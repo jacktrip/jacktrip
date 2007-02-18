@@ -1,0 +1,65 @@
+rms.o: rms.cpp ../include/rms.h /home/cc/220/stk-4.0/include/Filter.h \
+  /home/cc/220/stk-4.0/include/Stk.h ../include/ccconfig.h \
+  /usr/include/g++-3/iostream.h /usr/include/g++-3/streambuf.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/bits/types.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/gnu/stubs.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stddef.h \
+  /usr/include/bits/pthreadtypes.h /usr/include/bits/sched.h \
+  /usr/include/wchar.h /usr/include/bits/wchar.h /usr/include/gconv.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stdarg.h \
+  /usr/include/unistd.h /usr/include/bits/posix_opt.h \
+  /usr/include/bits/confname.h /usr/include/getopt.h \
+  /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/time.h \
+  /usr/include/endian.h /usr/include/bits/endian.h \
+  /usr/include/sys/select.h /usr/include/bits/select.h \
+  /usr/include/bits/sigset.h /usr/include/bits/time.h \
+  /usr/include/sys/sysmacros.h /usr/include/alloca.h /usr/include/math.h \
+  /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h \
+  /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
+  /usr/include/stdio.h /usr/include/bits/stdio_lim.h \
+  /usr/include/bits/stdio.h /usr/include/string.h
+rms.cpp :
+../include/rms.h :
+/home/cc/220/stk-4.0/include/Filter.h :
+/home/cc/220/stk-4.0/include/Stk.h :
+../include/ccconfig.h :
+/usr/include/g++-3/iostream.h :
+/usr/include/g++-3/streambuf.h :
+/usr/include/libio.h :
+/usr/include/_G_config.h :
+/usr/include/bits/types.h :
+/usr/include/features.h :
+/usr/include/sys/cdefs.h :
+/usr/include/gnu/stubs.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stddef.h :
+/usr/include/bits/pthreadtypes.h :
+/usr/include/bits/sched.h :
+/usr/include/wchar.h :
+/usr/include/bits/wchar.h :
+/usr/include/gconv.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stdarg.h :
+/usr/include/unistd.h :
+/usr/include/bits/posix_opt.h :
+/usr/include/bits/confname.h :
+/usr/include/getopt.h :
+/usr/include/stdlib.h :
+/usr/include/sys/types.h :
+/usr/include/time.h :
+/usr/include/endian.h :
+/usr/include/bits/endian.h :
+/usr/include/sys/select.h :
+/usr/include/bits/select.h :
+/usr/include/bits/sigset.h :
+/usr/include/bits/time.h :
+/usr/include/sys/sysmacros.h :
+/usr/include/alloca.h :
+/usr/include/math.h :
+/usr/include/bits/huge_val.h :
+/usr/include/bits/mathdef.h :
+/usr/include/bits/mathcalls.h :
+/usr/include/bits/mathinline.h :
+/usr/include/stdio.h :
+/usr/include/bits/stdio_lim.h :
+/usr/include/bits/stdio.h :
+/usr/include/string.h :

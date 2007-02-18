@@ -1,0 +1,170 @@
+sliderx3.o: sliderx3.cpp ../include/sliderx3.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qslider.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qwidget.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qwindowdefs.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qobjectdefs.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qglobal.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qconfig.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmodules.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfeatures.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qstring.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qcstring.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmemarray.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qgarray.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qshared.h \
+  /usr/include/string.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/gnu/stubs.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stddef.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qnamespace.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/limits.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/syslimits.h \
+  /usr/include/limits.h /usr/include/bits/posix1_lim.h \
+  /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
+  /usr/include/bits/posix2_lim.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qobject.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qevent.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qregion.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qrect.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qsize.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpoint.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmime.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmap.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qdatastream.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qiodevice.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpair.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qtl.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qtextstream.h \
+  /usr/include/stdio.h /usr/include/bits/types.h \
+  /usr/include/bits/pthreadtypes.h /usr/include/bits/sched.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+  /usr/include/bits/wchar.h /usr/include/gconv.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stdarg.h \
+  /usr/include/bits/stdio_lim.h /usr/include/bits/stdio.h \
+  /usr/include/g++-3/iterator /usr/include/g++-3/stl_config.h \
+  /usr/include/g++-3/stl_relops.h /usr/include/g++-3/iostream.h \
+  /usr/include/g++-3/streambuf.h /usr/include/g++-3/stl_iterator.h \
+  /usr/include/g++-3/map /usr/include/g++-3/stl_tree.h \
+  /usr/include/g++-3/stl_algobase.h /usr/include/g++-3/stl_pair.h \
+  /usr/include/g++-3/type_traits.h /usr/include/stdlib.h \
+  /usr/include/sys/types.h /usr/include/time.h /usr/include/endian.h \
+  /usr/include/bits/endian.h /usr/include/sys/select.h \
+  /usr/include/bits/select.h /usr/include/bits/sigset.h \
+  /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
+  /usr/include/alloca.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/exception \
+  /usr/include/g++-3/stl_alloc.h /usr/include/assert.h \
+  /usr/include/pthread.h /usr/include/sched.h /usr/include/signal.h \
+  /usr/include/bits/initspin.h /usr/include/bits/sigthread.h \
+  /usr/include/g++-3/stl_construct.h /usr/include/g++-3/stl_function.h \
+  /usr/include/g++-3/stl_map.h /usr/include/g++-3/stl_multimap.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpaintdevice.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpalette.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qcolor.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qbrush.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfont.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfontmetrics.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfontinfo.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qsizepolicy.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qrangecontrol.h \
+  /home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qframe.h
+sliderx3.cpp :
+../include/sliderx3.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qslider.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qwidget.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qwindowdefs.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qobjectdefs.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qglobal.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qconfig.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmodules.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfeatures.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qstring.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qcstring.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmemarray.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qgarray.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qshared.h :
+/usr/include/string.h :
+/usr/include/features.h :
+/usr/include/sys/cdefs.h :
+/usr/include/gnu/stubs.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stddef.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qnamespace.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/limits.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/syslimits.h :
+/usr/include/limits.h :
+/usr/include/bits/posix1_lim.h :
+/usr/include/bits/local_lim.h :
+/usr/include/linux/limits.h :
+/usr/include/bits/posix2_lim.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qobject.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qevent.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qregion.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qrect.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qsize.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpoint.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmime.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qmap.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qdatastream.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qiodevice.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpair.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qtl.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qtextstream.h :
+/usr/include/stdio.h :
+/usr/include/bits/types.h :
+/usr/include/bits/pthreadtypes.h :
+/usr/include/bits/sched.h :
+/usr/include/libio.h :
+/usr/include/_G_config.h :
+/usr/include/wchar.h :
+/usr/include/bits/wchar.h :
+/usr/include/gconv.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stdarg.h :
+/usr/include/bits/stdio_lim.h :
+/usr/include/bits/stdio.h :
+/usr/include/g++-3/iterator :
+/usr/include/g++-3/stl_config.h :
+/usr/include/g++-3/stl_relops.h :
+/usr/include/g++-3/iostream.h :
+/usr/include/g++-3/streambuf.h :
+/usr/include/g++-3/stl_iterator.h :
+/usr/include/g++-3/map :
+/usr/include/g++-3/stl_tree.h :
+/usr/include/g++-3/stl_algobase.h :
+/usr/include/g++-3/stl_pair.h :
+/usr/include/g++-3/type_traits.h :
+/usr/include/stdlib.h :
+/usr/include/sys/types.h :
+/usr/include/time.h :
+/usr/include/endian.h :
+/usr/include/bits/endian.h :
+/usr/include/sys/select.h :
+/usr/include/bits/select.h :
+/usr/include/bits/sigset.h :
+/usr/include/bits/time.h :
+/usr/include/sys/sysmacros.h :
+/usr/include/alloca.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/exception :
+/usr/include/g++-3/stl_alloc.h :
+/usr/include/assert.h :
+/usr/include/pthread.h :
+/usr/include/sched.h :
+/usr/include/signal.h :
+/usr/include/bits/initspin.h :
+/usr/include/bits/sigthread.h :
+/usr/include/g++-3/stl_construct.h :
+/usr/include/g++-3/stl_function.h :
+/usr/include/g++-3/stl_map.h :
+/usr/include/g++-3/stl_multimap.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpaintdevice.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qpalette.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qcolor.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qbrush.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfont.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfontmetrics.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qfontinfo.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qsizepolicy.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qrangecontrol.h :
+/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/qframe.h :
