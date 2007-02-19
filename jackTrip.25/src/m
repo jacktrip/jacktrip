@@ -3,6 +3,9 @@ APP_NAME=sw
 APP_NAME_QUOTES=\\\"$APP_NAME\\\"
  
 ######################################
+# Created by Chris Chafe
+# Modified by Juan-Pablo Caceres to include a make install option to build and RPM
+ 
 # QMAKE_CLEAN cleans up ui, killing dependencies involving 
 # generated base classes
 # don't --> make clean
@@ -13,10 +16,19 @@ rm $APP_NAME.pro
 
 echo "progen"
 
-qmake -project -o $APP_NAME.pro ui/ ../include/ 
+qmake -project -o $APP_NAME.pro ui/ ../include/
 
 echo "qmake"
 
-qmake -makefile -unix -o Makefile "CONFIG+=qt thread warn_on debug" "QMAKE_CXXFLAGS+=-Wno-deprecated -pg -g" "INCLUDEPATH+=/usr/include/stk ../include $QTDIR/include/qwt" "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" "OBJECTS_DIR=obj" "MOC_DIR=moc" "unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack -lqwt" $APP_NAME.pro
+qmake -makefile -unix -o Makefile \
+"CONFIG+=qt thread warn_on debug" \
+"QMAKE_CXXFLAGS+=-Wno-deprecated -pg -g" \
+"INCLUDEPATH+=/usr/include/stk ../include $QTDIR/include/qwt" \
+"DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
+"OBJECTS_DIR=obj" "MOC_DIR=moc" \
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack -lqwt" \
+"unix:TARGET=$APP_NAME" \
+"unix:target.path=/usr/bin" \
+"unix:INSTALLS+=target" $APP_NAME.pro
 
 echo "done"

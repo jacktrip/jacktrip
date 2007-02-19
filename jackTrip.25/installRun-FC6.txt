@@ -1,0 +1,101 @@
+This linux-based system is used for multi-machine jam sessions over Internet2. It is still being developed at CCRMA. At a miniumum, two machines are needed and it's easiest if they've got static ip addresses. The path between needs >3Mbps and low jitter. Set them up so ssh is easy (set up keys, allow X display to export) and run the session from two windows on one machine. Watch out for dhcp, watch out for incomplete /etc/hosts entries, watch out for firewalls and NAT boxes. If iperf udp looks ok on port 4464, in both directions, you've got it. You'll need root for lots of the installation 
+steps (where indicated), but not to run.
+
+---------------basic machine------------------------
+ (as root)
+do an fc5 planetCCRMA, with sound applications, developer install
+
+
+the firewall in the install option will interfere with using udp streaming, but you can turn it on while opening a hole for 4464:udp, if security might be an issue
+---------------qt 3.3---------qwt 4.2.0------------------------
+ (as root)
+yum install stk
+yum install qt-devel
+
+logout, login to set environment variable
+ (as root)
+yum install qt-designer
+
+
+yum install qwt-devel
+|||||||||||||||||||||
+(Note on FC6, if qwt-devel is not yet packated for FC6, you can manually install the packets for FC5)
+wget http://ccrma.stanford.edu/planetccrma/mirror/fedora/linux/planetccrma/5/i386/qwt-4.2.0-1.rhfc5.ccrma.i386.rpm
+rpm -ivh qwt-4.2.0-1.rhfc5.ccrma.i386.rpm
+wget http://ccrma.stanford.edu/planetccrma/mirror/fedora/linux/planetccrma/5/i386/repodata/repoview/qwt-devel-0-4.2.0-1.rhfc5.ccrma.html
+rpm -ivh qwt-devel-0-4.2.0-1.rhfc5.ccrma.html
+
+-----------edit firewall --------------------------
+ (as root)
+/usr/bin/system-config-securitylevel
+Other ports: 4464:udp
+
+-----------set up keys for no password login--------------------------
+(when you are asked for a passphrase, leave it empty)
+
+chmod 700 ~/.ssh
+ssh-keygen -t dsa -f ~/.ssh/id_dsa
+cd ~/.ssh
+scp id_dsa.pub SERVER:~/.ssh
+
+ssh SERVER
+chmod 700 ~/.ssh
+cd .ssh
+cat id_dsa.pub >> authorized_keys
+chmod 600 authorized_keys
+rm -f id_dsa.pub
+--------------------test path using iperf both ways --------------------------
+install iperf from rpm, google to find it
+[server]
+iperf -u -s -p4464
+[client]
+iperf -u -c <server-name-or-addr> -b20M -p4464
+...switch server and client and retest...
+
+---------------allow remote user to grab sound hardware --------------------
+ (as root)
+edit 
+/etc/security/console.perms.d/50-default.perms
+and change the permissions for <sound> to 0666 ... two entries there, on the
+same line
+then to make it take effect immediately, do
+chmod 0666 /dev/snd/*
+
+----------------------------jackTrip.25--------------------------
+not yet packaged, so...
+get & uncompress http://ccrma.stanford.edu/~cc/vox/jackTrip.25.tar.gz
+(I use anjuta to edit and there is an anjuta project, qtk.prj
+I don't use the anjuta makefile features, 
+instead I use the following script which runs qmake)
+
+cd down to the /src directory
+./m
+make
+
+-----------test new app --------------------------
+in the src directory:
+./sw (prints args)
+
+[server]
+qjackctl & 
+	(then these settings in Setup page gui)
+	Realtime, Frames/Period 32, Sample Rate 48000
+./sw -j -z 32 -b 4 -q 2 -a 2 -r
+[client]
+run qjackctl the same (exporting the X gui)
+./sw -j -z 32 -b 4 -q 2 -a 2 -t <server-name-or-addr>
+
+To restart:
+quit with <ctrl>c and re-run (always stop/start jack on both sides first)
+
+Hints:
+  ..."udp waited too long"... 
+	message means choking or jitter problems
+  ...if needed, increase packet sizes 32-64-128-256 at the expense of latency...
+	this must be the same for qjackctl and the -z command
+  ...add/reduce redundant packets with -b command...
+  ...add/reduce input queue with -q command...
+
+See README for blather about ownership.
+
+
