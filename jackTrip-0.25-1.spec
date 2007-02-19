@@ -4,7 +4,7 @@ Version: 0.25
 Release: 1
 Source0: %{name}-%{version}.tar.gz
 License: GPL
-Group: SoundWIRE at CCRMA
+Group: internet sound
 
 BuildRequires: qt-devel, qt-designer, qwt-devel, stk
 
