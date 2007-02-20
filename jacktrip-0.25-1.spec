@@ -1,7 +1,7 @@
 Summary: Multimachine jam sessions over internet
 Name: jacktrip
 Version: 0.25
-Release: 1
+Release: 1%{?dist}
 License: STK
 Group: Applications/Multimedia
 URL: http://ccrma.stanford.edu/groups/soundwire/donwloads/jacktrip/jacktrip-0.25.tar.gz
