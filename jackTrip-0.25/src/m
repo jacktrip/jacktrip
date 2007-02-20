@@ -1,5 +1,5 @@
 #####################################
-APP_NAME=jtrip
+APP_NAME=jacktrip
 APP_NAME_QUOTES=\\\"$APP_NAME\\\"
  
 ######################################
@@ -27,8 +27,6 @@ qmake -makefile -unix -o Makefile \
 "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
 "OBJECTS_DIR=obj" "MOC_DIR=moc" \
 "unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack -lqwt" \
-"unix:TARGET=$APP_NAME" \
-"unix:target.path=/usr/bin" \
-"unix:INSTALLS+=target" $APP_NAME.pro
+$APP_NAME.pro
 
 echo "done"
