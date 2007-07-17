@@ -20,7 +20,7 @@ get_fifo_priority (bool half)
 
 	min = sched_get_priority_min (SCHED_FIFO);
 	max = sched_get_priority_max (SCHED_FIFO);
-	if (half) priority = max  - (max - min) / 2;
+	if (half) priority = (max  - (max - min) / 2) + 1;
 		else
 	priority = max; 
 //      priority=min;

@@ -139,7 +139,7 @@ UDPInput::run ()
 	}
 		msleep (10);
 	cout << "Started UDP Input Run" << endl;
-		set_fifo_priority (false);
+		set_fifo_priority (true);
 	bool timeout;
 	int ret;
 	unsigned long now = 0;
