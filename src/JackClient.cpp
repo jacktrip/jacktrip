@@ -3,8 +3,6 @@
 // Created by: cc <cc@sony.stanford.edu>
 // Created on: Sat Jul 26 13:08:21 2003
 //
-// mod for displaying channels in jack counting from 1
-#define ONE_BASED (i+1)
 
 #include "JackClient.h"
 #include "math.h"
@@ -61,9 +59,9 @@ xx_global_process_xx (unsigned int nframes, void *argc)
 	for (int i = 0; i < xx_nChans_xx; i++)
 	{
 		inBufPtr[i] = (jack_default_audio_sample_t *)
-			jack_port_get_buffer (input_port[ONE_BASED], nframes);
+			jack_port_get_buffer (input_port[i], nframes);
 		outBufPtr[i] = (jack_default_audio_sample_t *)
-			jack_port_get_buffer (output_port[ONE_BASED], nframes);
+			jack_port_get_buffer (output_port[i], nframes);
 	}
 	double d;
 	signed short s;
@@ -126,8 +124,8 @@ JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool
 	xx_nChans_xx = this->nChans = nChans;
 	inBuf = new signed short[nChans * nFrames];
 	outBuf = new signed short[nChans * nFrames];
-	input_port = new jack_port_t *[nChans+1]; // ONE_BASED
-	output_port = new jack_port_t *[nChans+1]; // ONE_BASED
+	input_port = new jack_port_t *[nChans];
+	output_port = new jack_port_t *[nChans];
 	inBufPtr = new jack_default_audio_sample_t *[nChans];
 	outBufPtr = new jack_default_audio_sample_t *[nChans];
 //              printf ("\nbuffer bytes = %d\n", nChans * nFrames * sizeof(signed short));
@@ -153,7 +151,7 @@ JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool
 	// find a name predictably
 	for (int i = 1; i < 10; i++)
 	{
-		snprintf (namebuf, sizeof (namebuf) - 1, "jt_devel_%d", i);
+		snprintf (namebuf, sizeof (namebuf) - 1, "go_%d", i);
 		if ((client = jack_client_new (namebuf)) != 0)
 		{
 			break;
@@ -201,16 +199,16 @@ JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool
 	for (int i = 0; i < nChans; i++)
 	{
 		QString iName, oName;
-		QTextOStream (&iName) << "input" << ONE_BASED;
-		QTextOStream (&oName) << "output" << ONE_BASED;
+		QTextOStream (&iName) << "input" << i;
+		QTextOStream (&oName) << "output" << i;
 
 		if (output)
-			output_port[ONE_BASED] =
+			output_port[i] =
 				jack_port_register (client, oName,
 						    JACK_DEFAULT_AUDIO_TYPE,
 						    JackPortIsOutput, 0);
 		if (input)
-			input_port[ONE_BASED] =
+			input_port[i] =
 				jack_port_register (client, iName,
 						    JACK_DEFAULT_AUDIO_TYPE,
 						    JackPortIsInput, 0);
@@ -260,8 +258,7 @@ JackClient::go ()
 	{
 
 		if (jack_connect
-		    (client, ports[i+alsa_readable_offset], 
-		jack_port_name (input_port[ONE_BASED])))
+		    (client, ports[i+alsa_readable_offset], jack_port_name (input_port[i])))
 		{
 			fprintf (stderr, "cannot connect input ports\n");
 		}
@@ -280,7 +277,7 @@ JackClient::go ()
 	for (int i = 0; i < nChans; i++)
 	{
 		if (jack_connect
-		    (client, jack_port_name (output_port[ONE_BASED]), ports[i]))
+		    (client, jack_port_name (output_port[i]), ports[i]))
 		{
 			fprintf (stderr, "cannot connect output ports\n");
 		}

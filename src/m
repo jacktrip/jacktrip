@@ -1,11 +1,10 @@
-#!/bin/bash
 #####################################
 APP_NAME=jacktrip
 APP_NAME_QUOTES=\\\"$APP_NAME\\\"
  
 ######################################
 # Created by Chris Chafe
-# Modified by Juan-Pablo Caceres to include a make install option to build and RPM, and to make it work with any shell.
+# Modified by Juan-Pablo Caceres to include a make install option to build and RPM
  
 # QMAKE_CLEAN cleans up ui, killing dependencies involving 
 # generated base classes
@@ -27,9 +26,11 @@ qmake -makefile -unix -o Makefile \
 "INCLUDEPATH+=/usr/include/stk ../include $QTDIR/include/qwt" \
 "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
 "OBJECTS_DIR=obj" "MOC_DIR=moc" \
-"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack -lqwt" \
-"unix:TARGET=$APP_NAME" \
-"unix:target.path=/usr/bin" \
-"unix:INSTALLS+=target" $APP_NAME.pro
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack -lqwt" $APP_NAME.pro
+##Include this if you want to create the make install target in the makefile
+##"unix:TARGET=$APP_NAME" \
+##"unix:target.path=/usr/bin" \
+##"unix:INSTALLS+=target" \
+##$APP_NAME.pro
 
 echo "done"

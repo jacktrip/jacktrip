@@ -1,0 +1,42 @@
+
+[filelist]
+0=/home/cc/projects/jackTrip.25/src/circularbuffer.cpp
+1=/home/cc/projects/jackTrip.25/src/stream.cpp
+2=/home/cc/projects/jackTrip.25/include/stream.h
+3=/home/cc/projects/jackTrip.25/src/audio_output.cpp
+4=/home/cc/projects/jackTrip.25/include/audioDevice.h
+5=/home/cc/projects/jackTrip.25/src/audioDevice.cpp
+
+[filenumbers]
+0=1
+1=1
+2=63
+3=64
+4=111
+5=206
+
+[filemarkers]
+0=
+1=
+2=
+3=
+4=
+5=
+
+[File View]
+filter.file.unmatch=*.so *.o *.a *.la
+filter.file.ignore.hidden=0
+filter.dir.ignore.hidden=0
+
+[Project Tree]
+0=0
+1=0:1
+
+[File Tree]
+0=0
+
+[executer]
+RunInTerminal=true
+
+[Project State]
+clean before build=false
