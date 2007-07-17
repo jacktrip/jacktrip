@@ -28,7 +28,7 @@ qmake -makefile -unix -o Makefile \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -pg -g" \
 "INCLUDEPATH+=/usr/include/stk ../include $QTDIR/include/qwt" \
 "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
-"OBJECTS_DIR=obj" "MOC_DIR=moc" \
+"QMAKE_CLEAN+=$APP_NAME" \
 "unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack -lqwt" \
 "unix:TARGET=$APP_NAME" \
 "unix:target.path=/usr/bin" \
