@@ -11,16 +11,18 @@ APP_NAME_QUOTES=\\\"$APP_NAME\\\"
 # generated base classes
 # don't --> make clean
 
-rm -r obj
-rm -r moc
-rm $APP_NAME.pro
+#rm -r obj
+#rm -r moc
+#rm $APP_NAME.pro
 
-echo "progen"
+#echo "progen"
 
-qmake -project -o $APP_NAME.pro ui/ ../include/
+#qmake -project -o $APP_NAME.pro ui/ ../include/
+qmake -project -o $APP_NAME.pro
 
-echo "qmake"
+echo "qmake .pro built"
 
+#Create Makefile
 qmake -makefile -unix -o Makefile \
 "CONFIG+=qt thread warn_on debug" \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -pg -g" \
