@@ -153,7 +153,7 @@ JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool
 	// find a name predictably
 	for (int i = 1; i < 10; i++)
 	{
-		snprintf (namebuf, sizeof (namebuf) - 1, "jt_devel_%d", i);
+		snprintf (namebuf, sizeof (namebuf) - 1, "jacktrip_%d", i);
 		if ((client = jack_client_new (namebuf)) != 0)
 		{
 			break;
