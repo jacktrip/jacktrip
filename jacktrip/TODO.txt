@@ -1,3 +1,6 @@
 -Check That the Ethernet is running in full duplex
        /sbin/ethtool gives that info, but you have to be root for that
        looking for other options...
+       
+       dmesg |grep eth0
+       gives the info
