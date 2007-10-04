@@ -301,10 +301,8 @@ void
 StreamBD::PrintUsage ()
 {
 	cout << "===========================================================================" << endl;
-	cout << "   streamBD	A project of the SoundWIRE group at CCRMA, Stanford." << endl;
-	cout << " 		http://www-ccrma.stanford.edu/groups/soundwire/" << endl << endl;
-	cout << " 		Programming: Daniel Walling (dwalling@ccrma.stanford.edu)" << endl;
-	cout << "		Based on code by Scott Wilson (rswilson@ccrma.stanford.edu)" << endl;
+	cout << "   jacktrip	A project of the SoundWIRE group at CCRMA, Stanford." << endl;
+	cout << " 		http://ccrma.stanford.edu/groups/soundwire/software/" << endl << endl;
 	cout << "===========================================================================" << endl;
 	cout << " Needs to be run in one of the following modes:" << endl;
 	cout << "	-r		Receiver	(opens audio channels and waits" << endl;
@@ -338,9 +336,8 @@ StreamBD::PrintUsage ()
 	cout << "	-J		jack alsa readable offset	(" << args->jack_alsa_readable_offset << ")" << endl;
 	cout << "	-g		gui	(" << args->gui << ")" << endl;
 	cout << endl;
-	cout << "	run 'src/streambd' to see these instructions." <<
+	cout << "	run 'src/jacktrip' to see these instructions." <<
 		endl;
-	cout << "	Look in INSTRUCTIONS.TXT for further help." << endl;
 }
 
 /**

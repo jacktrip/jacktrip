@@ -12,7 +12,7 @@
 #include "qstring.h"
 #include "qtimer.h"
 #include "StreamBD.h"
-#include "StripChart.h"
+//#include "StripChart.h" //Removed for compatibility with qwt-5 (we are not really using it right now)
 	
 class MainDialog:public MainWindow
 {
@@ -20,7 +20,7 @@ class MainDialog:public MainWindow
 	  MainDialog (QWidget * parent = 0, const char *name = 0);
 	  virtual ~ MainDialog ();
 	  void init(StreamBD *s);
-	StripChart *plot;
+  //StripChart *plot; //Removed for compatibility with qwt-5 (we are not really using it right now)
 	virtual void closeEvent (QCloseEvent * e);
 	void customEvent (QCustomEvent * e);
 	void addThread (QObject * t);
