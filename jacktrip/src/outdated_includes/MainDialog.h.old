@@ -6,7 +6,7 @@
 
 #ifndef _MAINDIALOG_H_
 #define _MAINDIALOG_H_
-#include "../src/ui/MainWindow.h"
+//#include "../src/ui/MainWindow.h" //Removed for compatibility with qwt-5 (we are not really using it right now)
 #include "qptrlist.h"
 #include "qthread.h"
 #include "qstring.h"
@@ -14,7 +14,7 @@
 #include "StreamBD.h"
 //#include "StripChart.h" //Removed for compatibility with qwt-5 (we are not really using it right now)
 	
-class MainDialog:public MainWindow
+class MainDialog//:public MainWindow //Removed for compatibility with qwt-5 (we are not really using it right now)
 {
       Q_OBJECT public:
 	  MainDialog (QWidget * parent = 0, const char *name = 0);

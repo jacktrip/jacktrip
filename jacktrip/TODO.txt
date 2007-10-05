@@ -4,3 +4,5 @@
        
        dmesg |grep eth0
        gives the info
+
+Add flag to name the client with more meaningfull names than go_1, etc..
