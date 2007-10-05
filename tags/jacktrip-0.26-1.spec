@@ -44,7 +44,7 @@ make
 
 
 %changelog
-* Fri Oct 05 2007 Juan-Pablo Caceres <jcaceres@ccrma.Stanford.EDU> - 0.25-1
+* Fri Oct 05 2007 Juan-Pablo Caceres <jcaceres@ccrma.Stanford.EDU> - 0.26-1
 - new version 0.26, without qwt dependency
 * Mon Feb 19 2007 Juan-Pablo Caceres <jcaceres@ccrma.Stanford.EDU> - 0.25-1
 - modified names and version
