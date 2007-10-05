@@ -1,11 +1,10 @@
-//#include "MainDialog.h"
+#include "MainDialog.h"
 
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "qstring.h"
-#include "StreamBD.h"
+
 
 // dotted integer from hostname
 QString *
@@ -45,18 +44,18 @@ int
 main (int argc, char **argv)
 {
 	//create application object
-	//QApplication a (argc, argv);
-	//StreamBD s;
+	QApplication a (argc, argv);
+	StreamBD s;
 	// Parse the command line.  If the arguments are invalid,
 	// usage instructions will be printed.  Streambd will exit.
-	//if (s.ParseCommandLine (argc, argv) == 0)
+	if (s.ParseCommandLine (argc, argv) == 0)
 		return 0;
-	//MainDialog m;
-	//a.setMainWidget (&m);
-	//if (s.args->gui) m.show ();
-	//m.init (&s);
-	//a.processEvents ();
-	//return a.exec ();
+	MainDialog m;
+	a.setMainWidget (&m);
+	if (s.args->gui) m.show ();
+	m.init (&s);
+	a.processEvents ();
+	return a.exec ();
 }
 
 
