@@ -26,10 +26,10 @@ echo "qmake .pro built"
 qmake -makefile -unix -o Makefile \
 "CONFIG+=qt thread warn_on debug" \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -pg -g" \
-"INCLUDEPATH+=/usr/include/stk" \
+"INCLUDEPATH+=/usr/include/stk ../include" \
 "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
 "QMAKE_CLEAN+=$APP_NAME" \
-"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack -lqwt" \
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack" \
 "unix:TARGET=$APP_NAME" \
 "unix:target.path=/usr/bin" \
 "unix:INSTALLS+=target" $APP_NAME.pro
