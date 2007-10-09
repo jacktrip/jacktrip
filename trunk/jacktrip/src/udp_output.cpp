@@ -104,7 +104,7 @@ UDPOutput::run ()
 	char *buf = (char *) new char[bpp];
 
 	cout << "UDP Output run." << endl;
-		set_fifo_priority (true);
+		set_fifo_priority (false);
 	if (stream == NULL)
 	{
 		cerr << "ERROR: UDPOutput has no sream to read from!" << endl;
