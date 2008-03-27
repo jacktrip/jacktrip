@@ -16,7 +16,7 @@ InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 	char localhostbuf[100];
 	has_peer = false;
 	_rcvr = NULL;
-	sock = new QSocketDevice (QSocketDevice::Datagram);	// for an unreliable UDP socket
+	sock = new Q3SocketDevice (Q3SocketDevice::Datagram);	// for an unreliable UDP socket
 	sock->setAddressReusable(true);
 	if (gethostname (localhostbuf, 99))
 	{
