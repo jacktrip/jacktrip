@@ -51,8 +51,8 @@ main (int argc, char **argv)
 	if (s.ParseCommandLine (argc, argv) == 0)
 		return 0;
 	MainDialog m;
-	a.setMainWidget (&m);
-	if (s.args->gui) m.show ();
+	//a.setMainWidget (&m);
+	//if (s.args->gui) m.show ();
 	m.init (&s);
 	a.processEvents ();
 	return a.exec ();
