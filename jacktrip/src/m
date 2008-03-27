@@ -18,12 +18,12 @@ APP_NAME_QUOTES=\\\"$APP_NAME\\\"
 #echo "progen"
 
 #qmake -project -o $APP_NAME.pro ui/ ../include/
-qmake -project -o $APP_NAME.pro
+qmake-qt4 -project -o $APP_NAME.pro
 
 echo "qmake .pro built"
 
 #Create Makefile
-qmake -makefile -unix -o Makefile \
+qmake-qt4 -makefile -unix -o Makefile \
 "CONFIG+=qt thread warn_on debug" \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -pg -g" \
 "INCLUDEPATH+=/usr/include/stk ../include" \
