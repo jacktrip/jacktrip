@@ -7,7 +7,7 @@
 #ifndef _MAINDIALOG_H_
 #define _MAINDIALOG_H_
 //#include "../src/ui/MainWindow.h"
-#include "qptrlist.h"
+#include "q3ptrlist.h"
 #include "qthread.h"
 #include "qstring.h"
 #include "qtimer.h"

@@ -8,7 +8,7 @@
 #include "audioInfo.h"
 #include "networkInfo.h"
 #include "qthread.h"
-#include "qptrvector.h"
+#include "q3ptrvector.h"
 
 /**
  * @brief Connects an InputPlugin to an OutputPlugin with
@@ -25,15 +25,15 @@ class Stream
         
   protected:
  //  Vector inputs;
- 	  QPtrVector < InputPlugin > ins;
+ 	  Q3PtrVector < InputPlugin > ins;
   //  Vector outputs;
- 	  QPtrVector < OutputPlugin > outs;
+ 	  Q3PtrVector < OutputPlugin > outs;
   //   Vector processes;
- 	  QPtrVector < ProcessPlugin > procs;
+ 	  Q3PtrVector < ProcessPlugin > procs;
   //   Vector circularBuffers;
-	  QPtrVector < CircularBuffer > bufs;
+	  Q3PtrVector < CircularBuffer > bufs;
  //    Vector outputLocks;     
- 	  QPtrVector < QSemaphore >locks;
+ 	  Q3PtrVector < QSemaphore >locks;
   	int insCount;
 	int procsCount;
 	int outsCount;

@@ -1,7 +1,7 @@
 #ifndef 	_UDP_OUTPUT_H
 #define 	_UDP_OUTPUT_H
 
-#include <qsocketdevice.h>
+#include <q3socketdevice.h>
 
 #include "networkInfo.h"
 #include "audioInfo.h"
@@ -21,7 +21,7 @@ class UDPOutput:public OutputPlugin	// , public Semaphore
       private:
 
 	int one_time_flags;
-	QSocketDevice *sock;
+	Q3SocketDevice *sock;
 	bool _running;
 
 	int packetIndex;	// only used by netdebug mode

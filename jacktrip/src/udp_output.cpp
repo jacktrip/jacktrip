@@ -14,7 +14,7 @@ audInfo (audInfo)
 {
 	bpp = netInfo->getDataBytesPerPacket ();
 	char localhostbuf[100];
-	sock = new QSocketDevice (QSocketDevice::Datagram);
+	sock = new Q3SocketDevice (Q3SocketDevice::Datagram);
 	sock->setAddressReusable(true);
 	if (gethostname (localhostbuf, 99))
 	{

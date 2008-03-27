@@ -5,7 +5,7 @@
 #include "udp.h"
 #include "networkInfo.h"
 #include "audioInfo.h"
-#include <qsocketdevice.h>
+#include <q3socketdevice.h>
 #include <qobject.h>
 
 /**
@@ -20,7 +20,7 @@ class UDPInput:public InputPlugin
 	NetworkInfoT netInfo;
 	  AudioInfoT audInfo;
 
-	QSocketDevice *sock;
+	Q3SocketDevice *sock;
 	bool _running;
 	bool has_peer;
 
