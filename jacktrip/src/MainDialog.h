@@ -9,7 +9,8 @@
 //#include "../src/ui/MainWindow.h"
 #include "q3ptrlist.h"
 #include "qthread.h"
-#include "qstring.h"
+//#include "qstring.h"
+#include <qstring.h>
 #include "qtimer.h"
 #include "StreamBD.h"
 //#include "StripChart.h"

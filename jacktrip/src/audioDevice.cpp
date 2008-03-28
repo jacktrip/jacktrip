@@ -60,7 +60,7 @@ mode (mode)
 		case RECORD:
 			if (jack)
 				jdevice =
-					new JackClient (APP_NAME,
+				  new JackClient ("jacktrip",//APP_NAME, //*JPC Hack, need to fix later
 							audioInfo->
 							getNumChans (),
 							audioInfo->
@@ -85,7 +85,7 @@ mode (mode)
 		case PLAYBACK:
 			if (jack)
 				jdevice =
-					new JackClient (APP_NAME,
+					new JackClient ("jacktrip",//APP_NAME, //*JPC Hack, need to fix later
 							audioInfo->
 							getNumChans (),
 							audioInfo->
@@ -106,7 +106,7 @@ mode (mode)
 		case DUPLEX:
 			if (jack)
 				jdevice =
-					new JackClient (APP_NAME,
+					new JackClient ("jacktrip",//APP_NAME, //*JPC Hack, need to fix later
 							audioInfo->
 							getNumChans (),
 							audioInfo->
@@ -172,7 +172,8 @@ mode (mode)
 	{
 		readLock = new QSemaphore (1);
 		writeLock = new QSemaphore (1);
-		(*writeLock)++;	// lock out write, to start with read
+		//(*writeLock)++;	// lock out write, to start with read
+		(*writeLock).acquire(); //****JPC qt4 porting******
 	}
 
 	if (jack)
@@ -240,7 +241,8 @@ AudioDevice::bufferPtrs (void *jib, void *job)
 void
 AudioDevice::unlockRead ()
 {
-	(*readLock)--;		// so audio input thread will unblock when stopped
+  //(*readLock)--;		// so audio input thread will unblock when stopped
+	(*readLock).release();//****JPC qt4 porting******
 }
 
 void
@@ -252,9 +254,11 @@ AudioDevice::readBuffer (void *to)
 		cerr << "ERROR: AudioDevice::readBuffer called on device in PLAYBACK mode!" << endl;
 	}
 	
-		(*readLock)++;
+	//(*readLock)++;
+		(*readLock).acquire();//****JPC qt4 porting******
 		memcpy (to, buffer, bytesPerBuffer);
-		(*writeLock)--;
+		//(*writeLock)--;
+		(*writeLock).release();//****JPC qt4 porting******
 	
 }
 
@@ -268,10 +272,12 @@ AudioDevice::writeBuffer (void *from)
 	if (harp == false)
 	{
 		
-			(*writeLock)++;
+	  //(*writeLock)++;
+			(*writeLock).acquire();//****JPC qt4 porting******
 			memcpy (buffer, from, bytesPerBuffer);
 			tick (); // calls tickstream, blocks
-			(*readLock)--;
+			//(*readLock)--;
+			(*readLock).release();//****JPC qt4 porting******
 		
 	}
 	else

@@ -13,7 +13,8 @@ APP_NAME_QUOTES=\\\"$APP_NAME\\\"
 
 #rm -r obj
 #rm -r moc
-#rm $APP_NAME.pro
+rm $APP_NAME.pro
+rm Makefile
 
 #echo "progen"
 

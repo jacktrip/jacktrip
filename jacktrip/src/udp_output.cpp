@@ -69,8 +69,10 @@ UDPOutput::connect (QHostAddress remote)
 	}
 	// sets peerAddress   
 	sock->connect (remote, netInfo->getInPort ());
-	cout << "Connecting to " << remote.toString () << ":" << netInfo->
-		getInPort () << endl;
+	//**************JPC COMENTED OUT*******************
+	//cout << "Connecting to " << remote.toString () << ":" << netInfo->
+	//	getInPort () << endl;
+	//*************************************************
 	return 0;
 }
 
@@ -126,8 +128,10 @@ UDPOutput::run ()
 		if (res < 0)
 		{
 			perror ("Send");
-			cout << "error sending to " << sock->peerAddress ().
-				toString () << endl;
+			//**************JPC COMENTED OUT*******************
+			//cout << "error sending to " << sock->peerAddress ().
+			//	toString () << endl;
+			//*************************************************
 			return;
 		}
 		/*
