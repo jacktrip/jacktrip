@@ -71,7 +71,8 @@ Stream::addOutput (OutputPlugin * newout)
 	{			// We are going to need output synchronization locking.
 		// add a lock for the first output (didn't need it when it was the only one.)
 		tmp = new QSemaphore (10);
-		(*tmp)++;
+		//(*tmp)++;
+		(*tmp).acquire();//****JPC qt4 porting******
 		APPEND (locks, tmp);
 	}
 
@@ -84,7 +85,8 @@ Stream::addOutput (OutputPlugin * newout)
 	}
 
 	tmp = new QSemaphore (10);
-	(*tmp)++;
+	//(*tmp)++;
+	(*tmp).acquire();//****JPC qt4 porting******
 	APPEND (locks, tmp);
 }
 
@@ -122,7 +124,8 @@ Stream::read (void *buf, int key)
 #if (debugMe)
 					cerr << key << "->POST  ";
 #endif
-					(*sem)--;
+					//(*sem)--;
+					(*sem).release();//****JPC qt4 porting******
 				}
 			}
 		}
@@ -135,7 +138,8 @@ Stream::read (void *buf, int key)
 #if  (debugMe)
 			cerr << key << "->WAIT  ";
 #endif
-			(*sem)++;
+			//(*sem)++;
+			(*sem).acquire();//****JPC qt4 porting******
 		}
 	}
 

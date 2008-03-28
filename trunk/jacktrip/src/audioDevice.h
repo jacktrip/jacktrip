@@ -19,6 +19,10 @@
 #include "JackClient.h"
 #include "qthread.h"
 #include "StreamBD.h"
+//#include <qwaitcondition.h>
+#include <QWaitCondition>
+#include <QSemaphore>
+
 /**
  * @brief Interfaces with an RtAudio sound device.
  */

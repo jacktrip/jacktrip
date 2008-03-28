@@ -579,8 +579,10 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
 			usleep (10000);
 			 //     cout << ".";
 		}
-		cout << endl << "Connection received from: " <<
-			netin->peer ().toString () << endl;
+		//**************JPC COMENTED OUT*******************
+		//cout << endl << "Connection received from: " <<
+		//	netin->peer ().toString () << endl;
+		//*************************************************
 		cout << "Requesting return connection....";
 		netout->connect (netin->peer ());
 		cout << "SUCCESS!" << endl;

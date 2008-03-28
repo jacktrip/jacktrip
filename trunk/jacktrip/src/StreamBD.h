@@ -131,7 +131,8 @@ class MainDialog;
 
 class StreamBD:public QObject
 {
-      Q_OBJECT public:
+  //Q_OBJECT public://***JPC COMENTED OUT
+public:
 		StreamBD();
 		 ~StreamBD();
 	int cmd (MainDialog *eventThread);

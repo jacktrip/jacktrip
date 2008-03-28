@@ -11,7 +11,8 @@
 #include "Stk.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "qstring.h"
+//#include "qstring.h"
+#include <qstring.h>
 
 class AudioDevice;
 class JackClient:public Stk
