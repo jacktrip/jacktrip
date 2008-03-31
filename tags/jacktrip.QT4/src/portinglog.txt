@@ -1,0 +1,47 @@
+Log for qt3to4 on Thu Mar 27 14:52:37 2008. Number of log entries: 44
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audio_input.cpp
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audio_output.cpp
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audioDevice.cpp
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audioInfo.cpp
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/circularbuffer.cpp
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/JackClient.cpp at line 14 column 21: qtextstream.h -> q3textstream.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/main.cpp at line 38 column 21: qtextstream.h -> q3textstream.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/MainDialog.cpp
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/networkInfo.cpp
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stream.cpp
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/StreamBD.cpp
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_input.cpp at line 19 column 25: QSocketDevice -> Q3SocketDevice
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_input.cpp at line 19 column 40: QSocketDevice -> Q3SocketDevice
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_output.cpp at line 17 column 25: QSocketDevice -> Q3SocketDevice
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_output.cpp at line 17 column 40: QSocketDevice -> Q3SocketDevice
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audio_input.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audio_output.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audioConsts.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audioDevice.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/audioInfo.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/circularbuffer.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/Documentation.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/input_plugin.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/JackClient.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/MainDialog.h at line 10 column 21: qptrlist.h -> q3ptrlist.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/networkInfo.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/output_plugin.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/plugin.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/process_plugin.h
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stk_process.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stream.h at line 11 column 23: qptrvector.h -> q3ptrvector.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stream.h at line 22 column 14: QPtrVector -> Q3PtrVector
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stream.h at line 24 column 14: QPtrVector -> Q3PtrVector
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stream.h at line 26 column 14: QPtrVector -> Q3PtrVector
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stream.h at line 28 column 13: QPtrVector -> Q3PtrVector
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/stream.h at line 30 column 14: QPtrVector -> Q3PtrVector
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/StreamBD.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/ThreadCommEvent.h: Added the following include directives:
+	#include <QEvent> 	#include <QCustomEvent> 
+No changes made to file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_input.h at line 8 column 23: qsocketdevice.h -> q3socketdevice.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_input.h at line 20 column 14: QSocketDevice -> Q3SocketDevice
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_output.h at line 4 column 23: qsocketdevice.h -> q3socketdevice.h
+In file /user/j/jcaceres/svn-jacktrip/trunk/jacktrip/src/udp_output.h at line 19 column 14: QSocketDevice -> Q3SocketDevice
+In file jacktrip.pro: Added entry QT += network  qt3support 
+
