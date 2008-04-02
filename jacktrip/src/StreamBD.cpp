@@ -205,9 +205,9 @@ StreamBD::cmd (MainDialog *eventThread)
 audioDevice->setThreads(t);
 
 		t.netin = new UDPInput (netInfo, audioInfo);
-	t.netin->setGUI((QObject *)eventThread);
+		t.netin->setGUI((QObject *)eventThread);
 		t.netout = new UDPOutput (netInfo, audioInfo);
-	t.netout->setGUI((QObject *)eventThread);
+		t.netout->setGUI((QObject *)eventThread);
 
 		ConnectPlugins (t.audioin, t.netout, t.streamout);
 		ConnectPlugins (t.netin, t.audioout, t.streamin);
@@ -579,9 +579,11 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
 			usleep (10000);
 			 //     cout << ".";
 		}
+		
+		/////FOLOW THIS TO FIND THE PROBLEM
 		//**************JPC COMENTED OUT*******************
-		//cout << endl << "Connection received from: " <<
-		//	netin->peer ().toString () << endl;
+		cout << endl << "Connection received from: " <<
+		  netin->peer().toString().latin1() << endl;
 		//*************************************************
 		cout << "Requesting return connection....";
 		netout->connect (netin->peer ());

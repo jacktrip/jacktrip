@@ -3,7 +3,7 @@
 #define INCLUDED_CIRCULARBUFFER
 
 #include <qthread.h>
-//#include <qsemaphore.h>
+//#include <qsemaphore.h>//***JPC Port to qt4*****************
 #include <QSemaphore>
 /**
  * @brief Provides a circular buffer that can be written to and read
