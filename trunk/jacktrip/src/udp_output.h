@@ -1,7 +1,8 @@
 #ifndef 	_UDP_OUTPUT_H
 #define 	_UDP_OUTPUT_H
 
-#include <q3socketdevice.h>
+//#include <q3socketdevice.h>//***JPC Port to qt4*****************
+#include <QUdpSocket> //***JPC Port to qt4*****************
 
 #include "networkInfo.h"
 #include "audioInfo.h"
@@ -18,28 +19,31 @@
 
 class UDPOutput:public OutputPlugin	// , public Semaphore
 {
-      private:
+private:
+  
+  int one_time_flags;
+  //Q3SocketDevice *sock;//***JPC Port to qt4*****************
+  QUdpSocket *sock;//***JPC Port to qt4*****************
+  bool _running;
+  
+  int packetIndex;	// only used by netdebug mode
+  int maxPacketIndex;
+  char *packetData;	// only used by netdebug mode
+  int numBuffers;
+  NetworkInfoT netInfo;
+  AudioInfoT audInfo;
 
-	int one_time_flags;
-	Q3SocketDevice *sock;
-	bool _running;
-
-	int packetIndex;	// only used by netdebug mode
-	int maxPacketIndex;
-	  char *packetData;	// only used by netdebug mode
-int numBuffers;
-	NetworkInfoT netInfo;
-	  AudioInfoT audInfo;
-      public:
-	  UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo);
-	int connect (QHostAddress remote);
-	int send (char *buf);
-	void Initial ();
-	void run ();
-	void stop ();
-	int bpp;
-	int wholeSize;
-	void plotVal (double v);
+public:
+  UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo);
+  virtual ~UDPOutput();
+  int connect (QHostAddress remote);
+  int send (char *buf);
+  void Initial ();
+  void run ();
+  void stop ();
+  int bpp;
+  int wholeSize;
+  void plotVal (double v);
 };
 
 
