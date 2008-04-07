@@ -1,0 +1,164 @@
+# Anjuta Version 1.2.1 
+Compatibility Level: 1 
+
+<PROJECT_DESCRIPTION_START>
+<PROJECT_DESCRIPTION_END>
+<CONFIG_PROGS_START>
+<CONFIG_PROGS_END>
+<CONFIG_LIBS_START>
+<CONFIG_LIBS_END>
+<CONFIG_HEADERS_START>
+<CONFIG_HEADERS_END>
+<CONFIG_CHARACTERISTICS_START>
+<CONFIG_CHARACTERISTICS_END>
+<CONFIG_LIB_FUNCS_START>
+<CONFIG_LIB_FUNCS_END>
+<CONFIG_ADDITIONAL_START>
+<CONFIG_ADDITIONAL_END>
+<CONFIG_FILES_START>
+<CONFIG_FILES_END>
+<MAKEFILE_AM_START>
+<MAKEFILE_AM_END>
+
+props.file.type=project
+
+anjuta.version=1.2.1
+anjuta.compatibility.level=1
+
+project.name=qtk
+project.type=GENERIC
+project.target.type=EXECUTABLE
+project.version=1
+project.author=cc
+project.source.target=go
+project.has.gettext=1
+project.gui.command=
+project.programming.language=C++
+project.excluded.modules=	intl
+
+project.config.extra.modules.before=
+project.config.extra.modules.after=
+project.config.blocked=0
+project.config.disable.overwriting=1 1 1 1 1 1 1 1 1 
+
+project.menu.entry=qtk Version 1
+project.menu.group=Applications
+project.menu.comment=qtk Version 1
+project.menu.icon=
+project.menu.need.terminal=0
+
+project.configure.options=
+anjuta.program.arguments=
+preferences.build.option.jobs=0
+preferences.build.option.silent=0
+preferences.build.option.autosave=1
+preferences.anjuta.make.options=-f Makefile.preamble -f Makefile
+preferences.make=make
+preferences.build.option.keep.going=0
+preferences.build.option.warn.undef=0
+preferences.autoformat.custom.style= -i8 -sc -bli0 -bli2 -cbi2 -ss
+preferences.indent.opening=0
+preferences.autoformat.disable=0
+preferences.indent.automatic=1
+preferences.use.tabs=1
+preferences.indent.size=4
+preferences.tabsize=4
+preferences.indent.closing=0
+
+module.include.name=include
+module.include.type=
+module.include.files=\
+	ThreadCommEvent.h\
+	audioConsts.h\
+	audioDevice.h\
+	audioInfo.h\
+	audio_input.h\
+	audio_output.h\
+	circularbuffer.h\
+	input_plugin.h\
+	networkInfo.h\
+	output_plugin.h\
+	plugin.h\
+	process_plugin.h\
+	stk_process.h\
+	stream.h\
+	udp.h\
+	udp_input.h\
+	udp_output.h\
+	JackClient.h\
+	MainDialog.h\
+	StreamBD.h\
+	StripChart.h
+
+module.source.name=src
+module.source.type=
+module.source.files=\
+	main.cpp\
+	audioDevice.cpp\
+	audioInfo.cpp\
+	audio_input.cpp\
+	audio_output.cpp\
+	circularbuffer.cpp\
+	networkInfo.cpp\
+	stream.cpp\
+	udp_input.cpp\
+	udp_output.cpp\
+	JackClient.cpp\
+	MainDialog.cpp\
+	StreamBD.cpp\
+	StripChart.cpp
+
+module.pixmap.name=pixmaps
+module.pixmap.type=
+module.pixmap.files=
+
+module.data.name=data
+module.data.type=
+module.data.files=
+
+module.help.name=help
+module.help.type=
+module.help.files=
+
+module.doc.name=doc
+module.doc.type=
+module.doc.files=
+
+module.po.files=
+
+compiler.options.supports=
+compiler.options.include.paths=\
+	../include/\
+	/home/cc/220/stk-4.0/include/\
+	/home/cc/PIII866/vox/qt-x11-free-3.0.3/include/\
+	model/\
+	/usr/include/qwt/
+compiler.options.library.paths=\
+	/home/cc/PIII866/vox/qt-x11-free-3.0.3/lib/\
+	/home/cc/220/stk-4.0/src/\
+	/usr/lib/
+compiler.options.libraries=\
+	asound\
+	stk\
+	qt-mt\
+	ncurses\
+	qwt
+compiler.options.libraries.selected=1 1 1 1 1 
+compiler.options.defines=\
+	_USE_GUI_\
+	QT_THREAD_SUPPORT\
+	__LINUX_ALSA__\
+	RT\
+	MODEL=simppend\
+	RT_MALLOC\
+	NUMST=2\
+	NCSTATES=2
+compiler.options.defines.selected=1 1 1 1 1 
+compiler.options.warning.buttons=0 0 1 1 1 1 1 1 1 1 1 0 1 1 0 1 
+compiler.options.optimize.buttons=0 1 0 0 
+compiler.options.other.buttons=1 0 
+compiler.options.other.c.flags=
+compiler.options.other.l.flags=
+compiler.options.other.l.libs=
+
+project.src.paths=
