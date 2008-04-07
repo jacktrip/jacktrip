@@ -1,0 +1,12 @@
+-Check That the Ethernet is running in full duplex
+       /sbin/ethtool gives that info, but you have to be root for that
+       looking for other options...
+       
+       dmesg |grep eth0
+       gives the info
+
+Check the FIFO Prioriy, now it is at 51, was at 99
+=======
+
+Add flag to name the client with more meaningfull names than go_1, etc..
+
