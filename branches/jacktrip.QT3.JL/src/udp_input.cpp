@@ -38,10 +38,12 @@ InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 	}
 
 	packetIndex = 0;
-	wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;
+	//wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
+	wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp);//JPC JLink***********************************
 	packetData = new char[wholeSize];
 	memset (packetData, 0, wholeSize);
-	numRedundantBuffers = netInfo->getChunksPerPacket() - 1;
+	//numRedundantBuffers = netInfo->getChunksPerPacket() - 1;//JPC JLink***********************************
+	numRedundantBuffers = 0;//JPC JLink***********************************
 	maxPacketIndex = netInfo->getMaxSeq();
 	cout << endl << "UDPInput binding to " << localhostbuf
 		<< " port " << netInfo->getInPort () << endl;
@@ -65,12 +67,14 @@ int
 UDPInput::rcv (char *buf)
 {
 		int	rv = sock->readBlock (packetData, wholeSize);
-
+		
 		char *datapart;
 		packetIndex = ((nsHeader *) packetData)->i_seq;
-		datapart = packetData + sizeof (nsHeader) + 
-		  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);
-		memcpy (buf, datapart, bpp);
+		datapart = packetData + sizeof (nsHeader);
+		//cout << sizeof (nsHeader) << endl;
+		//datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
+		//  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);//JPC JLink***********************************
+		memcpy (buf, datapart, bpp);//JPC JLink***********************************
 /*
 		((nsHeader *) packetData)->i_type = 0;
 		((nsHeader *) packetData)->i_nframes = 1;
@@ -81,27 +85,27 @@ UDPInput::rcv (char *buf)
 		((nsHeader *) packetData)->i_rtnseq = 6;
 		((nsHeader *) packetData)->i_rtt = 7;
 */
-			if (rv < 0)
-			{
-				cerr << "bad read..." << endl;
-			}
-	return packetIndex;
+		if (rv < 0)
+		  {
+		    cerr << "bad read..." << endl;
+		  }
+		return packetIndex;
 }
 
 int
 UDPInput::rcvz1 (char *bufz1, int z)
 {
-		char *datapart;
-		packetIndex = ((nsHeader *) packetData)->i_seq-z;
-	if (packetIndex < 0) 
-	{
-		packetIndex += maxPacketIndex;
-//		cout << "backed below 0 (a good thing)" << endl;
-	}
-		datapart = packetData + sizeof (nsHeader) + 
-		  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);
-		memcpy (bufz1, datapart, bpp);
-	return packetIndex;
+  char *datapart;
+  packetIndex = ((nsHeader *) packetData)->i_seq-z;
+  if (packetIndex < 0) 
+    {
+      packetIndex += maxPacketIndex;
+      //		cout << "backed below 0 (a good thing)" << endl;
+    }
+  //datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
+  //  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);//JPC JLink***********************************
+  memcpy (bufz1, datapart, bpp);
+  return packetIndex;
 }
 
 /**
@@ -127,9 +131,10 @@ UDPInput::run ()
 	cout << "UDP Input waiting for peer." << endl;
 	while (has_peer == false)
 	{
-		if (sock->bytesAvailable () >= wholeSize)	// not an error
+	  //if (sock->bytesAvailable () >= wholeSize)	// not an error//JPC JLink***********************************
+	  if (sock->bytesAvailable () >= (wholeSize))	// not an error//JPC JLink***********************************
 		{
-			cout <<"wholeSize = " << wholeSize << " " <<sock->bytesAvailable ()<< endl;			
+			cout <<"wholeSize = " << wholeSize << " " <<sock->bytesAvailable ()<< endl;	
 			//sock->readBlock (buf, wholeSize);
 			this->rcv (buf);
 			has_peer = true;	// really rcvd something
@@ -145,9 +150,11 @@ UDPInput::run ()
 	unsigned long now = 0;
 	unsigned long lastTickTime = usecTime ();
 	int ctr = 0;
-	double max = 0.0;	
+	//double max = 0.0;// not an error//JPC JLink***********************************
+	//max = 0.0;// not an error//JPC JLink***********************************
 	int gap;
-	double gapAvg = 0.0;
+	//double gapAvg = 0.0;// not an error//JPC JLink***********************************
+	//gapAvg = 0.0; // not an error//JPC JLink***********************************
 	while (_running)
 	{
 // If timeout is non-null and no error occurred 
@@ -175,7 +182,8 @@ UDPInput::run ()
 			stream->writeRedundant (bufz1, key, z, zseq);
 				z--;
 			}
-			gap = stream->writeRedundant (buf, key, 0, seq);
+			//gap = stream->writeRedundant (buf, key, 0, seq);
+			stream->writeRedundant (buf, key, 0, seq);// not an error//JPC JLink***********************************
 //		cout << "writePosition " << gap <<"\t\t";
 			/*
 		now = usecTime ();

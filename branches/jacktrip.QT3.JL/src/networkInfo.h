@@ -43,14 +43,14 @@ IpHeader;
 
 typedef struct _nshdr
 {
-	char i_type;
-	char i_nchans;
-	char i_copies;
-	unsigned short i_nframes;
-	unsigned short i_cksum;
+  //char i_type; //JPC JLink***********************************
+  //char i_nchans;//JPC JLink***********************************
+  //char i_copies;//JPC JLink***********************************
+  //unsigned short i_nframes;//JPC JLink***********************************
+  //unsigned short i_cksum;//JPC JLink***********************************
 	unsigned short i_seq;
-	unsigned short i_rtnseq;
-	unsigned short i_rtt;
+  //unsigned short i_rtnseq;//JPC JLink***********************************
+  //unsigned short i_rtt;//JPC JLink***********************************
 }
 nsHeader;
 
