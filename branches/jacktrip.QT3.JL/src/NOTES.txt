@@ -1,0 +1,38 @@
+getBytesPerBuffer is being set at audioInfo.cpp (Check that)
+
+
+sizeof (INT16) : bytesPerSample
+
+
+
+=========================================================================
+UDPhdr.txt
+Header:
+
+/************************************************************************/
+/* values for the UDP stream type                                       */
+/* streamType is a 16-bit value at the head of each UDP stream          */
+/* Its bit map is as follows:  (b15-msb)                                */
+/* B15:reserved, B14:extended header, B13 Stereo, B12 not 16-bit        */
+/* B11-B9: 0-48 Khz, 1-44 Khz, 2-32 Khz, 3-24 Khz,                      */
+/*         4-22 Khz, 5-16 Khz, 6-11 Khz, 7-8 Khz                        */      
+/* B8-0: Samples in packet                                              */
+/************************************************************************/
+#define ETX_RSVD (0<<15)
+#define ETX_XTND (1<<14)
+#define ETX_STEREO (1<<13)
+#define ETX_MONO (0<<13)
+#define ETX_16BIT (0<<12)
+#define ETX_RATE_MASK(a) (a&(0x7<<9))
+#define ETX_48KHZ (0<<9)
+#define ETX_44KHZ (1<<9)
+#define ETX_32KHZ (2<<9)
+#define ETX_24KHZ (3<<9)
+#define ETX_22KHZ (4<<9)
+#define ETX_16KHZ (5<<9)
+#define ETX_11KHZ (6<<9)
+#define ETX_8KHZ  (7<<9)
+#define ETX_SPP(a) (a&0x01FF) /* able to express up to 512 SPP */
+
+/* Note that the extended header is likely to have 6 more bytes: */
+/* 2 for the sequence number, and 4 for a timestamp */
