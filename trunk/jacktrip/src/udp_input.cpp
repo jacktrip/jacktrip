@@ -62,8 +62,8 @@ UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
 //-------------------------------------------------------------------------------
 UDPInput::~UDPInput()
 {
-  delete sock;
-  delete peerAddress;
+  //delete sock;
+  //delete peerAddress;
 }
 
 
@@ -196,7 +196,20 @@ UDPInput::run ()
       // otherwise it sets *timeout to FALSE. This is useful to find out 
       // if the peer closed the connection.
       //ret = (sock->waitForMore (30, &timeout));//***JPC Port to qt4*****************
+
+      //***********************************************************
+      //###########################################################
+      // THE SEGMENTATION FAAULT BUG IS IN THE FOLLOWING LINE
+      // IT SEEMS THAT QT4 IS MESSING UP SOMETHING 
+      //###########################################################
+      //***********************************************************
+      cout << "BEFORE SEGFAULT LINE" << endl;
       timeout = sock->waitForReadyRead(30);//***JPC Port to qt4*****************
+      cout << "AFTER SEGFAULT LINE" << endl;
+      //***********************************************************
+      //##########################################################
+      //***********************************************************
+
       //if (ret == -1)//***JPC Port to qt4*****************
       //cerr << "udp in sock problems..." << endl;//***JPC Port to qt4*****************
       //else if (timeout)//***JPC Port to qt4*****************
@@ -249,13 +262,11 @@ UDPInput::run ()
 //-------------------------------------------------------------------------------
 void UDPInput::plotVal (double v)
 {
-  /*
     if(_rcvr!=NULL)
     {
     ThreadCommEvent *e = new ThreadCommEvent (-1.0, v, 0.0);
     QApplication::postEvent (_rcvr, e);	// to app event loop
     }
-  */
 }
 
 

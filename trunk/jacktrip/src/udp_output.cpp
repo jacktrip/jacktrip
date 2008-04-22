@@ -61,7 +61,7 @@ audInfo (audInfo)
 
 UDPOutput::~UDPOutput()
 {
-  delete sock;
+  //delete sock;
 }
 
 
@@ -179,15 +179,12 @@ UDPOutput::stop ()
 	cout << "UDP Output SHOULD stop" << endl;
 }
 
-//***JPC Port to qt4*****************
 void UDPOutput::plotVal (double v)
 {
-  /*
     if(_rcvr!=NULL)
     {
     ThreadCommEvent *e = new ThreadCommEvent (v, -1.0, 0.0);
     QApplication::postEvent (_rcvr, e);	// to app event loop
     }
-  */
 }
 
