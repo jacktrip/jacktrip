@@ -48,9 +48,11 @@ typedef struct _nshdr
   //char i_copies;//JPC JLink***********************************
   //unsigned short i_nframes;//JPC JLink***********************************
   //unsigned short i_cksum;//JPC JLink***********************************
-	unsigned short i_seq;
+  //unsigned short i_seq;
   //unsigned short i_rtnseq;//JPC JLink***********************************
   //unsigned short i_rtt;//JPC JLink***********************************
+  unsigned short i_head;//JPC JLink***********************************
+
 }
 nsHeader;
 

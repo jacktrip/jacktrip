@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream.h>
+#include "jamlink.h"
 extern QString *IPv4Addr (char *namebuf);
 extern int set_fifo_priority (bool half);
 
@@ -38,6 +39,7 @@ InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 	}
 
 	packetIndex = 0;
+	
 	//wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
 	wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp);//JPC JLink***********************************
 	packetData = new char[wholeSize];
@@ -69,12 +71,19 @@ UDPInput::rcv (char *buf)
 		int	rv = sock->readBlock (packetData, wholeSize);
 		
 		char *datapart;
-		packetIndex = ((nsHeader *) packetData)->i_seq;
+		//packetIndex = ((nsHeader *) packetData)->i_seq;//JPC JLink***********************************
+		packetHeader = ((nsHeader *) packetData)->i_head;//JPC JLink***********************************
 		datapart = packetData + sizeof (nsHeader);
 		//cout << sizeof (nsHeader) << endl;
 		//datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
 		//  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);//JPC JLink***********************************
 		memcpy (buf, datapart, bpp);//JPC JLink***********************************
+
+		//JPC JLink***********************************
+		// Binary print function
+		unsigned short caca = 0xFFFF;
+		PR("header in binary: ", ETX_STEREO);
+		//JPC JLink***********************************
 /*
 		((nsHeader *) packetData)->i_type = 0;
 		((nsHeader *) packetData)->i_nframes = 1;
@@ -96,7 +105,8 @@ int
 UDPInput::rcvz1 (char *bufz1, int z)
 {
   char *datapart;
-  packetIndex = ((nsHeader *) packetData)->i_seq-z;
+  //packetIndex = ((nsHeader *) packetData)->i_seq-z;//JPC JLink***********************************
+  packetIndex = ((nsHeader *) packetData)->i_head-z;//JPC JLink***********************************
   if (packetIndex < 0) 
     {
       packetIndex += maxPacketIndex;

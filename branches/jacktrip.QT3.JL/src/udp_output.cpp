@@ -81,8 +81,9 @@ int
 UDPOutput::send (char *buf)
 {
 		packetIndex = (packetIndex + 1) % maxPacketIndex;
+		((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
 		//((nsHeader *) packetData)->i_cksum = 4;//JPC JLink***********************************
-		((nsHeader *) packetData)->i_seq = packetIndex;
+		//((nsHeader *) packetData)->i_seq = packetIndex;//JPC JLink***********************************
 		//((nsHeader *) packetData)->i_rtnseq = 6;//JPC JLink***********************************
 		//((nsHeader *) packetData)->i_rtt = 7;//JPC JLink***********************************
 		char *datapart;

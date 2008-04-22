@@ -25,6 +25,7 @@ class UDPInput:public InputPlugin
 	bool has_peer;
 
 	int packetIndex;	//used for netdebug, checking order of incoming packets
+        unsigned short packetHeader;//JPC JLink***********************************
 	int maxPacketIndex;
 	char *packetData;
 
