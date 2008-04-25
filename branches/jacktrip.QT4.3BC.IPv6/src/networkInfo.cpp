@@ -11,7 +11,7 @@
 #include "networkInfo.h"
 #include <iostream.h>
 
-NetworkInfo::NetworkInfo (QString localHostName, int dataBytesPerPacket,
+NetworkInfo::NetworkInfo (char* localHostName, int dataBytesPerPacket,
 			  int in_port, int out_port, int chunksPerPacket, int q):
 _localHostName (localHostName),
 in_port (in_port),
@@ -83,4 +83,10 @@ QHostAddress
 NetworkInfo::localAddress ()
 {
 	return (_localAddress);
+}
+
+QString
+NetworkInfo::getLocalIP ()
+{
+	return (_localHostName);
 }

@@ -97,8 +97,21 @@ StreamBD::cmd (MainDialog *eventThread)
 					      args->secondsBetweenPlucks,
 					      args->jack, lastTickTime,
 							args->jack_alsa_readable_offset );
+	
+	//**********IPv4*******************************************
+	//NetworkInfoT netInfo = new NetworkInfo (*localhostName,
+	//				audioInfo->
+	//				getBytesPerBuffer (),
+	//				UDP_IN_PORT +
+	//				args->networkPortOffset,
+	//				UDP_OUT_PORT +
+	//				args->networkPortOffset,
+	//				args->redundancy,
+	//args->networkInputQueueLengthInPackets);
+	//**********************************************************
 
-	NetworkInfoT netInfo = new NetworkInfo (*localhostName,
+	//##########IPv4###################################################
+	NetworkInfoT netInfo = new NetworkInfo (args->localHostIP,
 						audioInfo->
 						getBytesPerBuffer (),
 						UDP_IN_PORT +
@@ -107,6 +120,13 @@ StreamBD::cmd (MainDialog *eventThread)
 						args->networkPortOffset,
 						args->redundancy,
 	args->networkInputQueueLengthInPackets);
+	//##################################################################
+
+
+
+
+
+
 
 	//   AudioDeviceT audioDevice;
 
@@ -471,23 +491,58 @@ StreamBD::ParseCommandLine (int argc, char *argv[])
 			secondsBetweenPlucks << " seconds." << endl;
 	}
 
+
 	// If we're in transmit or harpt mode, make sure we have
 	// a hostname to connect to.
 	if (args->runMode == TRANSMIT || args->runMode == HARPT)
 	{
-		if (argc > 0)
-		{		/* Copy remote hostname */
-			strncpy (args->remoteHostname, argv[0], 99);
-			cout << "remote hostname is " << args->
-				remoteHostname << endl;
-		}
-		else
-		{
-			cerr << "You must specify a remote hostname to run in transmit mode." << endl;
-			cerr << "Run streambd with no arguments for command line instructions." << endl;
-			return 0;
-		}
+	  //**********IPv4*******************************************
+	  /*
+	    if (argc > 1)
+	    {		// Copy remote hostname
+	    strncpy (args->remoteHostname, argv[0], 99);
+	    cout << "remote hostname is " << args->
+	    remoteHostname << endl;
+	    }	  
+	  */
+	  //**********************************************************
+	  //#############################################################
+	  //*****IPv6*************
+	  if (argc > 1)
+	    {		/* Copy remote hostname */
+	      strncpy (args->localHostIP, argv[0], 99);
+	      cout << "local hostname is " << args->
+		localHostIP << endl;
+	      strncpy (args->remoteHostname, argv[1], 99);
+	      cout << "remote hostname is " << args->
+		remoteHostname << endl;
+	    }
+	  else if (argc > 0)
+	    {		/* Copy remote hostname */
+	      strncpy (args->localHostIP, argv[0], 99);
+	      cout << "local hostname is " << args->
+		localHostIP << endl;
+	    }
+	  //#############################################################
+	  
+	  else
+	    {
+	      cerr << "You must specify a remote hostname to run in transmit mode." << endl;
+	      cerr << "Run streambd with no arguments for command line instructions." << endl;
+	      return 0;
+	    }
 	}
+	//#############################################################
+	//*****IPv6*************
+	else { // This is the SERVER MODE
+	  if (argc > 0)
+	    {		/* Copy remote hostname */
+	      strncpy (args->localHostIP, argv[0], 99);
+	      cout << "local hostname is " << args->
+		localHostIP << endl;
+	    }
+	}
+	//#############################################################
 	return 1;
 }
 
@@ -567,8 +622,16 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
 	{
 		cout << "Requesting Connection...........";
 		QHostAddress *ha = new QHostAddress ();
+		//**********IPv4*******************************************
+		/*
 		QString *s = IPv4Addr (hostname);	// dotted integer from name
 		ha->setAddress (*s);
+		*/
+		//**********************************************************
+		//#############################################################
+		ha->setAddress (hostname);//*****IPv6*************
+		cout << "IPv6 Remote Address CACA CACA CACACA CACACA: " << ha->toString().latin1() << endl;//*****IPv6*************
+		//#############################################################
 		netout->connect (*ha);
 	}
 	else

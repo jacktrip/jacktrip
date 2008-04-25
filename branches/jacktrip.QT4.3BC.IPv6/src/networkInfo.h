@@ -74,7 +74,7 @@ typedef class NetworkInfo
          * @param in_port - network input port.
          * @param out_port - network output port.
          */
-	  NetworkInfo (QString localHostName,
+	  NetworkInfo (char* localHostName,
 				    int dataBytesPerPacket, int in_port,
 				    int out_port, int chunksPerPacket, int q);
 
@@ -90,11 +90,13 @@ typedef class NetworkInfo
 	int getDataBytesPerPacket ();
 
 	QHostAddress localAddress ();
+        QString getLocalIP ();
 
 	unsigned short checksum (unsigned short *buffer, int size);
 
 	int pCopies ();
 	int getMaxSeq ();
+
 }
 
  *NetworkInfoT;

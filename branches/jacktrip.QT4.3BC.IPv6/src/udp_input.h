@@ -30,7 +30,7 @@ class UDPInput:public InputPlugin
 
 	void setPacketSize (int size);
       public:
-	  UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo);
+  UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo);
 	int rcvz1 (char *bufz1, int z);
 	int rcv (char *buf);
 	bool hasPeer ();

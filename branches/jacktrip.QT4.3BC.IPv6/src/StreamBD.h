@@ -113,6 +113,9 @@ typedef struct cmdLineArgs
 	int audioInputQueueLengthInAudioBuffers;	/*! Number of buffers of size framesPerAudioBuffer with which the
 							 * audio output is buffered.                             */
 	char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode. */
+        //###############################################################################################################
+        char localHostIP[100];	/*! Holds the IP to connect to in TRANSMIT and HARPT mode. */ //**IPv6*******
+        //###############################################################################################################
 	int networkPortOffset;	/*! Network port offset.                                  */
 	int audioDeviceID;	/*! Will use default audio device if not specified.       */
 	int runFifo;		/*! Run streambd with fifo priority (reduces delay).      */

@@ -16,8 +16,12 @@ InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 	char localhostbuf[100];
 	has_peer = false;
 	_rcvr = NULL;
-	sock = new Q3SocketDevice (Q3SocketDevice::Datagram);	// for an unreliable UDP socket
+	int dummy; dummy = 1;
+	sock = new Q3SocketDevice (Q3SocketDevice::Datagram, Q3SocketDevice::IPv6, dummy);	// for an unreliable UDP socket
 	sock->setAddressReusable(true);
+
+	//**********IPv4*******************************************
+	/*
 	if (gethostname (localhostbuf, 99))
 	{
 		perror ("gethostname");
@@ -27,6 +31,14 @@ InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 	QHostAddress *ha = new QHostAddress ();
 	QString *s = IPv4Addr (localhostbuf);	// dotted integer from name
 	ha->setAddress (*s);
+	*/
+	//**********************************************************
+	
+	QHostAddress *ha = new QHostAddress ();
+	//#############################################################
+	ha->setAddress (netInfo->getLocalIP());//*****IPv6*************
+	//#############################################################
+
 	if (!(sock->bind (*ha, netInfo->getInPort ())))
 	{
 		perror ("bind\n");
@@ -43,8 +55,16 @@ InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 	memset (packetData, 0, wholeSize);
 	numRedundantBuffers = netInfo->getChunksPerPacket() - 1;
 	maxPacketIndex = netInfo->getMaxSeq();
+	//**********IPv4*******************************************
+	/*
 	cout << endl << "UDPInput binding to " << localhostbuf
 		<< " port " << netInfo->getInPort () << endl;
+	*/
+	//**********************************************************
+	//#############################################################
+	cout << "IPv6 Local Address: " << ha->toString().latin1() << endl;//*****IPv6*************
+	//#############################################################
+
 }
 
 /** cout that the UDPInput thread has started */

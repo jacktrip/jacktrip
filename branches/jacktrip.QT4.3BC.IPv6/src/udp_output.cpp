@@ -14,8 +14,12 @@ audInfo (audInfo)
 {
 	bpp = netInfo->getDataBytesPerPacket ();
 	char localhostbuf[100];
-	sock = new Q3SocketDevice (Q3SocketDevice::Datagram);
+	int dummy; dummy = 1;
+	sock = new Q3SocketDevice (Q3SocketDevice::Datagram, Q3SocketDevice::IPv6, dummy);
 	sock->setAddressReusable(true);
+
+	//**********IPv4*******************************************
+	/*
 	if (gethostname (localhostbuf, 99))
 	{
 		perror ("gethostname");
@@ -24,6 +28,13 @@ audInfo (audInfo)
 	QHostAddress *ha = new QHostAddress ();
 	QString *s = IPv4Addr (localhostbuf);	// dotted integer from name
 	ha->setAddress (*s);
+	*/
+	//**********************************************************
+
+	QHostAddress *ha = new QHostAddress ();
+	//#############################################################
+	ha->setAddress (netInfo->getLocalIP());//*****IPv6*************
+	//#############################################################
 	if (!(sock->bind (*ha, netInfo->getOutPort ())))
 	{
 		perror ("bind\n");
@@ -48,9 +59,13 @@ audInfo (audInfo)
 	numBuffers = netInfo->getChunksPerPacket();
 	maxPacketIndex = netInfo->getMaxSeq();
 
+	//**********IPv4*******************************************
+	/*
 	cout << "UDPOuput binding to " << localhostbuf
 		<< " port " << netInfo->getOutPort () << endl;
-
+	*/
+	//**********************************************************
+	cout << "IPv6 Local Address: " << ha->toString().latin1() << endl;
 }
 
 void
@@ -67,12 +82,11 @@ UDPOutput::connect (QHostAddress remote)
 		cerr << "Error!  connect called with no valid socket" << endl;
 		exit ();
 	}
-	// sets peerAddress   
+	// sets peerAddress
+	//cout << "REMOTE *************** " << remote.toString().latin1() << endl;
 	sock->connect (remote, netInfo->getInPort ());
-	//**************JPC COMENTED OUT*******************
-	//cout << "Connecting to " << remote.toString () << ":" << netInfo->
-	//	getInPort () << endl;
-	//*************************************************
+	cout << "Connecting to " << remote.toString ().latin1() << " UDP-Port " << netInfo->
+		getInPort () << endl;
 	return 0;
 }
 
@@ -92,16 +106,21 @@ UDPOutput::send (char *buf)
 
 		memcpy (datapart, buf, bpp);
 
+		//######################################################
+		//########## Error is here #############################
 		int rv = sock->writeBlock (packetData, wholeSize,
 				       sock->peerAddress (),
 				       sock->peerPort ());
-	return rv;
+		//######################################################
+		//########## Error is here #############################
+		return rv;
 }
 
 void
 UDPOutput::run ()
 {
-	_running = true;
+
+  	_running = true;
 	int res = 1;
 	char *buf = (char *) new char[bpp];
 
@@ -128,10 +147,8 @@ UDPOutput::run ()
 		if (res < 0)
 		{
 			perror ("Send");
-			//**************JPC COMENTED OUT*******************
-			//cout << "error sending to " << sock->peerAddress ().
-			//	toString () << endl;
-			//*************************************************
+			cout << "error sending to " << sock->peerAddress ().
+				toString ().latin1() << endl;
 			return;
 		}
 		/*
