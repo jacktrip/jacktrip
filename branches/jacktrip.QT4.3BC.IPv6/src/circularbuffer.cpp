@@ -41,7 +41,7 @@ maxSeq (maxSeq)
 
 	prepareReaderWriter ();
 	dataLock = new QSemaphore (1);
-	cout << (*dataLock).available() << " FDF SDFJSDIF JSDFIJ DSIFJSDOI JOSI" << endl;
+	//cout << (*dataLock).available() << " FDF SDFJSDIF JSDFIJ DSIFJSDOI JOSI" << endl;
 	secondTry = false;
 }
 

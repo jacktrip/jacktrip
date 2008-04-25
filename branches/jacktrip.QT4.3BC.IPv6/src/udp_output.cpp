@@ -65,7 +65,11 @@ audInfo (audInfo)
 		<< " port " << netInfo->getOutPort () << endl;
 	*/
 	//**********************************************************
-	cout << "IPv6 Local Address: " << ha->toString().latin1() << endl;
+	//#############################################################
+	//cout << "IPv6 Local Address: " << ha->toString().latin1() << endl;
+	cout << endl << "UDPOuput binding to " << ha->toString().latin1()
+	     << " port " << netInfo->getOutPort () << endl;
+	//#############################################################
 }
 
 void

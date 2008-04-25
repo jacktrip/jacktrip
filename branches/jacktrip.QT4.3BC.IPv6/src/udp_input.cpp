@@ -62,7 +62,9 @@ InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 	*/
 	//**********************************************************
 	//#############################################################
-	cout << "IPv6 Local Address: " << ha->toString().latin1() << endl;//*****IPv6*************
+	//cout << "IPv6 Local Address: " << ha->toString().latin1() << endl;//*****IPv6*************
+	cout << endl << "UDPInput binding to " << ha->toString().latin1()
+	     << " port " << netInfo->getInPort () << endl;
 	//#############################################################
 
 }

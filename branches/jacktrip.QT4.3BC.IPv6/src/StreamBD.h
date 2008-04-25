@@ -114,7 +114,7 @@ typedef struct cmdLineArgs
 							 * audio output is buffered.                             */
 	char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode. */
         //###############################################################################################################
-        char localHostIP[100];	/*! Holds the IP to connect to in TRANSMIT and HARPT mode. */ //**IPv6*******
+        char localHostIP[100];	/*! Holds the IPv6 to connect to in TRANSMIT and HARPT mode. */ //**IPv6*******
         //###############################################################################################################
 	int networkPortOffset;	/*! Network port offset.                                  */
 	int audioDeviceID;	/*! Will use default audio device if not specified.       */

@@ -511,10 +511,10 @@ StreamBD::ParseCommandLine (int argc, char *argv[])
 	  if (argc > 1)
 	    {		/* Copy remote hostname */
 	      strncpy (args->localHostIP, argv[0], 99);
-	      cout << "local hostname is " << args->
+	      cout << "local IPv6 is " << args->
 		localHostIP << endl;
 	      strncpy (args->remoteHostname, argv[1], 99);
-	      cout << "remote hostname is " << args->
+	      cout << "remote IPv6 is " << args->
 		remoteHostname << endl;
 	    }
 	  else if (argc > 0)
@@ -538,7 +538,7 @@ StreamBD::ParseCommandLine (int argc, char *argv[])
 	  if (argc > 0)
 	    {		/* Copy remote hostname */
 	      strncpy (args->localHostIP, argv[0], 99);
-	      cout << "local hostname is " << args->
+	      cout << "local IPv6 is " << args->
 		localHostIP << endl;
 	    }
 	}
@@ -642,10 +642,8 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
 			usleep (10000);
 			 //     cout << ".";
 		}
-		//**************JPC COMENTED OUT*******************
-		//cout << endl << "Connection received from: " <<
-		//	netin->peer ().toString () << endl;
-		//*************************************************
+		cout << endl << "Connection received from: " <<
+		  netin->peer().toString().latin1() << endl;
 		cout << "Requesting return connection....";
 		netout->connect (netin->peer ());
 		cout << "SUCCESS!" << endl;
