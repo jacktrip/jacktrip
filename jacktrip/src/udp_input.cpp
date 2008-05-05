@@ -16,36 +16,9 @@ UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
 {
   bpp = netInfo->getDataBytesPerPacket ();
   cout << "bpp = " << bpp << endl;
-  char localhostbuf[100];
+
   has_peer = false;
   _rcvr = NULL;
-  //sock = new Q3SocketDevice (Q3SocketDevice::Datagram);	// for an unreliable UDP socket//***JPC Port to qt4*****************
-  //sock->setAddressReusable(true);//***JPC Port to qt4*****************
-  sock = new QUdpSocket;//***JPC Port to qt4*****************
-  peerAddress = new QHostAddress;
-  if (gethostname (localhostbuf, 99))
-    {
-      perror ("gethostname");
-      exit ();
-    }
-
-  cout <<"Local Host Name: " << QString(QHostInfo::localHostName ()).latin1() << endl;//***JPC Port to qt4*****************
-  //cout << "Rx buff = " << sock->receiveBufferSize () << endl;//***JPC Port to qt4*****************
-  QHostAddress *ha = new QHostAddress ();//***JPC Port to qt4*****************
-  QString *s = IPv4Addr (localhostbuf);	// dotted integer from name//***JPC Port to qt4*****************
-  ha->setAddress (*s);//***JPC Port to qt4*****************
-  cout << "INPUT PORT: " << netInfo->getInPort () << endl;
-
-  //if (!(sock->bind (*ha, netInfo->getInPort ())))//***JPC Port to qt4*****************
-  if (!(sock->bind (*ha, netInfo->getInPort (), QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
-    {
-      perror ("bind\n");
-      exit ();
-    }
-  if (!sock->isValid ())
-    {
-      cout << "socket creation error " << endl;
-    }
 
   packetIndex = 0;
   wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;
@@ -53,8 +26,6 @@ UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
   memset (packetData, 0, wholeSize);
   numRedundantBuffers = netInfo->getChunksPerPacket() - 1;
   maxPacketIndex = netInfo->getMaxSeq();
-  cout << endl << "UDPInput binding to " << localhostbuf
-       << " port " << netInfo->getInPort () << endl;
 }
 
 
@@ -62,6 +33,8 @@ UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
 //-------------------------------------------------------------------------------
 UDPInput::~UDPInput()
 {
+  //I need to check how to really clear memory with multithreads,
+  //the following lines don't work.
   //delete sock;
   //delete peerAddress;
 }
@@ -89,9 +62,7 @@ int
 UDPInput::rcv (char *buf)
 {
   //int	rv = sock->readBlock (packetData, wholeSize);//***JPC Port to qt4*****************
-  //cout << "###############################################" << endl;
   int	rv = sock->readDatagram (packetData, wholeSize, peerAddress);//***JPC Port to qt4*****************
-  //cout << "###############################################" << rv << endl;
   //cout << "***Packet Size***: " << rv << endl;//***JPC Port to qt4*****************
 
   char *datapart;
@@ -153,6 +124,36 @@ UDPInput::stop ()
 void
 UDPInput::run ()
 {
+  char localhostbuf[100];
+  sock = new QUdpSocket; //***JPC Port to qt4*****************
+  peerAddress = new QHostAddress;
+  if (gethostname (localhostbuf, 99))
+    {
+      perror ("gethostname");
+      exit ();
+    }
+
+  cout <<"Local Host Name: " << QString(QHostInfo::localHostName ()).latin1() << endl;//***JPC Port to qt4*****************
+  //cout << "Rx buff = " << sock->receiveBufferSize () << endl;//***JPC Port to qt4*****************
+  QHostAddress *ha = new QHostAddress ();//***JPC Port to qt4*****************
+  QString *s = IPv4Addr (localhostbuf);	// dotted integer from name//***JPC Port to qt4*****************
+  ha->setAddress (*s);//***JPC Port to qt4*****************
+  cout << "INPUT PORT: " << netInfo->getInPort () << endl;
+
+  //if (!(sock->bind (*ha, netInfo->getInPort ())))//***JPC Port to qt4*****************
+  if (!(sock->bind (*ha, netInfo->getInPort (), QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
+    {
+      perror ("bind\n");
+      exit ();
+    }
+  if (!sock->isValid ())
+    {
+      cout << "socket creation error " << endl;
+    }
+  cout << endl << "UDPInput binding to " << localhostbuf
+       << " port " << netInfo->getInPort () << endl;
+
+
   _running = true;
   int seq;
   char *buf = (char *) new char[bpp];
@@ -196,25 +197,14 @@ UDPInput::run ()
       // otherwise it sets *timeout to FALSE. This is useful to find out 
       // if the peer closed the connection.
       //ret = (sock->waitForMore (30, &timeout));//***JPC Port to qt4*****************
-
-      //***********************************************************
-      //###########################################################
-      // THE SEGMENTATION FAAULT BUG IS IN THE FOLLOWING LINE
-      // IT SEEMS THAT QT4 IS MESSING UP SOMETHING 
-      //###########################################################
-      //***********************************************************
-      cout << "BEFORE SEGFAULT LINE" << endl;
       timeout = sock->waitForReadyRead(30);//***JPC Port to qt4*****************
-      cout << "AFTER SEGFAULT LINE" << endl;
-      //***********************************************************
-      //##########################################################
-      //***********************************************************
 
       //if (ret == -1)//***JPC Port to qt4*****************
       //cerr << "udp in sock problems..." << endl;//***JPC Port to qt4*****************
       //else if (timeout)//***JPC Port to qt4*****************
-      if (!timeout)//***JPC Port to qt4*****************
+      if (!timeout) {//***JPC Port to qt4*****************
 	cerr << "udp in waited too long (more than 30ms)..." << endl;
+	}
       else 
 	{
 	  seq = this->rcv (buf);
@@ -285,12 +275,10 @@ bool UDPInput::hasPeer ()
 //-------------------------------------------------------------------------------
 QHostAddress UDPInput::peer ()
 {
-  cout << "#################RETURNING PEEEEERRRRRRRRR#############################" << endl;
   sock->readDatagram (packetData, wholeSize, peerAddress);//***JPC Port to qt4*****************
   cout << (*peerAddress).toString().latin1() << endl;
   //cout << sock->state() << endl;
   //cout << sock->peerName().latin1() << endl;
-  //cout << "RETURNING 23232323**************** *********" << endl;
   //return sock->peerAddress ();
   return (*peerAddress);
 }

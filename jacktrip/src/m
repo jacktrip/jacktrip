@@ -25,7 +25,7 @@ echo "qmake .pro built"
 
 #Create Makefile
 qmake-qt4 -makefile -unix -o Makefile \
-"CONFIG+=qt thread warn_on debug" \
+"CONFIG+=qt debug thread warn_on" \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
 "QT += network qt3support" \
 "INCLUDEPATH+=/usr/include/stk ../include" \
