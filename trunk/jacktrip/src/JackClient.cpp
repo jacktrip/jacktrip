@@ -159,8 +159,10 @@ JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool
 			break;
 		}
 	}
-	if (!client)
-		printf ("jack server not running?\n");
+	if (!client) {
+		printf ("Error: JACK server not running?\n");
+		exit(1);
+	}
 	else
 		cout << namebuf << " registered with jack" << endl;
 //      if ((client = jack_client_new (name)) == 0)
