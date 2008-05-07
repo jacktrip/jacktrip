@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <iostream.h>
 #include <QHostInfo>//***JPC Port to qt4*****************
+#include "jamlink.h"
 extern QString *IPv4Addr (char *namebuf);
 extern int set_fifo_priority (bool half);
 
@@ -21,10 +22,12 @@ UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
   _rcvr = NULL;
 
   packetIndex = 0;
-  wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;
+  //wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
+  wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp);//JPC JLink***********************************
   packetData = new char[wholeSize];
   memset (packetData, 0, wholeSize);
-  numRedundantBuffers = netInfo->getChunksPerPacket() - 1;
+  //numRedundantBuffers = netInfo->getChunksPerPacket() - 1;//JPC JLink***********************************
+  numRedundantBuffers = 0;//JPC JLink***********************************
   maxPacketIndex = netInfo->getMaxSeq();
 }
 
@@ -66,10 +69,19 @@ UDPInput::rcv (char *buf)
   //cout << "***Packet Size***: " << rv << endl;//***JPC Port to qt4*****************
 
   char *datapart;
-  packetIndex = ((nsHeader *) packetData)->i_seq;
-  datapart = packetData + sizeof (nsHeader) + 
-    ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);
+  //packetIndex = ((nsHeader *) packetData)->i_seq;//JPC JLink***********************************
+  packetHeader = ((nsHeader *) packetData)->i_head;//JPC JLink***********************************
+  //datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
+  //  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);//JPC JLink***********************************
+  datapart = packetData + sizeof (nsHeader);//JPC JLink***********************************
   memcpy (buf, datapart, bpp);
+
+  //###############JPC JLink#######################
+  // Binary print function
+  //unsigned short caca = 0xFFFF;
+  //PR("header in binary: ", ETX_STEREO);
+  //###############################################
+  
   /*
     ((nsHeader *) packetData)->i_type = 0;
     ((nsHeader *) packetData)->i_nframes = 1;
@@ -94,14 +106,15 @@ int
 UDPInput::rcvz1 (char *bufz1, int z)
 {
   char *datapart;
-  packetIndex = ((nsHeader *) packetData)->i_seq-z;
+  //packetIndex = ((nsHeader *) packetData)->i_seq-z;//JPC JLink***********************************
+  packetIndex = ((nsHeader *) packetData)->i_head-z;//JPC JLink***********************************
   if (packetIndex < 0) 
     {
       packetIndex += maxPacketIndex;
       //		cout << "backed below 0 (a good thing)" << endl;
     }
-  datapart = packetData + sizeof (nsHeader) + 
-    ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);
+  //datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
+  //  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);//JPC JLink***********************************
   memcpy (bufz1, datapart, bpp);
   return packetIndex;
 }
@@ -186,9 +199,9 @@ UDPInput::run ()
   unsigned long now = 0;
   unsigned long lastTickTime = usecTime ();
   int ctr = 0;
-  double max = 0.0;	
+  //double max = 0.0;//JPC JLink***********************************
   int gap;
-  double gapAvg = 0.0;
+  //double gapAvg = 0.0; //JPC JLink***********************************
   while (_running)
     {
       // If timeout is non-null and no error occurred 
@@ -220,7 +233,8 @@ UDPInput::run ()
 	      stream->writeRedundant (bufz1, key, z, zseq);
 	      z--;
 	    }
-	  gap = stream->writeRedundant (buf, key, 0, seq);
+	  //gap = stream->writeRedundant (buf, key, 0, seq);//JPC JLink***********************************
+	  stream->writeRedundant (buf, key, 0, seq);//JPC JLink***********************************
 	  //		cout << "writePosition " << gap <<"\t\t";
 	  /*
 	    now = usecTime ();

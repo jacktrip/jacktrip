@@ -41,14 +41,16 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
     }
 
   packetIndex = 0;
-  wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;
+  //wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
+  wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp)-1;//JPC JLink***********************************
+
   packetData = new char[wholeSize];
   memset (packetData, 0, wholeSize);
   // fixed parameters
-  ((nsHeader *) packetData)->i_type = 0;
-  ((nsHeader *) packetData)->i_nframes = audInfo->getFramesPerBuffer ();
-  ((nsHeader *) packetData)->i_nchans = audInfo->getNumAudioChans ();
-  ((nsHeader *) packetData)->i_copies = netInfo->getChunksPerPacket ();
+  //((nsHeader *) packetData)->i_type = 0;//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_nframes = audInfo->getFramesPerBuffer ();//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_nchans = audInfo->getNumAudioChans ();//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_copies = netInfo->getChunksPerPacket ();//JPC JLink***********************************
 	
   numBuffers = netInfo->getChunksPerPacket();
   maxPacketIndex = netInfo->getMaxSeq();
@@ -93,13 +95,15 @@ int
 UDPOutput::send (char *buf)
 {
   packetIndex = (packetIndex + 1) % maxPacketIndex;
-  ((nsHeader *) packetData)->i_cksum = 4;
-  ((nsHeader *) packetData)->i_seq = packetIndex;
-  ((nsHeader *) packetData)->i_rtnseq = 6;
-  ((nsHeader *) packetData)->i_rtt = 7;
+  ((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_cksum = 4;//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_seq = packetIndex;//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_rtnseq = 6;//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_rtt = 7;//JPC JLink***********************************
   char *datapart;
-  datapart = packetData + sizeof (nsHeader) + 
-    ((packetIndex % numBuffers) * bpp);
+  //datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
+  //  ((packetIndex % numBuffers) * bpp);//JPC JLink***********************************
+  datapart = packetData + sizeof (nsHeader);//JPC JLink***********************************
   //memset(datapart,'E', bpp);
   //strncpy (datapart, "Whee, i`m a fast packet.",bpp);
 
