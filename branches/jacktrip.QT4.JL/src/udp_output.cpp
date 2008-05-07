@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream.h>
+#include "jamlink.h"
 
 extern QString *IPv4Addr (char *namebuf);
 extern int set_fifo_priority (bool half);
@@ -42,7 +43,7 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
 
   packetIndex = 0;
   //wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
-  wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp)-1;//JPC JLink***********************************
+  wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp);//JPC JLink***********************************
 
   packetData = new char[wholeSize];
   memset (packetData, 0, wholeSize);
@@ -95,7 +96,14 @@ int
 UDPOutput::send (char *buf)
 {
   packetIndex = (packetIndex + 1) % maxPacketIndex;
-  ((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
+  //###################################
+  //Add here the header info
+  //###################################
+  //((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
+  ((nsHeader *) packetData)->i_head = ETX_XTND;//JPC JLink***********************************
+  //PR("header in binary:", packetHeader);
+
+
   //((nsHeader *) packetData)->i_cksum = 4;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_seq = packetIndex;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_rtnseq = 6;//JPC JLink***********************************
@@ -108,6 +116,13 @@ UDPOutput::send (char *buf)
   //strncpy (datapart, "Whee, i`m a fast packet.",bpp);
 
   memcpy (datapart, buf, bpp);
+
+
+  //cout << "sizeof(packetData): " << sizeof(packetData) << endl;
+  //cout << "numBuffers: " << numBuffers << endl;
+  //cout << "bpp: " << bpp << endl;
+  //cout << "datapart OUTPUT: " << sizeof(datapart) << endl;
+  //cout << "wholeSize:" <<  wholeSize << endl;
 
   //int rv = sock->writeBlock (packetData, wholeSize,//***JPC Port to qt4*****************
   //		       sock->peerAddress (),//***JPC Port to qt4*****************

@@ -24,6 +24,7 @@ UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
   packetIndex = 0;
   //wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
   wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp);//JPC JLink***********************************
+
   packetData = new char[wholeSize];
   memset (packetData, 0, wholeSize);
   //numRedundantBuffers = netInfo->getChunksPerPacket() - 1;//JPC JLink***********************************
@@ -73,13 +74,31 @@ UDPInput::rcv (char *buf)
   packetHeader = ((nsHeader *) packetData)->i_head;//JPC JLink***********************************
   //datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
   //  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);//JPC JLink***********************************
+
+  //##############################################
+  //Something is wrong here
+  //##############################################
   datapart = packetData + sizeof (nsHeader);//JPC JLink***********************************
+
   memcpy (buf, datapart, bpp);
+  //cout << "sizeof (packetHeader) INPUT: " << packetData << endl;//this is showing the wrong size
+  //cout << "sizeof(datapart) INPUT: " << sizeof(datapart) << endl;//This seems to be correct
+  //cout << "sizeof (nsHeader)INPUT: " << sizeof (nsHeader) << endl;
+  //int n;
+  //for (n=0;buf[n];n++)
+  //  ;
+  //cout << "n SIIIIIIIIIIIIIIIIIIIIIIIIIIZE: " << n << endl;
+  //cout << "BUFFFFFFFFFFFFFFFFFFFFFFFFFFF " << buf[12] << endl;
 
   //###############JPC JLink#######################
   // Binary print function
   //unsigned short caca = 0xFFFF;
   //PR("header in binary: ", ETX_STEREO);
+  //PR("header in binary:", packetHeader);
+
+  //PR("Binary Tests: ", ETX_XTND | ETX_STEREO |  ETX_44KHZ);
+  //PR("ETX_8KHZ: ",  ETX_XTND | ETX_STEREO | ETX_8KHZ)
+
   //###############################################
   
   /*

@@ -1,6 +1,11 @@
 // Written by Juan-Pablo Caceres
 // Soundwire Group, 2008
 
+#ifndef	_JAMLINK_H
+#define	_JAMLINK_H
+
+#include <iostream>
+
 //JamLink UDP Header:
 /************************************************************************/
 /* values for the UDP stream type                                       */
@@ -35,16 +40,18 @@
 
 // Display a unsigned short (2 bytes) in binary
 void printBinary(const unsigned short val);
-#include <iostream>
+//#include <iostream>
 
 #define PR(STR, EXPR) \
   cout << STR; printBinary(EXPR); cout << endl;
 
+/*
 void printBinary(const unsigned short val) {
   for(int i = 15; i >= 0; i--)
     if(val & (1 << i))
       std::cout << "1";
     else
-          std::cout << "0";
+      std::cout << "0";
 }
-
+*/
+#endif
