@@ -100,9 +100,7 @@ UDPOutput::send (char *buf)
   //Add here the header info
   //###################################
   //((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
-  ((nsHeader *) packetData)->i_head = ETX_XTND;//JPC JLink***********************************
-  //PR("header in binary:", packetHeader);
-
+  ((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_8KHZ;//JPC JLink***********************************
 
   //((nsHeader *) packetData)->i_cksum = 4;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_seq = packetIndex;//JPC JLink***********************************
@@ -115,9 +113,22 @@ UDPOutput::send (char *buf)
   //memset(datapart,'E', bpp);
   //strncpy (datapart, "Whee, i`m a fast packet.",bpp);
 
+
+  unsigned short caca;
+  caca = ((nsHeader *) packetData)->i_head;//JPC JLink***********************************
+  
+  char cacaChar[2];
+  cacaChar[0] = 1<<0;
+  cacaChar[1] = 1<<7;
+
+  //PRC("HEADER#############: ", (&cacaChar)++);
+  //PRC("HEADER1 #############: ", &cacaChar[1]);
+  //cout << "sizeof(cacaChar): " << sizeof(*cacaChar) << endl;
+  PR("HEADER#############: ", caca);
+
   memcpy (datapart, buf, bpp);
-
-
+  
+  //cout << "sizeof (nsHeader): " << sizeof(ETX_XTND) << endl;
   //cout << "sizeof(packetData): " << sizeof(packetData) << endl;
   //cout << "numBuffers: " << numBuffers << endl;
   //cout << "bpp: " << bpp << endl;

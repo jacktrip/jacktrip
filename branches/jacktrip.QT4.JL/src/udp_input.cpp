@@ -94,7 +94,8 @@ UDPInput::rcv (char *buf)
   // Binary print function
   //unsigned short caca = 0xFFFF;
   //PR("header in binary: ", ETX_STEREO);
-  //PR("header in binary:", packetHeader);
+  PR("header in binary INPUT:", packetHeader);
+  // PRC("header in binary packetData INPUT:", &packetData[1]);
 
   //PR("Binary Tests: ", ETX_XTND | ETX_STEREO |  ETX_44KHZ);
   //PR("ETX_8KHZ: ",  ETX_XTND | ETX_STEREO | ETX_8KHZ)
