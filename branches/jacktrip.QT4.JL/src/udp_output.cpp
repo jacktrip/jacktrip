@@ -124,7 +124,8 @@ UDPOutput::send (char *buf)
   //PRC("HEADER#############: ", (&cacaChar)++);
   //PRC("HEADER1 #############: ", &cacaChar[1]);
   //cout << "sizeof(cacaChar): " << sizeof(*cacaChar) << endl;
-  PR("HEADER#############: ", caca);
+  
+  //PR("HEADER#############: ", caca);
 
   memcpy (datapart, buf, bpp);
   

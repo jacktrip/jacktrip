@@ -24,6 +24,7 @@ UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
   packetIndex = 0;
   //wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
   wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp);//JPC JLink***********************************
+  cout << "wholeSize=================== " <<  wholeSize << endl;
 
   packetData = new char[wholeSize];
   memset (packetData, 0, wholeSize);
@@ -94,7 +95,9 @@ UDPInput::rcv (char *buf)
   // Binary print function
   //unsigned short caca = 0xFFFF;
   //PR("header in binary: ", ETX_STEREO);
-  PR("header in binary INPUT:", packetHeader);
+  //PR("header in binary INPUT:", packetHeader);
+  
+
   // PRC("header in binary packetData INPUT:", &packetData[1]);
 
   //PR("Binary Tests: ", ETX_XTND | ETX_STEREO |  ETX_44KHZ);
