@@ -94,11 +94,14 @@ UDPInput::rcv (char *buf)
   //###############JPC JLink#######################
   // Binary print function
   //unsigned short caca = 0xFFFF;
-  //PR("header in binary: ", ETX_STEREO);
-  //PR("header in binary INPUT:", packetHeader);
+  PR("header in binary 24 ==============: ", ETX_RATE_MASK(ETX_24KHZ | ETX_XTND));
+  PR("header in binary 22 ==============: ", ETX_RATE_MASK( ETX_22KHZ | ETX_XTND));
+  PR("header in binary 8 ==============: ",  ETX_RATE_MASK(ETX_8KHZ | ETX_XTND));
+  PR("tess 1 ======", 2 );
+  PR("header in binary INPUT:", packetHeader);
   
 
-  // PRC("header in binary packetData INPUT:", &packetData[1]);
+  //PRC("header in binary packetData INPUT:", &packetData[1]);
 
   //PR("Binary Tests: ", ETX_XTND | ETX_STEREO |  ETX_44KHZ);
   //PR("ETX_8KHZ: ",  ETX_XTND | ETX_STEREO | ETX_8KHZ)

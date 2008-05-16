@@ -100,7 +100,7 @@ UDPOutput::send (char *buf)
   //Add here the header info
   //###################################
   //((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
-  ((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_8KHZ;//JPC JLink***********************************
+  ((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_24KHZ;//JPC JLink***********************************
 
   //((nsHeader *) packetData)->i_cksum = 4;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_seq = packetIndex;//JPC JLink***********************************

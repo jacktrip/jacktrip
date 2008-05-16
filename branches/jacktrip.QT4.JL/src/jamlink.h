@@ -21,7 +21,7 @@ const unsigned short ETX_XTND = (1<<14);
 const unsigned short ETX_STEREO = (1<<13);
 const unsigned short ETX_MONO = (0<<13);
 const unsigned short ETX_16BIT = (0<<12);
-inline void ETX_RATE_MASK(const unsigned short a) { a&(0x7<<9); }
+inline unsigned short ETX_RATE_MASK(const unsigned short a) { a&(0x7<<9); }
 const unsigned short ETX_48KHZ = (0<<9);
 const unsigned short ETX_44KHZ = (1<<9);
 const unsigned short ETX_32KHZ = (2<<9);
@@ -30,7 +30,7 @@ const unsigned short ETX_22KHZ = (4<<9);
 const unsigned short ETX_16KHZ = (5<<9);
 const unsigned short ETX_11KHZ = (6<<9);
 const unsigned short ETX_8KHZ  = (7<<9);
-inline void  ETX_SPP(const unsigned short a) { (a&0x01FF); } //able to express up to 512 SPP
+inline unsigned short  ETX_SPP(const unsigned short a) { (a&0x01FF); } //able to express up to 512 SPP
 
 /*
 #define ETX_RSVD (0<<15)
