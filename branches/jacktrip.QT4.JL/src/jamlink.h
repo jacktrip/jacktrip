@@ -67,4 +67,8 @@ void printBinaryChar(const char* val);
 #define PRC(STR, EXPR) \
   cout << STR; printBinaryChar(EXPR); cout << endl;
 
+//Char byteswaping function
+void byteSwap(char* bswp, int len);
+
+
 #endif

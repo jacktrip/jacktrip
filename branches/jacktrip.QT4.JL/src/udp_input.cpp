@@ -7,6 +7,8 @@
 #include <iostream.h>
 #include <QHostInfo>//***JPC Port to qt4*****************
 #include "jamlink.h"
+#include <netinet/in.h>
+
 extern QString *IPv4Addr (char *namebuf);
 extern int set_fifo_priority (bool half);
 
@@ -69,6 +71,7 @@ UDPInput::rcv (char *buf)
   //int	rv = sock->readBlock (packetData, wholeSize);//***JPC Port to qt4*****************
   int	rv = sock->readDatagram (packetData, wholeSize, peerAddress);//***JPC Port to qt4*****************
   //cout << "***Packet Size***: " << rv << endl;//***JPC Port to qt4*****************
+  byteSwap(packetData, wholeSize);//JPC JLink***********************************
 
   char *datapart;
   //packetIndex = ((nsHeader *) packetData)->i_seq;//JPC JLink***********************************
@@ -76,35 +79,38 @@ UDPInput::rcv (char *buf)
   //datapart = packetData + sizeof (nsHeader) + //JPC JLink***********************************
   //  ((packetIndex % ((nsHeader *) packetData)->i_copies) * bpp);//JPC JLink***********************************
 
-  //##############################################
-  //Something is wrong here
-  //##############################################
   datapart = packetData + sizeof (nsHeader);//JPC JLink***********************************
-
+  //byteSwap(datapart, wholeSize);
   memcpy (buf, datapart, bpp);
-  //cout << "sizeof (packetHeader) INPUT: " << packetData << endl;//this is showing the wrong size
-  //cout << "sizeof(datapart) INPUT: " << sizeof(datapart) << endl;//This seems to be correct
-  //cout << "sizeof (nsHeader)INPUT: " << sizeof (nsHeader) << endl;
-  //int n;
-  //for (n=0;buf[n];n++)
-  //  ;
-  //cout << "n SIIIIIIIIIIIIIIIIIIIIIIIIIIZE: " << n << endl;
-  //cout << "BUFFFFFFFFFFFFFFFFFFFFFFFFFFF " << buf[12] << endl;
+  
 
   //###############JPC JLink#######################
   // Binary print function
   //unsigned short caca = 0xFFFF;
-  PR("header in binary 24 ==============: ", ETX_RATE_MASK(ETX_24KHZ | ETX_XTND));
-  PR("header in binary 22 ==============: ", ETX_RATE_MASK( ETX_22KHZ | ETX_XTND));
-  PR("header in binary 8 ==============: ",  ETX_RATE_MASK(ETX_8KHZ | ETX_XTND));
-  PR("tess 1 ======", 2 );
-  PR("header in binary INPUT:", packetHeader);
+  //PR("header in binary 24 ==============: ", ETX_RATE_MASK(ETX_24KHZ | ETX_XTND));
+  //PR("header in binary 22 ==============: ", ETX_RATE_MASK( ETX_22KHZ | ETX_XTND));
+  //PR("header in binary 8 ==============: ",  ETX_RATE_MASK(ETX_8KHZ | ETX_XTND));
+  //PR("tess 1 ======", 2 );
+  //PR("header in binary INPUT:", packetHeader);
   
+  // Byteswaping Test Function
+  /*
+  char datapartSWAP[wholeSize - 2];
+  //packetData2 = new char[wholeSize - 2];
+  for (int i= 0; i < (wholeSize-2)/2; i++) {
+    datapartSWAP[2*i]   = datapart[2*i+1];
+    datapartSWAP[2*i+1] = datapart[2*i];
+  }
+  memcpy (buf, datapartSWAP, bpp);
+  */
 
-  //PRC("header in binary packetData INPUT:", &packetData[1]);
-
-  //PR("Binary Tests: ", ETX_XTND | ETX_STEREO |  ETX_44KHZ);
-  //PR("ETX_8KHZ: ",  ETX_XTND | ETX_STEREO | ETX_8KHZ)
+  //uint16_t caca;
+  //caca = 60;
+  //PR("CACACACACACACAACA:", caca);
+  
+  //uint16_t caca2;
+  //caca2 = htons(caca);
+  //PR("CACACACACACACAACA22222222222:", caca2);
 
   //###############################################
   
