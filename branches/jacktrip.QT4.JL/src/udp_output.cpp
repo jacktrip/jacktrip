@@ -100,8 +100,7 @@ UDPOutput::send (char *buf)
   //Add here the header info
   //###################################
   //((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
-  ((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_24KHZ;//JPC JLink***********************************
-
+  
   //((nsHeader *) packetData)->i_cksum = 4;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_seq = packetIndex;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_rtnseq = 6;//JPC JLink***********************************
@@ -126,7 +125,7 @@ UDPOutput::send (char *buf)
   //cout << "sizeof(cacaChar): " << sizeof(*cacaChar) << endl;
   
   //PR("HEADER#############: ", caca);
-
+  
   memcpy (datapart, buf, bpp);
   
   //cout << "sizeof (nsHeader): " << sizeof(ETX_XTND) << endl;
@@ -139,6 +138,8 @@ UDPOutput::send (char *buf)
   //int rv = sock->writeBlock (packetData, wholeSize,//***JPC Port to qt4*****************
   //		       sock->peerAddress (),//***JPC Port to qt4*****************
   //		       sock->peerPort ());//***JPC Port to qt4*****************
+  byteSwap(packetData, wholeSize);//JPC JLink***********************************
+  ((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_24KHZ;//JPC JLink***********************************
   int rv = sock->writeDatagram (packetData, wholeSize,//***JPC Port to qt4*****************
 				sock->peerAddress (),//***JPC Port to qt4*****************
 				sock->peerPort ());//***JPC Port to qt4*****************
