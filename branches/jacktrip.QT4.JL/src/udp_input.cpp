@@ -91,8 +91,8 @@ UDPInput::rcv (char *buf)
   //PR("header in binary 22 ==============: ", ETX_RATE_MASK( ETX_22KHZ | ETX_XTND));
   //PR("header in binary 8 ==============: ",  ETX_RATE_MASK(ETX_8KHZ | ETX_XTND));
   //PR("tess 1 ======", 2 );
-  //PR("header in binary INPUT:", packetHeader);
-  
+  //PR("header in binary INPUT:::: ", packetHeader);
+  //cout << "pakcetHeader" <<  packetHeader << endl;
   // Byteswaping Test Function
   /*
   char datapartSWAP[wholeSize - 2];

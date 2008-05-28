@@ -113,12 +113,12 @@ UDPOutput::send (char *buf)
   //strncpy (datapart, "Whee, i`m a fast packet.",bpp);
 
 
-  unsigned short caca;
-  caca = ((nsHeader *) packetData)->i_head;//JPC JLink***********************************
+  //unsigned short caca;
+  //caca = ((nsHeader *) packetData)->i_head;//JPC JLink***********************************
   
-  char cacaChar[2];
-  cacaChar[0] = 1<<0;
-  cacaChar[1] = 1<<7;
+  //char cacaChar[2];
+  //cacaChar[0] = 1<<0;
+  //cacaChar[1] = 1<<7;
 
   //PRC("HEADER#############: ", (&cacaChar)++);
   //PRC("HEADER1 #############: ", &cacaChar[1]);
@@ -127,7 +127,7 @@ UDPOutput::send (char *buf)
   //PR("HEADER#############: ", caca);
   
   memcpy (datapart, buf, bpp);
-  
+    
   //cout << "sizeof (nsHeader): " << sizeof(ETX_XTND) << endl;
   //cout << "sizeof(packetData): " << sizeof(packetData) << endl;
   //cout << "numBuffers: " << numBuffers << endl;
@@ -138,8 +138,15 @@ UDPOutput::send (char *buf)
   //int rv = sock->writeBlock (packetData, wholeSize,//***JPC Port to qt4*****************
   //		       sock->peerAddress (),//***JPC Port to qt4*****************
   //		       sock->peerPort ());//***JPC Port to qt4*****************
+
+  // Quick hack to get the same header that I get in udp_input
+  ((nsHeader *) packetData)->i_head =  64;//JPC JLink***********************************
+  //PR("HEADER OUTPUT============= ", ((nsHeader *) packetData)->i_head);
   byteSwap(packetData, wholeSize);//JPC JLink***********************************
-  ((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_24KHZ;//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_24KHZ;//JPC JLink***********************************
+  //((nsHeader *) packetData)->i_head =  ETX_48KHZ;//JPC JLink***********************************
+  
+  //PRC("HEADER=============", &packetData[128]);
   int rv = sock->writeDatagram (packetData, wholeSize,//***JPC Port to qt4*****************
 				sock->peerAddress (),//***JPC Port to qt4*****************
 				sock->peerPort ());//***JPC Port to qt4*****************
