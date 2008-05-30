@@ -101,6 +101,11 @@ UDPOutput::send (char *buf)
   //###################################
   //((nsHeader *) packetData)->i_head = packetIndex;//JPC JLink***********************************
   
+  // use this without byteswap
+  //((nsHeader *) packetData)->i_head =  16384;//JPC JLink***********************************
+  //use this with byteswap
+  ((nsHeader *) packetData)->i_head =  64;//JPC JLink***********************************
+  
   //((nsHeader *) packetData)->i_cksum = 4;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_seq = packetIndex;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_rtnseq = 6;//JPC JLink***********************************
@@ -127,6 +132,9 @@ UDPOutput::send (char *buf)
   //PR("HEADER#############: ", caca);
   
   memcpy (datapart, buf, bpp);
+  //PRC("buf ========== ", &buf[0]);
+  //PRC("datapart ===== ", &datapart[0]);
+  //PRC("packetData === ", &packetData[2]);
     
   //cout << "sizeof (nsHeader): " << sizeof(ETX_XTND) << endl;
   //cout << "sizeof(packetData): " << sizeof(packetData) << endl;
@@ -140,16 +148,33 @@ UDPOutput::send (char *buf)
   //		       sock->peerPort ());//***JPC Port to qt4*****************
 
   // Quick hack to get the same header that I get in udp_input
-  ((nsHeader *) packetData)->i_head =  64;//JPC JLink***********************************
+
   //PR("HEADER OUTPUT============= ", ((nsHeader *) packetData)->i_head);
+
+  
+  //cout << (signed short) 0xfffd << endl;
+  //cout << ETX_44KHZ << endl;
+  
+  //PRC("packetDataBEFORE ========== ", &packetData[50]);
+  //PRC("packetDataBEFORE ========== ", &packetData[51]);
+  //byteSwap(packetData, wholeSize);//JPC JLink***********************************
+  //PRC("packetDataAFTER  ========== ", &packetData[50]);
+  //PRC("packetDataAFTER  ========== ", &packetData[51]);
+  
+  //for (int caca = 0; caca<40; caca++) {
+  //cout << *((signed short *) packetData+6) << endl;
+  //}
+  
   byteSwap(packetData, wholeSize);//JPC JLink***********************************
+  //cout << *((signed short *) packetData+2) << endl;
   //((nsHeader *) packetData)->i_head =  ETX_XTND | ETX_24KHZ;//JPC JLink***********************************
   //((nsHeader *) packetData)->i_head =  ETX_48KHZ;//JPC JLink***********************************
-  
   //PRC("HEADER=============", &packetData[128]);
   int rv = sock->writeDatagram (packetData, wholeSize,//***JPC Port to qt4*****************
 				sock->peerAddress (),//***JPC Port to qt4*****************
 				sock->peerPort ());//***JPC Port to qt4*****************
+  //PRC("packetDataBS== ", &packetData[2]);
+  
   //cout << "WRITING!!!!!!!!!!! " << rv  <<" "<< QString(sock->peerName ()).latin1() << " " << sock->peerPort ()<< endl;
   return rv;
 }

@@ -82,11 +82,13 @@ UDPInput::rcv (char *buf)
   datapart = packetData + sizeof (nsHeader);//JPC JLink***********************************
   //byteSwap(datapart, wholeSize);
   memcpy (buf, datapart, bpp);
-  
+  //PRC("DATA INPUT ++++ ", &packetData[20]);
 
   //###############JPC JLink#######################
   // Binary print function
   //unsigned short caca = 0xFFFF;
+  //PR("header in binary 44 ==============: ", ETX_44KHZ | ETX_XTND);
+  
   //PR("header in binary 24 ==============: ", ETX_RATE_MASK(ETX_24KHZ | ETX_XTND));
   //PR("header in binary 22 ==============: ", ETX_RATE_MASK( ETX_22KHZ | ETX_XTND));
   //PR("header in binary 8 ==============: ",  ETX_RATE_MASK(ETX_8KHZ | ETX_XTND));
