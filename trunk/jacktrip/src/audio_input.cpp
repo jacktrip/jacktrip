@@ -13,7 +13,9 @@
 
 #include "audio_input.h"
 #include "stream.h"
-#include <iostream.h>
+#include <iostream>
+
+using namespace std;
 
 AudioInput::AudioInput (AudioDevice * audioDevice, AudioInfoT audioInfo):
 InputPlugin ("Audio Input Plugin"),

@@ -35,7 +35,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <stdio.h>
-#include <iostream.h>
+#include <iostream>
 #include "audioInfo.h"
 #include "networkInfo.h"
 // Remove STK dependency

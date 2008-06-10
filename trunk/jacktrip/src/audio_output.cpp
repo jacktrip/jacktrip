@@ -2,7 +2,9 @@
 #include "stream.h"
 //#include "ambisonics/ambisonicsdecoder.h"
 #include <string.h>
-#include <iostream.h>
+#include <iostream>
+
+using namespace std;
 
 AudioOutput::AudioOutput (AudioDevice * audioDevice, AudioInfoT audioInfo):
 OutputPlugin ("Audio Output plugin"),

@@ -9,7 +9,7 @@
  */
 
 #include "audioInfo.h"
-#include <iostream.h>
+#include <iostream>
 
 AudioInfo::AudioInfo (int sampleRate, int bytesPerSample, int framesPerBuffer,
 		      int numChans, int netChans, int secondsBetweenPlucks,

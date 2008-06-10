@@ -9,7 +9,7 @@
  */
 
 #include "networkInfo.h"
-#include <iostream.h>
+#include <iostream>
 
 NetworkInfo::NetworkInfo (QString localHostName, int dataBytesPerPacket,
 			  int in_port, int out_port, int chunksPerPacket, int q):
