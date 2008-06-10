@@ -28,12 +28,14 @@ qmake-qt4 -makefile -unix -o Makefile \
 "CONFIG+=qt debug thread warn_on" \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
 "QT += network qt3support" \
-"INCLUDEPATH+=/usr/include/stk ../include" \
 "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
 "QMAKE_CLEAN+=$APP_NAME" \
-"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack" \
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lasound -ljack" \
 "unix:TARGET=$APP_NAME" \
 "unix:target.path=/usr/bin" \
 "unix:INSTALLS+=target" $APP_NAME.pro
+
+#INCLUDEPATH+=/usr/include/stk ../include" \
+#"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack" \
 
 echo "done"
