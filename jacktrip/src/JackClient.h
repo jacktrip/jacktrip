@@ -8,14 +8,14 @@
 #define _JACKCLIENT_H_
 
 #include <jack/jack.h>
-#include "Stk.h"
+//#include "Stk.h"
 #include "stdio.h"
 #include "stdlib.h"
 //#include "qstring.h"
 #include <qstring.h>
 
 class AudioDevice;
-class JackClient:public Stk
+class JackClient//:public Stk
 {
       public:
 	JackClient (QString name, int nChans, int nFrames, bool output, 

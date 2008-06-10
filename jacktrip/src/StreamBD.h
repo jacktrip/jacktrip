@@ -38,9 +38,10 @@
 #include <iostream.h>
 #include "audioInfo.h"
 #include "networkInfo.h"
-#include <stk/Delay.h>
-#include <stk/OneZero.h>
-#include "stk_process.h"
+// Remove STK dependency
+//#include <stk/Delay.h>
+//#include <stk/OneZero.h>
+//#include "stk_process.h"
 #include <qhostaddress.h>
 #include <qstring.h>
 #include <time.h>
@@ -159,8 +160,8 @@ void addPlugin (InputPlugin * from, Stream * str);
 
 void addPlugin (OutputPlugin * to, Stream * str);
 
-void addSTKProcesses (Stream * str);
-		cmdLineArgs *args;
+  //void addSTKProcesses (Stream * str); //Remove STK dependency
+  cmdLineArgs *args;
 	AudioDevice *audioDevice;
 	public slots:
 	void go ();
