@@ -7,6 +7,8 @@
 //#include "StreamBD.h"
 #include "audioDevice.h"
 
+using namespace std;
+
 extern QString *
 IPv4Addr (char *namebuf);
 

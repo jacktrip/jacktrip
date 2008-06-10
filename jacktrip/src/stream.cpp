@@ -1,11 +1,13 @@
 #include "stream.h"
-#include <iostream.h>
+#include <iostream>
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
 #define APPEND(x,y) x.resize(x.count()+1); x.insert (x.count(), y)
 
 #define debugMe FALSE
+
+using namespace std;
 
 Stream::Stream (AudioInfo * info, NetworkInfo * netInfo, int numBuffers, bool block):
 audioInfo (info)
