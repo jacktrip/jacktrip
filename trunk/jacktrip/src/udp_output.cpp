@@ -15,34 +15,7 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
   audInfo (audInfo)
 {
   bpp = netInfo->getDataBytesPerPacket ();
-  char localhostbuf[100];
-  //sock = new Q3SocketDevice (Q3SocketDevice::Datagram);//***JPC Port to qt4*****************
-  //sock->setAddressReusable(true);//***JPC Port to qt4*****************
-  sock = new QUdpSocket;
 
-  if (gethostname (localhostbuf, 99))
-    {
-      perror ("gethostname");
-      exit ();
-    }
-	
-  QHostAddress *ha = new QHostAddress ();
-  QString *s = IPv4Addr (localhostbuf);
-  ha->setAddress (*s);
-  //cout << "AAAAAAAAA" << (*ha).toString ().latin1() << endl;
-  //if (!(sock->bind (*ha, netInfo->getOutPort ())))//***JPC Port to qt4*****************
-  if (!(sock->bind (*ha, netInfo->getOutPort (),  QUdpSocket::DefaultForPlatform ) ) )//, QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
-    {
-      perror ("UDP Ouput Binding Error");
-      //cerr << "UDP Ouput Binding Error ";
-      //exit ();
-      abort();
-    }
-  if (!sock->isValid ())
-    {
-      cout << "socket creation error: " << "e->getErrorString()" <<
-	endl;
-    }
   packetIndex = 0;
   wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;
   packetData = new char[wholeSize];
@@ -56,9 +29,7 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
   numBuffers = netInfo->getChunksPerPacket();
   maxPacketIndex = netInfo->getMaxSeq();
 
-  cout << "UDPOuput binding to " << localhostbuf
-       << " port " << netInfo->getOutPort () << endl;
-
+  //peerAddress = new QHostAddress;
 }
 
 UDPOutput::~UDPOutput()
@@ -74,14 +45,17 @@ UDPOutput::Initial ()
   cout << "Started UDPOutput thread" << endl;
 }
 
+
 int
 UDPOutput::connect (QHostAddress remote)
 {
+  cout << "CONECT###########################################" << endl;
   if (!sock->isValid ())
     {
       cerr << "Error!  connect called with no valid socket" << endl;
       exit ();
     }
+  cout << "CONECT22222222222222222###########################################" << endl;
   // sets peerAddress   
   //sock->connect (remote, netInfo->getInPort ()); //***JPC Port to qt4*****************
   sock->connectToHost (remote, netInfo->getInPort ()); //***JPC Port to qt4*****************
@@ -89,8 +63,23 @@ UDPOutput::connect (QHostAddress remote)
   cout << "Connecting to " << remote.toString().latin1() << ":" << netInfo->
     getInPort () << endl;
 
+
   return 0;
 }
+
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Set the peer address to which the socket will connect
+ *  This function has to be called before starting the Thread
+ */
+//---------------------------------------------------------------------------------------------
+int
+UDPOutput::setPeerAddress (QHostAddress remote)
+{
+  peerAddress = remote;
+  return 0;
+}
+
 
 int
 UDPOutput::send (char *buf)
@@ -118,9 +107,51 @@ UDPOutput::send (char *buf)
   return rv;
 }
 
+
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Run the UDPOutput Thread
+ *  
+ */
+//---------------------------------------------------------------------------------------------
 void
 UDPOutput::run ()
 {
+  char localhostbuf[100];
+  //sock = new Q3SocketDevice (Q3SocketDevice::Datagram);//***JPC Port to qt4*****************
+  //sock->setAddressReusable(true);//***JPC Port to qt4*****************
+  sock = new QUdpSocket;
+
+  if (gethostname (localhostbuf, 99))
+    {
+      perror ("gethostname");
+      exit ();
+    }
+
+  QHostAddress *ha = new QHostAddress ();
+  QString *s = IPv4Addr (localhostbuf);
+  ha->setAddress (*s);
+  //cout << "AAAAAAAAA" << (*ha).toString ().latin1() << endl;
+  //if (!(sock->bind (*ha, netInfo->getOutPort ())))//***JPC Port to qt4*****************
+  //if (!(sock->bind (*ha, netInfo->getOutPort (),  QUdpSocket::DefaultForPlatform ) ) )//, QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
+  if (!(sock->bind (*ha, 8888,  QUdpSocket::DefaultForPlatform ) ) )//, QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
+    {
+      perror ("UDP Ouput Binding Error");
+      //cerr << "UDP Ouput Binding Error ";
+      //exit ();
+      abort();
+    }
+  if (!sock->isValid ())
+    {
+      cout << "socket creation error: " << "e->getErrorString()" <<
+	endl;
+    }
+  cout << "UDPOuput binding to " << localhostbuf
+       << " port " << netInfo->getOutPort () << endl;
+
+
+  this->connect (peerAddress);
+  
   _running = true;
   int res = 1;
   char *buf = (char *) new char[bpp];
