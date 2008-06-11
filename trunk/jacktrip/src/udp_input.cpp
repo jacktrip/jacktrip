@@ -143,10 +143,11 @@ UDPInput::run ()
   cout << "INPUT PORT: " << netInfo->getInPort () << endl;
 
   //if (!(sock->bind (*ha, netInfo->getInPort ())))//***JPC Port to qt4*****************
-  if (!(sock->bind (*ha, netInfo->getInPort (), QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
+  if (!(sock->bind (*ha, netInfo->getInPort (), QUdpSocket::DefaultForPlatform ) ) )//***JPC Port to qt4*****************
     {
-      perror ("bind\n");
-      exit ();
+      perror ("UDP Input Binding Error");
+      //exit ();
+      abort ();
     }
   if (!sock->isValid ())
     {
