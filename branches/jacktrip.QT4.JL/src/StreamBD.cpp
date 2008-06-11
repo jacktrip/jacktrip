@@ -7,6 +7,8 @@
 //#include "StreamBD.h"
 #include "audioDevice.h"
 
+using namespace std;
+
 extern QString *
 IPv4Addr (char *namebuf);
 
@@ -143,7 +145,9 @@ StreamBD::cmd (MainDialog *eventThread)
 
 		ConnectPlugins (t.netin, t.netout, t.streamout);
 		break;
-
+		
+		//remove STK dependency
+		/*
 	case HARPT:
 
 		t.netin = new UDPInput (netInfo, audioInfo);
@@ -178,6 +182,7 @@ StreamBD::cmd (MainDialog *eventThread)
 		ConnectPlugins (t.netin, t.netout, t.streamout);
 
 		break;
+		*/
 
 	case SNDMIRROR:
 		audioDevice = new AudioDevice (args->audioDeviceID,
@@ -515,6 +520,9 @@ StreamBD::addPlugin (OutputPlugin * to, Stream * str)
 	str->addOutput (to);
 }
 
+
+//Remove STK Depdency
+/*
 void
 StreamBD::addSTKProcesses (Stream * str)
 {
@@ -551,7 +559,7 @@ StreamBD::addSTKProcesses (Stream * str)
 		}
 	}
 }
-
+*/
 
 /**
  * @brief Connects, or waits for connection depending on runMode.

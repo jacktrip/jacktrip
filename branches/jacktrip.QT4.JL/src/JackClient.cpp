@@ -12,6 +12,9 @@
 #include "audioDevice.h"
 #include "qstring.h"
 #include <q3textstream.h>
+
+using namespace std;
+
 jack_port_t **input_port;
 jack_port_t **output_port;
 jack_default_audio_sample_t **inBufPtr;
@@ -117,7 +120,7 @@ xx_global_process_xx (unsigned int nframes, void *argc)
 	return 0;
 }
 
-JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool input, AudioDevice * ad, int aro):Stk ()
+JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool input, AudioDevice * ad, int aro)//:Stk () //Romved STK Dependency
 {
     alsa_readable_offset = aro;
 	audioDevice = ad;

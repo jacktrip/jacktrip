@@ -4,13 +4,15 @@
 #include "unistd.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <iostream.h>
+#include <iostream>
 #include <QHostInfo>//***JPC Port to qt4*****************
 #include "jamlink.h"
 #include <netinet/in.h>
 
 extern QString *IPv4Addr (char *namebuf);
 extern int set_fifo_priority (bool half);
+
+using namespace std;
 
 //-------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------
