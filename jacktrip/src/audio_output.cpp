@@ -63,10 +63,10 @@ AudioOutput::run ()
 }
 
 void
-AudioOutput::xfrTo (void *buf)
+AudioOutput::xfrTo (void*) //buf)
 {
-int rp = stream->read (buf, key);
-//		cout << "readPosition " << rp  <<"\t\t" << endl;
+  //int rp = stream->read (buf, key);
+  //		cout << "readPosition " << rp  <<"\t\t" << endl;
 }
 
 void

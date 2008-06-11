@@ -252,6 +252,7 @@ audioDevice->setThreads(t);
 		audioDevice->jackStart ();
 
 	cout << "Running " << endl;
+	return 0;
 }
 
 

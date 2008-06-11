@@ -15,7 +15,7 @@ class OutputPlugin : public Plugin
     int    key;
     Stream *stream;
   public:
-    OutputPlugin(char *name) : key(-1)
+    OutputPlugin(const char *name) : key(-1)
         {
             this->setName(name);
 			this->dontRun = false;

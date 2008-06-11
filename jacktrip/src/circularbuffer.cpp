@@ -113,7 +113,7 @@ CircularBuffer::writeRedundant (const void *writeChunk, int z, int seq)
 		}
 		int tmpSeq = seqBuffer[tmpPosition];
 		int dif = seq - tmpSeq;
-		if (dif < -numBufChunks); // -numChunks)
+		if (dif < -numBufChunks) // -numChunks)
 		{
 			dif += maxSeq;
 		}

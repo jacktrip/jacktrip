@@ -19,7 +19,8 @@ class MainDialog//:public MainWindow
 {
   //Q_OBJECT public://********JPC Coment out*************************************
 public:
-	  MainDialog (QWidget * parent = 0, const char *name = 0);
+  //	  MainDialog (QWidget * parent = 0, const char *name = 0);
+  MainDialog ();
 	  virtual ~ MainDialog ();
 	  void init(StreamBD *s);
   //StripChart *plot;

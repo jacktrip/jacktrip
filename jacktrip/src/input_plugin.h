@@ -15,7 +15,7 @@ class InputPlugin : public Plugin
 		int	key;
 		Stream *stream;
 	public:
-		InputPlugin(char *name) : key( -1 )
+		InputPlugin(const char *name) : key( -1 )
                     {
                         this->setName(name);
 						this->dontRun = false;
