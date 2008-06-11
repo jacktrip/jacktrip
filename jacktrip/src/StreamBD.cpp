@@ -578,7 +578,8 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
 		QHostAddress *ha = new QHostAddress ();
 		QString *s = IPv4Addr (hostname);	// dotted integer from name
 		ha->setAddress (*s);
-		netout->connect (*ha);
+		//netout->connect (*ha);
+		netout->setPeerAddress (*ha);
 	}
 	else
 	{
@@ -594,7 +595,8 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
 		  netin->peer().toString().latin1() << endl;
 		//*************************************************
 		cout << "Requesting return connection....";
-		netout->connect (netin->peer ());
+		//netout->connect (netin->peer ());
+		netout->setPeerAddress (netin->peer ());
 		cout << "SUCCESS!" << endl;
 	}
 }
