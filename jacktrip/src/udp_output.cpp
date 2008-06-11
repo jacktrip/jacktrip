@@ -31,17 +31,18 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
   ha->setAddress (*s);
   //cout << "AAAAAAAAA" << (*ha).toString ().latin1() << endl;
   //if (!(sock->bind (*ha, netInfo->getOutPort ())))//***JPC Port to qt4*****************
-  if (!(sock->bind (*ha, netInfo->getOutPort (), QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
+  if (!(sock->bind (*ha, netInfo->getOutPort (),  QUdpSocket::DefaultForPlatform ) ) )//, QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
     {
-      perror ("bind\n");
-      exit ();
+      perror ("UDP Ouput Binding Error");
+      //cerr << "UDP Ouput Binding Error ";
+      //exit ();
+      abort();
     }
   if (!sock->isValid ())
     {
       cout << "socket creation error: " << "e->getErrorString()" <<
 	endl;
     }
-
   packetIndex = 0;
   wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;
   packetData = new char[wholeSize];
