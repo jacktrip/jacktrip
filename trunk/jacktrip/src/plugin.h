@@ -33,7 +33,7 @@ class Plugin:public QThread
 	{
 		return name;
 	}
-	char *setName (char *newName)
+	char *setName (const char *newName)
 	{
 		strncpy (name, newName, 23);
 		name[23] = '\0';

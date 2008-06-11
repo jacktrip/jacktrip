@@ -22,8 +22,8 @@ netHarpStrings (netChans),
 framesPerBuffer (framesPerBuffer),
 secondsBetweenPlucks (secondsBetweenPlucks),
 jack (jack),
-lastTickTime (lastTick),
-jack_alsa_readable_offset (jack_alsa_readable_offset)
+jack_alsa_readable_offset (jack_alsa_readable_offset),
+lastTickTime (lastTick)
 {
 }
 
