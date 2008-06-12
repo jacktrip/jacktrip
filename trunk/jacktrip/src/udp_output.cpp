@@ -49,13 +49,11 @@ UDPOutput::Initial ()
 int
 UDPOutput::connect (QHostAddress remote)
 {
-  cout << "CONECT###########################################" << endl;
   if (!sock->isValid ())
     {
       cerr << "Error!  connect called with no valid socket" << endl;
       exit ();
     }
-  cout << "CONECT22222222222222222###########################################" << endl;
   // sets peerAddress   
   //sock->connect (remote, netInfo->getInPort ()); //***JPC Port to qt4*****************
   sock->connectToHost (remote, netInfo->getInPort ()); //***JPC Port to qt4*****************
