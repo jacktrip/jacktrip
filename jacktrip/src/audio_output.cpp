@@ -65,7 +65,7 @@ AudioOutput::run ()
 void
 AudioOutput::xfrTo (void* buf)
 {
-  //int rp = stream->read (buf, key);
+  int rp = stream->read (buf, key);
   //		cout << "readPosition " << rp  <<"\t\t" << endl;
 }
 
