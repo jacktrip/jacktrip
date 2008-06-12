@@ -1,0 +1,11 @@
+- add the option for 24 bit audio
+- remove comments and cleanup code
+- add a verbose mode, with more diagnostics (silent by default)
+  Check how to do this with a flag in cerr
+- check if multithread is working correctly
+- sourceforge
+- Distribute without the FAUST dependency
+- Always remove the debug mode for release
+- remove at some point the  qt3support
+- remove the lasound dependency
+- Replace all types by qt types, to make it more robost to multiprocessors.
