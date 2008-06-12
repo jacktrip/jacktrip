@@ -1,3 +1,36 @@
+/*
+  JackTrip: A Multimachine System for High-Quality Audio 
+  Network Performance over the Internet
+
+  Copyright (c) 2008 Chris Chafe, Juan-Pablo Caceres,
+  SoundWIRE group at CCRMA.
+  
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use,
+  copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following
+  conditions:
+  
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+ * stream.h
+ */
+
 #ifndef _STREAM_H
 #define _STREAM_H
 
@@ -20,55 +53,53 @@
  */
 class Stream 
 {
-    long lastPluckTime;
-    bool harp;
+  long lastPluckTime;
+  bool harp;
         
-  protected:
- //  Vector inputs;
- 	  Q3PtrVector < InputPlugin > ins;
+protected:
+  //  Vector inputs;
+  Q3PtrVector < InputPlugin > ins;
   //  Vector outputs;
- 	  Q3PtrVector < OutputPlugin > outs;
+  Q3PtrVector < OutputPlugin > outs;
   //   Vector processes;
- 	  Q3PtrVector < ProcessPlugin > procs;
+  Q3PtrVector < ProcessPlugin > procs;
   //   Vector circularBuffers;
-	  Q3PtrVector < CircularBuffer > bufs;
- //    Vector outputLocks;     
- 	  Q3PtrVector < QSemaphore >locks;
-  	int insCount;
-	int procsCount;
-	int outsCount;
-	int locksCount;
-	int bufsCount;
-	int processesPerChan;
+  Q3PtrVector < CircularBuffer > bufs;
+  //    Vector outputLocks;     
+  Q3PtrVector < QSemaphore >locks;
+  int insCount;
+  int procsCount;
+  int outsCount;
+  int locksCount;
+  int bufsCount;
+  int processesPerChan;
 
   /** @brief Controls read access.  No output is allowed
-                                to read until the master output has read (set with
-                                synchronizeOutputsTo.
-                            */
-    int outputSynchKey;
+      to read until the master output has read (set with
+      synchronizeOutputsTo.
+  */
+  int outputSynchKey;
     
-    AudioInfoT audioInfo;
+  AudioInfoT audioInfo;
         
-    void addCircularBuffer();
+  void addCircularBuffer();
         
-  public:
+public:
+  Stream(AudioInfo * info, NetworkInfo * netInfo, int numBuffers, bool block);
+  ~Stream();
+  void addInput(InputPlugin *newin);
+  void addOutput(OutputPlugin *newout);
+  void synchronizeOutputsTo(OutputPlugin *synchControlOutput);
+  void addProcess(ProcessPlugin *newproc);
+  int read(void *buf, int key);
+  int tapRead(void *buf);
     
-
-    Stream(AudioInfo * info, NetworkInfo * netInfo, int numBuffers, bool block);
-    ~Stream();
-    void addInput(InputPlugin *newin);
-    void addOutput(OutputPlugin *newout);
-    void synchronizeOutputsTo(OutputPlugin *synchControlOutput);
-    void addProcess(ProcessPlugin *newproc);
-    int read(void *buf, int key);
-    int tapRead(void *buf);
-    
-    int write(const void *buf, int key);
- int
-writeRedundant (const void *buf, int key, int z, int seq);
+  int write(const void *buf, int key);
+  int
+  writeRedundant (const void *buf, int key, int z, int seq);
   void clear();
-    void startThreads();
-     void stopThreads();
+  void startThreads();
+  void stopThreads();
   bool threadsRunning;
 };
 
