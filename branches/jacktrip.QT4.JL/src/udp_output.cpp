@@ -1,3 +1,36 @@
+/*
+  JackTrip: A Multimachine System for High-Quality Audio 
+  Network Performance over the Internet
+
+  Copyright (c) 2008 Chris Chafe, Juan-Pablo Caceres,
+  SoundWIRE group at CCRMA.
+  
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use,
+  copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following
+  conditions:
+  
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+ * udp_output.cpp
+ */
+
 #include "udp_output.h"
 #include "stream.h"
 #include "unistd.h"
@@ -11,6 +44,11 @@ using namespace std;
 extern QString *IPv4Addr (char *namebuf);
 extern int set_fifo_priority (bool half);
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
   OutputPlugin ("UDP Output"), one_time_flags (0), netInfo (netInfo),
   audInfo (audInfo)
@@ -31,24 +69,33 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
 	
   numBuffers = netInfo->getChunksPerPacket();
   maxPacketIndex = netInfo->getMaxSeq();
-
- 
-
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 UDPOutput::~UDPOutput()
 {
   //delete sock;
 }
 
 
-
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 UDPOutput::Initial ()
 {
   cout << "Started UDPOutput thread" << endl;
 }
 
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 int
 UDPOutput::connect (QHostAddress remote)
 {
@@ -70,6 +117,7 @@ UDPOutput::connect (QHostAddress remote)
 
 //---------------------------------------------------------------------------------------------
 /*! \brief Set the peer address to which the socket will connect
+ *
  *  This function has to be called before starting the Thread
  */
 //---------------------------------------------------------------------------------------------
@@ -262,6 +310,11 @@ UDPOutput::run ()
   cout << "UDP Output stop" << endl;
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 UDPOutput::stop ()
 {
@@ -269,6 +322,11 @@ UDPOutput::stop ()
   cout << "UDP Output SHOULD stop" << endl;
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void UDPOutput::plotVal (double v)
 {
   if(_rcvr!=NULL)
