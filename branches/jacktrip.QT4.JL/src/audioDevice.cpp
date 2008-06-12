@@ -1,15 +1,35 @@
-/**********************************************************************
- * File: audioDevice.cpp
- **********************************************************************
- * A project of the SoundWIRE research group at CCRMA
- * http://www-ccrma.stanford.edu/groups/soundwire/
- * --------------------------------------------------------------------
- * Coded by Daniel Walling (dwalling@ccrma.stanford.edu)
- * --------------------------------------------------------------------
- */
+/*
+  JackTrip: A Multimachine System for High-Quality Audio 
+  Network Performance over the Internet
 
-// updated for Stk 4.1.2
-// RtAudio.cpp is now in project to compile with desired API
+  Copyright (c) 2008 Chris Chafe, Juan-Pablo Caceres,
+  SoundWIRE group at CCRMA.
+  
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use,
+  copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following
+  conditions:
+  
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+ * audioDevice.cpp
+ */
 
 #include "audioDevice.h"
 #include <time.h>
@@ -24,9 +44,9 @@ AudioDevice::AudioDevice (bool testMode)
       exit (1);
     }
   /*
-  else
+    else
     {
-      probeAudioDevices ();
+    probeAudioDevices ();
     }
   */
 }
@@ -53,124 +73,124 @@ AudioDevice::AudioDevice (int ID, int numBuffers, audioDeviceModeT mode,
   if (jack)
     cout << "Creating Jack audio Device.........";
   /* //Remove STK Dependency
-  else
-    cout << "Creating RtAudio Device.........";
+     else
+     cout << "Creating RtAudio Device.........";
   */
   //try
   //{
-      switch (mode)
-	{
-	case RECORD:
-	  if (jack)
-	    jdevice =
-	      new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
-			      audioInfo->
-			      getNumChans (),
-			      audioInfo->
-			      getFramesPerBuffer (),
-			      false, true, this, 
-			      audioInfo->getJack_alsa_readable_offset ());
-	  /*//Remove STK Dependency
-	  else
-	    device = new RtAudio (streamID,
-				  0,
-				  ID,
-				  audioInfo->
-				  getNumAudioChans (),
-				  RTAUDIO_SINT16,
-				  audioInfo->
-				  getSampleRate (),
-				  &(tmpBufferSize),
-				  numBuffers,
-				  RtAudio::LINUX_ALSA);
-	  */
-
-	  break;
-	case PLAYBACK:
-	  if (jack)
-	    jdevice =
-	      new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
-			      audioInfo->
-			      getNumChans (),
-			      audioInfo->
-			      getFramesPerBuffer (),
-			      true, false, this, 
-			      audioInfo->getJack_alsa_readable_offset ());
-	  /*//Remove STK Dependency
-	  else
-	    device = new RtAudio (streamID,
-				  audioInfo->
-				  getNumAudioChans (), ID,
-				  0, RTAUDIO_SINT16,
-				  audioInfo->
-				  getSampleRate (),
-				  &(tmpBufferSize),
-				  numBuffers,
-				  RtAudio::LINUX_ALSA);
-	  */
-	  break;
-	case DUPLEX:
-	  if (jack)
-	    jdevice =
-	      new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
-			      audioInfo->
-			      getNumChans (),
-			      audioInfo->
-			      getFramesPerBuffer (),
-			      true, true, this, 
-			      audioInfo->getJack_alsa_readable_offset ());
-	  /*//Remove STK Dependency
-	  else
-	    device = new RtAudio ((streamID),
-				  audioInfo->
-				  getNumAudioChans (), ID,
-				  audioInfo->
-				  getNumAudioChans (),
-				  RTAUDIO_SINT16,
-				  audioInfo->
-				  getSampleRate (),
-				  &(tmpBufferSize),
-				  numBuffers,
-				  RtAudio::LINUX_ALSA);
-	  */
-	  break;
-	}
-      //}
-  /*//Remove STK Dependency
-  catch (RtError (&m))
+  switch (mode)
     {
-      cout << "FAILED!" << endl;
-      m.printMessage ();
-      probeAudioDevices ();
-      exit (1);
+    case RECORD:
+      if (jack)
+	jdevice =
+	  new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
+			  audioInfo->
+			  getNumChans (),
+			  audioInfo->
+			  getFramesPerBuffer (),
+			  false, true, this, 
+			  audioInfo->getJack_alsa_readable_offset ());
+      /*//Remove STK Dependency
+	else
+	device = new RtAudio (streamID,
+	0,
+	ID,
+	audioInfo->
+	getNumAudioChans (),
+	RTAUDIO_SINT16,
+	audioInfo->
+	getSampleRate (),
+	&(tmpBufferSize),
+	numBuffers,
+	RtAudio::LINUX_ALSA);
+      */
+
+      break;
+    case PLAYBACK:
+      if (jack)
+	jdevice =
+	  new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
+			  audioInfo->
+			  getNumChans (),
+			  audioInfo->
+			  getFramesPerBuffer (),
+			  true, false, this, 
+			  audioInfo->getJack_alsa_readable_offset ());
+      /*//Remove STK Dependency
+	else
+	device = new RtAudio (streamID,
+	audioInfo->
+	getNumAudioChans (), ID,
+	0, RTAUDIO_SINT16,
+	audioInfo->
+	getSampleRate (),
+	&(tmpBufferSize),
+	numBuffers,
+	RtAudio::LINUX_ALSA);
+      */
+      break;
+    case DUPLEX:
+      if (jack)
+	jdevice =
+	  new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
+			  audioInfo->
+			  getNumChans (),
+			  audioInfo->
+			  getFramesPerBuffer (),
+			  true, true, this, 
+			  audioInfo->getJack_alsa_readable_offset ());
+      /*//Remove STK Dependency
+	else
+	device = new RtAudio ((streamID),
+	audioInfo->
+	getNumAudioChans (), ID,
+	audioInfo->
+	getNumAudioChans (),
+	RTAUDIO_SINT16,
+	audioInfo->
+	getSampleRate (),
+	&(tmpBufferSize),
+	numBuffers,
+	RtAudio::LINUX_ALSA);
+      */
+      break;
+    }
+  //}
+  /*//Remove STK Dependency
+    catch (RtError (&m))
+    {
+    cout << "FAILED!" << endl;
+    m.printMessage ();
+    probeAudioDevices ();
+    exit (1);
     }
   */
   cout << "SUCCESS!" << endl;
 
   /*//Remove STK Dependency
-  if (tmpBufferSize != audioInfo->getFramesPerBuffer ())
+    if (tmpBufferSize != audioInfo->getFramesPerBuffer ())
     {
-      cerr << "RtAudio device could not use requested buffer length of " << audioInfo->getFramesPerBuffer () << " frames.  Using " << tmpBufferSize << endl;
-      audioInfo->setFramesPerBuffer (tmpBufferSize);
+    cerr << "RtAudio device could not use requested buffer length of " << audioInfo->getFramesPerBuffer () << " frames.  Using " << tmpBufferSize << endl;
+    audioInfo->setFramesPerBuffer (tmpBufferSize);
     }
   */
 
   /*//Remove STK Dependency
-  if (!jack)
+    if (!jack)
     {
-      if (device == NULL)
-	{
-	  cerr << "RtAudio Device is NULL!" << endl;
-	  probeAudioDevices ();
-	}
-      buffer = device->getStreamBuffer ();
+    if (device == NULL)
+    {
+    cerr << "RtAudio Device is NULL!" << endl;
+    probeAudioDevices ();
+    }
+    buffer = device->getStreamBuffer ();
 
 
-      if (buffer == NULL)
-	{
-	  cerr << "RtAudio device buffer is NULL!" << endl;
-	  probeAudioDevices ();
-	}
+    if (buffer == NULL)
+    {
+    cerr << "RtAudio device buffer is NULL!" << endl;
+    probeAudioDevices ();
+    }
     }
   */
 
@@ -214,28 +234,28 @@ AudioDevice::jackStop ()
 }
 
 /*
-void
-AudioDevice::tick ()
-{
+  void
+  AudioDevice::tick ()
+  {
   try
-    {
-      device->tickStream (); // blocks until transfer completed
-      if (audioInfo->lastTickTime)
-	{
-	  clock_t newTime = clock ();
-	  fprintf (stderr, "Audio Tick,%d,%d,%.5f\n", newTime,
-		   *(audioInfo->lastTickTime),
-		   (newTime -
-		    *(audioInfo->lastTickTime)) *
-		   CLOCKS_PER_SEC);
-	  *(audioInfo->lastTickTime) = newTime;
-	}
-    }
+  {
+  device->tickStream (); // blocks until transfer completed
+  if (audioInfo->lastTickTime)
+  {
+  clock_t newTime = clock ();
+  fprintf (stderr, "Audio Tick,%d,%d,%.5f\n", newTime,
+  *(audioInfo->lastTickTime),
+  (newTime -
+  *(audioInfo->lastTickTime)) *
+  CLOCKS_PER_SEC);
+  *(audioInfo->lastTickTime) = newTime;
+  }
+  }
   catch (RtError (&m))
-    {
-      m.printMessage ();
-    }
-}
+  {
+  m.printMessage ();
+  }
+  }
 */
 
 void
@@ -246,12 +266,12 @@ AudioDevice::jtick () // called by jack process after transfer completed
 }
 
 /*
-void
-AudioDevice::bufferPtrs (void *jib, void *job)
-{
+  void
+  AudioDevice::bufferPtrs (void *jib, void *job)
+  {
   //	jibuffer = jib;
   //	jobuffer = job;
-}
+  }
 */
 
 void
@@ -372,55 +392,55 @@ AudioDevice::generateHarpMixMap ()
  * @brief Probe audio device to see if it supports required functionality.
  */
 /*//Remove STK Dependency
-void
-AudioDevice::probeAudioDevices ()
-{
+  void
+  AudioDevice::probeAudioDevices ()
+  {
   cout << "=====================================================" <<
-    endl;
+  endl;
   cout << " Probing audio devices..." << endl;
   cout << " ------------------------" << endl << endl;
 
   try
-    {
-      device = new RtAudio ();
-    } catch (RtError (&m))
-    {
-      cerr << "AudioDevice::probeAudioDevice() failed!" << endl;
-      m.printMessage ();
-      exit (1);
-    }
+  {
+  device = new RtAudio ();
+  } catch (RtError (&m))
+  {
+  cerr << "AudioDevice::probeAudioDevice() failed!" << endl;
+  m.printMessage ();
+  exit (1);
+  }
   int numDevices = device->getDeviceCount ();
 
   RtAudioDeviceInfo info;
 
   cout << " " << numDevices << " audio devices found.  Probing..." <<
-    endl << endl;
+  endl << endl;
 
   for (int i = 0; i < numDevices; i++)
-    {
-      try
-	{
-	  info = device->getDeviceInfo (i + 1);
-	  checkRequirements (i + 1, &info);
-	}
-      catch (RtError & error)
-	{
-	  error.printMessage ();
-	  break;
-	}
-    }
+  {
+  try
+  {
+  info = device->getDeviceInfo (i + 1);
+  checkRequirements (i + 1, &info);
+  }
+  catch (RtError & error)
+  {
+  error.printMessage ();
+  break;
+  }
+  }
   cout << "Check these values against the streambd default command line settings." << endl;
   cout << "Change the relevant parameters as required.  If duplex is not supported" << endl;
   cout << "you will only be able to run in SNDMIRROR mode." << endl;
   cout << "=====================================================" <<
-    endl;
-}
+  endl;
+  }
 */
 
 /*//Remove STK Dependency
-void
-AudioDevice::checkRequirements (int deviceNum, RtAudioDeviceInfo * info)
-{
+  void
+  AudioDevice::checkRequirements (int deviceNum, RtAudioDeviceInfo * info)
+  {
   cout << "Device " << deviceNum << ": " << info->name << endl;
   cout << "maxOutputChannels =\t" << info->outputChannels << endl;
   cout << "maxInputChannels =\t" << info->inputChannels << endl;
@@ -428,16 +448,16 @@ AudioDevice::checkRequirements (int deviceNum, RtAudioDeviceInfo * info)
 
   cout << "hasDuplexSupport =\t";
   if (info->duplexChannels > 0)
-    cout << "true" << endl;
+  cout << "true" << endl;
   else
-    cout << "false." << endl;
+  cout << "false." << endl;
   cout << "Sample rates supported: " << endl;
   for (int i = 0; i < 99; i++)
-    if ((info->
-	 sampleRates[i] > 0) && (info->sampleRates[i] < 200000))
-      cout << info->sampleRates[i] << endl;
+  if ((info->
+  sampleRates[i] > 0) && (info->sampleRates[i] < 200000))
+  cout << info->sampleRates[i] << endl;
   cout << endl;
-}
+  }
 */
 
 void
