@@ -33,6 +33,8 @@ private:
   NetworkInfoT netInfo;
   AudioInfoT audInfo;
 
+  QHostAddress peerAddress;
+
 public:
   UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo);
   virtual ~UDPOutput();
@@ -44,6 +46,7 @@ public:
   int bpp;
   int wholeSize;
   void plotVal (double v);
+  int setPeerAddress (QHostAddress remote);
 };
 
 

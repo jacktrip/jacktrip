@@ -29,10 +29,13 @@ int xx_nChans_xx;
 int xx_nFrames_xx;
 static AudioDevice *extern_ptr_to_audioDevice;
 
+/*
 static void
 error ()
 {
 };
+*/
+
 static void
 error (const char *desc)
 {
@@ -40,12 +43,12 @@ error (const char *desc)
 }
 
 static void
-jack_shutdown (void *arg)
+jack_shutdown (void*)// *arg)
 {
 	exit (1);
 }
 
-static int srate_callback (jack_nframes_t nframes, void *arg)
+static int srate_callback (jack_nframes_t nframes, void*) //arg)
 {
 	printf ("the sample rate is now %d/sec\n", (int) nframes);
 	cout << "bogus -- fixme --  nothing has been changed" << endl;
@@ -53,7 +56,7 @@ static int srate_callback (jack_nframes_t nframes, void *arg)
 }
 
 static int
-xx_global_process_xx (unsigned int nframes, void *argc)
+xx_global_process_xx (unsigned int nframes, void*) //argc)
 {
 
 	if ((int) nframes != xx_nFrames_xx)
@@ -120,7 +123,8 @@ xx_global_process_xx (unsigned int nframes, void *argc)
 	return 0;
 }
 
-JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool input, AudioDevice * ad, int aro)//:Stk () //Romved STK Dependency
+//JackClient::JackClient (QString name, int nChans, int nFrames, bool output, bool input, AudioDevice * ad, int aro)//:Stk () //Romved STK Dependency
+JackClient::JackClient (int nChans, int nFrames, bool output, bool input, AudioDevice * ad, int aro)
 {
     alsa_readable_offset = aro;
 	audioDevice = ad;

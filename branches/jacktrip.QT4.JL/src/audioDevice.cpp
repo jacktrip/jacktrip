@@ -39,7 +39,7 @@ AudioDevice::AudioDevice (int ID, int numBuffers, audioDeviceModeT mode,
   mode (mode)
 {
   streamID = 0;
-  int tmpBufferSize = audioInfo->getFramesPerBuffer ();
+  //int tmpBufferSize = audioInfo->getFramesPerBuffer ();
   jack = audioInfo->isJack ();
   if (audioInfo->getNumNetHarpStrings () > 0)
     {
@@ -63,7 +63,7 @@ AudioDevice::AudioDevice (int ID, int numBuffers, audioDeviceModeT mode,
 	case RECORD:
 	  if (jack)
 	    jdevice =
-	      new JackClient ("jacktrip",//APP_NAME, //*JPC Hack, need to fix later
+	      new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
 			      audioInfo->
 			      getNumChans (),
 			      audioInfo->
@@ -89,7 +89,7 @@ AudioDevice::AudioDevice (int ID, int numBuffers, audioDeviceModeT mode,
 	case PLAYBACK:
 	  if (jack)
 	    jdevice =
-	      new JackClient ("jacktrip",//APP_NAME, //*JPC Hack, need to fix later
+	      new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
 			      audioInfo->
 			      getNumChans (),
 			      audioInfo->
@@ -112,7 +112,7 @@ AudioDevice::AudioDevice (int ID, int numBuffers, audioDeviceModeT mode,
 	case DUPLEX:
 	  if (jack)
 	    jdevice =
-	      new JackClient ("jacktrip",//APP_NAME, //*JPC Hack, need to fix later
+	      new JackClient (//"jacktrip",//APP_NAME, //*JPC Hack, need to fix later
 			      audioInfo->
 			      getNumChans (),
 			      audioInfo->
@@ -245,12 +245,14 @@ AudioDevice::jtick () // called by jack process after transfer completed
   //      cout << "jtick" << endl;
 }
 
+/*
 void
 AudioDevice::bufferPtrs (void *jib, void *job)
 {
   //	jibuffer = jib;
   //	jobuffer = job;
 }
+*/
 
 void
 AudioDevice::unlockRead ()

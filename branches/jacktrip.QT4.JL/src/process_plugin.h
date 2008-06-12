@@ -10,7 +10,7 @@
 class ProcessPlugin : public Plugin
 {
 	public:
-		ProcessPlugin(char *name)  { this->setName(name); }
+		ProcessPlugin(const char *name)  { this->setName(name); }
 		ProcessPlugin()  { this->setName("no name process :("); }
 			
 		virtual int process(char *buf) = 0;

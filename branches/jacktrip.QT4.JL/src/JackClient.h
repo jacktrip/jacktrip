@@ -18,7 +18,9 @@ class AudioDevice;
 class JackClient//:public Stk
 {
       public:
-	JackClient (QString name, int nChans, int nFrames, bool output, 
+  //JackClient (QString name, int nChans, int nFrames, bool output, 
+  //  bool input, AudioDevice * ad, int aro = 0);
+	JackClient (int nChans, int nFrames, bool output, 
 	  bool input, AudioDevice * ad, int aro = 0);
 	 ~JackClient ();
 	void go ();

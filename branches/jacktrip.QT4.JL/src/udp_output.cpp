@@ -16,32 +16,6 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
   audInfo (audInfo)
 {
   bpp = netInfo->getDataBytesPerPacket ();
-  char localhostbuf[100];
-  //sock = new Q3SocketDevice (Q3SocketDevice::Datagram);//***JPC Port to qt4*****************
-  //sock->setAddressReusable(true);//***JPC Port to qt4*****************
-  sock = new QUdpSocket;
-
-  if (gethostname (localhostbuf, 99))
-    {
-      perror ("gethostname");
-      exit ();
-    }
-	
-  QHostAddress *ha = new QHostAddress ();
-  QString *s = IPv4Addr (localhostbuf);
-  ha->setAddress (*s);
-  //cout << "AAAAAAAAA" << (*ha).toString ().latin1() << endl;
-  //if (!(sock->bind (*ha, netInfo->getOutPort ())))//***JPC Port to qt4*****************
-  if (!(sock->bind (*ha, netInfo->getOutPort (), QUdpSocket::ShareAddress ) ) )//***JPC Port to qt4*****************
-    {
-      perror ("bind\n");
-      exit ();
-    }
-  if (!sock->isValid ())
-    {
-      cout << "socket creation error: " << "e->getErrorString()" <<
-	endl;
-    }
 
   packetIndex = 0;
   //wholeSize = sizeof (nsHeader) + (netInfo->getChunksPerPacket () * bpp) + 1;//JPC JLink***********************************
@@ -58,8 +32,7 @@ UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
   numBuffers = netInfo->getChunksPerPacket();
   maxPacketIndex = netInfo->getMaxSeq();
 
-  cout << "UDPOuput binding to " << localhostbuf
-       << " port " << netInfo->getOutPort () << endl;
+ 
 
 }
 
@@ -93,6 +66,20 @@ UDPOutput::connect (QHostAddress remote)
 
   return 0;
 }
+
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Set the peer address to which the socket will connect
+ *  This function has to be called before starting the Thread
+ */
+//---------------------------------------------------------------------------------------------
+int
+UDPOutput::setPeerAddress (QHostAddress remote)
+{
+  peerAddress = remote;
+  return 0;
+}
+
 
 int
 UDPOutput::send (char *buf)
@@ -181,9 +168,48 @@ UDPOutput::send (char *buf)
   return rv;
 }
 
+
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Run the UDPOutput Thread
+ *  
+ */
+//---------------------------------------------------------------------------------------------
 void
 UDPOutput::run ()
 {
+  char localhostbuf[100];
+  //sock = new Q3SocketDevice (Q3SocketDevice::Datagram);//***JPC Port to qt4*****************
+  //sock->setAddressReusable(true);//***JPC Port to qt4*****************
+  sock = new QUdpSocket;
+
+  if (gethostname (localhostbuf, 99))
+    {
+      perror ("gethostname");
+      exit ();
+    }
+	
+  QHostAddress *ha = new QHostAddress ();
+  QString *s = IPv4Addr (localhostbuf);
+  ha->setAddress (*s);
+  //cout << "AAAAAAAAA" << (*ha).toString ().latin1() << endl;
+  //if (!(sock->bind (*ha, netInfo->getOutPort ())))//***JPC Port to qt4*****************
+  if (!(sock->bind (*ha, netInfo->getOutPort (), QUdpSocket::DefaultForPlatform ) ) )//***JPC Port to qt4*****************
+    {
+      perror ("bind\n");
+      exit ();
+    }
+  if (!sock->isValid ())
+    {
+      cout << "socket creation error: " << "e->getErrorString()" <<
+	endl;
+    }
+  cout << "UDPOuput binding to " << localhostbuf
+       << " port " << netInfo->getOutPort () << endl;
+
+
+  this->connect (peerAddress);
+
   _running = true;
   int res = 1;
   char *buf = (char *) new char[bpp];
