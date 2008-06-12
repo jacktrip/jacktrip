@@ -1,20 +1,36 @@
-//
-// File: StreamBD.h
-// Created by: User <Email>
-// Created on: Tue Apr 13 22:19:53 2004
-//
-/**********************************************************************
- * was file: streambd.cpp
- **********************************************************************
- * A project of the SoundWIRE research group at CCRMA
- * http://www-ccrma.stanford.edu/groups/soundwire/
- * --------------------------------------------------------------------
- * Coded by Daniel Walling (dwalling@ccrma.stanford.edu)
- * Based on Scott Wilson's streambd code (rswilson@ccrma.stanford.edu)
- * --------------------------------------------------------------------
- */
+/*
+  JackTrip: A Multimachine System for High-Quality Audio 
+  Network Performance over the Internet
 
-/* I/O Streams
+  Copyright (c) 2008 Chris Chafe, Juan-Pablo Caceres,
+  SoundWIRE group at CCRMA.
+  
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use,
+  copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following
+  conditions:
+  
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+ * StreamBD.h
+ *
+ * I/O Streams
  * -----------
  * - audioin and audioout are audio in and out.
  * - netin and netout are UDP network in and out.
@@ -24,7 +40,6 @@
  * buffer the connection (DEFAULT_OUTPUT_STREAM_QUEUE_LENGTH is the fewest output buffers that can 
  * be used reliably.
  */
-
 
 #include "audio_input.h"
 #include "audio_output.h"
@@ -38,10 +53,6 @@
 #include <iostream>
 #include "audioInfo.h"
 #include "networkInfo.h"
-// Remove STK dependency
-//#include <stk/Delay.h>
-//#include <stk/OneZero.h>
-//#include "stk_process.h"
 #include <qhostaddress.h>
 #include <qstring.h>
 #include <time.h>
@@ -88,43 +99,43 @@ class AudioOutput;
 
 struct streamThreads
 {
-	AudioInput *audioin;
-	AudioOutput *audioout;
-	UDPInput *netin;
-	UDPOutput *netout;
-	Stream *streamin;
-	Stream *streamout;
+  AudioInput *audioin;
+  AudioOutput *audioout;
+  UDPInput *netin;
+  UDPOutput *netout;
+  Stream *streamin;
+  Stream *streamout;
 };
 
 enum runModeT
-{ TRANSMIT, RECEIVE, NETMIRROR, SNDMIRROR, HARPT, HARPR, AUDIOINFO };
+  { TRANSMIT, RECEIVE, NETMIRROR, SNDMIRROR, HARPT, HARPR, AUDIOINFO };
 
 typedef struct cmdLineArgs
 {
-	int sampleRate;		/*! Audio sample rate.                                   */
-	int netHarpStrings;	/*! Number of audio channels being sent over the network 
-				 * connection.  In harp mode, any number of independent
-				 * network channels (harp strings) can be run and mixed
-				 * down to the number of audioChannels for monitoring.       */
-	int audioChannels;	/*! Number of audio channels to output on audioout.       */
-	int networkInputQueueLengthInPackets;	/*! Number of buffers of length rtBufferSize to buffer 
-							 * the incoming network connection with.                 */
-	int framesPerAudioBuffer;	/*! Size of buffers to be fed to the audioDevice output
-					 * device (in samples).                                  */
-	int audioInputQueueLengthInAudioBuffers;	/*! Number of buffers of size framesPerAudioBuffer with which the
-							 * audio output is buffered.                             */
-	char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode. */
-	int networkPortOffset;	/*! Network port offset.                                  */
-	int audioDeviceID;	/*! Will use default audio device if not specified.       */
-	int runFifo;		/*! Run streambd with fifo priority (reduces delay).      */
-	runModeT runMode;	/*! Run mode as defined above.                            */
-	int secondsBetweenPlucks;	/*! Number of seconds (integer) to wait between plucks.   */
-	float lowPassFilterCoeff;	/*! Specifies low-pass filter coefficient.                */
-	int delayIncrementBetweenStrings;	/*! Pitch increment between strings (cumulative).         */
-	bool jack;		/*! Use jack audio subsystem, v.1, otherwise RtAudio.         */
-	bool gui;		/*! GUI.         */
-	int redundancy;		/*! copies of a buffer in stream         */
-	int jack_alsa_readable_offset; /*! bump up which is lowest alsa input channel  */
+  int sampleRate;		/*! Audio sample rate.                                   */
+  int netHarpStrings;	/*! Number of audio channels being sent over the network 
+			 * connection.  In harp mode, any number of independent
+			 * network channels (harp strings) can be run and mixed
+			 * down to the number of audioChannels for monitoring.       */
+  int audioChannels;	/*! Number of audio channels to output on audioout.       */
+  int networkInputQueueLengthInPackets;	/*! Number of buffers of length rtBufferSize to buffer 
+					 * the incoming network connection with.                 */
+  int framesPerAudioBuffer;	/*! Size of buffers to be fed to the audioDevice output
+				 * device (in samples).                                  */
+  int audioInputQueueLengthInAudioBuffers;	/*! Number of buffers of size framesPerAudioBuffer with which the
+						 * audio output is buffered.                             */
+  char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode. */
+  int networkPortOffset;	/*! Network port offset.                                  */
+  int audioDeviceID;	/*! Will use default audio device if not specified.       */
+  int runFifo;		/*! Run streambd with fifo priority (reduces delay).      */
+  runModeT runMode;	/*! Run mode as defined above.                            */
+  int secondsBetweenPlucks;	/*! Number of seconds (integer) to wait between plucks.   */
+  float lowPassFilterCoeff;	/*! Specifies low-pass filter coefficient.                */
+  int delayIncrementBetweenStrings;	/*! Pitch increment between strings (cumulative).         */
+  bool jack;		/*! Use jack audio subsystem, v.1, otherwise RtAudio.         */
+  bool gui;		/*! GUI.         */
+  int redundancy;		/*! copies of a buffer in stream         */
+  int jack_alsa_readable_offset; /*! bump up which is lowest alsa input channel  */
 } *cmdLineArgsT;
 
 class AudioDevice;
@@ -134,39 +145,39 @@ class StreamBD:public QObject
 {
   //Q_OBJECT public://***JPC COMENTED OUT
 public:
-		StreamBD();
-		 ~StreamBD();
-	int cmd (MainDialog *eventThread);
-	void start();
-	void finish();
-	void PrintUsage ();
-	struct streamThreads t;
+  StreamBD();
+  ~StreamBD();
+  int cmd (MainDialog *eventThread);
+  void start();
+  void finish();
+  void PrintUsage ();
+  struct streamThreads t;
 
-int ParseCommandLine (int argc, char *argv[]);
+  int ParseCommandLine (int argc, char *argv[]);
 
-QString *GetLocalHostName ();
+  QString *GetLocalHostName ();
 
-void EstablishConnection (runModeT runMode, char *hostname,
-				 UDPOutput * netout, UDPInput * netin);
+  void EstablishConnection (runModeT runMode, char *hostname,
+			    UDPOutput * netout, UDPInput * netin);
 
-// int get_fifo_priority (void);
+  // int get_fifo_priority (void);
 
-// int set_fifo_priority (void);
+  // int set_fifo_priority (void);
 
-void ConnectPlugins (InputPlugin * from, OutputPlugin * to,
-			    Stream * through);
+  void ConnectPlugins (InputPlugin * from, OutputPlugin * to,
+		       Stream * through);
 
-void addPlugin (InputPlugin * from, Stream * str);
+  void addPlugin (InputPlugin * from, Stream * str);
 
-void addPlugin (OutputPlugin * to, Stream * str);
+  void addPlugin (OutputPlugin * to, Stream * str);
 
   //void addSTKProcesses (Stream * str); //Remove STK dependency
   cmdLineArgs *args;
-	AudioDevice *audioDevice;
-	public slots:
-	void go ();
-	void stop ();
-	void join ();
+  AudioDevice *audioDevice;
+		    public slots:
+		    void go ();
+  void stop ();
+  void join ();
 
 };
 
