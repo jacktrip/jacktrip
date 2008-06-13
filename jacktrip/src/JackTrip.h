@@ -62,8 +62,8 @@
 /* Define the audio sample type */
 typedef signed short INT16;
 
-#ifndef _STREAMBD_H_
-#define _STREAMBD_H_
+#ifndef __JACKTRIP_H_
+#define __JACKTRIP_H_
 
 /** @brief Default settings used if not specified at the command line.
  *
@@ -182,4 +182,4 @@ public:
 };
 
 
-#endif	//_STREAMBD_H_
+#endif
