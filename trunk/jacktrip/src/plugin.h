@@ -36,7 +36,7 @@
 #ifndef _PLUGIN_H
 #define _PLUGIN_H
 
-//#include <qthread.h>
+//#include <QThread>
 #include <QThread>
 // for plotting
 #include <sys/time.h>

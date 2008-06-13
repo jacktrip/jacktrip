@@ -39,7 +39,7 @@
 #include <cmath>
 #include "audioInfo.h"
 #include "JackClient.h"
-#include "qthread.h"
+#include <QThread>
 #include "JackTrip.h"
 #include <QWaitCondition>
 #include <QSemaphore>

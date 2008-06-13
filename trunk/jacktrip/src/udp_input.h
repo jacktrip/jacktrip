@@ -39,7 +39,7 @@
 #include "networkInfo.h"
 #include "audioInfo.h"
 #include <QUdpSocket>
-#include <qobject.h>
+#include <QObject>
 
 /**
  * @brief Sends buffers received from a UDP input stream into

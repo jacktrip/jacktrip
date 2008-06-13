@@ -40,7 +40,7 @@
 #include "process_plugin.h"
 #include "audioInfo.h"
 #include "networkInfo.h"
-#include "qthread.h"
+#include <QThread>
 //#include "q3ptrvector.h"
 #include <QVector>
 
