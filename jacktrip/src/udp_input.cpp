@@ -218,13 +218,13 @@ UDPInput::run ()
   cout << "Started UDP Input Run" << endl;
   set_fifo_priority (false);
   bool timeout;
-  int ret;
-  unsigned long now = 0;
-  unsigned long lastTickTime = usecTime ();
-  int ctr = 0;
-  double max = 0.0;	
+  //int ret;
+  //unsigned long now = 0;
+  //unsigned long lastTickTime = usecTime ();
+  //int ctr = 0;
+  //double max = 0.0;	
   int gap;
-  double gapAvg = 0.0;
+  //double gapAvg = 0.0;
   while (_running)
     {
       // If timeout is non-null and no error occurred 
