@@ -30,7 +30,7 @@ qmake-qt4 -makefile -unix -o Makefile \
 "QT += network qt3support" \
 "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
 "QMAKE_CLEAN+=$APP_NAME" \
-"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lasound -ljack" \
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack" \
 "unix:TARGET=$APP_NAME" \
 "unix:target.path=/usr/bin" \
 "unix:INSTALLS+=target" $APP_NAME.pro

@@ -1,0 +1,32 @@
+Jacktrip : Build Instructions for Fedora Linux (and possible other Linux Distros)
+
+---
+Dependencies:
+
+You need to have installed the libraries in your system:
+qt4-devel
+jack-audio-connection-kit-devel
+
+If you are using yum (in Fedora 7 or later) you can just install them (as root) with:
+   yum install qt4-devel jack-audio-connection-kit-devel
+
+
+---
+Build:
+
+to build on Linux, just go to the /src directory and type the following two commands:
+
+   ./m
+   make
+
+
+---
+Post Configuration
+Detailed instructions at 
+http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/
+
+
+---
+Using JackTrip
+Detailed instructions at 
+http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/
