@@ -78,7 +78,7 @@ main (int argc, char **argv)
 {
   //create application object
   QApplication a (argc, argv);
-  StreamBD s;
+  JackTrip s;
   // Parse the command line.  If the arguments are invalid,
   // usage instructions will be printed.  Streambd will exit.
   if (s.ParseCommandLine (argc, argv) == 0)

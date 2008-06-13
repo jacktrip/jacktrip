@@ -37,7 +37,7 @@
 #include "qthread.h"
 #include <qstring.h>
 #include "qtimer.h"
-#include "StreamBD.h"
+#include "JackTrip.h"
 	
 class MainDialog//:public MainWindow
 {
@@ -46,7 +46,7 @@ public:
   //	  MainDialog (QWidget * parent = 0, const char *name = 0);
   MainDialog ();
   virtual ~ MainDialog ();
-  void init(StreamBD *s);
+  void init(JackTrip *s);
   //StripChart *plot;
   //virtual void closeEvent (QCloseEvent * e);//********JPC Coment out*************************************
   //void customEvent (QCustomEvent * e);//********JPC Coment out*************************************

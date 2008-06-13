@@ -28,7 +28,7 @@
 */
 
 /*
- * StreamBD.h
+ * JackTrip.h
  *
  * I/O Streams
  * -----------
@@ -141,12 +141,12 @@ typedef struct cmdLineArgs
 class AudioDevice;
 class MainDialog;
 
-class StreamBD:public QObject
+class JackTrip:public QObject
 {
   //Q_OBJECT public://***JPC COMENTED OUT
 public:
-  StreamBD();
-  ~StreamBD();
+  JackTrip();
+  ~JackTrip();
   int cmd (MainDialog *eventThread);
   void start();
   void finish();
