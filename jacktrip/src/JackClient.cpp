@@ -36,7 +36,7 @@
 #include "string.h"
 #include "audioDevice.h"
 //#include "qstring.h"
-#include <QString>
+#include <qstring.h>
 //#include <q3textstream.h>
 #include <QTextStream>
 

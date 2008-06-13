@@ -38,7 +38,7 @@
 // turns on <> printing
 
 #include <qhostaddress.h>
-#include <time.h>
+#include <ctime>
 #include <netinet/in.h>
 
 /**

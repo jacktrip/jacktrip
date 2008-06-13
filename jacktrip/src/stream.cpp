@@ -33,9 +33,9 @@
 
 #include "stream.h"
 #include <iostream>
-#include <assert.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cassert>
+#include <cstdlib>
+#include <ctime>
 
 //#define APPEND(x,y) x.resize(x.count()+1); x.insert (x.count(), y)
 #define APPEND(x,y) x.resize( (x.size()-x.count(0)) + 1); x.insert ( (x.size()-x.count(0)), y)//QT4 port

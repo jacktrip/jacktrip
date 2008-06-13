@@ -35,8 +35,8 @@
 #include "networkInfo.h"
 #include "stream.h"
 #include "unistd.h"
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include <QHostInfo>//***JPC Port to qt4*****************
 extern QString *IPv4Addr (char *namebuf);

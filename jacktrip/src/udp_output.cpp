@@ -34,8 +34,8 @@
 #include "udp_output.h"
 #include "stream.h"
 #include "unistd.h"
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <iostream>
 
 using namespace std;
