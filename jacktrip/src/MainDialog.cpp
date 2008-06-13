@@ -32,13 +32,13 @@
  */
 
 #include "MainDialog.h"
-#include "qapplication.h"
-#include "qslider.h"
-#include "qcombobox.h"
-#include "qradiobutton.h"
+//#include "qapplication.h"
+//#include "qslider.h"
+//#include "qcombobox.h"
+//#include "qradiobutton.h"
 //#include "ThreadCommEvent.h"
-#include <qlabel.h>
-#include <qlayout.h>
+//#include <qlabel.h>
+//#include <qlayout.h>
 
 
 //MainDialog::MainDialog (QWidget * parent, const char *name)//:

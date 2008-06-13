@@ -53,10 +53,10 @@
 #include <iostream>
 #include "audioInfo.h"
 #include "networkInfo.h"
-#include <qhostaddress.h>
-#include <qstring.h>
+#include <QHostAddress>
+#include <QString>
 #include <ctime>
-#include "qobject.h"
+#include <QObject>
 
 
 /* Define the audio sample type */

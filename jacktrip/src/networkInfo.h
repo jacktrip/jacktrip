@@ -37,7 +37,7 @@
 #define netInfoDebug FALSE
 // turns on <> printing
 
-#include <qhostaddress.h>
+#include <QHostAddress>
 #include <ctime>
 #include <netinet/in.h>
 
