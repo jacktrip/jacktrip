@@ -38,8 +38,7 @@
 #include "udp.h"
 #include "networkInfo.h"
 #include "audioInfo.h"
-//#include <q3socketdevice.h> //***JPC Port to qt4*****************
-#include <QUdpSocket> //***JPC Port to qt4*****************
+#include <QUdpSocket>
 #include <qobject.h>
 
 /**
@@ -81,7 +80,7 @@ public:
   int bpp;
   int wholeSize;
   int numRedundantBuffers;
-  void plotVal (double v);
+  //void plotVal (double v);
 };
 
 

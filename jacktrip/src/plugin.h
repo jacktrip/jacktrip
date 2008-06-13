@@ -36,11 +36,13 @@
 #ifndef _PLUGIN_H
 #define _PLUGIN_H
 
-#include <qthread.h>
+//#include <qthread.h>
+#include <QThread>
 // for plotting
 #include <sys/time.h>
-#include "qapplication.h"
-#include "ThreadCommEvent.h"
+//#include "qapplication.h"
+#include <QApplication>
+//#include "ThreadCommEvent.h"
 
 
 class Plugin:public QThread
@@ -59,7 +61,7 @@ public:
   };
   QObject * _rcvr;
   void setGUI(QObject * rcvr){_rcvr = rcvr;};
-  virtual void plotVal (double v) = 0;
+  //virtual void plotVal (double v) = 0;
  
   char *getName ()
   {

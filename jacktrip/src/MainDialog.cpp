@@ -36,7 +36,7 @@
 #include "qslider.h"
 #include "qcombobox.h"
 #include "qradiobutton.h"
-#include "ThreadCommEvent.h"
+//#include "ThreadCommEvent.h"
 #include <qlabel.h>
 #include <qlayout.h>
 
@@ -68,35 +68,35 @@ MainDialog::init(StreamBD *s)
   //*********************************************
   //Coment out to remove dependency of widget
   QString tmp;
-  QTextOStream (&tmp) << "sampleRate " << s->args->sampleRate;
+  QTextStream (&tmp) << "sampleRate " << s->args->sampleRate;
   //sampleRateTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "netHarpStrings " << s->args->netHarpStrings;
+  QTextStream (&tmp) << "netHarpStrings " << s->args->netHarpStrings;
   //netHarpStringsTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "audioChannels " << s->args->audioChannels;
+  QTextStream (&tmp) << "audioChannels " << s->args->audioChannels;
   //audioChannelsTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "runFifo " << s->args->runFifo;
+  QTextStream (&tmp) << "runFifo " << s->args->runFifo;
   //runFifoTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "audioDeviceID " << s->args->audioDeviceID;
+  QTextStream (&tmp) << "audioDeviceID " << s->args->audioDeviceID;
   //audioDeviceIDTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "netInQInPackets " << s->args->networkInputQueueLengthInPackets;
+  QTextStream (&tmp) << "netInQInPackets " << s->args->networkInputQueueLengthInPackets;
   //netInQInPacketsTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "redundancy " << s->args->redundancy;
+  QTextStream (&tmp) << "redundancy " << s->args->redundancy;
   //redundancyTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "audioInQInAudioBufs " << s->args->audioInputQueueLengthInAudioBuffers;
+  QTextStream (&tmp) << "audioInQInAudioBufs " << s->args->audioInputQueueLengthInAudioBuffers;
   //audioInQInAudioBufsTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "framesPerAudioBuffer " << s->args->framesPerAudioBuffer;
+  QTextStream (&tmp) << "framesPerAudioBuffer " << s->args->framesPerAudioBuffer;
   //framesPerAudioBufferTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "networkPortOffset " << s->args->networkPortOffset;
+  QTextStream (&tmp) << "networkPortOffset " << s->args->networkPortOffset;
   //networkPortOffsetTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "runMode " << s->args->runMode;
+  QTextStream (&tmp) << "runMode " << s->args->runMode;
   //runModeTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "secondsBetweenPlucks " << s->args->secondsBetweenPlucks;
+  QTextStream (&tmp) << "secondsBetweenPlucks " << s->args->secondsBetweenPlucks;
   //secondsBetweenPlucksTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "lowPassFilterCoeff " << s->args->lowPassFilterCoeff;
+  QTextStream (&tmp) << "lowPassFilterCoeff " << s->args->lowPassFilterCoeff;
   //lowPassFilterCoeffTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "delayIncBtwnStrings " << s->args->delayIncrementBetweenStrings;
+  QTextStream (&tmp) << "delayIncBtwnStrings " << s->args->delayIncrementBetweenStrings;
   //delayIncBtwnStringsTextLabel->setText (tmp); tmp = "";
-  QTextOStream (&tmp) << "jack " << s->args->jack;
+  QTextStream (&tmp) << "jack " << s->args->jack;
   //jackTextLabel->setText (tmp);
   //*********************************************
 

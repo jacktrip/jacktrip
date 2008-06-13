@@ -619,7 +619,7 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
       /////FOLOW THIS TO FIND THE PROBLEM
       //**************JPC COMENTED OUT*******************
       cout << endl << "Connection received from: " <<
-	netin->peer().toString().latin1() << endl;
+	netin->peer().toString().toStdString() << endl;
       //*************************************************
       cout << "Requesting return connection....";
       //netout->connect (netin->peer ());

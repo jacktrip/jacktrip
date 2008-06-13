@@ -106,7 +106,7 @@ UDPOutput::connect (QHostAddress remote)
   // set peerAddress   
   sock->connectToHost (remote, netInfo->getInPort ());
 
-  cout << "Connecting to " << remote.toString().latin1() << ":" << netInfo->
+  cout << "Connecting to " << remote.toString().toStdString() << ":" << netInfo->
     getInPort () << endl;
 
 
@@ -213,7 +213,7 @@ UDPOutput::run ()
 	{
 	  perror ("Send");
 	  cout << "error sending to " << sock->peerAddress ().
-	    toString ().latin1() << endl;
+	    toString ().toStdString() << endl;
 	  return;
 	}
     }
@@ -237,6 +237,7 @@ UDPOutput::stop ()
 /*! \brief
  */
 //---------------------------------------------------------------------------------------------
+/*
 void UDPOutput::plotVal (double v)
 {
   if(_rcvr!=NULL)
@@ -245,3 +246,4 @@ void UDPOutput::plotVal (double v)
       QApplication::postEvent (_rcvr, e);	// to app event loop
     }
 }
+*/

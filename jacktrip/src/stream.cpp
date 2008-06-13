@@ -37,7 +37,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define APPEND(x,y) x.resize(x.count()+1); x.insert (x.count(), y)
+//#define APPEND(x,y) x.resize(x.count()+1); x.insert (x.count(), y)
+#define APPEND(x,y) x.resize( (x.size()-x.count(0)) + 1); x.insert ( (x.size()-x.count(0)), y)//QT4 port
 #define debugMe FALSE
 
 using namespace std;
@@ -91,7 +92,8 @@ Stream::addInput (InputPlugin * newin)
   newin->setWriteKey (ins.count ());
   APPEND (ins, newin);
 
-  if (ins.count () > bufs.count ())
+  //if (ins.count () > bufs.count ())
+  if ( (ins.size() - ins.count(0)) > (bufs.count() - bufs.count(0)))//QT4 port
     {
       addCircularBuffer ();
     }
@@ -102,7 +104,8 @@ void
 Stream::addOutput (OutputPlugin * newout)
 {
   QSemaphore *tmp;
-  if (outs.count () == 1)
+  //if (outs.count () == 1)
+  if ( (outs.size() - outs.count(0)) == 1 ) //QT4 port
     {			// We are going to need output synchronization locking.
       // add a lock for the first output (didn't need it when it was the only one.)
       tmp = new QSemaphore (10);
@@ -111,10 +114,12 @@ Stream::addOutput (OutputPlugin * newout)
       APPEND (locks, tmp);
     }
 
-  newout->setReadKey (outs.count ());
+  //newout->setReadKey (outs.count ());
+  newout->setReadKey ( (outs.size() - outs.count(0)) );//QT4 port
   APPEND (outs, newout);
 
-  if (outs.count () > bufs.count ())
+  //if (outs.count () > bufs.count ())
+  if ( (outs.size() - outs.count(0)) > (bufs.count() - bufs.count(0)) )
     {
       addCircularBuffer ();
     }
@@ -329,11 +334,17 @@ void
 Stream::startThreads ()
 {
   // cache vector lengths for next run
-  insCount = (int) ins.count ();
-  procsCount = (int) procs.count ();
-  outsCount = (int) outs.count ();
-  locksCount = (int) locks.count ();
-  bufsCount = (int) bufs.count ();
+  //insCount = (int) ins.count ();
+  insCount = (int) (ins.size() - ins.count(0));//QT4 port
+  //procsCount = (int) procs.count ();
+  procsCount = (int) (procs.size() - procs.count(0));//QT4 port
+  //outsCount = (int) outs.count ();
+  outsCount = (int) (outs.size() - outs.count(0));//QT4 port
+  //locksCount = (int) locks.count ();
+  locksCount = (int) (locks.size() - locks.count(0));//QT4 port
+  //bufsCount = (int) bufs.count ();
+  bufsCount = (int) (locks.size() - locks.count(0));//QT4 port
+
   processesPerChan = procsCount / audioInfo->getNumChans ();
 
   for (int i = 0; i < insCount; i++)
@@ -341,10 +352,12 @@ Stream::startThreads ()
       InputPlugin *ip = (InputPlugin *) ins[i];
       cout << "++++++++++++++++++++++" << endl;
       if(!ip->dontRun) {
-	if (!ip->running ())
+	//if (!ip->running ())
+	if (!ip->isRunning())//QT4port-----------
 	  ip->start ();
 	// with runMode == NETMIRROR ip needs to start earlier
-	if (!ip->running ())
+	//if (!ip->running ())
+	if (!ip->isRunning())//QT4port-----------
 	  {
 	    cerr << "failed to start input plugin " << ip->
 	      getName () << endl;
@@ -359,7 +372,8 @@ Stream::startThreads ()
       OutputPlugin *op = (OutputPlugin *) outs[i];
       if(!op->dontRun) {
 	op->start ();
-	if (!op->running ())
+	//if (!op->running ())
+	if (!op->isRunning())//QT4port-----------
 	  {
 	    cerr << "failed to start output plugin " << op->
 	      getName () << endl;
@@ -376,12 +390,14 @@ Stream::stopThreads ()
   for (int i = 0; i < insCount; i++)
     {
       InputPlugin *ip = ins[i];
-      if (ip->running ())
+      //if (ip->running ())
+      if (ip->isRunning())//QT4port-----------
 	{
 	  ip->stop ();
 	  ip->wait ();
 	  delete ip;
-	  ins.remove (i);
+	  //ins.remove (i);
+	  ins[i] = 0; //QT4 port
 	}
     }
   for (int i = 0; i < procsCount; i++)
@@ -389,21 +405,24 @@ Stream::stopThreads ()
       ProcessPlugin *pp = procs[i];
       {
 	delete pp;
-	procs.remove (i);
+	//procs.remove (i);
+	procs[i] = 0; //QT4 port
       }
     }
 
   for (int i = 0; i < outsCount; i++)
     {
       OutputPlugin *op = outs[i];
-      if (op->running ())
+      //if (op->running ())
+      if (op->isRunning())//QT4port-----------
 	{
 	  cerr << i << " of " << outsCount << " STOP... " <<
 	    endl;
 	  op->stop ();
 	  op->wait ();
 	  delete op;
-	  outs.remove (i);
+	  //outs.remove (i);
+	  outs[i] = 0; //QT4 port
 	  cerr << "    ... D, R  " << op->getName () << endl;
 	}
     }

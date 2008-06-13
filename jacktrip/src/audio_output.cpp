@@ -109,6 +109,7 @@ AudioOutput::stop ()
   _running = false;
 }
 
+/*
 void AudioOutput::plotVal (double v)
 {
   if(_rcvr!=NULL)
@@ -119,3 +120,4 @@ void AudioOutput::plotVal (double v)
       QApplication::postEvent (_rcvr, e);	// to app event loop
     }
 }
+*/
