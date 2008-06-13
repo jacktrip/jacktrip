@@ -28,10 +28,10 @@
 */
 
 /*
- * StreamBD.cpp
+ * JackTrip.cpp
  */
 
-//#include "StreamBD.h"
+//#include "JackTrip.h"
 #include "audioDevice.h"
 
 using namespace std;
@@ -94,20 +94,20 @@ set_fifo_priority (bool half)
 }
 
 
-StreamBD::StreamBD()
+JackTrip::JackTrip()
 {
   args = new cmdLineArgs;
 
 }
 
 
-StreamBD::~StreamBD()
+JackTrip::~JackTrip()
 {
   // TODO: put destructor code here
 }
 
 int
-StreamBD::cmd (MainDialog *eventThread)
+JackTrip::cmd (MainDialog *eventThread)
 {
   // Get the local host address
   QString *localhostName = GetLocalHostName ();
@@ -284,12 +284,12 @@ StreamBD::cmd (MainDialog *eventThread)
 
 
 void
-StreamBD::start ()
+JackTrip::start ()
 {
 }
 
 void
-StreamBD::finish ()
+JackTrip::finish ()
 {
   cout << "Finishing" << endl;
   if (args->jack)
@@ -303,14 +303,14 @@ StreamBD::finish ()
 }
 
 void
-StreamBD::go ()
+JackTrip::go ()
 /* cause run loop to start */
 {
   start ();
 }
 
 void
-StreamBD::stop ()
+JackTrip::stop ()
 /* cause run loop to finish */
 {
   //	loop = false; not a thread
@@ -318,7 +318,7 @@ StreamBD::stop ()
 }
 
 void
-StreamBD::join ()
+JackTrip::join ()
 /* wait for thread to exit */
 {
   //	wait (); not a thread
@@ -331,7 +331,7 @@ StreamBD::join ()
  * Print all of the command line arguments and their default values
  */
 void
-StreamBD::PrintUsage ()
+JackTrip::PrintUsage ()
 {
   cout << "===========================================================================" << endl;
   cout << "   jacktrip	A project of the SoundWIRE group at CCRMA, Stanford." << endl;
@@ -380,7 +380,7 @@ StreamBD::PrintUsage ()
  * unless explicitly assigned values on the commandline.
  */
 int
-StreamBD::ParseCommandLine (int argc, char *argv[])
+JackTrip::ParseCommandLine (int argc, char *argv[])
 {
 
   // Set Default Values
@@ -525,7 +525,7 @@ StreamBD::ParseCommandLine (int argc, char *argv[])
 }
 
 void
-StreamBD::ConnectPlugins (InputPlugin * from, OutputPlugin * to, Stream * through)
+JackTrip::ConnectPlugins (InputPlugin * from, OutputPlugin * to, Stream * through)
 {
   from->setStream (through);
   to->setStream (through);
@@ -535,14 +535,14 @@ StreamBD::ConnectPlugins (InputPlugin * from, OutputPlugin * to, Stream * throug
 }
 
 void
-StreamBD::addPlugin (InputPlugin * from, Stream * str)
+JackTrip::addPlugin (InputPlugin * from, Stream * str)
 {
   from->setStream (str);
   str->addInput (from);
 }
 
 void
-StreamBD::addPlugin (OutputPlugin * to, Stream * str)
+JackTrip::addPlugin (OutputPlugin * to, Stream * str)
 {
   to->setStream (str);
   str->addOutput (to);
@@ -552,7 +552,7 @@ StreamBD::addPlugin (OutputPlugin * to, Stream * str)
 //Remove STK Depdency
 /*
   void
-  StreamBD::addSTKProcesses (Stream * str)
+  JackTrip::addSTKProcesses (Stream * str)
   {
   // Declare STK filter processes for harp mode.
   OneZero *oneZero[args->netHarpStrings];
@@ -596,7 +596,7 @@ StreamBD::addPlugin (OutputPlugin * to, Stream * str)
  * If any other mode, wait for a peer, then connect back to that peer.
  */
 void
-StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * netout,
+JackTrip::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * netout,
 			       UDPInput * netin)
 {
   if (runMode == TRANSMIT || runMode == HARPT)
@@ -632,7 +632,7 @@ StreamBD::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
  * @brief Lookup the hostname of the local machine.
  */
 QString *
-StreamBD::GetLocalHostName ()
+JackTrip::GetLocalHostName ()
 {
   char localhostbuf[100];
   if (gethostname (localhostbuf, 99))

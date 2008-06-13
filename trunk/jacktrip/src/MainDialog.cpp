@@ -63,7 +63,7 @@ MainDialog::MainDialog ()//:
 }
 
 void
-MainDialog::init(StreamBD *s)
+MainDialog::init(JackTrip *s)
 {
   //*********************************************
   //Coment out to remove dependency of widget

@@ -40,7 +40,7 @@
 #include "audioInfo.h"
 #include "JackClient.h"
 #include "qthread.h"
-#include "StreamBD.h"
+#include "JackTrip.h"
 #include <QWaitCondition>
 #include <QSemaphore>
 
