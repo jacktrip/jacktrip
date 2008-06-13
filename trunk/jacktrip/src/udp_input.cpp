@@ -168,7 +168,7 @@ UDPInput::run ()
       exit ();
     }
 
-  cout <<"Local Host Name: " << QString(QHostInfo::localHostName ()).latin1() << endl;//***JPC Port to qt4*****************
+  cout <<"Local Host Name: " << QString(QHostInfo::localHostName ()).toStdString() << endl;//***JPC Port to qt4*****************
   //cout << "Rx buff = " << sock->receiveBufferSize () << endl;//***JPC Port to qt4*****************
   QHostAddress *ha = new QHostAddress ();//***JPC Port to qt4*****************
   QString *s = IPv4Addr (localhostbuf);	// dotted integer from name//***JPC Port to qt4*****************
@@ -286,6 +286,7 @@ UDPInput::run ()
 
 //-------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------
+/*
 void UDPInput::plotVal (double v)
 {
     if(_rcvr!=NULL)
@@ -294,7 +295,7 @@ void UDPInput::plotVal (double v)
     QApplication::postEvent (_rcvr, e);	// to app event loop
     }
 }
-
+*/
 
 //-------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------
@@ -312,7 +313,7 @@ bool UDPInput::hasPeer ()
 QHostAddress UDPInput::peer ()
 {
   sock->readDatagram (packetData, wholeSize, peerAddress);//***JPC Port to qt4*****************
-  cout << (*peerAddress).toString().latin1() << endl;
+  cout << (*peerAddress).toString().toStdString() << endl;
   //cout << sock->state() << endl;
   //cout << sock->peerName().latin1() << endl;
   //return sock->peerAddress ();

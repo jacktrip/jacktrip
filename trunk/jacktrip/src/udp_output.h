@@ -40,9 +40,7 @@
 #ifndef 	_UDP_OUTPUT_H
 #define 	_UDP_OUTPUT_H
 
-//#include <q3socketdevice.h>//***JPC Port to qt4*****************
-#include <QUdpSocket> //***JPC Port to qt4*****************
-
+#include <QUdpSocket>
 #include "networkInfo.h"
 #include "audioInfo.h"
 #include "output_plugin.h"
@@ -77,7 +75,7 @@ public:
   void stop ();
   int bpp;
   int wholeSize;
-  void plotVal (double v);
+  //void plotVal (double v);
   int setPeerAddress (QHostAddress remote);
 };
 

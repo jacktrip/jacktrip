@@ -27,7 +27,7 @@ echo "qmake .pro built"
 qmake-qt4 -makefile -unix -o Makefile \
 "CONFIG+=qt debug thread warn_on" \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
-"QT += network qt3support" \
+"QT += network" \
 "DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
 "QMAKE_CLEAN+=$APP_NAME" \
 "unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack" \
@@ -37,5 +37,6 @@ qmake-qt4 -makefile -unix -o Makefile \
 
 #INCLUDEPATH+=/usr/include/stk ../include" \
 #"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack" \
+#"QT += network qt3support" \
 
 echo "done"

@@ -105,7 +105,7 @@ public:
    */
 
   void stop ();
-  void plotVal (double v);
+  //void plotVal (double v);
 };
 
 /** NEWVERSION in other file */
