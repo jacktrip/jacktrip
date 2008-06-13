@@ -18,3 +18,11 @@
        gives the info
 
 -Check the FIFO Prioriy, now it is at 51, was at 99
+- Check why -q1 -b1 settings cause a buzz in the beginings, seems that the buffer doesn't get erased
+
+
+-remove class THREADCOM EVENT, not used and last one using qt3
+-Merge rcvz1 with normal rcv method: rcvz one does the buffering mechanism
+-Get a better command line parser
+-Check that header files are modern, e.g., <iostram> instead of <iostream.h> --DONE
+
