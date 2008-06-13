@@ -34,7 +34,7 @@
 #ifndef	_AUDIO_INFO_H
 #define	_AUDIO_INFO_H
 
-#include <time.h>
+#include <ctime>
 
 /**
  * @brief Contains all information relevant to audio buffers.

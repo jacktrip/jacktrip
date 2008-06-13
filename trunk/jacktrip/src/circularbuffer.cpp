@@ -48,7 +48,7 @@
 
 #include "circularbuffer.h"
 #include <iostream>
-#include <time.h>
+#include <ctime>
 
 using namespace std;
 

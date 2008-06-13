@@ -49,13 +49,13 @@
 #include "udp.h"
 #include <cstdlib>
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include "audioInfo.h"
 #include "networkInfo.h"
 #include <qhostaddress.h>
 #include <qstring.h>
-#include <time.h>
+#include <ctime>
 #include "qobject.h"
 
 
