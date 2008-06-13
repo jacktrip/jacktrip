@@ -94,6 +94,7 @@ AudioInput::xfrFrom (void *buf)
 }
 
 
+/*
 void AudioInput::plotVal (double v)
 {
   if(_rcvr!=NULL)
@@ -104,3 +105,4 @@ void AudioInput::plotVal (double v)
       QApplication::postEvent (_rcvr, e);	// to app event loop
     }
 }
+*/

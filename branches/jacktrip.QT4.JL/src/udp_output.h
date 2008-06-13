@@ -78,7 +78,7 @@ public:
   void stop ();
   int bpp;
   int wholeSize;
-  void plotVal (double v);
+  //void plotVal (double v);
   int setPeerAddress (QHostAddress remote);
 };
 

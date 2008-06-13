@@ -35,8 +35,10 @@
 #include "math.h"
 #include "string.h"
 #include "audioDevice.h"
-#include "qstring.h"
-#include <q3textstream.h>
+//#include "qstring.h"
+#include <QString>
+//#include <q3textstream.h>
+#include <QTextStream>
 
 #define ONE_BASED (i+1)
 
@@ -237,17 +239,19 @@ JackClient::JackClient (int nChans, int nFrames, bool output, bool input, AudioD
   for (int i = 0; i < nChans; i++)
     {
       QString iName, oName;
-      QTextOStream (&iName) << "input" << ONE_BASED;
-      QTextOStream (&oName) << "output" << ONE_BASED;
+      //QTextOStream (&iName) << "input" << ONE_BASED;
+      //QTextOStream (&oName) << "output" << ONE_BASED;
+      QTextStream (&iName) << "input" << ONE_BASED;//QT4 Port****
+      QTextStream (&oName) << "output" << ONE_BASED;//QT4 Port****
 
       if (output)
 	output_port[ONE_BASED] =
-	  jack_port_register (client, oName,
+	  jack_port_register (client, oName.toLatin1(),
 			      JACK_DEFAULT_AUDIO_TYPE,
 			      JackPortIsOutput, 0);
       if (input)
 	input_port[ONE_BASED] =
-	  jack_port_register (client, iName,
+	  jack_port_register (client, iName.toLatin1(),
 			      JACK_DEFAULT_AUDIO_TYPE,
 			      JackPortIsInput, 0);
     }

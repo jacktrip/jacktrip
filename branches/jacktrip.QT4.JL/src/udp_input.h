@@ -82,7 +82,7 @@ public:
   int bpp;
   int wholeSize;
   int numRedundantBuffers;
-  void plotVal (double v);
+  //void plotVal (double v);
 };
 
 

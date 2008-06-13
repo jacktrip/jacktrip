@@ -108,7 +108,7 @@ UDPOutput::connect (QHostAddress remote)
   //sock->connect (remote, netInfo->getInPort ()); //***JPC Port to qt4*****************
   sock->connectToHost (remote, netInfo->getInPort ()); //***JPC Port to qt4*****************
 
-  cout << "Connecting to " << remote.toString().latin1() << ":" << netInfo->
+  cout << "Connecting to " << remote.toString().toStdString() << ":" << netInfo->
     getInPort () << endl;
 
   return 0;
@@ -287,7 +287,7 @@ UDPOutput::run ()
 	  perror ("Send");
 	  //**************JPC COMENTED OUT*******************
 	  cout << "error sending to " << sock->peerAddress ().
-	    toString ().latin1() << endl;
+	    toString ().toStdString() << endl;
 	  //*************************************************
 	  return;
 	}
@@ -327,6 +327,7 @@ UDPOutput::stop ()
 /*! \brief
  */
 //---------------------------------------------------------------------------------------------
+/*
 void UDPOutput::plotVal (double v)
 {
   if(_rcvr!=NULL)
@@ -335,4 +336,4 @@ void UDPOutput::plotVal (double v)
       QApplication::postEvent (_rcvr, e);	// to app event loop
     }
 }
-
+*/

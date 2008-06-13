@@ -60,6 +60,6 @@ public:
   int rcv (char *buf);
   void run ();
   void stop ();
-  void plotVal (double v);
+  //void plotVal (double v);
 };
 #endif
