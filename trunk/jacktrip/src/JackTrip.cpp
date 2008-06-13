@@ -39,9 +39,12 @@ using namespace std;
 extern QString *
 IPv4Addr (char *namebuf);
 
-/**
- * @brief return fifo priority for streambd.
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Returns fifo priority for streambd.
+ *
  */
+//---------------------------------------------------------------------------------------------
 int
 get_fifo_priority (bool half)
 {
@@ -52,13 +55,16 @@ get_fifo_priority (bool half)
   if (half) priority = (max  - (max - min) / 2);
   else
     priority = max; 
-  //      priority=min;
+  //priority=min;
   return priority;
 }
 
-/**
- * @brief Set fifo priority (if user has sufficient privileges).
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Set fifo priority (if user has sufficient privileges).
+ *
  */
+//---------------------------------------------------------------------------------------------
 int
 set_fifo_priority (bool half)
 {
@@ -94,6 +100,10 @@ set_fifo_priority (bool half)
 }
 
 
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 JackTrip::JackTrip()
 {
   args = new cmdLineArgs;
@@ -101,11 +111,20 @@ JackTrip::JackTrip()
 }
 
 
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 JackTrip::~JackTrip()
 {
   // TODO: put destructor code here
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 int
 JackTrip::cmd (MainDialog *eventThread)
 {
@@ -283,11 +302,20 @@ JackTrip::cmd (MainDialog *eventThread)
 }
 
 
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::start ()
 {
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::finish ()
 {
@@ -302,6 +330,11 @@ JackTrip::finish ()
   cout << "stopped streamout threads" << endl;	
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::go ()
 /* cause run loop to start */
@@ -309,6 +342,11 @@ JackTrip::go ()
   start ();
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::stop ()
 /* cause run loop to finish */
@@ -317,6 +355,11 @@ JackTrip::stop ()
   finish();
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::join ()
 /* wait for thread to exit */
@@ -325,11 +368,12 @@ JackTrip::join ()
 }
 
 
-
-/* PrintUsage(struct cmdLineArgs *args)
- * ------------------------------------
+//---------------------------------------------------------------------------------------------
+/*! \brief PrintUsage()
+ *
  * Print all of the command line arguments and their default values
  */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::PrintUsage ()
 {
@@ -373,12 +417,14 @@ JackTrip::PrintUsage ()
     endl;
 }
 
-/**
- * @brief Parse the command line.
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Parse the command line.
  *
  * Use default values for all cmdLineArgs entries
  * unless explicitly assigned values on the commandline.
  */
+//---------------------------------------------------------------------------------------------
 int
 JackTrip::ParseCommandLine (int argc, char *argv[])
 {
@@ -524,6 +570,11 @@ JackTrip::ParseCommandLine (int argc, char *argv[])
   return 1;
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::ConnectPlugins (InputPlugin * from, OutputPlugin * to, Stream * through)
 {
@@ -534,6 +585,11 @@ JackTrip::ConnectPlugins (InputPlugin * from, OutputPlugin * to, Stream * throug
   through->addOutput (to);
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::addPlugin (InputPlugin * from, Stream * str)
 {
@@ -541,6 +597,11 @@ JackTrip::addPlugin (InputPlugin * from, Stream * str)
   str->addInput (from);
 }
 
+
+//---------------------------------------------------------------------------------------------
+/*! \brief
+ */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::addPlugin (OutputPlugin * to, Stream * str)
 {
@@ -549,52 +610,13 @@ JackTrip::addPlugin (OutputPlugin * to, Stream * str)
 }
 
 
-//Remove STK Depdency
-/*
-  void
-  JackTrip::addSTKProcesses (Stream * str)
-  {
-  // Declare STK filter processes for harp mode.
-  OneZero *oneZero[args->netHarpStrings];
-  STKProcess *oneZeroProcess[args->netHarpStrings];
-  Delay *delay[args->netHarpStrings];
-  STKProcess *delayProcess[args->netHarpStrings];
-
-  // Add STKProcesses to every network channel.
-  int thisDelay = 0;
-  for (int i = 0; i < args->netHarpStrings; i++)
-  {
-  // The OneZero filter lowpasses the signal each time it reflects,
-  // modelling the behavior of reflections from the ends of a string.
-  if (args->lowPassFilterCoeff != 0)
-  {
-  oneZero[i] = new OneZero ();
-  oneZeroProcess[i] =
-  new STKProcess ((Filter *) oneZero[i]);
-  oneZero[i]->setGain (args->lowPassFilterCoeff / 100.0);
-  str->addProcess (oneZeroProcess[i]);
-  }
-
-  // The delay line tunes the strings so that they don't all
-  // have the fundamental frequency determined by the network.
-  if (args->delayIncrementBetweenStrings != 0)
-  {
-  thisDelay = args->delayIncrementBetweenStrings * i;
-  delay[i] = new Delay ((long) thisDelay, (long) thisDelay);	// theDelay,maxDelay
-  delayProcess[i] =
-  new STKProcess ((Filter *) delay[i]);
-  str->addProcess (delayProcess[i]);
-  }
-  }
-  }
-*/
-
-/**
- * @brief Connects, or waits for connection depending on runMode.
+//---------------------------------------------------------------------------------------------
+/*! \brief Connects, or waits for connection depending on runMode.
  *
  * If transmit or harpt, connect to hostname.
  * If any other mode, wait for a peer, then connect back to that peer.
  */
+//---------------------------------------------------------------------------------------------
 void
 JackTrip::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * netout,
 			       UDPInput * netin)
@@ -616,11 +638,8 @@ JackTrip::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
 	  usleep (10000);
 	  //cout << ".";
 	}
-      /////FOLOW THIS TO FIND THE PROBLEM
-      //**************JPC COMENTED OUT*******************
       cout << endl << "Connection received from: " <<
 	netin->peer().toString().toStdString() << endl;
-      //*************************************************
       cout << "Requesting return connection....";
       //netout->connect (netin->peer ());
       netout->setPeerAddress (netin->peer ());
@@ -628,9 +647,13 @@ JackTrip::EstablishConnection (runModeT runMode, char *hostname, UDPOutput * net
     }
 }
 
-/**
- * @brief Lookup the hostname of the local machine.
+
+
+//---------------------------------------------------------------------------------------------
+/*! \brief Lookup the hostname of the local machine.
+ *
  */
+//---------------------------------------------------------------------------------------------
 QString *
 JackTrip::GetLocalHostName ()
 {

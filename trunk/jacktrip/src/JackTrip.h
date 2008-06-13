@@ -112,30 +112,30 @@ enum runModeT
 
 typedef struct cmdLineArgs
 {
-  int sampleRate;		/*! Audio sample rate.                                   */
+  int sampleRate;	/*! Audio sample rate.*/
   int netHarpStrings;	/*! Number of audio channels being sent over the network 
 			 * connection.  In harp mode, any number of independent
 			 * network channels (harp strings) can be run and mixed
-			 * down to the number of audioChannels for monitoring.       */
-  int audioChannels;	/*! Number of audio channels to output on audioout.       */
+			 * down to the number of audioChannels for monitoring.*/
+  int audioChannels;	/*! Number of audio channels to output on audioout.*/
   int networkInputQueueLengthInPackets;	/*! Number of buffers of length rtBufferSize to buffer 
-					 * the incoming network connection with.                 */
+					 * the incoming network connection with.*/
   int framesPerAudioBuffer;	/*! Size of buffers to be fed to the audioDevice output
-				 * device (in samples).                                  */
+				 * device (in samples).*/
   int audioInputQueueLengthInAudioBuffers;	/*! Number of buffers of size framesPerAudioBuffer with which the
-						 * audio output is buffered.                             */
-  char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode. */
-  int networkPortOffset;	/*! Network port offset.                                  */
-  int audioDeviceID;	/*! Will use default audio device if not specified.       */
-  int runFifo;		/*! Run streambd with fifo priority (reduces delay).      */
-  runModeT runMode;	/*! Run mode as defined above.                            */
-  int secondsBetweenPlucks;	/*! Number of seconds (integer) to wait between plucks.   */
-  float lowPassFilterCoeff;	/*! Specifies low-pass filter coefficient.                */
-  int delayIncrementBetweenStrings;	/*! Pitch increment between strings (cumulative).         */
-  bool jack;		/*! Use jack audio subsystem, v.1, otherwise RtAudio.         */
-  bool gui;		/*! GUI.         */
-  int redundancy;		/*! copies of a buffer in stream         */
-  int jack_alsa_readable_offset; /*! bump up which is lowest alsa input channel  */
+						 * audio output is buffered.*/
+  char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode.*/
+  int networkPortOffset;	/*! Network port offset.*/
+  int audioDeviceID;	/*! Will use default audio device if not specified.*/
+  int runFifo;		/*! Run streambd with fifo priority (reduces delay).*/
+  runModeT runMode;	/*! Run mode as defined above.*/
+  int secondsBetweenPlucks;	/*! Number of seconds (integer) to wait between plucks.*/
+  float lowPassFilterCoeff;	/*! Specifies low-pass filter coefficient.*/
+  int delayIncrementBetweenStrings;	/*! Pitch increment between strings (cumulative).*/
+  bool jack;		/*! Use jack audio subsystem, v.1, otherwise RtAudio.*/
+  bool gui;		/*! GUI.*/
+  int redundancy;		/*! copies of a buffer in stream */
+  int jack_alsa_readable_offset; /*! bump up which is lowest alsa input channel */
 } *cmdLineArgsT;
 
 class AudioDevice;
