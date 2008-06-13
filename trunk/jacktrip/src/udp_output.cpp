@@ -195,10 +195,10 @@ UDPOutput::run ()
     {
       cerr << "ERROR: UDPOutput has no sream to read from!" << endl;
     }
-  unsigned long now = 0;
-  unsigned long lastTickTime = usecTime ();
-  int ctr = 0;
-  double max = 0.0;
+  //unsigned long now = 0;
+  //unsigned long lastTickTime = usecTime ();
+  //int ctr = 0;
+  //double max = 0.0;
   while (_running)
     {
       res = stream->read (buf, key);
