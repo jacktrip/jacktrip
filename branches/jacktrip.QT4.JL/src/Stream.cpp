@@ -31,11 +31,11 @@
  * stream.cpp
  */
 
-#include "stream.h"
+#include "Stream.h"
 #include <iostream>
-#include <assert.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cassert>
+#include <cstdlib>
+#include <ctime>
 
 //#define APPEND(x,y) x.resize(x.count()+1); x.insert (x.count(), y)
 #define APPEND(x,y) x.resize( (x.size()-x.count(0)) + 1); x.insert ( (x.size()-x.count(0)), y)//QT4 port
@@ -81,7 +81,7 @@ Stream::addCircularBuffer ()
 }
 
 void
-Stream::addInput (InputPlugin * newin)
+Stream::addInput (InputStreamPlugin * newin)
 {
   if (ins.count () == 1)
     {
@@ -101,7 +101,7 @@ Stream::addInput (InputPlugin * newin)
 }
 
 void
-Stream::addOutput (OutputPlugin * newout)
+Stream::addOutput (OutputStreamPlugin * newout)
 {
   QSemaphore *tmp;
   //if (outs.count () == 1)
@@ -131,13 +131,13 @@ Stream::addOutput (OutputPlugin * newout)
 }
 
 void
-Stream::addProcess (ProcessPlugin * newproc)
+Stream::addProcess (ProcessStreamPlugin * newproc)
 {
   APPEND (procs, newproc);
 }
 
 void
-Stream::synchronizeOutputsTo (OutputPlugin * synchControlOutput)
+Stream::synchronizeOutputsTo (OutputStreamPlugin * synchControlOutput)
 {
   outputSynchKey = synchControlOutput->getReadKey ();
 }
@@ -235,8 +235,8 @@ Stream::writeRedundant (const void *buf, int key, int z, int seq)
 	    {	// For each channel 
 	      for (int p = 0; p < processesPerChan; p++)
 		{	// For each process, apply process
-		  ProcessPlugin *pp =
-		    (ProcessPlugin *) procs[c *
+		  ProcessStreamPlugin *pp =
+		    (ProcessStreamPlugin *) procs[c *
 					    processesPerChan
 					    + p];
 		  pp->process ((char
@@ -284,8 +284,8 @@ Stream::write (const void *buf, int key)
 	    {	// For each channel 
 	      for (int p = 0; p < processesPerChan; p++)
 		{	// For each process, apply process
-		  ProcessPlugin *pp =
-		    (ProcessPlugin *) procs[c *
+		  ProcessStreamPlugin *pp =
+		    (ProcessStreamPlugin *) procs[c *
 					    processesPerChan
 					    + p];
 		  pp->process ((char
@@ -349,7 +349,7 @@ Stream::startThreads ()
 
   for (int i = 0; i < insCount; i++)
     {
-      InputPlugin *ip = (InputPlugin *) ins[i];
+      InputStreamPlugin *ip = (InputStreamPlugin *) ins[i];
       cout << "++++++++++++++++++++++" << endl;
       if(!ip->dontRun) {
 	//if (!ip->running ())
@@ -369,7 +369,7 @@ Stream::startThreads ()
     {
       cerr << "Stream starting " << outsCount << " outputs." <<
 	endl;
-      OutputPlugin *op = (OutputPlugin *) outs[i];
+      OutputStreamPlugin *op = (OutputStreamPlugin *) outs[i];
       if(!op->dontRun) {
 	op->start ();
 	//if (!op->running ())
@@ -389,7 +389,7 @@ Stream::stopThreads ()
 {
   for (int i = 0; i < insCount; i++)
     {
-      InputPlugin *ip = ins[i];
+      InputStreamPlugin *ip = ins[i];
       //if (ip->running ())
       if (ip->isRunning())//QT4port-----------
 	{
@@ -402,7 +402,7 @@ Stream::stopThreads ()
     }
   for (int i = 0; i < procsCount; i++)
     {
-      ProcessPlugin *pp = procs[i];
+      ProcessStreamPlugin *pp = procs[i];
       {
 	delete pp;
 	//procs.remove (i);
@@ -412,7 +412,7 @@ Stream::stopThreads ()
 
   for (int i = 0; i < outsCount; i++)
     {
-      OutputPlugin *op = outs[i];
+      OutputStreamPlugin *op = outs[i];
       //if (op->running ())
       if (op->isRunning())//QT4port-----------
 	{

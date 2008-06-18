@@ -33,7 +33,7 @@
 
 #include "udp_input.h"
 #include "networkInfo.h"
-#include "stream.h"
+#include "Stream.h"
 #include "unistd.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -50,7 +50,7 @@ using namespace std;
 //-------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
-  InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
+  InputStreamPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 {
   bpp = netInfo->getDataBytesPerPacket ();
   cout << "bpp = " << bpp << endl;

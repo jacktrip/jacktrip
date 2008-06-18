@@ -28,7 +28,7 @@
 */
 
 /*
- * StreamBD.h
+ * JackTrip.h
  *
  * I/O Streams
  * -----------
@@ -41,29 +41,29 @@
  * be used reliably.
  */
 
-#include "audio_input.h"
-#include "audio_output.h"
+#include "AudioInput.h"
+#include "AudioOutput.h"
 #include "udp_input.h"
 #include "udp_output.h"
-#include "stream.h"
+#include "Stream.h"
 #include "udp.h"
 #include <cstdlib>
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include "audioInfo.h"
 #include "networkInfo.h"
-#include <qhostaddress.h>
-#include <qstring.h>
-#include <time.h>
-#include "qobject.h"
+#include <QHostAddress>
+#include <QString>
+#include <ctime>
+#include <QObject>
 
 
 /* Define the audio sample type */
 typedef signed short INT16;
 
-#ifndef _STREAMBD_H_
-#define _STREAMBD_H_
+#ifndef __JACKTRIP_H_
+#define __JACKTRIP_H_
 
 /** @brief Default settings used if not specified at the command line.
  *
@@ -112,41 +112,41 @@ enum runModeT
 
 typedef struct cmdLineArgs
 {
-  int sampleRate;		/*! Audio sample rate.                                   */
+  int sampleRate;	/*! Audio sample rate.*/
   int netHarpStrings;	/*! Number of audio channels being sent over the network 
 			 * connection.  In harp mode, any number of independent
 			 * network channels (harp strings) can be run and mixed
-			 * down to the number of audioChannels for monitoring.       */
-  int audioChannels;	/*! Number of audio channels to output on audioout.       */
+			 * down to the number of audioChannels for monitoring.*/
+  int audioChannels;	/*! Number of audio channels to output on audioout.*/
   int networkInputQueueLengthInPackets;	/*! Number of buffers of length rtBufferSize to buffer 
-					 * the incoming network connection with.                 */
+					 * the incoming network connection with.*/
   int framesPerAudioBuffer;	/*! Size of buffers to be fed to the audioDevice output
-				 * device (in samples).                                  */
+				 * device (in samples).*/
   int audioInputQueueLengthInAudioBuffers;	/*! Number of buffers of size framesPerAudioBuffer with which the
-						 * audio output is buffered.                             */
-  char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode. */
-  int networkPortOffset;	/*! Network port offset.                                  */
-  int audioDeviceID;	/*! Will use default audio device if not specified.       */
-  int runFifo;		/*! Run streambd with fifo priority (reduces delay).      */
-  runModeT runMode;	/*! Run mode as defined above.                            */
-  int secondsBetweenPlucks;	/*! Number of seconds (integer) to wait between plucks.   */
-  float lowPassFilterCoeff;	/*! Specifies low-pass filter coefficient.                */
-  int delayIncrementBetweenStrings;	/*! Pitch increment between strings (cumulative).         */
-  bool jack;		/*! Use jack audio subsystem, v.1, otherwise RtAudio.         */
-  bool gui;		/*! GUI.         */
-  int redundancy;		/*! copies of a buffer in stream         */
-  int jack_alsa_readable_offset; /*! bump up which is lowest alsa input channel  */
+						 * audio output is buffered.*/
+  char remoteHostname[100];	/*! Holds the hostname to connect to in TRANSMIT and HARPT mode.*/
+  int networkPortOffset;	/*! Network port offset.*/
+  int audioDeviceID;	/*! Will use default audio device if not specified.*/
+  int runFifo;		/*! Run streambd with fifo priority (reduces delay).*/
+  runModeT runMode;	/*! Run mode as defined above.*/
+  int secondsBetweenPlucks;	/*! Number of seconds (integer) to wait between plucks.*/
+  float lowPassFilterCoeff;	/*! Specifies low-pass filter coefficient.*/
+  int delayIncrementBetweenStrings;	/*! Pitch increment between strings (cumulative).*/
+  bool jack;		/*! Use jack audio subsystem, v.1, otherwise RtAudio.*/
+  bool gui;		/*! GUI.*/
+  int redundancy;		/*! copies of a buffer in stream */
+  int jack_alsa_readable_offset; /*! bump up which is lowest alsa input channel */
 } *cmdLineArgsT;
 
 class AudioDevice;
 class MainDialog;
 
-class StreamBD:public QObject
+class JackTrip:public QObject
 {
   //Q_OBJECT public://***JPC COMENTED OUT
 public:
-  StreamBD();
-  ~StreamBD();
+  JackTrip();
+  ~JackTrip();
   int cmd (MainDialog *eventThread);
   void start();
   void finish();
@@ -164,12 +164,12 @@ public:
 
   // int set_fifo_priority (void);
 
-  void ConnectPlugins (InputPlugin * from, OutputPlugin * to,
+  void ConnectStreamPlugins (InputStreamPlugin * from, OutputStreamPlugin * to,
 		       Stream * through);
 
-  void addPlugin (InputPlugin * from, Stream * str);
+  void addStreamPlugin (InputStreamPlugin * from, Stream * str);
 
-  void addPlugin (OutputPlugin * to, Stream * str);
+  void addStreamPlugin (OutputStreamPlugin * to, Stream * str);
 
   //void addSTKProcesses (Stream * str); //Remove STK dependency
   cmdLineArgs *args;
@@ -182,4 +182,4 @@ public:
 };
 
 
-#endif	//_STREAMBD_H_
+#endif

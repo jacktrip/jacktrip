@@ -28,81 +28,45 @@
 */
 
 /*
- * audio_input.cpp
+ * input_plugin.h
  *
- * Audio input class.  Takes rtBuffers from the sound device and 
- * puts them into the Stream.
- * 
+ * @brief Virtual function declarations for subclasses to be used as inputs to Stream
  */
 
-#include "audio_input.h"
-#include "stream.h"
-#include <iostream>
+#ifndef _INPUT_PLUGIN_H
+#define _INPUT_PLUGIN_H
 
-using namespace std;
+#include "StreamPlugin.h"
 
-AudioInput::AudioInput (AudioDevice * audioDevice, AudioInfoT audioInfo):
-  InputPlugin ("Audio Input Plugin"),
-  audioDevice (audioDevice), audioInfo (audioInfo)
-{
-  dontRun = audioInfo->jack;
-}
-
-AudioInput::~AudioInput ()
-{
-}
-
-int
-AudioInput::rcv (char *buf)
-{
-  audioDevice->readBuffer (buf);
-  return 0;
-}
-
-void
-AudioInput::stop ()
-{
-  _running = false;
-  audioDevice->unlockRead ();
-}
-
-void
-AudioInput::run ()
-{
-  _running = true;
-
-  char *databuf = new char[audioInfo->getBytesPerBuffer ()];
-
-  cerr << "Started AUDIO Input Run" << endl;
-
-  while (_running)
-    {
-      rcv (databuf);	// from audioDevice
-      if (stream == NULL)
-	{
-	  cerr << "ERROR: AudioInput has no stream to write to! " << endl;
-	}
-      xfrFrom (databuf);	// to stream
-    }
-}
+class Stream;
 
 
-void
-AudioInput::xfrFrom (void *buf)
-{
-  stream->write (buf, key);
-}
+class InputStreamPlugin : public StreamPlugin
+{ 
+protected:
+  int	key;
+  Stream *stream;
+public:
+  InputStreamPlugin(const char *name) : key( -1 )
+  {
+    this->setName(name);
+    this->dontRun = false;
+  }
+  virtual int rcv(char *buf) = 0;
+  virtual void stop() = 0;
+                                
+  void setWriteKey(int newKey)
+  {
+    key = newKey;
+  }
+  int getWriteKey()
+  {
+    return key;
+  }
+  void setStream( Stream *str ) 
+  {
+    stream = str;
+  }
+};
 
-
-/*
-void AudioInput::plotVal (double v)
-{
-  if(_rcvr!=NULL)
-    {
-      ThreadCommEvent *e = new ThreadCommEvent (v,
-						0.0,
-						0.0);
-      QApplication::postEvent (_rcvr, e);	// to app event loop
-    }
-}
-*/
+#endif

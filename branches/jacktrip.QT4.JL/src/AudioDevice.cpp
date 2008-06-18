@@ -31,8 +31,8 @@
  * audioDevice.cpp
  */
 
-#include "audioDevice.h"
-#include <time.h>
+#include "AudioDevice.h"
+#include <ctime>
 using namespace std;
 
 AudioDevice::AudioDevice (bool testMode)

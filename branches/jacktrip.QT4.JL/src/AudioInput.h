@@ -28,45 +28,38 @@
 */
 
 /*
- * input_plugin.h
- *
- * @brief Virtual function declarations for subclasses to be used as inputs to Stream
+ * audio_input.h
  */
 
-#ifndef _INPUT_PLUGIN_H
-#define _INPUT_PLUGIN_H
+#ifndef	_AUDIO_INPUT_H
+#define	_AUDIO_INPUT_H
 
-#include "plugin.h"
+#include "InputStreamPlugin.h"
+#include "AudioDevice.h"
+#include "audioInfo.h"
 
-class Stream;
+/**
+ * @brief Takes audio buffers from the audio device and sends them out
+ * on a Stream.
+ */
 
+class AudioInput:public InputStreamPlugin
+{
+private:
+  AudioDevice * audioDevice;
+  AudioInfoT audioInfo;
 
-class InputPlugin : public Plugin
-{ 
-protected:
-  int	key;
-  Stream *stream;
+  bool _running;		//!< True while the current thread is running. 
+
 public:
-  InputPlugin(const char *name) : key( -1 )
-  {
-    this->setName(name);
-    this->dontRun = false;
-  }
-  virtual int rcv(char *buf) = 0;
-  virtual void stop() = 0;
-                                
-  void setWriteKey(int newKey)
-  {
-    key = newKey;
-  }
-  int getWriteKey()
-  {
-    return key;
-  }
-  void setStream( Stream *str ) 
-  {
-    stream = str;
-  }
-};
 
+  AudioInput (AudioDevice * audioDevice,
+	      AudioInfoT audioInfo);
+  ~AudioInput ();
+  void xfrFrom (void *buf);
+  int rcv (char *buf);
+  void run ();
+  void stop ();
+  //void plotVal (double v);
+};
 #endif

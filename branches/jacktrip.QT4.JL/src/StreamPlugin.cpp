@@ -28,28 +28,30 @@
 */
 
 /*
- * process_plugin.h
- *
- * @brief Virtual function declarations for process plugins to Stream
+ * StreamPlugin.cpp
  */
-
-#ifndef _PROCESS_PLUGIN_H
-#define _PROCESS_PLUGIN_H
 
 #include "StreamPlugin.h"
 
-/**
- * @brief Virtual function declarations for process plugins to Stream
- */
 
-class ProcessStreamPlugin : public StreamPlugin
+unsigned long StreamPlugin::usecTime ()
 {
-public:
-  ProcessStreamPlugin(const char *name)  { this->setName(name); }
-  ProcessStreamPlugin()  { this->setName("no name process :("); }
-			
-  virtual int process(char *buf) = 0;
-  void run() {}
-};
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  return ((tv.tv_sec * 1000000) + (tv.tv_usec));
+  // was sec*1000 and usec/1000 for msec
+}
 
-#endif
+
+char* StreamPlugin::getName ()
+{
+  return name;
+}
+
+
+char* StreamPlugin::setName (const char *newName)
+{
+  strncpy (name, newName, 23);
+  name[23] = '\0';
+  return name;
+}

@@ -49,7 +49,7 @@
 #ifndef INCLUDED_CIRCULARBUFFER
 #define INCLUDED_CIRCULARBUFFER
 
-#include <qthread.h>
+#include <QThread>
 #include <QSemaphore>
 
 class CircularBuffer {

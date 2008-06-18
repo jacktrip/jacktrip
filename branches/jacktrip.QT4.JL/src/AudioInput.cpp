@@ -28,38 +28,81 @@
 */
 
 /*
- * audio_input.h
+ * audio_input.cpp
+ *
+ * Audio input class.  Takes rtBuffers from the sound device and 
+ * puts them into the Stream.
+ * 
  */
 
-#ifndef	_AUDIO_INPUT_H
-#define	_AUDIO_INPUT_H
+#include "AudioInput.h"
+#include "Stream.h"
+#include <iostream>
 
-#include "input_plugin.h"
-#include "audioDevice.h"
-#include "audioInfo.h"
+using namespace std;
 
-/**
- * @brief Takes audio buffers from the audio device and sends them out
- * on a Stream.
- */
-
-class AudioInput:public InputPlugin
+AudioInput::AudioInput (AudioDevice * audioDevice, AudioInfoT audioInfo):
+  InputStreamPlugin ("Audio Input StreamPlugin"),
+  audioDevice (audioDevice), audioInfo (audioInfo)
 {
-private:
-  AudioDevice * audioDevice;
-  AudioInfoT audioInfo;
+  dontRun = audioInfo->jack;
+}
 
-  bool _running;		//!< True while the current thread is running. 
+AudioInput::~AudioInput ()
+{
+}
 
-public:
+int
+AudioInput::rcv (char *buf)
+{
+  audioDevice->readBuffer (buf);
+  return 0;
+}
 
-  AudioInput (AudioDevice * audioDevice,
-	      AudioInfoT audioInfo);
-  ~AudioInput ();
-  void xfrFrom (void *buf);
-  int rcv (char *buf);
-  void run ();
-  void stop ();
-  //void plotVal (double v);
-};
-#endif
+void
+AudioInput::stop ()
+{
+  _running = false;
+  audioDevice->unlockRead ();
+}
+
+void
+AudioInput::run ()
+{
+  _running = true;
+
+  char *databuf = new char[audioInfo->getBytesPerBuffer ()];
+
+  cerr << "Started AUDIO Input Run" << endl;
+
+  while (_running)
+    {
+      rcv (databuf);	// from audioDevice
+      if (stream == NULL)
+	{
+	  cerr << "ERROR: AudioInput has no stream to write to! " << endl;
+	}
+      xfrFrom (databuf);	// to stream
+    }
+}
+
+
+void
+AudioInput::xfrFrom (void *buf)
+{
+  stream->write (buf, key);
+}
+
+
+/*
+void AudioInput::plotVal (double v)
+{
+  if(_rcvr!=NULL)
+    {
+      ThreadCommEvent *e = new ThreadCommEvent (v,
+						0.0,
+						0.0);
+      QApplication::postEvent (_rcvr, e);	// to app event loop
+    }
+}
+*/

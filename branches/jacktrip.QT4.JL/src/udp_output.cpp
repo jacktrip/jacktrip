@@ -32,7 +32,7 @@
  */
 
 #include "udp_output.h"
-#include "stream.h"
+#include "Stream.h"
 #include "unistd.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -50,7 +50,7 @@ extern int set_fifo_priority (bool half);
  */
 //---------------------------------------------------------------------------------------------
 UDPOutput::UDPOutput (NetworkInfoT netInfo, AudioInfoT audInfo):
-  OutputPlugin ("UDP Output"), one_time_flags (0), netInfo (netInfo),
+  OutputStreamPlugin ("UDP Output"), one_time_flags (0), netInfo (netInfo),
   audInfo (audInfo)
 {
   bpp = netInfo->getDataBytesPerPacket ();

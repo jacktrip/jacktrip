@@ -32,9 +32,9 @@
  */
 
 #include "JackClient.h"
-#include "math.h"
-#include "string.h"
-#include "audioDevice.h"
+#include <cmath>
+#include <cstring>
+#include "AudioDevice.h"
 //#include "qstring.h"
 #include <QString>
 //#include <q3textstream.h>

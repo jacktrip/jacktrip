@@ -31,16 +31,16 @@
  * audio_output.cpp
  */
 
-#include "audio_output.h"
-#include "stream.h"
+#include "AudioOutput.h"
+#include "Stream.h"
 //#include "ambisonics/ambisonicsdecoder.h"
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
 using namespace std;
 
 AudioOutput::AudioOutput (AudioDevice * audioDevice, AudioInfoT audioInfo):
-  OutputPlugin ("Audio Output plugin"),
+  OutputStreamPlugin ("Audio Output plugin"),
   audioDevice (audioDevice), audioInfo (audioInfo), decoder (NULL)
 {
   dontRun = audioInfo->jack;

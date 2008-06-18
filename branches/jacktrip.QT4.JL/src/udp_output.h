@@ -39,7 +39,7 @@
 
 #include "networkInfo.h"
 #include "audioInfo.h"
-#include "output_plugin.h"
+#include "OutputStreamPlugin.h"
 #include "udp.h"
 
 /**
@@ -50,7 +50,7 @@
  * code will be moved.
  */
 
-class UDPOutput:public OutputPlugin	// , public Semaphore
+class UDPOutput:public OutputStreamPlugin	// , public Semaphore
 {
 private:
   

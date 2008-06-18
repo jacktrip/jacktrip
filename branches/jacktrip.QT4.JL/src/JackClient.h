@@ -36,9 +36,9 @@
 #define _JACKCLIENT_H_
 
 #include <jack/jack.h>
-#include "stdio.h"
-#include "stdlib.h"
-#include <qstring.h>
+#include <cstdio>
+#include <cstdlib>
+#include <QString>
 
 class AudioDevice;
 class JackClient//:public Stk

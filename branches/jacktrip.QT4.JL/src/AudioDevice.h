@@ -35,12 +35,12 @@
 #define	_AUDIO_DEVICE_H
 
 #include <iostream>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 #include "audioInfo.h"
 #include "JackClient.h"
-#include "qthread.h"
-#include "StreamBD.h"
+#include <QThread>
+#include "JackTrip.h"
 #include <QWaitCondition>
 #include <QSemaphore>
 

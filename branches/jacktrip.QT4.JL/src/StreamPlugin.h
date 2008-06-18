@@ -28,47 +28,37 @@
 */
 
 /*
- * output_plugin.h
+ * StreamPlugin.h
+ *
+ * @brief Basic properties of an audio plugin
  */
 
-#ifndef _OUTPUT_PLUGIN_H
-#define _OUTPUT_PLUGIN_H
+#ifndef _PLUGIN_H
+#define _PLUGIN_H
 
-#include "plugin.h"
+#include <QThread>
+// for plotting
+#include <sys/time.h>
+#include <QApplication>
 
-class Stream;
 
-/**
- * @brief Virtual function declarations for outputs from Stream
- */
-
-class OutputPlugin : public Plugin
+class StreamPlugin : public QThread
 {
-protected:
-  int    key;
-  Stream *stream;
-
 public:
-  OutputPlugin(const char *name) : key(-1)
-  {
-    this->setName(name);
-    this->dontRun = false;
-  }
-  virtual int send(char *buf) = 0;
-  virtual void stop() = 0;
-  void setReadKey(int newKey)
-  {
-    key = newKey;
-  }
-  int getReadKey()
-  {
-    return key;
-  }
-  void setStream( Stream *str )
-  {
-    stream = str;
-  }
-    
+  bool dontRun;
+  // for plotting
+  unsigned long usecTime ();	// in usec
+  
+  QObject * _rcvr;
+  //void setGUI(QObject * rcvr){_rcvr = rcvr;};
+  //virtual void plotVal (double v) = 0;
+  
+  char* getName ();
+  char *setName (const char *newName);
+
+protected:
+  char name[24]; //TODO: Make this better
 };
+
 
 #endif

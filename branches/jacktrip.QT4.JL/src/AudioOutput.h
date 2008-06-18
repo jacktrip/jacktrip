@@ -34,8 +34,8 @@
 #ifndef	_AUDIO_OUTPUT_H
 #define	_AUDIO_OUTPUT_H
 
-#include "output_plugin.h"
-#include "audioDevice.h"
+#include "OutputStreamPlugin.h"
+#include "AudioDevice.h"
 #include "audioInfo.h"
 
 class AmbisonicsDecoder;
@@ -44,7 +44,7 @@ class AmbisonicsDecoder;
  * @brief Sends audio buffers from a Stream to the RtAudio (sound) device.
  */
 
-class AudioOutput:public OutputPlugin
+class AudioOutput:public OutputStreamPlugin
 {
 private:
   AudioDevice * audioDevice;
