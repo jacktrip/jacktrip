@@ -31,7 +31,7 @@
  * audio_output.cpp
  */
 
-#include "audio_output.h"
+#include "AudioOutput.h"
 #include "stream.h"
 //#include "ambisonics/ambisonicsdecoder.h"
 #include <cstring>
