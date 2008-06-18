@@ -35,7 +35,7 @@
  * 
  */
 
-#include "audio_input.h"
+#include "AudioInput.h"
 #include "stream.h"
 #include <iostream>
 

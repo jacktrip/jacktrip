@@ -41,7 +41,7 @@
  * be used reliably.
  */
 
-#include "audio_input.h"
+#include "AudioInput.h"
 #include "audio_output.h"
 #include "udp_input.h"
 #include "udp_output.h"
