@@ -34,7 +34,7 @@
 #ifndef 	_UDP_INPUT_H
 #define 	_UDP_INPUT_H
 
-#include "input_plugin.h"
+#include "InputStreamPlugin.h"
 #include "udp.h"
 #include "networkInfo.h"
 #include "audioInfo.h"

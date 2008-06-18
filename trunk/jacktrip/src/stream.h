@@ -35,7 +35,7 @@
 #define _STREAM_H
 
 #include "circularbuffer.h"
-#include "input_plugin.h"
+#include "InputStreamPlugin.h"
 #include "output_plugin.h"
 #include "process_plugin.h"
 #include "audioInfo.h"
