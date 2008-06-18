@@ -42,11 +42,11 @@
  * @brief Virtual function declarations for process plugins to Stream
  */
 
-class ProcessPlugin : public Plugin
+class ProcessStreamPlugin : public StreamPlugin
 {
 public:
-  ProcessPlugin(const char *name)  { this->setName(name); }
-  ProcessPlugin()  { this->setName("no name process :("); }
+  ProcessStreamPlugin(const char *name)  { this->setName(name); }
+  ProcessStreamPlugin()  { this->setName("no name process :("); }
 			
   virtual int process(char *buf) = 0;
   void run() {}

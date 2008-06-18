@@ -46,7 +46,7 @@
  * a Stream.
  */
 
-class UDPInput:public InputPlugin
+class UDPInput:public InputStreamPlugin
 {
 private:
   

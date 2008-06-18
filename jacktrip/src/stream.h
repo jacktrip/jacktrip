@@ -45,8 +45,8 @@
 #include <QVector>
 
 /**
- * @brief Connects an InputPlugin to an OutputPlugin with
- * optional ProcessPlugins processing the signal.
+ * @brief Connects an InputStreamPlugin to an OutputStreamPlugin with
+ * optional ProcessStreamPlugins processing the signal.
  */
 /**
  * Stream uses a CircularBuffer (a queue of audio buffers) under the hood. \n
@@ -59,14 +59,14 @@ class Stream
         
 protected:
   //  Vector inputs;
-  //Q3PtrVector < InputPlugin > ins;
-  QVector < InputPlugin* > ins; //QT4 port
+  //Q3PtrVector < InputStreamPlugin > ins;
+  QVector < InputStreamPlugin* > ins; //QT4 port
   //  Vector outputs;
-  //Q3PtrVector < OutputPlugin > outs;
-  QVector < OutputPlugin* > outs; //QT4 port
+  //Q3PtrVector < OutputStreamPlugin > outs;
+  QVector < OutputStreamPlugin* > outs; //QT4 port
   //   Vector processes;
-  //Q3PtrVector < ProcessPlugin > procs;
-  QVector < ProcessPlugin* > procs; //QT4 port
+  //Q3PtrVector < ProcessStreamPlugin > procs;
+  QVector < ProcessStreamPlugin* > procs; //QT4 port
   //   Vector circularBuffers;
   //Q3PtrVector < CircularBuffer > bufs;
   QVector < CircularBuffer* > bufs; //QT4 port
@@ -94,10 +94,10 @@ protected:
 public:
   Stream(AudioInfo * info, NetworkInfo * netInfo, int numBuffers, bool block);
   ~Stream();
-  void addInput(InputPlugin *newin);
-  void addOutput(OutputPlugin *newout);
-  void synchronizeOutputsTo(OutputPlugin *synchControlOutput);
-  void addProcess(ProcessPlugin *newproc);
+  void addInput(InputStreamPlugin *newin);
+  void addOutput(OutputStreamPlugin *newout);
+  void synchronizeOutputsTo(OutputStreamPlugin *synchControlOutput);
+  void addProcess(ProcessStreamPlugin *newproc);
   int read(void *buf, int key);
   int tapRead(void *buf);
     

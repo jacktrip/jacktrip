@@ -164,12 +164,12 @@ public:
 
   // int set_fifo_priority (void);
 
-  void ConnectPlugins (InputPlugin * from, OutputPlugin * to,
+  void ConnectStreamPlugins (InputStreamPlugin * from, OutputStreamPlugin * to,
 		       Stream * through);
 
-  void addPlugin (InputPlugin * from, Stream * str);
+  void addStreamPlugin (InputStreamPlugin * from, Stream * str);
 
-  void addPlugin (OutputPlugin * to, Stream * str);
+  void addStreamPlugin (OutputStreamPlugin * to, Stream * str);
 
   //void addSTKProcesses (Stream * str); //Remove STK dependency
   cmdLineArgs *args;

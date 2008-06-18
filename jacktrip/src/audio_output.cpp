@@ -40,7 +40,7 @@
 using namespace std;
 
 AudioOutput::AudioOutput (AudioDevice * audioDevice, AudioInfoT audioInfo):
-  OutputPlugin ("Audio Output plugin"),
+  OutputStreamPlugin ("Audio Output plugin"),
   audioDevice (audioDevice), audioInfo (audioInfo), decoder (NULL)
 {
   dontRun = audioInfo->jack;

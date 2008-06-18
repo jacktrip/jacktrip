@@ -42,7 +42,7 @@
 using namespace std;
 
 AudioInput::AudioInput (AudioDevice * audioDevice, AudioInfoT audioInfo):
-  InputPlugin ("Audio Input Plugin"),
+  InputStreamPlugin ("Audio Input StreamPlugin"),
   audioDevice (audioDevice), audioInfo (audioInfo)
 {
   dontRun = audioInfo->jack;

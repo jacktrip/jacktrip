@@ -45,7 +45,7 @@
 //#include "ThreadCommEvent.h"
 
 
-class Plugin:public QThread
+class StreamPlugin:public QThread
 {
 protected:
   char name[24];

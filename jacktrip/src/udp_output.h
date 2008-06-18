@@ -47,7 +47,7 @@
 #include "udp.h"
 
 
-class UDPOutput:public OutputPlugin	// , public Semaphore
+class UDPOutput:public OutputStreamPlugin	// , public Semaphore
 {
 private:
   

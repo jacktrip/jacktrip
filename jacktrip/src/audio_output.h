@@ -44,7 +44,7 @@ class AmbisonicsDecoder;
  * @brief Sends audio buffers from a Stream to the RtAudio (sound) device.
  */
 
-class AudioOutput:public OutputPlugin
+class AudioOutput:public OutputStreamPlugin
 {
 private:
   AudioDevice * audioDevice;

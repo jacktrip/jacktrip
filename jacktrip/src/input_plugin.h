@@ -41,13 +41,13 @@
 class Stream;
 
 
-class InputPlugin : public Plugin
+class InputStreamPlugin : public StreamPlugin
 { 
 protected:
   int	key;
   Stream *stream;
 public:
-  InputPlugin(const char *name) : key( -1 )
+  InputStreamPlugin(const char *name) : key( -1 )
   {
     this->setName(name);
     this->dontRun = false;

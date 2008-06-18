@@ -189,7 +189,7 @@ JackTrip::cmd (MainDialog *eventThread)
       t.netin = new UDPInput (netInfo, audioInfo);
       t.netout = new UDPOutput (netInfo, audioInfo);
 
-      ConnectPlugins (t.netin, t.netout, t.streamout);
+      ConnectStreamPlugins (t.netin, t.netout, t.streamout);
       break;
 		
       //remove STK dependency
@@ -201,7 +201,7 @@ JackTrip::cmd (MainDialog *eventThread)
 
 	addSTKProcesses (t.streamin);
 
-	ConnectPlugins (t.netin, t.netout, t.streamin);
+	ConnectStreamPlugins (t.netin, t.netout, t.streamin);
 
 	audioDevice = new AudioDevice (args->audioDeviceID,
 	args->
@@ -211,7 +211,7 @@ JackTrip::cmd (MainDialog *eventThread)
 
 	t.audioout = new AudioOutput (audioDevice, audioInfo);
 
-	addPlugin (t.audioout, t.streamin);
+	addStreamPlugin (t.audioout, t.streamin);
 
 	// Synchronize network packet transfers to audio device tick rate.
 	t.streamin->synchronizeOutputsTo (t.audioout);
@@ -225,7 +225,7 @@ JackTrip::cmd (MainDialog *eventThread)
 
 	addSTKProcesses (t.streamout);
 
-	ConnectPlugins (t.netin, t.netout, t.streamout);
+	ConnectStreamPlugins (t.netin, t.netout, t.streamout);
 
 	break;
       */
@@ -240,7 +240,7 @@ JackTrip::cmd (MainDialog *eventThread)
       t.audioin = new AudioInput (audioDevice, audioInfo);
       t.audioout = new AudioOutput (audioDevice, audioInfo);
 
-      ConnectPlugins (t.audioin, t.audioout, t.streamout);
+      ConnectStreamPlugins (t.audioin, t.audioout, t.streamout);
       break;
 
     default:
@@ -260,8 +260,8 @@ JackTrip::cmd (MainDialog *eventThread)
       t.netout = new UDPOutput (netInfo, audioInfo);
       t.netout->setGUI((QObject *)eventThread);
 
-      ConnectPlugins (t.audioin, t.netout, t.streamout);
-      ConnectPlugins (t.netin, t.audioout, t.streamin);
+      ConnectStreamPlugins (t.audioin, t.netout, t.streamout);
+      ConnectStreamPlugins (t.netin, t.audioout, t.streamin);
 
     }
 
@@ -576,7 +576,7 @@ JackTrip::ParseCommandLine (int argc, char *argv[])
  */
 //---------------------------------------------------------------------------------------------
 void
-JackTrip::ConnectPlugins (InputPlugin * from, OutputPlugin * to, Stream * through)
+JackTrip::ConnectStreamPlugins (InputStreamPlugin * from, OutputStreamPlugin * to, Stream * through)
 {
   from->setStream (through);
   to->setStream (through);
@@ -591,7 +591,7 @@ JackTrip::ConnectPlugins (InputPlugin * from, OutputPlugin * to, Stream * throug
  */
 //---------------------------------------------------------------------------------------------
 void
-JackTrip::addPlugin (InputPlugin * from, Stream * str)
+JackTrip::addStreamPlugin (InputStreamPlugin * from, Stream * str)
 {
   from->setStream (str);
   str->addInput (from);
@@ -603,7 +603,7 @@ JackTrip::addPlugin (InputPlugin * from, Stream * str)
  */
 //---------------------------------------------------------------------------------------------
 void
-JackTrip::addPlugin (OutputPlugin * to, Stream * str)
+JackTrip::addStreamPlugin (OutputStreamPlugin * to, Stream * str)
 {
   to->setStream (str);
   str->addOutput (to);
