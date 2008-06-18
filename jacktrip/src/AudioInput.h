@@ -35,7 +35,7 @@
 #define	_AUDIO_INPUT_H
 
 #include "input_plugin.h"
-#include "audioDevice.h"
+#include "AudioDevice.h"
 #include "audioInfo.h"
 
 /**

@@ -31,7 +31,7 @@
  * audioDevice.cpp
  */
 
-#include "audioDevice.h"
+#include "AudioDevice.h"
 #include <ctime>
 using namespace std;
 
