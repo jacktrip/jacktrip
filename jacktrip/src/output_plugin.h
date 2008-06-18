@@ -34,7 +34,7 @@
 #ifndef _OUTPUT_PLUGIN_H
 #define _OUTPUT_PLUGIN_H
 
-#include "plugin.h"
+#include "StreamPlugin.h"
 
 class Stream;
 

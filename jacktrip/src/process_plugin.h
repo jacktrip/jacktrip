@@ -36,7 +36,7 @@
 #ifndef _PROCESS_PLUGIN_H
 #define _PROCESS_PLUGIN_H
 
-#include "plugin.h"
+#include "StreamPlugin.h"
 
 /**
  * @brief Virtual function declarations for process plugins to Stream
