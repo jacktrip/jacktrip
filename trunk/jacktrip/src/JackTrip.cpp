@@ -185,50 +185,13 @@ JackTrip::cmd (MainDialog *eventThread)
       audioDevice = new AudioDevice (true);
       exit (0);
 
-    case NETMIRROR:
-      t.netin = new UDPInput (netInfo, audioInfo);
-      t.netout = new UDPOutput (netInfo, audioInfo);
-
-      ConnectStreamPlugins (t.netin, t.netout, t.streamout);
-      break;
-		
-      //remove STK dependency
       /*
-	case HARPT:
-
+	case NETMIRROR:
 	t.netin = new UDPInput (netInfo, audioInfo);
 	t.netout = new UDPOutput (netInfo, audioInfo);
-
-	addSTKProcesses (t.streamin);
-
-	ConnectStreamPlugins (t.netin, t.netout, t.streamin);
-
-	audioDevice = new AudioDevice (args->audioDeviceID,
-	args->
-	audioInputQueueLengthInAudioBuffers,
-	AudioDevice::DUPLEX,
-	audioInfo);
-
-	t.audioout = new AudioOutput (audioDevice, audioInfo);
-
-	addStreamPlugin (t.audioout, t.streamin);
-
-	// Synchronize network packet transfers to audio device tick rate.
-	t.streamin->synchronizeOutputsTo (t.audioout);
-
-	break;
-
-	case HARPR:
-
-	t.netin = new UDPInput (netInfo, audioInfo);
-	t.netout = new UDPOutput (netInfo, audioInfo);
-
-	addSTKProcesses (t.streamout);
-
+	
 	ConnectStreamPlugins (t.netin, t.netout, t.streamout);
-
 	break;
-      */
 
     case SNDMIRROR:
       audioDevice = new AudioDevice (args->audioDeviceID,
@@ -242,7 +205,7 @@ JackTrip::cmd (MainDialog *eventThread)
 
       ConnectStreamPlugins (t.audioin, t.audioout, t.streamout);
       break;
-
+      */
     default:
       audioDevice = new AudioDevice (args->audioDeviceID,
 				     args->
@@ -385,15 +348,15 @@ JackTrip::PrintUsage ()
   cout << "	-r		Receiver	(opens audio channels and waits" << endl;
   cout << "				 	for a connection from a transmitter)" << endl;
   cout << "	-t HOSTNAME	Transmitter 	(connects to a receiver on HOSTNAME)" << endl;
-  cout << "	-n		NetMirror 	(A receiver that reflects back all" << endl;
-  cout << "				 	audio sent to it by a transmitter." << endl;
-  cout << "					No local audio.)" <<
-    endl;
-  cout << "	-s		SndMirror 	(Routes sound input to output." << endl;
-  cout << "					No networking.)" <<
-    endl;
-  cout << "	-h HOSTNAME	HarpTransmitter	(uses network as harp strings.)" << endl;
-  cout << "	-p		HarpReceiver	(uses network as harp strings.)" << endl;
+  //cout << "	-n		NetMirror 	(A receiver that reflects back all" << endl;
+  //cout << "				 	audio sent to it by a transmitter." << endl;
+  //cout << "					No local audio.)" <<
+  //endl;
+  //cout << "	-s		SndMirror 	(Routes sound input to output." << endl;
+  //cout << "					No networking.)" <<
+  //  endl;
+  //cout << "	-h HOSTNAME	HarpTransmitter	(uses network as harp strings.)" << endl;
+  //cout << "	-p		HarpReceiver	(uses network as harp strings.)" << endl;
   cout << "	-i		Info		(Get audio device info.)" << endl;
   cout << "---------------------------------------------------------------------------" << endl;
   cout << " Optional parameters are as follows:				(default)" << endl;
