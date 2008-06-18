@@ -34,7 +34,7 @@
 #ifndef	_AUDIO_OUTPUT_H
 #define	_AUDIO_OUTPUT_H
 
-#include "output_plugin.h"
+#include "OutputStreamPlugin.h"
 #include "AudioDevice.h"
 #include "audioInfo.h"
 
