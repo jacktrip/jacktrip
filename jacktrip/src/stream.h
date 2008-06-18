@@ -36,7 +36,7 @@
 
 #include "circularbuffer.h"
 #include "InputStreamPlugin.h"
-#include "output_plugin.h"
+#include "OutputStreamPlugin.h"
 #include "process_plugin.h"
 #include "audioInfo.h"
 #include "networkInfo.h"

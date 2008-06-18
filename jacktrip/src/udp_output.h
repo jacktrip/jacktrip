@@ -43,7 +43,7 @@
 #include <QUdpSocket>
 #include "networkInfo.h"
 #include "audioInfo.h"
-#include "output_plugin.h"
+#include "OutputStreamPlugin.h"
 #include "udp.h"
 
 
