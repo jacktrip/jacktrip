@@ -43,7 +43,7 @@
  * on a Stream.
  */
 
-class AudioInput:public InputPlugin
+class AudioInput:public InputStreamPlugin
 {
 private:
   AudioDevice * audioDevice;

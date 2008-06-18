@@ -42,14 +42,14 @@ class Stream;
  * @brief Virtual function declarations for outputs from Stream
  */
 
-class OutputPlugin : public Plugin
+class OutputStreamPlugin : public StreamPlugin
 {
 protected:
   int    key;
   Stream *stream;
 
 public:
-  OutputPlugin(const char *name) : key(-1)
+  OutputStreamPlugin(const char *name) : key(-1)
   {
     this->setName(name);
     this->dontRun = false;

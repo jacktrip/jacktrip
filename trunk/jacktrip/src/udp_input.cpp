@@ -47,7 +47,7 @@ using namespace std;
 //-------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 UDPInput::UDPInput (NetworkInfoT netInfo, AudioInfoT audInfo):
-  InputPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
+  InputStreamPlugin ("UDP Input"), netInfo (netInfo), audInfo (audInfo)
 {
   bpp = netInfo->getDataBytesPerPacket ();
   cout << "bpp = " << bpp << endl;
