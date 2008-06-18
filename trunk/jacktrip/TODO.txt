@@ -25,4 +25,4 @@
 -Merge rcvz1 with normal rcv method: rcvz one does the buffering mechanism
 -Get a better command line parser
 -Check that header files are modern, e.g., <iostram> instead of <iostream.h> --DONE
-
+-Update interface to JackClient to make it compatible with the new API and also make it work with jackmp

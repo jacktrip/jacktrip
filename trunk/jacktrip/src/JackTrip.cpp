@@ -256,9 +256,9 @@ JackTrip::cmd (MainDialog *eventThread)
       audioDevice->setThreads(t);
 
       t.netin = new UDPInput (netInfo, audioInfo);
-      t.netin->setGUI((QObject *)eventThread);
+      //t.netin->setGUI((QObject *)eventThread);
       t.netout = new UDPOutput (netInfo, audioInfo);
-      t.netout->setGUI((QObject *)eventThread);
+      //t.netout->setGUI((QObject *)eventThread);
 
       ConnectStreamPlugins (t.audioin, t.netout, t.streamout);
       ConnectStreamPlugins (t.netin, t.audioout, t.streamin);

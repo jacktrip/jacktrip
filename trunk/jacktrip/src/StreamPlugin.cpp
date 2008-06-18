@@ -28,37 +28,30 @@
 */
 
 /*
- * StreamPlugin.h
- *
- * @brief Basic properties of an audio plugin
+ * StreamPlugin.cpp
  */
 
-#ifndef _PLUGIN_H
-#define _PLUGIN_H
-
-#include <QThread>
-// for plotting
-#include <sys/time.h>
-#include <QApplication>
+#include "StreamPlugin.h"
 
 
-class StreamPlugin : public QThread
+unsigned long StreamPlugin::usecTime ()
 {
-public:
-  bool dontRun;
-  // for plotting
-  unsigned long usecTime ();	// in usec
-  
-  QObject * _rcvr;
-  //void setGUI(QObject * rcvr){_rcvr = rcvr;};
-  //virtual void plotVal (double v) = 0;
-  
-  char* getName ();
-  char *setName (const char *newName);
-
-protected:
-  char name[24]; //TODO: Make this better
-};
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  return ((tv.tv_sec * 1000000) + (tv.tv_usec));
+  // was sec*1000 and usec/1000 for msec
+}
 
 
-#endif
+char* StreamPlugin::getName ()
+{
+  return name;
+}
+
+
+char* StreamPlugin::setName (const char *newName)
+{
+  strncpy (name, newName, 23);
+  name[23] = '\0';
+  return name;
+}
