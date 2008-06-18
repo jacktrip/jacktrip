@@ -36,7 +36,7 @@
  */
 
 #include "AudioInput.h"
-#include "stream.h"
+#include "Stream.h"
 #include <iostream>
 
 using namespace std;

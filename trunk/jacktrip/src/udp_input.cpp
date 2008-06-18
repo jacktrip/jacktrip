@@ -33,7 +33,7 @@
 
 #include "udp_input.h"
 #include "networkInfo.h"
-#include "stream.h"
+#include "Stream.h"
 #include "unistd.h"
 #include <cstdlib>
 #include <cstdio>

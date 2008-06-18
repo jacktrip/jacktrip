@@ -45,7 +45,7 @@
 #include "AudioOutput.h"
 #include "udp_input.h"
 #include "udp_output.h"
-#include "stream.h"
+#include "Stream.h"
 #include "udp.h"
 #include <cstdlib>
 #include <unistd.h>

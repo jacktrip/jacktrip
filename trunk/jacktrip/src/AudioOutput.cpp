@@ -32,7 +32,7 @@
  */
 
 #include "AudioOutput.h"
-#include "stream.h"
+#include "Stream.h"
 //#include "ambisonics/ambisonicsdecoder.h"
 #include <cstring>
 #include <iostream>
