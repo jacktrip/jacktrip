@@ -35,7 +35,7 @@
 #define	_AUDIO_OUTPUT_H
 
 #include "output_plugin.h"
-#include "audioDevice.h"
+#include "AudioDevice.h"
 #include "audioInfo.h"
 
 class AmbisonicsDecoder;

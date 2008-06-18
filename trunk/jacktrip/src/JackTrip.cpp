@@ -32,7 +32,7 @@
  */
 
 //#include "JackTrip.h"
-#include "audioDevice.h"
+#include "AudioDevice.h"
 
 using namespace std;
 

@@ -34,7 +34,7 @@
 #include "JackClient.h"
 #include <cmath>
 #include <cstring>
-#include "audioDevice.h"
+#include "AudioDevice.h"
 //#include "qstring.h"
 #include <QString>
 //#include <q3textstream.h>
