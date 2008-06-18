@@ -126,7 +126,7 @@ JackTrip::~JackTrip()
  */
 //---------------------------------------------------------------------------------------------
 int
-JackTrip::cmd (MainDialog *eventThread)
+JackTrip::cmd (MainDialog* eventThread)
 {
   // Get the local host address
   QString *localhostName = GetLocalHostName ();
@@ -184,28 +184,7 @@ JackTrip::cmd (MainDialog *eventThread)
     case AUDIOINFO:
       audioDevice = new AudioDevice (true);
       exit (0);
-
-      /*
-	case NETMIRROR:
-	t.netin = new UDPInput (netInfo, audioInfo);
-	t.netout = new UDPOutput (netInfo, audioInfo);
-	
-	ConnectStreamPlugins (t.netin, t.netout, t.streamout);
-	break;
-
-    case SNDMIRROR:
-      audioDevice = new AudioDevice (args->audioDeviceID,
-				     args->
-				     audioInputQueueLengthInAudioBuffers,
-				     AudioDevice::DUPLEX,
-				     audioInfo);
-
-      t.audioin = new AudioInput (audioDevice, audioInfo);
-      t.audioout = new AudioOutput (audioDevice, audioInfo);
-
-      ConnectStreamPlugins (t.audioin, t.audioout, t.streamout);
-      break;
-      */
+      
     default:
       audioDevice = new AudioDevice (args->audioDeviceID,
 				     args->
@@ -364,19 +343,19 @@ JackTrip::PrintUsage ()
   cout << "	-b 	Number of audio buffers in network packet (redundancy).	(" << args->redundancy << ")" << endl;
   cout << "	-q 	Number of packets in input queue.	(" << args->networkInputQueueLengthInPackets << ")" << endl;
   cout << "	-B 	Number of audio buffers in audio input queue.	(" << args->audioInputQueueLengthInAudioBuffers << ")" << endl;
-  cout << "	-c 	Number of NetHarp strings.			(" << args->netHarpStrings << ")" << endl;
+  //cout << "	-c 	Number of NetHarp strings.			(" << args->netHarpStrings << ")" << endl;
   cout << "	-a 	Number of audio channels to use.		(" << args->audioChannels << ")" << endl;
-  cout << "	-D 	Audio device to use if not default.		(" << args->audioDeviceID << ")" << endl;
+  //cout << "	-D 	Audio device to use if not default.		(" << args->audioDeviceID << ")" << endl;
   cout << "	-o 	Network port offset.				(" << args->networkPortOffset << ")" << endl;
   cout << "	-f 	Run fifo (scheduling priority).			(" << args->runFifo << ")" << endl;
-  cout << "	-P 	Seconds between Netharp plucks.			(" << args->secondsBetweenPlucks << ")" << endl;
-  cout << "	-l 	Integer % low pass filter coefficient.		(" << args->lowPassFilterCoeff << ") 0 = off" << endl;
-  cout << "	-d 	Delay increment between strings (msec.) 	(" << args->delayIncrementBetweenStrings << ") 0 = off" << endl;
+  //cout << "	-P 	Seconds between Netharp plucks.			(" << args->secondsBetweenPlucks << ")" << endl;
+  //cout << "	-l 	Integer % low pass filter coefficient.		(" << args->lowPassFilterCoeff << ") 0 = off" << endl;
+  //cout << "	-d 	Delay increment between strings (msec.) 	(" << args->delayIncrementBetweenStrings << ") 0 = off" << endl;
   cout << "	-j		jack 	(" << args->jack << ")" << endl;
   cout << "	-J		jack alsa readable offset	(" << args->jack_alsa_readable_offset << ")" << endl;
-  cout << "	-g		gui	(" << args->gui << ")" << endl;
+  //cout << "	-g		gui	(" << args->gui << ")" << endl;
   cout << endl;
-  cout << "	run 'src/jacktrip' to see these instructions." <<
+  cout << "	run './jacktrip' to see these instructions." <<
     endl;
 }
 

@@ -147,7 +147,7 @@ class JackTrip:public QObject
 public:
   JackTrip();
   ~JackTrip();
-  int cmd (MainDialog *eventThread);
+  int cmd (MainDialog* eventThread);
   void start();
   void finish();
   void PrintUsage ();
