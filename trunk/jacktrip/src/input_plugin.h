@@ -36,7 +36,7 @@
 #ifndef _INPUT_PLUGIN_H
 #define _INPUT_PLUGIN_H
 
-#include "plugin.h"
+#include "StreamPlugin.h"
 
 class Stream;
 
