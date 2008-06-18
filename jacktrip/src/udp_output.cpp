@@ -32,7 +32,7 @@
  */
 
 #include "udp_output.h"
-#include "stream.h"
+#include "Stream.h"
 #include "unistd.h"
 #include <cstdlib>
 #include <cstdio>

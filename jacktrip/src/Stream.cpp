@@ -31,7 +31,7 @@
  * stream.cpp
  */
 
-#include "stream.h"
+#include "Stream.h"
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
