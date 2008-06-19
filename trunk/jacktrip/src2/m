@@ -1,0 +1,42 @@
+#!/bin/bash
+#####################################
+APP_NAME=jacktrip
+APP_NAME_QUOTES=\\\"$APP_NAME\\\"
+ 
+######################################
+# Created by Chris Chafe
+# Modified by Juan-Pablo Caceres to include a make install option to build and RPM, and to make it work with any shell.
+ 
+# QMAKE_CLEAN cleans up ui, killing dependencies involving 
+# generated base classes
+# don't --> make clean
+
+#rm -r obj
+#rm -r moc
+rm $APP_NAME.pro
+rm Makefile
+
+#echo "progen"
+
+#qmake -project -o $APP_NAME.pro ui/ ../include/
+qmake-qt4 -project -o $APP_NAME.pro
+
+echo "qmake .pro built"
+
+#Create Makefile
+qmake-qt4 -makefile -unix -o Makefile \
+"CONFIG+=qt debug thread warn_on" \
+"QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
+"QT += network" \
+"DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
+"QMAKE_CLEAN+=$APP_NAME" \
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack" \
+"unix:TARGET=$APP_NAME" \
+"unix:target.path=/usr/bin" \
+"unix:INSTALLS+=target" $APP_NAME.pro
+
+#INCLUDEPATH+=/usr/include/stk ../include" \
+#"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack" \
+#"QT += network qt3support" \
+
+echo "done"
