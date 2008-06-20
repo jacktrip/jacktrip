@@ -14,6 +14,7 @@
  */
 class AudioInterface
 {
+  /*
 public:
   AudioInterface();
   virtual ~AudioInterface();
@@ -25,6 +26,7 @@ protected:
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
+  */
 };
 
 #endif
