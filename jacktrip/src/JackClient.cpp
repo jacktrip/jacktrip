@@ -183,14 +183,20 @@ JackClient::JackClient (int nChans, int nFrames, bool output, bool input, AudioD
 
   /* try to become a client of the JACK server */
   // code is from freqtweak
-  char
-    namebuf[100];
+  const char* server_name = NULL;
+  jack_options_t options = JackNoStartServer;
+  //TODO: Need to add this flag to options, still don't know how to do it
+  //options == JackUseExactName;
+  jack_status_t status;
+  
+  char namebuf[100];
   /* try to become a client of the JACK server */
   // find a name predictably
   for (int i = 1; i < 10; i++)
     {
       snprintf (namebuf, sizeof (namebuf) - 1, "jacktrip_%d", i);
-      if ((client = jack_client_new (namebuf)) != 0)
+      //if ((client = jack_client_new (namebuf)) != 0)
+      if ( (client = jack_client_open (namebuf, options, &status, server_name)) != NULL )
 	{
 	  break;
 	}
