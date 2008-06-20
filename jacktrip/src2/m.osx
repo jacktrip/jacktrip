@@ -1,0 +1,42 @@
+#!/bin/bash
+#####################################
+APP_NAME=jacktrip2
+######################################
+## Created by Juan-Pablo Caceres
+## qmake file to generate universal binary.
+## This was tested with MacOS X 10.5, in an Intel Machine, but should work
+## from 10.3.9 on, with proper configuration
+## Notes: this qmake files compiles using Static Qt Librairies.
+##        to install qt using static librairies on osx, configure as:
+##        ./configure -nomake examples -static -release -no-framework -universal
+## You also need 'Jack OS X' Installed, for the jack library
+## http://www.jackosx.com/
+
+#Cleanup
+rm $APP_NAME.pro
+rm Makefile
+echo "cleanup done"
+
+#Create project (.pro) file
+qmake -project -o $APP_NAME.pro
+echo "qmake .pro built."
+
+#Create Makefile
+qmake -makefile -o Makefile \
+"CONFIG +=qt release" \
+"CONFIG -= app_bundle" \
+"QT -= gui" \
+"LIBS += -dead_strip -ljack -framework CoreAudio" \
+"CONFIG += x86 ppc" \
+"TARGET = $APP_NAME" \
+"DESTDIR = ./" \
+"QMAKE_CLEAN += ./$APP_NAME" \
+"target.path = /usr/bin" \
+"INSTALLS += target" \
+$APP_NAME.pro
+
+echo "done"
+
+## Notes:
+## To link jack as framework
+## "LIBS += -framework jack
