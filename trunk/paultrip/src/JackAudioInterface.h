@@ -1,7 +1,7 @@
 /**
  * \file JackAudioInterface.h
- * author: Juan-Pablo Caceres
- * date: June 2008
+ * \author Juan-Pablo Caceres
+ * \date June 2008
  */
 
 

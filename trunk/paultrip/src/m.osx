@@ -1,6 +1,7 @@
 #!/bin/bash
 #####################################
-APP_NAME=jacktrip2
+APP_NAME=paultrip
+APP_NAME_QUOTES=\"${APP_NAME}\"
 ######################################
 ## Created by Juan-Pablo Caceres
 ## qmake file to generate universal binary.
@@ -23,12 +24,13 @@ echo "qmake .pro built."
 
 #Create Makefile
 qmake -makefile -o Makefile \
-"CONFIG +=qt release" \
+"CONFIG += qt release" \
 "CONFIG -= app_bundle" \
 "QT -= gui" \
 "LIBS += -dead_strip -ljack -framework CoreAudio" \
 "CONFIG += x86 ppc" \
 "TARGET = $APP_NAME" \
+"DEFINES += APP_NAME=${APP_NAME_QUOTES}" \
 "DESTDIR = ./" \
 "QMAKE_CLEAN += ./$APP_NAME" \
 "target.path = /usr/bin" \
