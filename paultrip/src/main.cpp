@@ -21,3 +21,19 @@ int main(int argc, char** argv)
   return 0;
 }
 
+
+
+
+// Main Page Documentation
+/*! \mainpage PaulTrip API Documentation
+ *
+ * \section intro_sec About PaulTrip
+ *
+ * test
+ *
+ * \section install_sec Installation
+ *
+ * \subsection test
+ *  
+ * etc...
+ */

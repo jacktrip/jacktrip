@@ -1,7 +1,7 @@
 /**
  * \file JackAudioInterface.cpp
- * author: Juan-Pablo Caceres
- * date: June 2008
+ * \author Juan-Pablo Caceres
+ * \date June 2008
  */
 
 #include "JackAudioInterface.h"
@@ -40,7 +40,8 @@ JackAudioInterface::~JackAudioInterface()
 //-------------------------------------------------------------------------------
 void JackAudioInterface::openClientConnection()
 {
-  const char* client_name = "test";
+  //TODO: Get this name from global variable
+  const char* client_name = "paultrip";//APP_NAME;
   const char* server_name = NULL;
   jack_options_t options = JackNoStartServer;
   jack_status_t status;
