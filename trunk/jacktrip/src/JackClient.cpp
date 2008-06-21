@@ -113,7 +113,7 @@ xx_global_process_xx (unsigned int nframes, void*) //argc)
       for (int i = 0; i < xx_nChans_xx; i++)
 	{
 	  inFrame = inBufPtr[i];
-	  s = (signed short) floor (inFrame[j] * 32768.0);
+	  s = (signed short) floor (inFrame[j] * 32768.0); //2^15
 	  inBuf[f + i] = s;
 	}
       // oscillator test on input
