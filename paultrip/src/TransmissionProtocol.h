@@ -30,63 +30,48 @@
 //*****************************************************************
 
 /**
- * \file main.cpp
+ * \file TransmissionProtocol.h
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
 
-#include <iostream>
-#include <unistd.h>
 
-#include "JackAudioInterface.h"
+#ifndef __TRANSMISSIONPROTOCOL_H__
+#define __TRANSMISSIONPROTOCOL_H__
 
-using namespace std;
-
-int process (jack_nframes_t nframes, void *arg);
+#include <QThread>
+#include <QHostAddress>
 
 
-int main(int argc, char** argv)
-{
-  JackAudioInterface test(4);
-  cout << "SR: " << test.getSampleRate() << endl;
-  cout << "Buffer Size: " << test.getBufferSize() << endl;
-  test.setProcessCallback(process);
-  test.startProcess();
-
-  
-  
-  //usleep(100000000);
-  while (true)
-    {
-      cout << "SR: " << test.getSampleRate() << endl;
-      cout << "Buffer Size: " << test.getBufferSize() << endl;
-      usleep(1000000);
-    }
-  return 0;
-}
-
-
-
-int process (jack_nframes_t nframes, void *arg)
-{
-
-	return 0;      
-}
-
-
-
-
-
-// Main Page Documentation
-/** \mainpage PaulTrip API Documentation
+/** \brief Base class that defines the transmission protocol.
  *
- * \section intro_sec About PaulTrip
+ * TODO: The idea is that this class should define the PaulTrip protocol, and implement parts
+ * of it like the redundancy forward error correction
  *
- * test
+ * The transport protocol itself has to be implemented subclassing this class, i.e.,
+ * using a TCP or UDP protocol.
  *
- * \section install_sec Installation
+ * Even if the underlined transmission protocol is stream oriented (as in TCP),
+ * we send packets that are the size of the audio processing buffer.
+ * Use AudioInterface::getBufferSize to obtain this value.
  *
- * \subsection test
- *  
- * etc...
+ * Each transmission (i.e., inputs and outputs) run on its own thread.
  */
+class TransmissionProtocol : QThread
+{
+public:
+  void receivePacket();
+  void setLocalIPv4Address();
+  void setPeerIPv4Address();
+  //void setLocalIPv6();
+  //void setRemoteIPv6();
+
+  void connect();
+
+private:
+  QHostAddress LocalIPv4Address;
+  QHostAddress PeerIPv4Address;
+  
+};
+
+#endif
