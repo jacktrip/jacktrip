@@ -29,64 +29,20 @@
 */
 //*****************************************************************
 
-/**
- * \file main.cpp
- * \author Juan-Pablo Caceres
- * \date June 2008
+/*
+ * AudioInterface.cpp
+ * author: Juan-Pablo Caceres
+ * date: June 2008
  */
 
-#include <iostream>
-#include <unistd.h>
 
-#include "JackAudioInterface.h"
+#include "AudioInterface.h"
 
-using namespace std;
-
-int process (jack_nframes_t nframes, void *arg);
-
-
-int main(int argc, char** argv)
+AudioInterface::AudioInterface()
 {
-  JackAudioInterface test(4);
-  cout << "SR: " << test.getSampleRate() << endl;
-  cout << "Buffer Size: " << test.getBufferSize() << endl;
-  test.setProcessCallback(process);
-  test.startProcess();
-
-  
-  
-  //usleep(100000000);
-  while (true)
-    {
-      cout << "SR: " << test.getSampleRate() << endl;
-      cout << "Buffer Size: " << test.getBufferSize() << endl;
-      usleep(1000000);
-    }
-  return 0;
 }
 
 
-
-int process (jack_nframes_t nframes, void *arg)
+AudioInterface::~AudioInterface()
 {
-
-	return 0;      
 }
-
-
-
-
-
-// Main Page Documentation
-/** \mainpage PaulTrip API Documentation
- *
- * \section intro_sec About PaulTrip
- *
- * test
- *
- * \section install_sec Installation
- *
- * \subsection test
- *  
- * etc...
- */
