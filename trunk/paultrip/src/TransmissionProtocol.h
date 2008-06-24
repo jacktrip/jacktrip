@@ -45,10 +45,12 @@
 
 /** \brief Base class that defines the transmission protocol.
  *
- * TODO: The idea is that this class should define the PaulTrip protocol, and implement parts
- * of it like the redundancy forward error correction
+ * \todo This Class should contain definition of paultrip header and basic funcionality to obtain
+ * local machine IPs and maybe functions to manipulate IPs.
+ * Redundancy and forward error correction should be implemented on each
+ * Transport protocol, cause they depend on the protocol itself
  *
- * The transport protocol itself has to be implemented subclassing this class, i.e.,
+ * \todo The transport protocol itself has to be implemented subclassing this class, i.e.,
  * using a TCP or UDP protocol.
  *
  * Even if the underlined transmission protocol is stream oriented (as in TCP),
