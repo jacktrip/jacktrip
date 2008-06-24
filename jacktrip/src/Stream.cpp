@@ -119,7 +119,7 @@ Stream::addOutput (OutputStreamPlugin * newout)
   APPEND (outs, newout);
 
   //if (outs.count () > bufs.count ())
-  if ( (outs.size() - outs.count(0)) > (bufs.count() - bufs.count(0)) )
+  if ( (outs.size() - outs.count(0)) > (bufs.size() - bufs.count(0)) )
     {
       addCircularBuffer ();
     }
