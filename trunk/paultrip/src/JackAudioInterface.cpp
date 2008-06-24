@@ -41,14 +41,7 @@
 
 using namespace std;
 
-
-//------------------------------------------------------------------------------
-/** \brief The class constructor
- * 
- * \param NumInChans Number of Input Channels
- * \param NumOutChans Number of Output Channels
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans)
   : mNumInChans(NumInChans), mNumOutChans(NumOutChans)
 {
@@ -56,12 +49,7 @@ JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans)
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief Overloaded class constructor with same inputs and output channels
- * 
- * \param NumChans Number of Input and Output Channels
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 JackAudioInterface::JackAudioInterface(int NumChans)
   : mNumInChans(NumChans), mNumOutChans(NumChans)
 {
@@ -69,25 +57,14 @@ JackAudioInterface::JackAudioInterface(int NumChans)
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief The class destructor
- * 
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 JackAudioInterface::~JackAudioInterface()
 {
   //TODO: Write Destructor
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief Private method to setup a client of the Jack server. This method
- *  is called by the class constructors. It does the following:\n
- *  - Connects to the JACK server
- *  - Sets the shutdown process callback
- *  - Creates the appropriate number of input and output channels
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 void JackAudioInterface::setupClient()
 {
   //TODO: Return an int as en error code
@@ -125,11 +102,7 @@ void JackAudioInterface::setupClient()
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief Creates input and output channels in the Jack client
- * 
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 void JackAudioInterface::createChannels()
 {
   //Create Input Ports
@@ -156,44 +129,21 @@ void JackAudioInterface::createChannels()
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief Get the Jack Server Sampling Rate, in samples/second
- * 
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 uint32_t JackAudioInterface::getSampleRate() const 
 {
   return jack_get_sample_rate(mClient);
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief Get the Jack Server Buffer Size, in samples
- * 
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 uint32_t JackAudioInterface::getBufferSize() const 
 {
   return jack_get_buffer_size(mClient);
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief setProcessCallback passes a function pointer process to be called by
- *  Jack the JACK server whenever there is work to be done.
- * 
- * \param process Function to be called to process audio. This function is 
- * of the type JackProcessCallback, which is defined as:\n
- * <tt>typedef int(* JackProcessCallback)(jack_nframes_t nframes, void *arg)</tt>
- * \n
- * See
- * http://jackaudio.org/files/docs/html/types_8h.html#4923142208a8e7dacf00ca7a10681d2b
- * for more details
- *
- * \return 0 on success, otherwise a non-zero error code,
- * causing JACK to remove that client from the process() graph.
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 int JackAudioInterface::setProcessCallback(JackProcessCallback process) const
 {
   if( int code = (jack_set_process_callback (mClient, process, 0)) )
@@ -205,12 +155,7 @@ int JackAudioInterface::setProcessCallback(JackProcessCallback process) const
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief
- *
- * \return 0 on success, otherwise a non-zero error code
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 int JackAudioInterface::startProcess() const
 {
   //Tell the JACK server that we are ready to roll.  Our
@@ -224,12 +169,7 @@ int JackAudioInterface::startProcess() const
 }
 
 
-//------------------------------------------------------------------------------
-/** \brief
- *
- * \return 0 on success, otherwise a non-zero error code
- */
-//-------------------------------------------------------------------------------
+//*******************************************************************************
 int JackAudioInterface::stopProcess() const
 {
   if ( int code = (jack_client_close(mClient)) )
@@ -241,12 +181,7 @@ int JackAudioInterface::stopProcess() const
 }
 
 
-//------------------------------------------------------------------------------
-/**
- * JACK calls this shutdown_callback if the server ever shuts down or
- * decides to disconnect the client.
- */
-//------------------------------------------------------------------------------
+//*******************************************************************************
 void JackAudioInterface::jackShutdown (void*)
 {
   cout << "The Jack Server was shut down!" << endl;
