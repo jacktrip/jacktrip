@@ -59,10 +59,14 @@
  *
  * Each transmission (i.e., inputs and outputs) run on its own thread.
  */
-class TransmissionProtocol : QThread
+class DataProtocol// : QThread
 {
 public:
-  void receivePacket();
+  TransmissionProtocol();
+  virtual ~TransmissionProtocol();
+
+  void receivePacket() = 0;
+  void sendPacket() = 0;
   void setLocalIPv4Address();
   void setPeerIPv4Address();
   //void setLocalIPv6();
@@ -73,7 +77,6 @@ public:
 private:
   QHostAddress LocalIPv4Address;
   QHostAddress PeerIPv4Address;
-  
 };
 
 #endif
