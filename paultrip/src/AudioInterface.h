@@ -40,7 +40,7 @@
 #define __AUDIOINTERFACE_H__
 
 #include <QtGlobal> //For QT4 types
-
+#include "paultrip_types.h"
 
 /** \brief Abstract class the provides interface with audio
  *
