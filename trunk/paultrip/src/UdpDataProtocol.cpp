@@ -30,29 +30,62 @@
 //*****************************************************************
 
 /**
- * \file AudioInterface.h
+ * \file UdpDataProtocol.cpp
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
 
+#include <sys/socket.h> //basic socket definitions
+#include <netinet/in.h> //sockaddr_in{} and other Internet defns
+#include <arpa/inet.h> //inet(3) functions
+#include <sys/types.h> //basic system data types
 
-#ifndef __AUDIOINTERFACE_H__
-#define __AUDIOINTERFACE_H__
+#include <cstring>
+#include <iostream>
 
-#include <QtGlobal> //For QT4 types
-#include "types.h"
+#include "UdpDataProtocol.h"
 
-/** \brief Abstract class the provides interface with audio
- *
- */
-class AudioInterface
+using namespace std;
+
+
+//*******************************************************************************
+UdpDataProtocol::UdpDataProtocol()
 {
-public:
-  AudioInterface();
-  virtual ~AudioInterface();
+}
 
-  virtual uint32_t getSampleRate() const = 0;
-  virtual uint32_t getBufferSize() const = 0;
-};
 
-#endif
+//*******************************************************************************
+UdpDataProtocol::~UdpDataProtocol()
+{
+}
+
+
+//*******************************************************************************
+void UdpDataProtocol::createSocket()
+{
+  int sockfd; //socket file descriptor
+  struct sockaddr_in localaddr;
+  
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0); //UDP socket creation
+  
+  bzero(&localaddr, sizeof(localaddr));
+  localaddr.sin_family = AF_INET;
+  localaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  localaddr.sin_port = htons(4464);
+  
+  //Bind local address and port
+  bind(sockfd, (struct sockaddr *) &localaddr, sizeof(localaddr));
+
+  cout << localaddr.sin_addr.s_addr << endl;
+  
+  cout << "socket created" << endl;
+
+  int n;
+  socklen_t len;
+  char mesg[10];
+  struct sockaddr* pcliaddr;
+  for ( ; ; )
+    {
+      recvfrom(sockfd, mesg , 10, 0, pcliaddr, &len);
+    }
+}

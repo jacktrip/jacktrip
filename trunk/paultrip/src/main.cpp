@@ -39,6 +39,7 @@
 #include <unistd.h>
 
 #include "JackAudioInterface.h"
+#include "UdpDataProtocol.h"
 
 using namespace std;
 
@@ -47,21 +48,28 @@ int process (jack_nframes_t nframes, void *arg);
 
 int main(int argc, char** argv)
 {
+
+  UdpDataProtocol udptest;
+  udptest.createSocket();
+  while (true)
+    {
+      usleep(1000000);
+    }
+  
+  /*
   JackAudioInterface test(4);
   cout << "SR: " << test.getSampleRate() << endl;
   cout << "Buffer Size: " << test.getBufferSize() << endl;
   test.setProcessCallback(process);
   test.startProcess();
-
-  
-  
-  //usleep(100000000);
   while (true)
     {
       cout << "SR: " << test.getSampleRate() << endl;
       cout << "Buffer Size: " << test.getBufferSize() << endl;
       usleep(1000000);
     }
+  */
+
   return 0;
 }
 

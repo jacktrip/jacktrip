@@ -30,53 +30,12 @@
 //*****************************************************************
 
 /**
- * \file TransmissionProtocol.h
+ * \file globals.cpp
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
 
-
-#ifndef __TRANSMISSIONPROTOCOL_H__
-#define __TRANSMISSIONPROTOCOL_H__
-
-#include <QThread>
-#include <QHostAddress>
-
-
-/** \brief Base class that defines the transmission protocol.
+/** Network related ports
  *
- * \todo This Class should contain definition of paultrip header and basic funcionality to obtain
- * local machine IPs and maybe functions to manipulate IPs.
- * Redundancy and forward error correction should be implemented on each
- * Transport protocol, cause they depend on the protocol itself
- *
- * \todo The transport protocol itself has to be implemented subclassing this class, i.e.,
- * using a TCP or UDP protocol.
- *
- * Even if the underlined transmission protocol is stream oriented (as in TCP),
- * we send packets that are the size of the audio processing buffer.
- * Use AudioInterface::getBufferSize to obtain this value.
- *
- * Each transmission (i.e., inputs and outputs) run on its own thread.
  */
-class DataProtocol// : QThread
-{
-public:
-  TransmissionProtocol();
-  virtual ~TransmissionProtocol();
-
-  void receivePacket() = 0;
-  void sendPacket() = 0;
-  void setLocalIPv4Address();
-  void setPeerIPv4Address();
-  //void setLocalIPv6();
-  //void setRemoteIPv6();
-
-  void connect();
-
-private:
-  QHostAddress LocalIPv4Address;
-  QHostAddress PeerIPv4Address;
-};
-
-#endif
+//const int INPUT_PORT_0 = 4464;

@@ -30,29 +30,27 @@
 //*****************************************************************
 
 /**
- * \file AudioInterface.h
+ * \file UdpDataProtocol.h
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
 
+#ifndef __UDPDATAPROTOCOL_H__
+#define __UDPDATAROTOCOL_H__
 
-#ifndef __AUDIOINTERFACE_H__
-#define __AUDIOINTERFACE_H__
 
-#include <QtGlobal> //For QT4 types
-#include "types.h"
-
-/** \brief Abstract class the provides interface with audio
- *
- */
-class AudioInterface
+class UdpDataProtocol// : QThread
 {
 public:
-  AudioInterface();
-  virtual ~AudioInterface();
+  UdpDataProtocol();
+  virtual ~UdpDataProtocol();
 
-  virtual uint32_t getSampleRate() const = 0;
-  virtual uint32_t getBufferSize() const = 0;
+  void createSocket();
+  
+
+private:
+
+
 };
 
 #endif
