@@ -44,7 +44,7 @@
 
 #include <QVector>
 
-#include "paultrip_types.h"
+#include "types.h"
 #include "AudioInterface.h"
 
 

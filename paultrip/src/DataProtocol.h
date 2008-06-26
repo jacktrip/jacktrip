@@ -30,29 +30,53 @@
 //*****************************************************************
 
 /**
- * \file AudioInterface.h
+ * \file TransmissionProtocol.h
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
 
 
-#ifndef __AUDIOINTERFACE_H__
-#define __AUDIOINTERFACE_H__
+#ifndef __DATAPROTOCOL_H__
+#define __DATAROTOCOL_H__
 
-#include <QtGlobal> //For QT4 types
-#include "types.h"
+#include <QThread>
+#include <QHostAddress>
 
-/** \brief Abstract class the provides interface with audio
+
+/** \brief Base class that defines the transmission protocol.
  *
+ * \todo This Class should contain definition of paultrip header and basic funcionality to obtain
+ * local machine IPs and maybe functions to manipulate IPs.
+ * Redundancy and forward error correction should be implemented on each
+ * Transport protocol, cause they depend on the protocol itself
+ *
+ * \todo The transport protocol itself has to be implemented subclassing this class, i.e.,
+ * using a TCP or UDP protocol.
+ *
+ * Even if the underlined transmission protocol is stream oriented (as in TCP),
+ * we send packets that are the size of the audio processing buffer.
+ * Use AudioInterface::getBufferSize to obtain this value.
+ *
+ * Each transmission (i.e., inputs and outputs) run on its own thread.
  */
-class AudioInterface
+class DataProtocol// : QThread
 {
 public:
-  AudioInterface();
-  virtual ~AudioInterface();
+  DataProtocol();
+  virtual ~DataProtocol();
 
-  virtual uint32_t getSampleRate() const = 0;
-  virtual uint32_t getBufferSize() const = 0;
+  void receivePacket() = 0;
+  void sendPacket() = 0;
+  void setLocalIPv4Address();
+  void setPeerIPv4Address();
+  //void setLocalIPv6();
+  //void setRemoteIPv6();
+
+  void connect();
+
+private:
+  QHostAddress LocalIPv4Address;
+  QHostAddress PeerIPv4Address;
 };
 
 #endif
