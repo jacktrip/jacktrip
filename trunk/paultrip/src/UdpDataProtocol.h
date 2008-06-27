@@ -38,19 +38,25 @@
 #ifndef __UDPDATAPROTOCOL_H__
 #define __UDPDATAROTOCOL_H__
 
+#include <QThread>
 
-class UdpDataProtocol// : QThread
+#include "DataProtocol.h"
+
+class UdpDataProtocol : DataProtocol
 {
 public:
-  UdpDataProtocol();
-  virtual ~UdpDataProtocol();
+  UdpDataProtocol() {};
+  virtual ~UdpDataProtocol() {};
 
-  void createSocket();
+  //virtual void run(){};
+
+  int setBindSocket();
   
 
 private:
+  
 
-
+  
 };
 
 #endif

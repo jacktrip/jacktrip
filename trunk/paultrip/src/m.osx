@@ -24,7 +24,7 @@ echo "qmake .pro built."
 
 #Create Makefile
 qmake -makefile -o Makefile \
-"CONFIG += qt release" \
+"CONFIG += qt release thread" \
 "CONFIG -= app_bundle" \
 "QT -= gui" \
 "LIBS += -ljack -framework CoreAudio -lm" \

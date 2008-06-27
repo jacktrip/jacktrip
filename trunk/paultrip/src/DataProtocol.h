@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file TransmissionProtocol.h
+ * \file DataProtocol.h
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
@@ -40,7 +40,11 @@
 #define __DATAROTOCOL_H__
 
 #include <QThread>
-#include <QHostAddress>
+//#include <QHostAddress>
+
+//#include <sys/socket.h> //basic socket definitions
+#include <netinet/in.h> //sockaddr_in{} and other Internet defns
+#include <arpa/inet.h> //inet(3) functions
 
 
 /** \brief Base class that defines the transmission protocol.
@@ -63,20 +67,27 @@ class DataProtocol// : QThread
 {
 public:
   DataProtocol();
-  virtual ~DataProtocol();
+  virtual ~DataProtocol() {};
+  
 
-  void receivePacket() = 0;
-  void sendPacket() = 0;
-  void setLocalIPv4Address();
-  void setPeerIPv4Address();
-  //void setLocalIPv6();
-  //void setRemoteIPv6();
+  //void receivePacket() = 0;
+  //void sendPacket() = 0;
 
-  void connect();
+  //void connect();
 
-private:
-  QHostAddress LocalIPv4Address;
-  QHostAddress PeerIPv4Address;
+
+protected:
+
+  virtual void setLocalIPv4Address();
+  virtual void setPeerIPv4Address(const char* peerAddress);
+  
+  //QHostAddress mLocalIPv4Address;
+  //QHostAddress mPeerIPv4Address;
+  
+  struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
+  struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+  int mSockFd; ///< Socket file descriptor 
+
 };
 
 #endif
