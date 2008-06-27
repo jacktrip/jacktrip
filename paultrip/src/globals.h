@@ -38,4 +38,4 @@
 /** Network related ports
  *
  */
-//const int INPUT_PORT_0 = 4464;
+const int INPUT_PORT_0 = 4464;

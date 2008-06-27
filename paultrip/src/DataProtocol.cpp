@@ -30,71 +30,55 @@
 //*****************************************************************
 
 /**
- * \file main.cpp
+ * \file DataProtocol.cpp
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
 
 #include <iostream>
-#include <unistd.h>
 
-#include "JackAudioInterface.h"
-#include "UdpDataProtocol.h"
+#include "DataProtocol.h"
+#include "globals.h"
+
 
 using namespace std;
 
-int process (jack_nframes_t nframes, void *arg);
-
-
-int main(int argc, char** argv)
+//*******************************************************************************
+DataProtocol::DataProtocol() 
 {
-
-  UdpDataProtocol udptest;
-  udptest.setBindSocket();
-  while (true)
-    {
-      usleep(1000000);
-    }
-  
-  /*
-  JackAudioInterface test(4);
-  cout << "SR: " << test.getSampleRate() << endl;
-  cout << "Buffer Size: " << test.getBufferSize() << endl;
-  test.setProcessCallback(process);
-  test.startProcess();
-  while (true)
-    {
-      cout << "SR: " << test.getSampleRate() << endl;
-      cout << "Buffer Size: " << test.getBufferSize() << endl;
-      usleep(1000000);
-    }
-  */
-
-  return 0;
+  this->setLocalIPv4Address();
+  this->setPeerIPv4Address("171.64.197.186");
 }
 
 
-
-int process (jack_nframes_t nframes, void *arg)
+//*******************************************************************************
+void DataProtocol::setLocalIPv4Address()
 {
-
-	return 0;      
+  bzero(&mLocalIPv4Addr, sizeof(mLocalIPv4Addr));
+  mLocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
+  mLocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
+  mLocalIPv4Addr.sin_port = htons(INPUT_PORT_0);//set receive port
 }
 
 
+//*******************************************************************************
+void DataProtocol::setPeerIPv4Address(const char* peerAddress)
+{
+  bzero(&mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
+  mPeerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
+  mPeerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
+  mPeerIPv4Addr.sin_port = htons(INPUT_PORT_0);//set receive port
 
+  int nPeer = inet_pton(AF_INET, peerAddress, &mPeerIPv4Addr.sin_addr);
+  if ( nPeer == 1 ) {
+    cout << "Successful Peer Addresss" << endl;
+  }
+  else if ( nPeer == 0 ) {
+    cout << "Error: Incorrect presentation format for address" << endl;
+  }
+  else {
+    cout << "Error: Could not set Peer Address" << endl;
+    exit(0);
+  }
+}
 
-
-// Main Page Documentation
-/** \mainpage PaulTrip API Documentation
- *
- * \section intro_sec About PaulTrip
- *
- * test
- *
- * \section install_sec Installation
- *
- * \subsection test
- *  
- * etc...
- */
