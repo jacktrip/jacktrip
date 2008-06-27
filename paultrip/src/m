@@ -1,39 +1,46 @@
 #!/bin/bash
 #####################################
-APP_NAME=jacktrip
-APP_NAME_QUOTES=\\\"$APP_NAME\\\"
+APP_NAME=paultrip
+APP_NAME_QUOTES=\"$APP_NAME\"
  
 ######################################
-# Created by Chris Chafe
-# Modified by Juan-Pablo Caceres to include a make install option to build and RPM, and to make it work with any shell.
- 
-# QMAKE_CLEAN cleans up ui, killing dependencies involving 
-# generated base classes
-# don't --> make clean
+## Created by Juan-Pablo Caceres
 
-#rm -r obj
-#rm -r moc
+#Cleanup
 rm $APP_NAME.pro
 rm Makefile
+echo "cleanup done"
 
-#echo "progen"
-
-#qmake -project -o $APP_NAME.pro ui/ ../include/
+#Create project (.pro) file
 qmake-qt4 -project -o $APP_NAME.pro
-
-echo "qmake .pro built"
+echo "qmake .pro built."
 
 #Create Makefile
 qmake-qt4 -makefile -unix -o Makefile \
-"CONFIG+=qt debug thread warn_on" \
+"CONFIG += qt debug thread warn_on" \
 "QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
-"QT += network" \
-"DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
-"QMAKE_CLEAN+=$APP_NAME" \
-"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack" \
-"unix:TARGET=$APP_NAME" \
-"unix:target.path=/usr/bin" \
-"unix:INSTALLS+=target" $APP_NAME.pro
+"QT -= gui" \
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack -lm" \
+"TARGET = $APP_NAME" \
+"DEFINES += APP_NAME=${APP_NAME_QUOTES}" \
+"DESTDIR = ./" \
+"QMAKE_CLEAN += ./$APP_NAME" \
+"target.path = /usr/bin" \
+"INSTALLS += target" \
+$APP_NAME.pro
+
+
+#Create Makefile
+#qmake-qt4 -makefile -unix -o Makefile \
+#"CONFIG+=qt debug thread warn_on" \
+#"QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
+#"QT += network" \
+#"DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
+#"QMAKE_CLEAN+=$APP_NAME" \
+#"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack" \
+#"unix:TARGET=$APP_NAME" \
+#"unix:target.path=/usr/bin" \
+#"unix:INSTALLS+=target" $APP_NAME.pro
 
 #INCLUDEPATH+=/usr/include/stk ../include" \
 #"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack" \
