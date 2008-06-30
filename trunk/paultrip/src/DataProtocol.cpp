@@ -48,6 +48,8 @@ DataProtocol::DataProtocol()
 {
   this->setLocalIPv4Address();
   this->setPeerIPv4Address("171.64.197.186");
+  //this->setPeerIPv4Address("cmn37.stanford.edu");
+  //cout << "cmn37.stanford.edu" << endl;
 }
 
 
@@ -64,6 +66,7 @@ void DataProtocol::setLocalIPv4Address()
 //*******************************************************************************
 void DataProtocol::setPeerIPv4Address(const char* peerAddress)
 {
+  //TODO: Accept also DNS addresses
   bzero(&mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
   mPeerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   mPeerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
@@ -71,10 +74,11 @@ void DataProtocol::setPeerIPv4Address(const char* peerAddress)
 
   int nPeer = inet_pton(AF_INET, peerAddress, &mPeerIPv4Addr.sin_addr);
   if ( nPeer == 1 ) {
-    cout << "Successful Peer Addresss" << endl;
+    cout << "Successful Peer Address" << endl;
   }
   else if ( nPeer == 0 ) {
     cout << "Error: Incorrect presentation format for address" << endl;
+    exit(0);
   }
   else {
     cout << "Error: Could not set Peer Address" << endl;
