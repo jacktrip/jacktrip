@@ -52,35 +52,6 @@ using namespace std;
 //*******************************************************************************
 int UdpDataProtocol::setBindSocket()
 {
-
-  /*
-  int sockfd; //socket file descriptor
-  struct sockaddr_in localaddr;
-  
-  sockfd = socket(AF_INET, SOCK_DGRAM, 0); //UDP socket creation
-  
-  Bzero(&localaddr, sizeof(localaddr));
-  localaddr.sin_family = AF_INET;
-  localaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  localaddr.sin_port = htons(4464);
-  
-  //Bind local address and port
-  bind(sockfd, (struct sockaddr *) &localaddr, sizeof(localaddr));
-
-  cout << localaddr.sin_addr.s_addr << endl;
-  
-  cout << "socket created" << endl;
-
-  int n;
-  socklen_t len;
-  char mesg[10];
-  struct sockaddr* pcliaddr;
-  for ( ; ; )
-    {
-      recvfrom(sockfd, mesg , 10, 0, pcliaddr, &len);
-    }
-  */
-
   //UDP socket creation
   mSockFd = socket(AF_INET, SOCK_DGRAM, 0);
   if ( mSockFd < 0 )
@@ -99,7 +70,7 @@ int UdpDataProtocol::setBindSocket()
     
   cout << "Successful socket creation and port binding" << endl;
 
-
+  //Connected UDP
   cout << "CONNECTING" << endl;
   int nCon = connect(mSockFd, (struct sockaddr *) &mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
   cout << "nCONNNNNN " << nCon << endl;
@@ -114,7 +85,7 @@ int UdpDataProtocol::setBindSocket()
       cout << sendline << endl;
       
       cout << "RECEIVING" << endl;
-      read(mSockFd, recline , 8);
+      read(mSockFd, recline , 7);
       cout << recline << endl;
       
     }
