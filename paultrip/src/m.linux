@@ -18,7 +18,7 @@ echo "qmake .pro built."
 #Create Makefile
 qmake-qt4 -makefile -unix -o Makefile \
 "CONFIG += qt debug thread warn_on" \
-"QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
+"QMAKE_CXXFLAGS+=-g -O2" \
 "QT -= gui" \
 "unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack -lm" \
 "TARGET = $APP_NAME" \

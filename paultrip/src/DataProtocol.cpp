@@ -36,6 +36,7 @@
  */
 
 #include <iostream>
+#include <cstdlib>
 
 #include "DataProtocol.h"
 #include "globals.h"
