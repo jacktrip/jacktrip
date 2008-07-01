@@ -46,8 +46,9 @@
 #include <iostream>
 #include <cstdlib>
 
-using namespace std;
-
+// NOTE: It's better not to use
+// using namespace std;
+// because some functions (line exit()) get confused with QT functions
 
 
 //*******************************************************************************
@@ -57,38 +58,40 @@ int UdpDataProtocol::setBindSocket()
   mSockFd = socket(AF_INET, SOCK_DGRAM, 0);
   if ( mSockFd < 0 )
     {
-      cerr << "UDP Socket Error" << endl;
-      exit(0);      
+      std::cerr << "UDP Socket Error" << std::endl;
+      std::exit(0);      
     }
 
   //Bind local address and port
   int nBind = bind(mSockFd, (struct sockaddr *) &mLocalIPv4Addr, sizeof(mLocalIPv4Addr));
   if ( nBind < 0 )
     {
-      cerr << "UDP Socket Bind Error" << endl;
-      exit(0);
+      std::cerr << "UDP Socket Bind Error" << std::endl;
+      std::exit(0);
     }
     
-  cout << "Successful socket creation and port binding" << endl;
+  std::cout << "Successful socket creation and port binding" << std::endl;
 
   //Connected UDP
-  cout << "CONNECTING" << endl;
-  int nCon = connect(mSockFd, (struct sockaddr *) &mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
-  cout << "nCONNNNNN " << nCon << endl;
+  std::cout << "CONNECTING" << std::endl;
+  int nCon = ::connect(mSockFd, (struct sockaddr *) &mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
+  //int nCon = ::connect(mSockFd, mPeerIPv4Addr.ai_addr, mPeerIPv4Addr.ai_addrlen);
+  std::cout << "nCONNNNNN " << nCon << std::endl;
   
   char sendline[8] = "1234567";
   char recline[9];
   
   while (true)
     {
-      cout << "SENDING" << endl;
+      //std::cout << "SENDING" << std::endl;
       write(mSockFd, sendline , strlen(sendline));
-      cout << sendline << endl;
+      //std::cout << sendline << std::endl;
       
-      cout << "RECEIVING" << endl;
+      /*
+      std::cout << "RECEIVING" << std::endl;
       read(mSockFd, recline , 7);
-      cout << recline << endl;
-      
+      std::cout << recline << std::endl;
+      */      
     }
   
   return(0);

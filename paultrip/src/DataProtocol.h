@@ -35,19 +35,32 @@
  * \date June 2008
  */
 
-
 #ifndef __DATAPROTOCOL_H__
 #define __DATAROTOCOL_H__
-
-#include <QThread>
-//#include <QHostAddress>
 
 //#include <sys/socket.h> //basic socket definitions
 #include <netinet/in.h> //sockaddr_in{} and other Internet defns
 #include <arpa/inet.h> //inet(3) functions
+#include <netdb.h>
+
+#include <QThread>
+
+/// \brief Enum to define class modes, SENDER or RECEIVER
+enum runModeT {SENDER, RECEIVER};
 
 
 /** \brief Base class that defines the transmission protocol.
+ * 
+ * This base class defines most of the common method to setup and connect
+ * sockets using the individual protocols (UDP, TCP, SCTP, etc).
+ *
+ * The class has to be constructed using one of two modes (runModeT):\n
+ * - SENDER
+ * - RECEIVER
+ *
+ * This has to be specified as a constructor argument. When using, create two instances
+ * of the class, one to receive and one to send packets. Each instance will run on a
+ * separate thread.
  *
  * \todo This Class should contain definition of paultrip header and basic funcionality to obtain
  * local machine IPs and maybe functions to manipulate IPs.
@@ -63,31 +76,46 @@
  *
  * Each transmission (i.e., inputs and outputs) run on its own thread.
  */
-class DataProtocol// : QThread
+class DataProtocol : public QThread
 {
 public:
-  DataProtocol();
-  virtual ~DataProtocol() {};
   
-
+  /**
+   * \brief The class constructor 
+   * \param runmode Sets the run mode, use either SENDER or RECEIVER
+   */
+  DataProtocol(const runModeT runmode);
+  
+  /** \brief The class destructor
+   */
+  virtual ~DataProtocol();
+  
   //void receivePacket() = 0;
   //void sendPacket() = 0;
-
   //void connect();
+  //virtual void run();
 
 
 protected:
 
+  /**
+   * \brief Sets the local IPv4 address struct
+   *
+   * It uses the default active device.
+   */
   virtual void setLocalIPv4Address();
-  virtual void setPeerIPv4Address(const char* peerAddress);
+
+  /**
+   * \brief Sets the peer (remote) IPv4 address struct
+   * \param peerAddress Either an IPv4 dotted integer number or a hostname
+   */
+  virtual void setPeerIPv4Address(const char* peerHostOrIP);
   
-  //QHostAddress mLocalIPv4Address;
-  //QHostAddress mPeerIPv4Address;
-  
+  const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
   struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+  //struct addrinfo mPeerIPv4Addr; ///< Peer IPv4 Address struct
   int mSockFd; ///< Socket file descriptor 
-
 };
 
 #endif

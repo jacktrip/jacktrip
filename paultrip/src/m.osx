@@ -27,6 +27,7 @@ qmake -makefile -o Makefile \
 "CONFIG += qt release thread" \
 "CONFIG -= app_bundle" \
 "QT -= gui" \
+"QT += network" \
 "LIBS += -ljack -framework CoreAudio -lm" \
 "CONFIG += x86 ppc" \
 "TARGET = $APP_NAME" \
