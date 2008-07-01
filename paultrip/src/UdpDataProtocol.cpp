@@ -75,7 +75,6 @@ int UdpDataProtocol::setBindSocket()
   //Connected UDP
   std::cout << "CONNECTING" << std::endl;
   int nCon = ::connect(mSockFd, (struct sockaddr *) &mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
-  //int nCon = ::connect(mSockFd, mPeerIPv4Addr.ai_addr, mPeerIPv4Addr.ai_addrlen);
   std::cout << "nCONNNNNN " << nCon << std::endl;
   
   char sendline[8] = "1234567";

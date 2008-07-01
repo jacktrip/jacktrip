@@ -45,7 +45,7 @@ class UdpDataProtocol : public DataProtocol
 {
 public:
   UdpDataProtocol(const runModeT runmode) : DataProtocol(runmode){};
-  //virtual ~UdpDataProtocol() {};
+  virtual ~UdpDataProtocol() {};
 
   //virtual void run(){};
 
