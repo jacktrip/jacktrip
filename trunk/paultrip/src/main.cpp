@@ -49,7 +49,7 @@ int process (jack_nframes_t nframes, void *arg);
 int main(int argc, char** argv)
 {
 
-  UdpDataProtocol udptest;
+  UdpDataProtocol udptest(SENDER);
   udptest.setBindSocket();
   while (true)
     {

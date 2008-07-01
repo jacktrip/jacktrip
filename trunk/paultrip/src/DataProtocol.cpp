@@ -35,22 +35,30 @@
  * \date June 2008
  */
 
-#include <iostream>
-#include <cstdlib>
-
 #include "DataProtocol.h"
 #include "globals.h"
 
+#include <iostream>
+#include <cstdlib>
 
-using namespace std;
+#include <QHostInfo>
+#include <QHostAddress>
+
 
 //*******************************************************************************
-DataProtocol::DataProtocol() 
+DataProtocol::DataProtocol(const runModeT runmode) : mRunMode(runmode)
 {
   this->setLocalIPv4Address();
-  this->setPeerIPv4Address("171.64.197.186");
   //this->setPeerIPv4Address("cmn37.stanford.edu");
-  //cout << "cmn37.stanford.edu" << endl;
+  this->setPeerIPv4Address("192.168.1.4");
+  //this->setPeerIPv4Address("171.64.197.186");
+}
+
+
+//*******************************************************************************
+DataProtocol::~DataProtocol()
+{
+  //freeaddrinfo
 }
 
 
@@ -65,9 +73,27 @@ void DataProtocol::setLocalIPv4Address()
 
 
 //*******************************************************************************
-void DataProtocol::setPeerIPv4Address(const char* peerAddress)
+void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
 {
-  //TODO: Accept also DNS addresses
+  const char* peerAddress; // dotted decimal address to use in the struct below
+
+  // Resolve Peer IPv4 with either doted integer IP or hostname
+  //----------------------------------------------------------
+  std::cout << "Resolving Peer IPv4 address..." << std::endl;
+  QHostInfo info = QHostInfo::fromName(peerHostOrIP);
+  if ( !info.addresses().isEmpty() ) {
+    std::cout << "Peer Address Found" << std::endl;
+    QHostAddress address = info.addresses().first(); // use the first address in list
+    peerAddress = address.toString().toLatin1();
+  }
+  else {
+    std::cerr << "ERROR: Could not set Peer IP Address" << std::endl;
+    std::cerr << "Check that it's public or that the hostname exists" << std::endl;
+    std::exit(1);
+  }
+  
+  // Set the Peer IPv4 Address struct
+  //---------------------------------
   bzero(&mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
   mPeerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   mPeerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
@@ -75,15 +101,15 @@ void DataProtocol::setPeerIPv4Address(const char* peerAddress)
 
   int nPeer = inet_pton(AF_INET, peerAddress, &mPeerIPv4Addr.sin_addr);
   if ( nPeer == 1 ) {
-    cout << "Successful Peer Address" << endl;
+    std::cout << "Successful Peer Address" << std::endl;
   }
   else if ( nPeer == 0 ) {
-    cout << "Error: Incorrect presentation format for address" << endl;
-    exit(0);
+    std::cout << "Error: Incorrect presentation format for address" << std::endl;
+    std::exit(1);
   }
   else {
-    cout << "Error: Could not set Peer Address" << endl;
-    exit(0);
+    std::cout << "Error: Could not set Peer Address" << std::endl;
+    std::exit(1);
   }
-}
 
+}

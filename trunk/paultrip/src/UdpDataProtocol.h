@@ -38,15 +38,14 @@
 #ifndef __UDPDATAPROTOCOL_H__
 #define __UDPDATAROTOCOL_H__
 
-#include <QThread>
-
 #include "DataProtocol.h"
 
-class UdpDataProtocol : DataProtocol
+
+class UdpDataProtocol : public DataProtocol
 {
 public:
-  UdpDataProtocol() {};
-  virtual ~UdpDataProtocol() {};
+  UdpDataProtocol(const runModeT runmode) : DataProtocol(runmode){};
+  //virtual ~UdpDataProtocol() {};
 
   //virtual void run(){};
 
@@ -54,9 +53,6 @@ public:
   
 
 private:
-  
-
-  
 };
 
 #endif
