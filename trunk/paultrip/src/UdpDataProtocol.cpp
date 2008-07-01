@@ -37,61 +37,107 @@
 
 #include "UdpDataProtocol.h"
 
-//#include <sys/socket.h> //basic socket definitions
-//#include <netinet/in.h> //sockaddr_in{} and other Internet defns
-//#include <arpa/inet.h> //inet(3) functions
-//#include <sys/types.h> //basic system data types
-
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
+#include <cerrno>
 
 // NOTE: It's better not to use
 // using namespace std;
 // because some functions (line exit()) get confused with QT functions
 
 
-//*******************************************************************************
-int UdpDataProtocol::setBindSocket()
-{
-  //UDP socket creation
-  mSockFd = socket(AF_INET, SOCK_DGRAM, 0);
-  if ( mSockFd < 0 )
-    {
-      std::cerr << "UDP Socket Error" << std::endl;
-      std::exit(0);      
-    }
 
-  //Bind local address and port
+//*******************************************************************************
+UdpDataProtocol::UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP)
+  : DataProtocol(runmode)
+{
+  this->setPeerIPv4Address(peerHostOrIP);
+  this->setBindSocket();
+}
+
+
+//*******************************************************************************
+void UdpDataProtocol::setBindSocket()
+{
+  // UDP socket creation
+  mSockFd = socket(AF_INET, SOCK_DGRAM, 0);
+  if ( mSockFd < 0 ) {
+    std::cerr << "ERROR: UDP Socket Error" << std::endl;
+    std::exit(0);      
+  }
+  
+  // Bind local address and port
+  /// \todo Bind to a different port in case this one is used by a different instance 
+  /// of the program
   int nBind = bind(mSockFd, (struct sockaddr *) &mLocalIPv4Addr, sizeof(mLocalIPv4Addr));
-  if ( nBind < 0 )
-    {
-      std::cerr << "UDP Socket Bind Error" << std::endl;
-      std::exit(0);
+  if ( nBind < 0 ) {
+    std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
+    std::exit(0);
+  }
+  
+  std::cout << "Successful socket creation and port binding" << std::endl;
+  
+  //Connected UDP
+  int nCon = ::connect(mSockFd, (struct sockaddr *) &mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
+  if ( nCon < 0) {
+    std::cerr << "ERROR: UDP Socket Connect Error" << std::endl;
+    std::exit(0);
+  }
+}
+
+
+//*******************************************************************************
+// Adapted form Stevens' "Unix Network Programming", third edition
+// Page 88 (readn)
+size_t UdpDataProtocol::receivePacket(char* buff, size_t n)
+{
+  size_t nleft;
+  ssize_t nread;
+  char* ptr;
+  
+  ptr = buff;
+  nleft = n;
+  while (nleft > 0) {
+    if ( (nread = ::read(mSockFd, ptr, nleft)) < 0) {
+      if (errno == EINTR)
+	nread = 0; // and call read() again
+      else
+	return(-1);
+    } else if (nread == 0)
+      break; // EOF
+    
+    nleft -= nread;
+    ptr   += nread;
+  }
+  return(n - nleft);
+}
+
+
+
+//*******************************************************************************
+// Adapted form Stevens' "Unix Network Programming", third edition
+// Page 88 (writen)
+// Write "n" bytes to a descriptor
+size_t UdpDataProtocol::sendPacket(const char* buff, size_t n)
+{
+  size_t nleft;
+  ssize_t nwritten;
+  const char* ptr;
+  
+  ptr = buff;
+  nleft = n;
+  while (nleft > 0) {
+    if ( (nwritten = ::write(mSockFd, ptr, nleft)) <= 0) {
+      if (nwritten < 0 && errno == EINTR)
+	nwritten = 0; // and call write() again
+      else
+	return(-1); // error
     }
     
-  std::cout << "Successful socket creation and port binding" << std::endl;
-
-  //Connected UDP
-  std::cout << "CONNECTING" << std::endl;
-  int nCon = ::connect(mSockFd, (struct sockaddr *) &mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
-  std::cout << "nCONNNNNN " << nCon << std::endl;
-  
-  char sendline[8] = "1234567";
-  char recline[9];
-  
-  while (true)
-    {
-      //std::cout << "SENDING" << std::endl;
-      write(mSockFd, sendline , strlen(sendline));
-      //std::cout << sendline << std::endl;
-      
-      /*
-      std::cout << "RECEIVING" << std::endl;
-      read(mSockFd, recline , 7);
-      std::cout << recline << std::endl;
-      */      
-    }
-  
-  return(0);
+    nleft -= nwritten;
+    ptr   += nwritten;
+  }
+  return(n);
 }
+

@@ -45,7 +45,6 @@
 #include <QVector>
 
 #include "types.h"
-#include "AudioInterface.h"
 
 
 /** \brief Class that provides an interface with the Jack Audio Server
@@ -55,7 +54,7 @@
  * \todo get jack_port_get_buffer for input and output ports (channels), in a way
  * that they can be used in other classes
  */
-class JackAudioInterface : public AudioInterface
+class JackAudioInterface
 {
 public:
 

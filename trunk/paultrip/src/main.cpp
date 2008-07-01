@@ -46,30 +46,33 @@ using namespace std;
 int process (jack_nframes_t nframes, void *arg);
 
 
-int main(int argc, char** argv)
+//int main(int argc, char** argv)
+int main()
 {
 
-  UdpDataProtocol udptest(SENDER);
-  udptest.setBindSocket();
+  /*
+  // Test UDP Socket
+  UdpDataProtocol udp_rec(RECEIVER, "cmn51.stanford.edu");
+  UdpDataProtocol udp_send(SENDER, "cmn51.stanford.edu");
+  udp_rec.start();
+  udp_send.start();
+  */
+
+  
+  // Test JackAudioInterface
+  JackAudioInterface jack_test(4);
+  cout << "SR: " << jack_test.getSampleRate() << endl;
+  cout << "Buffer Size: " << jack_test.getBufferSize() << endl;
+  jack_test.setProcessCallback(process);
+  jack_test.startProcess();
   while (true)
     {
+      //cout << "SR: " << test.getSampleRate() << endl;
+      //cout << "Buffer Size: " << test.getBufferSize() << endl;
       usleep(1000000);
     }
   
-  /*
-  JackAudioInterface test(4);
-  cout << "SR: " << test.getSampleRate() << endl;
-  cout << "Buffer Size: " << test.getBufferSize() << endl;
-  test.setProcessCallback(process);
-  test.startProcess();
-  while (true)
-    {
-      cout << "SR: " << test.getSampleRate() << endl;
-      cout << "Buffer Size: " << test.getBufferSize() << endl;
-      usleep(1000000);
-    }
-  */
-
+  
   return 0;
 }
 

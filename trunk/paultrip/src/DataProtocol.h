@@ -83,8 +83,7 @@ class DataProtocol : public QThread
 {
 public:
   
-  /**
-   * \brief The class constructor 
+  /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
   DataProtocol(const runModeT runmode);
@@ -93,32 +92,54 @@ public:
    */
   virtual ~DataProtocol();
   
-  //void receivePacket() = 0;
-  //void sendPacket() = 0;
-  //void connect();
-  //virtual void run();
+  /** \brief Sets the peer (remote) IPv4 address struct
+   * \param peerAddress Either an IPv4 dotted integer number or a hostname
+   */
+  virtual void setPeerIPv4Address(const char* peerHostOrIP);
+
+  /** \brief Receive a packet from the UDPSocket
+   *
+   * This method has to be implemented in the sub-classes
+   * \param buf Location at which to store the buffer
+   * \param n size of packet to receive
+   * \return number of bytes read, -1 on error
+   */
+  virtual size_t receivePacket(char* buf, size_t n) = 0;
+ 
+  /** \brief Sends a packet
+   *
+   * This method has to be implemented in the sub-classes
+   * \param buff Buffer to send
+   * \param n size of packet to receive
+   * \return number of bytes read, -1 on error
+   */
+  virtual size_t sendPacket(const char* buff, size_t n) = 0;
+
+  /** \brief Implements the thread loop
+   *
+   * Depending on the runmode, with will run a RECEIVE thread or
+   * SEND thread
+   */
+  virtual void run();
 
 
 protected:
 
-  /**
-   * \brief Sets the local IPv4 address struct
+  /** \brief Sets the local IPv4 address struct
    *
    * It uses the default active device.
    */
   virtual void setLocalIPv4Address();
 
-  /**
-   * \brief Sets the peer (remote) IPv4 address struct
-   * \param peerAddress Either an IPv4 dotted integer number or a hostname
-   */
-  virtual void setPeerIPv4Address(const char* peerHostOrIP);
-  
+  int mSockFd; ///< Socket file descriptor 
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
   struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
-  //struct addrinfo mPeerIPv4Addr; ///< Peer IPv4 Address struct
-  int mSockFd; ///< Socket file descriptor 
+
+
+private:
+  int mLocalPort; ///< Local Port number to Bind
+  int mPeerPort; ///< Peer Port number to Bind
 };
 
 #endif
