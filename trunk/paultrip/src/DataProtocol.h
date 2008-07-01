@@ -62,6 +62,9 @@ enum runModeT {SENDER, RECEIVER};
  * of the class, one to receive and one to send packets. Each instance will run on a
  * separate thread.
  *
+ * Redundancy and forward error correction should be implemented on each
+ * Transport protocol, cause they depend on the protocol itself
+ *
  * \todo This Class should contain definition of paultrip header and basic funcionality to obtain
  * local machine IPs and maybe functions to manipulate IPs.
  * Redundancy and forward error correction should be implemented on each
