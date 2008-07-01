@@ -76,7 +76,7 @@ void JackAudioInterface::setupClient()
   jack_status_t status;
 
   //Try to connect to the server
-  //TODO: Write better warning messages
+  /// \todo Write better warning messages
   mClient = jack_client_open (client_name, options, &status, server_name);
   if (mClient == NULL) {
     fprintf (stderr, "jack_client_open() failed, "

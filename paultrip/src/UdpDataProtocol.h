@@ -40,19 +40,50 @@
 
 #include "DataProtocol.h"
 
-
+/** \brief UDP implementation of DataProtocol class
+ * 
+ * 
+ *
+ */
 class UdpDataProtocol : public DataProtocol
 {
 public:
-  UdpDataProtocol(const runModeT runmode) : DataProtocol(runmode){};
+
+  /** \brief The class constructor 
+   * \param runmode Sets the run mode, use either SENDER or RECEIVER
+   */
+  UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP);
+
+  /** \brief The class destructor
+   */
   virtual ~UdpDataProtocol() {};
 
-  //virtual void run(){};
+  /** \brief Receives a packet
+   *
+   * This function meakes sure we recieve a complete packet
+   * of size n
+   * \param buff Buffer to store the recieved packet
+   * \param n size of packet to receive
+   * \return number of bytes read, -1 on error
+   */
+  virtual size_t receivePacket(char* buf, size_t n);
 
-  int setBindSocket();
-  
+  /** \brief Sends a packet
+   *
+   * This function meakes sure we send a complete packet
+   * of size n
+   * \param buff Buffer to send
+   * \param n size of packet to receive
+   * \return number of bytes read, -1 on error
+   */
+  virtual size_t sendPacket(const char* buff, size_t n);
+
+  //virtual void run();
+
 
 private:
+
+  void setBindSocket();
 };
 
 #endif

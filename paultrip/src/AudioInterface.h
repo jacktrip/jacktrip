@@ -48,8 +48,8 @@
 class AudioInterface
 {
 public:
-  AudioInterface();
-  virtual ~AudioInterface();
+  AudioInterface() {};
+  virtual ~AudioInterface() {};
 
   virtual uint32_t getSampleRate() const = 0;
   virtual uint32_t getBufferSize() const = 0;

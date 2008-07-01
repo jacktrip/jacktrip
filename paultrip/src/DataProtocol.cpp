@@ -37,6 +37,7 @@
 
 #include "DataProtocol.h"
 #include "globals.h"
+#include "JackAudioInterface.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -48,10 +49,17 @@
 //*******************************************************************************
 DataProtocol::DataProtocol(const runModeT runmode) : mRunMode(runmode)
 {
+  // Base ports INPUT_PORT_0 and OUTPUT_PORT_0defined at globals.h
+  if (mRunMode == RECEIVER) {
+    mLocalPort = INPUT_PORT_0;
+    mPeerPort = OUTPUT_PORT_0;
+  }
+  else if (mRunMode == SENDER) {
+    mLocalPort = OUTPUT_PORT_0;
+    mPeerPort = INPUT_PORT_0;
+  }
+
   this->setLocalIPv4Address();
-  //this->setPeerIPv4Address("cmn37.stanford.edu");
-  this->setPeerIPv4Address("192.168.1.4");
-  //this->setPeerIPv4Address("171.64.197.186");
 }
 
 
@@ -68,7 +76,8 @@ void DataProtocol::setLocalIPv4Address()
   bzero(&mLocalIPv4Addr, sizeof(mLocalIPv4Addr));
   mLocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   mLocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
-  mLocalIPv4Addr.sin_port = htons(INPUT_PORT_0);//set receive port
+  mLocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
+  std::cout << "mLocalPort = " << mLocalPort << std::endl;
 }
 
 
@@ -97,11 +106,11 @@ void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
   bzero(&mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
   mPeerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   mPeerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
-  mPeerIPv4Addr.sin_port = htons(INPUT_PORT_0);//set receive port
-
+  mPeerIPv4Addr.sin_port = htons(mPeerPort);//set Peer port
+  std::cout << "mPeerPort = " << mPeerPort << std::endl;
   int nPeer = inet_pton(AF_INET, peerAddress, &mPeerIPv4Addr.sin_addr);
   if ( nPeer == 1 ) {
-    std::cout << "Successful Peer Address" << std::endl;
+    std::cout << "Successful Set Peer Address" << std::endl;
   }
   else if ( nPeer == 0 ) {
     std::cout << "Error: Incorrect presentation format for address" << std::endl;
@@ -112,4 +121,40 @@ void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
     std::exit(1);
   }
 
+}
+
+
+//*******************************************************************************
+void DataProtocol::run()
+{
+
+  //JackAudioInterface jack(1);
+
+  std::cout << "Running DataProtocol Thread" << std::endl;
+  char *buf;
+  
+  char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
+
+  switch ( mRunMode ) 
+    {
+    case SENDER : 
+      while ( true )
+	{
+	  std::cout << "SENDING THREAD" << std::endl;
+	  //::write(mSockFd, sendtest , strlen(sendtest));
+	  this->sendPacket(sendtest , strlen(sendtest));
+	}
+      break;
+      
+    case RECEIVER : 
+      while ( true )
+	{
+	  /// \todo Set a timer to report packats arriving too late
+	  //std::cout << "RECIEVING THREAD" << std::endl;
+	  this->receivePacket(buf, 64);
+	  std::cout << buf << std::endl;
+	}
+      break;
+    }
+  
 }
