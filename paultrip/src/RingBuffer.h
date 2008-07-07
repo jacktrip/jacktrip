@@ -30,83 +30,46 @@
 //*****************************************************************
 
 /**
- * \file main.cpp
+ * \file RingBuffer.h
  * \author Juan-Pablo Caceres
- * \date June 2008
+ * \date July 2008
  */
 
-#include <iostream>
-#include <unistd.h>
+#ifndef __RINGBUFFER_H__
+#define __RINGBUFFER_H__
 
-#include "JackAudioInterface.h"
-#include "UdpDataProtocol.h"
-#include "RingBuffer.h"
+#include <QWaitCondition>
+#include <QMutex>
+#include <QMutexLocker>
 
-using namespace std;
+#include "types.h"
 
-int process (jack_nframes_t nframes, void *arg);
-
-
-//int main(int argc, char** argv)
-int main()
+class RingBuffer
 {
+public:
+  RingBuffer(int chunkSize, int numChunks);
+  virtual ~RingBuffer();
 
-  // Test RingBuffer
-  RingBuffer rb(1,1);
-
-
-  /*
-  // Test UDP Socket
-  UdpDataProtocol udp_rec(RECEIVER, "192.168.1.4");
-  UdpDataProtocol udp_send(SENDER, "192.168.1.4");
-  udp_rec.start();
-  udp_send.start();
-  */
-
-  /*
-  // Test JackAudioInterface
-  JackAudioInterface jack_test(4);
-  cout << "SR: " << jack_test.getSampleRate() << endl;
-  cout << "Buffer Size: " << jack_test.getBufferSize() << endl;
-  jack_test.setProcessCallback(process);
-  jack_test.startProcess();
-  */
-
-  /*
-  while (true)
-    {
-      //cout << "SR: " << test.getSampleRate() << endl;
-      //cout << "Buffer Size: " << test.getBufferSize() << endl;
-      usleep(1000000);
-      //usleep(1);
-    }
-  */
+  /** \brief Write a chunk into the circularbuffer
+   */
+  void put(const void* writeChunk);
   
-  return 0;
-}
+  /** \brief Read a chunk from the circularbuffer
+   */
+  void get(int8_t* readChunk);
 
 
+private:
+  int8_t* mRingBuffer; ///< 8-bit array of data (1-byte)
+  const int mChunkSize; ///< The size of one chunk in byes
+  const int mNumChunks; ///< Number of Chunks
+  int mTotalSize; ///< Total size of the mRingBuffer = mChunkSize*mNumChunks
+  int mHead, mTail;
 
-int process (jack_nframes_t nframes, void *arg)
-{
+  //Thread Synchronization Private Members
+  QMutex mMutex;
+  QWaitCondition mBufferIsNotFull;
+  QWaitCondition mBufferIsNotEmpty;
+};
 
-	return 0;      
-}
-
-
-
-
-
-// Main Page Documentation
-/** \mainpage PaulTrip API Documentation
- *
- * \section intro_sec About PaulTrip
- *
- * test
- *
- * \section install_sec Installation
- *
- * \subsection test
- *  
- * etc...
- */
+#endif

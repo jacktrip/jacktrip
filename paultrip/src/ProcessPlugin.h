@@ -30,83 +30,40 @@
 //*****************************************************************
 
 /**
- * \file main.cpp
+ * \file ProcessPlugin.h
  * \author Juan-Pablo Caceres
- * \date June 2008
+ * \date July 2008
  */
 
-#include <iostream>
-#include <unistd.h>
-
-#include "JackAudioInterface.h"
-#include "UdpDataProtocol.h"
-#include "RingBuffer.h"
-
-using namespace std;
-
-int process (jack_nframes_t nframes, void *arg);
+#ifndef __PROCESSPLUGIN_H__
+#define __PROCESSPLUGIN_H__
 
 
-//int main(int argc, char** argv)
-int main()
+/** \brief Interface for the process plugins.
+ *
+ * This class contains the same methods of the FAUST dsp class. A mydsp class can inherit from
+ * this class the same wway it inherits from dsp. The class contains also the interface with
+ * Jack and the other classes of PaulTrip for network streaming.
+ */
+class ProcessPlugin 
 {
+public:
 
-  // Test RingBuffer
-  RingBuffer rb(1,1);
-
-
-  /*
-  // Test UDP Socket
-  UdpDataProtocol udp_rec(RECEIVER, "192.168.1.4");
-  UdpDataProtocol udp_send(SENDER, "192.168.1.4");
-  udp_rec.start();
-  udp_send.start();
-  */
-
-  /*
-  // Test JackAudioInterface
-  JackAudioInterface jack_test(4);
-  cout << "SR: " << jack_test.getSampleRate() << endl;
-  cout << "Buffer Size: " << jack_test.getBufferSize() << endl;
-  jack_test.setProcessCallback(process);
-  jack_test.startProcess();
-  */
-
-  /*
-  while (true)
-    {
-      //cout << "SR: " << test.getSampleRate() << endl;
-      //cout << "Buffer Size: " << test.getBufferSize() << endl;
-      usleep(1000000);
-      //usleep(1);
-    }
-  */
+  ProcessPlugin() {};
+  virtual ~ProcessPlugin() {};
   
-  return 0;
-}
 
+  /** \brief Faust Pure Virtual Methods
+   */
+  virtual int getNumInputs() = 0;
+  virtual int getNumOutputs() = 0;
+  virtual void buildUserInterface(UI* interface) = 0;
+  virtual void init(int samplingRate) = 0;
+  /// 
+  virtual void compute(int len, float** inputs, float** outputs) = 0;
+  
+protected:
+  int fSamplingFreq; ///< Faust Data member
+};
 
-
-int process (jack_nframes_t nframes, void *arg)
-{
-
-	return 0;      
-}
-
-
-
-
-
-// Main Page Documentation
-/** \mainpage PaulTrip API Documentation
- *
- * \section intro_sec About PaulTrip
- *
- * test
- *
- * \section install_sec Installation
- *
- * \subsection test
- *  
- * etc...
- */
+#endif
