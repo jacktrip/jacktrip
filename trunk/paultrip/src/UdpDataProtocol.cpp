@@ -52,8 +52,8 @@
 UdpDataProtocol::UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP)
   : DataProtocol(runmode)
 {
-  this->setPeerIPv4Address(peerHostOrIP);
-  this->setBindSocket();
+  setPeerIPv4Address(peerHostOrIP);
+  setBindSocket();
 }
 
 

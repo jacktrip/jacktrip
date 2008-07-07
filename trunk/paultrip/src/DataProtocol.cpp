@@ -86,6 +86,9 @@ void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
 {
   const char* peerAddress; // dotted decimal address to use in the struct below
 
+  /// \todo Improve this to make it work also with local ip numbers, in a lan,
+  /// that don't have an assigned host name
+  /*
   // Resolve Peer IPv4 with either doted integer IP or hostname
   //----------------------------------------------------------
   std::cout << "Resolving Peer IPv4 address..." << std::endl;
@@ -100,7 +103,11 @@ void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
     std::cerr << "Check that it's public or that the hostname exists" << std::endl;
     std::exit(1);
   }
-  
+  */
+
+  // temporary implementation to make this work
+  peerAddress = peerHostOrIP;
+
   // Set the Peer IPv4 Address struct
   //---------------------------------
   bzero(&mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
@@ -140,7 +147,7 @@ void DataProtocol::run()
     case SENDER : 
       while ( true )
 	{
-	  std::cout << "SENDING THREAD" << std::endl;
+	  //std::cout << "SENDING THREAD" << std::endl;
 	  //::write(mSockFd, sendtest , strlen(sendtest));
 	  this->sendPacket(sendtest , strlen(sendtest));
 	}
@@ -152,7 +159,7 @@ void DataProtocol::run()
 	  /// \todo Set a timer to report packats arriving too late
 	  //std::cout << "RECIEVING THREAD" << std::endl;
 	  this->receivePacket(buf, 64);
-	  std::cout << buf << std::endl;
+	  //std::cout << buf << std::endl;
 	}
       break;
     }

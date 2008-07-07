@@ -131,15 +131,20 @@ protected:
    */
   virtual void setLocalIPv4Address();
 
+
+
   int mSockFd; ///< Socket file descriptor 
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
   struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
 
-
 private:
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
+  /// Number of clients running to check for ports already used
+  /// \note Unimplemented
+  static int sClientsRunning;
+
 };
 
 #endif
