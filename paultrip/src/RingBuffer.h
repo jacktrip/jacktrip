@@ -44,32 +44,51 @@
 
 #include "types.h"
 
+/** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read from
+ * asynchronously (blocking).
+ *
+ * The RingBuffer is an array of \b NumSlots slots of memory
+ * each of which is of size \b SlotSize bytes (8-bits). Slots can be read and 
+ * written asynchronously by multiple threads.
+ */
 class RingBuffer
 {
 public:
-  RingBuffer(int chunkSize, int numChunks);
-  virtual ~RingBuffer();
 
-  /** \brief Write a chunk into the circularbuffer
+  /** \brief The class constructor
+   * \param SlotSize Size of one slot in byes
+   * \param NumSlots Number of slots
    */
-  void put(const void* writeChunk);
+  RingBuffer(int SlotSize, int NumSlots);
+
+  /** \brief The class destructor
+   */
+  virtual ~RingBuffer();
   
-  /** \brief Read a chunk from the circularbuffer
+  /** \brief Write a chunk into the RingBuffer
+   *
+   * The caller is responsible to make sure sizeof(writeSlot) = slotSize
    */
-  void get(int8_t* readChunk);
+  void writeSlot(const int8_t* WriteSlot);
+  
+  /** \brief Read a slot from the RingBuffer
+   */
+  void readSlot(int8_t* ReadSlot);
 
 
 private:
   int8_t* mRingBuffer; ///< 8-bit array of data (1-byte)
-  const int mChunkSize; ///< The size of one chunk in byes
-  const int mNumChunks; ///< Number of Chunks
-  int mTotalSize; ///< Total size of the mRingBuffer = mChunkSize*mNumChunks
-  int mHead, mTail;
+  const int mSlotSize; ///< The size of one slot in byes
+  const int mNumSlots; ///< Number of Slots
+  int mTotalSize; ///< Total size of the mRingBuffer = mSlotSize*mNumSlotss
+  int mReadPosition; ///> Read Positions in the RingBuffer (Tail)
+  int mWritePosition; ///> Write Position in the RingBuffer (Head)
+  int mFullSlots; ///> Number of used (full) slots, in slot-size
 
   //Thread Synchronization Private Members
-  QMutex mMutex;
-  QWaitCondition mBufferIsNotFull;
-  QWaitCondition mBufferIsNotEmpty;
+  QMutex mMutex; ///> Mutex to protect read and write operations
+  QWaitCondition mBufferIsNotFull; ///> Buffer not full condition to monitor threads
+  QWaitCondition mBufferIsNotEmpty; ///> Buffer not empty condition to monitor threads
 };
 
 #endif

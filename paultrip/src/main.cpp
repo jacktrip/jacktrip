@@ -52,11 +52,30 @@ int main()
 {
 
   // Test RingBuffer
-  RingBuffer rb(1,1);
+  //****************************************************************
+  RingBuffer rb(2,2);
+
+  int8_t* writeSlot;
+  writeSlot = new int8_t[2];
+  writeSlot[0] = *"a";
+  writeSlot[1] = *"b";
+  std::cout << *writeSlot << std::endl;
+  std::cout << writeSlot[0] << std::endl;
+  std::cout << writeSlot[1] << std::endl;
+  std::cout << *(writeSlot+1) << std::endl;
+  rb.writeSlot(writeSlot);
+
+  int8_t* readSlot;
+  readSlot = new int8_t[2];
+  rb.readSlot(readSlot);
+  std::cout << *(readSlot) << std::endl;
+  std::cout << *(readSlot+1) << std::endl;
+
 
 
   /*
   // Test UDP Socket
+  //****************************************************************
   UdpDataProtocol udp_rec(RECEIVER, "192.168.1.4");
   UdpDataProtocol udp_send(SENDER, "192.168.1.4");
   udp_rec.start();
@@ -65,6 +84,7 @@ int main()
 
   /*
   // Test JackAudioInterface
+  //****************************************************************
   JackAudioInterface jack_test(4);
   cout << "SR: " << jack_test.getSampleRate() << endl;
   cout << "Buffer Size: " << jack_test.getBufferSize() << endl;

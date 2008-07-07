@@ -51,6 +51,7 @@ public:
 
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
+   * \param peerHostOrIP IPv4 number or host name
    */
   UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP);
 
@@ -62,7 +63,7 @@ public:
    *
    * This function meakes sure we recieve a complete packet
    * of size n
-   * \param buff Buffer to store the recieved packet
+   * \param buf Buffer to store the recieved packet
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
