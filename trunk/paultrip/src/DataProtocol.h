@@ -93,7 +93,7 @@ public:
   virtual ~DataProtocol();
   
   /** \brief Sets the peer (remote) IPv4 address struct
-   * \param peerAddress Either an IPv4 dotted integer number or a hostname
+   * \param peerHostOrIP Either an IPv4 dotted integer number or a hostname
    */
   virtual void setPeerIPv4Address(const char* peerHostOrIP);
 

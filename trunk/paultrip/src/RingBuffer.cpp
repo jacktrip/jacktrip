@@ -41,12 +41,12 @@
 #include <iostream>
 
 //*******************************************************************************
-RingBuffer::RingBuffer(int chunkSize, int numChunks) : 
-  mChunkSize(chunkSize), mNumChunks(numChunks),
-  mHead(0), mTail(0)
+RingBuffer::RingBuffer(int SlotSize, int NumSlots) : 
+  mSlotSize(SlotSize), mNumSlots(NumSlots),
+  mReadPosition(0), mWritePosition(0), mFullSlots(0)
 {
   mRingBuffer = NULL; //initialize to nothing
-  mTotalSize = mChunkSize*mNumChunks;
+  mTotalSize = mSlotSize*mNumSlots;
   mRingBuffer = new int8_t[mTotalSize]; 
 
   // Initialize all elements to zero.
@@ -54,6 +54,10 @@ RingBuffer::RingBuffer(int chunkSize, int numChunks) :
     mRingBuffer[i] = 0;    // Initialize all elements to zero.
   }
 
+  //int8_t caca;
+  //std::cout << sizeof(caca) << std::endl;
+  //std::cout << mTotalSize << std::endl;
+  //std::cout << sizeof(*mRingBuffer) << std::endl;
   std::cout << "CONSTRUCTOR RINGBUFFER" << std::endl;
 } 
 
@@ -68,31 +72,40 @@ RingBuffer::~RingBuffer()
 
 
 //*******************************************************************************
-/*
-void RingBuffer::write(const void* writeChunk)
+void RingBuffer::writeSlot(const int8_t* WriteSlot)
 {
-QMutexLocker locker(&mutex);
-while (tail == head + N)
-bufferIsNotFull.wait(&mutex);
-buffer[tail++ % N] = ch;
-bufferIsNotEmpty.wakeOne();
+  //lock the mutex
+  QMutexLocker locker(&mMutex);
+  // Check if there is space available to write a slot
+  // If the Ringbuffer is full, it waits for the bufferIsNotFull condition
+  while (mFullSlots == mNumSlots) {
+    mBufferIsNotFull.wait(&mMutex);
+  }
+  // Copy mSlotSize bytes to mRingBuffer
+  memcpy(mRingBuffer+mWritePosition, WriteSlot, mSlotSize);
+  // Update write position
+  mWritePosition = (mWritePosition+mSlotSize) % mTotalSize;
+  mFullSlots++; //update full slots
+  // Wake threads waitng for bufferIsNotFull condition
+  mBufferIsNotEmpty.wakeOne();
 }
-*/
 
 
 //*******************************************************************************
-void RingBuffer::get(int8_t* readChunk)
+void RingBuffer::readSlot(int8_t* ReadSlot)
 {
-  QMutexLocker locker(&mMutex); //lock the mutex
-
-  // Check if the buffer is not empty
-  // If it is empty, it waits on the bufferIsNotEmpty condition
-  while (mHead == mTail) {
+  //lock the mutex
+  QMutexLocker locker(&mMutex);
+  // Check if there are slots available to read
+  // If the Ringbuffer is empty, it waits for the bufferIsNotEmpty condition
+  while (mFullSlots == 0) {
     mBufferIsNotEmpty.wait(&mMutex);
   }
-  //TODO: Change this to memcpy
-  readChunk = &mRingBuffer[mHead++ % mTotalSize];
+  // Copy mSlotSize bytes to ReadSlot
+  memcpy(ReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+  // Update write position
+  mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
+  mFullSlots--; //update full slots
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotFull.wakeOne();
 }
-
