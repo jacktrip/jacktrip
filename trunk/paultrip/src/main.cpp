@@ -41,6 +41,7 @@
 #include "JackAudioInterface.h"
 #include "UdpDataProtocol.h"
 #include "RingBuffer.h"
+#include "PaulTrip.h"
 
 using namespace std;
 
@@ -50,6 +51,8 @@ int process (jack_nframes_t nframes, void *arg);
 //int main(int argc, char** argv)
 int main()
 {
+
+  PaulTrip caca(PaulTrip::UDP);
 
   // Test RingBuffer
   //****************************************************************

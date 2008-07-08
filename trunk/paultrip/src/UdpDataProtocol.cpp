@@ -44,7 +44,7 @@
 
 // NOTE: It's better not to use
 // using namespace std;
-// because some functions (line exit()) get confused with QT functions
+// because some functions (like exit()) get confused with QT functions
 
 
 
