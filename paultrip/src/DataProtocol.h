@@ -36,7 +36,7 @@
  */
 
 #ifndef __DATAPROTOCOL_H__
-#define __DATAROTOCOL_H__
+#define __DATAPROTOCOL_H__
 
 //#include <sys/socket.h> //basic socket definitions
 #include <netinet/in.h> //sockaddr_in{} and other Internet defns
@@ -45,8 +45,7 @@
 
 #include <QThread>
 
-/// \brief Enum to define class modes, SENDER or RECEIVER
-enum runModeT {SENDER, RECEIVER};
+
 
 
 /** \brief Base class that defines the transmission protocol.
@@ -82,14 +81,19 @@ enum runModeT {SENDER, RECEIVER};
 class DataProtocol : public QThread
 {
 public:
+
+  /// \brief Enum to define class modes, SENDER or RECEIVER
+  enum runModeT {
+    SENDER, ///< Set class as a Sender (send packets)
+    RECEIVER ///< Set class as a Receiver (receives packets)
+  };
   
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
   DataProtocol(const runModeT runmode);
   
-  /** \brief The class destructor
-   */
+  /// \brief The class destructor
   virtual ~DataProtocol();
   
   /** \brief Sets the peer (remote) IPv4 address struct
@@ -123,6 +127,8 @@ public:
   virtual void run();
 
 
+
+
 protected:
 
   /** \brief Sets the local IPv4 address struct
@@ -137,6 +143,8 @@ protected:
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
   struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+
+
 
 private:
   int mLocalPort; ///< Local Port number to Bind
