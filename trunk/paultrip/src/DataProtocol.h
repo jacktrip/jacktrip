@@ -42,9 +42,12 @@
 #include <netinet/in.h> //sockaddr_in{} and other Internet defns
 #include <arpa/inet.h> //inet(3) functions
 #include <netdb.h>
+//#include <memory> //for shared_ptr
+#include <tr1/memory>
 
 #include <QThread>
 
+#include "RingBuffer.h"
 
 
 
@@ -149,10 +152,11 @@ protected:
 private:
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
+  std::tr1::shared_ptr<RingBuffer> mRingBuffer; ///< Pointer to RingBuffer to read or write
+  
   /// Number of clients running to check for ports already used
   /// \note Unimplemented
   static int sClientsRunning;
-
 };
 
 #endif

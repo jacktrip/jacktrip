@@ -55,7 +55,7 @@ int main()
   PaulTrip caca(PaulTrip::UDP);
 
   // Test RingBuffer
-  //****************************************************************
+  //================================================================
   RingBuffer rb(2,2);
 
   int8_t* writeSlot;
@@ -78,7 +78,7 @@ int main()
 
   /*
   // Test UDP Socket
-  //****************************************************************
+  //================================================================
   UdpDataProtocol udp_rec(RECEIVER, "192.168.1.4");
   UdpDataProtocol udp_send(SENDER, "192.168.1.4");
   udp_rec.start();
@@ -87,7 +87,7 @@ int main()
 
   /*
   // Test JackAudioInterface
-  //****************************************************************
+  //================================================================
   JackAudioInterface jack_test(4);
   cout << "SR: " << jack_test.getSampleRate() << endl;
   cout << "Buffer Size: " << jack_test.getBufferSize() << endl;

@@ -87,6 +87,7 @@ public:
   virtual ~PaulTrip();
 
 
+  /// \todo setIpaddress
   //Methods to change defaults  
   /*
   void setPeerIPv4Address(const char* peerHostOrIP);

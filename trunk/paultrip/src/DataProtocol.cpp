@@ -106,6 +106,7 @@ void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
   */
 
   // temporary implementation to make this work
+  /// \todo change this
   peerAddress = peerHostOrIP;
 
   // Set the Peer IPv4 Address struct
