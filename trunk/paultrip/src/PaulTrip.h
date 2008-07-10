@@ -80,7 +80,7 @@ public:
    * \param NumChans Number of Audio Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  PaulTrip(dataProtocolT DataProtocolType = UDP, int NumChans = 2,
+  PaulTrip(dataProtocolT DataProtocolType = UDP, int NumChans = 1,
 	   audioBitResolutionT AudioBitResolution = BIT16);
   
   /// \brief The class destructor
