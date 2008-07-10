@@ -251,3 +251,9 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   return 0;
 }
 
+
+//*******************************************************************************
+int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
+{
+  return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
+}

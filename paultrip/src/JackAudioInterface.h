@@ -165,16 +165,15 @@ private:
    * that can be used with <tt>jack_set_process_callback</tt>
    *
    * <tt>jack_set_process_callback</tt> needs a static member function pointer. A normal
-   * member function won't work because this is passed under the scenes. That's why we 
+   * member function won't work because a <b><i>this</i></b> pointer is passed under the scenes.
+   * That's why we 
    * need to cast the member funcion processCallback to the static function
    * wrapperProcessCallback. The callback is then set as:\n
    * <tt>jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback,
    *                              this)</tt>
    */
-  static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
-  {
-    return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
-  }
+  // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
+  static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) ;
 
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
