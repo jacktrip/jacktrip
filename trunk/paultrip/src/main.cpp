@@ -143,11 +143,13 @@ int process (jack_nframes_t nframes, void *arg)
  *
  * \section intro_sec About PaulTrip
  *
- * test
+ * PaulTrip: A System for High-Quality Audio Network Performance
+ * over the Internet.
  *
  * \section install_sec Installation
  *
- * \subsection test
- *  
- * etc...
+ * \subsection Linux
+ *
+ * \subsection Mac OS X
+ *
  */

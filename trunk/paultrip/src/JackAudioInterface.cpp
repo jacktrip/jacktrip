@@ -150,6 +150,7 @@ uint32_t JackAudioInterface::getBufferSize() const
 
 
 //*******************************************************************************
+/// \todo This function may not be needed anymore as it is.
 int JackAudioInterface::setProcessCallback(JackProcessCallback process) const
 {
   std::cout << "JACK PROCESS CALLBACK" << std::endl;
