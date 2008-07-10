@@ -161,40 +161,25 @@ private:
   /// \brief JACK process callback
   int processCallback(jack_nframes_t nframes);
   
-
+  /** \brief Wrapper to cast the member processCallback to a static function pointer
+   * that can be used with <tt>jack_set_process_callback</tt>
+   *
+   * <tt>jack_set_process_callback</tt> needs a static member function pointer. A normal
+   * member function won't work because this is passed under the scenes. That's why we 
+   * need to cast the member funcion processCallback to the static function
+   * wrapperProcessCallback. The callback is then set as:\n
+   * <tt>jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback,
+   *                              this)</tt>
+   */
   static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
   {
     return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
   }
 
-  //static int wrapperProcessCallback(void* pt2Object, jack_nframes_t nframes, void* arg);
-
-  /*
-  static int wrapperProcessCallback (jack_nframes_t nframes, void *arg) {
-    return static_cast<reseaux*>(arg)->process (nframes);
-  }
-  */
-
-  /*
-  static int staticProcessCallback(void* obj, jack_nframes_t nframes, void* arg)
-  {
-    // check for null pointer (obj)
-    return reinterpret_cast<JackAudioInterface*>(obj)->processCallback(nframes, arg);
-  }
-  */
-
-  /*
-  static int staticProcessCallback(jack_nframes_t nframes, void* arg, void* context)
-  {
-    return static_cast<JackAudioInterface*>(context)->processCallback(nframes, arg);
-  }
-  */
-
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
 
-  //NOTE: Do I need access to mClient to set the process callback?
   jack_client_t* mClient; ///< Jack Client
   QVector<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVector<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
@@ -202,69 +187,10 @@ private:
   QVector<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVector<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
-  std::tr1::shared_ptr<RingBuffer> mInRingBuffer; 
+  /// Smart Pointer to RingBuffer to read from (input)
+  std::tr1::shared_ptr<RingBuffer> mInRingBuffer;
+  /// Smart Pointer to RingBuffer to write from (output)
   std::tr1::shared_ptr<RingBuffer> mOutRingBuffer; 
-
-  JackProcessCallback mProcess;
-  /*
-protected:
-  void setJackCallbackClass(JackAudioInterface* ptr) { sJackCallbackClass = ptr ; }
-  
-private:
-  static JackAudioInterface* sJackCallbackClass;
-
-public:
-  JackAudioInterface();
-  */
 };
-
-
-/*
-class JackAudioInterfaceCallback : public JackAudioInterface
-{
-  static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
-  {
-    return static_cast<JackAudioInterfaceCallback*>(arg)->processCallback(nframes, arg);
-  }
-};
-*/
-
-
-
-
-
-/*
-class JackCallbackClass : public JackAudioInterface
-{
-public:
-  
-  JackCallbackClass() { setJackCallbackClass( this ); }
-  ~JackCallbackClass() {}
-  
- 
-protected:
-  virtual void Render()
-  { cout << "Inside DerivedClass::Render()" << endl ; }
- 
-};
-*/
-
-
- /*
-int wrap_setFoo(int value, void *data) {
-  BaseClass *base_instance = static_cast<BaseClass *>(data);
-  SubClass *instance = static_cast<SubClass *>(base_instance);
-  try {
-    instance->setFoo(value);
-    return 1;
-  } catch (SomeException) {
-    return 0;
-  } catch (...) {
-    std::cerr << "Unexpected exception in callback; exiting\n";
-    abort();
-  }
-}
- */
-
 
 #endif

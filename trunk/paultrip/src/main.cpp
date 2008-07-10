@@ -56,8 +56,11 @@ int main()
  
   // Test PaulTrip
   //================================================================
-  PaulTrip paultrip;
-  paultrip.startThreads();
+  PaulTrip paultrip1;
+  paultrip1.startThreads();
+
+  PaulTrip paultrip2;
+  paultrip2.startThreads();
  
   /*
   // TestRingBuffer
