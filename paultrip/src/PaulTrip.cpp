@@ -62,6 +62,7 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   std::cout << SEPARATOR << std::endl;
 
   // Create DataProtocol Objects
+  /*
   switch (DataProtocolType) {
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
@@ -75,6 +76,7 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
     exit(1);
     break;
   }
+  */
 
   // Create RingBuffers with the apprioprate size
   mSendRingBuffer.reset( new RingBuffer(AudioBufferSizeInBytes, 10) );
@@ -85,8 +87,8 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   std::cout << SEPARATOR << std::endl;
 
   // Set RingBuffers pointers in protocols
-  mDataProtocolSender->setRingBuffer(mSendRingBuffer);
-  mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
+  //mDataProtocolSender->setRingBuffer(mSendRingBuffer);
+  //mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
   mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
 
   //pt2JackAudioInterface = (void*) mJackAudio;
