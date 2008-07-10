@@ -39,7 +39,9 @@
 #include "JackAudioInterface.h"
 #include <QTextStream>
 
-using namespace std;
+/// \todo Check that the RingBuffer Pointer have indeed been initialized before
+/// computing anything
+
 
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans)
@@ -126,6 +128,10 @@ void JackAudioInterface::createChannels()
 					JACK_DEFAULT_AUDIO_TYPE,
 					 JackPortIsOutput, 0);
     }
+  
+  /// \todo Put this in a better place
+  mInBuffer.resize(mNumInChans);
+  mOutBuffer.resize(mNumOutChans);
 }
 
 
@@ -146,9 +152,10 @@ uint32_t JackAudioInterface::getBufferSize() const
 //*******************************************************************************
 int JackAudioInterface::setProcessCallback(JackProcessCallback process) const
 {
+  std::cout << "JACK PROCESS CALLBACK" << std::endl;
   if( int code = (jack_set_process_callback (mClient, process, 0)) )
     {
-      cerr << "Could not set the process callback" << endl;
+      std::cerr << "Could not set the process callback" << std::endl;
       return(code);
     }
   return(0);
@@ -156,13 +163,21 @@ int JackAudioInterface::setProcessCallback(JackProcessCallback process) const
 
 
 //*******************************************************************************
-int JackAudioInterface::startProcess() const
+int JackAudioInterface::startProcess()
 {
+  //castProcessCallback callback = (castProcessCallback)&(this->processCallback);
+
+  std::cout << "Starting JACK PROCESS" << std::endl;
+  //mProcess = &JackAudioInterface::process;
+  //pObject->*func)(param1)
+  //int code = jack_set_process_callback (mClient, processCallback, 0);
+  //int code = jack_set_process_callback (mClient, sJackCallbackClass->processCallback, 0);
+  std::cout << "Starting PROCESS CALLED back" << std::endl;
   //Tell the JACK server that we are ready to roll.  Our
   //process() callback will start running now.
   if ( int code = (jack_activate(mClient)) ) 
     {
-    cerr << "Cannot activate client" << endl;
+      std::cerr << "Cannot activate client" << std::endl;
     return(code);
     }
   return(0);
@@ -174,7 +189,7 @@ int JackAudioInterface::stopProcess() const
 {
   if ( int code = (jack_client_close(mClient)) )
     {
-      cerr << "Cannot disconnect client" << endl;
+      std::cerr << "Cannot disconnect client" << std::endl;
       return(code);
     }
   return(0);
@@ -184,20 +199,52 @@ int JackAudioInterface::stopProcess() const
 //*******************************************************************************
 void JackAudioInterface::jackShutdown (void*)
 {
-  cout << "The Jack Server was shut down!" << endl;
-  cout << "Exiting program..." << endl;
-  exit (1);
+  std::cout << "The Jack Server was shut down!" << std::endl;
+  std::cout << "Exiting program..." << std::endl;
+  std::exit(1);
 }
 
 
 //*******************************************************************************
-void JackAudioInterface::setRingBuffer(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
+void JackAudioInterface::setRingBuffers(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
 				       std::tr1::shared_ptr<RingBuffer> OutRingBuffer)
 {
   mInRingBuffer = InRingBuffer;
   mOutRingBuffer = OutRingBuffer;
 }
 
+
+//*******************************************************************************
+void JackAudioInterface::computeNetworkProcess() 
+{
+  /// \todo Fix this, I need to read just one packet for all the channels
+  /// and then copy that to each channel
+  for (int i = 0; i < mNumInChans; i++) {  
+    mInRingBuffer->readSlot( (int8_t*) mInBuffer[i] );
+  }
+
+  for (int i = 0; i < mNumOutChans; i++) {  
+    mOutRingBuffer->writeSlot( (int8_t*) mOutBuffer[i] );
+  }
+}
+
+
+//*******************************************************************************
+int JackAudioInterface::processCallback(jack_nframes_t nframes, void* arg)
+{
+  //std::cout << "jackprocess" << std::endl;
+
+  // Get input and output buffers
+  for (int i = 0; i < mNumInChans; i++) {
+    mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
+  }
+  this->computeNetworkProcess();
+  /// \todo Dynamically alocate other processes (from FAUST for instance) here
+  return 0;
+}
 
 
 /*
@@ -206,3 +253,17 @@ int process(jack_nframes_t nframes, void *arg)
   return 0;      
 }
 */
+
+ /*
+void JackAudioInterface::setDataProtocolProcessCallback(jack_nframes_t nframes, void* arg)
+{
+  for (int i = 0; i < gNumInChans; i++) {
+    gInChannel[i] = (float *)jack_port_get_buffer(input_ports[i], nframes);
+  }
+  for (int i = 0; i < gNumOutChans; i++) {
+    gOutChannel[i] = (float *)jack_port_get_buffer(output_ports[i], nframes);
+  }
+  DSP.compute(nframes, gInChannel, gOutChannel);
+  return 0;
+}
+ */

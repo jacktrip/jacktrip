@@ -48,16 +48,28 @@
 #include "types.h"
 #include "RingBuffer.h"
 
+/*
+extern "C" int c_callback(void* obj, int (*func)(int), jack_nframes_t nframes, void* arg)
+{
+  // check for null pointers (obj / func)
+  return (*func)(obj, jack_nframes_t nframes, void* arg);
+}
+*/
+
 /** \brief Class that provides an interface with the Jack Audio Server
  *
  * \todo implement srate_callback
  * \todo automatically starts jack with buffer and sample rate settings specified by the user
  * \todo get jack_port_get_buffer for input and output ports (channels), in a way
  * that they can be used in other classes
+ * \todo set the Bit Resolution here (now it is defined in PaulTrip.h
  */
 class JackAudioInterface
 {
 public:
+
+  //typedef int (JackAudioInterface::*castProcessCallback)(jack_nframes_t, void*);
+
 
   /** \brief The class constructor
    * \param NumInChans Number of Input Channels
@@ -85,7 +97,7 @@ public:
   /** \brief
    * \return 0 on success, otherwise a non-zero error code
    */
-  int startProcess() const;
+  int startProcess();
 
   /** \brief
    * \return 0 on success, otherwise a non-zero error code
@@ -102,7 +114,7 @@ public:
    * \param InRingBuffer RingBuffer to read samples <B>from</B>
    * \param OutRingBuffer RingBuffer to write samples <B>to</B>
    */
-  void setRingBuffer(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
+  void setRingBuffers(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
 		     std::tr1::shared_ptr<RingBuffer> OutRingBuffer);
 
 
@@ -140,8 +152,29 @@ private:
   /** \brief JACK calls this shutdown_callback if the server ever shuts down or
    * decides to disconnect the client.
    */
-  static void jackShutdown (void*);
+  static void jackShutdown(void*);
   
+  /// \brief Sets the part of the process callback that sends and receive packets
+  void computeNetworkProcess();
+
+  /// \brief JACK process callback
+  int processCallback(jack_nframes_t nframes, void* arg);
+  
+  /*
+  static int staticProcessCallback(void* obj, jack_nframes_t nframes, void* arg)
+  {
+    // check for null pointer (obj)
+    return reinterpret_cast<JackAudioInterface*>(obj)->processCallback(nframes, arg);
+  }
+  */
+
+  /*
+  static int staticProcessCallback(jack_nframes_t nframes, void* arg, void* context)
+  {
+    return static_cast<JackAudioInterface*>(context)->processCallback(nframes, arg);
+  }
+  */
+
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
@@ -151,8 +184,59 @@ private:
   QVector<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVector<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
 
+  QVector<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
+  QVector<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
+
   std::tr1::shared_ptr<RingBuffer> mInRingBuffer; 
   std::tr1::shared_ptr<RingBuffer> mOutRingBuffer; 
+
+  JackProcessCallback mProcess;
+  /*
+protected:
+  void setJackCallbackClass(JackAudioInterface* ptr) { sJackCallbackClass = ptr ; }
+  
+private:
+  static JackAudioInterface* sJackCallbackClass;
+
+public:
+  JackAudioInterface();
+  */
 };
+
+
+
+/*
+class JackCallbackClass : public JackAudioInterface
+{
+public:
+  
+  JackCallbackClass() { setJackCallbackClass( this ); }
+  ~JackCallbackClass() {}
+  
+ 
+protected:
+  virtual void Render()
+  { cout << "Inside DerivedClass::Render()" << endl ; }
+ 
+};
+*/
+
+
+ /*
+int wrap_setFoo(int value, void *data) {
+  BaseClass *base_instance = static_cast<BaseClass *>(data);
+  SubClass *instance = static_cast<SubClass *>(base_instance);
+  try {
+    instance->setFoo(value);
+    return 1;
+  } catch (SomeException) {
+    return 0;
+  } catch (...) {
+    std::cerr << "Unexpected exception in callback; exiting\n";
+    abort();
+  }
+}
+ */
+
 
 #endif

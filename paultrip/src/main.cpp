@@ -42,6 +42,7 @@
 #include "UdpDataProtocol.h"
 #include "RingBuffer.h"
 #include "PaulTrip.h"
+#include "TestRingBuffer.h"
 
 using namespace std;
 
@@ -52,9 +53,20 @@ int process (jack_nframes_t nframes, void *arg);
 int main()
 {
 
+ 
+  // Test PaulTrip
+  //================================================================
   PaulTrip paultrip;
   paultrip.startThreads();
-
+ 
+  /*
+  // TestRingBuffer
+  //================================================================
+  TestRingBufferWrite tw;
+  TestRingBufferRead tr;
+  tr.start();
+  tw.start();
+  */
 
   /*
   // Test RingBuffer

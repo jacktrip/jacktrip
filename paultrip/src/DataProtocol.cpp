@@ -146,28 +146,28 @@ void DataProtocol::run()
   std::cout << SEPARATOR << std::endl;
   int8_t* buf;
   
-  //char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
+  char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
   switch ( mRunMode ) 
     {
     case SENDER : 
       while ( true )
 	{
-	  std::cout << "SENDING PACKETS" << std::endl;
-	  //std::cout << "SENDING THREAD" << std::endl;
-	  //::write(mSockFd, sendtest , strlen(sendtest));
+	  //std::cout << "SENDING PACKETS" << std::endl;
 	  mRingBuffer->readSlot(buf);
 	  this->sendPacket( (char*) buf, 512);
+	  //this->sendPacket( sendtest, 64);
 	}
       break;
       
     case RECEIVER : 
       while ( true )
 	{
-	  std::cout << "RECEIVING PACKETS" << std::endl;
+	  //std::cout << "RECEIVING PACKETS" << std::endl;
 	  /// \todo Set a timer to report packats arriving too late
 	  //std::cout << "RECIEVING THREAD" << std::endl;
 	  this->receivePacket( (char*) buf, 512);
-	  //TODO: Change this to match buffer size
+	  /// \todo Change this to match buffer size
+	  //std::cout << "PACKET RECIEVED" << std::endl;
 	  mRingBuffer->writeSlot(buf);
 	  //std::cout << buf << std::endl;
 	}

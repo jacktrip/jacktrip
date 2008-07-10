@@ -66,8 +66,8 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
 //*******************************************************************************
 RingBuffer::~RingBuffer()
 {
-  delete[] mRingBuffer;  // When done, free memory
-  mRingBuffer = NULL;     // Clear a to prevent using invalid memory reference
+  delete[] mRingBuffer; // Free memory
+  mRingBuffer = NULL; // Clear to prevent using invalid memory reference
   std::cout << "DESTRUCTOR RINGBUFFER" << std::endl;
 }
 
@@ -89,6 +89,7 @@ void RingBuffer::writeSlot(const int8_t* WriteSlot)
   mFullSlots++; //update full slots
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotEmpty.wakeOne();
+  std::cout << "mWritePosition === " << mWritePosition << std::endl;
 }
 
 
@@ -109,4 +110,5 @@ void RingBuffer::readSlot(int8_t* ReadSlot)
   mFullSlots--; //update full slots
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotFull.wakeOne();
+  std::cout << "mReadPosition === " << mReadPosition << std::endl;
 }
