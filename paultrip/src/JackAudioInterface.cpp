@@ -170,8 +170,15 @@ int JackAudioInterface::startProcess()
   std::cout << "Starting JACK PROCESS" << std::endl;
   //mProcess = &JackAudioInterface::process;
   //pObject->*func)(param1)
+  //int code = 
+  //  jack_set_process_callback (mClient,
+  //			       JackAudioInterface::wrapperProcessCallback((void*)this), 0);
   //int code = jack_set_process_callback (mClient, processCallback, 0);
   //int code = jack_set_process_callback (mClient, sJackCallbackClass->processCallback, 0);
+  //int code = jack_set_process_callback(mClient,
+  //			       std::mem_fun_ref(&JackAudioInterface::processCallback), 0);
+  int code = jack_set_process_callback(mClient,
+				       JackAudioInterface::wrapperProcessCallback, this);
   std::cout << "Starting PROCESS CALLED back" << std::endl;
   //Tell the JACK server that we are ready to roll.  Our
   //process() callback will start running now.
@@ -230,21 +237,54 @@ void JackAudioInterface::computeNetworkProcess()
 
 
 //*******************************************************************************
-int JackAudioInterface::processCallback(jack_nframes_t nframes, void* arg)
+int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
   //std::cout << "jackprocess" << std::endl;
+  std::cout << "BEGIN" << std::endl;
 
   // Get input and output buffers
   for (int i = 0; i < mNumInChans; i++) {
+    std::cout << "CACUMEIN ANTES" << std::endl;
     mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
+    std::cout << "CACUMENIN DESPUES" << std::endl;
+    //std::cout << "CACUMENIN" << std::endl;
   }
+  std::cout << mNumOutChans << std::endl;
+
   for (int i = 0; i < mNumOutChans; i++) {
+    std::cout << "i = " << i << std::endl;
+    std::cout << "CACUMENOUT ANTES" << std::endl;
     mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
+    std::cout << "CACUMENOUT DESPUES" << std::endl;
   }
-  this->computeNetworkProcess();
+  //TODO: UNCOMMENT THIS
+  //this->computeNetworkProcess();
   /// \todo Dynamically alocate other processes (from FAUST for instance) here
+
+  // oscillator test on output
+  for (int i = 0; i < mNumInChans; i++)
+    {
+      //mOutBuffer[i] = 
+    }
+  std::cout << "END" << std::endl;
   return 0;
 }
+
+
+//*******************************************************************************
+/*
+int JackAudioInterface::wrapperProcessCallback(void* pt2JackAudioInterface,
+						jack_nframes_t nframes, void* arg)
+{
+  // explicitly cast to a pointer to TClassA
+  JackAudioInterface* mySelf = (JackAudioInterface*) pt2JackAudioInterface;
+  
+  // call member
+  mySelf->processCallback(nframes, arg);
+}
+*/
+
+
 
 
 /*

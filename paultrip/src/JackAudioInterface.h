@@ -41,6 +41,7 @@
 
 #include <iostream>
 #include <tr1/memory> //for shared_ptr
+#include <functional> //for mem_fun_ref
 #include <jack/jack.h>
 
 #include <QVector>
@@ -158,8 +159,22 @@ private:
   void computeNetworkProcess();
 
   /// \brief JACK process callback
-  int processCallback(jack_nframes_t nframes, void* arg);
+  int processCallback(jack_nframes_t nframes);
   
+
+  static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
+  {
+    return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
+  }
+
+  //static int wrapperProcessCallback(void* pt2Object, jack_nframes_t nframes, void* arg);
+
+  /*
+  static int wrapperProcessCallback (jack_nframes_t nframes, void *arg) {
+    return static_cast<reseaux*>(arg)->process (nframes);
+  }
+  */
+
   /*
   static int staticProcessCallback(void* obj, jack_nframes_t nframes, void* arg)
   {
@@ -202,6 +217,19 @@ public:
   JackAudioInterface();
   */
 };
+
+
+/*
+class JackAudioInterfaceCallback : public JackAudioInterface
+{
+  static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
+  {
+    return static_cast<JackAudioInterfaceCallback*>(arg)->processCallback(nframes, arg);
+  }
+};
+*/
+
+
 
 
 
