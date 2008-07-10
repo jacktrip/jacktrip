@@ -37,6 +37,7 @@
 
 
 #include "JackAudioInterface.h"
+#include "globals.h"
 #include <QTextStream>
 
 /// \todo Check that the RingBuffer Pointer have indeed been initialized before
@@ -78,13 +79,16 @@ void JackAudioInterface::setupClient()
   jack_status_t status;
 
   // Try to connect to the server
-  /// \todo Write better warning messages
+  /// \todo Write better warning messages. This following line displays very
+  /// verbose message, check how to desable them.
   mClient = jack_client_open (client_name, options, &status, server_name);
   if (mClient == NULL) {
     fprintf (stderr, "jack_client_open() failed, "
-	     "status = 0x%2.0x\n", status);
+    	     "status = 0x%2.0x\n", status);
     if (status & JackServerFailed) {
       fprintf (stderr, "Unable to connect to JACK server\n");
+      std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
+      std::cerr << SEPARATOR << std::endl;
     }
     exit (1);
   }
@@ -238,12 +242,12 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
     mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
   }
 
-  //---------------
+  //-------------------------------------------------------------------
   // TEST: Loopback
   // To test, uncomment and send audio to client input. The same audio
   // should come out as output
   memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
-  //---------------
+  //-------------------------------------------------------------------
 
   /// \todo UNCOMMENT THIS
   //this->computeNetworkProcess();
