@@ -110,6 +110,8 @@ private:
   JackAudioInterface* mJackAudio; ///< Interface to Jack Client
   std::tr1::shared_ptr<RingBuffer> mSendRingBuffer; 
   std::tr1::shared_ptr<RingBuffer> mReceiveRingBuffer; 
+
+  JackAudioInterface* pt2JackAudioInterface; 
 };
 
 #endif
