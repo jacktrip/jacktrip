@@ -90,9 +90,6 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   //mDataProtocolSender->setRingBuffer(mSendRingBuffer);
   //mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
   mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
-
-  //pt2JackAudioInterface = (void*) mJackAudio;
-  //mJackAudio->setProcessCallback(JackAudioInterface::wrapperProcessCallback)
 }
 
 
