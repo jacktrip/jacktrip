@@ -124,7 +124,7 @@ void JackAudioInterface::createChannels()
     {
       QString outName;
       QTextStream (&outName) << "output_" << i+1;
-      mInPorts[i] = jack_port_register (mClient, outName.toLatin1(),
+      mOutPorts[i] = jack_port_register (mClient, outName.toLatin1(),
 					JACK_DEFAULT_AUDIO_TYPE,
 					 JackPortIsOutput, 0);
     }
@@ -240,33 +240,33 @@ void JackAudioInterface::computeNetworkProcess()
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
   //std::cout << "jackprocess" << std::endl;
-  std::cout << "BEGIN" << std::endl;
+  //std::cout << "BEGIN" << std::endl;
 
   // Get input and output buffers
   for (int i = 0; i < mNumInChans; i++) {
-    std::cout << "CACUMEIN ANTES" << std::endl;
     mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
-    std::cout << "CACUMENIN DESPUES" << std::endl;
-    //std::cout << "CACUMENIN" << std::endl;
   }
-  std::cout << mNumOutChans << std::endl;
-
+  
   for (int i = 0; i < mNumOutChans; i++) {
-    std::cout << "i = " << i << std::endl;
-    std::cout << "CACUMENOUT ANTES" << std::endl;
     mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
-    std::cout << "CACUMENOUT DESPUES" << std::endl;
   }
+
+  memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
+
   //TODO: UNCOMMENT THIS
   //this->computeNetworkProcess();
   /// \todo Dynamically alocate other processes (from FAUST for instance) here
 
+
+
   // oscillator test on output
+  /*
   for (int i = 0; i < mNumInChans; i++)
     {
       //mOutBuffer[i] = 
     }
-  std::cout << "END" << std::endl;
+  */
+  //std::cout << "END" << std::endl;
   return 0;
 }
 
