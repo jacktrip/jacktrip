@@ -59,7 +59,7 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
   //std::cout << sizeof(caca) << std::endl;
   //std::cout << mTotalSize << std::endl;
   //std::cout << sizeof(*mRingBuffer) << std::endl;
-  std::cout << "CONSTRUCTOR RINGBUFFER" << std::endl;
+  //std::cout << "CONSTRUCTOR RINGBUFFER" << std::endl;
 } 
 
 
@@ -68,7 +68,7 @@ RingBuffer::~RingBuffer()
 {
   delete[] mRingBuffer; // Free memory
   mRingBuffer = NULL; // Clear to prevent using invalid memory reference
-  std::cout << "DESTRUCTOR RINGBUFFER" << std::endl;
+  //std::cout << "DESTRUCTOR RINGBUFFER" << std::endl;
 }
 
 
