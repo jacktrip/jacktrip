@@ -39,6 +39,7 @@
 #include "RingBuffer.h"
 
 #include <iostream>
+#include <cstring>
 
 //*******************************************************************************
 RingBuffer::RingBuffer(int SlotSize, int NumSlots) : 
@@ -82,7 +83,7 @@ void RingBuffer::writeSlot(const int8_t* WriteSlot)
     mBufferIsNotFull.wait(&mMutex);
   }
   // Copy mSlotSize bytes to mRingBuffer
-  memcpy(mRingBuffer+mWritePosition, WriteSlot, mSlotSize);
+  std::memcpy(mRingBuffer+mWritePosition, WriteSlot, mSlotSize);
   // Update write position
   mWritePosition = (mWritePosition+mSlotSize) % mTotalSize;
   mFullSlots++; //update full slots
@@ -102,7 +103,7 @@ void RingBuffer::readSlot(int8_t* ReadSlot)
     mBufferIsNotEmpty.wait(&mMutex);
   }
   // Copy mSlotSize bytes to ReadSlot
-  memcpy(ReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+  std::memcpy(ReadSlot, mRingBuffer+mReadPosition, mSlotSize);
   // Update write position
   mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
   mFullSlots--; //update full slots

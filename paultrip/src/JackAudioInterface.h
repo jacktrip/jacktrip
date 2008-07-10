@@ -40,12 +40,13 @@
 #define __JACKAUDIOINTERFACE_H__
 
 #include <iostream>
+#include <tr1/memory> //for shared_ptr
 #include <jack/jack.h>
 
 #include <QVector>
 
 #include "types.h"
-
+#include "RingBuffer.h"
 
 /** \brief Class that provides an interface with the Jack Audio Server
  *
@@ -81,22 +82,6 @@ public:
    */
   virtual uint32_t getBufferSize() const;
 
-  /** \brief setProcessCallback passes a function pointer process to be called by
-   *  Jack the JACK server whenever there is work to be done.
-   * 
-   * \param process Function to be called to process audio. This function is 
-   * of the type JackProcessCallback, which is defined as:\n
-   * <tt>typedef int(* JackProcessCallback)(jack_nframes_t nframes, void *arg)</tt>
-   * \n
-   * See
-   * http://jackaudio.org/files/docs/html/types_8h.html#4923142208a8e7dacf00ca7a10681d2b
-   * for more details
-   *
-   * \return 0 on success, otherwise a non-zero error code,
-   * causing JACK to remove that client from the process() graph.
-   */
-  int setProcessCallback(JackProcessCallback process) const;
-
   /** \brief
    * \return 0 on success, otherwise a non-zero error code
    */
@@ -106,6 +91,19 @@ public:
    * \return 0 on success, otherwise a non-zero error code
    */
   int stopProcess() const;
+
+  /** \brief Set the pointer to the Input and Output RingBuffer
+   * that'll be use to read and write audio
+   *
+   * These RingBuffer<EM>s</EM> are used to read and write audio samples on 
+   * each JACK callback.
+   * \todo If the RingBuffer is blocked, the callback should stay
+   * on the last buffer, as in JackTrip (wavetable synth) 
+   * \param InRingBuffer RingBuffer to read samples <B>from</B>
+   * \param OutRingBuffer RingBuffer to write samples <B>to</B>
+   */
+  void setRingBuffer(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
+		     std::tr1::shared_ptr<RingBuffer> OutRingBuffer);
 
 
 private:
@@ -123,8 +121,23 @@ private:
    */
   void createChannels();
  
-  /**
-   * JACK calls this shutdown_callback if the server ever shuts down or
+  /** \brief setProcessCallback passes a function pointer process to be called by
+   *  Jack the JACK server whenever there is work to be done.
+   * 
+   * \param process Function to be called to process audio. This function is 
+   * of the type JackProcessCallback, which is defined as:\n
+   * <tt>typedef int(* JackProcessCallback)(jack_nframes_t nframes, void *arg)</tt>
+   * \n
+   * See
+   * http://jackaudio.org/files/docs/html/types_8h.html#4923142208a8e7dacf00ca7a10681d2b
+   * for more details
+   *
+   * \return 0 on success, otherwise a non-zero error code,
+   * causing JACK to remove that client from the process() graph.
+   */
+  int setProcessCallback(JackProcessCallback process) const;
+
+  /** \brief JACK calls this shutdown_callback if the server ever shuts down or
    * decides to disconnect the client.
    */
   static void jackShutdown (void*);
@@ -137,6 +150,9 @@ private:
   jack_client_t* mClient; ///< Jack Client
   QVector<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVector<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
+
+  std::tr1::shared_ptr<RingBuffer> mInRingBuffer; 
+  std::tr1::shared_ptr<RingBuffer> mOutRingBuffer; 
 };
 
 #endif

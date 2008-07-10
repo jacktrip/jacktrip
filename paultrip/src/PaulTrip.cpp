@@ -44,17 +44,30 @@
 
 
 //*******************************************************************************
-PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans, int AudioBitResolution) :
+PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
+		   audioBitResolutionT AudioBitResolution) :
   mNumChans(NumChans),
   mAudioBitResolution(AudioBitResolution)
 {
+  // Create JackAudioInterface Client Object
+  mJackAudio = new JackAudioInterface(mNumChans);
+  mSampleRate = mJackAudio->getSampleRate();
+  std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
+  std::cout << SEPARATOR << std::endl;
+  mAudioBufferSize = mJackAudio->getBufferSize();
+  int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
+  std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples" << std::endl;
+  std::cout << "                      or: " << AudioBufferSizeInBytes 
+	    << " bytes" << std::endl;
+  std::cout << SEPARATOR << std::endl;
+
   // Create DataProtocol Objects
   switch (DataProtocolType) {
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << SEPARATOR << std::endl;
-    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, "192.168.1.6");
-    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, "192.168.1.6");
+    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, "192.168.1.2");
+    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, "192.168.1.2");
     break;
     
   default: 
@@ -63,14 +76,17 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans, int AudioBitRes
     break;
   }
 
-  // Creat JackAudioInterface Object
-  mJackAudio = new JackAudioInterface(mNumChans);
-  mSampleRate = mJackAudio->getSampleRate();
-  std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
+  // Create RingBuffers with the apprioprate size
+  mSendRingBuffer.reset( new RingBuffer(AudioBufferSizeInBytes, 10) );
+  std::cout << "NEWED mSendRingBuffer" << std::endl;
   std::cout << SEPARATOR << std::endl;
-  mAudioBufferSize = mJackAudio->getBufferSize();
-  std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << std::endl;
+  mReceiveRingBuffer.reset( new RingBuffer(AudioBufferSizeInBytes, 10) );
+  std::cout << "NEWED mReceiveRingBuffer" << std::endl;
   std::cout << SEPARATOR << std::endl;
+
+  // Set RingBuffers pointers in protocols
+  mDataProtocolSender->setRingBuffer(mSendRingBuffer);
+  mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
 }
 
 
@@ -83,3 +99,9 @@ PaulTrip::~PaulTrip()
 }
 
 
+//*******************************************************************************
+void PaulTrip::startThreads()
+{
+  mDataProtocolSender->start();
+  mDataProtocolReceiver->start();
+}
