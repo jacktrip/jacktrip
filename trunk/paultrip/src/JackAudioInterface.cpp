@@ -67,15 +67,15 @@ JackAudioInterface::~JackAudioInterface()
 //*******************************************************************************
 void JackAudioInterface::setupClient()
 {
-  //TODO: Return an int as en error code
+  // \todo Return an int as en error code
 
-  //TODO: Get this name from global variable
+  // \todo Get this name from global variable
   const char* client_name = "PaulTrip";//APP_NAME;
   const char* server_name = NULL;
   jack_options_t options = JackNoStartServer;
   jack_status_t status;
 
-  //Try to connect to the server
+  // Try to connect to the server
   /// \todo Write better warning messages
   mClient = jack_client_open (client_name, options, &status, server_name);
   if (mClient == NULL) {
@@ -188,3 +188,21 @@ void JackAudioInterface::jackShutdown (void*)
   cout << "Exiting program..." << endl;
   exit (1);
 }
+
+
+//*******************************************************************************
+void JackAudioInterface::setRingBuffer(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
+				       std::tr1::shared_ptr<RingBuffer> OutRingBuffer)
+{
+  mInRingBuffer = InRingBuffer;
+  mOutRingBuffer = OutRingBuffer;
+}
+
+
+
+/*
+int process(jack_nframes_t nframes, void *arg)
+{
+  return 0;      
+}
+*/

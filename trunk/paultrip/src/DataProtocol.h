@@ -42,13 +42,11 @@
 #include <netinet/in.h> //sockaddr_in{} and other Internet defns
 #include <arpa/inet.h> //inet(3) functions
 #include <netdb.h>
-//#include <memory> //for shared_ptr
-#include <tr1/memory>
+#include <tr1/memory> //for shared_ptr
 
 #include <QThread>
 
 #include "RingBuffer.h"
-
 
 
 /** \brief Base class that defines the transmission protocol.
@@ -85,6 +83,12 @@ class DataProtocol : public QThread
 {
 public:
 
+  /// \brief JamLink Header
+  typedef struct
+  {
+    uint16_t head; ///< 16-bit standard header
+  } JamLinkHeader;
+  
   /// \brief Enum to define class modes, SENDER or RECEIVER
   enum runModeT {
     SENDER, ///< Set class as a Sender (send packets)
@@ -108,7 +112,7 @@ public:
    *
    * This method has to be implemented in the sub-classes
    * \param buf Location at which to store the buffer
-   * \param n size of packet to receive
+   * \param n size of packet to receive in bytes
    * \return number of bytes read, -1 on error
    */
   virtual size_t receivePacket(char* buf, size_t n) = 0;
@@ -117,7 +121,7 @@ public:
    *
    * This method has to be implemented in the sub-classes
    * \param buff Buffer to send
-   * \param n size of packet to receive
+   * \param n size of packet to receive in bytes
    * \return number of bytes read, -1 on error
    */
   virtual size_t sendPacket(const char* buff, size_t n) = 0;
@@ -129,7 +133,10 @@ public:
    */
   virtual void run();
 
-
+  /** \brief Set the pointer to the RingBuffer that'll be use to read 
+   * or write
+   */
+  void setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer);
 
 
 protected:
@@ -148,11 +155,14 @@ protected:
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
 
 
+  
+
 
 private:
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
-  std::tr1::shared_ptr<RingBuffer> mRingBuffer; ///< Pointer to RingBuffer to read or write
+  /// Smart Pointer to RingBuffer to read or write
+  std::tr1::shared_ptr<RingBuffer> mRingBuffer; 
   
   /// Number of clients running to check for ports already used
   /// \note Unimplemented

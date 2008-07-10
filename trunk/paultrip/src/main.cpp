@@ -52,8 +52,11 @@ int process (jack_nframes_t nframes, void *arg);
 int main()
 {
 
-  PaulTrip caca(PaulTrip::UDP);
+  PaulTrip paultrip;
+  paultrip.startThreads();
 
+
+  /*
   // Test RingBuffer
   //================================================================
   RingBuffer rb(2,2);
@@ -73,7 +76,7 @@ int main()
   rb.readSlot(readSlot);
   std::cout << *(readSlot) << std::endl;
   std::cout << *(readSlot+1) << std::endl;
-
+  */
 
 
   /*
@@ -95,7 +98,7 @@ int main()
   jack_test.startProcess();
   */
 
-  /*
+
   while (true)
     {
       //cout << "SR: " << test.getSampleRate() << endl;
@@ -103,7 +106,7 @@ int main()
       usleep(1000000);
       //usleep(1);
     }
-  */
+
   
   return 0;
 }

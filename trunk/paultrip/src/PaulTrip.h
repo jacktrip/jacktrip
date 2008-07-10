@@ -38,6 +38,8 @@
 #ifndef __PAULTRIP_H__
 #define __PAULTRIP_H__
 
+#include <tr1/memory> //for shared_ptr
+
 #include "DataProtocol.h"
 #include "JackAudioInterface.h"
 
@@ -65,36 +67,33 @@ public:
     SCTP ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
   };
 
+  /// \brief Enum for Audio Resolution in bits
+  enum audioBitResolutionT {
+    BIT8  = 8,  ///< 8 bits
+    BIT16 = 16, ///< 16 bits (default)
+    BIT24 = 24, ///< 24 bits
+    BIT32 = 32  ///< 32 bits
+  };
 
   /** \brief The class Constructor with Default Parameters
    * \param DataProtocolType Protocol type
+   * \param NumChans Number of Audio Channels
+   * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  PaulTrip(dataProtocolT DataProtocolType, int NumChans = 2, int AudioBitResolution = 16);
-  
-  /** \brief The class Constructor with Default Parameters
-   * \param AudioBitResolution 8, 16, 24, or 32 only
-   */
-  
-  /*
-  PaulTrip(dataProtocolT DataProtocolType = DefaultDataProtocolType,
-	   int NumChans = DefaultNumChans,
-	   int SampleRate = DefaultSampleRate,
-	   int AudioBufferSize = DefaultAudioBufferSize,
-	   int AudioBitResolution = DefaultAudioBitResolution);
-  */
+  PaulTrip(dataProtocolT DataProtocolType = UDP, int NumChans = 2,
+	   audioBitResolutionT AudioBitResolution = BIT16);
   
   /// \brief The class destructor
   virtual ~PaulTrip();
 
+  void startThreads();
 
-  /// \todo setIpaddress
+  /// \todo implement setPeerIPv4Address method
   //Methods to change defaults  
   /*
   void setPeerIPv4Address(const char* peerHostOrIP);
   void setDataProtocol(dataProtocolT ProtocolType);
-  void setSampleRate();
   void setNumChannels();
-  void setAudioBufferSize();
   void setAudioBitResolution();
   */
 
@@ -109,7 +108,8 @@ private:
   uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
 
   JackAudioInterface* mJackAudio; ///< Interface to Jack Client
-
+  std::tr1::shared_ptr<RingBuffer> mSendRingBuffer; 
+  std::tr1::shared_ptr<RingBuffer> mReceiveRingBuffer; 
 };
 
 #endif
