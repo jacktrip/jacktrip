@@ -87,6 +87,7 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   std::cout << SEPARATOR << std::endl;
 
   // Set RingBuffers pointers in protocols
+  /// \todo Uncomment this
   //mDataProtocolSender->setRingBuffer(mSendRingBuffer);
   //mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
   mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
@@ -106,6 +107,7 @@ PaulTrip::~PaulTrip()
 void PaulTrip::startThreads()
 {
   mJackAudio->startProcess();
+  /// \todo Uncomment this
   //mDataProtocolSender->start();
   //mDataProtocolReceiver->start();
 }
