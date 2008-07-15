@@ -75,9 +75,18 @@ public:
    */
   void readSlot(int8_t* ReadSlot);
 
+  /** \brief Read the last available slot, without blocking if there are no new 
+   * slots
+   */
+  void readLastSlotNonBlocking(int8_t* ReadSlot);
 
 private:
+
+  void underrunReset();
+  void overflowReset();
+
   int8_t* mRingBuffer; ///< 8-bit array of data (1-byte)
+  int8_t* mLastReadSlot; ///< Last slot read  
   const int mSlotSize; ///< The size of one slot in byes
   const int mNumSlots; ///< Number of Slots
   int mTotalSize; ///< Total size of the mRingBuffer = mSlotSize*mNumSlotss

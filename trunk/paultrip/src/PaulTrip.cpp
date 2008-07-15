@@ -45,12 +45,11 @@
 
 //*******************************************************************************
 PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
-		   audioBitResolutionT AudioBitResolution) :
-  mNumChans(NumChans),
-  mAudioBitResolution(AudioBitResolution)
+		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
+  mNumChans(NumChans)
 {
   // Create JackAudioInterface Client Object
-  mJackAudio = new JackAudioInterface(mNumChans);
+  mJackAudio = new JackAudioInterface(mNumChans, AudioBitResolution);
   mSampleRate = mJackAudio->getSampleRate();
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << SEPARATOR << std::endl;
@@ -62,7 +61,6 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   std::cout << SEPARATOR << std::endl;
 
   // Create DataProtocol Objects
-  /*
   switch (DataProtocolType) {
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
@@ -76,20 +74,19 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
     exit(1);
     break;
   }
-  */
+
 
   // Create RingBuffers with the apprioprate size
-  mSendRingBuffer.reset( new RingBuffer(AudioBufferSizeInBytes, 10) );
+  mSendRingBuffer.reset( new RingBuffer(AudioBufferSizeInBytes, 100) );
   std::cout << "NEWED mSendRingBuffer" << std::endl;
   std::cout << SEPARATOR << std::endl;
-  mReceiveRingBuffer.reset( new RingBuffer(AudioBufferSizeInBytes, 10) );
+  mReceiveRingBuffer.reset( new RingBuffer(AudioBufferSizeInBytes, 100) );
   std::cout << "NEWED mReceiveRingBuffer" << std::endl;
   std::cout << SEPARATOR << std::endl;
 
   // Set RingBuffers pointers in protocols
-  /// \todo Uncomment this
-  //mDataProtocolSender->setRingBuffer(mSendRingBuffer);
-  //mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
+  mDataProtocolSender->setRingBuffer(mSendRingBuffer);
+  mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
   mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
 }
 
@@ -107,7 +104,6 @@ PaulTrip::~PaulTrip()
 void PaulTrip::startThreads()
 {
   mJackAudio->startProcess();
-  /// \todo Uncomment this
-  //mDataProtocolSender->start();
-  //mDataProtocolReceiver->start();
+  mDataProtocolSender->start();
+  mDataProtocolReceiver->start();
 }

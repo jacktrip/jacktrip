@@ -145,7 +145,8 @@ void DataProtocol::run()
   std::cout << "Running DataProtocol Thread" << std::endl;
   std::cout << SEPARATOR << std::endl;
   int8_t* buf;
-  
+  buf = new int8_t[512];
+
   char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
   switch ( mRunMode ) 
     {
@@ -154,7 +155,9 @@ void DataProtocol::run()
 	{
 	  //std::cout << "SENDING PACKETS" << std::endl;
 	  mRingBuffer->readSlot(buf);
+	  //std::cout << "SENDING PACKETS" << std::endl;
 	  this->sendPacket( (char*) buf, 512);
+	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
 	  //this->sendPacket( sendtest, 64);
 	}
       break;
@@ -165,6 +168,7 @@ void DataProtocol::run()
 	  //std::cout << "RECEIVING PACKETS" << std::endl;
 	  /// \todo Set a timer to report packats arriving too late
 	  //std::cout << "RECIEVING THREAD" << std::endl;
+	  
 	  this->receivePacket( (char*) buf, 512);
 	  /// \todo Change this to match buffer size
 	  //std::cout << "PACKET RECIEVED" << std::endl;

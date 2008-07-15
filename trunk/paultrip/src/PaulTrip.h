@@ -67,13 +67,7 @@ public:
     SCTP ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
   };
 
-  /// \brief Enum for Audio Resolution in bits
-  enum audioBitResolutionT {
-    BIT8  = 8,  ///< 8 bits
-    BIT16 = 16, ///< 16 bits (default)
-    BIT24 = 24, ///< 24 bits
-    BIT32 = 32  ///< 32 bits
-  };
+
 
   /** \brief The class Constructor with Default Parameters
    * \param DataProtocolType Protocol type
@@ -81,7 +75,8 @@ public:
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
   PaulTrip(dataProtocolT DataProtocolType = UDP, int NumChans = 1,
-	   audioBitResolutionT AudioBitResolution = BIT16);
+	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
+	   JackAudioInterface::BIT16);
   
   /// \brief The class destructor
   virtual ~PaulTrip();
@@ -103,7 +98,6 @@ private:
   ///< Pointer to Abstract Type DataProtocol that receives packets
   DataProtocol* mDataProtocolReceiver;
   int mNumChans; ///< Number of Channels
-  int mAudioBitResolution; ///< Bit resolution in audio samples
   uint32_t mSampleRate; ///< Sample Rate
   uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
 
