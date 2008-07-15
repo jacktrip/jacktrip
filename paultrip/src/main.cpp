@@ -52,15 +52,13 @@ int process (jack_nframes_t nframes, void *arg);
 //int main(int argc, char** argv)
 int main()
 {
-
- 
   // Test PaulTrip
   //================================================================
   PaulTrip paultrip1;
   paultrip1.startThreads();
 
-  PaulTrip paultrip2;
-  paultrip2.startThreads();
+  //PaulTrip paultrip2;
+  //paultrip2.startThreads();
  
   /*
   // TestRingBuffer

@@ -39,24 +39,30 @@
 #include "JackAudioInterface.h"
 #include "globals.h"
 #include <QTextStream>
+#include <cstdlib>
 
 /// \todo Check that the RingBuffer Pointer have indeed been initialized before
 /// computing anything
 
 
 //*******************************************************************************
-JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans)
-  : mNumInChans(NumInChans), mNumOutChans(NumOutChans)
+JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans,
+				       audioBitResolutionT AudioBitResolution)
+  : mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
+    mAudioBitResolution(AudioBitResolution)
 {
   this->setupClient();
 }
 
 
 //*******************************************************************************
-JackAudioInterface::JackAudioInterface(int NumChans)
-  : mNumInChans(NumChans), mNumOutChans(NumChans)
+JackAudioInterface::JackAudioInterface(int NumChans,
+				       audioBitResolutionT AudioBitResolution)
+  : mNumInChans(NumChans), mNumOutChans(NumChans),
+    mAudioBitResolution(AudioBitResolution)
 {
-  this->setupClient();
+  setupClient();
+  setProcessCallback();
 }
 
 
@@ -90,7 +96,7 @@ void JackAudioInterface::setupClient()
       std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
       std::cerr << SEPARATOR << std::endl;
     }
-    exit (1);
+    std::exit(1);
   }
   if (status & JackServerStarted) {
     fprintf (stderr, "JACK server started\n");
@@ -154,27 +160,33 @@ uint32_t JackAudioInterface::getBufferSize() const
 
 
 //*******************************************************************************
-/// \todo This function may not be needed anymore as it is.
-int JackAudioInterface::setProcessCallback(JackProcessCallback process) const
+int JackAudioInterface::getAudioBitResolution() const
 {
-  std::cout << "JACK PROCESS CALLBACK" << std::endl;
-  if( int code = (jack_set_process_callback (mClient, process, 0)) )
+  return mAudioBitResolution;
+}
+
+
+//*******************************************************************************
+int JackAudioInterface::setProcessCallback()
+{
+  std::cout << "Setting JACK Process Callback..." << std::endl;
+  if ( int code = 
+       jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback, this)
+       )
     {
       std::cerr << "Could not set the process callback" << std::endl;
       return(code);
+      std::exit(1);
     }
+  std::cout << "SUCCESS" << std::endl;
+  std::cout << SEPARATOR << std::endl;
   return(0);
 }
 
 
 //*******************************************************************************
-int JackAudioInterface::startProcess()
+int JackAudioInterface::startProcess() const
 {
-  std::cout << "Starting JACK PROCESS" << std::endl;
-  int code = jack_set_process_callback(mClient,
-				       JackAudioInterface::wrapperProcessCallback, this);
-  std::cout << "Starting PROCESS CALLED back" << std::endl;
-
   //Tell the JACK server that we are ready to roll.  Our
   //process() callback will start running now.
   if ( int code = (jack_activate(mClient)) ) 
@@ -208,8 +220,8 @@ void JackAudioInterface::jackShutdown (void*)
 
 
 //*******************************************************************************
-void JackAudioInterface::setRingBuffers(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
-				       std::tr1::shared_ptr<RingBuffer> OutRingBuffer)
+void JackAudioInterface::setRingBuffers(const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
+					const std::tr1::shared_ptr<RingBuffer> OutRingBuffer)
 {
   mInRingBuffer = InRingBuffer;
   mOutRingBuffer = OutRingBuffer;
@@ -246,11 +258,11 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // TEST: Loopback
   // To test, uncomment and send audio to client input. The same audio
   // should come out as output
-  memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
+  //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
   //-------------------------------------------------------------------
 
   /// \todo UNCOMMENT THIS
-  //this->computeNetworkProcess();
+  computeNetworkProcess();
   /// \todo Dynamically alocate other processes (from FAUST for instance) here
   return 0;
 }

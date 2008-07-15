@@ -49,14 +49,6 @@
 #include "types.h"
 #include "RingBuffer.h"
 
-/*
-extern "C" int c_callback(void* obj, int (*func)(int), jack_nframes_t nframes, void* arg)
-{
-  // check for null pointers (obj / func)
-  return (*func)(obj, jack_nframes_t nframes, void* arg);
-}
-*/
-
 /** \brief Class that provides an interface with the Jack Audio Server
  *
  * \todo implement srate_callback
@@ -69,19 +61,26 @@ class JackAudioInterface
 {
 public:
 
-  //typedef int (JackAudioInterface::*castProcessCallback)(jack_nframes_t, void*);
-
-
+  /// \brief Enum for Audio Resolution in bits
+  enum audioBitResolutionT {
+    BIT8  = 8,  ///< 8 bits
+    BIT16 = 16, ///< 16 bits (default)
+    BIT24 = 24, ///< 24 bits
+    BIT32 = 32  ///< 32 bits
+  };
+  
   /** \brief The class constructor
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
+   * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  JackAudioInterface(int NumInChans, int NumOutChans);
+  JackAudioInterface(int NumInChans, int NumOutChans,
+		     audioBitResolutionT AudioBitResolution = BIT16);
 
   /** \brief Overloaded class constructor with same inputs and output channels
    * \param NumChans Number of Input and Output Channels
    */
-  JackAudioInterface(int NumChans);
+  JackAudioInterface(int NumChans, audioBitResolutionT AudioBitResolution = BIT16);
 
   /** \brief The class destructor
    */
@@ -89,16 +88,22 @@ public:
 
   /** \brief Get the Jack Server Sampling Rate, in samples/second
    */
-  virtual uint32_t getSampleRate() const;
+  uint32_t getSampleRate() const;
 
   /** \brief Get the Jack Server Buffer Size, in samples
    */
-  virtual uint32_t getBufferSize() const;
+  uint32_t getBufferSize() const;
+
+  /** \brief Get the Audio Bit Resolution, in bits
+   *
+   * This is one of the audioBitResolutionT set in construction
+   */
+  int getAudioBitResolution() const;
 
   /** \brief
    * \return 0 on success, otherwise a non-zero error code
    */
-  int startProcess();
+  int startProcess() const;
 
   /** \brief
    * \return 0 on success, otherwise a non-zero error code
@@ -115,8 +120,8 @@ public:
    * \param InRingBuffer RingBuffer to read samples <B>from</B>
    * \param OutRingBuffer RingBuffer to write samples <B>to</B>
    */
-  void setRingBuffers(std::tr1::shared_ptr<RingBuffer> InRingBuffer,
-		     std::tr1::shared_ptr<RingBuffer> OutRingBuffer);
+  void setRingBuffers(const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
+		      const std::tr1::shared_ptr<RingBuffer> OutRingBuffer);
 
 
 private:
@@ -134,22 +139,6 @@ private:
    */
   void createChannels();
  
-  /** \brief setProcessCallback passes a function pointer process to be called by
-   *  Jack the JACK server whenever there is work to be done.
-   * 
-   * \param process Function to be called to process audio. This function is 
-   * of the type JackProcessCallback, which is defined as:\n
-   * <tt>typedef int(* JackProcessCallback)(jack_nframes_t nframes, void *arg)</tt>
-   * \n
-   * See
-   * http://jackaudio.org/files/docs/html/types_8h.html#4923142208a8e7dacf00ca7a10681d2b
-   * for more details
-   *
-   * \return 0 on success, otherwise a non-zero error code,
-   * causing JACK to remove that client from the process() graph.
-   */
-  int setProcessCallback(JackProcessCallback process) const;
-
   /** \brief JACK calls this shutdown_callback if the server ever shuts down or
    * decides to disconnect the client.
    */
@@ -158,7 +147,23 @@ private:
   /// \brief Sets the part of the process callback that sends and receive packets
   void computeNetworkProcess();
 
-  /// \brief JACK process callback
+  /** \brief Set the process callback of the member function processCallback.
+   * This process will be called by the JACK server whenever there is work to be done.
+   * \return 0 on success, otherwise a non-zero error code,
+   * causing JACK to remove that client from the process() graph.
+   */
+  int setProcessCallback();
+
+  /** \brief JACK process callback
+   * 
+   * This is the function to be called to process audio. This function is 
+   * of the type JackProcessCallback, which is defined as:\n
+   * <tt>typedef int(* JackProcessCallback)(jack_nframes_t nframes, void *arg)</tt>
+   * \n
+   * See
+   * http://jackaudio.org/files/docs/html/types_8h.html#4923142208a8e7dacf00ca7a10681d2b
+   * for more details
+   */
   int processCallback(jack_nframes_t nframes);
   
   /** \brief Wrapper to cast the member processCallback to a static function pointer
@@ -178,6 +183,7 @@ private:
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
+  int mAudioBitResolution; ///< Bit resolution in audio samples
 
   jack_client_t* mClient; ///< Jack Client
   QVector<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
