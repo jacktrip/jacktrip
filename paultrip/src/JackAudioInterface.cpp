@@ -234,11 +234,13 @@ void JackAudioInterface::computeNetworkProcess()
   /// \todo Fix this, I need to read just one packet for all the channels
   /// and then copy that to each channel
   for (int i = 0; i < mNumInChans; i++) {  
-    mInRingBuffer->readSlot( (int8_t*) mInBuffer[i] );
+    mInRingBuffer->writeSlotNonBlocking( (int8_t*) mInBuffer[i] );
+    //std::cout << "CACUMEN IN BUFFER" << std::endl;
   }
 
   for (int i = 0; i < mNumOutChans; i++) {  
-    mOutRingBuffer->writeSlot( (int8_t*) mOutBuffer[i] );
+    mOutRingBuffer->readSlotNonBlocking( (int8_t*) mOutBuffer[i] );
+    //std::cout << "CACUMEN OUT BUFFER" << std::endl;
   }
 }
 
@@ -253,14 +255,12 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   for (int i = 0; i < mNumOutChans; i++) {
     mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
   }
-
   //-------------------------------------------------------------------
   // TEST: Loopback
   // To test, uncomment and send audio to client input. The same audio
   // should come out as output
   //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
   //-------------------------------------------------------------------
-
   /// \todo UNCOMMENT THIS
   computeNetworkProcess();
   /// \todo Dynamically alocate other processes (from FAUST for instance) here

@@ -65,8 +65,8 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << SEPARATOR << std::endl;
-    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, "192.168.1.2");
-    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, "192.168.1.2");
+    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, "192.168.1.4");
+    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, "192.168.1.4");
     break;
     
   default: 
@@ -88,6 +88,7 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   mDataProtocolSender->setRingBuffer(mSendRingBuffer);
   mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
   mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
+  //mJackAudio->setRingBuffers(mReceiveRingBuffer, mSendRingBuffer);
 }
 
 

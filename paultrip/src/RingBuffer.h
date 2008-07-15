@@ -69,16 +69,19 @@ public:
    *
    * The caller is responsible to make sure sizeof(writeSlot) = slotSize
    */
-  void writeSlot(const int8_t* WriteSlot);
+  void writeSlotBlocking(const int8_t* WriteSlot);
   
-  /** \brief Read a slot from the RingBuffer
+  /** \brief Read a slot from the RingBuffer into ReadSlot
    */
-  void readSlot(int8_t* ReadSlot);
+  void readSlotBlocking(int8_t* ReadSlot);
 
   /** \brief Read the last available slot, without blocking if there are no new 
    * slots
    */
-  void readLastSlotNonBlocking(int8_t* ReadSlot);
+  //void readLastSlotNonBlocking(int8_t* ReadSlot);
+
+  void writeSlotNonBlocking(const int8_t* WriteSlot);
+  void readSlotNonBlocking(int8_t* ReadSlot);
 
 private:
 
