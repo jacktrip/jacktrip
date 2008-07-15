@@ -147,14 +147,15 @@ void DataProtocol::run()
   int8_t* buf;
   buf = new int8_t[512];
 
-  char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
+  //char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
   switch ( mRunMode ) 
     {
     case SENDER : 
       while ( true )
 	{
-	  //std::cout << "SENDING PACKETS" << std::endl;
-	  mRingBuffer->readSlot(buf);
+	  //std::cout << "SENDING PACKETS --------------------------" << std::endl;
+	  /// \todo This should be blocking, since we don't want to send trash
+	  mRingBuffer->readSlotBlocking(buf);
 	  //std::cout << "SENDING PACKETS" << std::endl;
 	  this->sendPacket( (char*) buf, 512);
 	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
@@ -172,7 +173,7 @@ void DataProtocol::run()
 	  this->receivePacket( (char*) buf, 512);
 	  /// \todo Change this to match buffer size
 	  //std::cout << "PACKET RECIEVED" << std::endl;
-	  mRingBuffer->writeSlot(buf);
+	  mRingBuffer->writeSlotBlocking(buf);
 	  //std::cout << buf << std::endl;
 	}
       break;

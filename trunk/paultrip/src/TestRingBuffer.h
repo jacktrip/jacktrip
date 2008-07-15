@@ -19,7 +19,7 @@ public:
     writeSlot[1] = *"b";    
     while (true) {
       //std::cout << "writing BEFORE" << std::endl;
-      rb.writeSlot(writeSlot);
+      rb.writeSlotBlocking(writeSlot);
       //std::cout << "writing AFTER" << std::endl;
     }
   }
@@ -37,7 +37,7 @@ public:
     readSlot = new int8_t[2];
     while (true) {
       //std::cout << "reading BEFORE" << std::endl;
-      rb.readSlot(readSlot);
+      rb.readSlotBlocking(readSlot);
       //std::cout << "reading AFTER" << std::endl;
       //std::cout << *(readSlot) << std::endl;
       //std::cout << *(readSlot+1) << std::endl;
