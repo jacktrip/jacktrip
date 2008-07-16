@@ -41,6 +41,7 @@
 #include <iostream>
 #include <cstring>
 
+
 //*******************************************************************************
 RingBuffer::RingBuffer(int SlotSize, int NumSlots) : 
   mSlotSize(SlotSize), mNumSlots(NumSlots),
@@ -62,12 +63,6 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
   for (int i=0; i<mSlotSize; i++) {
     mLastReadSlot[i] = 0;    // Initialize all elements to zero.
   }
-
-  //int8_t caca;
-  //std::cout << sizeof(caca) << std::endl;
-  //std::cout << mTotalSize << std::endl;
-  //std::cout << sizeof(*mRingBuffer) << std::endl;
-  //std::cout << "CONSTRUCTOR RINGBUFFER" << std::endl;
 } 
 
 
@@ -78,12 +73,11 @@ RingBuffer::~RingBuffer()
   mRingBuffer = NULL; // Clear to prevent using invalid memory reference
   delete[] mLastReadSlot;
   mLastReadSlot = NULL;
-  //std::cout << "DESTRUCTOR RINGBUFFER" << std::endl;
 }
 
 
 //*******************************************************************************
-void RingBuffer::writeSlotBlocking(const int8_t* WriteSlot)
+void RingBuffer::insertSlotBlocking(const int8_t* ptrToSlot)
 {
   //lock the mutex
   QMutexLocker locker(&mMutex);
@@ -93,20 +87,19 @@ void RingBuffer::writeSlotBlocking(const int8_t* WriteSlot)
     mBufferIsNotFull.wait(&mMutex);
   }
   // Copy mSlotSize bytes to mRingBuffer
-  std::memcpy(mRingBuffer+mWritePosition, WriteSlot, mSlotSize);
+  std::memcpy(mRingBuffer+mWritePosition, ptrToSlot, mSlotSize);
   // Update write position
   mWritePosition = (mWritePosition+mSlotSize) % mTotalSize;
   mFullSlots++; //update full slots
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotEmpty.wakeAll();
   //std::cout << "mFullSlots WRITER === " << mFullSlots << std::endl;
-  // BUG: The write possition always comes back to cero, and stays there.
   //std::cout << "mWritePosition WRITER === " << mWritePosition << std::endl;
 }
 
 
 //*******************************************************************************
-void RingBuffer::readSlotBlocking(int8_t* ReadSlot)
+void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
 {
   //lock the mutex
   QMutexLocker locker(&mMutex);
@@ -116,7 +109,7 @@ void RingBuffer::readSlotBlocking(int8_t* ReadSlot)
     mBufferIsNotEmpty.wait(&mMutex);
   }
   // Copy mSlotSize bytes to ReadSlot
-  std::memcpy(ReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+  std::memcpy(ptrToReadSlot, mRingBuffer+mReadPosition, mSlotSize);
   // Update write position
   mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
   mFullSlots--; //update full slots
@@ -128,62 +121,43 @@ void RingBuffer::readSlotBlocking(int8_t* ReadSlot)
 
 
 //*******************************************************************************
-/*
-void RingBuffer::readLastSlotNonBlocking(int8_t* ReadSlot)
-{
-  //ReadSlot = mLastReadSlot;
-  std::memcpy(ReadSlot, mLastReadSlot, mSlotSize);
-}
-*/
-
-
-//*******************************************************************************
-void RingBuffer::writeSlotNonBlocking(const int8_t* WriteSlot)
+void RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot)
 {
   //lock the mutex
   QMutexLocker locker(&mMutex);
   // Check if there is space available to write a slot
   // If the Ringbuffer is full, it waits for the bufferIsNotFull condition
-  //while (mFullSlots == mNumSlots) {
-  //  mBufferIsNotFull.wait(&mMutex);
-  //}
   if (mFullSlots == mNumSlots) {
     std::cout << "OUPUT OVERFLOW" << std::endl;
     return;
     /// \todo define beheaviro for overflow
   }
   // Copy mSlotSize bytes to mRingBuffer
-  std::memcpy(mRingBuffer+mWritePosition, WriteSlot, mSlotSize);
+  std::memcpy(mRingBuffer+mWritePosition, ptrToSlot, mSlotSize);
   // Update write position
   mWritePosition = (mWritePosition+mSlotSize) % mTotalSize;
   mFullSlots++; //update full slots
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotEmpty.wakeAll();
   //std::cout << "mFullSlots WRITER === " << mFullSlots << std::endl;
-  // BUG: The write possition always comes back to cero, and stays there.
   //std::cout << "mWritePosition WRITER === " << mWritePosition << std::endl;
 }
 
 
 //*******************************************************************************
-void RingBuffer::readSlotNonBlocking(int8_t* ReadSlot)
+void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
   //lock the mutex
   QMutexLocker locker(&mMutex);
   // Check if there are slots available to read
   // If the Ringbuffer is empty, it waits for the bufferIsNotEmpty condition
-  //while (mFullSlots == 0) {
-  //  mBufferIsNotEmpty.wait(&mMutex);
-  //}
-  //std::cout << "mFullSlots READER === " << mFullSlots << std::endl;
   if (mFullSlots == 0) {
-    //std::cout << "WARNING: BUFFER UNDER-RUN" << std::endl;
     // Returns a buffer of zeros if there's nothing to read
-    std::memset(ReadSlot, 0, mSlotSize);
+    std::memset(ptrToReadSlot, 0, mSlotSize);
     return;
   }
   // Copy mSlotSize bytes to ReadSlot
-  std::memcpy(ReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+  std::memcpy(ptrToReadSlot, mRingBuffer+mReadPosition, mSlotSize);
   // Update write position
   mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
   mFullSlots--; //update full slots
@@ -192,4 +166,3 @@ void RingBuffer::readSlotNonBlocking(int8_t* ReadSlot)
   //std::cout << "mFullSlots === " << mFullSlots << std::endl;
   //std::cout << "mReadPosition === " << mReadPosition << std::endl;
 }
-

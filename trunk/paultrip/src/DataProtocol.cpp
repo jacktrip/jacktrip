@@ -173,7 +173,7 @@ void DataProtocol::run()
 	  this->receivePacket( (char*) buf, 512);
 	  /// \todo Change this to match buffer size
 	  //std::cout << "PACKET RECIEVED" << std::endl;
-	  mRingBuffer->writeSlotBlocking(buf);
+	  mRingBuffer->insertSlotBlocking(buf);
 	  //std::cout << buf << std::endl;
 	}
       break;

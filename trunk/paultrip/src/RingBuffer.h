@@ -44,19 +44,20 @@
 
 #include "types.h"
 
+
 /** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read from
- * asynchronously (blocking).
+ * asynchronously (blocking) or synchronously (non-blocking).
  *
  * The RingBuffer is an array of \b NumSlots slots of memory
  * each of which is of size \b SlotSize bytes (8-bits). Slots can be read and 
- * written asynchronously by multiple threads.
+ * written asynchronously/synchronously by multiple threads.
  */
 class RingBuffer
 {
 public:
 
   /** \brief The class constructor
-   * \param SlotSize Size of one slot in byes
+   * \param SlotSize Size of one slot in bytes
    * \param NumSlots Number of slots
    */
   RingBuffer(int SlotSize, int NumSlots);
@@ -65,26 +66,42 @@ public:
    */
   virtual ~RingBuffer();
   
-  /** \brief Write a chunk into the RingBuffer
+  /** \brief Insert a slot into the RingBuffer from ptrToSlot. This method will block until
+   * there's space in the buffer.
    *
-   * The caller is responsible to make sure sizeof(writeSlot) = slotSize
+   * The caller is responsible to make sure sizeof(WriteSlot) = SlotSize. This
+   * method should be use when the caller can block against its output, like 
+   * sending/receiving UDP packets. It shouldn't be used by audio. For that, use the
+   * insertSlotNonBlocking.
+   * \param ptrToSlot Pointer to slot to insert into the RingBuffer
    */
-  void writeSlotBlocking(const int8_t* WriteSlot);
+  void insertSlotBlocking(const int8_t* ptrToSlot);
   
-  /** \brief Read a slot from the RingBuffer into ReadSlot
+  /** \brief Read a slot from the RingBuffer into ptrToReadSlot. This method will block until
+   * there's space in the buffer.
+   *
+   * The caller is responsible to make sure sizeof(ptrToReadSlot) = SlotSize. This
+   * method should be use when the caller can block against its input, like 
+   * sending/receiving UDP packets. It shouldn't be used by audio. For that, use the
+   * readSlotNonBlocking.   
+   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
    */
-  void readSlotBlocking(int8_t* ReadSlot);
-
-  /** \brief Read the last available slot, without blocking if there are no new 
-   * slots
+  void readSlotBlocking(int8_t* ptrToReadSlot);
+  
+  /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
+   * \param ptrToSlot Pointer to slot to insert into the RingBuffer
    */
-  //void readLastSlotNonBlocking(int8_t* ReadSlot);
+  void insertSlotNonBlocking(const int8_t* ptrToSlot);
+  
+  /** \brief Same as readSlotBlocking but non-blocking (asynchronous)
+   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+   */
+  void readSlotNonBlocking(int8_t* ptrToReadSlot);
 
-  void writeSlotNonBlocking(const int8_t* WriteSlot);
-  void readSlotNonBlocking(int8_t* ReadSlot);
-
+  
 private:
 
+  /// \todo implement these two methods
   void underrunReset();
   void overflowReset();
 
