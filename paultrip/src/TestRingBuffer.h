@@ -19,7 +19,7 @@ public:
     writeSlot[1] = *"b";    
     while (true) {
       //std::cout << "writing BEFORE" << std::endl;
-      rb.writeSlotBlocking(writeSlot);
+      rb.insertSlotBlocking(writeSlot);
       //std::cout << "writing AFTER" << std::endl;
     }
   }

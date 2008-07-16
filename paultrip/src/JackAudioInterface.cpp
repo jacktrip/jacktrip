@@ -234,7 +234,7 @@ void JackAudioInterface::computeNetworkProcess()
   /// \todo Fix this, I need to read just one packet for all the channels
   /// and then copy that to each channel
   for (int i = 0; i < mNumInChans; i++) {  
-    mInRingBuffer->writeSlotNonBlocking( (int8_t*) mInBuffer[i] );
+    mInRingBuffer->insertSlotNonBlocking( (int8_t*) mInBuffer[i] );
     //std::cout << "CACUMEN IN BUFFER" << std::endl;
   }
 

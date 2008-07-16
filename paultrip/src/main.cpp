@@ -36,26 +36,116 @@
  */
 
 #include <iostream>
-#include <unistd.h>
+//#include <unistd.h>
+#include <getopt.h>
 
 #include "JackAudioInterface.h"
 #include "UdpDataProtocol.h"
 #include "RingBuffer.h"
 #include "PaulTrip.h"
 #include "TestRingBuffer.h"
+#include "globals.h"
 
 using namespace std;
 
-int process (jack_nframes_t nframes, void *arg);
+//int process (jack_nframes_t nframes, void *arg);
 
 
-//int main(int argc, char** argv)
-int main()
+static int verbose_flag = 0;
+
+
+int main(int argc, char** argv)
 {
+
+  // If no command arguments are given, print instructions
+  if(argc == 1) {
+    cout << "TODO: Print Usage" << endl;
+    return 0;
+  }
+
+  // Usage example at:
+  //http://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
+  // options descriptor
+  static struct option longopts[] = {
+    // These options set a flag, has to be sepcified as a long option --verbose
+    { "verbose", no_argument, &verbose_flag, 1 },
+    // These options don't set a flag.
+    { "numchannels", required_argument, NULL, 'n' },
+    { "server", no_argument, NULL, 's' },
+    { "client", required_argument, NULL, 'c' }, //server IP address
+    { NULL, 0, NULL, 0 }
+  };
+
+  // Parse Command Line Argumments
+  int ch;
+  while ((ch = getopt_long(argc, argv, "n:", longopts, NULL)) != -1)
+    switch (ch) {
+    case 'n':
+      cout << "case n" << endl;
+      break;
+    case 0:
+      cout << "case 0" << endl;
+      cout << verbose_flag << endl;
+      break;
+    default:
+      cout << "Print Usage default" << endl;
+      std::exit(1);
+      break;
+    }
+
+  // Warn if extra options where entered
+  if (optind < argc) {
+    cout << SEPARATOR << endl;
+    cout << "WARINING: The following entered options have no effect" << endl;
+    cout << "          They will be ignored!" << endl;
+    for( ; optind < argc; optind++) {
+      printf("argument: %s\n", argv[optind]);
+    }
+    cout << SEPARATOR << endl;
+  }
+  
+  /*
+  // If no command arguments are given, print instructions
+  if(argc == 1) {
+    cout << "Print Usage" << endl;
+    return 0;
+  }
+  
+  // Parse options
+  int opt;
+  while ((opt = getopt (argc, argv, "abc:")) != -1)
+    {
+      switch (opt)
+	{
+	case 'a':
+	  break;
+	case 'b' :
+	  break;
+	case '?':
+	  return 1;
+	  break;
+	default:
+	  cout << "Print Usage" << endl;
+	  return 1;
+	  break;
+	}
+    }
+  */
+  
+  /*
+  // Check if there's other stuff specified
+  // print all remaining options
+  cout << "optind" << optind << endl;
+  for( ; optind < argc; optind++) 
+    {
+    printf("argument: %s\n", argv[optind]);
+    }
+  */
+  
   // Test PaulTrip
   //================================================================
-  PaulTrip paultrip1;
-  paultrip1.startThreads();
+  //PaulTrip paultrip1;
+  //paultrip1.startThreads();
 
   //PaulTrip paultrip2;
   //paultrip2.startThreads();
@@ -125,13 +215,13 @@ int main()
 }
 
 
-
+/*
 int process (jack_nframes_t nframes, void *arg)
 {
 
 	return 0;      
 }
-
+*/
 
 
 

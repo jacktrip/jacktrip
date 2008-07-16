@@ -62,6 +62,7 @@ class JackAudioInterface
 public:
 
   /// \brief Enum for Audio Resolution in bits
+  /// \todo implement this into the class, now it's using jack default of 32 bits
   enum audioBitResolutionT {
     BIT8  = 8,  ///< 8 bits
     BIT16 = 16, ///< 16 bits (default)
@@ -79,6 +80,7 @@ public:
 
   /** \brief Overloaded class constructor with same inputs and output channels
    * \param NumChans Number of Input and Output Channels
+   * \param AudioBitResolution Audio Sample Resolutions in bits
    */
   JackAudioInterface(int NumChans, audioBitResolutionT AudioBitResolution = BIT16);
 
