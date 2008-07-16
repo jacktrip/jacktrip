@@ -51,12 +51,13 @@ using namespace std;
 //int process (jack_nframes_t nframes, void *arg);
 
 
-static int verbose_flag = 0;
+//static int verbose_flag = 0;
 
 
 int main(int argc, char** argv)
 {
 
+  /*
   // If no command arguments are given, print instructions
   if(argc == 1) {
     cout << "TODO: Print Usage" << endl;
@@ -103,7 +104,8 @@ int main(int argc, char** argv)
     }
     cout << SEPARATOR << endl;
   }
-  
+  */
+
   /*
   // If no command arguments are given, print instructions
   if(argc == 1) {

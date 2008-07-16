@@ -30,19 +30,19 @@
 //*****************************************************************
 
 /**
- * \file CommandLineArguments.h
+ * \file Settings.h
  * \author Juan-Pablo Caceres
  * \date July 2008
  */
 
 
-#ifndef __COMMANDLINEARGUMENTS_H__
-#define __COMMANDLINEARGUMENTS_H__
+#ifndef __SETTINGS_H__
+#define __SETTINGS_H__
 
 
-class CommandLineArguments
+class Settings
 {
-
+  int parseInput(int argc, char** argv);
   void printUsage();
 
 };
