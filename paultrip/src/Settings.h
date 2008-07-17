@@ -39,12 +39,28 @@
 #ifndef __SETTINGS_H__
 #define __SETTINGS_H__
 
+#include "DataProtocol.h"
 
+
+/** Class to set usage options and parse settings from input
+ *
+ */
 class Settings
 {
-  int parseInput(int argc, char** argv);
+
+public:
+  /// \brief Parses command line input
+  void parseInput(int argc, char** argv);
+
+  /// \brief Prints usage help
   void printUsage();
 
+
+  //private:
+  int mNumInChans; ///< Number of Input Channels
+  int mNumOutChans; ///<  Number of Output Channels
+  DataProtocol::runModeT mRunMode; ///< Run mode, SENDER or RECEIVER
+  char* mPeerHostOrIP; ///< Peer IP address or Host name
 };
 
 #endif

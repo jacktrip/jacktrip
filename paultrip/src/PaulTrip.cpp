@@ -44,7 +44,7 @@
 
 
 //*******************************************************************************
-PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
+PaulTrip::PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumChans,
 		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
   mNumChans(NumChans)
 {
@@ -65,8 +65,8 @@ PaulTrip::PaulTrip(dataProtocolT DataProtocolType, int NumChans,
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << SEPARATOR << std::endl;
-    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, "192.168.1.4");
-    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, "192.168.1.4");
+    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, PeerHostOrIP);
+    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, PeerHostOrIP);
     break;
     
   default: 
