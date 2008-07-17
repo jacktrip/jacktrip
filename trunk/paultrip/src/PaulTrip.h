@@ -68,13 +68,12 @@ public:
   };
 
 
-
   /** \brief The class Constructor with Default Parameters
    * \param DataProtocolType Protocol type
    * \param NumChans Number of Audio Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  PaulTrip(dataProtocolT DataProtocolType = UDP, int NumChans = 1,
+  PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType = UDP, int NumChans = 1,
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
 	   JackAudioInterface::BIT16);
   

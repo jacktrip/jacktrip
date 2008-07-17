@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file Settings.h
+ * \file Settings.cpp
  * \author Juan-Pablo Caceres
  * \date July 2008
  */
@@ -43,53 +43,62 @@
 
 using std::cout; using std::endl;
 
-/// \todo Check if this is the best place to put this
-static int verbose_flag = 0;
+int gVerboseFlag = 0;
+
 
 //*******************************************************************************
-int Settings::parseInput(int argc, char** argv)
+void Settings::parseInput(int argc, char** argv)
 {
   // If no command arguments are given, print instructions
   if(argc == 1) {
-    cout << "TODO: Print Usage" << endl;
-    return 0;
+    printUsage();
+    std::exit(0);
   }
 
   // Usage example at:
   //http://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
   // options descriptor
+  //----------------------------------------------------------------------------
   static struct option longopts[] = {
     // These options set a flag, has to be sepcified as a long option --verbose
-    { "verbose", no_argument, &verbose_flag, 1 },
+    { "verbose", no_argument, &gVerboseFlag, 1 },
     // These options don't set a flag.
-    { "numchannels", required_argument, NULL, 'n' },
-    { "server", no_argument, NULL, 's' },
-    { "client", required_argument, NULL, 'c' }, //server IP address
+    { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
+    { "server", no_argument, NULL, 's' }, // run in server mode
+    { "client", required_argument, NULL, 'c' }, //run in client mode, set server IP address
+    { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
   };
 
-  // Parse Command Line Argumments
+  // Parse Command Line Arguments
+  //----------------------------------------------------------------------------
   int ch;
-  while ((ch = getopt_long(argc, argv, "n:", longopts, NULL)) != -1)
+  while ( (ch = getopt_long(argc, argv, "n:sc:h", longopts, NULL)) != -1 )
     switch (ch) {
     case 'n':
-      cout << "case n" << endl;
+      mNumInChans = atoi(optarg);
+      mNumOutChans = atoi(optarg);
       break;
-    case 0:
-      cout << "case 0" << endl;
-      cout << verbose_flag << endl;
+    case 's':
+      mRunMode = DataProtocol::RECEIVER; /// \todo change this to SERVER
+      break;
+    case 'c':
+      mRunMode = DataProtocol::SENDER; /// \todo change this to CLIENT
+      mPeerHostOrIP = optarg;
       break;
     default:
-      cout << "Print Usage default" << endl;
-      std::exit(1);
+      printUsage();
+      std::exit(0);
       break;
     }
 
-  // Warn if extra options where entered
+  // Warn user if undefined options where entered
+  //----------------------------------------------------------------------------
   if (optind < argc) {
     cout << SEPARATOR << endl;
     cout << "WARINING: The following entered options have no effect" << endl;
     cout << "          They will be ignored!" << endl;
+    cout << "          Type paultrip to see options." << endl;
     for( ; optind < argc; optind++) {
       printf("argument: %s\n", argv[optind]);
     }
@@ -101,13 +110,19 @@ int Settings::parseInput(int argc, char** argv)
 //*******************************************************************************
 void Settings::printUsage()
 {
+  cout << "" << endl;
   cout << "PaulTrip: A System for High-Quality Audio Network Performance" << endl;
   cout << "over the Internet" << endl;
   cout << "Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe." << endl;
   cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
+  cout << "-----------------------------------------------------------------------------" << endl;
   cout << "" << endl;
-  cout << "Usage: " << endl;
-  cout << "--------------------------------------------" << endl;
-  cout << " -h  --help                    Prints this help" << endl;
+  cout << "Usage: paultrip [-s|-c host] [options]" << endl;
+  cout << "" << endl;
+  cout << "Options: " << endl;
+  cout << " -n, --numchannels #                      Number of Input and Output Channels" << endl;
+  cout << " -s, --server                             Run in Server Mode" << endl;
+  cout << " -c, --client      <peer_host_IP_or_name> Run in Client Mode" << endl;
+  cout << " -h, --help                               Prints this help" << endl;
   cout << "" << endl;
 }
