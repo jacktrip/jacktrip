@@ -72,6 +72,7 @@ void Settings::parseInput(int argc, char** argv)
 
   // Parse Command Line Arguments
   //----------------------------------------------------------------------------
+  /// \todo Specify mandatory arguments
   int ch;
   while ( (ch = getopt_long(argc, argv, "n:sc:h", longopts, NULL)) != -1 )
     switch (ch) {
