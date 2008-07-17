@@ -83,18 +83,35 @@ class DataProtocol : public QThread
 {
 public:
 
+  /// \brief Enum to define packet header types
+  enum packetHeaderTypeT {
+    DEFAULT, ///< Default application header
+    JAMLINK ///< Header to use with Jamlinks
+  };
+
+  /// \brief Default Header
+  typedef struct
+  {
+    uint8_t PacketType; ///< Packet Type
+    uint8_t BufferSize; ///< Buffer Size in Samples
+    uint8_t SamplingRate;
+    uint8_t NumChannels;
+    uint8_t SeqNumber;
+  } DefaultHeader;
+
   /// \brief JamLink Header
   typedef struct
   {
     uint16_t head; ///< 16-bit standard header
   } JamLinkHeader;
-  
+
   /// \brief Enum to define class modes, SENDER or RECEIVER
   enum runModeT {
     SENDER, ///< Set class as a Sender (send packets)
     RECEIVER ///< Set class as a Receiver (receives packets)
   };
   
+
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
@@ -138,6 +155,11 @@ public:
    */
   void setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer);
 
+  /// Stops the execution of the Thread
+  void stop();
+
+
+  //virtual void getIPAddressFromFirstPacket() = 0;
 
 protected:
 
@@ -147,25 +169,28 @@ protected:
    */
   virtual void setLocalIPv4Address();
 
-
-
+  /// \todo change this as private and add getter methods
   int mSockFd; ///< Socket file descriptor 
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
   struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
 
 
-  
-
-
 private:
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
-  /// Smart Pointer to RingBuffer to read or write
+  /// Smart Pointer to RingBuffer to read (for SENDER) or write (for RECEIVER)
   std::tr1::shared_ptr<RingBuffer> mRingBuffer; 
   
+  /// Boolean stop the execution of the thread
+  volatile bool mStopped;
+  /// Boolean to indicate if the RECEIVER is waiting to obtain peer address
+  volatile bool mHasPeerAddress;
+  /// Boolean that indicates if a packet was received
+  volatile bool mHasPacketsToReceive;
+
   /// Number of clients running to check for ports already used
-  /// \note Unimplemented
+  /// \note Unimplemented, try to find another way to check for used ports
   static int sClientsRunning;
 };
 

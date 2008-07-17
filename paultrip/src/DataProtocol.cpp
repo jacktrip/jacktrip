@@ -47,7 +47,8 @@
 
 
 //*******************************************************************************
-DataProtocol::DataProtocol(const runModeT runmode) : mRunMode(runmode)
+DataProtocol::DataProtocol(const runModeT runmode) : 
+  mRunMode(runmode), mStopped(false), mHasPacketsToReceive(false)
 {
   // Base ports INPUT_PORT_0 and OUTPUT_PORT_0defined at globals.h
   if (mRunMode == RECEIVER) {
@@ -66,7 +67,14 @@ DataProtocol::DataProtocol(const runModeT runmode) : mRunMode(runmode)
 //*******************************************************************************
 DataProtocol::~DataProtocol()
 {
-  //freeaddrinfo
+
+}
+
+
+//*******************************************************************************
+void DataProtocol::stop()
+{
+  mStopped = true;
 }
 
 
@@ -144,37 +152,48 @@ void DataProtocol::run()
 {
   std::cout << "Running DataProtocol Thread" << std::endl;
   std::cout << SEPARATOR << std::endl;
-  int8_t* buf;
-  buf = new int8_t[512];
+  int8_t* packet;
+  packet = new int8_t[512]; /// \todo set this size from the audio packet size
 
   //char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
   switch ( mRunMode ) 
     {
-    case SENDER : 
-      while ( true )
-	{
-	  //std::cout << "SENDING PACKETS --------------------------" << std::endl;
-	  /// \todo This should be blocking, since we don't want to send trash
-	  mRingBuffer->readSlotBlocking(buf);
-	  //std::cout << "SENDING PACKETS" << std::endl;
-	  this->sendPacket( (char*) buf, 512);
-	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
-	  //this->sendPacket( sendtest, 64);
-	}
-      break;
-      
     case RECEIVER : 
-      while ( true )
+      //----------------------------------------------------------------------------------- 
+      // Wait for the first packet to be ready and obtain address
+      // from that packet
+      /// \todo here is the place to read the datagram and check if the settings match
+      /// the local ones. Extract this information from the header
+      std::cout << "Waiting for Peer..." << std::endl;
+      this->receivePacket( (char*) packet, 512); // This blocks waiting for the first packet
+      std::cout << "Received Connection for Peer!" << std::endl;
+
+      while ( !mStopped )
 	{
 	  //std::cout << "RECEIVING PACKETS" << std::endl;
 	  /// \todo Set a timer to report packats arriving too late
 	  //std::cout << "RECIEVING THREAD" << std::endl;
 	  
-	  this->receivePacket( (char*) buf, 512);
+	  this->receivePacket( (char*) packet, 512);
 	  /// \todo Change this to match buffer size
 	  //std::cout << "PACKET RECIEVED" << std::endl;
-	  mRingBuffer->insertSlotBlocking(buf);
+	  mRingBuffer->insertSlotBlocking(packet);
 	  //std::cout << buf << std::endl;
+	}
+      break;
+      
+      
+    case SENDER : 
+      //----------------------------------------------------------------------------------- 
+      while ( !mStopped )
+	{
+	  //std::cout << "SENDING PACKETS --------------------------" << std::endl;
+	  /// \todo This should be blocking, since we don't want to send trash
+	  mRingBuffer->readSlotBlocking(packet);
+	  //std::cout << "SENDING PACKETS" << std::endl;
+	  this->sendPacket( (char*) packet, 512);
+	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
+	  //this->sendPacket( sendtest, 64);
 	}
       break;
     }

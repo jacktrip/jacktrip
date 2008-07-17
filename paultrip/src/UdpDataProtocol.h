@@ -61,7 +61,7 @@ public:
 
   /** \brief Receives a packet
    *
-   * This function meakes sure we recieve a complete packet
+   * This function makes sure we recieve a complete packet
    * of size n
    * \param buf Buffer to store the recieved packet
    * \param n size of packet to receive
