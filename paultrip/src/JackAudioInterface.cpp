@@ -265,32 +265,32 @@ void JackAudioInterface::computeNetworkProcess()
 {
   /// \todo cast *mInBuffer[i] to the bit resolution
 
-  // Input Process
+  // Output Process (from NETWORK to JACK)
   // ----------------------------------------------------------------
-  // Form mInputPacket concatenating  all the channels
-  for (int i = 0; i < mNumInChans; i++) {  
-    std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
-		mSizeInBytesPerChannel);
-  }
-  // Send Audio buffer to RingBuffer
-  mInRingBuffer->insertSlotNonBlocking( mInputPacket );
-  
-  // Output Process
-  // ----------------------------------------------------------------
-  // Read Audio buffer from RingBuffer
+  // Read Audio buffer from RingBuffer (read from incoming packets)
   mOutRingBuffer->readSlotNonBlocking(  mOutputPacket );
   // Extract separate channels to send to Jack
   for (int i = 0; i < mNumOutChans; i++) {
     std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
 		mSizeInBytesPerChannel);
   }
+
+  // Input Process (from JACK to NETWORK)
+  // ----------------------------------------------------------------
+  // Concatenate  all the channels from jack to form packet
+  for (int i = 0; i < mNumInChans; i++) {  
+    std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
+		mSizeInBytesPerChannel);
+  }
+  // Send Audio buffer to RingBuffer (these goes out as outgoing packets)
+  mInRingBuffer->insertSlotNonBlocking( mInputPacket );
 }
 
 
 //*******************************************************************************
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
-  // Get input and output buffers
+  // Get input and output buffers from JACK
   for (int i = 0; i < mNumInChans; i++) {
     mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
   }
@@ -303,9 +303,12 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // should come out as output
   //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
   //-------------------------------------------------------------------
-  /// \todo UNCOMMENT THIS
+
+  /// \todo Separate this into Input and output processing
   computeNetworkProcess();
+
   /// \todo Dynamically alocate other processes (from FAUST for instance) here
+
   return 0;
 }
 
@@ -322,7 +325,7 @@ void JackAudioInterface::sampleToBitConversion(sample_t* input,
 					       int8_t* output,
 					       audioBitResolutionT targetBitResolution)
 {
-  sample_t tmp_sample;
+  //sample_t tmp_sample;
   int16_t tmp_16;
   int8_t tmp_8;
 
@@ -345,3 +348,11 @@ void JackAudioInterface::sampleToBitConversion(sample_t* input,
       break;
     }
 }
+
+
+//*******************************************************************************
+void JackAudioInterface::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+{
+  mProcessPlugins.append(plugin);
+}
+

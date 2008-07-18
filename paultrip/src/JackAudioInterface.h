@@ -48,6 +48,7 @@
 
 #include "types.h"
 #include "RingBuffer.h"
+#include "ProcessPlugin.h"
 
 /** \brief Class that provides an interface with the Jack Audio Server
  *
@@ -132,6 +133,12 @@ public:
   void setRingBuffers(const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
 		      const std::tr1::shared_ptr<RingBuffer> OutRingBuffer);
 
+  /** \brief Append a ProcessPlugin. The order of processing is determined by
+   * the order by which appending is done.
+   * \param plugin a ProcesPlugin
+   */
+  void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
+
 
 private:
 
@@ -200,6 +207,7 @@ private:
   // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
   static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) ;
 
+
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
@@ -220,6 +228,9 @@ private:
   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
+
+  /// Vector of Smart Pointer to ProcesPlugin<EM>s</EM>
+  QVector<std::tr1::shared_ptr<ProcessPlugin> > mProcessPlugins;
 };
 
 #endif
