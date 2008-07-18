@@ -159,6 +159,9 @@ public:
   void stop();
 
 
+  void setAudioPacketSize(size_t size_bytes);
+  size_t getAudioPacketSize();
+
   //virtual void getIPAddressFromFirstPacket() = 0;
 
 protected:
@@ -192,6 +195,8 @@ private:
   /// Number of clients running to check for ports already used
   /// \note Unimplemented, try to find another way to check for used ports
   static int sClientsRunning;
+
+  size_t mPacketSize;
 };
 
 #endif

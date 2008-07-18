@@ -40,7 +40,9 @@
 #include "globals.h"
 #include <QTextStream>
 #include <cstdlib>
+#include <cstring>
 
+using std::cout; using std::cout;
 /// \todo Check that the RingBuffer Pointer have indeed been initialized before
 /// computing anything
 
@@ -51,7 +53,8 @@ JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans,
   : mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
     mAudioBitResolution(AudioBitResolution)
 {
-  this->setupClient();
+  setupClient();
+  setProcessCallback();
 }
 
 
@@ -70,6 +73,8 @@ JackAudioInterface::JackAudioInterface(int NumChans,
 JackAudioInterface::~JackAudioInterface()
 {
   //TODO: Write Destructor
+  delete[] mInputPacket;
+  delete[] mOutputPacket;
 }
 
 
@@ -111,6 +116,15 @@ void JackAudioInterface::setupClient()
 
   // Create input and output channels
   this->createChannels();
+
+  // Allocate buffer memory to read and write
+  int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
+  int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
+  mInputPacket = new int8_t[size_input];
+  mOutputPacket = new int8_t[size_output];
+  
+  //mInputPacket = new sample_t[getNumInputChannels()*getBufferSize()];
+  //mOutputPacket = new sample_t[getNumOutputChannels()*getBufferSize()];
 }
 
 
@@ -165,6 +179,26 @@ int JackAudioInterface::getAudioBitResolution() const
   return mAudioBitResolution;
 }
 
+
+//*******************************************************************************
+int JackAudioInterface::getNumInputChannels() const
+{
+  return mNumInChans;
+}
+
+
+//*******************************************************************************
+int JackAudioInterface::getNumOutputChannels() const
+{
+  return mNumOutChans;
+}
+
+
+//*******************************************************************************
+int JackAudioInterface::getSizeInBytesPerChannel() const
+{
+  return (getBufferSize() * getAudioBitResolution()/8);
+}
 
 //*******************************************************************************
 int JackAudioInterface::setProcessCallback()
@@ -229,19 +263,60 @@ void JackAudioInterface::setRingBuffers(const std::tr1::shared_ptr<RingBuffer> I
 
 
 //*******************************************************************************
+// Before sending and reading to Jack, we have to round to the sample resolution
+// that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
+// by default
 void JackAudioInterface::computeNetworkProcess() 
 {
   /// \todo Fix this, I need to read just one packet for all the channels
   /// and then copy that to each channel
-  for (int i = 0; i < mNumInChans; i++) {  
-    mInRingBuffer->insertSlotNonBlocking( (int8_t*) mInBuffer[i] );
-    //std::cout << "CACUMEN IN BUFFER" << std::endl;
-  }
+  
+  //sample_t* mInCacumen;
+  //sample_t* mOutCacumen;
 
-  for (int i = 0; i < mNumOutChans; i++) {  
-    mOutRingBuffer->readSlotNonBlocking( (int8_t*) mOutBuffer[i] );
-    //std::cout << "CACUMEN OUT BUFFER" << std::endl;
+  int size_bytes_per_channel = getSizeInBytesPerChannel();
+  // Input Process
+  // ----------------------------------------------------------------
+  for (int i = 0; i < mNumInChans; i++) {  
+    // I have to cast *mInBuffer[i] to the bit resolution
+    //mInputPacket[size_bytes_per_channel*i] = (int8_t) *mInBuffer[i];
+    //mInputPacket[i] = mInBuffer[i];
+    //std::memcpy(mInputPacket+(i*size_bytes_per_channel), mInBuffer[i],
+    //	size_bytes_per_channel);
+    std::memcpy(&mInputPacket[i*size_bytes_per_channel], mInBuffer[i],
+		size_bytes_per_channel);
+    //mInRingBuffer->insertSlotNonBlocking( (int8_t*) mInBuffer[i] ); //this works for 1 channel
   }
+  mInRingBuffer->insertSlotNonBlocking( mInputPacket ); //****
+  
+  // Output Process
+  // ----------------------------------------------------------------
+  mOutRingBuffer->readSlotNonBlocking(  mOutputPacket ); //****
+  for (int i = 0; i < mNumOutChans; i++) {  
+    //std::memcpy(mOutBuffer[i], mOutputPacket+(i*size_bytes_per_channel),
+    //	size_bytes_per_channel);
+    std::memcpy(mOutBuffer[i], &mOutputPacket[i*size_bytes_per_channel],
+		size_bytes_per_channel);
+    //*mOutBuffer[i] = mOutputPacket[i];
+    //mOutRingBuffer->readSlotNonBlocking( (int8_t*) mOutBuffer[i] );//this works for 1 channel
+    //*mOutBuffer[i] = mOutputPacket[size_bytes_per_channel*i];
+  }
+  
+  /*
+  //===========================================================================================
+  // THIS TEST WORKS FOR 1 CHANNEL ONLY
+  // Input Process
+  // ----------------------------------------------------------------
+  for (int i = 0; i < mNumInChans; i++) {  
+    mInRingBuffer->insertSlotNonBlocking( (int8_t*) mInBuffer[i] ); //this works for 1 channel
+  }
+  // Output Process
+  // ----------------------------------------------------------------
+  for (int i = 0; i < mNumOutChans; i++) {  
+    mOutRingBuffer->readSlotNonBlocking( (int8_t*) mOutBuffer[i] );//this works for 1 channel
+  }
+  //===========================================================================================
+  */
 }
 
 
@@ -272,4 +347,33 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
 int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
 {
   return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
+}
+
+
+//*******************************************************************************
+void JackAudioInterface::sampleToBitConversion(sample_t* input,
+					       int8_t* output,
+					       audioBitResolutionT targetBitResolution)
+{
+  sample_t tmp_sample;
+  int16_t tmp16;
+  switch (targetBitResolution)
+    {
+    case BIT8 : 
+      break;
+    case BIT16 :
+      tmp_sample = *input/32768.0;
+      tmp16 = (int16_t) tmp_sample;
+      output = (int8_t*) &tmp16;
+      std::cout << sizeof(output);
+      //output = (int8_t) &(*input/32768.0); //2^15
+      break;
+    case BIT24 :
+      //int8_t conv_number[4];
+      //return(*conv_number);
+      break;
+    case BIT32 :
+      output = (int8_t*) input; // Check these pointer operations
+      break;
+    }
 }

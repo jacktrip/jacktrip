@@ -45,6 +45,7 @@
 #include <QHostInfo>
 #include <QHostAddress>
 
+using std::cout; using std::endl;
 
 //*******************************************************************************
 DataProtocol::DataProtocol(const runModeT runmode) : 
@@ -152,10 +153,12 @@ void DataProtocol::run()
 {
   std::cout << "Running DataProtocol Thread" << std::endl;
   std::cout << SEPARATOR << std::endl;
-  int8_t* packet;
-  packet = new int8_t[512]; /// \todo set this size from the audio packet size
+  size_t packet_size = getAudioPacketSize();
+  int8_t packet[packet_size];
+  //packet = new int8_t[512]; /// \todo set this size from the audio packet size
 
   //char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
+  
   switch ( mRunMode ) 
     {
     case RECEIVER : 
@@ -165,7 +168,7 @@ void DataProtocol::run()
       /// \todo here is the place to read the datagram and check if the settings match
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
-      this->receivePacket( (char*) packet, 512); // This blocks waiting for the first packet
+      this->receivePacket( (char*) packet, packet_size); // This blocks waiting for the first packet
       std::cout << "Received Connection for Peer!" << std::endl;
 
       while ( !mStopped )
@@ -174,7 +177,7 @@ void DataProtocol::run()
 	  /// \todo Set a timer to report packats arriving too late
 	  //std::cout << "RECIEVING THREAD" << std::endl;
 	  
-	  this->receivePacket( (char*) packet, 512);
+	  this->receivePacket( (char*) packet, packet_size);
 	  /// \todo Change this to match buffer size
 	  //std::cout << "PACKET RECIEVED" << std::endl;
 	  mRingBuffer->insertSlotBlocking(packet);
@@ -191,10 +194,21 @@ void DataProtocol::run()
 	  /// \todo This should be blocking, since we don't want to send trash
 	  mRingBuffer->readSlotBlocking(packet);
 	  //std::cout << "SENDING PACKETS" << std::endl;
-	  this->sendPacket( (char*) packet, 512);
+	  this->sendPacket( (char*) packet, packet_size);
 	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
 	  //this->sendPacket( sendtest, 64);
 	}
       break;
     }
+}
+
+void DataProtocol::setAudioPacketSize(size_t size_bytes)
+{
+  mPacketSize = size_bytes;
+}
+
+
+size_t DataProtocol::getAudioPacketSize()
+{
+  return(mPacketSize);
 }
