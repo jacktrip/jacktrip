@@ -73,9 +73,9 @@ public:
    * \param NumChans Number of Audio Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType = UDP, int NumChans = 1,
+  PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType = UDP, int NumChans = 2,
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
-	   JackAudioInterface::BIT16);
+	   JackAudioInterface::BIT32);
   
   /// \brief The class destructor
   virtual ~PaulTrip();

@@ -76,13 +76,13 @@ public:
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
   JackAudioInterface(int NumInChans, int NumOutChans,
-		     audioBitResolutionT AudioBitResolution = BIT16);
+		     audioBitResolutionT AudioBitResolution);
 
   /** \brief Overloaded class constructor with same inputs and output channels
    * \param NumChans Number of Input and Output Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  JackAudioInterface(int NumChans, audioBitResolutionT AudioBitResolution = BIT16);
+  JackAudioInterface(int NumChans, audioBitResolutionT AudioBitResolution);
 
   /** \brief The class destructor
    */
@@ -101,6 +101,12 @@ public:
    * This is one of the audioBitResolutionT set in construction
    */
   int getAudioBitResolution() const;
+
+  int getNumInputChannels() const;
+
+  int getNumOutputChannels() const;
+
+  int getSizeInBytesPerChannel() const;
 
   /** \brief
    * \return 0 on success, otherwise a non-zero error code
@@ -127,6 +133,10 @@ public:
 
 
 private:
+
+  static void sampleToBitConversion(sample_t* input,
+				    int8_t* output,
+				    audioBitResolutionT targetBitResolution);
 
   /** \brief Private method to setup a client of the Jack server.
    *
@@ -197,7 +207,13 @@ private:
   /// Smart Pointer to RingBuffer to read from (input)
   std::tr1::shared_ptr<RingBuffer> mInRingBuffer;
   /// Smart Pointer to RingBuffer to write from (output)
-  std::tr1::shared_ptr<RingBuffer> mOutRingBuffer; 
+  std::tr1::shared_ptr<RingBuffer> mOutRingBuffer;
+
+  //sample_t* mInputPacket;
+  //sample_t* mOutputPacket;
+  int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
+  int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+  int mSizeInBytesPerChannel; ///< Size in bytes per audio channel
 };
 
 #endif
