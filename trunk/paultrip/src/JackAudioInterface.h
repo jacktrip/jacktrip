@@ -45,6 +45,7 @@
 #include <jack/jack.h>
 
 #include <QVector>
+#include <QVarLengthArray>
 
 #include "types.h"
 #include "RingBuffer.h"
@@ -172,7 +173,13 @@ private:
   static void jackShutdown(void*);
   
   /// \brief Sets the part of the process callback that sends and receive packets
-  void computeNetworkProcess();
+  //void computeNetworkProcess();
+
+  /// \brief Compute the process to receive packets to JACK
+  void computeNetworkProcessFromNetwork();
+
+  /// \brief Compute the process from JACK to send packets
+  void computeNetworkProcessToNetwork();
 
   /** \brief Set the process callback of the member function processCallback.
    * This process will be called by the JACK server whenever there is work to be done.
@@ -214,11 +221,17 @@ private:
   int mAudioBitResolution; ///< Bit resolution in audio samples
 
   jack_client_t* mClient; ///< Jack Client
-  QVector<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
-  QVector<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
+  //QVector<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
+  //QVector<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
 
-  QVector<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
-  QVector<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
+  QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
+  QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
+
+  //QVector<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
+  //QVector<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
+
+  QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
+  QVarLengthArray<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
   /// Smart Pointer to RingBuffer to read from (input)
   std::tr1::shared_ptr<RingBuffer> mInRingBuffer;
