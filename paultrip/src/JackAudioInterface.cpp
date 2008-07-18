@@ -249,8 +249,9 @@ void JackAudioInterface::jackShutdown (void*)
 
 
 //*******************************************************************************
-void JackAudioInterface::setRingBuffers(const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
-					const std::tr1::shared_ptr<RingBuffer> OutRingBuffer)
+void JackAudioInterface::setRingBuffers
+(const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
+ const std::tr1::shared_ptr<RingBuffer> OutRingBuffer)
 {
   mInRingBuffer = InRingBuffer;
   mOutRingBuffer = OutRingBuffer;
@@ -261,7 +262,7 @@ void JackAudioInterface::setRingBuffers(const std::tr1::shared_ptr<RingBuffer> I
 // Before sending and reading to Jack, we have to round to the sample resolution
 // that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
 // by default
-void JackAudioInterface::computeNetworkProcess() 
+void JackAudioInterface::computeNetworkProcessFromNetwork()
 {
   /// \todo cast *mInBuffer[i] to the bit resolution
 
@@ -274,7 +275,12 @@ void JackAudioInterface::computeNetworkProcess()
     std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
 		mSizeInBytesPerChannel);
   }
+}
 
+
+//*******************************************************************************
+void JackAudioInterface::computeNetworkProcessToNetwork()
+{
   // Input Process (from JACK to NETWORK)
   // ----------------------------------------------------------------
   // Concatenate  all the channels from jack to form packet
@@ -291,6 +297,7 @@ void JackAudioInterface::computeNetworkProcess()
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
   // Get input and output buffers from JACK
+  //-------------------------------------------------------------------
   for (int i = 0; i < mNumInChans; i++) {
     mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
   }
@@ -304,10 +311,18 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
   //-------------------------------------------------------------------
 
-  /// \todo Separate this into Input and output processing
-  computeNetworkProcess();
+  // Allocate the Process Callback
+  //-------------------------------------------------------------------
+  // 1) First, process incoming packets
+  computeNetworkProcessFromNetwork();
 
-  /// \todo Dynamically alocate other processes (from FAUST for instance) here
+  // 2) Dynamically allocate ProcessPlugin processes
+  for (int i = 0; i < mProcessPluginS.size(); ++i) {
+    mProcessPlugins[i]->compute(nframes, mInBuffer.data (), mOutBuffer.data ());
+  }
+
+  // 3) Finally, send packets to peer
+  computeNetworkProcessToNetwork();
 
   return 0;
 }

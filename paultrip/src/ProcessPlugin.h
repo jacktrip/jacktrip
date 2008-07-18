@@ -66,6 +66,9 @@ public:
    *
    */
   virtual void compute(jack_nframes_t nframes, float** inputs, float** outputs) = 0;
+  //virtual void compute(jack_nframes_t nframes,
+  //		       QVector<sample_t*>& inputs,
+  //	       QVector<sample_t*>& outputs) = 0;
   
 protected:
   int fSamplingFreq; ///< Faust Data member, Sampling Rate
