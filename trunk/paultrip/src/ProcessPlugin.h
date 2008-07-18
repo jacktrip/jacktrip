@@ -38,6 +38,8 @@
 #ifndef __PROCESSPLUGIN_H__
 #define __PROCESSPLUGIN_H__
 
+#include <jack/jack.h>
+
 
 /** \brief Interface for the process plugins.
  *
@@ -57,13 +59,16 @@ public:
    */
   virtual int getNumInputs() = 0;
   virtual int getNumOutputs() = 0;
-  virtual void buildUserInterface(UI* interface) = 0;
+  //virtual void buildUserInterface(UI* interface) = 0;
   virtual void init(int samplingRate) = 0;
-  /// 
-  virtual void compute(int len, float** inputs, float** outputs) = 0;
+  
+  /** \brief
+   *
+   */
+  virtual void compute(jack_nframes_t nframes, float** inputs, float** outputs) = 0;
   
 protected:
-  int fSamplingFreq; ///< Faust Data member
+  int fSamplingFreq; ///< Faust Data member, Sampling Rate
 };
 
 #endif

@@ -57,6 +57,10 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+  QVector<int> integerVector;
+  cout << integerVector.isEmpty() << endl;
+
+
   Settings settings;
   settings.parseInput(argc, argv);
   cout << settings.mPeerHostOrIP << endl;
