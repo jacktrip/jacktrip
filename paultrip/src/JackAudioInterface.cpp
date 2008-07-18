@@ -72,7 +72,6 @@ JackAudioInterface::JackAudioInterface(int NumChans,
 //*******************************************************************************
 JackAudioInterface::~JackAudioInterface()
 {
-  //TODO: Write Destructor
   delete[] mInputPacket;
   delete[] mOutputPacket;
 }
@@ -81,8 +80,6 @@ JackAudioInterface::~JackAudioInterface()
 //*******************************************************************************
 void JackAudioInterface::setupClient()
 {
-  // \todo Return an int as en error code
-
   // \todo Get this name from global variable
   const char* client_name = "PaulTrip";//APP_NAME;
   const char* server_name = NULL;
@@ -115,16 +112,14 @@ void JackAudioInterface::setupClient()
   jack_on_shutdown (mClient, this->jackShutdown, 0);
 
   // Create input and output channels
-  this->createChannels();
+  createChannels();
 
   // Allocate buffer memory to read and write
-  int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
-  int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
+  mSizeInBytesPerChannel = getSizeInBytesPerChannel();
+  int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
+  int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
   mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
-  
-  //mInputPacket = new sample_t[getNumInputChannels()*getBufferSize()];
-  //mOutputPacket = new sample_t[getNumOutputChannels()*getBufferSize()];
 }
 
 
@@ -195,7 +190,7 @@ int JackAudioInterface::getNumOutputChannels() const
 
 
 //*******************************************************************************
-int JackAudioInterface::getSizeInBytesPerChannel() const
+size_t JackAudioInterface::getSizeInBytesPerChannel() const
 {
   return (getBufferSize() * getAudioBitResolution()/8);
 }
@@ -268,55 +263,27 @@ void JackAudioInterface::setRingBuffers(const std::tr1::shared_ptr<RingBuffer> I
 // by default
 void JackAudioInterface::computeNetworkProcess() 
 {
-  /// \todo Fix this, I need to read just one packet for all the channels
-  /// and then copy that to each channel
-  
-  //sample_t* mInCacumen;
-  //sample_t* mOutCacumen;
+  /// \todo cast *mInBuffer[i] to the bit resolution
 
-  int size_bytes_per_channel = getSizeInBytesPerChannel();
   // Input Process
   // ----------------------------------------------------------------
+  // Form mInputPacket concatenating  all the channels
   for (int i = 0; i < mNumInChans; i++) {  
-    // I have to cast *mInBuffer[i] to the bit resolution
-    //mInputPacket[size_bytes_per_channel*i] = (int8_t) *mInBuffer[i];
-    //mInputPacket[i] = mInBuffer[i];
-    //std::memcpy(mInputPacket+(i*size_bytes_per_channel), mInBuffer[i],
-    //	size_bytes_per_channel);
-    std::memcpy(&mInputPacket[i*size_bytes_per_channel], mInBuffer[i],
-		size_bytes_per_channel);
-    //mInRingBuffer->insertSlotNonBlocking( (int8_t*) mInBuffer[i] ); //this works for 1 channel
+    std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
+		mSizeInBytesPerChannel);
   }
-  mInRingBuffer->insertSlotNonBlocking( mInputPacket ); //****
+  // Send Audio buffer to RingBuffer
+  mInRingBuffer->insertSlotNonBlocking( mInputPacket );
   
   // Output Process
   // ----------------------------------------------------------------
-  mOutRingBuffer->readSlotNonBlocking(  mOutputPacket ); //****
-  for (int i = 0; i < mNumOutChans; i++) {  
-    //std::memcpy(mOutBuffer[i], mOutputPacket+(i*size_bytes_per_channel),
-    //	size_bytes_per_channel);
-    std::memcpy(mOutBuffer[i], &mOutputPacket[i*size_bytes_per_channel],
-		size_bytes_per_channel);
-    //*mOutBuffer[i] = mOutputPacket[i];
-    //mOutRingBuffer->readSlotNonBlocking( (int8_t*) mOutBuffer[i] );//this works for 1 channel
-    //*mOutBuffer[i] = mOutputPacket[size_bytes_per_channel*i];
+  // Read Audio buffer from RingBuffer
+  mOutRingBuffer->readSlotNonBlocking(  mOutputPacket );
+  // Extract separate channels to send to Jack
+  for (int i = 0; i < mNumOutChans; i++) {
+    std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
+		mSizeInBytesPerChannel);
   }
-  
-  /*
-  //===========================================================================================
-  // THIS TEST WORKS FOR 1 CHANNEL ONLY
-  // Input Process
-  // ----------------------------------------------------------------
-  for (int i = 0; i < mNumInChans; i++) {  
-    mInRingBuffer->insertSlotNonBlocking( (int8_t*) mInBuffer[i] ); //this works for 1 channel
-  }
-  // Output Process
-  // ----------------------------------------------------------------
-  for (int i = 0; i < mNumOutChans; i++) {  
-    mOutRingBuffer->readSlotNonBlocking( (int8_t*) mOutBuffer[i] );//this works for 1 channel
-  }
-  //===========================================================================================
-  */
 }
 
 
@@ -356,17 +323,18 @@ void JackAudioInterface::sampleToBitConversion(sample_t* input,
 					       audioBitResolutionT targetBitResolution)
 {
   sample_t tmp_sample;
-  int16_t tmp16;
+  int16_t tmp_16;
+  int8_t tmp_8;
+
+  // 2^15 = 32768.0;   // to convert to 16 bits
+  // 2^23 = 8388608.0; // to convert to 8 bits
   switch (targetBitResolution)
     {
     case BIT8 : 
       break;
     case BIT16 :
-      tmp_sample = *input/32768.0;
-      tmp16 = (int16_t) tmp_sample;
-      output = (int8_t*) &tmp16;
-      std::cout << sizeof(output);
-      //output = (int8_t) &(*input/32768.0); //2^15
+      tmp_16 = (int16_t) *input/32768.0;
+      std::memcpy(output, &tmp_16, sizeof(int16_t)); // 2 bytes
       break;
     case BIT24 :
       //int8_t conv_number[4];

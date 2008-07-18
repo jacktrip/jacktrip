@@ -53,9 +53,6 @@
  *
  * \todo implement srate_callback
  * \todo automatically starts jack with buffer and sample rate settings specified by the user
- * \todo get jack_port_get_buffer for input and output ports (channels), in a way
- * that they can be used in other classes
- * \todo set the Bit Resolution here (now it is defined in PaulTrip.h
  */
 class JackAudioInterface
 {
@@ -102,18 +99,22 @@ public:
    */
   int getAudioBitResolution() const;
 
+  /// \brief Get Number of Input Channels
   int getNumInputChannels() const;
 
+  /// \brief Get Number of Output Channels
   int getNumOutputChannels() const;
 
-  int getSizeInBytesPerChannel() const;
+  /// \brief Get size of each audio per channel, in bytes
+  size_t getSizeInBytesPerChannel() const;
 
-  /** \brief
+  /** \brief Tell the JACK server that we are ready to roll. The
+   * process-callback will start running. This runs on its own thread.
    * \return 0 on success, otherwise a non-zero error code
    */
   int startProcess() const;
 
-  /** \brief
+  /** \brief Stops the process-callback thread
    * \return 0 on success, otherwise a non-zero error code
    */
   int stopProcess() const;
@@ -134,6 +135,13 @@ public:
 
 private:
 
+  /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
+   * supported (audioBitResolutionT).
+   *
+   * The result is stored in an int_8 array of the
+   * appropriate size to hold the value. The caller is responsible to allocate 
+   * enough space to store the result.
+   */
   static void sampleToBitConversion(sample_t* input,
 				    int8_t* output,
 				    audioBitResolutionT targetBitResolution);
@@ -209,11 +217,9 @@ private:
   /// Smart Pointer to RingBuffer to write from (output)
   std::tr1::shared_ptr<RingBuffer> mOutRingBuffer;
 
-  //sample_t* mInputPacket;
-  //sample_t* mOutputPacket;
   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
-  int mSizeInBytesPerChannel; ///< Size in bytes per audio channel
+  size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
 };
 
 #endif
