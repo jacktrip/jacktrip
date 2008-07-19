@@ -82,6 +82,8 @@ public:
 
   void startThreads();
 
+  void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
+
   /// \todo implement setPeerIPv4Address method
   //Methods to change defaults  
   /*

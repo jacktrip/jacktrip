@@ -39,7 +39,7 @@
 #include "LoopBack.h"
 #include "types.h"
 
-#include <iostream>
+#include <cstring> // for memcpy
 
 
 //*******************************************************************************
@@ -49,3 +49,4 @@ void LoopBack::compute(jack_nframes_t nframes, float** inputs, float** outputs)
     memcpy(outputs[i], inputs[i], sizeof(sample_t) * nframes);
   }
 }
+

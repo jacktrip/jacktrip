@@ -43,11 +43,9 @@
 
 
 /** Class to set usage options and parse settings from input
- *
  */
 class Settings
 {
-
 public:
   /// \brief Parses command line input
   void parseInput(int argc, char** argv);
@@ -56,7 +54,6 @@ public:
   void printUsage();
 
 
-  //private:
   int mNumInChans; ///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   DataProtocol::runModeT mRunMode; ///< Run mode, SENDER or RECEIVER

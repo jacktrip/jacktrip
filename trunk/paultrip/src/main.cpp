@@ -46,6 +46,7 @@
 #include "Settings.h"
 #include "TestRingBuffer.h"
 #include "globals.h"
+#include "LoopBack.h"
 
 using namespace std;
 
@@ -56,14 +57,30 @@ int main(int argc, char** argv)
   Settings settings;
   settings.parseInput(argc, argv);
   cout << settings.mPeerHostOrIP << endl;
+  cout << settings.mNumInChans << endl;
+
+  /*
+  LoopBack* loopback;
+  if ( settings.mNumInChans <= settings.mNumOutChans ) { 
+    loopback = new LoopBack(settings.mNumInChans);
+  }
+  else {
+    loopback = new LoopBack(settings.mNumOutChans);
+  }
+  */
+  
   PaulTrip paultrip1(settings.mPeerHostOrIP);
+  
+  std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
+  paultrip1.appendProcessPlugin(loopback);
+
   paultrip1.startThreads();
 
+
+  // Sleep for a while...
   while (true) {
     sleep(100);
   }
 
   return 0;
 }
-
-

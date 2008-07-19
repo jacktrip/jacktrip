@@ -1,23 +1,6 @@
-Potential useful Boost Libraries:
-http://www.boost.org/doc/libs
+High Priority TODOS:
 
-* Any: Safe, generic container for single values of different value types.
-* Asio: Portable networking, including sockets, timers, hostname resolution and socket iostreams.
-* Circular Buffer
-* Dynamic Bitset (to read individual bites)
-* Filesystem
-* Format
-* Function: Function object wrappers for deferred calls or callbacks
-* Functional: family of class templates that are function object wrappers.
-* Fusion: Library for working with tuples, including various containers, algorithms, etc.
-* Integer
-* Math
-* Multi-Array
-* Numeric Conversion
-* Program Options: for Command Line parser
-* Random: A complete system for random number generation.
-* Signals: Managed signals & slots callback implementation.
-* Statechart: Boost.Statechart - Arbitrarily complex finite state machines can be implemented in easily readable and maintainable C++ code
-* Thread: Portable C++ multi-threading.
-* Tribool: 3-state boolean type library.
-* Tuple: Ease definition of functions returning multiple values, and more.
+- add header
+- fix ring buffer (add resets)
+- add bit rate multipliers
+- Finish implementation of audio plug-in class (compatible with faust)

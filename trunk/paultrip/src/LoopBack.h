@@ -54,16 +54,14 @@
 class LoopBack : public ProcessPlugin
 {
 public:
-  LoopBack();
+  /// \brief The class constructor sets the number of channels to connect as loopback
+  LoopBack(int numchans) { mNumChannels = numchans; };
+  /// \brief The class destructor
   virtual ~LoopBack() {};
+
   virtual int getNumInputs() { return(mNumChannels); };
   virtual int getNumOutputs() { return(mNumChannels); };
-  virtual void init(int samplingRate);
   virtual void compute(jack_nframes_t nframes, float** inputs, float** outputs);
-
-  /// \brief Set the number of channels to connect as loopback
-  void setNunChannels(int numchans = 2) { mNumChannels = numchans; };
-
 
 private:
   int mNumChannels;
