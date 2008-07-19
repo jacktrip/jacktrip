@@ -41,34 +41,38 @@
 #include <jack/jack.h>
 
 
-/** \brief Interface for the process plugins.
+/** \brief Interface for the process plugins to add to the JACK callback process in 
+ * JackAudioInterface
  *
  * This class contains the same methods of the FAUST dsp class. A mydsp class can inherit from
- * this class the same wway it inherits from dsp. The class contains also the interface with
- * Jack and the other classes of PaulTrip for network streaming.
+ * this class the same way it inherits from dsp. Subclass should implement all methods
+ * except init, which is optional for processing that are sampling rate dependent or 
+ * that need specific initialization.
  */
 class ProcessPlugin 
 {
 public:
 
+  /// \brief The Class Constructor
   ProcessPlugin() {};
+  /// \brief The Class Destructor
   virtual ~ProcessPlugin() {};
   
-
-  /** \brief Faust Pure Virtual Methods
-   */
+  /// \brief Return Number of Input Channels
   virtual int getNumInputs() = 0;
+  /// \brief Return Number of Output Channels
   virtual int getNumOutputs() = 0;
+
   //virtual void buildUserInterface(UI* interface) = 0;
-  virtual void init(int samplingRate) = 0;
-  
-  /** \brief
-   *
+
+  /** \brief Do proper Initialization of members and class instances. By default this
+   * initializes the Sampling Frequency. If a class instance depends on the
+   * sampling frequency, it should be initialize here.
    */
+  virtual void init(int samplingRate) { fSamplingFreq = samplingRate; };
+  
+  /// \brief Compute process
   virtual void compute(jack_nframes_t nframes, float** inputs, float** outputs) = 0;
-  //virtual void compute(jack_nframes_t nframes,
-  //		       QVector<sample_t*>& inputs,
-  //	       QVector<sample_t*>& outputs) = 0;
   
 protected:
   int fSamplingFreq; ///< Faust Data member, Sampling Rate

@@ -30,40 +30,22 @@
 //*****************************************************************
 
 /**
- * \file main.cpp
+ * \file LoopBack.cpp
  * \author Juan-Pablo Caceres
- * \date June 2008
+ * \date July 2008
  */
 
+
+#include "LoopBack.h"
+#include "types.h"
+
 #include <iostream>
-#include <unistd.h>
-#include <getopt.h>
-
-#include "JackAudioInterface.h"
-#include "UdpDataProtocol.h"
-#include "RingBuffer.h"
-#include "PaulTrip.h"
-#include "Settings.h"
-#include "TestRingBuffer.h"
-#include "globals.h"
-
-using namespace std;
 
 
-int main(int argc, char** argv)
+//*******************************************************************************
+void LoopBack::compute(jack_nframes_t nframes, float** inputs, float** outputs)
 {
-  // Get Settings from user
-  Settings settings;
-  settings.parseInput(argc, argv);
-  cout << settings.mPeerHostOrIP << endl;
-  PaulTrip paultrip1(settings.mPeerHostOrIP);
-  paultrip1.startThreads();
-
-  while (true) {
-    sleep(100);
+  for ( int i = 0; i < getNumInputs(); i++ ) {
+    memcpy(outputs[i], inputs[i], sizeof(sample_t) * nframes);
   }
-
-  return 0;
 }
-
-

@@ -30,40 +30,43 @@
 //*****************************************************************
 
 /**
- * \file main.cpp
+ * \file LoopBack.h
  * \author Juan-Pablo Caceres
- * \date June 2008
+ * \date July 2008
  */
 
-#include <iostream>
-#include <unistd.h>
-#include <getopt.h>
 
-#include "JackAudioInterface.h"
-#include "UdpDataProtocol.h"
-#include "RingBuffer.h"
-#include "PaulTrip.h"
-#include "Settings.h"
-#include "TestRingBuffer.h"
-#include "globals.h"
+/** \brief Connect Inputs to Outputs
+ *
+ */
+#ifndef __LOOPBACK_H__
+#define __LOOPBACK_H__
 
-using namespace std;
+#include "ProcessPlugin.h"
 
 
-int main(int argc, char** argv)
+/** \brief This Class just copy audio from its inputs to its outputs.
+ *
+ * It can be use to do loopback without the need to externally connect channels
+ * in JACK. Note that if you <EM>do</EM> connect the channels in jack, you'll
+ * be effectively multiplying the signal by 2.
+ */
+class LoopBack : public ProcessPlugin
 {
-  // Get Settings from user
-  Settings settings;
-  settings.parseInput(argc, argv);
-  cout << settings.mPeerHostOrIP << endl;
-  PaulTrip paultrip1(settings.mPeerHostOrIP);
-  paultrip1.startThreads();
+public:
+  LoopBack();
+  virtual ~LoopBack() {};
+  virtual int getNumInputs() { return(mNumChannels); };
+  virtual int getNumOutputs() { return(mNumChannels); };
+  virtual void init(int samplingRate);
+  virtual void compute(jack_nframes_t nframes, float** inputs, float** outputs);
 
-  while (true) {
-    sleep(100);
-  }
-
-  return 0;
-}
+  /// \brief Set the number of channels to connect as loopback
+  void setNunChannels(int numchans = 2) { mNumChannels = numchans; };
 
 
+private:
+  int mNumChannels;
+};
+
+#endif
