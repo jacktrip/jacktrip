@@ -30,40 +30,28 @@
 //*****************************************************************
 
 /**
- * \file main.cpp
+ * \file documentation.cpp
  * \author Juan-Pablo Caceres
- * \date June 2008
+ * \date July 2008
  */
 
-#include <iostream>
-#include <unistd.h>
-#include <getopt.h>
 
-#include "JackAudioInterface.h"
-#include "UdpDataProtocol.h"
-#include "RingBuffer.h"
-#include "PaulTrip.h"
-#include "Settings.h"
-#include "TestRingBuffer.h"
-#include "globals.h"
+// Main Page Documentation
+//-----------------------------------------------------------------
+/**
+\mainpage PaulTrip API Documentation
+    
+\section intro_sec About PaulTrip
 
-using namespace std;
+PaulTrip: A System for High-Quality Audio Network Performance
+over the Internet.
 
 
-int main(int argc, char** argv)
-{
-  // Get Settings from user
-  Settings settings;
-  settings.parseInput(argc, argv);
-  cout << settings.mPeerHostOrIP << endl;
-  PaulTrip paultrip1(settings.mPeerHostOrIP);
-  paultrip1.startThreads();
+\section install_sec Installation
 
-  while (true) {
-    sleep(100);
-  }
+\subsection Linux
 
-  return 0;
-}
+\subsection Mac OS X
 
-
+    
+*/

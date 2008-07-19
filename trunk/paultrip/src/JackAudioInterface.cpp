@@ -308,7 +308,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // TEST: Loopback
   // To test, uncomment and send audio to client input. The same audio
   // should come out as output
-  //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t)* nframes);
+  //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t) * nframes);
   //-------------------------------------------------------------------
 
   // Allocate the Process Callback
@@ -317,8 +317,9 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   computeNetworkProcessFromNetwork();
 
   // 2) Dynamically allocate ProcessPlugin processes
-  for (int i = 0; i < mProcessPluginS.size(); ++i) {
-    mProcessPlugins[i]->compute(nframes, mInBuffer.data (), mOutBuffer.data ());
+  // The processing will be done in order of allocation
+  for (int i = 0; i < mProcessPlugins.size(); ++i) {
+    mProcessPlugins[i]->compute(nframes, mInBuffer.data(), mOutBuffer.data());
   }
 
   // 3) Finally, send packets to peer
@@ -368,6 +369,9 @@ void JackAudioInterface::sampleToBitConversion(sample_t* input,
 //*******************************************************************************
 void JackAudioInterface::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
 {
+  /// \todo check that channels in ProcessPlugins are less or same that jack channels
+  if ( plugin->getNumInputs() ) {
+  }
   mProcessPlugins.append(plugin);
 }
 

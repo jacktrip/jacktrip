@@ -5,7 +5,7 @@
 #include <QThread>
 #include <iostream>
 
-RingBuffer rb(2,100);
+static RingBuffer rb(2,100);
 
 class TestRingBufferWrite : public QThread
 {

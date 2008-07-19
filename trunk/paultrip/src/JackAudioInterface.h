@@ -221,15 +221,8 @@ private:
   int mAudioBitResolution; ///< Bit resolution in audio samples
 
   jack_client_t* mClient; ///< Jack Client
-  //QVector<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
-  //QVector<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
-
   QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
-
-  //QVector<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
-  //QVector<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
-
   QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
