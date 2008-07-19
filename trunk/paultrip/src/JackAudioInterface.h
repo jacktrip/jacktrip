@@ -136,7 +136,8 @@ public:
 
   /** \brief Append a ProcessPlugin. The order of processing is determined by
    * the order by which appending is done.
-   * \param plugin a ProcesPlugin smart pointer. Create it using something like
+   * \param plugin a ProcesPlugin smart pointer. Create the object instance
+   * using something like:\n
    * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
    */
   void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
