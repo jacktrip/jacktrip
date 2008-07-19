@@ -42,7 +42,7 @@
 #include "DataProtocol.h"
 
 
-/** Class to set usage options and parse settings from input
+/** \brief Class to set usage options and parse settings from input
  */
 class Settings
 {
