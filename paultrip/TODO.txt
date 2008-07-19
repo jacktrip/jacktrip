@@ -1,6 +1,7 @@
 High Priority TODOS:
 
-- add header
-- fix ring buffer (add resets)
+- ProcessPlugins working, need to set the faust compiler to generate approprate classes
+- add and read header
+- fix ring buffer (add resets) and decide about the queue lengths
 - add bit rate multipliers
-- Finish implementation of audio plug-in class (compatible with faust)
+- Propertely implement the PaulTrip class, now it is too protorypee
