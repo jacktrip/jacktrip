@@ -111,3 +111,10 @@ void PaulTrip::startThreads()
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();
 }
+
+
+//*******************************************************************************
+void PaulTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+{
+  mJackAudio->appendProcessPlugin(plugin);
+}
