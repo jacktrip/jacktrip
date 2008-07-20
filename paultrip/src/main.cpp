@@ -56,10 +56,11 @@ int main(int argc, char** argv)
   // Get Settings from user
   Settings settings;
   settings.parseInput(argc, argv);
-  cout << settings.mPeerHostOrIP << endl;
-  cout << "mNumOutChans" << settings.mNumOutChans << endl;
+  //cout << settings.getPeerAddress() << endl;
+  cout << "mNumOutChans" << settings.getNumOutChannels() << endl;
   
-  PaulTrip paultrip1(settings.mPeerHostOrIP);
+  char* peerIP; settings.getPeerAddress(peerIP);
+  PaulTrip paultrip1(peerIP);
   //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(settings.mNumOutChans));
   //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
   //paultrip1.appendProcessPlugin(loopback);
