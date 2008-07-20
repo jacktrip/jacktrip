@@ -51,14 +51,14 @@ using std::cout; using std::endl;
 DataProtocol::DataProtocol(const runModeT runmode) : 
   mRunMode(runmode), mStopped(false), mHasPacketsToReceive(false)
 {
-  // Base ports INPUT_PORT_0 and OUTPUT_PORT_0defined at globals.h
+  // Base ports gInputPort_0 and gOutputPort_0defined at globals.h
   if (mRunMode == RECEIVER) {
-    mLocalPort = INPUT_PORT_0;
-    mPeerPort = OUTPUT_PORT_0;
+    mLocalPort = gInputPort_0;
+    mPeerPort = gOutputPort_0;
   }
   else if (mRunMode == SENDER) {
-    mLocalPort = OUTPUT_PORT_0;
-    mPeerPort = INPUT_PORT_0;
+    mLocalPort = gOutputPort_0;
+    mPeerPort = gInputPort_0;
   }
 
   this->setLocalIPv4Address();

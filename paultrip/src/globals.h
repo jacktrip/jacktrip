@@ -40,8 +40,8 @@
 
 
 /// Network related ports
-const int INPUT_PORT_0 = 4464; ///< Input base port
-const int OUTPUT_PORT_0 = 4465; ///< Output base port
+const int gInputPort_0 = 4464; ///< Input base port
+const int gOutputPort_0 = 4465; ///< Output base port
 
 // Separator for terminal printing
 const char* const SEPARATOR = "---------------------------------------------------------";
