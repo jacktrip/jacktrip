@@ -47,6 +47,13 @@ int gVerboseFlag = 0;
 
 
 //*******************************************************************************
+Settings::Settings()
+{
+
+}
+
+
+//*******************************************************************************
 void Settings::parseInput(int argc, char** argv)
 {
   // If no command arguments are given, print instructions

@@ -47,13 +47,20 @@
 class Settings
 {
 public:
+  Settings();
+  ~Settings();
+
   /// \brief Parses command line input
   void parseInput(int argc, char** argv);
 
   /// \brief Prints usage help
   void printUsage();
 
+  int getNumInChannels() { return mNumInChans; };
+  int getNumOutChannels() { return mNumOutChans; };
+  void getPeerAddress(char* PeerAddress) {  PeerAddress = mPeerHostOrIP; };
 
+private:
   int mNumInChans; ///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   DataProtocol::runModeT mRunMode; ///< Run mode, SENDER or RECEIVER
