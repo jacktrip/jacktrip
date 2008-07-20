@@ -48,7 +48,7 @@ class Settings
 {
 public:
   Settings();
-  ~Settings();
+  virtual ~Settings() {};
 
   /// \brief Parses command line input
   void parseInput(int argc, char** argv);
