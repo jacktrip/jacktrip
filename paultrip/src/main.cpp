@@ -57,11 +57,12 @@ int main(int argc, char** argv)
   Settings settings;
   settings.parseInput(argc, argv);
   cout << settings.mPeerHostOrIP << endl;
-  cout << settings.mNumInChans << endl;
+  cout << "mNumOutChans" << settings.mNumOutChans << endl;
   
   PaulTrip paultrip1(settings.mPeerHostOrIP);
-  std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(settings.mNumOutChans));
-  paultrip1.appendProcessPlugin(loopback);
+  //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(settings.mNumOutChans));
+  //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
+  //paultrip1.appendProcessPlugin(loopback);
   paultrip1.startThreads();
 
   // Sleep for a while...

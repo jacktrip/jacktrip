@@ -307,7 +307,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   //-------------------------------------------------------------------
   // TEST: Loopback
   // To test, uncomment and send audio to client input. The same audio
-  // should come out as output
+  // should come out as output in the first channel
   //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t) * nframes);
   //-------------------------------------------------------------------
 

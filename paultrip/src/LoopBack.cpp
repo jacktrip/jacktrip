@@ -46,7 +46,8 @@
 void LoopBack::compute(jack_nframes_t nframes, float** inputs, float** outputs)
 {
   for ( int i = 0; i < getNumInputs(); i++ ) {
-    memcpy(outputs[i], inputs[i], sizeof(sample_t) * nframes);
+    // Everything that comes out, copy back to inputs
+    memcpy(inputs[i], outputs[i], sizeof(sample_t) * nframes);
   }
 }
 
