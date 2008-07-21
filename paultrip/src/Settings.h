@@ -60,11 +60,13 @@ public:
   int getNumOutChannels() { return mNumOutChans; };
   void getPeerAddress(char* PeerAddress) {  PeerAddress = mPeerHostOrIP; };
 
+  char* mPeerHostOrIP; ///< Peer IP address or Host name
+
 private:
   int mNumInChans; ///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   DataProtocol::runModeT mRunMode; ///< Run mode, SENDER or RECEIVER
-  char* mPeerHostOrIP; ///< Peer IP address or Host name
+  //char* mPeerHostOrIP; ///< Peer IP address or Host name
 };
 
 #endif

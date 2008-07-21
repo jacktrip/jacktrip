@@ -101,23 +101,24 @@ public:
   
 private:
 
-  /// \todo implement these two methods
+  /// \brief Resets the ring buffer for reads under-runs non-blocking
   void underrunReset();
+  /// \brief Resets the ring buffer for writes over-flows non-blocking
   void overflowReset();
 
-  int8_t* mRingBuffer; ///< 8-bit array of data (1-byte)
-  int8_t* mLastReadSlot; ///< Last slot read  
   const int mSlotSize; ///< The size of one slot in byes
   const int mNumSlots; ///< Number of Slots
-  int mTotalSize; ///< Total size of the mRingBuffer = mSlotSize*mNumSlotss
-  int mReadPosition; ///> Read Positions in the RingBuffer (Tail)
-  int mWritePosition; ///> Write Position in the RingBuffer (Head)
-  int mFullSlots; ///> Number of used (full) slots, in slot-size
+  const int mTotalSize; ///< Total size of the mRingBuffer = mSlotSize*mNumSlotss
+  int mReadPosition; ///< Read Positions in the RingBuffer (Tail)
+  int mWritePosition; ///< Write Position in the RingBuffer (Head)
+  int mFullSlots; ///< Number of used (full) slots, in slot-size
+  int8_t* mRingBuffer; ///< 8-bit array of data (1-byte)
+  int8_t* mLastReadSlot; ///< Last slot read  
 
-  //Thread Synchronization Private Members
-  QMutex mMutex; ///> Mutex to protect read and write operations
-  QWaitCondition mBufferIsNotFull; ///> Buffer not full condition to monitor threads
-  QWaitCondition mBufferIsNotEmpty; ///> Buffer not empty condition to monitor threads
+  // Thread Synchronization Private Members
+  QMutex mMutex; ///< Mutex to protect read and write operations
+  QWaitCondition mBufferIsNotFull; ///< Buffer not full condition to monitor threads
+  QWaitCondition mBufferIsNotEmpty; ///< Buffer not empty condition to monitor threads
 };
 
 #endif
