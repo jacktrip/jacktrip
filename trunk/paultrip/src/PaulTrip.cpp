@@ -108,8 +108,8 @@ PaulTrip::~PaulTrip()
 void PaulTrip::startThreads()
 {
   mJackAudio->startProcess();
-  mDataProtocolSender->start();
-  mDataProtocolReceiver->start();
+  mDataProtocolSender->start(QThread::TimeCriticalPriority);
+  mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
 }
 
 

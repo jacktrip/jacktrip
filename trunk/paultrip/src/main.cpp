@@ -48,19 +48,24 @@
 #include "globals.h"
 #include "LoopBack.h"
 
-using namespace std;
+using std::cout; using std::endl;
 
 
 int main(int argc, char** argv)
 {
+  int8_t caca;
+  if (&caca == NULL)
+    cout << "CACA ++++++++++ " << caca << endl;
+
   // Get Settings from user
   Settings settings;
   settings.parseInput(argc, argv);
   //cout << settings.getPeerAddress() << endl;
   cout << "mNumOutChans" << settings.getNumOutChannels() << endl;
   
-  char* peerIP; settings.getPeerAddress(peerIP);
-  PaulTrip paultrip1(peerIP);
+  //char* peerIP; settings.getPeerAddress(peerIP);
+  //cout << "SUPERCACUMEN" <<  peerIP << endl;
+  PaulTrip paultrip1(settings.mPeerHostOrIP);
   //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(settings.mNumOutChans));
   //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
   //paultrip1.appendProcessPlugin(loopback);
