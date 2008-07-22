@@ -38,19 +38,36 @@
 #ifndef __PAULTRIP_GLOBALS_H__
 #define __PAULTRIP_GLOBALS_H__
 
+/// \name Default Values
+//@{
+const int gDefaultNumInChannels = 2;
+const int gDefaultNumOutChannels = 2;
+//@}
 
-/// Network related ports
+
+/// \name Network related ports
+//@{
 const int gInputPort_0 = 4464; ///< Input base port
 const int gOutputPort_0 = 4465; ///< Output base port
+//@}
 
-// Separator for terminal printing
+
+/// \name Separator for terminal printing
+//@{
 const char* const SEPARATOR = "---------------------------------------------------------";
+//@}
 
-/// Global flags
+
+/// \name Global flags
+//@{
 extern int gVerboseFlag; ///< Verbose mode flag declaration
+//@}
 
-/// JackAudio
+
+
+/// \name JackAudio
+//@{
 const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
-
+//@}
 
 #endif
