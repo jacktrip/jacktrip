@@ -2,6 +2,6 @@ High Priority TODOS:
 
 - ProcessPlugins working, need to set the faust compiler to generate approprate classes. Also, add the offset option to process starting from a different channel
 - add and read header
-- fix ring buffer (add resets) and decide about the queue lengths
+- add queue lengths (settings of ring buffer)
 - add bit rate multipliers
 - Propertely implement the PaulTrip class, now it is too protorypee

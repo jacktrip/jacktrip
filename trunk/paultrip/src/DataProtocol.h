@@ -47,6 +47,8 @@
 #include <QThread>
 
 #include "RingBuffer.h"
+//#include "PacketHeader.h"
+class PacketHeader; // forward declaration
 
 
 /** \brief Base class that defines the transmission protocol.
@@ -89,22 +91,6 @@ public:
     JAMLINK ///< Header to use with Jamlinks
   };
 
-  /// \brief Default Header
-  typedef struct
-  {
-    uint8_t PacketType; ///< Packet Type
-    uint8_t BufferSize; ///< Buffer Size in Samples
-    uint8_t SamplingRate;
-    uint8_t NumChannels;
-    uint8_t SeqNumber;
-  } DefaultHeader;
-
-  /// \brief JamLink Header
-  typedef struct
-  {
-    uint16_t head; ///< 16-bit standard header
-  } JamLinkHeader;
-
   /// \brief Enum to define class modes, SENDER or RECEIVER
   enum runModeT {
     SENDER, ///< Set class as a Sender (send packets)
@@ -115,7 +101,8 @@ public:
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
-  DataProtocol(const runModeT runmode);
+  DataProtocol(const runModeT runmode,
+	       const packetHeaderTypeT headertype = DEFAULT);
   
   /// \brief The class destructor
   virtual ~DataProtocol();
@@ -197,6 +184,8 @@ private:
   static int sClientsRunning;
 
   size_t mPacketSize;
+
+  PacketHeader* mHeader;
 };
 
 #endif

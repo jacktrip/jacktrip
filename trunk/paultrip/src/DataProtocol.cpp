@@ -38,6 +38,7 @@
 #include "DataProtocol.h"
 #include "globals.h"
 #include "JackAudioInterface.h"
+#include "PacketHeader.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -48,9 +49,19 @@
 using std::cout; using std::endl;
 
 //*******************************************************************************
-DataProtocol::DataProtocol(const runModeT runmode) : 
-  mRunMode(runmode), mStopped(false), mHasPacketsToReceive(false)
+DataProtocol::DataProtocol(const runModeT runmode,
+			   const packetHeaderTypeT headertype) : 
+  mRunMode(runmode), mStopped(false), mHasPacketsToReceive(false), mHeader(NULL)
 {
+  //--------PROTOTYPE-------------------------
+  if ( headertype == DEFAULT ) {
+    mHeader = new DefaultHeader;
+  }
+  else if ( headertype == JAMLINK ) {
+    mHeader = new JamLinkHeader;
+  }
+  //------------------------------------------
+
   // Base ports gInputPort_0 and gOutputPort_0defined at globals.h
   if (mRunMode == RECEIVER) {
     mLocalPort = gInputPort_0;
@@ -68,7 +79,7 @@ DataProtocol::DataProtocol(const runModeT runmode) :
 //*******************************************************************************
 DataProtocol::~DataProtocol()
 {
-
+  delete mHeader;
 }
 
 
