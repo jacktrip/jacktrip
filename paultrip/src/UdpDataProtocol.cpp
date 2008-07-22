@@ -70,7 +70,8 @@ void UdpDataProtocol::setBindSocket()
   // Bind local address and port
   /// \todo Bind to a different port in case this one is used by a different instance 
   /// of the program
-  int nBind = bind(mSockFd, (struct sockaddr *) &mLocalIPv4Addr, sizeof(mLocalIPv4Addr));
+  struct sockaddr_in LocalIPv4Addr = getLocalIPv4AddressStruct();
+  int nBind = bind(mSockFd, (struct sockaddr *) &LocalIPv4Addr, sizeof(LocalIPv4Addr));
   if ( nBind < 0 ) {
     std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
     std::exit(0);
@@ -79,7 +80,8 @@ void UdpDataProtocol::setBindSocket()
   std::cout << "Successful socket creation and port binding" << std::endl;
   
   //Connected UDP
-  int nCon = ::connect(mSockFd, (struct sockaddr *) &mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
+  struct sockaddr_in PeerIPv4Addr = getPeerIPv4AddressStruct();
+  int nCon = ::connect(mSockFd, (struct sockaddr *) &PeerIPv4Addr, sizeof(PeerIPv4Addr));
   if ( nCon < 0) {
     std::cerr << "ERROR: UDP Socket Connect Error" << std::endl;
     std::exit(0);

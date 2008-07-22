@@ -142,14 +142,21 @@ public:
    */
   void setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer);
 
-  /// Stops the execution of the Thread
+  /// \brief Stops the execution of the Thread
   void stop();
 
-
+  /** \brief Sets the size of the audio part of the packets
+   * \param size_bytes Size in bytes
+   */
   void setAudioPacketSize(size_t size_bytes);
+
+  /** \brief Get the size of the audio part of the packets
+   * \return size_bytes Size in bytes
+   */
   size_t getAudioPacketSize();
 
   //virtual void getIPAddressFromFirstPacket() = 0;
+
 
 protected:
 
@@ -159,16 +166,31 @@ protected:
    */
   virtual void setLocalIPv4Address();
 
-  /// \todo change this as private and add getter methods
-  int mSockFd; ///< Socket file descriptor 
-  const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
-  struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
-  struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+  /** \brief Get the Run Mode of the object
+   * \return SENDER or RECEIVER
+   */
+  runModeT getRunMode() const { return mRunMode; };
+
+  /** \brief Returns the Local machine IPv4 socket address stuct
+   * \return Socket address stuct
+   */
+  const sockaddr_in& getLocalIPv4AddressStruct() const { return mLocalIPv4Addr; };
+  
+  /** \brief Returns the Peer  IPv4 socket address stuct
+   * \return Socket address stuct
+   */
+  const sockaddr_in& getPeerIPv4AddressStruct() const { return mPeerIPv4Addr; };
 
 
 private:
+
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
+  const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
+
+  struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
+  struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+
   /// Smart Pointer to RingBuffer to read (for SENDER) or write (for RECEIVER)
   std::tr1::shared_ptr<RingBuffer> mRingBuffer; 
   
@@ -183,9 +205,9 @@ private:
   /// \note Unimplemented, try to find another way to check for used ports
   static int sClientsRunning;
 
-  size_t mPacketSize;
+  size_t mAudioPacketSize; ///< Packet audio part size
 
-  PacketHeader* mHeader;
+  PacketHeader* mHeader; ///< Packet Header
 };
 
 #endif

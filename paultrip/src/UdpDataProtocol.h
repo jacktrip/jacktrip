@@ -85,6 +85,8 @@ public:
 private:
 
   void setBindSocket();
+
+  int mSockFd; ///< Socket file descriptor 
 };
 
 #endif

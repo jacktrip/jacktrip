@@ -97,7 +97,7 @@ void DataProtocol::setLocalIPv4Address()
   mLocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   mLocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
   mLocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
-  std::cout << "mLocalPort = " << mLocalPort << std::endl;
+  //std::cout << "mLocalPort = " << mLocalPort << std::endl;
 }
 
 
@@ -106,7 +106,7 @@ void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
 {
   const char* peerAddress; // dotted decimal address to use in the struct below
 
-  /// \todo Improve this to make it work also with local ip numbers, in a lan,
+  /// \todo Improve this to make it work also with local ip numbers, in a LAN,
   /// that don't have an assigned host name
   /*
   // Resolve Peer IPv4 with either doted integer IP or hostname
@@ -135,7 +135,7 @@ void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
   mPeerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   mPeerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
   mPeerIPv4Addr.sin_port = htons(mPeerPort);//set Peer port
-  std::cout << "mPeerPort = " << mPeerPort << std::endl;
+  //std::cout << "mPeerPort = " << mPeerPort << std::endl;
   int nPeer = inet_pton(AF_INET, peerAddress, &mPeerIPv4Addr.sin_addr);
   if ( nPeer == 1 ) {
     std::cout << "Successful Set Peer Address" << std::endl;
@@ -166,9 +166,6 @@ void DataProtocol::run()
   std::cout << SEPARATOR << std::endl;
   size_t packet_size = getAudioPacketSize();
   int8_t packet[packet_size];
-  //packet = new int8_t[512]; /// \todo set this size from the audio packet size
-
-  //char sendtest[65] = "1234567812345678123456781234567812345678123456781234567812345678";
   
   switch ( mRunMode ) 
     {
@@ -215,11 +212,11 @@ void DataProtocol::run()
 
 void DataProtocol::setAudioPacketSize(size_t size_bytes)
 {
-  mPacketSize = size_bytes;
+  mAudioPacketSize = size_bytes;
 }
 
 
 size_t DataProtocol::getAudioPacketSize()
 {
-  return(mPacketSize);
+  return(mAudioPacketSize);
 }
