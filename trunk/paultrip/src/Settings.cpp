@@ -47,10 +47,12 @@ int gVerboseFlag = 0;
 
 
 //*******************************************************************************
-Settings::Settings()
-{
-
-}
+Settings::Settings() :
+  mNumInChans(gDefaultNumInChannels),
+  mNumOutChans(gDefaultNumOutChannels),
+  mRunMode(DataProtocol::SENDER),
+  mLoopBack(false)
+{}
 
 
 //*******************************************************************************
@@ -73,6 +75,7 @@ void Settings::parseInput(int argc, char** argv)
     { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
     { "server", no_argument, NULL, 's' }, // run in server mode
     { "client", required_argument, NULL, 'c' }, //run in client mode, set server IP address
+    { "loopback", required_argument, NULL, 'l' }, //run in loopback mode
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
   };
@@ -81,7 +84,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:h", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:lh", longopts, NULL)) != -1 )
     switch (ch) {
     case 'n':
       mNumInChans = atoi(optarg);
@@ -93,6 +96,13 @@ void Settings::parseInput(int argc, char** argv)
     case 'c':
       mRunMode = DataProtocol::SENDER; /// \todo change this to CLIENT
       mPeerHostOrIP = optarg;
+      break;
+    case 'l': //loopback
+      mLoopBack = true;
+      break;
+    case 'h':
+      printUsage();
+      std::exit(0);
       break;
     default:
       printUsage();
@@ -131,6 +141,7 @@ void Settings::printUsage()
   cout << " -n, --numchannels #                      Number of Input and Output Channels" << endl;
   cout << " -s, --server                             Run in Server Mode" << endl;
   cout << " -c, --client      <peer_host_IP_or_name> Run in Client Mode" << endl;
+  cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -h, --help                               Prints this help" << endl;
   cout << "" << endl;
 }

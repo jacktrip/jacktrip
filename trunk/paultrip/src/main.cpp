@@ -53,23 +53,23 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
-  int8_t caca;
-  if (&caca == NULL)
-    cout << "CACA ++++++++++ " << caca << endl;
-
   // Get Settings from user
+  // ----------------------
   Settings settings;
   settings.parseInput(argc, argv);
-  //cout << settings.getPeerAddress() << endl;
-  cout << "mNumOutChans" << settings.getNumOutChannels() << endl;
+  cout << "Number of Channels = " << settings.getNumInChannels() << endl;
+  cout << "Peer Address = " << settings.mPeerHostOrIP << endl;
   
-  //char* peerIP; settings.getPeerAddress(peerIP);
-  //cout << "SUPERCACUMEN" <<  peerIP << endl;
-  PaulTrip paultrip1(settings.mPeerHostOrIP);
-  //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(settings.mNumOutChans));
-  //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
-  //paultrip1.appendProcessPlugin(loopback);
-  paultrip1.startThreads();
+  // Create Paultrip Class
+  PaulTrip paultrip(settings.mPeerHostOrIP);
+  
+  // Add Plugins
+  if ( settings.getLoopBack() ) {
+    cout << "Running in Loop-Back Mode..." << endl;
+    std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
+    paultrip.appendProcessPlugin(loopback);
+  }
+  paultrip.startThreads();
 
   // Sleep for a while...
   while (true) {
