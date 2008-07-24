@@ -337,9 +337,9 @@ int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg
 
 
 //*******************************************************************************
-void JackAudioInterface::sampleToBitConversion(sample_t* input,
+void JackAudioInterface::sampleToBitConversion(const sample_t* const input,
 					       int8_t* output,
-					       audioBitResolutionT targetBitResolution)
+					       const audioBitResolutionT targetBitResolution)
 {
   //sample_t tmp_sample;
   int16_t tmp_16;
