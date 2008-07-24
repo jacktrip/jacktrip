@@ -355,6 +355,8 @@ int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg
 
 
 //*******************************************************************************
+// This function quantize from 32 bit to a lower bit resolution
+// 24 bit is not working yet
 void JackAudioInterface::fromSampleToBitConversion(const sample_t* const input,
 						   int8_t* output,
 						   const audioBitResolutionT targetBitResolution)
@@ -378,16 +380,16 @@ void JackAudioInterface::fromSampleToBitConversion(const sample_t* const input,
       std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
       break;
     case BIT24 :
-      tmp_sample  = floor( (*input) * 8388608.0 ); // 2^23 = 8388608.0 24bit number
-      tmp_sample16 = tmp_sample / 256.0;   // tmp_sample/(2^8) = 2^15
+      tmp_sample  = (*input) * 8388608.0; // 2^23 = 8388608.0 24bit number
+      tmp_sample16 = floor( tmp_sample / 256.0 );   // tmp_sample/(2^8) = 2^15
+      tmp_sample8 = floor( tmp_sample - tmp_sample16*256 );
       tmp_16 = static_cast<int16_t>(tmp_sample16);
-
-
-      tmp_sample8 = tmp_sample / tmp_sample16;  // tmp_sample/(2^15) = 32768
-
-
-
       tmp_8 = static_cast<int8_t>(tmp_sample8);
+      //tmp_sample8 = tmp_sample / tmp_sample16;  // tmp_sample/(2^15) = 32768
+
+
+
+
       std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
       std::memcpy(output+2, &tmp_8, 1); // 16bits = 2 bytes
       break;
@@ -426,9 +428,9 @@ void JackAudioInterface::fromBitToSampleConversion(const int8_t* const input,
       tmp_8 = *(input+2);
       //std::memcpy(&tmp_16, input, 2);
       //std::memcpy(&tmp_8, input+2, 1);
-      tmp_sample16 = static_cast<sample_t>(tmp_16) / 32768.0;
-      tmp_sample8 = static_cast<sample_t>(tmp_8) / 128.0;
-      tmp_sample = tmp_sample16 * tmp_sample8;
+      tmp_sample16 = static_cast<sample_t>(tmp_16);
+      tmp_sample8 = static_cast<sample_t>(tmp_8);
+      tmp_sample = tmp_sample16 + tmp_sample8*256.0;
       //tmp_sample = ( (static_cast<sample_t>(tmp_16)) * (static_cast<sample_t>(tmp_8)) ) /
       //8388608.0;
       //cout << tmp_sample << endl;
