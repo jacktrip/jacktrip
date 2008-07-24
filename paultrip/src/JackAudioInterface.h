@@ -152,9 +152,9 @@ private:
    * appropriate size to hold the value. The caller is responsible to allocate 
    * enough space to store the result.
    */
-  static void sampleToBitConversion(sample_t* input,
+  static void sampleToBitConversion(const sample_t* const input,
 				    int8_t* output,
-				    audioBitResolutionT targetBitResolution);
+				    const audioBitResolutionT targetBitResolution);
 
   /** \brief Private method to setup a client of the Jack server.
    *
