@@ -41,6 +41,7 @@
 #include <QTextStream>
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 
 using std::cout; using std::cout;
 /// \todo Check that the RingBuffer Pointer have indeed been initialized before
@@ -51,18 +52,7 @@ using std::cout; using std::cout;
 JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans,
 				       audioBitResolutionT AudioBitResolution)
   : mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
-    mAudioBitResolution(AudioBitResolution)
-{
-  setupClient();
-  setProcessCallback();
-}
-
-
-//*******************************************************************************
-JackAudioInterface::JackAudioInterface(int NumChans,
-				       audioBitResolutionT AudioBitResolution)
-  : mNumInChans(NumChans), mNumOutChans(NumChans),
-    mAudioBitResolution(AudioBitResolution)
+    mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution)
 {
   setupClient();
   setProcessCallback();
@@ -120,6 +110,9 @@ void JackAudioInterface::setupClient()
   int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
   mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
+
+  /// \todo inizialize this in a better place
+  mNumFrames = getBufferSize(); 
 }
 
 
@@ -265,15 +258,28 @@ void JackAudioInterface::setRingBuffers
 void JackAudioInterface::computeNetworkProcessFromNetwork()
 {
   /// \todo cast *mInBuffer[i] to the bit resolution
-
+  //cout << mNumFrames << endl;
   // Output Process (from NETWORK to JACK)
   // ----------------------------------------------------------------
   // Read Audio buffer from RingBuffer (read from incoming packets)
   mOutRingBuffer->readSlotNonBlocking(  mOutputPacket );
   // Extract separate channels to send to Jack
   for (int i = 0; i < mNumOutChans; i++) {
-    std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
-		mSizeInBytesPerChannel);
+    //--------
+    // This should be faster for 32 bits
+    //std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
+    //		mSizeInBytesPerChannel);
+    //--------
+    sample_t* tmp_sample = mOutBuffer[i]; //sample buffer for channel i
+    for (int j = 0; j < mNumFrames; j++) {
+      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
+      // Change the bit resolution on each sample
+      //cout << tmp_sample[j] << endl;
+      fromBitToSampleConversion(&mOutputPacket[(i*mSizeInBytesPerChannel) 
+					       + (j*mBitResolutionMode)],
+				&tmp_sample[j],
+				mBitResolutionMode);
+    }
   }
 }
 
@@ -285,8 +291,20 @@ void JackAudioInterface::computeNetworkProcessToNetwork()
   // ----------------------------------------------------------------
   // Concatenate  all the channels from jack to form packet
   for (int i = 0; i < mNumInChans; i++) {  
-    std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
-		mSizeInBytesPerChannel);
+    //--------
+    // This should be faster for 32 bits
+    //std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
+    //		mSizeInBytesPerChannel);
+    //--------
+    sample_t* tmp_sample = mInBuffer[i]; //sample buffer for channel i
+    for (int j = 0; j < mNumFrames; j++) {
+      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
+      // Change the bit resolution on each sample
+      fromSampleToBitConversion(&tmp_sample[j],
+				&mInputPacket[(i*mSizeInBytesPerChannel)
+					      + (j*mBitResolutionMode)],
+				mBitResolutionMode);
+    }
   }
   // Send Audio buffer to RingBuffer (these goes out as outgoing packets)
   mInRingBuffer->insertSlotNonBlocking( mInputPacket );
@@ -337,30 +355,87 @@ int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg
 
 
 //*******************************************************************************
-void JackAudioInterface::sampleToBitConversion(const sample_t* const input,
-					       int8_t* output,
-					       const audioBitResolutionT targetBitResolution)
+void JackAudioInterface::fromSampleToBitConversion(const sample_t* const input,
+						   int8_t* output,
+						   const audioBitResolutionT targetBitResolution)
 {
-  //sample_t tmp_sample;
-  int16_t tmp_16;
   int8_t tmp_8;
-
-  // 2^15 = 32768.0;   // to convert to 16 bits
-  // 2^23 = 8388608.0; // to convert to 8 bits
+  uint8_t tmp_u8;
+  int16_t tmp_16;
+  sample_t tmp_sample;
+  sample_t tmp_sample16;
+  sample_t tmp_sample8;
   switch (targetBitResolution)
     {
     case BIT8 : 
+      tmp_sample = floor( (*input) * 128.0 ); // 2^7 = 128.0
+      tmp_8 = static_cast<int8_t>(tmp_sample);
+      std::memcpy(output, &tmp_8, 1); // 8bits = 1 bytes
       break;
     case BIT16 :
-      tmp_16 = (int16_t) *input/32768.0;
-      std::memcpy(output, &tmp_16, sizeof(int16_t)); // 2 bytes
+      tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
+      tmp_16 = static_cast<int16_t>(tmp_sample);
+      std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
       break;
     case BIT24 :
-      //int8_t conv_number[4];
-      //return(*conv_number);
+      tmp_sample  = floor( (*input) * 8388608.0 ); // 2^23 = 8388608.0 24bit number
+      tmp_sample16 = tmp_sample / 256.0;   // tmp_sample/(2^8) = 2^15
+      tmp_16 = static_cast<int16_t>(tmp_sample16);
+
+
+      tmp_sample8 = tmp_sample / tmp_sample16;  // tmp_sample/(2^15) = 32768
+
+
+
+      tmp_8 = static_cast<int8_t>(tmp_sample8);
+      std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
+      std::memcpy(output+2, &tmp_8, 1); // 16bits = 2 bytes
       break;
     case BIT32 :
-      output = (int8_t*) input; // Check these pointer operations
+      std::memcpy(output, input, 4); // 32bit = 4 bytes
+      break;
+    }
+}
+
+
+//*******************************************************************************
+void JackAudioInterface::fromBitToSampleConversion(const int8_t* const input,
+						   sample_t* output,
+						   const audioBitResolutionT sourceBitResolution)
+{
+  int8_t tmp_8;
+  uint8_t tmp_u8;
+  int16_t tmp_16;
+  sample_t tmp_sample;
+  sample_t tmp_sample16;
+  sample_t tmp_sample8;
+  switch (sourceBitResolution)
+    {
+    case BIT8 : 
+      tmp_8 = *input;
+      tmp_sample = static_cast<sample_t>(tmp_8) / 128.0;
+      std::memcpy(output, &tmp_sample, 4); // 4 bytes
+      break;
+    case BIT16 :
+      tmp_16 = *( reinterpret_cast<const int16_t*>(input) ); // *((int16_t*) input);
+      tmp_sample = static_cast<sample_t>(tmp_16) / 32768.0;
+      std::memcpy(output, &tmp_sample, 4); // 4 bytes
+      break;
+    case BIT24 :
+      tmp_16 = *( reinterpret_cast<const int16_t*>(input) );
+      tmp_8 = *(input+2);
+      //std::memcpy(&tmp_16, input, 2);
+      //std::memcpy(&tmp_8, input+2, 1);
+      tmp_sample16 = static_cast<sample_t>(tmp_16) / 32768.0;
+      tmp_sample8 = static_cast<sample_t>(tmp_8) / 128.0;
+      tmp_sample = tmp_sample16 * tmp_sample8;
+      //tmp_sample = ( (static_cast<sample_t>(tmp_16)) * (static_cast<sample_t>(tmp_8)) ) /
+      //8388608.0;
+      //cout << tmp_sample << endl;
+       std::memcpy(output, &tmp_sample, 4); // 4 bytes
+      break;
+    case BIT32 :
+      std::memcpy(output, input, 4); // 4 bytes
       break;
     }
 }
@@ -374,4 +449,3 @@ void JackAudioInterface::appendProcessPlugin(const std::tr1::shared_ptr<ProcessP
   }
   mProcessPlugins.append(plugin);
 }
-

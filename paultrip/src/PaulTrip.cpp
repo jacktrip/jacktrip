@@ -49,7 +49,7 @@ PaulTrip::PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
   mNumChans(NumChans)
 {
   // Create JackAudioInterface Client Object
-  mJackAudio = new JackAudioInterface(mNumChans, AudioBitResolution);
+  mJackAudio = new JackAudioInterface(mNumChans, mNumChans, AudioBitResolution);
   mSampleRate = mJackAudio->getSampleRate();
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << SEPARATOR << std::endl;
