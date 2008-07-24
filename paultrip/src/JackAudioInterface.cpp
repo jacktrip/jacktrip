@@ -380,6 +380,7 @@ void JackAudioInterface::fromSampleToBitConversion(const sample_t* const input,
       std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
       break;
     case BIT24 :
+      // First, quantize to 16bit, and then quantize the remainder error to 8bit
       tmp_sample  = (*input) * 8388608.0; // 2^23 = 8388608.0 24bit number
       tmp_sample16 = floor( tmp_sample / 256.0 );   // tmp_sample/(2^8) = 2^15
       tmp_sample8 = floor( tmp_sample - tmp_sample16*256 );
