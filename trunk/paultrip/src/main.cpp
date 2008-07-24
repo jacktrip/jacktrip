@@ -53,6 +53,32 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
+
+  /*
+  sample_t cacaInput = 6736439.0;
+  cout << "cacaInput === " << cacaInput << endl;
+
+  int8_t caOut[2];
+  JackAudioInterface::fromSampleToBitConversion(&cacaInput,
+						caOut,
+						JackAudioInterface::BIT16);
+  
+  //sleep(10);
+
+  sample_t Vuelta;
+  JackAudioInterface::fromBitToSampleConversion(caOut,
+						&Vuelta,
+						JackAudioInterface::BIT16);
+
+
+  cout << "Vuelta === " << Vuelta << endl;
+
+
+    //cout << "cacaOutput == " << cacaOuput << endl;
+  sleep(100);
+  */
+
+
   // Get Settings from user
   // ----------------------
   Settings settings;

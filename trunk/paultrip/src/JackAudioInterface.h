@@ -63,10 +63,10 @@ public:
   /// \brief Enum for Audio Resolution in bits
   /// \todo implement this into the class, now it's using jack default of 32 bits
   enum audioBitResolutionT {
-    BIT8  = 8,  ///< 8 bits
-    BIT16 = 16, ///< 16 bits (default)
-    BIT24 = 24, ///< 24 bits
-    BIT32 = 32  ///< 32 bits
+    BIT8  = 1, ///< 8 bits
+    BIT16 = 2, ///< 16 bits (default)
+    BIT24 = 3, ///< 24 bits
+    BIT32 = 4  ///< 32 bits
   };
   
   /** \brief The class constructor
@@ -76,12 +76,6 @@ public:
    */
   JackAudioInterface(int NumInChans, int NumOutChans,
 		     audioBitResolutionT AudioBitResolution);
-
-  /** \brief Overloaded class constructor with same inputs and output channels
-   * \param NumChans Number of Input and Output Channels
-   * \param AudioBitResolution Audio Sample Resolutions in bits
-   */
-  JackAudioInterface(int NumChans, audioBitResolutionT AudioBitResolution);
 
   /** \brief The class destructor
    */
@@ -142,9 +136,6 @@ public:
    */
   void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
 
-
-private:
-
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
    *
@@ -152,9 +143,23 @@ private:
    * appropriate size to hold the value. The caller is responsible to allocate 
    * enough space to store the result.
    */
-  static void sampleToBitConversion(const sample_t* const input,
-				    int8_t* output,
-				    const audioBitResolutionT targetBitResolution);
+  static void fromSampleToBitConversion(const sample_t* const input,
+					int8_t* output,
+					const audioBitResolutionT targetBitResolution);
+
+  /** \brief Convert a audioBitResolutionT bit resolution number into a 
+   * 32bit number (sample_t)
+   *
+   * The result is stored in an sample_t array of the
+   * appropriate size to hold the value. The caller is responsible to allocate 
+   * enough space to store the result.
+   */
+  static void fromBitToSampleConversion(const int8_t* const input,
+					sample_t* output,
+					const audioBitResolutionT sourceBitResolution);
+
+
+private:
 
   /** \brief Private method to setup a client of the Jack server.
    *
@@ -221,6 +226,7 @@ private:
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
   int mAudioBitResolution; ///< Bit resolution in audio samples
+  audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
 
   jack_client_t* mClient; ///< Jack Client
   QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
