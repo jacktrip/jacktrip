@@ -319,7 +319,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // 2) Dynamically allocate ProcessPlugin processes
   // The processing will be done in order of allocation
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
-    mProcessPlugins[i]->compute(nframes, mInBuffer.data(), mOutBuffer.data());
+    mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
   }
 
   // 3) Finally, send packets to peer
