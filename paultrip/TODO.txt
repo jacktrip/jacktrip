@@ -8,3 +8,5 @@ High Priority TODOS:
 
 - Verify RingBuffer, when in a mac the connection is done when something is already sending packets, the delay is much smaller that the case when the peer connect later.
 Also, there's a buzz when there's no connection that shouldn't happen, is should just send zeros.
+
+- 
