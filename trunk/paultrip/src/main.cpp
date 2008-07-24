@@ -47,28 +47,32 @@
 #include "TestRingBuffer.h"
 #include "globals.h"
 #include "LoopBack.h"
+#include <cmath>
 
 using std::cout; using std::endl;
 
 
 int main(int argc, char** argv)
 {
-
   /*
-  sample_t cacaInput = 6736439.0;
+  sample_t caca = 34783.3;
+  cout << floor(caca) << endl;
+
+
+  sample_t cacaInput = 0.32816274638;
   cout << "cacaInput === " << cacaInput << endl;
 
-  int8_t caOut[2];
+  int8_t caOut[4];
   JackAudioInterface::fromSampleToBitConversion(&cacaInput,
 						caOut,
-						JackAudioInterface::BIT16);
+						JackAudioInterface::BIT24);
   
   //sleep(10);
 
   sample_t Vuelta;
   JackAudioInterface::fromBitToSampleConversion(caOut,
 						&Vuelta,
-						JackAudioInterface::BIT16);
+						JackAudioInterface::BIT24);
 
 
   cout << "Vuelta === " << Vuelta << endl;
