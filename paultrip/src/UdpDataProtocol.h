@@ -71,51 +71,22 @@ public:
    */
   void setPeerAddress(char* peerHostOrIP);
 
-
   virtual size_t receivePacket(char* buf, size_t n);
   virtual size_t sendPacket(const char* buf, size_t n);
-  void bindSocket();
-  /** \brief Implements the thread loop
-   *
-   * Depending on the runmode, with will run a RECEIVE thread or
-   * SEND thread
-   */
   virtual void run();
 
 
-  /** \brief Receives a packet
-   *
-   * This function makes sure we recieve a complete packet
-   * of size n
-   * \param buf Buffer to store the recieved packet
-   * \param n size of packet to receive
-   * \return number of bytes read, -1 on error
-   */
-  virtual size_t receivePacketPOSIX(char* buf, size_t n);
-
-  /** \brief Sends a packet
-   *
-   * This function meakes sure we send a complete packet
-   * of size n
-   * \param buff Buffer to send
-   * \param n size of packet to receive
-   * \return number of bytes read, -1 on error
-   */
-  virtual size_t sendPacketPOSIX(const char* buff, size_t n);
-
-
-
-  //virtual void run();
-
-
 private:
+
+  /** \brief Binds the UDP socket to the available address and specified port
+   */
+  void bindSocket();
+
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
 
-  void setBindSocket();
-
-  int mSockFd; ///< Socket file descriptor 
+  //void setBindSocket();
 
   QUdpSocket mUdpSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address
