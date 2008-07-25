@@ -69,13 +69,24 @@ public:
     BIT32 = 4  ///< 32 bits
   };
   
+  /// \brief Sampling Rates supported by JACK
+  enum samplingRateT {
+    SR22, ///<  22050 Hz
+    SR44, ///<  44100 Hz
+    SR48, ///<  48000 Hz
+    SR88, ///<  88200 Hz
+    SR96, ///<  96000 Hz
+    SR192, ///< 192000 Hz
+    UNDEF ///< Undefined
+  };
+
   /** \brief The class constructor
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
   JackAudioInterface(int NumInChans, int NumOutChans,
-		     audioBitResolutionT AudioBitResolution);
+		     audioBitResolutionT AudioBitResolution = BIT16);
 
   /** \brief The class destructor
    */
@@ -84,6 +95,11 @@ public:
   /** \brief Get the Jack Server Sampling Rate, in samples/second
    */
   uint32_t getSampleRate() const;
+
+  /** \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
+   * \return samplingRateT enum type
+   */
+  samplingRateT getSampleRateType() const;
 
   /** \brief Get the Jack Server Buffer Size, in samples
    */

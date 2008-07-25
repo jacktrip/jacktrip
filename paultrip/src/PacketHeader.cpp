@@ -30,55 +30,40 @@
 //*****************************************************************
 
 /**
- * \file DataProtocol.cpp
+ * \file PacketHeader.cpp
  * \author Juan-Pablo Caceres
- * \date June 2008
+ * \date July 2008
  */
 
-#include "DataProtocol.h"
-#include "globals.h"
-#include "JackAudioInterface.h"
 #include "PacketHeader.h"
+#include "JackAudioInterface.h"
 
-#include <iostream>
-#include <cstdlib>
+//#######################################################################
+//####################### PacketHeader ##################################
+//#######################################################################
 
-#include <QHostInfo>
-#include <QHostAddress>
-
-using std::cout; using std::endl;
-
-//*******************************************************************************
-DataProtocol::DataProtocol(const runModeT runmode,
-			   const packetHeaderTypeT headertype) : 
-  mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mHeader(NULL)
+//***********************************************************************
+//PacketHeader::PacketHeader(std::tr1::shared_ptr<JackAudioInterface> JackAdioPtr)
+/*
+PacketHeader::PacketHeader(const JackAudioInterface& JackAdioPtr)
 {
+  mJackAudioPtr = JackAdioPtr;
 }
+*/
 
 
-//*******************************************************************************
-DataProtocol::~DataProtocol()
-{
-  delete mHeader;
-}
 
+//#######################################################################
+//####################### DefaultHeader #################################
+//#######################################################################
 
-//*******************************************************************************
-void DataProtocol::fillHeaderCommon(const JackAudioInterface& jackaudio)
+//***********************************************************************
+void DefaultHeader::fillHeaderCommon(const JackAudioInterface& JackAudio)
 {
   /*
-  switch (headertype) {
-  case DEFAULT :
-    mHeader = new DefaultHeader;
-    break;
-  case JAMLINK :
-    mHeader = new JamLinkHeader;
-    break;
-  default:
-    std::cerr << "ERROR: Undefined Header Type" << endl;
-    std::cerr << "Exiting Program..." << endl;
-    std::exit(1);
-    break;
-  }
+  mHeader.mBufferSize = getJackBufferSize();
+  mHeader.mSamplingRate = getJackSamplingRateType();
+  mHeader.mNumInChannels = getNumInChannels();
+  mHeader.mNumOutChannels = getNumOutChannels();
   */
 }

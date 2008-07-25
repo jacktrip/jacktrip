@@ -47,6 +47,7 @@
 #include "TestRingBuffer.h"
 #include "globals.h"
 #include "LoopBack.h"
+#include "PacketHeader.h"
 #include <cmath>
 
 using std::cout; using std::endl;
@@ -54,6 +55,11 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
+
+  //DefaultHeader dh;
+
+  //JackAudioInterface jack(1,1);
+  //cout << jack.getSampleRateType() << endl;
 
   /*
   UdpDataProtocol udp(DataProtocol::SENDER);
