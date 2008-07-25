@@ -36,26 +36,155 @@
  */
 
 #include "UdpDataProtocol.h"
+#include "globals.h"
 
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
 #include <cerrno>
 
+using std::cout; using std::endl;
+
 // NOTE: It's better not to use
 // using namespace std;
 // because some functions (like exit()) get confused with QT functions
 
 
+//*******************************************************************************
+UdpDataProtocol::UdpDataProtocol(const runModeT runmode)
+  : DataProtocol(runmode), mRunMode(runmode)
+{
+  // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
+  if (mRunMode == RECEIVER) {
+    mLocalPort = gInputPort_0;
+    mPeerPort = gOutputPort_0;
+  }
+  else if (mRunMode == SENDER) {
+    mLocalPort = gOutputPort_0;
+    mPeerPort = gInputPort_0;
+  }
+  bindSocket();
+}
+
 
 //*******************************************************************************
+void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
+{
+  mPeerAddress.setAddress(peerHostOrIP);
+  // check if the ip address is valid
+  if ( mPeerAddress.isNull() ) {
+    std::cerr << "ERROR: Incorrect presentation format address" << endl;
+    std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
+    std::cerr << "Exiting program..." << endl;
+    std::cerr << SEPARATOR << endl;
+    std::exit(1);
+  }
+  else {
+    std::cout << "Peer Address set to: " 
+	      << mPeerAddress.toString().toStdString() << std::endl;
+  }
+}
+
+
+//*******************************************************************************
+void UdpDataProtocol::bindSocket()
+{
+  // QHostAddress::Any : let the kernel decide the active address
+  cout << "CACUMEN: " << mLocalPort << endl;
+  if ( !mUdpSocket.bind(QHostAddress::Any, mLocalPort) ) {
+    std::cerr << "ERROR: could not bind UDP socket" << endl;
+    std::exit(1);
+  }
+  else {
+    cout << "Socket bound to port: " << mLocalPort << endl;
+    cout << SEPARATOR << endl;
+  }
+}
+
+
+//*******************************************************************************
+size_t UdpDataProtocol::receivePacket(char* buf, size_t n)
+{
+  size_t n_bytes = mUdpSocket.readDatagram(buf, n);
+  return n_bytes;
+}
+
+
+//*******************************************************************************
+size_t UdpDataProtocol::sendPacket(const char* buf, size_t n)
+{
+  size_t n_bytes = mUdpSocket.writeDatagram (buf, n, mPeerAddress, mPeerPort);
+  return n_bytes;
+}
+
+
+//*******************************************************************************
+
+void UdpDataProtocol::run()
+{
+  std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
+  std::cout << SEPARATOR << std::endl;
+  size_t packet_size = getAudioPacketSize();
+  int8_t packet[packet_size];
+  
+  switch ( mRunMode )
+    {
+    case RECEIVER :
+      //----------------------------------------------------------------------------------- 
+      // Wait for the first packet to be ready and obtain address
+      // from that packet
+      /// \todo here is the place to read the datagram and check if the settings match
+      /// the local ones. Extract this information from the header
+      std::cout << "Waiting for Peer..." << std::endl;
+      this->receivePacket( (char*) packet, packet_size); // This blocks waiting for the first packet
+      std::cout << "Received Connection for Peer!" << std::endl;
+
+      while ( !mStopped )
+	{
+	  //std::cout << "RECEIVING PACKETS" << std::endl;
+	  /// \todo Set a timer to report packats arriving too late
+	  //std::cout << "RECIEVING THREAD" << std::endl;
+	  
+	  this->receivePacket( (char*) packet, packet_size);
+	  /// \todo Change this to match buffer size
+	  //std::cout << "PACKET RECIEVED" << std::endl;
+	  mRingBuffer->insertSlotBlocking(packet);
+	  //std::cout << buf << std::endl;
+	}
+      break;
+      
+      
+    case SENDER : 
+      //----------------------------------------------------------------------------------- 
+      while ( !mStopped )
+	{
+	  //std::cout << "SENDING PACKETS --------------------------" << std::endl;
+	  /// \todo This should be blocking, since we don't want to send trash
+	  mRingBuffer->readSlotBlocking(packet);
+	  //std::cout << "SENDING PACKETS" << std::endl;
+	  this->sendPacket( (char*) packet, packet_size);
+	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
+	  //this->sendPacket( sendtest, 64);
+	}
+      break;
+    }
+}
+
+
+
+
+
+
+
+//*******************************************************************************
+/*
 UdpDataProtocol::UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP)
   : DataProtocol(runmode)
 {
   setPeerIPv4Address(peerHostOrIP);
   setBindSocket();
 }
-
+*/
 
 //*******************************************************************************
 void UdpDataProtocol::setBindSocket()
@@ -92,7 +221,7 @@ void UdpDataProtocol::setBindSocket()
 //*******************************************************************************
 // Adapted form Stevens' "Unix Network Programming", third edition
 // Page 88 (readn)
-size_t UdpDataProtocol::receivePacket(char* buff, size_t n)
+size_t UdpDataProtocol::receivePacketPOSIX(char* buff, size_t n)
 {
   size_t nleft;
   ssize_t nread;
@@ -121,7 +250,7 @@ size_t UdpDataProtocol::receivePacket(char* buff, size_t n)
 // Adapted form Stevens' "Unix Network Programming", third edition
 // Page 88 (writen)
 // Write "n" bytes to a descriptor
-size_t UdpDataProtocol::sendPacket(const char* buff, size_t n)
+size_t UdpDataProtocol::sendPacketPOSIX(const char* buff, size_t n)
 {
   size_t nleft;
   ssize_t nwritten;
@@ -142,4 +271,8 @@ size_t UdpDataProtocol::sendPacket(const char* buff, size_t n)
   }
   return(n);
 }
+
+
+
+
 

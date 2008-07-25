@@ -65,8 +65,12 @@ PaulTrip::PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << SEPARATOR << std::endl;
-    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, PeerHostOrIP);
-    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, PeerHostOrIP);
+    //mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, PeerHostOrIP);
+    //mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, PeerHostOrIP);
+    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER);
+    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER);
+    mDataProtocolSender->setPeerAddress(PeerHostOrIP);
+    mDataProtocolReceiver->setPeerAddress(PeerHostOrIP);
     break;
     
   default: 
@@ -76,7 +80,6 @@ PaulTrip::PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
   }
   mDataProtocolSender->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * NumChans);
   mDataProtocolReceiver->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * NumChans);
-
 
   // Create RingBuffers with the apprioprate size
   /// \todo Make all this operations cleaner

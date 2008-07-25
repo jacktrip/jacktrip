@@ -157,6 +157,7 @@ public:
 
   //virtual void getIPAddressFromFirstPacket() = 0;
 
+  virtual void setPeerAddress(char* peerHostOrIP) = 0;
 
 protected:
 
@@ -182,6 +183,7 @@ protected:
   const sockaddr_in& getPeerIPv4AddressStruct() const { return mPeerIPv4Addr; };
 
 
+
 private:
 
   int mLocalPort; ///< Local Port number to Bind
@@ -191,6 +193,7 @@ private:
   struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
 
+protected:
   /// Smart Pointer to RingBuffer to read (for SENDER) or write (for RECEIVER)
   std::tr1::shared_ptr<RingBuffer> mRingBuffer; 
   
@@ -201,6 +204,7 @@ private:
   /// Boolean that indicates if a packet was received
   volatile bool mHasPacketsToReceive;
 
+private:
   /// Number of clients running to check for ports already used
   /// \note Unimplemented, try to find another way to check for used ports
   static int sClientsRunning;

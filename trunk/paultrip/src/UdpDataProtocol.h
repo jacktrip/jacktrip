@@ -36,14 +36,16 @@
  */
 
 #ifndef __UDPDATAPROTOCOL_H__
-#define __UDPDATAROTOCOL_H__
+#define __UDPDATAPROTOCOL_H__
+
+#include <QThread>
+#include <QUdpSocket>
+#include <QHostAddress>
 
 #include "DataProtocol.h"
 
+
 /** \brief UDP implementation of DataProtocol class
- * 
- * 
- *
  */
 class UdpDataProtocol : public DataProtocol
 {
@@ -51,13 +53,35 @@ public:
 
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
+   */
+  UdpDataProtocol(const runModeT runmode);
+  
+  /** \brief The class constructor 
+   * \param runmode Sets the run mode, use either SENDER or RECEIVER
    * \param peerHostOrIP IPv4 number or host name
    */
-  UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP);
+  //UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP);
 
   /** \brief The class destructor
    */
-  virtual ~UdpDataProtocol() {};
+  virtual ~UdpDataProtocol() {};  
+
+  /** \brief Set the peer address
+   * \param peerHostOrIP IPv4 number or host name
+   */
+  void setPeerAddress(char* peerHostOrIP);
+
+
+  virtual size_t receivePacket(char* buf, size_t n);
+  virtual size_t sendPacket(const char* buf, size_t n);
+  void bindSocket();
+  /** \brief Implements the thread loop
+   *
+   * Depending on the runmode, with will run a RECEIVE thread or
+   * SEND thread
+   */
+  virtual void run();
+
 
   /** \brief Receives a packet
    *
@@ -67,7 +91,7 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual size_t receivePacket(char* buf, size_t n);
+  virtual size_t receivePacketPOSIX(char* buf, size_t n);
 
   /** \brief Sends a packet
    *
@@ -77,16 +101,25 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual size_t sendPacket(const char* buff, size_t n);
+  virtual size_t sendPacketPOSIX(const char* buff, size_t n);
+
+
 
   //virtual void run();
 
 
 private:
+  int mLocalPort; ///< Local Port number to Bind
+  int mPeerPort; ///< Peer Port number to Bind
+  const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
 
   void setBindSocket();
 
   int mSockFd; ///< Socket file descriptor 
+
+  QUdpSocket mUdpSocket; ///< The UDP socket
+  QHostAddress mPeerAddress; ///< The Peer Address
+
 };
 
 #endif
