@@ -30,21 +30,10 @@ qmake-qt4 -makefile -unix -o Makefile \
 "INSTALLS += target" \
 $APP_NAME.pro
 
+echo "Makefile done"
 
-#Create Makefile
-#qmake-qt4 -makefile -unix -o Makefile \
-#"CONFIG+=qt debug thread warn_on" \
-#"QMAKE_CXXFLAGS+=-Wno-deprecated -g -O2" \
-#"QT += network" \
-#"DEFINES+=__LINUX_ALSA__ APP_NAME=$APP_NAME_QUOTES" \
-#"QMAKE_CLEAN+=$APP_NAME" \
-#"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack" \
-#"unix:TARGET=$APP_NAME" \
-#"unix:target.path=/usr/bin" \
-#"unix:INSTALLS+=target" $APP_NAME.pro
+make clean
 
-#INCLUDEPATH+=/usr/include/stk ../include" \
-#"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -lstk -lasound -ljack" \
-#"QT += network qt3support" \
+echo "Cleanup done"
 
-echo "done"
+make

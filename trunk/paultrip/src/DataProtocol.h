@@ -85,6 +85,7 @@ class DataProtocol : public QThread
 {
 public:
 
+  //----------ENUMS------------------------------------------
   /// \brief Enum to define packet header types
   enum packetHeaderTypeT {
     DEFAULT, ///< Default application header
@@ -96,7 +97,7 @@ public:
     SENDER, ///< Set class as a Sender (send packets)
     RECEIVER ///< Set class as a Receiver (receives packets)
   };
-  
+  //---------------------------------------------------------
 
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
@@ -107,93 +108,60 @@ public:
   /// \brief The class destructor
   virtual ~DataProtocol();
   
-  /** \brief Sets the peer (remote) IPv4 address struct
-   * \param peerHostOrIP Either an IPv4 dotted integer number or a hostname
-   */
-  virtual void setPeerIPv4Address(const char* peerHostOrIP);
-
-  /** \brief Receive a packet from the UDPSocket
+  /** \brief Receives a packet
    *
-   * This method has to be implemented in the sub-classes
-   * \param buf Location at which to store the buffer
-   * \param n size of packet to receive in bytes
+   * This function makes sure we recieve a complete packet
+   * of size n
+   * \param buf Buffer to store the recieved packet
+   * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
   virtual size_t receivePacket(char* buf, size_t n) = 0;
- 
+  
   /** \brief Sends a packet
    *
-   * This method has to be implemented in the sub-classes
+   * This function meakes sure we send a complete packet
+   * of size n
    * \param buff Buffer to send
-   * \param n size of packet to receive in bytes
+   * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual size_t sendPacket(const char* buff, size_t n) = 0;
+  virtual size_t sendPacket(const char* buf, size_t n) = 0;
+
+  /** \brief Set the pointer to the RingBuffer that'll be use to read 
+   * or write
+   */
+  void setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer) { mRingBuffer = RingBuffer; };
 
   /** \brief Implements the thread loop
    *
    * Depending on the runmode, with will run a RECEIVE thread or
    * SEND thread
    */
-  virtual void run();
-
-  /** \brief Set the pointer to the RingBuffer that'll be use to read 
-   * or write
-   */
-  void setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer);
+  virtual void run() = 0;
 
   /// \brief Stops the execution of the Thread
-  void stop();
+  void stop() { mStopped = true; };
 
   /** \brief Sets the size of the audio part of the packets
    * \param size_bytes Size in bytes
    */
-  void setAudioPacketSize(size_t size_bytes);
+  void setAudioPacketSize(const size_t size_bytes){ mAudioPacketSize = size_bytes; };
 
   /** \brief Get the size of the audio part of the packets
    * \return size_bytes Size in bytes
    */
-  size_t getAudioPacketSize();
-
-  //virtual void getIPAddressFromFirstPacket() = 0;
+  size_t getAudioPacketSize() { return(mAudioPacketSize); };
 
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
 
 protected:
-
-  /** \brief Sets the local IPv4 address struct
-   *
-   * It uses the default active device.
-   */
-  virtual void setLocalIPv4Address();
 
   /** \brief Get the Run Mode of the object
    * \return SENDER or RECEIVER
    */
   runModeT getRunMode() const { return mRunMode; };
 
-  /** \brief Returns the Local machine IPv4 socket address stuct
-   * \return Socket address stuct
-   */
-  const sockaddr_in& getLocalIPv4AddressStruct() const { return mLocalIPv4Addr; };
-  
-  /** \brief Returns the Peer  IPv4 socket address stuct
-   * \return Socket address stuct
-   */
-  const sockaddr_in& getPeerIPv4AddressStruct() const { return mPeerIPv4Addr; };
-
-
-
-private:
-
-  int mLocalPort; ///< Local Port number to Bind
-  int mPeerPort; ///< Peer Port number to Bind
-  const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
-
-  struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
-  struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
-
-protected:
   /// Smart Pointer to RingBuffer to read (for SENDER) or write (for RECEIVER)
   std::tr1::shared_ptr<RingBuffer> mRingBuffer; 
   
@@ -205,6 +173,14 @@ protected:
   volatile bool mHasPacketsToReceive;
 
 private:
+
+  int mLocalPort; ///< Local Port number to Bind
+  int mPeerPort; ///< Peer Port number to Bind
+  const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
+
+  struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
+  struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+
   /// Number of clients running to check for ports already used
   /// \note Unimplemented, try to find another way to check for used ports
   static int sClientsRunning;

@@ -51,7 +51,7 @@ using std::cout; using std::endl;
 //*******************************************************************************
 DataProtocol::DataProtocol(const runModeT runmode,
 			   const packetHeaderTypeT headertype) : 
-  mRunMode(runmode), mStopped(false), mHasPacketsToReceive(false), mHeader(NULL)
+  mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mHeader(NULL)
 {
   //--------PROTOTYPE-------------------------
   if ( headertype == DEFAULT ) {
@@ -61,18 +61,6 @@ DataProtocol::DataProtocol(const runModeT runmode,
     mHeader = new JamLinkHeader;
   }
   //------------------------------------------
-
-  // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
-  if (mRunMode == RECEIVER) {
-    mLocalPort = gInputPort_0;
-    mPeerPort = gOutputPort_0;
-  }
-  else if (mRunMode == SENDER) {
-    mLocalPort = gOutputPort_0;
-    mPeerPort = gInputPort_0;
-  }
-
-  this->setLocalIPv4Address();
 }
 
 
@@ -80,143 +68,4 @@ DataProtocol::DataProtocol(const runModeT runmode,
 DataProtocol::~DataProtocol()
 {
   delete mHeader;
-}
-
-
-//*******************************************************************************
-void DataProtocol::stop()
-{
-  mStopped = true;
-}
-
-
-//*******************************************************************************
-void DataProtocol::setLocalIPv4Address()
-{
-  bzero(&mLocalIPv4Addr, sizeof(mLocalIPv4Addr));
-  mLocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
-  mLocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
-  mLocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
-  //std::cout << "mLocalPort = " << mLocalPort << std::endl;
-}
-
-
-//*******************************************************************************
-void DataProtocol::setPeerIPv4Address(const char* peerHostOrIP)
-{
-  const char* peerAddress; // dotted decimal address to use in the struct below
-
-  /// \todo Improve this to make it work also with local ip numbers, in a LAN,
-  /// that don't have an assigned host name
-  /*
-  // Resolve Peer IPv4 with either doted integer IP or hostname
-  //----------------------------------------------------------
-  std::cout << "Resolving Peer IPv4 address..." << std::endl;
-  QHostInfo info = QHostInfo::fromName(peerHostOrIP);
-  if ( !info.addresses().isEmpty() ) {
-    std::cout << "Peer Address Found" << std::endl;
-    QHostAddress address = info.addresses().first(); // use the first address in list
-    peerAddress = address.toString().toLatin1();
-  }
-  else {
-    std::cerr << "ERROR: Could not set Peer IP Address" << std::endl;
-    std::cerr << "Check that it's public or that the hostname exists" << std::endl;
-    std::exit(1);
-  }
-  */
-
-  // temporary implementation to make this work
-  /// \todo change this
-  peerAddress = peerHostOrIP;
-
-  // Set the Peer IPv4 Address struct
-  //---------------------------------
-  bzero(&mPeerIPv4Addr, sizeof(mPeerIPv4Addr));
-  mPeerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
-  mPeerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
-  mPeerIPv4Addr.sin_port = htons(mPeerPort);//set Peer port
-  //std::cout << "mPeerPort = " << mPeerPort << std::endl;
-  int nPeer = inet_pton(AF_INET, peerAddress, &mPeerIPv4Addr.sin_addr);
-  if ( nPeer == 1 ) {
-    std::cout << "Successful Set Peer Address" << std::endl;
-  }
-  else if ( nPeer == 0 ) {
-    std::cout << "Error: Incorrect presentation format for address" << std::endl;
-    std::exit(1);
-  }
-  else {
-    std::cout << "Error: Could not set Peer Address" << std::endl;
-    std::exit(1);
-  }
-
-}
-
-
-//*******************************************************************************
-void DataProtocol::setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer)
-{
-  mRingBuffer = RingBuffer;
-}
-
-
-//*******************************************************************************
-void DataProtocol::run()
-{
-  std::cout << "Running DataProtocol Thread" << std::endl;
-  std::cout << SEPARATOR << std::endl;
-  size_t packet_size = getAudioPacketSize();
-  int8_t packet[packet_size];
-  
-  switch ( mRunMode ) 
-    {
-    case RECEIVER : 
-      //----------------------------------------------------------------------------------- 
-      // Wait for the first packet to be ready and obtain address
-      // from that packet
-      /// \todo here is the place to read the datagram and check if the settings match
-      /// the local ones. Extract this information from the header
-      std::cout << "Waiting for Peer..." << std::endl;
-      this->receivePacket( (char*) packet, packet_size); // This blocks waiting for the first packet
-      std::cout << "Received Connection for Peer!" << std::endl;
-
-      while ( !mStopped )
-	{
-	  //std::cout << "RECEIVING PACKETS" << std::endl;
-	  /// \todo Set a timer to report packats arriving too late
-	  //std::cout << "RECIEVING THREAD" << std::endl;
-	  
-	  this->receivePacket( (char*) packet, packet_size);
-	  /// \todo Change this to match buffer size
-	  //std::cout << "PACKET RECIEVED" << std::endl;
-	  mRingBuffer->insertSlotBlocking(packet);
-	  //std::cout << buf << std::endl;
-	}
-      break;
-      
-      
-    case SENDER : 
-      //----------------------------------------------------------------------------------- 
-      while ( !mStopped )
-	{
-	  //std::cout << "SENDING PACKETS --------------------------" << std::endl;
-	  /// \todo This should be blocking, since we don't want to send trash
-	  mRingBuffer->readSlotBlocking(packet);
-	  //std::cout << "SENDING PACKETS" << std::endl;
-	  this->sendPacket( (char*) packet, packet_size);
-	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
-	  //this->sendPacket( sendtest, 64);
-	}
-      break;
-    }
-}
-
-void DataProtocol::setAudioPacketSize(size_t size_bytes)
-{
-  mAudioPacketSize = size_bytes;
-}
-
-
-size_t DataProtocol::getAudioPacketSize()
-{
-  return(mAudioPacketSize);
 }
