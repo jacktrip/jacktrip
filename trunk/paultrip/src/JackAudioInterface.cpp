@@ -155,6 +155,29 @@ uint32_t JackAudioInterface::getSampleRate() const
 
 
 //*******************************************************************************
+JackAudioInterface::samplingRateT JackAudioInterface::getSampleRateType() const
+{
+  uint32_t rate = jack_get_sample_rate(mClient);
+  JackAudioInterface::samplingRateT rate_type;
+  if      ( rate == 22050 ) {
+    return JackAudioInterface::SR22; }
+  else if ( rate == 44100 ) {
+    return JackAudioInterface::SR44; }
+  else if ( rate == 48000 ) {
+    return JackAudioInterface::SR48; }
+  else if ( rate == 88200 ) {
+    return JackAudioInterface::SR88; }
+  else if ( rate == 96000 ) {
+    return JackAudioInterface::SR96; }
+  else if ( rate == 19200 ) {
+    return JackAudioInterface::SR192; }
+
+  return JackAudioInterface::UNDEF;
+}
+
+
+
+//*******************************************************************************
 uint32_t JackAudioInterface::getBufferSize() const 
 {
   return jack_get_buffer_size(mClient);
