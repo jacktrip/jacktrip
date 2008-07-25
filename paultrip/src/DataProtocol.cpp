@@ -62,7 +62,7 @@ DataProtocol::DataProtocol(const runModeT runmode,
   }
   //------------------------------------------
 
-  // Base ports gInputPort_0 and gOutputPort_0defined at globals.h
+  // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
   if (mRunMode == RECEIVER) {
     mLocalPort = gInputPort_0;
     mPeerPort = gOutputPort_0;

@@ -54,6 +54,21 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
+
+  /*
+  UdpDataProtocol udp(DataProtocol::SENDER);
+  udp.setPeerAddress("192.168.1.4");
+  //udp.setPeerAddress("caca");
+  udp.bindSocket();
+  char buf[3] = "12";
+  while (true) {
+    //cout << "1" ;
+    udp.sendPacket(buf, 3);
+    //sleep(100);
+  }
+  sleep(100);
+  */
+
   /*
   sample_t caca = 34783.3;
   cout << floor(caca) << endl;
@@ -81,7 +96,6 @@ int main(int argc, char** argv)
     //cout << "cacaOutput == " << cacaOuput << endl;
   sleep(100);
   */
-
 
   // Get Settings from user
   // ----------------------
