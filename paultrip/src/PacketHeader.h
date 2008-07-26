@@ -44,6 +44,47 @@
 class JackAudioInterface; // Forward Declaration
 
 
+/** \brief Template struct for Headers
+ *
+ * To create the header, just type HeaderStruct<HeaderType>
+ */
+
+// FACTORY PATTERN 
+
+template <typename T>
+struct HeaderStruct
+{
+  T data;
+};
+
+struct DefaultHeaderStruct
+{
+  // watch out for alignment -- need to be on 4 byte chunks
+  //uint8_t mPacketType; ///< Packet Type
+  uint16_t mBufferSize; ///< Buffer Size in Samples
+  uint8_t mSamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
+  uint8_t mNumInChannels; ///< Number of Input Channels
+  uint8_t mNumOutChannels; ///<  Number of Output Channels
+  //uint8_t mSeqNumber; ///< Sequence Number
+};
+
+struct JamLinkHeaderStuct
+{
+  // watch out for alignment -- need to be on 4 byte chunks
+  unsigned short i_head;
+  unsigned short seqnum;
+  unsigned int  timeStamp;
+};
+
+/*
+union HeaderUnion
+{
+  DefaultHeaderStruct dh;
+  JamLinkHeaderStuct jl;
+};
+*/
+
+
 //#######################################################################
 //####################### PacketHeader ##################################
 //#######################################################################
@@ -53,29 +94,12 @@ class JackAudioInterface; // Forward Declaration
 class PacketHeader
 {
 public:
-  //PacketHeader(std::tr1::shared_ptr<JackAudioInterface> JackAdioPtr);
-  //PacketHeader(const JackAudioInterface& JackAdioPtr);
   PacketHeader() {};
   virtual ~PacketHeader() {};
-  virtual void fillHeaderCommon(const JackAudioInterface& JackAudio) = 0;
+  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio) = 0;
   virtual void parseHeader() = 0;
+  //virtual void fillHeaderStuct(HeaderStruct* hs) = 0;
 
-  /*
-  virtual uint16_t getJackBufferSize() const
-  { return mJackAudioPtr->getBufferSize(); };
-
-  virtual uint8_t getJackSamplingRateType() const
-  { return mJackAudioPtr->getSampleRateType(); };
-  
-  virtual uint8_t getNumInChannels() const
-  { return mJackAudioPtr->getNumInputChannels(); };
-
-  virtual uint8_t getNumOutChannels() const
-  { return mJackAudioPtr->getNumOutputChannels(); };
-  */
-
-private:
-  //std::tr1::shared_ptr<JackAudioInterface> mJackAudioPtr; 
 };
 
 
@@ -89,22 +113,11 @@ private:
 class DefaultHeader : public PacketHeader
 {
 public:
-  typedef struct Header{
-    //uint8_t mPacketType; ///< Packet Type
-    uint16_t mBufferSize; ///< Buffer Size in Samples
-    uint8_t mSamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
-    uint8_t mNumInChannels; ///< Number of Input Channels
-    uint8_t mNumOutChannels; ///<  Number of Output Channels
-    //uint8_t mSeqNumber; ///< Sequence Number
-  };
-
-  Header mHeader;
-
-  //DefaultHeader(std::tr1::shared_ptr<JackAudioInterface> JackAdioPtr) :
-  // PacketHeader(JackAdioPtr) {};
-
-  virtual void fillHeaderCommon(const JackAudioInterface& JackAudio);
+  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
   virtual void parseHeader() {};
+
+private:
+  //DefaultHeaderStruct mHeader;
 };
 
 
@@ -115,17 +128,23 @@ public:
 //#######################################################################
 /** \brief JamLink Header
  */
+/*
 class JamLinkHeader : public PacketHeader
 {
 public:
+
+
+
   //JamLinkHeader(std::tr1::shared_ptr<JackAudioInterface> JackAdioPtr) :
   //  PacketHeader(JackAdioPtr) {};
 
   uint16_t head; ///< 16-bit standard header
 
-  virtual void fillHeaderCommon(const JackAudioInterface& JackAudio) {};
+  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio) {};
   virtual void parseHeader() {};
-};
+  //virtual void fillHeaderStuct(HeaderStruct* hs) {};
 
+};
+*/
 
 #endif

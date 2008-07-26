@@ -38,32 +38,18 @@
 #include "PacketHeader.h"
 #include "JackAudioInterface.h"
 
-//#######################################################################
-//####################### PacketHeader ##################################
-//#######################################################################
-
-//***********************************************************************
-//PacketHeader::PacketHeader(std::tr1::shared_ptr<JackAudioInterface> JackAdioPtr)
-/*
-PacketHeader::PacketHeader(const JackAudioInterface& JackAdioPtr)
-{
-  mJackAudioPtr = JackAdioPtr;
-}
-*/
-
-
 
 //#######################################################################
 //####################### DefaultHeader #################################
 //#######################################################################
 
 //***********************************************************************
-void DefaultHeader::fillHeaderCommon(const JackAudioInterface& JackAudio)
+void DefaultHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio)
 {
   /*
-  mHeader.mBufferSize = getJackBufferSize();
-  mHeader.mSamplingRate = getJackSamplingRateType();
-  mHeader.mNumInChannels = getNumInChannels();
-  mHeader.mNumOutChannels = getNumOutChannels();
+  mHeader.mBufferSize = JackAudio.getBufferSize();
+  mHeader.mSamplingRate = JackAudio.getSampleRateType ();
+  mHeader.mNumInChannels = JackAudio.getNumInputChannels();
+  mHeader.mNumOutChannels = JackAudio.getNumOutputChannels();
   */
 }
