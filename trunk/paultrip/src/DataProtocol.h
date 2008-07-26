@@ -156,7 +156,8 @@ public:
 
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
 
-  void fillHeaderCommon(const JackAudioInterface& jackaudio);
+  void fillHeaderCommonFromJack(const JackAudioInterface& jackaudio);
+
 
 protected:
 
@@ -175,21 +176,22 @@ protected:
   /// Boolean that indicates if a packet was received
   volatile bool mHasPacketsToReceive;
 
+
 private:
 
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
-
+  
   struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
   struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
-
+  
   /// Number of clients running to check for ports already used
   /// \note Unimplemented, try to find another way to check for used ports
   static int sClientsRunning;
-
+  
   size_t mAudioPacketSize; ///< Packet audio part size
-
+  
   PacketHeader* mHeader; ///< Packet Header
 };
 

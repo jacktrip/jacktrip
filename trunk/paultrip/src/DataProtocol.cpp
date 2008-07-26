@@ -48,11 +48,25 @@
 
 using std::cout; using std::endl;
 
+
 //*******************************************************************************
 DataProtocol::DataProtocol(const runModeT runmode,
 			   const packetHeaderTypeT headertype) : 
   mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mHeader(NULL)
 {
+  switch (headertype) {
+  case DEFAULT :
+    mHeader = new DefaultHeader;
+    break;
+  case JAMLINK :
+    //mHeader = new JamLinkHeader;
+    break;
+  default:
+    std::cerr << "ERROR: Undefined Header Type" << endl;
+    std::cerr << "Exiting Program..." << endl;
+    std::exit(1);
+    break;
+  }
 }
 
 
@@ -64,21 +78,7 @@ DataProtocol::~DataProtocol()
 
 
 //*******************************************************************************
-void DataProtocol::fillHeaderCommon(const JackAudioInterface& jackaudio)
+void DataProtocol::fillHeaderCommonFromJack(const JackAudioInterface& jackaudio)
 {
-  /*
-  switch (headertype) {
-  case DEFAULT :
-    mHeader = new DefaultHeader;
-    break;
-  case JAMLINK :
-    mHeader = new JamLinkHeader;
-    break;
-  default:
-    std::cerr << "ERROR: Undefined Header Type" << endl;
-    std::cerr << "Exiting Program..." << endl;
-    std::exit(1);
-    break;
-  }
-  */
+  mHeader->fillHeaderCommonFromJack(jackaudio);
 }

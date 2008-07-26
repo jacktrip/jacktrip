@@ -56,7 +56,69 @@ using std::cout; using std::endl;
 int main(int argc, char** argv)
 {
 
-  //DefaultHeader dh;
+  //HeaderStruct<HeaderStruct*>* caca;
+  //new HeaderStruct<DefaultHeaderStruct>;
+
+  /*
+  HeaderStruct<void> test;
+  test = new HeaderStruct<DefaultHeaderStruct> test;
+  //cout << sizeof(test) << endl;
+  sleep(100);
+  */
+
+  //HeaderStruct* hs;
+  //hs = new DefaultHeaderStruct;
+  //static_cast<DefaultHeaderStruct*>(hs)->mSamplingRate = 1;
+  
+  /*
+  void* caca;
+  DefaultHeaderStruct dcaca;
+  reinterpret_cast<DefaultHeaderStruct*>(caca);
+  caca = new DefaultHeaderStruct;
+  JackAudioInterface jack(1,1);
+  reinterpret_cast<DefaultHeaderStruct*>(caca)->mSamplingRate = 1;
+  */
+  //caca = static_cast<DefaultHeaderStruct>(&dcaca);
+
+  /*
+  DefaultHeader ph;
+  
+  ph.fillHeaderCommonFromJack(jack);
+
+  HeaderStruct* hs;
+  hs = new DefaultHeaderStruct;
+  ph.fillHeaderStuct(hs);
+
+  cout << "HSSSSSSSSSSS " << hs->mSamplingRate << endl;
+  */
+
+  /*
+  //hs = new DefaultHeaderStruct;
+  //*hs = ph.getHeaderStuct();
+  cout << sizeof(hs) << endl;
+  HeaderStruct caca;
+  cout << sizeof(caca) << endl;
+  DefaultHeaderStruct caca2;
+  cout << sizeof(caca2) << endl;
+  */
+
+
+
+  /*
+  dh.fillHeaderCommonFromJack(jack);
+
+  void* stuctPointer;
+  DefaultHeader::DefaultHeaderStruct caca;
+  caca.mBufferSize = 1;
+  caca.mSamplingRate = 2;
+  caca.mNumInChannels = 3;
+  caca.mNumOutChannels = 4;
+  */
+  sleep(1000);
+
+
+
+
 
   //JackAudioInterface jack(1,1);
   //cout << jack.getSampleRateType() << endl;
