@@ -170,7 +170,7 @@ int main(int argc, char** argv)
   cout << "Number of Channels = " << settings.getNumInChannels() << endl;
   cout << "Peer Address = " << settings.mPeerHostOrIP << endl;
   
-  // Create Paultrip Class
+  // Create Jacktrip Class
   JackTrip jacktrip(settings.mPeerHostOrIP);
   
   // Add Plugins
