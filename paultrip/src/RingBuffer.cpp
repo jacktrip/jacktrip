@@ -72,6 +72,8 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
   
   // Advance write position to half of the RingBuffer
   mWritePosition = ( (NumSlots/2) * SlotSize ) % mTotalSize;
+  // Udpate Full Slots accordingly
+  mFullSlots = (NumSlots/2);
 }
 
 
@@ -89,12 +91,14 @@ RingBuffer::~RingBuffer()
 void RingBuffer::insertSlotBlocking(const int8_t* ptrToSlot)
 {
   QMutexLocker locker(&mMutex); // lock the mutex
-
   // Check if there is space available to write a slot
   // If the Ringbuffer is full, it waits for the bufferIsNotFull condition
   while (mFullSlots == mNumSlots) {
-    //std::cout << "OUPUT OVERFLOW BLOCKING" << std::endl;
+    //std::cout << "OUPUT OVERFLOW BLOCKING before" << std::endl;
+    //debugDump();
     mBufferIsNotFull.wait(&mMutex);
+    //std::cout << "OUPUT OVERFLOW BLOCKING after" << std::endl;
+    //debugDump();
   }
 
   // Copy mSlotSize bytes to mRingBuffer
@@ -102,6 +106,8 @@ void RingBuffer::insertSlotBlocking(const int8_t* ptrToSlot)
   // Update write position
   mWritePosition = (mWritePosition+mSlotSize) % mTotalSize;
   mFullSlots++; //update full slots
+  //cout << "WRITEBLOCK" << endl;
+  //debugDump();
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotEmpty.wakeAll();
 }
@@ -115,8 +121,11 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
   // Check if there are slots available to read
   // If the Ringbuffer is empty, it waits for the bufferIsNotEmpty condition
   while (mFullSlots == 0) {
-    //std::cerr << "READ UNDER-RUN BLOCKING" << endl;
+    //std::cerr << "READ UNDER-RUN BLOCKING before" << endl;
+    //debugDump();
     mBufferIsNotEmpty.wait(&mMutex);
+    //std::cerr << "READ UNDER-RUN BLOCKING after" << endl;
+    //debugDump();
   }
   
   // Copy mSlotSize bytes to ReadSlot
@@ -124,6 +133,8 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
   // Update write position
   mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
   mFullSlots--; //update full slots
+  //cout << "READBLOCK" << endl;
+  //debugDump();
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotFull.wakeAll();
 }
@@ -140,7 +151,7 @@ void RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot)
   /// \todo It may be better here to insert the slot anyways,
   /// instead of not writing anything
   if (mFullSlots == mNumSlots) {
-    std::cout << "OUPUT OVERFLOW NON BLOCKING" << std::endl;
+    std::cout << "OUPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
     overflowReset();
     return;
   }
@@ -159,13 +170,14 @@ void RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot)
 void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
   QMutexLocker locker(&mMutex); // lock the mutex
+  
  
   // Check if there are slots available to read
   // If the Ringbuffer is empty, it returns a buffer of zeros and rests the buffer
   if (mFullSlots == 0) {
     // Returns a buffer of zeros if there's nothing to read
-    std::cerr << "READ UNDER-RUN NON BLOCKING" << endl;
-    std::memset(ptrToReadSlot, 0, mSlotSize);
+    std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
+    //std::memset(ptrToReadSlot, 0, mSlotSize);
     underrunReset();
     return;
   }
@@ -184,9 +196,17 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 // Under-run happens when there's nothing to read.
 void RingBuffer::underrunReset()
 {
+  cout << "UNDERRRUNRESET BEFORE" << endl;
+  debugDump();
+
   // Advance the write pointer 1/2 the ring buffer
-  mWritePosition = ( mReadPosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
+  //mWritePosition = ( mReadPosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
+  mWritePosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
   mFullSlots += mNumSlots/2;
+  // Set the entire buffer to 0
+  std::memset(mRingBuffer, 0, mTotalSize);
+  cout << "UNDERRRUNRESET AFTER" << endl;
+  debugDump();
 }
 
 
@@ -194,7 +214,24 @@ void RingBuffer::underrunReset()
 // Over-flow happens when there's no space to write more slots.
 void RingBuffer::overflowReset()
 {
+  cout << "OVERFLOWRESET BEFORE" << endl;
+  debugDump();
+
   // Advance the read pointer 1/2 the ring buffer
-  mReadPosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
+  //mReadPosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
+  mReadPosition = ( mReadPosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
   mFullSlots -= mNumSlots/2;
+
+  cout << "OVERFLOWRESET AFTER" << endl;
+  debugDump();
+
+}
+
+
+void RingBuffer::debugDump() const
+{
+  cout << "mTotalSize = " << mTotalSize << endl;
+  cout << "mReadPosition = " << mReadPosition << endl;
+  cout << "mWritePosition = " << mWritePosition << endl;
+  cout <<  "mFullSlots = " << mFullSlots << endl;
 }

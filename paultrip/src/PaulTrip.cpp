@@ -83,10 +83,10 @@ PaulTrip::PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
 
   // Create RingBuffers with the apprioprate size
   /// \todo Make all this operations cleaner
-  mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 2) );
+  mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 4) );
   std::cout << "NEWED mSendRingBuffer" << std::endl;
   std::cout << SEPARATOR << std::endl;
-  mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 2) );
+  mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 8) );
   std::cout << "NEWED mReceiveRingBuffer" << std::endl;
   std::cout << SEPARATOR << std::endl;
 

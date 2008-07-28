@@ -55,7 +55,6 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
-
   //HeaderStruct<HeaderStruct*>* caca;
   //new HeaderStruct<DefaultHeaderStruct>;
 
@@ -114,7 +113,6 @@ int main(int argc, char** argv)
   caca.mNumInChannels = 3;
   caca.mNumOutChannels = 4;
   */
-  sleep(1000);
 
 
 

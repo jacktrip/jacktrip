@@ -49,8 +49,6 @@ class JackAudioInterface; // Forward Declaration
  * To create the header, just type HeaderStruct<HeaderType>
  */
 
-// FACTORY PATTERN 
-
 template <typename T>
 struct HeaderStruct
 {

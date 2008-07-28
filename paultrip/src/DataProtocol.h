@@ -116,7 +116,7 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual size_t receivePacket(char* buf, size_t n) = 0;
+  virtual int receivePacket(char* buf, size_t n) = 0;
   
   /** \brief Sends a packet
    *
@@ -126,7 +126,7 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual size_t sendPacket(const char* buf, size_t n) = 0;
+  virtual int sendPacket(const char* buf, size_t n) = 0;
 
   /** \brief Set the pointer to the RingBuffer that'll be use to read 
    * or write

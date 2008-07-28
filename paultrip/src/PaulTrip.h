@@ -75,7 +75,7 @@ public:
    */
   PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType = UDP, int NumChans = 2,
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
-	   JackAudioInterface::BIT8);
+	   JackAudioInterface::BIT16);
   
   /// \brief The class destructor
   virtual ~PaulTrip();
