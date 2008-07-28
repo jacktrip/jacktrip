@@ -1,6 +1,6 @@
 #!/bin/bash
 #####################################
-APP_NAME=paultrip
+APP_NAME=jacktrip
 APP_NAME_QUOTES=\"$APP_NAME\"
  
 ######################################

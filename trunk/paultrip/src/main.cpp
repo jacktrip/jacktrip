@@ -171,15 +171,15 @@ int main(int argc, char** argv)
   cout << "Peer Address = " << settings.mPeerHostOrIP << endl;
   
   // Create Paultrip Class
-  JackTrip paultrip(settings.mPeerHostOrIP);
+  JackTrip jacktrip(settings.mPeerHostOrIP);
   
   // Add Plugins
   if ( settings.getLoopBack() ) {
     cout << "Running in Loop-Back Mode..." << endl;
     std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
-    paultrip.appendProcessPlugin(loopback);
+    jacktrip.appendProcessPlugin(loopback);
   }
-  paultrip.startThreads();
+  jacktrip.startThreads();
 
   // Sleep for a while...
   while (true) {
