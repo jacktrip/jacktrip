@@ -35,8 +35,8 @@
  * \date June 2008
  */
 
-#ifndef __PAULTRIP_GLOBALS_H__
-#define __PAULTRIP_GLOBALS_H__
+#ifndef __JACKTRIP_GLOBALS_H__
+#define __JACKTRIP_GLOBALS_H__
 
 /// \name Default Values
 //@{
