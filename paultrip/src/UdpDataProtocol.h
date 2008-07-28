@@ -66,13 +66,29 @@ public:
    */
   virtual ~UdpDataProtocol() {};  
 
-  /** \brief Set the peer address
-   * \param peerHostOrIP IPv4 number or host name
-   */
+
   void setPeerAddress(char* peerHostOrIP);
 
+  /** \brief Receives a packet. It blocks until a packet is received
+   *
+   * This function makes sure we recieve a complete packet
+   * of size n
+   * \param buf Buffer to store the recieved packet
+   * \param n size of packet to receive
+   * \return number of bytes read, -1 on error
+   */
   virtual int receivePacket(char* buf, size_t n);
+  
+  /** \brief Sends a packet
+   *
+   * This function meakes sure we send a complete packet
+   * of size n
+   * \param buff Buffer to send
+   * \param n size of packet to receive
+   * \return number of bytes read, -1 on error
+   */
   virtual int sendPacket(const char* buf, size_t n);
+  
   virtual void run();
 
 

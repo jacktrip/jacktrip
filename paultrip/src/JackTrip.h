@@ -60,12 +60,20 @@ class JackTrip
 {
 public:
 
+  //----------ENUMS------------------------------------------
   /// \brief Enum for the data Protocol. At this time only UDP is implemented
   enum dataProtocolT {
     UDP, ///< Use UDP (User Datagram Protocol) 
     TCP, ///< <B>NOT IMPLEMENTED</B>: Use TCP (Transmission Control Protocol)
     SCTP ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
   };
+
+  /// \brief Enum for the JackTrip mode
+  enum jacktripModeT {
+    SERVER, ///< Run in Server Mode
+    CLIENT  ///< Run in Client Mode
+  };
+  //---------------------------------------------------------
 
 
   /** \brief The class Constructor with Default Parameters
@@ -94,13 +102,14 @@ public:
   */
 
 private:
+  int mNumChans; ///< Number of Channels
+  uint32_t mSampleRate; ///< Sample Rate
+  uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
+
   /// Pointer to Abstract Type DataProtocol that sends packets
   DataProtocol* mDataProtocolSender;
   ///< Pointer to Abstract Type DataProtocol that receives packets
   DataProtocol* mDataProtocolReceiver;
-  int mNumChans; ///< Number of Channels
-  uint32_t mSampleRate; ///< Sample Rate
-  uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
 
   JackAudioInterface* mJackAudio; ///< Interface to Jack Client
   std::tr1::shared_ptr<RingBuffer> mSendRingBuffer; 

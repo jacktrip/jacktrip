@@ -99,8 +99,10 @@ public:
   };
   //---------------------------------------------------------
 
+
   /** \brief The class constructor 
-   * \param runmode Sets the run mode, use either SENDER or RECEIVER
+   * \param runmode Sets the run mode, use either DataProtocol::SENDER or
+   * DataProtocol::RECEIVER
    */
   DataProtocol(const runModeT runmode,
 	       const packetHeaderTypeT headertype = DEFAULT);
@@ -108,26 +110,6 @@ public:
   /// \brief The class destructor
   virtual ~DataProtocol();
   
-  /** \brief Receives a packet
-   *
-   * This function makes sure we recieve a complete packet
-   * of size n
-   * \param buf Buffer to store the recieved packet
-   * \param n size of packet to receive
-   * \return number of bytes read, -1 on error
-   */
-  virtual int receivePacket(char* buf, size_t n) = 0;
-  
-  /** \brief Sends a packet
-   *
-   * This function meakes sure we send a complete packet
-   * of size n
-   * \param buff Buffer to send
-   * \param n size of packet to receive
-   * \return number of bytes read, -1 on error
-   */
-  virtual int sendPacket(const char* buf, size_t n) = 0;
-
   /** \brief Set the pointer to the RingBuffer that'll be use to read 
    * or write
    */
@@ -136,8 +118,8 @@ public:
 
   /** \brief Implements the thread loop
    *
-   * Depending on the runmode, with will run a RECEIVE thread or
-   * SEND thread
+   * Depending on the runmode, with will run a DataProtocol::SENDER thread or
+   * DataProtocol::RECEIVER thread
    */
   virtual void run() = 0;
 
@@ -154,6 +136,10 @@ public:
    */
   size_t getAudioPacketSize() { return(mAudioPacketSize); };
 
+  /** \brief Set the peer address
+   * \param peerHostOrIP IPv4 number or host name
+   * \todo implement here instead of in the subclass UDP
+   */
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
 
   void fillHeaderCommonFromJack(const JackAudioInterface& jackaudio);
