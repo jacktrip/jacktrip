@@ -71,8 +71,8 @@ public:
    */
   void setPeerAddress(char* peerHostOrIP);
 
-  virtual size_t receivePacket(char* buf, size_t n);
-  virtual size_t sendPacket(const char* buf, size_t n);
+  virtual int receivePacket(char* buf, size_t n);
+  virtual int sendPacket(const char* buf, size_t n);
   virtual void run();
 
 

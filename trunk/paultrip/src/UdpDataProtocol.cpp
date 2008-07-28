@@ -106,17 +106,30 @@ void UdpDataProtocol::bindSocket()
 
 
 //*******************************************************************************
-size_t UdpDataProtocol::receivePacket(char* buf, size_t n)
+int UdpDataProtocol::receivePacket(char* buf, size_t n)
 {
-  size_t n_bytes = mUdpSocket.readDatagram(buf, n);
+  //int n_bytes = 0;
+  //bool packet_recieved =  mUdpSocket.hasPendingDatagrams();
+  //cout << "HasPending = " << packet_recieved << false << endl;
+  //while ( !packet_recieved ) {
+  //  cout << "Waiting Too long..." << endl;
+  //  packet_recieved = mUdpSocket.waitForReadyRead(30);
+  //  cout << "AFTER" << packet_recieved << endl;
+  //}
+
+  while (mUdpSocket.pendingDatagramSize() < n ) {
+    
+  }
+  
+  int n_bytes = mUdpSocket.readDatagram(buf, n);
   return n_bytes;
 }
 
 
 //*******************************************************************************
-size_t UdpDataProtocol::sendPacket(const char* buf, size_t n)
+int UdpDataProtocol::sendPacket(const char* buf, size_t n)
 {
-  size_t n_bytes = mUdpSocket.writeDatagram (buf, n, mPeerAddress, mPeerPort);
+  int n_bytes = mUdpSocket.writeDatagram (buf, n, mPeerAddress, mPeerPort);
   return n_bytes;
 }
 
@@ -129,7 +142,7 @@ void UdpDataProtocol::run()
   std::cout << SEPARATOR << std::endl;
   size_t packet_size = getAudioPacketSize();
   int8_t packet[packet_size];
-  
+  bool has_pending = false;
   switch ( mRunMode )
     {
     case RECEIVER :
@@ -139,20 +152,24 @@ void UdpDataProtocol::run()
       /// \todo here is the place to read the datagram and check if the settings match
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
-      this->receivePacket( (char*) packet, packet_size); // This blocks waiting for the first packet
+      //while (!has_pending) {
+      //	has_pending = mUdpSocket.waitForReadyRead(3000);
+      //cout << "UDP WAINTING..." << endl;
+      //}
+      //has_pending =  mUdpSocket.hasPendingDatagrams()
+
+      receivePacket( (char*) packet, packet_size); // This blocks waiting for the first packet
       std::cout << "Received Connection for Peer!" << std::endl;
 
       while ( !mStopped )
 	{
-	  //std::cout << "RECEIVING PACKETS" << std::endl;
-	  /// \todo Set a timer to report packats arriving too late
-	  //std::cout << "RECIEVING THREAD" << std::endl;
-	  
-	  this->receivePacket( (char*) packet, packet_size);
-	  /// \todo Change this to match buffer size
-	  //std::cout << "PACKET RECIEVED" << std::endl;
-	  mRingBuffer->insertSlotBlocking(packet);
-	  //std::cout << buf << std::endl;
+	  /// \todo Set a timer to report packets arriving too late
+	 
+	  // This is blocking until we get a packet...
+	  receivePacket( (char*) packet, packet_size);
+	  // ...so we want to send the packet to the buffer as soon as we get in from
+	  // the socket, i.e., non-blocking
+	  mRingBuffer->insertSlotNonBlocking(packet);
 	}
       break;
       
@@ -161,13 +178,10 @@ void UdpDataProtocol::run()
       //----------------------------------------------------------------------------------- 
       while ( !mStopped )
 	{
-	  //std::cout << "SENDING PACKETS --------------------------" << std::endl;
-	  /// \todo This should be blocking, since we don't want to send trash
+	  // We block until there's stuff available to read
 	  mRingBuffer->readSlotBlocking(packet);
-	  //std::cout << "SENDING PACKETS" << std::endl;
+	  // This will send the packet immediately
 	  this->sendPacket( (char*) packet, packet_size);
-	  //std::cout << "SENDING PACKETS DONE!!!" << std::endl;
-	  //this->sendPacket( sendtest, 64);
 	}
       break;
     }
