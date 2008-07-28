@@ -35,8 +35,8 @@
  * \date July 2008
  */
 
-#ifndef __PAULTRIP_H__
-#define __PAULTRIP_H__
+#ifndef __JACKTRIP_H__
+#define __JACKTRIP_H__
 
 #include <tr1/memory> //for shared_ptr
 

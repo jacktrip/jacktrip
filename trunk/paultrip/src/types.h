@@ -36,8 +36,8 @@
  */
 
 
-#ifndef __PAULTRIP_TYPES_H__
-#define __PAULTRIP_TYPES_H__
+#ifndef __JACKTRIP_TYPES_H__
+#define __JACKTRIP_TYPES_H__
 
 #include <jack/types.h>
 #include <QtGlobal> //For QT4 types
