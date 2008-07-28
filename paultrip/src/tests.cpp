@@ -53,11 +53,11 @@ void tests()
 {
   // Test JackTrip
   //================================================================
-  //JackTrip paultrip1;
-  //paultrip1.startThreads();
+  //JackTrip jacktrip1;
+  //jacktrip1.startThreads();
 
-  //JackTrip paultrip2;
-  //paultrip2.startThreads();
+  //JackTrip jacktrip2;
+  //jacktrip2.startThreads();
  
   /*
   // TestRingBuffer

@@ -116,7 +116,7 @@ void Settings::parseInput(int argc, char** argv)
     cout << SEPARATOR << endl;
     cout << "WARINING: The following entered options have no effect" << endl;
     cout << "          They will be ignored!" << endl;
-    cout << "          Type paultrip to see options." << endl;
+    cout << "          Type jacktrip to see options." << endl;
     for( ; optind < argc; optind++) {
       printf("argument: %s\n", argv[optind]);
     }
@@ -135,7 +135,7 @@ void Settings::printUsage()
   cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
   cout << "-----------------------------------------------------------------------------" << endl;
   cout << "" << endl;
-  cout << "Usage: paultrip [-s|-c host] [options]" << endl;
+  cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
   cout << "" << endl;
   cout << "Options: " << endl;
   cout << " -n, --numchannels #                      Number of Input and Output Channels" << endl;

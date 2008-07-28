@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file paultrip_types.h
+ * \file jacktrip_types.h
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
