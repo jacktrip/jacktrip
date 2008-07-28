@@ -108,19 +108,8 @@ void UdpDataProtocol::bindSocket()
 //*******************************************************************************
 int UdpDataProtocol::receivePacket(char* buf, size_t n)
 {
-  //int n_bytes = 0;
-  //bool packet_recieved =  mUdpSocket.hasPendingDatagrams();
-  //cout << "HasPending = " << packet_recieved << false << endl;
-  //while ( !packet_recieved ) {
-  //  cout << "Waiting Too long..." << endl;
-  //  packet_recieved = mUdpSocket.waitForReadyRead(30);
-  //  cout << "AFTER" << packet_recieved << endl;
-  //}
-
-  while (mUdpSocket.pendingDatagramSize() < n ) {
-    
-  }
-  
+  // Block until There's something to read
+  while (mUdpSocket.pendingDatagramSize() < n ) {}
   int n_bytes = mUdpSocket.readDatagram(buf, n);
   return n_bytes;
 }
@@ -135,14 +124,14 @@ int UdpDataProtocol::sendPacket(const char* buf, size_t n)
 
 
 //*******************************************************************************
-
 void UdpDataProtocol::run()
 {
   std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
   std::cout << SEPARATOR << std::endl;
   size_t packet_size = getAudioPacketSize();
   int8_t packet[packet_size];
-  bool has_pending = false;
+  bool timeout = false;
+
   switch ( mRunMode )
     {
     case RECEIVER :
@@ -152,24 +141,24 @@ void UdpDataProtocol::run()
       /// \todo here is the place to read the datagram and check if the settings match
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
-      //while (!has_pending) {
-      //	has_pending = mUdpSocket.waitForReadyRead(3000);
-      //cout << "UDP WAINTING..." << endl;
-      //}
-      //has_pending =  mUdpSocket.hasPendingDatagrams()
-
-      receivePacket( (char*) packet, packet_size); // This blocks waiting for the first packet
+      // This blocks waiting for the first packet
+      receivePacket( reinterpret_cast<char*>(packet), packet_size);
       std::cout << "Received Connection for Peer!" << std::endl;
 
       while ( !mStopped )
 	{
-	  /// \todo Set a timer to report packets arriving too late
-	 
-	  // This is blocking until we get a packet...
-	  receivePacket( (char*) packet, packet_size);
-	  // ...so we want to send the packet to the buffer as soon as we get in from
-	  // the socket, i.e., non-blocking
-	  mRingBuffer->insertSlotNonBlocking(packet);
+	  // Timer to report packets arriving too late
+	  timeout = mUdpSocket.waitForReadyRead(30);
+	  if (!timeout) {
+	    std::cerr << "UDP is waited too long (more than 30ms)..." << endl;
+	  }
+	  else {
+	    // This is blocking until we get a packet...
+	    receivePacket( reinterpret_cast<char*>(packet), packet_size);
+	    // ...so we want to send the packet to the buffer as soon as we get in from
+	    // the socket, i.e., non-blocking
+	    mRingBuffer->insertSlotNonBlocking(packet);
+	  }
 	}
       break;
       
@@ -181,7 +170,7 @@ void UdpDataProtocol::run()
 	  // We block until there's stuff available to read
 	  mRingBuffer->readSlotBlocking(packet);
 	  // This will send the packet immediately
-	  this->sendPacket( (char*) packet, packet_size);
+	  sendPacket( reinterpret_cast<char*>(packet), packet_size);
 	}
       break;
     }

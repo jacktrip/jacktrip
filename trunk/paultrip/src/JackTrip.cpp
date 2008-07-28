@@ -46,7 +46,12 @@ using std::cout; using std::endl;
 //*******************************************************************************
 JackTrip::JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumChans,
 		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
-  mNumChans(NumChans)
+  mNumChans(NumChans),
+  mSampleRate(0),
+  mAudioBufferSize(0),
+  mDataProtocolSender(NULL),
+  mDataProtocolReceiver(NULL),
+  mJackAudio(NULL)
 {
   // Create JackAudioInterface Client Object
   mJackAudio = new JackAudioInterface(mNumChans, mNumChans, AudioBitResolution);
@@ -72,7 +77,14 @@ JackTrip::JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
     mDataProtocolSender->setPeerAddress(PeerHostOrIP);
     mDataProtocolReceiver->setPeerAddress(PeerHostOrIP);
     break;
-    
+  case TCP:
+    std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
+    exit(1);
+    break;
+  case SCTP:
+    std::cerr << "ERROR: SCTP Protocol is not unimplemented" << std::endl;
+    exit(1);
+    break;
   default: 
     std::cerr << "ERROR: Protocol not defined or unimplemented" << std::endl;
     exit(1);
