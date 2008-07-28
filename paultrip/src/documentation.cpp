@@ -1,6 +1,6 @@
 //*****************************************************************
 /*
-  PaulTrip: A System for High-Quality Audio Network Performance
+  JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
@@ -39,11 +39,11 @@
 // Main Page Documentation
 //-----------------------------------------------------------------
 /**
-\mainpage PaulTrip API Documentation
+\mainpage JackTrip API Documentation
     
-\section intro_sec About PaulTrip
+\section intro_sec About JackTrip
 
-PaulTrip: A System for High-Quality Audio Network Performance
+JackTrip: A System for High-Quality Audio Network Performance
 over the Internet.
 
 

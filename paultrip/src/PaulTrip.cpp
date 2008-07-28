@@ -1,6 +1,6 @@
 //*****************************************************************
 /*
-  PaulTrip: A System for High-Quality Audio Network Performance
+  JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
@@ -30,12 +30,12 @@
 //*****************************************************************
 
 /**
- * \file PaulTrip.cpp
+ * \file JackTrip.cpp
  * \author Juan-Pablo Caceres
  * \date July 2008
  */
 
-#include "PaulTrip.h"
+#include "JackTrip.h"
 #include "UdpDataProtocol.h"
 #include "globals.h"
 
@@ -44,7 +44,7 @@
 using std::cout; using std::endl;
 
 //*******************************************************************************
-PaulTrip::PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumChans,
+JackTrip::JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumChans,
 		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
   mNumChans(NumChans)
 {
@@ -99,7 +99,7 @@ PaulTrip::PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
 
 
 //*******************************************************************************
-PaulTrip::~PaulTrip()
+JackTrip::~JackTrip()
 {
   delete mDataProtocolSender;
   delete mDataProtocolReceiver;
@@ -108,7 +108,7 @@ PaulTrip::~PaulTrip()
 
 
 //*******************************************************************************
-void PaulTrip::startThreads()
+void JackTrip::startThreads()
 {
   mJackAudio->startProcess();
   mDataProtocolSender->start(QThread::TimeCriticalPriority);
@@ -117,7 +117,7 @@ void PaulTrip::startThreads()
 
 
 //*******************************************************************************
-void PaulTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
 {
   mJackAudio->appendProcessPlugin(plugin);
 }

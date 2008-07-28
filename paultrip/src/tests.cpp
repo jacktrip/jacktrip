@@ -1,6 +1,6 @@
 //*****************************************************************
 /*
-  PaulTrip: A System for High-Quality Audio Network Performance
+  JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
@@ -42,7 +42,7 @@
 #include "JackAudioInterface.h"
 #include "UdpDataProtocol.h"
 #include "RingBuffer.h"
-#include "PaulTrip.h"
+#include "JackTrip.h"
 #include "Settings.h"
 #include "TestRingBuffer.h"
 #include "globals.h"
@@ -51,12 +51,12 @@ using namespace std;
 
 void tests()
 {
-  // Test PaulTrip
+  // Test JackTrip
   //================================================================
-  //PaulTrip paultrip1;
+  //JackTrip paultrip1;
   //paultrip1.startThreads();
 
-  //PaulTrip paultrip2;
+  //JackTrip paultrip2;
   //paultrip2.startThreads();
  
   /*
