@@ -1,6 +1,6 @@
 //*****************************************************************
 /*
-  PaulTrip: A System for High-Quality Audio Network Performance
+  JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
@@ -42,7 +42,7 @@
 #include "JackAudioInterface.h"
 #include "UdpDataProtocol.h"
 #include "RingBuffer.h"
-#include "PaulTrip.h"
+#include "JackTrip.h"
 #include "Settings.h"
 #include "TestRingBuffer.h"
 #include "globals.h"
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
   cout << "Peer Address = " << settings.mPeerHostOrIP << endl;
   
   // Create Paultrip Class
-  PaulTrip paultrip(settings.mPeerHostOrIP);
+  JackTrip paultrip(settings.mPeerHostOrIP);
   
   // Add Plugins
   if ( settings.getLoopBack() ) {

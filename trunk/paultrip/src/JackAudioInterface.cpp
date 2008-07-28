@@ -1,6 +1,6 @@
 //*****************************************************************
 /*
-  PaulTrip: A System for High-Quality Audio Network Performance
+  JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
@@ -71,7 +71,7 @@ JackAudioInterface::~JackAudioInterface()
 void JackAudioInterface::setupClient()
 {
   // \todo Get this name from global variable
-  const char* client_name = "PaulTrip";//APP_NAME;
+  const char* client_name = "JackTrip";//APP_NAME;
   const char* server_name = NULL;
   jack_options_t options = JackNoStartServer;
   jack_status_t status;

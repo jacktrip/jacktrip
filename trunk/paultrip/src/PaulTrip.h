@@ -1,6 +1,6 @@
 //*****************************************************************
 /*
-  PaulTrip: A System for High-Quality Audio Network Performance
+  JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file PaulTrip.h
+ * \file JackTrip.h
  * \author Juan-Pablo Caceres
  * \date July 2008
  */
@@ -56,7 +56,7 @@ const int DefaultAudioBitResolution = 16;
 /** \brief
  *
  */
-class PaulTrip
+class JackTrip
 {
 public:
 
@@ -73,12 +73,12 @@ public:
    * \param NumChans Number of Audio Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  PaulTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType = UDP, int NumChans = 2,
+  JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType = UDP, int NumChans = 2,
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
 	   JackAudioInterface::BIT16);
   
   /// \brief The class destructor
-  virtual ~PaulTrip();
+  virtual ~JackTrip();
 
   void startThreads();
 
