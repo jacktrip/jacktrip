@@ -83,7 +83,7 @@ public:
    */
   JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType = UDP, int NumChans = 2,
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
-	   JackAudioInterface::BIT16);
+	   JackAudioInterface::BIT24);
   
   /// \brief The class destructor
   virtual ~JackTrip();

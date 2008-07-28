@@ -142,7 +142,7 @@ void RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot)
   /// \todo It may be better here to insert the slot anyways,
   /// instead of not writing anything
   if (mFullSlots == mNumSlots) {
-    std::cout << "OUPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
+    //std::cout << "OUPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
     overflowReset();
     return;
   }
@@ -167,7 +167,7 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
   // If the Ringbuffer is empty, it returns a buffer of zeros and rests the buffer
   if (mFullSlots == 0) {
     // Returns a buffer of zeros if there's nothing to read
-    std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
+    //std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
     std::memset(ptrToReadSlot, 0, mSlotSize);
     underrunReset();
     return;
