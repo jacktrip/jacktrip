@@ -102,8 +102,6 @@ void JackTrip::setupDataProtocol()
     std::cout << gPrintSeparator << std::endl;
     mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER);
     mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER);
-    //mDataProtocolSender->setPeerAddress(PeerHostOrIP);
-    //mDataProtocolReceiver->setPeerAddress(PeerHostOrIP);
     break;
   case TCP:
     std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
@@ -119,8 +117,11 @@ void JackTrip::setupDataProtocol()
     break;
   }
   
-  mDataProtocolSender->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * mNumChans);
-  mDataProtocolReceiver->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * mNumChans);
+  // Set Audio Packet Size
+  mDataProtocolSender->setAudioPacketSize
+    (mJackAudio->getSizeInBytesPerChannel() * mNumChans);
+  mDataProtocolReceiver->setAudioPacketSize
+    (mJackAudio->getSizeInBytesPerChannel() * mNumChans);
 }
 
 
@@ -170,119 +171,51 @@ void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plu
 
 
 //*******************************************************************************
-void JackTrip::startThreads()
+void JackTrip::start()
 {
-  cout << "BEFORE SETTING CLASSES IN JACKTRIP" << endl; 
+  switch ( mJackTripMode )
+    {
+    case CLIENT :
+      clientStart();
+      break;
+    case SERVER :
+      serverStart();
+      break;
+    }
+}
+
+
+//*******************************************************************************
+void JackTrip::clientStart()
+{
   // Set all classes and parameters
   setupJackAudio();
   setupDataProtocol();
   setupRingBuffers();
 
   // Set the peer address
-  mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
-  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+  if ( mPeerAddress.isEmpty() ) {
+    std::cerr << "ERROR: Peer Address has to be set if you run in CLIENT mode" << endl;
+    std::exit(1);
+  }
+  else {
+    mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+    mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+  }
 
   // Start Threads
   mJackAudio->startProcess();
   mDataProtocolSender->start(QThread::TimeCriticalPriority);
   mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
-}
 
-
-/*
-//*******************************************************************************
-JackTrip::JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumChans,
-		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
-  mNumChans(NumChans),
-  mSampleRate(0),
-  mAudioBufferSize(0),
-  mDataProtocolSender(NULL),
-  mDataProtocolReceiver(NULL),
-  mJackAudio(NULL)
-{
-  // Create JackAudioInterface Client Object
-  mJackAudio = new JackAudioInterface(mNumChans, mNumChans, AudioBitResolution);
-  mSampleRate = mJackAudio->getSampleRate();
-  std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
-  std::cout << gPrintSeparator << std::endl;
-  mAudioBufferSize = mJackAudio->getBufferSize();
-  int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
-  std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples" << std::endl;
-  std::cout << "                      or: " << AudioBufferSizeInBytes 
-	    << " bytes" << std::endl;
-  std::cout << gPrintSeparator << std::endl;
-
-  // Create DataProtocol Objects
-  switch (DataProtocolType) {
-  case UDP:
-    std::cout << "Using UDP Protocol" << std::endl;
-    std::cout << gPrintSeparator << std::endl;
-    //mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, PeerHostOrIP);
-    //mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, PeerHostOrIP);
-    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER);
-    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER);
-    mDataProtocolSender->setPeerAddress(PeerHostOrIP);
-    mDataProtocolReceiver->setPeerAddress(PeerHostOrIP);
-    break;
-  case TCP:
-    std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
-    exit(1);
-    break;
-  case SCTP:
-    std::cerr << "ERROR: SCTP Protocol is not unimplemented" << std::endl;
-    exit(1);
-    break;
-  default: 
-    std::cerr << "ERROR: Protocol not defined or unimplemented" << std::endl;
-    exit(1);
-    break;
-  }
-  mDataProtocolSender->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * NumChans);
-  mDataProtocolReceiver->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * NumChans);
-
-  // Create RingBuffers with the apprioprate size
-  /// \todo Make all this operations cleaner
-  mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 4) );
-  std::cout << "NEWED mSendRingBuffer" << std::endl;
-  std::cout << gPrintSeparator << std::endl;
-  mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 8) );
-  std::cout << "NEWED mReceiveRingBuffer" << std::endl;
-  std::cout << gPrintSeparator << std::endl;
-
-  // Set RingBuffers pointers in protocols
-  mDataProtocolSender->setRingBuffer(mSendRingBuffer);
-  mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
-  mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
-  //mJackAudio->setRingBuffers(mReceiveRingBuffer, mSendRingBuffer);
-
-
-  /// \todo this is new
-  mDataProtocolSender->fillHeaderCommonFromJack(*mJackAudio);
-
+  // Wait here until the threads return from run() methos
+  mDataProtocolSender->wait();
+  mDataProtocolReceiver->wait();
 }
 
 
 //*******************************************************************************
-JackTrip::~JackTrip()
+void JackTrip::serverStart()
 {
-  delete mDataProtocolSender;
-  delete mDataProtocolReceiver;
-  delete mJackAudio;
+
 }
-
-
-//*******************************************************************************
-void JackTrip::startThreads()
-{
-  mJackAudio->startProcess();
-  mDataProtocolSender->start(QThread::TimeCriticalPriority);
-  mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
-}
-
-
-//*******************************************************************************
-void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
-{
-  mJackAudio->appendProcessPlugin(plugin);
-}
-*/

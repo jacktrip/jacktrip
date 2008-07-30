@@ -67,7 +67,7 @@ int main(int argc, char** argv)
   
   jacktrip.setPeerAddress(settings.mPeerHostOrIP);
   cout << "after setting peer address" << endl;  
-  jacktrip.startThreads();
+  jacktrip.start();
 
   /*
   // Add Plugins
@@ -78,11 +78,5 @@ int main(int argc, char** argv)
   }
   */
   
-
-  // Sleep for a while...
-   while (true) {
-    sleep(100);
-  }
- 
   return 0;
 }
