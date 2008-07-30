@@ -86,7 +86,7 @@ void JackAudioInterface::setupClient()
     if (status & JackServerFailed) {
       fprintf (stderr, "Unable to connect to JACK server\n");
       std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
-      std::cerr << SEPARATOR << std::endl;
+      std::cerr << gPrintSeparator << std::endl;
     }
     std::exit(1);
   }
@@ -158,9 +158,11 @@ uint32_t JackAudioInterface::getSampleRate() const
 JackAudioInterface::samplingRateT JackAudioInterface::getSampleRateType() const
 {
   uint32_t rate = jack_get_sample_rate(mClient);
-  JackAudioInterface::samplingRateT rate_type;
+
   if      ( rate == 22050 ) {
     return JackAudioInterface::SR22; }
+  else if ( rate == 32000 ) {
+    return JackAudioInterface::SR32; }
   else if ( rate == 44100 ) {
     return JackAudioInterface::SR44; }
   else if ( rate == 48000 ) {
@@ -176,6 +178,47 @@ JackAudioInterface::samplingRateT JackAudioInterface::getSampleRateType() const
 }
 
 
+//*******************************************************************************
+int JackAudioInterface::getSampleRateFromType(samplingRateT rate_type)
+{
+  int sample_rate = 0;
+  switch (rate_type)
+    {
+    case SR22 :
+      sample_rate = 22050;
+      return sample_rate;
+      break;
+    case SR32 :
+      sample_rate = 32000;
+      return sample_rate;
+      break;
+    case SR44 :
+      sample_rate = 44000;
+      return sample_rate;
+      break;
+    case SR48 :
+      sample_rate = 48000;
+      return sample_rate;
+      break;
+    case SR88 :
+      sample_rate = 88200;
+      return sample_rate;
+      break;
+    case SR96 :
+      sample_rate = 96000;
+      return sample_rate;
+      break;
+    case SR192 :
+      sample_rate = 192000;
+      return sample_rate;
+      break;
+    default:
+      return sample_rate;
+      break;
+    }
+
+  return sample_rate;
+}
 
 //*******************************************************************************
 uint32_t JackAudioInterface::getBufferSize() const 
@@ -224,7 +267,7 @@ int JackAudioInterface::setProcessCallback()
       std::exit(1);
     }
   std::cout << "SUCCESS" << std::endl;
-  std::cout << SEPARATOR << std::endl;
+  std::cout << gPrintSeparator << std::endl;
   return(0);
 }
 

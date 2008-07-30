@@ -78,7 +78,7 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
     std::cerr << "ERROR: Incorrect presentation format address" << endl;
     std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
     std::cerr << "Exiting program..." << endl;
-    std::cerr << SEPARATOR << endl;
+    std::cerr << gPrintSeparator << endl;
     std::exit(1);
   }
   else {
@@ -100,7 +100,7 @@ void UdpDataProtocol::bindSocket()
   }
   else {
     cout << "Socket bound to port: " << mLocalPort << endl;
-    cout << SEPARATOR << endl;
+    cout << gPrintSeparator << endl;
   }
 }
 
@@ -127,10 +127,12 @@ int UdpDataProtocol::sendPacket(const char* buf, size_t n)
 void UdpDataProtocol::run()
 {
   std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
-  std::cout << SEPARATOR << std::endl;
+  std::cout << gPrintSeparator << std::endl;
   size_t packet_size = getAudioPacketSize();
-  int8_t packet[packet_size];
+  int8_t audio_packet[packet_size];
+  int8_t full_packet[packet_size];
   bool timeout = false;
+  //mHeader->fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
 
   switch ( mRunMode )
     {
@@ -142,7 +144,7 @@ void UdpDataProtocol::run()
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      receivePacket( reinterpret_cast<char*>(packet), packet_size);
+      receivePacket( reinterpret_cast<char*>(audio_packet), packet_size);
       std::cout << "Received Connection for Peer!" << std::endl;
 
       while ( !mStopped )
@@ -154,10 +156,10 @@ void UdpDataProtocol::run()
 	  }
 	  else {
 	    // This is blocking until we get a packet...
-	    receivePacket( reinterpret_cast<char*>(packet), packet_size);
+	    receivePacket( reinterpret_cast<char*>(audio_packet), packet_size);
 	    // ...so we want to send the packet to the buffer as soon as we get in from
 	    // the socket, i.e., non-blocking
-	    mRingBuffer->insertSlotNonBlocking(packet);
+	    mRingBuffer->insertSlotNonBlocking(audio_packet);
 	  }
 	}
       break;
@@ -168,9 +170,9 @@ void UdpDataProtocol::run()
       while ( !mStopped )
 	{
 	  // We block until there's stuff available to read
-	  mRingBuffer->readSlotBlocking(packet);
+	  mRingBuffer->readSlotBlocking(audio_packet);
 	  // This will send the packet immediately
-	  sendPacket( reinterpret_cast<char*>(packet), packet_size);
+	  sendPacket( reinterpret_cast<char*>(audio_packet), packet_size);
 	}
       break;
     }

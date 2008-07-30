@@ -144,7 +144,6 @@ public:
 
   void fillHeaderCommonFromJack(const JackAudioInterface& jackaudio);
 
-
 protected:
 
   /** \brief Get the Run Mode of the object
@@ -177,7 +176,9 @@ private:
   static int sClientsRunning;
   
   size_t mAudioPacketSize; ///< Packet audio part size
-  
+
+  /// \todo check a better way to access the header from the subclasses
+protected:
   PacketHeader* mHeader; ///< Packet Header
 };
 

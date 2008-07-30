@@ -38,18 +38,71 @@
 #include "PacketHeader.h"
 #include "JackAudioInterface.h"
 
+#include <sys/time.h>
+
+#include <iostream>
+
+using std::cout; using std::endl;
+
+
+
+//#######################################################################
+//####################### PacketHeader ##################################
+//#######################################################################
+uint64_t PacketHeader::usecTime()
+{
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  return ( (tv.tv_sec * 1000000)  + // seconds
+	   (tv.tv_usec) );  // plus the microseconds. Type suseconds_t, range [-1, 1000000]
+}
+
+
+
 
 //#######################################################################
 //####################### DefaultHeader #################################
 //#######################################################################
+DefaultHeader::DefaultHeader()
+{
+  mHeader.TimeStamp = 0;
+  mHeader.SeqNumber = 0;  
+  mHeader.BufferSize = 0; 
+  mHeader.SamplingRate = 0;
+  mHeader.NumInChannels = 0;
+  mHeader.NumOutChannels = 0;
+}
+
 
 //***********************************************************************
 void DefaultHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio)
 {
-  /*
-  mHeader.mBufferSize = JackAudio.getBufferSize();
-  mHeader.mSamplingRate = JackAudio.getSampleRateType ();
-  mHeader.mNumInChannels = JackAudio.getNumInputChannels();
-  mHeader.mNumOutChannels = JackAudio.getNumOutputChannels();
-  */
+  mHeader.BufferSize = JackAudio.getBufferSize();
+  mHeader.SamplingRate = JackAudio.getSampleRateType ();
+  mHeader.NumInChannels = JackAudio.getNumInputChannels();
+  mHeader.NumOutChannels = JackAudio.getNumOutputChannels();
+  mHeader.SeqNumber = 0;
+  mHeader.TimeStamp = PacketHeader::usecTime();
+  cout << mHeader.TimeStamp << endl;
+  printHeader();
+}
+
+
+//***********************************************************************
+void DefaultHeader::printHeader() const
+{
+  cout << "Default Packet Header:" << endl;
+  cout << "Buffer Size               = " << static_cast<int>(mHeader.BufferSize) << endl;
+  // Get the sample rate in Hz form the JackAudioInterface::samplingRateT
+  int sample_rate = 
+    JackAudioInterface::getSampleRateFromType
+    ( static_cast<JackAudioInterface::samplingRateT>(mHeader.SamplingRate) );
+  cout << "Sampling Rate             = " << sample_rate << endl;
+  cout << "Number of Input Channels  = " << static_cast<int>(mHeader.NumInChannels) << endl;
+  cout << "Number of Output Channels = " << static_cast<int>(mHeader.NumOutChannels) << endl;
+  cout << "Sequence Number           = " << static_cast<int>(mHeader.SeqNumber) << endl;
+  cout << "Time Stamp                = " << mHeader.TimeStamp << endl;
+  cout << gPrintSeparator << endl;
+  cout << sizeof(mHeader) << endl;
+
 }

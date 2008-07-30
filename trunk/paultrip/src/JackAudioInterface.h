@@ -72,6 +72,7 @@ public:
   /// \brief Sampling Rates supported by JACK
   enum samplingRateT {
     SR22, ///<  22050 Hz
+    SR32, ///<  32000 Hz
     SR44, ///<  44100 Hz
     SR48, ///<  48000 Hz
     SR88, ///<  88200 Hz
@@ -97,9 +98,16 @@ public:
   uint32_t getSampleRate() const;
 
   /** \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
-   * \return samplingRateT enum type
+   * \return  JackAudioInterface::samplingRateT enum type
    */
   samplingRateT getSampleRateType() const;
+
+  /** \brief Helper function to get the sample rate (in Hz) for a
+   * JackAudioInterface::samplingRateT
+   * \param rate_type  JackAudioInterface::samplingRateT enum type
+   * \return Sample Rate in Hz
+   */
+  static int getSampleRateFromType(samplingRateT rate_type);
 
   /** \brief Get the Jack Server Buffer Size, in samples
    */
