@@ -140,7 +140,7 @@ public:
 
   virtual int getHeaderSize() const { return sizeof(mHeader); };
 
-  void DefaultHeader::printHeader() const;
+  void printHeader() const;
 
 private:
 

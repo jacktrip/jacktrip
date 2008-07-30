@@ -55,24 +55,6 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
-
-  DefaultHeader dh;
-  JackAudioInterface ja(2,2); 
-  dh.fillHeaderCommonFromJack(ja);
-  //uint64_t caca1 = PacketHeader::usecTime();
-  //cout << "caca1" << caca1 << endl;
-  //usleep(10);
-  while ( true ) {
-    cout << PacketHeader::usecTime() << endl;;
-    sleep(1);
-  }
-
-  //uint64_t caca2 = PacketHeader::usecTime();
-  //cout << caca2 << endl;
-  //cout << "TIME = " <<  caca2-caca1 << endl;
-
-  sleep(1000);
-
   // Get Settings from user
   // ----------------------
   Settings settings;
@@ -81,20 +63,26 @@ int main(int argc, char** argv)
   cout << "Peer Address = " << settings.mPeerHostOrIP << endl;
   
   // Create Jacktrip Class
-  JackTrip jacktrip(settings.mPeerHostOrIP);
+  JackTrip jacktrip;
   
+  jacktrip.setPeerAddress(settings.mPeerHostOrIP);
+  cout << "after setting peer address" << endl;  
+  jacktrip.startThreads();
+
+  /*
   // Add Plugins
   if ( settings.getLoopBack() ) {
     cout << "Running in Loop-Back Mode..." << endl;
     std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
     jacktrip.appendProcessPlugin(loopback);
   }
-  jacktrip.startThreads();
+  */
+  
 
   // Sleep for a while...
-  while (true) {
+   while (true) {
     sleep(100);
   }
-
+ 
   return 0;
 }
