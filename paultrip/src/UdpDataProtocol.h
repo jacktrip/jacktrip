@@ -43,6 +43,7 @@
 #include <QHostAddress>
 
 #include "DataProtocol.h"
+#include "types.h"
 
 
 /** \brief UDP implementation of DataProtocol class
@@ -77,7 +78,7 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual int receivePacket(char* buf, size_t n);
+  virtual int receivePacket(char* buf, const size_t n);
   
   /** \brief Sends a packet
    *
@@ -87,8 +88,11 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual int sendPacket(const char* buf, size_t n);
+  virtual int sendPacket(const char* buf, const size_t n);
   
+  virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+					     uint16_t& port);
+
   virtual void run();
 
 

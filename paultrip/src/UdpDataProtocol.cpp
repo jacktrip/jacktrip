@@ -106,7 +106,7 @@ void UdpDataProtocol::bindSocket()
 
 
 //*******************************************************************************
-int UdpDataProtocol::receivePacket(char* buf, size_t n)
+int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
   // Block until There's something to read
   while (mUdpSocket.pendingDatagramSize() < n ) {}
@@ -116,10 +116,22 @@ int UdpDataProtocol::receivePacket(char* buf, size_t n)
 
 
 //*******************************************************************************
-int UdpDataProtocol::sendPacket(const char* buf, size_t n)
+int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
   int n_bytes = mUdpSocket.writeDatagram (buf, n, mPeerAddress, mPeerPort);
   return n_bytes;
+}
+
+
+//*******************************************************************************
+void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+						    uint16_t& port)
+{
+  while ( !mUdpSocket.hasPendingDatagrams() ) {
+    msleep(10);
+  }
+  char buf[1];
+  mUdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
 }
 
 
@@ -130,7 +142,7 @@ void UdpDataProtocol::run()
   std::cout << gPrintSeparator << std::endl;
   size_t packet_size = getAudioPacketSize();
   int8_t audio_packet[packet_size];
-  int8_t full_packet[packet_size];
+  //int8_t full_packet[packet_size];
   bool timeout = false;
   //mHeader->fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
 

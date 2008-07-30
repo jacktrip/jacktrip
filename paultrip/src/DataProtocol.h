@@ -45,6 +45,7 @@
 #include <tr1/memory> //for shared_ptr
 
 #include <QThread>
+#include <QHostAddress>
 
 #include "RingBuffer.h"
 class PacketHeader; // forward declaration
@@ -143,6 +144,9 @@ public:
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
 
   void fillHeaderCommonFromJack(const JackAudioInterface& jackaudio);
+
+  virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+					     uint16_t& port) = 0;
 
 protected:
 
