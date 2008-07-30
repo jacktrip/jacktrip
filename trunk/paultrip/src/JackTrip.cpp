@@ -40,6 +40,10 @@
 #include "globals.h"
 
 #include <iostream>
+#include <unistd.h> // for usleep, sleep
+
+#include <QHostAddress>
+#include <QThread>
 
 using std::cout; using std::endl;
 
@@ -173,6 +177,12 @@ void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plu
 //*******************************************************************************
 void JackTrip::start()
 {
+  // Set all classes and parameters
+  setupJackAudio();
+  setupDataProtocol();
+  setupRingBuffers();
+
+  // Start the threads for the specific mode
   switch ( mJackTripMode )
     {
     case CLIENT :
@@ -182,27 +192,6 @@ void JackTrip::start()
       serverStart();
       break;
     }
-}
-
-
-//*******************************************************************************
-void JackTrip::clientStart()
-{
-  // Set all classes and parameters
-  setupJackAudio();
-  setupDataProtocol();
-  setupRingBuffers();
-
-  // Set the peer address
-  if ( mPeerAddress.isEmpty() ) {
-    std::cerr << "ERROR: Peer Address has to be set if you run in CLIENT mode" << endl;
-    std::exit(1);
-  }
-  else {
-    mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
-    mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
-  }
-
   // Start Threads
   mJackAudio->startProcess();
   mDataProtocolSender->start(QThread::TimeCriticalPriority);
@@ -215,7 +204,41 @@ void JackTrip::clientStart()
 
 
 //*******************************************************************************
+void JackTrip::clientStart()
+{
+  // For the Client mode, the peer (or server) address has to be specified by the user
+  if ( mPeerAddress.isEmpty() ) {
+    std::cerr << "ERROR: Peer Address has to be set if you run in CLIENT mode" << endl;
+    std::exit(1);
+  }
+  else {
+    // Set the peer address
+    mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+  }
+}
+
+
+//*******************************************************************************
 void JackTrip::serverStart()
 {
+  // Set the peer address
+  if ( !mPeerAddress.isEmpty() ) {
+    std::cout << "WARNING: SERVER mode: Peer Address was set but will be deleted." << endl;
+    mPeerAddress.clear();
+  }
 
+  // Get the client address when it connects
+  cout << "Waiting for Connection From Server..." << endl;
+  QHostAddress peerHostAddress;
+  uint16_t port;
+  mDataProtocolReceiver->getPeerAddressFromFirstPacket(peerHostAddress,
+						       port);
+  mPeerAddress = peerHostAddress.toString();
+  cout << "Client Connection Received from IP : " 
+       << qPrintable(mPeerAddress) << endl;
+  cout << gPrintSeparator << endl;
+  sleep(0.5);
+
+  // Set the peer address to send packets (in the protocol sender)
+  mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
 }

@@ -85,7 +85,7 @@ public:
    * \param BufferQueueLength Audio Buffer for receiving packets
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  JackTrip(jacktripModeT JacktripMode = CLIENT,
+  JackTrip(jacktripModeT JacktripMode = SERVER,
 	   dataProtocolT DataProtocolType = UDP,
 	   int NumChans = 2,
 	   int BufferQueueLength = 8,
@@ -137,8 +137,9 @@ private:
   void setupDataProtocol();
   /// \brief Set the RingBuffer objects
   void setupRingBuffers();
-
+  /// \brief Start for the CLIENT mode
   void clientStart();
+  /// \brief Start for the SERVER mode
   void serverStart();
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
