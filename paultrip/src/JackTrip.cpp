@@ -43,6 +43,153 @@
 
 using std::cout; using std::endl;
 
+
+
+//*******************************************************************************
+JackTrip::JackTrip(jacktripModeT JacktripMode,
+		   dataProtocolT DataProtocolType,
+		   int NumChans,
+		   int BufferQueueLength,
+		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
+  mJackTripMode(JacktripMode),
+  mDataProtocol(DataProtocolType),
+  mNumChans(NumChans),
+  mBufferQueueLength(BufferQueueLength),
+  mSampleRate(0),
+  mAudioBufferSize(0),
+  mAudioBitResolution(AudioBitResolution),
+  mDataProtocolSender(NULL),
+  mDataProtocolReceiver(NULL),
+  mJackAudio(NULL)
+{
+  cout << "JACKTRIP class constructor" << endl;
+}
+
+
+//*******************************************************************************
+JackTrip::~JackTrip()
+{
+  delete mDataProtocolSender;
+  delete mDataProtocolReceiver;
+  delete mJackAudio;
+}
+
+
+//*******************************************************************************
+void JackTrip::setupJackAudio()
+{
+  // Create JackAudioInterface Client Object
+  mJackAudio = new JackAudioInterface(mNumChans, mNumChans, mAudioBitResolution);
+  mSampleRate = mJackAudio->getSampleRate();
+  std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
+  std::cout << gPrintSeparator << std::endl;
+  mAudioBufferSize = mJackAudio->getBufferSize();
+  int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
+  std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples" << std::endl;
+  std::cout << "                      or: " << AudioBufferSizeInBytes 
+	    << " bytes" << std::endl;
+  std::cout << gPrintSeparator << std::endl;
+}
+
+
+//*******************************************************************************
+void JackTrip::setupDataProtocol()
+{
+  // Create DataProtocol Objects
+  switch (mDataProtocol) {
+  case UDP:
+    std::cout << "Using UDP Protocol" << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER);
+    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER);
+    //mDataProtocolSender->setPeerAddress(PeerHostOrIP);
+    //mDataProtocolReceiver->setPeerAddress(PeerHostOrIP);
+    break;
+  case TCP:
+    std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
+    exit(1);
+    break;
+  case SCTP:
+    std::cerr << "ERROR: SCTP Protocol is not unimplemented" << std::endl;
+    exit(1);
+    break;
+  default: 
+    std::cerr << "ERROR: Protocol not defined or unimplemented" << std::endl;
+    exit(1);
+    break;
+  }
+  
+  mDataProtocolSender->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * mNumChans);
+  mDataProtocolReceiver->setAudioPacketSize(mJackAudio->getSizeInBytesPerChannel() * mNumChans);
+}
+
+
+//*******************************************************************************
+void JackTrip::setupRingBuffers()
+{
+  // Create RingBuffers with the apprioprate size
+  /// \todo Make all this operations cleaner
+  mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					gDefaultOutputQueueLength) );
+  mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					   mBufferQueueLength) );
+
+  // Set RingBuffers pointers in protocols
+  if ( (mDataProtocolSender == NULL) ||
+       (mDataProtocolReceiver == NULL) || (mJackAudio == NULL) ) {
+    std::cerr << "ERROR: DataProtocols or JackAudio have not been inizialized" << std::endl;
+    std::exit(1);
+  }
+  else {
+    // Set Ring Buffers
+    mDataProtocolSender->setRingBuffer(mSendRingBuffer);
+    mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
+    mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
+
+    // Set the header from jack
+    mDataProtocolSender->fillHeaderCommonFromJack(*mJackAudio);
+  }
+}
+
+
+//*******************************************************************************
+void JackTrip::setPeerAddress(char* PeerHostOrIP)
+{
+  mPeerAddress = PeerHostOrIP;
+  cout << "Peer Address Set to: " << qPrintable(mPeerAddress) << endl;
+  cout << gPrintSeparator << endl;
+  // Set Peer Address in Protocols
+}
+
+
+//*******************************************************************************
+void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+{
+  mJackAudio->appendProcessPlugin(plugin);
+}
+
+
+//*******************************************************************************
+void JackTrip::startThreads()
+{
+  cout << "BEFORE SETTING CLASSES IN JACKTRIP" << endl; 
+  // Set all classes and parameters
+  setupJackAudio();
+  setupDataProtocol();
+  setupRingBuffers();
+
+  // Set the peer address
+  mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+
+  // Start Threads
+  mJackAudio->startProcess();
+  mDataProtocolSender->start(QThread::TimeCriticalPriority);
+  mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
+}
+
+
+/*
 //*******************************************************************************
 JackTrip::JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumChans,
 		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
@@ -138,3 +285,4 @@ void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plu
 {
   mJackAudio->appendProcessPlugin(plugin);
 }
+*/

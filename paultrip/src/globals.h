@@ -47,6 +47,7 @@ const int gDefaultNumOutChannels = 2;
 const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode = 
   JackAudioInterface::BIT16;
 const int gDefaultQueueLength = 4;
+const int gDefaultOutputQueueLength = 4;
 //@}
 
 
