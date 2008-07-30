@@ -163,7 +163,7 @@ void DataProtocol::setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer)
 void DataProtocol::run()
 {
   std::cout << "Running DataProtocol Thread" << std::endl;
-  std::cout << SEPARATOR << std::endl;
+  std::cout << gPrintSeparator << std::endl;
   size_t packet_size = getAudioPacketSize();
   int8_t packet[packet_size];
   

@@ -50,7 +50,8 @@ int gVerboseFlag = 0;
 Settings::Settings() :
   mNumInChans(gDefaultNumInChannels),
   mNumOutChans(gDefaultNumOutChannels),
-  mRunMode(DataProtocol::SENDER),
+  mBitResolutionMode(gDefaultBitResolutionMode),
+  mQueueLength(gDefaultQueueLength),
   mLoopBack(false)
 {}
 
@@ -65,7 +66,7 @@ void Settings::parseInput(int argc, char** argv)
   }
 
   // Usage example at:
-  //http://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
+  // http://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
   // options descriptor
   //----------------------------------------------------------------------------
   static struct option longopts[] = {
@@ -73,9 +74,11 @@ void Settings::parseInput(int argc, char** argv)
     { "verbose", no_argument, &gVerboseFlag, 1 },
     // These options don't set a flag.
     { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
-    { "server", no_argument, NULL, 's' }, // run in server mode
-    { "client", required_argument, NULL, 'c' }, //run in client mode, set server IP address
-    { "loopback", required_argument, NULL, 'l' }, //run in loopback mode
+    { "server", no_argument, NULL, 's' }, // Run in server mode
+    { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+    { "queue", required_argument, NULL, 'q' }, // Queue Length
+    { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
+    { "loopback", required_argument, NULL, 'l' }, // Run in loopback mode
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
   };
@@ -84,27 +87,60 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:lh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:q:b:lh", longopts, NULL)) != -1 )
     switch (ch) {
+      
     case 'n':
+      //-------------------------------------------------------
       mNumInChans = atoi(optarg);
       mNumOutChans = atoi(optarg);
       break;
     case 's':
-      mRunMode = DataProtocol::RECEIVER; /// \todo change this to SERVER
+      //-------------------------------------------------------
+      /// \todo Implement this
       break;
     case 'c':
-      mRunMode = DataProtocol::SENDER; /// \todo change this to CLIENT
+      //-------------------------------------------------------
+      /// \todo Implement this
       mPeerHostOrIP = optarg;
       break;
+    case 'b':
+      //-------------------------------------------------------
+      if      ( atoi(optarg) == 8 ) {
+	mBitResolutionMode = JackAudioInterface::BIT8; }
+      else if ( atoi(optarg) == 16 ) {
+	mBitResolutionMode = JackAudioInterface::BIT16; }
+      else if ( atoi(optarg) == 24 ) {
+	mBitResolutionMode = JackAudioInterface::BIT16; }
+      else if ( atoi(optarg) == 32 ) {
+	mBitResolutionMode = JackAudioInterface::BIT32; }
+      else {
+	std::cerr << "--bitres ERROR: Wrong bit resolutions: " 
+		  << atoi(optarg) << " is not supported." << endl;
+	printUsage();
+	std::exit(1); }
+      break;
+    case 'q':
+      //-------------------------------------------------------
+      if ( atoi(optarg) <= 0 ) {
+	std::cerr << "--queue ERROR: The queue has to be a positive integer" << endl;
+	printUsage();
+	std::exit(1); }
+      else {
+	mQueueLength = atoi(optarg);
+      }
+      break;
     case 'l': //loopback
+      //-------------------------------------------------------
       mLoopBack = true;
       break;
     case 'h':
+      //-------------------------------------------------------
       printUsage();
       std::exit(0);
       break;
     default:
+      //-------------------------------------------------------
       printUsage();
       std::exit(0);
       break;
@@ -113,14 +149,14 @@ void Settings::parseInput(int argc, char** argv)
   // Warn user if undefined options where entered
   //----------------------------------------------------------------------------
   if (optind < argc) {
-    cout << SEPARATOR << endl;
+    cout << gPrintSeparator << endl;
     cout << "WARINING: The following entered options have no effect" << endl;
     cout << "          They will be ignored!" << endl;
     cout << "          Type jacktrip to see options." << endl;
     for( ; optind < argc; optind++) {
       printf("argument: %s\n", argv[optind]);
     }
-    cout << SEPARATOR << endl;
+    cout << gPrintSeparator << endl;
   }
 }
 
@@ -138,9 +174,11 @@ void Settings::printUsage()
   cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
   cout << "" << endl;
   cout << "Options: " << endl;
-  cout << " -n, --numchannels #                      Number of Input and Output Channels" << endl;
+  cout << " -n, --numchannels #                      Number of Input and Output Channels (default 2)" << endl;
   cout << " -s, --server                             Run in Server Mode" << endl;
   cout << " -c, --client      <peer_host_IP_or_name> Run in Client Mode" << endl;
+  cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default 4)" << endl;
+  cout << " -b, --bitres      # (8, 16 (Default), 24 or 32)    Audio Bit Rate Resolutions (default 16)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -h, --help                               Prints this help" << endl;
   cout << "" << endl;

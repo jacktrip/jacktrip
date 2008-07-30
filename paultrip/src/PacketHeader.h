@@ -38,9 +38,11 @@
 #ifndef __PACKETHEADER_H__
 #define __PACKETHEADER_H__
 
-#include <tr1/memory> //for shared_ptr
+#include <iostream>
+#include <tr1/memory> // for shared_ptr
 
 #include "types.h"
+#include "globals.h"
 class JackAudioInterface; // Forward Declaration
 
 
@@ -55,16 +57,7 @@ struct HeaderStruct
   T data;
 };
 
-struct DefaultHeaderStruct
-{
-  // watch out for alignment -- need to be on 4 byte chunks
-  //uint8_t mPacketType; ///< Packet Type
-  uint16_t mBufferSize; ///< Buffer Size in Samples
-  uint8_t mSamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
-  uint8_t mNumInChannels; ///< Number of Input Channels
-  uint8_t mNumOutChannels; ///<  Number of Output Channels
-  //uint8_t mSeqNumber; ///< Sequence Number
-};
+
 
 struct JamLinkHeaderStuct
 {
@@ -94,10 +87,20 @@ class PacketHeader
 public:
   PacketHeader() {};
   virtual ~PacketHeader() {};
-  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio) = 0;
-  virtual void parseHeader() = 0;
-  //virtual void fillHeaderStuct(HeaderStruct* hs) = 0;
+  
+  /** \brief Return a time stamp in microseconds
+   * \return Time stamp: microseconds since midnight (0 hour), January 1, 1970
+   */
+  static uint64_t usecTime();
 
+  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio) = 0;
+  virtual void addHeaderToPacket(const int8_t* const audio_packet,
+				 int8_t* full_packet) const {};
+  virtual void getAudioPacket(int8_t* audio_packet) const {};
+
+  virtual void parseHeader() = 0;
+  virtual void increaseSequenceNumber() = 0;
+  virtual int getHeaderSize() const = 0;
 };
 
 
@@ -111,11 +114,37 @@ public:
 class DefaultHeader : public PacketHeader
 {
 public:
+  //----------STRUCT-----------------------------------------
+  /// \brief Default Header Struct
+  struct DefaultHeaderStruct
+  {
+    // watch out for alignment...
+    uint64_t TimeStamp; ///< Time Stamp
+    uint16_t SeqNumber; ///< Sequence Number
+    uint16_t BufferSize; ///< Buffer Size in Samples
+    uint8_t  SamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
+    uint8_t  NumInChannels; ///< Number of Input Channels
+    uint8_t  NumOutChannels; ///<  Number of Output Channels
+  };
+  //---------------------------------------------------------
+
+  DefaultHeader(); 
+  virtual ~DefaultHeader() {};
   virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
   virtual void parseHeader() {};
+  virtual void increaseSequenceNumber()
+  {
+    mHeader.SeqNumber++;
+    std::cout << "Sequence Number = " << static_cast<int>(mHeader.SeqNumber) << std::endl;
+  };
+
+  virtual int getHeaderSize() const { return sizeof(mHeader); };
+
+  void DefaultHeader::printHeader() const;
 
 private:
-  //DefaultHeaderStruct mHeader;
+
+  DefaultHeaderStruct mHeader;
 };
 
 

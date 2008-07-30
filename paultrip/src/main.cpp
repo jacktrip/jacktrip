@@ -55,113 +55,23 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
-  //HeaderStruct<HeaderStruct*>* caca;
-  //new HeaderStruct<DefaultHeaderStruct>;
 
-  /*
-  HeaderStruct<void> test;
-  test = new HeaderStruct<DefaultHeaderStruct> test;
-  //cout << sizeof(test) << endl;
-  sleep(100);
-  */
-
-  //HeaderStruct* hs;
-  //hs = new DefaultHeaderStruct;
-  //static_cast<DefaultHeaderStruct*>(hs)->mSamplingRate = 1;
-  
-  /*
-  void* caca;
-  DefaultHeaderStruct dcaca;
-  reinterpret_cast<DefaultHeaderStruct*>(caca);
-  caca = new DefaultHeaderStruct;
-  JackAudioInterface jack(1,1);
-  reinterpret_cast<DefaultHeaderStruct*>(caca)->mSamplingRate = 1;
-  */
-  //caca = static_cast<DefaultHeaderStruct>(&dcaca);
-
-  /*
-  DefaultHeader ph;
-  
-  ph.fillHeaderCommonFromJack(jack);
-
-  HeaderStruct* hs;
-  hs = new DefaultHeaderStruct;
-  ph.fillHeaderStuct(hs);
-
-  cout << "HSSSSSSSSSSS " << hs->mSamplingRate << endl;
-  */
-
-  /*
-  //hs = new DefaultHeaderStruct;
-  //*hs = ph.getHeaderStuct();
-  cout << sizeof(hs) << endl;
-  HeaderStruct caca;
-  cout << sizeof(caca) << endl;
-  DefaultHeaderStruct caca2;
-  cout << sizeof(caca2) << endl;
-  */
-
-
-
-  /*
-  dh.fillHeaderCommonFromJack(jack);
-
-  void* stuctPointer;
-  DefaultHeader::DefaultHeaderStruct caca;
-  caca.mBufferSize = 1;
-  caca.mSamplingRate = 2;
-  caca.mNumInChannels = 3;
-  caca.mNumOutChannels = 4;
-  */
-
-
-
-
-
-  //JackAudioInterface jack(1,1);
-  //cout << jack.getSampleRateType() << endl;
-
-  /*
-  UdpDataProtocol udp(DataProtocol::SENDER);
-  udp.setPeerAddress("192.168.1.4");
-  //udp.setPeerAddress("caca");
-  udp.bindSocket();
-  char buf[3] = "12";
-  while (true) {
-    //cout << "1" ;
-    udp.sendPacket(buf, 3);
-    //sleep(100);
+  DefaultHeader dh;
+  JackAudioInterface ja(2,2); 
+  dh.fillHeaderCommonFromJack(ja);
+  //uint64_t caca1 = PacketHeader::usecTime();
+  //cout << "caca1" << caca1 << endl;
+  //usleep(10);
+  while ( true ) {
+    cout << PacketHeader::usecTime() << endl;;
+    sleep(1);
   }
-  sleep(100);
-  */
 
-  /*
-  sample_t caca = 34783.3;
-  cout << floor(caca) << endl;
+  //uint64_t caca2 = PacketHeader::usecTime();
+  //cout << caca2 << endl;
+  //cout << "TIME = " <<  caca2-caca1 << endl;
 
-
-  sample_t cacaInput = 0.32816274638;
-  cout << "cacaInput === " << cacaInput << endl;
-
-  int8_t caOut[4];
-  JackAudioInterface::fromSampleToBitConversion(&cacaInput,
-						caOut,
-						JackAudioInterface::BIT24);
-  
-  //sleep(10);
-
-  sample_t Vuelta;
-  JackAudioInterface::fromBitToSampleConversion(caOut,
-						&Vuelta,
-						JackAudioInterface::BIT24);
-
-
-  cout << "Vuelta === " << Vuelta << endl;
-
-
-    //cout << "cacaOutput == " << cacaOuput << endl;
-  sleep(100);
-  */
+  sleep(1000);
 
   // Get Settings from user
   // ----------------------

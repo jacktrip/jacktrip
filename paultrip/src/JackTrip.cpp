@@ -57,19 +57,19 @@ JackTrip::JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
   mJackAudio = new JackAudioInterface(mNumChans, mNumChans, AudioBitResolution);
   mSampleRate = mJackAudio->getSampleRate();
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
-  std::cout << SEPARATOR << std::endl;
+  std::cout << gPrintSeparator << std::endl;
   mAudioBufferSize = mJackAudio->getBufferSize();
   int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
   std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples" << std::endl;
   std::cout << "                      or: " << AudioBufferSizeInBytes 
 	    << " bytes" << std::endl;
-  std::cout << SEPARATOR << std::endl;
+  std::cout << gPrintSeparator << std::endl;
 
   // Create DataProtocol Objects
   switch (DataProtocolType) {
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
-    std::cout << SEPARATOR << std::endl;
+    std::cout << gPrintSeparator << std::endl;
     //mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER, PeerHostOrIP);
     //mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER, PeerHostOrIP);
     mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER);
@@ -97,16 +97,21 @@ JackTrip::JackTrip(char* PeerHostOrIP, dataProtocolT DataProtocolType, int NumCh
   /// \todo Make all this operations cleaner
   mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 4) );
   std::cout << "NEWED mSendRingBuffer" << std::endl;
-  std::cout << SEPARATOR << std::endl;
+  std::cout << gPrintSeparator << std::endl;
   mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * NumChans, 8) );
   std::cout << "NEWED mReceiveRingBuffer" << std::endl;
-  std::cout << SEPARATOR << std::endl;
+  std::cout << gPrintSeparator << std::endl;
 
   // Set RingBuffers pointers in protocols
   mDataProtocolSender->setRingBuffer(mSendRingBuffer);
   mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
   mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
   //mJackAudio->setRingBuffers(mReceiveRingBuffer, mSendRingBuffer);
+
+
+  /// \todo this is new
+  mDataProtocolSender->fillHeaderCommonFromJack(*mJackAudio);
+
 }
 
 

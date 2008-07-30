@@ -38,10 +38,15 @@
 #ifndef __JACKTRIP_GLOBALS_H__
 #define __JACKTRIP_GLOBALS_H__
 
+#include "JackAudioInterface.h"
+
 /// \name Default Values
 //@{
 const int gDefaultNumInChannels = 2;
 const int gDefaultNumOutChannels = 2;
+const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode = 
+  JackAudioInterface::BIT16;
+const int gDefaultQueueLength = 4;
 //@}
 
 
@@ -54,7 +59,7 @@ const int gOutputPort_0 = 4465; ///< Output base port
 
 /// \name Separator for terminal printing
 //@{
-const char* const SEPARATOR = "---------------------------------------------------------";
+const char* const gPrintSeparator = "---------------------------------------------------------";
 //@}
 
 

@@ -40,7 +40,7 @@
 #define __SETTINGS_H__
 
 #include "DataProtocol.h"
-
+#include "JackAudioInterface.h"
 
 /** \brief Class to set usage options and parse settings from input
  */
@@ -66,7 +66,9 @@ public:
 private:
   int mNumInChans; ///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
-  DataProtocol::runModeT mRunMode; ///< Run mode, SENDER or RECEIVER
+  /// Bit resolution (audioBitResolutionT) mode
+  JackAudioInterface::audioBitResolutionT mBitResolutionMode;
+  int mQueueLength; ///< Queue Length in Packet Size
   bool mLoopBack;
   //char* mPeerHostOrIP; ///< Peer IP address or Host name
 };
