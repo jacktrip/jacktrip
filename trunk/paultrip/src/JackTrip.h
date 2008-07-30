@@ -103,7 +103,8 @@ public:
    */
   void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
 
-  void startThreads();
+  /// \brief Start the processes
+  void start();
 
   //------------------------------------------------------------------------------------
   /// \name Methods to change parameters after construction
@@ -137,10 +138,13 @@ private:
   /// \brief Set the RingBuffer objects
   void setupRingBuffers();
 
+  void clientStart();
+  void serverStart();
+
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol
   int mNumChans; ///< Number of Channels (inputs = outputs)
-  int mBufferQueueLength;
+  int mBufferQueueLength; ///< Audio Buffer from network queue length
   uint32_t mSampleRate; ///< Sample Rate
   uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
   JackAudioInterface::audioBitResolutionT mAudioBitResolution;
