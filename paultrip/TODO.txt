@@ -3,12 +3,10 @@ High Priority TODOS:
 - ProcessPlugins working, need to set the faust compiler to generate approprate classes. Also, add the offset option to process starting from a different channel
 - add and read header
 - add queue lengths (settings of ring buffer)
-- add bit rate multipliers
 - Propertely implement the PaulTrip class, now it is too protorypee
-
-- Verify RingBuffer, when in a mac the connection is done when something is already sending packets, the delay is much smaller that the case when the peer connect later.
-
-Also, there's a buzz when there's no connection that shouldn't happen, is should just send zeros.
 
 - Verify why loopback is just duplicating one channel instead of using stereo.
 
+TODOS: Add header into packet, and add redundancy to UDP
+- Loopback is not working the way it is implements in JackAudioInterface
+ need to fix this maybe using an internal client
