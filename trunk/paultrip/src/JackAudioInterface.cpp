@@ -393,6 +393,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // To test, uncomment and send audio to client input. The same audio
   // should come out as output in the first channel
   //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t) * nframes);
+  //memcpy (mOutBuffer[1], mInBuffer[1], sizeof(sample_t) * nframes);
   //-------------------------------------------------------------------
 
   // Allocate the Process Callback
@@ -402,6 +403,10 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
 
   // 2) Dynamically allocate ProcessPlugin processes
   // The processing will be done in order of allocation
+ 
+  /// \todo This is not working, it seems that writing mInBuffer doesn't behave as expected,
+  /// so I need to create some sort of internal client. Now the behavior is that the last channel
+  /// gets looped back to all the other channels
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
     mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
   }

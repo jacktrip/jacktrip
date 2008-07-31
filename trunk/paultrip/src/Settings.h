@@ -41,6 +41,7 @@
 
 #include "DataProtocol.h"
 #include "JackAudioInterface.h"
+#include "JackTrip.h"
 
 /** \brief Class to set usage options and parse settings from input
  */
@@ -53,23 +54,35 @@ public:
   /// \brief Parses command line input
   void parseInput(int argc, char** argv);
 
+  void startJackTrip();
+
   /// \brief Prints usage help
   void printUsage();
 
-  int getNumInChannels() { return mNumInChans; };
-  int getNumOutChannels() { return mNumOutChans; };
-  void getPeerAddress(char* PeerAddress) {  PeerAddress = mPeerHostOrIP; };
+  //int getNumInChannels() { return mNumInChans; };
+  //int getNumOutChannels() { return mNumOutChans; };
+  //void getPeerAddress(char* PeerAddress) {  PeerAddress = mPeerHostOrIP; };
   bool getLoopBack() { return mLoopBack; };
 
-  char* mPeerHostOrIP; ///< Peer IP address or Host name
+  //char* mPeerHostOrIP; ///< Peer IP address or Host name
 
 private:
-  int mNumInChans; ///< Number of Input Channels
-  int mNumOutChans; ///<  Number of Output Channels
+  //int mNumInChans; ///< Number of Input Channels
+  //int mNumOutChans; ///<  Number of Output Channels
   /// Bit resolution (audioBitResolutionT) mode
-  JackAudioInterface::audioBitResolutionT mBitResolutionMode;
-  int mQueueLength; ///< Queue Length in Packet Size
+  //JackAudioInterface::audioBitResolutionT mBitResolutionMode;
+  //int mQueueLength; ///< Queue Length in Packet Size
+
+
+  JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
+  JackTrip::dataProtocolT mDataProtocol; ///< Data Protocol
+  int mNumChans; ///< Number of Channels (inputs = outputs)
+  int mBufferQueueLength; ///< Audio Buffer from network queue length
+  JackAudioInterface::audioBitResolutionT mAudioBitResolution;
+  QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
   bool mLoopBack;
+
+
   //char* mPeerHostOrIP; ///< Peer IP address or Host name
 };
 

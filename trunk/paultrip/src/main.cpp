@@ -59,15 +59,7 @@ int main(int argc, char** argv)
   // ----------------------
   Settings settings;
   settings.parseInput(argc, argv);
-  cout << "Number of Channels = " << settings.getNumInChannels() << endl;
-  cout << "Peer Address = " << settings.mPeerHostOrIP << endl;
-  
-  // Create Jacktrip Class
-  JackTrip jacktrip;
-  
-  jacktrip.setPeerAddress(settings.mPeerHostOrIP);
-  cout << "after setting peer address" << endl;  
-  jacktrip.start();
+  settings.startJackTrip();
 
   /*
   // Add Plugins

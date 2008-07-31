@@ -82,8 +82,10 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
     std::exit(1);
   }
   else {
-    std::cout << "Peer Address set to: " 
+    std::cout << "Peer Address set to: "
 	      << mPeerAddress.toString().toStdString() << std::endl;
+    cout << gPrintSeparator << endl;
+    usleep(100);
   }
 }
 
@@ -93,14 +95,15 @@ void UdpDataProtocol::bindSocket()
 {
   /// \todo if port is already used, try binding in a different port
   // QHostAddress::Any : let the kernel decide the active address
-  cout << "CACUMEN: " << mLocalPort << endl;
   if ( !mUdpSocket.bind(QHostAddress::Any, mLocalPort, QUdpSocket::DefaultForPlatform) ) {
     std::cerr << "ERROR: could not bind UDP socket" << endl;
     std::exit(1);
   }
   else {
-    cout << "Socket bound to port: " << mLocalPort << endl;
-    cout << gPrintSeparator << endl;
+    if ( mRunMode == RECEIVER ) {
+      cout << "UDP Socket Receiving in Port: " << mLocalPort << endl;
+      cout << gPrintSeparator << endl;
+    }
   }
 }
 
@@ -128,7 +131,7 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
 						    uint16_t& port)
 {
   while ( !mUdpSocket.hasPendingDatagrams() ) {
-    msleep(10);
+    msleep(100);
   }
   char buf[1];
   mUdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
@@ -138,8 +141,8 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
-  std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
-  std::cout << gPrintSeparator << std::endl;
+  //std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
+  //std::cout << gPrintSeparator << std::endl;
   size_t packet_size = getAudioPacketSize();
   int8_t audio_packet[packet_size];
   //int8_t full_packet[packet_size];
