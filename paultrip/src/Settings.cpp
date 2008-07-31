@@ -36,6 +36,7 @@
  */
 
 #include "Settings.h"
+#include "LoopBack.h"
 #include "globals.h"
 
 #include <iostream>
@@ -48,10 +49,11 @@ int gVerboseFlag = 0;
 
 //*******************************************************************************
 Settings::Settings() :
-  mNumInChans(gDefaultNumInChannels),
-  mNumOutChans(gDefaultNumOutChannels),
-  mBitResolutionMode(gDefaultBitResolutionMode),
-  mQueueLength(gDefaultQueueLength),
+  mJackTripMode(JackTrip::CLIENT),
+  mDataProtocol(JackTrip::UDP),
+  mNumChans(2),
+  mBufferQueueLength(gDefaultQueueLength),
+  mAudioBitResolution(JackAudioInterface::BIT16),
   mLoopBack(false)
 {}
 
@@ -78,7 +80,7 @@ void Settings::parseInput(int argc, char** argv)
     { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
-    { "loopback", required_argument, NULL, 'l' }, // Run in loopback mode
+    { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
   };
@@ -90,30 +92,29 @@ void Settings::parseInput(int argc, char** argv)
   while ( (ch = getopt_long(argc, argv, "n:sc:q:b:lh", longopts, NULL)) != -1 )
     switch (ch) {
       
-    case 'n':
+    case 'n': // Number of input and output channels
       //-------------------------------------------------------
-      mNumInChans = atoi(optarg);
-      mNumOutChans = atoi(optarg);
+      mNumChans = atoi(optarg);
       break;
-    case 's':
+    case 's': // Run in server mode
       //-------------------------------------------------------
-      /// \todo Implement this
+      mJackTripMode = JackTrip::SERVER;
       break;
     case 'c':
       //-------------------------------------------------------
-      /// \todo Implement this
-      mPeerHostOrIP = optarg;
+      mJackTripMode = JackTrip::CLIENT;
+      mPeerAddress = optarg;
       break;
     case 'b':
       //-------------------------------------------------------
       if      ( atoi(optarg) == 8 ) {
-	mBitResolutionMode = JackAudioInterface::BIT8; }
+	mAudioBitResolution = JackAudioInterface::BIT8; }
       else if ( atoi(optarg) == 16 ) {
-	mBitResolutionMode = JackAudioInterface::BIT16; }
+	mAudioBitResolution = JackAudioInterface::BIT16; }
       else if ( atoi(optarg) == 24 ) {
-	mBitResolutionMode = JackAudioInterface::BIT16; }
+	mAudioBitResolution = JackAudioInterface::BIT16; }
       else if ( atoi(optarg) == 32 ) {
-	mBitResolutionMode = JackAudioInterface::BIT32; }
+	mAudioBitResolution = JackAudioInterface::BIT32; }
       else {
 	std::cerr << "--bitres ERROR: Wrong bit resolutions: " 
 		  << atoi(optarg) << " is not supported." << endl;
@@ -127,7 +128,7 @@ void Settings::parseInput(int argc, char** argv)
 	printUsage();
 	std::exit(1); }
       else {
-	mQueueLength = atoi(optarg);
+	mBufferQueueLength = atoi(optarg);
       }
       break;
     case 'l': //loopback
@@ -174,12 +175,38 @@ void Settings::printUsage()
   cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
   cout << "" << endl;
   cout << "Options: " << endl;
-  cout << " -n, --numchannels #                      Number of Input and Output Channels (default 2)" << endl;
   cout << " -s, --server                             Run in Server Mode" << endl;
   cout << " -c, --client      <peer_host_IP_or_name> Run in Client Mode" << endl;
-  cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default 4)" << endl;
-  cout << " -b, --bitres      # (8, 16 (Default), 24 or 32)    Audio Bit Rate Resolutions (default 16)" << endl;
-  cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
+  cout << " -n, --numchannels #                      Number of Input and Output Channels (default "
+       << 2 << ")" << endl;
+  cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default " 
+       << gDefaultQueueLength << ")" << endl;
+  cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
+  //cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -h, --help                               Prints this help" << endl;
   cout << "" << endl;
+}
+
+
+//*******************************************************************************
+void Settings::startJackTrip()
+{
+  JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
+		    mBufferQueueLength, mAudioBitResolution);
+  // Set peer address in server mode
+  if ( mJackTripMode == JackTrip::CLIENT ) {
+    jacktrip.setPeerAddress(mPeerAddress.toLatin1().data()); }
+
+  /*
+  // Add Plugins
+  if ( mLoopBack ) {
+    cout << "Running in Loop-Back Mode..." << endl;
+    std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
+    jacktrip.appendProcessPlugin(loopback);
+    cout << "AFTER APPENDING" << endl;
+  }
+  */
+
+  // Start JackTrip
+  jacktrip.start();
 }

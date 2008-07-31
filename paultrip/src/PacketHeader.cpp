@@ -83,8 +83,8 @@ void DefaultHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio
   mHeader.NumOutChannels = JackAudio.getNumOutputChannels();
   mHeader.SeqNumber = 0;
   mHeader.TimeStamp = PacketHeader::usecTime();
-  cout << mHeader.TimeStamp << endl;
-  printHeader();
+  //cout << mHeader.TimeStamp << endl;
+  //printHeader();
 }
 
 

@@ -66,7 +66,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mDataProtocolReceiver(NULL),
   mJackAudio(NULL)
 {
-  cout << "JACKTRIP class constructor" << endl;
+  setupJackAudio();
 }
 
 
@@ -93,6 +93,9 @@ void JackTrip::setupJackAudio()
   std::cout << "                      or: " << AudioBufferSizeInBytes 
 	    << " bytes" << std::endl;
   std::cout << gPrintSeparator << std::endl;
+  cout << "The Number of Channels is: " << mJackAudio->getNumInputChannels() << endl;
+  std::cout << gPrintSeparator << std::endl;
+  usleep(100);
 }
 
 
@@ -104,6 +107,7 @@ void JackTrip::setupDataProtocol()
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << gPrintSeparator << std::endl;
+    usleep(100);
     mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER);
     mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER);
     break;
@@ -161,8 +165,9 @@ void JackTrip::setupRingBuffers()
 void JackTrip::setPeerAddress(char* PeerHostOrIP)
 {
   mPeerAddress = PeerHostOrIP;
-  cout << "Peer Address Set to: " << qPrintable(mPeerAddress) << endl;
-  cout << gPrintSeparator << endl;
+  //cout << "Peer Address Set to CACA: " << qPrintable(mPeerAddress) << endl;
+  //cout << gPrintSeparator << endl;
+  //usleep(300000);
   // Set Peer Address in Protocols
 }
 
@@ -170,7 +175,9 @@ void JackTrip::setPeerAddress(char* PeerHostOrIP)
 //*******************************************************************************
 void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
 {
+  cout << "BEFORE" << endl;
   mJackAudio->appendProcessPlugin(plugin);
+  cout << "AFTER" << endl;
 }
 
 
@@ -178,7 +185,6 @@ void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plu
 void JackTrip::start()
 {
   // Set all classes and parameters
-  setupJackAudio();
   setupDataProtocol();
   setupRingBuffers();
 
@@ -228,7 +234,7 @@ void JackTrip::serverStart()
   }
 
   // Get the client address when it connects
-  cout << "Waiting for Connection From Server..." << endl;
+  cout << "Waiting for Connection From Client..." << endl;
   QHostAddress peerHostAddress;
   uint16_t port;
   mDataProtocolReceiver->getPeerAddressFromFirstPacket(peerHostAddress,
@@ -237,7 +243,7 @@ void JackTrip::serverStart()
   cout << "Client Connection Received from IP : " 
        << qPrintable(mPeerAddress) << endl;
   cout << gPrintSeparator << endl;
-  sleep(0.5);
+  usleep(100);
 
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );

@@ -85,7 +85,7 @@ public:
    * \param BufferQueueLength Audio Buffer for receiving packets
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  JackTrip(jacktripModeT JacktripMode = SERVER,
+  JackTrip(jacktripModeT JacktripMode = CLIENT,
 	   dataProtocolT DataProtocolType = UDP,
 	   int NumChans = 2,
 	   int BufferQueueLength = 8,
