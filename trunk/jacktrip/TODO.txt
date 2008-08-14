@@ -11,5 +11,3 @@ TODOS: Add header into packet, and add redundancy to UDP
 - Loopback is not working the way it is implements in JackAudioInterface
  need to fix this maybe using an internal client
 
-
-- TEST SOURCEFORGE
