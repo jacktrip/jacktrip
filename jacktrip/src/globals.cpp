@@ -32,70 +32,79 @@
 /**
  * \file globals.cpp
  * \author Juan-Pablo Caceres
- * \date June 2008
+ * \date August 2008
  */
 
-#ifndef __JACKTRIP_GLOBALS_H__
-#define __JACKTRIP_GLOBALS_H__
 
-#include "JackAudioInterface.h"
+#include "globals.h"
 
-
-//*******************************************************************************
-/// \name Default Values
-//@{
-const int gDefaultNumInChannels = 2;
-const int gDefaultNumOutChannels = 2;
-const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode = 
-  JackAudioInterface::BIT16;
-const int gDefaultQueueLength = 4;
-const int gDefaultOutputQueueLength = 4;
-//@}
+#include <sched.h>
 
 
-//*******************************************************************************
-/// \name Network related ports
-//@{
-const int gInputPort_0 = 4464; ///< Input base port
-const int gOutputPort_0 = 4465; ///< Output base port
-//@}
-
-
-//*******************************************************************************
-/// \name Separator for terminal printing
-//@{
-const char* const gPrintSeparator = "---------------------------------------------------------";
-//@}
-
-
-//*******************************************************************************
-/// \name Global flags
-//@{
-extern int gVerboseFlag; ///< Verbose mode flag declaration
-//@}
-
-
-//*******************************************************************************
-/// \name JackAudio
-//@{
-const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
-//@}
-
-
-//*******************************************************************************
-/// \name Global Functions
-//@{
-// Linux Specific Functions
 #if defined ( __LINUX__ )
-/// \brief Returns fifo priority
-int get_fifo_priority (bool half);
-/// \brief Set fifo priority (if user has sufficient privileges).
-int set_fifo_priority (bool half);
-int set_realtime_priority (void);
-#endif
-//@}
+//*******************************************************************************
+int get_fifo_priority (bool half)
+{
+  int min, max, priority;
+  min = sched_get_priority_min (SCHED_FIFO);
+  max = sched_get_priority_max (SCHED_FIFO);
+  if (half) {
+    priority = (max  - (max - min) / 2); }
+  else {
+    priority = max; }
+
+  //priority=min;
+  return priority;
+}
 
 
+//*******************************************************************************
+int set_fifo_priority (bool half)
+{
+  struct sched_param p;
+  int priority;
+  //  scheduling priority
 
 
+  if (true) // (!getuid () || !geteuid ())
+    {
+      priority = get_fifo_priority (half);
+      p.sched_priority = priority;
+
+      if (sched_setscheduler (0, SCHED_FIFO, &p) == -1)
+	{
+	  fprintf (stderr,
+		   "\ncould not activate scheduling with priority %d\n",
+		   priority);
+	  return -1;
+	}
+      seteuid (getuid ());
+      fprintf (stderr,
+	       "\nset scheduling priority to %d (SCHED_FIFO)\n",
+	       priority);
+    }
+  else
+    {
+      fprintf (stderr,
+	       "\ninsufficient privileges to set scheduling priority\n");
+      priority = 0;
+    }
+  return priority;
+}
+
+
+//*******************************************************************************
+int set_realtime_priority (void)
+{
+  struct sched_param schp;
+
+  memset (&schp, 0, sizeof (schp));
+  schp.sched_priority = sched_get_priority_max (SCHED_FIFO);
+  if (sched_setscheduler (0, SCHED_FIFO, &schp) != 0)
+    {
+      perror ("set_scheduler");
+      return -1;
+    }
+  return 0;
+}
 #endif

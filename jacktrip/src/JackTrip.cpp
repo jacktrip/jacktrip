@@ -200,8 +200,19 @@ void JackTrip::start()
     }
   // Start Threads
   mJackAudio->startProcess();
+
+#if defined ( __LINUX__ )
+  cout << "Using Linux thread priority" << endl;
+  mDataProtocolSender->start();
+  mDataProtocolReceiver->start();
+#elif defined ( __MAC_OSX__ )
+  cout << "Using qt4 (MAC OS X) thread priority" << endl;
   mDataProtocolSender->start(QThread::TimeCriticalPriority);
   mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
+#else
+  std::cerr << "ERROR: Platform unknown or not supported" << endl;
+  std::exit(1);
+#endif
 
   // Wait here until the threads return from run() methos
   mDataProtocolSender->wait();

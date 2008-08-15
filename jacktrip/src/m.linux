@@ -23,7 +23,7 @@ qmake-qt4 -makefile -unix -o Makefile \
 "QT += network" \
 "unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack -lm" \
 "TARGET = $APP_NAME" \
-"DEFINES += APP_NAME=${APP_NAME_QUOTES}" \
+"DEFINES += APP_NAME=${APP_NAME_QUOTES} __LINUX__" \
 "DESTDIR = ./" \
 "QMAKE_CLEAN += ./$APP_NAME" \
 "target.path = /usr/bin" \

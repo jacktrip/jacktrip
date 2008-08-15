@@ -31,7 +31,7 @@ qmake -makefile -o Makefile \
 "LIBS += -ljack -framework CoreAudio -lm" \
 "CONFIG += x86 ppc" \
 "TARGET = $APP_NAME" \
-"DEFINES += APP_NAME=${APP_NAME_QUOTES}" \
+"DEFINES += APP_NAME=${APP_NAME_QUOTES} __MAC_OSX__" \
 "DESTDIR = ./" \
 "QMAKE_CLEAN += ./$APP_NAME" \
 "target.path = /usr/bin" \
