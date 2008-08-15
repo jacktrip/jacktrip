@@ -149,6 +149,10 @@ void UdpDataProtocol::run()
   bool timeout = false;
   //mHeader->fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
 
+#if defined ( __LINUX__ )
+  set_fifo_priority (false);
+#endif
+
   switch ( mRunMode )
     {
     case RECEIVER :
