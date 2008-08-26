@@ -258,6 +258,9 @@ private:
   QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
+  QVarLengthArray<sample_t*> mInProcessBuffer;
+  QVarLengthArray<sample_t*> mOutProcessBuffer;
+
   /// Smart Pointer to RingBuffer to read from (input)
   std::tr1::shared_ptr<RingBuffer> mInRingBuffer;
   /// Smart Pointer to RingBuffer to write from (output)

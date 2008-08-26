@@ -182,7 +182,7 @@ void Settings::printUsage()
   cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default " 
        << gDefaultQueueLength << ")" << endl;
   cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
-  //cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
+  cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -h, --help                               Prints this help" << endl;
   cout << "" << endl;
 }
@@ -197,15 +197,12 @@ void Settings::startJackTrip()
   if ( mJackTripMode == JackTrip::CLIENT ) {
     jacktrip.setPeerAddress(mPeerAddress.toLatin1().data()); }
 
-  /*
   // Add Plugins
   if ( mLoopBack ) {
     cout << "Running in Loop-Back Mode..." << endl;
     std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
     jacktrip.appendProcessPlugin(loopback);
-    cout << "AFTER APPENDING" << endl;
   }
-  */
 
   // Start JackTrip
   jacktrip.start();
