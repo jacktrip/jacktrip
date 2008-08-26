@@ -144,6 +144,8 @@ void JackAudioInterface::createChannels()
   /// \todo Put this in a better place
   mInBuffer.resize(mNumInChans);
   mOutBuffer.resize(mNumOutChans);
+  mInProcessBuffer.resize(mNumInChans);
+  mOutProcessBuffer.resize(mNumOutChans);
 }
 
 
@@ -363,10 +365,15 @@ void JackAudioInterface::computeNetworkProcessToNetwork()
     //		mSizeInBytesPerChannel);
     //--------
     sample_t* tmp_sample = mInBuffer[i]; //sample buffer for channel i
+    sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output process
+    sample_t tmp_result;
     for (int j = 0; j < mNumFrames; j++) {
       //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
       // Change the bit resolution on each sample
-      fromSampleToBitConversion(&tmp_sample[j],
+
+      // Add the input jack buffer to the buffer resulting from the output process
+      tmp_result = tmp_sample[j] + tmp_process_sample[j];
+      fromSampleToBitConversion(&tmp_result,
 				&mInputPacket[(i*mSizeInBytesPerChannel)
 					      + (j*mBitResolutionMode)],
 				mBitResolutionMode);
@@ -383,9 +390,11 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // Get input and output buffers from JACK
   //-------------------------------------------------------------------
   for (int i = 0; i < mNumInChans; i++) {
+    // Input Ports are READ ONLY
     mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
   }
   for (int i = 0; i < mNumOutChans; i++) {
+    // Output Ports are WRITABLE
     mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
   }
   //-------------------------------------------------------------------
@@ -401,15 +410,62 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // 1) First, process incoming packets
   computeNetworkProcessFromNetwork();
 
+
   // 2) Dynamically allocate ProcessPlugin processes
   // The processing will be done in order of allocation
- 
+
+  
+
+  for (int i = 0; i < mNumInChans; i++) {
+    //std::tr1::shared_ptr<sample_t> mInProcessBuffer[i]( new sample_t[nframes] );
+    mInProcessBuffer[i] = new sample_t[nframes];
+    // set to 0
+    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+    std::memcpy(mInProcessBuffer[i], mOutBuffer[i], sizeof(sample_t) * nframes);
+    //tempInBuffer[i].reset( new sample_t[nframes] );
+    //memcpy(static_cast<void*>(mInProcessBuffer[i].get()), mOutBuffer[i], sizeof(sample_t) * nframes);
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    mOutProcessBuffer[i] = new sample_t[nframes];
+    // set to 0
+    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
+
+  for (int i = 0; i < mProcessPlugins.size(); i++) {
+    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
+    mProcessPlugins[i]->compute(nframes, mInProcessBuffer.data(), mOutProcessBuffer.data());
+  }
+  
+  /*
+  QVarLengthArray<std::tr1::shared_ptr<sample_t> > tempInBuffer;
+  QVarLengthArray<std::tr1::shared_ptr<sample_t> > tempOutBuffer;
+  tempInBuffer.resize(mNumInChans);
+  tempOutBuffer.resize(mNumInChans);
+
+  for (int i = 0; i < mNumInChans; i++) {
+    tempInBuffer[i].reset( new sample_t[nframes] );
+    memcpy(static_cast<void*>(tempInBuffer[i].get()), mOutBuffer[i], sizeof(sample_t) * nframes);
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    tempOutBuffer[i].reset( new sample_t[nframes] );
+  }
+
+  */
+
+  //static_cast<void*>(tempInBuffer.data());
+
   /// \todo This is not working, it seems that writing mInBuffer doesn't behave as expected,
   /// so I need to create some sort of internal client. Now the behavior is that the last channel
   /// gets looped back to all the other channels
-  for (int i = 0; i < mProcessPlugins.size(); ++i) {
-    mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
+  for (int i = 0; i < mProcessPlugins.size(); i++) {
+    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
+    /*
+    mProcessPlugins[i]->compute(nframes,
+				reinterpret_cast<float**>(static_cast<void*>(tempInBuffer.data())), 
+				reinterpret_cast<float**>(static_cast<void*>(tempOutBuffer.data())));
+    */
   }
+  
 
   // 3) Finally, send packets to peer
   computeNetworkProcessToNetwork();
