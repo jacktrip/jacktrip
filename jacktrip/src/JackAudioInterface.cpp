@@ -64,6 +64,12 @@ JackAudioInterface::~JackAudioInterface()
 {
   delete[] mInputPacket;
   delete[] mOutputPacket;
+  for (int i = 0; i < mNumInChans; i++) {
+    delete[] mInProcessBuffer[i];
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    delete[] mOutProcessBuffer[i];
+  }
 }
 
 
@@ -111,8 +117,28 @@ void JackAudioInterface::setupClient()
   mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
 
-  /// \todo inizialize this in a better place
+  // Buffer size member
   mNumFrames = getBufferSize(); 
+
+  // Initialize Buffer array to read and write audio
+  mInBuffer.resize(mNumInChans);
+  mOutBuffer.resize(mNumOutChans);
+
+  // Initialize and asign memory for ProcessPlugins Buffers
+  mInProcessBuffer.resize(mNumInChans);
+  mOutProcessBuffer.resize(mNumOutChans);
+
+  int nframes = getBufferSize();
+  for (int i = 0; i < mNumInChans; i++) {
+    mInProcessBuffer[i] = new sample_t[nframes];
+    // set memory to 0
+    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    mOutProcessBuffer[i] = new sample_t[nframes];
+    // set memory to 0
+    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
 }
 
 
@@ -140,12 +166,6 @@ void JackAudioInterface::createChannels()
 					JACK_DEFAULT_AUDIO_TYPE,
 					 JackPortIsOutput, 0);
     }
-  
-  /// \todo Put this in a better place
-  mInBuffer.resize(mNumInChans);
-  mOutBuffer.resize(mNumOutChans);
-  mInProcessBuffer.resize(mNumInChans);
-  mOutProcessBuffer.resize(mNumOutChans);
 }
 
 
@@ -408,26 +428,21 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // Allocate the Process Callback
   //-------------------------------------------------------------------
   // 1) First, process incoming packets
+  // ----------------------------------
   computeNetworkProcessFromNetwork();
 
 
   // 2) Dynamically allocate ProcessPlugin processes
+  // -----------------------------------------------
   // The processing will be done in order of allocation
 
-  
-
+  ///\todo Implement for more than one process plugin, now it just works propertely with one.
+  /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
   for (int i = 0; i < mNumInChans; i++) {
-    //std::tr1::shared_ptr<sample_t> mInProcessBuffer[i]( new sample_t[nframes] );
-    mInProcessBuffer[i] = new sample_t[nframes];
-    // set to 0
     std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
     std::memcpy(mInProcessBuffer[i], mOutBuffer[i], sizeof(sample_t) * nframes);
-    //tempInBuffer[i].reset( new sample_t[nframes] );
-    //memcpy(static_cast<void*>(mInProcessBuffer[i].get()), mOutBuffer[i], sizeof(sample_t) * nframes);
   }
   for (int i = 0; i < mNumOutChans; i++) {
-    mOutProcessBuffer[i] = new sample_t[nframes];
-    // set to 0
     std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
   }
 
@@ -435,39 +450,10 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
     //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
     mProcessPlugins[i]->compute(nframes, mInProcessBuffer.data(), mOutProcessBuffer.data());
   }
-  
-  /*
-  QVarLengthArray<std::tr1::shared_ptr<sample_t> > tempInBuffer;
-  QVarLengthArray<std::tr1::shared_ptr<sample_t> > tempOutBuffer;
-  tempInBuffer.resize(mNumInChans);
-  tempOutBuffer.resize(mNumInChans);
 
-  for (int i = 0; i < mNumInChans; i++) {
-    tempInBuffer[i].reset( new sample_t[nframes] );
-    memcpy(static_cast<void*>(tempInBuffer[i].get()), mOutBuffer[i], sizeof(sample_t) * nframes);
-  }
-  for (int i = 0; i < mNumOutChans; i++) {
-    tempOutBuffer[i].reset( new sample_t[nframes] );
-  }
-
-  */
-
-  //static_cast<void*>(tempInBuffer.data());
-
-  /// \todo This is not working, it seems that writing mInBuffer doesn't behave as expected,
-  /// so I need to create some sort of internal client. Now the behavior is that the last channel
-  /// gets looped back to all the other channels
-  for (int i = 0; i < mProcessPlugins.size(); i++) {
-    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
-    /*
-    mProcessPlugins[i]->compute(nframes,
-				reinterpret_cast<float**>(static_cast<void*>(tempInBuffer.data())), 
-				reinterpret_cast<float**>(static_cast<void*>(tempOutBuffer.data())));
-    */
-  }
-  
 
   // 3) Finally, send packets to peer
+  // --------------------------------
   computeNetworkProcessToNetwork();
 
   return 0;
