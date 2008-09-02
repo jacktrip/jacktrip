@@ -41,6 +41,7 @@
 
 #include <iostream>
 #include <unistd.h> // for usleep, sleep
+#include <cstdlib>
 
 #include <QHostAddress>
 #include <QThread>
@@ -113,15 +114,15 @@ void JackTrip::setupDataProtocol()
     break;
   case TCP:
     std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
-    exit(1);
+    std::exit(1);
     break;
   case SCTP:
     std::cerr << "ERROR: SCTP Protocol is not unimplemented" << std::endl;
-    exit(1);
+    std::exit(1);
     break;
   default: 
     std::cerr << "ERROR: Protocol not defined or unimplemented" << std::endl;
-    exit(1);
+    std::exit(1);
     break;
   }
   
