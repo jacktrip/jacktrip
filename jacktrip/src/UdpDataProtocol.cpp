@@ -51,8 +51,8 @@ using std::cout; using std::endl;
 
 
 //*******************************************************************************
-UdpDataProtocol::UdpDataProtocol(const runModeT runmode)
-  : DataProtocol(runmode), mRunMode(runmode)
+UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode)
+  : DataProtocol(jacktrip, runmode), mRunMode(runmode)
 {
   // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
   if (mRunMode == RECEIVER) {
@@ -148,6 +148,8 @@ void UdpDataProtocol::run()
   //int8_t full_packet[packet_size];
   bool timeout = false;
   //mHeader->fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
+
+  //mJackTrip->putHeaderInPacket(full_packet);
 
 #if defined ( __LINUX__ )
   set_fifo_priority (false);

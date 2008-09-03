@@ -55,7 +55,7 @@ public:
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
-  UdpDataProtocol(const runModeT runmode);
+  UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode);
   
   /** \brief The class constructor 
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
