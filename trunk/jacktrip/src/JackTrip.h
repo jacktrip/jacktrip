@@ -44,6 +44,7 @@
 
 #include "DataProtocol.h"
 #include "JackAudioInterface.h"
+#include "PacketHeader.h"
 
 /** \brief Default values
  */
@@ -57,6 +58,7 @@ const int DefaultAudioBitResolution = 16;
 
 /** \brief
  *
+ * \todo FINISH THIS: This class also acts as a Mediator between all the other class
  */
 class JackTrip
 {
@@ -142,6 +144,11 @@ private:
   /// \brief Start for the SERVER mode
   void serverStart();
 
+
+  void createHeader(const DataProtocol::packetHeaderTypeT headertype);
+  void putHeaderInPacket(int8_t* full_packet);
+
+
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol
   int mNumChans; ///< Number of Channels (inputs = outputs)
@@ -156,11 +163,14 @@ private:
   ///< Pointer to Abstract Type DataProtocol that receives packets
   DataProtocol* mDataProtocolReceiver;
   JackAudioInterface* mJackAudio; ///< Interface to Jack Client
+  PacketHeader* mPacketHeader;
 
   /// Shared (smart) Pointer for the Send RingBuffer
   std::tr1::shared_ptr<RingBuffer> mSendRingBuffer; 
   /// Shared (smart) Pointer for the Receive RingBuffer
   std::tr1::shared_ptr<RingBuffer> mReceiveRingBuffer; 
+
+  //JackTripMediator mJackTripMediator;
 };
 
 #endif

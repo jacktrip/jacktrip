@@ -109,8 +109,8 @@ void JackTrip::setupDataProtocol()
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << gPrintSeparator << std::endl;
     usleep(100);
-    mDataProtocolSender = new UdpDataProtocol(DataProtocol::SENDER);
-    mDataProtocolReceiver =  new UdpDataProtocol(DataProtocol::RECEIVER);
+    mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER);
+    mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER);
     break;
   case TCP:
     std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
@@ -260,3 +260,30 @@ void JackTrip::serverStart()
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
 }
+
+
+
+
+void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
+{
+  switch (headertype) {
+  case DataProtocol::DEFAULT :
+    mPacketHeader = new DefaultHeader;
+    break;
+  case DataProtocol::JAMLINK :
+    //mHeader = new JamLinkHeader;
+    break;
+  default :
+    std::cerr << "ERROR: Undefined Header Type" << endl;
+    std::cerr << "Exiting Program..." << endl;
+    std::exit(1);
+    break;
+  }
+}
+
+
+void JackTrip::putHeaderInPacket(int8_t* full_packet)
+{
+  mPacketHeader->fillHeaderCommonFromJack(*mJackAudio);
+}
+

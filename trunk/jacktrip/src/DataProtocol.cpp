@@ -50,9 +50,11 @@ using std::cout; using std::endl;
 
 
 //*******************************************************************************
-DataProtocol::DataProtocol(const runModeT runmode,
+DataProtocol::DataProtocol(JackTrip* jacktrip,
+			   const runModeT runmode,
 			   const packetHeaderTypeT headertype) : 
-  mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mHeader(NULL)
+  mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mHeader(NULL),
+  mJackTrip(jacktrip)
 {
   switch (headertype) {
   case DEFAULT :
@@ -67,6 +69,10 @@ DataProtocol::DataProtocol(const runModeT runmode,
     std::exit(1);
     break;
   }
+
+  /////////////////////////////////////////////////
+  //mJackTrip->createHeader(headertype);
+  /////////////////////////////////////////////////
 }
 
 

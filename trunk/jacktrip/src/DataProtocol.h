@@ -50,7 +50,7 @@
 #include "RingBuffer.h"
 class PacketHeader; // forward declaration
 class JackAudioInterface; //forward declaration
-
+class JackTrip;
 
 /** \brief Base class that defines the transmission protocol.
  * 
@@ -105,7 +105,8 @@ public:
    * \param runmode Sets the run mode, use either DataProtocol::SENDER or
    * DataProtocol::RECEIVER
    */
-  DataProtocol(const runModeT runmode,
+  DataProtocol(JackTrip* jacktrip,
+	       const runModeT runmode,
 	       const packetHeaderTypeT headertype = DEFAULT);
   
   /// \brief The class destructor
@@ -181,9 +182,12 @@ private:
   
   size_t mAudioPacketSize; ///< Packet audio part size
 
+
   /// \todo check a better way to access the header from the subclasses
 protected:
   PacketHeader* mHeader; ///< Packet Header
+  JackTrip* mJackTrip;
+
 };
 
 #endif
