@@ -37,6 +37,8 @@
 
 #include "UdpDataProtocol.h"
 #include "globals.h"
+#include "JackTrip.h"
+
 
 #include <cstring>
 #include <iostream>
@@ -143,13 +145,14 @@ void UdpDataProtocol::run()
 {
   //std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
   //std::cout << gPrintSeparator << std::endl;
-  size_t packet_size = getAudioPacketSize();
-  int8_t audio_packet[packet_size];
-  //int8_t full_packet[packet_size];
+  size_t audio_packet_size = getAudioPacketSize();
+  audio_packet = new int8_t[audio_packet_size];
+  int full_packet_size = mJackTrip->getPacketSizeInBytes();
+  cout << "full_packet_size: " << full_packet_size << endl;
+  full_packet = new int8_t[full_packet_size];
   bool timeout = false;
-  //mHeader->fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
 
-  //mJackTrip->putHeaderInPacket(full_packet);
+  mJackTrip->putHeaderInPacket(full_packet, audio_packet);
 
 #if defined ( __LINUX__ )
   set_fifo_priority (false);
@@ -165,7 +168,9 @@ void UdpDataProtocol::run()
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      receivePacket( reinterpret_cast<char*>(audio_packet), packet_size);
+      //receivePacket( reinterpret_cast<char*>(audio_packet), audio_packet_size);
+      receivePacket( reinterpret_cast<char*>(full_packet), full_packet_size);
+      mJackTrip->parseAudioPacket(full_packet, audio_packet);
       std::cout << "Received Connection for Peer!" << std::endl;
 
       while ( !mStopped )
@@ -177,7 +182,9 @@ void UdpDataProtocol::run()
 	  }
 	  else {
 	    // This is blocking until we get a packet...
-	    receivePacket( reinterpret_cast<char*>(audio_packet), packet_size);
+	    //receivePacket( reinterpret_cast<char*>(audio_packet), audio_packet_size);
+	    receivePacket( reinterpret_cast<char*>(full_packet), full_packet_size);
+	    mJackTrip->parseAudioPacket(full_packet, audio_packet);
 	    // ...so we want to send the packet to the buffer as soon as we get in from
 	    // the socket, i.e., non-blocking
 	    mRingBuffer->insertSlotNonBlocking(audio_packet);
@@ -192,8 +199,10 @@ void UdpDataProtocol::run()
 	{
 	  // We block until there's stuff available to read
 	  mRingBuffer->readSlotBlocking(audio_packet);
+	  mJackTrip->putHeaderInPacket(full_packet, audio_packet);
 	  // This will send the packet immediately
-	  sendPacket( reinterpret_cast<char*>(audio_packet), packet_size);
+	  //sendPacket( reinterpret_cast<char*>(audio_packet), audio_packet_size);
+	  sendPacket( reinterpret_cast<char*>(full_packet), full_packet_size);
 	}
       break;
     }

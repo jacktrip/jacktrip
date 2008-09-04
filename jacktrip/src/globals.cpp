@@ -40,6 +40,9 @@
 
 #include <sched.h>
 
+#if defined ( __MAC_OSX__ )
+#include <mach/thread_policy.h>
+#endif
 
 #if defined ( __LINUX__ )
 //*******************************************************************************

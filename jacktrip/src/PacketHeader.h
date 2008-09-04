@@ -46,19 +46,7 @@
 class JackAudioInterface; // Forward Declaration
 
 
-/** \brief Template struct for Headers
- *
- * To create the header, just type HeaderStruct<HeaderType>
- */
-
-template <typename T>
-struct HeaderStruct
-{
-  T data;
-};
-
-
-
+//---------JAMLINK HEADER DRAFT----------------------------
 struct JamLinkHeaderStuct
 {
   // watch out for alignment -- need to be on 4 byte chunks
@@ -66,14 +54,7 @@ struct JamLinkHeaderStuct
   unsigned short seqnum;
   unsigned int  timeStamp;
 };
-
-/*
-union HeaderUnion
-{
-  DefaultHeaderStruct dh;
-  JamLinkHeaderStuct jl;
-};
-*/
+//---------------------------------------------------------
 
 
 //#######################################################################
@@ -93,14 +74,13 @@ public:
    */
   static uint64_t usecTime();
 
+  /// \todo Implement this using a JackTrip Method (Mediator) member instead of the 
+  /// reference to JackAudio
   virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio) = 0;
-  virtual void addHeaderToPacket(const int8_t* const audio_packet,
-				 int8_t* full_packet) const {};
-  virtual void getAudioPacket(int8_t* audio_packet) const {};
-
   virtual void parseHeader() = 0;
   virtual void increaseSequenceNumber() = 0;
-  virtual int getHeaderSize() const = 0;
+  virtual int getHeaderSizeInBytes() const = 0;
+  virtual void putHeaderInPacket(int8_t* full_packet) = 0;
 };
 
 
@@ -137,14 +117,16 @@ public:
     mHeader.SeqNumber++;
     std::cout << "Sequence Number = " << static_cast<int>(mHeader.SeqNumber) << std::endl;
   };
-
-  virtual int getHeaderSize() const { return sizeof(mHeader); };
-
+  virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); };
+  virtual void putHeaderInPacket(int8_t* full_packet)
+  {
+    std::memcpy(full_packet, reinterpret_cast<const void*>(&mHeader),
+		getHeaderSizeInBytes() );
+  };
   void printHeader() const;
 
 private:
-
-  DefaultHeaderStruct mHeader;
+  DefaultHeaderStruct mHeader; ///< Header Struct
 };
 
 
@@ -158,6 +140,7 @@ private:
 /*
 class JamLinkHeader : public PacketHeader
 {
+
 public:
 
 

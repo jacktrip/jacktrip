@@ -111,8 +111,15 @@ public:
 
   /** \brief Get the Jack Server Buffer Size, in samples
    */
-  uint32_t getBufferSize() const;
+  uint32_t getBufferSizeInSamples() const;
 
+  /** \brief Get the Jack Server Buffer Size, in bytes
+   */
+  uint32_t getBufferSizeInBytes() const 
+  { 
+    return (getBufferSizeInSamples()*sizeof(sample_t));
+  };
+  
   /** \brief Get the Audio Bit Resolution, in bits
    *
    * This is one of the audioBitResolutionT set in construction

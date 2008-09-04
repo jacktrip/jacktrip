@@ -111,6 +111,12 @@ private:
   QUdpSocket mUdpSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address
 
+
+  /// \todo change this names and location
+  int8_t* audio_packet;
+  int8_t* full_packet;
+
+
 };
 
 #endif
