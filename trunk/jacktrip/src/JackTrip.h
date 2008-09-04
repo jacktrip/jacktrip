@@ -130,6 +130,17 @@ public:
   //@}
   //------------------------------------------------------------------------------------
 
+  //------------------------------------------------------------------------------------
+  /// \name Mediator Functions
+  //@{
+  /// \todo Document all these functions
+  void createHeader(const DataProtocol::packetHeaderTypeT headertype);
+  void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
+  int getPacketSizeInBytes() const;
+  void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
+  //@}
+  //------------------------------------------------------------------------------------
+
 
 private:
 
@@ -143,10 +154,6 @@ private:
   void clientStart();
   /// \brief Start for the SERVER mode
   void serverStart();
-
-
-  void createHeader(const DataProtocol::packetHeaderTypeT headertype);
-  void putHeaderInPacket(int8_t* full_packet);
 
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT

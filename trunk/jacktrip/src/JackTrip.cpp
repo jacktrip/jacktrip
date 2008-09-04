@@ -68,6 +68,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mJackAudio(NULL)
 {
   setupJackAudio();
+
+  /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
+  createHeader(DataProtocol::DEFAULT);
 }
 
 
@@ -88,7 +91,7 @@ void JackTrip::setupJackAudio()
   mSampleRate = mJackAudio->getSampleRate();
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << gPrintSeparator << std::endl;
-  mAudioBufferSize = mJackAudio->getBufferSize();
+  mAudioBufferSize = mJackAudio->getBufferSizeInSamples();
   int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
   std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples" << std::endl;
   std::cout << "                      or: " << AudioBufferSizeInBytes 
@@ -262,8 +265,7 @@ void JackTrip::serverStart()
 }
 
 
-
-
+//*******************************************************************************
 void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
 {
   switch (headertype) {
@@ -282,8 +284,30 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
 }
 
 
-void JackTrip::putHeaderInPacket(int8_t* full_packet)
+//*******************************************************************************
+void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
 {
   mPacketHeader->fillHeaderCommonFromJack(*mJackAudio);
+  mPacketHeader->putHeaderInPacket(full_packet);
+  
+  int8_t* audio_part;
+  audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
+  std::memcpy(audio_part, audio_packet, mJackAudio->getBufferSizeInBytes());
+
 }
 
+
+//*******************************************************************************
+int JackTrip::getPacketSizeInBytes() const
+{
+  return (mJackAudio->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
+}
+
+
+//*******************************************************************************
+void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
+{
+  int8_t* audio_part;
+  audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
+  std::memcpy(audio_packet, audio_part, mJackAudio->getBufferSizeInBytes());
+}

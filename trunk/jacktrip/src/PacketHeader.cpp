@@ -77,7 +77,7 @@ DefaultHeader::DefaultHeader()
 //***********************************************************************
 void DefaultHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio)
 {
-  mHeader.BufferSize = JackAudio.getBufferSize();
+  mHeader.BufferSize = JackAudio.getBufferSizeInSamples();
   mHeader.SamplingRate = JackAudio.getSampleRateType ();
   mHeader.NumInChannels = JackAudio.getNumInputChannels();
   mHeader.NumOutChannels = JackAudio.getNumOutputChannels();

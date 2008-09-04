@@ -118,7 +118,7 @@ void JackAudioInterface::setupClient()
   mOutputPacket = new int8_t[size_output];
 
   // Buffer size member
-  mNumFrames = getBufferSize(); 
+  mNumFrames = getBufferSizeInSamples(); 
 
   // Initialize Buffer array to read and write audio
   mInBuffer.resize(mNumInChans);
@@ -128,7 +128,7 @@ void JackAudioInterface::setupClient()
   mInProcessBuffer.resize(mNumInChans);
   mOutProcessBuffer.resize(mNumOutChans);
 
-  int nframes = getBufferSize();
+  int nframes = getBufferSizeInSamples();
   for (int i = 0; i < mNumInChans; i++) {
     mInProcessBuffer[i] = new sample_t[nframes];
     // set memory to 0
@@ -243,7 +243,7 @@ int JackAudioInterface::getSampleRateFromType(samplingRateT rate_type)
 }
 
 //*******************************************************************************
-uint32_t JackAudioInterface::getBufferSize() const 
+uint32_t JackAudioInterface::getBufferSizeInSamples() const 
 {
   return jack_get_buffer_size(mClient);
 }
@@ -273,7 +273,7 @@ int JackAudioInterface::getNumOutputChannels() const
 //*******************************************************************************
 size_t JackAudioInterface::getSizeInBytesPerChannel() const
 {
-  return (getBufferSize() * getAudioBitResolution()/8);
+  return (getBufferSizeInSamples() * getAudioBitResolution()/8);
 }
 
 //*******************************************************************************

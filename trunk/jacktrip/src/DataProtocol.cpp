@@ -39,6 +39,7 @@
 #include "globals.h"
 #include "JackAudioInterface.h"
 #include "PacketHeader.h"
+#include "JackTrip.h"
 
 #include <iostream>
 #include <cstdlib>
