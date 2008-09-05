@@ -102,8 +102,10 @@ public:
 
 
   /** \brief The class constructor 
+   * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param runmode Sets the run mode, use either DataProtocol::SENDER or
    * DataProtocol::RECEIVER
+   * \param headertype packetHeaderTypeT header type to use for packets
    */
   DataProtocol(JackTrip* jacktrip,
 	       const runModeT runmode,

@@ -39,7 +39,7 @@
 #include "JackAudioInterface.h"
 
 #include <sys/time.h>
-
+#include <cstdlib>
 #include <iostream>
 
 using std::cout; using std::endl;
@@ -104,5 +104,45 @@ void DefaultHeader::printHeader() const
   cout << "Time Stamp                = " << mHeader.TimeStamp << endl;
   cout << gPrintSeparator << endl;
   cout << sizeof(mHeader) << endl;
+}
 
+
+
+//#######################################################################
+//####################### JamLinkHeader #################################
+//#######################################################################
+//***********************************************************************
+void JamLinkHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio)
+{
+  // Check number of channels
+  int num_inchannels = JackAudio.getNumInputChannels();
+  if ( num_inchannels != 1 ) {
+    std::cerr << "ERROR: JamLink only support ONE channel. Run JackTrip using only one channel"
+	      << endl;
+    std::exit(1);
+  }
+  
+  mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND);
+  
+  // Sampling Rate
+  int rate_type = JackAudio.getSampleRateType();
+  switch (rate_type)
+    {
+    case JackAudioInterface::SR48 :
+      mHeader.Common = (mHeader.Common | ETX_48KHZ);
+      break;
+    case JackAudioInterface::SR44 :
+      mHeader.Common = (mHeader.Common | ETX_44KHZ);
+      break;
+    case JackAudioInterface::SR32 :
+      mHeader.Common = (mHeader.Common | ETX_32KHZ);
+      break;
+    case JackAudioInterface::SR22 :
+      mHeader.Common = (mHeader.Common | ETX_22KHZ);
+      break;
+    default:
+      std::cerr << "ERROR: Sample rate not supported by JamLink" << endl;
+      std::exit(1);
+      break;
+    }
 }

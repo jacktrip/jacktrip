@@ -65,10 +65,10 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mAudioBitResolution(AudioBitResolution),
   mDataProtocolSender(NULL),
   mDataProtocolReceiver(NULL),
-  mJackAudio(NULL)
+  mJackAudio(NULL),
+  mPacketHeader(NULL)
 {
   setupJackAudio();
-
   /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
   createHeader(DataProtocol::DEFAULT);
 }
@@ -80,6 +80,7 @@ JackTrip::~JackTrip()
   delete mDataProtocolSender;
   delete mDataProtocolReceiver;
   delete mJackAudio;
+  delete mPacketHeader;
 }
 
 
@@ -273,7 +274,7 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
     mPacketHeader = new DefaultHeader;
     break;
   case DataProtocol::JAMLINK :
-    //mHeader = new JamLinkHeader;
+    mPacketHeader = new JamLinkHeader;
     break;
   default :
     std::cerr << "ERROR: Undefined Header Type" << endl;
