@@ -53,21 +53,18 @@ class UdpDataProtocol : public DataProtocol
 public:
 
   /** \brief The class constructor 
+   * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
   UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode);
   
-  /** \brief The class constructor 
-   * \param runmode Sets the run mode, use either SENDER or RECEIVER
-   * \param peerHostOrIP IPv4 number or host name
-   */
-  //UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP);
-
   /** \brief The class destructor
    */
-  virtual ~UdpDataProtocol() {};  
+  virtual ~UdpDataProtocol();  
 
-
+  /** \brief Set the Peer address to connect to
+   * \param peerHostOrIP IPv4 number or host name
+   */
   void setPeerAddress(char* peerHostOrIP);
 
   /** \brief Receives a packet. It blocks until a packet is received
@@ -84,15 +81,23 @@ public:
    *
    * This function meakes sure we send a complete packet
    * of size n
-   * \param buff Buffer to send
+   * \param buf Buffer to send
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
   virtual int sendPacket(const char* buf, const size_t n);
   
+  /** \brief Obtains the peer address from the first UDP packet received. This address
+   * is used by the SERVER mode to connect back to the client.
+   * \param peerHostAddress QHostAddress to store the peer address
+   * \param port Receiving port
+   */
   virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
 					     uint16_t& port);
 
+  /** \brief Implements the Thread Loop. To start the thread, call start()
+   * ( DO NOT CALL run() )
+   */
   virtual void run();
 
 
@@ -106,17 +111,11 @@ private:
   int mPeerPort; ///< Peer Port number to Bind
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
 
-  //void setBindSocket();
-
   QUdpSocket mUdpSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address
 
-
-  /// \todo change this names and location
-  int8_t* audio_packet;
-  int8_t* full_packet;
-
-
+  int8_t* mAudioPacket; ///< Buffer to store Audio Packets
+  int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
 };
 
 #endif

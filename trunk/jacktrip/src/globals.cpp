@@ -35,14 +35,62 @@
  * \date August 2008
  */
 
-
 #include "globals.h"
+#include "types.h"
 
+#if defined ( __LINUX__ )
 #include <sched.h>
+#endif //__LINUX__
 
 #if defined ( __MAC_OSX__ )
+#include <mach/mach.h>
 #include <mach/thread_policy.h>
-#endif
+//#include <mach/processor.h>
+
+#include <mach/clock.h>
+#include <sys/kernel.h>
+//#include <mach/kern/clock.h>
+
+#include <mach/clock.h>
+#include <mach/machine.h>
+#include <mach/mach_time.h>
+//#include <mach/thread_call.h>
+#include <mach/processor.h>
+//#include <mach/macro_help.h>
+
+#endif //__MAC_OSX__
+
+
+#if defined ( __MAC_OSX__ )
+//*******************************************************************************
+//http://developer.apple.com/DOCUMENTATION/Darwin/Conceptual/KernelProgramming/scheduler/chapter_8_section_4.html
+int set_realtime(int period, int computation, int constraint)
+{
+  //AbsoluteTime time;
+  //clock_get_uptime((uint64_t *)&time);
+
+  //uint64_t result;
+  //clock_get_uptime(&result);
+  //clock_get_system_microtime(&result,&result);
+
+  struct thread_time_constraint_policy ttcpolicy;
+  int ret;
+  
+  ttcpolicy.period=period; // HZ/160
+  ttcpolicy.computation=computation; // HZ/3300;
+  ttcpolicy.constraint=constraint; // HZ/2200;
+  ttcpolicy.preemptible=1;
+  
+  if ((ret=thread_policy_set(mach_thread_self(),
+			     THREAD_TIME_CONSTRAINT_POLICY, (thread_policy_t)&ttcpolicy,
+			     THREAD_TIME_CONSTRAINT_POLICY_COUNT)) != KERN_SUCCESS) {
+    fprintf(stderr, "set_realtime() failed.\n");
+    return 0;
+  }
+  return 1;
+}
+#endif //__MAC_OSX__ 
+
 
 #if defined ( __LINUX__ )
 //*******************************************************************************
@@ -110,4 +158,4 @@ int set_realtime_priority (void)
     }
   return 0;
 }
-#endif
+#endif //__LINUX__

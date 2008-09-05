@@ -92,10 +92,14 @@ int get_fifo_priority (bool half);
 /// \brief Set fifo priority (if user has sufficient privileges).
 int set_fifo_priority (bool half);
 int set_realtime_priority (void);
-#endif
+#endif //__LINUX__
 //@}
 
-
-
-
+//@{
+// Mac OS X Specific Functions
+#if defined ( __MAC_OSX__ )
+int set_realtime(int period, int computation, int constraint);
+#endif //__MAC_OSX__ 
+//@}
+  
 #endif
