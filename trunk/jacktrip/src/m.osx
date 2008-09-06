@@ -28,7 +28,9 @@ qmake -makefile -o Makefile \
 "CONFIG -= app_bundle" \
 "QT -= gui" \
 "QT += network" \
-"LIBS += -ljack -framework CoreAudio -lm" \
+"INCLUDEPATH+=/usr/local/include" \
+"LIBS += -ljack -lm -framework CoreAudio" \
+"QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk" \
 "CONFIG += x86 ppc" \
 "TARGET = $APP_NAME" \
 "DEFINES += APP_NAME=${APP_NAME_QUOTES} __MAC_OSX__" \
@@ -43,3 +45,8 @@ echo "done"
 ## Notes:
 ## To link jack as framework
 ## "LIBS += -framework jack
+## "QMAKE_LFLAGS += -L/System/Library/Frameworks/Kernel.framework" \
+## "QMAKE_LFLAGS += -L/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Kernel.framework/Headers/kern" \
+## "QMAKE_LFLAGS += -L/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Kernel.framework/Headers/" \
+## "QMAKE_LFLAGS += -L/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Kernel.framework/" 
+## "LIBS += -ljack -lm -framework CoreAudio -lcrypto" \

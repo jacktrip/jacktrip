@@ -55,9 +55,11 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
 		   dataProtocolT DataProtocolType,
 		   int NumChans,
 		   int BufferQueueLength,
-		   JackAudioInterface::audioBitResolutionT AudioBitResolution) :
+		   JackAudioInterface::audioBitResolutionT AudioBitResolution,
+		   DataProtocol::packetHeaderTypeT PacketHeaderType) :
   mJackTripMode(JacktripMode),
   mDataProtocol(DataProtocolType),
+  mPacketHeaderType(PacketHeaderType),
   mNumChans(NumChans),
   mBufferQueueLength(BufferQueueLength),
   mSampleRate(0),
@@ -70,7 +72,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
 {
   setupJackAudio();
   /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
-  createHeader(DataProtocol::DEFAULT);
+  createHeader(mPacketHeaderType);
 }
 
 
@@ -212,8 +214,10 @@ void JackTrip::start()
   mDataProtocolReceiver->start();
 #elif defined ( __MAC_OSX__ )
   cout << "Using qt4 (MAC OS X) thread priority" << endl;
-  mDataProtocolSender->start(QThread::TimeCriticalPriority);
-  mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
+  //mDataProtocolSender->start(QThread::TimeCriticalPriority);
+  //mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
+  mDataProtocolSender->start();
+  mDataProtocolReceiver->start();
 #else
   std::cerr << "ERROR: Platform unknown or not supported" << endl;
   std::exit(1);

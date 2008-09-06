@@ -42,7 +42,7 @@
 #include <tr1/memory> // for shared_ptr
 #include <cstring>
 
-#include "types.h"
+#include "types_jacktrip.h"
 #include "globals.h"
 class JackTrip; // Forward Declaration
 class JackAudioInterface; // Forward Declaration
@@ -113,8 +113,10 @@ struct JamLinkHeaderStuct : public HeaderStruct
 class PacketHeader
 {
 public:
-  PacketHeader() {}; //: mHeader(NULL) {};
-  virtual ~PacketHeader() {}; // { delete mHeader; };
+  /// \brief The class Constructor
+  PacketHeader() : mSeqNumber(0) {};
+  /// \brief The class Destructor
+  virtual ~PacketHeader() {};
   
   /** \brief Return a time stamp in microseconds
    * \return Time stamp: microseconds since midnight (0 hour), January 1, 1970
@@ -130,9 +132,20 @@ public:
    */
   virtual void parseHeader() = 0;
 
-  /* \brief Increase sequence number for counter
+  /* \brief Increase sequence number for counter, a 16bit number
    */
-  virtual void increaseSequenceNumber() = 0;
+  virtual void increaseSequenceNumber()
+  {
+    mSeqNumber++;
+  };
+
+  /* \brief Returns the current sequence number
+   * \return 16bit Sequence number
+   */
+  virtual uint16_t getSequenceNumber() const
+  {
+    return mSeqNumber;
+  }
 
   /* \brief Get the header size in bytes
    */
@@ -151,6 +164,9 @@ public:
    * sizeof(header part) + sizeof(audio part)
    */
   virtual void putHeaderInPacket(int8_t* full_packet) = 0;
+
+private:
+  uint16_t mSeqNumber;
 };
 
 
@@ -217,20 +233,8 @@ public:
 class JamLinkHeader : public PacketHeader
 {
 public:
-  /*
-  //---------JAMLINK HEADER DRAFT----------------------------
-  /// \brief JamLink Header Struct
-  struct JamLinkHeaderStuct
-  {
-    // watch out for alignment -- need to be on 4 byte chunks
-    uint16_t Common; ///< Common part of the header, 16 bit
-    uint16_t SeqNumber; ///< Sequence Number
-    uint32_t TimeStamp; ///< Time Stamp
-  };
-  //---------------------------------------------------------
-  */
-
-  JamLinkHeader() {};
+  
+  JamLinkHeader();
   virtual ~JamLinkHeader() {};
 
   virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
@@ -240,8 +244,6 @@ public:
   virtual void putHeaderInPacket(int8_t* full_packet)
   {
     putHeaderInPacketBaseClass(full_packet, mHeader);
-    //std::memcpy(full_packet, reinterpret_cast<const void*>(&mHeader),
-    //	getHeaderSizeInBytes() );
   };
 
 private:

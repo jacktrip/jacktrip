@@ -36,7 +36,7 @@
  */
 
 #include "globals.h"
-#include "types.h"
+#include "types_jacktrip.h"
 
 #if defined ( __LINUX__ )
 #include <sched.h>
@@ -45,17 +45,33 @@
 #if defined ( __MAC_OSX__ )
 #include <mach/mach.h>
 #include <mach/thread_policy.h>
+
 //#include <mach/processor.h>
 
-#include <mach/clock.h>
-#include <sys/kernel.h>
+//#include <mach/clock.h>
+//#include <sys/kernel.h>
 //#include <mach/kern/clock.h>
 
-#include <mach/clock.h>
-#include <mach/machine.h>
-#include <mach/mach_time.h>
+//#include <Kernel/kern/clock.h>
+//#include <kern/kern_types.h>
+//m#include <kern/kern_types.h>
+//#include <Kernel/kern/clock.h>
+//#include <kern/clock.h>
+
+
+//#include <assert.h>
+//#include <CoreServices/CoreServices.h>
+//#include <mach/mach.h>
+//#include <mach/mach_time.h>
+//#include <unistd.h>
+
+
+
+
+//#include <mach/machine.h>
+//#include <mach/mach_time.h>
 //#include <mach/thread_call.h>
-#include <mach/processor.h>
+//#include <mach/processor.h>
 //#include <mach/macro_help.h>
 
 #endif //__MAC_OSX__
@@ -64,6 +80,7 @@
 #if defined ( __MAC_OSX__ )
 //*******************************************************************************
 //http://developer.apple.com/DOCUMENTATION/Darwin/Conceptual/KernelProgramming/scheduler/chapter_8_section_4.html
+//http://lists.apple.com/archives/darwin-dev/2007/Sep/msg00035.html
 int set_realtime(int period, int computation, int constraint)
 {
   //AbsoluteTime time;
@@ -107,8 +124,10 @@ int get_fifo_priority (bool half)
   //priority=min;
   return priority;
 }
+#endif //__LINUX__
 
 
+#if defined ( __LINUX__ )
 //*******************************************************************************
 int set_fifo_priority (bool half)
 {
@@ -142,8 +161,10 @@ int set_fifo_priority (bool half)
     }
   return priority;
 }
+#endif //__LINUX__
 
 
+#if defined ( __LINUX__ )
 //*******************************************************************************
 int set_realtime_priority (void)
 {

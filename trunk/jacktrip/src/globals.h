@@ -84,6 +84,7 @@ const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
 
 //*******************************************************************************
 /// \name Global Functions
+
 //@{
 // Linux Specific Functions
 #if defined ( __LINUX__ )
