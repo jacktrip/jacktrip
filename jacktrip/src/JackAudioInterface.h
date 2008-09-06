@@ -47,7 +47,7 @@
 #include <QVector>
 #include <QVarLengthArray>
 
-#include "types.h"
+#include "types_jacktrip.h"
 #include "RingBuffer.h"
 #include "ProcessPlugin.h"
 
@@ -117,8 +117,8 @@ public:
    */
   uint32_t getBufferSizeInBytes() const 
   { 
-    return (getBufferSizeInSamples()*sizeof(sample_t));
-  };
+    return (getBufferSizeInSamples() * getAudioBitResolution()/8);
+  }
   
   /** \brief Get the Audio Bit Resolution, in bits
    *

@@ -92,7 +92,9 @@ public:
 	   int NumChans = 2,
 	   int BufferQueueLength = 8,
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
-	   JackAudioInterface::BIT16);
+	   JackAudioInterface::BIT16,
+	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
+	   DataProtocol::DEFAULT);
   
   /// \brief The class destructor
   virtual ~JackTrip();
@@ -114,16 +116,24 @@ public:
   // 
   /// \brief Sets (override) JackTrip Mode after construction
   void setJackTripMode(jacktripModeT JacktripMode)
-  { mJackTripMode = JacktripMode; };
+  { mJackTripMode = JacktripMode; }
   /// \brief Sets (override) DataProtocol Type after construction
   void setDataProtocoType(dataProtocolT DataProtocolType)
-  {mDataProtocol = DataProtocolType; };
+  { mDataProtocol = DataProtocolType; }
+  /// \brief 
+  void setPacketHeaderType(DataProtocol::packetHeaderTypeT PacketHeaderType)
+  { 
+    mPacketHeaderType = PacketHeaderType;
+    delete mPacketHeader;
+    mPacketHeader = NULL;
+    createHeader(mPacketHeaderType);
+  }
   /// \brief Sets (override) Number of Channels after construction
   void setNumChannels(int NumChans)
-  { mNumChans=NumChans; };
-/// \brief Sets (override) Buffer Queue Length Mode after construction
+  { mNumChans=NumChans; }
+  /// \brief Sets (override) Buffer Queue Length Mode after construction
   void setBufferQueueLength(int BufferQueueLength)
-  { mBufferQueueLength = BufferQueueLength; };
+  { mBufferQueueLength = BufferQueueLength; }
   /// \brief Sets (override) Audio Bit Resolution after construction
   void setAudioBitResolution(JackAudioInterface::audioBitResolutionT AudioBitResolution)
   { mAudioBitResolution = AudioBitResolution; }
@@ -157,7 +167,9 @@ private:
 
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
-  dataProtocolT mDataProtocol; ///< Data Protocol
+  dataProtocolT mDataProtocol; ///< Data Protocol Tipe
+  DataProtocol::packetHeaderTypeT mPacketHeaderType;
+
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   uint32_t mSampleRate; ///< Sample Rate

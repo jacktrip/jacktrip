@@ -175,6 +175,11 @@ void UdpDataProtocol::run()
   set_fifo_priority (false);
 #endif
 
+#if defined ( __MAC_OSX__ )
+  set_realtime(1250000,60000,90000);
+#endif
+
+
   switch ( mRunMode )
     {
     case RECEIVER :

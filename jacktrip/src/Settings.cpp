@@ -55,7 +55,8 @@ Settings::Settings() :
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
   mAudioBitResolution(JackAudioInterface::BIT16),
-  mLoopBack(false)
+  mLoopBack(false),
+  mJamLink(false)
 {}
 
 
@@ -82,6 +83,7 @@ void Settings::parseInput(int argc, char** argv)
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
+    { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
   };
@@ -90,7 +92,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:q:b:lh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:q:b:ljh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -132,9 +134,13 @@ void Settings::parseInput(int argc, char** argv)
 	mBufferQueueLength = atoi(optarg);
       }
       break;
-    case 'l': //loopback
+    case 'l': // loopback
       //-------------------------------------------------------
       mLoopBack = true;
+      break;
+    case 'j': // jamlink
+      //-------------------------------------------------------
+      mJamLink = true;
       break;
     case 'h':
       //-------------------------------------------------------
@@ -184,6 +190,7 @@ void Settings::printUsage()
        << gDefaultQueueLength << ")" << endl;
   cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
+  cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
   cout << " -h, --help                               Prints this help" << endl;
   cout << "" << endl;
 }
@@ -197,6 +204,10 @@ void Settings::startJackTrip()
   // Set peer address in server mode
   if ( mJackTripMode == JackTrip::CLIENT ) {
     jacktrip.setPeerAddress(mPeerAddress.toLatin1().data()); }
+
+  // Set in JamLink Mode
+  if ( mJamLink ) {
+    jacktrip.setPacketHeaderType(DataProtocol::JAMLINK); }
 
   // Add Plugins
   if ( mLoopBack ) {
