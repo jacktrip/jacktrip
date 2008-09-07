@@ -42,7 +42,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 
-#include "types_jacktrip.h"
+#include "jacktrip_types.h"
 
 
 /** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read from

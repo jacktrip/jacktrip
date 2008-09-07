@@ -37,7 +37,7 @@
 
 
 #include "LoopBack.h"
-#include "types_jacktrip.h"
+#include "jacktrip_types.h"
 
 #include <cstring> // for memcpy
 

@@ -47,7 +47,7 @@
 #include <QVector>
 #include <QVarLengthArray>
 
-#include "types_jacktrip.h"
+#include "jacktrip_types.h"
 #include "RingBuffer.h"
 #include "ProcessPlugin.h"
 
