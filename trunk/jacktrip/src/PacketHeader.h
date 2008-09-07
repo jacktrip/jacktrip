@@ -42,7 +42,7 @@
 #include <tr1/memory> // for shared_ptr
 #include <cstring>
 
-#include "types_jacktrip.h"
+#include "jacktrip_types.h"
 #include "globals.h"
 class JackTrip; // Forward Declaration
 class JackAudioInterface; // Forward Declaration

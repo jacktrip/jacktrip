@@ -43,7 +43,7 @@
 #include <QHostAddress>
 
 #include "DataProtocol.h"
-#include "types_jacktrip.h"
+#include "jacktrip_types.h"
 
 
 /** \brief UDP implementation of DataProtocol class

@@ -36,7 +36,7 @@
  */
 
 #include "globals.h"
-#include "types_jacktrip.h"
+#include "jacktrip_types.h"
 
 #if defined ( __LINUX__ )
 #include <sched.h>
