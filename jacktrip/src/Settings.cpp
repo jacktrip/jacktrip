@@ -37,7 +37,7 @@
 
 #include "Settings.h"
 #include "LoopBack.h"
-#include "globals.h"
+#include "jacktrip_globals.h"
 
 #include <iostream>
 #include <getopt.h> // for command line parsing

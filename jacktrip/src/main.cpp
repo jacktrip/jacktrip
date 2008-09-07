@@ -45,7 +45,7 @@
 #include "JackTrip.h"
 #include "Settings.h"
 #include "TestRingBuffer.h"
-#include "globals.h"
+#include "jacktrip_globals.h"
 #include "LoopBack.h"
 #include "PacketHeader.h"
 #include <cmath>

@@ -36,7 +36,7 @@
  */
 
 #include "DataProtocol.h"
-#include "globals.h"
+#include "jacktrip_globals.h"
 #include "JackAudioInterface.h"
 #include "PacketHeader.h"
 #include "JackTrip.h"

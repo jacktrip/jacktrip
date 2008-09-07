@@ -36,7 +36,7 @@
  */
 
 #include "UdpDataProtocol.h"
-#include "globals.h"
+#include "jacktrip_globals.h"
 #include "JackTrip.h"
 
 
