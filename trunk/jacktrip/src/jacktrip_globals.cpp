@@ -35,7 +35,7 @@
  * \date August 2008
  */
 
-#include "globals.h"
+#include "jacktrip_globals.h"
 #include "jacktrip_types.h"
 
 #if defined ( __LINUX__ )

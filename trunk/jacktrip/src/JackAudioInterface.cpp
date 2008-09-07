@@ -37,7 +37,7 @@
 
 
 #include "JackAudioInterface.h"
-#include "globals.h"
+#include "jacktrip_globals.h"
 #include <QTextStream>
 #include <cstdlib>
 #include <cstring>

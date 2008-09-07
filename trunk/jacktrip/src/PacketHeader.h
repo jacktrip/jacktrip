@@ -43,7 +43,7 @@
 #include <cstring>
 
 #include "jacktrip_types.h"
-#include "globals.h"
+#include "jacktrip_globals.h"
 class JackTrip; // Forward Declaration
 class JackAudioInterface; // Forward Declaration
 

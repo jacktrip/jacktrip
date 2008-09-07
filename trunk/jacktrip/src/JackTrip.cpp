@@ -37,7 +37,7 @@
 
 #include "JackTrip.h"
 #include "UdpDataProtocol.h"
-#include "globals.h"
+#include "jacktrip_globals.h"
 
 #include <iostream>
 #include <unistd.h> // for usleep, sleep
