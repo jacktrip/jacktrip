@@ -133,8 +133,8 @@ void JamLinkHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio
     std::exit(1);
   }
   
-  mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND);
-  
+  mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND) + 64;
+
   // Sampling Rate
   int rate_type = JackAudio.getSampleRateType();
   switch (rate_type)
