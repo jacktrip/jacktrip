@@ -47,9 +47,9 @@
 class JackTrip; // Forward Declaration
 class JackAudioInterface; // Forward Declaration
 
-
+/// \brief Abstract Header Struct, Header Stucts should subclass it
 struct HeaderStruct{};
-//----------STRUCT-----------------------------------------
+
 /// \brief Default Header Struct
 struct DefaultHeaderStruct : public HeaderStruct
 {
@@ -63,6 +63,7 @@ public:
   uint8_t  NumOutChannels; ///<  Number of Output Channels
   // uint8_t BitResolution; ///< \todo implement this part
 };
+
 //---------------------------------------------------------
 //JamLink UDP Header:
 /************************************************************************/
@@ -91,8 +92,6 @@ const unsigned short ETX_8KHZ  = (7<<9);
 // able to express up to 512 SPP
 //inline unsigned short  ETX_SPP(const unsigned short a) { (a&0x01FF); }
 
-
-//---------JAMLINK HEADER DRAFT----------------------------
 /// \brief JamLink Header Struct
 struct JamLinkHeaderStuct : public HeaderStruct
 {
@@ -101,7 +100,6 @@ struct JamLinkHeaderStuct : public HeaderStruct
   uint16_t SeqNumber; ///< Sequence Number
   uint32_t TimeStamp; ///< Time Stamp
 };
-//---------------------------------------------------------
 
 
 //#######################################################################

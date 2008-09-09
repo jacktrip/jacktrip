@@ -162,7 +162,7 @@ void UdpDataProtocol::run()
   
   // Setup Full Packet buffer
   int full_packet_size = mJackTrip->getPacketSizeInBytes();
-  cout << "full_packet_size: " << full_packet_size << endl;
+  //cout << "full_packet_size: " << full_packet_size << endl;
   mFullPacket = new int8_t[full_packet_size];
   std::memset(mFullPacket, 0, full_packet_size); // set buffer to 0
 
@@ -190,7 +190,7 @@ void UdpDataProtocol::run()
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-       receivePacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
+      receivePacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
 
