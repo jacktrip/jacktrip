@@ -39,7 +39,7 @@
 // Main Page Documentation
 //-----------------------------------------------------------------
 /**
-\mainpage JackTrip API Documentation
+\mainpage JackTrip Documentation
     
 \section intro_sec About JackTrip
 
@@ -49,9 +49,11 @@ over the Internet.
 
 \section install_sec Installation
 
+<a href="https://sourceforge.net/project/showfiles.php?group_id=236811">Download</a>
+
 \subsection Linux
 
 \subsection Mac OS X
 
-    
+
 */
