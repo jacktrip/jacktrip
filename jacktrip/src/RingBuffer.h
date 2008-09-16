@@ -98,8 +98,22 @@ public:
    */
   void readSlotNonBlocking(int8_t* ptrToReadSlot);
 
-  void setMemoryInReadSlot(int8_t* ptrToReadSlot);
-  void setMemoryInReadSlotWithLastReadSlot(int8_t* ptrToReadSlot);
+
+protected:
+
+  /** \brief Sets the memory in the Read Slot when uderrun occurs. By default,
+   * this sets it to 0. Override this method in a subclass for a different behavior.
+   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+   */
+  virtual void setUnderrunReadSlot(int8_t* ptrToReadSlot);
+
+  /** \brief Uses the last read slot to set the memory in the Read Slot.
+   * 
+   * The last read slot is the last packet that arrived, so if no new packets are received, 
+   * it keeps looping the same packet.
+   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+   */
+  virtual void setMemoryInReadSlotWithLastReadSlot(int8_t* ptrToReadSlot);
 
 private:
 

@@ -55,6 +55,7 @@ Settings::Settings() :
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
   mAudioBitResolution(JackAudioInterface::BIT16),
+  mUnderrrunZero(false),
   mLoopBack(false),
   mJamLink(false)
 {}
@@ -82,6 +83,7 @@ void Settings::parseInput(int argc, char** argv)
     { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
+    { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
     { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
     { "help", no_argument, NULL, 'h' }, // Print Help
@@ -92,7 +94,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:q:b:ljh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:q:b:zljh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -133,6 +135,10 @@ void Settings::parseInput(int argc, char** argv)
       else {
 	mBufferQueueLength = atoi(optarg);
       }
+      break;
+    case 'z': // underrun to zero
+      //-------------------------------------------------------
+      mUnderrrunZero = true;
       break;
     case 'l': // loopback
       //-------------------------------------------------------
@@ -189,6 +195,7 @@ void Settings::printUsage()
   cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default " 
        << gDefaultQueueLength << ")" << endl;
   cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
+  cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
   cout << " -h, --help                               Prints this help" << endl;
@@ -201,12 +208,20 @@ void Settings::startJackTrip()
 {
   JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
 		    mBufferQueueLength, mAudioBitResolution);
+
+  // Set buffers to zero when underrun
+  if ( mUnderrrunZero ) {
+    cout << "Setting buffers to zero when underrun..." << endl;
+    jacktrip.setUnderRunMode(JackTrip::ZEROS);
+  }
+
   // Set peer address in server mode
   if ( mJackTripMode == JackTrip::CLIENT ) {
     jacktrip.setPeerAddress(mPeerAddress.toLatin1().data()); }
 
   // Set in JamLink Mode
   if ( mJamLink ) {
+    cout << "Running in JamLink Mode..." << endl;
     jacktrip.setPacketHeaderType(DataProtocol::JAMLINK); }
 
   // Add Plugins
