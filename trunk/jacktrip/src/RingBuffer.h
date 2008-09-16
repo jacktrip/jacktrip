@@ -98,7 +98,9 @@ public:
    */
   void readSlotNonBlocking(int8_t* ptrToReadSlot);
 
-  
+  void setMemoryInReadSlot(int8_t* ptrToReadSlot);
+  void setMemoryInReadSlotWithLastReadSlot(int8_t* ptrToReadSlot);
+
 private:
 
   /// \brief Resets the ring buffer for reads under-runs non-blocking

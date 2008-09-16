@@ -138,7 +138,7 @@ public:
   /** \brief Get the size of the audio part of the packets
    * \return size_bytes Size in bytes
    */
-  size_t getAudioPacketSize() { return(mAudioPacketSize); };
+  size_t getAudioPacketSizeInBites() { return(mAudioPacketSize); };
 
   /** \brief Set the peer address
    * \param peerHostOrIP IPv4 number or host name

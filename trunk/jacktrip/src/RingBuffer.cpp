@@ -170,18 +170,37 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     // Returns a buffer of zeros if there's nothing to read
     //std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
     std::memset(ptrToReadSlot, 0, mSlotSize);
+    //setMemoryInReadSlot(ptrToReadSlot);
     underrunReset();
     return;
   }
   
   // Copy mSlotSize bytes to ReadSlot
   std::memcpy(ptrToReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+  // Always save memory of the last read slot
+  //std::memcpy(mLastReadSlot, mRingBuffer+mReadPosition, mSlotSize);
   // Update write position
   mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
   mFullSlots--; //update full slots
   // Wake threads waitng for bufferIsNotFull condition
   mBufferIsNotFull.wakeAll();
 }
+
+
+//*******************************************************************************
+void RingBuffer::setMemoryInReadSlot(int8_t* ptrToReadSlot)
+{
+  std::memset(ptrToReadSlot, 0, mSlotSize);
+}
+
+
+//*******************************************************************************
+void RingBuffer::setMemoryInReadSlotWithLastReadSlot(int8_t* ptrToReadSlot)
+{
+  std::memcpy(ptrToReadSlot, mLastReadSlot, mSlotSize);
+}
+
+
 
 
 //*******************************************************************************

@@ -297,15 +297,17 @@ void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
   
   int8_t* audio_part;
   audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
-  std::memcpy(audio_part, audio_packet, mJackAudio->getBufferSizeInBytes());
-
+  //std::memcpy(audio_part, audio_packet, mJackAudio->getBufferSizeInBytes());
+  std::memcpy(audio_part, audio_packet, mJackAudio->getSizeInBytesPerChannel() * mNumChans);
 }
 
 
 //*******************************************************************************
 int JackTrip::getPacketSizeInBytes() const
 {
-  return (mJackAudio->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
+  //return (mJackAudio->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
+  return (mJackAudio->getSizeInBytesPerChannel() * mNumChans  +
+	  mPacketHeader->getHeaderSizeInBytes());
 }
 
 
@@ -314,5 +316,6 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
 {
   int8_t* audio_part;
   audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
-  std::memcpy(audio_packet, audio_part, mJackAudio->getBufferSizeInBytes());
+  //std::memcpy(audio_packet, audio_part, mJackAudio->getBufferSizeInBytes());
+  std::memcpy(audio_packet, audio_part, mJackAudio->getSizeInBytesPerChannel() * mNumChans);
 }
