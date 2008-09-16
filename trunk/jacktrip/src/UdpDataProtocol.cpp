@@ -157,13 +157,13 @@ void UdpDataProtocol::run()
 
   // Setup Audio Packet buffer 
   size_t audio_packet_size = getAudioPacketSizeInBites();
-  cout << "audio_packet_size: " << audio_packet_size << endl;
+  //cout << "audio_packet_size: " << audio_packet_size << endl;
   mAudioPacket = new int8_t[audio_packet_size];
   std::memset(mAudioPacket, 0, audio_packet_size); // set buffer to 0
   
   // Setup Full Packet buffer
   int full_packet_size = mJackTrip->getPacketSizeInBytes();
-  cout << "full_packet_size: " << full_packet_size << endl;
+  //cout << "full_packet_size: " << full_packet_size << endl;
   mFullPacket = new int8_t[full_packet_size];
   std::memset(mFullPacket, 0, full_packet_size); // set buffer to 0
 

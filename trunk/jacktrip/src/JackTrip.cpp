@@ -37,6 +37,7 @@
 
 #include "JackTrip.h"
 #include "UdpDataProtocol.h"
+#include "RingBufferWavetable.h"
 #include "jacktrip_globals.h"
 
 #include <iostream>
@@ -56,7 +57,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
 		   int NumChans,
 		   int BufferQueueLength,
 		   JackAudioInterface::audioBitResolutionT AudioBitResolution,
-		   DataProtocol::packetHeaderTypeT PacketHeaderType) :
+		   DataProtocol::packetHeaderTypeT PacketHeaderType,
+		   underrunModeT UnderRunMode) :
   mJackTripMode(JacktripMode),
   mDataProtocol(DataProtocolType),
   mPacketHeaderType(PacketHeaderType),
@@ -68,7 +70,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mDataProtocolSender(NULL),
   mDataProtocolReceiver(NULL),
   mJackAudio(NULL),
-  mPacketHeader(NULL)
+  mPacketHeader(NULL),
+  mUnderRunMode(UnderRunMode)
 {
   setupJackAudio();
   /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
@@ -145,10 +148,24 @@ void JackTrip::setupRingBuffers()
 {
   // Create RingBuffers with the apprioprate size
   /// \todo Make all this operations cleaner
-  mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
-					gDefaultOutputQueueLength) );
-  mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
-					   mBufferQueueLength) );
+  switch (mUnderRunMode) {
+  case WAVETABLE:
+    mSendRingBuffer.reset( new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					  gDefaultOutputQueueLength) );
+    mReceiveRingBuffer.reset( new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					     mBufferQueueLength) );
+    break;
+  case ZEROS:
+    mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					  gDefaultOutputQueueLength) );
+    mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					     mBufferQueueLength) );
+    break;
+  default: 
+    std::cerr << "ERROR: Underrun Mode not defined" << std::endl;
+    std::exit(1);
+    break;
+  }
 
   // Set RingBuffers pointers in protocols
   if ( (mDataProtocolSender == NULL) ||

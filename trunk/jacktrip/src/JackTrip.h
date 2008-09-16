@@ -77,6 +77,12 @@ public:
     SERVER, ///< Run in Server Mode
     CLIENT  ///< Run in Client Mode
   };
+
+  /// \brief Enum for the JackTrip Underrun Mode, when packets
+  enum underrunModeT {
+    WAVETABLE, ///< Loops on the last received packet
+    ZEROS  ///< Set new buffers to zero if there are no new ones
+  };
   //---------------------------------------------------------
 
 
@@ -94,7 +100,8 @@ public:
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
 	   JackAudioInterface::BIT16,
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
-	   DataProtocol::DEFAULT);
+	   DataProtocol::DEFAULT,
+	   underrunModeT UnderRunMode = WAVETABLE);
   
   /// \brief The class destructor
   virtual ~JackTrip();
@@ -137,6 +144,8 @@ public:
   /// \brief Sets (override) Audio Bit Resolution after construction
   void setAudioBitResolution(JackAudioInterface::audioBitResolutionT AudioBitResolution)
   { mAudioBitResolution = AudioBitResolution; }
+  void setUnderRunMode(underrunModeT UnderRunMode)
+  { mUnderRunMode = UnderRunMode; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -183,6 +192,7 @@ private:
   DataProtocol* mDataProtocolReceiver;
   JackAudioInterface* mJackAudio; ///< Interface to Jack Client
   PacketHeader* mPacketHeader;
+  underrunModeT mUnderRunMode; ///< underrunModeT Mode
 
   /// Shared (smart) Pointer for the Send RingBuffer
   std::tr1::shared_ptr<RingBuffer> mSendRingBuffer; 

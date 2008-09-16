@@ -124,6 +124,8 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
   
   // Copy mSlotSize bytes to ReadSlot
   std::memcpy(ptrToReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+  // Always save memory of the last read slot
+  std::memcpy(mLastReadSlot, mRingBuffer+mReadPosition, mSlotSize);
   // Update write position
   mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
   mFullSlots--; //update full slots
@@ -169,8 +171,8 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
   if (mFullSlots == 0) {
     // Returns a buffer of zeros if there's nothing to read
     //std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
-    std::memset(ptrToReadSlot, 0, mSlotSize);
-    //setMemoryInReadSlot(ptrToReadSlot);
+    //std::memset(ptrToReadSlot, 0, mSlotSize);
+    setUnderrunReadSlot(ptrToReadSlot);
     underrunReset();
     return;
   }
@@ -178,7 +180,7 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
   // Copy mSlotSize bytes to ReadSlot
   std::memcpy(ptrToReadSlot, mRingBuffer+mReadPosition, mSlotSize);
   // Always save memory of the last read slot
-  //std::memcpy(mLastReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+  std::memcpy(mLastReadSlot, mRingBuffer+mReadPosition, mSlotSize);
   // Update write position
   mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
   mFullSlots--; //update full slots
@@ -188,7 +190,7 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 
 
 //*******************************************************************************
-void RingBuffer::setMemoryInReadSlot(int8_t* ptrToReadSlot)
+void RingBuffer::setUnderrunReadSlot(int8_t* ptrToReadSlot)
 {
   std::memset(ptrToReadSlot, 0, mSlotSize);
 }
@@ -209,9 +211,9 @@ void RingBuffer::underrunReset()
 {
   // Advance the write pointer 1/2 the ring buffer
   //mWritePosition = ( mReadPosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
-  mWritePosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
-  mFullSlots += mNumSlots/2;
-  // Clear the whole buffer (Set the entire buffer to 0)
+  //mWritePosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
+  //mFullSlots += mNumSlots/2;
+  // There's nothing new to read, so we clear the whole buffer (Set the entire buffer to 0)
   std::memset(mRingBuffer, 0, mTotalSize);
 }
 
