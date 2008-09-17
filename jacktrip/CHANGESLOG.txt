@@ -4,7 +4,7 @@
 - (fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X version)
 - (fixed) Bug that was causing plug-ins not to behave correctly
 - (added) Loopback mode
-
+- (added) Underrun Modes: Wavetable (default) and set to zeros
 
 ---
 1.0 Alpha 1  - initial release
