@@ -114,14 +114,6 @@ public:
   /// \brief The class destructor
   virtual ~DataProtocol();
   
-  /** \brief Set the pointer to the RingBuffer that'll be use to read 
-   * or write
-   */
-  /*
-  void setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer)
-  { mRingBuffer = RingBuffer; };
-  */
-
   /** \brief Implements the thread loop
    *
    * Depending on the runmode, with will run a DataProtocol::SENDER thread or
@@ -159,9 +151,6 @@ protected:
    * \return SENDER or RECEIVER
    */
   runModeT getRunMode() const { return mRunMode; };
-
-  /// Smart Pointer to RingBuffer to read (for SENDER) or write (for RECEIVER)
-  //std::tr1::shared_ptr<RingBuffer> mRingBuffer;
 
   /// Boolean stop the execution of the thread
   volatile bool mStopped;

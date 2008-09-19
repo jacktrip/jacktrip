@@ -203,9 +203,11 @@ private:
   underrunModeT mUnderRunMode; ///< underrunModeT Mode
 
   /// Shared (smart) Pointer for the Send RingBuffer
-  std::tr1::shared_ptr<RingBuffer> mSendRingBuffer; 
+  //std::tr1::shared_ptr<RingBuffer> mSendRingBuffer;
+  RingBuffer* mSendRingBuffer;
   /// Shared (smart) Pointer for the Receive RingBuffer
-  std::tr1::shared_ptr<RingBuffer> mReceiveRingBuffer; 
+  //std::tr1::shared_ptr<RingBuffer> mReceiveRingBuffer; 
+  RingBuffer* mReceiveRingBuffer;
 
   //JackTripMediator mJackTripMediator;
 };
