@@ -73,6 +73,7 @@ DefaultHeader::DefaultHeader()
   mHeader.SamplingRate = 0;
   mHeader.NumInChannels = 0;
   mHeader.NumOutChannels = 0;
+  mHeader.Dummy = 0;
 }
 
 

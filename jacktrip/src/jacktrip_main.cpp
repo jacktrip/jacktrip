@@ -36,39 +36,33 @@
  */
 
 #include <iostream>
-#include <unistd.h>
-#include <getopt.h>
+
+#include <QCoreApplication>
 
 #include "JackAudioInterface.h"
 #include "UdpDataProtocol.h"
 #include "RingBuffer.h"
 #include "JackTrip.h"
 #include "Settings.h"
-#include "TestRingBuffer.h"
-#include "jacktrip_globals.h"
+//#include "TestRingBuffer.h"
 #include "LoopBack.h"
 #include "PacketHeader.h"
-#include <cmath>
+
+#include "jacktrip_globals.h"
 
 using std::cout; using std::endl;
 
 
 int main(int argc, char** argv)
 {
+
+  QCoreApplication app(argc, argv);
+
   // Get Settings from user
   // ----------------------
   Settings settings;
   settings.parseInput(argc, argv);
   settings.startJackTrip();
 
-  /*
-  // Add Plugins
-  if ( settings.getLoopBack() ) {
-    cout << "Running in Loop-Back Mode..." << endl;
-    std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(2));
-    jacktrip.appendProcessPlugin(loopback);
-  }
-  */
-  
-  return 0;
+  return app.exec();
 }

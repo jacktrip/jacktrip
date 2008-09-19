@@ -117,8 +117,10 @@ public:
   /** \brief Set the pointer to the RingBuffer that'll be use to read 
    * or write
    */
+  /*
   void setRingBuffer(std::tr1::shared_ptr<RingBuffer> RingBuffer)
   { mRingBuffer = RingBuffer; };
+  */
 
   /** \brief Implements the thread loop
    *
@@ -159,7 +161,7 @@ protected:
   runModeT getRunMode() const { return mRunMode; };
 
   /// Smart Pointer to RingBuffer to read (for SENDER) or write (for RECEIVER)
-  std::tr1::shared_ptr<RingBuffer> mRingBuffer;
+  //std::tr1::shared_ptr<RingBuffer> mRingBuffer;
 
   /// Boolean stop the execution of the thread
   volatile bool mStopped;
@@ -188,7 +190,7 @@ private:
   /// \todo check a better way to access the header from the subclasses
 protected:
   PacketHeader* mHeader; ///< Packet Header
-  JackTrip* mJackTrip;
+  JackTrip* mJackTrip; ///< JackTrip mediator class
 
 };
 

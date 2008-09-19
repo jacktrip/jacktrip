@@ -35,7 +35,7 @@
  * \date June 2008
  */
 
-
+#include "JackTrip.h"
 #include "JackAudioInterface.h"
 #include "jacktrip_globals.h"
 #include <QTextStream>
@@ -49,10 +49,12 @@ using std::cout; using std::cout;
 
 
 //*******************************************************************************
-JackAudioInterface::JackAudioInterface(int NumInChans, int NumOutChans,
-				       audioBitResolutionT AudioBitResolution)
-  : mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
-    mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution)
+JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
+				       int NumInChans, int NumOutChans,
+				       audioBitResolutionT AudioBitResolution) :
+  mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
+  mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution),
+  mClient(NULL), mJackTrip(jacktrip)
 {
   setupClient();
   setProcessCallback();
@@ -86,6 +88,7 @@ void JackAudioInterface::setupClient()
   /// \todo Write better warning messages. This following line displays very
   /// verbose message, check how to desable them.
   mClient = jack_client_open (client_name, options, &status, server_name);
+
   if (mClient == NULL) {
     fprintf (stderr, "jack_client_open() failed, "
     	     "status = 0x%2.0x\n", status);
@@ -330,6 +333,7 @@ void JackAudioInterface::jackShutdown (void*)
 
 
 //*******************************************************************************
+/*
 void JackAudioInterface::setRingBuffers
 (const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
  const std::tr1::shared_ptr<RingBuffer> OutRingBuffer)
@@ -337,6 +341,7 @@ void JackAudioInterface::setRingBuffers
   mInRingBuffer = InRingBuffer;
   mOutRingBuffer = OutRingBuffer;
 }
+*/
 
 
 //*******************************************************************************
@@ -350,7 +355,9 @@ void JackAudioInterface::computeNetworkProcessFromNetwork()
   // Output Process (from NETWORK to JACK)
   // ----------------------------------------------------------------
   // Read Audio buffer from RingBuffer (read from incoming packets)
-  mOutRingBuffer->readSlotNonBlocking(  mOutputPacket );
+  //mOutRingBuffer->readSlotNonBlocking( mOutputPacket );
+  mJackTrip->receiveNetworkPacket( mOutputPacket );
+
   // Extract separate channels to send to Jack
   for (int i = 0; i < mNumOutChans; i++) {
     //--------
@@ -400,7 +407,8 @@ void JackAudioInterface::computeNetworkProcessToNetwork()
     }
   }
   // Send Audio buffer to RingBuffer (these goes out as outgoing packets)
-  mInRingBuffer->insertSlotNonBlocking( mInputPacket );
+  //mInRingBuffer->insertSlotNonBlocking( mInputPacket );
+  mJackTrip->sendNetworkPacket( mInputPacket );
 }
 
 

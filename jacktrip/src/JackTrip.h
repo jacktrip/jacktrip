@@ -157,6 +157,14 @@ public:
   void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
   int getPacketSizeInBytes() const;
   void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
+  void sendNetworkPacket(const int8_t* ptrToSlot)
+  { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot); }
+  void receiveNetworkPacket(int8_t* ptrToReadSlot)
+  { mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot); }
+  void readAudioBuffer(int8_t* ptrToReadSlot)
+  { mSendRingBuffer->readSlotBlocking(ptrToReadSlot); }
+  void writeAudioBuffer(const int8_t* ptrToSlot)
+  { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
   //@}
   //------------------------------------------------------------------------------------
 

@@ -56,6 +56,8 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
   mRingBuffer(new int8_t[mTotalSize]),
   mLastReadSlot(new int8_t[mSlotSize])
 {
+  //QMutexLocker locker(&mMutex); // lock the mutex  
+  
   // Verify if there's enough space to for the buffers
   if ( (mRingBuffer == NULL) || (mLastReadSlot == NULL) ) {
     std::cerr << "ERROR: RingBuffer out of memory!" << endl;
@@ -64,12 +66,19 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
   }
 
   // Set the buffers to zeros
+  /*
   for (int i=0; i<mTotalSize; i++) {
     mRingBuffer[i] = 0;    // Initialize all elements to zero.
   }
+  */
+  std::memset(mRingBuffer, 0, mTotalSize); // set buffer to 0
+  /*
   for (int i=0; i<mSlotSize; i++) {
     mLastReadSlot[i] = 0;    // Initialize all elements to zero.
   }
+  */
+  std::memset(mLastReadSlot, 0, mSlotSize); // set buffer to 0
+  
   
   // Advance write position to half of the RingBuffer
   mWritePosition = ( (NumSlots/2) * SlotSize ) % mTotalSize;
