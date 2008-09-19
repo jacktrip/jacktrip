@@ -93,7 +93,7 @@ JackTrip::~JackTrip()
 void JackTrip::setupJackAudio()
 {
   // Create JackAudioInterface Client Object
-  mJackAudio = new JackAudioInterface(mNumChans, mNumChans, mAudioBitResolution);
+  mJackAudio = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
   mSampleRate = mJackAudio->getSampleRate();
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << gPrintSeparator << std::endl;
@@ -175,11 +175,12 @@ void JackTrip::setupRingBuffers()
   }
   else {
     // Set Ring Buffers
-    mDataProtocolSender->setRingBuffer(mSendRingBuffer);
-    mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
-    mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
+    //mDataProtocolSender->setRingBuffer(mSendRingBuffer);
+    //mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
+    //mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
 
     // Set the header from jack
+    /// \todo Put this in a better place
     mDataProtocolSender->fillHeaderCommonFromJack(*mJackAudio);
   }
 }
@@ -225,6 +226,7 @@ void JackTrip::start()
   // Start Threads
   mJackAudio->startProcess();
 
+  /*
 #if defined ( __LINUX__ )
   cout << "Using Linux thread priority" << endl;
   mDataProtocolSender->start();
@@ -239,8 +241,12 @@ void JackTrip::start()
   std::cerr << "ERROR: Platform unknown or not supported" << endl;
   std::exit(1);
 #endif
+  */
 
-  // Wait here until the threads return from run() methos
+  mDataProtocolSender->start();
+  mDataProtocolReceiver->start();
+
+  // Wait here until the threads return from run() method
   mDataProtocolSender->wait();
   mDataProtocolReceiver->wait();
 }

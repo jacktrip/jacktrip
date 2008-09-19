@@ -75,8 +75,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode)
 //*******************************************************************************
 UdpDataProtocol::~UdpDataProtocol()
 {
-  delete mAudioPacket;
-  delete mFullPacket;
+  delete[] mAudioPacket;
+  delete[] mFullPacket;
 } 
 
 
@@ -132,7 +132,7 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 //*******************************************************************************
 int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
-  int n_bytes = mUdpSocket.writeDatagram (buf, n, mPeerAddress, mPeerPort);
+  int n_bytes = mUdpSocket.writeDatagram(buf, n, mPeerAddress, mPeerPort);
   return n_bytes;
 }
 
@@ -152,6 +152,7 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
+  //cout << "TTHREAD UDP SOCKET ================= "<< mUdpSocket.thread() << endl;
   //std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
   //std::cout << gPrintSeparator << std::endl;
 
@@ -208,7 +209,8 @@ void UdpDataProtocol::run()
 	    mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
 	    // ...so we want to send the packet to the buffer as soon as we get in from
 	    // the socket, i.e., non-blocking
-	    mRingBuffer->insertSlotNonBlocking(mAudioPacket);
+	    //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
+	    mJackTrip->writeAudioBuffer(mAudioPacket);
 	  }
 	}
       break;
@@ -219,10 +221,14 @@ void UdpDataProtocol::run()
       while ( !mStopped )
 	{
 	  // We block until there's stuff available to read
-	  mRingBuffer->readSlotBlocking(mAudioPacket);
+	  //mRingBuffer->readSlotBlocking(mAudioPacket);
+	  mJackTrip->readAudioBuffer( mAudioPacket );
 	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 	  // This will send the packet immediately
+	  //cout << "Before Sending ========================= "  << endl;
+	  //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
+	  //cout << "bytes_sent ============================= " << bytes_sent << endl;
 	}
       break;
     }

@@ -51,6 +51,9 @@
 #include "RingBuffer.h"
 #include "ProcessPlugin.h"
 
+class JackTrip; //forward declaration
+
+
 /** \brief Class that provides an interface with the Jack Audio Server
  *
  * \todo implement srate_callback
@@ -82,11 +85,13 @@ public:
   };
 
   /** \brief The class constructor
+   * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
    */
-  JackAudioInterface(int NumInChans, int NumOutChans,
+  JackAudioInterface(JackTrip* jacktrip,
+		     int NumInChans, int NumOutChans,
 		     audioBitResolutionT AudioBitResolution = BIT16);
 
   /** \brief The class destructor
@@ -156,8 +161,10 @@ public:
    * \param InRingBuffer RingBuffer to read samples <B>from</B>
    * \param OutRingBuffer RingBuffer to write samples <B>to</B>
    */
+  /*
   void setRingBuffers(const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
 		      const std::tr1::shared_ptr<RingBuffer> OutRingBuffer);
+  */
 
   /** \brief Append a ProcessPlugin. The order of processing is determined by
    * the order by which appending is done.
@@ -274,9 +281,6 @@ private:
   //QVarLengthArray<QVarLengthArray<sample_t> > mOutProcessBuffer;
 
 
-
-
-
   /// Smart Pointer to RingBuffer to read from (input)
   std::tr1::shared_ptr<RingBuffer> mInRingBuffer;
   /// Smart Pointer to RingBuffer to write from (output)
@@ -288,6 +292,8 @@ private:
 
   /// Vector of Smart Pointer to ProcesPlugin<EM>s</EM>
   QVector<std::tr1::shared_ptr<ProcessPlugin> > mProcessPlugins;
+  JackTrip* mJackTrip; ///< JackTrip mediator class
 };
+
 
 #endif
