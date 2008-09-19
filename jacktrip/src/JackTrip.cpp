@@ -71,7 +71,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mDataProtocolReceiver(NULL),
   mJackAudio(NULL),
   mPacketHeader(NULL),
-  mUnderRunMode(UnderRunMode)
+  mUnderRunMode(UnderRunMode),
+  mSendRingBuffer(NULL),
+  mReceiveRingBuffer(NULL)
 {
   setupJackAudio();
   /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
@@ -86,6 +88,8 @@ JackTrip::~JackTrip()
   delete mDataProtocolReceiver;
   delete mJackAudio;
   delete mPacketHeader;
+  delete mSendRingBuffer;
+  delete mReceiveRingBuffer;
 }
 
 
@@ -150,16 +154,29 @@ void JackTrip::setupRingBuffers()
   /// \todo Make all this operations cleaner
   switch (mUnderRunMode) {
   case WAVETABLE:
+    /*
     mSendRingBuffer.reset( new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
 					  gDefaultOutputQueueLength) );
     mReceiveRingBuffer.reset( new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
 					     mBufferQueueLength) );
+    */
+    mSendRingBuffer = new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					      gDefaultOutputQueueLength);
+    mReceiveRingBuffer = new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+						 mBufferQueueLength);
+    
     break;
   case ZEROS:
+    /*
     mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
 					  gDefaultOutputQueueLength) );
     mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
 					     mBufferQueueLength) );
+    */
+    mSendRingBuffer = new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+				     gDefaultOutputQueueLength);
+    mReceiveRingBuffer = new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
+					mBufferQueueLength);
     break;
   default: 
     std::cerr << "ERROR: Underrun Mode not defined" << std::endl;
