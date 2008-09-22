@@ -45,6 +45,7 @@
 #include "DataProtocol.h"
 #include "JackAudioInterface.h"
 #include "PacketHeader.h"
+#include "RingBuffer.h"
 
 /** \brief Default values
  */

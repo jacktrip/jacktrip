@@ -48,7 +48,6 @@
 #include <QVarLengthArray>
 
 #include "jacktrip_types.h"
-#include "RingBuffer.h"
 #include "ProcessPlugin.h"
 
 class JackTrip; //forward declaration
@@ -274,17 +273,6 @@ private:
 
   QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
   QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
-
-  ///< Vector of Input buffers/channel for ProcessPlugin
-  //QVarLengthArray<QVarLengthArray<sample_t> > mInProcessBuffer;
-  ///< Vector of Output buffers/channel for ProcessPlugin
-  //QVarLengthArray<QVarLengthArray<sample_t> > mOutProcessBuffer;
-
-
-  /// Smart Pointer to RingBuffer to read from (input)
-  std::tr1::shared_ptr<RingBuffer> mInRingBuffer;
-  /// Smart Pointer to RingBuffer to write from (output)
-  std::tr1::shared_ptr<RingBuffer> mOutRingBuffer;
 
   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer

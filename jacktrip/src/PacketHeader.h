@@ -45,7 +45,7 @@
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
 class JackTrip; // Forward Declaration
-class JackAudioInterface; // Forward Declaration
+
 
 /// \brief Abstract Header Struct, Header Stucts should subclass it
 struct HeaderStruct{};
@@ -243,7 +243,7 @@ public:
 
   virtual void fillHeaderCommonFromAudio();
   virtual void parseHeader() {};
-  virtual void checkPeerSettings(int8_t* full_packet) {}; 
+  virtual void checkPeerSettings(int8_t* full_packet) {}
   virtual void increaseSequenceNumber() {};
   virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); };
   virtual void putHeaderInPacket(int8_t* full_packet)

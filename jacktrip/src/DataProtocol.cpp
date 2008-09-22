@@ -37,8 +37,6 @@
 
 #include "DataProtocol.h"
 #include "jacktrip_globals.h"
-#include "JackAudioInterface.h"
-#include "PacketHeader.h"
 #include "JackTrip.h"
 
 #include <iostream>
@@ -52,8 +50,7 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 DataProtocol::DataProtocol(JackTrip* jacktrip,
-			   const runModeT runmode,
-			   const packetHeaderTypeT headertype) : 
+			   const runModeT runmode) : 
   mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mJackTrip(jacktrip)
 {}
 
@@ -61,12 +58,3 @@ DataProtocol::DataProtocol(JackTrip* jacktrip,
 //*******************************************************************************
 DataProtocol::~DataProtocol()
 {}
-
-
-//*******************************************************************************
-/*
-void DataProtocol::fillHeaderCommonFromAudio(const JackAudioInterface& jackaudio)
-{
-
-}
-*/

@@ -47,10 +47,8 @@
 #include <QThread>
 #include <QHostAddress>
 
-#include "RingBuffer.h"
-class PacketHeader; // forward declaration
-class JackAudioInterface; //forward declaration
-class JackTrip;
+class JackTrip; // forward declaration
+
 
 /** \brief Base class that defines the transmission protocol.
  * 
@@ -108,8 +106,7 @@ public:
    * \param headertype packetHeaderTypeT header type to use for packets
    */
   DataProtocol(JackTrip* jacktrip,
-	       const runModeT runmode,
-	       const packetHeaderTypeT headertype = DEFAULT);
+	       const runModeT runmode);
   
   /// \brief The class destructor
   virtual ~DataProtocol();
@@ -139,8 +136,6 @@ public:
    * \todo implement here instead of in the subclass UDP
    */
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
-
-  //void fillHeaderCommonFromAudio(const JackAudioInterface& jackaudio);
 
   virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
 					     uint16_t& port) = 0;

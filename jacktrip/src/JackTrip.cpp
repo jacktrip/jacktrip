@@ -183,23 +183,6 @@ void JackTrip::setupRingBuffers()
     std::exit(1);
     break;
   }
-
-  // Set RingBuffers pointers in protocols
-  if ( (mDataProtocolSender == NULL) ||
-       (mDataProtocolReceiver == NULL) || (mJackAudio == NULL) ) {
-    std::cerr << "ERROR: DataProtocols or JackAudio have not been inizialized" << std::endl;
-    std::exit(1);
-  }
-  else {
-    // Set Ring Buffers
-    //mDataProtocolSender->setRingBuffer(mSendRingBuffer);
-    //mDataProtocolReceiver->setRingBuffer(mReceiveRingBuffer);
-    //mJackAudio->setRingBuffers(mSendRingBuffer, mReceiveRingBuffer);
-
-    // Set the header from jack
-    /// \todo Put this in a better place
-    //mPacketHeader->fillHeaderCommonFromAudio();
-  }
 }
 
 

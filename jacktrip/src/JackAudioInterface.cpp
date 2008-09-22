@@ -35,17 +35,17 @@
  * \date June 2008
  */
 
-#include "JackTrip.h"
 #include "JackAudioInterface.h"
 #include "jacktrip_globals.h"
-#include <QTextStream>
+#include "JackTrip.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
 
+#include <QTextStream>
+
 using std::cout; using std::cout;
-/// \todo Check that the RingBuffer Pointer have indeed been initialized before
-/// computing anything
 
 
 //*******************************************************************************
@@ -218,7 +218,7 @@ int JackAudioInterface::getSampleRateFromType(samplingRateT rate_type)
       return sample_rate;
       break;
     case SR44 :
-      sample_rate = 44000;
+      sample_rate = 44100;
       return sample_rate;
       break;
     case SR48 :
