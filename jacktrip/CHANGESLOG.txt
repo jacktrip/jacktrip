@@ -5,6 +5,7 @@
 - (fixed) Bug that was causing plug-ins not to behave correctly
 - (added) Loopback mode
 - (added) Underrun Modes: Wavetable (default) and set to zeros
+- (added) Check for peer audio settings, program exists if they don't match
 
 ---
 1.0 Alpha 1  - initial release
