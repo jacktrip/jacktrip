@@ -36,7 +36,6 @@
  */
 
 #include "PacketHeader.h"
-#include "JackAudioInterface.h"
 #include "JackTrip.h"
 
 #include <sys/time.h>
@@ -44,7 +43,6 @@
 #include <iostream>
 
 using std::cout; using std::endl;
-
 
 
 //#######################################################################
@@ -102,14 +100,31 @@ void DefaultHeader::fillHeaderCommonFromAudio()
 //***********************************************************************
 void DefaultHeader::checkPeerSettings(int8_t* full_packet)
 {
-  cout << "CHECKING PEER" << endl;
   DefaultHeaderStruct* peer_header;
   peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
-  if ( peer_header->BufferSize != mHeader.BufferSize ) {
-    std::cerr << "ERROR: Peer Buffer size is  : " << peer_header->BufferSize << endl;
-    std::cerr << "       Local Buffer size is : " << mHeader.BufferSize << endl;
-    std::exit(1);
-  }
+
+  if ( peer_header->BufferSize != mHeader.BufferSize ) 
+    {
+      std::cerr << "ERROR: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
+      std::cerr << "       Local Buffer Size is : " << mHeader.BufferSize << endl;
+      std::cerr << "Make sure both machines use same buffer size" << endl;
+      std::cerr << "Exiting program..." << endl;
+      std::exit(1);
+    }
+
+  if ( peer_header->SamplingRate != mHeader.SamplingRate ) 
+    {
+      std::cerr << "ERROR: Peer Sampling Rate is  : " << 
+	JackAudioInterface::getSampleRateFromType
+	( static_cast<JackAudioInterface::samplingRateT>(peer_header->SamplingRate) ) << endl;
+      std::cerr << "       Local Sampling Rate is  : " << 
+	JackAudioInterface::getSampleRateFromType
+	( static_cast<JackAudioInterface::samplingRateT>(mHeader.SamplingRate) ) << endl;
+      std::cerr << "Make sure both machines use the same Sampling Rate" << endl;
+      std::cerr << "Exiting program..." << endl;
+      std::exit(1);
+    }
+  /// \todo Check number of channels and other parameters
 }
 
 

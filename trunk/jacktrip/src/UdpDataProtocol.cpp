@@ -39,7 +39,6 @@
 #include "jacktrip_globals.h"
 #include "JackTrip.h"
 
-
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
@@ -180,11 +179,10 @@ void UdpDataProtocol::run()
 #if defined ( __MAC_OSX__ )
   set_realtime(1250000,60000,90000);
 #endif
-
-
+  
   switch ( mRunMode )
     {
-    case RECEIVER :
+    case RECEIVER : {
       //----------------------------------------------------------------------------------- 
       // Wait for the first packet to be ready and obtain address
       // from that packet
@@ -192,9 +190,16 @@ void UdpDataProtocol::run()
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      receivePacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
+      while ( !mUdpSocket.hasPendingDatagrams() ) {}
+      int first_packet_size = mUdpSocket.pendingDatagramSize();
+      // The following line is the same as
+      // int8_t* first_packet = new int8_t[first_packet_size];
+      // but avoids memory leaks
+      std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
+      receivePacket( reinterpret_cast<char*>(first_packet.get()), first_packet_size);
+      //receivePacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
       // Check that peer has the same audio settings
-      mJackTrip->checkPeerSettings(mFullPacket);
+      mJackTrip->checkPeerSettings(first_packet.get());
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
 
@@ -215,10 +220,9 @@ void UdpDataProtocol::run()
 	    mJackTrip->writeAudioBuffer(mAudioPacket);
 	  }
 	}
-      break;
+      break; }
       
-      
-    case SENDER : 
+    case SENDER : {
       //----------------------------------------------------------------------------------- 
       while ( !mStopped )
 	{
@@ -232,6 +236,6 @@ void UdpDataProtocol::run()
 	  sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  //cout << "bytes_sent ============================= " << bytes_sent << endl;
 	}
-      break;
+      break; }
     }
 }
