@@ -47,19 +47,13 @@
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
-/** \brief Default values
- */
-/*
-const dataProtocolT DefaultDataProtocolType = UDP;
-const int DefaultNumChans = 2;
-const int DefaultSampleRate = 48000;
-const int DefaultAudioBufferSize = 128;
-const int DefaultAudioBitResolution = 16;
-*/
 
-/** \brief
+/** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
+ * to a listening server) to send audio streams in the network.
  *
- * \todo FINISH THIS: This class also acts as a Mediator between all the other class
+ * All audio and network settings can be set in this class.
+ * This class also acts as a Mediator between all the other class.
+ * Classes that uses JackTrip methods need to register with it.
  */
 class JackTrip
 {
@@ -194,16 +188,15 @@ private:
   /// \brief Start for the SERVER mode
   void serverStart();
 
-
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol Tipe
-  DataProtocol::packetHeaderTypeT mPacketHeaderType;
+  DataProtocol::packetHeaderTypeT mPacketHeaderType; ///< Packet Header Type
 
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   uint32_t mSampleRate; ///< Sample Rate
   uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
-  JackAudioInterface::audioBitResolutionT mAudioBitResolution;
+  JackAudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 
   /// Pointer to Abstract Type DataProtocol that sends packets
@@ -211,17 +204,13 @@ private:
   ///< Pointer to Abstract Type DataProtocol that receives packets
   DataProtocol* mDataProtocolReceiver;
   JackAudioInterface* mJackAudio; ///< Interface to Jack Client
-  PacketHeader* mPacketHeader;
+  PacketHeader* mPacketHeader; ///< Pointer to Packet Header
   underrunModeT mUnderRunMode; ///< underrunModeT Mode
 
-  /// Shared (smart) Pointer for the Send RingBuffer
-  //std::tr1::shared_ptr<RingBuffer> mSendRingBuffer;
+  /// Pointer for the Send RingBuffer
   RingBuffer* mSendRingBuffer;
-  /// Shared (smart) Pointer for the Receive RingBuffer
-  //std::tr1::shared_ptr<RingBuffer> mReceiveRingBuffer; 
+  /// Pointer for the Receive RingBuffer
   RingBuffer* mReceiveRingBuffer;
-
-  //JackTripMediator mJackTripMediator;
 };
 
 #endif
