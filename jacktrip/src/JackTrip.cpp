@@ -198,7 +198,7 @@ void JackTrip::setupRingBuffers()
 
     // Set the header from jack
     /// \todo Put this in a better place
-    mDataProtocolSender->fillHeaderCommonFromJack(*mJackAudio);
+    //mPacketHeader->fillHeaderCommonFromAudio();
   }
 }
 
@@ -315,10 +315,10 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
 {
   switch (headertype) {
   case DataProtocol::DEFAULT :
-    mPacketHeader = new DefaultHeader;
+    mPacketHeader = new DefaultHeader(this);
     break;
   case DataProtocol::JAMLINK :
-    mPacketHeader = new JamLinkHeader;
+    mPacketHeader = new JamLinkHeader(this);
     break;
   default :
     std::cerr << "ERROR: Undefined Header Type" << endl;
@@ -332,7 +332,7 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
 //*******************************************************************************
 void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
 {
-  mPacketHeader->fillHeaderCommonFromJack(*mJackAudio);
+  mPacketHeader->fillHeaderCommonFromAudio();
   mPacketHeader->putHeaderInPacket(full_packet);
   
   int8_t* audio_part;
@@ -358,4 +358,11 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
   audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
   //std::memcpy(audio_packet, audio_part, mJackAudio->getBufferSizeInBytes());
   std::memcpy(audio_packet, audio_part, mJackAudio->getSizeInBytesPerChannel() * mNumChans);
+}
+
+
+//*******************************************************************************
+void JackTrip::checkPeerSettings(int8_t* full_packet)
+{
+  mPacketHeader->checkPeerSettings(full_packet);
 }

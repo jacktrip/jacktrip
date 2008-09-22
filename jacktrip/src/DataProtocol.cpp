@@ -54,38 +54,19 @@ using std::cout; using std::endl;
 DataProtocol::DataProtocol(JackTrip* jacktrip,
 			   const runModeT runmode,
 			   const packetHeaderTypeT headertype) : 
-  mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mHeader(NULL),
-  mJackTrip(jacktrip)
-{
-  switch (headertype) {
-  case DEFAULT :
-    mHeader = new DefaultHeader;
-    break;
-  case JAMLINK :
-    //mHeader = new JamLinkHeader;
-    break;
-  default:
-    std::cerr << "ERROR: Undefined Header Type" << endl;
-    std::cerr << "Exiting Program..." << endl;
-    std::exit(1);
-    break;
-  }
-
-  /////////////////////////////////////////////////
-  //mJackTrip->createHeader(headertype);
-  /////////////////////////////////////////////////
-}
+  mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mJackTrip(jacktrip)
+{}
 
 
 //*******************************************************************************
 DataProtocol::~DataProtocol()
-{
-  delete mHeader;
-}
+{}
 
 
 //*******************************************************************************
-void DataProtocol::fillHeaderCommonFromJack(const JackAudioInterface& jackaudio)
+/*
+void DataProtocol::fillHeaderCommonFromAudio(const JackAudioInterface& jackaudio)
 {
-  mHeader->fillHeaderCommonFromJack(jackaudio);
+
 }
+*/

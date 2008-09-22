@@ -165,6 +165,15 @@ public:
   { mSendRingBuffer->readSlotBlocking(ptrToReadSlot); }
   void writeAudioBuffer(const int8_t* ptrToSlot)
   { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
+  uint32_t getBufferSizeInSamples() const
+  { return mJackAudio->getBufferSizeInSamples(); }
+  JackAudioInterface::samplingRateT getSampleRateType() const
+  { return mJackAudio->getSampleRateType(); }
+  int getNumInputChannels() const
+  { return mJackAudio->getNumInputChannels(); }
+  int getNumOutputChannels() const
+  {return mJackAudio->getNumOutputChannels(); }
+  void checkPeerSettings(int8_t* full_packet);
   //@}
   //------------------------------------------------------------------------------------
 

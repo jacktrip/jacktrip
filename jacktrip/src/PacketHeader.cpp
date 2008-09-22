@@ -37,6 +37,7 @@
 
 #include "PacketHeader.h"
 #include "JackAudioInterface.h"
+#include "JackTrip.h"
 
 #include <sys/time.h>
 #include <cstdlib>
@@ -49,6 +50,12 @@ using std::cout; using std::endl;
 //#######################################################################
 //####################### PacketHeader ##################################
 //#######################################################################
+//***********************************************************************
+PacketHeader::PacketHeader(JackTrip* jacktrip) : 
+  mSeqNumber(0), mJackTrip(jacktrip)
+{}
+
+
 //***********************************************************************
 uint64_t PacketHeader::usecTime()
 {
@@ -65,7 +72,8 @@ uint64_t PacketHeader::usecTime()
 //####################### DefaultHeader #################################
 //#######################################################################
 //***********************************************************************
-DefaultHeader::DefaultHeader()
+DefaultHeader::DefaultHeader(JackTrip* jacktrip) : 
+  PacketHeader(jacktrip), mJackTrip(jacktrip)
 {
   mHeader.TimeStamp = 0;
   mHeader.SeqNumber = 0;  
@@ -78,16 +86,30 @@ DefaultHeader::DefaultHeader()
 
 
 //***********************************************************************
-void DefaultHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio)
+void DefaultHeader::fillHeaderCommonFromAudio()
 {
-  mHeader.BufferSize = JackAudio.getBufferSizeInSamples();
-  mHeader.SamplingRate = JackAudio.getSampleRateType ();
-  mHeader.NumInChannels = JackAudio.getNumInputChannels();
-  mHeader.NumOutChannels = JackAudio.getNumOutputChannels();
+  mHeader.BufferSize = mJackTrip->getBufferSizeInSamples();
+  mHeader.SamplingRate = mJackTrip->getSampleRateType ();
+  mHeader.NumInChannels = mJackTrip->getNumInputChannels();
+  mHeader.NumOutChannels = mJackTrip->getNumOutputChannels();
   mHeader.SeqNumber = 0;
   mHeader.TimeStamp = PacketHeader::usecTime();
   //cout << mHeader.TimeStamp << endl;
   //printHeader();
+}
+
+
+//***********************************************************************
+void DefaultHeader::checkPeerSettings(int8_t* full_packet)
+{
+  cout << "CHECKING PEER" << endl;
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  if ( peer_header->BufferSize != mHeader.BufferSize ) {
+    std::cerr << "ERROR: Peer Buffer size is  : " << peer_header->BufferSize << endl;
+    std::cerr << "       Local Buffer size is : " << mHeader.BufferSize << endl;
+    std::exit(1);
+  }
 }
 
 
@@ -115,7 +137,8 @@ void DefaultHeader::printHeader() const
 //####################### JamLinkHeader #################################
 //#######################################################################
 //***********************************************************************
-JamLinkHeader::JamLinkHeader()
+JamLinkHeader::JamLinkHeader(JackTrip* jacktrip) :
+  PacketHeader(jacktrip), mJackTrip(jacktrip)
 {
   mHeader.Common = 0;
   mHeader.SeqNumber = 0;
@@ -124,10 +147,10 @@ JamLinkHeader::JamLinkHeader()
 
 
 //***********************************************************************
-void JamLinkHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio)
+void JamLinkHeader::fillHeaderCommonFromAudio()
 {
   // Check number of channels
-  int num_inchannels = JackAudio.getNumInputChannels();
+  int num_inchannels = mJackTrip->getNumInputChannels();
   if ( num_inchannels != 1 ) {
     std::cerr << "ERROR: JamLink only support ONE channel. Run JackTrip using only one channel"
 	      << endl;
@@ -137,7 +160,7 @@ void JamLinkHeader::fillHeaderCommonFromJack(const JackAudioInterface& JackAudio
   mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND) + 64;
 
   // Sampling Rate
-  int rate_type = JackAudio.getSampleRateType();
+  int rate_type = mJackTrip->getSampleRateType();
   switch (rate_type)
     {
     case JackAudioInterface::SR48 :
