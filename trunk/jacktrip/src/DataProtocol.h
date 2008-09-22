@@ -140,7 +140,7 @@ public:
    */
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
 
-  void fillHeaderCommonFromJack(const JackAudioInterface& jackaudio);
+  //void fillHeaderCommonFromAudio(const JackAudioInterface& jackaudio);
 
   virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
 					     uint16_t& port) = 0;
@@ -178,7 +178,7 @@ private:
 
   /// \todo check a better way to access the header from the subclasses
 protected:
-  PacketHeader* mHeader; ///< Packet Header
+  //PacketHeader* mHeader; ///< Packet Header
   JackTrip* mJackTrip; ///< JackTrip mediator class
 
 };

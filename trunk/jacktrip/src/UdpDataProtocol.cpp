@@ -193,6 +193,8 @@ void UdpDataProtocol::run()
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
       receivePacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
+      // Check that peer has the same audio settings
+      mJackTrip->checkPeerSettings(mFullPacket);
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
 

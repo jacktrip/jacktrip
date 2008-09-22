@@ -113,7 +113,7 @@ class PacketHeader
 {
 public:
   /// \brief The class Constructor
-  PacketHeader() : mSeqNumber(0) {};
+  PacketHeader(JackTrip* jacktrip);
   /// \brief The class Destructor
   virtual ~PacketHeader() {};
   
@@ -124,12 +124,14 @@ public:
 
   /// \todo Implement this using a JackTrip Method (Mediator) member instead of the 
   /// reference to JackAudio
-  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio) = 0;
+  virtual void fillHeaderCommonFromAudio() = 0;
 
   /* \brief Parse the packet header and take appropriate measures (like change settings, or 
    * quit the program if peer settings don't match)
    */
   virtual void parseHeader() = 0;
+
+  virtual void checkPeerSettings(int8_t* full_packet) = 0;
 
   /* \brief Increase sequence number for counter, a 16bit number
    */
@@ -166,6 +168,7 @@ public:
 
 private:
   uint16_t mSeqNumber;
+  JackTrip* mJackTrip; ///< JackTrip mediator class
 };
 
 
@@ -195,10 +198,11 @@ public:
   };
   //---------------------------------------------------------
   */
-  DefaultHeader(); 
+  DefaultHeader(JackTrip* jacktrip);
   virtual ~DefaultHeader() {};
-  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
+  virtual void fillHeaderCommonFromAudio();
   virtual void parseHeader() {};
+  virtual void checkPeerSettings(int8_t* full_packet);
   virtual void increaseSequenceNumber()
   {
     /*
@@ -215,9 +219,10 @@ public:
   };
   void printHeader() const;
 
-  //private:
+private:
   //DefaultHeaderStruct mHeader; ///< Header Struct
-  DefaultHeaderStruct mHeader;
+  DefaultHeaderStruct mHeader;///< Default Header Struct
+  JackTrip* mJackTrip; ///< JackTrip mediator class
 };
 
 
@@ -233,11 +238,12 @@ class JamLinkHeader : public PacketHeader
 {
 public:
   
-  JamLinkHeader();
+  JamLinkHeader(JackTrip* jacktrip);
   virtual ~JamLinkHeader() {};
 
-  virtual void fillHeaderCommonFromJack(const JackAudioInterface& JackAudio);
+  virtual void fillHeaderCommonFromAudio();
   virtual void parseHeader() {};
+  virtual void checkPeerSettings(int8_t* full_packet) {}; 
   virtual void increaseSequenceNumber() {};
   virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); };
   virtual void putHeaderInPacket(int8_t* full_packet)
@@ -247,6 +253,7 @@ public:
 
 private:
   JamLinkHeaderStuct mHeader; ///< JamLink Header Struct
+  JackTrip* mJackTrip; ///< JackTrip mediator class
 };
 
 
