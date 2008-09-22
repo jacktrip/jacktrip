@@ -44,7 +44,7 @@
 
 #include "DataProtocol.h"
 #include "jacktrip_types.h"
-
+#include "jacktrip_globals.h"
 
 /** \brief UDP implementation of DataProtocol class
  */
@@ -56,7 +56,8 @@ public:
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
-  UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode);
+  UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
+		  int incoming_port = gInputPort_0, int outgoing_port = gOutputPort_0);
   
   /** \brief The class destructor
    */

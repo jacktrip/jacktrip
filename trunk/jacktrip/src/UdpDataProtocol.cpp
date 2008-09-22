@@ -52,18 +52,19 @@ using std::cout; using std::endl;
 
 
 //*******************************************************************************
-UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode)
+UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
+				 int incoming_port, int outgoing_port)
   : DataProtocol(jacktrip, runmode), mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL)
 {
   // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
   if (mRunMode == RECEIVER) {
-    mLocalPort = gInputPort_0;
-    mPeerPort = gOutputPort_0;
+    mLocalPort = incoming_port;
+    mPeerPort = outgoing_port;
   }
   else if (mRunMode == SENDER) {
-    mLocalPort = gOutputPort_0;
-    mPeerPort = gInputPort_0;
+    mLocalPort = outgoing_port;
+    mPeerPort = incoming_port;
   }
 
   // Bind Socket
