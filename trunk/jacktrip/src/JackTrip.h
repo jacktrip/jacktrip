@@ -170,6 +170,8 @@ public:
   { return mJackAudio->getBufferSizeInSamples(); }
   JackAudioInterface::samplingRateT getSampleRateType() const
   { return mJackAudio->getSampleRateType(); }
+  uint8_t getAudioBitResolution() const
+  { return mJackAudio->getAudioBitResolution(); }
   int getNumInputChannels() const
   { return mJackAudio->getNumInputChannels(); }
   int getNumOutputChannels() const

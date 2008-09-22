@@ -77,9 +77,10 @@ DefaultHeader::DefaultHeader(JackTrip* jacktrip) :
   mHeader.SeqNumber = 0;  
   mHeader.BufferSize = 0; 
   mHeader.SamplingRate = 0;
+  mHeader.BitResolution = 0;
   mHeader.NumInChannels = 0;
   mHeader.NumOutChannels = 0;
-  mHeader.Dummy = 0;
+  //mHeader.Dummy = 0;
 }
 
 
@@ -89,6 +90,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
   mHeader.BufferSize = mJackTrip->getBufferSizeInSamples();
   mHeader.SamplingRate = mJackTrip->getSampleRateType ();
   mHeader.NumInChannels = mJackTrip->getNumInputChannels();
+  mHeader.BitResolution = mJackTrip->getAudioBitResolution();
   mHeader.NumOutChannels = mJackTrip->getNumOutputChannels();
   mHeader.SeqNumber = 0;
   mHeader.TimeStamp = PacketHeader::usecTime();
@@ -100,18 +102,22 @@ void DefaultHeader::fillHeaderCommonFromAudio()
 //***********************************************************************
 void DefaultHeader::checkPeerSettings(int8_t* full_packet)
 {
+  bool error = false;
+  
   DefaultHeaderStruct* peer_header;
   peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
 
+  // Check Buffer Size
   if ( peer_header->BufferSize != mHeader.BufferSize ) 
     {
       std::cerr << "ERROR: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
       std::cerr << "       Local Buffer Size is : " << mHeader.BufferSize << endl;
       std::cerr << "Make sure both machines use same buffer size" << endl;
-      std::cerr << "Exiting program..." << endl;
-      std::exit(1);
+      std::cerr << gPrintSeparator << endl;
+      error = true;
     }
 
+  // Check Sampling Rate
   if ( peer_header->SamplingRate != mHeader.SamplingRate ) 
     {
       std::cerr << "ERROR: Peer Sampling Rate is  : " << 
@@ -121,6 +127,25 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
 	JackAudioInterface::getSampleRateFromType
 	( static_cast<JackAudioInterface::samplingRateT>(mHeader.SamplingRate) ) << endl;
       std::cerr << "Make sure both machines use the same Sampling Rate" << endl;
+      std::cerr << gPrintSeparator << endl;
+      error = true;
+    }
+
+  // Check Audio Bit Resolution
+  if ( peer_header->BitResolution != mHeader.BitResolution ) 
+    {
+      std::cerr << "ERROR: Peer Audio Bit Resolution is  : " 
+		<< static_cast<int>(peer_header->BitResolution) << endl;
+      std::cerr << "       Local Audio Bit Resolution is : "
+		<< static_cast<int>(mHeader.BitResolution) << endl;
+      std::cerr << "Make sure both machines use the same Bit Resolution" << endl;
+      std::cerr << gPrintSeparator << endl;
+      error = true;
+    }
+
+  // Exit program if error
+  if (error) 
+    {
       std::cerr << "Exiting program..." << endl;
       std::exit(1);
     }
@@ -138,6 +163,7 @@ void DefaultHeader::printHeader() const
     JackAudioInterface::getSampleRateFromType
     ( static_cast<JackAudioInterface::samplingRateT>(mHeader.SamplingRate) );
   cout << "Sampling Rate             = " << sample_rate << endl;
+  cout << "Audio Bit Resolutions     = " << static_cast<int>(mHeader.BitResolution) << endl;
   cout << "Number of Input Channels  = " << static_cast<int>(mHeader.NumInChannels) << endl;
   cout << "Number of Output Channels = " << static_cast<int>(mHeader.NumOutChannels) << endl;
   cout << "Sequence Number           = " << static_cast<int>(mHeader.SeqNumber) << endl;

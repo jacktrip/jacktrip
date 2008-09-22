@@ -59,10 +59,10 @@ public:
   uint16_t SeqNumber; ///< Sequence Number
   uint16_t BufferSize; ///< Buffer Size in Samples
   uint8_t  SamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
+  uint8_t BitResolution; ///< Audio Bit Resolution
   uint8_t  NumInChannels; ///< Number of Input Channels
   uint8_t  NumOutChannels; ///<  Number of Output Channels
-  uint8_t  Dummy; ///< Dummy value to byte padding alignment 
-  //uint8_t BitResolution; ///< \todo implement this part
+  //uint8_t  Dummy; ///< Dummy value to byte padding alignment 
 };
 
 //---------------------------------------------------------
