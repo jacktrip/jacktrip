@@ -45,7 +45,7 @@
 
 #include <QTextStream>
 
-using std::cout; using std::cout;
+using std::cout; using std::endl;
 
 
 //*******************************************************************************
@@ -574,4 +574,51 @@ void JackAudioInterface::appendProcessPlugin(const std::tr1::shared_ptr<ProcessP
   if ( plugin->getNumInputs() ) {
   }
   mProcessPlugins.append(plugin);
+}
+
+
+
+//*******************************************************************************
+void JackAudioInterface::connectDefaultPorts()
+{
+  const char** physical_ouput_ports;
+  const char** physical_input_ports;
+
+  // Get physical output (capture) ports
+  if ( (physical_ouput_ports =
+       jack_get_ports (mClient, NULL, NULL,
+		       JackPortIsPhysical | JackPortIsOutput)) == NULL)
+    {
+      cout << "WARING: Cannot find any physical capture ports" << endl;
+    }
+
+  // Connect capure ports to jacktrip send
+  for (int i = 0; i < mNumInChans; i++) 
+    {
+      // Check that we don't run out of capture ports
+      if ( physical_ouput_ports[i] != NULL ) {
+	jack_connect(mClient, physical_ouput_ports[i], jack_port_name(mInPorts[i]));
+      }
+    }
+
+  free(physical_ouput_ports);
+
+  // Get physical input (playback) ports
+  if ( (physical_input_ports =
+	jack_get_ports (mClient, NULL, NULL,
+		       JackPortIsPhysical | JackPortIsInput)) == NULL)
+    {
+      cout << "WARING: Cannot find any physical playback ports" << endl;
+    }
+
+  // Connect playback ports to jacktrip receive
+  for (int i = 0; i < mNumOutChans; i++) 
+    {
+      // Check that we don't run out of capture ports
+      if ( physical_input_ports[i] != NULL ) {
+	jack_connect(mClient, jack_port_name(mOutPorts[i]), physical_input_ports[i]);
+      }
+    }
+  
+  free(physical_input_ports);
 }
