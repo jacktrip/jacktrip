@@ -195,6 +195,8 @@ public:
 					sample_t* output,
 					const audioBitResolutionT sourceBitResolution);
 
+  /// \brief Connect the default ports, capture to sends, and receives to playback
+  void connectDefaultPorts();
 
 private:
 

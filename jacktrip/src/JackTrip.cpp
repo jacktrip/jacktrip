@@ -225,6 +225,7 @@ void JackTrip::start()
     }
   // Start Threads
   mJackAudio->startProcess();
+  mJackAudio->connectDefaultPorts();
 
   /*
 #if defined ( __LINUX__ )

@@ -1,12 +1,13 @@
 ---
-1.0 Alpha 2
+1.0.1 Alpha
 - (added) jamlink mode to connect with jamlink boxes
 - (fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X version)
 - (fixed) Bug that was causing plug-ins not to behave correctly
 - (added) Loopback mode
 - (added) Underrun Modes: Wavetable (default) and set to zeros
 - (added) Check for peer audio settings, program exists if they don't match
+- (added) Automatically connect ports to available physical audio interface.
 
 ---
-1.0 Alpha 1  - initial release
+1.0 Alpha  - initial release
 
