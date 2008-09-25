@@ -49,7 +49,7 @@ class Settings
 {
 public:
   Settings();
-  virtual ~Settings() {};
+  virtual ~Settings();
 
   /// \brief Parses command line input
   void parseInput(int argc, char** argv);
@@ -59,20 +59,10 @@ public:
   /// \brief Prints usage help
   void printUsage();
 
-  //int getNumInChannels() { return mNumInChans; };
-  //int getNumOutChannels() { return mNumOutChans; };
-  //void getPeerAddress(char* PeerAddress) {  PeerAddress = mPeerHostOrIP; };
   bool getLoopBack() { return mLoopBack; };
 
-  //char* mPeerHostOrIP; ///< Peer IP address or Host name
-
 private:
-  //int mNumInChans; ///< Number of Input Channels
-  //int mNumOutChans; ///<  Number of Output Channels
-  /// Bit resolution (audioBitResolutionT) mode
-  //JackAudioInterface::audioBitResolutionT mBitResolutionMode;
-  //int mQueueLength; ///< Queue Length in Packet Size
-
+  JackTrip* mJackTrip; ///< JackTrip class
 
   JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   JackTrip::dataProtocolT mDataProtocol; ///< Data Protocol
@@ -83,8 +73,6 @@ private:
   bool mUnderrrunZero; ///< Use Underrun to Zero mode
   bool mLoopBack; ///< Loop-back mode
   bool mJamLink; ///< JamLink mode
-
-  //char* mPeerHostOrIP; ///< Peer IP address or Host name
 };
 
 #endif

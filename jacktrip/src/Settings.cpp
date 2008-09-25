@@ -50,6 +50,7 @@ int gVerboseFlag = 0;
 
 //*******************************************************************************
 Settings::Settings() :
+  mJackTrip(NULL),
   mJackTripMode(JackTrip::CLIENT),
   mDataProtocol(JackTrip::UDP),
   mNumChans(2),
@@ -60,6 +61,11 @@ Settings::Settings() :
   mJamLink(false)
 {}
 
+//*******************************************************************************
+Settings::~Settings()
+{
+  delete mJackTrip;
+}
 
 //*******************************************************************************
 void Settings::parseInput(int argc, char** argv)
@@ -206,31 +212,37 @@ void Settings::printUsage()
 //*******************************************************************************
 void Settings::startJackTrip()
 {
-  JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
-		    mBufferQueueLength, mAudioBitResolution);
+  //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
+  //	    mBufferQueueLength, mAudioBitResolution);
+  mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
+			  mBufferQueueLength, mAudioBitResolution);
 
   // Set buffers to zero when underrun
   if ( mUnderrrunZero ) {
     cout << "Setting buffers to zero when underrun..." << endl;
-    jacktrip.setUnderRunMode(JackTrip::ZEROS);
+    mJackTrip->setUnderRunMode(JackTrip::ZEROS);
   }
 
   // Set peer address in server mode
   if ( mJackTripMode == JackTrip::CLIENT ) {
-    jacktrip.setPeerAddress(mPeerAddress.toLatin1().data()); }
+    mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
 
   // Set in JamLink Mode
   if ( mJamLink ) {
     cout << "Running in JamLink Mode..." << endl;
-    jacktrip.setPacketHeaderType(DataProtocol::JAMLINK); }
+    mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK); }
 
   // Add Plugins
   if ( mLoopBack ) {
     cout << "Running in Loop-Back Mode..." << endl;
     std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
-    jacktrip.appendProcessPlugin(loopback);
+    mJackTrip->appendProcessPlugin(loopback);
   }
 
   // Start JackTrip
-  jacktrip.start();
+  mJackTrip->start();
+
+  //sleep(10);
+  //cout << "Stoping JackTrip..." << endl;
+  //mJackTrip->stop();
 }

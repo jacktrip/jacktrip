@@ -58,7 +58,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
 		   int BufferQueueLength,
 		   JackAudioInterface::audioBitResolutionT AudioBitResolution,
 		   DataProtocol::packetHeaderTypeT PacketHeaderType,
-		   underrunModeT UnderRunMode) :
+		   underrunModeT UnderRunMode,
+		   int local_incoming_port, int peer_incoming_port,
+		   int local_outgoing_port, int peer_outgoing_port) :
   mJackTripMode(JacktripMode),
   mDataProtocol(DataProtocolType),
   mPacketHeaderType(PacketHeaderType),
@@ -73,7 +75,11 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mPacketHeader(NULL),
   mUnderRunMode(UnderRunMode),
   mSendRingBuffer(NULL),
-  mReceiveRingBuffer(NULL)
+  mReceiveRingBuffer(NULL),
+  mLocalIncomingPort(local_incoming_port),
+  mPeerIncomingPort(peer_incoming_port),
+  mLocalOutgoingPort(local_outgoing_port),
+  mPeerOutgoingPort(peer_outgoing_port)
 {
   setupJackAudio();
   /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
@@ -122,8 +128,10 @@ void JackTrip::setupDataProtocol()
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << gPrintSeparator << std::endl;
     usleep(100);
-    mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER);
-    mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER);
+    mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER,
+    					      mPeerIncomingPort, mLocalOutgoingPort);
+    mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER,
+    						 mLocalIncomingPort, mPeerOutgoingPort);
     break;
   case TCP:
     std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
@@ -154,12 +162,6 @@ void JackTrip::setupRingBuffers()
   /// \todo Make all this operations cleaner
   switch (mUnderRunMode) {
   case WAVETABLE:
-    /*
-    mSendRingBuffer.reset( new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
-					  gDefaultOutputQueueLength) );
-    mReceiveRingBuffer.reset( new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
-					     mBufferQueueLength) );
-    */
     mSendRingBuffer = new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
 					      gDefaultOutputQueueLength);
     mReceiveRingBuffer = new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
@@ -167,12 +169,6 @@ void JackTrip::setupRingBuffers()
     
     break;
   case ZEROS:
-    /*
-    mSendRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
-					  gDefaultOutputQueueLength) );
-    mReceiveRingBuffer.reset( new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
-					     mBufferQueueLength) );
-    */
     mSendRingBuffer = new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
 				     gDefaultOutputQueueLength);
     mReceiveRingBuffer = new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
@@ -190,19 +186,13 @@ void JackTrip::setupRingBuffers()
 void JackTrip::setPeerAddress(char* PeerHostOrIP)
 {
   mPeerAddress = PeerHostOrIP;
-  //cout << "Peer Address Set to CACA: " << qPrintable(mPeerAddress) << endl;
-  //cout << gPrintSeparator << endl;
-  //usleep(300000);
-  // Set Peer Address in Protocols
 }
 
 
 //*******************************************************************************
 void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
 {
-  cout << "BEFORE" << endl;
   mJackAudio->appendProcessPlugin(plugin);
-  cout << "AFTER" << endl;
 }
 
 
@@ -225,33 +215,31 @@ void JackTrip::start()
     }
   // Start Threads
   mJackAudio->startProcess();
-  mJackAudio->connectDefaultPorts();
-
-  /*
-#if defined ( __LINUX__ )
-  cout << "Using Linux thread priority" << endl;
-  mDataProtocolSender->start();
-  mDataProtocolReceiver->start();
-#elif defined ( __MAC_OSX__ )
-  cout << "Using qt4 (MAC OS X) thread priority" << endl;
-  //mDataProtocolSender->start(QThread::TimeCriticalPriority);
-  //mDataProtocolReceiver->start(QThread::TimeCriticalPriority);
-  mDataProtocolSender->start();
-  mDataProtocolReceiver->start();
-#else
-  std::cerr << "ERROR: Platform unknown or not supported" << endl;
-  std::exit(1);
-#endif
-  */
+  mJackAudio->connectDefaultPorts();    
 
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();
 
   // Wait here until the threads return from run() method
-  mDataProtocolSender->wait();
-  mDataProtocolReceiver->wait();
+  //mDataProtocolSender->wait();
+  //mDataProtocolReceiver->wait();
 }
 
+
+//*******************************************************************************
+void JackTrip::stop()
+{
+  mDataProtocolSender->stop();
+  mDataProtocolReceiver->stop();
+  mJackAudio->stopProcess();
+}
+
+
+//*******************************************************************************
+void JackTrip::reBindSocket()
+{
+
+}
 
 //*******************************************************************************
 void JackTrip::clientStart()
@@ -287,6 +275,10 @@ void JackTrip::serverStart()
   cout << "Client Connection Received from IP : " 
        << qPrintable(mPeerAddress) << endl;
   cout << gPrintSeparator << endl;
+
+  /////////////
+  cout << "PORT--------------------------------: " << port << endl;
+  ////////////////
   usleep(100);
 
   // Set the peer address to send packets (in the protocol sender)

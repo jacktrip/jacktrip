@@ -50,7 +50,8 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 DataProtocol::DataProtocol(JackTrip* jacktrip,
-			   const runModeT runmode) : 
+			   const runModeT runmode,
+			   int incoming_port, int outgoing_port) : 
   mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mJackTrip(jacktrip)
 {}
 

@@ -96,7 +96,11 @@ public:
 	   JackAudioInterface::BIT16,
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
 	   DataProtocol::DEFAULT,
-	   underrunModeT UnderRunMode = WAVETABLE);
+	   underrunModeT UnderRunMode = WAVETABLE,
+	   int local_incoming_port = gInputPort_0,
+	   int peer_incoming_port = gInputPort_0,
+	   int local_outgoing_port = gOutputPort_0,
+	   int peer_outgoing_port = gOutputPort_0);
   
   /// \brief The class destructor
   virtual ~JackTrip();
@@ -109,8 +113,13 @@ public:
    */
   void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
 
-  /// \brief Start the processes
+  /// \brief Start the processing threads
   void start();
+
+  /// \brief Stop the processing threads
+  void stop();
+
+  void reBindSocket();
 
   //------------------------------------------------------------------------------------
   /// \name Methods to change parameters after construction
@@ -139,8 +148,18 @@ public:
   /// \brief Sets (override) Audio Bit Resolution after construction
   void setAudioBitResolution(JackAudioInterface::audioBitResolutionT AudioBitResolution)
   { mAudioBitResolution = AudioBitResolution; }
+  /// \brief Sets (override) Underrun Mode
   void setUnderRunMode(underrunModeT UnderRunMode)
   { mUnderRunMode = UnderRunMode; }
+  /// \brief Sets ports numbers for the local and peer machine.
+  /// Incoming port is <tt>port</tt> and outgoing ports are <tt>port+1</tt>
+  void setPort(int port)
+  {
+    mLocalIncomingPort = port;
+    mPeerIncomingPort = port;
+    mLocalOutgoingPort = port + 1;
+    mPeerOutgoingPort = port + 1;
+  }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -211,6 +230,11 @@ private:
   RingBuffer* mSendRingBuffer;
   /// Pointer for the Receive RingBuffer
   RingBuffer* mReceiveRingBuffer;
+
+  int mLocalIncomingPort; ///< Incoming (receiving) port for local machine
+  int mPeerIncomingPort; ///< Incoming (receiving) port for peer machine
+  int mLocalOutgoingPort; ///< Outgoing (sending) port for local machine
+  int mPeerOutgoingPort; ///< Outgoing (sending) port for peer machine
 };
 
 #endif
