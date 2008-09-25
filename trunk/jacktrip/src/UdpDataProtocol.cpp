@@ -55,7 +55,7 @@ using std::cout; using std::endl;
 UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
 				 int incoming_port, int outgoing_port)
   : DataProtocol(jacktrip, runmode, incoming_port, outgoing_port), mRunMode(runmode),
-    mAudioPacket(NULL), mFullPacket(NULL)
+    mUdpSocket(NULL), mAudioPacket(NULL), mFullPacket(NULL)
 {
   // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
   if (mRunMode == RECEIVER) {
@@ -66,15 +66,13 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mLocalPort = outgoing_port;
     mPeerPort = incoming_port;
   }
-
-  // Bind Socket
-  bindSocket();
 }
 
 
 //*******************************************************************************
 UdpDataProtocol::~UdpDataProtocol()
 {
+  delete mUdpSocket;
   delete[] mAudioPacket;
   delete[] mFullPacket;
 } 
@@ -106,7 +104,7 @@ void UdpDataProtocol::bindSocket()
 {
   /// \todo if port is already used, try binding in a different port
   // QHostAddress::Any : let the kernel decide the active address
-  if ( !mUdpSocket.bind(QHostAddress::Any, mLocalPort, QUdpSocket::DefaultForPlatform) ) {
+  if ( !mUdpSocket->bind(QHostAddress::Any, mLocalPort, QUdpSocket::DefaultForPlatform) ) {
     std::cerr << "ERROR: could not bind UDP socket" << endl;
     std::exit(1);
   }
@@ -123,8 +121,8 @@ void UdpDataProtocol::bindSocket()
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
   // Block until There's something to read
-  while (mUdpSocket.pendingDatagramSize() < n ) { QThread::msleep(1); }
-  int n_bytes = mUdpSocket.readDatagram(buf, n);
+  while (mUdpSocket->pendingDatagramSize() < n ) { QThread::msleep(1); }
+  int n_bytes = mUdpSocket->readDatagram(buf, n);
   return n_bytes;
 }
 
@@ -132,7 +130,7 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 //*******************************************************************************
 int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
-  int n_bytes = mUdpSocket.writeDatagram(buf, n, mPeerAddress, mPeerPort);
+  int n_bytes = mUdpSocket->writeDatagram(buf, n, mPeerAddress, mPeerPort);
   return n_bytes;
 }
 
@@ -141,20 +139,23 @@ int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
 						    uint16_t& port)
 {
-  while ( !mUdpSocket.hasPendingDatagrams() ) {
+  while ( !mUdpSocket->hasPendingDatagrams() ) {
     msleep(100);
   }
   char buf[1];
-  mUdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
+  mUdpSocket->readDatagram(buf, 1, &peerHostAddress, &port);
 }
 
 
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
-  //cout << "TTHREAD UDP SOCKET ================= "<< mUdpSocket.thread() << endl;
-  //std::cout << "Running DataProtocol Thread in UDP Mode" << std::endl;
-  //std::cout << gPrintSeparator << std::endl;
+  // Member inizialization (note: this is done here so that mUdpSocket
+  // is on the heap but on the same thread as UdpDataProtocol)
+  mUdpSocket = new QUdpSocket;
+
+  // Bind Socket
+  bindSocket();
 
   // Setup Audio Packet buffer 
   size_t audio_packet_size = getAudioPacketSizeInBites();
@@ -182,8 +183,8 @@ void UdpDataProtocol::run()
 #endif
 
   /*
-    // Check that mUdpSocket is in the same thread
-  cout << "UDPTHREAD: "<< (unsigned long) mUdpSocket.thread()->currentThreadId()
+  // Check that mUdpSocket is in the same thread
+  cout << "UDPTHREAD: "<< (unsigned long) mUdpSocket->thread()->currentThreadId()
        << endl;
   cout << "UDPTHREAD: "<< (unsigned long) currentThreadId() << endl;
   QThread::sleep(1);
@@ -199,8 +200,8 @@ void UdpDataProtocol::run()
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      while ( !mUdpSocket.hasPendingDatagrams() ) { QThread::msleep(100); }
-      int first_packet_size = mUdpSocket.pendingDatagramSize();
+      while ( !mUdpSocket->hasPendingDatagrams() ) { QThread::msleep(100); }
+      int first_packet_size = mUdpSocket->pendingDatagramSize();
       // The following line is the same as
       // int8_t* first_packet = new int8_t[first_packet_size];
       // but avoids memory leaks
@@ -215,7 +216,7 @@ void UdpDataProtocol::run()
       while ( !mStopped )
 	{
 	  // Timer to report packets arriving too late
-	  timeout = mUdpSocket.waitForReadyRead(30);
+	  timeout = mUdpSocket->waitForReadyRead(30);
 	  if (!timeout) {
 	    std::cerr << "UDP is waited too long (more than 30ms)..." << endl;
 	  }
