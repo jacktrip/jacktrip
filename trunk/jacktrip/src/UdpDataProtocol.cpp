@@ -54,7 +54,7 @@ using std::cout; using std::endl;
 //*******************************************************************************
 UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
 				 int incoming_port, int outgoing_port)
-  : DataProtocol(jacktrip, runmode), mRunMode(runmode),
+  : DataProtocol(jacktrip, runmode, incoming_port, outgoing_port), mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL)
 {
   // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
@@ -123,7 +123,7 @@ void UdpDataProtocol::bindSocket()
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
   // Block until There's something to read
-  while (mUdpSocket.pendingDatagramSize() < n ) {}
+  while (mUdpSocket.pendingDatagramSize() < n ) { QThread::msleep(1); }
   int n_bytes = mUdpSocket.readDatagram(buf, n);
   return n_bytes;
 }
@@ -180,6 +180,14 @@ void UdpDataProtocol::run()
 #if defined ( __MAC_OSX__ )
   set_realtime(1250000,60000,90000);
 #endif
+
+  /*
+    // Check that mUdpSocket is in the same thread
+  cout << "UDPTHREAD: "<< (unsigned long) mUdpSocket.thread()->currentThreadId()
+       << endl;
+  cout << "UDPTHREAD: "<< (unsigned long) currentThreadId() << endl;
+  QThread::sleep(1);
+  */
   
   switch ( mRunMode )
     {
@@ -191,7 +199,7 @@ void UdpDataProtocol::run()
       /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      while ( !mUdpSocket.hasPendingDatagrams() ) {}
+      while ( !mUdpSocket.hasPendingDatagrams() ) { QThread::msleep(100); }
       int first_packet_size = mUdpSocket.pendingDatagramSize();
       // The following line is the same as
       // int8_t* first_packet = new int8_t[first_packet_size];

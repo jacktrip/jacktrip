@@ -270,6 +270,8 @@ private:
   jack_client_t* mClient; ///< Jack Client
   QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
+  //jack_port_t** mInPorts; ///< Vector of Input Ports (Channels)
+  //jack_port_t** mOutPorts; ///< Vector of Output Ports (Channels)
   QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
@@ -283,6 +285,8 @@ private:
   /// Vector of Smart Pointer to ProcesPlugin<EM>s</EM>
   QVector<std::tr1::shared_ptr<ProcessPlugin> > mProcessPlugins;
   JackTrip* mJackTrip; ///< JackTrip mediator class
+
+  const char** mPorts;
 };
 
 

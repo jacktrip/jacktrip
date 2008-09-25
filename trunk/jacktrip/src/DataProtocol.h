@@ -106,7 +106,8 @@ public:
    * \param headertype packetHeaderTypeT header type to use for packets
    */
   DataProtocol(JackTrip* jacktrip,
-	       const runModeT runmode);
+	       const runModeT runmode,
+	       int incoming_port, int outgoing_port);
   
   /// \brief The class destructor
   virtual ~DataProtocol();
