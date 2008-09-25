@@ -112,8 +112,8 @@ private:
   int mPeerPort; ///< Peer Port number to Bind
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
 
-  QUdpSocket mUdpSocket; ///< The UDP socket
-  //QUdpSocket* mUdpSocket; ///< The UDP socket
+  //QUdpSocket mUdpSocket; ///< The UDP socket
+  QUdpSocket* mUdpSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address
 
   int8_t* mAudioPacket; ///< Buffer to store Audio Packets
