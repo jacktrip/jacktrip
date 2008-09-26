@@ -76,7 +76,8 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual int receivePacket(char* buf, const size_t n);
+  //virtual int receivePacket(char* buf, const size_t n);
+  virtual int receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n);
   
   /** \brief Sends a packet
    *
@@ -86,14 +87,18 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual int sendPacket(const char* buf, const size_t n);
+  //virtual int sendPacket(const char* buf, const size_t n);
+  virtual int sendPacket(QUdpSocket& UdpSocket, const char* buf, const size_t n);
   
   /** \brief Obtains the peer address from the first UDP packet received. This address
    * is used by the SERVER mode to connect back to the client.
    * \param peerHostAddress QHostAddress to store the peer address
    * \param port Receiving port
    */
-  virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+  //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+  //					     uint16_t& port);
+  virtual void getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
+					     QHostAddress& peerHostAddress,
 					     uint16_t& port);
 
   /** \brief Implements the Thread Loop. To start the thread, call start()
@@ -106,14 +111,15 @@ private:
 
   /** \brief Binds the UDP socket to the available address and specified port
    */
-  void bindSocket();
+  //void bindSocket();
+  void bindSocket(QUdpSocket& UdpSocket);
 
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
 
   //QUdpSocket mUdpSocket; ///< The UDP socket
-  QUdpSocket* mUdpSocket; ///< The UDP socket
+  QUdpSocket mUdpSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address
 
   int8_t* mAudioPacket; ///< Buffer to store Audio Packets
