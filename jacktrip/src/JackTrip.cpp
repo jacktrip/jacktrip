@@ -213,6 +213,7 @@ void JackTrip::start()
       serverStart();
       break;
     }
+
   // Start Threads
   mJackAudio->startProcess();
   mJackAudio->connectDefaultPorts();    
@@ -269,17 +270,31 @@ void JackTrip::serverStart()
   cout << "Waiting for Connection From Client..." << endl;
   QHostAddress peerHostAddress;
   uint16_t port;
-  mDataProtocolReceiver->getPeerAddressFromFirstPacket(peerHostAddress,
-						       port);
+  QUdpSocket UdpSockTemp;// Create socket to wait for client
+
+  // Bind the socket
+  if ( !UdpSockTemp.bind(QHostAddress::Any,
+		       mLocalIncomingPort,
+		       QUdpSocket::DefaultForPlatform) ) {
+    std::cerr << "ERROR: could not bind UDP socket" << endl;
+    std::exit(1);
+  }
+  // Listen to client
+  while ( !UdpSockTemp.hasPendingDatagrams() ) { usleep(100000); }
+  char buf[1];
+  // set client address
+  UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &port);
+  UdpSockTemp.close(); // close the socket
+
   mPeerAddress = peerHostAddress.toString();
   cout << "Client Connection Received from IP : " 
        << qPrintable(mPeerAddress) << endl;
   cout << gPrintSeparator << endl;
 
   /////////////
-  cout << "PORT--------------------------------: " << port << endl;
+  //cout << "PORT--------------------------------: " << port << endl;
   ////////////////
-  usleep(100);
+  //usleep(100);
 
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );

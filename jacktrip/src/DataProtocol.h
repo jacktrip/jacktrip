@@ -138,8 +138,8 @@ public:
    */
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
 
-  virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
-					     uint16_t& port) = 0;
+  //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+  //				     uint16_t& port) = 0;
 
 protected:
 
