@@ -58,7 +58,6 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
   : DataProtocol(jacktrip, runmode, incoming_port, outgoing_port), mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL)
 {
-  //mUdpSocket.moveToThread(this);
   // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
   if (mRunMode == RECEIVER) {
     mLocalPort = incoming_port;
@@ -68,16 +67,12 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mLocalPort = outgoing_port;
     mPeerPort = incoming_port;
   }
-
-  // Bind Socket
-  //bindSocket(mUdpSocket);
 }
 
 
 //*******************************************************************************
 UdpDataProtocol::~UdpDataProtocol()
 {
-  //delete mUdpSocket;
   delete[] mAudioPacket;
   delete[] mFullPacket;
 } 
@@ -105,12 +100,10 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
 
 
 //*******************************************************************************
-//void UdpDataProtocol::bindSocket()
 void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 {
   /// \todo if port is already used, try binding in a different port
   // QHostAddress::Any : let the kernel decide the active address
-  //if ( !mUdpSocket.bind(QHostAddress::Any, mLocalPort, QUdpSocket::DefaultForPlatform) ) {
   if ( !UdpSocket.bind(QHostAddress::Any, mLocalPort, QUdpSocket::DefaultForPlatform) ) {
     std::cerr << "ERROR: could not bind UDP socket" << endl;
     std::exit(1);
@@ -125,7 +118,6 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 
 
 //*******************************************************************************
-//int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n)
 {
   // Block until There's something to read
@@ -136,17 +128,15 @@ int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_
 
 
 //*******************************************************************************
-//int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
-int UdpDataProtocol::sendPacket(QUdpSocket& UdpSocket, const char* buf, const size_t n)
+int UdpDataProtocol::sendPacket(QUdpSocket& UdpSocket, const QHostAddress& PeerAddress,
+				const char* buf, const size_t n)
 {
-  int n_bytes = UdpSocket.writeDatagram(buf, n, mPeerAddress, mPeerPort);
+  int n_bytes = UdpSocket.writeDatagram(buf, n, PeerAddress, mPeerPort);
   return n_bytes;
 }
 
 
 //*******************************************************************************
-//void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
-//					    uint16_t& port)
 void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 						    QHostAddress& peerHostAddress,
 						    uint16_t& port)
@@ -162,15 +152,10 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
-  // Member inizialization (note: this is done here so that mUdpSocket
-  // is on the heap but on the same thread as UdpDataProtocol)
-  //mUdpSocket = new QUdpSocket;
-
-  //mUdpSocket.moveToThread(QThread::currentThread());
-
   QUdpSocket UdpSocket;
-  // Bind Socket
-  bindSocket(UdpSocket);
+  bindSocket(UdpSocket); // Bind Socket
+  QHostAddress PeerAddress;
+  PeerAddress = mPeerAddress;
 
   // Setup Audio Packet buffer 
   size_t audio_packet_size = getAudioPacketSizeInBites();
@@ -215,7 +200,6 @@ void UdpDataProtocol::run()
       // but avoids memory leaks
       std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
       receivePacket( UdpSocket, reinterpret_cast<char*>(first_packet.get()), first_packet_size);
-      //receivePacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
       // Check that peer has the same audio settings
       mJackTrip->checkPeerSettings(first_packet.get());
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
@@ -251,7 +235,7 @@ void UdpDataProtocol::run()
 	  // This will send the packet immediately
 	  //cout << "Before Sending ========================= "  << endl;
 	  //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
-	  sendPacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
+	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  //cout << "bytes_sent ============================= " << bytes_sent << endl;
 	}
       break; }
