@@ -56,6 +56,7 @@ Settings::Settings() :
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
   mAudioBitResolution(JackAudioInterface::BIT16),
+  mPortNum(gInputPort_0),
   mUnderrrunZero(false),
   mLoopBack(false),
   mJamLink(false)
@@ -87,6 +88,7 @@ void Settings::parseInput(int argc, char** argv)
     { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
     { "server", no_argument, NULL, 's' }, // Run in server mode
     { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+    { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
     { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
@@ -100,7 +102,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:q:b:zljh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:o:q:b:zljh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -115,6 +117,10 @@ void Settings::parseInput(int argc, char** argv)
       //-------------------------------------------------------
       mJackTripMode = JackTrip::CLIENT;
       mPeerAddress = optarg;
+      break;
+    case 'o': // Port Offset
+      //-------------------------------------------------------
+      mPortNum += atoi(optarg);
       break;
     case 'b':
       //-------------------------------------------------------
@@ -215,7 +221,7 @@ void Settings::startJackTrip()
   //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
   //	    mBufferQueueLength, mAudioBitResolution);
   mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
-			  mBufferQueueLength, mAudioBitResolution);
+			   mBufferQueueLength, mAudioBitResolution);
 
   // Set buffers to zero when underrun
   if ( mUnderrrunZero ) {
@@ -226,6 +232,9 @@ void Settings::startJackTrip()
   // Set peer address in server mode
   if ( mJackTripMode == JackTrip::CLIENT ) {
     mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
+
+  // Set Ports
+  mJackTrip->setPort(mPortNum);
 
   // Set in JamLink Mode
   if ( mJamLink ) {
