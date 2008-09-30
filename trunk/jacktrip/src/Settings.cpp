@@ -206,6 +206,7 @@ void Settings::printUsage()
        << 2 << ")" << endl;
   cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default " 
        << gDefaultQueueLength << ")" << endl;
+  cout << " -o, --portoffset  #                      Receiving port offset from base port " << gInputPort_0 << endl;
   cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
   cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
