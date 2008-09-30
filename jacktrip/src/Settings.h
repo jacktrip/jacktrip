@@ -70,6 +70,7 @@ private:
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   JackAudioInterface::audioBitResolutionT mAudioBitResolution;
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
+  int mPortNum; ///< Port Number
   bool mUnderrrunZero; ///< Use Underrun to Zero mode
   bool mLoopBack; ///< Loop-back mode
   bool mJamLink; ///< JamLink mode
