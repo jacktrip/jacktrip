@@ -6,17 +6,19 @@ APP_NAME_QUOTES=\"$APP_NAME\"
 ######################################
 ## Created by Juan-Pablo Caceres
 
+QCMD=qmake-qt4
+
 #Cleanup
 rm $APP_NAME.pro
 rm Makefile
 echo "cleanup done"
 
 #Create project (.pro) file
-qmake-qt4 -project -o $APP_NAME.pro
+$QCMD -project -o $APP_NAME.pro
 echo "qmake .pro built."
 
 #Create Makefile
-qmake-qt4 -makefile -unix -o Makefile \
+$QCMD -makefile -unix -o Makefile \
 "CONFIG += qt debug thread warn_on" \
 "QMAKE_CXXFLAGS+=-g -O2" \
 "QT -= gui" \
