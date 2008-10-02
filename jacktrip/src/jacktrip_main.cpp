@@ -60,9 +60,23 @@ int main(int argc, char** argv)
 
   // Get Settings from user
   // ----------------------
+  /*
   Settings settings;
   settings.parseInput(argc, argv);
   settings.startJackTrip();
-
+  */
+  try 
+    {
+      Settings settings;
+      settings.parseInput(argc, argv);
+      settings.startJackTrip();
+    }
+  catch ( const std::exception & e )
+    {
+      std::cerr << e.what() << endl;
+      std::cerr << "Exiting Program..." << endl;
+      std::cerr << gPrintSeparator << endl;
+      return -1;
+    }  
   return app.exec();
 }
