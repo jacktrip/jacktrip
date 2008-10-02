@@ -161,6 +161,12 @@ public:
     mLocalOutgoingPort = port + 1;
     mPeerOutgoingPort = port + 1;
   }
+  void setLocalPorts(int port)
+  {
+    mLocalIncomingPort = port;
+    mLocalOutgoingPort = port + 1;
+    std::cout << mLocalIncomingPort << mLocalOutgoingPort << std::endl;
+  }
   //@}
   //------------------------------------------------------------------------------------
 
