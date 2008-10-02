@@ -207,6 +207,8 @@ void JackTrip::start()
   switch ( mJackTripMode )
     {
     case CLIENT :
+      cout << "PORTS: ============" << endl;
+      cout << mLocalIncomingPort << mPeerIncomingPort << mLocalOutgoingPort << mPeerOutgoingPort << endl;
       clientStart();
       // Start Threads
       mJackAudio->startProcess();
