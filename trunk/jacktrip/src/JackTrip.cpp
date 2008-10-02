@@ -208,18 +208,37 @@ void JackTrip::start()
     {
     case CLIENT :
       clientStart();
+      // Start Threads
+      mJackAudio->startProcess();
+      mJackAudio->connectDefaultPorts();    
+      mDataProtocolSender->start();
+      mDataProtocolReceiver->start();
       break;
     case SERVER :
       serverStart();
+      // Start Threads
+      mJackAudio->startProcess();
+      mJackAudio->connectDefaultPorts();    
+      mDataProtocolSender->start();
+      mDataProtocolReceiver->start();
+      break;
+    case CLIENTTOPINGSERVER :
+      clientPingToServerStart();
+      break;
+    default: 
+      std::cerr << "ERROR: Jacktrip Mode not defined" << std::endl;
+      std::exit(1);
       break;
     }
 
   // Start Threads
+  /*
   mJackAudio->startProcess();
   mJackAudio->connectDefaultPorts();    
 
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();
+  */
 
   // Wait here until the threads return from run() method
   //mDataProtocolSender->wait();
@@ -292,12 +311,74 @@ void JackTrip::serverStart()
   cout << gPrintSeparator << endl;
 
   /////////////
-  //cout << "PORT--------------------------------: " << port << endl;
+  cout << "PORT--------------------------------: " << port << endl;
   ////////////////
   //usleep(100);
 
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+}
+
+//*******************************************************************************
+void JackTrip::clientPingToServerStart()
+{
+  // For the Client mode, the peer (or server) address has to be specified by the user
+  if ( mPeerAddress.isEmpty() ) {
+    std::cerr << "ERROR: Peer Address has to be set if you run in CLIENTTOPINGSERVER mode" << endl;
+    std::exit(1);
+  }
+  else {
+    // Set the peer address
+    mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+  }
+
+  // Start Threads
+  mJackAudio->startProcess();
+  //mJackAudio->connectDefaultPorts();    
+  mDataProtocolSender->start();
+  //cout << "STARTED DATA PROTOCOL SENDER-----------------------------" << endl;
+  //mDataProtocolReceiver->start();
+
+  QHostAddress serverHostAddress;
+  QUdpSocket UdpSockTemp;// Create socket to wait for server answer
+  uint16_t server_port;
+
+  // Bind the socket
+  if ( !UdpSockTemp.bind(QHostAddress::Any,
+			 mLocalIncomingPort,
+			 QUdpSocket::DefaultForPlatform) ) {
+    std::cerr << "ERROR: could not bind UDP socket" << endl;
+    std::exit(1);
+  }
+  // Listen to server response
+  cout << "Waiting for server response..." << endl;
+  while ( !UdpSockTemp.hasPendingDatagrams() ) { usleep(100000); }
+  cout << "Received response from server!" << endl;
+  char buf[1];
+  // set client address
+  UdpSockTemp.readDatagram(buf, 1, &serverHostAddress, &server_port);
+  UdpSockTemp.close(); // close the socket
+
+  // Stop the sender thread to change server port
+  mDataProtocolSender->stop();
+  mDataProtocolSender->wait(); // Wait for the thread to terminate
+  /*
+  while ( mDataProtocolSender->isRunning() ) 
+    { 
+      cout << "IS RUNNING!" << endl;
+      usleep(100000);
+    }
+  */
+  cout << "Server port now set to: " << server_port-1 << endl;  
+  cout << gPrintSeparator << endl;
+  mDataProtocolSender->setPeerPort(server_port-1);
+  
+  // Start Threads
+  //mJackAudio->startProcess();
+  mJackAudio->connectDefaultPorts();
+  cout << "RESTART from JackTrip-----------------------" << endl;
+  mDataProtocolSender->start();
+  mDataProtocolReceiver->start();
 }
 
 

@@ -120,7 +120,7 @@ public:
   virtual void run() = 0;
 
   /// \brief Stops the execution of the Thread
-  void stop() { mStopped = true; };
+  virtual void stop() { mStopped = true; };
 
   /** \brief Sets the size of the audio part of the packets
    * \param size_bytes Size in bytes
@@ -137,6 +137,12 @@ public:
    * \todo implement here instead of in the subclass UDP
    */
   virtual void setPeerAddress(char* peerHostOrIP) = 0;
+
+  /** \brief Set the peer incomming (receiving) port number
+   * \param port Port number
+   * \todo implement here instead of in the subclass UDP
+   */
+  virtual void setPeerPort(int port) = 0;
 
   //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
   //				     uint16_t& port) = 0;

@@ -149,9 +149,9 @@ int set_fifo_priority (bool half)
 	  return -1;
 	}
       seteuid (getuid ());
-      fprintf (stderr,
-	       "\nset scheduling priority to %d (SCHED_FIFO)\n",
-	       priority);
+      //fprintf (stderr,
+      //       "\nset scheduling priority to %d (SCHED_FIFO)\n",
+      //       priority);
     }
   else
     {

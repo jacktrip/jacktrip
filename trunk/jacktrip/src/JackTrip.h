@@ -70,7 +70,8 @@ public:
   /// \brief Enum for the JackTrip mode
   enum jacktripModeT {
     SERVER, ///< Run in Server Mode
-    CLIENT  ///< Run in Client Mode
+    CLIENT,  ///< Run in Client Mode
+    CLIENTTOPINGSERVER ///< Client of the Ping Server Mode
   };
 
   /// \brief Enum for the JackTrip Underrun Mode, when packets
@@ -202,10 +203,12 @@ private:
   void setupDataProtocol();
   /// \brief Set the RingBuffer objects
   void setupRingBuffers();
-  /// \brief Start for the CLIENT mode
+  /// \brief Starts for the CLIENT mode
   void clientStart();
-  /// \brief Start for the SERVER mode
+  /// \brief Starts for the SERVER mode
   void serverStart();
+  /// \brief Stats for the Client to Ping Server
+  void clientPingToServerStart();
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol Tipe
