@@ -67,9 +67,9 @@ int main(int argc, char** argv)
   */
   try 
     {
-      Settings settings;
-      settings.parseInput(argc, argv);
-      settings.startJackTrip();
+      Settings* settings = new Settings;
+      settings->parseInput(argc, argv);
+      settings->startJackTrip();
     }
   catch ( const std::exception & e )
     {
