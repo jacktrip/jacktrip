@@ -88,6 +88,7 @@ void Settings::parseInput(int argc, char** argv)
     { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
     { "server", no_argument, NULL, 's' }, // Run in server mode
     { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+    { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
     { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
@@ -102,7 +103,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:o:q:b:zljh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:C:o:q:b:zljh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -113,9 +114,14 @@ void Settings::parseInput(int argc, char** argv)
       //-------------------------------------------------------
       mJackTripMode = JackTrip::SERVER;
       break;
-    case 'c':
+    case 'c': // Client mode
       //-------------------------------------------------------
       mJackTripMode = JackTrip::CLIENT;
+      mPeerAddress = optarg;
+      break;
+    case 'C': // Ping to server
+      //-------------------------------------------------------
+      mJackTripMode = JackTrip::CLIENTTOPINGSERVER;
       mPeerAddress = optarg;
       break;
     case 'o': // Port Offset
@@ -231,7 +237,7 @@ void Settings::startJackTrip()
   }
 
   // Set peer address in server mode
-  if ( mJackTripMode == JackTrip::CLIENT ) {
+  if ( mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER ) {
     mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
 
   // Set Ports

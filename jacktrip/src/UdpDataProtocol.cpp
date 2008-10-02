@@ -152,6 +152,10 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
+  mStopped = false;
+  
+  cout << "STARTING THREAD!------------------------------------------------" << endl;
+  cout << "mRunMode === " << mRunMode << endl;
   QUdpSocket UdpSocket;
   bindSocket(UdpSocket); // Bind Socket
   QHostAddress PeerAddress;
@@ -228,6 +232,7 @@ void UdpDataProtocol::run()
       //----------------------------------------------------------------------------------- 
       while ( !mStopped )
 	{
+	  //cout << "sender" << endl;
 	  // We block until there's stuff available to read
 	  //mRingBuffer->readSlotBlocking(mAudioPacket);
 	  mJackTrip->readAudioBuffer( mAudioPacket );
@@ -238,6 +243,9 @@ void UdpDataProtocol::run()
 	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  //cout << "bytes_sent ============================= " << bytes_sent << endl;
 	}
+      cout << "THREAD STOPED" << endl;
       break; }
     }
+  cout << "EXITING THREAD!------------------------------------------------" << endl;
+  cout << "mRunMode === " << mRunMode << endl;
 }

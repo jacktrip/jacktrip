@@ -99,6 +99,9 @@ public:
 					     QHostAddress& peerHostAddress,
 					     uint16_t& port);
 
+  void setPeerPort(int port)
+  { mPeerPort; }
+
   /** \brief Implements the Thread Loop. To start the thread, call start()
    * ( DO NOT CALL run() )
    */
