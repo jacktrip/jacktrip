@@ -100,7 +100,7 @@ public:
 					     uint16_t& port);
 
   void setPeerPort(int port)
-  { mPeerPort; }
+  { mPeerPort = port; }
 
   /** \brief Implements the Thread Loop. To start the thread, call start()
    * ( DO NOT CALL run() )
