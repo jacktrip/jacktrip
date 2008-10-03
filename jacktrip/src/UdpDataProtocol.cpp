@@ -154,8 +154,8 @@ void UdpDataProtocol::run()
 {
   mStopped = false;
   
-  cout << "STARTING THREAD!------------------------------------------------" << endl;
-  cout << "mRunMode === " << mRunMode << endl;
+  //cout << "STARTING THREAD!------------------------------------------------" << endl;
+  //cout << "mRunMode === " << mRunMode << endl;
   QUdpSocket UdpSocket;
   bindSocket(UdpSocket); // Bind Socket
   QHostAddress PeerAddress;
