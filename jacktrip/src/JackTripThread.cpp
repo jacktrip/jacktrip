@@ -39,6 +39,7 @@
 #include "JackTripThread.h"
 
 #include <iostream>
+#include <cstdlib>
 
 using std::cout; using std::endl;
 
@@ -46,9 +47,53 @@ using std::cout; using std::endl;
 //*******************************************************************************
 void JackTripThread::run()
 {
+  /*
   cout << "******** STARTING JACKTRIPTHREAD *****************" << endl;
   JackTrip jacktrip(mJackTripMode);
+  jacktrip.setPort(mPortNum);
+  
+  if ( mJackTripMode == JackTrip::CLIENT )
+    {
+      jacktrip.setPeerAddress(mPeerAddress);
+    }
+  cout << "******** BEFORE SLEEP *****************" << endl;
+  QThread::sleep(1);
   jacktrip.start();
   cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
-  //QThread::sleep(10000);
+  QThread::sleep(9999999);
+
+
+  const char* client_name = "JackTrip";//APP_NAME;
+  const char* server_name = NULL;
+  jack_options_t options = JackNoStartServer;
+  jack_status_t status;
+  */
+
+  jack_client_t* mClient;
+  const char* client_name = "JackThread";
+  const char* server_name = NULL;
+  jack_options_t options = JackNoStartServer;
+  jack_status_t status;
+
+  mClient = jack_client_open (client_name, options, &status, server_name);
+
+  if (mClient == NULL) {
+    fprintf (stderr, "jack_client_open() failed, "
+    	     "status = 0x%2.0x\n", status);
+    if (status & JackServerFailed) {
+      fprintf (stderr, "Unable to connect to JACK server\n");
+    }
+    std::exit(1);
+  }
+  if (status & JackServerStarted) {
+    fprintf (stderr, "JACK server started\n");
+  }
+  if (status & JackNameNotUnique) {
+    client_name = jack_get_client_name(mClient);
+    fprintf (stderr, "unique name `%s' assigned\n", client_name);
+  }
+
+  sleep(1);
+
+  //wait();
 }

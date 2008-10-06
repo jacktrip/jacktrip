@@ -60,20 +60,14 @@ int main(int argc, char** argv)
 
   QCoreApplication app(argc, argv);
 
-  test_threads(JackTrip::SERVER);
-  cout << "-------------- ALL THREADS STARTED ----------------" << endl;
+  //main_tests(argc, argv); // test functions
 
   // Get Settings from user
   // ----------------------
-  /*
-  Settings settings;
-  settings.parseInput(argc, argv);
-  settings.startJackTrip();
-  */
-
-  /*
   try 
     {
+      // Get Settings from user
+      // ----------------------
       Settings* settings = new Settings;
       settings->parseInput(argc, argv);
       settings->startJackTrip();
@@ -85,6 +79,5 @@ int main(int argc, char** argv)
       std::cerr << gPrintSeparator << endl;
       return -1;
     }
-  */  
   return app.exec();
 }
