@@ -51,8 +51,13 @@ public:
   virtual ~JackTripThread(){};
   void run();
 
+  void setPort(int port_num) { mPortNum = port_num; } ;
+  void setPeerAddress(char* PeerHostOrIP) { mPeerAddress = PeerHostOrIP; }
+
 private:
   JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
+  int mPortNum;
+  char* mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 };
 
 

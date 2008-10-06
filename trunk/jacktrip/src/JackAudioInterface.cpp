@@ -104,8 +104,8 @@ void JackAudioInterface::setupClient()
       //std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
       //std::cerr << gPrintSeparator << std::endl;
     }
-    //std::exit(1);
-    throw std::runtime_error("ERROR: Maybe the JACK server is not running?");
+    std::exit(1);
+    //throw std::runtime_error("ERROR: Maybe the JACK server is not running?");
   }
   if (status & JackServerStarted) {
     fprintf (stderr, "JACK server started\n");
