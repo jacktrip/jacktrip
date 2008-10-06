@@ -40,6 +40,7 @@
 
 #include <tr1/memory> //for shared_ptr
 
+#include <QObject>
 #include <QString>
 
 #include "DataProtocol.h"
@@ -55,8 +56,10 @@
  * This class also acts as a Mediator between all the other class.
  * Classes that uses JackTrip methods need to register with it.
  */
-class JackTrip
+class JackTrip : public QObject
 {
+  Q_OBJECT;
+
 public:
 
   //----------ENUMS------------------------------------------
@@ -200,6 +203,9 @@ public:
   //@}
   //------------------------------------------------------------------------------------
 
+
+signals:
+  void JackTripStopped();
 
 private:
 

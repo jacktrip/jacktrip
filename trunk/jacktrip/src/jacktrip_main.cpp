@@ -47,6 +47,8 @@
 //#include "TestRingBuffer.h"
 #include "LoopBack.h"
 #include "PacketHeader.h"
+#include "JackTripThread.h"
+#include "jacktrip_tests.cpp"
 
 #include "jacktrip_globals.h"
 
@@ -58,6 +60,9 @@ int main(int argc, char** argv)
 
   QCoreApplication app(argc, argv);
 
+  test_threads(JackTrip::SERVER);
+  cout << "-------------- ALL THREADS STARTED ----------------" << endl;
+
   // Get Settings from user
   // ----------------------
   /*
@@ -65,6 +70,8 @@ int main(int argc, char** argv)
   settings.parseInput(argc, argv);
   settings.startJackTrip();
   */
+
+  /*
   try 
     {
       Settings* settings = new Settings;
@@ -77,6 +84,7 @@ int main(int argc, char** argv)
       std::cerr << "Exiting Program..." << endl;
       std::cerr << gPrintSeparator << endl;
       return -1;
-    }  
+    }
+  */  
   return app.exec();
 }
