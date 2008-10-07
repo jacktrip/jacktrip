@@ -43,7 +43,7 @@
 
 using std::cout; using std::endl;
 
-const int num_jacktrips = 5;
+const int num_jacktrips = 59;
 const int base_port = 4464;
 
 
@@ -56,29 +56,12 @@ void main_tests(int argc, char** argv)
 {
   if (argv[1][0] == 's' )
     {
-      //test_threads_server();
-      JackTripThread* jacktrips_1 = new JackTripThread(JackTrip::SERVER);
-      jacktrips_1->setPort(4464);
-      jacktrips_1->start(QThread::NormalPriority);
-      //sleep(1);
-
-      JackTripThread* jacktrips_2 = new JackTripThread(JackTrip::SERVER);
-      jacktrips_2->setPort(4474);
-      jacktrips_2->start(QThread::NormalPriority);
-      //sleep(1);
-
-      JackTripThread* jacktrips_3 = new JackTripThread(JackTrip::SERVER);
-      jacktrips_3->setPort(4484);
-      jacktrips_3->start(QThread::NormalPriority);
-      //sleep(1);
-      
-      JackTripThread* jacktrips_4 = new JackTripThread(JackTrip::SERVER);
-      jacktrips_4->setPort(4494);
-      jacktrips_4->start(QThread::NormalPriority);
-      //sleep(1);
+      test_threads_server();
     }
   else if (argv[1][0] == 'c' )
-    { test_threads_client("171.64.197.14"); }
+    { 
+      test_threads_client("171.64.197.209");
+    }
 }
 
 
@@ -95,7 +78,7 @@ void test_threads_server()
       jacktrips[i] = new JackTripThread(JackTrip::SERVER);
       jacktrips[i]->setPort(port_num);
       jacktrips[i]->start(QThread::NormalPriority);
-      sleep(1);
+      //sleep(1);
     }
 }
 
@@ -113,7 +96,8 @@ void test_threads_client(char* peer_address)
       jacktrips[i] = new JackTripThread(JackTrip::CLIENT);
       jacktrips[i]->setPort(port_num);
       jacktrips[i]->setPeerAddress(peer_address);
+      //sleep(1);
       jacktrips[i]->start(QThread::NormalPriority);
-      sleep(1);
+      //sleep(1);
     }
 }

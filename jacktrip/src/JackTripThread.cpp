@@ -47,7 +47,7 @@ using std::cout; using std::endl;
 //*******************************************************************************
 void JackTripThread::run()
 {
-  /*
+
   cout << "******** STARTING JACKTRIPTHREAD *****************" << endl;
   JackTrip jacktrip(mJackTripMode);
   jacktrip.setPort(mPortNum);
@@ -63,12 +63,8 @@ void JackTripThread::run()
   QThread::sleep(9999999);
 
 
-  const char* client_name = "JackTrip";//APP_NAME;
-  const char* server_name = NULL;
-  jack_options_t options = JackNoStartServer;
-  jack_status_t status;
-  */
 
+  /*
   jack_client_t* mClient;
   const char* client_name = "JackThread";
   const char* server_name = NULL;
@@ -92,8 +88,7 @@ void JackTripThread::run()
     client_name = jack_get_client_name(mClient);
     fprintf (stderr, "unique name `%s' assigned\n", client_name);
   }
+  */
 
-  sleep(1);
 
-  //wait();
 }

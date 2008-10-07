@@ -45,8 +45,13 @@
 #include <stdexcept>
 
 #include <QTextStream>
+#include <QMutexLocker>
 
 using std::cout; using std::endl;
+
+
+// sJackMutex definition
+QMutex JackAudioInterface::sJackMutex;
 
 
 //*******************************************************************************
@@ -94,7 +99,9 @@ void JackAudioInterface::setupClient()
   // Try to connect to the server
   /// \todo Write better warning messages. This following line displays very
   /// verbose message, check how to desable them.
+  sJackMutex.lock();
   mClient = jack_client_open (client_name, options, &status, server_name);
+  sJackMutex.unlock();
 
   if (mClient == NULL) {
     fprintf (stderr, "jack_client_open() failed, "
@@ -322,6 +329,7 @@ int JackAudioInterface::startProcess() const
 //*******************************************************************************
 int JackAudioInterface::stopProcess() const
 {
+  QMutexLocker locker(&sJackMutex);
   if ( int code = (jack_client_close(mClient)) )
     {
       std::cerr << "Cannot disconnect client" << std::endl;
