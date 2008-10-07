@@ -46,6 +46,8 @@
 
 #include <QVector>
 #include <QVarLengthArray>
+#include <QMutex>
+
 
 #include "jacktrip_types.h"
 #include "ProcessPlugin.h"
@@ -287,6 +289,7 @@ private:
   JackTrip* mJackTrip; ///< JackTrip mediator class
 
   const char** mPorts;
+  static QMutex sJackMutex; ///< Mutex to make thread safe jack functions that are not
 };
 
 

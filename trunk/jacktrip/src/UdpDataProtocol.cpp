@@ -212,7 +212,8 @@ void UdpDataProtocol::run()
       while ( !mStopped )
 	{
 	  // Timer to report packets arriving too late
-	  timeout = UdpSocket.waitForReadyRead(30);
+	  //timeout = UdpSocket.waitForReadyRead(30);
+	  timeout = 1;
 	  if (!timeout) {
 	    std::cerr << "UDP is waited too long (more than 30ms)..." << endl;
 	  }

@@ -61,6 +61,7 @@ int main(int argc, char** argv)
   QCoreApplication app(argc, argv);
 
   //main_tests(argc, argv); // test functions
+  //while (true) sleep(9999);
 
   // Get Settings from user
   // ----------------------
