@@ -47,8 +47,6 @@ using std::cout; using std::endl;
 //*******************************************************************************
 void JackTripThread::run()
 {
-
-  cout << "******** STARTING JACKTRIPTHREAD *****************" << endl;
   JackTrip jacktrip(mJackTripMode);
   jacktrip.setPort(mPortNum);
   
@@ -56,11 +54,11 @@ void JackTripThread::run()
     {
       jacktrip.setPeerAddress(mPeerAddress);
     }
-  cout << "******** BEFORE SLEEP *****************" << endl;
-  QThread::sleep(1);
+  //QThread::sleep(1);
   jacktrip.start();
+  jacktrip.wait();
   cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
-  QThread::sleep(9999999);
+  //QThread::sleep(9999999);
 
 
 

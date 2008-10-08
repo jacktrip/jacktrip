@@ -259,6 +259,12 @@ void JackTrip::stop()
   emit JackTripStopped();
 }
 
+//*******************************************************************************
+void JackTrip::wait()
+{
+  mDataProtocolSender->wait();
+  mDataProtocolReceiver->wait();
+}
 
 //*******************************************************************************
 void JackTrip::reBindSocket()
