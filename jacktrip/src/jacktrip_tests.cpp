@@ -43,7 +43,7 @@
 
 using std::cout; using std::endl;
 
-const int num_jacktrips = 59;
+const int num_jacktrips = 5;
 const int base_port = 4464;
 
 

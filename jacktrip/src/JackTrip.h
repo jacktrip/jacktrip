@@ -123,6 +123,10 @@ public:
   /// \brief Stop the processing threads
   void stop();
 
+  /// \brief Wait for all the threads to finish. This functions is used when JackTrip is 
+  /// run as a thread
+  void wait();
+
   void reBindSocket();
 
   //------------------------------------------------------------------------------------
