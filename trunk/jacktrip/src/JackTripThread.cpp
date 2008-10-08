@@ -48,7 +48,7 @@ using std::cout; using std::endl;
 void JackTripThread::run()
 {
   JackTrip jacktrip(mJackTripMode);
-  jacktrip.setPort(mPortNum);
+  jacktrip.setAllPorts(mPortNum);
   
   if ( mJackTripMode == JackTrip::CLIENT )
     {
