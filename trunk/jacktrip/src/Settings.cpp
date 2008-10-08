@@ -207,7 +207,7 @@ void Settings::printUsage()
   cout << "" << endl;
   cout << "Options: " << endl;
   cout << " -s, --server                             Run in Server Mode" << endl;
-  cout << " -c, --client      <peer_host_IP_or_name> Run in Client Mode" << endl;
+  cout << " -c, --client      <peer_host_IP_number>  Run in Client Mode" << endl;
   cout << " -n, --numchannels #                      Number of Input and Output Channels (default "
        << 2 << ")" << endl;
   cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default " 
