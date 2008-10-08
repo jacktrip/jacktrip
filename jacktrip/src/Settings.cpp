@@ -241,7 +241,7 @@ void Settings::startJackTrip()
     mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
 
   // Set Ports
-  mJackTrip->setPort(mPortNum);
+  mJackTrip->setAllPorts(mPortNum);
 
   // Set in JamLink Mode
   if ( mJamLink ) {
@@ -258,7 +258,9 @@ void Settings::startJackTrip()
   // Start JackTrip
   mJackTrip->start();
 
-  //sleep(10);
-  //cout << "Stoping JackTrip..." << endl;
-  //mJackTrip->stop();
+  /* 
+    sleep(10);
+    cout << "Stoping JackTrip..." << endl;
+    mJackTrip->stop();
+  */
 }

@@ -127,8 +127,7 @@ public:
   /// run as a thread
   void wait();
 
-  void reBindSocket();
-
+  
   //------------------------------------------------------------------------------------
   /// \name Methods to change parameters after construction
   //@{
@@ -159,23 +158,32 @@ public:
   /// \brief Sets (override) Underrun Mode
   void setUnderRunMode(underrunModeT UnderRunMode)
   { mUnderRunMode = UnderRunMode; }
-  /// \brief Sets ports numbers for the local and peer machine.
+  /// \brief Sets port numbers for the local and peer machine.
   /// Incoming port is <tt>port</tt> and outgoing ports are <tt>port+1</tt>
-  void setPort(int port)
+  void setAllPorts(int port)
   {
     mLocalIncomingPort = port;
     mPeerIncomingPort = port;
     mLocalOutgoingPort = port + 1;
     mPeerOutgoingPort = port + 1;
   }
+  /// \brief Sets port numbers for the local machine.
+  /// Incoming port is <tt>port</tt> and outgoing ports are <tt>port+1</tt>
   void setLocalPorts(int port)
   {
     mLocalIncomingPort = port;
     mLocalOutgoingPort = port + 1;
-    std::cout << mLocalIncomingPort << mLocalOutgoingPort << std::endl;
+  }
+  /// \brief Sets port numbers for the peer (remote) machine.
+  /// Incoming port is <tt>port</tt> and outgoing ports are <tt>port+1</tt>
+  void setPeerPorts(int port)
+  {
+    mPeerIncomingPort = port;
+    mPeerOutgoingPort = port + 1;
   }
   //@}
   //------------------------------------------------------------------------------------
+
 
   //------------------------------------------------------------------------------------
   /// \name Mediator Functions
@@ -210,6 +218,7 @@ public:
 
 signals:
   void JackTripStopped();
+
 
 private:
 

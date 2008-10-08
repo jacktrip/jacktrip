@@ -69,7 +69,7 @@ typedef quint16 uint16_t;
 typedef quint32 uint32_t;
 /// \brief Typedef for <tt>unsigned long long int</tt>. This type is guaranteed to 
 /// be 64-bit.
-typedef quint64 uint64_t;
+//typedef quint64 uint64_t;
 /// Typedef for <tt>signed char</tt>. This type is guaranteed to be 8-bit.
 typedef qint8 int8_t;
 /// Typedef for <tt>signed short</tt>. This type is guaranteed to be 16-bit.
@@ -78,7 +78,7 @@ typedef qint16 int16_t;
 typedef qint32 int32_t;
 /// \brief Typedef for <tt>long long int</tt>. This type is guaranteed to 
 /// be 64-bit.
-typedef qint64 int64_t;
+//typedef qint64 int64_t;
 //@}
 
 

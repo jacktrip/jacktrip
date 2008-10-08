@@ -207,8 +207,6 @@ void JackTrip::start()
   switch ( mJackTripMode )
     {
     case CLIENT :
-      cout << "PORTS: ============" << endl;
-      cout << mLocalIncomingPort << mPeerIncomingPort << mLocalOutgoingPort << mPeerOutgoingPort << endl;
       clientStart();
       // Start Threads
       mJackAudio->startProcess();
@@ -266,11 +264,6 @@ void JackTrip::wait()
   mDataProtocolReceiver->wait();
 }
 
-//*******************************************************************************
-void JackTrip::reBindSocket()
-{
-
-}
 
 //*******************************************************************************
 void JackTrip::clientStart()
@@ -320,11 +313,6 @@ void JackTrip::serverStart()
   cout << "Client Connection Received from IP : " 
        << qPrintable(mPeerAddress) << endl;
   cout << gPrintSeparator << endl;
-
-  /////////////
-  cout << "PORT--------------------------------: " << port << endl;
-  ////////////////
-  //usleep(100);
 
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
@@ -385,9 +373,7 @@ void JackTrip::clientPingToServerStart()
   mDataProtocolSender->setPeerPort(server_port-1);
   
   // Start Threads
-  //mJackAudio->startProcess();
-  mJackAudio->connectDefaultPorts();
-  cout << "RESTART from JackTrip-----------------------" << endl;
+  //mJackAudio->connectDefaultPorts();
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();
 }
