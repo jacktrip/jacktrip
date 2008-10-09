@@ -138,7 +138,7 @@ public:
   /// \brief Sets (override) DataProtocol Type after construction
   void setDataProtocoType(dataProtocolT DataProtocolType)
   { mDataProtocol = DataProtocolType; }
-  /// \brief 
+  /// \brief Sets the Packet header type
   void setPacketHeaderType(DataProtocol::packetHeaderTypeT PacketHeaderType)
   { 
     mPacketHeaderType = PacketHeaderType;
@@ -147,8 +147,9 @@ public:
     createHeader(mPacketHeaderType);
   }
   /// \brief Sets (override) Number of Channels after construction
-  void setNumChannels(int NumChans)
-  { mNumChans=NumChans; }
+  /// \todo implement this, not working right now because channels cannot be changed after construction
+  //void setNumChannels(int NumChans)
+  //{ mNumChans=NumChans; }
   /// \brief Sets (override) Buffer Queue Length Mode after construction
   void setBufferQueueLength(int BufferQueueLength)
   { mBufferQueueLength = BufferQueueLength; }
