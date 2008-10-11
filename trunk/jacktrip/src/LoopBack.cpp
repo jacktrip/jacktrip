@@ -43,7 +43,7 @@
 
 
 //*******************************************************************************
-void LoopBack::compute(jack_nframes_t nframes, float** inputs, float** outputs)
+void LoopBack::compute(int nframes, float** inputs, float** outputs)
 {
   for ( int i = 0; i < getNumInputs(); i++ ) {
     // Everything that comes out, copy back to inputs

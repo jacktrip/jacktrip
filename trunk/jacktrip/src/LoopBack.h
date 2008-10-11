@@ -61,7 +61,7 @@ public:
 
   virtual int getNumInputs() { return(mNumChannels); };
   virtual int getNumOutputs() { return(mNumChannels); };
-  virtual void compute(jack_nframes_t nframes, float** inputs, float** outputs);
+  virtual void compute(int nframes, float** inputs, float** outputs);
 
 private:
   int mNumChannels;

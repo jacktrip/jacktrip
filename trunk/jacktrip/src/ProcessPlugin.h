@@ -39,7 +39,7 @@
 #define __PROCESSPLUGIN_H__
 
 #include <jack/jack.h>
-
+#include <QObject>
 
 /** \brief Interface for the process plugins to add to the JACK callback process in 
  * JackAudioInterface
@@ -49,7 +49,7 @@
  * except init, which is optional for processing that are sampling rate dependent or 
  * that need specific initialization.
  */
-class ProcessPlugin 
+class ProcessPlugin : public QObject
 {
 public:
 
@@ -72,7 +72,7 @@ public:
   virtual void init(int samplingRate) { fSamplingFreq = samplingRate; };
   
   /// \brief Compute process
-  virtual void compute(jack_nframes_t nframes, float** inputs, float** outputs) = 0;
+  virtual void compute(int nframes, float** inputs, float** outputs) = 0;
   
 protected:
   int fSamplingFreq; ///< Faust Data member, Sampling Rate
