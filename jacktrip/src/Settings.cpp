@@ -37,6 +37,7 @@
 
 #include "Settings.h"
 #include "LoopBack.h"
+#include "NetKS.h"
 #include "jacktrip_globals.h"
 
 #include <iostream>
@@ -253,6 +254,11 @@ void Settings::startJackTrip()
     cout << "Running in Loop-Back Mode..." << endl;
     std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
     mJackTrip->appendProcessPlugin(loopback);
+    // ----- Test Karplus Strong -----------------------------------
+    //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
+    //mJackTrip->appendProcessPlugin(loopback);
+    //loopback->play();
+    // -------------------------------------------------------------
   }
 
   // Start JackTrip
