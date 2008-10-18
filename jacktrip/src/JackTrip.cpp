@@ -190,7 +190,8 @@ void JackTrip::setPeerAddress(char* PeerHostOrIP)
 
 
 //*******************************************************************************
-void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+//void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 {
   mJackAudio->appendProcessPlugin(plugin);
 }

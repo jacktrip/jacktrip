@@ -121,7 +121,7 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n)
 {
   // Block until There's something to read
-  while (UdpSocket.pendingDatagramSize() < n ) { QThread::msleep(1); }
+  while (UdpSocket.pendingDatagramSize() < n ) { QThread::usleep(10); }
   int n_bytes = UdpSocket.readDatagram(buf, n);
   return n_bytes;
 }

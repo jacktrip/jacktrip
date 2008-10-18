@@ -252,12 +252,19 @@ void Settings::startJackTrip()
   // Add Plugins
   if ( mLoopBack ) {
     cout << "Running in Loop-Back Mode..." << endl;
-    std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
+    //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
+    //mJackTrip->appendProcessPlugin(loopback.get());
+    
+    LoopBack* loopback = new LoopBack(mNumChans);
     mJackTrip->appendProcessPlugin(loopback);
+    
     // ----- Test Karplus Strong -----------------------------------
     //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
     //mJackTrip->appendProcessPlugin(loopback);
     //loopback->play();
+    //NetKS* netks = new NetKS;
+    //mJackTrip->appendProcessPlugin(netks);
+    //netks->play();
     // -------------------------------------------------------------
   }
 

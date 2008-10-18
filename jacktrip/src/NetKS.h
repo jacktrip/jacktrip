@@ -54,7 +54,8 @@ class NetKS : public ProcessPlugin
 public:
   void play()
   {
-    QTimer *timer = new QTimer;
+    std::cout << "********** PALYING ***********************************" << std::endl;
+    QTimer *timer = new QTimer(this);
     QObject::connect(timer, SIGNAL(timeout()),  this, SLOT(exciteString()));
     timer->start(300);
   }
@@ -76,14 +77,11 @@ private slots:
   }
 
   //=========== FROM FAUST ===================================================
-
   private:
-	float 	fslider0;
 	float 	fbutton0;
 	float 	fVec0[2];
 	float 	fRec0[2];
 	int 	iRec1[2];
-	float 	fslider1;
 	float 	fVec1[2];
   public:
 	virtual int getNumInputs() 	{ return 1; }
@@ -92,12 +90,10 @@ private slots:
 	}
 	virtual void instanceInit(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
-		fslider0 = 128.000000f;
 		fbutton0 = 0.0;
 		for (int i=0; i<2; i++) fVec0[i] = 0;
 		for (int i=0; i<2; i++) fRec0[i] = 0;
 		for (int i=0; i<2; i++) iRec1[i] = 0;
-		fslider1 = 0.500000f;
 		for (int i=0; i<2; i++) fVec1[i] = 0;
 	}
 	virtual void init(int samplingFreq) {
@@ -106,26 +102,20 @@ private slots:
 	}
   /*
 	virtual void buildUserInterface(UI* interface) {
-		interface->openVerticalBox("faust");
 		interface->openVerticalBox("excitator");
-		interface->addHorizontalSlider("excitation (samples)", &fslider0, 128.000000f, 2.000000f, 512.000000f, 1.000000f);
 		interface->addButton("play", &fbutton0);
-		interface->closeBox();
-		interface->addHorizontalSlider("level", &fslider1, 0.500000f, 0.000000f, 1.000000f, 0.100000f);
 		interface->closeBox();
 	}
   */
 	virtual void compute (int count, float** input, float** output) {
 		float* input0 = input[0];
 		float* output0 = output[0];
-		float fSlow0 = (1.000000f / fslider0);
-		float fSlow1 = fbutton0;
-		float fSlow2 = (4.656613e-10f * fslider1);
+		float fSlow0 = fbutton0;
 		for (int i=0; i<count; i++) {
-			fVec0[0] = fSlow1;
-			fRec0[0] = ((((fSlow1 - fVec0[1]) > 0.000000f) + fRec0[1]) - (fSlow0 * (fRec0[1] > 0.000000f)));
+			fVec0[0] = fSlow0;
+			fRec0[0] = ((((fSlow0 - fVec0[1]) > 0.000000f) + fRec0[1]) - (3.333333e-03f * (fRec0[1] > 0.000000f)));
 			iRec1[0] = (12345 + (1103515245 * iRec1[1]));
-			float fTemp0 = ((fSlow2 * iRec1[0]) * (fRec0[0] > 0.000000f));
+			float fTemp0 = ((4.190951e-10f * iRec1[0]) * (fRec0[0] > 0.000000f));
 			float fTemp1 = input0[i];
 			fVec1[0] = (fTemp1 + fTemp0);
 			output0[i] = (0.500000f * ((fTemp0 + fTemp1) + fVec1[1]));
@@ -135,13 +125,9 @@ private slots:
 			fRec0[1] = fRec0[0];
 			fVec0[1] = fVec0[0];
 		}
-		std::cout << fSlow1 << std::endl;
 	}
 
-
-
-
-
+  //============================================================================
 
 };
 

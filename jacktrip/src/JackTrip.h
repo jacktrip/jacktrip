@@ -115,7 +115,8 @@ public:
   /** \brief Append a process plugin. Processes will be appended in order
    * \param plugin Pointer to ProcessPlugin Class
    */
-  void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
+  //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
+  void appendProcessPlugin(ProcessPlugin* plugin);
 
   /// \brief Start the processing threads
   void start();

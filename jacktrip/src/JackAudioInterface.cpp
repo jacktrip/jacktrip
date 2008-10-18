@@ -584,7 +584,8 @@ void JackAudioInterface::fromBitToSampleConversion(const int8_t* const input,
 
 
 //*******************************************************************************
-void JackAudioInterface::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+//void JackAudioInterface::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
+void JackAudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
 {
   /// \todo check that channels in ProcessPlugins are less or same that jack channels
   if ( plugin->getNumInputs() ) {
@@ -614,7 +615,7 @@ void JackAudioInterface::connectDefaultPorts()
       }
     }
 
-  //std::free(mPorts);
+  std::free(mPorts);
 
   // Get physical input (playback) ports
   if ( (mPorts =
@@ -633,5 +634,5 @@ void JackAudioInterface::connectDefaultPorts()
       }
     }
   
-  //std::free(mPorts);
+  std::free(mPorts);
 }
