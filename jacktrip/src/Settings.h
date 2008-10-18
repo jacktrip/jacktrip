@@ -74,6 +74,7 @@ private:
   bool mUnderrrunZero; ///< Use Underrun to Zero mode
   bool mLoopBack; ///< Loop-back mode
   bool mJamLink; ///< JamLink mode
+  bool mJackTripServer; ///< JackTrip Server mode
 };
 
 #endif
