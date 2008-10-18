@@ -38,6 +38,7 @@
 #include "Settings.h"
 #include "LoopBack.h"
 #include "NetKS.h"
+#include "UdpMasterListener.h"
 #include "jacktrip_globals.h"
 
 #include <iostream>
@@ -60,7 +61,8 @@ Settings::Settings() :
   mPortNum(gInputPort_0),
   mUnderrrunZero(false),
   mLoopBack(false),
-  mJamLink(false)
+  mJamLink(false),
+  mJackTripServer(false)
 {}
 
 //*******************************************************************************
@@ -89,6 +91,7 @@ void Settings::parseInput(int argc, char** argv)
     { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
     { "server", no_argument, NULL, 's' }, // Run in server mode
     { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+    { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
     { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
     { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
     { "queue", required_argument, NULL, 'q' }, // Queue Length
@@ -104,7 +107,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:C:o:q:b:zljh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:b:zljh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -114,6 +117,10 @@ void Settings::parseInput(int argc, char** argv)
     case 's': // Run in server mode
       //-------------------------------------------------------
       mJackTripMode = JackTrip::SERVER;
+      break;
+    case 'S': // Run in jacktripserver mode
+      //-------------------------------------------------------
+      mJackTripServer = true;
       break;
     case 'c': // Client mode
       //-------------------------------------------------------
@@ -226,54 +233,64 @@ void Settings::printUsage()
 //*******************************************************************************
 void Settings::startJackTrip()
 {
-  //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
-  //	    mBufferQueueLength, mAudioBitResolution);
-  mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
-			   mBufferQueueLength, mAudioBitResolution);
 
-  // Set buffers to zero when underrun
-  if ( mUnderrrunZero ) {
-    cout << "Setting buffers to zero when underrun..." << endl;
-    mJackTrip->setUnderRunMode(JackTrip::ZEROS);
+  ///\todo Change this, just here to test
+  if ( mJackTripServer ) {
+    UdpMasterListener* udpmaster = new UdpMasterListener;
+    udpmaster->start();
   }
 
-  // Set peer address in server mode
-  if ( mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER ) {
-    mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
-
-  // Set Ports
-  mJackTrip->setAllPorts(mPortNum);
-
-  // Set in JamLink Mode
-  if ( mJamLink ) {
-    cout << "Running in JamLink Mode..." << endl;
-    mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK); }
-
-  // Add Plugins
-  if ( mLoopBack ) {
-    cout << "Running in Loop-Back Mode..." << endl;
-    //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
-    //mJackTrip->appendProcessPlugin(loopback.get());
+  else {
     
-    LoopBack* loopback = new LoopBack(mNumChans);
-    mJackTrip->appendProcessPlugin(loopback);
+    //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
+    //	    mBufferQueueLength, mAudioBitResolution);
+    mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
+			     mBufferQueueLength, mAudioBitResolution);
     
-    // ----- Test Karplus Strong -----------------------------------
-    //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
-    //mJackTrip->appendProcessPlugin(loopback);
-    //loopback->play();
-    //NetKS* netks = new NetKS;
-    //mJackTrip->appendProcessPlugin(netks);
-    //netks->play();
-    // -------------------------------------------------------------
+    // Set buffers to zero when underrun
+    if ( mUnderrrunZero ) {
+      cout << "Setting buffers to zero when underrun..." << endl;
+      mJackTrip->setUnderRunMode(JackTrip::ZEROS);
+    }
+    
+    // Set peer address in server mode
+    if ( mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER ) {
+      mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
+    
+    // Set Ports
+    mJackTrip->setAllPorts(mPortNum);
+    
+    // Set in JamLink Mode
+    if ( mJamLink ) {
+      cout << "Running in JamLink Mode..." << endl;
+      mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK); }
+    
+    // Add Plugins
+    if ( mLoopBack ) {
+      cout << "Running in Loop-Back Mode..." << endl;
+      //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
+      //mJackTrip->appendProcessPlugin(loopback.get());
+      
+      LoopBack* loopback = new LoopBack(mNumChans);
+      mJackTrip->appendProcessPlugin(loopback);
+      
+      // ----- Test Karplus Strong -----------------------------------
+      //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
+      //mJackTrip->appendProcessPlugin(loopback);
+      //loopback->play();
+      //NetKS* netks = new NetKS;
+      //mJackTrip->appendProcessPlugin(netks);
+      //netks->play();
+      // -------------------------------------------------------------
+    }
+    
+    // Start JackTrip
+    mJackTrip->start();
+    
+    /* 
+       sleep(10);
+       cout << "Stoping JackTrip..." << endl;
+       mJackTrip->stop();
+    */
   }
-
-  // Start JackTrip
-  mJackTrip->start();
-
-  /* 
-    sleep(10);
-    cout << "Stoping JackTrip..." << endl;
-    mJackTrip->stop();
-  */
 }

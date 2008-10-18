@@ -103,4 +103,16 @@ int set_realtime(int period, int computation, int constraint);
 #endif //__MAC_OSX__ 
 //@}
   
+
+//*******************************************************************************
+/// \name JackTrip Server parameters
+//@{
+/// Maximum Threads that can be run at the same time
+const int gMaxThreads = 290; // some pthread limit around 297?
+
+/// Public well-known UDP port to where the clients will connect
+const int gServerUdpPort = 4464;
+//@}
+
+
 #endif
