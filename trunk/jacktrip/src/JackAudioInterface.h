@@ -232,10 +232,8 @@ private:
 
   /** \brief Set the process callback of the member function processCallback.
    * This process will be called by the JACK server whenever there is work to be done.
-   * \return 0 on success, otherwise a non-zero error code,
-   * causing JACK to remove that client from the process() graph.
    */
-  int setProcessCallback();
+  void setProcessCallback();
 
   /** \brief JACK process callback
    * 

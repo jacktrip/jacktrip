@@ -99,10 +99,11 @@ void JackAudioInterface::setupClient()
   // Try to connect to the server
   /// \todo Write better warning messages. This following line displays very
   /// verbose message, check how to desable them.
-  sJackMutex.lock();
-  mClient = jack_client_open (client_name, options, &status, server_name);
-  sJackMutex.unlock();
-
+  {
+    QMutexLocker locker(&sJackMutex);
+    mClient = jack_client_open (client_name, options, &status, server_name);
+  }  
+  
   if (mClient == NULL) {
     fprintf (stderr, "jack_client_open() failed, "
     	     "status = 0x%2.0x\n", status);
@@ -111,8 +112,8 @@ void JackAudioInterface::setupClient()
       //std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
       //std::cerr << gPrintSeparator << std::endl;
     }
-    std::exit(1);
-    //throw std::runtime_error("ERROR: Maybe the JACK server is not running?");
+    //std::exit(1);
+    throw std::runtime_error("ERROR: Maybe the JACK server is not running?");
   }
   if (status & JackServerStarted) {
     fprintf (stderr, "JACK server started\n");
@@ -295,20 +296,21 @@ size_t JackAudioInterface::getSizeInBytesPerChannel() const
 }
 
 //*******************************************************************************
-int JackAudioInterface::setProcessCallback()
+void JackAudioInterface::setProcessCallback()
 {
   std::cout << "Setting JACK Process Callback..." << std::endl;
   if ( int code = 
        jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback, this)
        )
     {
-      std::cerr << "Could not set the process callback" << std::endl;
-      return(code);
-      std::exit(1);
+      //std::cerr << "Could not set the process callback" << std::endl;
+      //return(code);
+      throw std::runtime_error("Could not set the process callback");
+      //std::exit(1);
     }
   std::cout << "SUCCESS" << std::endl;
   std::cout << gPrintSeparator << std::endl;
-  return(0);
+  //return(0);
 }
 
 
@@ -342,9 +344,10 @@ int JackAudioInterface::stopProcess() const
 //*******************************************************************************
 void JackAudioInterface::jackShutdown (void*)
 {
-  std::cout << "The Jack Server was shut down!" << std::endl;
-  std::cout << "Exiting program..." << std::endl;
-  std::exit(1);
+  //std::cout << "The Jack Server was shut down!" << std::endl;
+  throw std::runtime_error("The Jack Server was shut down!");
+  //std::cout << "Exiting program..." << std::endl;
+  //std::exit(1);
 }
 
 
