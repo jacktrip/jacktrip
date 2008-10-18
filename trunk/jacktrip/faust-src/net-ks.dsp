@@ -61,6 +61,6 @@ av_lowpass(x)  = (x+x')/2;
 //        : av_lowpass;
 
 process = _ , 
-	( noise * hslider("level", 0.5, 0, 1, 0.1) :
-	 vgroup("excitator", *(button("play"): trigger(size))) ) 
+	( noise * 0.9 :
+	 vgroup("excitator", *(button("play"): trigger(300))) ) 
 	 :> av_lowpass;

@@ -173,7 +173,8 @@ public:
    * using something like:\n
    * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
    */
-  void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
+  //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
+  void appendProcessPlugin(ProcessPlugin* plugin);
 
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
@@ -285,7 +286,8 @@ private:
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
 
   /// Vector of Smart Pointer to ProcesPlugin<EM>s</EM>
-  QVector<std::tr1::shared_ptr<ProcessPlugin> > mProcessPlugins;
+  //QVector<std::tr1::shared_ptr<ProcessPlugin> > mProcessPlugins;
+  QVector<ProcessPlugin*> mProcessPlugins;
   JackTrip* mJackTrip; ///< JackTrip mediator class
 
   const char** mPorts;
