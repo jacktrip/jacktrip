@@ -283,12 +283,9 @@ private:
   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
 
-  /// Vector of Smart Pointer to ProcesPlugin<EM>s</EM>
-  //QVector<std::tr1::shared_ptr<ProcessPlugin> > mProcessPlugins;
-  QVector<ProcessPlugin*> mProcessPlugins;
+  QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
   JackTrip* mJackTrip; ///< JackTrip mediator class
 
-  const char** mPorts;
   static QMutex sJackMutex; ///< Mutex to make thread safe jack functions that are not
 };
 

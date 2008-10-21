@@ -41,6 +41,10 @@
 #include "JackAudioInterface.h"
 
 
+//namespace JackTrip/// \todo Add this namespace
+
+const char* const gVersion = "1.0.3-alpha"; ///< JackTrip version
+
 //*******************************************************************************
 /// \name Default Values
 //@{
