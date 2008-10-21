@@ -61,8 +61,7 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
   mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
   mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution),
   mClient(NULL),
-  mJackTrip(jacktrip),
-  mPorts(NULL)
+  mJackTrip(jacktrip)
 {
   setupClient();
   setProcessCallback();
@@ -82,8 +81,6 @@ JackAudioInterface::~JackAudioInterface()
   for (int i = 0; i < mNumOutChans; i++) {
     delete[] mOutProcessBuffer[i];
   }
-
-  //std::free(mPorts);
 }
 
 
@@ -601,8 +598,9 @@ void JackAudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
 //*******************************************************************************
 void JackAudioInterface::connectDefaultPorts()
 {
+  const char** ports;
   // Get physical output (capture) ports
-  if ( (mPorts =
+  if ( (ports =
        jack_get_ports (mClient, NULL, NULL,
 		       JackPortIsPhysical | JackPortIsOutput)) == NULL)
     {
@@ -613,15 +611,15 @@ void JackAudioInterface::connectDefaultPorts()
   for (int i = 0; i < mNumInChans; i++) 
     {
       // Check that we don't run out of capture ports
-      if ( mPorts[i] != NULL ) {
-	jack_connect(mClient, mPorts[i], jack_port_name(mInPorts[i]));
+      if ( ports[i] != NULL ) {
+	jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
       }
     }
 
-  std::free(mPorts);
+  std::free(ports);
 
   // Get physical input (playback) ports
-  if ( (mPorts =
+  if ( (ports =
 	jack_get_ports (mClient, NULL, NULL,
 		       JackPortIsPhysical | JackPortIsInput)) == NULL)
     {
@@ -632,10 +630,10 @@ void JackAudioInterface::connectDefaultPorts()
   for (int i = 0; i < mNumOutChans; i++) 
     {
       // Check that we don't run out of capture ports
-      if ( mPorts[i] != NULL ) {
-	jack_connect(mClient, jack_port_name(mOutPorts[i]), mPorts[i]);
+      if ( ports[i] != NULL ) {
+	jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
       }
     }
   
-  std::free(mPorts);
+  std::free(ports);
 }

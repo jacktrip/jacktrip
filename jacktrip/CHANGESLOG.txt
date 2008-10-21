@@ -1,4 +1,11 @@
 ---
+1.0.3 Alpha
+- (fixed) Now supports 64bits machines
+- (fixed) Improved exceptions handling
+- (added) Meta-server
+- (added) Basic Karplus-Strong model added
+
+---
 1.0.2 Alpha
 - (added) Port offset mode, to use a different UDP port than the default one.
 - (fixed) Improved thread behavior

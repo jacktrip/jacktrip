@@ -209,6 +209,7 @@ void Settings::printUsage()
   cout << "over the Internet" << endl;
   cout << "Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe." << endl;
   cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
+  cout << "VERSION: " << gVersion << endl;
   cout << "-----------------------------------------------------------------------------" << endl;
   cout << "" << endl;
   cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
