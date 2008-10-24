@@ -65,8 +65,8 @@ JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener) :
   */
   mUdpMasterListener = udpmasterlistener;
   setAutoDelete(false); // stick around after calling run()
-  mNetks = new NetKS;
-  mNetks->play();
+  //mNetks = new NetKS;
+  //mNetks->play();
 }
 
 
@@ -106,6 +106,9 @@ void JackTripWorker::run()
   // Try catching any exceptions that come from JackTrip
   try 
     {
+      NetKS* netks = new NetKS;
+      mNetks->play();
+      
       JackTrip* jacktrip = new JackTrip(JackTrip::CLIENT,
 					JackTrip::UDP,
 					mNumChans,2);
