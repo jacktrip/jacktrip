@@ -39,11 +39,14 @@
 #include "LoopBack.h"
 #include "NetKS.h"
 #include "UdpMasterListener.h"
+#include "JackTripWorker.h"
 #include "jacktrip_globals.h"
 
 #include <iostream>
 #include <getopt.h> // for command line parsing
 #include <cstdlib>
+
+#include "ThreadPoolTest.h"
 
 using std::cout; using std::endl;
 
@@ -237,10 +240,22 @@ void Settings::startJackTrip()
 
   ///\todo Change this, just here to test
   if ( mJackTripServer ) {
-    UdpMasterListener* udpmaster = new UdpMasterListener;
-    udpmaster->start();
-  }
+    //UdpMasterListener* udpmaster = new UdpMasterListener;
+    //udpmaster->start();
+    
+    //---Thread Pool Test--------------------------------------------
+    cout << "BEFORE START" << endl;
+    ThreadPoolTest* thtest = new ThreadPoolTest();
+    // QThreadPool takes ownership and deletes 'hello' automatically
+    QThreadPool::globalInstance()->start(thtest);
 
+    cout << "AFTER START" << endl;
+    sleep(2);
+    thtest->stop();
+    QThreadPool::globalInstance()->waitForDone();
+    //---------------------------------------------------------------
+  }
+  
   else {
     
     //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
