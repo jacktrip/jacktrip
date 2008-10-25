@@ -71,6 +71,7 @@ public:
   /// \brief Stops the execution of the Thread
   void stop() { mStopped = true; };
 
+  int releasePort(int id);
 
 private slots:
   void testRecieve()
@@ -101,9 +102,6 @@ private:
    * \return -1 if address is busy, id number if not
    */ 
   int isNewAddress(uint32_t address, uint16_t port);
-
-  int releasePort(int id);
-
 
   QUdpSocket mUdpMasterSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address

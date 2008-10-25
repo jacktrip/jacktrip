@@ -38,15 +38,17 @@
 #ifndef __JACKTRIPWORKER_H__
 #define __JACKTRIPWORKER_H__
 
+#include <iostream>
+
 #include <QThreadPool>
-//#include <QObject>
+#include <QObject>
 #include <QEventLoop>
-//#include <QThread>
 #include <QHostAddress>
+#include <QMutex>
 
 class JackTrip; // forward declaration
 class UdpMasterListener; // forward declaration
-class NetKS;
+
 
 /** \brief Prototype of the worker class that will be cloned through sending threads to the 
  * Thread Pool
@@ -59,20 +61,26 @@ class NetKS;
  */
 // Note that it is not possible to start run() as an event loop. That has to be implemented
 // inside a QThread
-//class JackTripWorker : public QObject, public QRunnable
-class JackTripWorker : public QEventLoop, public QRunnable
+class JackTripWorker : public QObject, public QRunnable
 {
   Q_OBJECT; // QRunnable is not a QObject, so I have to inherit from QObject as well
-
+  
 public:
+  /// \brief The class constructor
   JackTripWorker(UdpMasterListener* udpmasterlistener);
-  virtual ~JackTripWorker();
 
-  /// \brief Implements the Thread Loop.
-  /// To start the thread, call start() ( DO NOT CALL run() ). 
+  /// \brief The class destructor
+  virtual ~JackTripWorker();
+  
+  /** \brief Implements the Thread Loop.
+   * To start the thread, call start() ( DO NOT CALL run() ). 
+   */
   void run();
 
-  bool isSpawning() const { return mSpawning; }
+  /** \brief Check if the Thread is Spawning
+   * \return true is it is spawning, false if it's already running
+   */
+  bool isSpawning();
 
   /** \brief Sets the JackTripWorker properties
    * \param id ID number
@@ -84,7 +92,10 @@ public:
 
 
 private slots:
-  void fromServer();
+  void slotTest()
+  {
+    std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl;
+  }
 
 
 private:
@@ -92,15 +103,17 @@ private:
   UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
   QHostAddress mClientAddress; ///< Client Address
   uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client
+
   /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt> 
   uint16_t mClientPort;
+
   /// Thread spawning internal lock.
   /// If true, the prototype is working on creating (spawning) a new thread
   volatile bool mSpawning;
+  QMutex mMutex; ///< Mutex to protect mSpawning
+
   int mID; ///< ID thread number
   int mNumChans; ///< Number of Channels
-
-  NetKS* mNetks;
 };
 
 

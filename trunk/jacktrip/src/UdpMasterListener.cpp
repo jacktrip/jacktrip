@@ -93,6 +93,7 @@ void UdpMasterListener::run()
   cout << "=======================================================" << endl;
   while ( !mStopped )
     {
+      //cout << "WAITING........................." << endl;
       while ( MasterUdpSocket.hasPendingDatagrams() ) 
 	{
 	  //cout << "Received request from Client!" << endl;
@@ -107,6 +108,8 @@ void UdpMasterListener::run()
 	  /// \todo Add the port number in the comparison
 	  int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
 
+	  //cout << "IDIDIDIDIDDID === " << id << endl;
+
 	  // If the address is new, create a new thread in the pool
 	  if (id >= 0) // old address is -1
 	    {
@@ -118,6 +121,7 @@ void UdpMasterListener::run()
 	      cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
 	      cout << "=======================================================" << endl;
 	    }
+	  //cout << "ENDDDDDDDDDDDDDDDDDd === " << id << endl;
 	}
       QThread::msleep(100);
     }
@@ -127,6 +131,7 @@ void UdpMasterListener::run()
 //*******************************************************************************
 void UdpMasterListener::sendToPoolPrototype(int id)
 {
+  cout << "id ID **********@@@@@@@@@@@@@@@@@@@@@************** " << id <<  endl;
   mJTWorker->setJackTrip(id, mActiveAddress[id][0],
 			 mBasePort+(2*id), mActiveAddress[id][1],
 			 1); /// \todo temp default to 1 channel

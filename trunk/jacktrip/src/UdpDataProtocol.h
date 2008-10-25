@@ -50,8 +50,10 @@
  */
 class UdpDataProtocol : public DataProtocol
 {
+  Q_OBJECT;
+  
 public:
-
+  
   /** \brief The class constructor 
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
@@ -106,6 +108,10 @@ public:
    * ( DO NOT CALL run() )
    */
   virtual void run();
+
+
+signals:
+  void signalWating30Secs();
 
 
 private:

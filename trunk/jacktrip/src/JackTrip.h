@@ -218,8 +218,20 @@ public:
   //------------------------------------------------------------------------------------
 
 
+public slots:
+  /// \brief Slot to stop all the processes and threads
+  void slotStopProcesses() { stop(); };
+
+  /// \brief Slot to connect when UDP waits more than 30 secs
+  void slotUdpWating30Secs()
+  { 
+    emit signalProcessesStopped();
+  }
+
+
 signals:
-  void JackTripStopped();
+  /// \brieg Signal emitted when all the processes and threads are stopped
+  void signalProcessesStopped();
 
 
 private:

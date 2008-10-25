@@ -38,10 +38,11 @@
 #include <iostream>
 #include <unistd.h>
 
-#include <QObject>
 #include <QTimer>
+#include <QMutexLocker>
 
 #include "JackTripWorker.h"
+#include "JackTripWorkerMessages.h"
 #include "JackTrip.h"
 #include "UdpMasterListener.h"
 #include "NetKS.h"
@@ -74,7 +75,7 @@ JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener) :
 JackTripWorker::~JackTripWorker()
 {
   delete mUdpMasterListener;
-  delete mNetks;
+  
 }
 
 
@@ -83,7 +84,10 @@ void JackTripWorker::setJackTrip(int id, uint32_t client_address,
 				 uint16_t server_port, uint16_t client_port,
 				 int num_channels)
 {
-  mSpawning = true; /// \todo maybe do this stuff with a mutex instead?
+  { //Start Spawning, so lock mSpawning
+    QMutexLocker locker(&mMutex);
+    mSpawning = true;
+  }
   mID = id;
   // Set the jacktrip address and ports
   mClientAddress.setAddress(client_address);
@@ -106,6 +110,50 @@ void JackTripWorker::run()
   // Try catching any exceptions that come from JackTrip
   try 
     {
+      // Create and setup JackTrip Object
+      JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
+      jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
+      jacktrip.setLocalPorts(mServerPort);
+      jacktrip.setPeerPorts(mClientPort-1);
+
+      NetKS netks;
+      jacktrip.appendProcessPlugin(&netks);
+
+      // Create and setup signals and slots connections
+      JackTripWorkerMessages JTWMessages;
+
+
+      QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
+		       &JTWMessages, SLOT(slotTest()), Qt::QueuedConnection);
+
+
+      // Start Threads and event loop
+      jacktrip.start();
+      
+      QEventLoop event_loop;
+      QObject::connect(&JTWMessages, SIGNAL(signalStopEventLoop()),
+		       &event_loop, SLOT(quit()), Qt::QueuedConnection);
+
+      // Play the String
+      QTimer timer;
+      QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()), Qt::QueuedConnection);
+      timer.start(300);
+
+ 
+      { // Thread is already spawning, so release the lock
+	QMutexLocker locker(&mMutex);
+	mSpawning = false;
+      }
+
+      event_loop.exec(); // Excecution will block here until exit() the QEventLoop
+      //--------------------------------------------------------------------------
+      
+      // wait for jacktrip to be done before exiting the Worker Thread
+      jacktrip.wait();
+
+ 
+
+      /*
       NetKS* netks = new NetKS;
       mNetks->play();
       
@@ -130,10 +178,10 @@ void JackTripWorker::run()
       //timer->start(300);
       
       
-      /*
-	LoopBack* loopback = new LoopBack(mNumChans);
-	jacktrip->appendProcessPlugin(loopback);
-      */
+
+      //LoopBack* loopback = new LoopBack(mNumChans);
+      //jacktrip->appendProcessPlugin(loopback);
+
       jacktrip->start();
       
       mSpawning = false;
@@ -144,13 +192,21 @@ void JackTripWorker::run()
       
       jacktrip->wait(); // wait for jacktrip to be done
       cout << "AFTER WAIT(((((((((((((((((((((((" << endl;
+      */
     }
   catch ( const std::exception & e )
     {
+      std::cerr << "Couldn't send thread to the Pool" << endl;
       std::cerr << e.what() << endl;
-      std::cerr << "Exiting Program..." << endl;
       std::cerr << gPrintSeparator << endl;
     }
+ 
+  mUdpMasterListener->releasePort(mID);
+  { // Thread is already spawning, so release the lock
+    QMutexLocker locker(&mMutex);
+    mSpawning = false;
+  }
+
   /*
   QObject::connect(jacktrip, SIGNAL(JackTripStopped()),
 		   udpmasterlistener, SLOT(setValue(int)));
@@ -159,7 +215,8 @@ void JackTripWorker::run()
 
 
 //*******************************************************************************
-void JackTripWorker::fromServer()
+bool JackTripWorker::isSpawning()
 {
-  cout << "--------------- SIGNAL RECEIVED ---------------" << endl;
+  QMutexLocker locker(&mMutex);
+  return mSpawning;
 }

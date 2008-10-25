@@ -255,7 +255,7 @@ void JackTrip::stop()
   mDataProtocolSender->wait();
   mDataProtocolReceiver->wait();
   mJackAudio->stopProcess();
-  emit JackTripStopped();
+  emit signalProcessesStopped();
 }
 
 //*******************************************************************************

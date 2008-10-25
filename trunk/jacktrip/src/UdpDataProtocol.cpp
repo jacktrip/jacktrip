@@ -62,6 +62,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
   if (mRunMode == RECEIVER) {
     mLocalPort = incoming_port;
     mPeerPort = outgoing_port;
+    QObject::connect(this, SIGNAL(signalWating30Secs()),
+    		     jacktrip, SLOT(slotTestUdpWaiting()), Qt::QueuedConnection);
   }
   else if (mRunMode == SENDER) {
     mLocalPort = outgoing_port;
@@ -75,6 +77,7 @@ UdpDataProtocol::~UdpDataProtocol()
 {
   delete[] mAudioPacket;
   delete[] mFullPacket;
+  wait();
 } 
 
 
@@ -186,7 +189,7 @@ void UdpDataProtocol::run()
   set_realtime(1250000,60000,90000);
 #endif
 
-
+  //emit signalWating30Secs();
   switch ( mRunMode )
     {
     case RECEIVER : {
@@ -214,8 +217,11 @@ void UdpDataProtocol::run()
 	  // Timer to report packets arriving too late
 	  //timeout = UdpSocket.waitForReadyRead(30);
 	  timeout = 1;
+	  emit signalWating30Secs();
+	  //cout << "emmiting" << endl;
 	  if (!timeout) {
 	    std::cerr << "UDP is waited too long (more than 30ms)..." << endl;
+	    //emit signalWating30Secs();
 	  }
 	  else {
 	    // This is blocking until we get a packet...
@@ -244,9 +250,7 @@ void UdpDataProtocol::run()
 	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  //cout << "bytes_sent ============================= " << bytes_sent << endl;
 	}
-      cout << "THREAD STOPED" << endl;
       break; }
     }
-  cout << "EXITING THREAD!------------------------------------------------" << endl;
-  cout << "mRunMode === " << mRunMode << endl;
+  cout << "UdpDataProtocol Thread Stopped" << endl;
 }
