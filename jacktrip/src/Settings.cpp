@@ -240,10 +240,11 @@ void Settings::startJackTrip()
 
   ///\todo Change this, just here to test
   if ( mJackTripServer ) {
-    //UdpMasterListener* udpmaster = new UdpMasterListener;
-    //udpmaster->start();
+    UdpMasterListener* udpmaster = new UdpMasterListener;
+    udpmaster->start();
     
     //---Thread Pool Test--------------------------------------------
+    /*
     cout << "BEFORE START" << endl;
     ThreadPoolTest* thtest = new ThreadPoolTest();
     // QThreadPool takes ownership and deletes 'hello' automatically
@@ -253,6 +254,7 @@ void Settings::startJackTrip()
     sleep(2);
     thtest->stop();
     QThreadPool::globalInstance()->waitForDone();
+    */
     //---------------------------------------------------------------
   }
   

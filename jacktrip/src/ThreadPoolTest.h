@@ -15,6 +15,8 @@
 #include <iostream>
 
 #include "NetKS.h"
+#include "JackTripWorkerMessages.h"
+
 
 class ThreadPoolTest : public QObject, public QRunnable
 //class ThreadPoolTest : public QThread
@@ -29,15 +31,24 @@ public:
 
   void run()
   {
-    std::cout << "--------------- BEFORE ---------------" << std::endl;
-    NetKS netks;
-    netks.play();
-    std::cout << "--------------- AFTER ---------------" << std::endl;
-    //exec();
+    JackTripWorkerMessages jtm;
+    QThread testThread;
+    //jtm.moveToThread(&testThread);
+
+    //QObject::connect(&jtm, SIGNAL(signalTest()), &jtm, SLOT(slotTest()), Qt::QueuedConnection);
+    testThread.start();
+    jtm.play();
+    //testThread.wait();
+    
+    //std::cout << "--------------- BEFORE ---------------" << std::endl;
+    //NetKS netks;
+    //netks.play();
+    //std::cout << "--------------- AFTER ---------------" << std::endl;
+    
     QEventLoop loop;
-    QObject::connect(this, SIGNAL(stopELoop()), &loop, SLOT(quit()), Qt::QueuedConnection);
+    //QObject::connect(this, SIGNAL(stopELoop()), &loop, SLOT(quit()), Qt::QueuedConnection);
     loop.exec();
-    std::cout << "--------------- EXITING QRUNNABLE---------------" << std::endl;
+    //std::cout << "--------------- EXITING QRUNNABLE---------------" << std::endl;
     /*
     while (true) {
       std::cout << "Hello world from thread" << std::endl;

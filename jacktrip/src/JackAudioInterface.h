@@ -204,6 +204,7 @@ public:
 private:
 
   /** \brief Private method to setup a client of the Jack server.
+   * \exception std::runtime_error Can't start Jack
    *
    * This method is called by the class constructors. It does the following:\n
    *  - Connects to the JACK server
