@@ -110,8 +110,15 @@ public:
   virtual void run();
 
 
+private slots:
+  void printUdpWaitedTooLong(int wait_msec);
+
+
 signals:
-  void signalWating30Secs();
+
+  /// \brief Signals when waiting every 10 milliseconds, with the total wait on wait_msec
+  /// \param wait_msec Total wait in milliseconds
+  void signalWatingTooLong(int wait_msec);
 
 
 private:
@@ -119,6 +126,17 @@ private:
   /** \brief Binds the UDP socket to the available address and specified port
    */
   void bindSocket(QUdpSocket& UdpSocket);
+ 
+  /** \brief This function blocks until data is available for reading in the 
+   * QUdpSocket. The function will timeout after timeout_msec microseconds.
+   *
+   * This function is intended to replace QAbstractSocket::waitForReadyRead which has
+   * some problems with multithreading.
+   *
+   * \return returns true if there is data available for reading;
+   * otherwise it returns false (if an error occurred or the operation timed out)
+   */
+  bool waitForReady(QUdpSocket& UdpSocket, int timeout_msec);
 
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
@@ -130,4 +148,4 @@ private:
   int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
 };
 
-#endif
+#endif // __UDPDATAPROTOCOL_H__

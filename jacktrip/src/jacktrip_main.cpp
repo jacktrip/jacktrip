@@ -58,6 +58,8 @@ using std::cout; using std::endl;
 int main(int argc, char** argv)
 {
 
+  double caca = 0.1;
+  cout << caca << endl;
   QCoreApplication app(argc, argv);
 
   //--------TESTS--------------------------

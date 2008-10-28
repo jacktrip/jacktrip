@@ -222,11 +222,19 @@ public slots:
   /// \brief Slot to stop all the processes and threads
   void slotStopProcesses() { stop(); };
 
-  /// \brief Slot to connect when UDP waits more than 30 secs
-  void slotUdpWating30Secs()
+  /** \brief This slot emit the signal signalProcessesStopped()
+   * when UDP is waited for more than 30 seconds.
+   * 
+   * It is used to remove the thread from the server.
+   */
+  void slotUdpWatingTooLong(int wait_msec)
   { 
-    emit signalProcessesStopped();
-  }
+    int wait_time = 30000; // msec
+    if ( !(wait_msec%wait_time) ) {
+      std::cerr << "UDP WAITED MORE THAN 30 seconds." << std::endl;
+      emit signalProcessesStopped();
+    }  
+}
 
 
 signals:
