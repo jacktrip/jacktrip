@@ -62,8 +62,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
   if (mRunMode == RECEIVER) {
     mLocalPort = incoming_port;
     mPeerPort = outgoing_port;
-    QObject::connect(this, SIGNAL(signalWating30Secs()),
-    		     jacktrip, SLOT(slotTestUdpWaiting()), Qt::QueuedConnection);
+    QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
+    		     jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
   }
   else if (mRunMode == SENDER) {
     mLocalPort = outgoing_port;
@@ -124,7 +124,7 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n)
 {
   // Block until There's something to read
-  while (UdpSocket.pendingDatagramSize() < n ) { QThread::usleep(10); }
+  while (UdpSocket.pendingDatagramSize() < n ) { QThread::usleep(100); }
   int n_bytes = UdpSocket.readDatagram(buf, n);
   return n_bytes;
 }
@@ -189,6 +189,11 @@ void UdpDataProtocol::run()
   set_realtime(1250000,60000,90000);
 #endif
 
+
+  QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
+		   this, SLOT(printUdpWaitedTooLong(int)),
+		   Qt::QueuedConnection);
+
   //emit signalWating30Secs();
   switch ( mRunMode )
     {
@@ -216,11 +221,12 @@ void UdpDataProtocol::run()
 	{
 	  // Timer to report packets arriving too late
 	  //timeout = UdpSocket.waitForReadyRead(30);
-	  timeout = 1;
-	  emit signalWating30Secs();
+	  timeout = waitForReady(UdpSocket, 60000); //60 seconds
+	  //timeout = 1;
+	  //emit signalWating30Secs();
 	  //cout << "emmiting" << endl;
 	  if (!timeout) {
-	    std::cerr << "UDP is waited too long (more than 30ms)..." << endl;
+	    std::cerr << "UDP is waited too long (more than 60ms)..." << endl;
 	    //emit signalWating30Secs();
 	  }
 	  else {
@@ -253,4 +259,40 @@ void UdpDataProtocol::run()
       break; }
     }
   cout << "UdpDataProtocol Thread Stopped" << endl;
+}
+
+
+//*******************************************************************************
+bool UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
+{
+  int loop_resolution_usec = 100; // usecs to wait on each loop
+  int emit_resolution_usec = 10000; // 10 milliseconds
+  int timeout_usec = timeout_msec * 1000;
+  int ellaped_time_usec = 0; // Ellapsed time in milliseconds
+
+  while ( !(UdpSocket.hasPendingDatagrams()) && (ellaped_time_usec <= timeout_usec) ){
+    QThread::usleep(loop_resolution_usec);
+    ellaped_time_usec += loop_resolution_usec;
+    
+    if ( !(ellaped_time_usec % emit_resolution_usec) ) {
+      emit signalWatingTooLong(static_cast<int>(ellaped_time_usec/1000));
+    }
+  }
+  
+  if ( ellaped_time_usec >= timeout_usec )
+    { 
+      emit signalWatingTooLong(ellaped_time_usec/1000);
+      return false;
+    }
+  return true;
+}
+
+
+//*******************************************************************************
+void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
+{
+  int wait_time = 30; // msec
+  if ( !(wait_msec%wait_time) ) {
+    std::cerr << "UDP is waited too long (more than " << wait_time << "ms)..." << endl;
+  }
 }
