@@ -45,13 +45,17 @@
 
 #include "ProcessPlugin.h"
 
-
+/** \brief A simple (basic) network Karplus Strong.
+ *
+ * This plugin creates a one channel network karplus strong.
+ */
 class NetKS : public ProcessPlugin
 {
   Q_OBJECT;
 
 
 public:
+  /*
   void play()
   {
     std::cout << "********** PALYING ***********************************" << std::endl;
@@ -59,19 +63,17 @@ public:
     QObject::connect(timer, SIGNAL(timeout()),  this, SLOT(exciteString()));
     timer->start(300);
   }
-
-
-  //signals:
-  //void playString();
-
+  */
 
 private slots:
+
+  /// \brief Stlot to excite (play) the string
   void exciteString()
   {
     std::cout << "========= EXTICING STRING ===========" << std::endl;
     fbutton0 = 1.0;
     //std::cout << fbutton0 << std::endl;
-    usleep(280000);
+    usleep(280000); /// \todo Define this number based on the sampling rate and buffer size
     fbutton0 = 0.0;
     //std::cout << fbutton0 << std::endl;
   }
