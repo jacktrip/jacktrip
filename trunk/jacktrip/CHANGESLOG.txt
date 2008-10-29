@@ -4,6 +4,8 @@
 - (fixed) Improved exceptions handling
 - (added) Meta-server
 - (added) Basic Karplus-Strong model added
+- (dropped) Dropped support for PPC Mac OS X, now only supports 
+            Intel Mac OS X machines and Linux
 
 ---
 1.0.2 Alpha

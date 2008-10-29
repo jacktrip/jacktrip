@@ -63,7 +63,7 @@ void JackTripThread::run()
 
   //QThread::sleep(1);
   jacktrip.start();
-  netks.play();
+  //netks.play();
   jacktrip.wait();
 
 

@@ -42,7 +42,6 @@
 #include <QMutexLocker>
 
 #include "JackTripWorker.h"
-#include "JackTripWorkerMessages.h"
 #include "JackTrip.h"
 #include "UdpMasterListener.h"
 #include "NetKS.h"
@@ -110,64 +109,47 @@ void JackTripWorker::run()
   // Try catching any exceptions that come from JackTrip
   try 
     {
+      // Local event loop. this is necesary because QRunnables don't have their own as QThreads
+      QEventLoop event_loop;
+      
       // Create and setup JackTrip Object
       JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
       jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
       jacktrip.setLocalPorts(mServerPort);
       jacktrip.setPeerPorts(mClientPort-1);
 
-      NetKS netks;
-      jacktrip.appendProcessPlugin(&netks);
-
-      // Create and setup signals and slots connections
-      //JackTripWorkerMessages JTWMessages;
-
-
-      //QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
-      //		       &JTWMessages, SLOT(slotTest()), Qt::QueuedConnection);
-
-      //QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
-      //		       &JTWMessages, SLOT(slotTest()), Qt::QueuedConnection);
-
+      // Connect signals and slots
+      // -------------------------
       QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
 		       &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
-
-      // Start Threads and event loop
-      jacktrip.start();
-      
-      QEventLoop event_loop;
-
-      QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
-		       &event_loop, SLOT(quit()),
-		       Qt::QueuedConnection);
-      //QObject::connect(&JTWMessages, SIGNAL(signalStopEventLoop()),
-      //		       &event_loop, SLOT(quit()), Qt::QueuedConnection);
-
+      // Connection to terminate the local eventloop when jacktrip is done
       QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
-      		       &event_loop, SLOT(quit()),
-		       Qt::QueuedConnection);
+      		       &event_loop, SLOT(quit()), Qt::QueuedConnection);
 
-
-
+      // Karplus Strong String
+      NetKS netks;
+      jacktrip.appendProcessPlugin(&netks);
       // Play the String
       QTimer timer;
       QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
 		       Qt::QueuedConnection);
       timer.start(300);
-
- 
+      
+      // Start Threads and event loop
+      jacktrip.start();
+      
       { // Thread is already spawning, so release the lock
 	QMutexLocker locker(&mMutex);
 	mSpawning = false;
       }
-
+      
       event_loop.exec(); // Excecution will block here until exit() the QEventLoop
       //--------------------------------------------------------------------------
       
       // wait for jacktrip to be done before exiting the Worker Thread
       jacktrip.wait();
-
+      
     }
   catch ( const std::exception & e )
     {
@@ -175,17 +157,13 @@ void JackTripWorker::run()
       std::cerr << e.what() << endl;
       std::cerr << gPrintSeparator << endl;
     }
- 
+  
   mUdpMasterListener->releasePort(mID);
-  { // Thread is already spawning, so release the lock
+  { 
+    // Thread is already spawning, so release the lock
     QMutexLocker locker(&mMutex);
     mSpawning = false;
   }
-
-  /*
-  QObject::connect(jacktrip, SIGNAL(JackTripStopped()),
-		   udpmasterlistener, SLOT(setValue(int)));
-  */
 
   cout << "JackTrip ID = " << mID << " released from the THREAD POOL" << endl;
   cout << gPrintSeparator << endl;
