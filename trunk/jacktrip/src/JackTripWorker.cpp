@@ -120,23 +120,40 @@ void JackTripWorker::run()
       jacktrip.appendProcessPlugin(&netks);
 
       // Create and setup signals and slots connections
-      JackTripWorkerMessages JTWMessages;
+      //JackTripWorkerMessages JTWMessages;
 
 
-      QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
-		       &JTWMessages, SLOT(slotTest()), Qt::QueuedConnection);
+      //QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
+      //		       &JTWMessages, SLOT(slotTest()), Qt::QueuedConnection);
+
+      //QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
+      //		       &JTWMessages, SLOT(slotTest()), Qt::QueuedConnection);
+
+      QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
+		       &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
 
       // Start Threads and event loop
       jacktrip.start();
       
       QEventLoop event_loop;
-      QObject::connect(&JTWMessages, SIGNAL(signalStopEventLoop()),
-		       &event_loop, SLOT(quit()), Qt::QueuedConnection);
+
+      QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
+		       &event_loop, SLOT(quit()),
+		       Qt::QueuedConnection);
+      //QObject::connect(&JTWMessages, SIGNAL(signalStopEventLoop()),
+      //		       &event_loop, SLOT(quit()), Qt::QueuedConnection);
+
+      QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
+      		       &event_loop, SLOT(quit()),
+		       Qt::QueuedConnection);
+
+
 
       // Play the String
       QTimer timer;
-      QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()), Qt::QueuedConnection);
+      QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
+		       Qt::QueuedConnection);
       timer.start(300);
 
  
@@ -151,48 +168,6 @@ void JackTripWorker::run()
       // wait for jacktrip to be done before exiting the Worker Thread
       jacktrip.wait();
 
- 
-
-      /*
-      NetKS* netks = new NetKS;
-      mNetks->play();
-      
-      JackTrip* jacktrip = new JackTrip(JackTrip::CLIENT,
-					JackTrip::UDP,
-					mNumChans,2);
-      
-      jacktrip->setPeerAddress( mClientAddress.toString().toLatin1().data() );
-      jacktrip->setLocalPorts(mServerPort);
-      jacktrip->setPeerPorts(mClientPort-1);
-      
-      //NetKS* netks = new NetKS;
-      //jacktrip->appendProcessPlugin(mNetks);
-      //mNetks->play();
-      
-      cout << "AFTER PLAYING" << endl;
-      
-      //QTimer *timer = new QTimer(this);
-      //QObject::connect(timer, SIGNAL(timeout()), netks, SLOT(exciteString()));
-      //timer->start(300);
-      //QObject::connect(timer, SIGNAL(timeout()), netks, SLOT(exciteString()));
-      //timer->start(300);
-      
-      
-
-      //LoopBack* loopback = new LoopBack(mNumChans);
-      //jacktrip->appendProcessPlugin(loopback);
-
-      jacktrip->start();
-      
-      mSpawning = false;
-      cout << "================BEFORE BLOCK EXEC===========" << endl;
-      exec();
-      exit();
-      cout << "================BLOCK EXEC===========" << endl;
-      
-      jacktrip->wait(); // wait for jacktrip to be done
-      cout << "AFTER WAIT(((((((((((((((((((((((" << endl;
-      */
     }
   catch ( const std::exception & e )
     {
@@ -211,6 +186,9 @@ void JackTripWorker::run()
   QObject::connect(jacktrip, SIGNAL(JackTripStopped()),
 		   udpmasterlistener, SLOT(setValue(int)));
   */
+
+  cout << "JackTrip ID = " << mID << " released from the THREAD POOL" << endl;
+  cout << gPrintSeparator << endl;
 }
 
 

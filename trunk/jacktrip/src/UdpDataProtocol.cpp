@@ -124,7 +124,7 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n)
 {
   // Block until There's something to read
-  while (UdpSocket.pendingDatagramSize() < n ) { QThread::usleep(100); }
+  while ( (UdpSocket.pendingDatagramSize() < n) && !mStopped ) { QThread::usleep(100); }
   int n_bytes = UdpSocket.readDatagram(buf, n);
   return n_bytes;
 }
@@ -225,19 +225,21 @@ void UdpDataProtocol::run()
 	  //timeout = 1;
 	  //emit signalWating30Secs();
 	  //cout << "emmiting" << endl;
-	  if (!timeout) {
-	    std::cerr << "UDP is waited too long (more than 60ms)..." << endl;
-	    //emit signalWating30Secs();
-	  }
-	  else {
+	  //if (!timeout) {
+	  //  std::cerr << "UDP is waited too long (more than 60ms)..." << endl;
+	  //  //emit signalWating30Secs();
+	  //}
+	  //else {
 	    // This is blocking until we get a packet...
 	    receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
+
 	    mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+
 	    // ...so we want to send the packet to the buffer as soon as we get in from
 	    // the socket, i.e., non-blocking
 	    //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
 	    mJackTrip->writeAudioBuffer(mAudioPacket);
-	  }
+	    //}
 	}
       break; }
       
@@ -258,7 +260,6 @@ void UdpDataProtocol::run()
 	}
       break; }
     }
-  cout << "UdpDataProtocol Thread Stopped" << endl;
 }
 
 
@@ -270,7 +271,9 @@ bool UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
   int timeout_usec = timeout_msec * 1000;
   int ellaped_time_usec = 0; // Ellapsed time in milliseconds
 
-  while ( !(UdpSocket.hasPendingDatagrams()) && (ellaped_time_usec <= timeout_usec) ){
+  while ( ( !(UdpSocket.hasPendingDatagrams()) && (ellaped_time_usec <= timeout_usec) )
+	  && !mStopped ){
+    //cout << mStopped << endl;
     QThread::usleep(loop_resolution_usec);
     ellaped_time_usec += loop_resolution_usec;
     
