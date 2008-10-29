@@ -250,11 +250,21 @@ void JackTrip::start()
 //*******************************************************************************
 void JackTrip::stop()
 {
+  // Stop The Sender
   mDataProtocolSender->stop();
-  mDataProtocolReceiver->stop();
   mDataProtocolSender->wait();
+
+  // Stop The Receiver
+  mDataProtocolReceiver->stop();
   mDataProtocolReceiver->wait();
+
+  // Stop the jack process callback
   mJackAudio->stopProcess();
+
+  cout << "JackTrip Processes STOPPED!" << endl;
+  cout << gPrintSeparator << endl;
+
+  // Emit the jack stopped signal
   emit signalProcessesStopped();
 }
 
