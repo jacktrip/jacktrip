@@ -41,6 +41,7 @@
 #include <sys/time.h>
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 
 using std::cout; using std::endl;
 
@@ -146,8 +147,9 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
   // Exit program if error
   if (error) 
     {
-      std::cerr << "Exiting program..." << endl;
-      std::exit(1);
+      //std::cerr << "Exiting program..." << endl;
+      //std::exit(1);
+      throw std::logic_error("Local and Peer Settings don't match");
     }
   /// \todo Check number of channels and other parameters
 }
@@ -193,9 +195,10 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
   // Check number of channels
   int num_inchannels = mJackTrip->getNumInputChannels();
   if ( num_inchannels != 1 ) {
-    std::cerr << "ERROR: JamLink only support ONE channel. Run JackTrip using only one channel"
-	      << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: JamLink only support ONE channel. Run JackTrip using only one channel"
+    //	      << endl;
+    //std::exit(1);
+    throw std::logic_error("JamLink only support ONE channel. Run JackTrip using only one channel");
   }
   
   mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND) + 64;
@@ -217,8 +220,9 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
       mHeader.Common = (mHeader.Common | ETX_22KHZ);
       break;
     default:
-      std::cerr << "ERROR: Sample rate not supported by JamLink" << endl;
-      std::exit(1);
+      //std::cerr << "ERROR: Sample rate not supported by JamLink" << endl;
+      //std::exit(1);
+      throw std::out_of_range("Sample rate not supported by JamLink");
       break;
     }
 }

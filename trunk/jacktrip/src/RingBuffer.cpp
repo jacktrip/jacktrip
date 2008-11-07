@@ -41,6 +41,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <stdexcept>
 
 using std::cout; using std::endl;
 
@@ -60,9 +61,10 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
   
   // Verify if there's enough space to for the buffers
   if ( (mRingBuffer == NULL) || (mLastReadSlot == NULL) ) {
-    std::cerr << "ERROR: RingBuffer out of memory!" << endl;
-    std::cerr << "Exiting program..." << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: RingBuffer out of memory!" << endl;
+    //std::cerr << "Exiting program..." << endl;
+    //std::exit(1);
+    throw std::length_error("RingBuffer out of memory!");
   }
 
   // Set the buffers to zeros

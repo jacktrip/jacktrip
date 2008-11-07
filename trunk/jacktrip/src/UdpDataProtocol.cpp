@@ -43,7 +43,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cerrno>
-
+#include <stdexcept>
 
 using std::cout; using std::endl;
 
@@ -89,9 +89,10 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
   if ( mPeerAddress.isNull() ) {
     std::cerr << "ERROR: Incorrect presentation format address" << endl;
     std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
-    std::cerr << "Exiting program..." << endl;
-    std::cerr << gPrintSeparator << endl;
-    std::exit(1);
+    //std::cerr << "Exiting program..." << endl;
+    //std::cerr << gPrintSeparator << endl;
+    //std::exit(1);
+    throw std::invalid_argument("");
   }
   else {
     std::cout << "Peer Address set to: "
@@ -108,8 +109,9 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
   /// \todo if port is already used, try binding in a different port
   // QHostAddress::Any : let the kernel decide the active address
   if ( !UdpSocket.bind(QHostAddress::Any, mLocalPort, QUdpSocket::DefaultForPlatform) ) {
-    std::cerr << "ERROR: could not bind UDP socket" << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: could not bind UDP socket" << endl;
+    //std::exit(1);
+    throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   else {
     if ( mRunMode == RECEIVER ) {

@@ -57,9 +57,6 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
-
-  double caca = 0.1;
-  cout << caca << endl;
   QCoreApplication app(argc, argv);
 
   //--------TESTS--------------------------
@@ -79,8 +76,9 @@ int main(int argc, char** argv)
     }
   catch ( const std::exception & e )
     {
+      std::cerr << "ERROR:" << endl;
       std::cerr << e.what() << endl;
-      std::cerr << "Exiting Program..." << endl;
+      std::cerr << "Exiting JackTrip..." << endl;
       std::cerr << gPrintSeparator << endl;
       return -1;
     }

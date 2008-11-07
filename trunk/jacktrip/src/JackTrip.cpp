@@ -43,6 +43,7 @@
 #include <iostream>
 #include <unistd.h> // for usleep, sleep
 #include <cstdlib>
+#include <stdexcept>
 
 #include <QHostAddress>
 #include <QThread>
@@ -134,16 +135,19 @@ void JackTrip::setupDataProtocol()
     						 mLocalIncomingPort, mPeerOutgoingPort);
     break;
   case TCP:
-    std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
-    std::exit(1);
+    //std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
+    //std::exit(1);
+    throw std::invalid_argument("TCP Protocol is not implemented");
     break;
   case SCTP:
-    std::cerr << "ERROR: SCTP Protocol is not unimplemented" << std::endl;
-    std::exit(1);
+    //std::cerr << "ERROR: SCTP Protocol is not unimplemented" << std::endl;
+    //std::exit(1);
+    throw std::invalid_argument("SCTP Protocol is not implemented");
     break;
   default: 
-    std::cerr << "ERROR: Protocol not defined or unimplemented" << std::endl;
-    std::exit(1);
+    //std::cerr << "ERROR: Protocol not defined or unimplemented" << std::endl;
+    //std::exit(1);
+    throw std::invalid_argument("Protocol not defined or unimplemented");
     break;
   }
   
@@ -175,8 +179,9 @@ void JackTrip::setupRingBuffers()
 					mBufferQueueLength);
     break;
   default: 
-    std::cerr << "ERROR: Underrun Mode not defined" << std::endl;
-    std::exit(1);
+    //std::cerr << "ERROR: Underrun Mode not defined" << std::endl;
+    //std::exit(1);
+    throw std::invalid_argument("Underrun Mode undefined");
     break;
   }
 }
@@ -227,8 +232,9 @@ void JackTrip::start()
       clientPingToServerStart();
       break;
     default: 
-      std::cerr << "ERROR: Jacktrip Mode not defined" << std::endl;
-      std::exit(1);
+      //std::cerr << "ERROR: Jacktrip Mode not defined" << std::endl;
+      //std::exit(1);
+      throw std::invalid_argument("Jacktrip Mode  undefined");
       break;
     }
 
@@ -281,8 +287,9 @@ void JackTrip::clientStart()
 {
   // For the Client mode, the peer (or server) address has to be specified by the user
   if ( mPeerAddress.isEmpty() ) {
-    std::cerr << "ERROR: Peer Address has to be set if you run in CLIENT mode" << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: Peer Address has to be set if you run in CLIENT mode" << endl;
+    //std::exit(1);
+    throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
   }
   else {
     // Set the peer address
@@ -310,8 +317,9 @@ void JackTrip::serverStart()
   if ( !UdpSockTemp.bind(QHostAddress::Any,
 		       mLocalIncomingPort,
 		       QUdpSocket::DefaultForPlatform) ) {
-    std::cerr << "ERROR: could not bind UDP socket" << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: could not bind UDP socket" << endl;
+    //std::exit(1);
+    throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to client
   while ( !UdpSockTemp.hasPendingDatagrams() ) { usleep(100000); }
@@ -334,8 +342,9 @@ void JackTrip::clientPingToServerStart()
 {
   // For the Client mode, the peer (or server) address has to be specified by the user
   if ( mPeerAddress.isEmpty() ) {
-    std::cerr << "ERROR: Peer Address has to be set if you run in CLIENTTOPINGSERVER mode" << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: Peer Address has to be set if you run in CLIENTTOPINGSERVER mode" << endl;
+    //std::exit(1);
+    throw std::invalid_argument("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
   }
   else {
     // Set the peer address
@@ -357,8 +366,9 @@ void JackTrip::clientPingToServerStart()
   if ( !UdpSockTemp.bind(QHostAddress::Any,
 			 mLocalIncomingPort,
 			 QUdpSocket::DefaultForPlatform) ) {
-    std::cerr << "ERROR: could not bind UDP socket" << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: could not bind UDP socket" << endl;
+    //std::exit(1);
+    throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to server response
   cout << "Waiting for server response..." << endl;
@@ -401,9 +411,10 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
     mPacketHeader = new JamLinkHeader(this);
     break;
   default :
-    std::cerr << "ERROR: Undefined Header Type" << endl;
-    std::cerr << "Exiting Program..." << endl;
-    std::exit(1);
+    //std::cerr << "ERROR: Undefined Header Type" << endl;
+    //std::cerr << "Exiting Program..." << endl;
+    //std::exit(1);
+    throw std::invalid_argument("Undefined Header Type");
     break;
   }
 }
