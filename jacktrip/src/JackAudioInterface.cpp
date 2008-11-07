@@ -102,15 +102,15 @@ void JackAudioInterface::setupClient()
   }  
   
   if (mClient == NULL) {
-    fprintf (stderr, "jack_client_open() failed, "
-    	     "status = 0x%2.0x\n", status);
+    //fprintf (stderr, "jack_client_open() failed, "
+    //	     "status = 0x%2.0x\n", status);
     if (status & JackServerFailed) {
       fprintf (stderr, "Unable to connect to JACK server\n");
       //std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
       //std::cerr << gPrintSeparator << std::endl;
     }
     //std::exit(1);
-    throw std::runtime_error("ERROR: Maybe the JACK server is not running?");
+    throw std::runtime_error("Maybe the JACK server is not running?");
   }
   if (status & JackServerStarted) {
     fprintf (stderr, "JACK server started\n");
@@ -302,7 +302,7 @@ void JackAudioInterface::setProcessCallback()
     {
       //std::cerr << "Could not set the process callback" << std::endl;
       //return(code);
-      throw std::runtime_error("Could not set the process callback");
+      throw std::runtime_error("Could not set the Jack process callback");
       //std::exit(1);
     }
   std::cout << "SUCCESS" << std::endl;
