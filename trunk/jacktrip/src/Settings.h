@@ -75,6 +75,7 @@ private:
   bool mLoopBack; ///< Loop-back mode
   bool mJamLink; ///< JamLink mode
   bool mJackTripServer; ///< JackTrip Server mode
+  unsigned int mRedundancy; ///< Redundancy factor for data in the network
 };
 
 #endif

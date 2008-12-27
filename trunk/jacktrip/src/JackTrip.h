@@ -91,11 +91,13 @@ public:
    * \param NumChans Number of Audio Channels (same for inputs and outputs)
    * \param BufferQueueLength Audio Buffer for receiving packets
    * \param AudioBitResolution Audio Sample Resolutions in bits
+   * \param redundancy redundancy factor for network data
    */
   JackTrip(jacktripModeT JacktripMode = CLIENT,
 	   dataProtocolT DataProtocolType = UDP,
 	   int NumChans = 2,
 	   int BufferQueueLength = 8,
+	   unsigned int redundancy = 1,
 	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
 	   JackAudioInterface::BIT16,
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
@@ -297,6 +299,8 @@ private:
   int mPeerIncomingPort; ///< Incoming (receiving) port for peer machine
   int mLocalOutgoingPort; ///< Outgoing (sending) port for local machine
   int mPeerOutgoingPort; ///< Outgoing (sending) port for peer machine
+
+  unsigned int mRedundancy; ///< Redundancy factor in network data
 };
 
 #endif

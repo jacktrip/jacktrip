@@ -65,7 +65,8 @@ Settings::Settings() :
   mUnderrrunZero(false),
   mLoopBack(false),
   mJamLink(false),
-  mJackTripServer(false)
+  mJackTripServer(false),
+  mRedundancy(1)
 {}
 
 //*******************************************************************************
@@ -98,6 +99,7 @@ void Settings::parseInput(int argc, char** argv)
     { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
     { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
     { "queue", required_argument, NULL, 'q' }, // Queue Length
+    { "redundancy", required_argument, NULL, 'r' }, // Redundancy
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
     { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
@@ -110,7 +112,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:b:zljh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -163,6 +165,16 @@ void Settings::parseInput(int argc, char** argv)
 	std::exit(1); }
       else {
 	mBufferQueueLength = atoi(optarg);
+      }
+      break;
+    case 'r':
+      //-------------------------------------------------------
+      if ( atoi(optarg) <= 0 ) {
+	std::cerr << "--queue ERROR: The queue has to be a positive integer" << endl;
+	printUsage();
+	std::exit(1); }
+      else {
+	mRedundancy = atoi(optarg);
       }
       break;
     case 'z': // underrun to zero
@@ -263,7 +275,7 @@ void Settings::startJackTrip()
     //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
     //	    mBufferQueueLength, mAudioBitResolution);
     mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
-			     mBufferQueueLength, mAudioBitResolution);
+			     mBufferQueueLength, mRedundancy, mAudioBitResolution);
     
     // Set buffers to zero when underrun
     if ( mUnderrrunZero ) {

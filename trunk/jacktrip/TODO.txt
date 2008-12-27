@@ -1,7 +1,7 @@
 High Priority TODOS:
 --------------------
 
-- Add redundancy to UDP
+- Add redundancy to UDP (DONE)
 - Finish header implementation, add run-time check
 
 

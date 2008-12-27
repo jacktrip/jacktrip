@@ -59,7 +59,8 @@ public:
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
   UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
-		  int incoming_port = gInputPort_0, int outgoing_port = gOutputPort_0);
+		  int incoming_port = gInputPort_0, int outgoing_port = gOutputPort_0,
+		  unsigned int udp_redundancy_factor = 1);
   
   /** \brief The class destructor
    */
@@ -146,6 +147,8 @@ private:
 
   int8_t* mAudioPacket; ///< Buffer to store Audio Packets
   int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
+
+  unsigned int mUdpRedundancyFactor; ///< Factor of redundancy
 };
 
 #endif // __UDPDATAPROTOCOL_H__

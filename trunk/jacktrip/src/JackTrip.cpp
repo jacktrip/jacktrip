@@ -57,6 +57,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
 		   dataProtocolT DataProtocolType,
 		   int NumChans,
 		   int BufferQueueLength,
+		   unsigned int redundancy,
 		   JackAudioInterface::audioBitResolutionT AudioBitResolution,
 		   DataProtocol::packetHeaderTypeT PacketHeaderType,
 		   underrunModeT UnderRunMode,
@@ -80,7 +81,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mLocalIncomingPort(local_incoming_port),
   mPeerIncomingPort(peer_incoming_port),
   mLocalOutgoingPort(local_outgoing_port),
-  mPeerOutgoingPort(peer_outgoing_port)
+  mPeerOutgoingPort(peer_outgoing_port),
+  mRedundancy(redundancy)
 {
   setupJackAudio();
   /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
@@ -130,9 +132,11 @@ void JackTrip::setupDataProtocol()
     std::cout << gPrintSeparator << std::endl;
     usleep(100);
     mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER,
-    					      mPeerIncomingPort, mLocalOutgoingPort);
+    					      mPeerIncomingPort, mLocalOutgoingPort,
+					      mRedundancy);
     mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER,
-    						 mLocalIncomingPort, mPeerOutgoingPort);
+    						 mLocalIncomingPort, mPeerOutgoingPort,
+						 mRedundancy);
     break;
   case TCP:
     //std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
