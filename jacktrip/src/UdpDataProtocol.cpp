@@ -197,6 +197,18 @@ void UdpDataProtocol::run()
 		   Qt::QueuedConnection);
 
   //emit signalWating30Secs();
+
+
+  /// ************* PROTOTYPR FOR REDUNDANCY **************************
+  int last_packet_pointer = 0;
+  int redundancy = 3;
+  int full_redundant_packet_size = full_packet_size * redundancy;
+  int8_t* full_redundant_packet;
+  full_redundant_packet = new int8_t[full_redundant_packet_size];
+  std::memset(full_redundant_packet, 0, full_redundant_packet_size);
+  /// *****************************************************************
+
+
   switch ( mRunMode )
     {
     case RECEIVER : {
@@ -219,6 +231,11 @@ void UdpDataProtocol::run()
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
 
+      /// ************* PROTOTYPE FOR REDUNDANCY **************************
+      int current_seq_num = 0;
+      int last_seq_num = 0;
+      int newer_seq_num = 0;
+      /// *****************************************************************
       while ( !mStopped )
 	{
 	  // Timer to report packets arriving too late
@@ -232,16 +249,72 @@ void UdpDataProtocol::run()
 	  //  //emit signalWating30Secs();
 	  //}
 	  //else {
-	    // This is blocking until we get a packet...
-	    receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 
+	  /*
+	  // This is blocking until we get a packet...
+	  receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
+	  
+	  mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+	  
+	  // ...so we want to send the packet to the buffer as soon as we get in from
+	  // the socket, i.e., non-blocking
+	  //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
+	  mJackTrip->writeAudioBuffer(mAudioPacket);
+	  */
+
+	  /// ************* PROTOTYPE FOR REDUNDANCY **************************
+	  // This is blocking until we get a packet...
+	  receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
+			 full_redundant_packet_size);
+	  //current_seq_num = mJackTrip->getPeerSequenceNumber(full_redundant_packet);
+	  
+	  //mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+	  newer_seq_num =
+	      mJackTrip->getPeerSequenceNumber(full_redundant_packet);
+	  current_seq_num = newer_seq_num;
+	  cout << current_seq_num << " ";
+	  int redun_last_index = 0;
+	  for (int i = 1; i<redundancy; i++) {
+	    if ( (current_seq_num == (last_seq_num+1))) { break; }
+	    
+	    redun_last_index = i;
+
+	    current_seq_num =
+	      mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
+	    cout << current_seq_num << " ";
+	    //cout << "current_seq_num === "  << current_seq_num << endl;
+	    //cout << "last_seq_num === " << last_seq_num << endl;
+	    
+	    //cout << "redun_last_index22222222222=== " << redun_last_index << endl;
+	  }
+	   cout << endl;
+
+
+	  //cout << "newer_seq_num === "  << newer_seq_num << endl;
+	  //cout << "current_seq_num === "  << current_seq_num << endl;
+	  //cout << "last_seq_num === " << last_seq_num << endl;
+	  last_seq_num = newer_seq_num;
+
+	  // ...so we want to send the packet to the buffer as soon as we get in from
+	  // the socket, i.e., non-blocking
+	  //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
+	  for (int i = redun_last_index; i>=0; i--) {
+	    //cout << "i ========"  << i << endl;
+	    memcpy(mFullPacket,
+		   full_redundant_packet + (i*full_packet_size),
+		   full_packet_size);
 	    mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
-
-	    // ...so we want to send the packet to the buffer as soon as we get in from
-	    // the socket, i.e., non-blocking
-	    //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
 	    mJackTrip->writeAudioBuffer(mAudioPacket);
-	    //}
+	  }
+
+	  //for (int i = 5; i>=0; i--) {
+	  //  cout << "i ========"  << i << endl;
+	  //}
+	  
+	  //mJackTrip->writeAudioBuffer(mAudioPacket);
+	 
+	  /// *****************************************************************
+	  //}
 	}
       break; }
       
@@ -249,16 +322,48 @@ void UdpDataProtocol::run()
       //----------------------------------------------------------------------------------- 
       while ( !mStopped )
 	{
-	  //cout << "sender" << endl;
+	  /*
 	  // We block until there's stuff available to read
-	  //mRingBuffer->readSlotBlocking(mAudioPacket);
 	  mJackTrip->readAudioBuffer( mAudioPacket );
 	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 	  // This will send the packet immediately
-	  //cout << "Before Sending ========================= "  << endl;
 	  //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
-	  //cout << "bytes_sent ============================= " << bytes_sent << endl;
+	  */
+
+	  /// ************* PROTOTYPE FOR REDUNDANCY **************************
+	  // \todo Add modulo operator to wrap around sequence number
+
+	  mJackTrip->readAudioBuffer( mAudioPacket );
+	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
+
+	  // Move older packets to end of array
+	  std::memmove(full_redundant_packet+full_packet_size,
+		       full_redundant_packet,
+		       full_packet_size*(redundancy-1));
+	  // Copy new packet to the begining of array
+	  std::memcpy(full_redundant_packet,
+		 mFullPacket, full_packet_size);
+	  //last_packet_pointer = (last_packet_pointer+1) % redundancy;
+	  
+	  // This will send the packet immediately
+	  //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
+	  
+	  int random_integer = rand();
+
+	  // 10% (or other number) packet lost simulation.
+	  // Uncomment the if to activate
+	  if ( random_integer > (RAND_MAX/100) )
+	    {
+	      sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
+			  full_redundant_packet_size);
+	    }
+	  //cout << mJackTrip->getSequenceNumber() << endl;
+	  mJackTrip->increaseSequenceNumber();
+	  //cout << "mJackTrip->getSequenceNumber()" << mJackTrip->getSequenceNumber() << endl;
+	  // Increase the packet header sequency number.
+	  
+	  /// *****************************************************************
 	}
       break; }
     }

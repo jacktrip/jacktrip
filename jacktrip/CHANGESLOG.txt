@@ -6,6 +6,8 @@
 - (added) Basic Karplus-Strong model added
 - (dropped) Dropped support for PPC Mac OS X, now only supports 
             Intel Mac OS X machines and Linux
+- (added) Some functionality reimplemented using signals and slots for 
+          more flexibility
 
 ---
 1.0.2 Alpha
