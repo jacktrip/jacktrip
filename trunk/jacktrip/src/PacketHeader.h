@@ -132,6 +132,7 @@ public:
   virtual void parseHeader() = 0;
 
   virtual void checkPeerSettings(int8_t* full_packet) = 0;
+  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
 
   /* \brief Increase sequence number for counter, a 16bit number
    */
@@ -205,11 +206,14 @@ public:
   virtual void checkPeerSettings(int8_t* full_packet);
   virtual void increaseSequenceNumber()
   {
-    /*
     mHeader.SeqNumber++;
-    std::cout << "Sequence Number = " << static_cast<int>(mHeader.SeqNumber) << std::endl;
-    */
+    //std::cout << "Sequence Number = " << static_cast<int>(mHeader.SeqNumber) << std::endl;
   };
+  virtual uint16_t getSequenceNumber() const
+  {
+    return mHeader.SeqNumber;
+  }
+  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
   virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); };
   virtual void putHeaderInPacket(int8_t* full_packet)
   {
@@ -244,6 +248,7 @@ public:
   virtual void fillHeaderCommonFromAudio();
   virtual void parseHeader() {};
   virtual void checkPeerSettings(int8_t* full_packet) {}
+  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const { /*\todo IMPLEMENT*/}
   virtual void increaseSequenceNumber() {};
   virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); };
   virtual void putHeaderInPacket(int8_t* full_packet)

@@ -93,7 +93,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
   mHeader.NumInChannels = mJackTrip->getNumInputChannels();
   mHeader.BitResolution = mJackTrip->getAudioBitResolution();
   mHeader.NumOutChannels = mJackTrip->getNumOutputChannels();
-  mHeader.SeqNumber = 0;
+  //mHeader.SeqNumber = 0;
   mHeader.TimeStamp = PacketHeader::usecTime();
   //cout << mHeader.TimeStamp << endl;
   //printHeader();
@@ -173,6 +173,20 @@ void DefaultHeader::printHeader() const
   cout << gPrintSeparator << endl;
   cout << sizeof(mHeader) << endl;
 }
+
+
+//***********************************************************************
+uint16_t DefaultHeader::getPeerSequenceNumber(int8_t* full_packet) const
+{
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  return peer_header->SeqNumber;
+}
+
+
+
+
+
 
 
 

@@ -44,6 +44,12 @@
 #include <cmath>
 #include <stdexcept>
 
+///************PROTORYPE FOR CELT**************************
+//#include <celt/celt.h>
+//#include <celt/celt_header.h>
+//#include <celt/celt_types.h>
+///********************************************************
+
 #include <QTextStream>
 #include <QMutexLocker>
 
@@ -479,6 +485,24 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // 3) Finally, send packets to peer
   // --------------------------------
   computeNetworkProcessToNetwork();
+
+  
+  ///************PROTORYPE FOR CELT**************************
+  ///********************************************************
+  /*
+  CELTMode* mode;
+  int* error;
+  mode = celt_mode_create(48000, 2, 64, error);
+  */
+  //celt_mode_create(48000, 2, 64, NULL);
+  //unsigned char* compressed;
+  //CELTEncoder* celtEncoder;
+  //celt_encode_float(celtEncoder, mInBuffer, NULL, compressed, );
+  
+  ///********************************************************
+  ///********************************************************
+
+
 
   return 0;
 }

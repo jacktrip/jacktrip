@@ -32,6 +32,8 @@ $QCMD -makefile -unix -o Makefile \
 "INSTALLS += target" \
 $APP_NAME.pro
 
+##"INCLUDEPATH+=/usr/include/celt" \
+
 echo "Makefile done"
 
 make clean

@@ -214,6 +214,12 @@ public:
   int getNumOutputChannels() const
   {return mJackAudio->getNumOutputChannels(); }
   void checkPeerSettings(int8_t* full_packet);
+  void increaseSequenceNumber()
+  { mPacketHeader->increaseSequenceNumber(); }
+  int getSequenceNumber() const
+  { return mPacketHeader->getSequenceNumber(); }
+  int getPeerSequenceNumber(int8_t* full_packet) const
+  { return mPacketHeader->getPeerSequenceNumber(full_packet); }
   //@}
   //------------------------------------------------------------------------------------
 
