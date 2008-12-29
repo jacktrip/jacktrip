@@ -19,7 +19,7 @@ echo "qmake .pro built."
 
 #Create Makefile
 $QCMD -makefile -unix -o Makefile \
-"CONFIG += qt debug thread warn_on" \
+"CONFIG += qt release thread" \
 "QMAKE_CXXFLAGS+=-g -O2" \
 "QT -= gui" \
 "QT += network" \
