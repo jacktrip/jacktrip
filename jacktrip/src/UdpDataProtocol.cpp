@@ -185,6 +185,14 @@ void UdpDataProtocol::run()
   // Put header in first packet
   mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 
+  // Redundancy Variables
+  // (Algorithm explained at the end of this file)
+  // ---------------------------------------------
+  int full_redundant_packet_size = full_packet_size * mUdpRedundancyFactor;
+  int8_t* full_redundant_packet;
+  full_redundant_packet = new int8_t[full_redundant_packet_size];
+  std::memset(full_redundant_packet, 0, full_redundant_packet_size); // Initialize to 0
+  
 #if defined ( __LINUX__ )
   set_fifo_priority (false);
 #endif
@@ -193,21 +201,10 @@ void UdpDataProtocol::run()
   set_realtime(1250000,60000,90000);
 #endif
 
-
+  // Connect signals and slots for packets arriving too late notifications
   QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
 		   this, SLOT(printUdpWaitedTooLong(int)),
 		   Qt::QueuedConnection);
-
-  //emit signalWating30Secs();
-
-
-  /// ************* PROTOTYPR FOR REDUNDANCY **************************
-  int full_redundant_packet_size = full_packet_size * mUdpRedundancyFactor;
-  int8_t* full_redundant_packet;
-  full_redundant_packet = new int8_t[full_redundant_packet_size];
-  std::memset(full_redundant_packet, 0, full_redundant_packet_size);
-  /// *****************************************************************
-
 
   switch ( mRunMode )
     {
@@ -231,11 +228,12 @@ void UdpDataProtocol::run()
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
 
-      /// ************* PROTOTYPE FOR REDUNDANCY **************************
-      int current_seq_num = 0;
-      int last_seq_num = 0;
-      int newer_seq_num = 0;
-      /// *****************************************************************
+      // Redundancy Variables
+      // --------------------
+      int current_seq_num = 0; // Store current sequence number
+      int last_seq_num = 0;    // Store last package sequence number
+      int newer_seq_num = 0;   // Store newer sequence number
+
       while ( !mStopped )
 	{
 	  // Timer to report packets arriving too late
@@ -245,7 +243,8 @@ void UdpDataProtocol::run()
 	  //timeout = UdpSocket.waitForReadyRead(30);
 	  timeout = waitForReady(UdpSocket, 60000); //60 seconds
 
-	  /* OLD CODE WITHOUT REDUNDANCY *************************************************************
+	  // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
+	  /*
 	  // This is blocking until we get a packet...
 	  receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  
@@ -255,33 +254,37 @@ void UdpDataProtocol::run()
 	  // the socket, i.e., non-blocking
 	  //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
 	  mJackTrip->writeAudioBuffer(mAudioPacket);
-	  ********************************************************************************************/
+	  */
+	  //----------------------------------------------------------------------------------
 
 	  // This is blocking until we get a packet...
 	  receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
 			 full_redundant_packet_size);
 
+	  // Get Packet Sequence Number
 	  newer_seq_num =
 	    mJackTrip->getPeerSequenceNumber(full_redundant_packet);
 	  current_seq_num = newer_seq_num;
+
 	  //cout << current_seq_num << " ";
 	  int redun_last_index = 0;
 	  for (int i = 1; i<mUdpRedundancyFactor; i++) {
+	    // Check if the package we receive is the next one expected, i.e., 
+	    // current_seq_num == (last_seq_num+1)
 	    if ( (current_seq_num == (last_seq_num+1))) { break; }
 	    
-	    redun_last_index = i;
-	    
+	    // if it's not, check the next one until it is the corresponding packet
+	    // or there aren't more available packets
+	    redun_last_index = i; // index of packet to use in the redundant packet
 	    current_seq_num =
 	      mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
 	    //cout << current_seq_num << " ";
 	  }
 	  //cout << endl;
 
-	  last_seq_num = newer_seq_num;
+	  last_seq_num = newer_seq_num; // Save last read packet
 
-	  // ...so we want to send the packet to the buffer as soon as we get in from
-	  // the socket, i.e., non-blocking
-	  //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
+	  // Send to audio all available audio packets, in order
 	  for (int i = redun_last_index; i>=0; i--) {
 	    memcpy(mFullPacket,
 		   full_redundant_packet + (i*full_packet_size),
@@ -296,21 +299,21 @@ void UdpDataProtocol::run()
       //----------------------------------------------------------------------------------- 
       while ( !mStopped )
 	{
-	  /* OLD CODE WITHOUT REDUNDANCY *************************************************************
+	  // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
+	  /*
 	  // We block until there's stuff available to read
 	  mJackTrip->readAudioBuffer( mAudioPacket );
 	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 	  // This will send the packet immediately
 	  //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
-	  ********************************************************************************************/
-
-	  // \todo Add modulo operator to wrap around sequence number
+	  */
+	  //----------------------------------------------------------------------------------
 
 	  mJackTrip->readAudioBuffer( mAudioPacket );
 	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 
-	  // Move older packets to end of array
+	  // Move older packets to end of array of redundant packets
 	  std::memmove(full_redundant_packet+full_packet_size,
 		       full_redundant_packet,
 		       full_packet_size*(mUdpRedundancyFactor-1));
@@ -322,7 +325,7 @@ void UdpDataProtocol::run()
 	  // Uncomment the if to activate
 	  //---------------------------------------------------------------------------------
 	  //int random_integer = rand();
-	  //if ( random_integer > (RAND_MAX/2) )
+	  //if ( random_integer > (RAND_MAX/10) )
 	  //{
 	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
 		      full_redundant_packet_size);
