@@ -1,0 +1,27 @@
+---
+1.0.3
+- (added) Redundancy Algorithm for UDP Packets to to avoid glitches with packet losses
+- (fixed) Now compiles on 64bits machines
+- (fixed) Improved exceptions handling
+- (added) Basic Karplus-Strong model added as Plug-in
+- (added) Some functionality reimplemented using signals and slots for 
+          more flexibility
+- (added) Multiple-Client-Server in alpha testing, expect it working in the next release
+
+---
+1.0.2 Alpha
+- (added) Port offset mode, to use a different UDP port than the default one.
+- (fixed) Improved thread behavior
+
+---
+1.0.1 Alpha
+- (added) jamlink mode to connect with jamlink boxes
+- (fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X version)
+- (fixed) Bug that was causing plug-ins not to behave correctly
+- (added) Loopback mode
+- (added) Underrun Modes: Wavetable (default) and set to zeros
+- (added) Check for peer audio settings, program exists if they don't match
+- (added) Automatically connect ports to available physical audio interface.
+
+---
+1.0 Alpha  - initial release
