@@ -230,9 +230,11 @@ void UdpDataProtocol::run()
 
       // Redundancy Variables
       // --------------------
-      int current_seq_num = 0; // Store current sequence number
-      int last_seq_num = 0;    // Store last package sequence number
-      int newer_seq_num = 0;   // Store newer sequence number
+      // NOTE: These types need to be the same unsigned integer as the sequence
+      // number in the header. That way, they wrap around in the "same place"
+      uint16_t current_seq_num = 0; // Store current sequence number
+      uint16_t last_seq_num = 0;    // Store last package sequence number
+      uint16_t newer_seq_num = 0;   // Store newer sequence number
 
       while ( !mStopped )
 	{
