@@ -1,13 +1,12 @@
 ---
-1.0.3 Alpha
-- (fixed) Now supports 64bits machines
+1.0.3
+- (added) Redundancy Algorithm for UDP Packets to to avoid glitches with packet losses
+- (fixed) Now compiles on 64bits machines
 - (fixed) Improved exceptions handling
-- (added) Meta-server
-- (added) Basic Karplus-Strong model added
-- (dropped) Dropped support for PPC Mac OS X, now only supports 
-            Intel Mac OS X machines and Linux
+- (added) Basic Karplus-Strong model added as Plug-in
 - (added) Some functionality reimplemented using signals and slots for 
           more flexibility
+- (added) Multiple-Client-Server in alpha testing, expect it working in the next release
 
 ---
 1.0.2 Alpha

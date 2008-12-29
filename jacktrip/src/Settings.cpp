@@ -104,6 +104,7 @@ void Settings::parseInput(int argc, char** argv)
     { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
     { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
+    { "version", no_argument, NULL, 'v' }, // Version Number
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
   };
@@ -112,7 +113,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljvh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -189,6 +190,14 @@ void Settings::parseInput(int argc, char** argv)
       //-------------------------------------------------------
       mJamLink = true;
       break;
+    case 'v':
+      //-------------------------------------------------------
+      cout << "JackTrip VERSION: " << gVersion << endl;
+      cout << "Copyright (c) 2008-2009 Juan-Pablo Caceres, Chris Chafe." << endl;
+      cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
+      cout << "" << endl;
+      std::exit(0);
+      break;
     case 'h':
       //-------------------------------------------------------
       printUsage();
@@ -222,7 +231,7 @@ void Settings::printUsage()
   cout << "" << endl;
   cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
   cout << "over the Internet" << endl;
-  cout << "Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe." << endl;
+  cout << "Copyright (c) 2008-2009 Juan-Pablo Caceres, Chris Chafe." << endl;
   cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
   cout << "VERSION: " << gVersion << endl;
   cout << "-----------------------------------------------------------------------------" << endl;
@@ -243,7 +252,8 @@ void Settings::printUsage()
   cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
-  cout << " -h, --help                               Prints this help" << endl;
+  cout << " -v, --version                            Prints Version Number" << endl;
+  cout << " -h, --help                               Prints this Help" << endl;
   cout << "" << endl;
 }
 
