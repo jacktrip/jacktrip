@@ -31,7 +31,7 @@ qmake -makefile -o Makefile \
 "INCLUDEPATH+=/usr/local/include" \
 "LIBS += -ljack -lm -framework CoreAudio" \
 "QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk" \
-"CONFIG += x86" \
+"CONFIG += x86 ppc" \
 "TARGET = $APP_NAME" \
 "DEFINES += APP_NAME=${APP_NAME_QUOTES} __MAC_OSX__" \
 "DESTDIR = ./" \
