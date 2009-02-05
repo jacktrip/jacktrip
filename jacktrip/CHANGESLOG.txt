@@ -1,4 +1,8 @@
 ---
+1.0.4
+- (fixed) Buss error caused when no physical inputs or outputs ports are available
+
+---
 1.0.3
 - (added) Redundancy Algorithm for UDP Packets to to avoid glitches with packet losses
 - (fixed) Now compiles on 64bits machines
