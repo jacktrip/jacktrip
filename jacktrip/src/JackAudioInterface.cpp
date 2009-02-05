@@ -623,6 +623,7 @@ void JackAudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
 void JackAudioInterface::connectDefaultPorts()
 {
   const char** ports;
+
   // Get physical output (capture) ports
   if ( (ports =
        jack_get_ports (mClient, NULL, NULL,
@@ -630,18 +631,19 @@ void JackAudioInterface::connectDefaultPorts()
     {
       cout << "WARING: Cannot find any physical capture ports" << endl;
     }
-
-  // Connect capure ports to jacktrip send
-  for (int i = 0; i < mNumInChans; i++) 
+  else
     {
-      // Check that we don't run out of capture ports
-      if ( ports[i] != NULL ) {
-	jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
-      }
+      // Connect capure ports to jacktrip send
+      for (int i = 0; i < mNumInChans; i++) 
+	{
+	  // Check that we don't run out of capture ports
+	  if ( ports[i] != NULL ) {
+	    jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
+	  }
+	}
+      std::free(ports);
     }
-
-  std::free(ports);
-
+  
   // Get physical input (playback) ports
   if ( (ports =
 	jack_get_ports (mClient, NULL, NULL,
@@ -649,15 +651,16 @@ void JackAudioInterface::connectDefaultPorts()
     {
       cout << "WARING: Cannot find any physical playback ports" << endl;
     }
-
-  // Connect playback ports to jacktrip receive
-  for (int i = 0; i < mNumOutChans; i++) 
+  else 
     {
-      // Check that we don't run out of capture ports
-      if ( ports[i] != NULL ) {
-	jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
-      }
+      // Connect playback ports to jacktrip receive
+      for (int i = 0; i < mNumOutChans; i++) 
+	{
+	  // Check that we don't run out of capture ports
+	  if ( ports[i] != NULL ) {
+	    jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
+	  }
+	}
+      std::free(ports);
     }
-  
-  std::free(ports);
 }
