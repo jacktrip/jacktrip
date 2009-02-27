@@ -88,7 +88,8 @@ public:
   /// \brief Enum to define packet header types
   enum packetHeaderTypeT {
     DEFAULT, ///< Default application header
-    JAMLINK ///< Header to use with Jamlinks
+    JAMLINK, ///< Header to use with Jamlinks
+    EMPTY    ///< Empty Header
   };
 
   /// \brief Enum to define class modes, SENDER or RECEIVER

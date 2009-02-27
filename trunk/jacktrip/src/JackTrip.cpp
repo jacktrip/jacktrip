@@ -414,6 +414,9 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
   case DataProtocol::JAMLINK :
     mPacketHeader = new JamLinkHeader(this);
     break;
+  case DataProtocol::EMPTY :
+    mPacketHeader = new EmptyHeader(this);
+    break;
   default :
     //std::cerr << "ERROR: Undefined Header Type" << endl;
     //std::cerr << "Exiting Program..." << endl;

@@ -262,4 +262,31 @@ private:
 };
 
 
+
+//#######################################################################
+//####################### EmptyHeader #################################
+//#######################################################################
+
+/** \brief Empty Header to use with systems that don't include a header.
+ */
+class EmptyHeader : public PacketHeader
+{
+public:
+  
+  EmptyHeader(JackTrip* jacktrip);
+  virtual ~EmptyHeader() {};
+
+  virtual void fillHeaderCommonFromAudio() {};
+  virtual void parseHeader() {};
+  virtual void checkPeerSettings(int8_t* full_packet) {}
+  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const { /*\todo IMPLEMENT*/}
+  virtual void increaseSequenceNumber() {};
+  virtual int getHeaderSizeInBytes() const { return 0; };
+  virtual void putHeaderInPacket(int8_t* full_packet) {};
+
+private:
+  JackTrip* mJackTrip; ///< JackTrip mediator class
+};
+
+
 #endif //__PACKETHEADER_H__
