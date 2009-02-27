@@ -150,7 +150,7 @@ void Settings::parseInput(int argc, char** argv)
       else if ( atoi(optarg) == 16 ) {
 	mAudioBitResolution = JackAudioInterface::BIT16; }
       else if ( atoi(optarg) == 24 ) {
-	mAudioBitResolution = JackAudioInterface::BIT16; }
+	mAudioBitResolution = JackAudioInterface::BIT24; }
       else if ( atoi(optarg) == 32 ) {
 	mAudioBitResolution = JackAudioInterface::BIT32; }
       else {
