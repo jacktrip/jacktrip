@@ -104,6 +104,7 @@ void Settings::parseInput(int argc, char** argv)
     { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
     { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
+    { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
@@ -113,7 +114,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljvh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljevh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -185,6 +186,10 @@ void Settings::parseInput(int argc, char** argv)
     case 'l': // loopback
       //-------------------------------------------------------
       mLoopBack = true;
+      break;
+    case 'e': // jamlink
+      //-------------------------------------------------------
+      mEmptyHeader = true;
       break;
     case 'j': // jamlink
       //-------------------------------------------------------
@@ -306,6 +311,11 @@ void Settings::startJackTrip()
     if ( mJamLink ) {
       cout << "Running in JamLink Mode..." << endl;
       mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK); }
+
+    // Set in EmptyHeader Mode
+    if ( mEmptyHeader ) {
+      cout << "Running in EmptyHeader Mode..." << endl;
+      mJackTrip->setPacketHeaderType(DataProtocol::EMPTY); }
     
     // Add Plugins
     if ( mLoopBack ) {
