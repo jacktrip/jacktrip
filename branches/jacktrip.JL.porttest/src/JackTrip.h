@@ -167,7 +167,7 @@ public:
   void setAllPorts(int port)
   {
     mLocalIncomingPort = port;
-    mPeerIncomingPort = port;
+    mPeerIncomingPort = 4464;
     mLocalOutgoingPort = port;
     mPeerOutgoingPort = port;
   }
