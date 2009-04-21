@@ -69,8 +69,9 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
   }
   else if (mRunMode == SENDER) {
     //mLocalPort = outgoing_port;
-    mLocalPort = 4464;
-    mPeerPort = incoming_port;
+    mLocalPort = incoming_port;
+    //mPeerPort = incoming_port;
+    mPeerPort = 4464;
   }
 }
 

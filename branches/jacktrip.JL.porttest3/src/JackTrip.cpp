@@ -47,6 +47,8 @@
 
 #include <QHostAddress>
 #include <QThread>
+#include <QMutex>
+#include <QMutexLocker>
 
 using std::cout; using std::endl;
 
@@ -228,9 +230,10 @@ void JackTrip::start()
       serverStart();
       // Start Threads
       mJackAudio->startProcess();
-      mJackAudio->connectDefaultPorts();    
-      mDataProtocolSender->start();
+      mJackAudio->connectDefaultPorts();
       mDataProtocolReceiver->start();
+      QThread:usleep(1000000);
+      mDataProtocolSender->start();
       break;
     case CLIENTTOPINGSERVER :
       clientPingToServerStart();
@@ -320,7 +323,7 @@ void JackTrip::serverStart()
   // Bind the socket
   if ( !UdpSockTemp.bind(QHostAddress::Any,
 		       mLocalIncomingPort,
-		       QUdpSocket::DefaultForPlatform) ) {
+		       QUdpSocket::ShareAddress) ) {
     //std::cerr << "ERROR: could not bind UDP socket" << endl;
     //std::exit(1);
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
