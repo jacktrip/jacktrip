@@ -231,8 +231,10 @@ void JackTrip::start()
       // Start Threads
       mJackAudio->startProcess();
       mJackAudio->connectDefaultPorts();
+      cout << "Starting Receiver Socket..." << endl;
       mDataProtocolReceiver->start();
-      QThread:usleep(1000000);
+      usleep(1000000);
+      cout << "Starting Sender Socket..." << endl;
       mDataProtocolSender->start();
       break;
     case CLIENTTOPINGSERVER :
