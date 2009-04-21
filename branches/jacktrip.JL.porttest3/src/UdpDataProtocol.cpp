@@ -102,7 +102,7 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
     std::cout << "Peer Address set to: "
 	      << mPeerAddress.toString().toStdString() << std::endl;
     cout << gPrintSeparator << endl;
-    usleep(100);
+    QThread::usleep(100);
   }
 }
 
@@ -152,7 +152,7 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 						    uint16_t& port)
 {
   while ( !UdpSocket.hasPendingDatagrams() ) {
-    msleep(100);
+    QThread::msleep(100);
   }
   char buf[1];
   UdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);

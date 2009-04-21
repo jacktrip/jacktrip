@@ -41,7 +41,7 @@
 #include "jacktrip_globals.h"
 
 #include <iostream>
-#include <unistd.h> // for usleep, sleep
+//#include <unistd.h> // for usleep, sleep
 #include <cstdlib>
 #include <stdexcept>
 
@@ -120,7 +120,7 @@ void JackTrip::setupJackAudio()
   std::cout << gPrintSeparator << std::endl;
   cout << "The Number of Channels is: " << mJackAudio->getNumInputChannels() << endl;
   std::cout << gPrintSeparator << std::endl;
-  usleep(100);
+  QThread::usleep(100);
 }
 
 
@@ -132,7 +132,7 @@ void JackTrip::setupDataProtocol()
   case UDP:
     std::cout << "Using UDP Protocol" << std::endl;
     std::cout << gPrintSeparator << std::endl;
-    usleep(100);
+    QThread::usleep(100);
     mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER,
     					      mPeerIncomingPort, mLocalOutgoingPort,
 					      mRedundancy);
@@ -231,11 +231,11 @@ void JackTrip::start()
       // Start Threads
       mJackAudio->startProcess();
       mJackAudio->connectDefaultPorts();
-      cout << "Starting Receiver Socket..." << endl;
-      mDataProtocolReceiver->start();
-      QThread::sleep(1);
       cout << "Starting Sender Socket..." << endl;
       mDataProtocolSender->start();
+      QThread::sleep(1);
+      cout << "Starting Receiver Socket..." << endl;
+      mDataProtocolReceiver->start();
       break;
     case CLIENTTOPINGSERVER :
       clientPingToServerStart();
@@ -331,7 +331,7 @@ void JackTrip::serverStart()
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to client
-  while ( !UdpSockTemp.hasPendingDatagrams() ) { usleep(100000); }
+  while ( !UdpSockTemp.hasPendingDatagrams() ) { QThread::usleep(100000); }
   char buf[1];
   // set client address
   UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &port);
@@ -381,7 +381,7 @@ void JackTrip::clientPingToServerStart()
   }
   // Listen to server response
   cout << "Waiting for server response..." << endl;
-  while ( !UdpSockTemp.hasPendingDatagrams() ) { usleep(100000); }
+  while ( !UdpSockTemp.hasPendingDatagrams() ) { QThread::usleep(100000); }
   cout << "Received response from server!" << endl;
   char buf[1];
   // set client address
