@@ -56,7 +56,7 @@
  * This class also acts as a Mediator between all the other class.
  * Classes that uses JackTrip methods need to register with it.
  */
-class JackTrip : public QObject
+class JackTrip : public QThread
 {
   Q_OBJECT;
 
