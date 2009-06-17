@@ -60,15 +60,18 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mAudioPacket(NULL), mFullPacket(NULL),
     mUdpRedundancyFactor(udp_redundancy_factor)
 {
-  // Base ports gInputPort_0 and gOutputPort_0 defined at globals.h
+  // Base ports gInputPort_0, gOutputPort_0  and gDefaultSendPort
+  // defined at globals.h
   if (mRunMode == RECEIVER) {
     mLocalPort = incoming_port;
-    mPeerPort = outgoing_port;
+    //mPeerPort = outgoing_port;
+    mPeerPort = gDefaultSendPort;
     QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
     		     jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
   }
   else if (mRunMode == SENDER) {
-    mLocalPort = outgoing_port;
+    //mLocalPort = outgoing_port;
+    mLocalPort = gDefaultSendPort;
     mPeerPort = incoming_port;
   }
 }
@@ -109,8 +112,15 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
 void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 {
   /// \todo if port is already used, try binding in a different port
+
+  QUdpSocket::BindMode bind_mode;
+  if (mRunMode == RECEIVER) {
+    bind_mode = QUdpSocket::DontShareAddress; }
+  else if (mRunMode == SENDER) {
+    bind_mode = QUdpSocket::ShareAddress; }
+
   // QHostAddress::Any : let the kernel decide the active address
-  if ( !UdpSocket.bind(QHostAddress::Any, mLocalPort, QUdpSocket::DefaultForPlatform) ) {
+  if ( !UdpSocket.bind(QHostAddress::Any, mLocalPort, bind_mode) ) {
     //std::cerr << "ERROR: could not bind UDP socket" << endl;
     //std::exit(1);
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
