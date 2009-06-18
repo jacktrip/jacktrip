@@ -198,7 +198,11 @@ void UdpDataProtocol::run()
   int8_t* full_redundant_packet;
   full_redundant_packet = new int8_t[full_redundant_packet_size];
   std::memset(full_redundant_packet, 0, full_redundant_packet_size); // Initialize to 0
-  
+
+  /// \todo Set this as one function in globals
+  // Set realtime priority (function in jacktrip_globals.h)
+  set_realtime_priority();
+/*
 #if defined ( __LINUX__ )
   set_fifo_priority (false);
 #endif
@@ -206,7 +210,7 @@ void UdpDataProtocol::run()
 #if defined ( __MAC_OSX__ )
   set_realtime(1250000,60000,90000);
 #endif
-
+*/
   // Connect signals and slots for packets arriving too late notifications
   QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
                    this, SLOT(printUdpWaitedTooLong(int)),
