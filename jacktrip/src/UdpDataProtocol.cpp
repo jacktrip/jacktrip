@@ -54,11 +54,11 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
-				 int incoming_port, int outgoing_port,
-				 unsigned int udp_redundancy_factor)
+                                 int incoming_port, int outgoing_port,
+                                 unsigned int udp_redundancy_factor)
   : DataProtocol(jacktrip, runmode, incoming_port, outgoing_port), mRunMode(runmode),
-    mAudioPacket(NULL), mFullPacket(NULL),
-    mUdpRedundancyFactor(udp_redundancy_factor)
+  mAudioPacket(NULL), mFullPacket(NULL),
+  mUdpRedundancyFactor(udp_redundancy_factor)
 {
   // Base ports gInputPort_0, gOutputPort_0  and gDefaultSendPort
   // defined at globals.h
@@ -66,7 +66,7 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mLocalPort = incoming_port;
     mPeerPort = outgoing_port;
     QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
-    		     jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
+                     jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
   }
   else if (mRunMode == SENDER) {
     mLocalPort = outgoing_port;
@@ -99,7 +99,7 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
   }
   else {
     std::cout << "Peer Address set to: "
-	      << mPeerAddress.toString().toStdString() << std::endl;
+        << mPeerAddress.toString().toStdString() << std::endl;
     cout << gPrintSeparator << endl;
     usleep(100);
   }
@@ -142,7 +142,7 @@ int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_
 
 //*******************************************************************************
 int UdpDataProtocol::sendPacket(QUdpSocket& UdpSocket, const QHostAddress& PeerAddress,
-				const char* buf, const size_t n)
+                                const char* buf, const size_t n)
 {
   int n_bytes = UdpSocket.writeDatagram(buf, n, PeerAddress, mPeerPort);
   return n_bytes;
@@ -151,8 +151,8 @@ int UdpDataProtocol::sendPacket(QUdpSocket& UdpSocket, const QHostAddress& PeerA
 
 //*******************************************************************************
 void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
-						    QHostAddress& peerHostAddress,
-						    uint16_t& port)
+                                                    QHostAddress& peerHostAddress,
+                                                    uint16_t& port)
 {
   while ( !UdpSocket.hasPendingDatagrams() ) {
     msleep(100);
@@ -209,12 +209,12 @@ void UdpDataProtocol::run()
 
   // Connect signals and slots for packets arriving too late notifications
   QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
-		   this, SLOT(printUdpWaitedTooLong(int)),
-		   Qt::QueuedConnection);
+                   this, SLOT(printUdpWaitedTooLong(int)),
+                   Qt::QueuedConnection);
 
   switch ( mRunMode )
-    {
-    case RECEIVER : {
+  {
+  case RECEIVER : {
       //----------------------------------------------------------------------------------- 
       // Wait for the first packet to be ready and obtain address
       // from that packet
@@ -243,107 +243,107 @@ void UdpDataProtocol::run()
       uint16_t newer_seq_num = 0;   // Store newer sequence number
 
       while ( !mStopped )
-	{
-	  // Timer to report packets arriving too late
-	  // This QT method gave me a lot of trouble, so I replaced it with my own 'waitForReady'
-	  // that uses signals and slots and can also report with packets have not 
-	  // arrive for a longer time
-	  //timeout = UdpSocket.waitForReadyRead(30);
-	  timeout = waitForReady(UdpSocket, 60000); //60 seconds
+      {
+        // Timer to report packets arriving too late
+        // This QT method gave me a lot of trouble, so I replaced it with my own 'waitForReady'
+        // that uses signals and slots and can also report with packets have not
+        // arrive for a longer time
+        //timeout = UdpSocket.waitForReadyRead(30);
+        timeout = waitForReady(UdpSocket, 60000); //60 seconds
 
-	  // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
-	  /*
-	  // This is blocking until we get a packet...
-	  receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
-	  
-	  mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
-	  
-	  // ...so we want to send the packet to the buffer as soon as we get in from
-	  // the socket, i.e., non-blocking
-	  //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
-	  mJackTrip->writeAudioBuffer(mAudioPacket);
-	  */
-	  //----------------------------------------------------------------------------------
+        // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
+        /*
+    // This is blocking until we get a packet...
+    receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 
-	  // This is blocking until we get a packet...
-	  receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
-			 full_redundant_packet_size);
+    mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
 
-	  // Get Packet Sequence Number
-	  newer_seq_num =
-	    mJackTrip->getPeerSequenceNumber(full_redundant_packet);
-	  current_seq_num = newer_seq_num;
+    // ...so we want to send the packet to the buffer as soon as we get in from
+    // the socket, i.e., non-blocking
+    //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
+    mJackTrip->writeAudioBuffer(mAudioPacket);
+    */
+        //----------------------------------------------------------------------------------
 
-	  //cout << current_seq_num << " ";
-	  int redun_last_index = 0;
-	  for (int i = 1; i<mUdpRedundancyFactor; i++) {
-	    // Check if the package we receive is the next one expected, i.e., 
-	    // current_seq_num == (last_seq_num+1)
-	    if ( (current_seq_num == (last_seq_num+1))) { break; }
-	    
-	    // if it's not, check the next one until it is the corresponding packet
-	    // or there aren't more available packets
-	    redun_last_index = i; // index of packet to use in the redundant packet
-	    current_seq_num =
-	      mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
-	    //cout << current_seq_num << " ";
-	  }
-	  //cout << endl;
+        // This is blocking until we get a packet...
+        receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
+                       full_redundant_packet_size);
 
-	  last_seq_num = newer_seq_num; // Save last read packet
+        // Get Packet Sequence Number
+        newer_seq_num =
+            mJackTrip->getPeerSequenceNumber(full_redundant_packet);
+        current_seq_num = newer_seq_num;
 
-	  // Send to audio all available audio packets, in order
-	  for (int i = redun_last_index; i>=0; i--) {
-	    memcpy(mFullPacket,
-		   full_redundant_packet + (i*full_packet_size),
-		   full_packet_size);
-	    mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
-	    mJackTrip->writeAudioBuffer(mAudioPacket);
-	  }
-	}
+        //cout << current_seq_num << " ";
+        int redun_last_index = 0;
+        for (int i = 1; i<mUdpRedundancyFactor; i++) {
+          // Check if the package we receive is the next one expected, i.e.,
+          // current_seq_num == (last_seq_num+1)
+          if ( (current_seq_num == (last_seq_num+1))) { break; }
+
+          // if it's not, check the next one until it is the corresponding packet
+          // or there aren't more available packets
+          redun_last_index = i; // index of packet to use in the redundant packet
+          current_seq_num =
+              mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
+          //cout << current_seq_num << " ";
+        }
+        //cout << endl;
+
+        last_seq_num = newer_seq_num; // Save last read packet
+
+        // Send to audio all available audio packets, in order
+        for (int i = redun_last_index; i>=0; i--) {
+          memcpy(mFullPacket,
+                 full_redundant_packet + (i*full_packet_size),
+                 full_packet_size);
+          mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+          mJackTrip->writeAudioBuffer(mAudioPacket);
+        }
+      }
       break; }
-      
-    case SENDER : {
+
+  case SENDER : {
       //----------------------------------------------------------------------------------- 
       while ( !mStopped )
-	{
-	  // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
-	  /*
-	  // We block until there's stuff available to read
-	  mJackTrip->readAudioBuffer( mAudioPacket );
-	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
-	  // This will send the packet immediately
-	  //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
-	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
-	  */
-	  //----------------------------------------------------------------------------------
+      {
+        // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
+        /*
+    // We block until there's stuff available to read
+    mJackTrip->readAudioBuffer( mAudioPacket );
+    mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
+    // This will send the packet immediately
+    //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
+    sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
+    */
+        //----------------------------------------------------------------------------------
 
-	  mJackTrip->readAudioBuffer( mAudioPacket );
-	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
+        mJackTrip->readAudioBuffer( mAudioPacket );
+        mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 
-	  // Move older packets to end of array of redundant packets
-	  std::memmove(full_redundant_packet+full_packet_size,
-		       full_redundant_packet,
-		       full_packet_size*(mUdpRedundancyFactor-1));
-	  // Copy new packet to the begining of array
-	  std::memcpy(full_redundant_packet,
-		 mFullPacket, full_packet_size);
-	  
-	  // 10% (or other number) packet lost simulation.
-	  // Uncomment the if to activate
-	  //---------------------------------------------------------------------------------
-	  //int random_integer = rand();
-	  //if ( random_integer > (RAND_MAX/10) )
-	  //{
-	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
-		      full_redundant_packet_size);
-	  //}
-	  //---------------------------------------------------------------------------------
+        // Move older packets to end of array of redundant packets
+        std::memmove(full_redundant_packet+full_packet_size,
+                     full_redundant_packet,
+                     full_packet_size*(mUdpRedundancyFactor-1));
+        // Copy new packet to the begining of array
+        std::memcpy(full_redundant_packet,
+                    mFullPacket, full_packet_size);
 
-	  mJackTrip->increaseSequenceNumber();
-	}
+        // 10% (or other number) packet lost simulation.
+        // Uncomment the if to activate
+        //---------------------------------------------------------------------------------
+        //int random_integer = rand();
+        //if ( random_integer > (RAND_MAX/10) )
+        //{
+        sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
+                    full_redundant_packet_size);
+        //}
+        //---------------------------------------------------------------------------------
+
+        mJackTrip->increaseSequenceNumber();
+      }
       break; }
-    }
+  }
 }
 
 
@@ -356,7 +356,7 @@ bool UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
   int ellaped_time_usec = 0; // Ellapsed time in milliseconds
 
   while ( ( !(UdpSocket.hasPendingDatagrams()) && (ellaped_time_usec <= timeout_usec) )
-	  && !mStopped ){
+    && !mStopped ){
     //cout << mStopped << endl;
     QThread::usleep(loop_resolution_usec);
     ellaped_time_usec += loop_resolution_usec;
@@ -367,10 +367,10 @@ bool UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
   }
   
   if ( ellaped_time_usec >= timeout_usec )
-    { 
-      emit signalWatingTooLong(ellaped_time_usec/1000);
-      return false;
-    }
+  {
+    emit signalWatingTooLong(ellaped_time_usec/1000);
+    return false;
+  }
   return true;
 }
 
