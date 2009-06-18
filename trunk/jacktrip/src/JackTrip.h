@@ -105,8 +105,8 @@ public:
 	   underrunModeT UnderRunMode = WAVETABLE,
 	   int local_incoming_port = gInputPort_0,
 	   int peer_incoming_port = gInputPort_0,
-	   int local_outgoing_port = gOutputPort_0,
-	   int peer_outgoing_port = gOutputPort_0);
+     int local_outgoing_port = gDefaultSendPort,
+     int peer_outgoing_port = gDefaultSendPort);
   
   /// \brief The class destructor
   virtual ~JackTrip();
@@ -163,27 +163,23 @@ public:
   void setUnderRunMode(underrunModeT UnderRunMode)
   { mUnderRunMode = UnderRunMode; }
   /// \brief Sets port numbers for the local and peer machine.
-  /// Incoming port is <tt>port</tt> and outgoing ports are <tt>port+1</tt>
+  /// Receive port is <tt>port</tt>
   void setAllPorts(int port)
   {
     mLocalIncomingPort = port;
     mPeerIncomingPort = port;
-    mLocalOutgoingPort = port + 1;
-    mPeerOutgoingPort = port + 1;
   }
   /// \brief Sets port numbers for the local machine.
-  /// Incoming port is <tt>port</tt> and outgoing ports are <tt>port+1</tt>
+  /// Receive port is <tt>port</tt>
   void setLocalPorts(int port)
   {
     mLocalIncomingPort = port;
-    mLocalOutgoingPort = port + 1;
   }
   /// \brief Sets port numbers for the peer (remote) machine.
-  /// Incoming port is <tt>port</tt> and outgoing ports are <tt>port+1</tt>
+  /// Receive port is <tt>port</tt>
   void setPeerPorts(int port)
   {
     mPeerIncomingPort = port;
-    mPeerOutgoingPort = port + 1;
   }
   //@}
   //------------------------------------------------------------------------------------

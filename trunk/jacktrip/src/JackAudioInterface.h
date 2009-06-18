@@ -93,7 +93,8 @@ public:
    */
   JackAudioInterface(JackTrip* jacktrip,
 		     int NumInChans, int NumOutChans,
-		     audioBitResolutionT AudioBitResolution = BIT16);
+         audioBitResolutionT AudioBitResolution = BIT16,
+         char* ClientName = "JackTrip");
 
   /** \brief The class destructor
    */
@@ -270,6 +271,7 @@ private:
   audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
 
   jack_client_t* mClient; ///< Jack Client
+  char* mClientName; ///< Jack Client Name
   QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
   //jack_port_t** mInPorts; ///< Vector of Input Ports (Channels)
