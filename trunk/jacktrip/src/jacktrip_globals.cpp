@@ -180,3 +180,15 @@ int set_realtime_priority (void)
   return 0;
 }
 #endif //__LINUX__
+
+void set_realtime_priority()
+{
+#if defined ( __LINUX__ )
+  set_fifo_priority (false);
+#endif //__LINUX__
+#if defined ( __MAC_OSX__ )
+  set_realtime(1250000,60000,90000);
+#endif //__MAC_OSX__
+}
+
+
