@@ -200,7 +200,7 @@ void UdpDataProtocol::run()
   std::memset(full_redundant_packet, 0, full_redundant_packet_size); // Initialize to 0
 
   // Set realtime priority (function in jacktrip_globals.h)
-  set_realtime_priority();
+  set_crossplatform_realtime_priority();
 
   // Connect signals and slots for packets arriving too late notifications
   QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
