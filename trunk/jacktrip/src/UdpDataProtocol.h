@@ -139,6 +139,14 @@ private:
    */
   bool waitForReady(QUdpSocket& UdpSocket, int timeout_msec);
 
+  void receivePacketRedundancy(QUdpSocket& UdpSocket,
+                               int8_t* full_redundant_packet,
+                               int full_redundant_packet_size,
+                               int full_packet_size,
+                               uint16_t& current_seq_num,
+                               uint16_t& last_seq_num,
+                               uint16_t& newer_seq_num);
+
   int mLocalPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number to Bind
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
