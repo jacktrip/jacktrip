@@ -291,32 +291,6 @@ void UdpDataProtocol::run()
                              full_redundant_packet,
                              full_redundant_packet_size,
                              full_packet_size);
-
-        /*
-        mJackTrip->readAudioBuffer( mAudioPacket );
-        mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
-
-        // Move older packets to end of array of redundant packets
-        std::memmove(full_redundant_packet+full_packet_size,
-                     full_redundant_packet,
-                     full_packet_size*(mUdpRedundancyFactor-1));
-        // Copy new packet to the begining of array
-        std::memcpy(full_redundant_packet,
-                    mFullPacket, full_packet_size);
-
-        // 10% (or other number) packet lost simulation.
-        // Uncomment the if to activate
-        //---------------------------------------------------------------------------------
-        //int random_integer = rand();
-        //if ( random_integer > (RAND_MAX/10) )
-        //{
-        sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
-                    full_redundant_packet_size);
-        //}
-        //---------------------------------------------------------------------------------
-
-        mJackTrip->increaseSequenceNumber();
-        */
       }
       break; }
   }
@@ -430,12 +404,12 @@ void UdpDataProtocol::sendPacketRedundancy(QUdpSocket& UdpSocket,
   // 10% (or other number) packet lost simulation.
   // Uncomment the if to activate
   //---------------------------------------------------------------------------------
-  int random_integer = rand();
-  if ( random_integer > (RAND_MAX/10) )
-  {
+  //int random_integer = rand();
+  //if ( random_integer > (RAND_MAX/10) )
+  //{
   sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
               full_redundant_packet_size);
-  }
+  //}
   //---------------------------------------------------------------------------------
 
   mJackTrip->increaseSequenceNumber();
