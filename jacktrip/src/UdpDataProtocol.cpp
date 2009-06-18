@@ -269,48 +269,6 @@ void UdpDataProtocol::run()
                                current_seq_num,
                                last_seq_num,
                                newer_seq_num);
-
-        /*
-        // This is blocking until we get a packet...
-        receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
-                       full_redundant_packet_size);
-
-
-        // Get Packet Sequence Number
-        newer_seq_num =
-            mJackTrip->getPeerSequenceNumber(full_redundant_packet);
-        current_seq_num = newer_seq_num;
-
-
-        //cout << current_seq_num << " ";
-        int redun_last_index = 0;
-        for (int i = 1; i<mUdpRedundancyFactor; i++) {
-          // Check if the package we receive is the next one expected, i.e.,
-          // current_seq_num == (last_seq_num+1)
-          if ( (current_seq_num == (last_seq_num+1))) { break; }
-
-          // if it's not, check the next one until it is the corresponding packet
-          // or there aren't more available packets
-          redun_last_index = i; // index of packet to use in the redundant packet
-          current_seq_num =
-              mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
-          //cout << current_seq_num << " ";
-        }
-        //cout << endl;
-
-        last_seq_num = newer_seq_num; // Save last read packet
-
-
-
-        // Send to audio all available audio packets, in order
-        for (int i = redun_last_index; i>=0; i--) {
-          memcpy(mFullPacket,
-                 full_redundant_packet + (i*full_packet_size),
-                 full_packet_size);
-          mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
-          mJackTrip->writeAudioBuffer(mAudioPacket);
-        }
-        */
       }
       break; }
 
@@ -328,7 +286,13 @@ void UdpDataProtocol::run()
     sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
     */
         //----------------------------------------------------------------------------------
+        sendPacketRedundancy(UdpSocket,
+                             PeerAddress,
+                             full_redundant_packet,
+                             full_redundant_packet_size,
+                             full_packet_size);
 
+        /*
         mJackTrip->readAudioBuffer( mAudioPacket );
         mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 
@@ -352,6 +316,7 @@ void UdpDataProtocol::run()
         //---------------------------------------------------------------------------------
 
         mJackTrip->increaseSequenceNumber();
+        */
       }
       break; }
   }
@@ -442,8 +407,40 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
     mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
     mJackTrip->writeAudioBuffer(mAudioPacket);
   }
-
 }
+
+//*******************************************************************************
+void UdpDataProtocol::sendPacketRedundancy(QUdpSocket& UdpSocket,
+                                           QHostAddress& PeerAddress,
+                                           int8_t* full_redundant_packet,
+                                           int full_redundant_packet_size,
+                                           int full_packet_size)
+{
+  mJackTrip->readAudioBuffer( mAudioPacket );
+  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
+
+  // Move older packets to end of array of redundant packets
+  std::memmove(full_redundant_packet+full_packet_size,
+               full_redundant_packet,
+               full_packet_size*(mUdpRedundancyFactor-1));
+  // Copy new packet to the begining of array
+  std::memcpy(full_redundant_packet,
+              mFullPacket, full_packet_size);
+
+  // 10% (or other number) packet lost simulation.
+  // Uncomment the if to activate
+  //---------------------------------------------------------------------------------
+  int random_integer = rand();
+  if ( random_integer > (RAND_MAX/10) )
+  {
+  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
+              full_redundant_packet_size);
+  }
+  //---------------------------------------------------------------------------------
+
+  mJackTrip->increaseSequenceNumber();
+}
+
 
 /*
   The Redundancy Algorythmn works as follows. We send a packet that contains
