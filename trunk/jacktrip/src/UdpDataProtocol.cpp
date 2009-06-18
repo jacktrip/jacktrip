@@ -339,7 +339,6 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
                                               uint16_t& last_seq_num,
                                               uint16_t& newer_seq_num)
 {
-
   // This is blocking until we get a packet...
   receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
                  full_redundant_packet_size);
