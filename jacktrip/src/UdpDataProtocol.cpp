@@ -218,8 +218,6 @@ void UdpDataProtocol::run()
       //----------------------------------------------------------------------------------- 
       // Wait for the first packet to be ready and obtain address
       // from that packet
-      /// \todo here is the place to read the datagram and check if the settings match
-      /// the local ones. Extract this information from the header
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
       while ( !UdpSocket.hasPendingDatagrams() ) { QThread::msleep(100); }
@@ -264,15 +262,25 @@ void UdpDataProtocol::run()
     mJackTrip->writeAudioBuffer(mAudioPacket);
     */
         //----------------------------------------------------------------------------------
+        receivePacketRedundancy(UdpSocket,
+                               full_redundant_packet,
+                               full_redundant_packet_size,
+                               full_packet_size,
+                               current_seq_num,
+                               last_seq_num,
+                               newer_seq_num);
 
+        /*
         // This is blocking until we get a packet...
         receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
                        full_redundant_packet_size);
+
 
         // Get Packet Sequence Number
         newer_seq_num =
             mJackTrip->getPeerSequenceNumber(full_redundant_packet);
         current_seq_num = newer_seq_num;
+
 
         //cout << current_seq_num << " ";
         int redun_last_index = 0;
@@ -292,6 +300,8 @@ void UdpDataProtocol::run()
 
         last_seq_num = newer_seq_num; // Save last read packet
 
+
+
         // Send to audio all available audio packets, in order
         for (int i = redun_last_index; i>=0; i--) {
           memcpy(mFullPacket,
@@ -300,6 +310,7 @@ void UdpDataProtocol::run()
           mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
           mJackTrip->writeAudioBuffer(mAudioPacket);
         }
+        */
       }
       break; }
 
@@ -385,6 +396,54 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
 }
 
 
+//*******************************************************************************
+void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
+                                              int8_t* full_redundant_packet,
+                                              int full_redundant_packet_size,
+                                              int full_packet_size,
+                                              uint16_t& current_seq_num,
+                                              uint16_t& last_seq_num,
+                                              uint16_t& newer_seq_num)
+{
+
+  // This is blocking until we get a packet...
+  receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
+                 full_redundant_packet_size);
+
+  // Get Packet Sequence Number
+  newer_seq_num =
+      mJackTrip->getPeerSequenceNumber(full_redundant_packet);
+  current_seq_num = newer_seq_num;
+
+
+  //cout << current_seq_num << " ";
+  int redun_last_index = 0;
+  for (int i = 1; i<mUdpRedundancyFactor; i++) {
+    // Check if the package we receive is the next one expected, i.e.,
+    // current_seq_num == (last_seq_num+1)
+    if ( (current_seq_num == (last_seq_num+1))) { break; }
+
+    // if it's not, check the next one until it is the corresponding packet
+    // or there aren't more available packets
+    redun_last_index = i; // index of packet to use in the redundant packet
+    current_seq_num =
+        mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
+    //cout << current_seq_num << " ";
+  }
+  //cout << endl;
+
+  last_seq_num = newer_seq_num; // Save last read packet
+
+  // Send to audio all available audio packets, in order
+  for (int i = redun_last_index; i>=0; i--) {
+    memcpy(mFullPacket,
+           full_redundant_packet + (i*full_packet_size),
+           full_packet_size);
+    mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+    mJackTrip->writeAudioBuffer(mAudioPacket);
+  }
+
+}
 
 /*
   The Redundancy Algorythmn works as follows. We send a packet that contains
