@@ -63,11 +63,13 @@ QMutex JackAudioInterface::sJackMutex;
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
 				       int NumInChans, int NumOutChans,
-				       audioBitResolutionT AudioBitResolution) :
+               audioBitResolutionT AudioBitResolution,
+               char* ClienName) :
   mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
   mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution),
   mClient(NULL),
-  mJackTrip(jacktrip)
+  mJackTrip(jacktrip),
+  mClientName(ClienName)
 {
   setupClient();
   setProcessCallback();
@@ -93,8 +95,7 @@ JackAudioInterface::~JackAudioInterface()
 //*******************************************************************************
 void JackAudioInterface::setupClient()
 {
-  // \todo Get this name from global variable
-  const char* client_name = "JackTrip";//APP_NAME;
+  const char* client_name = mClientName;
   const char* server_name = NULL;
   jack_options_t options = JackNoStartServer;
   jack_status_t status;
