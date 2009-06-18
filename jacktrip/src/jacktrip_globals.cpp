@@ -181,7 +181,7 @@ int set_realtime_priority (void)
 }
 #endif //__LINUX__
 
-void set_realtime_priority()
+void set_crossplatform_realtime_priority()
 {
 #if defined ( __LINUX__ )
   set_fifo_priority (false);

@@ -90,7 +90,7 @@ const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
 //*******************************************************************************
 /// \name Global Functions
 
-void set_realtime_priority();
+void set_crossplatform_realtime_priority();
 
 //@{
 // Linux Specific Functions
