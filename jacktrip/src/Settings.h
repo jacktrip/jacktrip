@@ -63,7 +63,6 @@ public:
 
 private:
   JackTrip* mJackTrip; ///< JackTrip class
-
   JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   JackTrip::dataProtocolT mDataProtocol; ///< Data Protocol
   int mNumChans; ///< Number of Channels (inputs = outputs)
@@ -71,7 +70,9 @@ private:
   JackAudioInterface::audioBitResolutionT mAudioBitResolution;
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
   int mPortNum; ///< Port Number
+  char* mClientName;
   bool mUnderrrunZero; ///< Use Underrun to Zero mode
+
   bool mLoopBack; ///< Loop-back mode
   bool mJamLink; ///< JamLink mode
   bool mEmptyHeader; ///< EmptyHeader mode

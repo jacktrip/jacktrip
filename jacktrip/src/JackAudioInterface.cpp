@@ -71,8 +71,8 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
   mJackTrip(jacktrip),
   mClientName(ClienName)
 {
-  setupClient();
-  setProcessCallback();
+  //setupClient();
+  //setProcessCallback();
 }
 
 
@@ -89,6 +89,14 @@ JackAudioInterface::~JackAudioInterface()
   for (int i = 0; i < mNumOutChans; i++) {
     delete[] mOutProcessBuffer[i];
   }
+}
+
+
+//*******************************************************************************
+void JackAudioInterface::setup()
+{
+  setupClient();
+  setProcessCallback();
 }
 
 
