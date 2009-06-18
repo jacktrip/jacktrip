@@ -62,6 +62,7 @@ Settings::Settings() :
   mBufferQueueLength(gDefaultQueueLength),
   mAudioBitResolution(JackAudioInterface::BIT16),
   mPortNum(gInputPort_0),
+  mClientName(NULL),
   mUnderrrunZero(false),
   mLoopBack(false),
   mJamLink(false),
@@ -105,6 +106,7 @@ void Settings::parseInput(int argc, char** argv)
     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
     { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
     { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
+    { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
@@ -114,7 +116,7 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljevh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljeJ:vh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -194,6 +196,10 @@ void Settings::parseInput(int argc, char** argv)
     case 'j': // jamlink
       //-------------------------------------------------------
       mJamLink = true;
+      break;
+    case 'J':
+      //-------------------------------------------------------
+      mClientName = optarg;
       break;
     case 'v':
       //-------------------------------------------------------
@@ -294,6 +300,11 @@ void Settings::startJackTrip()
     mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
 			     mBufferQueueLength, mRedundancy, mAudioBitResolution);
     
+    // Change client name if different from default
+    if (mClientName != NULL) {
+      mJackTrip->setClientName(mClientName);
+    }
+
     // Set buffers to zero when underrun
     if ( mUnderrrunZero ) {
       cout << "Setting buffers to zero when underrun..." << endl;

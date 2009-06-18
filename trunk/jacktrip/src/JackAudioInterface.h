@@ -100,6 +100,10 @@ public:
    */
   virtual ~JackAudioInterface();
 
+  /** \brief Setup the client
+   */
+  void setup();
+
   /** \brief Get the Jack Server Sampling Rate, in samples/second
    */
   uint32_t getSampleRate() const;
@@ -201,6 +205,10 @@ public:
 
   /// \brief Connect the default ports, capture to sends, and receives to playback
   void connectDefaultPorts();
+
+  /// \brief Set Client Name to something different that the default (JackTrip)
+  void setClientName(char* ClientName)
+  { mClientName = ClientName; }
 
 private:
 

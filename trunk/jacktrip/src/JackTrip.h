@@ -181,6 +181,9 @@ public:
   {
     mPeerIncomingPort = port;
   }
+  /// \brief Set Client Name to something different that the default (JackTrip)
+  void setClientName(char* ClientName)
+  { mJackClientName = ClientName; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -297,6 +300,7 @@ private:
   int mPeerOutgoingPort; ///< Outgoing (sending) port for peer machine
 
   unsigned int mRedundancy; ///< Redundancy factor in network data
+  char* mJackClientName; ///< JackAudio Client Name
 };
 
 #endif

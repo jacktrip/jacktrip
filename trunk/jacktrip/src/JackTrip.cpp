@@ -82,11 +82,12 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mPeerIncomingPort(peer_incoming_port),
   mLocalOutgoingPort(local_outgoing_port),
   mPeerOutgoingPort(peer_outgoing_port),
-  mRedundancy(redundancy)
+  mRedundancy(redundancy),
+  mJackClientName("JackTrip")
 {
-  setupJackAudio();
+  //setupJackAudio();
   /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
-  createHeader(mPacketHeaderType);
+  //createHeader(mPacketHeaderType);
 }
 
 
@@ -107,6 +108,8 @@ void JackTrip::setupJackAudio()
 {
   // Create JackAudioInterface Client Object
   mJackAudio = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+  mJackAudio->setClientName(mJackClientName);
+  mJackAudio->setup();
   mSampleRate = mJackAudio->getSampleRate();
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << gPrintSeparator << std::endl;
@@ -210,6 +213,8 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 void JackTrip::start()
 {
   // Set all classes and parameters
+  setupJackAudio();
+  createHeader(mPacketHeaderType);
   setupDataProtocol();
   setupRingBuffers();
 
