@@ -263,6 +263,7 @@ void Settings::printUsage()
   cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
+  cout << " --clientname                             Change default client name (default is JackTrip)" << endl;
   cout << " -v, --version                            Prints Version Number" << endl;
   cout << " -h, --help                               Prints this Help" << endl;
   cout << "" << endl;
