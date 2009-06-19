@@ -247,8 +247,8 @@ public:
 
   virtual void fillHeaderCommonFromAudio();
   virtual void parseHeader() {};
-  virtual void checkPeerSettings(int8_t* full_packet) {}
-  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const { /*\todo IMPLEMENT*/}
+  virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
+  virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { /*\todo IMPLEMENT*/ return 0; }
   virtual void increaseSequenceNumber() {};
   virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); };
   virtual void putHeaderInPacket(int8_t* full_packet)
@@ -278,11 +278,11 @@ public:
 
   virtual void fillHeaderCommonFromAudio() {};
   virtual void parseHeader() {};
-  virtual void checkPeerSettings(int8_t* full_packet) {}
-  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const { /*\todo IMPLEMENT*/}
+  virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
+  virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; /*\todo IMPLEMENT*/}
   virtual void increaseSequenceNumber() {};
   virtual int getHeaderSizeInBytes() const { return 0; };
-  virtual void putHeaderInPacket(int8_t* full_packet) {};
+  virtual void putHeaderInPacket(int8_t* /*full_packet*/) {};
 
 private:
   JackTrip* mJackTrip; ///< JackTrip mediator class

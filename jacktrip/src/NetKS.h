@@ -88,8 +88,7 @@ private slots:
   public:
 	virtual int getNumInputs() 	{ return 1; }
 	virtual int getNumOutputs() 	{ return 1; }
-	static void classInit(int samplingFreq) {
-	}
+  static void classInit(int /*samplingFreq*/) {}
 	virtual void instanceInit(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
 		fbutton0 = 0.0;
