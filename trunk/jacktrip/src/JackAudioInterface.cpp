@@ -68,8 +68,8 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
   mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
   mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution),
   mClient(NULL),
-  mJackTrip(jacktrip),
-  mClientName(ClienName)
+  mClientName(ClienName),
+  mJackTrip(jacktrip)
 {
   //setupClient();
   //setProcessCallback();
@@ -317,6 +317,7 @@ void JackAudioInterface::setProcessCallback()
     {
       //std::cerr << "Could not set the process callback" << std::endl;
       //return(code);
+      (void) code; // to avoid compiler warnings
       throw std::runtime_error("Could not set the Jack process callback");
       //std::exit(1);
     }

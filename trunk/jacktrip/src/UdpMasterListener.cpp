@@ -48,10 +48,10 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 UdpMasterListener::UdpMasterListener(int server_port) :
-  mServerPort(server_port),
-  mJTWorker(NULL),
-  mStopped(false),
-  mTotalRunningThreads(0)
+    mJTWorker(NULL),
+    mServerPort(server_port),
+    mStopped(false),
+    mTotalRunningThreads(0)
 {
   // Register JackTripWorker with the master listener
   mJTWorker = new JackTripWorker(this);
@@ -182,4 +182,5 @@ int UdpMasterListener::releasePort(int id)
 { 
   mActiveAddress[id][0] = 0;
   mActiveAddress[id][1] = 0;
+  return 0; /// \todo Check if we really need to return an argument here
 }

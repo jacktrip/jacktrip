@@ -52,7 +52,7 @@ void test_threads_server();
 void test_threads_client(char* peer_address);
 
 
-void main_tests(int argc, char** argv)
+void main_tests(int /*argc*/, char** argv)
 {
   if (argv[1][0] == 's' )
     {
