@@ -1,20 +1,29 @@
-CONFIG += qt debug thread
-CONFIG -= app_bundle
+CONFIG += qt thread debug_and_release build_all
+CONFIG(debug, debug|release) {
+  TARGET = jacktrip_debug
+  } else {
+  TARGET = jacktrip
+  }
 QT -= gui
 QT += network
 INCLUDEPATH+=/usr/local/include
-LIBS += -ljack -lm -framework CoreAudio
-TARGET = jacktrip
-DEFINES += APP_NAME=${APP_NAME_QUOTES} __MAC_OSX__
+macx {
+  message(MAC OS X)
+  CONFIG -= app_bundle
+  LIBS += -ljack -lm -framework CoreAudio
+  DEFINES += __MAC_OSX__
+  }
+linux-g++ {
+  message(Linux)
+  QMAKE_CXXFLAGS+=-g -O2
+  unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack -lm
+  DEFINES += __LINUX__
+  }
+#TARGET = jacktrip
 DESTDIR = .
-QMAKE_CLEAN += ./$APP_NAME
+QMAKE_CLEAN += ./jacktrip ./jacktrip_debug
 target.path = /usr/bin
 INSTALLS += target
-
-#TEMPLATE = app
-#TARGET = jacktrip
-#DEPENDPATH += .
-#INCLUDEPATH += .
 
 # Input
 HEADERS += DataProtocol.h \
