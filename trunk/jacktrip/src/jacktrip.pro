@@ -7,19 +7,18 @@ CONFIG(debug, debug|release) {
 QT -= gui
 QT += network
 INCLUDEPATH+=/usr/local/include
+LIBS += -ljack -lm
 macx {
   message(MAC OS X)
   CONFIG -= app_bundle
-  LIBS += -ljack -lm -framework CoreAudio
+  LIBS += -framework CoreAudio
   DEFINES += __MAC_OSX__
   }
 linux-g++ {
   message(Linux)
-  QMAKE_CXXFLAGS+=-g -O2
-  unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack -lm
+  QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
   }
-#TARGET = jacktrip
 DESTDIR = .
 QMAKE_CLEAN += ./jacktrip ./jacktrip_debug
 target.path = /usr/bin
