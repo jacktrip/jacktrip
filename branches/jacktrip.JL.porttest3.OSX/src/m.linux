@@ -1,0 +1,41 @@
+#!/bin/bash
+#####################################
+APP_NAME=jacktrip
+APP_NAME_QUOTES=\"$APP_NAME\"
+ 
+######################################
+## Created by Juan-Pablo Caceres
+
+QCMD=qmake-qt4
+
+#Cleanup
+rm $APP_NAME.pro
+rm Makefile
+echo "cleanup done"
+
+#Create project (.pro) file
+$QCMD -project -o $APP_NAME.pro
+echo "qmake .pro built."
+
+#Create Makefile
+$QCMD -makefile -unix -o Makefile \
+"CONFIG += qt release thread" \
+"QMAKE_CXXFLAGS+=-g -O2" \
+"QT -= gui" \
+"QT += network" \
+"unix:LIBS+=-Xlinker -rpath $QTDIR/lib -ljack -lm" \
+"TARGET = $APP_NAME" \
+"DEFINES += APP_NAME=${APP_NAME_QUOTES} __LINUX__" \
+"DESTDIR = ./" \
+"QMAKE_CLEAN += ./$APP_NAME" \
+"target.path = /usr/bin" \
+"INSTALLS += target" \
+$APP_NAME.pro
+
+echo "Makefile done"
+
+make clean
+
+echo "Cleanup done"
+
+make
