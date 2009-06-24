@@ -119,6 +119,7 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   else {
+    cout << "*******SOCKETBOUND to port ***** == " << mLocalPort << endl;
     if ( mRunMode == RECEIVER ) {
       cout << "UDP Socket Receiving in Port: " << mLocalPort << endl;
       cout << gPrintSeparator << endl;
@@ -167,9 +168,39 @@ void UdpDataProtocol::run()
   //cout << "STARTING THREAD!------------------------------------------------" << endl;
   //cout << "mRunMode === " << mRunMode << endl;
   QUdpSocket UdpSocket;
-  bindSocket(UdpSocket); // Bind Socket
+  //bindSocket(UdpSocket); // Bind Socket
+  
+
   QHostAddress PeerAddress;
   PeerAddress = mPeerAddress;
+  
+  int fd = socket(AF_INET, SOCK_DGRAM, 0);
+  // Bind local address and port
+  /// \todo Bind to a different port in case this one is used by a different instance 
+  /// of the program
+  struct sockaddr_in LocalIPv4Addr;
+  bzero(&LocalIPv4Addr, sizeof(LocalIPv4Addr));
+  LocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
+  LocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
+  LocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
+  int nBind = bind(fd, (struct sockaddr *) &LocalIPv4Addr,
+		   sizeof(LocalIPv4Addr));
+  if ( nBind < 0 ) {
+    std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
+    std::exit(0);
+  }
+  if (mRunMode == RECEIVER) {
+    
+    UdpSocket.setSocketDescriptor( fd, QUdpSocket::BoundState,  
+				  QUdpSocket::ReadOnly );
+    //bindSocket(UdpSocket); // Bind Socket
+  }
+    /*
+   UdpSocket.connectToHost (PeerAddress, mPeerPort);
+   UdpSocket.setLocalPort(mLocalPort);
+    */
+  
+ 
 
   // Setup Audio Packet buffer 
   size_t audio_packet_size = getAudioPacketSizeInBites();
@@ -205,10 +236,11 @@ void UdpDataProtocol::run()
 #endif
 
   // Connect signals and slots for packets arriving too late notifications
+  /*
   QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
-		   this, SLOT(printUdpWaitedTooLong(int)),
-		   Qt::QueuedConnection);
-
+  		   this, SLOT(printUdpWaitedTooLong(int)),
+  		   Qt::QueuedConnection);
+  */
   switch ( mRunMode )
     {
     case RECEIVER : {
@@ -217,9 +249,13 @@ void UdpDataProtocol::run()
       // from that packet
       /// \todo here is the place to read the datagram and check if the settings match
       /// the local ones. Extract this information from the header
-      std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      while ( !UdpSocket.hasPendingDatagrams() ) { QThread::msleep(100); }
+      while ( !UdpSocket.hasPendingDatagrams() ) {
+	
+	QThread::msleep(1000);
+	cout << "SIZEintra === " << UdpSocket.pendingDatagramSize() << endl;
+      }
+      //cout << "SIZE333 === " << UdpSocket.pendingDatagramSize() << endl;
       int first_packet_size = UdpSocket.pendingDatagramSize();
       // The following line is the same as
       // int8_t* first_packet = new int8_t[first_packet_size];
@@ -304,6 +340,8 @@ void UdpDataProtocol::run()
       //----------------------------------------------------------------------------------- 
       while ( !mStopped )
 	{
+	  //UdpSocket.setLocalPort(mLocalPort);
+	  
 	  // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
 	  /*
 	  // We block until there's stuff available to read
@@ -314,7 +352,6 @@ void UdpDataProtocol::run()
 	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 	  */
 	  //----------------------------------------------------------------------------------
-
 	  mJackTrip->readAudioBuffer( mAudioPacket );
 	  mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 
@@ -333,7 +370,7 @@ void UdpDataProtocol::run()
 	  //if ( random_integer > (RAND_MAX/10) )
 	  //{
 	  sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
-		      full_redundant_packet_size);
+	  	      full_redundant_packet_size);
 	  //}
 	  //---------------------------------------------------------------------------------
 
