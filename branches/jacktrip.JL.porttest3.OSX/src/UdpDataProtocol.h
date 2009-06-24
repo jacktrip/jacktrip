@@ -109,7 +109,7 @@ public:
    * ( DO NOT CALL run() )
    */
   virtual void run();
-
+  size_t receivePacket2(int sock, char* buff, size_t n);
 
 private slots:
   void printUdpWaitedTooLong(int wait_msec);

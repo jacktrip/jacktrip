@@ -57,6 +57,73 @@ using std::cout; using std::endl;
 
 int main(int argc, char** argv)
 {
+  /*
+  int fd = socket(AF_INET, SOCK_DGRAM, 0);
+  struct sockaddr_in LocalIPv4Addr;
+  bzero(&LocalIPv4Addr, sizeof(LocalIPv4Addr));
+  LocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
+  LocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
+  LocalIPv4Addr.sin_port = htons(4464);//set local port
+  
+  int one = 1;
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one)) < 0) {
+    cout << "COULDN'T SET SO_REUSEADDR option" << endl;
+  }
+
+  int nBind = bind(fd, (struct sockaddr *) &LocalIPv4Addr,
+		   sizeof(LocalIPv4Addr));
+  cout << "BINDING 1" << endl;
+  if ( nBind < 0 ) {
+    std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
+    std::exit(0);
+  }
+  cout << "AFTER BINDING 1" << endl;
+
+
+  int fd1 = socket(AF_INET, SOCK_DGRAM, 0);
+  struct sockaddr_in LocalIPv4Addr1;
+  bzero(&LocalIPv4Addr1, sizeof(LocalIPv4Addr1));
+  LocalIPv4Addr1.sin_family = AF_INET;//AF_INET: IPv4 Protocol
+  LocalIPv4Addr1.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
+  LocalIPv4Addr1.sin_port = htons(4464);//set local port
+
+
+  int one1 = 1;
+  if (setsockopt(fd1, SOL_SOCKET, SO_REUSEPORT, &one1, sizeof(one1)) < 0) {
+    cout << "COULDN'T SET SO_REUSEADDR option" << endl;
+  }
+
+
+  int nBind1 = bind(fd1, (struct sockaddr *) &LocalIPv4Addr1,
+		   sizeof(LocalIPv4Addr1));
+  cout << "BINDING 2" << endl;
+  if ( nBind1 < 0 ) {
+    std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
+    std::exit(0);
+  }
+  cout << "AFTER BINDING 2" << endl;
+  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   QCoreApplication app(argc, argv);
 
   //--------TESTS--------------------------

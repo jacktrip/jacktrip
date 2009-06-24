@@ -175,6 +175,15 @@ void UdpDataProtocol::run()
   PeerAddress = mPeerAddress;
   
   int fd = socket(AF_INET, SOCK_DGRAM, 0);
+  /*
+  int on = 1;
+  cout << "BEFORE BINDING" << endl;
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+    {
+      perror("setsockopt(SO_REUSEADDR) failed");
+    }
+  cout << "AFTER BINDING" << endl;
+  */
   // Bind local address and port
   /// \todo Bind to a different port in case this one is used by a different instance 
   /// of the program
@@ -183,18 +192,45 @@ void UdpDataProtocol::run()
   LocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   LocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
   LocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
+  
+  int one = 1;
+  setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
+  //setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+  //int Buffer = 1;
+  //cout << "REC BUF SIZE = " << setsockopt(fd, SOL_SOCKET, SO_RCVBUF, 0, sizeof(0)) << endl;
   int nBind = bind(fd, (struct sockaddr *) &LocalIPv4Addr,
 		   sizeof(LocalIPv4Addr));
   if ( nBind < 0 ) {
     std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
     std::exit(0);
   }
+
+  
+  struct sockaddr_in ServerIPv4Addr;
+  bzero(&ServerIPv4Addr, sizeof(ServerIPv4Addr));
+  ServerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
+  ServerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
+  ServerIPv4Addr.sin_port = htons(mLocalPort);//set local port
+  cout << "inet_pton == " << inet_pton(AF_INET, "192.168.177.160", &ServerIPv4Addr.sin_addr) << endl;
+  
+  
+  
   if (mRunMode == RECEIVER) {
+    cout << "CONNECT RECEIVER == " << ::connect(fd, (struct sockaddr *) &ServerIPv4Addr, sizeof(ServerIPv4Addr)) << endl;
+    cout << "SHUTDOWN RECEIVER = " << ::shutdown(fd,SHUT_WR) << endl;
+  } 
+  
+  if (mRunMode == SENDER) {
+    //cout << "CONNECT SENDER == " << ::connect(fd, (struct sockaddr *) &ServerIPv4Addr, sizeof(ServerIPv4Addr)) << endl;
+    //cout << "SHUTDOWN SENDER = " << ::shutdown(fd,SHUT_RD) << endl;
+  }    
+  
+
+  UdpSocket.setSocketDescriptor( fd, QUdpSocket::BoundState,  
+				   QUdpSocket::ReadOnly );
     
-    UdpSocket.setSocketDescriptor( fd, QUdpSocket::BoundState,  
-				  QUdpSocket::ReadOnly );
     //bindSocket(UdpSocket); // Bind Socket
-  }
+    //}
     /*
    UdpSocket.connectToHost (PeerAddress, mPeerPort);
    UdpSocket.setLocalPort(mLocalPort);
@@ -250,6 +286,23 @@ void UdpDataProtocol::run()
       /// \todo here is the place to read the datagram and check if the settings match
       /// the local ones. Extract this information from the header
       // This blocks waiting for the first packet
+      /*
+      size_t nleft;
+      ssize_t nread;
+      char* buf;
+      nread = ::read(fd, buf, nleft);
+      cout << nread << endl;
+      QThread::msleep(1000);
+      nread = ::read(fd, buf, nleft);
+      cout << nread << endl;
+      QThread::msleep(1000);
+      nread = ::read(fd, buf, nleft);
+      cout << nread << endl;
+      QThread::msleep(1000);
+      nread = ::read(fd, buf, nleft);
+      cout << nread << endl;
+      */
+      
       while ( !UdpSocket.hasPendingDatagrams() ) {
 	
 	QThread::msleep(1000);
@@ -262,11 +315,12 @@ void UdpDataProtocol::run()
       // but avoids memory leaks
       std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
       receivePacket( UdpSocket, reinterpret_cast<char*>(first_packet.get()), first_packet_size);
+
       // Check that peer has the same audio settings
       mJackTrip->checkPeerSettings(first_packet.get());
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
-
+      
       // Redundancy Variables
       // --------------------
       // NOTE: These types need to be the same unsigned integer as the sequence
@@ -282,6 +336,7 @@ void UdpDataProtocol::run()
 	  // that uses signals and slots and can also report with packets have not 
 	  // arrive for a longer time
 	  //timeout = UdpSocket.waitForReadyRead(30);
+	  
 	  timeout = waitForReady(UdpSocket, 60000); //60 seconds
 
 	  // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
@@ -302,6 +357,14 @@ void UdpDataProtocol::run()
 	  receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
 			 full_redundant_packet_size);
 
+
+	  //receivePacket2( fd, reinterpret_cast<char*>(full_redundant_packet),
+	  //		  full_redundant_packet_size);
+	  //cout << receivePacket2( fd, reinterpret_cast<char*>(full_redundant_packet),
+	  //			  full_redundant_packet_size) << endl;
+	  
+	  //cout << "PACKET RECEIVED" << endl;
+	  QThread::msleep(1);
 	  // Get Packet Sequence Number
 	  newer_seq_num =
 	    mJackTrip->getPeerSequenceNumber(full_redundant_packet);
@@ -458,3 +521,30 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
   If it has more than one packet that it hasn't yet received, it sends it to the soundcard
   one by one.
 */
+
+
+//*******************************************************************************
+// Adapted form Stevens' "Unix Network Programming", third edition
+// Page 88 (readn)
+size_t UdpDataProtocol::receivePacket2(int sock, char* buff, size_t n)
+{
+  size_t nleft;
+  ssize_t nread;
+  char* ptr;
+  
+  ptr = buff;
+  nleft = n;
+  while (nleft > 0) {
+    if ( (nread = ::read(sock, ptr, nleft)) < 0) {
+      if (errno == EINTR)
+	nread = 0; // and call read() again
+      else
+	return(-1);
+    } else if (nread == 0)
+      break; // EOF
+    
+    nleft -= nread;
+    ptr   += nread;
+  }
+  return(n - nleft);
+}
