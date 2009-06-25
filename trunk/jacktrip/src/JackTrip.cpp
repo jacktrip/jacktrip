@@ -135,11 +135,12 @@ void JackTrip::setupDataProtocol()
     std::cout << gPrintSeparator << std::endl;
     usleep(100);
     mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER,
-    					      mSenderPeerPort, mSenderBindPort,
-					      mRedundancy);
+                                              //mSenderPeerPort, mSenderBindPort,
+                                              mSenderBindPort, mSenderPeerPort,
+                                              mRedundancy);
     mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER,
-    						 mReceiverBindPort, mReceiverPeerPort,
-						 mRedundancy);
+                                                 mReceiverBindPort, mReceiverPeerPort,
+                                                 mRedundancy);
     break;
   case TCP:
     //std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;

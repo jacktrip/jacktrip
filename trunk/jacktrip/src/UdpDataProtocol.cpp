@@ -62,15 +62,17 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
 {
   // Base ports gInputPort_0, gOutputPort_0  and gDefaultSendPort
   // defined at globals.h
+  mLocalPort = bind_port;
+  mPeerPort = peer_port;
   if (mRunMode == RECEIVER) {
-    mLocalPort = bind_port;
-    mPeerPort = peer_port;
+    //mLocalPort = bind_port;
+    //mPeerPort = peer_port;
     QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
                      jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
   }
   else if (mRunMode == SENDER) {
-    mLocalPort = peer_port;
-    mPeerPort = bind_port;
+    //mLocalPort = peer_port;
+    //mPeerPort = bind_port;
   }
 }
 
