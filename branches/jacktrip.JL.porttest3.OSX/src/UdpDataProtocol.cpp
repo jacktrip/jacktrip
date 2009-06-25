@@ -196,10 +196,16 @@ void UdpDataProtocol::run()
   LocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
   
   int one = 1;
-  
-  //setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
+
+#if defined ( __LINUX__ )
   ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-  
+#endif
+
+#if defined ( __MAC_OSX__ )
+  // This option is not avialable on Linux, and without it OS X has problems
+  ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
+#endif
+    
   //int Buffer = 1;
   //cout << "REC BUF SIZE = " << setsockopt(fd, SOL_SOCKET, SO_RCVBUF, 0, sizeof(0)) << endl;
   int nBind = ::bind(fd, (struct sockaddr *) &LocalIPv4Addr,
@@ -209,17 +215,23 @@ void UdpDataProtocol::run()
     std::exit(0);
   }
 
-  
-  struct sockaddr_in ServerIPv4Addr;
+  struct sockaddr_in ServerIPv4Addr;  
   bzero(&ServerIPv4Addr, sizeof(ServerIPv4Addr));
   ServerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   ServerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
   ServerIPv4Addr.sin_port = htons(mLocalPort);//set local port
-  cout << "inet_pton == " << inet_pton(AF_INET, "171.64.197.42", &ServerIPv4Addr.sin_addr) << endl;
-  
-  
+  //cout << "inet_pton == " << inet_pton(AF_INET, "171.64.197.42", &ServerIPv4Addr.sin_addr) << endl;
+  //cout << "inet_pton == " << inet_pton(AF_INET, "192.168.177.160", &ServerIPv4Addr.sin_addr) << endl;
+  const char* peeraddress = mPeerAddress.toString().toLatin1().constData();
+  //const char* peeraddress = "192.168.177.160";
+  cout << "inet_pton == " << inet_pton(AF_INET, peeraddress, &ServerIPv4Addr.sin_addr) << endl;
+  //cout << mPeerAddress.toString().toLatin1().constData() << endl;
+  cout << "peeraddress ====== " << peeraddress << endl;
+
+
   
   if (mRunMode == RECEIVER) {
+
     cout << "CONNECT RECEIVER == " << ::connect(fd, (struct sockaddr *) &ServerIPv4Addr, sizeof(ServerIPv4Addr)) << endl;
     cout << "SHUTDOWN RECEIVER = " << ::shutdown(fd,SHUT_WR) << endl;
     UdpSocket.setSocketDescriptor( fd, QUdpSocket::ConnectedState,  

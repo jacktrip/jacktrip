@@ -235,13 +235,15 @@ void JackTrip::start()
       // Start Threads
       mJackAudio->startProcess();
       mJackAudio->connectDefaultPorts();
-      
-      QThread::sleep(1);
-      cout << "Starting Receiver Socket..." << endl;
-      mDataProtocolReceiver->start();
       QThread::sleep(1);
       cout << "Starting Sender Socket..." << endl;
       mDataProtocolSender->start(); 
+      QThread::sleep(1);
+      cout << "Starting Receiver Socket..." << endl;
+      mDataProtocolReceiver->start();
+      
+      
+      
       
       break;
     case CLIENTTOPINGSERVER :
@@ -352,6 +354,7 @@ void JackTrip::serverStart()
 
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
 }
 
 //*******************************************************************************
