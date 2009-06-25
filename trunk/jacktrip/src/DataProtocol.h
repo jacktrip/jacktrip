@@ -108,7 +108,7 @@ public:
    */
   DataProtocol(JackTrip* jacktrip,
 	       const runModeT runmode,
-	       int incoming_port, int outgoing_port);
+	       int bind_port, int peer_port);
   
   /// \brief The class destructor
   virtual ~DataProtocol();
