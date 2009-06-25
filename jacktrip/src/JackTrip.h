@@ -166,20 +166,20 @@ public:
   /// Receive port is <tt>port</tt>
   void setAllPorts(int port)
   {
-    mLocalIncomingPort = port;
-    mPeerIncomingPort = port;
+    mReceiverBindPort = port;
+    mSenderPeerPort = port;
   }
   /// \brief Sets port numbers for the local machine.
   /// Receive port is <tt>port</tt>
   void setLocalPorts(int port)
   {
-    mLocalIncomingPort = port;
+    mReceiverBindPort = port;
   }
   /// \brief Sets port numbers for the peer (remote) machine.
   /// Receive port is <tt>port</tt>
   void setPeerPorts(int port)
   {
-    mPeerIncomingPort = port;
+    mSenderPeerPort = port;
   }
   /// \brief Set Client Name to something different that the default (JackTrip)
   void setClientName(char* ClientName)
@@ -294,10 +294,10 @@ private:
   /// Pointer for the Receive RingBuffer
   RingBuffer* mReceiveRingBuffer;
 
-  int mLocalIncomingPort; ///< Incoming (receiving) port for local machine
-  int mPeerIncomingPort; ///< Incoming (receiving) port for peer machine
-  int mLocalOutgoingPort; ///< Outgoing (sending) port for local machine
-  int mPeerOutgoingPort; ///< Outgoing (sending) port for peer machine
+  int mReceiverBindPort; ///< Incoming (receiving) port for local machine
+  int mSenderPeerPort; ///< Incoming (receiving) port for peer machine
+  int mSenderBindPort; ///< Outgoing (sending) port for local machine
+  int mReceiverPeerPort; ///< Outgoing (sending) port for peer machine
 
   unsigned int mRedundancy; ///< Redundancy factor in network data
   char* mJackClientName; ///< JackAudio Client Name
