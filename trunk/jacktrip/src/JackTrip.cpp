@@ -248,15 +248,6 @@ void JackTrip::start()
       break;
     }
 
-  // Start Threads
-  /*
-  mJackAudio->startProcess();
-  mJackAudio->connectDefaultPorts();    
-
-  mDataProtocolSender->start();
-  mDataProtocolReceiver->start();
-  */
-
   // Wait here until the threads return from run() method
   //mDataProtocolSender->wait();
   //mDataProtocolReceiver->wait();
