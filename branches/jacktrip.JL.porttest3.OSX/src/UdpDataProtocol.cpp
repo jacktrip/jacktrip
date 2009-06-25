@@ -176,16 +176,11 @@ void UdpDataProtocol::run()
   QHostAddress PeerAddress;
   PeerAddress = mPeerAddress;
   
+  
+  //==============================================================================
+  //=======WORKING WITH SOCK DESK ================================================
+  //==============================================================================
   int fd = socket(AF_INET, SOCK_DGRAM, 0);
-  /*
-  int on = 1;
-  cout << "BEFORE BINDING" << endl;
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
-    {
-      perror("setsockopt(SO_REUSEADDR) failed");
-    }
-  cout << "AFTER BINDING" << endl;
-  */
   // Bind local address and port
   /// \todo Bind to a different port in case this one is used by a different instance 
   /// of the program
@@ -194,7 +189,7 @@ void UdpDataProtocol::run()
   LocalIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   LocalIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
   LocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
-  
+  cout << "mLocalPort === " << mLocalPort << " ===" << endl;
   int one = 1;
 
 #if defined ( __LINUX__ )
@@ -214,12 +209,12 @@ void UdpDataProtocol::run()
     std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
     std::exit(0);
   }
-
+  
   struct sockaddr_in ServerIPv4Addr;  
   bzero(&ServerIPv4Addr, sizeof(ServerIPv4Addr));
   ServerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   ServerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
-  ServerIPv4Addr.sin_port = htons(mLocalPort);//set local port
+  ServerIPv4Addr.sin_port = htons(4464);//set local port
   //cout << "inet_pton == " << inet_pton(AF_INET, "171.64.197.42", &ServerIPv4Addr.sin_addr) << endl;
   //cout << "inet_pton == " << inet_pton(AF_INET, "192.168.177.160", &ServerIPv4Addr.sin_addr) << endl;
   const char* peeraddress = mPeerAddress.toString().toLatin1().constData();
@@ -244,6 +239,16 @@ void UdpDataProtocol::run()
     UdpSocket.setSocketDescriptor( fd, QUdpSocket::BoundState,  
 				   QUdpSocket::WriteOnly );
   }    
+  //==============================================================================
+  //==============================================================================
+
+
+
+
+
+
+
+
 
   //QThread::msleep(1000);
 

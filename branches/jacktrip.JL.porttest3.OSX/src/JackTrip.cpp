@@ -237,11 +237,11 @@ void JackTrip::start()
       mJackAudio->connectDefaultPorts();
       QThread::sleep(1);
       cout << "Starting Sender Socket..." << endl;
-      mDataProtocolSender->start(); 
+      mDataProtocolSender->start();
       QThread::sleep(1);
       cout << "Starting Receiver Socket..." << endl;
       mDataProtocolReceiver->start();
-      
+       
       
       
       
