@@ -304,6 +304,7 @@ void JackTrip::clientStart()
   else {
     // Set the peer address
     mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+    mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
   }
 }
 
