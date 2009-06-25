@@ -103,10 +103,10 @@ public:
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
 	   DataProtocol::DEFAULT,
 	   underrunModeT UnderRunMode = WAVETABLE,
-	   int local_incoming_port = gInputPort_0,
-	   int peer_incoming_port = gInputPort_0,
-     int local_outgoing_port = gDefaultSendPort,
-     int peer_outgoing_port = gDefaultSendPort);
+	   int receiver_bind_port = gInputPort_0,
+	   int sender_peer_port = gInputPort_0,
+     int sender_bind_port = gDefaultSendPort,
+     int receiver_peer_port = gDefaultSendPort);
   
   /// \brief The class destructor
   virtual ~JackTrip();

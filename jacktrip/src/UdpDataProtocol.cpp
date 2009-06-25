@@ -54,23 +54,23 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
-                                 int incoming_port, int outgoing_port,
+                                 int bind_port, int peer_port,
                                  unsigned int udp_redundancy_factor)
-  : DataProtocol(jacktrip, runmode, incoming_port, outgoing_port), mRunMode(runmode),
+  : DataProtocol(jacktrip, runmode, bind_port, peer_port), mRunMode(runmode),
   mAudioPacket(NULL), mFullPacket(NULL),
   mUdpRedundancyFactor(udp_redundancy_factor)
 {
   // Base ports gInputPort_0, gOutputPort_0  and gDefaultSendPort
   // defined at globals.h
   if (mRunMode == RECEIVER) {
-    mLocalPort = incoming_port;
-    mPeerPort = outgoing_port;
+    mLocalPort = bind_port;
+    mPeerPort = peer_port;
     QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
                      jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
   }
   else if (mRunMode == SENDER) {
-    mLocalPort = outgoing_port;
-    mPeerPort = incoming_port;
+    mLocalPort = peer_port;
+    mPeerPort = bind_port;
   }
 }
 

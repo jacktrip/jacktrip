@@ -59,7 +59,7 @@ public:
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    */
   UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
-      int incoming_port = gInputPort_0, int outgoing_port = gDefaultSendPort,
+      int bind_port = gInputPort_0, int peer_port = gDefaultSendPort,
 		  unsigned int udp_redundancy_factor = 1);
   
   /** \brief The class destructor
