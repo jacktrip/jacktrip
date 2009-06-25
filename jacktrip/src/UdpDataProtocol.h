@@ -103,7 +103,7 @@ public:
    */
   virtual void getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 					     QHostAddress& peerHostAddress,
-					     uint16_t& port);
+               uint16_t& port);
 
   void setPeerPort(int port)
   { mPeerPort = port; }

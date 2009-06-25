@@ -62,7 +62,7 @@ const int gDefaultOutputQueueLength = 4;
 //@{
 const int gInputPort_0 = 4464; ///< Input base port
 //const int gOutputPort_0 = 4465; ///< Output base port
-const int gDefaultSendPort = 4463; ///< Default for to use to send packet
+const int gDefaultSendPort = 4464; ///< Default for to use to send packet
 //@}
 
 
