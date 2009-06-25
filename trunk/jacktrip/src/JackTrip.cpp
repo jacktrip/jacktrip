@@ -78,10 +78,10 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mUnderRunMode(UnderRunMode),
   mSendRingBuffer(NULL),
   mReceiveRingBuffer(NULL),
-  mLocalIncomingPort(local_incoming_port),
-  mPeerIncomingPort(peer_incoming_port),
-  mLocalOutgoingPort(local_outgoing_port),
-  mPeerOutgoingPort(peer_outgoing_port),
+  mReceiverBindPort(local_incoming_port),
+  mSenderPeerPort(peer_incoming_port),
+  mSenderBindPort(local_outgoing_port),
+  mReceiverPeerPort(peer_outgoing_port),
   mRedundancy(redundancy),
   mJackClientName("JackTrip")
 {
@@ -135,10 +135,10 @@ void JackTrip::setupDataProtocol()
     std::cout << gPrintSeparator << std::endl;
     usleep(100);
     mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER,
-    					      mPeerIncomingPort, mLocalOutgoingPort,
+    					      mSenderPeerPort, mSenderBindPort,
 					      mRedundancy);
     mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER,
-    						 mLocalIncomingPort, mPeerOutgoingPort,
+    						 mReceiverBindPort, mReceiverPeerPort,
 						 mRedundancy);
     break;
   case TCP:
@@ -324,7 +324,7 @@ void JackTrip::serverStart()
 
   // Bind the socket
   if ( !UdpSockTemp.bind(QHostAddress::Any,
-		       mLocalIncomingPort,
+		       mReceiverBindPort,
 		       QUdpSocket::DefaultForPlatform) ) {
     //std::cerr << "ERROR: could not bind UDP socket" << endl;
     //std::exit(1);
@@ -373,7 +373,7 @@ void JackTrip::clientPingToServerStart()
 
   // Bind the socket
   if ( !UdpSockTemp.bind(QHostAddress::Any,
-			 mLocalIncomingPort,
+			 mReceiverBindPort,
 			 QUdpSocket::DefaultForPlatform) ) {
     //std::cerr << "ERROR: could not bind UDP socket" << endl;
     //std::exit(1);
