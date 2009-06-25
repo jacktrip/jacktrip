@@ -45,6 +45,8 @@
 #include <cerrno>
 #include <stdexcept>
 
+#include <sys/socket.h>
+
 using std::cout; using std::endl;
 
 // NOTE: It's better not to use
@@ -133,7 +135,7 @@ int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_
 {
   // Block until There's something to read
   while ( (UdpSocket.pendingDatagramSize() < n) && !mStopped ) { QThread::usleep(100); }
-  int n_bytes = UdpSocket.readDatagram(buf, n);
+  int n_bytes = UdpSocket.read(buf, n);
   return n_bytes;
 }
 
@@ -156,7 +158,7 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
     QThread::msleep(100);
   }
   char buf[1];
-  UdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
+  UdpSocket.read(buf, 1);
 }
 
 
@@ -194,11 +196,13 @@ void UdpDataProtocol::run()
   LocalIPv4Addr.sin_port = htons(mLocalPort);//set local port
   
   int one = 1;
-  setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
-  //setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+  
+  //setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
+  ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+  
   //int Buffer = 1;
   //cout << "REC BUF SIZE = " << setsockopt(fd, SOL_SOCKET, SO_RCVBUF, 0, sizeof(0)) << endl;
-  int nBind = bind(fd, (struct sockaddr *) &LocalIPv4Addr,
+  int nBind = ::bind(fd, (struct sockaddr *) &LocalIPv4Addr,
 		   sizeof(LocalIPv4Addr));
   if ( nBind < 0 ) {
     std::cerr << "ERROR: UDP Socket Bind Error" << std::endl;
@@ -211,23 +215,28 @@ void UdpDataProtocol::run()
   ServerIPv4Addr.sin_family = AF_INET;//AF_INET: IPv4 Protocol
   ServerIPv4Addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY: let the kernel decide the active address
   ServerIPv4Addr.sin_port = htons(mLocalPort);//set local port
-  cout << "inet_pton == " << inet_pton(AF_INET, "192.168.177.160", &ServerIPv4Addr.sin_addr) << endl;
+  cout << "inet_pton == " << inet_pton(AF_INET, "171.64.197.42", &ServerIPv4Addr.sin_addr) << endl;
   
   
   
   if (mRunMode == RECEIVER) {
     cout << "CONNECT RECEIVER == " << ::connect(fd, (struct sockaddr *) &ServerIPv4Addr, sizeof(ServerIPv4Addr)) << endl;
     cout << "SHUTDOWN RECEIVER = " << ::shutdown(fd,SHUT_WR) << endl;
+    UdpSocket.setSocketDescriptor( fd, QUdpSocket::ConnectedState,  
+				   QUdpSocket::ReadOnly );
   } 
   
   if (mRunMode == SENDER) {
     //cout << "CONNECT SENDER == " << ::connect(fd, (struct sockaddr *) &ServerIPv4Addr, sizeof(ServerIPv4Addr)) << endl;
     //cout << "SHUTDOWN SENDER = " << ::shutdown(fd,SHUT_RD) << endl;
+    UdpSocket.setSocketDescriptor( fd, QUdpSocket::BoundState,  
+				   QUdpSocket::WriteOnly );
   }    
-  
 
-  UdpSocket.setSocketDescriptor( fd, QUdpSocket::BoundState,  
-				   QUdpSocket::ReadOnly );
+  //QThread::msleep(1000);
+
+  //UdpSocket.setSocketDescriptor( fd, QUdpSocket::ConnectedState,  
+  //			   QUdpSocket::ReadWrite );
     
     //bindSocket(UdpSocket); // Bind Socket
     //}
@@ -336,9 +345,14 @@ void UdpDataProtocol::run()
 	  // that uses signals and slots and can also report with packets have not 
 	  // arrive for a longer time
 	  //timeout = UdpSocket.waitForReadyRead(30);
-	  
-	  timeout = waitForReady(UdpSocket, 60000); //60 seconds
-
+	  //cout << "BEFORE TIMEOUT" << endl;
+	  //while ( !UdpSocket.hasPendingDatagrams() ) {
+	  //  cout << "HASPENDING " << UdpSocket.hasPendingDatagrams() << endl;
+	  //  QThread::msleep(1000);
+	  //  cout << "SIZEintra === " << UdpSocket.pendingDatagramSize() << endl;
+	  //}
+	  timeout = waitForReady(UdpSocket, 6000); //60 seconds
+	  //cout << "AFTER TIMEOUT" << endl;
 	  // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
 	  /*
 	  // This is blocking until we get a packet...
@@ -357,14 +371,14 @@ void UdpDataProtocol::run()
 	  receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
 			 full_redundant_packet_size);
 
-
+	  //QThread::msleep(1);
 	  //receivePacket2( fd, reinterpret_cast<char*>(full_redundant_packet),
 	  //		  full_redundant_packet_size);
 	  //cout << receivePacket2( fd, reinterpret_cast<char*>(full_redundant_packet),
 	  //			  full_redundant_packet_size) << endl;
 	  
 	  //cout << "PACKET RECEIVED" << endl;
-	  QThread::msleep(1);
+	  //QThread::msleep(1);
 	  // Get Packet Sequence Number
 	  newer_seq_num =
 	    mJackTrip->getPeerSequenceNumber(full_redundant_packet);
