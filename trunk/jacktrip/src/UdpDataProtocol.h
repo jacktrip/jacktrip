@@ -160,8 +160,8 @@ private:
                             int full_redundant_packet_size,
                             int full_packet_size);
 
-  int mLocalPort; ///< Local Port number to Bind
-  int mPeerPort; ///< Peer Port number to Bind
+  int mBindPort; ///< Local Port number to Bind
+  int mPeerPort; ///< Peer Port number
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
 
   QHostAddress mPeerAddress; ///< The Peer Address
