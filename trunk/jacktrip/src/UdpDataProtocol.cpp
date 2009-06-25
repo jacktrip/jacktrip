@@ -44,6 +44,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <stdexcept>
+#include <sys/socket.h> // for POSIX Sockets
 
 using std::cout; using std::endl;
 
@@ -111,8 +112,62 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
 //*******************************************************************************
 void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 {
-  /// \todo if port is already used, try binding in a different port
+  // Creat socket descriptor
+  int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
+  // Set local IPv4 Address
+  struct sockaddr_in local_addr;
+  ::bzero(&local_addr, sizeof(local_addr));
+  local_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
+  local_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
+  local_addr.sin_port = htons(mBindPort); //set local port
+
+  // Set socket to be reusable, this is platform dependent
+  int one = 1;
+#if defined ( __LINUX__ )
+  ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+#endif
+#if defined ( __MAC_OSX__ )
+  // This option is not avialable on Linux, and without it MAC OS X
+  // has problems rebinding a socket
+  ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
+#endif
+
+  // Bind the Socket
+  if ( (::bind(sock_fd, (struct sockaddr *) &local_addr, sizeof(local_addr))) < 0 )
+  { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
+
+  // To be able to use the two UDP sockets bound to the same port number,
+  // we connect the receiver and issue a SHUT_WR.
+  if (mRunMode == SENDER) {
+    // We use the sender as an unconnected UDP socket
+    UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::BoundState,
+                                  QUdpSocket::WriteOnly);
+  }
+  else if (mRunMode == RECEIVER) {
+    // Set peer IPv4 Address
+    struct sockaddr_in peer_addr;
+    bzero(&peer_addr, sizeof(peer_addr));
+    peer_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
+    peer_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
+    peer_addr.sin_port = htons(mPeerPort); //set local port
+    const char* peer_ip_num = mPeerAddress.toString().toLatin1().constData();
+
+    //************ CHECK RETURNS **************************
+    //*****************************************************
+    ::inet_pton(AF_INET, peer_ip_num, &peer_addr.sin_addr);
+    ::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr));
+    ::shutdown(sock_fd,SHUT_WR);
+    //*****************************************************
+    //*****************************************************
+    UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::ConnectedState,
+                                  QUdpSocket::ReadOnly);
+    cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
+    cout << gPrintSeparator << endl;
+  }
+
+  /*
+  /// \todo if port is already used, try binding in a different port
   QUdpSocket::BindMode bind_mode;
   if (mRunMode == RECEIVER) {
     bind_mode = QUdpSocket::DontShareAddress; }
@@ -129,6 +184,7 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
       cout << gPrintSeparator << endl;
     }
   }
+  */
 }
 
 
@@ -162,7 +218,6 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
   char buf[1];
   UdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
 }
-
 
 //*******************************************************************************
 void UdpDataProtocol::run()
