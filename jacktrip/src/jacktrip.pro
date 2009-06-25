@@ -1,3 +1,7 @@
+#******************************
+# Created by Juan-Pablo Caceres
+#******************************
+
 CONFIG += qt thread debug_and_release build_all
 CONFIG(debug, debug|release) {
   TARGET = jacktrip_debug

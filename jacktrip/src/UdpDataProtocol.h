@@ -57,9 +57,12 @@ public:
   /** \brief The class constructor 
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
+   * \param bind_port Port number to bind for this socket (this is the receive or send port depending on the runmode)
+   * \param peer_port Peer port number (this is the receive or send port depending on the runmode)
+   * \param udp_redundancy_factor Number of redundant packets
    */
   UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
-      int bind_port = gInputPort_0, int peer_port = gDefaultSendPort,
+      int bind_port, int peer_port,
 		  unsigned int udp_redundancy_factor = 1);
   
   /** \brief The class destructor

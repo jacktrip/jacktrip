@@ -105,6 +105,8 @@ public:
    * \param runmode Sets the run mode, use either DataProtocol::SENDER or
    * DataProtocol::RECEIVER
    * \param headertype packetHeaderTypeT header type to use for packets
+   * \param bind_port Port number to bind for this socket (this is the receive or send port depending on the runmode)
+   * \param peer_port Peer port number (this is the receive or send port depending on the runmode)
    */
   DataProtocol(JackTrip* jacktrip,
 	       const runModeT runmode,
