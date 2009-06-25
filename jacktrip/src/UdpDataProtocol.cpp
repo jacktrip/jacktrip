@@ -62,16 +62,16 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
 {
   // Base ports gInputPort_0, gOutputPort_0  and gDefaultSendPort
   // defined at globals.h
-  mLocalPort = bind_port;
+  mBindPort = bind_port;
   mPeerPort = peer_port;
   if (mRunMode == RECEIVER) {
-    //mLocalPort = bind_port;
+    //mBindPort = bind_port;
     //mPeerPort = peer_port;
     QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
                      jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
   }
   else if (mRunMode == SENDER) {
-    //mLocalPort = peer_port;
+    //mBindPort = peer_port;
     //mPeerPort = bind_port;
   }
 }
@@ -120,12 +120,12 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
     bind_mode = QUdpSocket::ShareAddress; }
 
   // QHostAddress::Any : let the kernel decide the active address
-  if ( !UdpSocket.bind(QHostAddress::Any, mLocalPort, bind_mode) ) {
+  if ( !UdpSocket.bind(QHostAddress::Any, mBindPort, bind_mode) ) {
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   else {
     if ( mRunMode == RECEIVER ) {
-      cout << "UDP Socket Receiving in Port: " << mLocalPort << endl;
+      cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
       cout << gPrintSeparator << endl;
     }
   }
