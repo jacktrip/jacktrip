@@ -1,4 +1,9 @@
 ---
+1.0.5
+- (removed) Universal OS X support. Now only works with intel machines
+- (added) option for packet without header
+
+---
 1.0.4
 - (fixed) Buss error caused when no physical inputs or outputs ports are available
 
