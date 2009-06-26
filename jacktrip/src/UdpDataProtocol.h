@@ -47,6 +47,12 @@
 #include "jacktrip_globals.h"
 
 /** \brief UDP implementation of DataProtocol class
+ *
+ * The class has a <tt>bind port</tt> and a <tt>peer port</tt>. The meaning of these
+ * depends on the runModeT. If it's a SENDER, <tt>bind port</tt> is the source port and
+ * <tt>peer port</tt> is the destination port for each UDP packet. If it's a RECEIVER,
+ * the <tt>bind port</tt> destination port (for incoming packets) and the <tt>peer port</tt>
+ * is the source port.
  */
 class UdpDataProtocol : public DataProtocol
 {
@@ -105,11 +111,20 @@ public:
 					     QHostAddress& peerHostAddress,
                uint16_t& port);
 
+  /** \brief Sets the bind port number
+    */
+  void setBindPort(int port)
+  { mBindPort = port; }
+
+  /** \brief Sets the peer port number
+    */
   void setPeerPort(int port)
   { mPeerPort = port; }
 
   /** \brief Implements the Thread Loop. To start the thread, call start()
    * ( DO NOT CALL run() )
+   *
+   * This function creats and binds all the socket and start the connection loop thread.
    */
   virtual void run();
 
