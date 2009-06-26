@@ -49,7 +49,7 @@ const int base_port = 4464;
 
 void main_tests(int argc, char** argv);
 void test_threads_server();
-void test_threads_client(char* peer_address);
+void test_threads_client(const char* peer_address);
 
 
 void main_tests(int /*argc*/, char** argv)
@@ -84,7 +84,7 @@ void test_threads_server()
 
 
 // Test many servers running at the same time
-void test_threads_client(char* peer_address)
+void test_threads_client(const char* peer_address)
 {
   QVector<JackTripThread*> jacktrips;
   jacktrips.resize(num_jacktrips);
