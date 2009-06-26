@@ -103,10 +103,10 @@ public:
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
 	   DataProtocol::DEFAULT,
 	   underrunModeT UnderRunMode = WAVETABLE,
-	   int receiver_bind_port = gInputPort_0,
-	   int sender_peer_port = gInputPort_0,
-     int sender_bind_port = gDefaultSendPort,
-     int receiver_peer_port = gDefaultSendPort);
+     int receiver_bind_port = gDefaultPort,
+     int sender_peer_port = gDefaultPort,
+     int sender_bind_port = gDefaultPort,
+     int receiver_peer_port = gDefaultPort);
   
   /// \brief The class destructor
   virtual ~JackTrip();
@@ -168,18 +168,20 @@ public:
   {
     mReceiverBindPort = port;
     mSenderPeerPort = port;
+    mSenderBindPort = port;
+    mReceiverPeerPort = port;
   }
-  /// \brief Sets port numbers for the local machine.
-  /// Receive port is <tt>port</tt>
-  void setLocalPorts(int port)
+  /// \brief Sets port numbers to bind in RECEIVER and SENDER sockets.
+  void setBindPorts(int port)
   {
     mReceiverBindPort = port;
+    mSenderBindPort = port;
   }
   /// \brief Sets port numbers for the peer (remote) machine.
-  /// Receive port is <tt>port</tt>
   void setPeerPorts(int port)
   {
     mSenderPeerPort = port;
+    mReceiverPeerPort = port;
   }
   /// \brief Set Client Name to something different that the default (JackTrip)
   void setClientName(char* ClientName)

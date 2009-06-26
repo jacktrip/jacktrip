@@ -61,7 +61,7 @@ Settings::Settings() :
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
   mAudioBitResolution(JackAudioInterface::BIT16),
-  mPortNum(gInputPort_0),
+  mPortNum(gDefaultPort),
   mClientName(NULL),
   mUnderrrunZero(false),
   mLoopBack(false),
@@ -258,7 +258,7 @@ void Settings::printUsage()
        << gDefaultQueueLength << ")" << endl;
   cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (defaul 1)" 
        << endl;
-  cout << " -o, --portoffset  #                      Receiving port offset from base port " << gInputPort_0 << endl;
+  cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
   cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
   cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
@@ -322,7 +322,15 @@ void Settings::startJackTrip()
     // Set in JamLink Mode
     if ( mJamLink ) {
       cout << "Running in JamLink Mode..." << endl;
-      mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK); }
+      mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK);
+      // JamLinks only receive in port gDefaultPort (4464), so we set that number here
+      mJackTrip->setPeerPorts(gDefaultPort);
+      // Also, because of the NAT traversal scheme, the portn need to be
+      // "symetric", e.g.:
+      // from JackTrip to JamLink : src = 4474, dest = 4464
+      // from JamLinl to JackTrip : src = 4464, dest = 4474
+      mJackTrip->setBindPorts(mPortNum);
+    }
 
     // Set in EmptyHeader Mode
     if ( mEmptyHeader ) {

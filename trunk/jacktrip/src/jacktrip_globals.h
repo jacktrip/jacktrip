@@ -43,7 +43,7 @@
 
 //namespace JackTrip/// \todo Add this namespace
 
-const char* const gVersion = "1.0.4"; ///< JackTrip version
+const char* const gVersion = "1.0.5"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
@@ -60,9 +60,10 @@ const int gDefaultOutputQueueLength = 4;
 //*******************************************************************************
 /// \name Network related ports
 //@{
-const int gInputPort_0 = 4464; ///< Input base port
+const int gDefaultPort = 4464; ///< Default JackTrip Port
+//const int gInputPort_0 = 4464; ///< Input base port
 //const int gOutputPort_0 = 4465; ///< Output base port
-const int gDefaultSendPort = 4464; ///< Default for to use to send packet
+//const int gDefaultSendPort = 4464; ///< Default for to use to send packet
 //@}
 
 
