@@ -84,11 +84,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mReceiverPeerPort(receiver_peer_port),
   mRedundancy(redundancy),
   mJackClientName("JackTrip")
-{
-  //setupJackAudio();
-  /// \todo CHECK THIS AND PUT IT IN A BETTER PLACE, also, get header type from options
-  //createHeader(mPacketHeaderType);
-}
+{}
 
 
 //*******************************************************************************
@@ -143,18 +139,12 @@ void JackTrip::setupDataProtocol()
                                                  mRedundancy);
     break;
   case TCP:
-    //std::cerr << "ERROR: TCP Protocol is not unimplemented" << std::endl;
-    //std::exit(1);
     throw std::invalid_argument("TCP Protocol is not implemented");
     break;
   case SCTP:
-    //std::cerr << "ERROR: SCTP Protocol is not unimplemented" << std::endl;
-    //std::exit(1);
     throw std::invalid_argument("SCTP Protocol is not implemented");
     break;
   default: 
-    //std::cerr << "ERROR: Protocol not defined or unimplemented" << std::endl;
-    //std::exit(1);
     throw std::invalid_argument("Protocol not defined or unimplemented");
     break;
   }
@@ -186,9 +176,7 @@ void JackTrip::setupRingBuffers()
     mReceiveRingBuffer = new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
 					mBufferQueueLength);
     break;
-  default: 
-    //std::cerr << "ERROR: Underrun Mode not defined" << std::endl;
-    //std::exit(1);
+  default:
     throw std::invalid_argument("Underrun Mode undefined");
     break;
   }
@@ -203,7 +191,6 @@ void JackTrip::setPeerAddress(const char* PeerHostOrIP)
 
 
 //*******************************************************************************
-//void JackTrip::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
 void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 {
   mJackAudio->appendProcessPlugin(plugin);
@@ -242,15 +229,9 @@ void JackTrip::start()
       clientPingToServerStart();
       break;
     default: 
-      //std::cerr << "ERROR: Jacktrip Mode not defined" << std::endl;
-      //std::exit(1);
       throw std::invalid_argument("Jacktrip Mode  undefined");
       break;
     }
-
-  // Wait here until the threads return from run() method
-  //mDataProtocolSender->wait();
-  //mDataProtocolReceiver->wait();
 }
 
 
@@ -288,8 +269,6 @@ void JackTrip::clientStart()
 {
   // For the Client mode, the peer (or server) address has to be specified by the user
   if ( mPeerAddress.isEmpty() ) {
-    //std::cerr << "ERROR: Peer Address has to be set if you run in CLIENT mode" << endl;
-    //std::exit(1);
     throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
   }
   else {
@@ -319,8 +298,6 @@ void JackTrip::serverStart()
   if ( !UdpSockTemp.bind(QHostAddress::Any,
 		       mReceiverBindPort,
 		       QUdpSocket::DefaultForPlatform) ) {
-    //std::cerr << "ERROR: could not bind UDP socket" << endl;
-    //std::exit(1);
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to client
@@ -345,8 +322,6 @@ void JackTrip::clientPingToServerStart()
 {
   // For the Client mode, the peer (or server) address has to be specified by the user
   if ( mPeerAddress.isEmpty() ) {
-    //std::cerr << "ERROR: Peer Address has to be set if you run in CLIENTTOPINGSERVER mode" << endl;
-    //std::exit(1);
     throw std::invalid_argument("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
   }
   else {
@@ -369,8 +344,6 @@ void JackTrip::clientPingToServerStart()
   if ( !UdpSockTemp.bind(QHostAddress::Any,
 			 mReceiverBindPort,
 			 QUdpSocket::DefaultForPlatform) ) {
-    //std::cerr << "ERROR: could not bind UDP socket" << endl;
-    //std::exit(1);
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to server response
@@ -417,9 +390,6 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
     mPacketHeader = new EmptyHeader(this);
     break;
   default :
-    //std::cerr << "ERROR: Undefined Header Type" << endl;
-    //std::cerr << "Exiting Program..." << endl;
-    //std::exit(1);
     throw std::invalid_argument("Undefined Header Type");
     break;
   }

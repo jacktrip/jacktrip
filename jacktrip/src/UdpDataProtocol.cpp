@@ -56,24 +56,16 @@ using std::cout; using std::endl;
 //*******************************************************************************
 UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
                                  int bind_port, int peer_port,
-                                 unsigned int udp_redundancy_factor)
-  : DataProtocol(jacktrip, runmode, bind_port, peer_port), mRunMode(runmode),
-  mAudioPacket(NULL), mFullPacket(NULL),
-  mUdpRedundancyFactor(udp_redundancy_factor)
+                                 unsigned int udp_redundancy_factor) :
+DataProtocol(jacktrip, runmode, bind_port, peer_port),
+mBindPort(bind_port), mPeerPort(peer_port),
+mRunMode(runmode),
+mAudioPacket(NULL), mFullPacket(NULL),
+mUdpRedundancyFactor(udp_redundancy_factor)
 {
-  // Base ports gInputPort_0, gOutputPort_0  and gDefaultSendPort
-  // defined at globals.h
-  mBindPort = bind_port;
-  mPeerPort = peer_port;
   if (mRunMode == RECEIVER) {
-    //mBindPort = bind_port;
-    //mPeerPort = peer_port;
     QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
                      jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
-  }
-  else if (mRunMode == SENDER) {
-    //mBindPort = peer_port;
-    //mPeerPort = bind_port;
   }
 }
 
@@ -95,9 +87,6 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
   if ( mPeerAddress.isNull() ) {
     std::cerr << "ERROR: Incorrect presentation format address" << endl;
     std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
-    //std::cerr << "Exiting program..." << endl;
-    //std::cerr << gPrintSeparator << endl;
-    //std::exit(1);
     throw std::invalid_argument("");
   }
   else {
@@ -153,19 +142,22 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
     peer_addr.sin_port = htons(mPeerPort); //set local port
     const char* peer_ip_num = mPeerAddress.toString().toLatin1().constData();
 
-    //************ CHECK RETURNS **************************
-    //*****************************************************
-    ::inet_pton(AF_INET, peer_ip_num, &peer_addr.sin_addr);
-    ::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr));
-    ::shutdown(sock_fd,SHUT_WR);
-    //*****************************************************
-    //*****************************************************
+    // Connect the socket and issue a Write shutdown (to make it a
+    // reader socket only)
+    if ( (::inet_pton(AF_INET, peer_ip_num, &peer_addr.sin_addr)) < 1 )
+    { throw std::runtime_error("ERROR: Invalid address presentation format"); }
+    if ( (::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr))) < 0)
+    { throw std::runtime_error("ERROR: Could not connect UDP socket"); }
+    if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
+    { throw std::runtime_error("ERROR: Could suntdown SHUT_WR UDP socket"); }
+
     UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::ConnectedState,
                                   QUdpSocket::ReadOnly);
     cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
     cout << gPrintSeparator << endl;
   }
 
+  // OLD CODE WITHOUT POSIX FIX--------------------------------------------------
   /*
   /// \todo if port is already used, try binding in a different port
   QUdpSocket::BindMode bind_mode;
@@ -185,6 +177,7 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
     }
   }
   */
+  // ----------------------------------------------------------------------------
 }
 
 
@@ -219,13 +212,13 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
   UdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
 }
 
+
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
   mStopped = false;
   
-  //cout << "STARTING THREAD!------------------------------------------------" << endl;
-  //cout << "mRunMode === " << mRunMode << endl;
+  // Creat and bind sockets
   QUdpSocket UdpSocket;
   bindSocket(UdpSocket); // Bind Socket
   QHostAddress PeerAddress;
@@ -303,16 +296,16 @@ void UdpDataProtocol::run()
 
         // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
         /*
-    // This is blocking until we get a packet...
-    receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
+        // This is blocking until we get a packet...
+        receivePacket( UdpSocket, reinterpret_cast<char*>(mFullPacket), full_packet_size);
 
-    mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+        mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
 
-    // ...so we want to send the packet to the buffer as soon as we get in from
-    // the socket, i.e., non-blocking
-    //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
-    mJackTrip->writeAudioBuffer(mAudioPacket);
-    */
+        // ...so we want to send the packet to the buffer as soon as we get in from
+        // the socket, i.e., non-blocking
+        //mRingBuffer->insertSlotNonBlocking(mAudioPacket);
+        mJackTrip->writeAudioBuffer(mAudioPacket);
+        */
         //----------------------------------------------------------------------------------
         receivePacketRedundancy(UdpSocket,
                                full_redundant_packet,
@@ -330,13 +323,13 @@ void UdpDataProtocol::run()
       {
         // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
         /*
-    // We block until there's stuff available to read
-    mJackTrip->readAudioBuffer( mAudioPacket );
-    mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
-    // This will send the packet immediately
-    //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
-    sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
-    */
+        // We block until there's stuff available to read
+        mJackTrip->readAudioBuffer( mAudioPacket );
+        mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
+        // This will send the packet immediately
+        //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
+        sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
+        */
         //----------------------------------------------------------------------------------
         sendPacketRedundancy(UdpSocket,
                              PeerAddress,
