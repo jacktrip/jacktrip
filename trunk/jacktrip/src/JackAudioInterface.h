@@ -90,11 +90,12 @@ public:
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
+   * \param ClientName Client name in Jack
    */
   JackAudioInterface(JackTrip* jacktrip,
 		     int NumInChans, int NumOutChans,
          audioBitResolutionT AudioBitResolution = BIT16,
-         char* ClientName = "JackTrip");
+         const char* ClientName = "JackTrip");
 
   /** \brief The class destructor
    */
@@ -207,7 +208,7 @@ public:
   void connectDefaultPorts();
 
   /// \brief Set Client Name to something different that the default (JackTrip)
-  void setClientName(char* ClientName)
+  void setClientName(const char* ClientName)
   { mClientName = ClientName; }
 
 private:
@@ -279,7 +280,7 @@ private:
   audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
 
   jack_client_t* mClient; ///< Jack Client
-  char* mClientName; ///< Jack Client Name
+  const char* mClientName; ///< Jack Client Name
   QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
   //jack_port_t** mInPorts; ///< Vector of Input Ports (Channels)

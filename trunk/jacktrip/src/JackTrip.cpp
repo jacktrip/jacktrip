@@ -196,7 +196,7 @@ void JackTrip::setupRingBuffers()
 
 
 //*******************************************************************************
-void JackTrip::setPeerAddress(char* PeerHostOrIP)
+void JackTrip::setPeerAddress(const char* PeerHostOrIP)
 {
   mPeerAddress = PeerHostOrIP;
 }

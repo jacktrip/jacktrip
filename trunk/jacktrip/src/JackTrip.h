@@ -112,7 +112,7 @@ public:
   virtual ~JackTrip();
 
   /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
-  void setPeerAddress(char* PeerHostOrIP);
+  void setPeerAddress(const char* PeerHostOrIP);
 
   /** \brief Append a process plugin. Processes will be appended in order
    * \param plugin Pointer to ProcessPlugin Class
@@ -302,7 +302,7 @@ private:
   int mReceiverPeerPort; ///< Outgoing (sending) port for peer machine
 
   unsigned int mRedundancy; ///< Redundancy factor in network data
-  char* mJackClientName; ///< JackAudio Client Name
+  const char* mJackClientName; ///< JackAudio Client Name
 };
 
 #endif
