@@ -622,8 +622,7 @@ void JackAudioInterface::fromBitToSampleConversion(const int8_t* const input,
 void JackAudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
 {
   /// \todo check that channels in ProcessPlugins are less or same that jack channels
-  if ( plugin->getNumInputs() ) {
-  }
+  if ( plugin->getNumInputs() ) {}
   mProcessPlugins.append(plugin);
 }
 

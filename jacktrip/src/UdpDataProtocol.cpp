@@ -82,7 +82,7 @@ UdpDataProtocol::~UdpDataProtocol()
 
 
 //*******************************************************************************
-void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
+void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
   mPeerAddress.setAddress(peerHostOrIP);
   // check if the ip address is valid
@@ -91,12 +91,14 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
     std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
     throw std::invalid_argument("");
   }
+  /*
   else {
     std::cout << "Peer Address set to: "
         << mPeerAddress.toString().toStdString() << std::endl;
     cout << gPrintSeparator << endl;
     usleep(100);
   }
+  */
 }
 
 
@@ -144,11 +146,10 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
     peer_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
     peer_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
     peer_addr.sin_port = htons(mPeerPort); //set local port
-    const char* peer_ip_num = mPeerAddress.toString().toLatin1().constData();
-
     // Connect the socket and issue a Write shutdown (to make it a
     // reader socket only)
-    if ( (::inet_pton(AF_INET, peer_ip_num, &peer_addr.sin_addr)) < 1 )
+    if ( (::inet_pton(AF_INET, mPeerAddress.toString().toLatin1().constData(),
+                      &peer_addr.sin_addr)) < 1 )
     { throw std::runtime_error("ERROR: Invalid address presentation format"); }
     if ( (::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr))) < 0)
     { throw std::runtime_error("ERROR: Could not connect UDP socket"); }

@@ -333,19 +333,22 @@ void Settings::startJackTrip()
     }
 
     // Set in EmptyHeader Mode
+    /*
     if ( mEmptyHeader ) {
       cout << "Running in EmptyHeader Mode..." << endl;
-      mJackTrip->setPacketHeaderType(DataProtocol::EMPTY); }
-    
+      mJackTrip->setPacketHeaderType(DataProtocol::EMPTY);
+    }
+    */
+
     // Add Plugins
     if ( mLoopBack ) {
       cout << "Running in Loop-Back Mode..." << endl;
       //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
       //mJackTrip->appendProcessPlugin(loopback.get());
-      
+
       LoopBack* loopback = new LoopBack(mNumChans);
       mJackTrip->appendProcessPlugin(loopback);
-      
+
       // ----- Test Karplus Strong -----------------------------------
       //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
       //mJackTrip->appendProcessPlugin(loopback);

@@ -306,6 +306,8 @@ private:
 
   unsigned int mRedundancy; ///< Redundancy factor in network data
   const char* mJackClientName; ///< JackAudio Client Name
+
+  QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 };
 
 #endif
