@@ -84,7 +84,7 @@ public:
   /** \brief Set the Peer address to connect to
    * \param peerHostOrIP IPv4 number or host name
    */
-  void setPeerAddress(char* peerHostOrIP);
+  void setPeerAddress(const char* peerHostOrIP);
 
   /** \brief Receives a packet. It blocks until a packet is received
    *

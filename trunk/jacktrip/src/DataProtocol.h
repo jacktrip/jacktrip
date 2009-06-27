@@ -139,7 +139,7 @@ public:
    * \param peerHostOrIP IPv4 number or host name
    * \todo implement here instead of in the subclass UDP
    */
-  virtual void setPeerAddress(char* peerHostOrIP) = 0;
+  virtual void setPeerAddress(const char* peerHostOrIP) = 0;
 
   /** \brief Set the peer incomming (receiving) port number
    * \param port Port number

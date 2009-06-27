@@ -193,7 +193,8 @@ void JackTrip::setPeerAddress(const char* PeerHostOrIP)
 //*******************************************************************************
 void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 {
-  mJackAudio->appendProcessPlugin(plugin);
+  mProcessPlugins.append(plugin);
+  //mJackAudio->appendProcessPlugin(plugin);
 }
 
 
@@ -229,6 +230,9 @@ void JackTrip::start()
 
   // Start Threads
   mJackAudio->startProcess();
+  for (int i = 0; i < mProcessPlugins.size(); ++i) {
+    mJackAudio->appendProcessPlugin(mProcessPlugins[i]);
+  }
   mJackAudio->connectDefaultPorts();
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();
@@ -275,6 +279,8 @@ void JackTrip::clientStart()
     // Set the peer address
     mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
     mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+    cout << "Peer Address set to: " << mPeerAddress.toStdString() << std::endl;
+    cout << gPrintSeparator << endl;
   }
 }
 
@@ -313,8 +319,8 @@ void JackTrip::serverStart()
   cout << gPrintSeparator << endl;
 
   // Set the peer address to send packets (in the protocol sender)
-  mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
-  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+  mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().constData() );
+  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().constData() );
 }
 
 //*******************************************************************************
