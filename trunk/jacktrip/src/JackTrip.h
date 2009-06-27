@@ -130,6 +130,9 @@ public:
   /// run as a thread
   void wait();
 
+  /// \brief Check if UDP port is already binded
+  /// \param port Port number
+  void checkIfPortIsBinded(int port);
   
   //------------------------------------------------------------------------------------
   /// \name Methods to change parameters after construction
