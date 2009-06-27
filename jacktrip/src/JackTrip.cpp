@@ -200,6 +200,10 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 //*******************************************************************************
 void JackTrip::start()
 {
+  // Check if ports are already binded by another process on this machine
+  checkIfPortIsBinded(mReceiverBindPort);
+  checkIfPortIsBinded(mSenderBindPort);
+
   // Set all classes and parameters
   setupJackAudio();
   createHeader(mPacketHeaderType);
@@ -211,19 +215,9 @@ void JackTrip::start()
     {
     case CLIENT :
       clientStart();
-      // Start Threads
-      mJackAudio->startProcess();
-      mJackAudio->connectDefaultPorts();    
-      mDataProtocolSender->start();
-      mDataProtocolReceiver->start();
       break;
     case SERVER :
       serverStart();
-      // Start Threads
-      mJackAudio->startProcess();
-      mJackAudio->connectDefaultPorts();    
-      mDataProtocolSender->start();
-      mDataProtocolReceiver->start();
       break;
     case CLIENTTOPINGSERVER :
       clientPingToServerStart();
@@ -232,6 +226,12 @@ void JackTrip::start()
       throw std::invalid_argument("Jacktrip Mode  undefined");
       break;
     }
+
+  // Start Threads
+  mJackAudio->startProcess();
+  mJackAudio->connectDefaultPorts();
+  mDataProtocolSender->start();
+  mDataProtocolReceiver->start();
 }
 
 
@@ -295,9 +295,9 @@ void JackTrip::serverStart()
   QUdpSocket UdpSockTemp;// Create socket to wait for client
 
   // Bind the socket
-  if ( !UdpSockTemp.bind(QHostAddress::Any,
-		       mReceiverBindPort,
-		       QUdpSocket::DefaultForPlatform) ) {
+  if ( !UdpSockTemp.bind(QHostAddress::Any, mReceiverBindPort,
+                         QUdpSocket::DefaultForPlatform) )
+  {
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to client
@@ -432,4 +432,20 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
 void JackTrip::checkPeerSettings(int8_t* full_packet)
 {
   mPacketHeader->checkPeerSettings(full_packet);
+}
+
+
+//*******************************************************************************
+void JackTrip::checkIfPortIsBinded(int port)
+{
+  QUdpSocket UdpSockTemp;// Create socket to wait for client
+
+  // Bind the socket
+  if ( !UdpSockTemp.bind(QHostAddress::Any, port, QUdpSocket::DontShareAddress) )
+  {
+    UdpSockTemp.close(); // close the socket
+    throw std::runtime_error(
+        "Could not bind UDP socket. It may already be binded by another process on your machine. Try using a different port number");
+  }
+  UdpSockTemp.close(); // close the socket
 }

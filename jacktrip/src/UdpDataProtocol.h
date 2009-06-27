@@ -53,6 +53,12 @@
  * <tt>peer port</tt> is the destination port for each UDP packet. If it's a RECEIVER,
  * the <tt>bind port</tt> destination port (for incoming packets) and the <tt>peer port</tt>
  * is the source port.
+ *
+ * The SENDER and RECEIVER socket can share the same port/address pair (for compatibility
+ * with the JamLink boxes). This is achieved setting
+ * the resusable property in the socket for address and port. You have to
+ * externaly check if the port is already binded if you want to avoid re-binding to the
+ * same port.
  */
 class UdpDataProtocol : public DataProtocol
 {
