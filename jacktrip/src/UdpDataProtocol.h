@@ -191,6 +191,7 @@ private:
   int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
 
   unsigned int mUdpRedundancyFactor; ///< Factor of redundancy
+  static QMutex sUdpMutex; ///< Mutex to make thread safe the binding process
 };
 
 #endif // __UDPDATAPROTOCOL_H__

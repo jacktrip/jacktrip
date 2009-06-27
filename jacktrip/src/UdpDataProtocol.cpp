@@ -52,6 +52,8 @@ using std::cout; using std::endl;
 // using namespace std;
 // because some functions (like exit()) get confused with QT functions
 
+// sJackMutex definition
+QMutex UdpDataProtocol::sUdpMutex;
 
 //*******************************************************************************
 UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
@@ -101,6 +103,8 @@ void UdpDataProtocol::setPeerAddress(char* peerHostOrIP)
 //*******************************************************************************
 void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
 {
+  QMutexLocker locker(&sUdpMutex);
+
   // Creat socket descriptor
   int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
