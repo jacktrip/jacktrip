@@ -56,7 +56,7 @@ int gVerboseFlag = 0;
 //*******************************************************************************
 Settings::Settings() :
   mJackTrip(NULL),
-  mJackTripMode(JackTrip::CLIENT),
+  mJackTripMode(JackTrip::SERVER),
   mDataProtocol(JackTrip::UDP),
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
@@ -309,6 +309,7 @@ void Settings::startJackTrip()
     // Set buffers to zero when underrun
     if ( mUnderrrunZero ) {
       cout << "Setting buffers to zero when underrun..." << endl;
+      cout << gPrintSeparator << std::endl;
       mJackTrip->setUnderRunMode(JackTrip::ZEROS);
     }
     
@@ -322,6 +323,7 @@ void Settings::startJackTrip()
     // Set in JamLink Mode
     if ( mJamLink ) {
       cout << "Running in JamLink Mode..." << endl;
+      cout << gPrintSeparator << std::endl;
       mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK);
       // JamLinks only receive in port gDefaultPort (4464), so we set that number here
       mJackTrip->setPeerPorts(gDefaultPort);
@@ -333,16 +335,16 @@ void Settings::startJackTrip()
     }
 
     // Set in EmptyHeader Mode
-    /*
     if ( mEmptyHeader ) {
       cout << "Running in EmptyHeader Mode..." << endl;
+      cout << gPrintSeparator << std::endl;
       mJackTrip->setPacketHeaderType(DataProtocol::EMPTY);
     }
-    */
 
     // Add Plugins
     if ( mLoopBack ) {
       cout << "Running in Loop-Back Mode..." << endl;
+      cout << gPrintSeparator << std::endl;
       //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
       //mJackTrip->appendProcessPlugin(loopback.get());
 
