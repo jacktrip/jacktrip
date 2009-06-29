@@ -55,6 +55,7 @@ public:
   void parseInput(int argc, char** argv);
 
   void startJackTrip();
+  void stopJackTrip();
 
   /// \brief Prints usage help
   void printUsage();

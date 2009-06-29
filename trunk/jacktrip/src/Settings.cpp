@@ -74,6 +74,7 @@ Settings::Settings() :
 //*******************************************************************************
 Settings::~Settings()
 {
+  stopJackTrip();
   delete mJackTrip;
 }
 
@@ -371,4 +372,11 @@ void Settings::startJackTrip()
        mJackTrip->stop();
     */
   }
+}
+
+
+//*******************************************************************************
+void Settings::stopJackTrip()
+{
+  mJackTrip->stop();
 }
