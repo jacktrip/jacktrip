@@ -66,6 +66,7 @@ Settings::Settings() :
   mUnderrrunZero(false),
   mLoopBack(false),
   mJamLink(false),
+  mEmptyHeader(false),
   mJackTripServer(false),
   mRedundancy(1)
 {}
