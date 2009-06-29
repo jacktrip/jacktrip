@@ -3,7 +3,7 @@
 - (added) Compatibility with JamLink boxes (at 48KHz and 64 buffer size)
 - (added) Option for packet without header
 - (added) Option to change default client name
-- (removed) Universal OS X support. Now only works with intel machines
+- (fixed) General optimizations and code cleanup
 
 ---
 1.0.4
