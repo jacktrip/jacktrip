@@ -5,6 +5,7 @@
 - (added) Option for packets without header
 - (added) Option to change default client name
 - (fixed) General optimizations and code cleanup
+- (added) Improved, now cross-platform build script
 
 ---
 1.0.4
