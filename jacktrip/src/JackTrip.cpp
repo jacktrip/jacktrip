@@ -227,7 +227,10 @@ void JackTrip::start()
       throw std::invalid_argument("Jacktrip Mode  undefined");
       break;
     }
-
+  
+  
+  cout << "mSenderPeerPort === " << mSenderPeerPort << endl;
+  cout << "mReceiverPeerPort === " << mReceiverPeerPort << endl;
   // Start Threads
   mJackAudio->startProcess();
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
@@ -321,6 +324,10 @@ void JackTrip::serverStart()
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().constData() );
   mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().constData() );
+  // We reply to the same port the peer sent the packets
+  mDataProtocolSender->setPeerPort(port);
+  mDataProtocolReceiver->setPeerPort(port);
+  setPeerPorts(port);
 }
 
 //*******************************************************************************

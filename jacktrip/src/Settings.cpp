@@ -320,15 +320,17 @@ void Settings::startJackTrip()
       mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
     
     // Set Ports
+    cout << "SETTING ALL PORTS" << endl;
     mJackTrip->setAllPorts(mPortNum);
-    
+
     // Set in JamLink Mode
     if ( mJamLink ) {
       cout << "Running in JamLink Mode..." << endl;
       cout << gPrintSeparator << std::endl;
       mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK);
       // JamLinks only receive in port gDefaultPort (4464), so we set that number here
-      mJackTrip->setPeerPorts(gDefaultPort);
+      //mJackTrip->setPeerPorts(gDefaultPort);
+      //mJackTrip->setPeerPorts(35981);
       // Also, because of the NAT traversal scheme, the portn need to be
       // "symetric", e.g.:
       // from JackTrip to JamLink : src = 4474, dest = 4464
