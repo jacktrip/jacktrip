@@ -104,9 +104,9 @@ public:
 	   DataProtocol::DEFAULT,
 	   underrunModeT UnderRunMode = WAVETABLE,
      int receiver_bind_port = gDefaultPort,
-     int sender_peer_port = gDefaultPort,
      int sender_bind_port = gDefaultPort,
-     int receiver_peer_port = gDefaultPort);
+     int receiver_peer_port = gDefaultPort,
+     int sender_peer_port = gDefaultPort);
   
   /// \brief The class destructor
   virtual ~JackTrip();

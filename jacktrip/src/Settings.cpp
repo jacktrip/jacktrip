@@ -328,14 +328,6 @@ void Settings::startJackTrip()
       cout << "Running in JamLink Mode..." << endl;
       cout << gPrintSeparator << std::endl;
       mJackTrip->setPacketHeaderType(DataProtocol::JAMLINK);
-      // JamLinks only receive in port gDefaultPort (4464), so we set that number here
-      //mJackTrip->setPeerPorts(gDefaultPort);
-      //mJackTrip->setPeerPorts(35981);
-      // Also, because of the NAT traversal scheme, the portn need to be
-      // "symetric", e.g.:
-      // from JackTrip to JamLink : src = 4474, dest = 4464
-      // from JamLinl to JackTrip : src = 4464, dest = 4474
-      mJackTrip->setBindPorts(mPortNum);
     }
 
     // Set in EmptyHeader Mode

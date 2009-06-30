@@ -55,14 +55,14 @@ using std::cout; using std::endl;
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode,
 		   dataProtocolT DataProtocolType,
-		   int NumChans,
-		   int BufferQueueLength,
-		   unsigned int redundancy,
-		   JackAudioInterface::audioBitResolutionT AudioBitResolution,
-		   DataProtocol::packetHeaderTypeT PacketHeaderType,
-		   underrunModeT UnderRunMode,
-		   int receiver_bind_port, int sender_peer_port,
-		   int sender_bind_port, int receiver_peer_port) :
+       int NumChans,
+       int BufferQueueLength,
+       unsigned int redundancy,
+       JackAudioInterface::audioBitResolutionT AudioBitResolution,
+       DataProtocol::packetHeaderTypeT PacketHeaderType,
+       underrunModeT UnderRunMode,
+       int receiver_bind_port, int sender_bind_port,
+       int receiver_peer_port, int sender_peer_port) :
   mJackTripMode(JacktripMode),
   mDataProtocol(DataProtocolType),
   mPacketHeaderType(PacketHeaderType),
@@ -228,9 +228,6 @@ void JackTrip::start()
       break;
     }
   
-  
-  cout << "mSenderPeerPort === " << mSenderPeerPort << endl;
-  cout << "mReceiverPeerPort === " << mReceiverPeerPort << endl;
   // Start Threads
   mJackAudio->startProcess();
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
@@ -300,7 +297,7 @@ void JackTrip::serverStart()
   // Get the client address when it connects
   cout << "Waiting for Connection From Client..." << endl;
   QHostAddress peerHostAddress;
-  uint16_t port;
+  uint16_t peer_port;
   QUdpSocket UdpSockTemp;// Create socket to wait for client
 
   // Bind the socket
@@ -313,7 +310,7 @@ void JackTrip::serverStart()
   while ( !UdpSockTemp.hasPendingDatagrams() ) { QThread::usleep(100000); }
   char buf[1];
   // set client address
-  UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &port);
+  UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &peer_port);
   UdpSockTemp.close(); // close the socket
 
   mPeerAddress = peerHostAddress.toString();
@@ -325,9 +322,14 @@ void JackTrip::serverStart()
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().constData() );
   mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().constData() );
   // We reply to the same port the peer sent the packets
-  mDataProtocolSender->setPeerPort(port);
-  mDataProtocolReceiver->setPeerPort(port);
-  setPeerPorts(port);
+  // This way we can go through NAT
+  // Because of the NAT traversal scheme, the portn need to be
+  // "symetric", e.g.:
+  // from Client to Server : src = 4474, dest = 4464
+  // from Server to Client : src = 4464, dest = 4474
+  mDataProtocolSender->setPeerPort(peer_port);
+  mDataProtocolReceiver->setPeerPort(peer_port);
+  setPeerPorts(peer_port);
 }
 
 //*******************************************************************************

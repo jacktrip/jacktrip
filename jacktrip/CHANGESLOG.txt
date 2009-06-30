@@ -1,7 +1,8 @@
 ---
 1.0.5
-- (added) Compatibility with JamLink boxes (at 48KHz and 64 buffer size)
-- (added) Option for packet without header
+- (added) Compatibility with JamLink boxes (restricted at the moment to 48KHz, 64 buffer size and 1 channel)
+- (added) New port structure that allows the communication between a public server and a local client
+- (added) Option for packets without header
 - (added) Option to change default client name
 - (fixed) General optimizations and code cleanup
 
