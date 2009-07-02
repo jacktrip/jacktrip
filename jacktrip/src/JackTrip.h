@@ -189,6 +189,9 @@ public:
   /// \brief Set Client Name to something different that the default (JackTrip)
   void setClientName(char* ClientName)
   { mJackClientName = ClientName; }
+  /// \brief Set the number of audio channels
+  void setNumChannels(int num_chans)
+  { mNumChans = num_chans; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -213,6 +216,8 @@ public:
   { return mJackAudio->getBufferSizeInSamples(); }
   JackAudioInterface::samplingRateT getSampleRateType() const
   { return mJackAudio->getSampleRateType(); }
+  int getSampleRate() const
+  { return mJackAudio->getSampleRate(); }
   uint8_t getAudioBitResolution() const
   { return mJackAudio->getAudioBitResolution(); }
   int getNumInputChannels() const
@@ -260,10 +265,12 @@ signals:
   void signalNoUdpPacketsForSeconds();
 
 
-private:
+public:
 
   /// \brief Set the JackAudioInteface object
   void setupJackAudio();
+  /// \brief Close the JackAudioInteface and disconnects it from JACK
+  void closeJackAudio();
   /// \brief Set the DataProtocol objects
   void setupDataProtocol();
   /// \brief Set the RingBuffer objects
@@ -274,6 +281,9 @@ private:
   void serverStart();
   /// \brief Stats for the Client to Ping Server
   void clientPingToServerStart();
+
+
+private:
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol Tipe
