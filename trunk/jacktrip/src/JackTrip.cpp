@@ -102,6 +102,14 @@ JackTrip::~JackTrip()
 //*******************************************************************************
 void JackTrip::setupJackAudio()
 {
+  // Check if mJackAudio has already been created or not
+  if (mJackAudio != NULL)  { // if it has been created, disconnet it from JACK and delete it
+    cout << "WARINING: JackAudio interface was setup already:" << endl;
+    cout << "It will be errased and setup again." << endl;
+    cout << gPrintSeparator << endl;
+    closeJackAudio();
+  }
+
   // Create JackAudioInterface Client Object
   mJackAudio = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
   mJackAudio->setClientName(mJackClientName);
@@ -112,12 +120,21 @@ void JackTrip::setupJackAudio()
   mAudioBufferSize = mJackAudio->getBufferSizeInSamples();
   int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
   std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples" << std::endl;
-  std::cout << "                      or: " << AudioBufferSizeInBytes 
-	    << " bytes" << std::endl;
+  std::cout << "                      or: " << AudioBufferSizeInBytes
+      << " bytes" << std::endl;
   std::cout << gPrintSeparator << std::endl;
   cout << "The Number of Channels is: " << mJackAudio->getNumInputChannels() << endl;
   std::cout << gPrintSeparator << std::endl;
   QThread::usleep(100);
+}
+
+
+//*******************************************************************************
+void JackTrip::closeJackAudio()
+{
+  mJackAudio->close();
+  delete mJackAudio;
+  mJackAudio = NULL;
 }
 
 

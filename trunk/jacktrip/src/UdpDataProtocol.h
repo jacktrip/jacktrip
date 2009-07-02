@@ -146,7 +146,8 @@ signals:
   void signalWatingTooLong(int wait_msec);
 
 
-private:
+//private:
+public:
 
   /** \brief Binds the UDP socket to the available address and specified port
    */
@@ -180,6 +181,9 @@ private:
                             int8_t* full_redundant_packet,
                             int full_redundant_packet_size,
                             int full_packet_size);
+
+
+private:
 
   int mBindPort; ///< Local Port number to Bind
   int mPeerPort; ///< Peer Port number

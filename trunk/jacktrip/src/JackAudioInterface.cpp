@@ -101,6 +101,13 @@ void JackAudioInterface::setup()
 
 
 //*******************************************************************************
+void JackAudioInterface::close()
+{
+  jack_client_close	(mClient);
+}
+
+
+//*******************************************************************************
 void JackAudioInterface::setupClient()
 {
   const char* client_name = mClientName;

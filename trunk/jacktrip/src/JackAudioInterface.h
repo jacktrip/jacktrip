@@ -105,6 +105,10 @@ public:
    */
   void setup();
 
+  /** \brief Close the client and disconnects it from a JACK server
+   */
+  void close();
+
   /** \brief Get the Jack Server Sampling Rate, in samples/second
    */
   uint32_t getSampleRate() const;
