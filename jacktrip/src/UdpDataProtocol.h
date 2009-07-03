@@ -147,7 +147,7 @@ signals:
 
 
 //private:
-public:
+protected:
 
   /** \brief Binds the UDP socket to the available address and specified port
    */
@@ -174,9 +174,9 @@ public:
                                uint16_t& last_seq_num,
                                uint16_t& newer_seq_num);
 
-  /** \brief Redundancy algorythm at the sender  end
+  /** \brief Redundancy algorythm at the sender's end
     */
-  void sendPacketRedundancy(QUdpSocket& UdpSocket,
+  virtual void sendPacketRedundancy(QUdpSocket& UdpSocket,
                             QHostAddress& PeerAddress,
                             int8_t* full_redundant_packet,
                             int full_redundant_packet_size,

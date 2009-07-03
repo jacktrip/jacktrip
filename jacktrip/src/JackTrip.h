@@ -135,7 +135,7 @@ public:
   void checkIfPortIsBinded(int port);
   
   //------------------------------------------------------------------------------------
-  /// \name Methods to change parameters after construction
+  /// \name Getters and Setters Methods to change parameters after construction
   //@{
   // 
   /// \brief Sets (override) JackTrip Mode after construction
@@ -192,6 +192,25 @@ public:
   /// \brief Set the number of audio channels
   void setNumChannels(int num_chans)
   { mNumChans = num_chans; }
+
+  int getReceiverBindPort() const
+  { return mReceiverBindPort; }
+  int getSenderPeerPort() const
+  { return mSenderPeerPort; }
+  int getSenderBindPort() const
+  { return mSenderBindPort; }
+  int getReceiverPeerPort() const
+  { return mReceiverPeerPort; }
+
+  DataProtocol* getDataProtocolSender() const
+  { return mDataProtocolSender; }
+  DataProtocol* getDataProtocolReceiver() const
+  { return mDataProtocolReceiver; }
+
+  RingBuffer* getSendRingBuffer() const
+  { return mSendRingBuffer; }
+  RingBuffer* getReceiveRingBuffer() const
+  { return mReceiveRingBuffer; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -272,7 +291,7 @@ public:
   /// \brief Close the JackAudioInteface and disconnects it from JACK
   void closeJackAudio();
   /// \brief Set the DataProtocol objects
-  void setupDataProtocol();
+  virtual void setupDataProtocol();
   /// \brief Set the RingBuffer objects
   void setupRingBuffers();
   /// \brief Starts for the CLIENT mode
