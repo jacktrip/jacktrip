@@ -304,7 +304,7 @@ signals:
 public:
 
   /// \brief Set the JackAudioInteface object
-  void setupJackAudio();
+  virtual void setupJackAudio();
   /// \brief Close the JackAudioInteface and disconnects it from JACK
   void closeJackAudio();
   /// \brief Set the DataProtocol objects
