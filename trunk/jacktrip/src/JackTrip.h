@@ -206,11 +206,22 @@ public:
   { return mDataProtocolSender; }
   DataProtocol* getDataProtocolReceiver() const
   { return mDataProtocolReceiver; }
+  void setDataProtocolSender(DataProtocol* const DataProtocolSender)
+  { mDataProtocolSender = DataProtocolSender; }
+  void setDataProtocolReceiver(DataProtocol* const DataProtocolReceiver)
+  { mDataProtocolReceiver = DataProtocolReceiver; }
 
   RingBuffer* getSendRingBuffer() const
   { return mSendRingBuffer; }
   RingBuffer* getReceiveRingBuffer() const
   { return mReceiveRingBuffer; }
+  void setSendRingBuffer(RingBuffer* const SendRingBuffer)
+  { mSendRingBuffer = SendRingBuffer; }
+  void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
+  { mReceiveRingBuffer = ReceiveRingBuffer; }
+
+  void setPacketHeader(PacketHeader* const PacketHeader)
+  { mPacketHeader = PacketHeader; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -219,7 +230,7 @@ public:
   /// \name Mediator Functions
   //@{
   /// \todo Document all these functions
-  void createHeader(const DataProtocol::packetHeaderTypeT headertype);
+  virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
   void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
   int getPacketSizeInBytes() const;
   void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
@@ -243,7 +254,7 @@ public:
   { return mJackAudio->getNumInputChannels(); }
   int getNumOutputChannels() const
   {return mJackAudio->getNumOutputChannels(); }
-  void checkPeerSettings(int8_t* full_packet);
+  virtual void checkPeerSettings(int8_t* full_packet);
   void increaseSequenceNumber()
   { mPacketHeader->increaseSequenceNumber(); }
   int getSequenceNumber() const
@@ -252,6 +263,8 @@ public:
   { return mPacketHeader->getPeerSequenceNumber(full_packet); }
   size_t getSizeInBytesPerChannel() const
   { return mJackAudio->getSizeInBytesPerChannel(); }
+  int getHeaderSizeInBytes() const
+  { return mPacketHeader->getHeaderSizeInBytes(); }
   //@}
   //------------------------------------------------------------------------------------
 

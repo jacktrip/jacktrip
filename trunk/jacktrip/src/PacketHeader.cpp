@@ -212,21 +212,23 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
     //std::cerr << "ERROR: JamLink only support ONE channel. Run JackTrip using only one channel"
     //	      << endl;
     //std::exit(1);
+    //std::cerr << "WARINING: JamLink only support ONE channel. Run JackTrip using only one channel" << endl;
     throw std::logic_error("JamLink only support ONE channel. Run JackTrip using only one channel");
   }
   
   // Sampling Rate
   int rate_type = mJackTrip->getSampleRateType();
   if ( rate_type != JackAudioInterface::SR48 ) {
+    //std::cerr << "WARINING: JamLink only support 48kHz for communication with JackTrip at the moment." << endl;
     throw std::logic_error("ERROR: JamLink only support 48kHz for communication with JackTrip at the moment.");
   }
 
   // Check Buffer Size
   int buf_size = mJackTrip->getBufferSizeInSamples();
-  if ( buf_size != 64 )
-    {
-      throw std::logic_error("ERROR: JamLink only support 64 buffer size for communication with JackTrip at the moment.");
-    }
+  if ( buf_size != 64 ) {
+    //std::cerr << "WARINING: JamLink only support 64 buffer size for communication with JackTrip at the moment." << endl;
+    throw std::logic_error("ERROR: JamLink only support 64 buffer size for communication with JackTrip at the moment.");
+  }
 
   mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND) + 64;
   switch (rate_type)
