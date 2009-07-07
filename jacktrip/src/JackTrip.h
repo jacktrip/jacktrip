@@ -253,7 +253,7 @@ public:
   int getNumInputChannels() const
   { return mJackAudio->getNumInputChannels(); }
   int getNumOutputChannels() const
-  {return mJackAudio->getNumOutputChannels(); }
+  { return mJackAudio->getNumOutputChannels(); }
   virtual void checkPeerSettings(int8_t* full_packet);
   void increaseSequenceNumber()
   { mPacketHeader->increaseSequenceNumber(); }
@@ -265,6 +265,8 @@ public:
   { return mJackAudio->getSizeInBytesPerChannel(); }
   int getHeaderSizeInBytes() const
   { return mPacketHeader->getHeaderSizeInBytes(); }
+  virtual int getTotalAudioPacketSizeInBytes() const
+  { return mJackAudio->getSizeInBytesPerChannel() * mNumChans; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -275,7 +277,7 @@ public slots:
   {
     std::cout << "Stopping JackTrip..." << std::endl;
     stop();
-  };
+  }
 
   /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds
    * when UDP is waited for more than 30 seconds.
@@ -326,7 +328,7 @@ private:
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   uint32_t mSampleRate; ///< Sample Rate
-  uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
+  //uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
   JackAudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 
