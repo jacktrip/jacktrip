@@ -187,7 +187,7 @@ public:
     mReceiverPeerPort = port;
   }
   /// \brief Set Client Name to something different that the default (JackTrip)
-  void setClientName(char* ClientName)
+  void setClientName(const char* ClientName)
   { mJackClientName = ClientName; }
   /// \brief Set the number of audio channels
   void setNumChannels(int num_chans)
