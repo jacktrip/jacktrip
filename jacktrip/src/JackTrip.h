@@ -112,40 +112,40 @@ public:
   virtual ~JackTrip();
 
   /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
-  void setPeerAddress(const char* PeerHostOrIP);
+  virtual void setPeerAddress(const char* PeerHostOrIP);
 
   /** \brief Append a process plugin. Processes will be appended in order
    * \param plugin Pointer to ProcessPlugin Class
    */
   //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
-  void appendProcessPlugin(ProcessPlugin* plugin);
+  virtual void appendProcessPlugin(ProcessPlugin* plugin);
 
   /// \brief Start the processing threads
-  void start();
+  virtual void start();
 
   /// \brief Stop the processing threads
-  void stop();
+  virtual void stop();
 
   /// \brief Wait for all the threads to finish. This functions is used when JackTrip is 
   /// run as a thread
-  void wait();
+  virtual void wait();
 
   /// \brief Check if UDP port is already binded
   /// \param port Port number
-  void checkIfPortIsBinded(int port);
+  virtual void checkIfPortIsBinded(int port);
   
   //------------------------------------------------------------------------------------
   /// \name Getters and Setters Methods to change parameters after construction
   //@{
   // 
   /// \brief Sets (override) JackTrip Mode after construction
-  void setJackTripMode(jacktripModeT JacktripMode)
+  virtual void setJackTripMode(jacktripModeT JacktripMode)
   { mJackTripMode = JacktripMode; }
   /// \brief Sets (override) DataProtocol Type after construction
-  void setDataProtocoType(dataProtocolT DataProtocolType)
+  virtual void setDataProtocoType(dataProtocolT DataProtocolType)
   { mDataProtocol = DataProtocolType; }
   /// \brief Sets the Packet header type
-  void setPacketHeaderType(DataProtocol::packetHeaderTypeT PacketHeaderType)
+  virtual void setPacketHeaderType(DataProtocol::packetHeaderTypeT PacketHeaderType)
   { 
     mPacketHeaderType = PacketHeaderType;
     delete mPacketHeader;
@@ -157,17 +157,17 @@ public:
   //void setNumChannels(int NumChans)
   //{ mNumChans=NumChans; }
   /// \brief Sets (override) Buffer Queue Length Mode after construction
-  void setBufferQueueLength(int BufferQueueLength)
+  virtual void setBufferQueueLength(int BufferQueueLength)
   { mBufferQueueLength = BufferQueueLength; }
   /// \brief Sets (override) Audio Bit Resolution after construction
-  void setAudioBitResolution(JackAudioInterface::audioBitResolutionT AudioBitResolution)
+  virtual void setAudioBitResolution(JackAudioInterface::audioBitResolutionT AudioBitResolution)
   { mAudioBitResolution = AudioBitResolution; }
   /// \brief Sets (override) Underrun Mode
-  void setUnderRunMode(underrunModeT UnderRunMode)
+  virtual void setUnderRunMode(underrunModeT UnderRunMode)
   { mUnderRunMode = UnderRunMode; }
   /// \brief Sets port numbers for the local and peer machine.
   /// Receive port is <tt>port</tt>
-  void setAllPorts(int port)
+  virtual void setAllPorts(int port)
   {
     mReceiverBindPort = port;
     mSenderPeerPort = port;
@@ -175,53 +175,57 @@ public:
     mReceiverPeerPort = port;
   }
   /// \brief Sets port numbers to bind in RECEIVER and SENDER sockets.
-  void setBindPorts(int port)
+  virtual void setBindPorts(int port)
   {
     mReceiverBindPort = port;
     mSenderBindPort = port;
   }
   /// \brief Sets port numbers for the peer (remote) machine.
-  void setPeerPorts(int port)
+  virtual void setPeerPorts(int port)
   {
     mSenderPeerPort = port;
     mReceiverPeerPort = port;
   }
   /// \brief Set Client Name to something different that the default (JackTrip)
-  void setClientName(const char* ClientName)
+  virtual void setClientName(const char* ClientName)
   { mJackClientName = ClientName; }
   /// \brief Set the number of audio channels
-  void setNumChannels(int num_chans)
+  virtual void setNumChannels(int num_chans)
   { mNumChans = num_chans; }
 
-  int getReceiverBindPort() const
+  virtual int getReceiverBindPort() const
   { return mReceiverBindPort; }
-  int getSenderPeerPort() const
+  virtual int getSenderPeerPort() const
   { return mSenderPeerPort; }
-  int getSenderBindPort() const
+  virtual int getSenderBindPort() const
   { return mSenderBindPort; }
-  int getReceiverPeerPort() const
+  virtual int getReceiverPeerPort() const
   { return mReceiverPeerPort; }
 
-  DataProtocol* getDataProtocolSender() const
+  virtual DataProtocol* getDataProtocolSender() const
   { return mDataProtocolSender; }
-  DataProtocol* getDataProtocolReceiver() const
+  virtual DataProtocol* getDataProtocolReceiver() const
   { return mDataProtocolReceiver; }
-  void setDataProtocolSender(DataProtocol* const DataProtocolSender)
+  virtual void setDataProtocolSender(DataProtocol* const DataProtocolSender)
   { mDataProtocolSender = DataProtocolSender; }
-  void setDataProtocolReceiver(DataProtocol* const DataProtocolReceiver)
+  virtual void setDataProtocolReceiver(DataProtocol* const DataProtocolReceiver)
   { mDataProtocolReceiver = DataProtocolReceiver; }
 
-  RingBuffer* getSendRingBuffer() const
+  virtual RingBuffer* getSendRingBuffer() const
   { return mSendRingBuffer; }
-  RingBuffer* getReceiveRingBuffer() const
+  virtual RingBuffer* getReceiveRingBuffer() const
   { return mReceiveRingBuffer; }
-  void setSendRingBuffer(RingBuffer* const SendRingBuffer)
+  virtual void setSendRingBuffer(RingBuffer* const SendRingBuffer)
   { mSendRingBuffer = SendRingBuffer; }
-  void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
+  virtual void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
   { mReceiveRingBuffer = ReceiveRingBuffer; }
 
-  void setPacketHeader(PacketHeader* const PacketHeader)
+  virtual void setPacketHeader(PacketHeader* const PacketHeader)
   { mPacketHeader = PacketHeader; }
+
+  virtual int getRingBuffersSlotSize()
+  { return getTotalAudioPacketSizeInBytes(); }
+
   //@}
   //------------------------------------------------------------------------------------
 
@@ -232,7 +236,7 @@ public:
   /// \todo Document all these functions
   virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
   void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
-  int getPacketSizeInBytes() const;
+  virtual int getPacketSizeInBytes();
   void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
   virtual void sendNetworkPacket(const int8_t* ptrToSlot)
   { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot); }

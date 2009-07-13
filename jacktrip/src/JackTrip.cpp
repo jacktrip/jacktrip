@@ -183,13 +183,14 @@ void JackTrip::setupRingBuffers()
 {
   // Create RingBuffers with the apprioprate size
   /// \todo Make all this operations cleaner
-  int total_audio_packet_size = getTotalAudioPacketSizeInBytes();
+  //int total_audio_packet_size = getTotalAudioPacketSizeInBytes();
+  int slot_size = getRingBuffersSlotSize();
 
   switch (mUnderRunMode) {
   case WAVETABLE:
-    mSendRingBuffer = new RingBufferWavetable(total_audio_packet_size,
+    mSendRingBuffer = new RingBufferWavetable(slot_size,
                                               gDefaultOutputQueueLength);
-    mReceiveRingBuffer = new RingBufferWavetable(total_audio_packet_size,
+    mReceiveRingBuffer = new RingBufferWavetable(slot_size,
                                                  mBufferQueueLength);
     /*
     mSendRingBuffer = new RingBufferWavetable(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
@@ -200,9 +201,9 @@ void JackTrip::setupRingBuffers()
     
     break;
   case ZEROS:
-    mSendRingBuffer = new RingBuffer(total_audio_packet_size,
+    mSendRingBuffer = new RingBuffer(slot_size,
                                      gDefaultOutputQueueLength);
-    mReceiveRingBuffer = new RingBuffer(total_audio_packet_size,
+    mReceiveRingBuffer = new RingBuffer(slot_size,
                                         mBufferQueueLength);
     /*
     mSendRingBuffer = new RingBuffer(mJackAudio->getSizeInBytesPerChannel() * mNumChans,
@@ -461,7 +462,7 @@ void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
 
 
 //*******************************************************************************
-int JackTrip::getPacketSizeInBytes() const
+int JackTrip::getPacketSizeInBytes()
 {
   //return (mJackAudio->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
   //return (mJackAudio->getSizeInBytesPerChannel() * mNumChans  +
