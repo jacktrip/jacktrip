@@ -166,21 +166,21 @@ protected:
 
   /** \brief Redundancy algorythm at the receiving end
     */
-  void receivePacketRedundancy(QUdpSocket& UdpSocket,
-                               int8_t* full_redundant_packet,
-                               int full_redundant_packet_size,
-                               int full_packet_size,
-                               uint16_t& current_seq_num,
-                               uint16_t& last_seq_num,
-                               uint16_t& newer_seq_num);
+  virtual void receivePacketRedundancy(QUdpSocket& UdpSocket,
+                                       int8_t* full_redundant_packet,
+                                       int full_redundant_packet_size,
+                                       int full_packet_size,
+                                       uint16_t& current_seq_num,
+                                       uint16_t& last_seq_num,
+                                       uint16_t& newer_seq_num);
 
   /** \brief Redundancy algorythm at the sender's end
     */
   virtual void sendPacketRedundancy(QUdpSocket& UdpSocket,
-                            QHostAddress& PeerAddress,
-                            int8_t* full_redundant_packet,
-                            int full_redundant_packet_size,
-                            int full_packet_size);
+                                    QHostAddress& PeerAddress,
+                                    int8_t* full_redundant_packet,
+                                    int full_redundant_packet_size,
+                                    int full_packet_size);
 
 
 private:
