@@ -265,6 +265,8 @@ public:
   { return mPacketHeader->getSequenceNumber(); }
   int getPeerSequenceNumber(int8_t* full_packet) const
   { return mPacketHeader->getPeerSequenceNumber(full_packet); }
+  uint64_t getPeerTimeStamp(int8_t* full_packet) const
+  { return mPacketHeader->getPeerTimeStamp(full_packet); }
   size_t getSizeInBytesPerChannel() const
   { return mJackAudio->getSizeInBytesPerChannel(); }
   int getHeaderSizeInBytes() const
