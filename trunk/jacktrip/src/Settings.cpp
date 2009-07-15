@@ -61,7 +61,7 @@ Settings::Settings() :
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
   mAudioBitResolution(JackAudioInterface::BIT16),
-  mPortNum(gDefaultPort),
+  mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
   mClientName(NULL),
   mUnderrrunZero(false),
   mLoopBack(false),
@@ -101,6 +101,8 @@ void Settings::parseInput(int argc, char** argv)
     { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
     { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
     { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
+    { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
+    { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "redundancy", required_argument, NULL, 'r' }, // Redundancy
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
@@ -118,7 +120,8 @@ void Settings::parseInput(int argc, char** argv)
   //----------------------------------------------------------------------------
   /// \todo Specify mandatory arguments
   int ch;
-  while ( (ch = getopt_long(argc, argv, "n:sc:SC:o:q:r:b:zljeJ:vh", longopts, NULL)) != -1 )
+  while ( (ch = getopt_long(argc, argv,
+                            "n:sc:SC:o:B:P:q:r:b:zljeJ:vh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -145,7 +148,16 @@ void Settings::parseInput(int argc, char** argv)
       break;
     case 'o': // Port Offset
       //-------------------------------------------------------
-      mPortNum += atoi(optarg);
+      mBindPortNum += atoi(optarg);
+      mPeerPortNum += atoi(optarg);
+      break;
+    case 'B': // Bind Port
+      //-------------------------------------------------------
+      mBindPortNum = atoi(optarg);
+      break;
+    case 'P': // Peer Port
+      //-------------------------------------------------------
+      mPeerPortNum = atoi(optarg);
       break;
     case 'b':
       //-------------------------------------------------------
@@ -320,8 +332,9 @@ void Settings::startJackTrip()
       mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
     
     // Set Ports
-    cout << "SETTING ALL PORTS" << endl;
-    mJackTrip->setAllPorts(mPortNum);
+    //cout << "SETTING ALL PORTS" << endl;
+    mJackTrip->setBindPorts(mBindPortNum);
+    mJackTrip->setPeerPorts(mPeerPortNum);
 
     // Set in JamLink Mode
     if ( mJamLink ) {
