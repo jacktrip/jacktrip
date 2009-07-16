@@ -14,6 +14,7 @@ INCLUDEPATH+=/usr/local/include
 LIBS += -ljack -lm
 macx {
   message(MAC OS X)
+  QMAKE_CXXFLAGS += -D__UNIX_JACK__ -D__MACOSX_CORE__ #RtAudio Flags
   CONFIG -= app_bundle
   CONFIG += x86 ppc
   LIBS += -framework CoreAudio

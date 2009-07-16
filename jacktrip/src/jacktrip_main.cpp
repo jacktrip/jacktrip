@@ -48,6 +48,7 @@
 #include "LoopBack.h"
 #include "PacketHeader.h"
 #include "JackTripThread.h"
+#include "RtAudioInterface.h"
 #include "jacktrip_tests.cpp"
 
 #include "jacktrip_globals.h"
@@ -61,11 +62,16 @@ int main(int argc, char** argv)
 
   //--------TESTS--------------------------
   //main_tests(argc, argv); // test functions
+  JackTrip jacktrip;
+  RtAudioInterface rtaudio(&jacktrip);
+  rtaudio.setup();
+
   //while (true) sleep(9999);
   //---------------------------------------
 
   // Get Settings from user
   // ----------------------
+  /*
   try 
     {
       // Get Settings from user
@@ -82,5 +88,6 @@ int main(int argc, char** argv)
       std::cerr << gPrintSeparator << endl;
       return -1;
     }
+    */
   return app.exec();
 }
