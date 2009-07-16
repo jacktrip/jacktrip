@@ -66,12 +66,11 @@ int main(int argc, char** argv)
   RtAudioInterface rtaudio(&jacktrip);
   rtaudio.setup();
 
-  //while (true) sleep(9999);
+  while (true) sleep(9999);
   //---------------------------------------
 
   // Get Settings from user
   // ----------------------
-  /*
   try 
     {
       // Get Settings from user
@@ -88,6 +87,6 @@ int main(int argc, char** argv)
       std::cerr << gPrintSeparator << endl;
       return -1;
     }
-    */
+
   return app.exec();
 }

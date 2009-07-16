@@ -53,7 +53,6 @@ HEADERS += DataProtocol.h \
            ThreadPoolTest.h \
            UdpDataProtocol.h \
            UdpMasterListener.h \
-           jacktrip_tests.cpp \
            RtAudioInterface.h \
            RtAudio.h \
            RtError.h

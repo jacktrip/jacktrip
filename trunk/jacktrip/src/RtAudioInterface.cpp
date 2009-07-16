@@ -36,6 +36,7 @@
  */
 
 #include "RtAudioInterface.h"
+#include "jacktrip_globals.h"
 
 using std::cout; using std::endl;
 
@@ -63,16 +64,22 @@ RtAudioInterface::~RtAudioInterface()
 //*******************************************************************************
 void RtAudioInterface::setup()
 {
-  cout << "RtAudioInterface::setup()" << endl;
+  cout << "Settin Up Default RtAudio Interface" << endl;
+  cout << gPrintSeparator << endl;
   mRtAudio = new RtAudio;
   if ( mRtAudio->getDeviceCount() < 1 ) {
     cout << "No audio devices found!" << endl;
-    //std::exit(0);
+    std::exit(0);
   }
-  cout << mRtAudio->getDeviceCount() << endl;
 
-  RtAudio::DeviceInfo info;
-  info = mRtAudio->getDeviceInfo(mRtAudio->getDefaultInputDevice());
+  // Get and print default devices
+  RtAudio::DeviceInfo info_input;
+  RtAudio::DeviceInfo info_output;
+  info_input = mRtAudio->getDeviceInfo(mRtAudio->getDefaultInputDevice());
+  info_output = mRtAudio->getDeviceInfo(mRtAudio->getDefaultOutputDevice());
+  cout << "Default input device  : " << info_input.name << endl;
+  cout << "Default output device : " << info_output.name << endl;
+  cout << gPrintSeparator << endl;
 
   RtAudio::StreamParameters in_params, out_params;
   in_params.deviceId = mRtAudio->getDefaultInputDevice();
