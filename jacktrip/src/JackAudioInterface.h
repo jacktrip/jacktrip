@@ -103,20 +103,20 @@ public:
 
   /** \brief Setup the client
    */
-  void setup();
+  virtual void setup();
 
   /** \brief Close the client and disconnects it from a JACK server
    */
-  void close();
+  virtual void close();
 
   /** \brief Get the Jack Server Sampling Rate, in samples/second
    */
-  uint32_t getSampleRate() const;
+  virtual uint32_t getSampleRate() const;
 
   /** \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
    * \return  JackAudioInterface::samplingRateT enum type
    */
-  samplingRateT getSampleRateType() const;
+  virtual samplingRateT getSampleRateType() const;
 
   /** \brief Helper function to get the sample rate (in Hz) for a
    * JackAudioInterface::samplingRateT
@@ -127,11 +127,11 @@ public:
 
   /** \brief Get the Jack Server Buffer Size, in samples
    */
-  uint32_t getBufferSizeInSamples() const;
+  virtual uint32_t getBufferSizeInSamples() const;
 
   /** \brief Get the Jack Server Buffer Size, in bytes
    */
-  uint32_t getBufferSizeInBytes() const 
+  virtual uint32_t getBufferSizeInBytes() const
   { 
     return (getBufferSizeInSamples() * getAudioBitResolution()/8);
   }
@@ -140,27 +140,27 @@ public:
    *
    * This is one of the audioBitResolutionT set in construction
    */
-  int getAudioBitResolution() const;
+  virtual int getAudioBitResolution() const;
 
   /// \brief Get Number of Input Channels
-  int getNumInputChannels() const;
+  virtual int getNumInputChannels() const;
 
   /// \brief Get Number of Output Channels
-  int getNumOutputChannels() const;
+  virtual int getNumOutputChannels() const;
 
   /// \brief Get size of each audio per channel, in bytes
-  size_t getSizeInBytesPerChannel() const;
+  virtual size_t getSizeInBytesPerChannel() const;
 
   /** \brief Tell the JACK server that we are ready to roll. The
    * process-callback will start running. This runs on its own thread.
    * \return 0 on success, otherwise a non-zero error code
    */
-  int startProcess() const;
+  virtual int startProcess() const;
 
   /** \brief Stops the process-callback thread
    * \return 0 on success, otherwise a non-zero error code
    */
-  int stopProcess() const;
+  virtual int stopProcess() const;
 
   /** \brief Set the pointer to the Input and Output RingBuffer
    * that'll be use to read and write audio
@@ -184,7 +184,7 @@ public:
    * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
    */
   //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
-  void appendProcessPlugin(ProcessPlugin* plugin);
+  virtual void appendProcessPlugin(ProcessPlugin* plugin);
 
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
@@ -194,8 +194,8 @@ public:
    * enough space to store the result.
    */
   static void fromSampleToBitConversion(const sample_t* const input,
-					int8_t* output,
-					const audioBitResolutionT targetBitResolution);
+                                        int8_t* output,
+                                        const audioBitResolutionT targetBitResolution);
 
   /** \brief Convert a audioBitResolutionT bit resolution number into a 
    * 32bit number (sample_t)
@@ -205,8 +205,8 @@ public:
    * enough space to store the result.
    */
   static void fromBitToSampleConversion(const int8_t* const input,
-					sample_t* output,
-					const audioBitResolutionT sourceBitResolution);
+                                        sample_t* output,
+                                        const audioBitResolutionT sourceBitResolution);
 
   /// \brief Connect the default ports, capture to sends, and receives to playback
   void connectDefaultPorts();
