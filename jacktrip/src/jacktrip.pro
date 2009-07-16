@@ -29,6 +29,9 @@ QMAKE_CLEAN += ./jacktrip ./jacktrip_debug
 target.path = /usr/bin
 INSTALLS += target
 
+INCLUDEPATH += ../externals/includes/rtaudio-4.0.6
+DEPENDPATH += ../externals/includes/rtaudio-4.0.6
+
 # Input
 HEADERS += DataProtocol.h \
            JackAudioInterface.h \
@@ -49,7 +52,10 @@ HEADERS += DataProtocol.h \
            ThreadPoolTest.h \
            UdpDataProtocol.h \
            UdpMasterListener.h \
-           jacktrip_tests.cpp
+           jacktrip_tests.cpp \
+           RtAudioInterface.h \
+           RtAudio.h \
+           RtError.h
 SOURCES += DataProtocol.cpp \
            JackAudioInterface.cpp \
            JackTrip.cpp \
@@ -65,4 +71,6 @@ SOURCES += DataProtocol.cpp \
            Settings.cpp \
            tests.cpp \
            UdpDataProtocol.cpp \
-           UdpMasterListener.cpp
+           UdpMasterListener.cpp \
+           RtAudioInterface.cpp \
+           RtAudio.cpp
