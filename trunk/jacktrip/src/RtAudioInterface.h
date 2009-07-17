@@ -59,16 +59,25 @@ public:
 
   virtual ~RtAudioInterface();
 
-  /** \brief Setup the client
-   */
-  virtual void setup();
-
   virtual void listAllInterfaces();
+
+  int RtAudioCallback(void *outputBuffer, void *inputBuffer, unsigned int nFrames,
+                      double streamTime, RtAudioStreamStatus status, void *userData) {}
+
+  // --------Inherited Functions -----------------
+  virtual void setup();
+  virtual uint32_t getSampleRate() const { return mSamplingRate; }
+  virtual uint32_t getBufferSizeInSamples() const { return mBufferSize; }
+  // ---------------------------------------------
+
 
 
 private:
   void printDeviceInfo(unsigned int deviceId);
 
+
+  uint32_t mSamplingRate;
+  uint32_t mBufferSize;
   RtAudio* mRtAudio; ///< RtAudio class
 
 };
