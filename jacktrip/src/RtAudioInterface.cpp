@@ -50,6 +50,7 @@ JackAudioInterface(jacktrip,
                    NumInChans, NumOutChans,
                    AudioBitResolution,
                    ClientName),
+mSamplingRate(48000), mBufferSize(128),
 mRtAudio(NULL)
 {}
 
@@ -133,5 +134,15 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
   for (unsigned int ii = 0; ii<sampleRates.size();ii++) {
     cout << sampleRates[ii] << " ";
   }
+  cout << endl;
+  RtAudioFormat bitformats = info.nativeFormats;
+  cout << "bitformats = " << bitformats << endl;
+
+  cout << RTAUDIO_SINT8 << endl;
+  cout << RTAUDIO_SINT16 << endl;
+  cout << RTAUDIO_SINT24 << endl;
+  cout << RTAUDIO_SINT32 << endl;
+  cout << RTAUDIO_FLOAT32 << endl;
+  cout << RTAUDIO_FLOAT64 << endl;
   cout << endl;
 }

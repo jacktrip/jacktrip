@@ -60,20 +60,30 @@ int main(int argc, char** argv)
 {
   QCoreApplication app(argc, argv);
 
-  //--------TESTS--------------------------
-  //main_tests(argc, argv); // test functions
-  JackTrip jacktrip;
-  RtAudioInterface rtaudio(&jacktrip);
-  rtaudio.setup();
-  //rtaudio.listAllInterfaces();
-  //rtaudio.printDeviceInfo(0);
+  bool testing = false;
+  if ( argc > 1 ) {
+    if ( !strcmp(argv[1], "test") ) {
+      testing = true;
+    }
+  }
 
-  while (true) sleep(9999);
-  //---------------------------------------
+  if ( testing ) {
+    cout << "=========TESTING=========" << endl;
+    //main_tests(argc, argv); // test functions
+    JackTrip jacktrip;
+    RtAudioInterface rtaudio(&jacktrip);
+    //rtaudio.setup();
+    rtaudio.listAllInterfaces();
+    //rtaudio.printDeviceInfo(0);
 
-  // Get Settings from user
-  // ----------------------
-  try 
+    while (true) sleep(9999);
+  }
+  else {
+    //---------------------------------------
+
+    // Get Settings from user
+    // ----------------------
+    try
     {
       // Get Settings from user
       // ----------------------
@@ -81,7 +91,7 @@ int main(int argc, char** argv)
       settings->parseInput(argc, argv);
       settings->startJackTrip();
     }
-  catch ( const std::exception & e )
+    catch ( const std::exception & e )
     {
       std::cerr << "ERROR:" << endl;
       std::cerr << e.what() << endl;
@@ -89,6 +99,7 @@ int main(int argc, char** argv)
       std::cerr << gPrintSeparator << endl;
       return -1;
     }
+  }
 
   return app.exec();
 }
