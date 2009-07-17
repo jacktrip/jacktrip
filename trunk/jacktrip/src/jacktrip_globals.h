@@ -38,10 +38,11 @@
 #ifndef __JACKTRIP_GLOBALS_H__
 #define __JACKTRIP_GLOBALS_H__
 
-#include "JackAudioInterface.h"
+#include "AudioInterface.h"
+//#include "JackAudioInterface.h"
 
-
-//namespace JackTrip/// \todo Add this namespace
+/// \todo Add this namespace
+//namespace JackTrip
 
 const char* const gVersion = "1.0.5"; ///< JackTrip version
 
@@ -50,8 +51,10 @@ const char* const gVersion = "1.0.5"; ///< JackTrip version
 //@{
 const int gDefaultNumInChannels = 2;
 const int gDefaultNumOutChannels = 2;
-const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode = 
-  JackAudioInterface::BIT16;
+//const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
+//    JackAudioInterface::BIT16;
+const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
+    AudioInterface::BIT16;
 const int gDefaultQueueLength = 4;
 const int gDefaultOutputQueueLength = 4;
 //@}

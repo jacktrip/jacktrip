@@ -51,6 +51,7 @@
 
 #include "jacktrip_types.h"
 #include "ProcessPlugin.h"
+#include "AudioInterface.h"
 
 class JackTrip; //forward declaration
 
@@ -60,10 +61,11 @@ class JackTrip; //forward declaration
  * \todo implement srate_callback
  * \todo automatically starts jack with buffer and sample rate settings specified by the user
  */
-class JackAudioInterface
+class JackAudioInterface : public AudioInterface
 {
 public:
 
+  /*
   /// \brief Enum for Audio Resolution in bits
   /// \todo implement this into the class, now it's using jack default of 32 bits
   enum audioBitResolutionT {
@@ -84,6 +86,7 @@ public:
     SR192, ///< 192000 Hz
     UNDEF ///< Undefined
   };
+*/
 
   /** \brief The class constructor
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
@@ -93,9 +96,9 @@ public:
    * \param ClientName Client name in Jack
    */
   JackAudioInterface(JackTrip* jacktrip,
-		     int NumInChans, int NumOutChans,
-         audioBitResolutionT AudioBitResolution = BIT16,
-         const char* ClientName = "JackTrip");
+                     int NumInChans, int NumOutChans,
+                     AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+                     const char* ClientName = "JackTrip");
 
   /** \brief The class destructor
    */
@@ -195,7 +198,7 @@ public:
    */
   static void fromSampleToBitConversion(const sample_t* const input,
                                         int8_t* output,
-                                        const audioBitResolutionT targetBitResolution);
+                                        const AudioInterface::audioBitResolutionT targetBitResolution);
 
   /** \brief Convert a audioBitResolutionT bit resolution number into a 
    * 32bit number (sample_t)
@@ -206,7 +209,7 @@ public:
    */
   static void fromBitToSampleConversion(const int8_t* const input,
                                         sample_t* output,
-                                        const audioBitResolutionT sourceBitResolution);
+                                        const AudioInterface::audioBitResolutionT sourceBitResolution);
 
   /// \brief Connect the default ports, capture to sends, and receives to playback
   void connectDefaultPorts();
@@ -281,7 +284,7 @@ private:
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
   int mAudioBitResolution; ///< Bit resolution in audio samples
-  audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
+  AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
 
   jack_client_t* mClient; ///< Jack Client
   const char* mClientName; ///< Jack Client Name

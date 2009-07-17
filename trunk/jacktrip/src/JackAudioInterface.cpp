@@ -62,14 +62,17 @@ QMutex JackAudioInterface::sJackMutex;
 
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
-				       int NumInChans, int NumOutChans,
-               audioBitResolutionT AudioBitResolution,
-               const char* ClienName) :
-  mNumInChans(NumInChans), mNumOutChans(NumOutChans), 
-  mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution),
-  mClient(NULL),
-  mClientName(ClienName),
-  mJackTrip(jacktrip)
+                                       int NumInChans, int NumOutChans,
+                                       AudioInterface::audioBitResolutionT AudioBitResolution,
+                                       const char* ClienName) :
+AudioInterface(jacktrip,
+               NumInChans, NumOutChans,
+               AudioBitResolution),
+mNumInChans(NumInChans), mNumOutChans(NumOutChans),
+mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution),
+mClient(NULL),
+mClientName(ClienName),
+mJackTrip(jacktrip)
 {
   //setupClient();
   //setProcessCallback();
@@ -537,7 +540,7 @@ int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg
 // 24 bit is not working yet
 void JackAudioInterface::fromSampleToBitConversion(const sample_t* const input,
 						   int8_t* output,
-						   const audioBitResolutionT targetBitResolution)
+               const AudioInterface::audioBitResolutionT targetBitResolution)
 {
   int8_t tmp_8;
   uint8_t tmp_u8; // unsigned to quantize the remainder in 24bits
@@ -586,7 +589,7 @@ void JackAudioInterface::fromSampleToBitConversion(const sample_t* const input,
 //*******************************************************************************
 void JackAudioInterface::fromBitToSampleConversion(const int8_t* const input,
 						   sample_t* output,
-						   const audioBitResolutionT sourceBitResolution)
+               const AudioInterface::audioBitResolutionT sourceBitResolution)
 {
   int8_t tmp_8;
   uint8_t tmp_u8;

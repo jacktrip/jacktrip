@@ -98,8 +98,8 @@ public:
 	   int NumChans = 2,
 	   int BufferQueueLength = 8,
 	   unsigned int redundancy = 1,
-	   JackAudioInterface::audioBitResolutionT AudioBitResolution = 
-	   JackAudioInterface::BIT16,
+     AudioInterface::audioBitResolutionT AudioBitResolution =
+     AudioInterface::BIT16,
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
 	   DataProtocol::DEFAULT,
 	   underrunModeT UnderRunMode = WAVETABLE,
@@ -160,7 +160,7 @@ public:
   virtual void setBufferQueueLength(int BufferQueueLength)
   { mBufferQueueLength = BufferQueueLength; }
   /// \brief Sets (override) Audio Bit Resolution after construction
-  virtual void setAudioBitResolution(JackAudioInterface::audioBitResolutionT AudioBitResolution)
+  virtual void setAudioBitResolution(AudioInterface::audioBitResolutionT AudioBitResolution)
   { mAudioBitResolution = AudioBitResolution; }
   /// \brief Sets (override) Underrun Mode
   virtual void setUnderRunMode(underrunModeT UnderRunMode)
@@ -335,7 +335,7 @@ private:
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   uint32_t mSampleRate; ///< Sample Rate
   //uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
-  JackAudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
+  AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 
   /// Pointer to Abstract Type DataProtocol that sends packets

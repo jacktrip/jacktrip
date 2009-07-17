@@ -55,8 +55,7 @@ HEADERS += DataProtocol.h \
            UdpDataProtocol.h \
            UdpMasterListener.h \
            AudioInterface.h \
-           RtAudioInterface.h \
-           JackAudioInterfaceTest.h
+           RtAudioInterface.h
 SOURCES += DataProtocol.cpp \
            JackAudioInterface.cpp \
            JackTrip.cpp \
@@ -74,8 +73,7 @@ SOURCES += DataProtocol.cpp \
            UdpDataProtocol.cpp \
            UdpMasterListener.cpp \
            AudioInterface.cpp \
-           RtAudioInterface.cpp \
-           JackAudioInterfaceTest.cpp
+           RtAudioInterface.cpp
 
 # RtAduio Headers
 HEADERS += RtAudio.h \

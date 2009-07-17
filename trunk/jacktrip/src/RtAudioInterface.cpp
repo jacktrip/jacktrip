@@ -44,7 +44,7 @@ using std::cout; using std::endl;
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip,
                                    int NumInChans, int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution,
+                                   AudioInterface::audioBitResolutionT AudioBitResolution,
                                    const char* ClientName) :
 JackAudioInterface(jacktrip,
                    NumInChans, NumOutChans,
