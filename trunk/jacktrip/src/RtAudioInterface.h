@@ -61,12 +61,13 @@ public:
 
   /** \brief Setup the client
    */
-  virtual void setup();
+  virtual void setup(int deviceId = -1);
 
   virtual void listAllInterfaces();
 
 
 private:
+  void printDeviceInfo(unsigned int deviceId);
 
   RtAudio* mRtAudio; ///< RtAudio class
 
