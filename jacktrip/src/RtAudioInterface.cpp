@@ -85,3 +85,36 @@ void RtAudioInterface::setup()
   in_params.deviceId = mRtAudio->getDefaultInputDevice();
   out_params.deviceId = mRtAudio->getDefaultOutputDevice();
 }
+
+
+//*******************************************************************************
+void RtAudioInterface::listAllInterfaces()
+{
+  RtAudio all;
+  if ( all.getDeviceCount() < 1 ) {
+    cout << "No audio devices found!" << endl; }
+  else {
+    RtAudio::DeviceInfo info;
+    for (int i = 0; i<all.getDeviceCount(); i++) {
+      info = all.getDeviceInfo(i);
+      std::vector<unsigned int> sampleRates;
+      cout << "Audio Device  [" << i << "] : "  << info.name << endl;
+      cout << "  Output Channels : " << info.outputChannels << endl;
+      cout << "  Input Channels  : " << info.inputChannels << endl;
+      if (info.isDefaultOutput) {
+        cout << "  --Default Output Device--" << endl; }
+      if (info.isDefaultInput) {
+        cout << "  --Default Intput Device--" << endl; }
+      if (info.probed) {
+        cout << "  --Probed Successful--" << endl; }
+
+      sampleRates = info.sampleRates;
+      cout << "  Supported Sampling Rates: ";
+      for (int ii = 0; ii<sampleRates.size();ii++) {
+        cout << sampleRates[ii] << " ";
+      }
+      cout << endl;
+      cout << gPrintSeparator << endl;
+    }
+  }
+}

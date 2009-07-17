@@ -63,6 +63,8 @@ public:
    */
   virtual void setup();
 
+  virtual void listAllInterfaces();
+
 
 private:
 
