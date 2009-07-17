@@ -64,7 +64,8 @@ int main(int argc, char** argv)
   //main_tests(argc, argv); // test functions
   JackTrip jacktrip;
   RtAudioInterface rtaudio(&jacktrip);
-  rtaudio.setup();
+  //rtaudio.setup();
+  rtaudio.listAllInterfaces();
 
   while (true) sleep(9999);
   //---------------------------------------
