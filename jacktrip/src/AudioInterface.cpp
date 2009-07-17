@@ -80,8 +80,8 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 
 
 //*******************************************************************************
-int AudioInterface::processCallback(sample_t* output_buffer,
-                                    sample_t* input_buffer,
+int AudioInterface::processCallback(float* output_buffer,
+                                    float* input_buffer,
                                     unsigned int num_buffer_frames,
                                     unsigned int num_channels)
 {
@@ -163,8 +163,8 @@ int AudioInterface::processCallback(sample_t* output_buffer,
 // Before sending and reading to Jack, we have to round to the sample resolution
 // that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
 // by default
-void AudioInterface::computeProcessFromNetwork(sample_t* output_buffer,
-                                               sample_t* input_buffer,
+void AudioInterface::computeProcessFromNetwork(float* output_buffer,
+                                               float* input_buffer,
                                                unsigned int num_buffer_frames,
                                                unsigned int num_channels)
 {
@@ -200,8 +200,8 @@ void AudioInterface::computeProcessFromNetwork(sample_t* output_buffer,
 
 
 //*******************************************************************************
-void AudioInterface::computeNetworkProcessToNetwork(sample_t* output_buffer,
-                                                    sample_t* input_buffer,
+void AudioInterface::computeNetworkProcessToNetwork(float* output_buffer,
+                                                    float* input_buffer,
                                                     unsigned int num_buffer_frames,
                                                     unsigned int num_channels)
 {

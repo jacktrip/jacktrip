@@ -41,6 +41,7 @@
 #include <QThread>
 #include <QUdpSocket>
 #include <QHostAddress>
+#include <QMutex>
 
 #include "DataProtocol.h"
 #include "jacktrip_types.h"

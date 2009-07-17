@@ -60,7 +60,7 @@ Settings::Settings() :
   mDataProtocol(JackTrip::UDP),
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
-  mAudioBitResolution(JackAudioInterface::BIT16),
+  mAudioBitResolution(AudioInterface::BIT16),
   mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
   mClientName(NULL),
   mUnderrrunZero(false),
@@ -162,13 +162,13 @@ void Settings::parseInput(int argc, char** argv)
     case 'b':
       //-------------------------------------------------------
       if      ( atoi(optarg) == 8 ) {
-	mAudioBitResolution = JackAudioInterface::BIT8; }
+  mAudioBitResolution = AudioInterface::BIT8; }
       else if ( atoi(optarg) == 16 ) {
-	mAudioBitResolution = JackAudioInterface::BIT16; }
+  mAudioBitResolution = AudioInterface::BIT16; }
       else if ( atoi(optarg) == 24 ) {
-	mAudioBitResolution = JackAudioInterface::BIT24; }
+  mAudioBitResolution = AudioInterface::BIT24; }
       else if ( atoi(optarg) == 32 ) {
-	mAudioBitResolution = JackAudioInterface::BIT32; }
+  mAudioBitResolution = AudioInterface::BIT32; }
       else {
 	std::cerr << "--bitres ERROR: Wrong bit resolutions: " 
 		  << atoi(optarg) << " is not supported." << endl;

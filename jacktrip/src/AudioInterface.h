@@ -38,8 +38,10 @@
 #ifndef __AUDIOINTERFACE_H__
 #define __AUDIOINTERFACE_H__
 
+#include "jacktrip_types.h"
+
 #include <QVarLengthArray>
-#include "jacktrip_globals.h"
+//#include "jacktrip_globals.h"
 
 class JackTrip; //forward declaration
 
@@ -75,25 +77,26 @@ public:
    */
   AudioInterface(JackTrip* jacktrip,
                  int NumInChans, int NumOutChans,
-                 audioBitResolutionT AudioBitResolution = BIT16);
+                 AudioInterface::audioBitResolutionT AudioBitResolution =
+                 AudioInterface::BIT16);
 
   virtual ~AudioInterface();
 
   /// \brief Setup the client
   virtual void setup();
 
-  int processCallback(sample_t* output_buffer,
-                      sample_t* input_buffer,
+  int processCallback(float* output_buffer,
+                      float* input_buffer,
                       unsigned int num_buffer_frames,
                       unsigned int num_channels);
-  void computeProcessFromNetwork(sample_t* output_buffer,
-                                 sample_t* input_buffer,
+  void computeProcessFromNetwork(float* output_buffer,
+                                 float* input_buffer,
                                  unsigned int num_buffer_frames,
                                  unsigned int num_channels);
-  void computeNetworkProcessToNetwork(sample_t* output_buffer,
-                                 sample_t* input_buffer,
-                                 unsigned int num_buffer_frames,
-                                 unsigned int num_channels);
+  void computeNetworkProcessToNetwork(float* output_buffer,
+                                      float* input_buffer,
+                                      unsigned int num_buffer_frames,
+                                      unsigned int num_channels);
 
 
   /// \brief Get Number of Input Channels

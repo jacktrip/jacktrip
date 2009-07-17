@@ -54,7 +54,7 @@ public:
    */
   RtAudioInterface(JackTrip* jacktrip,
                    int NumInChans = 2, int NumOutChans = 2,
-                   audioBitResolutionT AudioBitResolution = JackAudioInterface::BIT16,
+                   AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
                    const char* ClientName = "JamTest");
 
   virtual ~RtAudioInterface();

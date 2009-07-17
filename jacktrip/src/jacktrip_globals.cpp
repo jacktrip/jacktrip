@@ -35,6 +35,8 @@
  * \date August 2008
  */
 
+#include <iostream>
+
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
 
