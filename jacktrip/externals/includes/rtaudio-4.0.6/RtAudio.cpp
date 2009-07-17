@@ -304,10 +304,10 @@ void RtApi :: closeStream( void )
   return;
 }
 
-bool RtApi :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned int channels,
-                               unsigned int firstChannel, unsigned int sampleRate,
-                               RtAudioFormat format, unsigned int *bufferSize,
-                               RtAudio::StreamOptions *options )
+bool RtApi :: probeDeviceOpen( unsigned int /*device*/, StreamMode /*mode*/, unsigned int /*channels*/,
+                               unsigned int /*firstChannel*/, unsigned int /*sampleRate*/,
+                               RtAudioFormat /*format*/, unsigned int* /*bufferSize*/,
+                               RtAudio::StreamOptions* /*options*/ )
 {
   // MUST be implemented in subclasses!
   return FAILURE;
@@ -708,11 +708,11 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
 }
 
 OSStatus callbackHandler( AudioDeviceID inDevice,
-                          const AudioTimeStamp* inNow,
+                          const AudioTimeStamp* /*inNow*/,
                           const AudioBufferList* inInputData,
-                          const AudioTimeStamp* inInputTime,
+                          const AudioTimeStamp* /*inInputTime*/,
                           AudioBufferList* outOutputData,
-                          const AudioTimeStamp* inOutputTime, 
+                          const AudioTimeStamp* /*inOutputTime*/,
                           void* infoPointer )
 {
   CallbackInfo *info = (CallbackInfo *) infoPointer;
@@ -724,8 +724,8 @@ OSStatus callbackHandler( AudioDeviceID inDevice,
     return kAudioHardwareNoError;
 }
 
-OSStatus deviceListener( AudioDeviceID inDevice,
-                         UInt32 channel,
+OSStatus deviceListener( AudioDeviceID /*inDevice*/,
+                         UInt32 /*channel*/,
                          Boolean isInput,
                          AudioDevicePropertyID propertyID,
                          void* handlePointer )

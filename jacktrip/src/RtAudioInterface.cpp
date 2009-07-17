@@ -57,12 +57,12 @@ mRtAudio(NULL)
 //*******************************************************************************
 RtAudioInterface::~RtAudioInterface()
 {
-  //delete mRtAudio;
+  delete mRtAudio;
 }
 
 
 //*******************************************************************************
-void RtAudioInterface::setup(int deviceId)
+void RtAudioInterface::setup()
 {
   cout << "Settin Up Default RtAudio Interface" << endl;
   cout << gPrintSeparator << endl;
@@ -71,26 +71,15 @@ void RtAudioInterface::setup(int deviceId)
     cout << "No audio devices found!" << endl;
     std::exit(0);
   }
-  else if ( mRtAudio->getDeviceCount() > deviceId ) {
-    cout << "Device [" << deviceId << "] doesn't exist!" << endl;
-    std::exit(0);
-  }
 
   // Get and print default devices
   RtAudio::DeviceInfo info_input;
   RtAudio::DeviceInfo info_output;
 
   int deviceId_input; int deviceId_output;
-  if (deviceId == -1) { // use default
-    deviceId_input = mRtAudio->getDefaultInputDevice();
-    deviceId_output = mRtAudio->getDefaultOutputDevice();
-  }
-  //else {
-  //info_input = mRtAudio->getDeviceInfo(deviceId_input);
-  //info_output = mRtAudio->getDeviceInfo(deviceId_output);
-  //cout << "DEFAULT INPUT DEVICE  : " << info_input.name << endl;
-  //cout << "DEFAULT OUTPUT DEVICE : " << info_output.name << endl;
-  //cout << gPrintSeparator << endl;
+  // use default devices
+  deviceId_input = mRtAudio->getDefaultInputDevice();
+  deviceId_output = mRtAudio->getDefaultOutputDevice();
 
 
   cout << "DEFAULT INPUT DEVICE  : " << endl;
@@ -141,7 +130,7 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
 
   sampleRates = info.sampleRates;
   cout << "  Supported Sampling Rates: ";
-  for (int ii = 0; ii<sampleRates.size();ii++) {
+  for (unsigned int ii = 0; ii<sampleRates.size();ii++) {
     cout << sampleRates[ii] << " ";
   }
   cout << endl;

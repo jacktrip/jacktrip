@@ -61,7 +61,7 @@ public:
 
   /** \brief Setup the client
    */
-  virtual void setup(int deviceId = -1);
+  virtual void setup();
 
   virtual void listAllInterfaces();
 
