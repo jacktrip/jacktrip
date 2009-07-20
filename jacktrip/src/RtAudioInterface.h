@@ -71,6 +71,8 @@ public:
   virtual uint32_t getSampleRate() const { return mSamplingRate; }
   virtual uint32_t getBufferSizeInSamples() const { return mBufferSize; }
   virtual int startProcess() const;
+  virtual samplingRateT getSampleRateType() const
+  { return JackAudioInterface::SR48; }
   // ---------------------------------------------
 
   //virtual int getNumInputChannels() const { return 1; }
@@ -106,9 +108,6 @@ private:
   uint32_t mSamplingRate;
   uint32_t mBufferSize;
   RtAudio* mRtAudio; ///< RtAudio class
-
-  //JackTrip* mTestJackTrip;
-
 };
 
 #endif // __RTAUDIOINTERFACE_H__
