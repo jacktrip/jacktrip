@@ -298,17 +298,20 @@ int JackAudioInterface::getAudioBitResolution() const
 
 
 //*******************************************************************************
+/*
 int JackAudioInterface::getNumInputChannels() const
 {
   return mNumInChans;
 }
-
+*/
 
 //*******************************************************************************
+/*
 int JackAudioInterface::getNumOutputChannels() const
 {
   return mNumOutChans;
 }
+*/
 
 
 //*******************************************************************************

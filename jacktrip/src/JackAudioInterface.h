@@ -146,10 +146,10 @@ public:
   virtual int getAudioBitResolution() const;
 
   /// \brief Get Number of Input Channels
-  virtual int getNumInputChannels() const;
+  //virtual int getNumInputChannels() const;
 
   /// \brief Get Number of Output Channels
-  virtual int getNumOutputChannels() const;
+  //virtual int getNumOutputChannels() const;
 
   /// \brief Get size of each audio per channel, in bytes
   virtual size_t getSizeInBytesPerChannel() const;
