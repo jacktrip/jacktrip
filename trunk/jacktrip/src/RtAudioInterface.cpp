@@ -52,29 +52,20 @@ JackAudioInterface(jacktrip,
                    NumInChans, NumOutChans,
                    AudioBitResolution),
 mJackTrip(jacktrip),
-mSamplingRate(48000), mBufferSize(512),
+mSamplingRate(48000), mBufferSize(64),
 mRtAudio(NULL)
 {
-    cout << "================= CONSTRUCTING RtAudioInterface ==================" << endl;
-    mJackTrip->printTextTest();
   // Allocate buffer memory to read and write
   int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
   int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
-  cout << "size_input ============================= " << size_input << endl;
-  //mInputPacket = new int8_t[size_input];
+  mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
-
-  int8_t* mInputPacket = new int8_t[mBufferSize*2];
 
   // Initialize Buffer array to read and write audio
   cout << "getNumInputChannels() = " << getNumInputChannels() << endl;
   cout << " getNumOutputChannels() = " << getNumOutputChannels() << endl;
   mInBuffer.resize(mBufferSize*getNumInputChannels());
   mOutBuffer.resize(mBufferSize*getNumOutputChannels());
-
-
-  //mJackTrip->printTextTest();
-  //mTestJackTrip = new JackTrip;
 }
 
 
@@ -200,10 +191,97 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
 {
 
 
-  cout << "c" << endl;
+  //cout << "c" << endl;
   //float* in_buffer = static_cast<float*>(inputBuffer);
   //std::memcpy(&mInputPacket[0], in_buffer, 2*mBufferSize);
-  mJackTrip->printTextTest();
+  //mJackTrip->printTextTest();
+
+
+  mInBuffer[0] = (sample_t*) inputBuffer;
+  mOutBuffer[0] = (sample_t*) outputBuffer;
+
+
+
+  // Output Process (from NETWORK to JACK)
+  // ----------------------------------------------------------------
+  // Read Audio buffer from RingBuffer (read from incoming packets)
+  //mOutRingBuffer->readSlotNonBlocking( mOutputPacket );
+  mJackTrip->receiveNetworkPacket( mOutputPacket );
+
+  // Extract separate channels to send to Jack
+  for (int i = 0; i < getNumOutputChannels(); i++) {
+    //--------
+    // This should be faster for 32 bits
+    //std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
+    //		mSizeInBytesPerChannel);
+    //--------
+    sample_t* tmp_sample = mOutBuffer[i]; //sample buffer for channel i
+    for (int j = 0; j < nFrames; j++) {
+      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
+      // Change the bit resolution on each sample
+      //cout << tmp_sample[j] << endl;
+      fromBitToSampleConversion(&mOutputPacket[(i*getSizeInBytesPerChannel())
+                 + (j*BIT16)],
+        &tmp_sample[j],
+        BIT16);
+    }
+  }
+
+
+
+
+  // Input Process (from JACK to NETWORK)
+  // ----------------------------------------------------------------
+  // Concatenate  all the channels from jack to form packet
+  for (int i = 0; i < getNumInputChannels(); i++) {
+    //--------
+    // This should be faster for 32 bits
+    //std::memcpy(&mInputPacket[i*getSizeInBytesPerChannel()], mInBuffer[i],
+    //		mSizeInBytesPerChannel);
+    //--------
+    sample_t* tmp_sample = mInBuffer[i]; //sample buffer for channel i
+    sample_t tmp_result;
+    for (int j = 0; j < nFrames; j++) {
+      // Add the input jack buffer to the buffer resulting from the output process
+      tmp_result = tmp_sample[j];
+      JackAudioInterface::fromSampleToBitConversion(&tmp_result,
+                                                    &mInputPacket[(i*getSizeInBytesPerChannel())
+                                                                  + (j*BIT16)],
+                                                    BIT16);
+    }
+  }
+  // Send Audio buffer to RingBuffer (these goes out as outgoing packets)
+  //mInRingBuffer->insertSlotNonBlocking( mInputPacket );
+  mJackTrip->sendNetworkPacket( mInputPacket );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   //mTestJackTrip->printTextTest();
 
   //if (mJackTrip != NULL)
