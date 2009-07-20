@@ -135,6 +135,7 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
     cout << sampleRates[ii] << " ";
   }
   cout << endl;
+  /*
   RtAudioFormat bitformats = info.nativeFormats;
   cout << "bitformats = " << bitformats << endl;
 
@@ -145,4 +146,5 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
   cout << RTAUDIO_FLOAT32 << endl;
   cout << RTAUDIO_FLOAT64 << endl;
   cout << endl;
+  */
 }

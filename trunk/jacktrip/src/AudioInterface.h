@@ -89,16 +89,27 @@ public:
                       float* input_buffer,
                       unsigned int num_buffer_frames,
                       unsigned int num_channels);
+
   void computeProcessFromNetwork(float* output_buffer,
                                  float* input_buffer,
                                  unsigned int num_buffer_frames,
                                  unsigned int num_channels);
+
   void computeNetworkProcessToNetwork(float* output_buffer,
                                       float* input_buffer,
                                       unsigned int num_buffer_frames,
                                       unsigned int num_channels);
 
+  //--------------SETTERS---------------------------------------------
+  virtual void setNumInputChannels(int nchannels)
+  { mNumInChans = nchannels; }
+  virtual void setNumOutputChannels(int nchannels)
+  { mNumOutChans = nchannels; }
+  virtual int setNumBufferFramesPerChannel(int nbuf_frames)
+  { mNumBufferFramesPerChannel = nbuf_frames; }
+  //------------------------------------------------------------------
 
+  //--------------GETTERS---------------------------------------------
   /// \brief Get Number of Input Channels
   virtual int getNumInputChannels() const { return mNumInChans; }
   /// \brief Get Number of Output Channels
@@ -107,7 +118,7 @@ public:
   { return mNumBufferFramesPerChannel; }
   virtual uint32_t getBufferSizeInSamples() const;
   virtual size_t getSizeInBytesPerChannel() const;
-
+  //------------------------------------------------------------------
 
 private:
 
