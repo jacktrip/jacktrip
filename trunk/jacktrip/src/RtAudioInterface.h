@@ -38,8 +38,13 @@
 #ifndef __RTAUDIOINTERFACE_H__
 #define __RTAUDIOINTERFACE_H__
 
-#include "JackAudioInterface.h"
 #include "RtAudio.h"
+
+#include "JackAudioInterface.h"
+#include "AudioInterface.h"
+
+
+class JackTrip; // Forward declaration
 
 class RtAudioInterface : public JackAudioInterface
 {
@@ -54,31 +59,55 @@ public:
    */
   RtAudioInterface(JackTrip* jacktrip,
                    int NumInChans = 2, int NumOutChans = 2,
-                   AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-                   const char* ClientName = "JamTest");
+                   audioBitResolutionT AudioBitResolution = BIT16);
 
   virtual ~RtAudioInterface();
 
-  virtual void listAllInterfaces();
 
-  int RtAudioCallback(void *outputBuffer, void *inputBuffer, unsigned int nFrames,
-                      double streamTime, RtAudioStreamStatus status, void *userData) {}
+  virtual void listAllInterfaces();
 
   // --------Inherited Functions -----------------
   virtual void setup();
   virtual uint32_t getSampleRate() const { return mSamplingRate; }
   virtual uint32_t getBufferSizeInSamples() const { return mBufferSize; }
+  virtual int startProcess() const;
   // ---------------------------------------------
 
+  //virtual int getNumInputChannels() const { return 1; }
+  //virtual int getNumOutputChannels() const  { return 1; }
+  //virtual samplingRateT getSampleRateType() const {return SR48;}
+  //virtual int getAudioBitResolution() const {return 16;}
+  //virtual int getSizeInBytesPerChannel() const {return 2;}
+  //virtual void close() {}
+  //virtual void stopProcess() {}
 
+
+  //virtual int processCallback(jack_nframes_t nframes);
 
 private:
+  int RtAudioCallback(void *outputBuffer, void *inputBuffer, unsigned int nFrames,
+                      double streamTime, RtAudioStreamStatus status);
+  static int wrapperRtAudioCallback(void *outputBuffer, void *inputBuffer, unsigned int nFrames,
+                                    double streamTime, RtAudioStreamStatus status, void *userData);
+
   void printDeviceInfo(unsigned int deviceId);
 
+  JackTrip* mJackTrip;
+
+  int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
+  int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+
+  QVarLengthArray<float*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
+  QVarLengthArray<float*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
+
+  //float* mInBuffer; ///< Vector of Input buffers/channel read from JACK
+  //float* mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
   uint32_t mSamplingRate;
   uint32_t mBufferSize;
   RtAudio* mRtAudio; ///< RtAudio class
+
+  //JackTrip* mTestJackTrip;
 
 };
 

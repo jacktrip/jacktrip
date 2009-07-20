@@ -43,7 +43,8 @@
 #include <QVarLengthArray>
 //#include "jacktrip_globals.h"
 
-class JackTrip; //forward declaration
+class JackTrip;
+
 
 class AudioInterface
 {
@@ -105,7 +106,7 @@ public:
   { mNumInChans = nchannels; }
   virtual void setNumOutputChannels(int nchannels)
   { mNumOutChans = nchannels; }
-  virtual int setNumBufferFramesPerChannel(int nbuf_frames)
+  virtual void setNumBufferFramesPerChannel(int nbuf_frames)
   { mNumBufferFramesPerChannel = nbuf_frames; }
   //------------------------------------------------------------------
 
@@ -120,8 +121,10 @@ public:
   virtual size_t getSizeInBytesPerChannel() const;
   //------------------------------------------------------------------
 
-private:
+protected:
+  JackTrip* mJackTrip;
 
+private:
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumBufferFramesPerChannel; ///< Buffer block size, in samples
