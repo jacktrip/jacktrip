@@ -1,0 +1,25 @@
+#!/bin/bash
+## Created by Juan-Pablo Caceres
+
+# Check for Platform
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    echo "Building on Linux"
+    platform='linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    echo "Building on Mac OS X"
+    platform='macosx'
+fi
+
+# Set qmake command name
+if [[ $platform == 'linux' ]]; then
+    QCMD=qmake-qt4
+elif [[ $platform == 'macosx' ]]; then
+    QCMD=qmake
+fi
+
+# Build
+$QCMD jacktrip.pro
+make clean
+make release
