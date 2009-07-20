@@ -53,7 +53,7 @@
 #include "ProcessPlugin.h"
 #include "AudioInterface.h"
 
-class JackTrip; //forward declaration
+//class JackTrip; //forward declaration
 
 
 /** \brief Class that provides an interface with the Jack Audio Server
@@ -279,7 +279,6 @@ private:
   // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
   static int wrapperProcessCallback(jack_nframes_t nframes, void *arg) ;
 
-
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
@@ -303,8 +302,8 @@ private:
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
 
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
-  JackTrip* mJackTrip; ///< JackTrip mediator class
 
+  JackTrip* mJackTrip; ///< JackTrip mediator class
   static QMutex sJackMutex; ///< Mutex to make thread safe jack functions that are not
 };
 

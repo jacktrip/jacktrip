@@ -36,16 +36,22 @@
  */
 
 #include "AudioInterface.h"
+#include "JackTrip.h"
+#include <iostream>
 
+using std::cout; using std::endl;
 
 //*******************************************************************************
 AudioInterface::AudioInterface(JackTrip* jacktrip,
                                int NumInChans, int NumOutChans,
                                audioBitResolutionT AudioBitResolutionconst) :
+mJackTrip(jacktrip),
 mNumInChans(NumInChans), mNumOutChans(NumOutChans),
 mNumBufferFramesPerChannel(128),
 mInputPacket(NULL), mOutputPacket(NULL)
-{}
+{
+  cout << "================= CONSTRUCTING AudioInterface ==================" << endl;
+}
 
 
 //*******************************************************************************

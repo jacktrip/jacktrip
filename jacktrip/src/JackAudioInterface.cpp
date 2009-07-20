@@ -74,6 +74,7 @@ mClient(NULL),
 mClientName(ClienName),
 mJackTrip(jacktrip)
 {
+  cout << "================= CONSTRUCTING JackAudioInterface ==================" << endl;
   //setupClient();
   //setProcessCallback();
 }

@@ -44,7 +44,9 @@
 #include <QString>
 
 #include "DataProtocol.h"
+#include "AudioInterface.h"
 #include "JackAudioInterface.h"
+#include "RtAudioInterface.h"
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
@@ -248,7 +250,7 @@ public:
   { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
   uint32_t getBufferSizeInSamples() const
   { return mJackAudio->getBufferSizeInSamples(); }
-  JackAudioInterface::samplingRateT getSampleRateType() const
+  RtAudioInterface::samplingRateT getSampleRateType() const
   { return mJackAudio->getSampleRateType(); }
   int getSampleRate() const
   { return mJackAudio->getSampleRate(); }
@@ -276,6 +278,8 @@ public:
   //@}
   //------------------------------------------------------------------------------------
 
+  void printTextTest() {std::cout << "=== JackTrip PRINT ===" << std::endl;}
+  void printTextTest2() {std::cout << "=== JackTrip PRINT2 ===" << std::endl;}
 
 public slots:
   /// \brief Slot to stop all the processes and threads
@@ -342,7 +346,10 @@ private:
   DataProtocol* mDataProtocolSender;
   ///< Pointer to Abstract Type DataProtocol that receives packets
   DataProtocol* mDataProtocolReceiver;
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   JackAudioInterface* mJackAudio; ///< Interface to Jack Client
+  //RtAudioInterface* mJackAudio; ///< Interface to Jack Client
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   PacketHeader* mPacketHeader; ///< Pointer to Packet Header
   underrunModeT mUnderRunMode; ///< underrunModeT Mode
 
