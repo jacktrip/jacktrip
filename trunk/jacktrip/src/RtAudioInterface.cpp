@@ -36,10 +36,8 @@
  */
 
 #include "RtAudioInterface.h"
-#include "JackAudioInterface.h"
-#include "AudioInterface.h"
-#include "jacktrip_globals.h"
 #include "JackTrip.h"
+#include "jacktrip_globals.h"
 
 using std::cout; using std::endl;
 
@@ -191,7 +189,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
 {
 
 
-  //cout << "c" << endl;
+  //cout << "nFrames = " << nFrames << endl;
   //float* in_buffer = static_cast<float*>(inputBuffer);
   //std::memcpy(&mInputPacket[0], in_buffer, 2*mBufferSize);
   //mJackTrip->printTextTest();
@@ -208,6 +206,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
   //mOutRingBuffer->readSlotNonBlocking( mOutputPacket );
   mJackTrip->receiveNetworkPacket( mOutputPacket );
 
+
   // Extract separate channels to send to Jack
   for (int i = 0; i < getNumOutputChannels(); i++) {
     //--------
@@ -220,13 +219,12 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
       //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
       // Change the bit resolution on each sample
       //cout << tmp_sample[j] << endl;
-      fromBitToSampleConversion(&mOutputPacket[(i*getSizeInBytesPerChannel())
+      AudioInterface::fromBitToSampleConversion(&mOutputPacket[(i*getSizeInBytesPerChannel())
                  + (j*BIT16)],
         &tmp_sample[j],
         BIT16);
     }
   }
-
 
 
 
@@ -244,7 +242,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
     for (int j = 0; j < nFrames; j++) {
       // Add the input jack buffer to the buffer resulting from the output process
       tmp_result = tmp_sample[j];
-      JackAudioInterface::fromSampleToBitConversion(&tmp_result,
+      AudioInterface::fromSampleToBitConversion(&tmp_result,
                                                     &mInputPacket[(i*getSizeInBytesPerChannel())
                                                                   + (j*BIT16)],
                                                     BIT16);
