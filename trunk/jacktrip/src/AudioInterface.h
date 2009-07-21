@@ -97,7 +97,7 @@ public:
   virtual void appendProcessPlugin(ProcessPlugin* plugin) = 0;
   virtual void connectDefaultPorts() = 0;
 
-
+  /*
   int processCallback(float* output_buffer,
                       float* input_buffer,
                       unsigned int num_buffer_frames,
@@ -112,6 +112,7 @@ public:
                                       float* input_buffer,
                                       unsigned int num_buffer_frames,
                                       unsigned int num_channels);
+                                      */
 
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
@@ -143,7 +144,7 @@ public:
   { mNumOutChans = nchannels; }
   virtual void setSampleRate(uint32_t sample_rate)
   { mSampleRate = sample_rate; }
-  virtual uint32_t setBufferSizeInSamples(uint32_t buf_size)
+  virtual void setBufferSizeInSamples(uint32_t buf_size)
   { mBufferSizeInSamples = buf_size; }
   /// \brief Set Client Name to something different that the default (JackTrip)
   virtual void setClientName(const char* ClientName) = 0;
@@ -167,16 +168,20 @@ public:
    *
    * This is one of the audioBitResolutionT set in construction
    */
-  virtual int getAudioBitResolution() const { return 16; }
+  virtual int getAudioBitResolution() const { return mAudioBitResolution; }
   //------------------------------------------------------------------
 
 private:
   JackTrip* mJackTrip;
 
-  uint32_t mSampleRate; ///< Sampling Rate
-  uint32_t mBufferSizeInSamples; ///< Buffer size in samples
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
+  //int mNumFrames; ///< Buffer block size, in samples
+  int mAudioBitResolution; ///< Bit resolution in audio samples
+  AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
+
+  uint32_t mSampleRate; ///< Sampling Rate
+  uint32_t mBufferSizeInSamples; ///< Buffer size in samples
 
   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer

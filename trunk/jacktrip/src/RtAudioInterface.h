@@ -70,7 +70,7 @@ public:
   virtual void close() {}
   virtual int startProcess() const;
   virtual int stopProcess() const { return 0; }
-  virtual void appendProcessPlugin(ProcessPlugin* plugin) {}
+  virtual void appendProcessPlugin(ProcessPlugin* /*plugin*/) {}
   virtual void connectDefaultPorts() {}
 
 
@@ -79,7 +79,7 @@ public:
 
   virtual samplingRateT getSampleRateType() const
   { return AudioInterface::SR48; }
-  virtual void setClientName(const char* ClientName) {}
+  virtual void setClientName(const char* /*ClientName*/) {}
   
   
 

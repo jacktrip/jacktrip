@@ -185,7 +185,7 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
 //*******************************************************************************
 int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
                                       unsigned int nFrames,
-                                      double streamTime, RtAudioStreamStatus status)
+                                      double /*streamTime*/, RtAudioStreamStatus /*status*/)
 {
 
 
@@ -215,7 +215,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
     //		mSizeInBytesPerChannel);
     //--------
     sample_t* tmp_sample = mOutBuffer[i]; //sample buffer for channel i
-    for (int j = 0; j < nFrames; j++) {
+    for (unsigned int j = 0; j < nFrames; j++) {
       //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
       // Change the bit resolution on each sample
       //cout << tmp_sample[j] << endl;
@@ -239,7 +239,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
     //--------
     sample_t* tmp_sample = mInBuffer[i]; //sample buffer for channel i
     sample_t tmp_result;
-    for (int j = 0; j < nFrames; j++) {
+    for (unsigned int j = 0; j < nFrames; j++) {
       // Add the input jack buffer to the buffer resulting from the output process
       tmp_result = tmp_sample[j];
       AudioInterface::fromSampleToBitConversion(&tmp_result,

@@ -113,8 +113,8 @@ void JackTrip::setupJackAudio()
 
   // Create JackAudioInterface Client Object
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  //mJackAudio = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
-  mJackAudio = new RtAudioInterface(this, mNumChans, mNumChans);
+  mJackAudio = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+  //mJackAudio = new RtAudioInterface(this, mNumChans, mNumChans);
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   mJackAudio->setClientName(mJackClientName);
   mJackAudio->setup();

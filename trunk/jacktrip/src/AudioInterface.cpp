@@ -44,11 +44,12 @@ using std::cout; using std::endl;
 //*******************************************************************************
 AudioInterface::AudioInterface(JackTrip* jacktrip,
                                int NumInChans, int NumOutChans,
-                               audioBitResolutionT AudioBitResolutionconst) :
+                               audioBitResolutionT AudioBitResolution) :
 mJackTrip(jacktrip),
-mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
 mNumInChans(NumInChans), mNumOutChans(NumOutChans),
+mAudioBitResolution(AudioBitResolution*8),
 //mNumBufferFramesPerChannel(128),
+mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
 mInputPacket(NULL), mOutputPacket(NULL)
 {
   cout << "================= CONSTRUCTING AudioInterface ==================" << endl;
@@ -88,82 +89,16 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 
 
 //*******************************************************************************
+/*
 int AudioInterface::processCallback(float* output_buffer,
                                     float* input_buffer,
                                     unsigned int num_buffer_frames,
                                     unsigned int num_channels)
 {
-  /*
-  // Get input and output buffers from JACK
-  //-------------------------------------------------------------------
-  for (int i = 0; i < mNumInChans; i++) {
-    // Input Ports are READ ONLY
-    mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
-  }
-  for (int i = 0; i < mNumOutChans; i++) {
-    // Output Ports are WRITABLE
-    mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
-  }
-  //-------------------------------------------------------------------
-  // TEST: Loopback
-  // To test, uncomment and send audio to client input. The same audio
-  // should come out as output in the first channel
-  //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t) * nframes);
-  //memcpy (mOutBuffer[1], mInBuffer[1], sizeof(sample_t) * nframes);
-  //-------------------------------------------------------------------
-
-  // Allocate the Process Callback
-  //-------------------------------------------------------------------
-  // 1) First, process incoming packets
-  // ----------------------------------
-  computeNetworkProcessFromNetwork();
-
-
-  // 2) Dynamically allocate ProcessPlugin processes
-  // -----------------------------------------------
-  // The processing will be done in order of allocation
-
-  ///\todo Implement for more than one process plugin, now it just works propertely with one.
-  /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
-  for (int i = 0; i < mNumInChans; i++) {
-    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
-    std::memcpy(mInProcessBuffer[i], mOutBuffer[i], sizeof(sample_t) * nframes);
-  }
-  for (int i = 0; i < mNumOutChans; i++) {
-    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
-  }
-
-  for (int i = 0; i < mProcessPlugins.size(); i++) {
-    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
-    mProcessPlugins[i]->compute(nframes, mInProcessBuffer.data(), mOutProcessBuffer.data());
-  }
-
-
-  // 3) Finally, send packets to peer
-  // --------------------------------
-  computeNetworkProcessToNetwork();
-*/
-
-  ///************PROTORYPE FOR CELT**************************
-  ///********************************************************
-  /*
-  CELTMode* mode;
-  int* error;
-  mode = celt_mode_create(48000, 2, 64, error);
-  */
-  //celt_mode_create(48000, 2, 64, NULL);
-  //unsigned char* compressed;
-  //CELTEncoder* celtEncoder;
-  //celt_encode_float(celtEncoder, mInBuffer, NULL, compressed, );
-
-  ///********************************************************
-  ///********************************************************
-
-
 
   return 0;
 }
-
+*/
 
 
 
@@ -171,79 +106,26 @@ int AudioInterface::processCallback(float* output_buffer,
 // Before sending and reading to Jack, we have to round to the sample resolution
 // that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
 // by default
+/*
 void AudioInterface::computeProcessFromNetwork(float* output_buffer,
                                                float* input_buffer,
                                                unsigned int num_buffer_frames,
                                                unsigned int num_channels)
 {
-  /*
-  /// \todo cast *mInBuffer[i] to the bit resolution
-  //cout << mNumFrames << endl;
-  // Output Process (from NETWORK to JACK)
-  // ----------------------------------------------------------------
-  // Read Audio buffer from RingBuffer (read from incoming packets)
-  //mOutRingBuffer->readSlotNonBlocking( mOutputPacket );
-  mJackTrip->receiveNetworkPacket( mOutputPacket );
 
-  // Extract separate channels to send to Jack
-  for (int i = 0; i < mNumOutChans; i++) {
-    //--------
-    // This should be faster for 32 bits
-    //std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
-    //		mSizeInBytesPerChannel);
-    //--------
-    sample_t* tmp_sample = mOutBuffer[i]; //sample buffer for channel i
-    for (int j = 0; j < mNumFrames; j++) {
-      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
-      // Change the bit resolution on each sample
-      //cout << tmp_sample[j] << endl;
-      fromBitToSampleConversion(&mOutputPacket[(i*mSizeInBytesPerChannel)
-                 + (j*mBitResolutionMode)],
-        &tmp_sample[j],
-        mBitResolutionMode);
-    }
-  }
-  */
 }
-
+*/
 
 //*******************************************************************************
+/*
 void AudioInterface::computeNetworkProcessToNetwork(float* output_buffer,
                                                     float* input_buffer,
                                                     unsigned int num_buffer_frames,
                                                     unsigned int num_channels)
 {
-  /*
-  // Input Process (from JACK to NETWORK)
-  // ----------------------------------------------------------------
-  // Concatenate  all the channels from jack to form packet
-  for (int i = 0; i < mNumInChans; i++) {
-    //--------
-    // This should be faster for 32 bits
-    //std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
-    //		mSizeInBytesPerChannel);
-    //--------
-    sample_t* tmp_sample = mInBuffer[i]; //sample buffer for channel i
-    sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output process
-    sample_t tmp_result;
-    for (int j = 0; j < mNumFrames; j++) {
-      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
-      // Change the bit resolution on each sample
 
-      // Add the input jack buffer to the buffer resulting from the output process
-      tmp_result = tmp_sample[j] + tmp_process_sample[j];
-      fromSampleToBitConversion(&tmp_result,
-                                &mInputPacket[(i*mSizeInBytesPerChannel)
-                                              + (j*mBitResolutionMode)],
-                                mBitResolutionMode);
-    }
-  }
-  // Send Audio buffer to RingBuffer (these goes out as outgoing packets)
-  //mInRingBuffer->insertSlotNonBlocking( mInputPacket );
-  mJackTrip->sendNetworkPacket( mInputPacket );
-  */
 }
-
+*/
 
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution

@@ -69,16 +69,12 @@ AudioInterface(jacktrip,
                NumInChans, NumOutChans,
                AudioBitResolution),
 mNumInChans(NumInChans), mNumOutChans(NumOutChans),
-mAudioBitResolution(AudioBitResolution*8), mBitResolutionMode(AudioBitResolution),
+//mAudioBitResolution(AudioBitResolution*8),
+mBitResolutionMode(AudioBitResolution),
 mClient(NULL),
 mClientName(ClienName),
 mJackTrip(jacktrip)
-{
-  cout << "================= CONSTRUCTING JackAudioInterface ==================" << endl;
-  cout << "mAudioBitResolution =========" << mAudioBitResolution << endl;
-  //setupClient();
-  //setProcessCallback();
-}
+{}
 
 
 //*******************************************************************************
@@ -290,30 +286,6 @@ uint32_t JackAudioInterface::getBufferSizeInSamples() const
 {
   return jack_get_buffer_size(mClient);
 }
-
-
-//*******************************************************************************
-int JackAudioInterface::getAudioBitResolution() const
-{
-  return mAudioBitResolution;
-}
-
-
-//*******************************************************************************
-/*
-int JackAudioInterface::getNumInputChannels() const
-{
-  return mNumInChans;
-}
-*/
-
-//*******************************************************************************
-/*
-int JackAudioInterface::getNumOutputChannels() const
-{
-  return mNumOutChans;
-}
-*/
 
 
 //*******************************************************************************
