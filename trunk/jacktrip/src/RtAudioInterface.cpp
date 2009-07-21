@@ -48,11 +48,11 @@ using std::cout; using std::endl;
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip,
                                    int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution) :
-JackAudioInterface(jacktrip,
-                   NumInChans, NumOutChans,
-                   AudioBitResolution),
+AudioInterface(jacktrip,
+               NumInChans, NumOutChans,
+               AudioBitResolution),
 mJackTrip(jacktrip),
-mSamplingRate(48000), mBufferSize(64),
+mSamplingRate(gDefaultSampleRate), mBufferSize(gDefaultBufferSizeInSamples),
 mRtAudio(NULL)
 {
   // Allocate buffer memory to read and write

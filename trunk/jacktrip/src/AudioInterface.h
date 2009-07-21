@@ -113,6 +113,29 @@ public:
                                       unsigned int num_buffer_frames,
                                       unsigned int num_channels);
 
+  /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
+   * supported (audioBitResolutionT).
+   *
+   * The result is stored in an int_8 array of the
+   * appropriate size to hold the value. The caller is responsible to allocate
+   * enough space to store the result.
+   */
+  static void fromSampleToBitConversion(const sample_t* const input,
+                                        int8_t* output,
+                                        const AudioInterface::audioBitResolutionT targetBitResolution);
+
+  /** \brief Convert a audioBitResolutionT bit resolution number into a
+   * 32bit number (sample_t)
+   *
+   * The result is stored in an sample_t array of the
+   * appropriate size to hold the value. The caller is responsible to allocate
+   * enough space to store the result.
+   */
+  static void fromBitToSampleConversion(const int8_t* const input,
+                                        sample_t* output,
+                                        const AudioInterface::audioBitResolutionT sourceBitResolution);
+
+
   //--------------SETTERS---------------------------------------------
   virtual void setNumInputChannels(int nchannels)
   { mNumInChans = nchannels; }
