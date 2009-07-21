@@ -14,8 +14,7 @@ INCLUDEPATH+=/usr/local/include
 LIBS += -ljack -lm
 macx {
   message(MAC OS X)
-  #QMAKE_CXXFLAGS += -D__UNIX_JACK__ -D__MACOSX_CORE__ #RtAudio Flags
-  QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #RtAudio Flags
+  QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
   CONFIG -= app_bundle
   CONFIG += x86 ppc
   LIBS += -framework CoreAudio
@@ -23,6 +22,8 @@ macx {
   }
 linux-g++ {
   message(Linux)
+  LIBS += -lasound
+  QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
   QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
   }

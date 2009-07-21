@@ -39,6 +39,9 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 
+#include <cstdlib>
+
+
 using std::cout; using std::endl;
 
 

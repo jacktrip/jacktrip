@@ -36,6 +36,7 @@
  */
 
 #include <iostream>
+#include <cstring>
 
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
