@@ -167,7 +167,7 @@ public:
    *
    * This is one of the audioBitResolutionT set in construction
    */
-  virtual int getAudioBitResolution() const = 0;
+  virtual int getAudioBitResolution() const { return 16; }
   //------------------------------------------------------------------
 
 private:

@@ -40,7 +40,6 @@
 
 #include "RtAudio.h"
 
-//#include "JackAudioInterface.h"
 #include "AudioInterface.h"
 
 
@@ -81,14 +80,18 @@ public:
   virtual samplingRateT getSampleRateType() const
   { return AudioInterface::SR48; }
   virtual void setClientName(const char* ClientName) {}
-  virtual int getAudioBitResolution() const {}
+  
+  
+
+
+  //virtual int getAudioBitResolution() const {}
   // ---------------------------------------------
 
   //virtual int getNumInputChannels() const { return 1; }
   //virtual int getNumOutputChannels() const  { return 1; }
   //virtual samplingRateT getSampleRateType() const {return SR48;}
   //virtual int getAudioBitResolution() const {return 16;}
-  virtual size_t getSizeInBytesPerChannel() const {return 2*128;}
+  //virtual size_t getSizeInBytesPerChannel() const { return 2*128; }
   //virtual void close() {}
   //virtual void stopProcess() {}
 
