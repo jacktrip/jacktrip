@@ -52,9 +52,7 @@ mAudioBitResolution(AudioBitResolution*8),
 //mNumBufferFramesPerChannel(128),
 mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
 mInputPacket(NULL), mOutputPacket(NULL)
-{
-  cout << "================= CONSTRUCTING AudioInterface ==================" << endl;
-}
+{}
 
 
 //*******************************************************************************

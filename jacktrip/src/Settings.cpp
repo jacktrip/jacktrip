@@ -68,7 +68,8 @@ Settings::Settings() :
   mJamLink(false),
   mEmptyHeader(false),
   mJackTripServer(false),
-  mRedundancy(1)
+  mRedundancy(1),
+  mUseJack(true)
 {}
 
 //*******************************************************************************
@@ -111,6 +112,7 @@ void Settings::parseInput(int argc, char** argv)
     { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
     { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
     { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
+    { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
@@ -121,7 +123,7 @@ void Settings::parseInput(int argc, char** argv)
   /// \todo Specify mandatory arguments
   int ch;
   while ( (ch = getopt_long(argc, argv,
-                            "n:sc:SC:o:B:P:q:r:b:zljeJ:vh", longopts, NULL)) != -1 )
+                            "n:sc:SC:o:B:P:q:r:b:zljeJ:Rvh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -214,6 +216,10 @@ void Settings::parseInput(int argc, char** argv)
     case 'J':
       //-------------------------------------------------------
       mClientName = optarg;
+      break;
+    case 'R':
+      //-------------------------------------------------------
+      mUseJack = false;
       break;
     case 'v':
       //-------------------------------------------------------
@@ -348,6 +354,11 @@ void Settings::startJackTrip()
       cout << "Running in EmptyHeader Mode..." << endl;
       cout << gPrintSeparator << std::endl;
       mJackTrip->setPacketHeaderType(DataProtocol::EMPTY);
+    }
+
+    // Set RtAudio
+    if (!mUseJack) {
+      mJackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
     }
 
     // Add Plugins
