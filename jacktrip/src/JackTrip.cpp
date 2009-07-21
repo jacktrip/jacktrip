@@ -113,8 +113,8 @@ void JackTrip::setupJackAudio()
 
   // Create JackAudioInterface Client Object
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  //mJackAudio = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
-  mJackAudio = new RtAudioInterface(this, mNumChans, mNumChans);
+  mJackAudio = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+  //mJackAudio = new RtAudioInterface(this, mNumChans, mNumChans);
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   mJackAudio->setClientName(mJackClientName);
   mJackAudio->setup();
@@ -271,10 +271,10 @@ void JackTrip::start()
   // Start Threads
   mJackAudio->startProcess();
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  //for (int i = 0; i < mProcessPlugins.size(); ++i) {
-  //  mJackAudio->appendProcessPlugin(mProcessPlugins[i]);
-  //}
-  //mJackAudio->connectDefaultPorts();
+  for (int i = 0; i < mProcessPlugins.size(); ++i) {
+    mJackAudio->appendProcessPlugin(mProcessPlugins[i]);
+  }
+  mJackAudio->connectDefaultPorts();
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();

@@ -43,7 +43,9 @@
 #include <QVarLengthArray>
 //#include "jacktrip_globals.h"
 
+// Forward declarations
 class JackTrip;
+class ProcessPlugin;
 
 
 class AudioInterface
@@ -83,8 +85,18 @@ public:
 
   virtual ~AudioInterface();
 
-  /// \brief Setup the client
-  virtual void setup();
+  /** \brief Setup the client
+    *
+    * This will set the audio client with the specified Sampling Rate,
+    * Packet Size, Bit Resolution, etc...
+    */
+  virtual void setup() = 0;
+  virtual void close() = 0;
+  virtual int startProcess() const = 0;
+  virtual int stopProcess() const = 0;
+  virtual void appendProcessPlugin(ProcessPlugin* plugin) = 0;
+  virtual void connectDefaultPorts() = 0;
+
 
   int processCallback(float* output_buffer,
                       float* input_buffer,
@@ -106,8 +118,12 @@ public:
   { mNumInChans = nchannels; }
   virtual void setNumOutputChannels(int nchannels)
   { mNumOutChans = nchannels; }
-  virtual void setNumBufferFramesPerChannel(int nbuf_frames)
-  { mNumBufferFramesPerChannel = nbuf_frames; }
+  virtual void setSampleRate(uint32_t sample_rate)
+  { mSampleRate = sample_rate; }
+  virtual uint32_t setBufferSizeInSamples(uint32_t buf_size)
+  { mBufferSizeInSamples = buf_size; }
+  /// \brief Set Client Name to something different that the default (JackTrip)
+  virtual void setClientName(const char* ClientName) = 0;
   //------------------------------------------------------------------
 
   //--------------GETTERS---------------------------------------------
@@ -115,19 +131,29 @@ public:
   virtual int getNumInputChannels() const { return mNumInChans; }
   /// \brief Get Number of Output Channels
   virtual int getNumOutputChannels() const  { return mNumOutChans; }
-  virtual int getNumBufferFramesPerChannel() const
-  { return mNumBufferFramesPerChannel; }
-  virtual uint32_t getBufferSizeInSamples() const;
+  virtual uint32_t getBufferSizeInSamples() const
+  { return mBufferSizeInSamples; }
   virtual size_t getSizeInBytesPerChannel() const;
+  /// \brief Get the Jack Server Sampling Rate, in samples/second
+  virtual uint32_t getSampleRate() const
+  { return mSampleRate; }
+  /// \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
+  /// \return  JackAudioInterface::samplingRateT enum type
+  virtual samplingRateT getSampleRateType() const = 0;
+  /** \brief Get the Audio Bit Resolution, in bits
+   *
+   * This is one of the audioBitResolutionT set in construction
+   */
+  virtual int getAudioBitResolution() const = 0;
   //------------------------------------------------------------------
 
-protected:
+private:
   JackTrip* mJackTrip;
 
-private:
+  uint32_t mSampleRate; ///< Sampling Rate
+  uint32_t mBufferSizeInSamples; ///< Buffer size in samples
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
-  int mNumBufferFramesPerChannel; ///< Buffer block size, in samples
 
   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
