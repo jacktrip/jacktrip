@@ -215,7 +215,7 @@ public:
   void connectDefaultPorts();
 
   /// \brief Set Client Name to something different that the default (JackTrip)
-  void setClientName(const char* ClientName)
+  virtual void setClientName(const char* ClientName)
   { mClientName = ClientName; }
 
 private:

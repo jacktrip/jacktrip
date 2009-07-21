@@ -46,8 +46,9 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
                                int NumInChans, int NumOutChans,
                                audioBitResolutionT AudioBitResolutionconst) :
 mJackTrip(jacktrip),
+mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
 mNumInChans(NumInChans), mNumOutChans(NumOutChans),
-mNumBufferFramesPerChannel(128),
+//mNumBufferFramesPerChannel(128),
 mInputPacket(NULL), mOutputPacket(NULL)
 {
   cout << "================= CONSTRUCTING AudioInterface ==================" << endl;
@@ -72,11 +73,12 @@ void AudioInterface::setup()
 
 
 //*******************************************************************************
+/*
 uint32_t AudioInterface::getBufferSizeInSamples() const
 {
   //return jack_get_buffer_size(mClient);
 }
-
+*/
 
 //*******************************************************************************
 size_t AudioInterface::getSizeInBytesPerChannel() const

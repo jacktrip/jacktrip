@@ -347,7 +347,7 @@ private:
   ///< Pointer to Abstract Type DataProtocol that receives packets
   DataProtocol* mDataProtocolReceiver;
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  JackAudioInterface* mJackAudio; ///< Interface to Jack Client
+  AudioInterface* mJackAudio; ///< Interface to Jack Client
   //RtAudioInterface* mJackAudio; ///< Interface to Jack Client
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   PacketHeader* mPacketHeader; ///< Pointer to Packet Header
