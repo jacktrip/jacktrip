@@ -65,29 +65,6 @@ class JackAudioInterface : public AudioInterface
 {
 public:
 
-  /*
-  /// \brief Enum for Audio Resolution in bits
-  /// \todo implement this into the class, now it's using jack default of 32 bits
-  enum audioBitResolutionT {
-    BIT8  = 1, ///< 8 bits
-    BIT16 = 2, ///< 16 bits (default)
-    BIT24 = 3, ///< 24 bits
-    BIT32 = 4  ///< 32 bits
-  };
-  
-  /// \brief Sampling Rates supported by JACK
-  enum samplingRateT {
-    SR22, ///<  22050 Hz
-    SR32, ///<  32000 Hz
-    SR44, ///<  44100 Hz
-    SR48, ///<  48000 Hz
-    SR88, ///<  88200 Hz
-    SR96, ///<  96000 Hz
-    SR192, ///< 192000 Hz
-    UNDEF ///< Undefined
-  };
-*/
-
   /** \brief The class constructor
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param NumInChans Number of Input Channels
@@ -139,18 +116,6 @@ public:
     return (getBufferSizeInSamples() * getAudioBitResolution()/8);
   }
   
-  /** \brief Get the Audio Bit Resolution, in bits
-   *
-   * This is one of the audioBitResolutionT set in construction
-   */
-  virtual int getAudioBitResolution() const;
-
-  /// \brief Get Number of Input Channels
-  //virtual int getNumInputChannels() const;
-
-  /// \brief Get Number of Output Channels
-  //virtual int getNumOutputChannels() const;
-
   /// \brief Get size of each audio per channel, in bytes
   virtual size_t getSizeInBytesPerChannel() const;
 
@@ -260,7 +225,7 @@ private:
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
   int mNumFrames; ///< Buffer block size, in samples
-  int mAudioBitResolution; ///< Bit resolution in audio samples
+  //int mAudioBitResolution; ///< Bit resolution in audio samples
   AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
 
   jack_client_t* mClient; ///< Jack Client
