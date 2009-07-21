@@ -84,6 +84,12 @@ public:
     WAVETABLE, ///< Loops on the last received packet
     ZEROS  ///< Set new buffers to zero if there are no new ones
   };
+
+  /// \brief Enum for Audio Interface Mode
+  enum audiointerfaceModeT {
+    JACK, ///< Jack Mode
+    RTAUDIO  ///< RtAudio Mode
+  };
   //---------------------------------------------------------
 
 
@@ -228,6 +234,8 @@ public:
   virtual int getRingBuffersSlotSize()
   { return getTotalAudioPacketSizeInBytes(); }
 
+  virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
+  { mAudiointerfaceMode = audiointerface_mode; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -249,17 +257,17 @@ public:
   virtual void writeAudioBuffer(const int8_t* ptrToSlot)
   { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
   uint32_t getBufferSizeInSamples() const
-  { return mJackAudio->getBufferSizeInSamples(); }
+  { return mAudioInterface->getBufferSizeInSamples(); }
   RtAudioInterface::samplingRateT getSampleRateType() const
-  { return mJackAudio->getSampleRateType(); }
+  { return mAudioInterface->getSampleRateType(); }
   int getSampleRate() const
-  { return mJackAudio->getSampleRate(); }
+  { return mAudioInterface->getSampleRate(); }
   uint8_t getAudioBitResolution() const
-  { return mJackAudio->getAudioBitResolution(); }
+  { return mAudioInterface->getAudioBitResolution(); }
   int getNumInputChannels() const
-  { return mJackAudio->getNumInputChannels(); }
+  { return mAudioInterface->getNumInputChannels(); }
   int getNumOutputChannels() const
-  { return mJackAudio->getNumOutputChannels(); }
+  { return mAudioInterface->getNumOutputChannels(); }
   virtual void checkPeerSettings(int8_t* full_packet);
   void increaseSequenceNumber()
   { mPacketHeader->increaseSequenceNumber(); }
@@ -270,11 +278,11 @@ public:
   uint64_t getPeerTimeStamp(int8_t* full_packet) const
   { return mPacketHeader->getPeerTimeStamp(full_packet); }
   size_t getSizeInBytesPerChannel() const
-  { return mJackAudio->getSizeInBytesPerChannel(); }
+  { return mAudioInterface->getSizeInBytesPerChannel(); }
   int getHeaderSizeInBytes() const
   { return mPacketHeader->getHeaderSizeInBytes(); }
   virtual int getTotalAudioPacketSizeInBytes() const
-  { return mJackAudio->getSizeInBytesPerChannel() * mNumChans; }
+  { return mAudioInterface->getSizeInBytesPerChannel() * mNumChans; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -334,6 +342,7 @@ private:
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol Tipe
   DataProtocol::packetHeaderTypeT mPacketHeaderType; ///< Packet Header Type
+  JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
@@ -344,12 +353,9 @@ private:
 
   /// Pointer to Abstract Type DataProtocol that sends packets
   DataProtocol* mDataProtocolSender;
-  ///< Pointer to Abstract Type DataProtocol that receives packets
+  /// Pointer to Abstract Type DataProtocol that receives packets
   DataProtocol* mDataProtocolReceiver;
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  AudioInterface* mJackAudio; ///< Interface to Jack Client
-  //RtAudioInterface* mJackAudio; ///< Interface to Jack Client
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  AudioInterface* mAudioInterface; ///< Interface to Jack Client
   PacketHeader* mPacketHeader; ///< Pointer to Packet Header
   underrunModeT mUnderRunMode; ///< underrunModeT Mode
 

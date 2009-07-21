@@ -80,6 +80,7 @@ private:
   bool mEmptyHeader; ///< EmptyHeader mode
   bool mJackTripServer; ///< JackTrip Server mode
   unsigned int mRedundancy; ///< Redundancy factor for data in the network
+  bool mUseJack; ///< Use or not JackAduio
 };
 
 #endif
