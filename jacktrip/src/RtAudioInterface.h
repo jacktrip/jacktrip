@@ -40,13 +40,13 @@
 
 #include "RtAudio.h"
 
-#include "JackAudioInterface.h"
+//#include "JackAudioInterface.h"
 #include "AudioInterface.h"
 
 
 class JackTrip; // Forward declaration
 
-class RtAudioInterface : public JackAudioInterface
+class RtAudioInterface : public AudioInterface
 {
 public:
 
@@ -68,18 +68,27 @@ public:
 
   // --------Inherited Functions -----------------
   virtual void setup();
+  virtual void close() {}
+  virtual int startProcess() const;
+  virtual int stopProcess() const { return 0; }
+  virtual void appendProcessPlugin(ProcessPlugin* plugin) {}
+  virtual void connectDefaultPorts() {}
+
+
   virtual uint32_t getSampleRate() const { return mSamplingRate; }
   virtual uint32_t getBufferSizeInSamples() const { return mBufferSize; }
-  virtual int startProcess() const;
+
   virtual samplingRateT getSampleRateType() const
-  { return JackAudioInterface::SR48; }
+  { return AudioInterface::SR48; }
+  virtual void setClientName(const char* ClientName) {}
+  virtual int getAudioBitResolution() const {}
   // ---------------------------------------------
 
   //virtual int getNumInputChannels() const { return 1; }
   //virtual int getNumOutputChannels() const  { return 1; }
   //virtual samplingRateT getSampleRateType() const {return SR48;}
   //virtual int getAudioBitResolution() const {return 16;}
-  //virtual int getSizeInBytesPerChannel() const {return 2;}
+  virtual size_t getSizeInBytesPerChannel() const {return 2*128;}
   //virtual void close() {}
   //virtual void stopProcess() {}
 

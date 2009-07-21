@@ -278,6 +278,7 @@ void JackTrip::start()
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();
+  cout << "============== AFTER START ==============" << endl;
 }
 
 
