@@ -96,8 +96,6 @@ public:
     * method to ensure correct inizialization.
     */
   virtual void setup();
-  /// \brief Close the client (stop audio processes)
-  //virtual void close() = 0;
   /// \brief Tell the audio server that we are ready to roll. The
   /// process-callback will start running. This runs on its own thread.
   /// \return 0 on success, otherwise a non-zero error code
