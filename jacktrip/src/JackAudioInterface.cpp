@@ -353,7 +353,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   //memcpy (mOutBuffer[1], mInBuffer[1], sizeof(sample_t) * nframes);
   //-------------------------------------------------------------------
 
-  AudioInterface::callback(mInBuffer, mOutBuffer, mInputPacket, mOutputPacket,
+  AudioInterface::callback(mInBuffer, mOutBuffer,// mInputPacket, mOutputPacket,
                            nframes);//, mInProcessBuffer, mOutProcessBuffer);
 
   return 0;

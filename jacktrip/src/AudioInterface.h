@@ -108,11 +108,9 @@ public:
   /// \brief Process callback
   virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
                         QVarLengthArray<sample_t*>& out_buffer,
-                        int8_t* input_packet,
-                        int8_t* output_packet,
-                        unsigned int n_frames);//,
-                        //QVarLengthArray<sample_t*>& in_process_buffer,
-                        //QVarLengthArray<sample_t*>& out_process_buffer);
+                        //int8_t* input_packet,
+                        //int8_t* output_packet,
+                        unsigned int n_frames);
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
    *
@@ -182,9 +180,7 @@ private:
                                QVarLengthArray<sample_t*>& out_buffer,
                                int8_t* input_packet,
                                int8_t* output_packet,
-                               unsigned int n_frames);//,
-                               //QVarLengthArray<sample_t*>& in_process_buffer,
-                               //QVarLengthArray<sample_t*>& out_process_buffer);
+                               unsigned int n_frames);
 
   JackTrip* mJackTrip;
 
@@ -201,6 +197,8 @@ private:
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
   QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
   QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
+  int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
+  int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
 };
 
 #endif // __AUDIOINTERFACE_H__
