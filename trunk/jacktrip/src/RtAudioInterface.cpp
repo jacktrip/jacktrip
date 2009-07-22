@@ -53,7 +53,8 @@ AudioInterface(jacktrip,
                NumInChans, NumOutChans,
                AudioBitResolution),
 mJackTrip(jacktrip),
-mSamplingRate(gDefaultSampleRate), mBufferSize(gDefaultBufferSizeInSamples),
+mSamplingRate(gDefaultSampleRate),
+mBufferSize(gDefaultBufferSizeInSamples),
 mRtAudio(NULL)
 {
   // Allocate buffer memory to read and write
@@ -62,25 +63,9 @@ mRtAudio(NULL)
   mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
 
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  // Initialize Buffer array to read and write audio
-  //cout << "getNumInputChannels() = " << getNumInputChannels() << endl;
-  //cout << " getNumOutputChannels() = " << getNumOutputChannels() << endl;
-  //mInBuffer.resize(mBufferSize*getNumInputChannels());
-  //mOutBuffer.resize(mBufferSize*getNumOutputChannels());
   // Initialize Buffer array to read and write audio
   mInBuffer.resize(getNumInputChannels());
   mOutBuffer.resize(getNumOutputChannels());
-
-  /*
-  for (int i = 0; i < getNumInputChannels(); i++) {
-    mInBuffer[i] = new sample_t[128];
-  }
-  for (int i = 0; i < getNumOutputChannels(); i++) {
-    mOutBuffer[i] = new sample_t[128];
-  }
-*/
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 }
 
 
@@ -258,6 +243,18 @@ int RtAudioInterface::startProcess() const
   mRtAudio->startStream();
   return(0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
