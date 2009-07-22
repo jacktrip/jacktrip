@@ -89,23 +89,14 @@ private:
                       double streamTime, RtAudioStreamStatus status);
   static int wrapperRtAudioCallback(void *outputBuffer, void *inputBuffer, unsigned int nFrames,
                                     double streamTime, RtAudioStreamStatus status, void *userData);
-
   void printDeviceInfo(unsigned int deviceId);
 
   JackTrip* mJackTrip;
-
-  //int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
-  //int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
-
   QVarLengthArray<float*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<float*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
-
   uint32_t mSamplingRate;
   uint32_t mBufferSize;
   RtAudio* mRtAudio; ///< RtAudio class
-
-  //QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
-  //QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
 };
 
 #endif // __RTAUDIOINTERFACE_H__
