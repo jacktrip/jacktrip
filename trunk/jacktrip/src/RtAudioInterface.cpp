@@ -223,7 +223,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
     mOutBuffer[i] = outputBuffer_sample+(nFrames*i);
   }
 
-  AudioInterface::callback(mInBuffer, mOutBuffer, mInputPacket, mOutputPacket,
+  AudioInterface::callback(mInBuffer, mOutBuffer,// mInputPacket, mOutputPacket,
                            nFrames);//, mInProcessBuffer, mOutProcessBuffer);
 
   return 0;

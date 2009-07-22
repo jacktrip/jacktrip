@@ -50,13 +50,24 @@ mJackTrip(jacktrip),
 mNumInChans(NumInChans), mNumOutChans(NumOutChans),
 mAudioBitResolution(AudioBitResolution*8),
 mBitResolutionMode(AudioBitResolution),
-mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples)
-{}
+mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
+mInputPacket(NULL), mOutputPacket(NULL)
+{
+  // Set pointer to NULL
+  for (int i = 0; i < mNumInChans; i++) {
+    mInProcessBuffer[i] = NULL;
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    mOutProcessBuffer[i] = NULL;
+  }
+}
 
 
 //*******************************************************************************
 AudioInterface::~AudioInterface()
 {
+  delete[] mInputPacket;
+  delete[] mOutputPacket;
   for (int i = 0; i < mNumInChans; i++) {
     delete[] mInProcessBuffer[i];
   }
@@ -70,6 +81,13 @@ AudioInterface::~AudioInterface()
 //*******************************************************************************
 void AudioInterface::setup()
 {
+  // Allocate buffer memory to read and write
+  mSizeInBytesPerChannel = getSizeInBytesPerChannel();
+  int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
+  int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
+  mInputPacket = new int8_t[size_input];
+  mOutputPacket = new int8_t[size_output];
+
   // Initialize and asign memory for ProcessPlugins Buffers
   mInProcessBuffer.resize(mNumInChans);
   mOutProcessBuffer.resize(mNumOutChans);
@@ -85,13 +103,6 @@ void AudioInterface::setup()
     // set memory to 0
     std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
   }
-
-  // Allocate buffer memory to read and write
-  //mSizeInBytesPerChannel = getSizeInBytesPerChannel();
-  //int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
-  //int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
-  //mInputPacket = new int8_t[size_input];
-  //mOutputPacket = new int8_t[size_output];
 }
 
 
@@ -105,41 +116,27 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
-                              int8_t* input_packet,
-                              int8_t* output_packet,
-                              unsigned int n_frames)//,
-                              //QVarLengthArray<sample_t*>& in_process_buffer,
-                              //QVarLengthArray<sample_t*>& out_process_buffer)
+                              //int8_t* input_packet,
+                              //int8_t* output_packet,
+                              unsigned int n_frames)
 {
   // Allocate the Process Callback
   //-------------------------------------------------------------------
   // 1) First, process incoming packets
   // ----------------------------------
+  /*
   computeProcessFromNetwork(in_buffer, out_buffer,
                             input_packet, output_packet,
+                            n_frames);
+                            */
+  computeProcessFromNetwork(in_buffer, out_buffer,
+                            mInputPacket, mOutputPacket,
                             n_frames);
 
 
   // 2) Dynamically allocate ProcessPlugin processes
   // -----------------------------------------------
   // The processing will be done in order of allocation
-  /*
-  /// \todo Implement for more than one process plugin, now it just works propertely with one.
-  /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
-  for (int i = 0; i < mNumInChans; i++) {
-    std::memset(in_process_buffer[i], 0, sizeof(sample_t) * n_frames);
-    std::memcpy(in_process_buffer[i], out_buffer[i], sizeof(sample_t) * n_frames);
-  }
-  for (int i = 0; i < mNumOutChans; i++) {
-    std::memset(out_process_buffer[i], 0, sizeof(sample_t) * n_frames);
-  }
-
-  for (int i = 0; i < mProcessPlugins.size(); i++) {
-    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
-    mProcessPlugins[i]->compute(n_frames, in_process_buffer.data(), out_process_buffer.data());
-  }
-  */
-
   /// \todo Implement for more than one process plugin, now it just works propertely with one.
   /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
   for (int i = 0; i < mNumInChans; i++) {
@@ -158,10 +155,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
   // 3) Finally, send packets to peer
   // --------------------------------
+  /*
   computeProcessToNetwork(in_buffer, out_buffer,
                           input_packet, output_packet,
-                          n_frames);//,
-                          //mInProcessBuffer, mOutProcessBuffer);
+                          n_frames);
+                          */
+  computeProcessToNetwork(in_buffer, out_buffer,
+                          mInputPacket, mOutputPacket,
+                          n_frames);
 
 
   ///************PROTORYPE FOR CELT**************************
@@ -226,9 +227,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
                                              QVarLengthArray<sample_t*>& /*out_buffer*/,
                                              int8_t* input_packet,
                                              int8_t* /*output_packet*/,
-                                             unsigned int n_frames)//,
-                                             //QVarLengthArray<sample_t*>& /*in_process_buffer*/,
-                                             //QVarLengthArray<sample_t*>& /*out_process_buffer*/)
+                                             unsigned int n_frames)
 {
   // Input Process (from JACK to NETWORK)
   // ----------------------------------------------------------------
