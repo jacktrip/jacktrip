@@ -105,8 +105,8 @@ private:
   uint32_t mBufferSize;
   RtAudio* mRtAudio; ///< RtAudio class
 
-  QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
-  QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
+  //QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
+  //QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
 };
 
 #endif // __RTAUDIOINTERFACE_H__

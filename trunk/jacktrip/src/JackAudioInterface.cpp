@@ -82,7 +82,7 @@ JackAudioInterface::~JackAudioInterface()
 {
   delete[] mInputPacket;
   delete[] mOutputPacket;
-
+  /*
   for (int i = 0; i < mNumInChans; i++) {
     delete[] mInProcessBuffer[i];
   }
@@ -90,6 +90,7 @@ JackAudioInterface::~JackAudioInterface()
   for (int i = 0; i < mNumOutChans; i++) {
     delete[] mOutProcessBuffer[i];
   }
+  */
 }
 
 
@@ -97,6 +98,7 @@ JackAudioInterface::~JackAudioInterface()
 void JackAudioInterface::setup()
 {
   setupClient();
+  AudioInterface::setup();
   setProcessCallback();
 }
 
@@ -110,7 +112,7 @@ void JackAudioInterface::close()
 
 //*******************************************************************************
 void JackAudioInterface::setupClient()
-{
+{  
   const char* client_name = mClientName;
   const char* server_name = NULL;
   jack_options_t options = JackNoStartServer;
@@ -163,6 +165,7 @@ void JackAudioInterface::setupClient()
   mInBuffer.resize(mNumInChans);
   mOutBuffer.resize(mNumOutChans);
 
+  /*
   // Initialize and asign memory for ProcessPlugins Buffers
   mInProcessBuffer.resize(mNumInChans);
   mOutProcessBuffer.resize(mNumOutChans);
@@ -178,6 +181,7 @@ void JackAudioInterface::setupClient()
     // set memory to 0
     std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
   }
+  */
 }
 
 
@@ -350,7 +354,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   //-------------------------------------------------------------------
 
   AudioInterface::callback(mInBuffer, mOutBuffer, mInputPacket, mOutputPacket,
-                           nframes, mInProcessBuffer, mOutProcessBuffer);
+                           nframes);//, mInProcessBuffer, mOutProcessBuffer);
 
   return 0;
 }

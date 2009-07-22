@@ -93,7 +93,7 @@ public:
     * This will set the audio client with the specified Sampling Rate,
     * Packet Size, Bit Resolution, etc...
     */
-  virtual void setup() = 0;
+  virtual void setup();
   virtual void close() = 0;
   virtual int startProcess() const = 0;
   virtual int stopProcess() const = 0;
@@ -110,9 +110,9 @@ public:
                         QVarLengthArray<sample_t*>& out_buffer,
                         int8_t* input_packet,
                         int8_t* output_packet,
-                        unsigned int n_frames,
-                        QVarLengthArray<sample_t*>& in_process_buffer,
-                        QVarLengthArray<sample_t*>& out_process_buffer);
+                        unsigned int n_frames);//,
+                        //QVarLengthArray<sample_t*>& in_process_buffer,
+                        //QVarLengthArray<sample_t*>& out_process_buffer);
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
    *
@@ -199,6 +199,8 @@ private:
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
 
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+  QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
+  QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
 };
 
 #endif // __AUDIOINTERFACE_H__
