@@ -50,9 +50,7 @@ mJackTrip(jacktrip),
 mNumInChans(NumInChans), mNumOutChans(NumOutChans),
 mAudioBitResolution(AudioBitResolution*8),
 mBitResolutionMode(AudioBitResolution),
-//mNumBufferFramesPerChannel(128),
 mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples)
-//mInputPacket(NULL), mOutputPacket(NULL)
 {}
 
 
