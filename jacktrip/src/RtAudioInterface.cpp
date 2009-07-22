@@ -57,14 +57,6 @@ mSamplingRate(gDefaultSampleRate),
 mBufferSize(gDefaultBufferSizeInSamples),
 mRtAudio(NULL)
 {
-  /*
-  // Allocate buffer memory to read and write
-  int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
-  int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
-  mInputPacket = new int8_t[size_input];
-  mOutputPacket = new int8_t[size_output];
-  */
-
   // Initialize Buffer array to read and write audio
   mInBuffer.resize(getNumInputChannels());
   mOutBuffer.resize(getNumOutputChannels());
@@ -132,23 +124,6 @@ void RtAudioInterface::setup()
     exit( 0 );
   }
 
-  /*
-  // Initialize and asign memory for ProcessPlugins Buffers
-  mInProcessBuffer.resize(getNumInputChannels());
-  mOutProcessBuffer.resize(getNumInputChannels());
-
-  int nframes = getBufferSizeInSamples();
-  for (int i = 0; i < getNumInputChannels(); i++) {
-    mInProcessBuffer[i] = new sample_t[nframes];
-    // set memory to 0
-    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
-  }
-  for (int i = 0; i < getNumOutputChannels(); i++) {
-    mOutProcessBuffer[i] = new sample_t[nframes];
-    // set memory to 0
-    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
-  }
-  */
   AudioInterface::setup();
 }
 
@@ -225,9 +200,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
     mOutBuffer[i] = outputBuffer_sample+(nFrames*i);
   }
 
-  AudioInterface::callback(mInBuffer, mOutBuffer,// mInputPacket, mOutputPacket,
-                           nFrames);//, mInProcessBuffer, mOutProcessBuffer);
-
+  AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
   return 0;
 }
 

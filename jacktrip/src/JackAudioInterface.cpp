@@ -80,17 +80,6 @@ mJackTrip(jacktrip)
 //*******************************************************************************
 JackAudioInterface::~JackAudioInterface()
 {
-  //delete[] mInputPacket;
-  //delete[] mOutputPacket;
-  /*
-  for (int i = 0; i < mNumInChans; i++) {
-    delete[] mInProcessBuffer[i];
-  }
-
-  for (int i = 0; i < mNumOutChans; i++) {
-    delete[] mOutProcessBuffer[i];
-  }
-  */
 }
 
 
@@ -151,39 +140,12 @@ void JackAudioInterface::setupClient()
   // Create input and output channels
   createChannels();
 
-  /*
-  // Allocate buffer memory to read and write
-  mSizeInBytesPerChannel = getSizeInBytesPerChannel();
-  int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
-  int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
-  mInputPacket = new int8_t[size_input];
-  mOutputPacket = new int8_t[size_output];
-  */
-
   // Buffer size member
   mNumFrames = getBufferSizeInSamples(); 
 
   // Initialize Buffer array to read and write audio
   mInBuffer.resize(mNumInChans);
   mOutBuffer.resize(mNumOutChans);
-
-  /*
-  // Initialize and asign memory for ProcessPlugins Buffers
-  mInProcessBuffer.resize(mNumInChans);
-  mOutProcessBuffer.resize(mNumOutChans);
-
-  int nframes = getBufferSizeInSamples();
-  for (int i = 0; i < mNumInChans; i++) {
-    mInProcessBuffer[i] = new sample_t[nframes];
-    // set memory to 0
-    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
-  }
-  for (int i = 0; i < mNumOutChans; i++) {
-    mOutProcessBuffer[i] = new sample_t[nframes];
-    // set memory to 0
-    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
-  }
-  */
 }
 
 
@@ -355,9 +317,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   //memcpy (mOutBuffer[1], mInBuffer[1], sizeof(sample_t) * nframes);
   //-------------------------------------------------------------------
 
-  AudioInterface::callback(mInBuffer, mOutBuffer,// mInputPacket, mOutputPacket,
-                           nframes);//, mInProcessBuffer, mOutProcessBuffer);
-
+  AudioInterface::callback(mInBuffer, mOutBuffer, nframes);
   return 0;
 }
 
@@ -367,9 +327,6 @@ int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg
 {
   return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
 }
-
-
-
 
 
 //*******************************************************************************
