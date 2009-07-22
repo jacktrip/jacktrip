@@ -56,12 +56,37 @@ mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSample
 
 //*******************************************************************************
 AudioInterface::~AudioInterface()
-{}
+{
+  for (int i = 0; i < mNumInChans; i++) {
+    delete[] mInProcessBuffer[i];
+  }
+
+  for (int i = 0; i < mNumOutChans; i++) {
+    delete[] mOutProcessBuffer[i];
+  }
+}
 
 
 //*******************************************************************************
 void AudioInterface::setup()
 {
+  // Initialize and asign memory for ProcessPlugins Buffers
+  mInProcessBuffer.resize(mNumInChans);
+  mOutProcessBuffer.resize(mNumOutChans);
+
+  int nframes = getBufferSizeInSamples();
+  cout << "nframe =============== " << nframes << endl;
+  for (int i = 0; i < mNumInChans; i++) {
+    mInProcessBuffer[i] = new sample_t[nframes];
+    // set memory to 0
+    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    mOutProcessBuffer[i] = new sample_t[nframes];
+    // set memory to 0
+    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
+
   // Allocate buffer memory to read and write
   //mSizeInBytesPerChannel = getSizeInBytesPerChannel();
   //int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
@@ -83,9 +108,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
                               int8_t* input_packet,
                               int8_t* output_packet,
-                              unsigned int n_frames,
-                              QVarLengthArray<sample_t*>& in_process_buffer,
-                              QVarLengthArray<sample_t*>& out_process_buffer)
+                              unsigned int n_frames)//,
+                              //QVarLengthArray<sample_t*>& in_process_buffer,
+                              //QVarLengthArray<sample_t*>& out_process_buffer)
 {
   // Allocate the Process Callback
   //-------------------------------------------------------------------
@@ -99,8 +124,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
   // 2) Dynamically allocate ProcessPlugin processes
   // -----------------------------------------------
   // The processing will be done in order of allocation
-
-  ///\todo Implement for more than one process plugin, now it just works propertely with one.
+  /*
+  /// \todo Implement for more than one process plugin, now it just works propertely with one.
   /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
   for (int i = 0; i < mNumInChans; i++) {
     std::memset(in_process_buffer[i], 0, sizeof(sample_t) * n_frames);
@@ -114,6 +139,22 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
     mProcessPlugins[i]->compute(n_frames, in_process_buffer.data(), out_process_buffer.data());
   }
+  */
+
+  /// \todo Implement for more than one process plugin, now it just works propertely with one.
+  /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
+  for (int i = 0; i < mNumInChans; i++) {
+    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
+    std::memcpy(mInProcessBuffer[i], mOutProcessBuffer[i], sizeof(sample_t) * n_frames);
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
+  }
+
+  for (int i = 0; i < mProcessPlugins.size(); i++) {
+    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
+    mProcessPlugins[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
+  }
 
 
   // 3) Finally, send packets to peer
@@ -121,7 +162,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
   computeProcessToNetwork(in_buffer, out_buffer,
                           input_packet, output_packet,
                           n_frames,
-                          in_process_buffer, out_process_buffer);
+                          mInProcessBuffer, mOutProcessBuffer);
 
 
   ///************PROTORYPE FOR CELT**************************

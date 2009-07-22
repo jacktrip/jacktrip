@@ -79,6 +79,8 @@ RtAudioInterface::~RtAudioInterface()
 //*******************************************************************************
 void RtAudioInterface::setup()
 {
+  AudioInterface::setup();
+
   cout << "Settin Up Default RtAudio Interface" << endl;
   cout << gPrintSeparator << endl;
   mRtAudio = new RtAudio;
@@ -128,7 +130,7 @@ void RtAudioInterface::setup()
     exit( 0 );
   }
 
-
+  /*
   // Initialize and asign memory for ProcessPlugins Buffers
   mInProcessBuffer.resize(getNumInputChannels());
   mOutProcessBuffer.resize(getNumInputChannels());
@@ -144,6 +146,7 @@ void RtAudioInterface::setup()
     // set memory to 0
     std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
   }
+  */
 }
 
 
@@ -220,7 +223,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
   }
 
   AudioInterface::callback(mInBuffer, mOutBuffer, mInputPacket, mOutputPacket,
-                           nFrames, mInProcessBuffer, mOutProcessBuffer);
+                           nFrames);//, mInProcessBuffer, mOutProcessBuffer);
 
   return 0;
 }
