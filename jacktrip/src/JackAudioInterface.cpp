@@ -216,6 +216,7 @@ uint32_t JackAudioInterface::getSampleRate() const
 
 
 //*******************************************************************************
+/*
 JackAudioInterface::samplingRateT JackAudioInterface::getSampleRateType() const
 {
   uint32_t rate = jack_get_sample_rate(mClient);
@@ -237,7 +238,7 @@ JackAudioInterface::samplingRateT JackAudioInterface::getSampleRateType() const
 
   return JackAudioInterface::UNDEF;
 }
-
+*/
 
 //*******************************************************************************
 int JackAudioInterface::getSampleRateFromType(samplingRateT rate_type)

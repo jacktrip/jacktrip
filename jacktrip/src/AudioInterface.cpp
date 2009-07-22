@@ -324,3 +324,30 @@ void AudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
   mProcessPlugins.append(plugin);
 }
 
+
+//*******************************************************************************
+AudioInterface::samplingRateT AudioInterface::getSampleRateType() const
+{
+  uint32_t rate = getSampleRate();
+
+  if      ( rate == 22050 ) {
+    return AudioInterface::SR22; }
+  else if ( rate == 32000 ) {
+    return AudioInterface::SR32; }
+  else if ( rate == 44100 ) {
+    return AudioInterface::SR44; }
+  else if ( rate == 48000 ) {
+    return AudioInterface::SR48; }
+  else if ( rate == 88200 ) {
+    return AudioInterface::SR88; }
+  else if ( rate == 96000 ) {
+    return AudioInterface::SR96; }
+  else if ( rate == 19200 ) {
+    return AudioInterface::SR192; }
+
+  return AudioInterface::UNDEF;
+}
+
+
+
+
