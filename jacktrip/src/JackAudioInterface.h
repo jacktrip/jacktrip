@@ -81,17 +81,6 @@ public:
 
   /// \brief Setup the client
   virtual void setup();
-  /// \brief Close the client and disconnects it from a JACK server
-  //virtual void close();
-  /// \brief Get the Jack Server Sampling Rate, in samples/second
-  virtual uint32_t getSampleRate() const;
-  /// \brief Get the Jack Server Buffer Size, in samples
-  virtual uint32_t getBufferSizeInSamples() const;
-  /// \brief Get the Jack Server Buffer Size, in bytes
-  virtual uint32_t getBufferSizeInBytes() const
-  { return (getBufferSizeInSamples() * getAudioBitResolution()/8); }
-  /// \brief Get size of each audio per channel, in bytes
-  virtual size_t getSizeInBytesPerChannel() const;
   /** \brief Tell the JACK server that we are ready to roll. The
    * process-callback will start running. This runs on its own thread.
    * \return 0 on success, otherwise a non-zero error code
@@ -103,14 +92,28 @@ public:
   virtual int stopProcess() const;
   /// \brief Connect the default ports, capture to sends, and receives to playback
   void connectDefaultPorts();
+
+  //--------------SETTERS---------------------------------------------
   /// \brief Set Client Name to something different that the default (JackTrip)
   virtual void setClientName(const char* ClientName)
   { mClientName = ClientName; }
-
   virtual void setSampleRate(uint32_t /*sample_rate*/)
   { std::cout << "WARING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
   virtual void setBufferSizeInSamples(uint32_t /*buf_size*/)
   { std::cout << "WARING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
+  //------------------------------------------------------------------
+
+  //--------------GETTERS---------------------------------------------
+  /// \brief Get the Jack Server Sampling Rate, in samples/second
+  virtual uint32_t getSampleRate() const;
+  /// \brief Get the Jack Server Buffer Size, in samples
+  virtual uint32_t getBufferSizeInSamples() const;
+  /// \brief Get the Jack Server Buffer Size, in bytes
+  virtual uint32_t getBufferSizeInBytes() const
+  { return (getBufferSizeInSamples() * getAudioBitResolution()/8); }
+  /// \brief Get size of each audio per channel, in bytes
+  virtual size_t getSizeInBytesPerChannel() const;
+  //------------------------------------------------------------------
 
 private:
 
