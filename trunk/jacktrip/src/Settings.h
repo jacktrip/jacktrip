@@ -81,6 +81,10 @@ private:
   bool mJackTripServer; ///< JackTrip Server mode
   unsigned int mRedundancy; ///< Redundancy factor for data in the network
   bool mUseJack; ///< Use or not JackAduio
+  bool mChanfeDefaultSR; ///< Change Default Sampling Rate
+  bool mChanfeDefaultBS; ///< Change Default Buffer Size
+  unsigned int mSampleRate;
+  unsigned int mAudioBufferSize;
 };
 
 #endif

@@ -70,8 +70,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mAudiointerfaceMode(JackTrip::JACK),
   mNumChans(NumChans),
   mBufferQueueLength(BufferQueueLength),
-  mSampleRate(0),
-  //mAudioBufferSize(0),
+  mSampleRate(gDefaultSampleRate),
+  mAudioBufferSize(gDefaultBufferSizeInSamples),
   mAudioBitResolution(AudioBitResolution),
   mDataProtocolSender(NULL),
   mDataProtocolReceiver(NULL),
@@ -102,7 +102,7 @@ JackTrip::~JackTrip()
 
 
 //*******************************************************************************
-void JackTrip::setupJackAudio()
+void JackTrip::setupAudio()
 {
   // Check if mAudioInterface has already been created or not
   if (mAudioInterface != NULL)  { // if it has been created, disconnet it from JACK and delete it
@@ -112,24 +112,25 @@ void JackTrip::setupJackAudio()
     closeJackAudio();
   }
 
-  // Create JackAudioInterface Client Object
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  // Create AudioInterface Client Object
   if ( mAudiointerfaceMode == JackTrip::JACK ) {
-    mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution); }
+    mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+    mSampleRate = mAudioInterface->getSampleRate();
+    mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
+    mAudioInterface->setClientName(mJackClientName);
+  }
   else if ( mAudiointerfaceMode == JackTrip::RTAUDIO ) {
     mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+    mAudioInterface->setSampleRate(mSampleRate);
+    mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
   }
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  mAudioInterface->setClientName(mJackClientName);
+
   mAudioInterface->setup();
-  mSampleRate = mAudioInterface->getSampleRate();
+
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << gPrintSeparator << std::endl;
-  //mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
-  //int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
-  int AudioBufferSize = mAudioInterface->getBufferSizeInSamples();
-  int AudioBufferSizeInBytes = AudioBufferSize*sizeof(sample_t);
-  std::cout << "The Audio Buffer Size is: " << AudioBufferSize << " samples" << std::endl;
+  int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
+  std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples" << std::endl;
   std::cout << "                      or: " << AudioBufferSizeInBytes
       << " bytes" << std::endl;
   std::cout << gPrintSeparator << std::endl;
@@ -251,7 +252,7 @@ void JackTrip::start()
   checkIfPortIsBinded(mSenderBindPort);
 
   // Set all classes and parameters
-  setupJackAudio();
+  setupAudio();
   createHeader(mPacketHeaderType);
   setupDataProtocol();
   setupRingBuffers();
