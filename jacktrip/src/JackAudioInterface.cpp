@@ -367,6 +367,7 @@ void JackAudioInterface::setRingBuffers
 // Before sending and reading to Jack, we have to round to the sample resolution
 // that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
 // by default
+/*
 void JackAudioInterface::computeNetworkProcessFromNetwork()
 {
   /// \todo cast *mInBuffer[i] to the bit resolution
@@ -396,9 +397,10 @@ void JackAudioInterface::computeNetworkProcessFromNetwork()
     }
   }
 }
-
+*/
 
 //*******************************************************************************
+/*
 void JackAudioInterface::computeNetworkProcessToNetwork()
 {
   // Input Process (from JACK to NETWORK)
@@ -429,7 +431,7 @@ void JackAudioInterface::computeNetworkProcessToNetwork()
   //mInRingBuffer->insertSlotNonBlocking( mInputPacket );
   mJackTrip->sendNetworkPacket( mInputPacket );
 }
-
+*/
 
 //*******************************************************************************
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
@@ -451,7 +453,15 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t) * nframes);
   //memcpy (mOutBuffer[1], mInBuffer[1], sizeof(sample_t) * nframes);
   //-------------------------------------------------------------------
+  AudioInterface::callback(mInBuffer,
+                           mOutBuffer,
+                           mInputPacket,
+                           mOutputPacket,
+                           nframes,
+                           mInProcessBuffer,
+                           mOutProcessBuffer);
 
+  /*
   // Allocate the Process Callback
   //-------------------------------------------------------------------
   // 1) First, process incoming packets
@@ -482,7 +492,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // 3) Finally, send packets to peer
   // --------------------------------
   computeNetworkProcessToNetwork();
-
+  */
   
   ///************PROTORYPE FOR CELT**************************
   ///********************************************************
@@ -513,6 +523,7 @@ int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg
 
 
 //*******************************************************************************
+/*
 //void JackAudioInterface::appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin)
 void JackAudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
 {
@@ -520,7 +531,7 @@ void JackAudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
   if ( plugin->getNumInputs() ) {}
   mProcessPlugins.append(plugin);
 }
-
+*/
 
 
 //*******************************************************************************
