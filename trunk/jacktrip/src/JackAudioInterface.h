@@ -93,11 +93,6 @@ public:
    */
   virtual uint32_t getSampleRate() const;
 
-  /** \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
-   * \return  JackAudioInterface::samplingRateT enum type
-   */
-  //virtual samplingRateT getSampleRateType() const;
-
   /** \brief Helper function to get the sample rate (in Hz) for a
    * JackAudioInterface::samplingRateT
    * \param rate_type  JackAudioInterface::samplingRateT enum type
@@ -162,6 +157,11 @@ public:
   /// \brief Set Client Name to something different that the default (JackTrip)
   virtual void setClientName(const char* ClientName)
   { mClientName = ClientName; }
+
+  virtual void setSampleRate(uint32_t /*sample_rate*/)
+  { std::cout << "WARING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
+  virtual void setBufferSizeInSamples(uint32_t /*buf_size*/)
+  { std::cout << "WARING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
 
 private:
 

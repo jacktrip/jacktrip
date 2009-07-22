@@ -95,6 +95,12 @@ public:
   virtual void close() = 0;
   virtual int startProcess() const = 0;
   virtual int stopProcess() const = 0;
+  /** \brief Append a ProcessPlugin. The order of processing is determined by
+   * the order by which appending is done.
+   * \param plugin a ProcesPlugin smart pointer. Create the object instance
+   * using something like:\n
+   * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
+   */
   virtual void appendProcessPlugin(ProcessPlugin* plugin);
   virtual void connectDefaultPorts() = 0;
 

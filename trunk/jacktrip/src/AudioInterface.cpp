@@ -65,9 +65,9 @@ AudioInterface::~AudioInterface()
 void AudioInterface::setup()
 {
   // Allocate buffer memory to read and write
-  mSizeInBytesPerChannel = getSizeInBytesPerChannel();
-  int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
-  int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
+  //mSizeInBytesPerChannel = getSizeInBytesPerChannel();
+  //int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
+  //int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
   //mInputPacket = new int8_t[size_input];
   //mOutputPacket = new int8_t[size_output];
 }
@@ -147,9 +147,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 // Before sending and reading to Jack, we have to round to the sample resolution
 // that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
 // by default
-void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& in_buffer,
+void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& /*in_buffer*/,
                                                QVarLengthArray<sample_t*>& out_buffer,
-                                               int8_t* input_packet,
+                                               int8_t* /*input_packet*/,
                                                int8_t* output_packet,
                                                unsigned int n_frames)
 {
@@ -185,11 +185,11 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& in_bu
 
 //*******************************************************************************
 void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
-                                             QVarLengthArray<sample_t*>& out_buffer,
+                                             QVarLengthArray<sample_t*>& /*out_buffer*/,
                                              int8_t* input_packet,
-                                             int8_t* output_packet,
+                                             int8_t* /*output_packet*/,
                                              unsigned int n_frames,
-                                             QVarLengthArray<sample_t*>& in_process_buffer,
+                                             QVarLengthArray<sample_t*>& /*in_process_buffer*/,
                                              QVarLengthArray<sample_t*>& out_process_buffer)
 {
   // Input Process (from JACK to NETWORK)
