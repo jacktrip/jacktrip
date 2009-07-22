@@ -62,11 +62,25 @@ mRtAudio(NULL)
   mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
 
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // Initialize Buffer array to read and write audio
-  cout << "getNumInputChannels() = " << getNumInputChannels() << endl;
-  cout << " getNumOutputChannels() = " << getNumOutputChannels() << endl;
-  mInBuffer.resize(mBufferSize*getNumInputChannels());
-  mOutBuffer.resize(mBufferSize*getNumOutputChannels());
+  //cout << "getNumInputChannels() = " << getNumInputChannels() << endl;
+  //cout << " getNumOutputChannels() = " << getNumOutputChannels() << endl;
+  //mInBuffer.resize(mBufferSize*getNumInputChannels());
+  //mOutBuffer.resize(mBufferSize*getNumOutputChannels());
+  // Initialize Buffer array to read and write audio
+  mInBuffer.resize(getNumInputChannels());
+  mOutBuffer.resize(getNumOutputChannels());
+
+  /*
+  for (int i = 0; i < getNumInputChannels(); i++) {
+    mInBuffer[i] = new sample_t[128];
+  }
+  for (int i = 0; i < getNumOutputChannels(); i++) {
+    mOutBuffer[i] = new sample_t[128];
+  }
+*/
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 }
 
 
@@ -108,8 +122,10 @@ void RtAudioInterface::setup()
   RtAudio::StreamParameters in_params, out_params;
   in_params.deviceId = mRtAudio->getDefaultInputDevice();
   out_params.deviceId = mRtAudio->getDefaultOutputDevice();
-  in_params.nChannels = 1;
-  out_params.nChannels = 1;
+  in_params.nChannels = getNumInputChannels();
+  out_params.nChannels = getNumOutputChannels();
+  cout << "in_params" << in_params.nChannels << endl;
+  cout << "out_params" << out_params.nChannels << endl;
 
   RtAudio::StreamOptions options;
   options.flags = RTAUDIO_NONINTERLEAVED;
@@ -128,6 +144,26 @@ void RtAudioInterface::setup()
     std::cout << '\n' << e.getMessage() << '\n' << std::endl;
     exit( 0 );
   }
+
+
+  // Initialize and asign memory for ProcessPlugins Buffers
+  mInProcessBuffer.resize(getNumInputChannels());
+  mOutProcessBuffer.resize(getNumInputChannels());
+
+  int nframes = getBufferSizeInSamples();
+  for (int i = 0; i < getNumInputChannels(); i++) {
+    mInProcessBuffer[i] = new sample_t[nframes];
+    // set memory to 0
+    std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
+  for (int i = 0; i < getNumOutputChannels(); i++) {
+    mOutProcessBuffer[i] = new sample_t[nframes];
+    // set memory to 0
+    std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
+
+
+
 }
 
 
@@ -192,15 +228,33 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
 {
 
 
-  //cout << "nFrames = " << nFrames << endl;
-  //float* in_buffer = static_cast<float*>(inputBuffer);
-  //std::memcpy(&mInputPacket[0], in_buffer, 2*mBufferSize);
-  //mJackTrip->printTextTest();
+  sample_t* inputBuffer_sample = (sample_t*) inputBuffer;
+  sample_t* outputBuffer_sample = (sample_t*) outputBuffer;
+  // Get input and output buffers
+  //-------------------------------------------------------------------
+  for (int i = 0; i < getNumInputChannels(); i++) {
+    // Input Ports are READ ONLY
+    mInBuffer[i] = inputBuffer_sample+(nFrames*i);
+    //std::memcpy(mInBuffer[i], inputBuffer_sample+(128*i), 512);
+    //std::memcpy(mInBuffer[i], inputBuffer_sample+(nFrames*i), sizeof(sample_t)*nFrames);
+  }
+  for (int i = 0; i < getNumOutputChannels(); i++) {
+    // Output Ports are WRITABLE
+    mOutBuffer[i] = outputBuffer_sample+(nFrames*i);
+    //std::memcpy(mOutBuffer[i], outputBuffer_sample+(128*i), 512);
+    //std::memcpy(mOutBuffer[i], outputBuffer_sample+(nFrames*i), sizeof(sample_t)*nFrames);
+  }
+
+  AudioInterface::callback(mInBuffer, mOutBuffer, mInputPacket, mOutputPacket,
+                           nFrames, mInProcessBuffer, mOutProcessBuffer);
 
 
+
+/*
   mInBuffer[0] = (sample_t*) inputBuffer;
   mOutBuffer[0] = (sample_t*) outputBuffer;
-
+  //AudioInterface::callback(mInBuffer, mOutBuffer, mInputPacket, mOutputPacket,
+  //                         nFrames, mInProcessBuffer, mOutProcessBuffer);
 
 
   // Output Process (from NETWORK to JACK)
@@ -255,7 +309,7 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
   //mInRingBuffer->insertSlotNonBlocking( mInputPacket );
   mJackTrip->sendNetworkPacket( mInputPacket );
 
-
+*/
 
 
 
