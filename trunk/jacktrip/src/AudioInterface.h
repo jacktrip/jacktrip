@@ -85,18 +85,36 @@ public:
                  int NumInChans, int NumOutChans,
                  AudioInterface::audioBitResolutionT AudioBitResolution =
                  AudioInterface::BIT16);
-
+  /// \brief The class destructor
   virtual ~AudioInterface();
 
-  /** \brief Setup the client
+  /** \brief Setup the client. This function should be called just before
     *
-    * This will set the audio client with the specified Sampling Rate,
-    * Packet Size, Bit Resolution, etc...
+    * starting the audio processes, it will setup the audio client with
+    * the class parameters, like Sampling Rate,
+    * Packet Size, Bit Resolution, etc... Sub-classes should also call the parent
+    * method to ensure correct inizialization.
     */
   virtual void setup();
-  virtual void close() = 0;
+  /// \brief Close the client (stop audio processes)
+  //virtual void close() = 0;
+  /// \brief Tell the audio server that we are ready to roll. The
+  /// process-callback will start running. This runs on its own thread.
+  /// \return 0 on success, otherwise a non-zero error code
   virtual int startProcess() const = 0;
+  /// \brief Stops the process-callback thread
+  /// \return 0 on success, otherwise a non-zero error code
   virtual int stopProcess() const = 0;
+  /** \brief Process callback. Subclass should call this callback after obtaining the
+    in_buffer and out_buffer pointers.
+    * \param in_buffer Array of input audio samplers for each channel. The user
+    * is reponsible to check that each channel has n_frames samplers
+    * \param in_buffer Array of output audio samplers for each channel. The user
+    * is reponsible to check that each channel has n_frames samplers
+    */
+  virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
+                        QVarLengthArray<sample_t*>& out_buffer,
+                        unsigned int n_frames);
   /** \brief Append a ProcessPlugin. The order of processing is determined by
    * the order by which appending is done.
    * \param plugin a ProcesPlugin smart pointer. Create the object instance
@@ -105,11 +123,6 @@ public:
    */
   virtual void appendProcessPlugin(ProcessPlugin* plugin);
   virtual void connectDefaultPorts() = 0;
-  /** \brief Process callback
-    */
-  virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
-                        QVarLengthArray<sample_t*>& out_buffer,
-                        unsigned int n_frames);
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
    *
@@ -130,12 +143,6 @@ public:
   static void fromBitToSampleConversion(const int8_t* const input,
                                         sample_t* output,
                                         const AudioInterface::audioBitResolutionT sourceBitResolution);
-  /** \brief Helper function to get the sample rate (in Hz) for a
-   * JackAudioInterface::samplingRateT
-   * \param rate_type  JackAudioInterface::samplingRateT enum type
-   * \return Sample Rate in Hz
-   */
-  static int getSampleRateFromType(samplingRateT rate_type);
 
   //--------------SETTERS---------------------------------------------
   virtual void setNumInputChannels(int nchannels)
@@ -169,35 +176,32 @@ public:
    * This is one of the audioBitResolutionT set in construction
    */
   virtual int getAudioBitResolution() const { return mAudioBitResolution; }
+  /** \brief Helper function to get the sample rate (in Hz) for a
+   * JackAudioInterface::samplingRateT
+   * \param rate_type  JackAudioInterface::samplingRateT enum type
+   * \return Sample Rate in Hz
+   */
+  static int getSampleRateFromType(samplingRateT rate_type);
   //------------------------------------------------------------------
 
 
 private:
+
   /// \brief Compute the process to receive packets
-  void computeProcessFromNetwork(//QVarLengthArray<sample_t*>& in_buffer,
-                                 QVarLengthArray<sample_t*>& out_buffer,
-                                 //int8_t* input_packet,
-                                 //int8_t* output_packet,
+  void computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_buffer,
                                  unsigned int n_frames);
   /// \brief Compute the process to send packets
   void computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
-                               //QVarLengthArray<sample_t*>& out_buffer,
-                               //int8_t* input_packet,
-                               //int8_t* output_packet,
                                unsigned int n_frames);
 
-  JackTrip* mJackTrip;
-
+  JackTrip* mJackTrip; ///< JackTrip Mediator Class pointer
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
-  //int mNumFrames; ///< Buffer block size, in samples
   int mAudioBitResolution; ///< Bit resolution in audio samples
   AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
-
   uint32_t mSampleRate; ///< Sampling Rate
   uint32_t mBufferSizeInSamples; ///< Buffer size in samples
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
-
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
   QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
   QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin

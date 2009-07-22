@@ -82,7 +82,7 @@ public:
   /// \brief Setup the client
   virtual void setup();
   /// \brief Close the client and disconnects it from a JACK server
-  virtual void close();
+  //virtual void close();
   /// \brief Get the Jack Server Sampling Rate, in samples/second
   virtual uint32_t getSampleRate() const;
   /// \brief Get the Jack Server Buffer Size, in samples

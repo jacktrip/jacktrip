@@ -53,8 +53,6 @@ AudioInterface(jacktrip,
                NumInChans, NumOutChans,
                AudioBitResolution),
 mJackTrip(jacktrip),
-mSamplingRate(gDefaultSampleRate),
-mBufferSize(gDefaultBufferSizeInSamples),
 mRtAudio(NULL)
 {
   // Initialize Buffer array to read and write audio
@@ -108,8 +106,8 @@ void RtAudioInterface::setup()
 
   RtAudio::StreamOptions options;
   options.flags = RTAUDIO_NONINTERLEAVED;
-  unsigned int sampleRate = mSamplingRate;
-  unsigned int bufferFrames = mBufferSize;
+  unsigned int sampleRate = getSampleRate();//mSamplingRate;
+  unsigned int bufferFrames = getBufferSizeInSamples();//mBufferSize;
 
   try {
     // IMPORTANT NOTE: It's VERY important to remember to pass this
