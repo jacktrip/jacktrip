@@ -172,14 +172,14 @@ private:
   /// \brief Compute the process to receive packets
   void computeProcessFromNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                  QVarLengthArray<sample_t*>& out_buffer,
-                                 int8_t* input_packet,
-                                 int8_t* output_packet,
+                                 //int8_t* input_packet,
+                                 //int8_t* output_packet,
                                  unsigned int n_frames);
   /// \brief Compute the process to send packets
   void computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                QVarLengthArray<sample_t*>& out_buffer,
-                               int8_t* input_packet,
-                               int8_t* output_packet,
+                               //int8_t* input_packet,
+                               //int8_t* output_packet,
                                unsigned int n_frames);
 
   JackTrip* mJackTrip;

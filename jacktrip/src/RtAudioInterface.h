@@ -94,8 +94,8 @@ private:
 
   JackTrip* mJackTrip;
 
-  int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
-  int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+  //int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
+  //int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
 
   QVarLengthArray<float*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<float*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK

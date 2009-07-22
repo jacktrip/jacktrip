@@ -80,8 +80,8 @@ mJackTrip(jacktrip)
 //*******************************************************************************
 JackAudioInterface::~JackAudioInterface()
 {
-  delete[] mInputPacket;
-  delete[] mOutputPacket;
+  //delete[] mInputPacket;
+  //delete[] mOutputPacket;
   /*
   for (int i = 0; i < mNumInChans; i++) {
     delete[] mInProcessBuffer[i];
@@ -151,12 +151,14 @@ void JackAudioInterface::setupClient()
   // Create input and output channels
   createChannels();
 
+  /*
   // Allocate buffer memory to read and write
   mSizeInBytesPerChannel = getSizeInBytesPerChannel();
   int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
   int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
   mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
+  */
 
   // Buffer size member
   mNumFrames = getBufferSizeInSamples(); 

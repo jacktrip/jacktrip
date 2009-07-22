@@ -57,11 +57,13 @@ mSamplingRate(gDefaultSampleRate),
 mBufferSize(gDefaultBufferSizeInSamples),
 mRtAudio(NULL)
 {
+  /*
   // Allocate buffer memory to read and write
   int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
   int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
   mInputPacket = new int8_t[size_input];
   mOutputPacket = new int8_t[size_output];
+  */
 
   // Initialize Buffer array to read and write audio
   mInBuffer.resize(getNumInputChannels());
