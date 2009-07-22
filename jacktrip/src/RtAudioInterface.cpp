@@ -124,8 +124,6 @@ void RtAudioInterface::setup()
   out_params.deviceId = mRtAudio->getDefaultOutputDevice();
   in_params.nChannels = getNumInputChannels();
   out_params.nChannels = getNumOutputChannels();
-  cout << "in_params" << in_params.nChannels << endl;
-  cout << "out_params" << out_params.nChannels << endl;
 
   RtAudio::StreamOptions options;
   options.flags = RTAUDIO_NONINTERLEAVED;
@@ -255,10 +253,8 @@ int RtAudioInterface::wrapperRtAudioCallback(void *outputBuffer, void *inputBuff
 
 
 //*******************************************************************************
-
 int RtAudioInterface::startProcess() const
 {
-  cout << "=== RtAudioInterface::startProcess() ===" << endl;
   mRtAudio->startStream();
   return(0);
 }
