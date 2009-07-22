@@ -217,11 +217,11 @@ void Settings::parseInput(int argc, char** argv)
       //-------------------------------------------------------
       mJamLink = true;
       break;
-    case 'J':
+    case 'J': // Set client Name
       //-------------------------------------------------------
       mClientName = optarg;
       break;
-    case 'R':
+    case 'R': // RtAudio
       //-------------------------------------------------------
       mUseJack = false;
       break;
@@ -284,8 +284,13 @@ void Settings::printUsage()
   cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
   cout << "" << endl;
   cout << "Options: " << endl;
+  cout << "REQUIRED ARGUMENTS: " << endl;
+  cout << "===================" << endl;
   cout << " -s, --server                             Run in Server Mode" << endl;
   cout << " -c, --client      <peer_host_IP_number>  Run in Client Mode" << endl;
+  cout << endl;
+  cout << "OPTIONAL ARGUMENTS: " << endl;
+  cout << "===================" << endl;
   cout << " -n, --numchannels #                      Number of Input and Output Channels (default "
        << 2 << ")" << endl;
   cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default " 
@@ -293,11 +298,22 @@ void Settings::printUsage()
   cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (defaul 1)" 
        << endl;
   cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
+  cout << " --bindport        #                      Set only the bind port number (default to 4464)" << endl;
+  cout << " --peerport        #                      Set only the Peer port number (default to 4464)" << endl;
   cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
   cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
   cout << " --clientname                             Change default client name (default is JackTrip)" << endl;
+  cout << endl;
+  cout << "ARGUMENTS TO USE IT WITHOUT JACK:" << endl;
+  cout << "=================================" << endl;
+  cout << " --rtaudio                                Use defaul sound system instead of Jack" << endl;
+  cout << "   --srate         #                      Set the sampling rate, works on --rtaudio mode only (defaults 48000)" << endl;
+  cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (defaults 128)" << endl;
+  cout << endl;
+  cout << "HELP ARGUMENTS: " << endl;
+  cout << "===============" << endl;
   cout << " -v, --version                            Prints Version Number" << endl;
   cout << " -h, --help                               Prints this Help" << endl;
   cout << "" << endl;
