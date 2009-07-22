@@ -105,7 +105,7 @@ public:
    */
   virtual void appendProcessPlugin(ProcessPlugin* plugin);
   virtual void connectDefaultPorts() = 0;
-
+  /// \brief Process callback
   virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
                         QVarLengthArray<sample_t*>& out_buffer,
                         int8_t* input_packet,
@@ -113,7 +113,6 @@ public:
                         unsigned int n_frames,
                         QVarLengthArray<sample_t*>& in_process_buffer,
                         QVarLengthArray<sample_t*>& out_process_buffer);
-
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
    *
@@ -124,7 +123,6 @@ public:
   static void fromSampleToBitConversion(const sample_t* const input,
                                         int8_t* output,
                                         const AudioInterface::audioBitResolutionT targetBitResolution);
-
   /** \brief Convert a audioBitResolutionT bit resolution number into a
    * 32bit number (sample_t)
    *
@@ -173,11 +171,13 @@ public:
 
 
 private:
+  /// \brief Compute the process to receive packets
   void computeProcessFromNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                  QVarLengthArray<sample_t*>& out_buffer,
                                  int8_t* input_packet,
                                  int8_t* output_packet,
                                  unsigned int n_frames);
+  /// \brief Compute the process to send packets
   void computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                QVarLengthArray<sample_t*>& out_buffer,
                                int8_t* input_packet,
@@ -196,10 +196,6 @@ private:
 
   uint32_t mSampleRate; ///< Sampling Rate
   uint32_t mBufferSizeInSamples; ///< Buffer size in samples
-
-  //int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
-  //int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
-  unsigned int mBufferSize;
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
 
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>

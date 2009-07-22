@@ -125,32 +125,6 @@ public:
    */
   virtual int stopProcess() const;
 
-  /** \brief Set the pointer to the Input and Output RingBuffer
-   * that'll be use to read and write audio
-   *
-   * These RingBuffer<EM>s</EM> are used to read and write audio samples on 
-   * each JACK callback.
-   * \todo If the RingBuffer is blocked, the callback should stay
-   * on the last buffer, as in JackTrip (wavetable synth) 
-   * \param InRingBuffer RingBuffer to read samples <B>from</B>
-   * \param OutRingBuffer RingBuffer to write samples <B>to</B>
-   */
-  /*
-  void setRingBuffers(const std::tr1::shared_ptr<RingBuffer> InRingBuffer,
-		      const std::tr1::shared_ptr<RingBuffer> OutRingBuffer);
-  */
-
-  /** \brief Append a ProcessPlugin. The order of processing is determined by
-   * the order by which appending is done.
-   * \param plugin a ProcesPlugin smart pointer. Create the object instance
-   * using something like:\n
-   * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
-   */
-  //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
-  /*
-  virtual void appendProcessPlugin(ProcessPlugin* plugin);
-  */
-
   /// \brief Connect the default ports, capture to sends, and receives to playback
   void connectDefaultPorts();
 
@@ -183,15 +157,6 @@ private:
    * decides to disconnect the client.
    */
   static void jackShutdown(void*);
-  
-  /// \brief Sets the part of the process callback that sends and receive packets
-  //void computeNetworkProcess();
-
-  /// \brief Compute the process to receive packets to JACK
-  //void computeNetworkProcessFromNetwork();
-
-  /// \brief Compute the process from JACK to send packets
-  //void computeNetworkProcessToNetwork();
 
   /** \brief Set the process callback of the member function processCallback.
    * This process will be called by the JACK server whenever there is work to be done.
@@ -234,8 +199,6 @@ private:
   const char* mClientName; ///< Jack Client Name
   QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
   QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
-  //jack_port_t** mInPorts; ///< Vector of Input Ports (Channels)
-  //jack_port_t** mOutPorts; ///< Vector of Output Ports (Channels)
   QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
