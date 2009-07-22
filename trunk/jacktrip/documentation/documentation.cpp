@@ -61,7 +61,7 @@ It is currently being developed and actively tested at CCRMA by the SoundWIRE gr
 \section install_sec Installation
 
 Download the latest release:
-<a href="https://sourceforge.net/project/showfiles.php?group_id=236811">Download</a>
+<a href="http://code.google.com/p/jacktrip/">Download</a>
 
 Please read the documentation inside the packet to install.
 
