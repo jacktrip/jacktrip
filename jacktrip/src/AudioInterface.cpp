@@ -97,6 +97,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                             input_packet, output_packet,
                             n_frames);
 
+
   // 2) Dynamically allocate ProcessPlugin processes
   // -----------------------------------------------
   // The processing will be done in order of allocation
