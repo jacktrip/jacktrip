@@ -65,11 +65,8 @@ public:
   /// \brief List all avialable audio interfaces, with its properties
   virtual void listAllInterfaces();
   virtual void setup();
-  /// \todo IMPLEMENT
-  //virtual void close() {}
   virtual int startProcess() const;
-  /// \todo IMPLEMENT
-  virtual int stopProcess() const { return 0; }
+  virtual int stopProcess() const;
   /// \brief This has no effect in RtAudio
   virtual void connectDefaultPorts() {}
 

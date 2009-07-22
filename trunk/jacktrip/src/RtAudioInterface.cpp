@@ -71,8 +71,6 @@ RtAudioInterface::~RtAudioInterface()
 //*******************************************************************************
 void RtAudioInterface::setup()
 {
-
-
   cout << "Settin Up Default RtAudio Interface" << endl;
   cout << gPrintSeparator << endl;
   mRtAudio = new RtAudio;
@@ -152,30 +150,18 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
   cout << "Audio Device  [" << i << "] : "  << info.name << endl;
   cout << "  Output Channels : " << info.outputChannels << endl;
   cout << "  Input Channels  : " << info.inputChannels << endl;
-  if (info.isDefaultOutput) {
-    cout << "  --Default Output Device--" << endl; }
-  if (info.isDefaultInput) {
-    cout << "  --Default Intput Device--" << endl; }
-  if (info.probed) {
-    cout << "  --Probed Successful--" << endl; }
-
   sampleRates = info.sampleRates;
   cout << "  Supported Sampling Rates: ";
   for (unsigned int ii = 0; ii<sampleRates.size();ii++) {
     cout << sampleRates[ii] << " ";
   }
   cout << endl;
-
-  //RtAudioFormat bitformats = info.nativeFormats;
-  //cout << "bitformats = " << bitformats << endl;
-
-  //cout << RTAUDIO_SINT8 << endl;
-  //cout << RTAUDIO_SINT16 << endl;
-  //cout << RTAUDIO_SINT24 << endl;
-  //cout << RTAUDIO_SINT32 << endl;
-  //cout << RTAUDIO_FLOAT32 << endl;
-  //cout << RTAUDIO_FLOAT64 << endl;
-  //cout << endl;
+  if (info.isDefaultOutput) {
+    cout << "  --Default Output Device--" << endl; }
+  if (info.isDefaultInput) {
+    cout << "  --Default Intput Device--" << endl; }
+  if (info.probed) {
+    cout << "  --Probed Successful--" << endl; }
 }
 
 
@@ -221,6 +207,16 @@ int RtAudioInterface::startProcess() const
   return(0);
 }
 
+
+//*******************************************************************************
+int RtAudioInterface::stopProcess() const
+{
+  try { mRtAudio->closeStream(); }
+  catch ( RtError& e ) {
+    std::cout << '\n' << e.getMessage() << '\n' << std::endl;
+    return(-1); }
+  return 0;
+}
 
 
 
