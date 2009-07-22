@@ -41,10 +41,10 @@
 #include "RtAudio.h"
 
 #include "AudioInterface.h"
-
-
+#include "jacktrip_globals.h"
 class JackTrip; // Forward declaration
 
+/// \brief Base Class that provides an interface with RtAudio
 class RtAudioInterface : public AudioInterface
 {
 public:
@@ -54,33 +54,31 @@ public:
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
    * \param AudioBitResolution Audio Sample Resolutions in bits
-   * \param ClientName Client name in Jack
    */
   RtAudioInterface(JackTrip* jacktrip,
-                   int NumInChans = 2, int NumOutChans = 2,
+                   int NumInChans = gDefaultNumInChannels,
+                   int NumOutChans = gDefaultNumOutChannels,
                    audioBitResolutionT AudioBitResolution = BIT16);
-
+  /// \brief The class destructor
   virtual ~RtAudioInterface();
 
+  /// \brief List all avialable audio interfaces, with its properties
   virtual void listAllInterfaces();
-
   virtual void setup();
   /// \todo IMPLEMENT
-  virtual void close() {}
+  //virtual void close() {}
   virtual int startProcess() const;
   /// \todo IMPLEMENT
   virtual int stopProcess() const { return 0; }
-  // This has no effect in RtAudio
+  /// \brief This has no effect in RtAudio
   virtual void connectDefaultPorts() {}
 
   //--------------SETTERS---------------------------------------------
-  // This has no effect in RtAudio
+  /// \brief This has no effect in RtAudio
   virtual void setClientName(const char* /*ClientName*/) {}
   //------------------------------------------------------------------
 
   //--------------GETTERS---------------------------------------------
-  virtual uint32_t getSampleRate() const { return mSamplingRate; }
-  virtual uint32_t getBufferSizeInSamples() const { return mBufferSize; }
   //------------------------------------------------------------------
 
 
@@ -91,11 +89,9 @@ private:
                                     double streamTime, RtAudioStreamStatus status, void *userData);
   void printDeviceInfo(unsigned int deviceId);
 
-  JackTrip* mJackTrip;
+  JackTrip* mJackTrip; ///< JackTrip Mediator Class pointer
   QVarLengthArray<float*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<float*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
-  uint32_t mSamplingRate;
-  uint32_t mBufferSize;
   RtAudio* mRtAudio; ///< RtAudio class
 };
 
