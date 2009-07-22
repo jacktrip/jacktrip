@@ -70,7 +70,6 @@ public:
   virtual int startProcess() const;
   /// \todo IMPLEMENT
   virtual int stopProcess() const { return 0; }
-  virtual void appendProcessPlugin(ProcessPlugin* /*plugin*/) {}\
   // This has no effect in RtAudio
   virtual void connectDefaultPorts() {}
 
