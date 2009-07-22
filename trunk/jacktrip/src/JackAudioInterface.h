@@ -76,58 +76,33 @@ public:
                      int NumInChans, int NumOutChans,
                      AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
                      const char* ClientName = "JackTrip");
-
-  /** \brief The class destructor
-   */
+  /// \brief The class destructor
   virtual ~JackAudioInterface();
 
-  /** \brief Setup the client
-   */
+  /// \brief Setup the client
   virtual void setup();
-
-  /** \brief Close the client and disconnects it from a JACK server
-   */
+  /// \brief Close the client and disconnects it from a JACK server
   virtual void close();
-
-  /** \brief Get the Jack Server Sampling Rate, in samples/second
-   */
+  /// \brief Get the Jack Server Sampling Rate, in samples/second
   virtual uint32_t getSampleRate() const;
-
-  /** \brief Helper function to get the sample rate (in Hz) for a
-   * JackAudioInterface::samplingRateT
-   * \param rate_type  JackAudioInterface::samplingRateT enum type
-   * \return Sample Rate in Hz
-   */
-  static int getSampleRateFromType(samplingRateT rate_type);
-
-  /** \brief Get the Jack Server Buffer Size, in samples
-   */
+  /// \brief Get the Jack Server Buffer Size, in samples
   virtual uint32_t getBufferSizeInSamples() const;
-
-  /** \brief Get the Jack Server Buffer Size, in bytes
-   */
+  /// \brief Get the Jack Server Buffer Size, in bytes
   virtual uint32_t getBufferSizeInBytes() const
-  { 
-    return (getBufferSizeInSamples() * getAudioBitResolution()/8);
-  }
-  
+  { return (getBufferSizeInSamples() * getAudioBitResolution()/8); }
   /// \brief Get size of each audio per channel, in bytes
   virtual size_t getSizeInBytesPerChannel() const;
-
   /** \brief Tell the JACK server that we are ready to roll. The
    * process-callback will start running. This runs on its own thread.
    * \return 0 on success, otherwise a non-zero error code
    */
   virtual int startProcess() const;
-
   /** \brief Stops the process-callback thread
    * \return 0 on success, otherwise a non-zero error code
    */
   virtual int stopProcess() const;
-
   /// \brief Connect the default ports, capture to sends, and receives to playback
   void connectDefaultPorts();
-
   /// \brief Set Client Name to something different that the default (JackTrip)
   virtual void setClientName(const char* ClientName)
   { mClientName = ClientName; }
@@ -148,21 +123,16 @@ private:
    *  - Creates the appropriate number of input and output channels
    */
   void setupClient();
-
-  /** \brief Creates input and output channels in the Jack client
-   */
+  /// \brief Creates input and output channels in the Jack client
   void createChannels();
- 
   /** \brief JACK calls this shutdown_callback if the server ever shuts down or
    * decides to disconnect the client.
    */
   static void jackShutdown(void*);
-
   /** \brief Set the process callback of the member function processCallback.
    * This process will be called by the JACK server whenever there is work to be done.
    */
   void setProcessCallback();
-
   /** \brief JACK process callback
    * 
    * This is the function to be called to process audio. This function is 
@@ -174,7 +144,6 @@ private:
    * for more details
    */
   int processCallback(jack_nframes_t nframes);
-  
   /** \brief Wrapper to cast the member processCallback to a static function pointer
    * that can be used with <tt>jack_set_process_callback</tt>
    *

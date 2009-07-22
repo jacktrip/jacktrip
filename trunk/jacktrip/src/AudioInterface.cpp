@@ -385,6 +385,46 @@ AudioInterface::samplingRateT AudioInterface::getSampleRateType() const
   return AudioInterface::UNDEF;
 }
 
+//*******************************************************************************
+int AudioInterface::getSampleRateFromType(samplingRateT rate_type)
+{
+  int sample_rate = 0;
+  switch (rate_type)
+    {
+    case SR22 :
+      sample_rate = 22050;
+      return sample_rate;
+      break;
+    case SR32 :
+      sample_rate = 32000;
+      return sample_rate;
+      break;
+    case SR44 :
+      sample_rate = 44100;
+      return sample_rate;
+      break;
+    case SR48 :
+      sample_rate = 48000;
+      return sample_rate;
+      break;
+    case SR88 :
+      sample_rate = 88200;
+      return sample_rate;
+      break;
+    case SR96 :
+      sample_rate = 96000;
+      return sample_rate;
+      break;
+    case SR192 :
+      sample_rate = 192000;
+      return sample_rate;
+      break;
+    default:
+      return sample_rate;
+      break;
+    }
 
+  return sample_rate;
+}
 
 
