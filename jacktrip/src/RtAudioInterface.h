@@ -62,25 +62,27 @@ public:
 
   virtual ~RtAudioInterface();
 
-
   virtual void listAllInterfaces();
 
-  // --------Inherited Functions -----------------
   virtual void setup();
+  /// \todo IMPLEMENT
   virtual void close() {}
   virtual int startProcess() const;
+  /// \todo IMPLEMENT
   virtual int stopProcess() const { return 0; }
-  virtual void appendProcessPlugin(ProcessPlugin* /*plugin*/) {}
+  virtual void appendProcessPlugin(ProcessPlugin* /*plugin*/) {}\
+  // This has no effect in RtAudio
   virtual void connectDefaultPorts() {}
 
-
-  virtual uint32_t getSampleRate() const { return mSamplingRate; }
-  virtual uint32_t getBufferSizeInSamples() const { return mBufferSize; }
-
-  virtual samplingRateT getSampleRateType() const
-  { return AudioInterface::SR48; }
+  //--------------SETTERS---------------------------------------------
   // This has no effect in RtAudio
   virtual void setClientName(const char* /*ClientName*/) {}
+  //------------------------------------------------------------------
+
+  //--------------GETTERS---------------------------------------------
+  virtual uint32_t getSampleRate() const { return mSamplingRate; }
+  virtual uint32_t getBufferSizeInSamples() const { return mBufferSize; }
+  //------------------------------------------------------------------
 
 
 private:
@@ -98,9 +100,6 @@ private:
 
   QVarLengthArray<float*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<float*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
-
-  //float* mInBuffer; ///< Vector of Input buffers/channel read from JACK
-  //float* mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
 
   uint32_t mSamplingRate;
   uint32_t mBufferSize;

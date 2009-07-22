@@ -49,6 +49,8 @@
 class JackTrip;
 
 
+/** \brief Base Class that provides an interface with audio
+ */
 class AudioInterface
 {
 public:
@@ -168,6 +170,7 @@ public:
    */
   virtual int getAudioBitResolution() const { return mAudioBitResolution; }
   //------------------------------------------------------------------
+
 
 private:
   void computeProcessFromNetwork(QVarLengthArray<sample_t*>& in_buffer,
