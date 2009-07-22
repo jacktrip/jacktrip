@@ -79,7 +79,7 @@ RtAudioInterface::~RtAudioInterface()
 //*******************************************************************************
 void RtAudioInterface::setup()
 {
-  AudioInterface::setup();
+
 
   cout << "Settin Up Default RtAudio Interface" << endl;
   cout << gPrintSeparator << endl;
@@ -147,6 +147,7 @@ void RtAudioInterface::setup()
     std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
   }
   */
+  AudioInterface::setup();
 }
 
 

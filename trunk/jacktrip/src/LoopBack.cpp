@@ -40,6 +40,9 @@
 #include "jacktrip_types.h"
 
 #include <cstring> // for memcpy
+#include <iostream>
+
+using std::cout; using std::endl;
 
 
 //*******************************************************************************
