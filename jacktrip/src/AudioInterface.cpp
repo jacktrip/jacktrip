@@ -116,23 +116,14 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
-                              //int8_t* input_packet,
-                              //int8_t* output_packet,
                               unsigned int n_frames)
 {
   // Allocate the Process Callback
   //-------------------------------------------------------------------
   // 1) First, process incoming packets
   // ----------------------------------
-  /*
-  computeProcessFromNetwork(in_buffer, out_buffer,
-                            input_packet, output_packet,
-                            n_frames);
-                            */
-  computeProcessFromNetwork(in_buffer, out_buffer,
-                            //mInputPacket, mOutputPacket,
-                            n_frames);
-
+  computeProcessFromNetwork(//in_buffer,
+                            out_buffer, n_frames);
 
   // 2) Dynamically allocate ProcessPlugin processes
   // -----------------------------------------------
@@ -148,20 +139,12 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
   }
 
   for (int i = 0; i < mProcessPlugins.size(); i++) {
-    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
     mProcessPlugins[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
   }
 
-
   // 3) Finally, send packets to peer
   // --------------------------------
-  /*
-  computeProcessToNetwork(in_buffer, out_buffer,
-                          input_packet, output_packet,
-                          n_frames);
-                          */
-  computeProcessToNetwork(in_buffer, out_buffer,
-                          //mInputPacket, mOutputPacket,
+  computeProcessToNetwork(in_buffer, //out_buffer,
                           n_frames);
 
 
@@ -186,10 +169,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 // Before sending and reading to Jack, we have to round to the sample resolution
 // that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
 // by default
-void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& /*in_buffer*/,
+void AudioInterface::computeProcessFromNetwork(//QVarLengthArray<sample_t*>& /*in_buffer*/,
                                                QVarLengthArray<sample_t*>& out_buffer,
-                                               //int8_t* /*input_packet*/,
-                                               //int8_t* output_packet,
                                                unsigned int n_frames)
 {
   /// \todo cast *mInBuffer[i] to the bit resolution
@@ -224,9 +205,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& /*in_
 
 //*******************************************************************************
 void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
-                                             QVarLengthArray<sample_t*>& /*out_buffer*/,
-                                             //int8_t* input_packet,
-                                             //int8_t* /*output_packet*/,
+                                             //QVarLengthArray<sample_t*>& /*out_buffer*/,
                                              unsigned int n_frames)
 {
   // Input Process (from JACK to NETWORK)
