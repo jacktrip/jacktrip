@@ -96,7 +96,7 @@ public:
   /** \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
    * \return  JackAudioInterface::samplingRateT enum type
    */
-  virtual samplingRateT getSampleRateType() const;
+  //virtual samplingRateT getSampleRateType() const;
 
   /** \brief Helper function to get the sample rate (in Hz) for a
    * JackAudioInterface::samplingRateT

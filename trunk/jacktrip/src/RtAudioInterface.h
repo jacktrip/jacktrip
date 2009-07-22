@@ -79,24 +79,9 @@ public:
 
   virtual samplingRateT getSampleRateType() const
   { return AudioInterface::SR48; }
+  // This has no effect in RtAudio
   virtual void setClientName(const char* /*ClientName*/) {}
-  
-  
 
-
-  //virtual int getAudioBitResolution() const {}
-  // ---------------------------------------------
-
-  //virtual int getNumInputChannels() const { return 1; }
-  //virtual int getNumOutputChannels() const  { return 1; }
-  //virtual samplingRateT getSampleRateType() const {return SR48;}
-  //virtual int getAudioBitResolution() const {return 16;}
-  //virtual size_t getSizeInBytesPerChannel() const { return 2*128; }
-  //virtual void close() {}
-  //virtual void stopProcess() {}
-
-
-  //virtual int processCallback(jack_nframes_t nframes);
 
 private:
   int RtAudioCallback(void *outputBuffer, void *inputBuffer, unsigned int nFrames,

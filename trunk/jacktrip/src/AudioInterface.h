@@ -154,8 +154,8 @@ public:
   virtual uint32_t getSampleRate() const
   { return mSampleRate; }
   /// \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
-  /// \return  JackAudioInterface::samplingRateT enum type
-  virtual samplingRateT getSampleRateType() const = 0;
+  /// \return  AudioInterface::samplingRateT enum type
+  virtual samplingRateT getSampleRateType() const;
   /** \brief Get the Audio Bit Resolution, in bits
    *
    * This is one of the audioBitResolutionT set in construction

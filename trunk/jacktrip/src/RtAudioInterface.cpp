@@ -161,9 +161,6 @@ void RtAudioInterface::setup()
     // set memory to 0
     std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
   }
-
-
-
 }
 
 
@@ -220,36 +217,79 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
 }
 
 
-
 //*******************************************************************************
 int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
                                       unsigned int nFrames,
                                       double /*streamTime*/, RtAudioStreamStatus /*status*/)
 {
-
-
   sample_t* inputBuffer_sample = (sample_t*) inputBuffer;
   sample_t* outputBuffer_sample = (sample_t*) outputBuffer;
+
   // Get input and output buffers
   //-------------------------------------------------------------------
   for (int i = 0; i < getNumInputChannels(); i++) {
     // Input Ports are READ ONLY
     mInBuffer[i] = inputBuffer_sample+(nFrames*i);
-    //std::memcpy(mInBuffer[i], inputBuffer_sample+(128*i), 512);
-    //std::memcpy(mInBuffer[i], inputBuffer_sample+(nFrames*i), sizeof(sample_t)*nFrames);
   }
   for (int i = 0; i < getNumOutputChannels(); i++) {
     // Output Ports are WRITABLE
     mOutBuffer[i] = outputBuffer_sample+(nFrames*i);
-    //std::memcpy(mOutBuffer[i], outputBuffer_sample+(128*i), 512);
-    //std::memcpy(mOutBuffer[i], outputBuffer_sample+(nFrames*i), sizeof(sample_t)*nFrames);
   }
 
   AudioInterface::callback(mInBuffer, mOutBuffer, mInputPacket, mOutputPacket,
                            nFrames, mInProcessBuffer, mOutProcessBuffer);
 
+  return 0;
+}
 
 
+//*******************************************************************************
+int RtAudioInterface::wrapperRtAudioCallback(void *outputBuffer, void *inputBuffer,
+                                             unsigned int nFrames, double streamTime,
+                                             RtAudioStreamStatus status, void *userData)
+{
+  return static_cast<RtAudioInterface*>(userData)->RtAudioCallback(outputBuffer,inputBuffer,
+                                                              nFrames,
+                                                              streamTime, status);
+}
+
+
+//*******************************************************************************
+
+int RtAudioInterface::startProcess() const
+{
+  cout << "=== RtAudioInterface::startProcess() ===" << endl;
+  mRtAudio->startStream();
+  return(0);
+}
+
+
+
+
+
+
+
+
+
+
+
+// OLD CODE
+// =============================================================================
+
+/*
+int RtAudioInterface::processCallback(jack_nframes_t nframes)
+{
+  mJackTrip->printTextTest();
+  return JackAudioInterface::processCallback(nframes);
+}
+*/
+
+
+//*******************************************************************************
+//int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
+//                                      unsigned int nFrames,
+//                                      double /*streamTime*/, RtAudioStreamStatus /*status*/)
+//{
 /*
   mInBuffer[0] = (sample_t*) inputBuffer;
   mOutBuffer[0] = (sample_t*) outputBuffer;
@@ -427,35 +467,6 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
   //mInRingBuffer->insertSlotNonBlocking( mInputPacket );
   mJackTrip->sendNetworkPacket( mInputPacket );
   */
-  return 0;
-}
+  //return 0;
+//}
 
-
-//*******************************************************************************
-int RtAudioInterface::wrapperRtAudioCallback(void *outputBuffer, void *inputBuffer,
-                                             unsigned int nFrames, double streamTime,
-                                             RtAudioStreamStatus status, void *userData)
-{
-  return static_cast<RtAudioInterface*>(userData)->RtAudioCallback(outputBuffer,inputBuffer,
-                                                              nFrames,
-                                                              streamTime, status);
-}
-
-
-//*******************************************************************************
-
-int RtAudioInterface::startProcess() const
-{
-  cout << "=== RtAudioInterface::startProcess() ===" << endl;
-  mRtAudio->startStream();
-  return(0);
-}
-
-
-/*
-int RtAudioInterface::processCallback(jack_nframes_t nframes)
-{
-  mJackTrip->printTextTest();
-  return JackAudioInterface::processCallback(nframes);
-}
-*/
