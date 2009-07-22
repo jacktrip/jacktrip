@@ -38,14 +38,15 @@
 #ifndef __AUDIOINTERFACE_H__
 #define __AUDIOINTERFACE_H__
 
+#include "ProcessPlugin.h"
 #include "jacktrip_types.h"
 
 #include <QVarLengthArray>
+#include <QVector>
 //#include "jacktrip_globals.h"
 
 // Forward declarations
 class JackTrip;
-class ProcessPlugin;
 
 
 class AudioInterface
@@ -94,25 +95,16 @@ public:
   virtual void close() = 0;
   virtual int startProcess() const = 0;
   virtual int stopProcess() const = 0;
-  virtual void appendProcessPlugin(ProcessPlugin* plugin) = 0;
+  virtual void appendProcessPlugin(ProcessPlugin* plugin);
   virtual void connectDefaultPorts() = 0;
 
-  /*
-  int processCallback(float* output_buffer,
-                      float* input_buffer,
-                      unsigned int num_buffer_frames,
-                      unsigned int num_channels);
-
-  void computeProcessFromNetwork(float* output_buffer,
-                                 float* input_buffer,
-                                 unsigned int num_buffer_frames,
-                                 unsigned int num_channels);
-
-  void computeNetworkProcessToNetwork(float* output_buffer,
-                                      float* input_buffer,
-                                      unsigned int num_buffer_frames,
-                                      unsigned int num_channels);
-                                      */
+  virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
+                        QVarLengthArray<sample_t*>& out_buffer,
+                        int8_t* input_packet,
+                        int8_t* output_packet,
+                        unsigned int n_frames,
+                        QVarLengthArray<sample_t*>& in_process_buffer,
+                        QVarLengthArray<sample_t*>& out_process_buffer);
 
   /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
@@ -172,6 +164,19 @@ public:
   //------------------------------------------------------------------
 
 private:
+  void computeProcessFromNetwork(QVarLengthArray<sample_t*>& in_buffer,
+                                 QVarLengthArray<sample_t*>& out_buffer,
+                                 int8_t* input_packet,
+                                 int8_t* output_packet,
+                                 unsigned int n_frames);
+  void computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
+                               QVarLengthArray<sample_t*>& out_buffer,
+                               int8_t* input_packet,
+                               int8_t* output_packet,
+                               unsigned int n_frames,
+                               QVarLengthArray<sample_t*>& in_process_buffer,
+                               QVarLengthArray<sample_t*>& out_process_buffer);
+
   JackTrip* mJackTrip;
 
   int mNumInChans;///< Number of Input Channels
@@ -183,9 +188,12 @@ private:
   uint32_t mSampleRate; ///< Sampling Rate
   uint32_t mBufferSizeInSamples; ///< Buffer size in samples
 
-  int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
-  int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+  //int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
+  //int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
   unsigned int mBufferSize;
+  size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
+
+  QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 };
 
 #endif // __AUDIOINTERFACE_H__

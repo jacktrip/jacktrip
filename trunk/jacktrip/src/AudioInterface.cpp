@@ -49,9 +49,10 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
 mJackTrip(jacktrip),
 mNumInChans(NumInChans), mNumOutChans(NumOutChans),
 mAudioBitResolution(AudioBitResolution*8),
+mBitResolutionMode(AudioBitResolution),
 //mNumBufferFramesPerChannel(128),
-mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
-mInputPacket(NULL), mOutputPacket(NULL)
+mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples)
+//mInputPacket(NULL), mOutputPacket(NULL)
 {}
 
 
@@ -64,21 +65,13 @@ AudioInterface::~AudioInterface()
 void AudioInterface::setup()
 {
   // Allocate buffer memory to read and write
-  //mSizeInBytesPerChannel = getSizeInBytesPerChannel();
+  mSizeInBytesPerChannel = getSizeInBytesPerChannel();
   int size_input  = getSizeInBytesPerChannel() * getNumInputChannels();
   int size_output = getSizeInBytesPerChannel() * getNumOutputChannels();
-  mInputPacket = new int8_t[size_input];
-  mOutputPacket = new int8_t[size_output];
+  //mInputPacket = new int8_t[size_input];
+  //mOutputPacket = new int8_t[size_output];
 }
 
-
-//*******************************************************************************
-/*
-uint32_t AudioInterface::getBufferSizeInSamples() const
-{
-  //return jack_get_buffer_size(mClient);
-}
-*/
 
 //*******************************************************************************
 size_t AudioInterface::getSizeInBytesPerChannel() const
@@ -88,43 +81,145 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 
 
 //*******************************************************************************
-/*
-int AudioInterface::processCallback(float* output_buffer,
-                                    float* input_buffer,
-                                    unsigned int num_buffer_frames,
-                                    unsigned int num_channels)
+void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
+                              QVarLengthArray<sample_t*>& out_buffer,
+                              int8_t* input_packet,
+                              int8_t* output_packet,
+                              unsigned int n_frames,
+                              QVarLengthArray<sample_t*>& in_process_buffer,
+                              QVarLengthArray<sample_t*>& out_process_buffer)
 {
+  // Allocate the Process Callback
+  //-------------------------------------------------------------------
+  // 1) First, process incoming packets
+  // ----------------------------------
+  computeProcessFromNetwork(in_buffer, out_buffer,
+                            input_packet, output_packet,
+                            n_frames);
 
-  return 0;
+  // 2) Dynamically allocate ProcessPlugin processes
+  // -----------------------------------------------
+  // The processing will be done in order of allocation
+
+  ///\todo Implement for more than one process plugin, now it just works propertely with one.
+  /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
+  for (int i = 0; i < mNumInChans; i++) {
+    std::memset(in_process_buffer[i], 0, sizeof(sample_t) * n_frames);
+    std::memcpy(in_process_buffer[i], out_buffer[i], sizeof(sample_t) * n_frames);
+  }
+  for (int i = 0; i < mNumOutChans; i++) {
+    std::memset(out_process_buffer[i], 0, sizeof(sample_t) * n_frames);
+  }
+
+  for (int i = 0; i < mProcessPlugins.size(); i++) {
+    //mProcessPlugins[i]->compute(nframes, mOutBuffer.data(), mInBuffer.data());
+    mProcessPlugins[i]->compute(n_frames, in_process_buffer.data(), out_process_buffer.data());
+  }
+
+
+  // 3) Finally, send packets to peer
+  // --------------------------------
+  computeProcessToNetwork(in_buffer, out_buffer,
+                          input_packet, output_packet,
+                          n_frames,
+                          in_process_buffer, out_process_buffer);
+
+
+  ///************PROTORYPE FOR CELT**************************
+  ///********************************************************
+  /*
+  CELTMode* mode;
+  int* error;
+  mode = celt_mode_create(48000, 2, 64, error);
+  */
+  //celt_mode_create(48000, 2, 64, NULL);
+  //unsigned char* compressed;
+  //CELTEncoder* celtEncoder;
+  //celt_encode_float(celtEncoder, mInBuffer, NULL, compressed, );
+
+  ///********************************************************
+  ///********************************************************
+
 }
-*/
-
-
 
 //*******************************************************************************
 // Before sending and reading to Jack, we have to round to the sample resolution
 // that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
 // by default
-/*
-void AudioInterface::computeProcessFromNetwork(float* output_buffer,
-                                               float* input_buffer,
-                                               unsigned int num_buffer_frames,
-                                               unsigned int num_channels)
+void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& in_buffer,
+                                               QVarLengthArray<sample_t*>& out_buffer,
+                                               int8_t* input_packet,
+                                               int8_t* output_packet,
+                                               unsigned int n_frames)
 {
+  /// \todo cast *mInBuffer[i] to the bit resolution
+  //cout << mNumFrames << endl;
+  // Output Process (from NETWORK to JACK)
+  // ----------------------------------------------------------------
+  // Read Audio buffer from RingBuffer (read from incoming packets)
+  //mOutRingBuffer->readSlotNonBlocking( mOutputPacket );
+  mJackTrip->receiveNetworkPacket( output_packet );
 
+  // Extract separate channels to send to Jack
+  for (int i = 0; i < mNumOutChans; i++) {
+    //--------
+    // This should be faster for 32 bits
+    //std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
+    //		mSizeInBytesPerChannel);
+    //--------
+    sample_t* tmp_sample = out_buffer[i]; //sample buffer for channel i
+    for (unsigned int j = 0; j < n_frames; j++) {
+      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
+      // Change the bit resolution on each sample
+      //cout << tmp_sample[j] << endl;
+      fromBitToSampleConversion(&output_packet[(i*mSizeInBytesPerChannel)
+                                               + (j*mBitResolutionMode)],
+                                &tmp_sample[j],
+                                mBitResolutionMode);
+    }
+  }
 }
-*/
+
+
 
 //*******************************************************************************
-/*
-void AudioInterface::computeNetworkProcessToNetwork(float* output_buffer,
-                                                    float* input_buffer,
-                                                    unsigned int num_buffer_frames,
-                                                    unsigned int num_channels)
+void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
+                                             QVarLengthArray<sample_t*>& out_buffer,
+                                             int8_t* input_packet,
+                                             int8_t* output_packet,
+                                             unsigned int n_frames,
+                                             QVarLengthArray<sample_t*>& in_process_buffer,
+                                             QVarLengthArray<sample_t*>& out_process_buffer)
 {
+  // Input Process (from JACK to NETWORK)
+  // ----------------------------------------------------------------
+  // Concatenate  all the channels from jack to form packet
+  for (int i = 0; i < mNumInChans; i++) {
+    //--------
+    // This should be faster for 32 bits
+    //std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
+    //		mSizeInBytesPerChannel);
+    //--------
+    sample_t* tmp_sample = in_buffer[i]; //sample buffer for channel i
+    sample_t* tmp_process_sample = out_process_buffer[i]; //sample buffer from the output process
+    sample_t tmp_result;
+    for (unsigned int j = 0; j < n_frames; j++) {
+      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
+      // Change the bit resolution on each sample
 
+      // Add the input jack buffer to the buffer resulting from the output process
+      tmp_result = tmp_sample[j] + tmp_process_sample[j];
+      fromSampleToBitConversion(&tmp_result,
+                                &input_packet[(i*mSizeInBytesPerChannel)
+                                              + (j*mBitResolutionMode)],
+                                mBitResolutionMode);
+    }
+  }
+  // Send Audio buffer to Network
+  mJackTrip->sendNetworkPacket( input_packet );
 }
-*/
+
+
 
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
@@ -217,5 +312,14 @@ void AudioInterface::fromBitToSampleConversion
       std::memcpy(output, input, 4); // 4 bytes
       break;
     }
+}
+
+
+//*******************************************************************************
+void AudioInterface::appendProcessPlugin(ProcessPlugin* plugin)
+{
+  /// \todo check that channels in ProcessPlugins are less or same that jack channels
+  if ( plugin->getNumInputs() ) {}
+  mProcessPlugins.append(plugin);
 }
 
