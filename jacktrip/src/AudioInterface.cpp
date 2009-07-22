@@ -172,11 +172,9 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
                                                unsigned int n_frames)
 {
   /// \todo cast *mInBuffer[i] to the bit resolution
-  //cout << mNumFrames << endl;
   // Output Process (from NETWORK to JACK)
   // ----------------------------------------------------------------
   // Read Audio buffer from RingBuffer (read from incoming packets)
-  //mOutRingBuffer->readSlotNonBlocking( mOutputPacket );
   mJackTrip->receiveNetworkPacket( mOutputPacket );
 
   // Extract separate channels to send to Jack
@@ -188,9 +186,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
     //--------
     sample_t* tmp_sample = out_buffer[i]; //sample buffer for channel i
     for (unsigned int j = 0; j < n_frames; j++) {
-      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
       // Change the bit resolution on each sample
-      //cout << tmp_sample[j] << endl;
       fromBitToSampleConversion(&mOutputPacket[(i*mSizeInBytesPerChannel)
                                                + (j*mBitResolutionMode)],
                                 &tmp_sample[j],
@@ -218,9 +214,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output process
     sample_t tmp_result;
     for (unsigned int j = 0; j < n_frames; j++) {
-      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
       // Change the bit resolution on each sample
-
       // Add the input jack buffer to the buffer resulting from the output process
       tmp_result = tmp_sample[j] + tmp_process_sample[j];
       fromSampleToBitConversion(&tmp_result,

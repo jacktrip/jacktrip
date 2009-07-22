@@ -68,7 +68,6 @@ int main(int argc, char** argv)
   }
 
   if ( testing ) {
-    /*
     cout << "=========TESTING=========" << endl;
     //main_tests(argc, argv); // test functions
     JackTrip jacktrip;
@@ -78,7 +77,6 @@ int main(int argc, char** argv)
     //rtaudio.printDeviceInfo(0);
 
     while (true) sleep(9999);
-    */
   }
   else {
     //---------------------------------------
