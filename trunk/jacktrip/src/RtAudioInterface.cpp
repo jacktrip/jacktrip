@@ -54,11 +54,7 @@ AudioInterface(jacktrip,
                AudioBitResolution),
 mJackTrip(jacktrip),
 mRtAudio(NULL)
-{
-  // Initialize Buffer array to read and write audio
-  mInBuffer.resize(getNumInputChannels());
-  mOutBuffer.resize(getNumOutputChannels());
-}
+{}
 
 
 //*******************************************************************************
@@ -71,6 +67,12 @@ RtAudioInterface::~RtAudioInterface()
 //*******************************************************************************
 void RtAudioInterface::setup()
 {
+  // Initialize Buffer array to read and write audio and members
+  mNumInChans = getNumInputChannels();
+  mNumOutChans = getNumOutputChannels();
+  mInBuffer.resize(getNumInputChannels());
+  mOutBuffer.resize(getNumOutputChannels());
+
   cout << "Settin Up Default RtAudio Interface" << endl;
   cout << gPrintSeparator << endl;
   mRtAudio = new RtAudio;
@@ -87,7 +89,6 @@ void RtAudioInterface::setup()
   // use default devices
   deviceId_input = mRtAudio->getDefaultInputDevice();
   deviceId_output = mRtAudio->getDefaultOutputDevice();
-
 
   cout << "DEFAULT INPUT DEVICE  : " << endl;
   printDeviceInfo(deviceId_input);
@@ -120,6 +121,7 @@ void RtAudioInterface::setup()
     exit( 0 );
   }
 
+  // Setup parent class
   AudioInterface::setup();
 }
 
@@ -175,11 +177,11 @@ int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
 
   // Get input and output buffers
   //-------------------------------------------------------------------
-  for (int i = 0; i < getNumInputChannels(); i++) {
+  for (int i = 0; i < mNumInChans; i++) {
     // Input Ports are READ ONLY
     mInBuffer[i] = inputBuffer_sample+(nFrames*i);
   }
-  for (int i = 0; i < getNumOutputChannels(); i++) {
+  for (int i = 0; i < mNumOutChans; i++) {
     // Output Ports are WRITABLE
     mOutBuffer[i] = outputBuffer_sample+(nFrames*i);
   }
@@ -203,7 +205,11 @@ int RtAudioInterface::wrapperRtAudioCallback(void *outputBuffer, void *inputBuff
 //*******************************************************************************
 int RtAudioInterface::startProcess() const
 {
-  mRtAudio->startStream();
+  try { mRtAudio->startStream(); }
+  catch ( RtError& e ) {
+    std::cout << '\n' << e.getMessage() << '\n' << std::endl;
+    return(-1);
+  }
   return(0);
 }
 
@@ -214,7 +220,8 @@ int RtAudioInterface::stopProcess() const
   try { mRtAudio->closeStream(); }
   catch ( RtError& e ) {
     std::cout << '\n' << e.getMessage() << '\n' << std::endl;
-    return(-1); }
+    return(-1);
+  }
   return 0;
 }
 

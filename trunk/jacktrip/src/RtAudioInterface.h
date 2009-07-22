@@ -87,6 +87,8 @@ private:
   void printDeviceInfo(unsigned int deviceId);
 
   JackTrip* mJackTrip; ///< JackTrip Mediator Class pointer
+  int mNumInChans;///< Number of Input Channels
+  int mNumOutChans; ///<  Number of Output Channels
   QVarLengthArray<float*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
   QVarLengthArray<float*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
   RtAudio* mRtAudio; ///< RtAudio class
