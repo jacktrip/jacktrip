@@ -236,6 +236,11 @@ public:
 
   virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
   { mAudiointerfaceMode = audiointerface_mode; }
+
+  void setSampleRate(uint32_t sample_rate)
+  { mSampleRate = sample_rate; }
+  void setAudioBufferSizeInSamples(uint32_t buf_size)
+  { mAudioBufferSize = buf_size; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -258,10 +263,12 @@ public:
   { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
   uint32_t getBufferSizeInSamples() const
   { return mAudioInterface->getBufferSizeInSamples(); }
+
   RtAudioInterface::samplingRateT getSampleRateType() const
   { return mAudioInterface->getSampleRateType(); }
   int getSampleRate() const
   { return mAudioInterface->getSampleRate(); }
+
   uint8_t getAudioBitResolution() const
   { return mAudioInterface->getAudioBitResolution(); }
   int getNumInputChannels() const
@@ -321,8 +328,8 @@ signals:
 
 public:
 
-  /// \brief Set the JackAudioInteface object
-  virtual void setupJackAudio();
+  /// \brief Set the AudioInteface object
+  virtual void setupAudio();
   /// \brief Close the JackAudioInteface and disconnects it from JACK
   void closeJackAudio();
   /// \brief Set the DataProtocol objects
@@ -347,7 +354,7 @@ private:
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   uint32_t mSampleRate; ///< Sample Rate
-  //uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
+  uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
   AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 

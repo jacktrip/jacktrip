@@ -69,7 +69,9 @@ Settings::Settings() :
   mEmptyHeader(false),
   mJackTripServer(false),
   mRedundancy(1),
-  mUseJack(true)
+  mUseJack(true),
+  mChanfeDefaultSR(false),
+  mChanfeDefaultBS(false)
 {}
 
 //*******************************************************************************
@@ -113,6 +115,8 @@ void Settings::parseInput(int argc, char** argv)
     { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
     { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
     { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
+    { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
+    { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
@@ -123,7 +127,7 @@ void Settings::parseInput(int argc, char** argv)
   /// \todo Specify mandatory arguments
   int ch;
   while ( (ch = getopt_long(argc, argv,
-                            "n:sc:SC:o:B:P:q:r:b:zljeJ:Rvh", longopts, NULL)) != -1 )
+                            "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vh", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -220,6 +224,16 @@ void Settings::parseInput(int argc, char** argv)
     case 'R':
       //-------------------------------------------------------
       mUseJack = false;
+      break;
+    case 'T': // Sampling Rate
+      //-------------------------------------------------------
+      mChanfeDefaultSR = true;
+      mSampleRate = atoi(optarg);
+      break;
+    case 'F': // Buffer Size
+      //-------------------------------------------------------
+      mChanfeDefaultBS = true;
+      mAudioBufferSize = atoi(optarg);
       break;
     case 'v':
       //-------------------------------------------------------
@@ -359,6 +373,16 @@ void Settings::startJackTrip()
     // Set RtAudio
     if (!mUseJack) {
       mJackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
+    }
+
+    // Chanfe default Sampling Rate
+    if (mChanfeDefaultSR) {
+      mJackTrip->setSampleRate(mSampleRate);
+    }
+
+    // Chanfe default Buffer Size
+    if (mChanfeDefaultBS) {
+      mJackTrip->setAudioBufferSizeInSamples(mAudioBufferSize);
     }
 
     // Add Plugins
