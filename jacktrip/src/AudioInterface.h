@@ -131,7 +131,12 @@ public:
   static void fromBitToSampleConversion(const int8_t* const input,
                                         sample_t* output,
                                         const AudioInterface::audioBitResolutionT sourceBitResolution);
-
+  /** \brief Helper function to get the sample rate (in Hz) for a
+   * JackAudioInterface::samplingRateT
+   * \param rate_type  JackAudioInterface::samplingRateT enum type
+   * \return Sample Rate in Hz
+   */
+  static int getSampleRateFromType(samplingRateT rate_type);
 
   //--------------SETTERS---------------------------------------------
   virtual void setNumInputChannels(int nchannels)
