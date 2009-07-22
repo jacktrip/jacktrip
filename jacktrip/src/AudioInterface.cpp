@@ -75,7 +75,6 @@ void AudioInterface::setup()
   mOutProcessBuffer.resize(mNumOutChans);
 
   int nframes = getBufferSizeInSamples();
-  cout << "nframe =============== " << nframes << endl;
   for (int i = 0; i < mNumInChans; i++) {
     mInProcessBuffer[i] = new sample_t[nframes];
     // set memory to 0
@@ -161,8 +160,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
   // --------------------------------
   computeProcessToNetwork(in_buffer, out_buffer,
                           input_packet, output_packet,
-                          n_frames,
-                          mInProcessBuffer, mOutProcessBuffer);
+                          n_frames);//,
+                          //mInProcessBuffer, mOutProcessBuffer);
 
 
   ///************PROTORYPE FOR CELT**************************
@@ -227,9 +226,9 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
                                              QVarLengthArray<sample_t*>& /*out_buffer*/,
                                              int8_t* input_packet,
                                              int8_t* /*output_packet*/,
-                                             unsigned int n_frames,
-                                             QVarLengthArray<sample_t*>& /*in_process_buffer*/,
-                                             QVarLengthArray<sample_t*>& out_process_buffer)
+                                             unsigned int n_frames)//,
+                                             //QVarLengthArray<sample_t*>& /*in_process_buffer*/,
+                                             //QVarLengthArray<sample_t*>& /*out_process_buffer*/)
 {
   // Input Process (from JACK to NETWORK)
   // ----------------------------------------------------------------
@@ -241,7 +240,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     //		mSizeInBytesPerChannel);
     //--------
     sample_t* tmp_sample = in_buffer[i]; //sample buffer for channel i
-    sample_t* tmp_process_sample = out_process_buffer[i]; //sample buffer from the output process
+    sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output process
     sample_t tmp_result;
     for (unsigned int j = 0; j < n_frames; j++) {
       //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);

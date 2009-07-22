@@ -182,9 +182,9 @@ private:
                                QVarLengthArray<sample_t*>& out_buffer,
                                int8_t* input_packet,
                                int8_t* output_packet,
-                               unsigned int n_frames,
-                               QVarLengthArray<sample_t*>& in_process_buffer,
-                               QVarLengthArray<sample_t*>& out_process_buffer);
+                               unsigned int n_frames);//,
+                               //QVarLengthArray<sample_t*>& in_process_buffer,
+                               //QVarLengthArray<sample_t*>& out_process_buffer);
 
   JackTrip* mJackTrip;
 
