@@ -187,14 +187,12 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
     sample_t* tmp_sample = out_buffer[i]; //sample buffer for channel i
     for (unsigned int j = 0; j < n_frames; j++) {
       // Change the bit resolution on each sample
-      fromBitToSampleConversion(&mOutputPacket[(i*mSizeInBytesPerChannel)
-                                               + (j*mBitResolutionMode)],
-                                &tmp_sample[j],
-                                mBitResolutionMode);
+      fromBitToSampleConversion(
+          &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
+          &tmp_sample[j], mBitResolutionMode );
     }
   }
 }
-
 
 
 //*******************************************************************************
@@ -217,10 +215,10 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
       // Change the bit resolution on each sample
       // Add the input jack buffer to the buffer resulting from the output process
       tmp_result = tmp_sample[j] + tmp_process_sample[j];
-      fromSampleToBitConversion(&tmp_result,
-                                &mInputPacket[(i*mSizeInBytesPerChannel)
-                                              + (j*mBitResolutionMode)],
-                                mBitResolutionMode);
+      fromSampleToBitConversion(
+          &tmp_result,
+          &mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
+          mBitResolutionMode );
     }
   }
   // Send Audio buffer to Network
