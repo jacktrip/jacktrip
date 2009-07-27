@@ -45,8 +45,10 @@
 
 /** \brief Class to set usage options and parse settings from input
  */
-class Settings
+class Settings : public QThread
 {
+  Q_OBJECT;
+
 public:
   Settings();
   virtual ~Settings();
@@ -60,7 +62,15 @@ public:
   /// \brief Prints usage help
   void printUsage();
 
-  bool getLoopBack() { return mLoopBack; };
+  bool getLoopBack() { return mLoopBack; }
+
+
+public slots:
+  void slotExitProgram()
+  {
+    std::cerr << "Exiting JackTrip..." << std::endl;
+    std::exit(1);
+  }
 
 private:
   JackTrip* mJackTrip; ///< JackTrip class
