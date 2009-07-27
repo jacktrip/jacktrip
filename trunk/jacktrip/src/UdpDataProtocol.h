@@ -38,6 +38,8 @@
 #ifndef __UDPDATAPROTOCOL_H__
 #define __UDPDATAPROTOCOL_H__
 
+#include <stdexcept>
+
 #include <QThread>
 #include <QUdpSocket>
 #include <QHostAddress>
@@ -85,7 +87,7 @@ public:
   /** \brief Set the Peer address to connect to
    * \param peerHostOrIP IPv4 number or host name
    */
-  void setPeerAddress(const char* peerHostOrIP);
+  void setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument);
 
   /** \brief Receives a packet. It blocks until a packet is received
    *
@@ -145,6 +147,8 @@ signals:
   /// \brief Signals when waiting every 10 milliseconds, with the total wait on wait_msec
   /// \param wait_msec Total wait in milliseconds
   void signalWatingTooLong(int wait_msec);
+
+  void signalError(QString error_message);
 
 
 //private:

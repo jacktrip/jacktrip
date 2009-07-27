@@ -39,6 +39,7 @@
 #define __JACKTRIP_H__
 
 #include <tr1/memory> //for shared_ptr
+#include <stdexcept>
 
 #include <QObject>
 #include <QString>
@@ -129,7 +130,7 @@ public:
   virtual void appendProcessPlugin(ProcessPlugin* plugin);
 
   /// \brief Start the processing threads
-  virtual void start();
+  virtual void start() throw(std::invalid_argument);
 
   /// \brief Stop the processing threads
   virtual void stop();
@@ -317,12 +318,12 @@ public slots:
       emit signalNoUdpPacketsForSeconds();
     }
   }
-  
+
 
 signals:
-  /// \brieg Signal emitted when all the processes and threads are stopped
+  /// \brief Signal emitted when all the processes and threads are stopped
   void signalProcessesStopped();
-  /// \brieg Signal emitted when no UDP Packets have been received for a while
+  /// \brief Signal emitted when no UDP Packets have been received for a while
   void signalNoUdpPacketsForSeconds();
 
 
@@ -337,9 +338,9 @@ public:
   /// \brief Set the RingBuffer objects
   void setupRingBuffers();
   /// \brief Starts for the CLIENT mode
-  void clientStart();
+  void clientStart() throw(std::invalid_argument);
   /// \brief Starts for the SERVER mode
-  void serverStart();
+  void serverStart() throw(std::runtime_error);
   /// \brief Stats for the Client to Ping Server
   void clientPingToServerStart();
 

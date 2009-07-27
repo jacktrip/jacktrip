@@ -245,37 +245,46 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 
 
 //*******************************************************************************
-void JackTrip::start()
+void JackTrip::start() throw(std::invalid_argument)
 {
   // Check if ports are already binded by another process on this machine
+  // ------------------------------------------------------------------
   checkIfPortIsBinded(mReceiverBindPort);
   checkIfPortIsBinded(mSenderBindPort);
 
   // Set all classes and parameters
+  // ------------------------------
   setupAudio();
   createHeader(mPacketHeaderType);
   setupDataProtocol();
   setupRingBuffers();
 
+  // Connect Signals and Slots
+  // -------------------------
+  QObject::connect(mPacketHeader, SIGNAL(signalError(const char*)),
+                   this, SLOT(slotStopProcesses()));
+
   // Start the threads for the specific mode
+  // ---------------------------------------
   switch ( mJackTripMode )
-    {
-    case CLIENT :
-      clientStart();
-      break;
-    case SERVER :
-      serverStart();
-      break;
-    case CLIENTTOPINGSERVER :
-      clientPingToServerStart();
-      break;
-    default: 
-      throw std::invalid_argument("Jacktrip Mode  undefined");
-      break;
-    }
-  
+  {
+  case CLIENT :
+    clientStart();
+    break;
+  case SERVER :
+    serverStart();
+    break;
+  case CLIENTTOPINGSERVER :
+    clientPingToServerStart();
+    break;
+  default:
+    throw std::invalid_argument("Jacktrip Mode  undefined");
+    break;
+  }
+
   // Start Threads
   mAudioInterface->startProcess();
+
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
     mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
   }
@@ -315,14 +324,13 @@ void JackTrip::wait()
 
 
 //*******************************************************************************
-void JackTrip::clientStart()
+void JackTrip::clientStart() throw(std::invalid_argument)
 {
   // For the Client mode, the peer (or server) address has to be specified by the user
   if ( mPeerAddress.isEmpty() ) {
     throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
   }
   else {
-    // Set the peer address
     mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
     mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
     cout << "Peer Address set to: " << mPeerAddress.toStdString() << std::endl;
@@ -332,7 +340,7 @@ void JackTrip::clientStart()
 
 
 //*******************************************************************************
-void JackTrip::serverStart()
+void JackTrip::serverStart() throw(std::runtime_error)
 {
   // Set the peer address
   if ( !mPeerAddress.isEmpty() ) {

@@ -42,6 +42,9 @@
 #include <tr1/memory> // for shared_ptr
 #include <cstring>
 
+#include <QObject>
+#include <QString>
+
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
 class JackTrip; // Forward Declaration
@@ -109,8 +112,10 @@ struct JamLinkHeaderStuct : public HeaderStruct
 /** \brief Base class for header type. Subclass this struct to
  * create a new header.
  */
-class PacketHeader
+class PacketHeader : public QObject
 {
+  Q_OBJECT;
+
 public:
   /// \brief The class Constructor
   PacketHeader(JackTrip* jacktrip);
@@ -126,7 +131,7 @@ public:
   /// reference to JackAudio
   virtual void fillHeaderCommonFromAudio() = 0;
 
-  /* \brief Parse the packet header and take appropriate measures (like change settings, or 
+  /** \brief Parse the packet header and take appropriate measures (like change settings, or
    * quit the program if peer settings don't match)
    */
   virtual void parseHeader() = 0;
@@ -136,14 +141,13 @@ public:
   virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const = 0;
 
 
-  /* \brief Increase sequence number for counter, a 16bit number
-   */
+  /// \brief Increase sequence number for counter, a 16bit number
   virtual void increaseSequenceNumber()
   {
     mSeqNumber++;
-  };
+  }
 
-  /* \brief Returns the current sequence number
+  /** \brief Returns the current sequence number
    * \return 16bit Sequence number
    */
   virtual uint16_t getSequenceNumber() const
@@ -151,8 +155,7 @@ public:
     return mSeqNumber;
   }
 
-  /* \brief Get the header size in bytes
-   */
+  /// \brief Get the header size in bytes
   virtual int getHeaderSizeInBytes() const = 0;
 
 
@@ -161,13 +164,18 @@ public:
   {
     std::memcpy(full_packet, reinterpret_cast<const void*>(&header_struct),
 		getHeaderSizeInBytes() );
-  };
+  }
 
-  /* \brief Put the header in buffer pointed by full_packet
+  /** \brief Put the header in buffer pointed by full_packet
    * \param full_packet Pointer to full packet (audio+header). Size must be
    * sizeof(header part) + sizeof(audio part)
    */
   virtual void putHeaderInPacket(int8_t* full_packet) = 0;
+
+
+signals:
+  void signalError(const char* error_message);
+
 
 private:
   uint16_t mSeqNumber;

@@ -350,6 +350,10 @@ void Settings::startJackTrip()
     //	    mBufferQueueLength, mAudioBitResolution);
     mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
 			     mBufferQueueLength, mRedundancy, mAudioBitResolution);
+
+    // Connect Signals and Slots
+    QObject::connect(mJackTrip, SIGNAL( signalProcessesStopped() ),
+                     this, SLOT( slotExitProgram() ));
     
     // Change client name if different from default
     if (mClientName != NULL) {

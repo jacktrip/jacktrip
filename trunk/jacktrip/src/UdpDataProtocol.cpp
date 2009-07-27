@@ -82,14 +82,18 @@ UdpDataProtocol::~UdpDataProtocol()
 
 
 //*******************************************************************************
-void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
+void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument)
 {
   mPeerAddress.setAddress(peerHostOrIP);
   // check if the ip address is valid
   if ( mPeerAddress.isNull() ) {
-    std::cerr << "ERROR: Incorrect presentation format address" << endl;
-    std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
-    throw std::invalid_argument("");
+    QString error_message = "Incorrect presentation format address\n '";
+    error_message.append(peerHostOrIP);
+    error_message.append("' is not a valid IP address");
+    //std::cerr << "ERROR: Incorrect presentation format address" << endl;
+    //std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
+    //throw std::invalid_argument("Incorrect presentation format address");
+    throw std::invalid_argument( error_message.toStdString());
   }
   /*
   else {
