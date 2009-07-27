@@ -93,39 +93,39 @@ void UdpMasterListener::run()
   cout << "Waiting for client..." << endl;
   cout << "=======================================================" << endl;
   while ( !mStopped )
+  {
+    //cout << "WAITING........................." << endl;
+    while ( MasterUdpSocket.hasPendingDatagrams() )
     {
-      //cout << "WAITING........................." << endl;
-      while ( MasterUdpSocket.hasPendingDatagrams() ) 
-	{
-	  //cout << "Received request from Client!" << endl;
-	  // Get Client IP Address and outgoing port from packet
-	  int rv = MasterUdpSocket.readDatagram(buf, 1, &PeerAddress, &peer_port);
-	  //cout << "Peer Port in Server ==== " << peer_port << endl;
-	  if (rv < 0) { std::cerr << "ERROR: Bad UDP packet read..." << endl; }
+      //cout << "Received request from Client!" << endl;
+      // Get Client IP Address and outgoing port from packet
+      int rv = MasterUdpSocket.readDatagram(buf, 1, &PeerAddress, &peer_port);
+      //cout << "Peer Port in Server ==== " << peer_port << endl;
+      if (rv < 0) { std::cerr << "ERROR: Bad UDP packet read..." << endl; }
 
-	  /// \todo Get number of channels in the client from header
+      /// \todo Get number of channels in the client from header
 
-	  // check by comparing 32-bit addresses
-	  /// \todo Add the port number in the comparison
-	  int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
+      // check by comparing 32-bit addresses
+      /// \todo Add the port number in the comparison
+      int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
 
-	  //cout << "IDIDIDIDIDDID === " << id << endl;
+      //cout << "IDIDIDIDIDDID === " << id << endl;
 
-	  // If the address is new, create a new thread in the pool
-	  if (id >= 0) // old address is -1
-	    {
-	      // redirect port and spawn listener
-	      sendToPoolPrototype(id);
-	      // wait until one is complete before another spawns
-	      while (mJTWorker->isSpawning()) { QThread::msleep(1); }
-	      mTotalRunningThreads++;
-	      cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
-	      cout << "=======================================================" << endl;
-	    }
-	  //cout << "ENDDDDDDDDDDDDDDDDDd === " << id << endl;
-	}
-      QThread::msleep(100);
+      // If the address is new, create a new thread in the pool
+      if (id >= 0) // old address is -1
+      {
+        // redirect port and spawn listener
+        sendToPoolPrototype(id);
+        // wait until one is complete before another spawns
+        while (mJTWorker->isSpawning()) { QThread::msleep(1); }
+        mTotalRunningThreads++;
+        cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
+        cout << "=======================================================" << endl;
+      }
+      //cout << "ENDDDDDDDDDDDDDDDDDd === " << id << endl;
     }
+    QThread::msleep(100);
+  }
 }
 
 

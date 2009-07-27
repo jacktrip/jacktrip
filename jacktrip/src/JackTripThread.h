@@ -47,11 +47,11 @@
 class JackTripThread : public QThread
 {
 public:
-  JackTripThread(JackTrip::jacktripModeT JacktripMode) : mJackTripMode(JacktripMode) {};
-  virtual ~JackTripThread(){};
+  JackTripThread(JackTrip::jacktripModeT JacktripMode) : mJackTripMode(JacktripMode) {}
+  virtual ~JackTripThread(){}
   void run();
 
-  void setPort(int port_num) { mPortNum = port_num; } ;
+  void setPort(int port_num) { mPortNum = port_num; }
   void setPeerAddress(const char* PeerHostOrIP) { mPeerAddress = PeerHostOrIP; }
 
 private:

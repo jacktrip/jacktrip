@@ -63,21 +63,18 @@ public:
   UdpMasterListener(int server_port = gServerUdpPort);
   virtual ~UdpMasterListener();
   
-  /** \brief Implements the Thread Loop. To start the thread, call start()
-   * ( DO NOT CALL run() )
-   */
+  /// \brief Implements the Thread Loop. To start the thread, call start()
+  /// ( DO NOT CALL run() )
   void run();
 
   /// \brief Stops the execution of the Thread
-  void stop() { mStopped = true; };
+  void stop() { mStopped = true; }
 
   int releasePort(int id);
 
 private slots:
   void testRecieve()
-  {
-    std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl;
-  }
+  { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
 
 signals:
   void Listening();
@@ -91,7 +88,7 @@ private:
    */
   static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
-  /* \brief Send the JackTripWorker to the thread pool. This will run
+  /** \brief Send the JackTripWorker to the thread pool. This will run
    * until it's done. We still have control over the prototype class.
    * \param id Identification Number
    */

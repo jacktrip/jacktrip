@@ -74,7 +74,6 @@ JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener) :
 JackTripWorker::~JackTripWorker()
 {
   delete mUdpMasterListener;
-  
 }
 
 
