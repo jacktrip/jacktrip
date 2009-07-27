@@ -324,7 +324,7 @@ void Settings::printUsage()
 void Settings::startJackTrip()
 {
 
-  ///\todo Change this, just here to test
+  /// \todo Change this, just here to test
   if ( mJackTripServer ) {
     UdpMasterListener* udpmaster = new UdpMasterListener;
     udpmaster->start();
