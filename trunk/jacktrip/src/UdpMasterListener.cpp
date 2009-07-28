@@ -70,7 +70,7 @@ UdpMasterListener::UdpMasterListener(int server_port) :
 //*******************************************************************************
 UdpMasterListener::~UdpMasterListener()
 {
-  mThreadPool.waitForDone ();
+  mThreadPool.waitForDone();
   delete mJTWorker;
 }
 
@@ -134,8 +134,8 @@ void UdpMasterListener::sendToPoolPrototype(int id)
 {
   cout << "id ID **********@@@@@@@@@@@@@@@@@@@@@************** " << id <<  endl;
   mJTWorker->setJackTrip(id, mActiveAddress[id][0],
-			 mBasePort+(2*id), mActiveAddress[id][1],
-			 1); /// \todo temp default to 1 channel
+                         mBasePort+(2*id), mActiveAddress[id][1],
+                         1); /// \todo temp default to 1 channel
   mThreadPool.start(mJTWorker, QThread::TimeCriticalPriority); //send one thread to the pool
 }
 
@@ -145,7 +145,7 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 {
   // QHostAddress::Any : let the kernel decide the active address
   if ( !udpsocket.bind(QHostAddress::Any,
-			port, QUdpSocket::DefaultForPlatform) ) {
+                       port, QUdpSocket::DefaultForPlatform) ) {
     //std::cerr << "ERROR: could not bind UDP socket" << endl;
     //std::exit(1);
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
@@ -165,10 +165,10 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
   bool busyAddress = false;
   int id = 0;
   while ( !busyAddress && (id<mThreadPool.activeThreadCount()) )
-    {
-      if ( address==mActiveAddress[id][0] &&  port==mActiveAddress[id][1]) { busyAddress = true; }
-      id++;
-    }      
+  {
+    if ( address==mActiveAddress[id][0] &&  port==mActiveAddress[id][1]) { busyAddress = true; }
+    id++;
+  }
   if ( !busyAddress ) { 
     mActiveAddress[id][0] = address;
     mActiveAddress[id][1] = port;

@@ -39,6 +39,8 @@
 #ifndef __SETTINGS_H__
 #define __SETTINGS_H__
 
+#include <cstdlib>
+
 #include "DataProtocol.h"
 #include "JackAudioInterface.h"
 #include "JackTrip.h"

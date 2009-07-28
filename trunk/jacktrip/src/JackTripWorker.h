@@ -93,9 +93,7 @@ public:
 
 private slots:
   void slotTest()
-  {
-    std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl;
-  }
+  { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
 
 
 private:
