@@ -98,64 +98,62 @@ void JackTripWorker::setJackTrip(int id, uint32_t client_address,
 //*******************************************************************************
 void JackTripWorker::run()
 {
-  /*
-    NOTE: This is the message that qt prints when an exception is thrown:
+  /* NOTE: This is the message that qt prints when an exception is thrown:
     'Qt Concurrent has caught an exception thrown from a worker thread.
     This is not supported, exceptions thrown in worker threads must be
-    caught before control returns to Qt Concurrent.'
-  */
+    caught before control returns to Qt Concurrent.'*/
   
   // Try catching any exceptions that come from JackTrip
   try 
-    {
-      // Local event loop. this is necesary because QRunnables don't have their own as QThreads
-      QEventLoop event_loop;
-      
-      // Create and setup JackTrip Object
-      JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
-      jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
-      jacktrip.setBindPorts(mServerPort);
-      jacktrip.setPeerPorts(mClientPort-1);
+  {
+    // Local event loop. this is necesary because QRunnables don't have their own as QThreads
+    QEventLoop event_loop;
 
-      // Connect signals and slots
-      // -------------------------
-      QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
-		       &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    // Create and setup JackTrip Object
+    JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
+    jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
+    jacktrip.setBindPorts(mServerPort);
+    jacktrip.setPeerPorts(mClientPort-1);
 
-      // Connection to terminate the local eventloop when jacktrip is done
-      QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
-      		       &event_loop, SLOT(quit()), Qt::QueuedConnection);
+    // Connect signals and slots
+    // -------------------------
+    QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
+                     &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
-      // Karplus Strong String
-      NetKS netks;
-      jacktrip.appendProcessPlugin(&netks);
-      // Play the String
-      QTimer timer;
-      QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
-		       Qt::QueuedConnection);
-      timer.start(300);
-      
-      // Start Threads and event loop
-      jacktrip.start();
-      
-      { // Thread is already spawning, so release the lock
-	QMutexLocker locker(&mMutex);
-	mSpawning = false;
-      }
-      
-      event_loop.exec(); // Excecution will block here until exit() the QEventLoop
-      //--------------------------------------------------------------------------
-      
-      // wait for jacktrip to be done before exiting the Worker Thread
-      jacktrip.wait();
-      
+    // Connection to terminate the local eventloop when jacktrip is done
+    QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
+                     &event_loop, SLOT(quit()), Qt::QueuedConnection);
+
+    // Karplus Strong String
+    NetKS netks;
+    jacktrip.appendProcessPlugin(&netks);
+    // Play the String
+    QTimer timer;
+    QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
+                     Qt::QueuedConnection);
+    timer.start(300);
+
+    // Start Threads and event loop
+    jacktrip.start();
+
+    { // Thread is already spawning, so release the lock
+      QMutexLocker locker(&mMutex);
+      mSpawning = false;
     }
+
+    event_loop.exec(); // Excecution will block here until exit() the QEventLoop
+    //--------------------------------------------------------------------------
+
+    // wait for jacktrip to be done before exiting the Worker Thread
+    jacktrip.wait();
+
+  }
   catch ( const std::exception & e )
-    {
-      std::cerr << "Couldn't send thread to the Pool" << endl;
-      std::cerr << e.what() << endl;
-      std::cerr << gPrintSeparator << endl;
-    }
+  {
+    std::cerr << "Couldn't send thread to the Pool" << endl;
+    std::cerr << e.what() << endl;
+    std::cerr << gPrintSeparator << endl;
+  }
   
   mUdpMasterListener->releasePort(mID);
   { 
