@@ -137,7 +137,7 @@ public:
 
   /// \brief Wait for all the threads to finish. This functions is used when JackTrip is 
   /// run as a thread
-  virtual void wait();
+  virtual void waitThreads();
 
   /// \brief Check if UDP port is already binded
   /// \param port Port number
@@ -302,7 +302,7 @@ public slots:
   void slotStopProcesses()
   {
     std::cout << "Stopping JackTrip..." << std::endl;
-    stop();
+    this->stop();
   }
 
   /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds

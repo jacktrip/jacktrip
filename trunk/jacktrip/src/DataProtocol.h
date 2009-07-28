@@ -43,6 +43,7 @@
 #include <arpa/inet.h> //inet(3) functions
 #include <netdb.h>
 #include <tr1/memory> //for shared_ptr
+#include <iostream>
 
 #include <QThread>
 #include <QHostAddress>
@@ -82,6 +83,8 @@ class JackTrip; // forward declaration
  */
 class DataProtocol : public QThread
 {
+  Q_OBJECT;
+
 public:
 
   //----------ENUMS------------------------------------------
@@ -123,17 +126,17 @@ public:
   virtual void run() = 0;
 
   /// \brief Stops the execution of the Thread
-  virtual void stop() { mStopped = true; };
+  virtual void stop() { mStopped = true; }
 
   /** \brief Sets the size of the audio part of the packets
    * \param size_bytes Size in bytes
    */
-  void setAudioPacketSize(const size_t size_bytes){ mAudioPacketSize = size_bytes; };
+  void setAudioPacketSize(const size_t size_bytes){ mAudioPacketSize = size_bytes; }
 
   /** \brief Get the size of the audio part of the packets
    * \return size_bytes Size in bytes
    */
-  size_t getAudioPacketSizeInBites() { return(mAudioPacketSize); };
+  size_t getAudioPacketSizeInBites() { return(mAudioPacketSize); }
 
   /** \brief Set the peer address
    * \param peerHostOrIP IPv4 number or host name
@@ -150,12 +153,18 @@ public:
   //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
   //				     uint16_t& port) = 0;
 
+
+signals:
+
+  void signalError(const char* error_message);
+
+
 protected:
 
   /** \brief Get the Run Mode of the object
    * \return SENDER or RECEIVER
    */
-  runModeT getRunMode() const { return mRunMode; };
+  runModeT getRunMode() const { return mRunMode; }
 
   /// Boolean stop the execution of the thread
   volatile bool mStopped;

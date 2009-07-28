@@ -107,7 +107,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
 
 
 //*******************************************************************************
-void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket)
+void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error)
 {
   QMutexLocker locker(&sUdpMutex);
 
@@ -226,10 +226,23 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 void UdpDataProtocol::run()
 {
   mStopped = false;
-  
+
+  //QObject::connect(this, SIGNAL(signalError(const char*)),
+  //                 mJackTrip, SLOT(slotStopProcesses()),
+  //                 Qt::QueuedConnection);
+
   // Creat and bind sockets
   QUdpSocket UdpSocket;
-  bindSocket(UdpSocket); // Bind Socket
+  try {
+    bindSocket(UdpSocket); // Bind Socket
+  } catch ( const std::exception & e ) {
+    emit signalError( e.what() );
+    //this->terminate();
+    //this->wait();
+    cout << "AFTER EMITING" << endl;
+  }
+
+
   QHostAddress PeerAddress;
   PeerAddress = mPeerAddress;
 
@@ -261,20 +274,19 @@ void UdpDataProtocol::run()
   // Set realtime priority (function in jacktrip_globals.h)
   set_crossplatform_realtime_priority();
 
-  // Connect signals and slots for packets arriving too late notifications
-  QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
-                   this, SLOT(printUdpWaitedTooLong(int)),
-                   Qt::QueuedConnection);
-
   switch ( mRunMode )
   {
   case RECEIVER : {
+      // Connect signals and slots for packets arriving too late notifications
+      QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
+                       this, SLOT(printUdpWaitedTooLong(int)),
+                       Qt::QueuedConnection);
       //----------------------------------------------------------------------------------- 
       // Wait for the first packet to be ready and obtain address
       // from that packet
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      while ( !UdpSocket.hasPendingDatagrams() ) { QThread::msleep(100); }
+      while ( !UdpSocket.hasPendingDatagrams() && !mStopped ) { QThread::msleep(100); }
       int first_packet_size = UdpSocket.pendingDatagramSize();
       // The following line is the same as
       // int8_t* first_packet = new int8_t[first_packet_size];
