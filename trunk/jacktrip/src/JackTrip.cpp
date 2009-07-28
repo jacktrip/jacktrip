@@ -115,6 +115,7 @@ void JackTrip::setupAudio()
   // Create AudioInterface Client Object
   if ( mAudiointerfaceMode == JackTrip::JACK ) {
     mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+    mAudioInterface->setup();
     mSampleRate = mAudioInterface->getSampleRate();
     mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
     mAudioInterface->setClientName(mJackClientName);
@@ -123,9 +124,8 @@ void JackTrip::setupAudio()
     mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
     mAudioInterface->setSampleRate(mSampleRate);
     mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
+    mAudioInterface->setup();
   }
-
-  mAudioInterface->setup();
 
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << gPrintSeparator << std::endl;
