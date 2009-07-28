@@ -262,11 +262,10 @@ void JackTrip::start() throw(std::invalid_argument)
   // -------------------------
   QObject::connect(mPacketHeader, SIGNAL(signalError(const char*)),
                    this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
-
   //QObject::connect(mDataProtocolSender, SIGNAL(signalError(const char*)),
-  //                 this, SLOT(slotStopProcesses()));
+  //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
   //QObject::connect(mDataProtocolReceiver, SIGNAL(signalError(const char*)),
-  //                 this, SLOT(slotStopProcesses()));
+  //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
   // Start the threads for the specific mode
   // ---------------------------------------
@@ -391,6 +390,7 @@ void JackTrip::serverStart() throw(std::runtime_error)
 }
 
 //*******************************************************************************
+/// \todo REWRITE ALL THIS, whith carefull control for errors
 void JackTrip::clientPingToServerStart()
 {
   // For the Client mode, the peer (or server) address has to be specified by the user
@@ -406,6 +406,7 @@ void JackTrip::clientPingToServerStart()
   mAudioInterface->startProcess();
   //mAudioInterface->connectDefaultPorts();    
   mDataProtocolSender->start();
+  while ( !mDataProtocolSender->isRunning() ) { QThread::msleep(100); }
   //cout << "STARTED DATA PROTOCOL SENDER-----------------------------" << endl;
   //mDataProtocolReceiver->start();
 
@@ -414,10 +415,12 @@ void JackTrip::clientPingToServerStart()
   uint16_t server_port;
 
   // Bind the socket
+  cout << "CACUMEN1111111111111111111" << endl;
   if ( !UdpSockTemp.bind(QHostAddress::Any,
                          mReceiverBindPort,
                          QUdpSocket::DefaultForPlatform) ) {
-    throw std::runtime_error("2222Could not bind UDP socket. It may be already binded.");
+    cout << "CACUMEN22222222222222222" << endl;
+    //throw std::runtime_error("Could not bind PingToServer UDP socket. It may be already binded.");
   }
   // Listen to server response
   cout << "Waiting for server response..." << endl;
