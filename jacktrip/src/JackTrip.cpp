@@ -258,11 +258,15 @@ void JackTrip::start() throw(std::invalid_argument)
   createHeader(mPacketHeaderType);
   setupDataProtocol();
   setupRingBuffers();
-
   // Connect Signals and Slots
   // -------------------------
   QObject::connect(mPacketHeader, SIGNAL(signalError(const char*)),
-                   this, SLOT(slotStopProcesses()));
+                   this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+
+  //QObject::connect(mDataProtocolSender, SIGNAL(signalError(const char*)),
+  //                 this, SLOT(slotStopProcesses()));
+  //QObject::connect(mDataProtocolReceiver, SIGNAL(signalError(const char*)),
+  //                 this, SLOT(slotStopProcesses()));
 
   // Start the threads for the specific mode
   // ---------------------------------------
@@ -316,7 +320,7 @@ void JackTrip::stop()
 }
 
 //*******************************************************************************
-void JackTrip::wait()
+void JackTrip::waitThreads()
 {
   mDataProtocolSender->wait();
   mDataProtocolReceiver->wait();
@@ -411,9 +415,9 @@ void JackTrip::clientPingToServerStart()
 
   // Bind the socket
   if ( !UdpSockTemp.bind(QHostAddress::Any,
-			 mReceiverBindPort,
-			 QUdpSocket::DefaultForPlatform) ) {
-    throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
+                         mReceiverBindPort,
+                         QUdpSocket::DefaultForPlatform) ) {
+    throw std::runtime_error("2222Could not bind UDP socket. It may be already binded.");
   }
   // Listen to server response
   cout << "Waiting for server response..." << endl;

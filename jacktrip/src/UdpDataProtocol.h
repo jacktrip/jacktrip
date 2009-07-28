@@ -148,7 +148,7 @@ signals:
   /// \param wait_msec Total wait in milliseconds
   void signalWatingTooLong(int wait_msec);
 
-  void signalError(QString error_message);
+
 
 
 //private:
@@ -156,7 +156,7 @@ protected:
 
   /** \brief Binds the UDP socket to the available address and specified port
    */
-  void bindSocket(QUdpSocket& UdpSocket);
+  void bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error);
  
   /** \brief This function blocks until data is available for reading in the 
    * QUdpSocket. The function will timeout after timeout_msec microseconds.

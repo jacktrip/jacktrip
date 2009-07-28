@@ -349,7 +349,7 @@ void Settings::startJackTrip()
     //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
     //	    mBufferQueueLength, mAudioBitResolution);
     mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
-			     mBufferQueueLength, mRedundancy, mAudioBitResolution);
+                             mBufferQueueLength, mRedundancy, mAudioBitResolution);
 
     // Connect Signals and Slots
     QObject::connect(mJackTrip, SIGNAL( signalProcessesStopped() ),
