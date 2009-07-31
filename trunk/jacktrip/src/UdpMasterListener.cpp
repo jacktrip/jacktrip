@@ -85,90 +85,40 @@ void UdpMasterListener::run()
 {
   mStopped = false;
 
+  // Create and bind the TCP server
+  // ------------------------------
   QTcpServer TcpServer;
-  if ( !TcpServer.listen(QHostAddress::Any, 4464) ) {
-    std::cerr << "Unable to Start TCP Server" << endl;
+  if ( !TcpServer.listen(QHostAddress::Any, mServerPort) ) {
+    std::cerr << "TCP Socket Server ERROR: " << TcpServer.errorString().toStdString() <<  endl;
     std::exit(1);
   }
-
-  //QObject::connect(&TcpServer, SIGNAL(newConnection()), this, SLOT(testReceive()));
-
   cout << "TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
+
+  // Wait for Client Connections
+  // ---------------------------
   cout << "Waiting from Client..." << endl;
   while ( !TcpServer.waitForNewConnection(1000) ) {} // block until a new connection is received
   cout << "Client Connection Received!" << endl;
   QTcpSocket *clientConnection = TcpServer.nextPendingConnection();
 
-  //QThread::sleep(2);
-  cout << "SENDING PACKETS---" << endl;
-  uint16_t port = 4474;
-  cout << "PORT BYTES: " << sizeof(port) << endl;
-  char port_num[sizeof(port)];
-  //port_num = new char[sizeof(port)];
-  std::memcpy(port_num, &port, sizeof(port));
-  //cout << "Bytes Writen: " << clientConnection->write(port_num, sizeof(port)) << endl;
-  clientConnection->write(port_num, sizeof(port));
-  clientConnection->waitForBytesWritten(-1);
-  cout << "AFTER WRITTING" << endl;
-  //clientConnection->disconnectFromHost();
-  //cout << "DISCONNECT FROM HOST" << endl;
+  // Send Port Number to Client
+  // --------------------------
+  uint16_t port = 4465;
+  char port_buf[sizeof(port)];
+  std::memcpy(port_buf, &port, sizeof(port));
+  clientConnection->write(port_buf, sizeof(port));
+  while ( clientConnection->bytesToWrite() > 0 ) {
+    clientConnection->waitForBytesWritten(-1);
+  }
+  cout << "Port sent to Client" << endl;
+
+  // Close and Delete the socket
+  // ---------------------------
+  clientConnection->close();
+  delete clientConnection;
+  cout << "Client TCP Socket Closed!" << endl;
+
   while (true) { QThread::sleep(1); }
-
-
-
-
-
-  /*
-  QStringList fortunes;
-
-  fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
-              << tr("You've got to think about tomorrow.")
-              << tr("You will be surprised by a loud noise.")
-              << tr("You will feel hungry again in another hour.")
-              << tr("You might have mail.")
-              << tr("You cannot kill time without injuring eternity.")
-              << tr("Computers are not intelligent. They only think they are.");
-
-
-
-
-
-  QByteArray block;
-  QDataStream out(&block, QIODevice::WriteOnly);
-  out.setVersion(QDataStream::Qt_4_0);
-  out << (quint16)0;
-  out << fortunes.at(qrand() % fortunes.size());
-  out.device()->seek(0);
-  out << (quint16)(block.size() - sizeof(quint16));
-
-  cout << "bites written: " << clientConnection->write(block) << endl;
-  clientConnection->disconnectFromHost();
-  cout << "AFTER QT" << endl;
-  QThread::sleep(100000);
-
-
-
-
-
-  uint16_t port = 4474;
-  char* port_num;
-  port_num = new char[sizeof(port)];
-  std::memset(port_num, port, sizeof(port));
-  QThread::sleep(1);
-  clientConnection->write(port_num);
-  cout << "AFTER WRITE" << endl;
-  QThread::sleep(1000);
-  cout << "clientConnection->write(port_num) = " << clientConnection->write(port_num) << endl;
-  clientConnection->disconnectFromHost();
-  cout << "cacumen" << endl;
-  */
-
-
-
-
-
-
-
 
 
 
