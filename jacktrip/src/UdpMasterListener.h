@@ -73,7 +73,7 @@ public:
   int releasePort(int id);
 
 private slots:
-  void testRecieve()
+  void testReceive()
   { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
 
 signals:
