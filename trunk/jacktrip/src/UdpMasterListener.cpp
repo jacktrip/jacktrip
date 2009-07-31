@@ -38,6 +38,11 @@
 #include <iostream>
 #include <cstdlib>
 #include <stdexcept>
+#include <cstring>
+
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QStringList>
 
 #include "UdpMasterListener.h"
 #include "JackTripWorker.h"
@@ -80,6 +85,78 @@ void UdpMasterListener::run()
 {
   mStopped = false;
 
+  QTcpServer TcpServer;
+  if ( !TcpServer.listen(QHostAddress::Any, 4464) ) {
+    std::cerr << "Unable to Start TCP Server" << endl;
+    std::exit(1);
+  }
+
+  QObject::connect(&TcpServer, SIGNAL(newConnection()), this, SLOT(testReceive()));
+
+  cout << "TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
+  cout << "Waiting from Client..." << endl;
+  while ( !TcpServer.waitForNewConnection(100) ) {} // block until a new connection is received
+  cout << "Client Connection Received!" << endl;
+  QTcpSocket *clientConnection = TcpServer.nextPendingConnection();
+
+
+
+
+
+  QStringList fortunes;
+
+  fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
+              << tr("You've got to think about tomorrow.")
+              << tr("You will be surprised by a loud noise.")
+              << tr("You will feel hungry again in another hour.")
+              << tr("You might have mail.")
+              << tr("You cannot kill time without injuring eternity.")
+              << tr("Computers are not intelligent. They only think they are.");
+
+
+
+
+
+  QByteArray block;
+  QDataStream out(&block, QIODevice::WriteOnly);
+  out.setVersion(QDataStream::Qt_4_0);
+  out << (quint16)0;
+  out << fortunes.at(qrand() % fortunes.size());
+  out.device()->seek(0);
+  out << (quint16)(block.size() - sizeof(quint16));
+
+  clientConnection->write(block);
+  clientConnection->disconnectFromHost();
+  cout << "AFTER QT" << endl;
+  QThread::sleep(100000);
+
+
+
+
+
+  uint16_t port = 4474;
+  char* port_num;
+  port_num = new char[sizeof(port)];
+  std::memset(port_num, port, sizeof(port));
+  QThread::sleep(1);
+  clientConnection->write(port_num);
+  cout << "AFTER WRITE" << endl;
+  QThread::sleep(1000);
+  cout << "clientConnection->write(port_num) = " << clientConnection->write(port_num) << endl;
+  clientConnection->disconnectFromHost();
+  cout << "cacumen" << endl;
+
+
+
+
+
+
+
+
+
+
+
+  /*
   // Create objects on the stack
   QUdpSocket MasterUdpSocket;
   QHostAddress PeerAddress;
@@ -94,7 +171,7 @@ void UdpMasterListener::run()
   cout << "=======================================================" << endl;
   while ( !mStopped )
   {
-    cout << "WAITING........................." << endl;
+    //cout << "WAITING........................." << endl;
     while ( MasterUdpSocket.hasPendingDatagrams() )
     {
       cout << "Received request from Client!" << endl;
@@ -107,6 +184,7 @@ void UdpMasterListener::run()
 
       // check by comparing 32-bit addresses
       /// \todo Add the port number in the comparison
+      cout << "peer_portpeer_portpeer_port === " << peer_port << endl;
       int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
 
       //cout << "IDIDIDIDIDDID === " << id << endl;
@@ -126,6 +204,7 @@ void UdpMasterListener::run()
     }
     QThread::msleep(100);
   }
+  */
 }
 
 

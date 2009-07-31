@@ -113,7 +113,7 @@ void JackTripWorker::run()
     JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
     jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
     jacktrip.setBindPorts(mServerPort);
-    jacktrip.setPeerPorts(mClientPort-1);
+    jacktrip.setPeerPorts(mClientPort);
 
     // Connect signals and slots
     // -------------------------
