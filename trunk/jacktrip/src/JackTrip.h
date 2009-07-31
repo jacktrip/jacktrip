@@ -43,6 +43,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QUdpSocket>
 
 #include "DataProtocol.h"
 #include "AudioInterface.h"
@@ -319,6 +320,11 @@ public slots:
     }
   }
 
+  void slotPrintTest()
+  {
+    std::cout << "=== TESTING ===" << std::endl;
+  }
+
 
 signals:
   /// \brief Signal emitted when all the processes and threads are stopped
@@ -340,12 +346,16 @@ public:
   /// \brief Starts for the CLIENT mode
   void clientStart() throw(std::invalid_argument);
   /// \brief Starts for the SERVER mode
-  void serverStart() throw(std::runtime_error);
+  void serverStart() throw(std::invalid_argument, std::runtime_error);
   /// \brief Stats for the Client to Ping Server
-  void clientPingToServerStart();
+  void clientPingToServerStart() throw(std::invalid_argument);
 
 
 private:
+  void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
+                         QHostAddress PeerHostAddress, int peer_port)
+  throw(std::runtime_error);
+
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol Tipe
@@ -376,6 +386,7 @@ private:
   int mSenderPeerPort; ///< Incoming (receiving) port for peer machine
   int mSenderBindPort; ///< Outgoing (sending) port for local machine
   int mReceiverPeerPort; ///< Outgoing (sending) port for peer machine
+  int mTcpServerPort;
 
   unsigned int mRedundancy; ///< Redundancy factor in network data
   const char* mJackClientName; ///< JackAudio Client Name
