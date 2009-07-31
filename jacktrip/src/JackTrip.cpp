@@ -48,6 +48,7 @@
 
 #include <QHostAddress>
 #include <QThread>
+#include <QTcpSocket>
 
 using std::cout; using std::endl;
 
@@ -84,6 +85,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mSenderPeerPort(sender_peer_port),
   mSenderBindPort(sender_bind_port),
   mReceiverPeerPort(receiver_peer_port),
+  mTcpServerPort(4464),
   mRedundancy(redundancy),
   mJackClientName("JackTrip")
 {}
@@ -318,6 +320,7 @@ void JackTrip::stop()
   emit signalProcessesStopped();
 }
 
+
 //*******************************************************************************
 void JackTrip::waitThreads()
 {
@@ -343,12 +346,14 @@ void JackTrip::clientStart() throw(std::invalid_argument)
 
 
 //*******************************************************************************
-void JackTrip::serverStart() throw(std::runtime_error)
+void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
 {
   // Set the peer address
   if ( !mPeerAddress.isEmpty() ) {
     std::cout << "WARNING: SERVER mode: Peer Address was set but will be deleted." << endl;
+    throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
     mPeerAddress.clear();
+    return;
   }
 
   // Get the client address when it connects
@@ -378,7 +383,7 @@ void JackTrip::serverStart() throw(std::runtime_error)
   // Set the peer address to send packets (in the protocol sender)
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().constData() );
   mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().constData() );
-  // We reply to the same port the peer sent the packets
+  // We reply to the same port the peer sent the packets from
   // This way we can go through NAT
   // Because of the NAT traversal scheme, the portn need to be
   // "symetric", e.g.:
@@ -389,42 +394,160 @@ void JackTrip::serverStart() throw(std::runtime_error)
   setPeerPorts(peer_port);
 }
 
+
 //*******************************************************************************
 /// \todo REWRITE ALL THIS, whith carefull control for errors
-void JackTrip::clientPingToServerStart()
+void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 {
+  // Set Peer (server in this case) address
+  // --------------------------------------
   // For the Client mode, the peer (or server) address has to be specified by the user
   if ( mPeerAddress.isEmpty() ) {
     throw std::invalid_argument("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
+    return;
   }
+
+  // Creat Socket Objects
+  // --------------------
+  QTcpSocket tcpClient;
+  QHostAddress serverHostAddress;
+  serverHostAddress.setAddress(mPeerAddress);
+
+  // Connect Socket to Server and wait for response
+  // ----------------------------------------------
+  tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+  cout << "TCP Connecting to Server..." << endl;
+  if (!tcpClient.waitForConnected()) {
+    std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
+    return;
+  }
+  cout << "TCP Socket Connected to Server!" << endl;
+
+  // Read the size of the package
+  // ----------------------------
+  //tcpClient.waitForReadyRead();
+
+  while (tcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
+    if (!tcpClient.waitForReadyRead()) {
+      std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
+      return;
+    }
+  }
+  cout << "Ready To Read From Socket!" << endl;
+
+  uint16_t port;
+  char port_num[sizeof(port)];
+  tcpClient.read(port_num, sizeof(port));
+  std::memcpy(&port, port_num, sizeof(port));
+  cout << port << endl;
+  while (true) { QThread::sleep(10); }
+
+
+  /*
+  while (true) {
+    cout << "Bytes Avialable to read: " << tcpClient.bytesAvailable()  << endl;
+    QThread::sleep(1);
+  }
+*/
+
+
+
+  /*
+  uint16_t blockSize;
+  QDataStream in(&tcpClient);
+  in.setVersion(QDataStream::Qt_4_0);
+  in >> blockSize;
+
+  while (true) {
+  cout << tcpClient.bytesAvailable()  << endl;
+  QThread::sleep(1);
+}
+  while (tcpClient.bytesAvailable() < blockSize) {
+    if (!tcpClient.waitForReadyRead()) {
+      std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
+      return;
+    }
+  }
+  */
+
+  /*
+  TcpSock.waitForReadyRead();
+  cout << "READY TO READ!" << endl;
+
+  while (true) {
+    cout << "Bytes Avialable: " << TcpSock.bytesAvailable() << endl;
+    cout << "Ready Read: " << TcpSock.waitForReadyRead(1) << endl;
+    QThread::sleep(1);
+  }
+
+  QThread::sleep(100000);
+  */
+
+
+/*
+  QDataStream in(&TcpSock);
+  in.setVersion(QDataStream::Qt_4_0);
+  quint16 blockSize = 0;
+  cout << TcpSock.bytesAvailable() << endl;
+  if (blockSize == 0) {
+    if (TcpSock.bytesAvailable() < (int)sizeof(quint16))
+      return;
+
+    in >> blockSize;
+  }
+
+  if (TcpSock.bytesAvailable() < blockSize)
+    return;
+
+  cout << "blockSize: " << blockSize << endl;
+*/
+  /*
+  QString nextFortune;
+  in >> nextFortune;
+
+  if (nextFortune == currentFortune) {
+    QTimer::singleShot(0, this, SLOT(requestNewFortune()));
+    return;
+  }
+
+  currentFortune = nextFortune;
+  statusLabel->setText(currentFortune);
+  getFortuneButton->setEnabled(true);
+  */
+
+
+
+  /*
   else {
     // Set the peer address
     mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
   }
 
-  // Start Threads
+  // Start the Sender Threads
+  // ------------------------
   mAudioInterface->startProcess();
-  //mAudioInterface->connectDefaultPorts();    
   mDataProtocolSender->start();
+  // block until mDataProtocolSender thread starts
   while ( !mDataProtocolSender->isRunning() ) { QThread::msleep(100); }
-  //cout << "STARTED DATA PROTOCOL SENDER-----------------------------" << endl;
-  //mDataProtocolReceiver->start();
 
+  // Create a Socket to listen to Server's answer
+  // --------------------------------------------
   QHostAddress serverHostAddress;
   QUdpSocket UdpSockTemp;// Create socket to wait for server answer
   uint16_t server_port;
 
   // Bind the socket
-  cout << "CACUMEN1111111111111111111" << endl;
+  //bindReceiveSocket(UdpSockTemp, mReceiverBindPort,
+  //                  mPeerAddress, peer_port);
   if ( !UdpSockTemp.bind(QHostAddress::Any,
                          mReceiverBindPort,
-                         QUdpSocket::DefaultForPlatform) ) {
-    cout << "CACUMEN22222222222222222" << endl;
+                         QUdpSocket::ShareAddress) ) {
     //throw std::runtime_error("Could not bind PingToServer UDP socket. It may be already binded.");
   }
+
   // Listen to server response
   cout << "Waiting for server response..." << endl;
-  while ( !UdpSockTemp.hasPendingDatagrams() ) { QThread::usleep(100000); }
+  while ( !UdpSockTemp.hasPendingDatagrams() ) { QThread::msleep(100); }
   cout << "Received response from server!" << endl;
   char buf[1];
   // set client address
@@ -434,21 +557,71 @@ void JackTrip::clientPingToServerStart()
   // Stop the sender thread to change server port
   mDataProtocolSender->stop();
   mDataProtocolSender->wait(); // Wait for the thread to terminate
-  /*
-  while ( mDataProtocolSender->isRunning() ) 
-    { 
-      cout << "IS RUNNING!" << endl;
-      QThread::usleep(100000);
-    }
-  */
-  cout << "Server port now set to: " << server_port-1 << endl;  
+
+  cout << "Server port now set to: " << server_port << endl;
   cout << gPrintSeparator << endl;
-  mDataProtocolSender->setPeerPort(server_port-1);
+  mDataProtocolSender->setPeerPort(server_port);
   
   // Start Threads
   //mAudioInterface->connectDefaultPorts();
   mDataProtocolSender->start();
   mDataProtocolReceiver->start();
+  */
+}
+
+
+//*******************************************************************************
+void JackTrip::bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
+                                 QHostAddress PeerHostAddress, int peer_port)
+throw(std::runtime_error)
+{
+  // Creat socket descriptor
+  int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+  // Set local IPv4 Address
+  struct sockaddr_in local_addr;
+  ::bzero(&local_addr, sizeof(local_addr));
+  local_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
+  local_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
+  local_addr.sin_port = htons(bind_port); //set bind port
+
+  // Set socket to be reusable, this is platform dependent
+  int one = 1;
+#if defined ( __LINUX__ )
+  ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+#endif
+#if defined ( __MAC_OSX__ )
+  // This option is not avialable on Linux, and without it MAC OS X
+  // has problems rebinding a socket
+  ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
+#endif
+
+  // Bind the Socket
+  if ( (::bind(sock_fd, (struct sockaddr *) &local_addr, sizeof(local_addr))) < 0 )
+  { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
+
+  // To be able to use the two UDP sockets bound to the same port number,
+  // we connect the receiver and issue a SHUT_WR.
+  // Set peer IPv4 Address
+  struct sockaddr_in peer_addr;
+  bzero(&peer_addr, sizeof(peer_addr));
+  peer_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
+  peer_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
+  peer_addr.sin_port = htons(peer_port); //set local port
+  // Connect the socket and issue a Write shutdown (to make it a
+  // reader socket only)
+  if ( (::inet_pton(AF_INET, PeerHostAddress.toString().toLatin1().constData(),
+                    &peer_addr.sin_addr)) < 1 )
+  { throw std::runtime_error("ERROR: Invalid address presentation format"); }
+  if ( (::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr))) < 0)
+  { throw std::runtime_error("ERROR: Could not connect UDP socket"); }
+  if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
+  { throw std::runtime_error("ERROR: Could suntdown SHUT_WR UDP socket"); }
+
+  UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::ConnectedState,
+                                QUdpSocket::ReadOnly);
+  cout << "UDP Socket Receiving in Port: " << bind_port << endl;
+  cout << gPrintSeparator << endl;
 }
 
 

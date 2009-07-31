@@ -91,18 +91,34 @@ void UdpMasterListener::run()
     std::exit(1);
   }
 
-  QObject::connect(&TcpServer, SIGNAL(newConnection()), this, SLOT(testReceive()));
+  //QObject::connect(&TcpServer, SIGNAL(newConnection()), this, SLOT(testReceive()));
 
   cout << "TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
   cout << "Waiting from Client..." << endl;
-  while ( !TcpServer.waitForNewConnection(100) ) {} // block until a new connection is received
+  while ( !TcpServer.waitForNewConnection(1000) ) {} // block until a new connection is received
   cout << "Client Connection Received!" << endl;
   QTcpSocket *clientConnection = TcpServer.nextPendingConnection();
 
+  //QThread::sleep(2);
+  cout << "SENDING PACKETS---" << endl;
+  uint16_t port = 4474;
+  cout << "PORT BYTES: " << sizeof(port) << endl;
+  char port_num[sizeof(port)];
+  //port_num = new char[sizeof(port)];
+  std::memcpy(port_num, &port, sizeof(port));
+  //cout << "Bytes Writen: " << clientConnection->write(port_num, sizeof(port)) << endl;
+  clientConnection->write(port_num, sizeof(port));
+  clientConnection->waitForBytesWritten(-1);
+  cout << "AFTER WRITTING" << endl;
+  //clientConnection->disconnectFromHost();
+  //cout << "DISCONNECT FROM HOST" << endl;
+  while (true) { QThread::sleep(1); }
 
 
 
 
+
+  /*
   QStringList fortunes;
 
   fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
@@ -125,7 +141,7 @@ void UdpMasterListener::run()
   out.device()->seek(0);
   out << (quint16)(block.size() - sizeof(quint16));
 
-  clientConnection->write(block);
+  cout << "bites written: " << clientConnection->write(block) << endl;
   clientConnection->disconnectFromHost();
   cout << "AFTER QT" << endl;
   QThread::sleep(100000);
@@ -145,7 +161,7 @@ void UdpMasterListener::run()
   cout << "clientConnection->write(port_num) = " << clientConnection->write(port_num) << endl;
   clientConnection->disconnectFromHost();
   cout << "cacumen" << endl;
-
+  */
 
 
 
