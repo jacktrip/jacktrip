@@ -416,12 +416,12 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   // Connect Socket to Server and wait for response
   // ----------------------------------------------
   tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
-  cout << "TCP Connecting to Server..." << endl;
+  cout << "Connecting to Server..." << endl;
   if (!tcpClient.waitForConnected()) {
     std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
     return;
   }
-  cout << "TCP Socket Connected to Server!" << endl;
+  //cout << "TCP Socket Connected to Server!" << endl;
 
   // Read the size of the package
   // ----------------------------
@@ -435,87 +435,26 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   }
   cout << "Ready To Read From Socket!" << endl;
 
-  uint16_t port;
-  char port_num[sizeof(port)];
-  tcpClient.read(port_num, sizeof(port));
-  std::memcpy(&port, port_num, sizeof(port));
-  cout << port << endl;
-  while (true) { QThread::sleep(10); }
+  // Read UDP Port Number from Server
+  // --------------------------------
+  uint16_t udp_port;
+  int size = sizeof(udp_port);
+  char port_buf[size];
+  tcpClient.read(port_buf, size);
+  std::memcpy(&udp_port, port_buf, size);
+  //cout << "Received UDP Port Number: " << udp_port << endl;
 
+  // Close the TCP Socket
+  // --------------------
+  tcpClient.close(); // Close the socket
+  //cout << "TCP Socket Closed!" << endl;
+  cout << "Connection Succesfull!" << endl;
 
-  /*
-  while (true) {
-    cout << "Bytes Avialable to read: " << tcpClient.bytesAvailable()  << endl;
-    QThread::sleep(1);
-  }
-*/
-
-
-
-  /*
-  uint16_t blockSize;
-  QDataStream in(&tcpClient);
-  in.setVersion(QDataStream::Qt_4_0);
-  in >> blockSize;
-
-  while (true) {
-  cout << tcpClient.bytesAvailable()  << endl;
-  QThread::sleep(1);
-}
-  while (tcpClient.bytesAvailable() < blockSize) {
-    if (!tcpClient.waitForReadyRead()) {
-      std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
-      return;
-    }
-  }
-  */
-
-  /*
-  TcpSock.waitForReadyRead();
-  cout << "READY TO READ!" << endl;
-
-  while (true) {
-    cout << "Bytes Avialable: " << TcpSock.bytesAvailable() << endl;
-    cout << "Ready Read: " << TcpSock.waitForReadyRead(1) << endl;
-    QThread::sleep(1);
-  }
-
-  QThread::sleep(100000);
-  */
-
-
-/*
-  QDataStream in(&TcpSock);
-  in.setVersion(QDataStream::Qt_4_0);
-  quint16 blockSize = 0;
-  cout << TcpSock.bytesAvailable() << endl;
-  if (blockSize == 0) {
-    if (TcpSock.bytesAvailable() < (int)sizeof(quint16))
-      return;
-
-    in >> blockSize;
-  }
-
-  if (TcpSock.bytesAvailable() < blockSize)
-    return;
-
-  cout << "blockSize: " << blockSize << endl;
-*/
-  /*
-  QString nextFortune;
-  in >> nextFortune;
-
-  if (nextFortune == currentFortune) {
-    QTimer::singleShot(0, this, SLOT(requestNewFortune()));
-    return;
-  }
-
-  currentFortune = nextFortune;
-  statusLabel->setText(currentFortune);
-  getFortuneButton->setEnabled(true);
-  */
-
-
+  mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+  mDataProtocolSender->setPeerPort(udp_port);
+  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+  cout << "Server Address set to: " << mPeerAddress.toStdString() << " Port: " << udp_port << std::endl;
+  cout << gPrintSeparator << endl;
 
   /*
   else {
