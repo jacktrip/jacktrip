@@ -85,6 +85,10 @@ void UdpMasterListener::run()
 {
   mStopped = false;
 
+  QHostAddress PeerAddress; // Object to store peer address
+  uint32_t peer_port = 0; // Peer port
+  uint32_t server_udp_port = 0;
+
   // Create and bind the TCP server
   // ------------------------------
   QTcpServer TcpServer;
@@ -92,36 +96,47 @@ void UdpMasterListener::run()
     std::cerr << "TCP Socket Server ERROR: " << TcpServer.errorString().toStdString() <<  endl;
     std::exit(1);
   }
+
   cout << "TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
+  while ( !mStopped )
+  {
+    // Wait for Client Connections
+    cout << "Waiting for client..." << endl;
+    cout << "=======================================================" << endl;
+    while ( !TcpServer.waitForNewConnection(1000) ) {} // block until a new connection is received
+    cout << "Client Connection Received!" << endl;
+    QTcpSocket *clientConnection = TcpServer.nextPendingConnection();
+    PeerAddress = clientConnection->peerAddress();
+    cout << "Client Connect Received from Address : "
+        << PeerAddress.toString().toStdString() << endl;
 
-  // Wait for Client Connections
-  // ---------------------------
-  cout << "Waiting from Client..." << endl;
-  while ( !TcpServer.waitForNewConnection(1000) ) {} // block until a new connection is received
-  cout << "Client Connection Received!" << endl;
-  QTcpSocket *clientConnection = TcpServer.nextPendingConnection();
+    // Get UDP port from client
+    peer_port = readClientUdpPort(clientConnection);
 
-  // Send Port Number to Client
-  // --------------------------
-  uint16_t port = 4465;
-  char port_buf[sizeof(port)];
-  std::memcpy(port_buf, &port, sizeof(port));
-  clientConnection->write(port_buf, sizeof(port));
-  while ( clientConnection->bytesToWrite() > 0 ) {
-    clientConnection->waitForBytesWritten(-1);
+    /// \todo Get number of channels in the client from header
+
+    // Check if Address is not already in the thread pool
+    // check by comparing 32-bit addresses
+    int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
+
+    // If the address is new, create a new thread in the pool
+      if (id >= 0) // old address is -1
+    {
+        server_udp_port = mBasePort+id;
+        sendUdpPort(clientConnection, server_udp_port);
+        // redirect port and spawn listener
+        mJTWorker->setJackTrip(id, mActiveAddress[id][0],
+                               server_udp_port, mActiveAddress[id][1],
+                               1); /// \todo temp default to 1 channel
+        mThreadPool.start(mJTWorker, QThread::TimeCriticalPriority); //send one thread to the pool
+        // wait until one is complete before another spawns
+        while (mJTWorker->isSpawning()) { QThread::msleep(10); }
+        mTotalRunningThreads++;
+        cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
+        cout << "=======================================================" << endl;
+      }
+    QThread::msleep(100);
   }
-  cout << "Port sent to Client" << endl;
-
-  // Close and Delete the socket
-  // ---------------------------
-  clientConnection->close();
-  delete clientConnection;
-  cout << "Client TCP Socket Closed!" << endl;
-
-  while (true) { QThread::sleep(1); }
-
-
-
   /*
   // Create objects on the stack
   QUdpSocket MasterUdpSocket;
@@ -175,6 +190,54 @@ void UdpMasterListener::run()
 
 
 //*******************************************************************************
+int UdpMasterListener::readClientUdpPort(QTcpSocket* clientConnection)
+{
+  // Read the size of the package
+  // ----------------------------
+  //tcpClient.waitForReadyRead();
+  cout << "Reading UDP port from Server..." << endl;
+  while (clientConnection->bytesAvailable() < (int)sizeof(uint16_t)) {
+    if (!clientConnection->waitForReadyRead()) {
+      std::cerr << "TCP Socket ERROR: " << clientConnection->errorString().toStdString() <<  endl;
+      //std::exit(1);
+      return 0;
+    }
+  }
+
+  cout << "Ready To Read From Socket!" << endl;
+  // Read UDP Port Number from Server
+  // --------------------------------
+  int udp_port;
+  int size = sizeof(udp_port);
+  char port_buf[size];
+  clientConnection->read(port_buf, size);
+  std::memcpy(&udp_port, port_buf, size);
+  return udp_port;
+}
+
+
+//*******************************************************************************
+void UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, uint32_t udp_port)
+{
+  // Send Port Number to Client
+  // --------------------------
+  char port_buf[sizeof(udp_port)];
+  std::memcpy(port_buf, &udp_port, sizeof(udp_port));
+  clientConnection->write(port_buf, sizeof(udp_port));
+  while ( clientConnection->bytesToWrite() > 0 ) {
+    clientConnection->waitForBytesWritten(-1);
+  }
+  cout << "Port sent to Client" << endl;
+
+  // Close and Delete the socket
+  // ---------------------------
+  clientConnection->close();
+  delete clientConnection;
+  cout << "Client TCP Socket Closed!" << endl;
+}
+
+
+//*******************************************************************************
 void UdpMasterListener::sendToPoolPrototype(int id)
 {
   cout << "id ID **********@@@@@@@@@@@@@@@@@@@@@************** " << id <<  endl;
@@ -206,7 +269,7 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 {
   /// \todo Add the port number in the comparison, i.e., compart IP/port pair
-  
+  cout << "COMPARISSON: " << port << endl;
   bool busyAddress = false;
   int id = 0;
   while ( !busyAddress && (id<mThreadPool.activeThreadCount()) )

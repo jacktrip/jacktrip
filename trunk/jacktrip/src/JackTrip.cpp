@@ -351,9 +351,9 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
   // Set the peer address
   if ( !mPeerAddress.isEmpty() ) {
     std::cout << "WARNING: SERVER mode: Peer Address was set but will be deleted." << endl;
-    throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
+    //throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
     mPeerAddress.clear();
-    return;
+    //return;
   }
 
   // Get the client address when it connects
@@ -416,30 +416,48 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   // Connect Socket to Server and wait for response
   // ----------------------------------------------
   tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
-  cout << "Connecting to Server..." << endl;
+  cout << "Connecting to TCP Server..." << endl;
   if (!tcpClient.waitForConnected()) {
     std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
-    return;
+    std::exit(1);
+    //return;
   }
-  //cout << "TCP Socket Connected to Server!" << endl;
+  cout << "TCP Socket Connected to Server!" << endl;
+
+
+  // Send Port Number to Client
+  // --------------------------
+  char port_buf[sizeof(mReceiverBindPort)];
+  std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
+
+  tcpClient.write(port_buf, sizeof(mReceiverBindPort));
+  while ( tcpClient.bytesToWrite() > 0 ) {
+    tcpClient.waitForBytesWritten(-1);
+  }
+  cout << "Port sent to Client" << endl;
 
   // Read the size of the package
   // ----------------------------
   //tcpClient.waitForReadyRead();
-
+  cout << "Reading UDP port from Server..." << endl;
   while (tcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
     if (!tcpClient.waitForReadyRead()) {
       std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
-      return;
+      std::exit(1);
+      //return;
     }
   }
   cout << "Ready To Read From Socket!" << endl;
 
+
+
+
+
   // Read UDP Port Number from Server
   // --------------------------------
-  uint16_t udp_port;
+  uint32_t udp_port;
   int size = sizeof(udp_port);
-  char port_buf[size];
+  //char port_buf[size];
   tcpClient.read(port_buf, size);
   std::memcpy(&udp_port, port_buf, size);
   //cout << "Received UDP Port Number: " << udp_port << endl;
@@ -450,9 +468,12 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   //cout << "TCP Socket Closed!" << endl;
   cout << "Connection Succesfull!" << endl;
 
+  // Set with the received UDP port
+  // ------------------------------
+  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
   mDataProtocolSender->setPeerPort(udp_port);
-  mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+  mDataProtocolReceiver->setPeerPort(udp_port);
   cout << "Server Address set to: " << mPeerAddress.toStdString() << " Port: " << udp_port << std::endl;
   cout << gPrintSeparator << endl;
 
