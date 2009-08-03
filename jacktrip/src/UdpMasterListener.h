@@ -44,6 +44,8 @@
 #include <QThreadPool>
 #include <QUdpSocket>
 #include <QHostAddress>
+#include <QTcpSocket>
+#include <QTcpServer>
 
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
@@ -87,6 +89,10 @@ private:
    * \param port Port number
    */
   static void bindUdpSocket(QUdpSocket& udpsocket, int port);
+
+  int readClientUdpPort(QTcpSocket* clientConnection);
+  void sendUdpPort(QTcpSocket* clientConnection, uint32_t udp_port);
+
 
   /** \brief Send the JackTripWorker to the thread pool. This will run
    * until it's done. We still have control over the prototype class.

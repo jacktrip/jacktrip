@@ -109,11 +109,13 @@ void JackTripWorker::run()
     // Local event loop. this is necesary because QRunnables don't have their own as QThreads
     QEventLoop event_loop;
 
+    cout << "mServerPort ======== " << mServerPort << endl;
     // Create and setup JackTrip Object
-    JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
+    //JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
+    JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
     jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
     jacktrip.setBindPorts(mServerPort);
-    jacktrip.setPeerPorts(mClientPort);
+    //jacktrip.setPeerPorts(mClientPort);
 
     // Connect signals and slots
     // -------------------------
