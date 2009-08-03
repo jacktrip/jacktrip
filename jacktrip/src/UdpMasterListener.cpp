@@ -86,8 +86,8 @@ void UdpMasterListener::run()
   mStopped = false;
 
   QHostAddress PeerAddress; // Object to store peer address
-  uint32_t peer_port = 0; // Peer port
-  uint32_t server_udp_port = 0;
+  int peer_port = 0; // Peer port
+  int server_udp_port = 0;
 
   // Create and bind the TCP server
   // ------------------------------
@@ -217,7 +217,7 @@ int UdpMasterListener::readClientUdpPort(QTcpSocket* clientConnection)
 
 
 //*******************************************************************************
-void UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, uint32_t udp_port)
+void UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
 {
   // Send Port Number to Client
   // --------------------------
