@@ -133,7 +133,7 @@ void JackTripWorker::run()
     QTimer timer;
     QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
                      Qt::QueuedConnection);
-    timer.start(300);
+    timer.start(1000);
 
     // Start Threads and event loop
     jacktrip.start();
