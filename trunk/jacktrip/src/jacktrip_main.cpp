@@ -76,7 +76,7 @@ int main(int argc, char** argv)
     rtaudio.listAllInterfaces();
     //rtaudio.printDeviceInfo(0);
 
-    while (true) sleep(9999);
+    //while (true) sleep(9999);
   }
   else {
     //---------------------------------------
