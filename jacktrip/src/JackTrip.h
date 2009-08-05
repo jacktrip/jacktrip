@@ -38,7 +38,7 @@
 #ifndef __JACKTRIP_H__
 #define __JACKTRIP_H__
 
-#include <tr1/memory> //for shared_ptr
+//#include <tr1/memory> //for shared_ptr
 #include <stdexcept>
 
 #include <QObject>

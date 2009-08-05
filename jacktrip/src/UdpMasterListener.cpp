@@ -68,7 +68,7 @@ UdpMasterListener::UdpMasterListener(int server_port) :
   }
   // Set the base dynamic port
   // The Dynamic and/or Private Ports are those from 49152 through 65535
-  mBasePort = ( random() % ( (65535 - gMaxThreads) - 49152 ) ) + 49152;
+  mBasePort = ( rand() % ( (65535 - gMaxThreads) - 49152 ) ) + 49152;
 }
 
 

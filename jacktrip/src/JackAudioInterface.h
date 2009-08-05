@@ -40,7 +40,7 @@
 #define __JACKAUDIOINTERFACE_H__
 
 #include <iostream>
-#include <tr1/memory> //for shared_ptr
+//#include <tr1/memory> //for shared_ptr
 #include <functional> //for mem_fun_ref
 #include <jack/jack.h>
 

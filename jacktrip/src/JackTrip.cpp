@@ -294,8 +294,9 @@ void JackTrip::start() throw(std::invalid_argument)
     mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
   }
   mAudioInterface->connectDefaultPorts();
-  mDataProtocolSender->start();
   mDataProtocolReceiver->start();
+  QThread::msleep(1);
+  mDataProtocolSender->start();
 }
 
 

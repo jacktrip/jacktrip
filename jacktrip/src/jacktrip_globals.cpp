@@ -184,6 +184,25 @@ int set_realtime_priority (void)
 }
 #endif //__LINUX__
 
+
+#if defined ( __WIN_32__ )
+int win_priority()
+{
+  if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0)
+  {
+    printf("set Priority Class failed \n");
+    return -1;
+  }
+  if(SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0)
+  {
+    printf("set Thread Priority failed \n");
+    return -1;
+  }
+  return GetThreadPriority(GetCurrentThread());
+}
+#endif //__WIN_32__
+
+
 void set_crossplatform_realtime_priority()
 {
 #if defined ( __LINUX__ )
@@ -192,6 +211,10 @@ void set_crossplatform_realtime_priority()
 #if defined ( __MAC_OSX__ )
   set_realtime(1250000,60000,90000);
 #endif //__MAC_OSX__
+#if defined __WIN_32__
+  win_priority();
+#endif
+
 }
 
 

@@ -39,7 +39,7 @@
 #define __PACKETHEADER_H__
 
 #include <iostream>
-#include <tr1/memory> // for shared_ptr
+//#include <tr1/memory> // for shared_ptr
 #include <cstring>
 
 #include <QObject>
