@@ -35,7 +35,7 @@ win32 {
   QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
   INCLUDEPATH+= 'C:\Program Files\Jack v1.9.2\includes'
   LIBS += 'C:\Program Files\Jack v1.9.2\lib\libjack.lib'
-  LIBS += -lWs2_32 -lOle32
+  LIBS += -lWs2_32 -lOle32 #neede by rtaudio/asio
   DEFINES += __WIN_32__
   DEFINES -= UNICODE #RtAudio for Qt
 }
