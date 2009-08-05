@@ -47,7 +47,7 @@
 #ifdef __WIN_32__
 #include <winsock.h>
 #endif
-#ifdef __LINUX__ || __MAC__OSX__
+#if defined (__LINUX__) || (__MAC__OSX__)
 #include <sys/socket.h> // for POSIX Sockets
 #endif
 
