@@ -76,7 +76,7 @@ SOURCES += DataProtocol.cpp \
            AudioInterface.cpp \
            RtAudioInterface.cpp
 
-# RtAduio Headers
+# RtAduio Input
 HEADERS += RtAudio.h \
            RtError.h
 SOURCES += RtAudio.cpp
