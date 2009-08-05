@@ -44,7 +44,12 @@
 #include <cstdlib>
 #include <cerrno>
 #include <stdexcept>
+#ifdef __WIN_32__
+#include <winsock.h>
+#endif
+#ifdef __LINUX__ || __MAC__OSX__
 #include <sys/socket.h> // for POSIX Sockets
+#endif
 
 using std::cout; using std::endl;
 
@@ -111,12 +116,47 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error
 {
   QMutexLocker locker(&sUdpMutex);
 
-  // Creat socket descriptor
-  int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
+#if defined __WIN_32__
+  WORD wVersionRequested;
+  WSADATA wsaData;
+  int err;
 
-  // Set local IPv4 Address
+  wVersionRequested = MAKEWORD( 1, 1 );
+
+  err = WSAStartup( wVersionRequested, &wsaData );
+  if ( err != 0 ) {
+    // Tell the user that we couldn't find a useable
+    // winsock.dll.
+
+    return;
+  }
+
+  // Confirm that the Windows Sockets DLL supports 1.1. or higher
+
+  if ( LOBYTE( wsaData.wVersion ) != 1 ||
+       HIBYTE( wsaData.wVersion ) != 1 ) {
+    // Tell the user that we couldn't find a useable
+    // winsock.dll.
+    WSACleanup( );
+    return;
+  }
+
+  // Creat socket descriptor
+  SOCKET sock_fd;
+  SOCKADDR_IN local_addr;
+#endif
+
+#if defined ( __LINUX__ ) || (__MAC_OSX__)
+  int sock_fd;
+  //Set local IPv4 Address
   struct sockaddr_in local_addr;
-  ::bzero(&local_addr, sizeof(local_addr));
+#endif
+
+  // Creat socket descriptor
+  sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+  //::bzero(&local_addr, sizeof(local_addr));
+  std::memset(&local_addr, 0, sizeof(local_addr)); // set buffer to 0
   local_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
   local_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
   local_addr.sin_port = htons(mBindPort); //set local port
@@ -131,10 +171,22 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error
   // has problems rebinding a socket
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
+#if defined (__WIN_32__)
+  //make address/port reusable
+  setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
+#endif
 
   // Bind the Socket
+#if defined ( __LINUX__ ) || ( __MAC_OSX__ )
   if ( (::bind(sock_fd, (struct sockaddr *) &local_addr, sizeof(local_addr))) < 0 )
   { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
+#endif
+#if defined (__WIN_32__)
+  //int bound;
+  //bound = bind(sock_fd, (SOCKADDR *) &local_addr, sizeof(local_addr));
+  if ( (bind(sock_fd, (SOCKADDR *) &local_addr, sizeof(local_addr))) == SOCKET_ERROR )
+  { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
+#endif
 
   // To be able to use the two UDP sockets bound to the same port number,
   // we connect the receiver and issue a SHUT_WR.
@@ -144,6 +196,7 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error
                                   QUdpSocket::WriteOnly);
   }
   else if (mRunMode == RECEIVER) {
+#if defined (__LINUX__) || (__MAC_OSX__)
     // Set peer IPv4 Address
     struct sockaddr_in peer_addr;
     bzero(&peer_addr, sizeof(peer_addr));
@@ -159,6 +212,31 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error
     { throw std::runtime_error("ERROR: Could not connect UDP socket"); }
     if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
     { throw std::runtime_error("ERROR: Could suntdown SHUT_WR UDP socket"); }
+#endif
+#if defined __WIN_32__
+    // Set peer IPv4 Address
+    SOCKADDR_IN peer_addr;
+    std::memset(&peer_addr, 0, sizeof(peer_addr)); // set buffer to 0
+    peer_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
+    peer_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
+    peer_addr.sin_port = htons(mPeerPort); //set local port
+    // Connect the socket and issue a Write shutdown (to make it a
+    // reader socket only)
+    peer_addr.sin_addr.s_addr = inet_addr(mPeerAddress.toString().toLatin1().constData());
+    int con = (::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr)));
+    if ( con < 0)
+    {
+      fprintf(stderr, "ERROR: Could not connect UDP socket");
+      throw std::runtime_error("ERROR: Could not connect UDP socket");
+    }
+    //cout<<"connect returned: "<<con<<endl;
+    int shut_sr = shutdown(sock_fd, SD_SEND);  //shut down sender's receive function
+    if ( shut_sr< 0)
+    {
+      fprintf(stderr, "ERROR: Could not shutdown SD_SEND UDP socket");
+      throw std::runtime_error("ERROR: Could not shutdown SD_SEND UDP socket");
+    }
+#endif
 
     UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::ConnectedState,
                                   QUdpSocket::ReadOnly);
@@ -289,12 +367,13 @@ void UdpDataProtocol::run()
       while ( !UdpSocket.hasPendingDatagrams() && !mStopped ) { QThread::msleep(100); }
       int first_packet_size = UdpSocket.pendingDatagramSize();
       // The following line is the same as
-      // int8_t* first_packet = new int8_t[first_packet_size];
+      int8_t* first_packet = new int8_t[first_packet_size];
+      /// \todo fix this to avoid memory leaks
       // but avoids memory leaks
-      std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
-      receivePacket( UdpSocket, reinterpret_cast<char*>(first_packet.get()), first_packet_size);
+      //std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
+      receivePacket( UdpSocket, reinterpret_cast<char*>(first_packet), first_packet_size);
       // Check that peer has the same audio settings
-      mJackTrip->checkPeerSettings(first_packet.get());
+      mJackTrip->checkPeerSettings(first_packet);
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
 

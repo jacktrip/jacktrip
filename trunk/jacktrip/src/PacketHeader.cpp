@@ -46,6 +46,29 @@
 using std::cout; using std::endl;
 
 
+// below is the gettimeofday definition for windows: this function is not defined in sys/time.h as it is in unix
+// for more info check: http://www.halcode.com/archives/2008/08/26/retrieving-system-time-gettimeofday/
+#if defined __WIN_32__
+#ifdef __cplusplus
+void GetSystemTimeAsFileTime(FILETIME*);
+inline int gettimeofday(struct timeval* p, void* tz /* IGNORED */)
+{
+  union {
+    long long ns100; /*time since 1 Jan 1601 in 100ns units */
+    FILETIME ft;
+  } now;
+  GetSystemTimeAsFileTime( &(now.ft) );
+  p->tv_usec=(long)((now.ns100 / 10LL) % 1000000LL );
+  p->tv_sec= (long)((now.ns100-(116444736000000000LL))/10000000LL);
+  return 0;
+}
+#else
+/* Must be defined somewhere else */
+int gettimeofday(struct timeval* p, void* tz /* IGNORED */);
+#endif
+#endif
+
+
 //#######################################################################
 //####################### PacketHeader ##################################
 //#######################################################################

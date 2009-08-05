@@ -39,7 +39,7 @@
 #define __NETKS_H__
 
 #include <iostream>
-#include <unistd.h>
+//#include <unistd.h>
 
 #include <QTimer>
 
@@ -73,7 +73,7 @@ private slots:
     std::cout << "========= EXTICING STRING ===========" << std::endl;
     fbutton0 = 1.0;
     //std::cout << fbutton0 << std::endl;
-    usleep(280000); /// \todo Define this number based on the sampling rate and buffer size
+    QThread::usleep(280000); /// \todo Define this number based on the sampling rate and buffer size
     fbutton0 = 0.0;
     //std::cout << fbutton0 << std::endl;
   }

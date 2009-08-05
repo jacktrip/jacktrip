@@ -38,11 +38,17 @@
 #ifndef __DATAPROTOCOL_H__
 #define __DATAPROTOCOL_H__
 
-//#include <sys/socket.h> //basic socket definitions
+#ifdef __WIN_32__
+#include <winsock.h>
+#endif
+
+#ifndef __WIN_32__
 #include <netinet/in.h> //sockaddr_in{} and other Internet defns
 #include <arpa/inet.h> //inet(3) functions
 #include <netdb.h>
-#include <tr1/memory> //for shared_ptr
+//#include <tr1/memory> //for shared_ptr
+#endif
+
 #include <iostream>
 
 #include <QThread>

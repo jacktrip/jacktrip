@@ -10,8 +10,10 @@ CONFIG(debug, debug|release) {
   }
 QT -= gui
 QT += network
-INCLUDEPATH+=/usr/local/include
-LIBS += -ljack -lm
+!win32 {
+    INCLUDEPATH+=/usr/local/include
+    LIBS += -ljack -lm
+}
 macx {
   message(MAC OS X)
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
@@ -27,6 +29,16 @@ linux-g++ {
   QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
   }
+win32 {
+  message(win32)
+  CONFIG += x86 console
+  QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
+  INCLUDEPATH+= 'C:\Program Files\Jack v1.9.2\includes'
+  LIBS += 'C:\Program Files\Jack v1.9.2\lib\libjack.lib'
+  LIBS += -lWs2_32
+  DEFINES += __WIN_32__
+}
+
 DESTDIR = .
 QMAKE_CLEAN += ./jacktrip ./jacktrip_debug
 target.path = /usr/bin
@@ -34,6 +46,10 @@ INSTALLS += target
 
 INCLUDEPATH += ../externals/includes/rtaudio-4.0.6
 DEPENDPATH += ../externals/includes/rtaudio-4.0.6
+win32 {
+  INCLUDEPATH += ../externals/includes/rtaudio-4.0.6/include
+  DEPENDPATH += ../externals/includes/rtaudio-4.0.6/include
+}
 
 # Input
 HEADERS += DataProtocol.h \
@@ -70,7 +86,7 @@ SOURCES += DataProtocol.cpp \
            ProcessPlugin.cpp \
            RingBuffer.cpp \
            Settings.cpp \
-           tests.cpp \
+           #tests.cpp \
            UdpDataProtocol.cpp \
            UdpMasterListener.cpp \
            AudioInterface.cpp \
@@ -80,3 +96,17 @@ SOURCES += DataProtocol.cpp \
 HEADERS += RtAudio.h \
            RtError.h
 SOURCES += RtAudio.cpp
+win32 {
+HEADERS += asio.h \
+           asiodrivers.h \
+           asiolist.h \
+           asiodrvr.h \
+           asiosys.h \
+           ginclude.h \
+           iasiodrv.h \
+           iasiothiscallresolver.h
+SOURCES += asio.cpp \
+           asiodrivers.cpp \
+           asiolist.cpp \
+           iasiothiscallresolver.cpp
+}

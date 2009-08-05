@@ -115,7 +115,13 @@ int set_realtime_priority (void);
 int set_realtime(int period, int computation, int constraint);
 #endif //__MAC_OSX__ 
 //@}
-  
+
+//@{
+// Windows Specific Functions
+#if defined ( __WIN_32__ )
+int win_priority();
+#endif //__WIN_32__
+//@}
 
 //*******************************************************************************
 /// \name JackTrip Server parameters
