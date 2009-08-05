@@ -532,6 +532,7 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 
 
 //*******************************************************************************
+/*
 void JackTrip::bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
                                  QHostAddress PeerHostAddress, int peer_port)
 throw(std::runtime_error)
@@ -584,6 +585,7 @@ throw(std::runtime_error)
   cout << "UDP Socket Receiving in Port: " << bind_port << endl;
   cout << gPrintSeparator << endl;
 }
+*/
 
 
 //*******************************************************************************

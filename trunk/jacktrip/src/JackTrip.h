@@ -352,9 +352,9 @@ public:
 
 
 private:
-  void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
-                         QHostAddress PeerHostAddress, int peer_port)
-  throw(std::runtime_error);
+  //void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
+  //                       QHostAddress PeerHostAddress, int peer_port)
+  //throw(std::runtime_error);
 
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
