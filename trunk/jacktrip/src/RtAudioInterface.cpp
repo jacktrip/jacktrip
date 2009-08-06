@@ -104,9 +104,12 @@ void RtAudioInterface::setup()
   out_params.nChannels = getNumOutputChannels();
 
   RtAudio::StreamOptions options;
-//The first flag only affects windows, the second linux and mac, and the third linux only
-  options.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_SCHEDULE_REALTIME;
-//linux only
+  //The second flag affects linux and mac only
+  options.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_SCHEDULE_REALTIME;
+#ifdef __WIN_32__
+  options.flags = options.flags | RTAUDIO_MINIMIZE_LATENCY;
+#endif
+  //linux only
   options.priority = 99;
 
   unsigned int sampleRate = getSampleRate();//mSamplingRate;
