@@ -81,6 +81,7 @@ private slots:
 signals:
   void Listening();
   void ClientAddressSet();
+  void signalRemoveThread(int id);
 
 
 private:
@@ -105,6 +106,11 @@ private:
    * \return -1 if address is busy, id number if not
    */ 
   int isNewAddress(uint32_t address, uint16_t port);
+
+  /** \brief Returns the ID of the client in the pool. If the client
+    * is not in the pool yet, returns -1.
+    */
+  int getPoolID(uint32_t address, uint16_t port);
 
   QUdpSocket mUdpMasterSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address

@@ -22,4 +22,5 @@ fi
 # Build
 $QCMD jacktrip.pro
 make clean
+$QCMD jacktrip.pro
 make release

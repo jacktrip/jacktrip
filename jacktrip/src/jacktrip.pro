@@ -41,7 +41,7 @@ win32 {
 }
 
 DESTDIR = .
-QMAKE_CLEAN += ./jacktrip ./jacktrip_debug
+QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 target.path = /usr/bin
 INSTALLS += target
 

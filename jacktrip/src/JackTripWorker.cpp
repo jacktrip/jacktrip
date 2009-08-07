@@ -73,7 +73,7 @@ JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener) :
 //*******************************************************************************
 JackTripWorker::~JackTripWorker()
 {
-  delete mUdpMasterListener;
+  //delete mUdpMasterListener;
 }
 
 
@@ -121,11 +121,17 @@ void JackTripWorker::run()
     // -------------------------
     QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
-
     // Connection to terminate the local eventloop when jacktrip is done
     QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
                      &event_loop, SLOT(quit()), Qt::QueuedConnection);
+    // Connections to remove thread from pool when a new connection
+    // is requested from the same client/port pair
+    QObject::connect(mUdpMasterListener, SIGNAL(signalRemoveThread(int)),
+                     this, SLOT(slotRemoveThread(int)), Qt::QueuedConnection);
+    QObject::connect(this, SIGNAL(signalRemoveThread()),
+                     &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
+    cout << "THREAD ID ==============>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << mID << endl;
     // Karplus Strong String
     NetKS netks;
     jacktrip.appendProcessPlugin(&netks);
@@ -174,4 +180,14 @@ bool JackTripWorker::isSpawning()
 {
   QMutexLocker locker(&mMutex);
   return mSpawning;
+}
+
+
+//*******************************************************************************
+void JackTripWorker::slotRemoveThread(int id)
+{
+  cout << "=== THREAD ID: " << mID << endl;
+  cout << "=== REMOVING THREAD ID : " <<  id << " ===" << endl;
+  if (mID == id)
+  { emit signalRemoveThread(); }
 }
