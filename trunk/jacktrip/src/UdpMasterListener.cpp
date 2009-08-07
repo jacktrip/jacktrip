@@ -81,6 +81,10 @@ UdpMasterListener::~UdpMasterListener()
 
 
 //*******************************************************************************
+// Now that the first handshake is with TCP server, if the addreess/peer port of
+// the client is already on the thread pool, it means that a new connection is
+// requested (the old was desconnected). So we have to remove that thread from
+// the pool and then connect again.
 void UdpMasterListener::run()
 {
   mStopped = false;
@@ -100,8 +104,7 @@ void UdpMasterListener::run()
   cout << "TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
   while ( !mStopped )
   {
-    // Wait for Client Connections
-    cout << "Waiting for client..." << endl;
+    cout << "Waiting for client connections..." << endl;
     cout << "=======================================================" << endl;
     while ( !TcpServer.waitForNewConnection(1000) ) {} // block until a new connection is received
     cout << "Client Connection Received!" << endl;
@@ -112,6 +115,7 @@ void UdpMasterListener::run()
 
     // Get UDP port from client
     peer_port = readClientUdpPort(clientConnection);
+    cout << "Client UDP Port is = " << peer_port << endl;
 
     /// \todo Get number of channels in the client from header
 
@@ -119,22 +123,35 @@ void UdpMasterListener::run()
     // check by comparing 32-bit addresses
     int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
 
+    if (id == -1) {
+      int id_remove;
+      id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_port);
+      emit signalRemoveThread(id_remove);
+      // block until the thread has been removed from the pool
+      while ( isNewAddress(PeerAddress.toIPv4Address(), peer_port) == -1 )
+      { cout << "removing" << endl; QThread::msleep(10); }
+      // Get a new ID for this client
+      id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
+    }
+
     // If the address is new, create a new thread in the pool
-      if (id >= 0) // old address is -1
-    {
-        server_udp_port = mBasePort+id;
-        sendUdpPort(clientConnection, server_udp_port);
-        // redirect port and spawn listener
-        mJTWorker->setJackTrip(id, mActiveAddress[id][0],
-                               server_udp_port, mActiveAddress[id][1],
-                               1); /// \todo temp default to 1 channel
-        mThreadPool.start(mJTWorker, QThread::TimeCriticalPriority); //send one thread to the pool
-        // wait until one is complete before another spawns
-        while (mJTWorker->isSpawning()) { QThread::msleep(10); }
-        mTotalRunningThreads++;
-        cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
-        cout << "=======================================================" << endl;
-      }
+    //if (id >= 0) // old address is -1
+    //{
+      server_udp_port = mBasePort+id;
+      sendUdpPort(clientConnection, server_udp_port);
+      // redirect port and spawn listener
+      mJTWorker->setJackTrip(id, mActiveAddress[id][0],
+                             server_udp_port, mActiveAddress[id][1],
+                             1); /// \todo temp default to 1 channel
+      mThreadPool.start(mJTWorker, QThread::TimeCriticalPriority); //send one thread to the pool
+      // wait until one is complete before another spawns
+      while (mJTWorker->isSpawning()) { QThread::msleep(10); }
+      mTotalRunningThreads++;
+      cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
+      cout << "=======================================================" << endl;
+    //}
+
+
     QThread::msleep(100);
   }
   /*
@@ -240,7 +257,6 @@ void UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
 //*******************************************************************************
 void UdpMasterListener::sendToPoolPrototype(int id)
 {
-  cout << "id ID **********@@@@@@@@@@@@@@@@@@@@@************** " << id <<  endl;
   mJTWorker->setJackTrip(id, mActiveAddress[id][0],
                          mBasePort+(2*id), mActiveAddress[id][1],
                          1); /// \todo temp default to 1 channel
@@ -268,8 +284,6 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 // check by comparing 32-bit addresses
 int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 {
-  /// \todo Add the port number in the comparison, i.e., compart IP/port pair
-  cout << "COMPARISSON: " << port << endl;
   bool busyAddress = false;
   int id = 0;
   while ( !busyAddress && (id<mThreadPool.activeThreadCount()) )
@@ -286,9 +300,22 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 
 
 //*******************************************************************************
+int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
+{
+  for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
+  {
+    if ( address==mActiveAddress[id][0] &&  port==mActiveAddress[id][1])
+    { return id; }
+  }
+  return -1;
+}
+
+
+//*******************************************************************************
 int UdpMasterListener::releasePort(int id)
 { 
   mActiveAddress[id][0] = 0;
   mActiveAddress[id][1] = 0;
+  mTotalRunningThreads--;
   return 0; /// \todo Check if we really need to return an argument here
 }

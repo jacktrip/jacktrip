@@ -47,7 +47,7 @@
 //#include "TestRingBuffer.h"
 #include "LoopBack.h"
 #include "PacketHeader.h"
-#include "JackTripThread.h"
+//#include "JackTripThread.h"
 #include "RtAudioInterface.h"
 #include "jacktrip_tests.cpp"
 

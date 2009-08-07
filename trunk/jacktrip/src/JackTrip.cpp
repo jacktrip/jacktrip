@@ -397,7 +397,6 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
 
 
 //*******************************************************************************
-/// \todo REWRITE ALL THIS, whith carefull control for errors
 void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 {
   // Set Peer (server in this case) address
@@ -424,10 +423,10 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     //return;
   }
   cout << "TCP Socket Connected to Server!" << endl;
+  emit signalTcpClientConnected();
 
-
-  // Send Port Number to Client
-  // --------------------------
+  // Send Client Port Number to Server
+  // ---------------------------------
   char port_buf[sizeof(mReceiverBindPort)];
   std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
 
@@ -439,7 +438,6 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 
   // Read the size of the package
   // ----------------------------
-  //tcpClient.waitForReadyRead();
   cout << "Reading UDP port from Server..." << endl;
   while (tcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
     if (!tcpClient.waitForReadyRead()) {
@@ -449,10 +447,6 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     }
   }
   cout << "Ready To Read From Socket!" << endl;
-
-
-
-
 
   // Read UDP Port Number from Server
   // --------------------------------
