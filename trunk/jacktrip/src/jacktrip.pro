@@ -33,8 +33,7 @@ win32 {
   message(win32)
   CONFIG += x86 console
   QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
-  INCLUDEPATH+= 'C:\Program Files\Jack v1.9.2\includes'
-  LIBS += 'C:\Program Files\Jack v1.9.2\lib\libjack.lib'
+  LIBS += 'release/libjack.dll'
   LIBS += -lWs2_32 -lOle32 #needed by rtaudio/asio
   DEFINES += __WIN_32__
   DEFINES -= UNICODE #RtAudio for Qt
@@ -49,7 +48,9 @@ INCLUDEPATH += ../externals/includes/rtaudio-4.0.6
 DEPENDPATH += ../externals/includes/rtaudio-4.0.6
 win32 {
   INCLUDEPATH += ../externals/includes/rtaudio-4.0.6/include
+  INCLUDEPATH += ../externals/includes
   DEPENDPATH += ../externals/includes/rtaudio-4.0.6/include
+  INCLUDEPATH += ../externals/includes
 }
 
 # Input
