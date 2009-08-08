@@ -72,7 +72,7 @@ public:
   /// \brief Stops the execution of the Thread
   void stop() { mStopped = true; }
 
-  int releasePort(int id);
+  int releaseThread(int id);
 
 private slots:
   void testReceive()
@@ -99,7 +99,7 @@ private:
    * until it's done. We still have control over the prototype class.
    * \param id Identification Number
    */
-  void sendToPoolPrototype(int id);
+  //void sendToPoolPrototype(int id);
 
   /** \brief Check if address is already handled, if not add to array
    * \param IPv4 address as a number
@@ -115,7 +115,8 @@ private:
   QUdpSocket mUdpMasterSocket; ///< The UDP socket
   QHostAddress mPeerAddress; ///< The Peer Address
 
-  JackTripWorker* mJTWorker; ///< Class that will be used as prototype
+  //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
+  QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorker s
   QThreadPool mThreadPool; ///< The Thread Pool
 
   int mServerPort; //< Server known port number

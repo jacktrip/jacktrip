@@ -163,7 +163,7 @@ void JackTripWorker::run()
     std::cerr << gPrintSeparator << endl;
   }
   
-  mUdpMasterListener->releasePort(mID);
+  mUdpMasterListener->releaseThread(mID);
   { 
     // Thread is already spawning, so release the lock
     QMutexLocker locker(&mMutex);
@@ -172,6 +172,7 @@ void JackTripWorker::run()
 
   cout << "JackTrip ID = " << mID << " released from the THREAD POOL" << endl;
   cout << gPrintSeparator << endl;
+  emit signalThreadReleasedFromPool();
 }
 
 
@@ -190,4 +191,11 @@ void JackTripWorker::slotRemoveThread(int id)
   cout << "=== REMOVING THREAD ID : " <<  id << " ===" << endl;
   if (mID == id)
   { emit signalRemoveThread(); }
+}
+
+
+//*******************************************************************************
+void JackTripWorker::stopThread()
+{
+  emit signalRemoveThread();
 }
