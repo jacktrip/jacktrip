@@ -53,13 +53,20 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 UdpMasterListener::UdpMasterListener(int server_port) :
-    mJTWorker(NULL),
+    //mJTWorker(NULL),
     mServerPort(server_port),
     mStopped(false),
     mTotalRunningThreads(0)
 {
   // Register JackTripWorker with the master listener
-  mJTWorker = new JackTripWorker(this);
+  //mJTWorker = new JackTripWorker(this);
+  mJTWorkers = new QVector<JackTripWorker*>;
+  for (int i = 0; i<gMaxThreads; i++) {
+    mJTWorkers->insert(i, NULL);
+  }
+
+
+  //mJTWorkers = new JackTripWorker(this);
   mThreadPool.setExpiryTimeout(3000); // msec (-1) = forever
   // Inizialize IP addresses
   for (int i = 0; i<gMaxThreads; i++) { 
@@ -76,7 +83,11 @@ UdpMasterListener::UdpMasterListener(int server_port) :
 UdpMasterListener::~UdpMasterListener()
 {
   mThreadPool.waitForDone();
-  delete mJTWorker;
+  //delete mJTWorker;
+  for (int i = 0; i<gMaxThreads; i++) {
+    delete mJTWorkers->at(i);
+  }
+  delete mJTWorkers;
 }
 
 
@@ -126,7 +137,10 @@ void UdpMasterListener::run()
     if (id == -1) {
       int id_remove;
       id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_port);
-      emit signalRemoveThread(id_remove);
+      mJTWorkers->at(id_remove)->stopThread();
+
+
+      //emit signalRemoveThread(id_remove);
       // block until the thread has been removed from the pool
       while ( isNewAddress(PeerAddress.toIPv4Address(), peer_port) == -1 )
       { cout << "removing" << endl; QThread::msleep(10); }
@@ -139,13 +153,18 @@ void UdpMasterListener::run()
     //{
       server_udp_port = mBasePort+id;
       sendUdpPort(clientConnection, server_udp_port);
+
+      // Register JackTripWorker with the master listener
+      delete mJTWorkers->at(id);
+      mJTWorkers->replace(id, new JackTripWorker(this));
+
       // redirect port and spawn listener
-      mJTWorker->setJackTrip(id, mActiveAddress[id][0],
-                             server_udp_port, mActiveAddress[id][1],
-                             1); /// \todo temp default to 1 channel
-      mThreadPool.start(mJTWorker, QThread::TimeCriticalPriority); //send one thread to the pool
+      mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
+                                     server_udp_port, mActiveAddress[id][1],
+                                     1); /// \todo temp default to 1 channel
+      mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority); //send one thread to the pool
       // wait until one is complete before another spawns
-      while (mJTWorker->isSpawning()) { QThread::msleep(10); }
+      while (mJTWorkers->at(id)->isSpawning()) { QThread::msleep(10); }
       mTotalRunningThreads++;
       cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
       cout << "=======================================================" << endl;
@@ -255,6 +274,7 @@ void UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
 
 
 //*******************************************************************************
+/*
 void UdpMasterListener::sendToPoolPrototype(int id)
 {
   mJTWorker->setJackTrip(id, mActiveAddress[id][0],
@@ -262,6 +282,7 @@ void UdpMasterListener::sendToPoolPrototype(int id)
                          1); /// \todo temp default to 1 channel
   mThreadPool.start(mJTWorker, QThread::TimeCriticalPriority); //send one thread to the pool
 }
+*/
 
 
 //*******************************************************************************
@@ -312,7 +333,7 @@ int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
 
 
 //*******************************************************************************
-int UdpMasterListener::releasePort(int id)
+int UdpMasterListener::releaseThread(int id)
 { 
   mActiveAddress[id][0] = 0;
   mActiveAddress[id][1] = 0;

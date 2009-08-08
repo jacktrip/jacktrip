@@ -90,6 +90,8 @@ public:
 		   uint16_t server_port, uint16_t client_port,
 		   int num_channels);
 
+  void stopThread();
+
 
 private slots:
   void slotTest()
@@ -100,6 +102,7 @@ private slots:
 
 signals:
   void signalRemoveThread();
+  void signalThreadReleasedFromPool();
 
 private:
 
