@@ -97,12 +97,12 @@ private slots:
   void slotTest()
   { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
 
-  void slotRemoveThread(int id);
+  //void slotRemoveThread(int id);
 
 
 signals:
   void signalRemoveThread();
-  void signalThreadReleasedFromPool();
+  //void signalThreadReleasedFromPool();
 
 private:
 
