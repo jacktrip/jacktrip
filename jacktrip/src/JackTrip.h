@@ -52,7 +52,7 @@
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
-
+#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
  * to a listening server) to send audio streams in the network.
  *
@@ -60,6 +60,7 @@
  * This class also acts as a Mediator between all the other class.
  * Classes that uses JackTrip methods need to register with it.
  */
+
 class JackTrip : public QThread
 {
   Q_OBJECT;
@@ -351,7 +352,6 @@ public:
   /// \brief Stats for the Client to Ping Server
   void clientPingToServerStart() throw(std::invalid_argument);
 
-
 private:
   //void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
   //                       QHostAddress PeerHostAddress, int peer_port)
@@ -396,3 +396,5 @@ private:
 };
 
 #endif
+
+
