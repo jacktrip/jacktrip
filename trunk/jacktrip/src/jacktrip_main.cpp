@@ -52,7 +52,6 @@
 #include "jacktrip_tests.cpp"
 
 #include "jacktrip_globals.h"
-
 using std::cout; using std::endl;
 
 

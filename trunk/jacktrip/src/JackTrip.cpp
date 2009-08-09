@@ -52,7 +52,14 @@
 
 using std::cout; using std::endl;
 
-
+//the following function has to remain outside the Jacktrip class definition
+//its purpose is to close the app when control c is hit by the user in rtaudio/asio4all mode
+#if defined __WIN_32__
+void sigint_handler(int sig)
+    {
+     exit(0);
+    }
+#endif
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode,
@@ -248,12 +255,17 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 
 //*******************************************************************************
 void JackTrip::start() throw(std::invalid_argument)
-{
+{ //signal that catches ctrl c in rtaudio-asio mode
+#if defined (__WIN_32__)
+    if (signal(SIGINT, sigint_handler) == SIG_ERR) {
+          perror("signal");
+            exit(1);
+        }
+#endif
   // Check if ports are already binded by another process on this machine
   // ------------------------------------------------------------------
   checkIfPortIsBinded(mReceiverBindPort);
   checkIfPortIsBinded(mSenderBindPort);
-
   // Set all classes and parameters
   // ------------------------------
   setupAudio();
@@ -358,7 +370,7 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
   }
 
   // Get the client address when it connects
-  cout << "Waiting for Connection From Client..." << endl;
+  cout << "Waiting for Connection From Client..." << endl;//stop();
   QHostAddress peerHostAddress;
   uint16_t peer_port;
   QUdpSocket UdpSockTemp;// Create socket to wait for client
