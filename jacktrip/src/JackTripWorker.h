@@ -68,28 +68,22 @@ class JackTripWorker : public QObject, public QRunnable
 public:
   /// \brief The class constructor
   JackTripWorker(UdpMasterListener* udpmasterlistener);
-
   /// \brief The class destructor
   virtual ~JackTripWorker();
   
-  /** \brief Implements the Thread Loop.
-   * To start the thread, call start() ( DO NOT CALL run() ). 
-   */
+  /// \brief Implements the Thread Loop.
+  /// To start the thread, call start() ( DO NOT CALL run() ).
   void run();
-
-  /** \brief Check if the Thread is Spawning
-   * \return true is it is spawning, false if it's already running
-   */
+  /// \brief Check if the Thread is Spawning
+  /// \return true is it is spawning, false if it's already running
   bool isSpawning();
-
-  /** \brief Sets the JackTripWorker properties
-   * \param id ID number
-   * \param address 
-   */
+  /// \brief Sets the JackTripWorker properties
+  /// \param id ID number
+  /// \param address
   void setJackTrip(int id, uint32_t client_address,
 		   uint16_t server_port, uint16_t client_port,
 		   int num_channels);
-
+  /// Stop and remove thread from pool
   void stopThread();
 
 
@@ -97,12 +91,10 @@ private slots:
   void slotTest()
   { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
 
-  //void slotRemoveThread(int id);
-
 
 signals:
   void signalRemoveThread();
-  //void signalThreadReleasedFromPool();
+
 
 private:
 

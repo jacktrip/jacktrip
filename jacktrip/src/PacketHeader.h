@@ -63,9 +63,10 @@ public:
   uint16_t BufferSize; ///< Buffer Size in Samples
   uint8_t  SamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
   uint8_t BitResolution; ///< Audio Bit Resolution
-  uint8_t  NumInChannels; ///< Number of Input Channels
-  uint8_t  NumOutChannels; ///<  Number of Output Channels
-  //uint8_t  Dummy; ///< Dummy value to byte padding alignment 
+  //uint8_t  NumInChannels; ///< Number of Input Channels
+  //uint8_t  NumOutChannels; ///<  Number of Output Channels
+  uint8_t  NumChannels; ///< Number of Channels, we assume input and outputs are the same
+  uint8_t  ConnectionMode;
 };
 
 //---------------------------------------------------------
@@ -106,6 +107,7 @@ struct JamLinkHeaderStuct : public HeaderStruct
 };
 
 
+
 //#######################################################################
 //####################### PacketHeader ##################################
 //#######################################################################
@@ -122,54 +124,43 @@ public:
   /// \brief The class Destructor
   virtual ~PacketHeader() {}
   
-  /** \brief Return a time stamp in microseconds
-   * \return Time stamp: microseconds since midnight (0 hour), January 1, 1970
-   */
+  /// \brief Return a time stamp in microseconds
+  /// \return Time stamp: microseconds since midnight (0 hour), January 1, 1970
   static uint64_t usecTime();
-
   /// \todo Implement this using a JackTrip Method (Mediator) member instead of the 
   /// reference to JackAudio
   virtual void fillHeaderCommonFromAudio() = 0;
-
-  /** \brief Parse the packet header and take appropriate measures (like change settings, or
-   * quit the program if peer settings don't match)
-   */
+  /// \brief Parse the packet header and take appropriate measures (like change settings, or
+  /// quit the program if peer settings don't match)
   virtual void parseHeader() = 0;
-
   virtual void checkPeerSettings(int8_t* full_packet) = 0;
-  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
-  virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const = 0;
 
+  virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const = 0;
+  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
+  virtual uint16_t getPeerBufferSize(int8_t* full_packet) const = 0;
+  virtual uint8_t  getPeerSamplingRate(int8_t* full_packet) const = 0;
+  virtual uint8_t getPeerBitResolution(int8_t* full_packet) const = 0;
+  virtual uint8_t  getPeerNumChannels(int8_t* full_packet) const = 0;
+  virtual uint8_t  getPeerConnectionMode(int8_t* full_packet) const = 0;
 
   /// \brief Increase sequence number for counter, a 16bit number
   virtual void increaseSequenceNumber()
-  {
-    mSeqNumber++;
-  }
-
-  /** \brief Returns the current sequence number
-   * \return 16bit Sequence number
-   */
+  { mSeqNumber++; }
+  /// \brief Returns the current sequence number
+  /// \return 16bit Sequence number
   virtual uint16_t getSequenceNumber() const
-  {
-    return mSeqNumber;
-  }
-
+  { return mSeqNumber; }
   /// \brief Get the header size in bytes
   virtual int getHeaderSizeInBytes() const = 0;
-
-
   virtual void putHeaderInPacketBaseClass(int8_t* full_packet,
 				       const HeaderStruct& header_struct)
   {
     std::memcpy(full_packet, reinterpret_cast<const void*>(&header_struct),
 		getHeaderSizeInBytes() );
   }
-
-  /** \brief Put the header in buffer pointed by full_packet
-   * \param full_packet Pointer to full packet (audio+header). Size must be
-   * sizeof(header part) + sizeof(audio part)
-   */
+  /// \brief Put the header in buffer pointed by full_packet
+  /// \param full_packet Pointer to full packet (audio+header). Size must be
+  /// sizeof(header part) + sizeof(audio part)
   virtual void putHeaderInPacket(int8_t* full_packet) = 0;
 
 
@@ -201,28 +192,30 @@ public:
   virtual void parseHeader() {}
   virtual void checkPeerSettings(int8_t* full_packet);
   virtual void increaseSequenceNumber()
-  {
-    mHeader.SeqNumber++;
-    //std::cout << "Sequence Number = " << static_cast<int>(mHeader.SeqNumber) << std::endl;
-  }
+  { mHeader.SeqNumber++; }
   virtual uint16_t getSequenceNumber() const
-  {
-    return mHeader.SeqNumber;
-  }
-  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
-  virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const
-  { /** \todo IMPLEMENT*/ return 0; }
+  { return mHeader.SeqNumber; }
   virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); }
   virtual void putHeaderInPacket(int8_t* full_packet)
-  {
-    putHeaderInPacketBaseClass(full_packet, mHeader);
-    //std::memcpy(full_packet, reinterpret_cast<const void*>(&mHeader),
-    //	getHeaderSizeInBytes() );
-  }
+  { putHeaderInPacketBaseClass(full_packet, mHeader); }
   void printHeader() const;
+  uint8_t getConnectionMode() const
+  { return mHeader.ConnectionMode; }
+  uint8_t getNumChannels() const
+  { return mHeader.NumChannels; }
+
+
+  virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const
+  { /** \todo IMPLEMENT*/ return 0; }
+  virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
+  virtual uint16_t getPeerBufferSize(int8_t* full_packet) const;
+  virtual uint8_t  getPeerSamplingRate(int8_t* full_packet) const;
+  virtual uint8_t getPeerBitResolution(int8_t* full_packet) const;
+  virtual uint8_t  getPeerNumChannels(int8_t* full_packet) const;
+  virtual uint8_t  getPeerConnectionMode(int8_t* full_packet) const;
+
 
 private:
-  //DefaultHeaderStruct mHeader; ///< Header Struct
   DefaultHeaderStruct mHeader;///< Default Header Struct
   JackTrip* mJackTrip; ///< JackTrip mediator class
 };
@@ -246,16 +239,19 @@ public:
   virtual void fillHeaderCommonFromAudio();
   virtual void parseHeader() {}
   virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
-  virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const
-  { /** \todo IMPLEMENT*/ return 0; }
-  virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const
-  { /** \todo IMPLEMENT*/ return 0; }
+
+  virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t  getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t  getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t  getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
+
   virtual void increaseSequenceNumber() {}
   virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); }
   virtual void putHeaderInPacket(int8_t* full_packet)
-  {
-    putHeaderInPacketBaseClass(full_packet, mHeader);
-  };
+  { putHeaderInPacketBaseClass(full_packet, mHeader); }
 
 private:
   JamLinkHeaderStuct mHeader; ///< JamLink Header Struct
@@ -280,12 +276,17 @@ public:
   virtual void fillHeaderCommonFromAudio() {}
   virtual void parseHeader() {}
   virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
-  virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const
-  { return 0; }
-  virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const
-  { return 0; }
   virtual void increaseSequenceNumber() {}
   virtual int getHeaderSizeInBytes() const { return 0; }
+
+  virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t  getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t  getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
+  virtual uint8_t  getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
+
   virtual void putHeaderInPacket(int8_t* /*full_packet*/) {}
 
 private:

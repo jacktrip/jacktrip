@@ -39,6 +39,7 @@
 #define __UDPMASTERLISTENER_H__
 
 #include <iostream>
+#include <stdexcept>
 
 #include <QThread>
 #include <QThreadPool>
@@ -89,7 +90,7 @@ private:
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
-  static void bindUdpSocket(QUdpSocket& udpsocket, int port);
+  static void bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std::runtime_error);
 
   int readClientUdpPort(QTcpSocket* clientConnection);
   void sendUdpPort(QTcpSocket* clientConnection, int udp_port);

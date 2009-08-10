@@ -102,24 +102,23 @@ DefaultHeader::DefaultHeader(JackTrip* jacktrip) :
   mHeader.BufferSize = 0; 
   mHeader.SamplingRate = 0;
   mHeader.BitResolution = 0;
-  mHeader.NumInChannels = 0;
-  mHeader.NumOutChannels = 0;
-  //mHeader.Dummy = 0;
+  //mHeader.NumInChannels = 0;
+  //mHeader.NumOutChannels = 0;
+  mHeader.NumChannels = 0;
+  mHeader.ConnectionMode = 0;
 }
 
 
 //***********************************************************************
 void DefaultHeader::fillHeaderCommonFromAudio()
 {
+  mHeader.TimeStamp = PacketHeader::usecTime();
   mHeader.BufferSize = mJackTrip->getBufferSizeInSamples();
   mHeader.SamplingRate = mJackTrip->getSampleRateType ();
-  mHeader.NumInChannels = mJackTrip->getNumInputChannels();
   mHeader.BitResolution = mJackTrip->getAudioBitResolution();
-  mHeader.NumOutChannels = mJackTrip->getNumOutputChannels();
-  //mHeader.SeqNumber = 0;
-  mHeader.TimeStamp = PacketHeader::usecTime();
-  //cout << mHeader.TimeStamp << endl;
-  //printHeader();
+  mHeader.NumChannels = mJackTrip->getNumChannels();
+  mHeader.ConnectionMode = mJackTrip->getConnectionMode();
+  printHeader();
 }
 
 
@@ -190,12 +189,14 @@ void DefaultHeader::printHeader() const
     ( static_cast<JackAudioInterface::samplingRateT>(mHeader.SamplingRate) );
   cout << "Sampling Rate             = " << sample_rate << endl;
   cout << "Audio Bit Resolutions     = " << static_cast<int>(mHeader.BitResolution) << endl;
-  cout << "Number of Input Channels  = " << static_cast<int>(mHeader.NumInChannels) << endl;
-  cout << "Number of Output Channels = " << static_cast<int>(mHeader.NumOutChannels) << endl;
+  //cout << "Number of Input Channels  = " << static_cast<int>(mHeader.NumInChannels) << endl;
+  //cout << "Number of Output Channels = " << static_cast<int>(mHeader.NumOutChannels) << endl;
+  cout << "Number of Channels        = " << static_cast<int>(mHeader.NumChannels) << endl;
   cout << "Sequence Number           = " << static_cast<int>(mHeader.SeqNumber) << endl;
   cout << "Time Stamp                = " << mHeader.TimeStamp << endl;
+  cout << "Connection Mode           = " << static_cast<int>(mHeader.ConnectionMode) << endl;
   cout << gPrintSeparator << endl;
-  cout << sizeof(mHeader) << endl;
+  //cout << sizeof(mHeader) << endl;
 }
 
 
@@ -208,6 +209,49 @@ uint16_t DefaultHeader::getPeerSequenceNumber(int8_t* full_packet) const
 }
 
 
+//***********************************************************************
+uint16_t DefaultHeader::getPeerBufferSize(int8_t* full_packet) const
+{
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  return peer_header->BufferSize;
+}
+
+
+//***********************************************************************
+uint8_t  DefaultHeader::getPeerSamplingRate(int8_t* full_packet) const
+{
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  return peer_header->SamplingRate;
+}
+
+
+//***********************************************************************
+uint8_t DefaultHeader::getPeerBitResolution(int8_t* full_packet) const
+{
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  return peer_header->BitResolution;
+}
+
+
+//***********************************************************************
+uint8_t DefaultHeader::getPeerNumChannels(int8_t* full_packet) const
+{
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  return peer_header->NumChannels;
+}
+
+
+//***********************************************************************
+uint8_t DefaultHeader::getPeerConnectionMode(int8_t* full_packet) const
+{
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  return peer_header->ConnectionMode;
+}
 
 
 

@@ -93,6 +93,12 @@ public:
     JACK, ///< Jack Mode
     RTAUDIO  ///< RtAudio Mode
   };
+
+  /// \brief Enum for Connection Mode (useful for connections to MultiClient Server)
+  enum connectionModeT {
+    NORMAL, ///< Normal Mode
+    KSTRONG  ///< Karplus Strong
+  };
   //---------------------------------------------------------
 
 
@@ -163,10 +169,6 @@ public:
     mPacketHeader = NULL;
     createHeader(mPacketHeaderType);
   }
-  /// \brief Sets (override) Number of Channels after construction
-  /// \todo implement this, not working right now because channels cannot be changed after construction
-  //void setNumChannels(int NumChans)
-  //{ mNumChans=NumChans; }
   /// \brief Sets (override) Buffer Queue Length Mode after construction
   virtual void setBufferQueueLength(int BufferQueueLength)
   { mBufferQueueLength = BufferQueueLength; }
@@ -213,23 +215,23 @@ public:
   virtual int getReceiverPeerPort() const
   { return mReceiverPeerPort; }
 
-  virtual DataProtocol* getDataProtocolSender() const
-  { return mDataProtocolSender; }
-  virtual DataProtocol* getDataProtocolReceiver() const
-  { return mDataProtocolReceiver; }
-  virtual void setDataProtocolSender(DataProtocol* const DataProtocolSender)
-  { mDataProtocolSender = DataProtocolSender; }
-  virtual void setDataProtocolReceiver(DataProtocol* const DataProtocolReceiver)
-  { mDataProtocolReceiver = DataProtocolReceiver; }
+  //virtual DataProtocol* getDataProtocolSender() const
+  //{ return mDataProtocolSender; }
+  //virtual DataProtocol* getDataProtocolReceiver() const
+  //{ return mDataProtocolReceiver; }
+  //virtual void setDataProtocolSender(DataProtocol* const DataProtocolSender)
+  //{ mDataProtocolSender = DataProtocolSender; }
+  //virtual void setDataProtocolReceiver(DataProtocol* const DataProtocolReceiver)
+  //{ mDataProtocolReceiver = DataProtocolReceiver; }
 
-  virtual RingBuffer* getSendRingBuffer() const
-  { return mSendRingBuffer; }
-  virtual RingBuffer* getReceiveRingBuffer() const
-  { return mReceiveRingBuffer; }
-  virtual void setSendRingBuffer(RingBuffer* const SendRingBuffer)
-  { mSendRingBuffer = SendRingBuffer; }
-  virtual void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
-  { mReceiveRingBuffer = ReceiveRingBuffer; }
+  //virtual RingBuffer* getSendRingBuffer() const
+  //{ return mSendRingBuffer; }
+  //virtual RingBuffer* getReceiveRingBuffer() const
+  //{ return mReceiveRingBuffer; }
+  //virtual void setSendRingBuffer(RingBuffer* const SendRingBuffer)
+  //{ mSendRingBuffer = SendRingBuffer; }
+  //virtual void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
+  //{ mReceiveRingBuffer = ReceiveRingBuffer; }
 
   virtual void setPacketHeader(PacketHeader* const PacketHeader)
   { mPacketHeader = PacketHeader; }
@@ -244,6 +246,9 @@ public:
   { mSampleRate = sample_rate; }
   void setAudioBufferSizeInSamples(uint32_t buf_size)
   { mAudioBufferSize = buf_size; }
+
+  JackTrip::connectionModeT getConnectionMode() const
+  { return mConnectionMode; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -267,26 +272,56 @@ public:
   uint32_t getBufferSizeInSamples() const
   { return mAudioInterface->getBufferSizeInSamples(); }
 
-  RtAudioInterface::samplingRateT getSampleRateType() const
+  AudioInterface::samplingRateT getSampleRateType() const
   { return mAudioInterface->getSampleRateType(); }
   int getSampleRate() const
   { return mAudioInterface->getSampleRate(); }
 
   uint8_t getAudioBitResolution() const
   { return mAudioInterface->getAudioBitResolution(); }
-  int getNumInputChannels() const
+  unsigned int getNumInputChannels() const
   { return mAudioInterface->getNumInputChannels(); }
-  int getNumOutputChannels() const
+  unsigned int getNumOutputChannels() const
   { return mAudioInterface->getNumOutputChannels(); }
+  unsigned int getNumChannels() const
+  {
+    if (getNumInputChannels() == getNumOutputChannels())
+    { return getNumInputChannels(); }
+    else { return 0; }
+  }
   virtual void checkPeerSettings(int8_t* full_packet);
   void increaseSequenceNumber()
   { mPacketHeader->increaseSequenceNumber(); }
   int getSequenceNumber() const
   { return mPacketHeader->getSequenceNumber(); }
-  int getPeerSequenceNumber(int8_t* full_packet) const
-  { return mPacketHeader->getPeerSequenceNumber(full_packet); }
+
+  //int getPeerSequenceNumber(int8_t* full_packet) const
+  //{ return mPacketHeader->getPeerSequenceNumber(full_packet); }
+  //uint64_t getPeerTimeStamp(int8_t* full_packet) const
+  //{ return mPacketHeader->getPeerTimeStamp(full_packet); }
+
   uint64_t getPeerTimeStamp(int8_t* full_packet) const
   { return mPacketHeader->getPeerTimeStamp(full_packet); }
+
+  uint16_t getPeerSequenceNumber(int8_t* full_packet) const
+  { return mPacketHeader->getPeerSequenceNumber(full_packet); }
+
+  uint16_t getPeerBufferSize(int8_t* full_packet) const
+  { return mPacketHeader->getPeerBufferSize(full_packet); }
+
+  uint8_t getPeerSamplingRate(int8_t* full_packet) const
+  { return mPacketHeader->getPeerSamplingRate(full_packet); }
+
+  uint8_t getPeerBitResolution(int8_t* full_packet) const
+  { return mPacketHeader->getPeerBitResolution(full_packet); }
+
+  uint8_t  getPeerNumChannels(int8_t* full_packet) const
+  { return mPacketHeader->getPeerNumChannels(full_packet); }
+
+  uint8_t  getPeerConnectionMode(int8_t* full_packet) const
+  { return mPacketHeader->getPeerConnectionMode(full_packet); }
+
+
   size_t getSizeInBytesPerChannel() const
   { return mAudioInterface->getSizeInBytesPerChannel(); }
   int getHeaderSizeInBytes() const
@@ -391,6 +426,8 @@ private:
 
   unsigned int mRedundancy; ///< Redundancy factor in network data
   const char* mJackClientName; ///< JackAudio Client Name
+
+  JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
 
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 };

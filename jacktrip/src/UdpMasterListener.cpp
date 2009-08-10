@@ -101,8 +101,8 @@ void UdpMasterListener::run()
   mStopped = false;
 
   QHostAddress PeerAddress; // Object to store peer address
-  int peer_port = 0; // Peer port
-  int server_udp_port = 0;
+  int peer_udp_port; // Peer listening port
+  int server_udp_port; // Server assigned udp port
 
   // Create and bind the TCP server
   // ------------------------------
@@ -125,47 +125,53 @@ void UdpMasterListener::run()
         << PeerAddress.toString().toStdString() << endl;
 
     // Get UDP port from client
-    peer_port = readClientUdpPort(clientConnection);
-    cout << "Client UDP Port is = " << peer_port << endl;
+    // ------------------------
+    peer_udp_port = readClientUdpPort(clientConnection);
+    cout << "Client UDP Port is = " << peer_udp_port << endl;
 
-    /// \todo Get number of channels in the client from header
-
+    // Check is client is new or not
+    // -----------------------------
     // Check if Address is not already in the thread pool
     // check by comparing 32-bit addresses
-    int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
-    cout << "id &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&: " << id << endl;
-
+    int id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
+    // If the address is not new, we need to remove the client from the pool
+    // before re-starting the connection
     if (id == -1) {
       int id_remove;
-      id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_port);
+      id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
       // stop the thread
       mJTWorkers->at(id_remove)->stopThread();
       // block until the thread has been removed from the pool
-      while ( isNewAddress(PeerAddress.toIPv4Address(), peer_port) == -1 )
+      while ( isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port) == -1 )
       { cout << "removing" << endl; QThread::msleep(10); }
       // Get a new ID for this client
-      id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
+      id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
     }
-
+    // Assign server port and send it to Client
     server_udp_port = mBasePort+id;
     sendUdpPort(clientConnection, server_udp_port);
+    // Close and Delete the socket
+    // ---------------------------
+    clientConnection->close();
+    delete clientConnection;
+    cout << "Client TCP Socket Closed!" << endl;
 
+    // Spawn Thread to Pool
+    // --------------------
     // Register JackTripWorker with the master listener
-    delete mJTWorkers->at(id);
+    delete mJTWorkers->at(id); // just in case the Worker was previously created
     mJTWorkers->replace(id, new JackTripWorker(this));
-
     // redirect port and spawn listener
     mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
                                     server_udp_port, mActiveAddress[id][1],
                                     1); /// \todo temp default to 1 channel
-    mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority); //send one thread to the pool
-    cout << "BEFORE SPAWNING" << endl;
+    //send one thread to the pool
+    mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority);
     // wait until one is complete before another spawns
-    while (mJTWorkers->at(id)->isSpawning()) { /*cout << "isSpawning" << endl;*/ QThread::msleep(10); }
+    while (mJTWorkers->at(id)->isSpawning()) { QThread::msleep(10); }
     mTotalRunningThreads++;
     cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
     cout << "=======================================================" << endl;
-
     QThread::msleep(100);
   }
   /*
@@ -230,7 +236,6 @@ int UdpMasterListener::readClientUdpPort(QTcpSocket* clientConnection)
   while (clientConnection->bytesAvailable() < (int)sizeof(uint16_t)) {
     if (!clientConnection->waitForReadyRead()) {
       std::cerr << "TCP Socket ERROR: " << clientConnection->errorString().toStdString() <<  endl;
-      //std::exit(1);
       return 0;
     }
   }
@@ -259,12 +264,6 @@ void UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
     clientConnection->waitForBytesWritten(-1);
   }
   cout << "Port sent to Client" << endl;
-
-  // Close and Delete the socket
-  // ---------------------------
-  clientConnection->close();
-  delete clientConnection;
-  cout << "Client TCP Socket Closed!" << endl;
 }
 
 
@@ -281,7 +280,7 @@ void UdpMasterListener::sendToPoolPrototype(int id)
 
 
 //*******************************************************************************
-void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
+void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std::runtime_error)
 {
   // QHostAddress::Any : let the kernel decide the active address
   if ( !udpsocket.bind(QHostAddress::Any,
