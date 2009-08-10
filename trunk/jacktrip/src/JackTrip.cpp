@@ -94,7 +94,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mReceiverPeerPort(receiver_peer_port),
   mTcpServerPort(4464),
   mRedundancy(redundancy),
-  mJackClientName("JackTrip")
+  mJackClientName("JackTrip"),
+  mConnectionMode(JackTrip::NORMAL)
 {}
 
 
@@ -411,6 +412,8 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
 //*******************************************************************************
 void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 {
+  mConnectionMode = JackTrip::KSTRONG;
+
   // Set Peer (server in this case) address
   // --------------------------------------
   // For the Client mode, the peer (or server) address has to be specified by the user

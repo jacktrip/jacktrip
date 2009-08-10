@@ -103,8 +103,6 @@ void JackTripWorker::run()
     This is not supported, exceptions thrown in worker threads must be
     caught before control returns to Qt Concurrent.'*/
   
-  cout << "@@@@@@@@ JackTripWorker::run() @@@@@@@@" << endl;
-
   // Try catching any exceptions that come from JackTrip
   try 
   {
@@ -113,7 +111,6 @@ void JackTripWorker::run()
 
     cout << "mServerPort ======== " << mServerPort << endl;
     // Create and setup JackTrip Object
-    //JackTrip jacktrip(JackTrip::CLIENT, JackTrip::UDP, mNumChans, 2);
     JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
     jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
     jacktrip.setBindPorts(mServerPort);
@@ -121,21 +118,17 @@ void JackTripWorker::run()
 
     // Connect signals and slots
     // -------------------------
+    // Connection to terminate JackTrip when packets haven't arrive for
+    // a certain amount of time
     QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
     // Connection to terminate the local eventloop when jacktrip is done
     QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
                      &event_loop, SLOT(quit()), Qt::QueuedConnection);
-    // Connections to remove thread from pool when a new connection
-    // is requested from the same client/port pair
-    //QObject::connect(mUdpMasterListener, SIGNAL(signalRemoveThread(int)),
-    //                 this, SLOT(slotRemoveThread(int)), Qt::QueuedConnection);
     QObject::connect(this, SIGNAL(signalRemoveThread()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
-    cout << "THREAD ID ==============>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << mID << endl;
     // Karplus Strong String
-    /*
     NetKS netks;
     jacktrip.appendProcessPlugin(&netks);
     // Play the String
@@ -143,11 +136,9 @@ void JackTripWorker::run()
     QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
                      Qt::QueuedConnection);
     timer.start(1000);
-    */
 
     // Start Threads and event loop
     jacktrip.start();
-    cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER STARTING" << endl;
 
     { // Thread is already spawning, so release the lock
       QMutexLocker locker(&mMutex);
@@ -169,15 +160,14 @@ void JackTripWorker::run()
   }
   
   mUdpMasterListener->releaseThread(mID);
+
+  cout << "JackTrip ID = " << mID << " released from the THREAD POOL" << endl;
+  cout << gPrintSeparator << endl;
   { 
     // Thread is already spawning, so release the lock
     QMutexLocker locker(&mMutex);
     mSpawning = false;
   }
-
-  cout << "JackTrip ID = " << mID << " released from the THREAD POOL" << endl;
-  cout << gPrintSeparator << endl;
-  //emit signalThreadReleasedFromPool();
 }
 
 
@@ -188,17 +178,6 @@ bool JackTripWorker::isSpawning()
   return mSpawning;
 }
 
-
-//*******************************************************************************
-/*
-void JackTripWorker::slotRemoveThread(int id)
-{
-  cout << "=== THREAD ID: " << mID << endl;
-  cout << "=== REMOVING THREAD ID : " <<  id << " ===" << endl;
-  if (mID == id)
-  { emit signalRemoveThread(); }
-}
-*/
 
 //*******************************************************************************
 void JackTripWorker::stopThread()
