@@ -110,12 +110,13 @@ void JackTripWorker::run()
     // Local event loop. this is necesary because QRunnables don't have their own as QThreads
     QEventLoop event_loop;
 
-    cout << "mServerPort ======== " << mServerPort << endl;
     // Create and setup JackTrip Object
     JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
     jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
     jacktrip.setBindPorts(mServerPort);
     //jacktrip.setPeerPorts(mClientPort);
+
+    int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
 
     // Connect signals and slots
     // -------------------------
@@ -129,14 +130,18 @@ void JackTripWorker::run()
     QObject::connect(this, SIGNAL(signalRemoveThread()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
-    // Karplus Strong String
+    // Create objects in the stack in case they're needed
     NetKS netks;
-    jacktrip.appendProcessPlugin(&netks);
-    // Play the String
     QTimer timer;
-    QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
-                     Qt::QueuedConnection);
-    timer.start(1000);
+    
+    if ( PeerConnectionMode == JackTrip::KSTRONG ) { // Karplus Strong String
+      cout << "Setting Up Server In Karplus Strong Mode" << endl;
+      jacktrip.appendProcessPlugin(&netks);
+      // Play the String
+      QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
+                       Qt::QueuedConnection);
+      timer.start(1000);
+    }
 
     // Start Threads and event loop
     jacktrip.start();
@@ -173,7 +178,7 @@ void JackTripWorker::run()
 
 
 //*******************************************************************************
-void JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
+int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
 {
   //QHostAddress peerHostAddress;
   //uint16_t peer_port;
@@ -195,6 +200,22 @@ void JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
   char packet[packet_size];
   UdpSockTemp.readDatagram(packet, packet_size);
   UdpSockTemp.close(); // close the socket
+  int8_t* full_packet = reinterpret_cast<int8_t*>(packet);
+
+  int PeerBufferSize = jacktrip.getPeerBufferSize(full_packet);
+  int PeerSamplingRate = jacktrip.getPeerSamplingRate(full_packet);
+  int PeerBitResolution = jacktrip.getPeerBitResolution(full_packet);
+  int PeerNumChannels = jacktrip.getPeerNumChannels(full_packet);
+  int PeerConnectionMode = jacktrip.getPeerConnectionMode(full_packet);
+
+  cout << "getPeerBufferSize = " << PeerBufferSize << endl;
+  cout << "getPeerSamplingRate = " << PeerSamplingRate << endl;
+  cout << "getPeerBitResolution = " << PeerBitResolution << endl;
+  cout << "getPeerNumChannels = " << PeerNumChannels << endl;
+  cout << "getPeerConnectionMode = " << PeerConnectionMode << endl;
+
+  jacktrip.setNumChannels(PeerNumChannels);
+  return PeerConnectionMode;
 }
 
 

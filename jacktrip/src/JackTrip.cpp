@@ -96,7 +96,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mRedundancy(redundancy),
   mJackClientName("JackTrip"),
   mConnectionMode(JackTrip::NORMAL)
-{}
+{
+  createHeader(mPacketHeaderType);
+}
 
 
 //*******************************************************************************
@@ -600,6 +602,7 @@ throw(std::runtime_error)
 //*******************************************************************************
 void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
 {
+  delete mPacketHeader; //Just in case it has already been allocated
   switch (headertype) {
   case DataProtocol::DEFAULT :
     mPacketHeader = new DefaultHeader(this);
