@@ -112,9 +112,9 @@ public:
    */
   JackTrip(jacktripModeT JacktripMode = CLIENT,
 	   dataProtocolT DataProtocolType = UDP,
-	   int NumChans = 2,
-	   int BufferQueueLength = 8,
-	   unsigned int redundancy = 1,
+     int NumChans = gDefaultNumInChannels,
+     int BufferQueueLength = gDefaultQueueLength,
+     unsigned int redundancy = gDefaultRedundancy,
      AudioInterface::audioBitResolutionT AudioBitResolution =
      AudioInterface::BIT16,
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
@@ -294,11 +294,6 @@ public:
   { mPacketHeader->increaseSequenceNumber(); }
   int getSequenceNumber() const
   { return mPacketHeader->getSequenceNumber(); }
-
-  //int getPeerSequenceNumber(int8_t* full_packet) const
-  //{ return mPacketHeader->getPeerSequenceNumber(full_packet); }
-  //uint64_t getPeerTimeStamp(int8_t* full_packet) const
-  //{ return mPacketHeader->getPeerTimeStamp(full_packet); }
 
   uint64_t getPeerTimeStamp(int8_t* full_packet) const
   { return mPacketHeader->getPeerTimeStamp(full_packet); }
