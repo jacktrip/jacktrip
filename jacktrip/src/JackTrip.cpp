@@ -257,7 +257,7 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 
 
 //*******************************************************************************
-void JackTrip::start() throw(std::invalid_argument)
+void JackTrip::startProcess() throw(std::invalid_argument)
 { //signal that catches ctrl c in rtaudio-asio mode
 #if defined (__WIN_32__)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {

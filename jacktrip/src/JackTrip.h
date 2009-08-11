@@ -138,7 +138,7 @@ public:
   virtual void appendProcessPlugin(ProcessPlugin* plugin);
 
   /// \brief Start the processing threads
-  virtual void start() throw(std::invalid_argument);
+  virtual void startProcess() throw(std::invalid_argument);
 
   /// \brief Stop the processing threads
   virtual void stop();
