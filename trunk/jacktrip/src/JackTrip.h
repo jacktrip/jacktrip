@@ -321,7 +321,6 @@ public:
   uint8_t  getPeerConnectionMode(int8_t* full_packet) const
   { return mPacketHeader->getPeerConnectionMode(full_packet); }
 
-
   size_t getSizeInBytesPerChannel() const
   { return mAudioInterface->getSizeInBytesPerChannel(); }
   int getHeaderSizeInBytes() const
