@@ -144,7 +144,7 @@ void JackTripWorker::run()
     }
 
     // Start Threads and event loop
-    jacktrip.start();
+    jacktrip.startProcess();
 
     { // Thread is already spawning, so release the lock
       QMutexLocker locker(&mMutex);
