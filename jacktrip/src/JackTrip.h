@@ -215,23 +215,23 @@ public:
   virtual int getReceiverPeerPort() const
   { return mReceiverPeerPort; }
 
-  //virtual DataProtocol* getDataProtocolSender() const
-  //{ return mDataProtocolSender; }
-  //virtual DataProtocol* getDataProtocolReceiver() const
-  //{ return mDataProtocolReceiver; }
-  //virtual void setDataProtocolSender(DataProtocol* const DataProtocolSender)
-  //{ mDataProtocolSender = DataProtocolSender; }
-  //virtual void setDataProtocolReceiver(DataProtocol* const DataProtocolReceiver)
-  //{ mDataProtocolReceiver = DataProtocolReceiver; }
+  virtual DataProtocol* getDataProtocolSender() const
+  { return mDataProtocolSender; }
+  virtual DataProtocol* getDataProtocolReceiver() const
+  { return mDataProtocolReceiver; }
+  virtual void setDataProtocolSender(DataProtocol* const DataProtocolSender)
+  { mDataProtocolSender = DataProtocolSender; }
+  virtual void setDataProtocolReceiver(DataProtocol* const DataProtocolReceiver)
+  { mDataProtocolReceiver = DataProtocolReceiver; }
 
-  //virtual RingBuffer* getSendRingBuffer() const
-  //{ return mSendRingBuffer; }
-  //virtual RingBuffer* getReceiveRingBuffer() const
-  //{ return mReceiveRingBuffer; }
-  //virtual void setSendRingBuffer(RingBuffer* const SendRingBuffer)
-  //{ mSendRingBuffer = SendRingBuffer; }
-  //virtual void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
-  //{ mReceiveRingBuffer = ReceiveRingBuffer; }
+  virtual RingBuffer* getSendRingBuffer() const
+  { return mSendRingBuffer; }
+  virtual RingBuffer* getReceiveRingBuffer() const
+  { return mReceiveRingBuffer; }
+  virtual void setSendRingBuffer(RingBuffer* const SendRingBuffer)
+  { mSendRingBuffer = SendRingBuffer; }
+  virtual void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
+  { mReceiveRingBuffer = ReceiveRingBuffer; }
 
   virtual void setPacketHeader(PacketHeader* const PacketHeader)
   { mPacketHeader = PacketHeader; }
