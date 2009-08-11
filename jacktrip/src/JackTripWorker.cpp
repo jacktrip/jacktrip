@@ -40,6 +40,7 @@
 
 #include <QTimer>
 #include <QMutexLocker>
+#include <QWaitCondition>
 
 #include "JackTripWorker.h"
 #include "JackTrip.h"
@@ -168,6 +169,32 @@ void JackTripWorker::run()
     QMutexLocker locker(&mMutex);
     mSpawning = false;
   }
+}
+
+
+//*******************************************************************************
+void JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
+{
+  //QHostAddress peerHostAddress;
+  //uint16_t peer_port;
+  QUdpSocket UdpSockTemp;// Create socket to wait for client
+
+  // Bind the socket
+  if ( !UdpSockTemp.bind(QHostAddress::Any, mServerPort,
+                         QUdpSocket::DefaultForPlatform) )
+  {
+    throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
+  }
+
+  // Listen to client
+  QWaitCondition sleep;
+  QMutex mutex; mutex.lock();
+  while ( !UdpSockTemp.hasPendingDatagrams() ) { sleep.wait(&mutex,100); }
+  mutex.unlock();
+  int packet_size = UdpSockTemp.pendingDatagramSize();
+  char packet[packet_size];
+  UdpSockTemp.readDatagram(packet, packet_size);
+  UdpSockTemp.close(); // close the socket
 }
 
 

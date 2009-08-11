@@ -118,7 +118,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
   mHeader.BitResolution = mJackTrip->getAudioBitResolution();
   mHeader.NumChannels = mJackTrip->getNumChannels();
   mHeader.ConnectionMode = mJackTrip->getConnectionMode();
-  printHeader();
+  //printHeader();
 }
 
 
