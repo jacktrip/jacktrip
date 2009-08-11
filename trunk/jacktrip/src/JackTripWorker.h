@@ -97,7 +97,7 @@ signals:
 
 
 private:
-  void setJackTripFromClientHeader(JackTrip& jacktrip);
+  int setJackTripFromClientHeader(JackTrip& jacktrip);
 
   UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
   QHostAddress mClientAddress; ///< Client Address
