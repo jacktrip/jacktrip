@@ -200,6 +200,16 @@ void DefaultHeader::printHeader() const
 }
 
 
+
+//***********************************************************************
+uint64_t DefaultHeader::getPeerTimeStamp(int8_t* full_packet) const
+{
+  DefaultHeaderStruct* peer_header;
+  peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
+  return peer_header->TimeStamp;
+}
+
+
 //***********************************************************************
 uint16_t DefaultHeader::getPeerSequenceNumber(int8_t* full_packet) const
 {
