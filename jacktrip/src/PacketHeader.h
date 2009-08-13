@@ -205,8 +205,7 @@ public:
   { return mHeader.NumChannels; }
 
 
-  virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const
-  { /** \todo IMPLEMENT*/ return 0; }
+  virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const;
   virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
   virtual uint16_t getPeerBufferSize(int8_t* full_packet) const;
   virtual uint8_t  getPeerSamplingRate(int8_t* full_packet) const;
