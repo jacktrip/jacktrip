@@ -249,6 +249,12 @@ public:
 
   JackTrip::connectionModeT getConnectionMode() const
   { return mConnectionMode; }
+
+  JackTrip::jacktripModeT getJackTripMode() const
+  { return mJackTripMode; }
+
+  QString getPeerAddress() const
+  { return mPeerAddress; }
   //@}
   //------------------------------------------------------------------------------------
 
