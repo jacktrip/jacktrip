@@ -39,7 +39,7 @@
 #ifndef __JACKTRIP_TYPES_H__
 #define __JACKTRIP_TYPES_H__
 
-#include <jack/types.h>
+//#include <jack/types.h>
 #include <QtGlobal> //For QT4 types
 
 //-------------------------------------------------------------------------------
@@ -49,7 +49,8 @@
 //-------------------------------------------------------------------------------
 //@{
 /// Audio sample type
-typedef jack_default_audio_sample_t sample_t; 
+//typedef jack_default_audio_sample_t sample_t;
+typedef float sample_t;
 //@}
 
 
