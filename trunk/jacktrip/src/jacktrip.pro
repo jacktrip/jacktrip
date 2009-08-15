@@ -10,9 +10,10 @@ CONFIG(debug, debug|release) {
   }
 QT -= gui
 QT += network
+
 !win32 {
     INCLUDEPATH+=/usr/local/include
-    LIBS += -ljack -lm
+   LIBS += -ljack -lm
 }
 macx {
   message(MAC OS X)
@@ -41,6 +42,14 @@ win32 {
   DEFINES += __WIN_32__
   DEFINES -= UNICODE #RtAudio for Qt
 }
+
+# http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
+# Configuration without Jack
+nojack {
+  LIBS -= -ljack
+  DEFINES += __NO_JACK__
+}
+
 
 DESTDIR = .
 QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
