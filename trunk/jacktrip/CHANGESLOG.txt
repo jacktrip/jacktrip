@@ -1,4 +1,10 @@
 ---
+1.1
+- (added) Support for RtAudio. Jacktrip can now be used without Jack
+- (added) New port to Windows XP and Windows Vista
+- (added) Multiclient Server
+
+---
 1.0.5
 - (added) Compatibility with JamLink boxes (restricted at the moment to 48KHz, 64 buffer size and 1 channel)
 - (added) New port structure that allows the communication between a public server and a local client

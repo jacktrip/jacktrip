@@ -40,12 +40,19 @@ If you're on Mac OS X or Fedora Linux and have all the dependencies installed,
 you can build by simply going to the /src directory and typing the following:
     ./build
 
+If you want to build without Jack support (meaning that you won't need jack installed
+to use the app) type the following:
+   ./build nojack
 
 If the previous script doesn't work on a different Linux flavor, try building
 the Makfiles yourself. You'd need qmake (e.g., on Fedora, this command is called
 qmake-qt4). Then you can build by:
     qmake jacktrip.pro
     make release
+
+Or without Jack support:
+   qmake -config nojack jacktrip.pro
+   make release
 
 
 If you want to install install (using Terminal): on the /src directory type:
