@@ -39,6 +39,7 @@
 #include "UdpDataProtocol.h"
 #include "RingBufferWavetable.h"
 #include "jacktrip_globals.h"
+#include "JackAudioInterface.h"
 #include "RtAudioInterface.h"
 
 #include <iostream>
@@ -122,16 +123,25 @@ void JackTrip::setupAudio()
     cout << "WARINING: JackAudio interface was setup already:" << endl;
     cout << "It will be errased and setup again." << endl;
     cout << gPrintSeparator << endl;
-    closeJackAudio();
+    closeAudio();
   }
 
   // Create AudioInterface Client Object
   if ( mAudiointerfaceMode == JackTrip::JACK ) {
+#ifndef __NO_JACK__
     mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
     mAudioInterface->setup();
     mSampleRate = mAudioInterface->getSampleRate();
     mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
     mAudioInterface->setClientName(mJackClientName);
+#endif //__NON_JACK__
+#ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
+    cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
+    mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+    mAudioInterface->setSampleRate(mSampleRate);
+    mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
+    mAudioInterface->setup();
+#endif
   }
   else if ( mAudiointerfaceMode == JackTrip::RTAUDIO ) {
     mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
@@ -154,7 +164,7 @@ void JackTrip::setupAudio()
 
 
 //*******************************************************************************
-void JackTrip::closeJackAudio()
+void JackTrip::closeAudio()
 {
   //mAudioInterface->close();
   mAudioInterface->stopProcess();

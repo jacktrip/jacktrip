@@ -47,8 +47,11 @@
 
 #include "DataProtocol.h"
 #include "AudioInterface.h"
+
+#ifndef __NO_JACK__
 #include "JackAudioInterface.h"
-#include "RtAudioInterface.h"
+#endif //__NO_JACK__
+
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
@@ -377,7 +380,7 @@ public:
   /// \brief Set the AudioInteface object
   virtual void setupAudio();
   /// \brief Close the JackAudioInteface and disconnects it from JACK
-  void closeJackAudio();
+  void closeAudio();
   /// \brief Set the DataProtocol objects
   virtual void setupDataProtocol();
   /// \brief Set the RingBuffer objects
