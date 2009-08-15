@@ -142,17 +142,17 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
 
   // Check Sampling Rate
   if ( peer_header->SamplingRate != mHeader.SamplingRate ) 
-    {
-      std::cerr << "ERROR: Peer Sampling Rate is   : " <<
-	JackAudioInterface::getSampleRateFromType
-	( static_cast<JackAudioInterface::samplingRateT>(peer_header->SamplingRate) ) << endl;
-      std::cerr << "       Local Sampling Rate is  : " << 
-	JackAudioInterface::getSampleRateFromType
-	( static_cast<JackAudioInterface::samplingRateT>(mHeader.SamplingRate) ) << endl;
-      std::cerr << "Make sure both machines use the same Sampling Rate" << endl;
-      std::cerr << gPrintSeparator << endl;
-      error = true;
-    }
+  {
+    std::cerr << "ERROR: Peer Sampling Rate is   : " <<
+        AudioInterface::getSampleRateFromType
+        ( static_cast<AudioInterface::samplingRateT>(peer_header->SamplingRate) ) << endl;
+    std::cerr << "       Local Sampling Rate is  : " <<
+        AudioInterface::getSampleRateFromType
+        ( static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate) ) << endl;
+    std::cerr << "Make sure both machines use the same Sampling Rate" << endl;
+    std::cerr << gPrintSeparator << endl;
+    error = true;
+  }
 
   // Check Audio Bit Resolution
   if ( peer_header->BitResolution != mHeader.BitResolution ) 
@@ -183,10 +183,10 @@ void DefaultHeader::printHeader() const
 {
   cout << "Default Packet Header:" << endl;
   cout << "Buffer Size               = " << static_cast<int>(mHeader.BufferSize) << endl;
-  // Get the sample rate in Hz form the JackAudioInterface::samplingRateT
+  // Get the sample rate in Hz form the AudioInterface::samplingRateT
   int sample_rate = 
-    JackAudioInterface::getSampleRateFromType
-    ( static_cast<JackAudioInterface::samplingRateT>(mHeader.SamplingRate) );
+    AudioInterface::getSampleRateFromType
+    ( static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate) );
   cout << "Sampling Rate             = " << sample_rate << endl;
   cout << "Audio Bit Resolutions     = " << static_cast<int>(mHeader.BitResolution) << endl;
   //cout << "Number of Input Channels  = " << static_cast<int>(mHeader.NumInChannels) << endl;
@@ -298,7 +298,7 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
   
   // Sampling Rate
   int rate_type = mJackTrip->getSampleRateType();
-  if ( rate_type != JackAudioInterface::SR48 ) {
+  if ( rate_type != AudioInterface::SR48 ) {
     //std::cerr << "WARINING: JamLink only support 48kHz for communication with JackTrip at the moment." << endl;
     //throw std::logic_error("ERROR: JamLink only support 48kHz for communication with JackTrip at the moment.");
     emit signalError("ERROR: JamLink only support 48kHz for communication with JackTrip at the moment.");
@@ -315,16 +315,16 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
   mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND) + 64;
   switch (rate_type)
     {
-    case JackAudioInterface::SR48 :
+    case AudioInterface::SR48 :
       mHeader.Common = (mHeader.Common | ETX_48KHZ);
       break;
-    case JackAudioInterface::SR44 :
+    case AudioInterface::SR44 :
       mHeader.Common = (mHeader.Common | ETX_44KHZ);
       break;
-    case JackAudioInterface::SR32 :
+    case AudioInterface::SR32 :
       mHeader.Common = (mHeader.Common | ETX_32KHZ);
       break;
-    case JackAudioInterface::SR22 :
+    case AudioInterface::SR22 :
       mHeader.Common = (mHeader.Common | ETX_22KHZ);
       break;
     default:

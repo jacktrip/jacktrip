@@ -42,7 +42,11 @@
 #include <cstdlib>
 
 #include "DataProtocol.h"
+
+#ifndef __NO_JACK__
 #include "JackAudioInterface.h"
+#endif //__NO_JACK__
+
 #include "JackTrip.h"
 
 /** \brief Class to set usage options and parse settings from input

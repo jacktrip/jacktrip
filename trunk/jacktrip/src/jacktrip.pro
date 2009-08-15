@@ -10,11 +10,20 @@ CONFIG(debug, debug|release) {
   }
 QT -= gui
 QT += network
-
-!win32 {
-    INCLUDEPATH+=/usr/local/include
-   LIBS += -ljack -lm
+# http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
+# Configuration without Jack
+nojack {
+  DEFINES += __NO_JACK__
 }
+!win32 {
+  INCLUDEPATH+=/usr/local/include
+  LIBS += -ljack -lm
+  nojack {
+    message(Building NONJACK)
+    LIBS -= -ljack
+  }
+}
+
 macx {
   message(MAC OS X)
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
@@ -43,12 +52,7 @@ win32 {
   DEFINES -= UNICODE #RtAudio for Qt
 }
 
-# http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
-# Configuration without Jack
-nojack {
-  LIBS -= -ljack
-  DEFINES += __NO_JACK__
-}
+
 
 
 DESTDIR = .
@@ -69,7 +73,6 @@ win32 {
 
 # Input
 HEADERS += DataProtocol.h \
-           JackAudioInterface.h \
            JackTrip.h \
            jacktrip_globals.h \
            jacktrip_types.h \
@@ -89,8 +92,10 @@ HEADERS += DataProtocol.h \
            UdpMasterListener.h \
            AudioInterface.h \
            RtAudioInterface.h
+!nojack {
+SOURCES += JackAudioInterface.h
+}
 SOURCES += DataProtocol.cpp \
-           JackAudioInterface.cpp \
            JackTrip.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
@@ -107,6 +112,9 @@ SOURCES += DataProtocol.cpp \
            UdpMasterListener.cpp \
            AudioInterface.cpp \
            RtAudioInterface.cpp
+!nojack {
+SOURCES += JackAudioInterface.cpp
+}
 
 # RtAduio Input
 HEADERS += RtAudio.h \
