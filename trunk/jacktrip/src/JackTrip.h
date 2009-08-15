@@ -255,6 +255,9 @@ public:
 
   QString getPeerAddress() const
   { return mPeerAddress; }
+
+  bool receivedConnectionFromPeer()
+  { return mReceivedConnection; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -355,11 +358,10 @@ public slots:
       emit signalNoUdpPacketsForSeconds();
     }
   }
-
   void slotPrintTest()
-  {
-    std::cout << "=== TESTING ===" << std::endl;
-  }
+  { std::cout << "=== TESTING ===" << std::endl; }
+  void slotReceivedConnectionFromPeer()
+  { mReceivedConnection = true; }
 
 
 signals:
@@ -430,6 +432,8 @@ private:
   JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
 
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+
+  volatile bool mReceivedConnection; ///< Bool of received connection from peer
 };
 
 #endif

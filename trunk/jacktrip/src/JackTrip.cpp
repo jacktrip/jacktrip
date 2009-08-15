@@ -95,7 +95,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mTcpServerPort(4464),
   mRedundancy(redundancy),
   mJackClientName("JackTrip"),
-  mConnectionMode(JackTrip::NORMAL)
+  mConnectionMode(JackTrip::NORMAL),
+  mReceivedConnection(false)
 {
   createHeader(mPacketHeaderType);
 }
@@ -279,6 +280,9 @@ void JackTrip::startProcess() throw(std::invalid_argument)
   // -------------------------
   QObject::connect(mPacketHeader, SIGNAL(signalError(const char*)),
                    this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+  QObject::connect(mDataProtocolReceiver, SIGNAL(signalReceivedConnectionFromPeer()),
+                   this, SLOT(slotReceivedConnectionFromPeer()),
+                   Qt::QueuedConnection);
   //QObject::connect(mDataProtocolSender, SIGNAL(signalError(const char*)),
   //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
   //QObject::connect(mDataProtocolReceiver, SIGNAL(signalError(const char*)),
