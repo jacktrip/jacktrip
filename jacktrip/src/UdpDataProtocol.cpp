@@ -376,6 +376,7 @@ void UdpDataProtocol::run()
       mJackTrip->checkPeerSettings(first_packet);
       mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
       std::cout << "Received Connection for Peer!" << std::endl;
+      emit signalReceivedConnectionFromPeer();
 
       // Redundancy Variables
       // --------------------

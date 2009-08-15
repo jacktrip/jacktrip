@@ -163,6 +163,7 @@ public:
 signals:
 
   void signalError(const char* error_message);
+  void signalReceivedConnectionFromPeer();
 
 
 protected:
