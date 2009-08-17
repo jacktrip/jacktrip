@@ -428,7 +428,8 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
 //*******************************************************************************
 void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 {
-  mConnectionMode = JackTrip::KSTRONG;
+  //mConnectionMode = JackTrip::KSTRONG;
+  //mConnectionMode = JackTrip::JAMTEST;
 
   // Set Peer (server in this case) address
   // --------------------------------------

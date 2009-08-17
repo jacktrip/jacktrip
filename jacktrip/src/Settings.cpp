@@ -427,6 +427,7 @@ void Settings::startJackTrip()
     
     // Start JackTrip
     mJackTrip->startProcess();
+    mJackTrip->start();
     
     /* 
        sleep(10);

@@ -117,7 +117,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
   mHeader.SamplingRate = mJackTrip->getSampleRateType ();
   mHeader.BitResolution = mJackTrip->getAudioBitResolution();
   mHeader.NumChannels = mJackTrip->getNumChannels();
-  mHeader.ConnectionMode = mJackTrip->getConnectionMode();
+  mHeader.ConnectionMode = static_cast<int>(mJackTrip->getConnectionMode());
   //printHeader();
 }
 
@@ -260,7 +260,7 @@ uint8_t DefaultHeader::getPeerConnectionMode(int8_t* full_packet) const
 {
   DefaultHeaderStruct* peer_header;
   peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
-  return peer_header->ConnectionMode;
+  return static_cast<uint8_t>(peer_header->ConnectionMode);
 }
 
 
