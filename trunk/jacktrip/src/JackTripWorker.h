@@ -99,7 +99,7 @@ signals:
 
 
 private:
-  int setJackTripFromClientHeader(JackTrip* jacktrip);
+  int setJackTripFromClientHeader(JackTrip& jacktrip);
   JackTrip::connectionModeT getConnectionModeFromHeader();
 
   UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
