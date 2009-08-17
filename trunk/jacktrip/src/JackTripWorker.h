@@ -46,7 +46,9 @@
 #include <QHostAddress>
 #include <QMutex>
 
-class JackTrip; // forward declaration
+#include "JackTrip.h"
+
+//class JackTrip; // forward declaration
 class UdpMasterListener; // forward declaration
 
 
@@ -97,7 +99,8 @@ signals:
 
 
 private:
-  int setJackTripFromClientHeader(JackTrip& jacktrip);
+  int setJackTripFromClientHeader(JackTrip* jacktrip);
+  JackTrip::connectionModeT getConnectionModeFromHeader();
 
   UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
   QHostAddress mClientAddress; ///< Client Address

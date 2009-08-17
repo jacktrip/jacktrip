@@ -91,7 +91,8 @@ HEADERS += DataProtocol.h \
            UdpDataProtocol.h \
            UdpMasterListener.h \
            AudioInterface.h \
-           RtAudioInterface.h
+           RtAudioInterface.h \
+           JamTest.h
 !nojack {
 SOURCES += JackAudioInterface.h
 }

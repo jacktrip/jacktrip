@@ -100,7 +100,8 @@ public:
   /// \brief Enum for Connection Mode (useful for connections to MultiClient Server)
   enum connectionModeT {
     NORMAL, ///< Normal Mode
-    KSTRONG  ///< Karplus Strong
+    KSTRONG,  ///< Karplus Strong
+    JAMTEST  ///< Karplus Strong
   };
   //---------------------------------------------------------
 
@@ -252,6 +253,8 @@ public:
 
   JackTrip::connectionModeT getConnectionMode() const
   { return mConnectionMode; }
+  void setConnectionMode(JackTrip::connectionModeT connection_mode)
+  { mConnectionMode = connection_mode; }
 
   JackTrip::jacktripModeT getJackTripMode() const
   { return mJackTripMode; }
