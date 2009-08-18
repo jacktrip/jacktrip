@@ -43,11 +43,8 @@ win32 {
   message(win32)
   CONFIG += x86 console
   QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
-  LIBS += -L../externals/includes/QTWindows -llibjack
-  LIBS += -L../externals/includes/QTWindows -lmingwm10
-  LIBS += -L../externals/includes/QTWindows -lQtCore4
-  LIBS += -L../externals/includes/QTWindows -lQtNetwork4
   LIBS += -lWs2_32 -lOle32 #needed by rtaudio/asio
+  LIBS += "../externals/includes/QTWindows/libjack.lib"
   DEFINES += __WIN_32__
   DEFINES -= UNICODE #RtAudio for Qt
 }
@@ -66,9 +63,7 @@ win32 {
   INCLUDEPATH += ../externals/includes/rtaudio-4.0.6/include
   INCLUDEPATH += ../externals/includes
   DEPENDPATH += ../externals/includes/rtaudio-4.0.6/include
-  INCLUDEPATH += ../externals/includes
-  INCLUDEPATH += '../externals/includes/QTWindows/
-  DEPENDPATH += '../externals/includes/QTWindows/
+  DEPENDPATH += ../externals/includes
 }
 
 # Input
