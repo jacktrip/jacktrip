@@ -47,6 +47,7 @@
 #include "UdpMasterListener.h"
 #include "NetKS.h"
 #include "LoopBack.h"
+#include "JamTest.h"
 
 using std::cout; using std::endl;
 
@@ -89,7 +90,8 @@ void JackTripWorker::setJackTrip(int id, uint32_t client_address,
   }
   mID = id;
   // Set the jacktrip address and ports
-  mClientAddress.setAddress(client_address);
+  //mClientAddress.setAddress(client_address);
+  mClientAddress = client_address;
   mServerPort = server_port;
   mClientPort = client_port;
   mNumChans = num_channels;
@@ -103,7 +105,9 @@ void JackTripWorker::run()
     'Qt Concurrent has caught an exception thrown from a worker thread.
     This is not supported, exceptions thrown in worker threads must be
     caught before control returns to Qt Concurrent.'*/
-  
+
+  QHostAddress ClientAddress;
+
   // Try catching any exceptions that come from JackTrip
   try 
   {
@@ -111,8 +115,13 @@ void JackTripWorker::run()
     QEventLoop event_loop;
 
     // Create and setup JackTrip Object
-    JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
-    jacktrip.setPeerAddress( mClientAddress.toString().toLatin1().data() );
+    //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
+    JamTest jacktrip(JackTrip::SERVER); // ########### JamTest #################
+    ClientAddress.setAddress(mClientAddress);
+    // If I don't type this line, I get a bus error in the next line.
+    // I still haven't figure out why
+    ClientAddress.toString().toLatin1().constData();
+    jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
     jacktrip.setBindPorts(mServerPort);
     //jacktrip.setPeerPorts(mClientPort);
 
@@ -130,21 +139,9 @@ void JackTripWorker::run()
     QObject::connect(this, SIGNAL(signalRemoveThread()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
-    // Create objects in the stack in case they're needed
-    NetKS netks;
-    QTimer timer;
-    
-    if ( PeerConnectionMode == JackTrip::KSTRONG ) { // Karplus Strong String
-      cout << "Setting Up Server In Karplus Strong Mode" << endl;
-      jacktrip.appendProcessPlugin(&netks);
-      // Play the String
-      QObject::connect(&timer, SIGNAL(timeout()), &netks, SLOT(exciteString()),
-                       Qt::QueuedConnection);
-      timer.start(1000);
-    }
-
     // Start Threads and event loop
     jacktrip.startProcess();
+    jacktrip.start(); // ########### JamTest Only #################
 
     { // Thread is already spawning, so release the lock
       QMutexLocker locker(&mMutex);

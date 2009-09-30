@@ -103,7 +103,8 @@ private:
   JackTrip::connectionModeT getConnectionModeFromHeader();
 
   UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
-  QHostAddress mClientAddress; ///< Client Address
+  //QHostAddress mClientAddress; ///< Client Address
+  uint32_t mClientAddress;
   uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client
 
   /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt> 
