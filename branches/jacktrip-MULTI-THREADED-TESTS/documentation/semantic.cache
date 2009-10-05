@@ -1,0 +1,14 @@
+;; Object semantic.cache
+;; SEMANTICDB Tags save file
+(semanticdb-project-database "semantic.cache"
+  :file "semantic.cache"
+  :tables (list 
+   (semanticdb-table "documentation.cpp"
+    :file "documentation.cpp"
+    :pointmax 4575
+    :major-mode 'c++-mode
+    :tokens 'nil
+    :unmatched-syntax 'nil
+    )
+   )
+  )

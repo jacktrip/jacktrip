@@ -1,0 +1,34 @@
+#!/bin/bash
+## Created by Juan-Pablo Caceres
+
+# Check for Platform
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    echo "Building on Linux"
+    platform='linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    echo "Building on Mac OS X"
+    platform='macosx'
+fi
+
+# Set qmake command name
+if [[ $platform == 'linux' ]]; then
+    QCMD=qmake-qt4
+elif [[ $platform == 'macosx' ]]; then
+    QCMD=qmake
+fi
+
+# Build
+if [[ $1 == 'nojack' ]]; then
+    echo "Building without Jack"
+    $QCMD -config nojack jacktrip.pro
+    make clean
+    $QCMD -config nojack jacktrip.pro
+    make release
+else
+    $QCMD jacktrip.pro
+    make clean
+    $QCMD jacktrip.pro
+    make release
+fi
