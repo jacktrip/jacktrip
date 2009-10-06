@@ -106,6 +106,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
 //*******************************************************************************
 JackTrip::~JackTrip()
 {
+  wait();
   delete mDataProtocolSender;
   delete mDataProtocolReceiver;
   delete mAudioInterface;
