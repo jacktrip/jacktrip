@@ -132,6 +132,9 @@ public:
   /// \brief The class destructor
   virtual ~JackTrip();
 
+  /// \brief Starting point for the thread
+  virtual void run() {}
+
   /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
   virtual void setPeerAddress(const char* PeerHostOrIP);
 
@@ -345,7 +348,7 @@ public:
 
 public slots:
   /// \brief Slot to stop all the processes and threads
-  void slotStopProcesses()
+  virtual void slotStopProcesses()
   {
     std::cout << "Stopping JackTrip..." << std::endl;
     this->stop();

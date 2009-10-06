@@ -122,8 +122,8 @@ void JackTripWorker::run()
     JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
 #endif
 #ifdef __JAMTEST__
-    //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
     JamTest jacktrip(JackTrip::SERVER); // ########### JamTest #################
+    //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
 #endif
 
     ClientAddress.setAddress(mClientAddress);
@@ -150,7 +150,7 @@ void JackTripWorker::run()
 
     // Start Threads and event loop
     jacktrip.startProcess();
-    //jacktrip.start(); // ########### JamTest Only #################
+    jacktrip.start(); // ########### JamTest Only #################
 
     { // Thread is already spawning, so release the lock
       QMutexLocker locker(&mMutex);
