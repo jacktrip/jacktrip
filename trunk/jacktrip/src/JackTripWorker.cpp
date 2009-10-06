@@ -47,7 +47,9 @@
 #include "UdpMasterListener.h"
 #include "NetKS.h"
 #include "LoopBack.h"
+#ifdef __JAMTEST__
 #include "JamTest.h"
+#endif
 
 using std::cout; using std::endl;
 
@@ -116,7 +118,14 @@ void JackTripWorker::run()
 
     // Create and setup JackTrip Object
     //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
+#ifndef __JAMTEST__
+    JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
+#endif
+#ifdef __JAMTEST__
+    //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
     JamTest jacktrip(JackTrip::SERVER); // ########### JamTest #################
+#endif
+
     ClientAddress.setAddress(mClientAddress);
     // If I don't type this line, I get a bus error in the next line.
     // I still haven't figure out why
@@ -141,7 +150,7 @@ void JackTripWorker::run()
 
     // Start Threads and event loop
     jacktrip.startProcess();
-    jacktrip.start(); // ########### JamTest Only #################
+    //jacktrip.start(); // ########### JamTest Only #################
 
     { // Thread is already spawning, so release the lock
       QMutexLocker locker(&mMutex);
