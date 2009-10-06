@@ -396,7 +396,7 @@ public:
   /// \brief Starts for the SERVER mode
   void serverStart() throw(std::invalid_argument, std::runtime_error);
   /// \brief Stats for the Client to Ping Server
-  void clientPingToServerStart() throw(std::invalid_argument);
+  virtual void clientPingToServerStart() throw(std::invalid_argument);
 
 private:
   //void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,

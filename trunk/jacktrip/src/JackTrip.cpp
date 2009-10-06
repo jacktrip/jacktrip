@@ -498,6 +498,7 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 
   // Set with the received UDP port
   // ------------------------------
+  setPeerPorts(udp_port);
   mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
   mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
   mDataProtocolSender->setPeerPort(udp_port);
