@@ -108,6 +108,12 @@ void JackTripWorker::run()
     This is not supported, exceptions thrown in worker threads must be
     caught before control returns to Qt Concurrent.'*/
 
+  {
+    // Thread is already spawning, so release the lock
+    QMutexLocker locker(&mMutex);
+    mSpawning = true;
+  }
+
   QHostAddress ClientAddress;
 
   // Try catching any exceptions that come from JackTrip
@@ -151,6 +157,7 @@ void JackTripWorker::run()
     // Start Threads and event loop
     jacktrip.startProcess();
     jacktrip.start(); // ########### JamTest Only #################
+    cout << "@@@@@@@@@@@@@@@@@> AFTER JACKTRIPWORKER jacktrip.start()" << endl;
 
     { // Thread is already spawning, so release the lock
       QMutexLocker locker(&mMutex);
@@ -159,6 +166,11 @@ void JackTripWorker::run()
 
     event_loop.exec(); // Excecution will block here until exit() the QEventLoop
     //--------------------------------------------------------------------------
+
+    { // Thread is already spawning, so release the lock
+      QMutexLocker locker(&mMutex);
+      mSpawning = true;
+    }
 
     // wait for jacktrip to be done before exiting the Worker Thread
     jacktrip.wait();

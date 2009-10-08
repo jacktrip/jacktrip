@@ -351,7 +351,10 @@ public slots:
   virtual void slotStopProcesses()
   {
     std::cout << "Stopping JackTrip..." << std::endl;
+    std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
+    mStopped = true;
     this->stop();
+    std::cout << "AFTER Stopping JackTrip..." << std::endl;
   }
 
   /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds
@@ -443,6 +446,7 @@ private:
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 
   volatile bool mReceivedConnection; ///< Bool of received connection from peer
+  volatile bool mStopped;
 };
 
 #endif

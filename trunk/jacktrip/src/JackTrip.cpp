@@ -97,7 +97,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mRedundancy(redundancy),
   mJackClientName("JackTrip"),
   mConnectionMode(JackTrip::NORMAL),
-  mReceivedConnection(false)
+  mReceivedConnection(false),
+  mStopped(false)
 {
   createHeader(mPacketHeaderType);
 }
@@ -333,16 +334,21 @@ void JackTrip::startProcess() throw(std::invalid_argument)
 //*******************************************************************************
 void JackTrip::stop()
 {
+  cout << "INIT STOP-----------" << endl;
   // Stop The Sender
   mDataProtocolSender->stop();
   mDataProtocolSender->wait();
+  cout << "Stop The Sender-----------" << endl;
 
   // Stop The Receiver
   mDataProtocolReceiver->stop();
+  cout << "Stop The Receiver 1-----------" << endl;
   mDataProtocolReceiver->wait();
+  cout << "Stop The Receiver 2-----------" << endl;
 
   // Stop the jack process callback
   mAudioInterface->stopProcess();
+  cout << "Stop the jack process callback-----------" << endl;
 
   cout << "JackTrip Processes STOPPED!" << endl;
   cout << gPrintSeparator << endl;
@@ -400,7 +406,10 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to client
-  while ( !UdpSockTemp.hasPendingDatagrams() ) { QThread::usleep(100000); }
+  while ( !UdpSockTemp.hasPendingDatagrams() ) {
+    if (mStopped == true) { return; }
+    QThread::usleep(100000);
+  }
   char buf[1];
   // set client address
   UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &peer_port);

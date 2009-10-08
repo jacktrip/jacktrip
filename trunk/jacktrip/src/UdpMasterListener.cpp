@@ -145,31 +145,40 @@ void UdpMasterListener::run()
       int id_remove;
       id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
       // stop the thread
-      mJTWorkers->at(id_remove)->stopThread();
+      //if ( mJTWorkers->at(id_remove) != NULL) {
+        mJTWorkers->at(id_remove)->stopThread();
+      //}
       // block until the thread has been removed from the pool
       while ( isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port) == -1 )
       { cout << "removing" << endl; QThread::msleep(10); }
+      cout << "---> AFTER REMOVING" << endl;
       // Get a new ID for this client
       //id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
       id = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
     }
+    cout << "AFTER FIRST LOOP" << endl;
     // Assign server port and send it to Client
     server_udp_port = mBasePort+id;
     sendUdpPort(clientConnection, server_udp_port);
     // Close and Delete the socket
     // ---------------------------
     clientConnection->close();
+    cout << "---> BEFORE DELETE clientConnection" << endl;
     delete clientConnection;
     cout << "Client TCP Socket Closed!" << endl;
 
     // Spawn Thread to Pool
     // --------------------
     // Register JackTripWorker with the master listener
+    cout << "BEFORE DELETE mJTWorkers" << endl;
     delete mJTWorkers->at(id); // just in case the Worker was previously created
+    mJTWorkers->insert(id, NULL);
     mJTWorkers->replace(id, new JackTripWorker(this));
+    cout << "---> AFTER new" << endl;
     // redirect port and spawn listener
     {
       QMutexLocker lock(&mMutex);
+      cout << "---> AFTER QMutexLocker" << endl;
       mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
                                       server_udp_port, mActiveAddress[id][1],
                                       1); /// \todo temp default to 1 channel
@@ -309,6 +318,7 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std
 int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 {
   QMutexLocker lock(&mMutex);
+  //cout << "######################INIT isNewAddress"<< endl;
   bool busyAddress = false;
   int id = 0;
 
@@ -373,3 +383,8 @@ int UdpMasterListener::releaseThread(int id)
   mTotalRunningThreads--;
   return 0; /// \todo Check if we really need to return an argument here
 }
+
+
+// TODO:
+// USE bool QAbstractSocket::isValid () const to check if socket is connect. if not, exit loop
+

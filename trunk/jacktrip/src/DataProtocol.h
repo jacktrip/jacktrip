@@ -53,6 +53,7 @@
 
 #include <QThread>
 #include <QHostAddress>
+#include <QMutexLocker>
 
 class JackTrip; // forward declaration
 
@@ -132,7 +133,11 @@ public:
   virtual void run() = 0;
 
   /// \brief Stops the execution of the Thread
-  virtual void stop() { mStopped = true; }
+  virtual void stop() {
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!STOPPING DATA PROTOCOL" << std::endl;
+    mStopped = true;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!AFTER mStopped true" << std::endl;
+  }
 
   /** \brief Sets the size of the audio part of the packets
    * \param size_bytes Size in bytes
