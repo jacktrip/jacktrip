@@ -43,6 +43,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QStringList>
+#include <QMutexLocker>
 
 #include "UdpMasterListener.h"
 #include "JackTripWorker.h"
@@ -148,7 +149,8 @@ void UdpMasterListener::run()
       while ( isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port) == -1 )
       { cout << "removing" << endl; QThread::msleep(10); }
       // Get a new ID for this client
-      id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
+      //id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
+      id = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
     }
     // Assign server port and send it to Client
     server_udp_port = mBasePort+id;
@@ -302,17 +304,44 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std
 // check by comparing 32-bit addresses
 int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 {
+  QMutexLocker lock(&mMutex);
   bool busyAddress = false;
   int id = 0;
+
+  /*
   while ( !busyAddress && (id<mThreadPool.activeThreadCount()) )
   {
     if ( address==mActiveAddress[id][0] &&  port==mActiveAddress[id][1]) { busyAddress = true; }
     id++;
   }
-  if ( !busyAddress ) { 
+  */
+  for (int i = 0; i<gMaxThreads; i++) {
+    if ( address==mActiveAddress[i][0] &&  port==mActiveAddress[i][1]) {
+      id = i;
+      busyAddress = true;
+      //cout << i << "##########################BUSY############################"<< endl;
+    }
+  }
+  if ( !busyAddress ) {
+    /*
     mActiveAddress[id][0] = address;
     mActiveAddress[id][1] = port;
+  } else {
+  */
+    id = 0;
+    bool foundEmptyAddress = false;
+    while ( !foundEmptyAddress && (id<gMaxThreads) ) {
+      if ( (mActiveAddress[id][0] == 0) &&  (mActiveAddress[id][1] == 0) ) {
+        foundEmptyAddress = true;
+        mActiveAddress[id][0] = address;
+        mActiveAddress[id][1] = port;
+      }  else {
+        id++;
+        cout << id << endl;
+      }
+    }
   }
+  //cout << "ID -------------------------------> " << id << "BUSYADDRESS " << busyAddress << endl;
   return ((busyAddress) ? -1 : id);
 }
 
@@ -320,7 +349,8 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 //*******************************************************************************
 int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
 {
-  for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
+  //for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
+  for (int id = 0; id<gMaxThreads; id++ )
   {
     if ( address==mActiveAddress[id][0] &&  port==mActiveAddress[id][1])
     { return id; }
@@ -332,8 +362,11 @@ int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
 //*******************************************************************************
 int UdpMasterListener::releaseThread(int id)
 { 
+  QMutexLocker lock(&mMutex);
   mActiveAddress[id][0] = 0;
   mActiveAddress[id][1] = 0;
   mTotalRunningThreads--;
+  cout << "THREAD RELEASED UdpMasterListener" << endl;
+  QThread:sleep(2);
   return 0; /// \todo Check if we really need to return an argument here
 }

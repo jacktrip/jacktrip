@@ -214,11 +214,13 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
   int PeerNumChannels = jacktrip.getPeerNumChannels(full_packet);
   int PeerConnectionMode = jacktrip.getPeerConnectionMode(full_packet);
 
+  /*
   cout << "getPeerBufferSize = " << PeerBufferSize << endl;
   cout << "getPeerSamplingRate = " << PeerSamplingRate << endl;
   cout << "getPeerBitResolution = " << PeerBitResolution << endl;
   cout << "getPeerNumChannels = " << PeerNumChannels << endl;
   cout << "getPeerConnectionMode = " << PeerConnectionMode << endl;
+  */
 
   jacktrip.setNumChannels(PeerNumChannels);
   return PeerConnectionMode;

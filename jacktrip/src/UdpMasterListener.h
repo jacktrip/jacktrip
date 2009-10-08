@@ -47,6 +47,7 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <QTcpServer>
+#include <QMutex>
 
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
@@ -128,6 +129,7 @@ private:
   /// Boolean stop the execution of the thread
   volatile bool mStopped;
   int mTotalRunningThreads; ///< Number of Threads running in the pool
+  QMutex mMutex;
 };
 
 
