@@ -114,8 +114,8 @@ private:
     */
   int getPoolID(uint32_t address, uint16_t port);
 
-  QUdpSocket mUdpMasterSocket; ///< The UDP socket
-  QHostAddress mPeerAddress; ///< The Peer Address
+  //QUdpSocket mUdpMasterSocket; ///< The UDP socket
+  //QHostAddress mPeerAddress; ///< The Peer Address
 
   //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
   QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorker s
