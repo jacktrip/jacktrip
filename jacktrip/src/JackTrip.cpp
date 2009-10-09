@@ -295,6 +295,9 @@ void JackTrip::startProcess() throw(std::invalid_argument)
   QObject::connect(mDataProtocolReceiver, SIGNAL(signalReceivedConnectionFromPeer()),
                    this, SLOT(slotReceivedConnectionFromPeer()),
                    Qt::QueuedConnection);
+  QObject::connect(this, SIGNAL(signalUdpTimeOut()),
+                   this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+
   //QObject::connect(mDataProtocolSender, SIGNAL(signalError(const char*)),
   //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
   //QObject::connect(mDataProtocolReceiver, SIGNAL(signalError(const char*)),
@@ -312,6 +315,9 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     break;
   case CLIENTTOPINGSERVER :
     clientPingToServerStart();
+    break;
+  case SERVERPINGSERVER :
+    serverStart(true);
     break;
   default:
     throw std::invalid_argument("Jacktrip Mode  undefined");
@@ -383,7 +389,8 @@ void JackTrip::clientStart() throw(std::invalid_argument)
 
 
 //*******************************************************************************
-void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
+void JackTrip::serverStart(bool timeout, int udpTimeout)
+    throw(std::invalid_argument, std::runtime_error)
 {
   // Set the peer address
   if ( !mPeerAddress.isEmpty() ) {
@@ -394,7 +401,8 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
   }
 
   // Get the client address when it connects
-  cout << "Waiting for Connection From Client..." << endl;//stop();
+  cout << "Waiting for Connection From Client..." << endl;
+  cout << "TIME OUT ----> " << timeout << endl;
   QHostAddress peerHostAddress;
   uint16_t peer_port;
   QUdpSocket UdpSockTemp;// Create socket to wait for client
@@ -406,9 +414,24 @@ void JackTrip::serverStart() throw(std::invalid_argument, std::runtime_error)
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to client
-  while ( !UdpSockTemp.hasPendingDatagrams() ) {
-    if (mStopped == true) { return; }
-    QThread::usleep(100000);
+  int sleepTime = 100; // ms
+  int elapsedTime = 0;
+  if (timeout) {
+    while ( (!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout) ) {
+      if (mStopped == true) { emit signalUdpTimeOut(); return; }
+      QThread::msleep(sleepTime);
+      elapsedTime += sleepTime;
+    }
+    if (!UdpSockTemp.hasPendingDatagrams()) {
+      emit signalUdpTimeOut();
+      cout << "---> JackTrip::serverStart TIMEOUT" << endl;
+      return;
+    }
+  } else {
+    while ( !UdpSockTemp.hasPendingDatagrams() ) {
+      if (mStopped == true) { emit signalUdpTimeOut(); return; }
+      QThread::msleep(sleepTime);
+    }
   }
   char buf[1];
   // set client address

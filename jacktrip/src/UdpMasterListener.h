@@ -94,7 +94,7 @@ private:
   static void bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std::runtime_error);
 
   int readClientUdpPort(QTcpSocket* clientConnection);
-  void sendUdpPort(QTcpSocket* clientConnection, int udp_port);
+  int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
 
 
   /** \brief Send the JackTripWorker to the thread pool. This will run
