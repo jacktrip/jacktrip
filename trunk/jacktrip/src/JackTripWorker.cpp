@@ -108,11 +108,10 @@ void JackTripWorker::run()
     This is not supported, exceptions thrown in worker threads must be
     caught before control returns to Qt Concurrent.'*/
 
-  {
-    // Thread is already spawning, so release the lock
-    QMutexLocker locker(&mMutex);
-    mSpawning = true;
-  }
+  cout << "---> BEFORE QMutexLocker locker(&mMutex); mSpawning = true; " << endl;
+  { QMutexLocker locker(&mMutex); mSpawning = true; }
+  cout << "---> AFTER QMutexLocker locker(&mMutex); mSpawning = true; " << endl;
+
 
   QHostAddress ClientAddress;
 
@@ -125,13 +124,13 @@ void JackTripWorker::run()
     // Create and setup JackTrip Object
     //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
 #ifndef __JAMTEST__
-    JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
+    JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
 #endif
 #ifdef __JAMTEST__
-    JamTest jacktrip(JackTrip::SERVER); // ########### JamTest #################
-    //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
+    JamTest jacktrip(JackTrip::SERVERPINGSERVER); // ########### JamTest #################
+    //JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
 #endif
-
+    cout << "---> BEFORE ClientAddress.setAddress(mClientAddress) " << endl;
     ClientAddress.setAddress(mClientAddress);
     // If I don't type this line, I get a bus error in the next line.
     // I still haven't figure out why
@@ -140,25 +139,37 @@ void JackTripWorker::run()
     jacktrip.setBindPorts(mServerPort);
     //jacktrip.setPeerPorts(mClientPort);
 
+    cout << "---> BEFORE PeerConnectionMode " << endl;
     int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
+    if ( PeerConnectionMode == -1 ) {
+      mUdpMasterListener->releaseThread(mID);
+      { QMutexLocker locker(&mMutex); mSpawning = false; }
+      return;
+    }
 
     // Connect signals and slots
     // -------------------------
+    cout << "---> BEFORE SIGNAL SLOTS 1 " << endl;
     // Connection to terminate JackTrip when packets haven't arrive for
     // a certain amount of time
     QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    cout << "---> BEFORE SIGNAL SLOTS 2 " << endl;
     // Connection to terminate the local eventloop when jacktrip is done
     QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
                      &event_loop, SLOT(quit()), Qt::QueuedConnection);
+    cout << "---> BEFORE SIGNAL SLOTS 3 " << endl;
     QObject::connect(this, SIGNAL(signalRemoveThread()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
     // Start Threads and event loop
+    cout << "---> BEFORE jacktrip.startProcess() " << endl;
     jacktrip.startProcess();
+    cout << "---> BEFORE jacktrip.start()" << endl;
     jacktrip.start(); // ########### JamTest Only #################
     cout << "@@@@@@@@@@@@@@@@@> AFTER JACKTRIPWORKER jacktrip.start()" << endl;
 
+    cout << "---> BEFORE QMutexLocker locker(&mMutex);" << endl;
     { // Thread is already spawning, so release the lock
       QMutexLocker locker(&mMutex);
       mSpawning = false;
@@ -196,6 +207,7 @@ void JackTripWorker::run()
 
 
 //*******************************************************************************
+// returns -1 on error
 int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
 {
   //QHostAddress peerHostAddress;
@@ -210,10 +222,23 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
   }
 
   // Listen to client
-  QWaitCondition sleep;
-  QMutex mutex; mutex.lock();
-  while ( !UdpSockTemp.hasPendingDatagrams() ) { sleep.wait(&mutex,100); }
-  mutex.unlock();
+  QWaitCondition sleep; // time is in milliseconds
+  QMutex mutex;
+  int sleepTime = 100; // ms
+  int udpTimeout = gTimeOutMultiThreadedServer*1000; // gTimeOutMultiThreadedServer seconds
+  int elapsedTime = 0;
+  {
+    QMutexLocker lock(&mutex);
+    while ( (!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout) ) {
+      sleep.wait(&mutex,sleepTime);
+      elapsedTime += sleepTime;
+      cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
+    }
+  }
+  if (!UdpSockTemp.hasPendingDatagrams()) {
+    cout << "---> UdpSockTemp.hasPendingDatagrams() returning error" << endl;
+    return -1;
+  }
   int packet_size = UdpSockTemp.pendingDatagramSize();
   char packet[packet_size];
   UdpSockTemp.readDatagram(packet, packet_size);

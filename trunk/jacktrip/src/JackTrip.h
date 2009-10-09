@@ -82,7 +82,8 @@ public:
   enum jacktripModeT {
     SERVER, ///< Run in Server Mode
     CLIENT,  ///< Run in Client Mode
-    CLIENTTOPINGSERVER ///< Client of the Ping Server Mode
+    CLIENTTOPINGSERVER, ///< Client of the Ping Server Mode
+    SERVERPINGSERVER ///< Server of the MultiThreaded JackTrip
   };
 
   /// \brief Enum for the JackTrip Underrun Mode, when packets
@@ -377,6 +378,8 @@ public slots:
 
 
 signals:
+
+  void signalUdpTimeOut();
   /// \brief Signal emitted when all the processes and threads are stopped
   void signalProcessesStopped();
   /// \brief Signal emitted when no UDP Packets have been received for a while
@@ -397,7 +400,10 @@ public:
   /// \brief Starts for the CLIENT mode
   void clientStart() throw(std::invalid_argument);
   /// \brief Starts for the SERVER mode
-  void serverStart() throw(std::invalid_argument, std::runtime_error);
+  /// \param timout Set the server to timeout after 2 seconds if no client connections are received.
+  /// Usefull for the multithreaded server
+  void serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer)
+      throw(std::invalid_argument, std::runtime_error);
   /// \brief Stats for the Client to Ping Server
   virtual void clientPingToServerStart() throw(std::invalid_argument);
 
