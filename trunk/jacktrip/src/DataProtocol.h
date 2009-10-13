@@ -53,6 +53,7 @@
 
 #include <QThread>
 #include <QHostAddress>
+#include <QMutex>
 #include <QMutexLocker>
 
 class JackTrip; // forward declaration
@@ -134,8 +135,10 @@ public:
 
   /// \brief Stops the execution of the Thread
   virtual void stop() {
+    QMutexLocker lock(&mMutex);
     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!STOPPING DATA PROTOCOL" << std::endl;
     mStopped = true;
+    std::cout << "mStopped in stop dataprotocol: " << mStopped << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!AFTER mStopped true" << std::endl;
   }
 
@@ -184,6 +187,7 @@ protected:
   volatile bool mHasPeerAddress;
   /// Boolean that indicates if a packet was received
   volatile bool mHasPacketsToReceive;
+  QMutex mMutex;
 
 
 private:

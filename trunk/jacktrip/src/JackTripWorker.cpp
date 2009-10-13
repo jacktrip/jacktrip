@@ -130,6 +130,22 @@ void JackTripWorker::run()
     JamTest jacktrip(JackTrip::SERVERPINGSERVER); // ########### JamTest #################
     //JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
 #endif
+
+    // Connect signals and slots
+    // -------------------------
+    cout << "---> BEFORE SIGNAL SLOTS 1 " << endl;
+    // Connection to terminate JackTrip when packets haven't arrive for
+    // a certain amount of time
+    QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
+                     &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    cout << "---> BEFORE SIGNAL SLOTS 2 " << endl;
+    // Connection to terminate the local eventloop when jacktrip is done
+    QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
+                     &event_loop, SLOT(quit()), Qt::QueuedConnection);
+    cout << "---> BEFORE SIGNAL SLOTS 3 " << endl;
+    QObject::connect(this, SIGNAL(signalRemoveThread()),
+                     &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+
     cout << "---> BEFORE ClientAddress.setAddress(mClientAddress) " << endl;
     ClientAddress.setAddress(mClientAddress);
     // If I don't type this line, I get a bus error in the next line.
@@ -147,20 +163,7 @@ void JackTripWorker::run()
       return;
     }
 
-    // Connect signals and slots
-    // -------------------------
-    cout << "---> BEFORE SIGNAL SLOTS 1 " << endl;
-    // Connection to terminate JackTrip when packets haven't arrive for
-    // a certain amount of time
-    QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
-                     &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
-    cout << "---> BEFORE SIGNAL SLOTS 2 " << endl;
-    // Connection to terminate the local eventloop when jacktrip is done
-    QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
-                     &event_loop, SLOT(quit()), Qt::QueuedConnection);
-    cout << "---> BEFORE SIGNAL SLOTS 3 " << endl;
-    QObject::connect(this, SIGNAL(signalRemoveThread()),
-                     &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+
 
     // Start Threads and event loop
     cout << "---> BEFORE jacktrip.startProcess() " << endl;
@@ -178,10 +181,7 @@ void JackTripWorker::run()
     event_loop.exec(); // Excecution will block here until exit() the QEventLoop
     //--------------------------------------------------------------------------
 
-    { // Thread is already spawning, so release the lock
-      QMutexLocker locker(&mMutex);
-      mSpawning = true;
-    }
+    { QMutexLocker locker(&mMutex); mSpawning = true; }
 
     // wait for jacktrip to be done before exiting the Worker Thread
     jacktrip.wait();
@@ -192,9 +192,15 @@ void JackTripWorker::run()
     std::cerr << "Couldn't send thread to the Pool" << endl;
     std::cerr << e.what() << endl;
     std::cerr << gPrintSeparator << endl;
+    mUdpMasterListener->releaseThread(mID);
+    { QMutexLocker locker(&mMutex); mSpawning = false; }
+    return;
   }
   
-  mUdpMasterListener->releaseThread(mID);
+  {
+    QMutexLocker locker(&mMutex);
+    mUdpMasterListener->releaseThread(mID);
+  }
 
   cout << "JackTrip ID = " << mID << " released from the THREAD POOL" << endl;
   cout << gPrintSeparator << endl;
@@ -218,6 +224,7 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
   if ( !UdpSockTemp.bind(QHostAddress::Any, mServerPort,
                          QUdpSocket::DefaultForPlatform) )
   {
+    std::cerr << "in JackTripWorker: Could not bind UDP socket. It may be already binded." << endl;
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
 
@@ -225,7 +232,7 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
   QWaitCondition sleep; // time is in milliseconds
   QMutex mutex;
   int sleepTime = 100; // ms
-  int udpTimeout = gTimeOutMultiThreadedServer*1000; // gTimeOutMultiThreadedServer seconds
+  int udpTimeout = gTimeOutMultiThreadedServer; // gTimeOutMultiThreadedServer mseconds
   int elapsedTime = 0;
   {
     QMutexLocker lock(&mutex);
@@ -236,6 +243,7 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     }
   }
   if (!UdpSockTemp.hasPendingDatagrams()) {
+    UdpSockTemp.close();
     cout << "---> UdpSockTemp.hasPendingDatagrams() returning error" << endl;
     return -1;
   }
@@ -275,5 +283,7 @@ bool JackTripWorker::isSpawning()
 //*******************************************************************************
 void JackTripWorker::stopThread()
 {
+  QMutexLocker locker(&mMutex);
+  cout << "---> EMIT SIGNAL STOP THREADS JackTripWorker::stopThread()" << endl;
   emit signalRemoveThread();
 }

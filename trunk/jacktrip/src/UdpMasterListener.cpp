@@ -159,8 +159,10 @@ void UdpMasterListener::run()
         // stop the thread
         mJTWorkers->at(id_remove)->stopThread();
         // block until the thread has been removed from the pool
-        while ( isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port) == -1 )
-        { cout << "removing" << endl; QThread::msleep(10); }
+        while ( isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port) == -1 ) {
+          cout << "JackTrip MULTI-THREADED SERVER: Removing JackTripWorker from pool..." << endl;
+          QThread::msleep(10);
+        }
         // Get a new ID for this client
         //id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
         id = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
@@ -168,8 +170,9 @@ void UdpMasterListener::run()
       // Assign server port and send it to Client
       server_udp_port = mBasePort+id;
       if ( sendUdpPort(clientConnection, server_udp_port) == 0 ) {
-        releaseThread(id);
+        clientConnection->close();
         delete clientConnection;
+        releaseThread(id);
         break;
       }
 
@@ -407,7 +410,9 @@ int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
 //*******************************************************************************
 int UdpMasterListener::releaseThread(int id)
 { 
+  cout << "---> UdpMasterListener::releaseThread(int id)" << endl;
   QMutexLocker lock(&mMutex);
+  cout << "---> AFTER UdpMasterListener::releaseThread(int id) MUTEX" << endl;
   mActiveAddress[id][0] = 0;
   mActiveAddress[id][1] = 0;
   mTotalRunningThreads--;
