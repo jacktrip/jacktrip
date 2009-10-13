@@ -155,8 +155,6 @@ void JackTripWorker::run()
       return;
     }
 
-
-
     // Start Threads and event loop
     jacktrip.startProcess();
     jacktrip.start(); // ########### JamTest Only #################
