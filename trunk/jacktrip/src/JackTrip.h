@@ -268,6 +268,9 @@ public:
 
   bool receivedConnectionFromPeer()
   { return mReceivedConnection; }
+
+  bool tcpConnectionError()
+  { return mTcpConnectionError; }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -404,7 +407,8 @@ public:
   int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer)
       throw(std::invalid_argument, std::runtime_error);
   /// \brief Stats for the Client to Ping Server
-  virtual void clientPingToServerStart() throw(std::invalid_argument);
+  /// \return -1 on error, 0 on success
+  virtual int clientPingToServerStart() throw(std::invalid_argument);
 
 private:
   //void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
@@ -451,6 +455,7 @@ private:
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 
   volatile bool mReceivedConnection; ///< Bool of received connection from peer
+  volatile bool mTcpConnectionError;
   volatile bool mStopped;
 };
 

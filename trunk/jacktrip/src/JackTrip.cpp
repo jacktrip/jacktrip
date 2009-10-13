@@ -98,6 +98,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mJackClientName("JackTrip"),
   mConnectionMode(JackTrip::NORMAL),
   mReceivedConnection(false),
+  mTcpConnectionError(false),
   mStopped(false)
 {
   createHeader(mPacketHeaderType);
@@ -314,10 +315,15 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     serverStart();
     break;
   case CLIENTTOPINGSERVER :
-    clientPingToServerStart();
+    if ( clientPingToServerStart() == -1 ) { // if error on server start (-1) we return inmediatly
+      mTcpConnectionError = true;
+      slotStopProcesses();
+      return;
+    }
     break;
   case SERVERPINGSERVER :
     if ( serverStart(true) == -1 ) { // if error on server start (-1) we return inmediatly
+      slotStopProcesses();
       return;
     }
     break;
@@ -457,7 +463,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)
 
 
 //*******************************************************************************
-void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
+int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 {
   //mConnectionMode = JackTrip::KSTRONG;
   //mConnectionMode = JackTrip::JAMTEST;
@@ -467,7 +473,7 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   // For the Client mode, the peer (or server) address has to be specified by the user
   if ( mPeerAddress.isEmpty() ) {
     throw std::invalid_argument("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
-    return;
+    return -1;
   }
 
   // Creat Socket Objects
@@ -482,8 +488,8 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   cout << "Connecting to TCP Server..." << endl;
   if (!tcpClient.waitForConnected()) {
     std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
-    std::exit(1);
-    //return;
+    //std::exit(1);
+    return -1;
   }
   cout << "TCP Socket Connected to Server!" << endl;
   emit signalTcpClientConnected();
@@ -505,8 +511,8 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   while (tcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
     if (!tcpClient.waitForReadyRead()) {
       std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
-      std::exit(1);
-      //return;
+      //std::exit(1);
+      return -1;
     }
   }
   cout << "Ready To Read From Socket!" << endl;
@@ -535,6 +541,7 @@ void JackTrip::clientPingToServerStart() throw(std::invalid_argument)
   mDataProtocolReceiver->setPeerPort(udp_port);
   cout << "Server Address set to: " << mPeerAddress.toStdString() << " Port: " << udp_port << std::endl;
   cout << gPrintSeparator << endl;
+  return 0;
 
   /*
   else {
