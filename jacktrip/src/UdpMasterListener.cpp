@@ -179,33 +179,26 @@ void UdpMasterListener::run()
       // Close and Delete the socket
       // ---------------------------
       clientConnection->close();
-      cout << "---> BEFORE DELETE clientConnection" << endl;
       delete clientConnection;
       cout << "JackTrip MULTI-THREADED SERVER: Client TCP Socket Closed!" << endl;
 
       // Spawn Thread to Pool
       // --------------------
       // Register JackTripWorker with the master listener
-      cout << "BEFORE DELETE mJTWorkers" << endl;
       delete mJTWorkers->at(id); // just in case the Worker was previously created
       mJTWorkers->insert(id, NULL);
       mJTWorkers->replace(id, new JackTripWorker(this));
-      cout << "---> AFTER new" << endl;
       // redirect port and spawn listener
       {
         QMutexLocker lock(&mMutex);
-        cout << "---> AFTER QMutexLocker" << endl;
         mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
                                         server_udp_port, mActiveAddress[id][1],
                                         1); /// \todo temp default to 1 channel
       }
-      cout << "---> AFTER setJackTrip" << endl;
       //send one thread to the pool
       mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority);
-      cout << "---> AFTER mThreadPool.start" << endl;
       // wait until one is complete before another spawns
       while (mJTWorkers->at(id)->isSpawning()) { QThread::msleep(10); }
-      cout << "---> AFTER while (mJTWorkers->at(id)->isSpawning())" << endl;
       //mTotalRunningThreads++;
       cout << "JackTrip MULTI-THREADED SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
       cout << "===============================================================" << endl;
@@ -301,8 +294,6 @@ int UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
   std::memcpy(port_buf, &udp_port, sizeof(udp_port));
   clientConnection->write(port_buf, sizeof(udp_port));
   while ( clientConnection->bytesToWrite() > 0 ) {
-    cout << "----> clientConnection->isValid(): " << clientConnection->isValid() << "STATE: " << clientConnection->state() << endl;
-    //if ( clientConnection->isValid() ) {
     if ( clientConnection->state() == QAbstractSocket::ConnectedState ) {
       clientConnection->waitForBytesWritten(-1);
     }
@@ -348,7 +339,6 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std
 int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 {
   QMutexLocker lock(&mMutex);
-  //cout << "######################INIT isNewAddress"<< endl;
   bool busyAddress = false;
   int id = 0;
 
@@ -363,7 +353,6 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
     if ( address==mActiveAddress[i][0] &&  port==mActiveAddress[i][1]) {
       id = i;
       busyAddress = true;
-      //cout << i << "##########################BUSY############################"<< endl;
     }
   }
   if ( !busyAddress ) {
@@ -381,11 +370,9 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
         mActiveAddress[id][1] = port;
       }  else {
         id++;
-        cout << id << endl;
       }
     }
   }
-  //cout << "ID -------------------------------> " << id << "BUSYADDRESS " << busyAddress << endl;
   if (!busyAddress) {
     mTotalRunningThreads++;
   }
@@ -410,9 +397,7 @@ int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
 //*******************************************************************************
 int UdpMasterListener::releaseThread(int id)
 { 
-  cout << "---> UdpMasterListener::releaseThread(int id)" << endl;
   QMutexLocker lock(&mMutex);
-  cout << "---> AFTER UdpMasterListener::releaseThread(int id) MUTEX" << endl;
   mActiveAddress[id][0] = 0;
   mActiveAddress[id][1] = 0;
   mTotalRunningThreads--;

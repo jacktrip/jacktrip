@@ -352,10 +352,8 @@ public slots:
   virtual void slotStopProcesses()
   {
     std::cout << "Stopping JackTrip..." << std::endl;
-    std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
     mStopped = true;
     this->stop();
-    std::cout << "AFTER Stopping JackTrip..." << std::endl;
   }
 
   /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds

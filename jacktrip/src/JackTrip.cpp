@@ -317,7 +317,7 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     clientPingToServerStart();
     break;
   case SERVERPINGSERVER :
-    if ( serverStart(true) == -1 ) {
+    if ( serverStart(true) == -1 ) { // if error on server start (-1) we return inmediatly
       return;
     }
     break;
@@ -327,7 +327,6 @@ void JackTrip::startProcess() throw(std::invalid_argument)
   }
 
   // Start Threads
-  cout << "---> STARTING THREADS mAudioInterface->startProcess();" << endl;
   mAudioInterface->startProcess();
 
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
@@ -335,32 +334,24 @@ void JackTrip::startProcess() throw(std::invalid_argument)
   }
   mAudioInterface->connectDefaultPorts();
   mDataProtocolReceiver->start();
-  cout << "---> AFTER THREADS mDataProtocolReceiver->start();" << endl;
   QThread::msleep(1);
   mDataProtocolSender->start();
-  cout << "---> AFTER THREADS mDataProtocolSender->start();" << endl;
 }
 
 
 //*******************************************************************************
 void JackTrip::stop()
 {
-  cout << "INIT STOP-----------" << endl;
   // Stop The Sender
   mDataProtocolSender->stop();
-  cout << "Stop The Sender 1-----------" << endl;
   mDataProtocolSender->wait();
-  cout << "Stop The Sender 2-----------" << endl;
 
   // Stop The Receiver
   mDataProtocolReceiver->stop();
-  cout << "Stop The Receiver 1-----------" << endl;
   mDataProtocolReceiver->wait();
-  cout << "Stop The Receiver 2-----------" << endl;
 
   // Stop the jack process callback
   mAudioInterface->stopProcess();
-  cout << "Stop the jack process callback-----------" << endl;
 
   cout << "JackTrip Processes STOPPED!" << endl;
   cout << gPrintSeparator << endl;
@@ -408,7 +399,6 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)
 
   // Get the client address when it connects
   cout << "Waiting for Connection From Client..." << endl;
-  cout << "TIME OUT ----> " << timeout << endl;
   QHostAddress peerHostAddress;
   uint16_t peer_port;
   QUdpSocket UdpSockTemp;// Create socket to wait for client
@@ -431,7 +421,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)
     }
     if (!UdpSockTemp.hasPendingDatagrams()) {
       emit signalUdpTimeOut();
-      cout << "---> JackTrip::serverStart TIMEOUT" << endl;
+      cout << "JackTrip Server Timed Out!" << endl;
       return -1;
     }
   } else {
