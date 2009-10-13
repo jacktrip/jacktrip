@@ -87,6 +87,10 @@ public:
 		   int num_channels);
   /// Stop and remove thread from pool
   void stopThread();
+  int getID()
+  {
+    return mID;
+  }
 
 
 private slots:

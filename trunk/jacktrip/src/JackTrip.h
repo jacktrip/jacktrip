@@ -400,6 +400,7 @@ public:
   /// \brief Starts for the SERVER mode
   /// \param timout Set the server to timeout after 2 seconds if no client connections are received.
   /// Usefull for the multithreaded server
+  /// \return 0 on success, -1 on error
   int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer)
       throw(std::invalid_argument, std::runtime_error);
   /// \brief Stats for the Client to Ping Server

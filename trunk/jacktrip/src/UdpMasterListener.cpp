@@ -186,7 +186,6 @@ void UdpMasterListener::run()
       // --------------------
       // Register JackTripWorker with the master listener
       delete mJTWorkers->at(id); // just in case the Worker was previously created
-      mJTWorkers->insert(id, NULL);
       mJTWorkers->replace(id, new JackTripWorker(this));
       // redirect port and spawn listener
       {
