@@ -136,10 +136,7 @@ public:
   /// \brief Stops the execution of the Thread
   virtual void stop() {
     QMutexLocker lock(&mMutex);
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!STOPPING DATA PROTOCOL" << std::endl;
     mStopped = true;
-    std::cout << "mStopped in stop dataprotocol: " << mStopped << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!AFTER mStopped true" << std::endl;
   }
 
   /** \brief Sets the size of the audio part of the packets

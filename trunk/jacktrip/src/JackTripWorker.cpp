@@ -108,10 +108,7 @@ void JackTripWorker::run()
     This is not supported, exceptions thrown in worker threads must be
     caught before control returns to Qt Concurrent.'*/
 
-  cout << "---> BEFORE QMutexLocker locker(&mMutex); mSpawning = true; " << endl;
   { QMutexLocker locker(&mMutex); mSpawning = true; }
-  cout << "---> AFTER QMutexLocker locker(&mMutex); mSpawning = true; " << endl;
-
 
   QHostAddress ClientAddress;
 
@@ -133,20 +130,16 @@ void JackTripWorker::run()
 
     // Connect signals and slots
     // -------------------------
-    cout << "---> BEFORE SIGNAL SLOTS 1 " << endl;
     // Connection to terminate JackTrip when packets haven't arrive for
     // a certain amount of time
     QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
-    cout << "---> BEFORE SIGNAL SLOTS 2 " << endl;
     // Connection to terminate the local eventloop when jacktrip is done
     QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
                      &event_loop, SLOT(quit()), Qt::QueuedConnection);
-    cout << "---> BEFORE SIGNAL SLOTS 3 " << endl;
     QObject::connect(this, SIGNAL(signalRemoveThread()),
                      &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
-    cout << "---> BEFORE ClientAddress.setAddress(mClientAddress) " << endl;
     ClientAddress.setAddress(mClientAddress);
     // If I don't type this line, I get a bus error in the next line.
     // I still haven't figure out why
@@ -155,7 +148,6 @@ void JackTripWorker::run()
     jacktrip.setBindPorts(mServerPort);
     //jacktrip.setPeerPorts(mClientPort);
 
-    cout << "---> BEFORE PeerConnectionMode " << endl;
     int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
     if ( PeerConnectionMode == -1 ) {
       mUdpMasterListener->releaseThread(mID);
@@ -166,17 +158,11 @@ void JackTripWorker::run()
 
 
     // Start Threads and event loop
-    cout << "---> BEFORE jacktrip.startProcess() " << endl;
     jacktrip.startProcess();
-    cout << "---> BEFORE jacktrip.start()" << endl;
     jacktrip.start(); // ########### JamTest Only #################
-    cout << "@@@@@@@@@@@@@@@@@> AFTER JACKTRIPWORKER jacktrip.start()" << endl;
 
-    cout << "---> BEFORE QMutexLocker locker(&mMutex);" << endl;
-    { // Thread is already spawning, so release the lock
-      QMutexLocker locker(&mMutex);
-      mSpawning = false;
-    }
+    // Thread is already spawning, so release the lock
+    { QMutexLocker locker(&mMutex); mSpawning = false; }
 
     event_loop.exec(); // Excecution will block here until exit() the QEventLoop
     //--------------------------------------------------------------------------
@@ -239,12 +225,11 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     while ( (!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout) ) {
       sleep.wait(&mutex,sleepTime);
       elapsedTime += sleepTime;
-      cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
+      //cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
     }
   }
   if (!UdpSockTemp.hasPendingDatagrams()) {
     UdpSockTemp.close();
-    cout << "---> UdpSockTemp.hasPendingDatagrams() returning error" << endl;
     return -1;
   }
   int packet_size = UdpSockTemp.pendingDatagramSize();
@@ -284,6 +269,5 @@ bool JackTripWorker::isSpawning()
 void JackTripWorker::stopThread()
 {
   QMutexLocker locker(&mMutex);
-  cout << "---> EMIT SIGNAL STOP THREADS JackTripWorker::stopThread()" << endl;
   emit signalRemoveThread();
 }

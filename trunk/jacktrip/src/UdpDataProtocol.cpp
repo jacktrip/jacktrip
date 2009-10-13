@@ -304,14 +304,6 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
-  cout << "===> STARTING UdpDataProtocol::run()" << endl;
-  /*
-  {
-    QMutexLocker lock(&mMutex);
-    mStopped = false;
-  }
-  */
-
   //QObject::connect(this, SIGNAL(signalError(const char*)),
   //                 mJackTrip, SLOT(slotStopProcesses()),
   //                 Qt::QueuedConnection);
@@ -322,9 +314,6 @@ void UdpDataProtocol::run()
     bindSocket(UdpSocket); // Bind Socket
   } catch ( const std::exception & e ) {
     emit signalError( e.what() );
-    //this->terminate();
-    //this->wait();
-    cout << "AFTER EMITING" << endl;
     return;
   }
 
@@ -397,7 +386,6 @@ void UdpDataProtocol::run()
       uint16_t last_seq_num = 0;    // Store last package sequence number
       uint16_t newer_seq_num = 0;   // Store newer sequence number
 
-      cout << "-----------------------> BEFORE WHILE" << endl;
       while ( !mStopped )
       {
         // Timer to report packets arriving too late
@@ -427,9 +415,7 @@ void UdpDataProtocol::run()
                                current_seq_num,
                                last_seq_num,
                                newer_seq_num);
-        //cout << "----------> receivePacketRedundancy" << endl;
       }
-      cout << "-----------------------> AFTER WHILE" << endl;
       break; }
 
   case SENDER : {
@@ -467,7 +453,6 @@ bool UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
 
   while ( ( !(UdpSocket.hasPendingDatagrams()) && (ellaped_time_usec <= timeout_usec) )
     && !mStopped ){
-    //cout << mStopped << endl;
     if (mStopped) { return false; }
     QThread::usleep(loop_resolution_usec);
     ellaped_time_usec += loop_resolution_usec;
