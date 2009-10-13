@@ -317,7 +317,9 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     clientPingToServerStart();
     break;
   case SERVERPINGSERVER :
-    serverStart(true);
+    if ( serverStart(true) == -1 ) {
+      return;
+    }
     break;
   default:
     throw std::invalid_argument("Jacktrip Mode  undefined");
@@ -325,6 +327,7 @@ void JackTrip::startProcess() throw(std::invalid_argument)
   }
 
   // Start Threads
+  cout << "---> STARTING THREADS mAudioInterface->startProcess();" << endl;
   mAudioInterface->startProcess();
 
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
@@ -332,8 +335,10 @@ void JackTrip::startProcess() throw(std::invalid_argument)
   }
   mAudioInterface->connectDefaultPorts();
   mDataProtocolReceiver->start();
+  cout << "---> AFTER THREADS mDataProtocolReceiver->start();" << endl;
   QThread::msleep(1);
   mDataProtocolSender->start();
+  cout << "---> AFTER THREADS mDataProtocolSender->start();" << endl;
 }
 
 
@@ -343,8 +348,9 @@ void JackTrip::stop()
   cout << "INIT STOP-----------" << endl;
   // Stop The Sender
   mDataProtocolSender->stop();
+  cout << "Stop The Sender 1-----------" << endl;
   mDataProtocolSender->wait();
-  cout << "Stop The Sender-----------" << endl;
+  cout << "Stop The Sender 2-----------" << endl;
 
   // Stop The Receiver
   mDataProtocolReceiver->stop();
@@ -389,7 +395,7 @@ void JackTrip::clientStart() throw(std::invalid_argument)
 
 
 //*******************************************************************************
-void JackTrip::serverStart(bool timeout, int udpTimeout)
+int JackTrip::serverStart(bool timeout, int udpTimeout)
     throw(std::invalid_argument, std::runtime_error)
 {
   // Set the peer address
@@ -411,6 +417,7 @@ void JackTrip::serverStart(bool timeout, int udpTimeout)
   if ( !UdpSockTemp.bind(QHostAddress::Any, mReceiverBindPort,
                          QUdpSocket::DefaultForPlatform) )
   {
+    std::cerr << "in JackTrip: Could not bind UDP socket. It may be already binded." << endl;
     throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
   }
   // Listen to client
@@ -418,18 +425,18 @@ void JackTrip::serverStart(bool timeout, int udpTimeout)
   int elapsedTime = 0;
   if (timeout) {
     while ( (!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout) ) {
-      if (mStopped == true) { emit signalUdpTimeOut(); return; }
+      if (mStopped == true) { emit signalUdpTimeOut(); UdpSockTemp.close(); return -1; }
       QThread::msleep(sleepTime);
       elapsedTime += sleepTime;
     }
     if (!UdpSockTemp.hasPendingDatagrams()) {
       emit signalUdpTimeOut();
       cout << "---> JackTrip::serverStart TIMEOUT" << endl;
-      return;
+      return -1;
     }
   } else {
     while ( !UdpSockTemp.hasPendingDatagrams() ) {
-      if (mStopped == true) { emit signalUdpTimeOut(); return; }
+      if (mStopped == true) { emit signalUdpTimeOut(); return -1; }
       QThread::msleep(sleepTime);
     }
   }
@@ -455,6 +462,7 @@ void JackTrip::serverStart(bool timeout, int udpTimeout)
   mDataProtocolSender->setPeerPort(peer_port);
   mDataProtocolReceiver->setPeerPort(peer_port);
   setPeerPorts(peer_port);
+  return 0;
 }
 
 

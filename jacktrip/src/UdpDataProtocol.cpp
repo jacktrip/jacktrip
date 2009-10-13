@@ -70,6 +70,7 @@ mRunMode(runmode),
 mAudioPacket(NULL), mFullPacket(NULL),
 mUdpRedundancyFactor(udp_redundancy_factor)
 {
+  mStopped = false;
   if (mRunMode == RECEIVER) {
     QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
                      jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
@@ -303,7 +304,13 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
-  mStopped = false;
+  cout << "===> STARTING UdpDataProtocol::run()" << endl;
+  /*
+  {
+    QMutexLocker lock(&mMutex);
+    mStopped = false;
+  }
+  */
 
   //QObject::connect(this, SIGNAL(signalError(const char*)),
   //                 mJackTrip, SLOT(slotStopProcesses()),
@@ -318,6 +325,7 @@ void UdpDataProtocol::run()
     //this->terminate();
     //this->wait();
     cout << "AFTER EMITING" << endl;
+    return;
   }
 
 
@@ -364,7 +372,7 @@ void UdpDataProtocol::run()
       // from that packet
       std::cout << "Waiting for Peer..." << std::endl;
       // This blocks waiting for the first packet
-      while ( !UdpSocket.hasPendingDatagrams() && !mStopped ) {
+      while ( !UdpSocket.hasPendingDatagrams() ) {
         if (mStopped) { return; }
         QThread::msleep(100);
       }

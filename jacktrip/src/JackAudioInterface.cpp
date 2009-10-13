@@ -227,6 +227,7 @@ int JackAudioInterface::stopProcess() const
 {
   cout << "---> BEFORE JackAudioInterface::stopProcess()" << endl;
   QMutexLocker locker(&sJackMutex);
+  cout << "---> AFTER JackAudioInterface::stopProcess() MUTEX" << endl;
   if ( int code = (jack_client_close(mClient)) )
     {
       std::cerr << "Cannot disconnect client" << std::endl;
