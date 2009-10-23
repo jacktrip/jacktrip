@@ -231,14 +231,12 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
       //cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
     }
   }
-  /*
-  sleep.wait(&mutex,100);
+  // Check if we time out or not
   if (!UdpSockTemp.hasPendingDatagrams()) {
-    std::cerr << "--->JackTripWorker: is not receiving Datagrams" << endl;
+    std::cerr << "--->JackTripWorker: is not receiving Datagrams (timeout)" << endl;
     UdpSockTemp.close();
     return -1;
   }
-  */
   int packet_size = UdpSockTemp.pendingDatagramSize();
   char packet[packet_size];
   UdpSockTemp.readDatagram(packet, packet_size);
