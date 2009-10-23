@@ -356,8 +356,9 @@ void JackTrip::stop()
   mDataProtocolReceiver->stop();
   mDataProtocolReceiver->wait();
 
-  // Stop the jack process callback
-  mAudioInterface->stopProcess();
+  // Stop the audio processes
+  //mAudioInterface->stopProcess();
+  closeAudio();
 
   cout << "JackTrip Processes STOPPED!" << endl;
   cout << gPrintSeparator << endl;

@@ -226,7 +226,8 @@ int JackAudioInterface::startProcess() const
 int JackAudioInterface::stopProcess() const
 {
   QMutexLocker locker(&sJackMutex);
-  if ( int code = (jack_client_close(mClient)) )
+  int code = (jack_client_close(mClient));
+  if ( code != 0  )
     {
       std::cerr << "Cannot disconnect client" << std::endl;
       return(code);
