@@ -120,6 +120,7 @@ void JackTripWorker::run()
 
     // Create and setup JackTrip Object
     //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
+    cout << "---> JackTripWorker: Creating jacktip objects..." << endl;
 #ifndef __JAMTEST__
     JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
 #endif
@@ -130,6 +131,7 @@ void JackTripWorker::run()
 
     // Connect signals and slots
     // -------------------------
+    cout << "---> JackTripWorker: Connecting signals and slots..." << endl;
     // Connection to terminate JackTrip when packets haven't arrive for
     // a certain amount of time
     QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
@@ -148,6 +150,7 @@ void JackTripWorker::run()
     jacktrip.setBindPorts(mServerPort);
     //jacktrip.setPeerPorts(mClientPort);
 
+    cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
     int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
     if ( PeerConnectionMode == -1 ) {
       mUdpMasterListener->releaseThread(mID);
@@ -156,7 +159,9 @@ void JackTripWorker::run()
     }
 
     // Start Threads and event loop
+    cout << "---> JackTripWorker: startProcess..." << endl;
     jacktrip.startProcess();
+    cout << "---> JackTripWorker: start..." << endl;
     jacktrip.start(); // ########### JamTest Only #################
 
     // Thread is already spawning, so release the lock
