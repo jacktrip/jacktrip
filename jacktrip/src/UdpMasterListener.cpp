@@ -188,6 +188,7 @@ void UdpMasterListener::run()
       delete mJTWorkers->at(id); // just in case the Worker was previously created
       mJTWorkers->replace(id, new JackTripWorker(this));
       // redirect port and spawn listener
+      cout << "---> JackTrip MULTI-THREADED SERVER: Spawning Listener..." << endl;
       {
         QMutexLocker lock(&mMutex);
         mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
@@ -195,6 +196,7 @@ void UdpMasterListener::run()
                                         1); /// \todo temp default to 1 channel
       }
       //send one thread to the pool
+      cout << "---> JackTrip MULTI-THREADED SERVER: Starting Thread..." << endl;
       mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority);
       // wait until one is complete before another spawns
       while (mJTWorkers->at(id)->isSpawning()) { QThread::msleep(10); }
