@@ -39,6 +39,13 @@ linux-g++ {
   QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
   }
+linux-g++-64 {
+  message(Linux 64bit)
+  LIBS += -lasound
+  QMAKE_CXXFLAGS += -fPIC -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
+  QMAKE_CXXFLAGS += -g -O2
+  DEFINES += __LINUX__
+  }
 win32 {
   message(win32)
   CONFIG += x86 console
