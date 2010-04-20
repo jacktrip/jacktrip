@@ -170,9 +170,11 @@ void JackTrip::setupAudio()
 void JackTrip::closeAudio()
 {
   //mAudioInterface->close();
-  mAudioInterface->stopProcess();
-  delete mAudioInterface;
-  mAudioInterface = NULL;
+  if ( mAudioInterface != NULL ) {
+    mAudioInterface->stopProcess();
+    delete mAudioInterface;
+    mAudioInterface = NULL;
+  }
 }
 
 
