@@ -249,6 +249,9 @@ public:
 
   virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
   { mAudiointerfaceMode = audiointerface_mode; }
+  virtual void setAudioInterface(AudioInterface* const AudioInterface)
+  { mAudioInterface = AudioInterface; }
+
 
   void setSampleRate(uint32_t sample_rate)
   { mSampleRate = sample_rate; }
