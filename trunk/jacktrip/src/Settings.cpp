@@ -184,7 +184,7 @@ void Settings::parseInput(int argc, char** argv)
     case 'q':
       //-------------------------------------------------------
       if ( atoi(optarg) <= 0 ) {
-	std::cerr << "--queue ERROR: The queue has to be a positive integer" << endl;
+  std::cerr << "--queue ERROR: The queue has to be equal or greater that 2" << endl;
 	printUsage();
 	std::exit(1); }
       else {
@@ -194,7 +194,7 @@ void Settings::parseInput(int argc, char** argv)
     case 'r':
       //-------------------------------------------------------
       if ( atoi(optarg) <= 0 ) {
-	std::cerr << "--queue ERROR: The queue has to be a positive integer" << endl;
+  std::cerr << "--redundancy ERROR: The reduncancy has to be a positive integer" << endl;
 	printUsage();
 	std::exit(1); }
       else {
@@ -293,7 +293,7 @@ void Settings::printUsage()
   cout << "===================" << endl;
   cout << " -n, --numchannels #                      Number of Input and Output Channels (default "
        << 2 << ")" << endl;
-  cout << " -q, --queue       # (1 or more)          Queue Buffer Length, in Packet Size (default " 
+  cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default "
        << gDefaultQueueLength << ")" << endl;
   cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (defaul 1)" 
        << endl;
