@@ -28,7 +28,7 @@ macx {
   message(MAC OS X)
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
   CONFIG -= app_bundle
-  CONFIG += x86 ppc
+  CONFIG += x86 #ppc
   LIBS += -framework CoreAudio
   DEFINES += __MAC_OSX__
   }

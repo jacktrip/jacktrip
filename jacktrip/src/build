@@ -22,13 +22,13 @@ fi
 # Build
 if [[ $1 == 'nojack' ]]; then
     echo "Building without Jack"
-    $QCMD -config nojack jacktrip.pro
+    $QCMD -spec macx-g++ -config nojack jacktrip.pro
     make clean
-    $QCMD -config nojack jacktrip.pro
+    $QCMD -spec macx-g++ -config nojack jacktrip.pro
     make release
 else
-    $QCMD jacktrip.pro
+    $QCMD -spec macx-g++ jacktrip.pro
     make clean
-    $QCMD jacktrip.pro
+    $QCMD -spec macx-g++ jacktrip.pro
     make release
 fi
