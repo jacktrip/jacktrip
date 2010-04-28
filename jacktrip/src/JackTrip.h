@@ -305,9 +305,9 @@ public:
   uint8_t getAudioBitResolution() const
   { return mAudioInterface->getAudioBitResolution(); }
   unsigned int getNumInputChannels() const
-  { return mAudioInterface->getNumInputChannels(); }
+  { return mNumChans; /*return mAudioInterface->getNumInputChannels();*/ }
   unsigned int getNumOutputChannels() const
-  { return mAudioInterface->getNumOutputChannels(); }
+  { return mNumChans; /*return mAudioInterface->getNumOutputChannels();*/ }
   unsigned int getNumChannels() const
   {
     if (getNumInputChannels() == getNumOutputChannels())
