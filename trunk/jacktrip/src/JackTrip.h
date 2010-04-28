@@ -303,7 +303,7 @@ public:
   { return mAudioInterface->getSampleRate(); }
 
   uint8_t getAudioBitResolution() const
-  { return mAudioInterface->getAudioBitResolution(); }
+  { return mAudioBitResolution; /*return mAudioInterface->getAudioBitResolution();*/ }
   unsigned int getNumInputChannels() const
   { return mNumChans; /*return mAudioInterface->getNumInputChannels();*/ }
   unsigned int getNumOutputChannels() const
