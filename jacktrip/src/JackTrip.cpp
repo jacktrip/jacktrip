@@ -40,7 +40,9 @@
 #include "RingBufferWavetable.h"
 #include "jacktrip_globals.h"
 #include "JackAudioInterface.h"
+#ifdef __RT_AUDIO__
 #include "RtAudioInterface.h"
+#endif
 
 #include <iostream>
 //#include <unistd.h> // for usleep, sleep
@@ -139,18 +141,22 @@ void JackTrip::setupAudio()
     mAudioInterface->setClientName(mJackClientName);
 #endif //__NON_JACK__
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
+#ifdef __RT_AUDIO__
     cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
     mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
     mAudioInterface->setSampleRate(mSampleRate);
     mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
     mAudioInterface->setup();
 #endif
+#endif
   }
   else if ( mAudiointerfaceMode == JackTrip::RTAUDIO ) {
+#ifdef __RT_AUDIO__
     mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
     mAudioInterface->setSampleRate(mSampleRate);
     mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
     mAudioInterface->setup();
+#endif
   }
 
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;

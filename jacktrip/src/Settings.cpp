@@ -391,9 +391,11 @@ void Settings::startJackTrip()
     }
 
     // Set RtAudio
+#ifdef __RT_AUDIO__
     if (!mUseJack) {
       mJackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
     }
+#endif
 
     // Chanfe default Sampling Rate
     if (mChanfeDefaultSR) {
