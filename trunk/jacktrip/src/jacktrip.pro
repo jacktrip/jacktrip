@@ -11,6 +11,7 @@ CONFIG(debug, debug|release) {
 QT -= gui
 QT += network
 # http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
+DEFINES += __RT_AUDIO__
 # Configuration without Jack
 nojack {
   DEFINES += __NO_JACK__
