@@ -15,20 +15,22 @@ fi
 # Set qmake command name
 if [[ $platform == 'linux' ]]; then
     QCMD=qmake-qt4
+    QSPEC=linux-g++
 elif [[ $platform == 'macosx' ]]; then
     QCMD=qmake
+    QSPEC=macx-g++
 fi
 
 # Build
 if [[ $1 == 'nojack' ]]; then
     echo "Building without Jack"
-    $QCMD -spec macx-g++ -config nojack jacktrip.pro
+    $QCMD -spec $QSPEC -config nojack jacktrip.pro
     make clean
-    $QCMD -spec macx-g++ -config nojack jacktrip.pro
+    $QCMD -spec $QSPEC -config nojack jacktrip.pro
     make release
 else
-    $QCMD -spec macx-g++ jacktrip.pro
+    $QCMD -spec $QSPEC jacktrip.pro
     make clean
-    $QCMD -spec macx-g++ jacktrip.pro
+    $QCMD -spec $QSPEC jacktrip.pro
     make release
 fi
