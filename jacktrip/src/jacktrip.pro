@@ -30,7 +30,7 @@ macx {
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
   CONFIG -= app_bundle
   CONFIG += x86 #ppc
-  LIBS += -framework CoreAudio
+  LIBS += -framework CoreAudio -framework CoreFoundation
   DEFINES += __MAC_OSX__
   }
 linux-g++ {
@@ -65,12 +65,12 @@ QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 target.path = /usr/bin
 INSTALLS += target
 
-INCLUDEPATH += ../externals/includes/rtaudio-4.0.6
-DEPENDPATH += ../externals/includes/rtaudio-4.0.6
+INCLUDEPATH += ../externals/includes/rtaudio-4.0.7
+DEPENDPATH += ../externals/includes/rtaudio-4.0.7
 win32 {
-  INCLUDEPATH += ../externals/includes/rtaudio-4.0.6/include
+  INCLUDEPATH += ../externals/includes/rtaudio-4.0.7/include
   INCLUDEPATH += ../externals/includes
-  DEPENDPATH += ../externals/includes/rtaudio-4.0.6/include
+  DEPENDPATH += ../externals/includes/rtaudio-4.0.7/include
   DEPENDPATH += ../externals/includes
 }
 
