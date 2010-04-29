@@ -295,12 +295,12 @@ public:
   virtual void writeAudioBuffer(const int8_t* ptrToSlot)
   { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
   uint32_t getBufferSizeInSamples() const
-  { return mAudioInterface->getBufferSizeInSamples(); }
+  { return mAudioBufferSize; /*return mAudioInterface->getBufferSizeInSamples();*/ }
 
   AudioInterface::samplingRateT getSampleRateType() const
   { return mAudioInterface->getSampleRateType(); }
   int getSampleRate() const
-  { return mAudioInterface->getSampleRate(); }
+  { return mSampleRate; /*return mAudioInterface->getSampleRate();*/ }
 
   uint8_t getAudioBitResolution() const
   { return mAudioBitResolution; /*return mAudioInterface->getAudioBitResolution();*/ }
