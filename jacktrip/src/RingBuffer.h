@@ -44,6 +44,8 @@
 
 #include "jacktrip_types.h"
 
+using namespace JackTripNamespace;
+
 
 /** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read from
  * asynchronously (blocking) or synchronously (non-blocking).
