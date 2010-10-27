@@ -224,7 +224,10 @@ int RtAudioInterface::startProcess() const
 //*******************************************************************************
 int RtAudioInterface::stopProcess() const
 {
-  try { mRtAudio->closeStream(); }
+  try {
+      AudioInterface::stopProcess();
+      mRtAudio->closeStream();
+  }
   catch ( RtError& e ) {
     std::cout << '\n' << e.getMessage() << '\n' << std::endl;
     return(-1);

@@ -61,6 +61,7 @@ Settings::Settings() :
   mNumChans(2),
   mBufferQueueLength(gDefaultQueueLength),
   mAudioBitResolution(AudioInterface::BIT16),
+  mCodecMode(JackTrip::CELT),
   mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
   mClientName(NULL),
   mUnderrrunZero(false),
@@ -71,7 +72,9 @@ Settings::Settings() :
   mRedundancy(1),
   mUseJack(true),
   mChanfeDefaultSR(false),
-  mChanfeDefaultBS(false)
+  mChanfeDefaultBS(false),
+  mBitrate(0),
+  mCeltBitrate(gDefaultCeltBitrate)
 {}
 
 //*******************************************************************************
@@ -108,7 +111,7 @@ void Settings::parseInput(int argc, char** argv)
     { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "redundancy", required_argument, NULL, 'r' }, // Redundancy
-    { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
+    { "bitrate", required_argument, NULL, 'b' }, // Audio Bit Rate (CELT)
     { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
     { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
@@ -119,6 +122,7 @@ void Settings::parseInput(int argc, char** argv)
     { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "help", no_argument, NULL, 'h' }, // Print Help
+    { "pcm", no_argument, NULL, 'p' }, // Set codec to PCM, optional argument sets sample bit depth
     { NULL, 0, NULL, 0 }
   };
 
@@ -127,7 +131,7 @@ void Settings::parseInput(int argc, char** argv)
   /// \todo Specify mandatory arguments
   int ch;
   while ( (ch = getopt_long(argc, argv,
-                            "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vh", longopts, NULL)) != -1 )
+                            "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vhp", longopts, NULL)) != -1 )
     switch (ch) {
       
     case 'n': // Number of input and output channels
@@ -167,19 +171,12 @@ void Settings::parseInput(int argc, char** argv)
       break;
     case 'b':
       //-------------------------------------------------------
-      if      ( atoi(optarg) == 8 ) {
-  mAudioBitResolution = AudioInterface::BIT8; }
-      else if ( atoi(optarg) == 16 ) {
-  mAudioBitResolution = AudioInterface::BIT16; }
-      else if ( atoi(optarg) == 24 ) {
-  mAudioBitResolution = AudioInterface::BIT24; }
-      else if ( atoi(optarg) == 32 ) {
-  mAudioBitResolution = AudioInterface::BIT32; }
-      else {
-	std::cerr << "--bitres ERROR: Wrong bit resolutions: " 
-		  << atoi(optarg) << " is not supported." << endl;
-	printUsage();
-	std::exit(1); }
+      if ( atoi(optarg) <= 0 ){
+          std::cerr << "--bitrate ERROR: The bitrate has to be a positive integer" << endl;
+                printUsage();
+                std::exit(1); }
+      else
+          mBitrate = atoi(optarg);
       break;
     case 'q':
       //-------------------------------------------------------
@@ -234,6 +231,9 @@ void Settings::parseInput(int argc, char** argv)
       //-------------------------------------------------------
       mChanfeDefaultBS = true;
       mAudioBufferSize = atoi(optarg);
+      break;
+    case 'p':
+      mCodecMode = JackTrip::PCM;
       break;
     case 'v':
       //-------------------------------------------------------
@@ -300,7 +300,9 @@ void Settings::printUsage()
   cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
   cout << " --bindport        #                      Set only the bind port number (default to 4464)" << endl;
   cout << " --peerport        #                      Set only the Peer port number (default to 4464)" << endl;
-  cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
+  cout << " -p, --pcm         #                      Set audio codec to PCM" << endl;
+  cout << " -b, --bitrate     #                      Bitrate in kbps (CELT - Default " << gDefaultCeltBitrate
+                                                     << ") or Sample bitdepth (8, 16, 24, 32 in PCM - Default 16)" << endl;
   cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
   cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
@@ -346,10 +348,34 @@ void Settings::startJackTrip()
   
   else {
     
+      if (mBitrate != 0)
+      {
+          if (mCodecMode == JackTrip::CELT)
+          {
+              mCeltBitrate = mBitrate;
+          }
+          else if (mCodecMode == JackTrip::PCM)
+          {
+              if      ( mBitrate == 8 ) {
+                  mAudioBitResolution = AudioInterface::BIT8; }
+              else if ( mBitrate == 16) {
+                  mAudioBitResolution = AudioInterface::BIT16; }
+              else if ( mBitrate == 24 ) {
+                  mAudioBitResolution = AudioInterface::BIT24; }
+              else if ( mBitrate == 32 ) {
+                  mAudioBitResolution = AudioInterface::BIT32; }
+              else {
+                  std::cerr << "--pcm ERROR: Wrong bit resolutions: "
+                          << mBitrate << " is not supported." << endl;
+                  printUsage();
+                  std::exit(1); }
+          }
+      }
+
     //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
     //	    mBufferQueueLength, mAudioBitResolution);
     mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
-                             mBufferQueueLength, mRedundancy, mAudioBitResolution);
+                             mBufferQueueLength, mRedundancy, mAudioBitResolution, mCodecMode, mCeltBitrate);
 
     // Connect Signals and Slots
     QObject::connect(mJackTrip, SIGNAL( signalProcessesStopped() ),

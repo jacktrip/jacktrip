@@ -71,6 +71,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
        int BufferQueueLength,
        unsigned int redundancy,
        AudioInterface::audioBitResolutionT AudioBitResolution,
+       JackTrip::codecModeT CodecMode,
+       unsigned int celtBitrate,
        DataProtocol::packetHeaderTypeT PacketHeaderType,
        underrunModeT UnderRunMode,
        int receiver_bind_port, int sender_bind_port,
@@ -79,6 +81,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mDataProtocol(DataProtocolType),
   mPacketHeaderType(PacketHeaderType),
   mAudiointerfaceMode(JackTrip::JACK),
+  mCodecMode(CodecMode),
   mNumChans(NumChans),
   mBufferQueueLength(BufferQueueLength),
   mSampleRate(gDefaultSampleRate),
@@ -101,7 +104,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mConnectionMode(JackTrip::NORMAL),
   mReceivedConnection(false),
   mTcpConnectionError(false),
-  mStopped(false)
+  mStopped(false),
+  mCeltBitrate(celtBitrate)
 {
   createHeader(mPacketHeaderType);
 }
@@ -159,6 +163,34 @@ void JackTrip::setupAudio()
 #endif
   }
 
+  if (mCodecMode == JackTrip::PCM)
+  {
+      std::cout << "Setting encoder to PCM " << mAudioInterface->getAudioBitResolution()
+              << " bits" << std::endl;
+      encoder = new Codec();
+      decoder = new Codec();
+  }
+  else if (mCodecMode == JackTrip::CELT)
+  {
+      if (mAudioInterface->getBufferSizeInSamples() < 64 || mAudioInterface->getBufferSizeInSamples() > 512)
+      {
+          std::cout << "CELT must have frame sizes between 64 and 512 samples." << endl;
+          std::cout << "Exiting..." << endl;
+          closeAudio();
+          emit signalProcessesStopped();
+      }
+      mAudioInterface->setAudioBitResolution(AudioInterface::BIT32);
+      mCeltBytes = celtBitrateToBytesPerFrame(mCeltBitrate);
+      std::cout << "Setting encoder to CELT (" << mCeltBitrate << " kbps, "
+              << mCeltBytes << " bytes per frame)" << std::endl;
+      encoder = new CodecCELT(mCeltBytes);
+      decoder = new CodecCELT(mCeltBytes);
+  }
+
+  mAudioInterface->setEncoder(encoder);
+  mAudioInterface->setDecoder(decoder);
+
+  std::cout << gPrintSeparator << std::endl;
   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
   std::cout << gPrintSeparator << std::endl;
   int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
@@ -171,6 +203,11 @@ void JackTrip::setupAudio()
   QThread::usleep(100);
 }
 
+unsigned int JackTrip::celtBitrateToBytesPerFrame(unsigned int bitrate)
+{
+    const int kilobitToByte = 128;
+    return kilobitToByte * bitrate * mAudioInterface->getBufferSizeInSamples() / mAudioInterface->getSampleRate();
+}
 
 //*******************************************************************************
 void JackTrip::closeAudio()
@@ -217,8 +254,8 @@ void JackTrip::setupDataProtocol()
   //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
   //mDataProtocolReceiver->setAudioPacketSize
   //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-  mDataProtocolSender->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
-  mDataProtocolReceiver->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
+  mDataProtocolSender->setAudioPacketSize(getTotalEncoderPacketSizeInBytes());
+  mDataProtocolReceiver->setAudioPacketSize(getTotalDecoderPacketSizeInBytes());
 }
 
 
@@ -228,13 +265,14 @@ void JackTrip::setupRingBuffers()
   // Create RingBuffers with the apprioprate size
   /// \todo Make all this operations cleaner
   //int total_audio_packet_size = getTotalAudioPacketSizeInBytes();
-  int slot_size = getRingBuffersSlotSize();
+  int slot_size_sender = getSendRingBufferSlotSize();
+  int slot_size_receiver = getReceiveRingBufferSlotSize();
 
   switch (mUnderRunMode) {
   case WAVETABLE:
-    mSendRingBuffer = new RingBufferWavetable(slot_size,
+    mSendRingBuffer = new RingBufferWavetable(slot_size_sender,
                                               gDefaultOutputQueueLength);
-    mReceiveRingBuffer = new RingBufferWavetable(slot_size,
+    mReceiveRingBuffer = new RingBufferWavetable(slot_size_receiver,
                                                  mBufferQueueLength);
     /*
     mSendRingBuffer = new RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
@@ -245,9 +283,9 @@ void JackTrip::setupRingBuffers()
     
     break;
   case ZEROS:
-    mSendRingBuffer = new RingBuffer(slot_size,
+    mSendRingBuffer = new RingBuffer(slot_size_sender,
                                      gDefaultOutputQueueLength);
-    mReceiveRingBuffer = new RingBuffer(slot_size,
+    mReceiveRingBuffer = new RingBuffer(slot_size_receiver,
                                         mBufferQueueLength);
     /*
     mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
@@ -693,7 +731,7 @@ void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
   audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
   //std::memcpy(audio_part, audio_packet, mAudioInterface->getBufferSizeInBytes());
   //std::memcpy(audio_part, audio_packet, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-  std::memcpy(audio_part, audio_packet, getTotalAudioPacketSizeInBytes());
+  std::memcpy(audio_part, audio_packet, getTotalEncoderPacketSizeInBytes());
 }
 
 
@@ -703,7 +741,7 @@ int JackTrip::getPacketSizeInBytes()
   //return (mAudioInterface->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
   //return (mAudioInterface->getSizeInBytesPerChannel() * mNumChans  +
   //mPacketHeader->getHeaderSizeInBytes());
-  return (getTotalAudioPacketSizeInBytes()  +
+  return (getTotalEncoderPacketSizeInBytes()  +
           mPacketHeader->getHeaderSizeInBytes());
 }
 
@@ -715,7 +753,7 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
   audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
   //std::memcpy(audio_packet, audio_part, mAudioInterface->getBufferSizeInBytes());
   //std::memcpy(audio_packet, audio_part, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-  std::memcpy(audio_packet, audio_part, getTotalAudioPacketSizeInBytes());
+  std::memcpy(audio_packet, audio_part, getTotalDecoderPacketSizeInBytes());
 }
 
 

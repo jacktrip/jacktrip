@@ -1,0 +1,957 @@
+Index: Settings.h
+===================================================================
+--- Settings.h	(revision 492)
++++ Settings.h	(working copy)
+@@ -85,6 +85,7 @@
+   int mNumChans; ///< Number of Channels (inputs = outputs)
+   int mBufferQueueLength; ///< Audio Buffer from network queue length
+   AudioInterface::audioBitResolutionT mAudioBitResolution;
++  JackTrip::codecModeT mCodecMode;
+   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
+   int mBindPortNum; ///< Bind Port Number
+   int mPeerPortNum; ///< Peer Port Number
+@@ -101,6 +102,8 @@
+   bool mChanfeDefaultBS; ///< Change Default Buffer Size
+   unsigned int mSampleRate;
+   unsigned int mAudioBufferSize;
++  unsigned int mBitrate;
++  unsigned int mCeltBitrate;
+ };
+ 
+ #endif
+Index: JackTrip.cpp
+===================================================================
+--- JackTrip.cpp	(revision 492)
++++ JackTrip.cpp	(working copy)
+@@ -71,6 +71,8 @@
+        int BufferQueueLength,
+        unsigned int redundancy,
+        AudioInterface::audioBitResolutionT AudioBitResolution,
++       JackTrip::codecModeT CodecMode,
++       unsigned int celtBitrate,
+        DataProtocol::packetHeaderTypeT PacketHeaderType,
+        underrunModeT UnderRunMode,
+        int receiver_bind_port, int sender_bind_port,
+@@ -79,6 +81,7 @@
+   mDataProtocol(DataProtocolType),
+   mPacketHeaderType(PacketHeaderType),
+   mAudiointerfaceMode(JackTrip::JACK),
++  mCodecMode(CodecMode),
+   mNumChans(NumChans),
+   mBufferQueueLength(BufferQueueLength),
+   mSampleRate(gDefaultSampleRate),
+@@ -101,7 +104,8 @@
+   mConnectionMode(JackTrip::NORMAL),
+   mReceivedConnection(false),
+   mTcpConnectionError(false),
+-  mStopped(false)
++  mStopped(false),
++  mCeltBitrate(celtBitrate)
+ {
+   createHeader(mPacketHeaderType);
+ }
+@@ -159,6 +163,34 @@
+ #endif
+   }
+ 
++  if (mCodecMode == JackTrip::PCM)
++  {
++      std::cout << "Setting encoder to PCM " << mAudioInterface->getAudioBitResolution()
++              << " bits" << std::endl;
++      encoder = new Codec();
++      decoder = new Codec();
++  }
++  else if (mCodecMode == JackTrip::CELT)
++  {
++      if (mAudioInterface->getBufferSizeInSamples() < 64 || mAudioInterface->getBufferSizeInSamples() > 512)
++      {
++          std::cout << "CELT must have frame sizes between 64 and 512 samples." << endl;
++          std::cout << "Exiting..." << endl;
++          closeAudio();
++          emit signalProcessesStopped();
++      }
++      mAudioInterface->setAudioBitResolution(AudioInterface::BIT32);
++      mCeltBytes = celtBitrateToBytesPerFrame(mCeltBitrate);
++      std::cout << "Setting encoder to CELT (" << mCeltBitrate << " kbps, "
++              << mCeltBytes << " bytes per frame)" << std::endl;
++      encoder = new CodecCELT(mCeltBytes);
++      decoder = new CodecCELT(mCeltBytes);
++  }
++
++  mAudioInterface->setEncoder(encoder);
++  mAudioInterface->setDecoder(decoder);
++
++  std::cout << gPrintSeparator << std::endl;
+   std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
+   std::cout << gPrintSeparator << std::endl;
+   int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
+@@ -171,6 +203,11 @@
+   QThread::usleep(100);
+ }
+ 
++unsigned int JackTrip::celtBitrateToBytesPerFrame(unsigned int bitrate)
++{
++    const int kilobitToByte = 128;
++    return kilobitToByte * bitrate * mAudioInterface->getBufferSizeInSamples() / mAudioInterface->getSampleRate();
++}
+ 
+ //*******************************************************************************
+ void JackTrip::closeAudio()
+@@ -217,8 +254,8 @@
+   //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
+   //mDataProtocolReceiver->setAudioPacketSize
+   //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
+-  mDataProtocolSender->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
+-  mDataProtocolReceiver->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
++  mDataProtocolSender->setAudioPacketSize(getTotalEncoderPacketSizeInBytes());
++  mDataProtocolReceiver->setAudioPacketSize(getTotalDecoderPacketSizeInBytes());
+ }
+ 
+ 
+@@ -228,13 +265,14 @@
+   // Create RingBuffers with the apprioprate size
+   /// \todo Make all this operations cleaner
+   //int total_audio_packet_size = getTotalAudioPacketSizeInBytes();
+-  int slot_size = getRingBuffersSlotSize();
++  int slot_size_sender = getSendRingBufferSlotSize();
++  int slot_size_receiver = getReceiveRingBufferSlotSize();
+ 
+   switch (mUnderRunMode) {
+   case WAVETABLE:
+-    mSendRingBuffer = new RingBufferWavetable(slot_size,
++    mSendRingBuffer = new RingBufferWavetable(slot_size_sender,
+                                               gDefaultOutputQueueLength);
+-    mReceiveRingBuffer = new RingBufferWavetable(slot_size,
++    mReceiveRingBuffer = new RingBufferWavetable(slot_size_receiver,
+                                                  mBufferQueueLength);
+     /*
+     mSendRingBuffer = new RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
+@@ -245,9 +283,9 @@
+     
+     break;
+   case ZEROS:
+-    mSendRingBuffer = new RingBuffer(slot_size,
++    mSendRingBuffer = new RingBuffer(slot_size_sender,
+                                      gDefaultOutputQueueLength);
+-    mReceiveRingBuffer = new RingBuffer(slot_size,
++    mReceiveRingBuffer = new RingBuffer(slot_size_receiver,
+                                         mBufferQueueLength);
+     /*
+     mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
+@@ -693,7 +731,7 @@
+   audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
+   //std::memcpy(audio_part, audio_packet, mAudioInterface->getBufferSizeInBytes());
+   //std::memcpy(audio_part, audio_packet, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
+-  std::memcpy(audio_part, audio_packet, getTotalAudioPacketSizeInBytes());
++  std::memcpy(audio_part, audio_packet, getTotalEncoderPacketSizeInBytes());
+ }
+ 
+ 
+@@ -703,7 +741,7 @@
+   //return (mAudioInterface->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
+   //return (mAudioInterface->getSizeInBytesPerChannel() * mNumChans  +
+   //mPacketHeader->getHeaderSizeInBytes());
+-  return (getTotalAudioPacketSizeInBytes()  +
++  return (getTotalEncoderPacketSizeInBytes()  +
+           mPacketHeader->getHeaderSizeInBytes());
+ }
+ 
+@@ -715,7 +753,7 @@
+   audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
+   //std::memcpy(audio_packet, audio_part, mAudioInterface->getBufferSizeInBytes());
+   //std::memcpy(audio_packet, audio_part, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
+-  std::memcpy(audio_packet, audio_part, getTotalAudioPacketSizeInBytes());
++  std::memcpy(audio_packet, audio_part, getTotalDecoderPacketSizeInBytes());
+ }
+ 
+ 
+Index: JackAudioInterface.cpp
+===================================================================
+--- JackAudioInterface.cpp	(revision 492)
++++ JackAudioInterface.cpp	(working copy)
+@@ -181,14 +181,7 @@
+   return jack_get_buffer_size(mClient);
+ }
+ 
+-
+ //*******************************************************************************
+-size_t JackAudioInterface::getSizeInBytesPerChannel() const
+-{
+-  return (getBufferSizeInSamples() * getAudioBitResolution()/8);
+-}
+-
+-//*******************************************************************************
+ void JackAudioInterface::setProcessCallback()
+ {
+   std::cout << "Setting JACK Process Callback..." << std::endl;
+@@ -226,6 +219,7 @@
+ int JackAudioInterface::stopProcess() const
+ {
+   QMutexLocker locker(&sJackMutex);
++  AudioInterface::stopProcess();
+   int code = (jack_client_close(mClient));
+   if ( code != 0  )
+     {
+Index: jacktrip_globals.h
+===================================================================
+--- jacktrip_globals.h	(revision 492)
++++ jacktrip_globals.h	(working copy)
+@@ -62,6 +62,7 @@
+ const int gDefaultRedundancy = 1;
+ const int gTimeOutMultiThreadedServer = 5000; // seconds
+ const int gWaitCounter = 60;
++const int gDefaultCeltBitrate = 128;
+ //@}
+ 
+ 
+Index: PacketHeader.cpp
+===================================================================
+--- PacketHeader.cpp	(revision 492)
++++ PacketHeader.cpp	(working copy)
+@@ -106,6 +106,8 @@
+   //mHeader.NumOutChannels = 0;
+   mHeader.NumChannels = 0;
+   mHeader.ConnectionMode = 0;
++  mHeader.Codec = 0;
++  mHeader.CeltBytes = 0;
+ }
+ 
+ 
+@@ -118,6 +120,8 @@
+   mHeader.BitResolution = mJackTrip->getAudioBitResolution();
+   mHeader.NumChannels = mJackTrip->getNumChannels();
+   mHeader.ConnectionMode = static_cast<int>(mJackTrip->getConnectionMode());
++  mHeader.Codec = static_cast<int>(mJackTrip->getCodecMode());
++  mHeader.CeltBytes = mJackTrip->getCeltBytes();
+   //printHeader();
+ }
+ 
+@@ -166,6 +170,30 @@
+       error = true;
+     }
+ 
++  // Check encoder
++  if (peer_header->Codec != mHeader.Codec)
++  {
++      const char* peerString = (peer_header->Codec) == JackTrip::CELT ? "CELT" : "PCM";
++      const char* localString = (mHeader.Codec) == JackTrip::CELT ? "CELT" : "PCM";
++
++      std::cerr << "ERROR: Peer Codec is  : " << peerString << endl;
++      std::cerr << "       Local Codec is : " << localString << endl;
++      std::cerr << "Make sure both machines use the same codec" << endl;
++      std::cerr << gPrintSeparator << endl;
++      error = true;
++  }
++  // Check CELT frame size
++  else if (peer_header->Codec == JackTrip::CELT && peer_header->CeltBytes != mHeader.CeltBytes)
++  {
++      std::cerr << "ERROR: Peer CELT Bitrate is  : "
++              << static_cast<int>(peer_header->CeltBytes) << endl;
++      std::cerr << "       Local CELT Bitrate is : "
++              << static_cast<int>(mHeader.CeltBytes) << endl;
++      std::cerr << "Make sure both machines use the same bitrate" << endl;
++      std::cerr << gPrintSeparator << endl;
++      error = true;
++  }
++
+   // Exit program if error
+   if (error) 
+     {
+Index: jacktrip.pro
+===================================================================
+--- jacktrip.pro	(revision 492)
++++ jacktrip.pro	(working copy)
+@@ -1,140 +1,150 @@
+-#******************************
++# ******************************
+ # Created by Juan-Pablo Caceres
+-#******************************
+-
+-CONFIG += qt thread debug_and_release build_all
+-CONFIG(debug, debug|release) {
+-  TARGET = jacktrip_debug
+-  } else {
+-  TARGET = jacktrip
+-  }
++# ******************************
++CONFIG += qt \
++    thread \
++    debug_and_release \
++    build_all
++CONFIG(debug, debug|release):TARGET = jacktrip_debug
++else:TARGET = jacktrip
+ QT -= gui
+ QT += network
++
+ # http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
+ DEFINES += __RT_AUDIO__
++
+ # Configuration without Jack
+-nojack {
+-  DEFINES += __NO_JACK__
++nojack:DEFINES += __NO_JACK__
++!win32 { 
++    INCLUDEPATH += /usr/local/include
++    LIBS += -ljack \
++        -lm -lcelt0
++    nojack { 
++        message(Building NONJACK)
++        LIBS -= -ljack
++    }
+ }
+-!win32 {
+-  INCLUDEPATH+=/usr/local/include
+-  LIBS += -ljack -lm
+-  nojack {
+-    message(Building NONJACK)
+-    LIBS -= -ljack
+-  }
++macx { 
++    message(MAC OS X)
++    QMAKE_CXXFLAGS += -D__MACOSX_CORE__ # -D__UNIX_JACK__ #RtAudio Flags
++    CONFIG -= app_bundle
++    CONFIG += x86 # ppc
++    LIBS += -framework \
++        CoreAudio \
++        -framework \
++        CoreFoundation
++    DEFINES += __MAC_OSX__
+ }
+-
+-macx {
+-  message(MAC OS X)
+-  QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
+-  CONFIG -= app_bundle
+-  CONFIG += x86 #ppc
+-  LIBS += -framework CoreAudio -framework CoreFoundation
+-  DEFINES += __MAC_OSX__
+-  }
+-linux-g++ {
+-  message(Linux)
+-  LIBS += -lasound
+-  QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
+-  QMAKE_CXXFLAGS += -g -O2
+-  DEFINES += __LINUX__
+-  }
+-linux-g++-64 {
+-  message(Linux 64bit)
+-  LIBS += -lasound
+-  QMAKE_CXXFLAGS += -fPIC -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
+-  QMAKE_CXXFLAGS += -g -O2
+-  DEFINES += __LINUX__
+-  }
+-win32 {
+-  message(win32)
+-  CONFIG += x86 console
+-  QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
+-  LIBS += -lWs2_32 -lOle32 #needed by rtaudio/asio
+-  LIBS += "../externals/includes/QTWindows/libjack.lib"
+-  DEFINES += __WIN_32__
+-  DEFINES -= UNICODE #RtAudio for Qt
++linux-g++ { 
++    message(Linux)
++    LIBS += -lasound
++    QMAKE_CXXFLAGS += -D__LINUX_ALSA__ # -D__LINUX_OSS__ #RtAudio Flags
++    QMAKE_CXXFLAGS += -g \
++        -O2
++    DEFINES += __LINUX__
+ }
+-
+-
+-
+-
++linux-g++-64 { 
++    message(Linux 64bit)
++    LIBS += -lasound
++    QMAKE_CXXFLAGS += -fPIC \
++        -D__LINUX_ALSA__ # -D__LINUX_OSS__ #RtAudio Flags
++    QMAKE_CXXFLAGS += -g \
++        -O2
++    DEFINES += __LINUX__
++}
++win32 { 
++    message(win32)
++    CONFIG += x86 \
++        console
++    QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ # -D__UNIX_JACK__ #RtAudio Flags
++    LIBS += -lWs2_32 \
++        -lOle32 # needed by rtaudio/asio
++    LIBS += "../externals/includes/QTWindows/libjack.lib"
++    LIBS += "../externals/includes/QTWindows/libcelt0.a"
++    LIBS += "../externals/includes/QTWindows/cygwin1.dll"
++    DEFINES += __WIN_32__
++    DEFINES -= UNICODE # RtAudio for Qt
++}
+ DESTDIR = .
+-QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
++QMAKE_CLEAN += -r \
++    ./jacktrip \
++    ./jacktrip_debug \
++    ./release \
++    ./debug
+ target.path = /usr/bin
+ INSTALLS += target
+-
+ INCLUDEPATH += ../externals/includes/rtaudio-4.0.7
+ DEPENDPATH += ../externals/includes/rtaudio-4.0.7
+-win32 {
+-  INCLUDEPATH += ../externals/includes/rtaudio-4.0.7/include
+-  INCLUDEPATH += ../externals/includes
+-  DEPENDPATH += ../externals/includes/rtaudio-4.0.7/include
+-  DEPENDPATH += ../externals/includes
++win32 { 
++    INCLUDEPATH += ../externals/includes/rtaudio-4.0.7/include
++    INCLUDEPATH += ../externals/includes
++    INCLUDEPATH += ../externals/includes/QTWindows/
++    DEPENDPATH += ../externals/includes/rtaudio-4.0.7/include
++    DEPENDPATH += ../externals/includes
++    DEPENDPATH += ../externals/includes/QTWindows/
+ }
+ 
+ # Input
+ HEADERS += DataProtocol.h \
+-           JackTrip.h \
+-           jacktrip_globals.h \
+-           jacktrip_types.h \
+-           JackTripThread.h \
+-           JackTripWorker.h \
+-           JackTripWorkerMessages.h \
+-           LoopBack.h \
+-           NetKS.h \
+-           PacketHeader.h \
+-           ProcessPlugin.h \
+-           RingBuffer.h \
+-           RingBufferWavetable.h \
+-           Settings.h \
+-           TestRingBuffer.h \
+-           ThreadPoolTest.h \
+-           UdpDataProtocol.h \
+-           UdpMasterListener.h \
+-           AudioInterface.h \
+-           RtAudioInterface.h
+-           #JamTest.h
+-!nojack {
+-SOURCES += JackAudioInterface.h
+-}
++    JackTrip.h \
++    jacktrip_globals.h \
++    jacktrip_types.h \
++    JackTripThread.h \
++    JackTripWorker.h \
++    JackTripWorkerMessages.h \
++    LoopBack.h \
++    NetKS.h \
++    PacketHeader.h \
++    ProcessPlugin.h \
++    RingBuffer.h \
++    RingBufferWavetable.h \
++    Settings.h \
++    TestRingBuffer.h \
++    ThreadPoolTest.h \
++    UdpDataProtocol.h \
++    UdpMasterListener.h \
++    AudioInterface.h \
++    RtAudioInterface.h \
++    CodecCelt.h \
++    Codec.h
++
++# JamTest.h
++!nojack:SOURCES += JackAudioInterface.h
+ SOURCES += DataProtocol.cpp \
+-           JackTrip.cpp \
+-           jacktrip_globals.cpp \
+-           jacktrip_main.cpp \
+-           jacktrip_tests.cpp \
+-           JackTripThread.cpp \
+-           JackTripWorker.cpp \
+-           LoopBack.cpp \
+-           PacketHeader.cpp \
+-           ProcessPlugin.cpp \
+-           RingBuffer.cpp \
+-           Settings.cpp \
+-           #tests.cpp \
+-           UdpDataProtocol.cpp \
+-           UdpMasterListener.cpp \
+-           AudioInterface.cpp \
+-           RtAudioInterface.cpp
+-!nojack {
+-SOURCES += JackAudioInterface.cpp
+-}
++    JackTrip.cpp \
++    jacktrip_globals.cpp \
++    jacktrip_main.cpp \
++    jacktrip_tests.cpp \
++    JackTripThread.cpp \
++    JackTripWorker.cpp \
++    LoopBack.cpp \
++    PacketHeader.cpp \
++    ProcessPlugin.cpp \
++    RingBuffer.cpp \
++    Settings.cpp \ # tests.cpp \
++    UdpDataProtocol.cpp \
++    UdpMasterListener.cpp \
++    AudioInterface.cpp \
++    RtAudioInterface.cpp \
++    CodecCelt.cpp \
++    Codec.cpp
++!nojack:SOURCES += JackAudioInterface.cpp
+ 
+ # RtAduio Input
+ HEADERS += RtAudio.h \
+-           RtError.h
++    RtError.h
+ SOURCES += RtAudio.cpp
+-win32 {
+-HEADERS += asio.h \
+-           asiodrivers.h \
+-           asiolist.h \
+-           asiodrvr.h \
+-           asiosys.h \
+-           ginclude.h \
+-           iasiodrv.h \
+-           iasiothiscallresolver.h
+-SOURCES += asio.cpp \
+-           asiodrivers.cpp \
+-           asiolist.cpp \
+-           iasiothiscallresolver.cpp
++win32 { 
++    HEADERS += asio.h \
++        asiodrivers.h \
++        asiolist.h \
++        asiodrvr.h \
++        asiosys.h \
++        ginclude.h \
++        iasiodrv.h \
++        iasiothiscallresolver.h
++    SOURCES += asio.cpp \
++        asiodrivers.cpp \
++        asiolist.cpp \
++        iasiothiscallresolver.cpp
+ }
+Index: AudioInterface.h
+===================================================================
+--- AudioInterface.h	(revision 492)
++++ AudioInterface.h	(working copy)
+@@ -39,6 +39,7 @@
+ #define __AUDIOINTERFACE_H__
+ 
+ #include "ProcessPlugin.h"
++#include "CodecCelt.h"
+ #include "jacktrip_types.h"
+ 
+ #include <QVarLengthArray>
+@@ -104,7 +105,7 @@
+   virtual int startProcess() const = 0;
+   /// \brief Stops the process-callback thread
+   /// \return 0 on success, otherwise a non-zero error code
+-  virtual int stopProcess() const = 0;
++  virtual int stopProcess() const;
+   /** \brief Process callback. Subclass should call this callback after obtaining the
+     in_buffer and out_buffer pointers.
+     * \param in_buffer Array of input audio samplers for each channel. The user
+@@ -153,6 +154,9 @@
+   { mSampleRate = sample_rate; }
+   virtual void setBufferSizeInSamples(uint32_t buf_size)
+   { mBufferSizeInSamples = buf_size; }
++  virtual void setAudioBitResolution(audioBitResolutionT bitResolution);
++  virtual void setEncoder(Codec* codec);
++  virtual void setDecoder(Codec* codec);
+   /// \brief Set Client Name to something different that the default (JackTrip)
+   virtual void setClientName(const char* ClientName) = 0;
+   //------------------------------------------------------------------
+@@ -164,6 +168,7 @@
+   virtual int getNumOutputChannels() const  { return mNumOutChans; }
+   virtual uint32_t getBufferSizeInSamples() const
+   { return mBufferSizeInSamples; }
++  /// \brief Get size of each audio per channel, in bytes
+   virtual size_t getSizeInBytesPerChannel() const;
+   /// \brief Get the Jack Server Sampling Rate, in samples/second
+   virtual uint32_t getSampleRate() const
+@@ -207,6 +212,11 @@
+   QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
+   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
+   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
++
++  Codec* encoder;
++  Codec* decoder;
++  int8_t* mCompressedPacket;
++  int8_t* mUncompressedPacket;
+ };
+ 
+ #endif // __AUDIOINTERFACE_H__
+Index: Settings.cpp
+===================================================================
+--- Settings.cpp	(revision 492)
++++ Settings.cpp	(working copy)
+@@ -61,6 +61,7 @@
+   mNumChans(2),
+   mBufferQueueLength(gDefaultQueueLength),
+   mAudioBitResolution(AudioInterface::BIT16),
++  mCodecMode(JackTrip::CELT),
+   mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
+   mClientName(NULL),
+   mUnderrrunZero(false),
+@@ -71,7 +72,9 @@
+   mRedundancy(1),
+   mUseJack(true),
+   mChanfeDefaultSR(false),
+-  mChanfeDefaultBS(false)
++  mChanfeDefaultBS(false),
++  mBitrate(0),
++  mCeltBitrate(gDefaultCeltBitrate)
+ {}
+ 
+ //*******************************************************************************
+@@ -108,7 +111,7 @@
+     { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
+     { "queue", required_argument, NULL, 'q' }, // Queue Length
+     { "redundancy", required_argument, NULL, 'r' }, // Redundancy
+-    { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
++    { "bitrate", required_argument, NULL, 'b' }, // Audio Bit Rate (CELT)
+     { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
+     { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
+     { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
+@@ -119,6 +122,7 @@
+     { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
+     { "version", no_argument, NULL, 'v' }, // Version Number
+     { "help", no_argument, NULL, 'h' }, // Print Help
++    { "pcm", no_argument, NULL, 'p' }, // Set codec to PCM, optional argument sets sample bit depth
+     { NULL, 0, NULL, 0 }
+   };
+ 
+@@ -127,7 +131,7 @@
+   /// \todo Specify mandatory arguments
+   int ch;
+   while ( (ch = getopt_long(argc, argv,
+-                            "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vh", longopts, NULL)) != -1 )
++                            "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vhp", longopts, NULL)) != -1 )
+     switch (ch) {
+       
+     case 'n': // Number of input and output channels
+@@ -167,19 +171,12 @@
+       break;
+     case 'b':
+       //-------------------------------------------------------
+-      if      ( atoi(optarg) == 8 ) {
+-  mAudioBitResolution = AudioInterface::BIT8; }
+-      else if ( atoi(optarg) == 16 ) {
+-  mAudioBitResolution = AudioInterface::BIT16; }
+-      else if ( atoi(optarg) == 24 ) {
+-  mAudioBitResolution = AudioInterface::BIT24; }
+-      else if ( atoi(optarg) == 32 ) {
+-  mAudioBitResolution = AudioInterface::BIT32; }
+-      else {
+-	std::cerr << "--bitres ERROR: Wrong bit resolutions: " 
+-		  << atoi(optarg) << " is not supported." << endl;
+-	printUsage();
+-	std::exit(1); }
++      if ( atoi(optarg) <= 0 ){
++          std::cerr << "--bitrate ERROR: The bitrate has to be a positive integer" << endl;
++                printUsage();
++                std::exit(1); }
++      else
++          mBitrate = atoi(optarg);
+       break;
+     case 'q':
+       //-------------------------------------------------------
+@@ -235,6 +232,9 @@
+       mChanfeDefaultBS = true;
+       mAudioBufferSize = atoi(optarg);
+       break;
++    case 'p':
++      mCodecMode = JackTrip::PCM;
++      break;
+     case 'v':
+       //-------------------------------------------------------
+       cout << "JackTrip VERSION: " << gVersion << endl;
+@@ -300,7 +300,9 @@
+   cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
+   cout << " --bindport        #                      Set only the bind port number (default to 4464)" << endl;
+   cout << " --peerport        #                      Set only the Peer port number (default to 4464)" << endl;
+-  cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
++  cout << " -p, --pcm         #                      Set audio codec to PCM" << endl;
++  cout << " -b, --bitrate     #                      Bitrate in kbps (CELT - Default " << gDefaultCeltBitrate
++                                                     << ") or Sample bitdepth (8, 16, 24, 32 in PCM - Default 16)" << endl;
+   cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
+   cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
+   cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
+@@ -346,10 +348,34 @@
+   
+   else {
+     
++      if (mBitrate != 0)
++      {
++          if (mCodecMode == JackTrip::CELT)
++          {
++              mCeltBitrate = mBitrate;
++          }
++          else if (mCodecMode == JackTrip::PCM)
++          {
++              if      ( mBitrate == 8 ) {
++                  mAudioBitResolution = AudioInterface::BIT8; }
++              else if ( mBitrate == 16) {
++                  mAudioBitResolution = AudioInterface::BIT16; }
++              else if ( mBitrate == 24 ) {
++                  mAudioBitResolution = AudioInterface::BIT24; }
++              else if ( mBitrate == 32 ) {
++                  mAudioBitResolution = AudioInterface::BIT32; }
++              else {
++                  std::cerr << "--pcm ERROR: Wrong bit resolutions: "
++                          << mBitrate << " is not supported." << endl;
++                  printUsage();
++                  std::exit(1); }
++          }
++      }
++
+     //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
+     //	    mBufferQueueLength, mAudioBitResolution);
+     mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
+-                             mBufferQueueLength, mRedundancy, mAudioBitResolution);
++                             mBufferQueueLength, mRedundancy, mAudioBitResolution, mCodecMode, mCeltBitrate);
+ 
+     // Connect Signals and Slots
+     QObject::connect(mJackTrip, SIGNAL( signalProcessesStopped() ),
+Index: JackTrip.h
+===================================================================
+--- JackTrip.h	(revision 492)
++++ JackTrip.h	(working copy)
+@@ -104,6 +104,12 @@
+     KSTRONG,  ///< Karplus Strong
+     JAMTEST  ///< Karplus Strong
+   };
++
++  enum codecModeT {
++      PCM,
++      CELT
++  };
++
+   //---------------------------------------------------------
+ 
+ 
+@@ -122,6 +128,8 @@
+      unsigned int redundancy = gDefaultRedundancy,
+      AudioInterface::audioBitResolutionT AudioBitResolution =
+      AudioInterface::BIT16,
++     JackTrip::codecModeT CodecMode = JackTrip::CELT,
++     unsigned int celtBitrate = 64,
+ 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
+ 	   DataProtocol::DEFAULT,
+ 	   underrunModeT UnderRunMode = WAVETABLE,
+@@ -244,8 +252,10 @@
+   virtual void setPacketHeader(PacketHeader* const PacketHeader)
+   { mPacketHeader = PacketHeader; }
+ 
+-  virtual int getRingBuffersSlotSize()
+-  { return getTotalAudioPacketSizeInBytes(); }
++  virtual int getSendRingBufferSlotSize()
++  { return getTotalEncoderPacketSizeInBytes(); }
++  virtual int getReceiveRingBufferSlotSize()
++  { return getTotalDecoderPacketSizeInBytes(); }
+ 
+   virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
+   { mAudiointerfaceMode = audiointerface_mode; }
+@@ -266,6 +276,9 @@
+   JackTrip::jacktripModeT getJackTripMode() const
+   { return mJackTripMode; }
+ 
++  JackTrip::codecModeT getCodecMode() const
++  { return mCodecMode; }
++
+   QString getPeerAddress() const
+   { return mPeerAddress; }
+ 
+@@ -314,6 +327,8 @@
+     { return getNumInputChannels(); }
+     else { return 0; }
+   }
++  uint8_t getCeltBytes() const
++  { return mCeltBytes; }
+   virtual void checkPeerSettings(int8_t* full_packet);
+   void increaseSequenceNumber()
+   { mPacketHeader->increaseSequenceNumber(); }
+@@ -341,12 +356,12 @@
+   uint8_t  getPeerConnectionMode(int8_t* full_packet) const
+   { return mPacketHeader->getPeerConnectionMode(full_packet); }
+ 
+-  size_t getSizeInBytesPerChannel() const
+-  { return mAudioInterface->getSizeInBytesPerChannel(); }
+   int getHeaderSizeInBytes() const
+   { return mPacketHeader->getHeaderSizeInBytes(); }
+-  virtual int getTotalAudioPacketSizeInBytes() const
+-  { return mAudioInterface->getSizeInBytesPerChannel() * mNumChans; }
++  virtual int getTotalEncoderPacketSizeInBytes() const
++  { return encoder->getTotalCodecSizeInBytes(); }
++  virtual int getTotalDecoderPacketSizeInBytes() const
++  { return decoder->getTotalCodecSizeInBytes(); }
+   //@}
+   //------------------------------------------------------------------------------------
+ 
+@@ -418,11 +433,13 @@
+   //                       QHostAddress PeerHostAddress, int peer_port)
+   //throw(std::runtime_error);
+ 
++  unsigned int celtBitrateToBytesPerFrame(unsigned int bitrate);
+ 
+   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
+   dataProtocolT mDataProtocol; ///< Data Protocol Tipe
+   DataProtocol::packetHeaderTypeT mPacketHeaderType; ///< Packet Header Type
+   JackTrip::audiointerfaceModeT mAudiointerfaceMode;
++  codecModeT mCodecMode;
+ 
+   int mNumChans; ///< Number of Channels (inputs = outputs)
+   int mBufferQueueLength; ///< Audio Buffer from network queue length
+@@ -460,6 +477,11 @@
+   volatile bool mReceivedConnection; ///< Bool of received connection from peer
+   volatile bool mTcpConnectionError;
+   volatile bool mStopped;
++
++  Codec* encoder;
++  Codec* decoder;
++  unsigned int mCeltBytes;
++  unsigned int mCeltBitrate;
+ };
+ 
+ #endif
+Index: JackAudioInterface.h
+===================================================================
+--- JackAudioInterface.h	(revision 492)
++++ JackAudioInterface.h	(working copy)
+@@ -111,8 +111,6 @@
+   /// \brief Get the Jack Server Buffer Size, in bytes
+   virtual uint32_t getBufferSizeInBytes() const
+   { return (getBufferSizeInSamples() * getAudioBitResolution()/8); }
+-  /// \brief Get size of each audio per channel, in bytes
+-  virtual size_t getSizeInBytesPerChannel() const;
+   //------------------------------------------------------------------
+ 
+ private:
+Index: AudioInterface.cpp
+===================================================================
+--- AudioInterface.cpp	(revision 492)
++++ AudioInterface.cpp	(working copy)
+@@ -68,6 +68,8 @@
+ {
+   delete[] mInputPacket;
+   delete[] mOutputPacket;
++  delete[] mCompressedPacket;
++  delete[] mUncompressedPacket;
+   for (int i = 0; i < mNumInChans; i++) {
+     delete[] mInProcessBuffer[i];
+   }
+@@ -86,7 +88,7 @@
+   int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
+   int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
+   mInputPacket = new int8_t[size_input];
+-  mOutputPacket = new int8_t[size_output];
++  mUncompressedPacket = new int8_t[size_output];
+ 
+   // Initialize and asign memory for ProcessPlugins Buffers
+   mInProcessBuffer.resize(mNumInChans);
+@@ -105,13 +107,39 @@
+   }
+ }
+ 
++void AudioInterface::setEncoder(Codec *codec)
++{
++    this->encoder = codec;
++    encoder->setup(this);
++    mCompressedPacket = new int8_t[encoder->getTotalCodecSizeInBytes()];
++}
+ 
++void AudioInterface::setDecoder(Codec *codec)
++{
++    this->decoder = codec;
++    decoder->setup(this);
++    mOutputPacket = new int8_t[decoder->getTotalCodecSizeInBytes()];
++}
++
++void AudioInterface::setAudioBitResolution(audioBitResolutionT bitResolution)
++{
++    mBitResolutionMode = bitResolution;
++    mAudioBitResolution = bitResolution * 8;
++}
++
+ //*******************************************************************************
+ size_t AudioInterface::getSizeInBytesPerChannel() const
+ {
+-  return (getBufferSizeInSamples() * getAudioBitResolution()/8);
++    return (getBufferSizeInSamples() * getAudioBitResolution()/8);
+ }
+ 
++//*******************************************************************************
++int AudioInterface::stopProcess() const
++{
++    encoder->stop();
++    decoder->stop();
++    return 0;
++}
+ 
+ //*******************************************************************************
+ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
+@@ -177,6 +205,8 @@
+   // Read Audio buffer from RingBuffer (read from incoming packets)
+   mJackTrip->receiveNetworkPacket( mOutputPacket );
+ 
++  decoder->decode(mOutputPacket, mUncompressedPacket);
++
+   // Extract separate channels to send to Jack
+   for (int i = 0; i < mNumOutChans; i++) {
+     //--------
+@@ -188,7 +218,8 @@
+     for (unsigned int j = 0; j < n_frames; j++) {
+       // Change the bit resolution on each sample
+       fromBitToSampleConversion(
+-          &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
++          // Interleaved samples
++          &mUncompressedPacket[(i + j * mNumOutChans) * mBitResolutionMode ],
+           &tmp_sample[j], mBitResolutionMode );
+     }
+   }
+@@ -217,12 +248,15 @@
+       tmp_result = tmp_sample[j] + tmp_process_sample[j];
+       fromSampleToBitConversion(
+           &tmp_result,
+-          &mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
++          &mInputPacket[(i + j * mNumInChans) * mBitResolutionMode ],
+           mBitResolutionMode );
+     }
+   }
++
++  encoder->encode(mInputPacket, mCompressedPacket);
++
+   // Send Audio buffer to Network
+-  mJackTrip->sendNetworkPacket( mInputPacket );
++  mJackTrip->sendNetworkPacket( mCompressedPacket );
+ }
+ 
+ 
+Index: PacketHeader.h
+===================================================================
+--- PacketHeader.h	(revision 492)
++++ PacketHeader.h	(working copy)
+@@ -67,6 +67,9 @@
+   //uint8_t  NumOutChannels; ///<  Number of Output Channels
+   uint8_t  NumChannels; ///< Number of Channels, we assume input and outputs are the same
+   uint8_t  ConnectionMode;
++  // New fields
++  uint8_t Codec;
++  uint8_t CeltBytes;
+ };
+ 
+ //---------------------------------------------------------
+Index: RtAudioInterface.cpp
+===================================================================
+--- RtAudioInterface.cpp	(revision 492)
++++ RtAudioInterface.cpp	(working copy)
+@@ -224,7 +224,10 @@
+ //*******************************************************************************
+ int RtAudioInterface::stopProcess() const
+ {
+-  try { mRtAudio->closeStream(); }
++  try {
++      AudioInterface::stopProcess();
++      mRtAudio->closeStream();
++  }
+   catch ( RtError& e ) {
+     std::cout << '\n' << e.getMessage() << '\n' << std::endl;
+     return(-1);

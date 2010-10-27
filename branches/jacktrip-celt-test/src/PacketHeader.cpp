@@ -106,6 +106,8 @@ DefaultHeader::DefaultHeader(JackTrip* jacktrip) :
   //mHeader.NumOutChannels = 0;
   mHeader.NumChannels = 0;
   mHeader.ConnectionMode = 0;
+  mHeader.Codec = 0;
+  mHeader.CeltBytes = 0;
 }
 
 
@@ -118,6 +120,8 @@ void DefaultHeader::fillHeaderCommonFromAudio()
   mHeader.BitResolution = mJackTrip->getAudioBitResolution();
   mHeader.NumChannels = mJackTrip->getNumChannels();
   mHeader.ConnectionMode = static_cast<int>(mJackTrip->getConnectionMode());
+  mHeader.Codec = static_cast<int>(mJackTrip->getCodecMode());
+  mHeader.CeltBytes = mJackTrip->getCeltBytes();
   //printHeader();
 }
 
@@ -165,6 +169,30 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
       std::cerr << gPrintSeparator << endl;
       error = true;
     }
+
+  // Check encoder
+  if (peer_header->Codec != mHeader.Codec)
+  {
+      const char* peerString = (peer_header->Codec) == JackTrip::CELT ? "CELT" : "PCM";
+      const char* localString = (mHeader.Codec) == JackTrip::CELT ? "CELT" : "PCM";
+
+      std::cerr << "ERROR: Peer Codec is  : " << peerString << endl;
+      std::cerr << "       Local Codec is : " << localString << endl;
+      std::cerr << "Make sure both machines use the same codec" << endl;
+      std::cerr << gPrintSeparator << endl;
+      error = true;
+  }
+  // Check CELT frame size
+  else if (peer_header->Codec == JackTrip::CELT && peer_header->CeltBytes != mHeader.CeltBytes)
+  {
+      std::cerr << "ERROR: Peer CELT Bitrate is  : "
+              << static_cast<int>(peer_header->CeltBytes) << endl;
+      std::cerr << "       Local CELT Bitrate is : "
+              << static_cast<int>(mHeader.CeltBytes) << endl;
+      std::cerr << "Make sure both machines use the same bitrate" << endl;
+      std::cerr << gPrintSeparator << endl;
+      error = true;
+  }
 
   // Exit program if error
   if (error) 

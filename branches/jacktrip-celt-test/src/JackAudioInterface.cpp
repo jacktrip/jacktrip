@@ -181,13 +181,6 @@ uint32_t JackAudioInterface::getBufferSizeInSamples() const
   return jack_get_buffer_size(mClient);
 }
 
-
-//*******************************************************************************
-size_t JackAudioInterface::getSizeInBytesPerChannel() const
-{
-  return (getBufferSizeInSamples() * getAudioBitResolution()/8);
-}
-
 //*******************************************************************************
 void JackAudioInterface::setProcessCallback()
 {
@@ -226,6 +219,7 @@ int JackAudioInterface::startProcess() const
 int JackAudioInterface::stopProcess() const
 {
   QMutexLocker locker(&sJackMutex);
+  AudioInterface::stopProcess();
   int code = (jack_client_close(mClient));
   if ( code != 0  )
     {

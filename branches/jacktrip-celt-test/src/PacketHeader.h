@@ -67,6 +67,9 @@ public:
   //uint8_t  NumOutChannels; ///<  Number of Output Channels
   uint8_t  NumChannels; ///< Number of Channels, we assume input and outputs are the same
   uint8_t  ConnectionMode;
+  // New fields
+  uint8_t Codec;
+  uint8_t CeltBytes;
 };
 
 //---------------------------------------------------------

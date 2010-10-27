@@ -85,6 +85,7 @@ private:
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   AudioInterface::audioBitResolutionT mAudioBitResolution;
+  JackTrip::codecModeT mCodecMode;
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
   int mBindPortNum; ///< Bind Port Number
   int mPeerPortNum; ///< Peer Port Number
@@ -101,6 +102,8 @@ private:
   bool mChanfeDefaultBS; ///< Change Default Buffer Size
   unsigned int mSampleRate;
   unsigned int mAudioBufferSize;
+  unsigned int mBitrate;
+  unsigned int mCeltBitrate;
 };
 
 #endif

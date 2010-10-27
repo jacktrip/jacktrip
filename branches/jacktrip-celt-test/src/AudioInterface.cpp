@@ -68,6 +68,8 @@ AudioInterface::~AudioInterface()
 {
   delete[] mInputPacket;
   delete[] mOutputPacket;
+  delete[] mCompressedPacket;
+  delete[] mUncompressedPacket;
   for (int i = 0; i < mNumInChans; i++) {
     delete[] mInProcessBuffer[i];
   }
@@ -86,7 +88,7 @@ void AudioInterface::setup()
   int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
   int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
   mInputPacket = new int8_t[size_input];
-  mOutputPacket = new int8_t[size_output];
+  mUncompressedPacket = new int8_t[size_output];
 
   // Initialize and asign memory for ProcessPlugins Buffers
   mInProcessBuffer.resize(mNumInChans);
@@ -105,13 +107,39 @@ void AudioInterface::setup()
   }
 }
 
+void AudioInterface::setEncoder(Codec *codec)
+{
+    this->encoder = codec;
+    encoder->setup(this);
+    mCompressedPacket = new int8_t[encoder->getTotalCodecSizeInBytes()];
+}
+
+void AudioInterface::setDecoder(Codec *codec)
+{
+    this->decoder = codec;
+    decoder->setup(this);
+    mOutputPacket = new int8_t[decoder->getTotalCodecSizeInBytes()];
+}
+
+void AudioInterface::setAudioBitResolution(audioBitResolutionT bitResolution)
+{
+    mBitResolutionMode = bitResolution;
+    mAudioBitResolution = bitResolution * 8;
+}
 
 //*******************************************************************************
 size_t AudioInterface::getSizeInBytesPerChannel() const
 {
-  return (getBufferSizeInSamples() * getAudioBitResolution()/8);
+    return (getBufferSizeInSamples() * getAudioBitResolution()/8);
 }
 
+//*******************************************************************************
+int AudioInterface::stopProcess() const
+{
+    encoder->stop();
+    decoder->stop();
+    return 0;
+}
 
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
@@ -177,6 +205,8 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
   // Read Audio buffer from RingBuffer (read from incoming packets)
   mJackTrip->receiveNetworkPacket( mOutputPacket );
 
+  decoder->decode(mOutputPacket, mUncompressedPacket);
+
   // Extract separate channels to send to Jack
   for (int i = 0; i < mNumOutChans; i++) {
     //--------
@@ -188,7 +218,8 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
     for (unsigned int j = 0; j < n_frames; j++) {
       // Change the bit resolution on each sample
       fromBitToSampleConversion(
-          &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
+          // Interleaved samples
+          &mUncompressedPacket[(i + j * mNumOutChans) * mBitResolutionMode ],
           &tmp_sample[j], mBitResolutionMode );
     }
   }
@@ -217,12 +248,15 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
       tmp_result = tmp_sample[j] + tmp_process_sample[j];
       fromSampleToBitConversion(
           &tmp_result,
-          &mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
+          &mInputPacket[(i + j * mNumInChans) * mBitResolutionMode ],
           mBitResolutionMode );
     }
   }
+
+  encoder->encode(mInputPacket, mCompressedPacket);
+
   // Send Audio buffer to Network
-  mJackTrip->sendNetworkPacket( mInputPacket );
+  mJackTrip->sendNetworkPacket( mCompressedPacket );
 }
 
 

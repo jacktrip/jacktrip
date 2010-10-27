@@ -39,6 +39,7 @@
 #define __AUDIOINTERFACE_H__
 
 #include "ProcessPlugin.h"
+#include "CodecCelt.h"
 #include "jacktrip_types.h"
 
 #include <QVarLengthArray>
@@ -104,7 +105,7 @@ public:
   virtual int startProcess() const = 0;
   /// \brief Stops the process-callback thread
   /// \return 0 on success, otherwise a non-zero error code
-  virtual int stopProcess() const = 0;
+  virtual int stopProcess() const;
   /** \brief Process callback. Subclass should call this callback after obtaining the
     in_buffer and out_buffer pointers.
     * \param in_buffer Array of input audio samplers for each channel. The user
@@ -153,6 +154,9 @@ public:
   { mSampleRate = sample_rate; }
   virtual void setBufferSizeInSamples(uint32_t buf_size)
   { mBufferSizeInSamples = buf_size; }
+  virtual void setAudioBitResolution(audioBitResolutionT bitResolution);
+  virtual void setEncoder(Codec* codec);
+  virtual void setDecoder(Codec* codec);
   /// \brief Set Client Name to something different that the default (JackTrip)
   virtual void setClientName(const char* ClientName) = 0;
   //------------------------------------------------------------------
@@ -164,6 +168,7 @@ public:
   virtual int getNumOutputChannels() const  { return mNumOutChans; }
   virtual uint32_t getBufferSizeInSamples() const
   { return mBufferSizeInSamples; }
+  /// \brief Get size of each audio per channel, in bytes
   virtual size_t getSizeInBytesPerChannel() const;
   /// \brief Get the Jack Server Sampling Rate, in samples/second
   virtual uint32_t getSampleRate() const
@@ -207,6 +212,11 @@ private:
   QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
   int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+
+  Codec* encoder;
+  Codec* decoder;
+  int8_t* mCompressedPacket;
+  int8_t* mUncompressedPacket;
 };
 
 #endif // __AUDIOINTERFACE_H__

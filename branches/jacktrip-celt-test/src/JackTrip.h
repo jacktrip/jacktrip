@@ -104,6 +104,12 @@ public:
     KSTRONG,  ///< Karplus Strong
     JAMTEST  ///< Karplus Strong
   };
+
+  enum codecModeT {
+      PCM,
+      CELT
+  };
+
   //---------------------------------------------------------
 
 
@@ -122,6 +128,8 @@ public:
      unsigned int redundancy = gDefaultRedundancy,
      AudioInterface::audioBitResolutionT AudioBitResolution =
      AudioInterface::BIT16,
+     JackTrip::codecModeT CodecMode = JackTrip::CELT,
+     unsigned int celtBitrate = 64,
 	   DataProtocol::packetHeaderTypeT PacketHeaderType = 
 	   DataProtocol::DEFAULT,
 	   underrunModeT UnderRunMode = WAVETABLE,
@@ -244,8 +252,10 @@ public:
   virtual void setPacketHeader(PacketHeader* const PacketHeader)
   { mPacketHeader = PacketHeader; }
 
-  virtual int getRingBuffersSlotSize()
-  { return getTotalAudioPacketSizeInBytes(); }
+  virtual int getSendRingBufferSlotSize()
+  { return getTotalEncoderPacketSizeInBytes(); }
+  virtual int getReceiveRingBufferSlotSize()
+  { return getTotalDecoderPacketSizeInBytes(); }
 
   virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
   { mAudiointerfaceMode = audiointerface_mode; }
@@ -265,6 +275,9 @@ public:
 
   JackTrip::jacktripModeT getJackTripMode() const
   { return mJackTripMode; }
+
+  JackTrip::codecModeT getCodecMode() const
+  { return mCodecMode; }
 
   QString getPeerAddress() const
   { return mPeerAddress; }
@@ -314,6 +327,8 @@ public:
     { return getNumInputChannels(); }
     else { return 0; }
   }
+  uint8_t getCeltBytes() const
+  { return mCeltBytes; }
   virtual void checkPeerSettings(int8_t* full_packet);
   void increaseSequenceNumber()
   { mPacketHeader->increaseSequenceNumber(); }
@@ -341,12 +356,12 @@ public:
   uint8_t  getPeerConnectionMode(int8_t* full_packet) const
   { return mPacketHeader->getPeerConnectionMode(full_packet); }
 
-  size_t getSizeInBytesPerChannel() const
-  { return mAudioInterface->getSizeInBytesPerChannel(); }
   int getHeaderSizeInBytes() const
   { return mPacketHeader->getHeaderSizeInBytes(); }
-  virtual int getTotalAudioPacketSizeInBytes() const
-  { return mAudioInterface->getSizeInBytesPerChannel() * mNumChans; }
+  virtual int getTotalEncoderPacketSizeInBytes() const
+  { return encoder->getTotalCodecSizeInBytes(); }
+  virtual int getTotalDecoderPacketSizeInBytes() const
+  { return decoder->getTotalCodecSizeInBytes(); }
   //@}
   //------------------------------------------------------------------------------------
 
@@ -418,11 +433,13 @@ private:
   //                       QHostAddress PeerHostAddress, int peer_port)
   //throw(std::runtime_error);
 
+  unsigned int celtBitrateToBytesPerFrame(unsigned int bitrate);
 
   jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
   dataProtocolT mDataProtocol; ///< Data Protocol Tipe
   DataProtocol::packetHeaderTypeT mPacketHeaderType; ///< Packet Header Type
   JackTrip::audiointerfaceModeT mAudiointerfaceMode;
+  codecModeT mCodecMode;
 
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
@@ -460,6 +477,11 @@ private:
   volatile bool mReceivedConnection; ///< Bool of received connection from peer
   volatile bool mTcpConnectionError;
   volatile bool mStopped;
+
+  Codec* encoder;
+  Codec* decoder;
+  unsigned int mCeltBytes;
+  unsigned int mCeltBitrate;
 };
 
 #endif

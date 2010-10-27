@@ -62,6 +62,7 @@ const uint32_t gDefaultBufferSizeInSamples = 128;
 const int gDefaultRedundancy = 1;
 const int gTimeOutMultiThreadedServer = 5000; // seconds
 const int gWaitCounter = 60;
+const int gDefaultCeltBitrate = 128;
 //@}
 
 
