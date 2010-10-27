@@ -48,7 +48,7 @@
 // Forward declarations
 class JackTrip;
 
-using namespace JackTripNamespace;
+//using namespace JackTripNamespace;
 
 
 /** \brief Base Class that provides an interface with audio
