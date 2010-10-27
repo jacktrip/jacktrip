@@ -42,8 +42,8 @@
 //#include <jack/types.h>
 #include <QtGlobal> //For QT4 types
 
-namespace JackTripNamespace
-{
+//namespace JackTripNamespace
+//{
 
   //-------------------------------------------------------------------------------
   /** \name Audio typedefs
@@ -84,6 +84,6 @@ namespace JackTripNamespace
   /// be 64-bit.
   //typedef qint64 int64_t;
   //@}
-} // end of namespace JackTripNamespace
+//} // end of namespace JackTripNamespace
 
 #endif
