@@ -18,7 +18,7 @@ nojack:DEFINES += __NO_JACK__
 !win32 { 
     INCLUDEPATH += /usr/local/include
     LIBS += -ljack \
-        -lm -lcelt0
+        -lm /usr/local/lib/libcelt0.a #-lcelt0 #full path to link statically
     nojack { 
         message(Building NONJACK)
         LIBS -= -ljack
