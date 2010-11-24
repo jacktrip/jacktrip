@@ -15,7 +15,7 @@ LIBS += -ljack -lm
 macx {
   message(MAC OS X)
   CONFIG -= app_bundle
-  CONFIG += x86 ppc
+  CONFIG += x86 #ppc
   LIBS += -framework CoreAudio
   DEFINES += __MAC_OSX__
   }
