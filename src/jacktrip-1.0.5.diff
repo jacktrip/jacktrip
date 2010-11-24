@@ -1,0 +1,26 @@
+Index: src/JackTripWorker.h
+===================================================================
+--- src/JackTripWorker.h	(revision 495)
++++ src/JackTripWorker.h	(working copy)
+@@ -46,6 +46,8 @@
+ #include <QHostAddress>
+ #include <QMutex>
+ 
++#include "jacktrip_types.h"
++
+ class JackTrip; // forward declaration
+ class UdpMasterListener; // forward declaration
+ 
+Index: src/jacktrip_globals.cpp
+===================================================================
+--- src/jacktrip_globals.cpp	(revision 495)
++++ src/jacktrip_globals.cpp	(working copy)
+@@ -38,6 +38,8 @@
+ #include "jacktrip_globals.h"
+ #include "jacktrip_types.h"
+ 
++#include <stdio.h>
++
+ #if defined ( __LINUX__ )
+ #include <sched.h>
+ #endif //__LINUX__
