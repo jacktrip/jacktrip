@@ -39,6 +39,8 @@
 #include "jacktrip_globals.h"
 #include "JackTrip.h"
 
+#include <QHostInfo>
+
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
@@ -90,12 +92,20 @@ UdpDataProtocol::~UdpDataProtocol()
 //*******************************************************************************
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument)
 {
-  mPeerAddress.setAddress(peerHostOrIP);
+  // Get DNS Address
+  QHostInfo info = QHostInfo::fromName(peerHostOrIP);
+  if (!info.addresses().isEmpty()) {
+    // use the first IP address
+    mPeerAddress = info.addresses().first();
+    //cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
+    //    << mPeerAddress.toString().toStdString() << endl;
+  }
+
   // check if the ip address is valid
   if ( mPeerAddress.isNull() ) {
     QString error_message = "Incorrect presentation format address\n '";
     error_message.append(peerHostOrIP);
-    error_message.append("' is not a valid IP address");
+    error_message.append("' is not a valid IP address or Host Name");
     //std::cerr << "ERROR: Incorrect presentation format address" << endl;
     //std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
     //throw std::invalid_argument("Incorrect presentation format address");
