@@ -1,8 +1,9 @@
 ---
-1.1
+trunk
 - (added) Support for RtAudio. Jacktrip can now be used without Jack
 - (added) New port to Windows XP and Windows Vista
 - (added) Multiclient Server
+- (added) DNS Look-up support
 
 ---
 1.0.5
