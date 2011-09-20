@@ -29,7 +29,8 @@ macx {
   message(MAC OS X)
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
   CONFIG -= app_bundle
-  CONFIG += x86 #ppc
+  #CONFIG += x86 #ppc #### If you have both libraries installed, you
+  # can change between 32bits (x86) or 64bits(x86_64) Change this to go back to 32 bits (x86)
   LIBS += -framework CoreAudio -framework CoreFoundation
   DEFINES += __MAC_OSX__
   }
