@@ -135,10 +135,10 @@ void JackTrip::setupAudio()
   if ( mAudiointerfaceMode == JackTrip::JACK ) {
 #ifndef __NO_JACK__
     mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+    mAudioInterface->setClientName(mJackClientName);
     mAudioInterface->setup();
     mSampleRate = mAudioInterface->getSampleRate();
     mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
-    mAudioInterface->setClientName(mJackClientName);
 #endif //__NON_JACK__
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
 #ifdef __RT_AUDIO__
