@@ -363,7 +363,7 @@ public slots:
   }
 
   /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds
-   * when UDP is waited for more than 30 seconds.
+   * when UDP has waited for more than 30 seconds.
    * 
    * It is used to remove the thread from the server.
    */

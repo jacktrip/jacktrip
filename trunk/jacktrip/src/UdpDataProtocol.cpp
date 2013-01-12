@@ -486,7 +486,7 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
 {
   int wait_time = 30; // msec
   if ( !(wait_msec%wait_time) ) {
-    std::cerr << "UDP is waited too long (more than " << wait_time << "ms)..." << endl;
+    std::cerr << "UDP waiting too long (more than " << wait_time << "ms)..." << endl;
   }
 }
 
