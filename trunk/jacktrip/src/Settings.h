@@ -95,6 +95,7 @@ private:
   bool mJamLink; ///< JamLink mode
   bool mEmptyHeader; ///< EmptyHeader mode
   bool mJackTripServer; ///< JackTrip Server mode
+  QString mLocalAddress; ///< Local Address
   unsigned int mRedundancy; ///< Redundancy factor for data in the network
   bool mUseJack; ///< Use or not JackAduio
   bool mChanfeDefaultSR; ///< Change Default Sampling Rate
