@@ -1,0 +1,47 @@
+---
+trunk
+- (added) Support for RtAudio. Jacktrip can now be used without Jack
+- (added) New port to Windows XP and Windows Vista
+- (added) Multiclient Server
+- (added) DNS Look-up support
+
+---
+1.0.5
+- (added) Compatibility with JamLink boxes (restricted at the moment to 48KHz, 64 buffer size and 1 channel)
+- (added) New port structure that allows the communication between a public server and a local client
+- (added) Option for packets without header
+- (added) Option to change default client name
+- (fixed) General optimizations and code cleanup
+- (added) Improved, now cross-platform build script
+
+---
+1.0.4
+- (fixed) Buss error caused when no physical inputs or outputs ports are available
+
+---
+1.0.3
+- (added) Redundancy Algorithm for UDP Packets to to avoid glitches with packet losses
+- (fixed) Now compiles on 64bits machines
+- (fixed) Improved exceptions handling
+- (added) Basic Karplus-Strong model added as Plug-in
+- (added) Some functionality reimplemented using signals and slots for 
+          more flexibility
+- (added) Multiple-Client-Server in alpha testing, expect it working in the next release
+
+---
+1.0.2 Alpha
+- (added) Port offset mode, to use a different UDP port than the default one.
+- (fixed) Improved thread behavior
+
+---
+1.0.1 Alpha
+- (added) jamlink mode to connect with jamlink boxes
+- (fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X version)
+- (fixed) Bug that was causing plug-ins not to behave correctly
+- (added) Loopback mode
+- (added) Underrun Modes: Wavetable (default) and set to zeros
+- (added) Check for peer audio settings, program exists if they don't match
+- (added) Automatically connect ports to available physical audio interface.
+
+---
+1.0 Alpha  - initial release
