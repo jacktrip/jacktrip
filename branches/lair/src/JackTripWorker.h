@@ -84,7 +84,7 @@ public:
   /// \param address
   void setJackTrip(int id, uint32_t client_address,
 		   uint16_t server_port, uint16_t client_port,
-		   int num_channels);
+           int num_channels, QHostAddress localAddress);
   /// Stop and remove thread from pool
   void stopThread();
   int getID()
@@ -121,6 +121,7 @@ private:
 
   int mID; ///< ID thread number
   int mNumChans; ///< Number of Channels
+  QHostAddress mLocalAddress;
 };
 
 

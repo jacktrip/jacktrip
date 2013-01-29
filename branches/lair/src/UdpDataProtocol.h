@@ -89,6 +89,11 @@ public:
    */
   void setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument);
 
+  /** \brief Set the Local address
+   * \param QHostAddress
+   */
+  void setLocalAddress(QHostAddress localAddress);
+
   /** \brief Receives a packet. It blocks until a packet is received
    *
    * This function makes sure we recieve a complete packet
@@ -193,6 +198,7 @@ private:
   const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
 
   QHostAddress mPeerAddress; ///< The Peer Address
+  QHostAddress mLocalAddress; ///< The Peer Address
 
   int8_t* mAudioPacket; ///< Buffer to store Audio Packets
   int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)

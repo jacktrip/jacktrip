@@ -155,6 +155,11 @@ public:
    */
   virtual void setPeerAddress(const char* peerHostOrIP) = 0;
 
+  /** \brief Set the local address
+   * \param QHostAddress
+   */
+  virtual void setLocalAddress(QHostAddress localaddress) = 0;
+
   /** \brief Set the peer incomming (receiving) port number
    * \param port Port number
    * \todo implement here instead of in the subclass UDP

@@ -64,7 +64,7 @@ class UdpMasterListener : public QThread
   Q_OBJECT;
 
 public:
-  UdpMasterListener(int server_port = gServerUdpPort);
+  UdpMasterListener(QHostAddress localAddress, int server_port);
   virtual ~UdpMasterListener();
   
   /// \brief Implements the Thread Loop. To start the thread, call start()
@@ -121,6 +121,7 @@ private:
   QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorker s
   QThreadPool mThreadPool; ///< The Thread Pool
 
+  QHostAddress mLocalAddress;
   int mServerPort; //< Server known port number
   int mBasePort;
   uint32_t mActiveAddress[gMaxThreads][2]; ///< Active addresses pool numbers (32 bits IPv4 numbers)

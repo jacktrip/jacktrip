@@ -53,8 +53,9 @@ using std::cout; using std::endl;
 
 
 //*******************************************************************************
-UdpMasterListener::UdpMasterListener(int server_port) :
+UdpMasterListener::UdpMasterListener(QHostAddress localAddress, const int server_port) :
     //mJTWorker(NULL),
+    mLocalAddress(localAddress),
     mServerPort(server_port),
     mStopped(false),
     mTotalRunningThreads(0)
@@ -80,6 +81,7 @@ UdpMasterListener::UdpMasterListener(int server_port) :
 
   // SoundWIRE ports open are UDP 61000-62000
   mBasePort = 61000;
+
 }
 
 
@@ -193,7 +195,7 @@ void UdpMasterListener::run()
         QMutexLocker lock(&mMutex);
         mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
                                         server_udp_port, mActiveAddress[id][1],
-                                        1); /// \todo temp default to 1 channel
+                                        1, mLocalAddress); /// \todo temp default to 1 channel
       }
       //send one thread to the pool
       cout << "---> JackTrip MULTI-THREADED SERVER: Starting Thread..." << endl;
