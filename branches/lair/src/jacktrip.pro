@@ -75,6 +75,9 @@ win32 {
   DEPENDPATH += ../externals/includes
 }
 
+# for plugins
+INCLUDEPATH += ../faust-src-lair
+
 # Input
 HEADERS += DataProtocol.h \
            JackTrip.h \

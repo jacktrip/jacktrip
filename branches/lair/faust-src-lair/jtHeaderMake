@@ -1,0 +1,11 @@
+mkdir tmp
+cd tmp
+cp ../$1 .
+faust -xml $1 > xxx
+../faust2jacktrip/faust2jacktrip $1.xml 
+faust -a $1-wrapper.cpp -o $1.h $1
+cp $1.h ../
+rm *
+cd ..
+rmdir tmp
+

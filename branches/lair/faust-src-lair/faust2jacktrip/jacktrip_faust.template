@@ -1,0 +1,71 @@
+//
+// notes from CC
+// see faust2jacktrip
+// this file generated from jacktrip_faust.template
+// use make to update the template
+// and use jtHeaderMake <file>.dsp to generate this file
+
+#ifndef __%dsp_name%_H__
+#define __%dsp_name%_H__
+
+#include <iostream>
+#include <unistd.h>
+//cc for random()
+#include <cstdlib>
+
+// any QT classes
+#include <QTimer>
+
+#include "ProcessPlugin.h"
+#include "Faust.h"
+
+/*
+ * FAUST intrinsic
+ */
+<<includeIntrinsic>>
+
+/*
+ * FAUST defines UI values as private, but provides no getters/setters.
+ * In our particular case it's way more convenient to access them directly
+ * than to set up a complicated UI structure.  Also get rid of everything
+ * being "virtual", since it may stop the compiler from inlining properly!
+ */
+#define private public
+#define virtual
+
+// definition of derived dsp class
+
+/* Rename the class the name of our DSP. */
+#define mydsp %dsp_name%dsp
+
+/*
+ * FAUST class
+ */
+<<includeclass>>
+
+
+// our jacktrip dsp class, inheriting from ProcessPlugin and Faust dsp
+class %dsp_name% : public ProcessPlugin, public %dsp_name%dsp
+{
+    Q_OBJECT
+public:
+    %dsp_name%(int nChans) : mNumChannels(nChans){}
+    virtual ~%dsp_name%() {}
+    int getNumInputs() {return %dsp_name%dsp::getNumInputs();}
+    int getNumOutputs() {return %dsp_name%dsp::getNumOutputs();}
+    void compute (int count, FAUSTFLOAT** input, FAUSTFLOAT** output)
+      {%dsp_name%dsp::compute (count, input, output);}
+    void instanceInit(int samplingFreq)
+    {%dsp_name%dsp::instanceInit (samplingFreq);}
+private:
+    int mNumChannels;
+};
+
+// always undefine this stuff for compatibility with the rest of the project compilations
+#undef private
+#undef virtual
+#undef mydsp
+
+  #endif // __%dsp_name%_H__
+
+
