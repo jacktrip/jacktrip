@@ -55,7 +55,7 @@ class NetKS : public ProcessPlugin
 
 
 public:
-  /*
+
   void play()
   {
     std::cout << "********** PALYING ***********************************" << std::endl;
@@ -63,7 +63,7 @@ public:
     QObject::connect(timer, SIGNAL(timeout()),  this, SLOT(exciteString()));
     timer->start(300);
   }
-  */
+
 
 private slots:
 
