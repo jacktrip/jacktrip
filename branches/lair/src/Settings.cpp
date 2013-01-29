@@ -38,6 +38,7 @@
 #include "Settings.h"
 #include "LoopBack.h"
 #include "NetKS.h"
+#include "Comb2.dsp.h"
 #include "UdpMasterListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
@@ -426,17 +427,20 @@ void Settings::startJackTrip()
             //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
             //mJackTrip->appendProcessPlugin(loopback.get());
 
-//            LoopBack* loopback = new LoopBack(mNumChans);
+//  default plugin example          LoopBack* loopback = new LoopBack(mNumChans);
 //            mJackTrip->appendProcessPlugin(loopback);
 
             // ----- Test Karplus Strong -----------------------------------
             //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
             //mJackTrip->appendProcessPlugin(loopback);
             //loopback->play();
-            NetKS* netks = new NetKS;
-            mJackTrip->appendProcessPlugin(netks);
-            netks->play();
+// NetKS example           NetKS* netks = new NetKS;
+//            mJackTrip->appendProcessPlugin(netks);
+//            netks->play();
             // -------------------------------------------------------------
+//            Comb2 example
+            Comb2* plugin = new Comb2(mNumChans);
+                        mJackTrip->appendProcessPlugin(plugin);
         }
 
         // Start JackTrip

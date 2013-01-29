@@ -1,5 +1,5 @@
 //-----------------------------------------------------
-// name: "Comb6"
+// name: "Comb2"
 // version: "1.0"
 // author: "CC"
 // license: "BSD"
@@ -15,8 +15,8 @@
 // use make to update the template
 // and use jtHeaderMake <file>.dsp to generate this file
 
-#ifndef __Comb6_H__
-#define __Comb6_H__
+#ifndef __Comb2_H__
+#define __Comb2_H__
 
 #include <iostream>
 #include <unistd.h>
@@ -45,7 +45,7 @@
 // definition of derived dsp class
 
 /* Rename the class the name of our DSP. */
-#define mydsp Comb6dsp
+#define mydsp Comb2dsp
 
 /*
  * FAUST class
@@ -62,7 +62,7 @@ class mydsp : public dsp{
 	float 	fVec0[64];
   public:
 	static void metadata(Meta* m) 	{ 
-		m->declare("name", "Comb6");
+		m->declare("name", "Comb2");
 		m->declare("version", "1.0");
 		m->declare("author", "CC");
 		m->declare("license", "BSD");
@@ -105,18 +105,18 @@ class mydsp : public dsp{
 
 
 // our jacktrip dsp class, inheriting from ProcessPlugin and Faust dsp
-class Comb6 : public ProcessPlugin, public Comb6dsp
+class Comb2 : public ProcessPlugin, public Comb2dsp
 {
     Q_OBJECT
 public:
-    Comb6(int nChans) : mNumChannels(nChans){}
-    virtual ~Comb6() {}
-    int getNumInputs() {return Comb6dsp::getNumInputs();}
-    int getNumOutputs() {return Comb6dsp::getNumOutputs();}
+    Comb2(int nChans) : mNumChannels(nChans){}
+    virtual ~Comb2() {}
+    int getNumInputs() {return Comb2dsp::getNumInputs();}
+    int getNumOutputs() {return Comb2dsp::getNumOutputs();}
     void compute (int count, FAUSTFLOAT** input, FAUSTFLOAT** output)
-      {Comb6dsp::compute (count, input, output);}
+      {Comb2dsp::compute (count, input, output);}
     void instanceInit(int samplingFreq)
-    {Comb6dsp::instanceInit (samplingFreq);}
+    {Comb2dsp::instanceInit (samplingFreq);}
 private:
     int mNumChannels;
 };
@@ -126,6 +126,6 @@ private:
 #undef virtual
 #undef mydsp
 
-  #endif // __Comb6_H__
+  #endif // __Comb2_H__
 
 

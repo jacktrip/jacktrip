@@ -98,7 +98,8 @@ HEADERS += DataProtocol.h \
            UdpDataProtocol.h \
            UdpMasterListener.h \
            AudioInterface.h \
-           RtAudioInterface.h
+           RtAudioInterface.h \
+    ../faust-src-lair/Comb2.dsp.h
            #JamTest.h
 !nojack {
 SOURCES += JackAudioInterface.h
@@ -119,7 +120,8 @@ SOURCES += DataProtocol.cpp \
            UdpDataProtocol.cpp \
            UdpMasterListener.cpp \
            AudioInterface.cpp \
-           RtAudioInterface.cpp
+           RtAudioInterface.cpp \
+    ../faust-src-lair/Faust.cpp
 !nojack {
 SOURCES += JackAudioInterface.cpp
 }

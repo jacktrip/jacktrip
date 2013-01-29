@@ -1,4 +1,4 @@
-declare name 		"Comb6";
+declare name 		"Comb2";
 declare version 	"1.0";
 declare author 		"CC";
 declare license 	"BSD";
