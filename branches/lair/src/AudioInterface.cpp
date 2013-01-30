@@ -135,7 +135,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     for (int i = 0; i < mNumNetInChans; i++) {
       std::memset(mNetInBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
-  computeProcessFromNetwork(out_buffer, mNumNetInChans);   // nib6 result in mNetInBuffer (nchans on net, not audio)
+  computeProcessFromNetwork(out_buffer, n_frames);   // nib6 result in mNetInBuffer (nchans on net, not audio)
   // out_buffer unused till later
 
   // 2) Dynamically allocate ProcessPlugin processes
