@@ -55,10 +55,10 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
     mInputPacket(NULL), mOutputPacket(NULL)
 {
     // Set pointer to NULL
-    for (int i = 0; i < mNumInChans; i++) {
+    for (int i = 0; i < mNumNetChans; i++) {
         mInProcessBuffer[i] = NULL;
     }
-    for (int i = 0; i < mNumOutChans; i++) {
+    for (int i = 0; i < mNumNetChans; i++) {
         mOutProcessBuffer[i] = NULL;
     }
 }
@@ -69,11 +69,11 @@ AudioInterface::~AudioInterface()
 {
     delete[] mInputPacket;
     delete[] mOutputPacket;
-    for (int i = 0; i < mNumInChans; i++) {
+    for (int i = 0; i < mNumNetChans; i++) {
         delete[] mInProcessBuffer[i];
     }
 
-    for (int i = 0; i < mNumOutChans; i++) {
+    for (int i = 0; i < mNumNetChans; i++) {
         delete[] mOutProcessBuffer[i];
     }
 }
@@ -90,12 +90,11 @@ void AudioInterface::setup()
     mOutputPacket = new int8_t[size_output];
 
     // Initialize and asign memory for ProcessPlugins Buffers
-    mInProcessBuffer.resize(mNumInChans);
-    mOutProcessBuffer.resize(mNumOutChans);
+    mInProcessBuffer.resize(mNumNetChans);
+    mOutProcessBuffer.resize(mNumNetChans);
 
     int nframes = getBufferSizeInSamples();
     // Initialize Buffer array to read and write network
-#define mNumNetChans 2
     mNetInBuffer.resize(mNumNetChans);
     for (int i = 0; i < mNumNetChans; i++) {
         mNetInBuffer[i] = new sample_t[nframes];
@@ -104,12 +103,12 @@ void AudioInterface::setup()
     }
 
 
-    for (int i = 0; i < mNumInChans; i++) {
+    for (int i = 0; i < mNumNetChans; i++) {
         mInProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
         std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
     }
-    for (int i = 0; i < mNumOutChans; i++) {
+    for (int i = 0; i < mNumNetChans; i++) {
         mOutProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
@@ -241,7 +240,8 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             // Change the bit resolution on each sample
             // Add the input jack buffer to the buffer resulting from the output process
 #define INGAIN (0.9999) // 1.0 can saturate the fixed pt rounding on output
-            tmp_result = INGAIN*tmp_sample[j] + tmp_process_sample[j];
+            #define COMBGAIN (0.1)
+            tmp_result = INGAIN*tmp_sample[j] + COMBGAIN*tmp_process_sample[j];
             fromSampleToBitConversion(
                         &tmp_result,
                         &mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],

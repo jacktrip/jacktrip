@@ -440,7 +440,7 @@ mNumNetChans = 6;
 //            netks->play();
             // -------------------------------------------------------------
 //            Comb2 example
-            Comb2* plugin = new Comb2(mNumNetChans);
+            Comb6* plugin = new Comb6(mNumNetChans);
                         mJackTrip->appendProcessPlugin(plugin);
         }
 
