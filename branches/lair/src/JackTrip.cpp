@@ -68,6 +68,7 @@ void sigint_handler(int sig)
 JackTrip::JackTrip(jacktripModeT JacktripMode,
 		   dataProtocolT DataProtocolType,
                    int NumChans,
+                   int NumNetChans,
                    int BufferQueueLength,
                    unsigned int redundancy,
                    AudioInterface::audioBitResolutionT AudioBitResolution,
@@ -80,6 +81,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mPacketHeaderType(PacketHeaderType),
     mAudiointerfaceMode(JackTrip::JACK),
     mNumChans(NumChans),
+    mNumNetChans(NumNetChans),
     mBufferQueueLength(BufferQueueLength),
     mSampleRate(gDefaultSampleRate),
     mAudioBufferSize(gDefaultBufferSizeInSamples),
@@ -135,7 +137,7 @@ void JackTrip::setupAudio()
     // Create AudioInterface Client Object
     if ( mAudiointerfaceMode == JackTrip::JACK ) {
 #ifndef __NO_JACK__
-        mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+        mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mNumNetChans, mAudioBitResolution);
         mAudioInterface->setClientName(mJackClientName);
         mAudioInterface->setup();
         mSampleRate = mAudioInterface->getSampleRate();

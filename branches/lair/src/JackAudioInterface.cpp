@@ -63,16 +63,18 @@ QMutex JackAudioInterface::sJackMutex;
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
                                        int NumInChans, int NumOutChans,
-                                       AudioInterface::audioBitResolutionT AudioBitResolution,
-                                       const char* ClienName) :
+                                       int NumNetChans,
+                                       audioBitResolutionT AudioBitResolution, const char *ClientName) :
 AudioInterface(jacktrip,
                NumInChans, NumOutChans,
+               NumNetChans,
                AudioBitResolution),
-mNumInChans(NumInChans), mNumOutChans(NumOutChans),
+    mNumInChans(NumInChans), mNumOutChans(NumOutChans),
+    mNumNetChans(NumNetChans),
 //mAudioBitResolution(AudioBitResolution*8),
 mBitResolutionMode(AudioBitResolution),
 mClient(NULL),
-mClientName(ClienName),
+mClientName(ClientName),
 mJackTrip(jacktrip)
 {}
 

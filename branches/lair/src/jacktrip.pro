@@ -99,7 +99,8 @@ HEADERS += DataProtocol.h \
            UdpMasterListener.h \
            AudioInterface.h \
            RtAudioInterface.h \
-    ../faust-src-lair/Comb2.dsp.h
+    ../faust-src-lair/Comb2.dsp.h \
+    ../faust-src-lair/Comb6.dsp.h
            #JamTest.h
 !nojack {
 SOURCES += JackAudioInterface.h

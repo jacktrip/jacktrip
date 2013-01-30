@@ -39,6 +39,7 @@
 #include "LoopBack.h"
 #include "NetKS.h"
 #include "Comb2.dsp.h"
+#include "Comb6.dsp.h"
 #include "UdpMasterListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
@@ -353,10 +354,10 @@ void Settings::startJackTrip()
     }
 
     else {
-
+mNumNetChans = 6;
         //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
         //	    mBufferQueueLength, mAudioBitResolution);
-        mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
+        mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans, mNumNetChans,
                                  mBufferQueueLength, mRedundancy, mAudioBitResolution);
 
         // Connect Signals and Slots
@@ -439,7 +440,7 @@ void Settings::startJackTrip()
 //            netks->play();
             // -------------------------------------------------------------
 //            Comb2 example
-            Comb2* plugin = new Comb2(mNumChans);
+            Comb2* plugin = new Comb2(mNumNetChans);
                         mJackTrip->appendProcessPlugin(plugin);
         }
 

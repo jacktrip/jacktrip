@@ -74,6 +74,7 @@ public:
    */
   JackAudioInterface(JackTrip* jacktrip,
                      int NumInChans, int NumOutChans,
+                     int NumNetChans,
                      AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
                      const char* ClientName = "JackTrip");
   /// \brief The class destructor
@@ -163,6 +164,7 @@ private:
 
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
+  int mNumNetChans; ///<  Number of Network Audio Channels (network comb filters
   int mNumFrames; ///< Buffer block size, in samples
   //int mAudioBitResolution; ///< Bit resolution in audio samples
   AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode

@@ -118,6 +118,7 @@ public:
     JackTrip(jacktripModeT JacktripMode = CLIENT,
              dataProtocolT DataProtocolType = UDP,
              int NumChans = gDefaultNumInChannels,
+             int NumNetChans = gDefaultNumInChannels,
              int BufferQueueLength = gDefaultQueueLength,
              unsigned int redundancy = gDefaultRedundancy,
              AudioInterface::audioBitResolutionT AudioBitResolution =
@@ -428,6 +429,7 @@ private:
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
     int mNumChans; ///< Number of Channels (inputs = outputs)
+    int mNumNetChans; ///< Number of Network Audio Channels (net comb filters)
     int mBufferQueueLength; ///< Audio Buffer from network queue length
     uint32_t mSampleRate; ///< Sample Rate
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback

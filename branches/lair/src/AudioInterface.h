@@ -85,6 +85,7 @@ public:
    */
   AudioInterface(JackTrip* jacktrip,
                  int NumInChans, int NumOutChans,
+                 int NumNetChans,
                  AudioInterface::audioBitResolutionT AudioBitResolution =
                  AudioInterface::BIT16);
   /// \brief The class destructor
@@ -197,6 +198,7 @@ private:
   JackTrip* mJackTrip; ///< JackTrip Mediator Class pointer
   int mNumInChans;///< Number of Input Channels
   int mNumOutChans; ///<  Number of Output Channels
+  int mNumNetChans; ///<  Number of Network Audio Channels (net comb filters)
   int mAudioBitResolution; ///< Bit resolution in audio samples
   AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
   uint32_t mSampleRate; ///< Sampling Rate
