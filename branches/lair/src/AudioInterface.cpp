@@ -93,6 +93,16 @@ void AudioInterface::setup()
   mOutProcessBuffer.resize(mNumOutChans);
 
   int nframes = getBufferSizeInSamples();
+  // Initialize Buffer array to read and write network
+#define mNumNetInChans 2
+  mNetInBuffer.resize(mNumNetInChans);
+  for (int i = 0; i < mNumNetInChans; i++) {
+      mNetInBuffer[i] = new sample_t[nframes];
+      // set memory to 0
+      std::memset(mNetInBuffer[i], 0, sizeof(sample_t) * nframes);
+  }
+
+
   for (int i = 0; i < mNumInChans; i++) {
     mInProcessBuffer[i] = new sample_t[nframes];
     // set memory to 0
@@ -122,29 +132,44 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
   //-------------------------------------------------------------------
   // 1) First, process incoming packets
   // ----------------------------------
-  computeProcessFromNetwork(out_buffer, n_frames);
+    for (int i = 0; i < mNumNetInChans; i++) {
+      std::memset(mNetInBuffer[i], 0, sizeof(sample_t) * n_frames);
+    }
+  computeProcessFromNetwork(out_buffer, mNumNetInChans);   // nib6 result in mNetInBuffer (nchans on net, not audio)
+  // out_buffer unused till later
 
   // 2) Dynamically allocate ProcessPlugin processes
   // -----------------------------------------------
   // The processing will be done in order of allocation
   /// \todo Implement for more than one process plugin, now it just works propertely with one.
   /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
-  for (int i = 0; i < mNumInChans; i++) {
+  for (int i = 0; i < mNumNetInChans; i++) {
     std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
-    std::memcpy(mInProcessBuffer[i], out_buffer[i], sizeof(sample_t) * n_frames);
-  }
-  for (int i = 0; i < mNumOutChans; i++) {
+    std::memcpy(mInProcessBuffer[i], mNetInBuffer[i], sizeof(sample_t) * n_frames);
+  } // dest, src // nib6 to cib6
+  for (int i = 0; i < mNumNetInChans; i++) {
     std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
   }
 
   for (int i = 0; i < mProcessPlugins.size(); i++) {
     mProcessPlugins[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
-  }
+  }  // compute cob6
 
   // 3) Finally, send packets to peer
   // --------------------------------
-  computeProcessToNetwork(in_buffer, n_frames);
-
+  computeProcessToNetwork(in_buffer, n_frames); // aib1 + cob6 to nob6
+  ///////////////////////////////////////////////////////////////////////////////
+  // straight to audio out
+#define mNumAudOutChans 2
+  for (int i = 0; i < mNumAudOutChans; i++) {
+      std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
+  }
+  for (int i = 0; i < mNumNetInChans; i++) {
+      sample_t* mix_sample = out_buffer[i%mNumAudOutChans];
+      sample_t* tmp_sample = mNetInBuffer[i];
+      for (int j = 0; j < (int)n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+  }                                         // nib6 to aob2
+  ///////////////////////////////////////////////////////////////////////////////
 
   ///************PROTORYPE FOR CELT**************************
   ///********************************************************
@@ -171,7 +196,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_buffer,
                                                unsigned int n_frames)
 {
-  /// \todo cast *mInBuffer[i] to the bit resolution
+    (void) out_buffer;
+    /// \todo cast *mInBuffer[i] to the bit resolution
   // Output Process (from NETWORK to JACK)
   // ----------------------------------------------------------------
   // Read Audio buffer from RingBuffer (read from incoming packets)
@@ -184,7 +210,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
     //std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
     //		mSizeInBytesPerChannel);
     //--------
-    sample_t* tmp_sample = out_buffer[i]; //sample buffer for channel i
+    sample_t* tmp_sample = mNetInBuffer[i]; //sample buffer for channel i
     for (unsigned int j = 0; j < n_frames; j++) {
       // Change the bit resolution on each sample
       fromBitToSampleConversion(
@@ -214,7 +240,8 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     for (unsigned int j = 0; j < n_frames; j++) {
       // Change the bit resolution on each sample
       // Add the input jack buffer to the buffer resulting from the output process
-      tmp_result = tmp_sample[j] + tmp_process_sample[j];
+#define INGAIN (0.9999) // 1.0 can saturate the fixed pt rounding on output
+      tmp_result = INGAIN*tmp_sample[j] + tmp_process_sample[j];
       fromSampleToBitConversion(
           &tmp_result,
           &mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],

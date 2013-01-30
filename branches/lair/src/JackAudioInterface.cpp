@@ -138,6 +138,7 @@ void JackAudioInterface::setupClient()
   // Initialize Buffer array to read and write audio
   mInBuffer.resize(mNumInChans);
   mOutBuffer.resize(mNumOutChans);
+
 }
 
 
