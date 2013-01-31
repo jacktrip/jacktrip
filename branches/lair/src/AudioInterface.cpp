@@ -84,8 +84,10 @@ void AudioInterface::setup()
 {
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
-    int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
-    int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
+//    int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
+//    int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
+    int size_input  = mSizeInBytesPerChannel * mNumNetChans;
+    int size_output = mSizeInBytesPerChannel * mNumNetChans;
     mInputPacket = new int8_t[size_input];
     mOutputPacket = new int8_t[size_output];
 
@@ -240,7 +242,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             // Change the bit resolution on each sample
             // Add the input jack buffer to the buffer resulting from the output process
 #define INGAIN (0.0) // 1.0 can saturate the fixed pt rounding on output
-            #define COMBGAIN (0.00)
+            #define COMBGAIN (0.001)
             tmp_result = INGAIN*tmp_sample[j] + COMBGAIN*tmp_process_sample[j];
             fromSampleToBitConversion(
                         &tmp_result,
