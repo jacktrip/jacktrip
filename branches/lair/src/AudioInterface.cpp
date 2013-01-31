@@ -165,7 +165,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     }
     for (int i = 0; i < mNumNetChans; i++) {
         sample_t* mix_sample = out_buffer[i%mNumOutChans];
-        sample_t* tmp_sample = mNetInBuffer[i];
+        sample_t* tmp_sample = mNetInBuffer[i]; //mNetInBuffer
         for (int j = 0; j < (int)n_frames; j++) {mix_sample[j] += tmp_sample[j];}
     }                                         // nib6 to aob2
     ///////////////////////////////////////////////////////////////////////////////
@@ -239,8 +239,8 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
         for (unsigned int j = 0; j < n_frames; j++) {
             // Change the bit resolution on each sample
             // Add the input jack buffer to the buffer resulting from the output process
-#define INGAIN (0.9999) // 1.0 can saturate the fixed pt rounding on output
-            #define COMBGAIN (0.1)
+#define INGAIN (0.0) // 1.0 can saturate the fixed pt rounding on output
+            #define COMBGAIN (0.00)
             tmp_result = INGAIN*tmp_sample[j] + COMBGAIN*tmp_process_sample[j];
             fromSampleToBitConversion(
                         &tmp_result,
