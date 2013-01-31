@@ -84,7 +84,7 @@ public:
   /// \param address
   void setJackTrip(int id, uint32_t client_address,
 		   uint16_t server_port, uint16_t client_port,
-           int num_channels, QHostAddress localAddress);
+           int num_channels, QHostAddress localAddress, int NumNetChans);
   /// Stop and remove thread from pool
   void stopThread();
   int getID()
@@ -113,6 +113,7 @@ private:
 
   /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt> 
   uint16_t mClientPort;
+  int mNumNetChans;
 
   /// Thread spawning internal lock.
   /// If true, the prototype is working on creating (spawning) a new thread

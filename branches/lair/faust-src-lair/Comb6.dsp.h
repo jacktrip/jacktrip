@@ -108,17 +108,17 @@ class mydsp : public dsp{
 		FAUSTFLOAT* output4 = output[4];
 		FAUSTFLOAT* output5 = output[5];
 		for (int i=0; i<count; i++) {
-            output0[i] = (FAUSTFLOAT)(0.999f * (float)input0[i]);
+			output0[i] = (FAUSTFLOAT)(0.9f * (float)input0[i]);
 			fVec0[IOTA&63] = (float)input1[i];
-            output1[i] = (FAUSTFLOAT)(0.999f * fVec0[(IOTA-46)&63]);
+			output1[i] = (FAUSTFLOAT)(0.9f * fVec0[(IOTA-46)&63]);
 			fVec1[IOTA&127] = (float)input2[i];
-            output2[i] = (FAUSTFLOAT)(0.999f * fVec1[(IOTA-82)&127]);
+			output2[i] = (FAUSTFLOAT)(0.9f * fVec1[(IOTA-82)&127]);
 			fVec2[IOTA&127] = (float)input3[i];
-            output3[i] = (FAUSTFLOAT)(0.999f * fVec2[(IOTA-126)&127]);
+			output3[i] = (FAUSTFLOAT)(0.9f * fVec2[(IOTA-126)&127]);
 			fVec3[IOTA&255] = (float)input4[i];
-            output4[i] = (FAUSTFLOAT)(0.999f * fVec3[(IOTA-166)&255]);
+			output4[i] = (FAUSTFLOAT)(0.9f * fVec3[(IOTA-166)&255]);
 			fVec4[IOTA&255] = (float)input5[i];
-            output5[i] = (FAUSTFLOAT)(0.999f * fVec4[(IOTA-199)&255]);
+			output5[i] = (FAUSTFLOAT)(0.9f * fVec4[(IOTA-199)&255]);
 			// post processing
 			IOTA = IOTA+1;
 		}

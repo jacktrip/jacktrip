@@ -64,7 +64,7 @@ class UdpMasterListener : public QThread
   Q_OBJECT;
 
 public:
-  UdpMasterListener(QHostAddress localAddress, int server_port);
+  UdpMasterListener(QHostAddress localAddress, int server_port, int NumNetChans);
   virtual ~UdpMasterListener();
   
   /// \brief Implements the Thread Loop. To start the thread, call start()
@@ -123,6 +123,7 @@ private:
 
   QHostAddress mLocalAddress;
   int mServerPort; //< Server known port number
+  int mNumNetChans;
   int mBasePort;
   uint32_t mActiveAddress[gMaxThreads][2]; ///< Active addresses pool numbers (32 bits IPv4 numbers)
   QHash<uint32_t, uint16_t> mActiveAddresPortPair;

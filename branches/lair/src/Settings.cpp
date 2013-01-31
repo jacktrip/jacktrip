@@ -334,8 +334,9 @@ void Settings::startJackTrip()
 {
 
     /// \todo Change this, just here to test
+    mNumNetChans = 6;
     if ( mJackTripServer ) {
-        UdpMasterListener* udpmaster = new UdpMasterListener(QHostAddress(mLocalAddress), (int)gServerUdpPort);
+        UdpMasterListener* udpmaster = new UdpMasterListener(QHostAddress(mLocalAddress), (int)gServerUdpPort, mNumNetChans);
         udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------
@@ -354,7 +355,6 @@ void Settings::startJackTrip()
     }
 
     else {
-mNumNetChans = 6;
         //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
         //	    mBufferQueueLength, mAudioBitResolution);
         mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans, mNumNetChans,
