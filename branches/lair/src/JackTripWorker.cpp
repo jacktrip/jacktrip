@@ -166,9 +166,9 @@ void JackTripWorker::run()
 
         // Start Threads and event loop
         cout << "---> JackTripWorker: startProcess..." << endl;
-//        Comb6* plugin = new Comb6(mNumNetChans);
+        Comb6* plugin = new Comb6(mNumNetChans);
 //        Osc6* plugin = new Osc6(mNumNetChans);
-        Noi6* plugin = new Noi6(mNumNetChans);
+//        Noi6* plugin = new Noi6(mNumNetChans);
         jacktrip.appendProcessPlugin(plugin);
 
         jacktrip.startProcess();

@@ -442,9 +442,9 @@ void Settings::startJackTrip()
 //            netks->play();
             // -------------------------------------------------------------
 //            Comb2 example
-//            Comb6* plugin = new Comb6(mNumNetChans);
+            Comb6* plugin = new Comb6(mNumNetChans);
 //            Osc6* plugin = new Osc6(mNumNetChans);
-            Noi6* plugin = new Noi6(mNumNetChans);
+//            Noi6* plugin = new Noi6(mNumNetChans);
                         mJackTrip->appendProcessPlugin(plugin);
         }
 
