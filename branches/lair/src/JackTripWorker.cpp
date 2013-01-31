@@ -47,6 +47,7 @@
 #include "UdpMasterListener.h"
 #include "NetKS.h"
 #include "Comb6.dsp.h"
+#include "Osc6.dsp.h"
 #include "LoopBack.h"
 #ifdef __JAMTEST__
 #include "JamTest.h"
@@ -164,7 +165,8 @@ void JackTripWorker::run()
 
         // Start Threads and event loop
         cout << "---> JackTripWorker: startProcess..." << endl;
-        Comb6* plugin = new Comb6(mNumNetChans);
+//        Comb6* plugin = new Comb6(mNumNetChans);
+        Osc6* plugin = new Osc6(mNumNetChans);
         jacktrip.appendProcessPlugin(plugin);
 
         jacktrip.startProcess();

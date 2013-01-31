@@ -40,6 +40,7 @@
 #include "NetKS.h"
 #include "Comb2.dsp.h"
 #include "Comb6.dsp.h"
+#include "Osc6.dsp.h"
 #include "UdpMasterListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
@@ -440,7 +441,8 @@ void Settings::startJackTrip()
 //            netks->play();
             // -------------------------------------------------------------
 //            Comb2 example
-            Comb6* plugin = new Comb6(mNumNetChans);
+//            Comb6* plugin = new Comb6(mNumNetChans);
+            Osc6* plugin = new Osc6(mNumNetChans);
                         mJackTrip->appendProcessPlugin(plugin);
         }
 
