@@ -241,8 +241,8 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
         for (unsigned int j = 0; j < n_frames; j++) {
             // Change the bit resolution on each sample
             // Add the input jack buffer to the buffer resulting from the output process
-#define INGAIN (0.0) // 1.0 can saturate the fixed pt rounding on output
-            #define COMBGAIN (1.0)
+#define INGAIN (0.999) // 1.0 can saturate the fixed pt rounding on output
+            #define COMBGAIN (0.1)
             tmp_result = INGAIN*tmp_sample[j] + COMBGAIN*tmp_process_sample[j];
             fromSampleToBitConversion(
                         &tmp_result,

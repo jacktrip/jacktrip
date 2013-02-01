@@ -249,7 +249,7 @@ public:
     { mPacketHeader = PacketHeader; }
 
     virtual int getRingBuffersSlotSize()
-    { return getTotalAudioPacketSizeInBytes(); }
+    { return getTotalNetworkPacketSizeInBytes(); }
 
     virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
     { mAudiointerfaceMode = audiointerface_mode; }
@@ -351,6 +351,8 @@ public:
     { return mPacketHeader->getHeaderSizeInBytes(); }
     virtual int getTotalAudioPacketSizeInBytes() const
     { return mAudioInterface->getSizeInBytesPerChannel() * mNumChans; }
+    virtual int getTotalNetworkPacketSizeInBytes() const
+    { return mAudioInterface->getSizeInBytesPerChannel() * mNumNetChans; }
     //@}
     //------------------------------------------------------------------------------------
 

@@ -220,8 +220,8 @@ void JackTrip::setupDataProtocol()
     //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
     //mDataProtocolReceiver->setAudioPacketSize
     //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-    mDataProtocolSender->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
-    mDataProtocolReceiver->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
+    mDataProtocolSender->setAudioPacketSize(getTotalNetworkPacketSizeInBytes());
+    mDataProtocolReceiver->setAudioPacketSize(getTotalNetworkPacketSizeInBytes());
 }
 
 
@@ -702,7 +702,7 @@ void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
     audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
     //std::memcpy(audio_part, audio_packet, mAudioInterface->getBufferSizeInBytes());
     //std::memcpy(audio_part, audio_packet, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-    std::memcpy(audio_part, audio_packet, getTotalAudioPacketSizeInBytes());
+    std::memcpy(audio_part, audio_packet, getTotalNetworkPacketSizeInBytes());
 }
 
 
@@ -712,7 +712,7 @@ int JackTrip::getPacketSizeInBytes()
     //return (mAudioInterface->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
     //return (mAudioInterface->getSizeInBytesPerChannel() * mNumChans  +
     //mPacketHeader->getHeaderSizeInBytes());
-    return (getTotalAudioPacketSizeInBytes()  +
+    return (getTotalNetworkPacketSizeInBytes()  +
             mPacketHeader->getHeaderSizeInBytes());
 }
 
@@ -724,7 +724,7 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
     audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getBufferSizeInBytes());
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-    std::memcpy(audio_packet, audio_part, getTotalAudioPacketSizeInBytes());
+    std::memcpy(audio_packet, audio_part, getTotalNetworkPacketSizeInBytes());
 }
 
 
