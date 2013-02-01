@@ -163,6 +163,8 @@ public:
   virtual int getNumInputChannels() const { return mNumInChans; }
   /// \brief Get Number of Output Channels
   virtual int getNumOutputChannels() const  { return mNumOutChans; }
+  /// \brief Get Number of Network Channels
+  virtual int getNumNetworkChannels() const { return mNumNetChans; }
   virtual uint32_t getBufferSizeInSamples() const
   { return mBufferSizeInSamples; }
   virtual size_t getSizeInBytesPerChannel() const;

@@ -102,10 +102,11 @@ HEADERS += DataProtocol.h \
     ../faust-src-lair/Comb2.dsp.h \
     ../faust-src-lair/Comb6.dsp.h \
     ../faust-src-lair/Osc6.dsp.h \
-    ../faust-src-lair/Noi6.dsp.h
+    ../faust-src-lair/Noi6.dsp.h \
+    JackAudioInterface.h
            #JamTest.h
 !nojack {
-SOURCES += JackAudioInterface.h
+SOURCES +=
 }
 SOURCES += DataProtocol.cpp \
            JackTrip.cpp \

@@ -169,7 +169,10 @@ void JackTrip::setupAudio()
     std::cout << "                      or: " << AudioBufferSizeInBytes
               << " bytes" << std::endl;
     std::cout << gPrintSeparator << std::endl;
-    cout << "The Number of Channels is: " << mAudioInterface->getNumInputChannels() << endl;
+    cout << "The Number of Audio Channels is: " << mAudioInterface->getNumInputChannels() << endl;
+    std::cout << gPrintSeparator << std::endl;
+
+    cout << "The Number of Network Channels is: " << mAudioInterface->getNumNetworkChannels() << endl;
     std::cout << gPrintSeparator << std::endl;
     QThread::usleep(100);
 }
@@ -220,6 +223,7 @@ void JackTrip::setupDataProtocol()
     //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
     //mDataProtocolReceiver->setAudioPacketSize
     //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
+    qDebug() << "Network Packet Size (bytes) =" << getTotalNetworkPacketSizeInBytes();
     mDataProtocolSender->setAudioPacketSize(getTotalNetworkPacketSizeInBytes());
     mDataProtocolReceiver->setAudioPacketSize(getTotalNetworkPacketSizeInBytes());
 }
@@ -231,6 +235,7 @@ void JackTrip::setupRingBuffers()
     // Create RingBuffers with the apprioprate size
     /// \todo Make all this operations cleaner
     //int total_audio_packet_size = getTotalAudioPacketSizeInBytes();
+    qDebug() << "Ring Buffer Slot Size (bytes) =" << getRingBuffersSlotSize();
     int slot_size = getRingBuffersSlotSize();
 
     switch (mUnderRunMode) {
