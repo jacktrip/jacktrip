@@ -38,6 +38,7 @@
 #include "Settings.h"
 #include "LoopBack.h"
 #include "NetKS.h"
+#include "Comb1.dsp.h"
 #include "Comb2.dsp.h"
 #include "Comb6.dsp.h"
 #include "Osc6.dsp.h"
@@ -455,6 +456,9 @@ void Settings::startJackTrip()
             // ---------------------------------------
             switch ( mNumNetChans )
             {
+            case 1 :
+                 mJackTrip->appendProcessPlugin(new Comb1(mNumNetChans));
+                break;
             case 2 :
                  mJackTrip->appendProcessPlugin(new Comb2(mNumNetChans));
                 break;

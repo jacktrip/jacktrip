@@ -92,9 +92,9 @@ class mydsp : public dsp{
 		FAUSTFLOAT* output0 = output[0];
 		FAUSTFLOAT* output1 = output[1];
 		for (int i=0; i<count; i++) {
-			output0[i] = (FAUSTFLOAT)(0.99f * (float)input0[i]);
+			output0[i] = (FAUSTFLOAT)(0.9f * (float)input0[i]);
 			fVec0[IOTA&63] = (float)input1[i];
-			output1[i] = (FAUSTFLOAT)(0.99f * fVec0[(IOTA-46)&63]);
+			output1[i] = (FAUSTFLOAT)(0.9f * fVec0[(IOTA-46)&63]);
 			// post processing
 			IOTA = IOTA+1;
 		}

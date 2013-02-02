@@ -6,7 +6,7 @@ declare copyright 	"(c)CCRMA 2013";
 
 // Constant Parameters
 //--------------------
-linScl = 0.99;
+linScl = 0.9;
 framesPerPeriod = 1024;
 srScl = 48000/44100; // original tunings were for 44.1kHz
 combtuningL1	= ((1116 * srScl)-framesPerPeriod)/2;
