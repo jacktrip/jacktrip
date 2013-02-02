@@ -167,11 +167,20 @@ void JackTripWorker::run()
 
         // Start Threads and event loop
         cout << "---> JackTripWorker: startProcess..." << endl;
-//        Comb2* plugin = new Comb2(mNumNetChans);
-        Comb6* plugin = new Comb6(mNumNetChans);
-//        Osc6* plugin = new Osc6(mNumNetChans);
-//        Noi6* plugin = new Noi6(mNumNetChans);
-        jacktrip.appendProcessPlugin(plugin);
+        switch ( mNumNetChans )
+        {
+        case 2 :
+            jacktrip.appendProcessPlugin(new Comb2(mNumNetChans));
+            break;
+        case 6 :
+            jacktrip.appendProcessPlugin(new Comb6(mNumNetChans));
+            break;
+        default:
+            throw std::invalid_argument("JackTripWorker: mNumNetChans doesn't correspond to Faust plugin");
+            break;
+        }
+        //        Osc6* plugin = new Osc6(mNumNetChans);
+        //        Noi6* plugin = new Noi6(mNumNetChans);
 
         jacktrip.startProcess();
 
@@ -222,7 +231,7 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     //QHostAddress peerHostAddress;
     //uint16_t peer_port;
     QUdpSocket UdpSockTemp;// Create socket to wait for client
-qDebug() << mLocalAddress;
+    qDebug() << mLocalAddress;
     // Bind the socket
     if ( !UdpSockTemp.bind(mLocalAddress, mServerPort,
                            QUdpSocket::DefaultForPlatform) )

@@ -433,22 +433,33 @@ void Settings::startJackTrip()
             //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
             //mJackTrip->appendProcessPlugin(loopback.get());
 
-//  default plugin example          LoopBack* loopback = new LoopBack(mNumChans);
-//            mJackTrip->appendProcessPlugin(loopback);
+            //  default plugin example          LoopBack* loopback = new LoopBack(mNumChans);
+            //            mJackTrip->appendProcessPlugin(loopback);
 
             // ----- Test Karplus Strong -----------------------------------
             //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
             //mJackTrip->appendProcessPlugin(loopback);
             //loopback->play();
-// NetKS example           NetKS* netks = new NetKS;
-//            mJackTrip->appendProcessPlugin(netks);
-//            netks->play();
+            // NetKS example           NetKS* netks = new NetKS;
+            //            mJackTrip->appendProcessPlugin(netks);
+            //            netks->play();
             // -------------------------------------------------------------
-//            Comb2* plugin = new Comb2(mNumNetChans);
-            Comb6* plugin = new Comb6(mNumNetChans);
-//            Osc6* plugin = new Osc6(mNumNetChans);
-//            Noi6* plugin = new Noi6(mNumNetChans);
-                        mJackTrip->appendProcessPlugin(plugin);
+            // Start the threads for the specific mode
+            // ---------------------------------------
+            switch ( mNumNetChans )
+            {
+            case 2 :
+                 mJackTrip->appendProcessPlugin(new Comb2(mNumNetChans));
+                break;
+            case 6 :
+                mJackTrip->appendProcessPlugin(new Comb6(mNumNetChans));
+                break;
+            default:
+                throw std::invalid_argument("Settings: mNumNetChans doesn't correspond to Faust plugin");
+                break;
+            }
+            //            Osc6* plugin = new Osc6(mNumNetChans);
+            //            Noi6* plugin = new Noi6(mNumNetChans);
         }
 
         // Start JackTrip
