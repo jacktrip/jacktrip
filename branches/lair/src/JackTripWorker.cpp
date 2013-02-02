@@ -222,7 +222,7 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     //QHostAddress peerHostAddress;
     //uint16_t peer_port;
     QUdpSocket UdpSockTemp;// Create socket to wait for client
-
+qDebug() << mLocalAddress;
     // Bind the socket
     if ( !UdpSockTemp.bind(mLocalAddress, mServerPort,
                            QUdpSocket::DefaultForPlatform) )

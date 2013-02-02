@@ -337,8 +337,14 @@ void Settings::startJackTrip()
 
     /// \todo Change this, just here to test
     mNumNetChans = 6;
+    QHostAddress localAddress;
+    if(mLocalAddress!=QString()) // default
+        localAddress = QHostAddress(mLocalAddress.toLatin1().data());
+    else
+        localAddress = QHostAddress::Any;
+
     if ( mJackTripServer ) {
-        UdpMasterListener* udpmaster = new UdpMasterListener(QHostAddress(mLocalAddress), (int)gServerUdpPort, mNumNetChans);
+        UdpMasterListener* udpmaster = new UdpMasterListener(localAddress, (int)gServerUdpPort, mNumNetChans);
         udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------
@@ -382,10 +388,7 @@ void Settings::startJackTrip()
         if ( mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER ) {
             mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
 
-        if(mLocalAddress!=QString()) // default
-            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
-        else
-            mJackTrip->setLocalAddress(QHostAddress::Any);
+        mJackTrip->setLocalAddress(localAddress);
 
         // Set Ports
         //cout << "SETTING ALL PORTS" << endl;
