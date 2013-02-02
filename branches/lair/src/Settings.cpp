@@ -63,6 +63,7 @@ Settings::Settings() :
     mJackTripMode(JackTrip::SERVER),
     mDataProtocol(JackTrip::UDP),
     mNumChans(2),
+    mNumNetChans(gDefaultNumNetChannels),
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
@@ -104,6 +105,7 @@ void Settings::parseInput(int argc, char** argv)
         { "verbose", no_argument, &gVerboseFlag, 1 },
         // These options don't set a flag.
         { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
+        { "numnetchannels", required_argument, NULL, 'N' }, // Number of network channels for LAIR
         { "server", no_argument, NULL, 's' }, // Run in server mode
         { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
         { "localaddress", required_argument, NULL, 'L' }, // set local address e.g., 127.0.0.2 for second instance on same host
@@ -133,12 +135,16 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vh", longopts, NULL)) != -1 )
+                              "n:N:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vh", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
             //-------------------------------------------------------
             mNumChans = atoi(optarg);
+            break;
+        case 'N': // Number of network channels, comb filters for LAIR
+            //-------------------------------------------------------
+            mNumNetChans = atoi(optarg);
             break;
         case 's': // Run in server mode
             //-------------------------------------------------------
@@ -303,6 +309,8 @@ void Settings::printUsage()
     cout << "===================" << endl;
     cout << " -n, --numchannels #                      Number of Input and Output Channels (default "
          << 2 << ")" << endl;
+    cout << " -N, --numnetchannels #                   Number of Network Channels for LAIR (default "
+         << gDefaultNumNetChannels << ")" << endl;
     cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default "
          << gDefaultQueueLength << ")" << endl;
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (defaul 1)"
@@ -336,7 +344,6 @@ void Settings::startJackTrip()
 {
 
     /// \todo Change this, just here to test
-    mNumNetChans = 6;
     QHostAddress localAddress;
     if(mLocalAddress!=QString()) // default
         localAddress = QHostAddress(mLocalAddress.toLatin1().data());

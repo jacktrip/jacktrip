@@ -118,7 +118,7 @@ public:
     JackTrip(jacktripModeT JacktripMode = CLIENT,
              dataProtocolT DataProtocolType = UDP,
              int NumChans = gDefaultNumInChannels,
-             int NumNetChans = gDefaultNumInChannels,
+             int NumNetChans = gDefaultNumNetChannels,
              int BufferQueueLength = gDefaultQueueLength,
              unsigned int redundancy = gDefaultRedundancy,
              AudioInterface::audioBitResolutionT AudioBitResolution =

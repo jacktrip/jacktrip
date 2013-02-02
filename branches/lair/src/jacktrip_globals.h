@@ -50,6 +50,7 @@ const char* const gVersion = "1.1"; ///< JackTrip version
 /// \name Default Values
 //@{
 const int gDefaultNumInChannels = 2;
+const int gDefaultNumNetChannels = 6;
 const int gDefaultNumOutChannels = 2;
 //const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
 //    JackAudioInterface::BIT16;
