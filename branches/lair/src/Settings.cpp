@@ -69,7 +69,7 @@ Settings::Settings() :
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
     mClientName(NULL),
     mUnderrrunZero(false),
-    mLoopBack(false),
+    mLAIR(false),
     mJamLink(false),
     mEmptyHeader(false),
     mJackTripServer(false),
@@ -118,7 +118,7 @@ void Settings::parseInput(int argc, char** argv)
         { "redundancy", required_argument, NULL, 'r' }, // Redundancy
         { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
         { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
-        { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
+        { "lair", no_argument, NULL, 'l' }, // Run in LAIR mode
         { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
         { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
         { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
@@ -221,9 +221,9 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mUnderrrunZero = true;
             break;
-        case 'l': // loopback
+        case 'l': // LAIR
             //-------------------------------------------------------
-            mLoopBack = true;
+            mLAIR = true;
             break;
         case 'e': // jamlink
             //-------------------------------------------------------
@@ -320,7 +320,7 @@ void Settings::printUsage()
     cout << " --peerport        #                      Set only the Peer port number (default to 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
-    cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
+    cout << " -l, --lair                               Run in LAIR Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
     cout << " --clientname                             Change default client name (default is JackTrip)" << endl;
     cout << " --localaddress                           Change default local host IP address (127.0.0.1)" << endl;
@@ -434,8 +434,8 @@ void Settings::startJackTrip()
         }
 
         // Add Plugins
-        if ( mLoopBack ) {
-            cout << "Running in Loop-Back Mode..." << endl;
+        if ( mLAIR ) {
+            cout << "Running in LAIR Mode..." << endl;
             cout << gPrintSeparator << std::endl;
             //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
             //mJackTrip->appendProcessPlugin(loopback.get());

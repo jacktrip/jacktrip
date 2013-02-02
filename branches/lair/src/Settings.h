@@ -68,7 +68,7 @@ public:
   /// \brief Prints usage help
   void printUsage();
 
-  bool getLoopBack() { return mLoopBack; }
+  bool getLAIR() { return mLAIR; }
 
 
 public slots:
@@ -92,7 +92,7 @@ private:
   char* mClientName; ///< JackClient Name
   bool mUnderrrunZero; ///< Use Underrun to Zero mode
 
-  bool mLoopBack; ///< Loop-back mode
+  bool mLAIR; ///< LAIR mode
   bool mJamLink; ///< JamLink mode
   bool mEmptyHeader; ///< EmptyHeader mode
   bool mJackTripServer; ///< JackTrip Server mode
