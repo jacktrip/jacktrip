@@ -59,11 +59,11 @@ typedef long double quad;
 class mydsp : public dsp{
   private:
 	int 	IOTA;
-	float 	fVec0[64];
-	float 	fVec1[128];
-	float 	fVec2[128];
-	float 	fVec3[256];
-	float 	fVec4[256];
+	float 	fVec0[512];
+	float 	fVec1[1024];
+	float 	fVec2[1024];
+	float 	fVec3[1024];
+	float 	fVec4[1024];
   public:
 	static void metadata(Meta* m) 	{ 
 		m->declare("name", "Comb6");
@@ -80,11 +80,11 @@ class mydsp : public dsp{
 	virtual void instanceInit(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
 		IOTA = 0;
-		for (int i=0; i<64; i++) fVec0[i] = 0;
-		for (int i=0; i<128; i++) fVec1[i] = 0;
-		for (int i=0; i<128; i++) fVec2[i] = 0;
-		for (int i=0; i<256; i++) fVec3[i] = 0;
-		for (int i=0; i<256; i++) fVec4[i] = 0;
+		for (int i=0; i<512; i++) fVec0[i] = 0;
+		for (int i=0; i<1024; i++) fVec1[i] = 0;
+		for (int i=0; i<1024; i++) fVec2[i] = 0;
+		for (int i=0; i<1024; i++) fVec3[i] = 0;
+		for (int i=0; i<1024; i++) fVec4[i] = 0;
 	}
 	virtual void init(int samplingFreq) {
 		classInit(samplingFreq);
@@ -109,16 +109,16 @@ class mydsp : public dsp{
 		FAUSTFLOAT* output5 = output[5];
 		for (int i=0; i<count; i++) {
 			output0[i] = (FAUSTFLOAT)(0.9f * (float)input0[i]);
-			fVec0[IOTA&63] = (float)input1[i];
-			output1[i] = (FAUSTFLOAT)(0.9f * fVec0[(IOTA-46)&63]);
-			fVec1[IOTA&127] = (float)input2[i];
-			output2[i] = (FAUSTFLOAT)(0.9f * fVec1[(IOTA-82)&127]);
-			fVec2[IOTA&127] = (float)input3[i];
-			output3[i] = (FAUSTFLOAT)(0.9f * fVec2[(IOTA-126)&127]);
-			fVec3[IOTA&255] = (float)input4[i];
-			output4[i] = (FAUSTFLOAT)(0.9f * fVec3[(IOTA-166)&255]);
-			fVec4[IOTA&255] = (float)input5[i];
-			output5[i] = (FAUSTFLOAT)(0.9f * fVec4[(IOTA-199)&255]);
+			fVec0[IOTA&511] = (float)input1[i];
+			output1[i] = (FAUSTFLOAT)(0.9f * fVec0[(IOTA-494)&511]);
+			fVec1[IOTA&1023] = (float)input2[i];
+			output2[i] = (FAUSTFLOAT)(0.9f * fVec1[(IOTA-530)&1023]);
+			fVec2[IOTA&1023] = (float)input3[i];
+			output3[i] = (FAUSTFLOAT)(0.9f * fVec2[(IOTA-574)&1023]);
+			fVec3[IOTA&1023] = (float)input4[i];
+			output4[i] = (FAUSTFLOAT)(0.9f * fVec3[(IOTA-614)&1023]);
+			fVec4[IOTA&1023] = (float)input5[i];
+			output5[i] = (FAUSTFLOAT)(0.9f * fVec4[(IOTA-647)&1023]);
 			// post processing
 			IOTA = IOTA+1;
 		}
