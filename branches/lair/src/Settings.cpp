@@ -41,6 +41,7 @@
 #include "Comb1.dsp.h"
 #include "Comb2.dsp.h"
 #include "Comb6.dsp.h"
+#include "AP2.dsp.h"
 #include "Osc6.dsp.h"
 #include "Noi6.dsp.h"
 #include "UdpMasterListener.h"
@@ -464,6 +465,7 @@ void Settings::startJackTrip()
                 break;
             case 6 :
                 mJackTrip->appendProcessPlugin(new Comb6(mNumNetChans));
+                mJackTrip->appendProcessPlugin(new AP2(mNumChans));
                 break;
             default:
                 throw std::invalid_argument("Settings: mNumNetChans doesn't correspond to Faust plugin");

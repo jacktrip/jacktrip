@@ -153,24 +153,45 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
 
-    for (int i = 0; i < mProcessPlugins.size(); i++) {
-        mProcessPlugins[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
-    }  // compute cob6
+//    for (int i = 0; i < mProcessPlugins.size(); i++) {
+#define COMBDSP 0
+        mProcessPlugins[COMBDSP]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
+//    }  // compute cob6
 
     // 3) Finally, send packets to peer
     // --------------------------------
     computeProcessToNetwork(in_buffer, n_frames); // aib1 + cob6 to nob6
     ///////////////////////////////////////////////////////////////////////////////
     // straight to audio out
+//    for (int i = 0; i < mNumOutChans; i++) {
+//        std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
+//    }
+//    for (int i = 0; i < mNumNetChans; i++) {
+//        sample_t* mix_sample = out_buffer[i%mNumOutChans];
+//        sample_t* tmp_sample = mNetInBuffer[i]; //mNetInBuffer
+//        for (int j = 0; j < (int)n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+//    }                                         // nib6 to aob2
+    ///////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // output through all-pass cascade
+    // AP2 is 2 channel, mixes inputs to mono, then splits to two parallel AP chains
+    for (int i = 0; i < mNumOutChans; i++) {
+        std::memset(in_buffer[i], 0, sizeof(sample_t) * n_frames);
+    } // recycle in_buffer for AP input
+    for (int i = 0; i < mNumNetChans; i++) {
+        sample_t* mix_sample = in_buffer[i%mNumOutChans];
+        sample_t* tmp_sample = mNetInBuffer[i];
+        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+    }                                         // nib6 to apib2
+#define APDSP 1
     for (int i = 0; i < mNumOutChans; i++) {
         std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
     }
-    for (int i = 0; i < mNumNetChans; i++) {
-        sample_t* mix_sample = out_buffer[i%mNumOutChans];
-        sample_t* tmp_sample = mNetInBuffer[i]; //mNetInBuffer
-        for (int j = 0; j < (int)n_frames; j++) {mix_sample[j] += tmp_sample[j];}
-    }                                         // nib6 to aob2
+        mProcessPlugins[APDSP]->compute(n_frames, in_buffer.data(), out_buffer.data());
+        // compute ap2 into aob2
     ///////////////////////////////////////////////////////////////////////////////
+
 
     ///************PROTORYPE FOR CELT**************************
     ///********************************************************

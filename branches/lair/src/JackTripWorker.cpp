@@ -49,6 +49,7 @@
 #include "Comb1.dsp.h"
 #include "Comb2.dsp.h"
 #include "Comb6.dsp.h"
+#include "AP2.dsp.h"
 #include "Osc6.dsp.h"
 #include "Noi6.dsp.h"
 #include "LoopBack.h"
@@ -178,6 +179,7 @@ void JackTripWorker::run()
             break;
         case 6 :
             jacktrip.appendProcessPlugin(new Comb6(mNumNetChans));
+            jacktrip.appendProcessPlugin(new AP2(mNumChans));
             break;
         default:
             throw std::invalid_argument("JackTripWorker: mNumNetChans doesn't correspond to Faust plugin");
