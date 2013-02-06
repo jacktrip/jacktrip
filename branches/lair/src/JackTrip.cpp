@@ -748,7 +748,8 @@ void JackTrip::checkIfPortIsBinded(int port)
 {
     QUdpSocket UdpSockTemp;// Create socket to wait for client
     // Bind the socket
-    if ( !UdpSockTemp.bind(mLocalAddress, port, QUdpSocket::DontShareAddress) )
+    qDebug() << mLocalAddress;
+    if ( !UdpSockTemp.bind(mLocalAddress, port, QUdpSocket::ShareAddress) )
     {
         UdpSockTemp.close(); // close the socket
         throw std::runtime_error(
