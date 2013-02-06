@@ -355,7 +355,8 @@ void Settings::startJackTrip()
         localAddress = QHostAddress::Any;
 
     if ( mJackTripServer ) {
-        UdpMasterListener* udpmaster = new UdpMasterListener(localAddress, (int)gServerUdpPort, mNumNetChans);
+        UdpMasterListener* udpmaster = new UdpMasterListener(localAddress, (int)gServerUdpPort,
+                                                             mNumNetChans, mClientName);
         udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------

@@ -92,7 +92,8 @@ JackTripWorker::~JackTripWorker()
 //*******************************************************************************
 void JackTripWorker::setJackTrip(int id, uint32_t client_address,
                                  uint16_t server_port, uint16_t client_port,
-                                 int num_channels, QHostAddress localAddress, int NumNetChans)
+                                 int num_channels, QHostAddress localAddress, int NumNetChans,
+                                 char* ClientName)
 {
     { //Start Spawning, so lock mSpawning
         QMutexLocker locker(&mMutex);
@@ -107,6 +108,7 @@ void JackTripWorker::setJackTrip(int id, uint32_t client_address,
     mNumChans = num_channels;
     mLocalAddress = localAddress;
     mNumNetChans = NumNetChans;
+    mClientName = ClientName;
 }
 
 
@@ -168,7 +170,7 @@ void JackTripWorker::run()
             { QMutexLocker locker(&mMutex); mSpawning = false; }
             return;
         }
-
+jacktrip.setClientName(mClientName);
         // Start Threads and event loop
         cout << "---> JackTripWorker: startProcess..." << endl;
         switch ( mNumNetChans )
@@ -243,7 +245,6 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     //QHostAddress peerHostAddress;
     //uint16_t peer_port;
     QUdpSocket UdpSockTemp;// Create socket to wait for client
-    qDebug() << mLocalAddress;
     // Bind the socket
     if ( !UdpSockTemp.bind(mLocalAddress, mServerPort,
                            QUdpSocket::DefaultForPlatform) )

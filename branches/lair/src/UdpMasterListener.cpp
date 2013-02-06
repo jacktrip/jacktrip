@@ -53,11 +53,13 @@ using std::cout; using std::endl;
 
 
 //*******************************************************************************
-UdpMasterListener::UdpMasterListener(QHostAddress localAddress, const int server_port, int NumNetChans) :
+UdpMasterListener::UdpMasterListener(QHostAddress localAddress, const int server_port, int NumNetChans,
+                                     char * ClientName) :
     //mJTWorker(NULL),
     mLocalAddress(localAddress),
     mServerPort(server_port),
     mNumNetChans(NumNetChans),
+    mClientName(ClientName),
     mStopped(false),
     mTotalRunningThreads(0)
 {
@@ -196,7 +198,8 @@ void UdpMasterListener::run()
         QMutexLocker lock(&mMutex);
         mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
                                         server_udp_port, mActiveAddress[id][1],
-                                        1, mLocalAddress, mNumNetChans); /// \todo temp default to 1 channel
+                                        1, mLocalAddress, mNumNetChans,
+                                        mClientName);
       }
       //send one thread to the pool
       cout << "---> JackTrip MULTI-THREADED SERVER: Starting Thread..." << endl;
