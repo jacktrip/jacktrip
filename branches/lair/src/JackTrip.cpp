@@ -562,6 +562,9 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
     mDataProtocolSender->setPeerPort(udp_port);
     mDataProtocolReceiver->setPeerPort(udp_port);
+    mDataProtocolSender->setLocalAddress( mLocalAddress );
+    mDataProtocolReceiver->setLocalAddress( mLocalAddress );
+
     cout << "Server Address set to: " << mPeerAddress.toStdString() << " Port: " << udp_port << std::endl;
     cout << gPrintSeparator << endl;
     return 0;
