@@ -105,7 +105,9 @@ HEADERS += DataProtocol.h \
     ../faust-src-lair/Noi6.dsp.h \
     JackAudioInterface.h \
     ../faust-src-lair/Comb1.dsp.h \
-    ../faust-src-lair/AP2.dsp.h
+    ../faust-src-lair/AP2.dsp.h \
+    ../faust-src-lair/Comb16.dsp.h \
+    ../faust-src-lair/AP8.dsp.h
            #JamTest.h
 !nojack {
 SOURCES +=

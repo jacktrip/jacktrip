@@ -208,6 +208,7 @@ private:
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
   QVarLengthArray<sample_t*> mNetInBuffer; ///< Vector of Input buffers/channel read from net
+  QVarLengthArray<sample_t*> mAPInBuffer; ///< Vector of Input buffers/channel for AllPass input
   QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
   QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
   int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer

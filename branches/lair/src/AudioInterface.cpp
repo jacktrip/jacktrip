@@ -61,6 +61,9 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
     for (int i = 0; i < mNumNetChans; i++) {
         mOutProcessBuffer[i] = NULL;
     }
+    for (int i = 0; i < mNumInChans; i++) {
+        mAPInBuffer[i] = NULL;
+    }
 }
 
 
@@ -72,9 +75,11 @@ AudioInterface::~AudioInterface()
     for (int i = 0; i < mNumNetChans; i++) {
         delete[] mInProcessBuffer[i];
     }
-
     for (int i = 0; i < mNumNetChans; i++) {
         delete[] mOutProcessBuffer[i];
+    }
+    for (int i = 0; i < mNumInChans; i++) {
+        delete[] mAPInBuffer[i];
     }
 }
 
@@ -84,8 +89,8 @@ void AudioInterface::setup()
 {
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
-//    int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
-//    int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
+    //    int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
+    //    int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
     int size_input  = mSizeInBytesPerChannel * mNumNetChans;
     int size_output = mSizeInBytesPerChannel * mNumNetChans;
     mInputPacket = new int8_t[size_input];
@@ -94,6 +99,7 @@ void AudioInterface::setup()
     // Initialize and asign memory for ProcessPlugins Buffers
     mInProcessBuffer.resize(mNumNetChans);
     mOutProcessBuffer.resize(mNumNetChans);
+    mAPInBuffer.resize(mNumInChans);
 
     int nframes = getBufferSizeInSamples();
     // Initialize Buffer array to read and write network
@@ -114,6 +120,11 @@ void AudioInterface::setup()
         mOutProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+    }
+    for (int i = 0; i < mNumInChans; i++) {
+        mAPInBuffer[i] = new sample_t[nframes];
+        // set memory to 0
+        std::memset(mAPInBuffer[i], 0, sizeof(sample_t) * nframes);
     }
 }
 
@@ -153,43 +164,52 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
 
-//    for (int i = 0; i < mProcessPlugins.size(); i++) {
+    //    for (int i = 0; i < mProcessPlugins.size(); i++) {
 #define COMBDSP 0
-        mProcessPlugins[COMBDSP]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
-//    }  // compute cob6
+#define APDSP 1
+    mProcessPlugins[COMBDSP]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
+    //    }  // compute cob6
 
     // 3) Finally, send packets to peer
     // --------------------------------
-    computeProcessToNetwork(in_buffer, n_frames); // aib1 + cob6 to nob6
+    computeProcessToNetwork(in_buffer, n_frames); // aib2 + cob6 to nob6
     ///////////////////////////////////////////////////////////////////////////////
+#define AP
+#ifndef AP
     // straight to audio out
-//    for (int i = 0; i < mNumOutChans; i++) {
-//        std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
-//    }
-//    for (int i = 0; i < mNumNetChans; i++) {
-//        sample_t* mix_sample = out_buffer[i%mNumOutChans];
-//        sample_t* tmp_sample = mNetInBuffer[i]; //mNetInBuffer
-//        for (int j = 0; j < (int)n_frames; j++) {mix_sample[j] += tmp_sample[j];}
-//    }                                         // nib6 to aob2
-    ///////////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // output through all-pass cascade
-    // AP2 is 2 channel, mixes inputs to mono, then splits to two parallel AP chains
-    for (int i = 0; i < mNumOutChans; i++) {
-        std::memset(in_buffer[i], 0, sizeof(sample_t) * n_frames);
-    } // recycle in_buffer for AP input
-    for (int i = 0; i < mNumNetChans; i++) {
-        sample_t* mix_sample = in_buffer[i%mNumOutChans];
-        sample_t* tmp_sample = mNetInBuffer[i];
-        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
-    }                                         // nib6 to apib2
-#define APDSP 1
     for (int i = 0; i < mNumOutChans; i++) {
         std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
     }
-        mProcessPlugins[APDSP]->compute(n_frames, in_buffer.data(), out_buffer.data());
-        // compute ap2 into aob2
+    for (int i = 0; i < mNumNetChans; i++) {
+        sample_t* mix_sample = out_buffer[i%mNumOutChans];
+        sample_t* tmp_sample = mNetInBuffer[i]; //mNetInBuffer
+        for (int j = 0; j < (int)n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+    }                                         // nib6 to aob2
+    ///////////////////////////////////////////////////////////////////////////////
+#else
+    ///////////////////////////////////////////////////////////////////////////////
+    // output through all-pass cascade
+    // AP2 is 2 channel, mixes inputs to mono, then splits to two parallel AP chains
+    // AP8 is 2 channel, two parallel AP chains
+    for (int i = 0; i < mNumInChans; i++) {
+        std::memset(mAPInBuffer[i], 0, sizeof(sample_t) * n_frames);
+    }
+    for (int i = 0; i < mNumNetChans; i++) {
+        sample_t* mix_sample = mAPInBuffer[i%mNumOutChans];
+        sample_t* tmp_sample = mNetInBuffer[i];
+        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+    }                                         // nib6 to apib2
+    for (int i = 0; i < mNumInChans; i++) {
+        sample_t* mix_sample = mAPInBuffer[i];
+        sample_t* tmp_sample = in_buffer[i];
+        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+    }                                         // nib6 to apib2
+    for (int i = 0; i < mNumOutChans; i++) {
+        std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
+    }
+    mProcessPlugins[APDSP]->compute(n_frames, mAPInBuffer.data(), out_buffer.data());
+    // compute ap2 into aob2
+#endif
     ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -263,7 +283,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             // Change the bit resolution on each sample
             // Add the input jack buffer to the buffer resulting from the output process
 #define INGAIN (0.999) // 1.0 can saturate the fixed pt rounding on output
-           // #define COMBGAIN (0.1)
+            // #define COMBGAIN (0.1)
             tmp_result = INGAIN*tmp_sample[j] + tmp_process_sample[j];
             fromSampleToBitConversion(
                         &tmp_result,
