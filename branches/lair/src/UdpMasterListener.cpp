@@ -155,6 +155,7 @@ void UdpMasterListener::run()
       // -----------------------------
       // Check if Address is not already in the thread pool
       // check by comparing 32-bit addresses
+      qDebug() << PeerAddress << "------------------***************";
       int id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
       // If the address is not new, we need to remove the client from the pool
       // before re-starting the connection

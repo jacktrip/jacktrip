@@ -63,6 +63,17 @@
  * This class also acts as a Mediator between all the other class.
  * Classes that uses JackTrip methods need to register with it.
  */
+#include <QTcpSocket>
+class TcpSocketDerived : public QTcpSocket
+{
+public:
+    void setLocalAddress(QHostAddress LocalAddress)
+    {
+//        QTcpSocket::setLocalAddress(LocalAddress);
+        // Qt 5.0 QTcpSocket::bind(LocalAddress);
+       qDebug() << "attempt to set tcp socket local address to but needs Qt 5.0" << LocalAddress;
+    };
+};
 
 class JackTrip : public QThread
 {
@@ -214,6 +225,9 @@ public:
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(const char* ClientName)
     { mJackClientName = ClientName; }
+    /// \brief register the ID of a jacktrip worker
+    virtual void setID(int id)
+    { mID = id; }
     /// \brief Set the number of audio channels
     virtual void setNumChannels(int num_chans)
     { mNumChans = num_chans; }
@@ -400,7 +414,7 @@ signals:
 public:
 
     /// \brief Set the AudioInteface object
-    virtual void setupAudio();
+    virtual void setupAudio(int connectServerHub = -1);
     /// \brief Close the JackAudioInteface and disconnects it from JACK
     void closeAudio();
     /// \brief Set the DataProtocol objects
@@ -460,6 +474,7 @@ private:
 
     unsigned int mRedundancy; ///< Redundancy factor in network data
     const char* mJackClientName; ///< JackAudio Client Name
+    int mID; ///< jacktrip worker ID
 
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
 

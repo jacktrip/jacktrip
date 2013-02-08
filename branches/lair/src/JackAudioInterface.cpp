@@ -64,18 +64,21 @@ QMutex JackAudioInterface::sJackMutex;
 JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
                                        int NumInChans, int NumOutChans,
                                        int NumNetChans,
-                                       audioBitResolutionT AudioBitResolution, const char *ClientName) :
-AudioInterface(jacktrip,
-               NumInChans, NumOutChans,
-               NumNetChans,
-               AudioBitResolution),
-    mNumInChans(NumInChans), mNumOutChans(NumOutChans),
-    mNumNetChans(NumNetChans),
-//mAudioBitResolution(AudioBitResolution*8),
-mBitResolutionMode(AudioBitResolution),
-mClient(NULL),
-mClientName(ClientName),
-mJackTrip(jacktrip)
+                                       audioBitResolutionT AudioBitResolution, const char *ClientName,
+                                       int connectServerHub)
+    :
+      AudioInterface(jacktrip,
+                     NumInChans, NumOutChans,
+                     NumNetChans,
+                     AudioBitResolution),
+      mNumInChans(NumInChans), mNumOutChans(NumOutChans),
+      mNumNetChans(NumNetChans),
+      //mAudioBitResolution(AudioBitResolution*8),
+      mBitResolutionMode(AudioBitResolution),
+      mClient(NULL),
+      mClientName(ClientName),
+      mJackTrip(jacktrip),
+      mConnectServerHub(connectServerHub) // default false
 {}
 
 
@@ -87,59 +90,59 @@ JackAudioInterface::~JackAudioInterface()
 //*******************************************************************************
 void JackAudioInterface::setup()
 {
-  setupClient();
-  AudioInterface::setup();
-  setProcessCallback();
+    setupClient();
+    AudioInterface::setup();
+    setProcessCallback();
 }
 
 
 //*******************************************************************************
 void JackAudioInterface::setupClient()
 {  
-  const char* client_name = mClientName;
-  const char* server_name = NULL;
-  jack_options_t options = JackNoStartServer;
-  jack_status_t status;
+    const char* client_name = mClientName;
+    const char* server_name = NULL;
+    jack_options_t options = JackNoStartServer;
+    jack_status_t status;
 
-  // Try to connect to the server
-  /// \todo Write better warning messages. This following line displays very
-  /// verbose message, check how to desable them.
-  {
-    QMutexLocker locker(&sJackMutex);
-    mClient = jack_client_open (client_name, options, &status, server_name);
-  }  
-  
-  if (mClient == NULL) {
-    //fprintf (stderr, "jack_client_open() failed, "
-    //	     "status = 0x%2.0x\n", status);
-    if (status & JackServerFailed) {
-      fprintf (stderr, "Unable to connect to JACK server\n");
-      //std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
-      //std::cerr << gPrintSeparator << std::endl;
+    // Try to connect to the server
+    /// \todo Write better warning messages. This following line displays very
+    /// verbose message, check how to desable them.
+    {
+        QMutexLocker locker(&sJackMutex);
+        mClient = jack_client_open (client_name, options, &status, server_name);
     }
-    //std::exit(1);
-    throw std::runtime_error("Maybe the JACK server is not running?");
-  }
-  if (status & JackServerStarted) {
-    fprintf (stderr, "JACK server started\n");
-  }
-  if (status & JackNameNotUnique) {
-    client_name = jack_get_client_name(mClient);
-    fprintf (stderr, "unique name `%s' assigned\n", client_name);
-  }
 
-  // Set function to call if Jack shuts down
-  jack_on_shutdown (mClient, this->jackShutdown, 0);
+    if (mClient == NULL) {
+        //fprintf (stderr, "jack_client_open() failed, "
+        //	     "status = 0x%2.0x\n", status);
+        if (status & JackServerFailed) {
+            fprintf (stderr, "Unable to connect to JACK server\n");
+            //std::cerr << "ERROR: Maybe the JACK server is not running?" << std::endl;
+            //std::cerr << gPrintSeparator << std::endl;
+        }
+        //std::exit(1);
+        throw std::runtime_error("Maybe the JACK server is not running?");
+    }
+    if (status & JackServerStarted) {
+        fprintf (stderr, "JACK server started\n");
+    }
+    if (status & JackNameNotUnique) {
+        client_name = jack_get_client_name(mClient);
+        fprintf (stderr, "unique name `%s' assigned\n", client_name);
+    }
 
-  // Create input and output channels
-  createChannels();
+    // Set function to call if Jack shuts down
+    jack_on_shutdown (mClient, this->jackShutdown, 0);
 
-  // Buffer size member
-  mNumFrames = getBufferSizeInSamples(); 
+    // Create input and output channels
+    createChannels();
 
-  // Initialize Buffer array to read and write audio
-  mInBuffer.resize(mNumInChans);
-  mOutBuffer.resize(mNumOutChans);
+    // Buffer size member
+    mNumFrames = getBufferSizeInSamples();
+
+    // Initialize Buffer array to read and write audio
+    mInBuffer.resize(mNumInChans);
+    mOutBuffer.resize(mNumOutChans);
 
 }
 
@@ -147,26 +150,26 @@ void JackAudioInterface::setupClient()
 //*******************************************************************************
 void JackAudioInterface::createChannels()
 {
-  //Create Input Ports
-  mInPorts.resize(mNumInChans);
-  for (int i = 0; i < mNumInChans; i++)
+    //Create Input Ports
+    mInPorts.resize(mNumInChans);
+    for (int i = 0; i < mNumInChans; i++)
     {
-      QString inName;
-      QTextStream (&inName) << "send_" << i+1;
-      mInPorts[i] = jack_port_register (mClient, inName.toLatin1(),
-					JACK_DEFAULT_AUDIO_TYPE,
-					JackPortIsInput, 0);
+        QString inName;
+        QTextStream (&inName) << "send_" << i+1;
+        mInPorts[i] = jack_port_register (mClient, inName.toLatin1(),
+                                          JACK_DEFAULT_AUDIO_TYPE,
+                                          JackPortIsInput, 0);
     }
 
-  //Create Output Ports
-  mOutPorts.resize(mNumOutChans);
-  for (int i = 0; i < mNumInChans; i++)
+    //Create Output Ports
+    mOutPorts.resize(mNumOutChans);
+    for (int i = 0; i < mNumInChans; i++)
     {
-      QString outName;
-      QTextStream (&outName) << "receive_" << i+1;
-      mOutPorts[i] = jack_port_register (mClient, outName.toLatin1(),
-					JACK_DEFAULT_AUDIO_TYPE,
-					 JackPortIsOutput, 0);
+        QString outName;
+        QTextStream (&outName) << "receive_" << i+1;
+        mOutPorts[i] = jack_port_register (mClient, outName.toLatin1(),
+                                           JACK_DEFAULT_AUDIO_TYPE,
+                                           JackPortIsOutput, 0);
     }
 }
 
@@ -174,78 +177,78 @@ void JackAudioInterface::createChannels()
 //*******************************************************************************
 uint32_t JackAudioInterface::getSampleRate() const 
 {
-  return jack_get_sample_rate(mClient);
+    return jack_get_sample_rate(mClient);
 }
 
 
 //*******************************************************************************
 uint32_t JackAudioInterface::getBufferSizeInSamples() const 
 {
-  return jack_get_buffer_size(mClient);
+    return jack_get_buffer_size(mClient);
 }
 
 
 //*******************************************************************************
 size_t JackAudioInterface::getSizeInBytesPerChannel() const
 {
-  return (getBufferSizeInSamples() * getAudioBitResolution()/8);
+    return (getBufferSizeInSamples() * getAudioBitResolution()/8);
 }
 
 //*******************************************************************************
 void JackAudioInterface::setProcessCallback()
 {
-  std::cout << "Setting JACK Process Callback..." << std::endl;
-  if ( int code = 
-       jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback, this)
-       )
+    std::cout << "Setting JACK Process Callback..." << std::endl;
+    if ( int code =
+         jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback, this)
+         )
     {
-      //std::cerr << "Could not set the process callback" << std::endl;
-      //return(code);
-      (void) code; // to avoid compiler warnings
-      throw std::runtime_error("Could not set the Jack process callback");
-      //std::exit(1);
+        //std::cerr << "Could not set the process callback" << std::endl;
+        //return(code);
+        (void) code; // to avoid compiler warnings
+        throw std::runtime_error("Could not set the Jack process callback");
+        //std::exit(1);
     }
-  std::cout << "SUCCESS" << std::endl;
-  std::cout << gPrintSeparator << std::endl;
-  //return(0);
+    std::cout << "SUCCESS" << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+    //return(0);
 }
 
 
 //*******************************************************************************
 int JackAudioInterface::startProcess() const
 {
-  //Tell the JACK server that we are ready to roll.  Our
-  //process() callback will start running now.
-  if ( int code = (jack_activate(mClient)) ) 
+    //Tell the JACK server that we are ready to roll.  Our
+    //process() callback will start running now.
+    if ( int code = (jack_activate(mClient)) )
     {
-      std::cerr << "Cannot activate client" << std::endl;
-    return(code);
+        std::cerr << "Cannot activate client" << std::endl;
+        return(code);
     }
-  return(0);
+    return(0);
 }
 
 
 //*******************************************************************************
 int JackAudioInterface::stopProcess() const
 {
-  QMutexLocker locker(&sJackMutex);
-  int code = (jack_client_close(mClient));
-  if ( code != 0  )
+    QMutexLocker locker(&sJackMutex);
+    int code = (jack_client_close(mClient));
+    if ( code != 0  )
     {
-      std::cerr << "Cannot disconnect client" << std::endl;
-      return(code);
+        std::cerr << "Cannot disconnect client" << std::endl;
+        return(code);
     }
-  return(0);
+    return(0);
 }
 
 
 //*******************************************************************************
 void JackAudioInterface::jackShutdown (void*)
 {
-  //std::cout << "The Jack Server was shut down!" << std::endl;
-  throw std::runtime_error("The Jack Server was shut down!");
-  //std::cout << "Exiting program..." << std::endl;
-  //std::exit(1);
+    //std::cout << "The Jack Server was shut down!" << std::endl;
+    throw std::runtime_error("The Jack Server was shut down!");
+    //std::cout << "Exiting program..." << std::endl;
+    //std::exit(1);
 }
 
 
@@ -253,80 +256,94 @@ void JackAudioInterface::jackShutdown (void*)
 //*******************************************************************************
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
-  // Get input and output buffers from JACK
-  //-------------------------------------------------------------------
-  for (int i = 0; i < mNumInChans; i++) {
-    // Input Ports are READ ONLY
-    mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
-  }
-  for (int i = 0; i < mNumOutChans; i++) {
-    // Output Ports are WRITABLE
-    mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
-  }
-  //-------------------------------------------------------------------
-  // TEST: Loopback
-  // To test, uncomment and send audio to client input. The same audio
-  // should come out as output in the first channel
-  //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t) * nframes);
-  //memcpy (mOutBuffer[1], mInBuffer[1], sizeof(sample_t) * nframes);
-  //-------------------------------------------------------------------
+    // Get input and output buffers from JACK
+    //-------------------------------------------------------------------
+    for (int i = 0; i < mNumInChans; i++) {
+        // Input Ports are READ ONLY
+        mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
+    }
+    for (int i = 0; i < mNumOutChans; i++) {
+        // Output Ports are WRITABLE
+        mOutBuffer[i] = (sample_t*) jack_port_get_buffer(mOutPorts[i], nframes);
+    }
+    //-------------------------------------------------------------------
+    // TEST: Loopback
+    // To test, uncomment and send audio to client input. The same audio
+    // should come out as output in the first channel
+    //memcpy (mOutBuffer[0], mInBuffer[0], sizeof(sample_t) * nframes);
+    //memcpy (mOutBuffer[1], mInBuffer[1], sizeof(sample_t) * nframes);
+    //-------------------------------------------------------------------
 
-  AudioInterface::callback(mInBuffer, mOutBuffer, nframes);
-  return 0;
+    AudioInterface::callback(mInBuffer, mOutBuffer, nframes);
+    return 0;
 }
 
 
 //*******************************************************************************
 int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void *arg) 
 {
-  return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
+    return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
 }
 
 
 //*******************************************************************************
 void JackAudioInterface::connectDefaultPorts()
 {
-  const char** ports;
+    const char** ports;
+    const char* regEx ="threePortPairs:*";
+    int offset = mNumInChans * (mConnectServerHub>=0)? mConnectServerHub : 0; // default is -1
 
-  // Get physical output (capture) ports
-  if ( (ports =
-        jack_get_ports (mClient, NULL, NULL,
-                        JackPortIsPhysical | JackPortIsOutput)) == NULL)
-  {
-    cout << "WARING: Cannot find any physical capture ports" << endl;
-  }
-  else
-  {
-    // Connect capure ports to jacktrip send
-    for (int i = 0; i < mNumInChans; i++)
+    if (mConnectServerHub != -1)
+        ( (ports =
+            jack_get_ports (mClient, regEx, NULL,
+                            JackPortIsOutput)) == NULL);
+    else
+        ( (ports =
+            jack_get_ports (mClient, NULL, NULL,
+                            JackPortIsPhysical | JackPortIsOutput)) == NULL);
+
+    if(!ports)
     {
-      // Check that we don't run out of capture ports
-      if ( ports[i] != NULL ) {
-        jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
-      }
+        cout << "WARNING: Cannot find any signal souce (capture) ports" << endl;
     }
-    std::free(ports);
-  }
-  
-  // Get physical input (playback) ports
-  if ( (ports =
-        jack_get_ports (mClient, NULL, NULL,
-                        JackPortIsPhysical | JackPortIsInput)) == NULL)
-  {
-    cout << "WARING: Cannot find any physical playback ports" << endl;
-  }
-  else 
-  {
-    // Connect playback ports to jacktrip receive
-    for (int i = 0; i < mNumOutChans; i++)
+    else
     {
-      // Check that we don't run out of capture ports
-      if ( ports[i] != NULL ) {
-        jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
-      }
+        // Connect capure ports to jacktrip send
+        for (int i = 0; i < mNumInChans; i++)
+        {
+            // Check that we don't run out of capture ports
+            if ( ports[i] != NULL ) {
+                jack_connect(mClient, ports[i+offset], jack_port_name(mInPorts[i]));
+            }
+        }
+        std::free(ports);
     }
-    std::free(ports);
-  }
+
+    // Get physical input (playback) ports
+        if (mConnectServerHub != -1)
+            ( (ports =
+                jack_get_ports (mClient, regEx, NULL,
+                                JackPortIsInput)) == NULL);
+        else
+            ( (ports =
+                      jack_get_ports (mClient, NULL, NULL,
+                                      JackPortIsPhysical | JackPortIsInput)) == NULL);
+        if(!ports)
+    {
+        cout << "WARNING: Cannot find any signal sinks (playback) ports" << endl;
+    }
+    else
+    {
+        // Connect playback ports to jacktrip receive
+        for (int i = 0; i < mNumOutChans; i++)
+        {
+            // Check that we don't run out of capture ports
+            if ( ports[i] != NULL ) {
+                jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i+offset]);
+            }
+        }
+        std::free(ports);
+    }
 }
 
 
@@ -403,20 +420,20 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
   // --------------------------------
   computeNetworkProcessToNetwork();
 */
-  ///************PROTORYPE FOR CELT**************************
-  ///********************************************************
-  /*
+///************PROTORYPE FOR CELT**************************
+///********************************************************
+/*
   CELTMode* mode;
   int* error;
   mode = celt_mode_create(48000, 2, 64, error);
   */
-  //celt_mode_create(48000, 2, 64, NULL);
-  //unsigned char* compressed;
-  //CELTEncoder* celtEncoder;
-  //celt_encode_float(celtEncoder, mInBuffer, NULL, compressed, );
+//celt_mode_create(48000, 2, 64, NULL);
+//unsigned char* compressed;
+//CELTEncoder* celtEncoder;
+//celt_encode_float(celtEncoder, mInBuffer, NULL, compressed, );
 
-  ///********************************************************
-  ///********************************************************
+///********************************************************
+///********************************************************
 //  return 0;
 //}
 

@@ -124,7 +124,7 @@ JackTrip::~JackTrip()
 
 
 //*******************************************************************************
-void JackTrip::setupAudio()
+void JackTrip::setupAudio(int connectServerHub)
 {
     // Check if mAudioInterface has already been created or not
     if (mAudioInterface != NULL)  { // if it has been created, disconnet it from JACK and delete it
@@ -139,6 +139,7 @@ void JackTrip::setupAudio()
 #ifndef __NO_JACK__
         mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mNumNetChans, mAudioBitResolution);
         mAudioInterface->setClientName(mJackClientName);
+        mAudioInterface->setConnectServerHub(connectServerHub);
         mAudioInterface->setup();
         mSampleRate = mAudioInterface->getSampleRate();
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
@@ -306,7 +307,7 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     checkIfPortIsBinded(mSenderBindPort);
     // Set all classes and parameters
     // ------------------------------
-    setupAudio();
+    setupAudio((mJackTripMode == SERVERPINGSERVER)? mID : -1);
     createHeader(mPacketHeaderType);
     setupDataProtocol();
     setupRingBuffers();
@@ -356,6 +357,7 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     for (int i = 0; i < mProcessPlugins.size(); ++i) {
         mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
     }
+
     // Start Threads
     mAudioInterface->startProcess();
 
@@ -501,12 +503,13 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
 
     // Creat Socket Objects
     // --------------------
-    QTcpSocket tcpClient;
+    TcpSocketDerived tcpClient;
     QHostAddress serverHostAddress;
     serverHostAddress.setAddress(mPeerAddress);
 
     // Connect Socket to Server and wait for response
     // ----------------------------------------------
+    tcpClient.setLocalAddress(mLocalAddress);
     tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
     cout << "Connecting to TCP Server..." << endl;
     if (!tcpClient.waitForConnected()) {
@@ -748,7 +751,6 @@ void JackTrip::checkIfPortIsBinded(int port)
 {
     QUdpSocket UdpSockTemp;// Create socket to wait for client
     // Bind the socket
-    qDebug() << mLocalAddress;
     if ( !UdpSockTemp.bind(mLocalAddress, port, QUdpSocket::ShareAddress) )
     {
         UdpSockTemp.close(); // close the socket

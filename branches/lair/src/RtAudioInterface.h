@@ -73,6 +73,7 @@ public:
   //--------------SETTERS---------------------------------------------
   /// \brief This has no effect in RtAudio
   virtual void setClientName(const char* /*ClientName*/) {}
+  virtual void setConnectServerHub(int connectServerHub) {}
   //------------------------------------------------------------------
 
   //--------------GETTERS---------------------------------------------

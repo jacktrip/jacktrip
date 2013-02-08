@@ -170,7 +170,8 @@ void JackTripWorker::run()
             { QMutexLocker locker(&mMutex); mSpawning = false; }
             return;
         }
-jacktrip.setClientName(mClientName);
+        jacktrip.setClientName(mClientName);
+        jacktrip.setID(getID());
         // Start Threads and event loop
         cout << "---> JackTripWorker: startProcess..." << endl;
         switch ( mNumNetChans )

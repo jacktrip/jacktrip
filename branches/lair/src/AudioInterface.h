@@ -156,6 +156,7 @@ public:
   { mBufferSizeInSamples = buf_size; }
   /// \brief Set Client Name to something different that the default (JackTrip)
   virtual void setClientName(const char* ClientName) = 0;
+  virtual void setConnectServerHub(int connectServerHub) = 0;
   //------------------------------------------------------------------
 
   //--------------GETTERS---------------------------------------------
