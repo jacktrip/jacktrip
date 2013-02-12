@@ -199,11 +199,11 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         sample_t* tmp_sample = mNetInBuffer[i];
         for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
     }                                         // nib6 to apib2
-    for (int i = 0; i < mNumInChans; i++) {
-        sample_t* mix_sample = mAPInBuffer[i];
-        sample_t* tmp_sample = in_buffer[i];
-        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
-    }                                         // nib6 to apib2
+//    for (int i = 0; i < mNumInChans; i++) {
+//        sample_t* mix_sample = mAPInBuffer[i];
+//        sample_t* tmp_sample = in_buffer[i];
+//        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+//    }                                         // nib6 to apib2
     for (int i = 0; i < mNumOutChans; i++) {
         std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
     }

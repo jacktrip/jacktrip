@@ -292,7 +292,7 @@ void JackAudioInterface::connectDefaultPorts()
     const char** ports;
     const char* regEx ="threePortPairs:*";
     int offset = mNumInChans * ((mConnectServerHub>=0)? mConnectServerHub : 0); // default is -1
-    qDebug() << "offset = " << offset;
+//    qDebug() << "offset = " << offset;
     if (mConnectServerHub != -1)
         ( (ports =
             jack_get_ports (mClient, regEx, NULL,
