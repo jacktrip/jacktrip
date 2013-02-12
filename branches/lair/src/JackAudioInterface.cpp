@@ -291,7 +291,7 @@ void JackAudioInterface::connectDefaultPorts()
 {
     const char** ports;
     const char* regEx ="threePortPairs:*";
-    int offset = mNumInChans * (mConnectServerHub>=0)? mConnectServerHub : 0; // default is -1
+    int offset = mNumInChans * ((mConnectServerHub>=0)? mConnectServerHub : 0); // default is -1
 
     if (mConnectServerHub != -1)
         ( (ports =
