@@ -199,16 +199,17 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         sample_t* tmp_sample = mNetInBuffer[i];
         for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
     }                                         // nib6 to apib2
-//    for (int i = 0; i < mNumInChans; i++) {
-//        sample_t* mix_sample = mAPInBuffer[i];
-//        sample_t* tmp_sample = in_buffer[i];
-//        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
-//    }                                         // nib6 to apib2
     for (int i = 0; i < mNumOutChans; i++) {
         std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
     }
     mProcessPlugins[APDSP]->compute(n_frames, mAPInBuffer.data(), out_buffer.data());
     // compute ap2 into aob2
+    for (int i = 0; i < mNumInChans; i++) {
+        sample_t* mix_sample = out_buffer[i];
+        sample_t* tmp_sample = in_buffer[i];
+        for (int j = 0; j < n_frames; j++) {mix_sample[j] += tmp_sample[j];}
+    }
+    // add aib2 to aob2
 #endif
     ///////////////////////////////////////////////////////////////////////////////
 
@@ -283,7 +284,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             // Change the bit resolution on each sample
             // Add the input jack buffer to the buffer resulting from the output process
 #define INGAIN (0.999) // 1.0 can saturate the fixed pt rounding on output
-            #define COMBGAIN (0.4)
+#define COMBGAIN (0.4)
             tmp_result = INGAIN*tmp_sample[j] + COMBGAIN*tmp_process_sample[j];
             fromSampleToBitConversion(
                         &tmp_result,
