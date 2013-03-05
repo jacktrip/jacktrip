@@ -515,7 +515,7 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
   for (unsigned int i = 1; i<mUdpRedundancyFactor; i++) {
     // Check if the package we receive is the next one expected, i.e.,
     // current_seq_num == (last_seq_num+1)
-    if ( (current_seq_num == (last_seq_num+1))) { break; }
+    if ( current_seq_num == (last_seq_num+1) ) { break; }
 
     // if it's not, check the next one until it is the corresponding packet
     // or there aren't more available packets
