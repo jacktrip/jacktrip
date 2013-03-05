@@ -66,8 +66,8 @@ QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 target.path = /usr/bin
 INSTALLS += target
 
-INCLUDEPATH += ../externals/includes/rtaudio-4.0.7
-DEPENDPATH += ../externals/includes/rtaudio-4.0.7
+#INCLUDEPATH += ../externals/includes/rtaudio-4.0.7
+#DEPENDPATH += ../externals/includes/rtaudio-4.0.7
 win32 {
   INCLUDEPATH += ../externals/includes/rtaudio-4.0.7/include
   INCLUDEPATH += ../externals/includes
@@ -122,9 +122,9 @@ SOURCES += JackAudioInterface.cpp
 }
 
 # RtAduio Input
-HEADERS += RtAudio.h \
-           RtError.h
-SOURCES += RtAudio.cpp
+HEADERS += ../externals/includes/rtaudio-4.0.7/RtAudio.h \
+           ../externals/includes/rtaudio-4.0.7/RtError.h
+SOURCES += ../externals/includes/rtaudio-4.0.7/RtAudio.cpp
 win32 {
 HEADERS += asio.h \
            asiodrivers.h \
