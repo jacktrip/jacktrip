@@ -45,6 +45,7 @@
 #if defined ( __LINUX__ )
 #include <sched.h>
 #include <unistd.h>
+#include <sys/types.h>
 #endif //__LINUX__
 
 #if defined ( __MAC_OSX__ )
