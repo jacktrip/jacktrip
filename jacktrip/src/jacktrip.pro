@@ -18,7 +18,7 @@ nojack {
 }
 !win32 {
   INCLUDEPATH+=/usr/local/include
-  LIBS += -ljack -lm
+  LIBS += -L/usr/local/lib -ljack -lm
   nojack {
     message(Building NONJACK)
     LIBS -= -ljack
