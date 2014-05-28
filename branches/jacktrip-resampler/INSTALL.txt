@@ -1,0 +1,115 @@
+Jacktrip : Build Instructions for Linux and MacOS X
+
+JackTrip: A System for High-Quality Audio Network Performance over the Internet.
+
+---
+MacOS X (10.3.9 or higher) Installation:
+
+If you are installing on MacOS X, a universal binary is provided.  You just need to have JackOSX installed on your machine
+http://www.jackosx.com/
+
+To install (using Terminal): go to bin/ directory and type:
+
+   sudo cp jacktrip /usr/bin/
+   (enter your password when prompted)
+
+   sudo chmod 755 /usr/bin/jacktrip
+   (now you can run jacktrip from any directory using Terminal)
+
+
+---
+Dependencies:
+
+You need to have installed the libraries in your system:
+qt4-devel
+jack-audio-connection-kit-devel
+
+If you are using yum (in Fedora 8 or later) you can just install them (as root) with:
+   yum install qt4-devel jack-audio-connection-kit-devel
+
+If you want to build on MacOS X, you need JackOSX
+http://www.jackosx.com/
+and Qt 4.5 or higher. 
+http://trolltech.com/products/qt/
+
+
+---
+Build:
+
+If you're on Mac OS X or Fedora Linux and have all the dependencies installed,
+you can build by simply going to the /src directory and typing the following:
+    ./build
+
+If you want to build without Jack support (meaning that you won't need jack installed
+to use the app) type the following:
+   ./build nojack
+
+If the previous script doesn't work on a different Linux flavor, try building
+the Makfiles yourself. You'd need qmake (e.g., on Fedora, this command is called
+qmake-qt4). Then you can build by:
+    qmake jacktrip.pro
+    make release
+
+Or without Jack support:
+   qmake -config nojack jacktrip.pro
+   make release
+
+
+If you want to install install (using Terminal): on the /src directory type:
+
+   sudo cp jacktrip /usr/bin/
+   (enter your password when prompted)
+
+   sudo chmod 755 /usr/bin/jacktrip
+   (now you can run jacktrip from any directory using Terminal)
+
+-----------------------------
+WINDOWS (XP and later) 
+
+Dependencies:
+
+- ASIO4all audio driver is required even with Audio interfaces that support ASIO: www.asio4all.com
+
+Installation:
+
+Simply Run the setup file Jacktrip-1.1.exe, which will unpack Jacktrip in the directory of your choice,
+the default is Program Files/Jacktrip.
+
+The installer also adds the executable Jacktrip.exe in the System32 directory, so that it can be executed
+from a command prompt from any working directory.
+
+This executable (jacktrip.exe) can be found in the bin directory, along with the Dynamic 
+Link Libraries (DLLs) it links to.
+
+
+Building:
+
+The easiest way to build is to download the free Qt Creator IDE from http://qt.nokia.com/products/ 
+
+Make a copy of the src and externals directories into a new directory of your choice, open the jacktrip.pro 
+file in src, and build the project.
+
+You can alternatively download the MinGW (Minimalist GNU for Windows), a Windows port of the GNU
+compiler from http://www.mingw.org/ and use mingw32-make from a command terminal to build the makefile.
+
+Building is not supported with Microsoft Visual Studio Compilers.
+
+Note: compiling with modifications in the .pro file (like adding a new source or header file) requires 
+qmake which is only available in the Qt Creator package.
+
+---
+
+BUILD WARNING 
+
+Always keep the /src and /externals directories under the same directory.
+
+---
+Post Configuration
+Detailed instructions at 
+http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/
+
+
+---
+Using JackTrip
+Detailed instructions at 
+http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/
