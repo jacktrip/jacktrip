@@ -70,15 +70,6 @@ RingBuffer::RingBuffer(JackTrip* jackTrip, int size,char type) :
   deltaXrun(0),
   arr(0),
   countC(0),
-  peerPeriodVector(new QVector<uint32_t>(0)),
-  localPeriodVector(new QVector<uint32_t>(0)),
-  ratioVector(new QVector<float>(0)),
-  arrVector(new QVector<float>(0)),
-  totalSizeVector(new QVector<int32_t>(0)),
-  readSpaceVector(new QVector<int16_t>(0)),
-  writeSpaceVector(new QVector<int16_t>(0)),
-  nReadVector(new QVector<int32_t>(0)),
-  countCVector(new QVector<int>(0)),
   XRunHappened(0)
 
 {
@@ -203,93 +194,152 @@ int RingBuffer::readSlotAndResampler(int8_t* ptrToReadSlot)
   info();
   countC = 0;
 #endif
-  if(mJackTrip->isOnAdaptive() ==true)
+  if(mJackTrip->isOnAdaptive() ==true){
 	  this->setupAdaptive();
-  nRead = 0;
-  int frameWorstCase = ceil(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()*mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8) -
-		  mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8;
-
-  readNoAdvance(reinterpret_cast<char*>(inputSampleInByte), frameWorstCase);
-  if(XRunHappened)
-    return 1;
-  for(int i = 0; i < ceil(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()*mJackTrip->getNumChans()) - mJackTrip->getNumChans(); i++)
-    mJackTrip->fromBitToSampleConversion(&(inputSampleInByte[i*mJackTrip->getAudioBitResolution()/8]),&inputSampleInterleaved[i], mJackTrip->getAudioBitResolution());
-
-
-  // Setup the resampler and process the samp
-  mJackTrip->getUniformResampler()->inp_count = ceil(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()) -  1;
-  tmpNRead = mJackTrip->getUniformResampler()->inp_count ;
-  mJackTrip->getUniformResampler()->inp_data  = inputSampleInterleaved;
-  mJackTrip->getUniformResampler()->out_count = mJackTrip->getBufferSizeInSamples() ;
-  mJackTrip->getUniformResampler()->out_data  = outputSampleInterleaved;
-  while(mJackTrip->getUniformResampler()->out_count && !XRunHappened){
-	  if (mJackTrip->getUniformResampler()->process())
-		  emit signalError("Resampler Error!");
-	  tmpNRead -= mJackTrip->getUniformResampler()->inp_count ;
-	  //cout << tmpNRead << endl;
-	  nRead += tmpNRead;
-	  if (tmpNRead > mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel())
-		  emit signalError("Resampler Error!");
-	  //cout << "nRead "<< nRead << endl;
-	  readPointerAdvance(tmpNRead*mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8);
-	  if(mJackTrip->getUniformResampler()->out_count == 0)
-		  continue;
-	  readNoAdvance(reinterpret_cast<char*>(tmpByte), mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8);
+	  nRead = 0;
+	  int frameWorstCase = mJackTrip->getAudioBitResolution()/8*mJackTrip->getNumChans()*floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel());
+#ifdef __DEBUG__
+	  cout << "frameWorstCase " << frameWorstCase << endl;
+#endif
+	  readNoAdvance(reinterpret_cast<char*>(inputSampleInByte), frameWorstCase);
 	  if(XRunHappened)
-	    continue;
-	  for(int i = 0; i < mJackTrip->getNumChans(); i++)
-	    mJackTrip->fromBitToSampleConversion(&tmpByte[i*mJackTrip->getAudioBitResolution()/8],&tmpSample[i], mJackTrip->getAudioBitResolution());
-	  mJackTrip->getUniformResampler()->inp_data  = tmpSample;
-	  mJackTrip->getUniformResampler()->inp_count = 1;
-	  tmpNRead = mJackTrip->getUniformResampler()->inp_count;
-	  ++countC;
+	    return 1;
+#ifdef __DEBUG__
+	  cout << "seconda "<< mJackTrip->getNumChans()*floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()) << endl;
+#endif
+	  for(int i = 0; i < mJackTrip->getNumChans()*floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()); i++)
+	    mJackTrip->fromBitToSampleConversion(&(inputSampleInByte[i*mJackTrip->getAudioBitResolution()/8]),&inputSampleInterleaved[i], mJackTrip->getAudioBitResolution());
+
+
+	  // Setup the resampler and process the samp
+#ifdef __DEBUG__
+	  cout << "terza " << floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel())<< endl;
+#endif
+	  mJackTrip->getAdaptiveResampler()->inp_count = floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel());
+	  tmpNRead = mJackTrip->getAdaptiveResampler()->inp_count ;
+	  mJackTrip->getAdaptiveResampler()->inp_data  = inputSampleInterleaved;
+	  mJackTrip->getAdaptiveResampler()->out_count = mJackTrip->getBufferSizeInSamples() ;
+	  mJackTrip->getAdaptiveResampler()->out_data  = outputSampleInterleaved;
+	  while(mJackTrip->getAdaptiveResampler()->out_count && !XRunHappened){
+		  if (mJackTrip->getAdaptiveResampler()->process()){}
+//			  emit signalError("Resampler Error!");
+		  tmpNRead -= mJackTrip->getAdaptiveResampler()->inp_count ;
+		  //cout << tmpNRead << endl;
+		  nRead += tmpNRead;
+		  if (tmpNRead > mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()){}
+//			  emit signalError("Resampler Error!");
+		  //cout << "nRead "<< nRead << endl;
+		  readPointerAdvance(tmpNRead*mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8);
+		  if(mJackTrip->getAdaptiveResampler()->out_count == 0)
+			  continue;
+		  readNoAdvance(reinterpret_cast<char*>(tmpByte), mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8);
+		  if(XRunHappened)
+		    continue;
+		  for(int i = 0; i < mJackTrip->getNumChans(); i++)
+		    mJackTrip->fromBitToSampleConversion(&tmpByte[i*mJackTrip->getAudioBitResolution()/8],&tmpSample[i], mJackTrip->getAudioBitResolution());
+		  mJackTrip->getAdaptiveResampler()->inp_data  = tmpSample;
+		  mJackTrip->getAdaptiveResampler()->inp_count = 1;
+		  tmpNRead = mJackTrip->getAdaptiveResampler()->inp_count;
+		  ++countC;
+	  }
+
+	  //cout << "nRead"  << nRead << endl;
+
+	  //DeInterleave
+	    for(int i=0; i<mJackTrip->getBufferSizeInSamples(); i++)
+	      for(uint16_t j=0; j<mJackTrip->getNumChans(); j++){
+	    	  outputSampleDeInterleaved[j*mJackTrip->getBufferSizeInSamples()+i]
+	    	                         = outputSampleInterleaved[j + i*mJackTrip->getNumChans() ];
+	      }
+
+	  // Convert Samples in bytes
+	  for(int i = 0; i < ((int)mJackTrip->getBufferSizeInSamples())*mJackTrip->getNumChans(); i++)
+		  mJackTrip->fromSampleToBitConversion(&outputSampleDeInterleaved[i],&ptrToReadSlot[i*mJackTrip->getAudioBitResolution()/8], mJackTrip->getAudioBitResolution());
+
+
+	  // Always save memory of the last read slot
+	  std::memset(mLastReadSlot, 0, mJackTrip->getSizeInBytesPerChannel()*mJackTrip->getNumChans()); // set buffer to 0
+	  std::memcpy(mLastReadSlot, (int8_t*)ptrToReadSlot, mJackTrip->getSizeInBytesPerChannel()*mJackTrip->getNumChans());
+	  mBufferIsNotFull.wakeAll();
+
+	  return 1;
+  }else{
+	  nRead = 0;
+	  int frameWorstCase = mJackTrip->getAudioBitResolution()/8*mJackTrip->getNumChans()*floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel());
+#ifdef __DEBUG__
+	  cout << "frameWorstCase " << frameWorstCase << endl;
+#endif
+	  readNoAdvance(reinterpret_cast<char*>(inputSampleInByte), frameWorstCase);
+	  if(XRunHappened)
+	    return 1;
+#ifdef __DEBUG__
+	  cout << "seconda "<< mJackTrip->getNumChans()*floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()) << endl;
+#endif
+	  for(int i = 0; i < mJackTrip->getNumChans()*floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()); i++)
+	    mJackTrip->fromBitToSampleConversion(&(inputSampleInByte[i*mJackTrip->getAudioBitResolution()/8]),&inputSampleInterleaved[i], mJackTrip->getAudioBitResolution());
+
+
+	  // Setup the resampler and process the samp
+#ifdef __DEBUG__
+	  cout << "terza " << floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel())<< endl;
+#endif
+	  mJackTrip->getUniformResampler()->inp_count = floor(mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel());
+	  tmpNRead = mJackTrip->getUniformResampler()->inp_count ;
+	  mJackTrip->getUniformResampler()->inp_data  = inputSampleInterleaved;
+	  mJackTrip->getUniformResampler()->out_count = mJackTrip->getBufferSizeInSamples() ;
+	  mJackTrip->getUniformResampler()->out_data  = outputSampleInterleaved;
+	  while(mJackTrip->getUniformResampler()->out_count && !XRunHappened){
+		  if (mJackTrip->getUniformResampler()->process()){}
+		  tmpNRead -= mJackTrip->getUniformResampler()->inp_count ;
+		  //cout << tmpNRead << endl;
+		  nRead += tmpNRead;
+		  if (tmpNRead > mJackTrip->getPeerBufferSize()*mJackTrip->getRatioDel()){}
+		  //cout << "nRead "<< nRead << endl;
+		  readPointerAdvance(tmpNRead*mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8);
+		  if(mJackTrip->getUniformResampler()->out_count == 0)
+			  continue;
+		  readNoAdvance(reinterpret_cast<char*>(tmpByte), mJackTrip->getNumChans()*mJackTrip->getAudioBitResolution()/8);
+		  if(XRunHappened)
+		    continue;
+		  for(int i = 0; i < mJackTrip->getNumChans(); i++)
+		    mJackTrip->fromBitToSampleConversion(&tmpByte[i*mJackTrip->getAudioBitResolution()/8],&tmpSample[i], mJackTrip->getAudioBitResolution());
+		  mJackTrip->getUniformResampler()->inp_data  = tmpSample;
+		  mJackTrip->getUniformResampler()->inp_count = 1;
+		  tmpNRead = mJackTrip->getUniformResampler()->inp_count;
+		  ++countC;
+	  }
+
+	  //cout << "nRead"  << nRead << endl;
+
+	  //DeInterleave
+	    for(int i=0; i<mJackTrip->getBufferSizeInSamples(); i++)
+	      for(uint16_t j=0; j<mJackTrip->getNumChans(); j++){
+	    	  outputSampleDeInterleaved[j*mJackTrip->getBufferSizeInSamples()+i]
+	    	                         = outputSampleInterleaved[j + i*mJackTrip->getNumChans() ];
+	      }
+
+	  // Convert Samples in bytes
+	  for(int i = 0; i < ((int)mJackTrip->getBufferSizeInSamples())*mJackTrip->getNumChans(); i++)
+		  mJackTrip->fromSampleToBitConversion(&outputSampleDeInterleaved[i],&ptrToReadSlot[i*mJackTrip->getAudioBitResolution()/8], mJackTrip->getAudioBitResolution());
+
+
+	  // Always save memory of the last read slot
+	  std::memset(mLastReadSlot, 0, mJackTrip->getSizeInBytesPerChannel()*mJackTrip->getNumChans()); // set buffer to 0
+	  std::memcpy(mLastReadSlot, (int8_t*)ptrToReadSlot, mJackTrip->getSizeInBytesPerChannel()*mJackTrip->getNumChans());
+	  mBufferIsNotFull.wakeAll();
+
+	  return 1;
   }
-
-  //cout << "nRead"  << nRead << endl;
-
-  //DeInterleave
-    for(int i=0; i<mJackTrip->getBufferSizeInSamples(); i++)
-      for(uint16_t j=0; j<mJackTrip->getNumChans(); j++){
-    	  outputSampleDeInterleaved[j*mJackTrip->getPeerBufferSize()+i]
-    	                         = outputSampleInterleaved[j + i*mJackTrip->getNumChans() ];
-      }
-
-  // Convert Samples in bytes
-  for(int i = 0; i < ((int)mJackTrip->getBufferSizeInSamples())*mJackTrip->getNumChans(); i++)
-	  mJackTrip->fromSampleToBitConversion(&outputSampleDeInterleaved[i],&ptrToReadSlot[i*mJackTrip->getAudioBitResolution()/8], mJackTrip->getAudioBitResolution());
-
-
-  // Always save memory of the last read slot
-  std::memset(mLastReadSlot, 0, mJackTrip->getSizeInBytesPerChannel()*mJackTrip->getNumChans()); // set buffer to 0
-  std::memcpy(mLastReadSlot, (int8_t*)ptrToReadSlot, mJackTrip->getSizeInBytesPerChannel()*mJackTrip->getNumChans());
-  mBufferIsNotFull.wakeAll();
-
-  return 1;
 }
 
 int RingBuffer::setupAdaptive(){
   arr = ((mJackTrip->getPeerEstimatedPeriod()*mJackTrip->getRatioDel())/mJackTrip->getEstimatedPeriod());
-  mJackTrip->getUniformResampler()->set_rratio(arr);
+  mJackTrip->getAdaptiveResampler()->set_rratio(arr);
   return 0;
 }
 
 void RingBuffer::info(){
   arr = (mJackTrip->getPeerEstimatedPeriod()*mJackTrip->getRatioDel())/mJackTrip->getEstimatedPeriod();
-  if(arrVector->size()>= SIZEVECTOR)
-    arrVector->pop_front();
-  arrVector->push_back(arr);
-  if(readSpaceVector->size()>= SIZEVECTOR)
-    readSpaceVector->pop_front();
-  readSpaceVector->push_back(readSpace());
-  if(writeSpaceVector->size()>= SIZEVECTOR)
-    writeSpaceVector->pop_front();
-  writeSpaceVector->push_back(writeSpace());
-  if(nReadVector->size()>= SIZEVECTOR)
-    nReadVector->pop_front();
-  nReadVector->push_back(nRead);
-  if(countCVector->size()>= SIZEVECTOR)
-	  countCVector->pop_front();
-  countCVector->push_back(countC);
 }
 
 
@@ -346,50 +396,6 @@ void RingBuffer::overflowReset()
 //*******************************************************************************
 void RingBuffer::debugDump() const
 {
-  QString strpeerPeriodVector;
-  QString strarrVector;
-  strarrVector += "arrVector \t\t";
-  for (int it = 0; it < arrVector->size(); ++it)
-  {
-    strarrVector += QString::number(arrVector->value(it));
-    strarrVector += "\t";
-  }
-  QString strreadPositionVector;
-  strreadPositionVector += "readSpaceVector \t\t";
-  for (int it = 0; it < readSpaceVector->size(); ++it)
-  {
-    strreadPositionVector += QString::number(readSpaceVector->value(it));
-    strreadPositionVector += "\t";
-  }
-  QString strwritePositionVector;
-  strwritePositionVector += "writeSpaceVector \t\t";
-  for (int it = 0; it < writeSpaceVector->size(); ++it)
-  {
-    strwritePositionVector += QString::number(writeSpaceVector->value(it));
-    strwritePositionVector += "\t";
-  }
-  QString strnReadVector;
-  strnReadVector += "nReadVector \t\t";
-  for (int it = 0; it < nReadVector->size(); ++it)
-  {
-    strnReadVector += QString::number(nReadVector->value(it));
-    strnReadVector += "\t";
-  }
-  QString strcountCVector;
-  strcountCVector += "countCVector \t\t";
-  for (int it = 0; it < countCVector->size(); ++it)
-  {
-    strcountCVector += QString::number(countCVector->value(it));
-    strcountCVector += "\t";
-  }
-  cout << "RingBuffer Type: " << mType << endl;
-
-  cout << strarrVector.toUtf8().constData() << endl;
-  cout << strreadPositionVector.toUtf8().constData() << endl;
-  cout << strwritePositionVector.toUtf8().constData() << endl;
-  cout << strnReadVector.toUtf8().constData() << endl;
-  cout << strcountCVector.toUtf8().constData() << endl;
-
 }
 
 

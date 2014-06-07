@@ -56,7 +56,6 @@
 #endif //__NO_JACK__
 
 #include "PacketHeader.h"
-#include "RingBuffer.h"
 
 #include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
@@ -379,8 +378,10 @@ public:
   jack_client_t* getClient() const{ return ((JackAudioInterface*)mAudioInterface)->getClient(); }
   void setClient(jack_client_t* client){ ((JackAudioInterface*)mAudioInterface)->setClient(client); }
   const char* getClientName() const{return ((JackAudioInterface*)mAudioInterface)->getClientName();}
-  void setUniformResampler( VResampler* uniformResampler_local) {uniformResampler = uniformResampler_local;}
-  VResampler* getUniformResampler()  {	return uniformResampler;}
+  void setAdaptiveResampler( VResampler* uniformResampler_local) {adaptiveResampler = uniformResampler_local;}
+  void setUniformResampler( Resampler* uniformResampler_local) {uniformResampler = uniformResampler_local;}
+  VResampler* getAdaptiveResampler()  {	return adaptiveResampler;}
+  Resampler* getUniformResampler()  {	return uniformResampler;}
   int8_t* getInputPacket()  {return mAudioInterface->getInputPacket();}
   void setInputPacket(int8_t* inputPacket) {mAudioInterface->setInputPacket(inputPacket);}
   int8_t* getOutputPacket()  {return mAudioInterface->getOutputPacket();}
@@ -687,7 +688,8 @@ private:
 
   volatile bool mReceivedConnection; ///< Bool of received connection from peer
   volatile bool mTcpConnectionError;
-  VResampler *uniformResampler; ///< Pointer to resampler
+  VResampler *adaptiveResampler; ///< Pointer to resampler
+  Resampler *uniformResampler; ///< Pointer to resampler
   float t_local_del; ///< Time Frame of local host
   float t_peer_del ; ///< Time Frame of peer host
   float ratio_del; ///< Ratio beetween timeframe/samplerate of local host and peer host

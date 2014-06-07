@@ -41,9 +41,6 @@
 #include <QWaitCondition>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QObject>
-#include <QString>
-#include <QVector>
 #include <iostream>
 #include <cmath>
 #include <jack/jack.h>
@@ -62,9 +59,8 @@ class JackTrip;
  * each of which is of size \b SlotSize bytes (8-bits). Slots can be read and
  * written asynchronously/synchronously by multiple threads.
  */
-class RingBuffer : public QObject
+class RingBuffer
 {
-  Q_OBJECT;
 
 public:
 
@@ -160,8 +156,6 @@ protected:
 
   JackTrip* mJackTrip;
 
-signals:
-    void signalError(const char* error_message);
 
 private:
 
@@ -198,15 +192,6 @@ private:
   double deltaXrun;  ///< time between the 2 last xrun
   float arr;
   int countC;
-  QVector<uint32_t>* peerPeriodVector;
-  QVector<uint32_t>* localPeriodVector;
-  QVector<float>* ratioVector;
-  QVector<float>* arrVector;
-  QVector<int32_t>* totalSizeVector;
-  QVector<int16_t>* readSpaceVector;
-  QVector<int16_t>* writeSpaceVector;
-  QVector<int32_t>* nReadVector;
-  QVector<int>* countCVector;
   bool XRunHappened;
 };
 
