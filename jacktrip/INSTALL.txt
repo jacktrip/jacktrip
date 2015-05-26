@@ -21,17 +21,18 @@ To install (using Terminal): go to bin/ directory and type:
 Dependencies:
 
 You need to have installed the libraries in your system:
-qt4-devel
+Qt 5.3 or higher
 jack-audio-connection-kit-devel
 
 If you are using yum (in Fedora 8 or later) you can just install them (as root) with:
-   yum install qt4-devel jack-audio-connection-kit-devel
+   yum install jack-audio-connection-kit-devel
+and install qt from the qt site.
 
 If you want to build on MacOS X, you need JackOSX
 http://www.jackosx.com/
-and Qt 4.5 or higher. 
-http://trolltech.com/products/qt/
+and Qt 5.3 or higher. 
 
+It is also possible to build without jack, see below.
 
 ---
 Build:
