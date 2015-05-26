@@ -1,9 +1,9 @@
 ---
-trunk
+1.1
 - (added) Support for RtAudio. Jacktrip can now be used without Jack
-- (added) New port to Windows XP and Windows Vista
-- (added) Multiclient Server
-- (added) DNS Look-up support
+- (added) DNS Look-up support, now one machine can have a private IP (but still needs to have UDP ports open)
+- (added) New port to Windows XP and Windows Vista (experimental and not tested for a long time, only when using jacktrip as a library)
+- (added) Multiclient Server (experimental and not exposed in the executable)
 
 ---
 1.0.5
