@@ -3,9 +3,9 @@ Jacktrip : Build Instructions for Linux and MacOS X
 JackTrip: A System for High-Quality Audio Network Performance over the Internet.
 
 ---
-MacOS X (10.3.9 or higher) Installation:
+MacOS X (10.9 or higher) Installation:
 
-If you are installing on MacOS X, a universal binary is provided.  You just need to have JackOSX installed on your machine
+If you are installing on MacOS X, a binary is provided.  You just need to have JackOSX installed on your machine
 http://www.jackosx.com/
 
 To install (using Terminal): go to bin/ directory and type:
