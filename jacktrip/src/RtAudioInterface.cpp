@@ -123,7 +123,7 @@ void RtAudioInterface::setup()
                          sampleRate, &bufferFrames,
                          &RtAudioInterface::wrapperRtAudioCallback, this, &options);
   }
-  catch ( RtError& e ) {
+  catch ( RtAudioError & e ) {
     std::cout << '\n' << e.getMessage() << '\n' << std::endl;
     exit( 0 );
   }
@@ -213,7 +213,7 @@ int RtAudioInterface::wrapperRtAudioCallback(void *outputBuffer, void *inputBuff
 int RtAudioInterface::startProcess() const
 {
   try { mRtAudio->startStream(); }
-  catch ( RtError& e ) {
+  catch ( RtAudioError& e ) {
     std::cout << '\n' << e.getMessage() << '\n' << std::endl;
     return(-1);
   }
@@ -225,7 +225,7 @@ int RtAudioInterface::startProcess() const
 int RtAudioInterface::stopProcess() const
 {
   try { mRtAudio->closeStream(); }
-  catch ( RtError& e ) {
+  catch ( RtAudioError& e ) {
     std::cout << '\n' << e.getMessage() << '\n' << std::endl;
     return(-1);
   }

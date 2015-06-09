@@ -1,4 +1,8 @@
 ---
+master
+- (update) Updated to RtAudio 4.1.1.
+
+---
 1.1
 - (added) Support for RtAudio. Jacktrip can now be used without Jack
 - (added) DNS Look-up support, now one machine can have a private IP (but still needs to have UDP ports open)

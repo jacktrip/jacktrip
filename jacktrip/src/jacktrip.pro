@@ -71,9 +71,9 @@ INSTALLS += target
 #INCLUDEPATH += ../externals/includes/rtaudio-4.0.7
 #DEPENDPATH += ../externals/includes/rtaudio-4.0.7
 win32 {
-  INCLUDEPATH += ../externals/includes/rtaudio-4.0.7/include
+  INCLUDEPATH += ../externals/rtaudio-4.1.1/include
   INCLUDEPATH += ../externals/includes
-  DEPENDPATH += ../externals/includes/rtaudio-4.0.7/include
+  DEPENDPATH += ../externals/rtaudio-4.1.1/include
   DEPENDPATH += ../externals/includes
 }
 
@@ -124,9 +124,10 @@ SOURCES += JackAudioInterface.cpp
 }
 
 # RtAduio Input
-HEADERS += ../externals/includes/rtaudio-4.0.7/RtAudio.h \
-           ../externals/includes/rtaudio-4.0.7/RtError.h
-SOURCES += ../externals/includes/rtaudio-4.0.7/RtAudio.cpp
+INCLUDEPATH += ../externals/rtaudio-4.1.1/
+DEPENDPATH += ../externals/rtaudio-4.1.1/
+HEADERS += ../externals/rtaudio-4.1.1/RtAudio.h
+SOURCES += ../externals/rtaudio-4.1.1/RtAudio.cpp
 win32 {
 HEADERS += asio.h \
            asiodrivers.h \
