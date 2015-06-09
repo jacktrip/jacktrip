@@ -36,20 +36,24 @@ macx {
   LIBS += -framework CoreAudio -framework CoreFoundation
   DEFINES += __MAC_OSX__
   }
-linux-g++ {
-  message(Linux)
-  LIBS += -lasound
+
+linux-g++ | linux-g++-64 {
+  LIBS += -lasound -lrtaudio
   QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
   QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
   }
+
+linux-g++ {
+  message(Linux)
+  QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
+  }
+
 linux-g++-64 {
   message(Linux 64bit)
-  LIBS += -lasound
   QMAKE_CXXFLAGS += -fPIC -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
-  QMAKE_CXXFLAGS += -g -O2
-  DEFINES += __LINUX__
   }
+
 win32 {
   message(win32)
   CONFIG += x86 console
@@ -68,14 +72,6 @@ QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 target.path = /usr/bin
 INSTALLS += target
 
-#INCLUDEPATH += ../externals/includes/rtaudio-4.0.7
-#DEPENDPATH += ../externals/includes/rtaudio-4.0.7
-win32 {
-  INCLUDEPATH += ../externals/rtaudio-4.1.1/include
-  INCLUDEPATH += ../externals/includes
-  DEPENDPATH += ../externals/rtaudio-4.1.1/include
-  DEPENDPATH += ../externals/includes
-}
 
 # Input
 HEADERS += DataProtocol.h \
@@ -124,10 +120,17 @@ SOURCES += JackAudioInterface.cpp
 }
 
 # RtAduio Input
+win32 {
+  INCLUDEPATH += ../externals/rtaudio-4.1.1/include
+  DEPENDPATH += ../externals/rtaudio-4.1.1/include
+}
+macx | win32 {
 INCLUDEPATH += ../externals/rtaudio-4.1.1/
 DEPENDPATH += ../externals/rtaudio-4.1.1/
 HEADERS += ../externals/rtaudio-4.1.1/RtAudio.h
 SOURCES += ../externals/rtaudio-4.1.1/RtAudio.cpp
+}
+
 win32 {
 HEADERS += asio.h \
            asiodrivers.h \

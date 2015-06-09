@@ -23,8 +23,9 @@ Dependencies:
 You need to have installed the libraries in your system:
 Qt 5.3 or higher
 jack-audio-connection-kit-devel
+rtaudio
 
-If you are using yum (in Fedora 8 or later) you can just install them (as root) with:
+If you are using yum you can just install them (as root) with:
    yum install jack-audio-connection-kit-devel
 and install qt from the qt site.
 
