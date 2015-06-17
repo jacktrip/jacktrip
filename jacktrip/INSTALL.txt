@@ -3,18 +3,41 @@ Jacktrip : Build Instructions for Linux and MacOS X
 JackTrip: A System for High-Quality Audio Network Performance over the Internet.
 
 ---
-MacOS X (10.9 or higher) Installation:
+MacOS X (10.9 or higher) installation:
 
 If you are installing on MacOS X, a binary is provided.  You just need to have JackOSX installed on your machine
 http://www.jackosx.com/
 
-To install (using Terminal): go to bin/ directory and type:
+To install (using Terminal):
 
-   sudo cp jacktrip /usr/bin/
-   (enter your password when prompted)
+$ git clone https://github.com/jcacerec/jacktrip.git
+$ cd jacktrip/jacktrip/src
+$ sudo cp jacktrip /usr/bin/
+  (enter your password when prompted)
 
-   sudo chmod 755 /usr/bin/jacktrip
-   (now you can run jacktrip from any directory using Terminal)
+$ sudo chmod 755 /usr/bin/jacktrip
+  (now you can run jacktrip from any directory using Terminal)
+
+
+---
+Fedora 22 installation:
+
+To install on Fedora (and possibly other Linux distributions), you need qt5, and jack-audio-connection-kit-devel. You also need rtaudio. If you don’t have the latest package, install from source: 
+
+$ git clone https://github.com/thestk/rtaudio
+$ cd rtaudio
+$ autoconf
+$ ./configure --with-jack
+$ make
+$ sudo make install
+$ sudo ln -s /usr/local/lib/librtaudio.so.4 /lib64/
+
+Then to install jacktrip:
+
+$ git clone https://github.com/jcacerec/jacktrip.git
+$ cd jacktrip/jacktrip/src
+$ ./build
+$ sudo make install
 
 
 ---
@@ -35,6 +58,7 @@ and Qt 5.3 or higher.
 
 It is also possible to build without jack, see below.
 
+
 ---
 Build:
 
@@ -47,25 +71,25 @@ to use the app) type the following:
    ./build nojack
 
 If the previous script doesn't work on a different Linux flavor, try building
-the Makfiles yourself. You'd need qmake (e.g., on Fedora, this command is called
-qmake-qt4). Then you can build by:
-    qmake jacktrip.pro
-    make release
+the Makfiles yourself. You'd need qmake. Then you can build by:
+$ qmake jacktrip.pro
+$ make release
 
 Or without Jack support:
-   qmake -config nojack jacktrip.pro
-   make release
+$ qmake -config nojack jacktrip.pro
+$ make release
 
 
 If you want to install install (using Terminal): on the /src directory type:
 
-   sudo cp jacktrip /usr/bin/
-   (enter your password when prompted)
+$ sudo cp jacktrip /usr/bin/
+  (enter your password when prompted)
 
-   sudo chmod 755 /usr/bin/jacktrip
-   (now you can run jacktrip from any directory using Terminal)
+$ sudo chmod 755 /usr/bin/jacktrip
+  (now you can run jacktrip from any directory using Terminal)
 
------------------------------
+
+---
 WINDOWS (XP and later) 
 
 Dependencies:
