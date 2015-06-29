@@ -182,7 +182,7 @@ void Settings::parseInput(int argc, char** argv)
             else if ( atoi(optarg) == 32 ) {
                 mAudioBitResolution = AudioInterface::BIT32; }
             else {
-                std::cerr << "--bitres ERROR: Wrong bit resolutions: "
+                std::cerr << "--bitres ERROR: Wrong bit resolution: "
                           << atoi(optarg) << " is not supported." << endl;
                 printUsage();
                 std::exit(1); }
@@ -190,7 +190,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'q':
             //-------------------------------------------------------
             if ( atoi(optarg) <= 0 ) {
-                std::cerr << "--queue ERROR: The queue has to be equal or greater that 2" << endl;
+                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 printUsage();
                 std::exit(1); }
             else {
@@ -244,7 +244,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2009 Juan-Pablo Caceres, Chris Chafe." << endl;
+            cout << "Copyright (c) 2008-2015 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
             cout << "" << endl;
             std::exit(0);
@@ -265,11 +265,11 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     if (optind < argc) {
         cout << gPrintSeparator << endl;
-        cout << "WARINING: The following entered options have no effect" << endl;
+        cout << "WARINING: The following entered options have no effect." << endl;
         cout << "          They will be ignored!" << endl;
-        cout << "          Type jacktrip to see options." << endl;
+        cout << "          Type 'jacktrip' to see options." << endl;
         for( ; optind < argc; optind++) {
-            printf("argument: %s\n", argv[optind]);
+            cout << "argument: " << argv[optind] << endl;
         }
         cout << gPrintSeparator << endl;
     }
@@ -297,27 +297,27 @@ void Settings::printUsage()
     cout << endl;
     cout << "OPTIONAL ARGUMENTS: " << endl;
     cout << "===================" << endl;
-    cout << " -n, --numchannels #                      Number of Input and Output Channels (default "
+    cout << " -n, --numchannels #                      Number of Input and Output Channels (default: "
          << 2 << ")" << endl;
-    cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default "
+    cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
          << gDefaultQueueLength << ")" << endl;
-    cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (defaul 1)"
+    cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
          << endl;
     cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
-    cout << " --bindport        #                      Set only the bind port number (default to 4464)" << endl;
-    cout << " --peerport        #                      Set only the Peer port number (default to 4464)" << endl;
-    cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default 16)" << endl;
-    cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (defaults to wavetable)" << endl;
+    cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
+    cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
+    cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
+    cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
-    cout << " --clientname                             Change default client name (default is JackTrip)" << endl;
-    cout << " --localaddress                           Change default local host IP address (127.0.0.1)" << endl;
+    cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
+    cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << endl;
-    cout << "ARGUMENTS TO USE IT WITHOUT JACK:" << endl;
-    cout << "=================================" << endl;
-    cout << " --rtaudio                                Use defaul sound system instead of Jack" << endl;
-    cout << "   --srate         #                      Set the sampling rate, works on --rtaudio mode only (defaults 48000)" << endl;
-    cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (defaults 128)" << endl;
+    cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
+    cout << "=======================================" << endl;
+    cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
+    cout << "   --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
+    cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << "===============" << endl;
