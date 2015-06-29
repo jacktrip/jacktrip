@@ -285,18 +285,15 @@ void Settings::printUsage()
     cout << "Copyright (c) 2008-2015 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
     cout << "VERSION: " << gVersion << endl;
-    cout << "-----------------------------------------------------------------------------" << endl;
     cout << "" << endl;
     cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
     cout << "" << endl;
     cout << "Options: " << endl;
     cout << "REQUIRED ARGUMENTS: " << endl;
-    cout << "===================" << endl;
     cout << " -s, --server                             Run in Server Mode" << endl;
     cout << " -c, --client      <peer_host_IP_number>  Run in Client Mode" << endl;
     cout << endl;
     cout << "OPTIONAL ARGUMENTS: " << endl;
-    cout << "===================" << endl;
     cout << " -n, --numchannels #                      Number of Input and Output Channels (default: "
          << 2 << ")" << endl;
     cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
@@ -314,13 +311,11 @@ void Settings::printUsage()
     cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
-    cout << "=======================================" << endl;
     cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
     cout << "   --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
     cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
-    cout << "===============" << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
     cout << " -h, --help                               Prints this Help" << endl;
     cout << "" << endl;
