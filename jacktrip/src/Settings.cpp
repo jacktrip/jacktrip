@@ -72,7 +72,8 @@ Settings::Settings() :
     mRedundancy(1),
     mUseJack(true),
     mChanfeDefaultSR(false),
-    mChanfeDefaultBS(false)
+    mChanfeDefaultBS(false),
+    mConnectDefaultAudioPorts(true)
 {}
 
 //*******************************************************************************
@@ -119,6 +120,7 @@ void Settings::parseInput(int argc, char** argv)
         { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
         { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
         { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
+        { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
         { "version", no_argument, NULL, 'v' }, // Version Number
         { "help", no_argument, NULL, 'h' }, // Print Help
         { NULL, 0, NULL, 0 }
@@ -129,7 +131,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:vh", longopts, NULL)) != -1 )
+                              "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:Dvh", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -241,6 +243,10 @@ void Settings::parseInput(int argc, char** argv)
             mChanfeDefaultBS = true;
             mAudioBufferSize = atoi(optarg);
             break;
+        case 'D':
+            //-------------------------------------------------------
+            mConnectDefaultAudioPorts = false;
+            break;
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
@@ -309,6 +315,7 @@ void Settings::printUsage()
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
     cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
     cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
+    cout << " --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
@@ -352,6 +359,9 @@ void Settings::startJackTrip()
         //	    mBufferQueueLength, mAudioBitResolution);
         mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
                                  mBufferQueueLength, mRedundancy, mAudioBitResolution);
+
+        // Set connect or not default audio ports. Only work for jack
+        mJackTrip->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
 
         // Connect Signals and Slots
         QObject::connect(mJackTrip, SIGNAL( signalProcessesStopped() ),

@@ -214,6 +214,10 @@ public:
   virtual void setNumChannels(int num_chans)
   { mNumChans = num_chans; }
 
+  /// Set to connect or not default audio ports (only implemented in Jack)
+  virtual void setConnectDefaultAudioPorts(bool connect)
+  {mConnectDefaultAudioPorts = connect;}
+
   virtual int getReceiverBindPort() const
   { return mReceiverBindPort; }
   virtual int getSenderPeerPort() const
@@ -460,6 +464,8 @@ private:
   volatile bool mReceivedConnection; ///< Bool of received connection from peer
   volatile bool mTcpConnectionError;
   volatile bool mStopped;
+
+  bool mConnectDefaultAudioPorts; ///< Connect or not default audio ports
 };
 
 #endif

@@ -101,7 +101,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mConnectionMode(JackTrip::NORMAL),
   mReceivedConnection(false),
   mTcpConnectionError(false),
-  mStopped(false)
+  mStopped(false),
+  mConnectDefaultAudioPorts(true)
 {
   createHeader(mPacketHeaderType);
 }
@@ -346,7 +347,7 @@ void JackTrip::startProcess() throw(std::invalid_argument)
   for (int i = 0; i < mProcessPlugins.size(); ++i) {
     mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
   }
-  mAudioInterface->connectDefaultPorts();
+  if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
   mDataProtocolReceiver->start();
   QThread::msleep(1);
   mDataProtocolSender->start();

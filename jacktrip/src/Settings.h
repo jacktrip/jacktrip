@@ -102,6 +102,7 @@ private:
   bool mChanfeDefaultBS; ///< Change Default Buffer Size
   unsigned int mSampleRate;
   unsigned int mAudioBufferSize;
+  bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
 };
 
 #endif
