@@ -4,8 +4,6 @@
 
 You can use it between any combination of Linux and Mac OS X (i.e., one end using Linux can connect to the other using Mac OS X).
 
-It is currently being developed and actively tested at [CCRMA](http://ccrma.stanford.edu/) by the [SoundWIRE group](http://ccrma.stanford.edu/groups/soundwire/).
-
 
 ## Links ##
   * Preliminary [Documentation](http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/) and [API](http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/annotated.html).
