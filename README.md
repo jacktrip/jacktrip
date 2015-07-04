@@ -10,6 +10,7 @@ You can use it between any combination of Linux and Mac OS X (i.e., one end usin
   * Subscribe to the [Mailing List](http://groups.google.com/group/jacktrip-users).
   * [CCRMA](http://ccrma.stanford.edu/) .
   * [SoundWIRE group](http://ccrma.stanford.edu/groups/soundwire/).
+  * [Juan-Pablo Caceres](https://ccrma.stanford.edu/~jcaceres/).
 
 
 ## Related Software ##
