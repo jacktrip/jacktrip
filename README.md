@@ -1,4 +1,4 @@
-# JackTrip #
+# JackTrip (download the latest release [here](https://github.com/jcacerec/jacktrip/releases))
 
 **JackTrip** is a Linux and Mac OS X-based system used for multi-machine network performance over the Internet. It supports any number of channels (as many as the computer/network can handle) of bidirectional, high quality, uncompressed audio signal streaming.
 
