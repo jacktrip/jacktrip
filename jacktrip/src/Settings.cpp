@@ -297,7 +297,7 @@ void Settings::printUsage()
     cout << "Options: " << endl;
     cout << "REQUIRED ARGUMENTS: " << endl;
     cout << " -s, --server                             Run in Server Mode" << endl;
-    cout << " -c, --client      <peer_host_IP_number>  Run in Client Mode" << endl;
+    cout << " -c, --client <peer_hostname_or_IP_num>   Run in Client Mode" << endl;
     cout << endl;
     cout << "OPTIONAL ARGUMENTS: " << endl;
     cout << " -n, --numchannels #                      Number of Input and Output Channels (default: "
