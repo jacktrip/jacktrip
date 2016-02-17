@@ -12,10 +12,10 @@ To install (using Terminal):
 
 $ git clone https://github.com/jcacerec/jacktrip.git
 $ cd jacktrip/jacktrip/src
-$ sudo cp jacktrip /usr/bin/
+$ sudo cp jacktrip /usr/local/bin/
   (enter your password when prompted)
 
-$ sudo chmod 755 /usr/bin/jacktrip
+$ sudo chmod 755 /usr/local/bin/jacktrip
   (now you can run jacktrip from any directory using Terminal)
 
 
@@ -82,10 +82,10 @@ $ make release
 
 If you want to install install (using Terminal): on the /src directory type:
 
-$ sudo cp jacktrip /usr/bin/
+$ sudo cp jacktrip /usr/local/bin/
   (enter your password when prompted)
 
-$ sudo chmod 755 /usr/bin/jacktrip
+$ sudo chmod 755 /usr/local/bin/jacktrip
   (now you can run jacktrip from any directory using Terminal)
 
 
