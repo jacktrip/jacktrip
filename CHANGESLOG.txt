@@ -1,5 +1,6 @@
 ---
 master
+- (fixed) Fixed compilation for  MacOSX10.11.sdk.
 - (update) Updated to RtAudio 4.1.1, and using shared lib in linux.
 
 ---
