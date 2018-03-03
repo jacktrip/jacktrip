@@ -27,7 +27,7 @@ if [[ $platform == 'linux' ]]; then
     QSPEC=linux-g++
 elif [[ $platform == 'macosx' ]]; then
     QCMD=qmake
-    QSPEC=macx-g++
+    QSPEC=macx-clang
 fi
 
 # Build
