@@ -98,9 +98,9 @@ public:
   virtual void setClientName(const char* ClientName)
   { mClientName = ClientName; }
   virtual void setSampleRate(uint32_t /*sample_rate*/)
-  { std::cout << "WARING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
+  { std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
   virtual void setBufferSizeInSamples(uint32_t /*buf_size*/)
-  { std::cout << "WARING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
+  { std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
   //------------------------------------------------------------------
 
   //--------------GETTERS---------------------------------------------
