@@ -290,7 +290,7 @@ void JackAudioInterface::connectDefaultPorts()
         jack_get_ports (mClient, NULL, NULL,
                         JackPortIsPhysical | JackPortIsOutput)) == NULL)
   {
-    cout << "WARING: Cannot find any physical capture ports" << endl;
+    cout << "WARNING: Cannot find any physical capture ports" << endl;
   }
   else
   {
@@ -310,7 +310,7 @@ void JackAudioInterface::connectDefaultPorts()
         jack_get_ports (mClient, NULL, NULL,
                         JackPortIsPhysical | JackPortIsInput)) == NULL)
   {
-    cout << "WARING: Cannot find any physical playback ports" << endl;
+    cout << "WARNING: Cannot find any physical playback ports" << endl;
   }
   else 
   {
