@@ -38,7 +38,7 @@
 #ifndef __RTAUDIOINTERFACE_H__
 #define __RTAUDIOINTERFACE_H__
 
-#include "RtAudio.h"
+#include "rtaudio/RtAudio.h"
 
 #include "AudioInterface.h"
 #include "jacktrip_globals.h"
