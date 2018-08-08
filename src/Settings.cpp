@@ -72,6 +72,7 @@ Settings::Settings() :
     mRedundancy(1),
     mUseJack(true),
     mChanfeDefaultSR(false),
+    mChanfeDefaultID(0),
     mChanfeDefaultBS(false),
     mConnectDefaultAudioPorts(true)
 {}
@@ -119,6 +120,7 @@ void Settings::parseInput(int argc, char** argv)
         { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
         { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
         { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
+        { "deviceid", required_argument, NULL, 'd' }, // Set RTAudio device id to use
         { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
         { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
         { "version", no_argument, NULL, 'v' }, // Version Number
@@ -131,7 +133,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:sc:SC:o:B:P:q:r:b:zljeJ:RT:F:Dvh", longopts, NULL)) != -1 )
+                              "n:sc:SC:o:B:P:q:r:b:zljeJ:RTd:F:Dvh", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -238,6 +240,11 @@ void Settings::parseInput(int argc, char** argv)
             mChanfeDefaultSR = true;
             mSampleRate = atoi(optarg);
             break;
+        case 'd': // RTAudio device id
+            //-------------------------------------------------------
+            mChanfeDefaultID = true;
+            mDeviceID = atoi(optarg);
+            break;
         case 'F': // Buffer Size
             //-------------------------------------------------------
             mChanfeDefaultBS = true;
@@ -321,6 +328,7 @@ void Settings::printUsage()
     cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
     cout << "   --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
     cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
+    cout << "   --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -417,6 +425,11 @@ void Settings::startJackTrip()
         // Chanfe default Sampling Rate
         if (mChanfeDefaultSR) {
             mJackTrip->setSampleRate(mSampleRate);
+        }
+        
+        // Chanfe defualt device ID
+        if (mChanfeDefaultID) {
+            mJackTrip->setDeviceID(mDeviceID);
         }
 
         // Chanfe default Buffer Size

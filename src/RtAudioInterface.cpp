@@ -85,10 +85,10 @@ void RtAudioInterface::setup()
   RtAudio::DeviceInfo info_input;
   RtAudio::DeviceInfo info_output;
 
-  int deviceId_input; int deviceId_output;
+  uint32_t deviceId_input; uint32_t deviceId_output;
   // use default devices
-  deviceId_input = mRtAudio->getDefaultInputDevice();
-  deviceId_output = mRtAudio->getDefaultOutputDevice();
+  deviceId_input = mJackTrip->getDeviceID();
+  deviceId_output = mJackTrip->getDeviceID();
 
   cout << "DEFAULT INPUT DEVICE  : " << endl;
   printDeviceInfo(deviceId_input);
@@ -98,8 +98,8 @@ void RtAudioInterface::setup()
   cout << gPrintSeparator << endl;
 
   RtAudio::StreamParameters in_params, out_params;
-  in_params.deviceId = mRtAudio->getDefaultInputDevice();
-  out_params.deviceId = mRtAudio->getDefaultOutputDevice();
+  in_params.deviceId = deviceId_input;
+  out_params.deviceId = deviceId_output;
   in_params.nChannels = getNumInputChannels();
   out_params.nChannels = getNumOutputChannels();
 

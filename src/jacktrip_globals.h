@@ -58,6 +58,7 @@ const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
 const int gDefaultQueueLength = 4;
 const int gDefaultOutputQueueLength = 4;
 const uint32_t gDefaultSampleRate = 48000;
+const uint32_t gDefaultDeviceID = 0;
 const uint32_t gDefaultBufferSizeInSamples = 128;
 const QString gDefaultLocalAddress = QString();
 const int gDefaultRedundancy = 1;
