@@ -15,8 +15,6 @@ CONFIG(debug, debug|release) {
 QT -= gui
 QT += network
 
-unix:DISTRIBUTION = $$system(cat /etc/issue | cut -d\' \' -f1)
-
 # rc.1.2 switch enables experimental wair build
 # DEFINES += WAIR
 
@@ -110,9 +108,6 @@ INCLUDEPATH += ../../Downloads/jack2-master/jack2-master/common
 LIBS += -LC:\Users\cc\Documents\jackSimpleClient\lib -ljack
 }
 
-
-
-
 DESTDIR = .
 QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 target.path = /usr/bin
@@ -140,16 +135,7 @@ HEADERS += DataProtocol.h \
            ThreadPoolTest.h \
            UdpDataProtocol.h \
            UdpMasterListener.h \
-           AudioInterface.h \
-            ../faust-src-lair/Faust.h \
-            ../faust-src-lair/ap8x2.dsp.h \
-            ../faust-src-lair/dcblock2gain.dsp.h \
-            ../faust-src-lair/Stk16.dsp.h \
-            ../faust-src-lair/stk/Delay.h \
-            ../faust-src-lair/stk/Filter.h \
-            ../faust-src-lair/stk/Stk.h \
-            ../faust-src-lair/stk/OnePole.h \
-            JMess.h
+           AudioInterface.h
 
 !nojack {
 HEADERS += JackAudioInterface.h
@@ -168,12 +154,7 @@ SOURCES += DataProtocol.cpp \
            Settings.cpp \
            UdpDataProtocol.cpp \
            UdpMasterListener.cpp \
-           AudioInterface.cpp \
-            ../faust-src-lair/Faust.cpp \
-            ../faust-src-lair/stk/Delay.cpp \
-            ../faust-src-lair/stk/Stk.cpp \
-            ../faust-src-lair/stk/OnePole.cpp \
-            JMess.cpp
+           AudioInterface.cpp
 
 !nojack {
 SOURCES += JackAudioInterface.cpp
