@@ -151,6 +151,8 @@ public:
   { mNumOutChans = nchannels; }
   virtual void setSampleRate(uint32_t sample_rate)
   { mSampleRate = sample_rate; }
+  virtual void setDeviceID(uint32_t device_id)
+  { mDeviceID = device_id; }
   virtual void setBufferSizeInSamples(uint32_t buf_size)
   { mBufferSizeInSamples = buf_size; }
   /// \brief Set Client Name to something different that the default (JackTrip)
@@ -164,6 +166,8 @@ public:
   virtual int getNumOutputChannels() const  { return mNumOutChans; }
   virtual uint32_t getBufferSizeInSamples() const
   { return mBufferSizeInSamples; }
+  virtual uint32_t getDeviceID() const
+  { return mDeviceID; }
   virtual size_t getSizeInBytesPerChannel() const;
   /// \brief Get the Jack Server Sampling Rate, in samples/second
   virtual uint32_t getSampleRate() const
@@ -200,6 +204,7 @@ private:
   int mAudioBitResolution; ///< Bit resolution in audio samples
   AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
   uint32_t mSampleRate; ///< Sampling Rate
+  uint32_t mDeviceID; ///< RTAudio DeviceID
   uint32_t mBufferSizeInSamples; ///< Buffer size in samples
   size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
   QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>

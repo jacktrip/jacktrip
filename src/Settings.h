@@ -99,8 +99,10 @@ private:
   unsigned int mRedundancy; ///< Redundancy factor for data in the network
   bool mUseJack; ///< Use or not JackAduio
   bool mChanfeDefaultSR; ///< Change Default Sampling Rate
+  bool mChanfeDefaultID; ///< Change Default device ID
   bool mChanfeDefaultBS; ///< Change Default Buffer Size
   unsigned int mSampleRate;
+  unsigned int mDeviceID;
   unsigned int mAudioBufferSize;
   bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
 };

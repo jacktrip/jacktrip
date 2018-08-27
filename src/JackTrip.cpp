@@ -82,6 +82,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
   mNumChans(NumChans),
   mBufferQueueLength(BufferQueueLength),
   mSampleRate(gDefaultSampleRate),
+  mDeviceID(gDefaultDeviceID),
   mAudioBufferSize(gDefaultBufferSizeInSamples),
   mAudioBitResolution(AudioBitResolution),
   mDataProtocolSender(NULL),
@@ -139,6 +140,7 @@ void JackTrip::setupAudio()
     mAudioInterface->setClientName(mJackClientName);
     mAudioInterface->setup();
     mSampleRate = mAudioInterface->getSampleRate();
+    mDeviceID = mAudioInterface->getDeviceID();
     mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif //__NON_JACK__
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
@@ -146,6 +148,7 @@ void JackTrip::setupAudio()
     cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
     mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
     mAudioInterface->setSampleRate(mSampleRate);
+    mAudioInterface->setDeviceID(mDeviceID);
     mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
     mAudioInterface->setup();
 #endif
@@ -155,6 +158,7 @@ void JackTrip::setupAudio()
 #ifdef __RT_AUDIO__
     mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
     mAudioInterface->setSampleRate(mSampleRate);
+    mAudioInterface->setDeviceID(mDeviceID);
     mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
     mAudioInterface->setup();
 #endif
@@ -168,6 +172,8 @@ void JackTrip::setupAudio()
       << " bytes" << std::endl;
   std::cout << gPrintSeparator << std::endl;
   cout << "The Number of Channels is: " << mAudioInterface->getNumInputChannels() << endl;
+  std::cout << gPrintSeparator << std::endl;
+  cout << "The RTAudio device ID is: " << mAudioInterface->getDeviceID() << endl;
   std::cout << gPrintSeparator << std::endl;
   QThread::usleep(100);
 }

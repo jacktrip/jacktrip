@@ -259,8 +259,11 @@ public:
 
   void setSampleRate(uint32_t sample_rate)
   { mSampleRate = sample_rate; }
+  void setDeviceID(uint32_t device_id)
+  { mDeviceID = device_id; }
   void setAudioBufferSizeInSamples(uint32_t buf_size)
   { mAudioBufferSize = buf_size; }
+  
 
   JackTrip::connectionModeT getConnectionMode() const
   { return mConnectionMode; }
@@ -300,6 +303,8 @@ public:
   { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
   uint32_t getBufferSizeInSamples() const
   { return mAudioBufferSize; /*return mAudioInterface->getBufferSizeInSamples();*/ }
+  uint32_t getDeviceID() const
+  { return mDeviceID; /*return mAudioInterface->mDeviceID();*/ }
 
   AudioInterface::samplingRateT getSampleRateType() const
   { return mAudioInterface->getSampleRateType(); }
@@ -431,6 +436,7 @@ private:
   int mNumChans; ///< Number of Channels (inputs = outputs)
   int mBufferQueueLength; ///< Audio Buffer from network queue length
   uint32_t mSampleRate; ///< Sample Rate
+  uint32_t mDeviceID; ///< RTAudio DeviceID
   uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
   AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
   QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
