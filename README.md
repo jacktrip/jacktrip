@@ -15,7 +15,7 @@ You can use it between any combination of machines e.g., one end using Linux can
 
 # Raspberry Pi
 
-[paper](https://lac.linuxaudio.org/2019/doc/chafe2.pdf) accompanying demo at [Linux Audio Conference 2019](https://lac.linuxaudio.org/2019/)
+[paper](https://lac.linuxaudio.org/2019/doc/chafe2.pdf) accompanying jacktrip demo at [Linux Audio Conference 2019](https://lac.linuxaudio.org/2019/)
 
 # Other Repos
 jacktrip (1.0) was released on google code. When that shut down, it migrated to github (1.05, 1.1)
