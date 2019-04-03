@@ -18,10 +18,3 @@ jacktrip (1.0) was released on google code. When that shut down, it migrated to 
 
 The most current release (1.2) is here on CCRMA's cm-gitlab
 
-# Install
-
-# Build
-
-# Run
-
-
