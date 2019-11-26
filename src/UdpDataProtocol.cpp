@@ -372,7 +372,8 @@ void UdpDataProtocol::run()
 
   // Set realtime priority (function in jacktrip_globals.h)
   if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before set_crossplatform_realtime_priority()" << std::endl;
-  set_crossplatform_realtime_priority();
+  std::cout << "Experimental version -- not using set_crossplatform_realtime_priority()" << std::endl;
+  //set_crossplatform_realtime_priority();
 
   switch ( mRunMode )
   {

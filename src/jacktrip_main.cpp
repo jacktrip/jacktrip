@@ -56,10 +56,20 @@
 #include "jacktrip_globals.h"
 using std::cout; using std::endl;
 
+#include <QDebug>
+#include <QLoggingCategory>
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+    fprintf(stderr, "%s\n", localMsg.constData());
+    fflush(stderr);
+}
 
 int main(int argc, char** argv)
 {
   QCoreApplication app(argc, argv);
+  QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+  qInstallMessageHandler(myMessageOutput);
 
   bool testing = false;
   if ( argc > 1 ) {
