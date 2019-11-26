@@ -13,7 +13,7 @@ EQ            = =
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -D__LINUX__ -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_QML_DEBUG
+DEFINES       = -D__LINUX__ -DQT_NETWORK_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -D_REENTRANT -Wall -W -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -D__LINUX_ALSA__ -g -O2 -D__LINUX_ALSA__ -g -std=gnu++11 -D_REENTRANT -Wall -W -fPIC $(DEFINES)
 INCPATH       = -I. -I../faust-src-lair/stk -isystem /usr/local/include -I../faust-src-lair -isystem /usr/include/qt5 -isystem /usr/include/qt5/QtNetwork -isystem /usr/include/qt5/QtCore -Idebug -I/usr/lib64/qt5/mkspecs/linux-g++
@@ -254,7 +254,6 @@ DIST          = /usr/lib64/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib64/qt5/mkspecs/features/qt.prf \
 		/usr/lib64/qt5/mkspecs/features/resources.prf \
 		/usr/lib64/qt5/mkspecs/features/moc.prf \
-		/usr/lib64/qt5/mkspecs/features/qml_debug.prf \
 		/usr/lib64/qt5/mkspecs/features/warn_on.prf \
 		/usr/lib64/qt5/mkspecs/features/qmake_use.prf \
 		/usr/lib64/qt5/mkspecs/features/file_copies.prf \
@@ -308,7 +307,7 @@ jacktrip_debug:  $(OBJECTS)
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 qmake: FORCE
-	@$(QMAKE) -o Makefile.Debug jacktrip.pro -spec linux-g++ CONFIG+=debug CONFIG+=qml_debug
+	@$(QMAKE) -o Makefile.Debug jacktrip.pro -spec linux-g++
 
 qmake_all: FORCE
 

@@ -375,6 +375,66 @@ void UdpDataProtocol::run()
   std::cout << "Experimental version -- not using set_crossplatform_realtime_priority()" << std::endl;
   //set_crossplatform_realtime_priority();
 
+/////////////////////
+  // to see thread priorities
+  // sudo ps -eLo pri,rtprio,cls,pid,nice,cmd | grep -E 'jackd|jacktrip|rtc|RTPRI' | sort -r
+
+// from David Runge
+
+//  It seems that it tries to apply the highest available SCHED_FIFO to
+//  jacktrip or half of it (?) [1] (although that's not what you would want,
+//  as this would mean assigning a higher priority to jacktrip than e.g. to
+//  the audio interface and e.g. IRQs that need to be taken care of).
+
+//  The version on github [2] (current 1.1) is actually worse off, as it
+//  just hardcodes RTPRIO 99 (which means jacktrip will compete with the
+//  Linux kernel watchdog, if the user trying to launch jacktrip is even
+//  allowed to use that high of a priority!).
+//  On most systems this will not work at all (aside from it being outright
+//  dangerous). On Arch (and also Ubuntu) the sane default is to allow
+//  rtprio 95 to a privileged user group (e.g. 'realtime' or 'audio', etc.)
+
+//  It would be very awesome, if setting the priority would be dealt with by
+//  a command line flag to jacktrip (e.g. `jacktrip --priority=50`) and
+//  otherwise defaulting to a much much lower number (e.g. 10), so the
+//  application can be run out-of-the-box (even without being in a
+//  privileged group).
+
+// from Nando
+
+//  You should actually be using the priority that jack gives you when you
+//  create the realtime thread, that puts your process "behind" - so to
+//  speak - the processing that jack does on behalf of all its clients, and
+//  behind (in a properly configured system) the audio interface processing
+//  interrupt. No need to select a priority yourself.
+
+//  In a Fedora system I run jack with a priority of 65 (the Fedora packages
+//  changed the default to a much lower one which is a big no-no). The
+//  clients inherit 60, I think. Some clients that have their own internal
+//  structure of processes (jconvolver) run multiple threads and use
+//  priorities below 60 for them (ie: they start with what jack gave them).
+
+//  If you need to run a thread (not the audio thread) with higher priority
+//  you could retrieve the priority that jack gave you and add some magic
+//  number to get it to be above jack itself (10 would be fine in my
+//  experience).
+
+//without setting it
+//        PRI RTPRIO CLS   PID  NI CMD
+//         60     20  FF  4348   - /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+//         55     15  FF  9835   - ./jacktrip -s
+//         19      -  TS  9835   0 ./jacktrip -s
+//         19      -  TS  9835   0 ./jacktrip -s
+//         19      -  TS  9835   0 ./jacktrip -s
+//         19      -  TS  9835   0 ./jacktrip -s
+//         19      -  TS  9835   0 ./jacktrip -s
+//         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+//         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+//         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+//         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+
+// jack puts its clients in FF at 5 points below itself
+
   switch ( mRunMode )
   {
   case RECEIVER : {
