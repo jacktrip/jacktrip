@@ -126,7 +126,7 @@ void JMess::writeOutput(QString xmlOutFile)
     //	   << qPrintable(file.errorString()) << endl;
     //      exit(1);
     //    }
-    
+
     //    QTextStream out(&file);
     //    jmess_xml.save(out, Indent);
     //    cout << qPrintable(xmlOutFile) << " written." << endl;
@@ -192,32 +192,47 @@ void JMess::connectSpawnedPorts(int nChans)
             {
                 LAIRS[ctr] = s.toInt();
                 ctr++;
-                                qDebug() << ports[out_i] << tmp << s;
+                qDebug() << ports[out_i] << tmp << s;
             }
         }
     }
-for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
+    for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
     qDebug() << "---------------------------------";
     disconnectAll();
+    //////////////////////
+    //    // from hubLogger connects client to itself
+    //    for (int i = 0; i<ctr; i++)
+    //        {
+    //            int k = i; // (j+(i+1))%ctr;
+    //////////////////////////////////////////////////////////////////
+#define CONNECT_CLIENT_TO_SELF
+
     for (int i = 0; i<ctr; i++)
+#ifdef CONNECT_CLIENT_TO_SELF
+#else
         for (int j = 0; j<(ctr-1); j++)
+#endif
         {
+#ifdef CONNECT_CLIENT_TO_SELF
+            int k = i;
+#else
             int k = (j+(i+1))%ctr;
+#endif
             for (int l = 1; l<=nChans; l++) // chans are 1-based
             {
                 qDebug() << "connect LAIR" << LAIRS[i] << ":receive_ " << l
                          <<"with LAIR" << LAIRS[k] << "send_" << l;
 
                 QString left = (QString(WAIR_AUDIO_NAME + QString::number(LAIRS[i]) +
-                         ":receive_" + QString::number(l)));
+                                        ":receive_" + QString::number(l)));
                 QString right = (QString(WAIR_AUDIO_NAME + QString::number(LAIRS[k]) +
-                         ":send_" + QString::number(l)));
+                                         ":send_" + QString::number(l)));
 
                 if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
-                  qDebug() << "WARNING: port: " << left
-                       << "and port: " << right
-                       << " could not be connected.";
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
                 }
 
             }

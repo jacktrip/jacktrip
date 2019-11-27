@@ -62,7 +62,7 @@ const int Indent = 2;
 //-------------------------------------------------------------------------------
 class JMess {
 
-public: 
+public:
   JMess();
   virtual ~JMess();
 
