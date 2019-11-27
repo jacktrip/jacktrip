@@ -53,7 +53,7 @@ const int gDefaultNumInChannels = 2;
 const int gDefaultNumOutChannels = 2;
 
 #define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
-#define WAIR_AUDIO_NAME "WAIR" // for jack connection
+#define WAIR_AUDIO_NAME "JackTrip" // for jack connection
 const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
 #ifdef WAIR // wair
 // uses hub mode
