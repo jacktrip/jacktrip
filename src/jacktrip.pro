@@ -118,6 +118,7 @@ INCLUDEPATH += ../faust-src-lair
 
 # Input
 HEADERS += DataProtocol.h \
+           JMess.h \
            JackTrip.h \
            jacktrip_globals.h \
            jacktrip_types.h \
@@ -141,6 +142,7 @@ HEADERS += DataProtocol.h \
 HEADERS += JackAudioInterface.h
 }
 SOURCES += DataProtocol.cpp \
+           JMess.cpp \
            JackTrip.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
