@@ -196,7 +196,7 @@ void JMess::connectSpawnedPorts(int nChans)
             }
         }
     }
-        for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
+for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
     qDebug() << "---------------------------------";
     disconnectAll();
     for (int i = 0; i<ctr; i++)
