@@ -53,11 +53,13 @@ const int gDefaultNumInChannels = 2;
 const int gDefaultNumOutChannels = 2;
 
 #define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
-#define WAIR_AUDIO_NAME "JackTrip" // for jack connection
+// #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
+const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
 const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
 
 // hubpatch = 2 for TUB ensemble patching
-const QString gDOMAIN_TRIPLE = QString("10.11.12"); // for TUB multiclient hub
+const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
+const QString gTUB_AUDIO_NAME = QString("TUB"); // for TUB multiclient hub
 const int gMIN_TUB = 0; // lowest client address
 const int gMAX_TUB = 9; // highest client address
 
