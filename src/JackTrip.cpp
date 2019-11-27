@@ -129,7 +129,7 @@ JackTrip::~JackTrip()
 
 //*******************************************************************************
 void JackTrip::setupAudio(
-        #ifdef WAIR // WAIR
+        #ifdef WAIRTOMASTER // WAIR
         int ID
         #endif // endwhere
         )
@@ -305,7 +305,7 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 
 //*******************************************************************************
 void JackTrip::startProcess(
-        #ifdef WAIR // WAIR
+        #ifdef WAIRTOMASTER // WAIR
         int ID
         #endif // endwhere
         ) throw(std::invalid_argument)
@@ -334,7 +334,7 @@ void JackTrip::startProcess(
     // ------------------------------
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before setupAudio" << std::endl;
     setupAudio(
-            #ifdef WAIR // wair
+            #ifdef WAIRTOMASTER // wair
                 ID
             #endif // endwhere
                 );

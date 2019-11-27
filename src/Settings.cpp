@@ -546,7 +546,7 @@ void Settings::startJackTrip()
         // Start JackTrip
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
         mJackTrip->startProcess(
-            #ifdef WAIR // WAIR
+            #ifdef WAIRTOMASTER // WAIR
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );
