@@ -127,6 +127,7 @@ void UdpMasterListener::run()
     while ( !mStopped )
     {
         cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
+        cout << "JackTrip HUB SERVER: Hub auto audio patch =" << mHubPatch << endl;
         cout << "=======================================================" << endl;
         while ( !TcpServer.waitForNewConnection(1000) )
         { if (mStopped) { return; } } // block until a new connection is received

@@ -294,8 +294,10 @@ void Settings::parseInput(int argc, char** argv)
         case 'p':
             //-------------------------------------------------------
             if      ( atoi(optarg) == 0 ) {
+                mHubConnectionMode = JackTrip::SERVERTOCLIENT; }
+            if      ( atoi(optarg) == 1 ) {
                 mHubConnectionMode = JackTrip::CLIENTECHO; }
-            else if ( atoi(optarg) == 1 ) {
+            else if ( atoi(optarg) == 2 ) {
                 mHubConnectionMode = JackTrip::CLIENTFOFI; }
             else {
                 std::cerr << "--bitres ERROR: Wrong HubConnectionMode: "
@@ -369,6 +371,7 @@ void Settings::printUsage()
     cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
     cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
+    cout << " -p, --hubpatch    # (0, 1, 2)            Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
@@ -383,6 +386,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
+    cout << " -V, --verbose                            Verbose mode, prints debug messages" << endl;
     cout << " -h, --help                               Prints this Help" << endl;
     cout << "" << endl;
 }
@@ -398,6 +402,7 @@ void Settings::startJackTrip()
 #ifdef WAIR // WAIR
         udpmaster->setWAIR(mWAIR);
 #endif // endwhere
+        udpmaster->setHubPatch(mHubConnectionMode);
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
         udpmaster->start();
 
