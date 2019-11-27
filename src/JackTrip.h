@@ -98,11 +98,17 @@ public:
         RTAUDIO  ///< RtAudio Mode
     };
 
-    /// \brief Enum for Connection Mode (useful for connections to MultiClient Server)
+    /// \brief Enum for Connection Mode (in packet header)
     enum connectionModeT {
         NORMAL, ///< Normal Mode
         KSTRONG,  ///< Karplus Strong
         JAMTEST  ///< Karplus Strong
+    };
+
+    /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are automatically patched in Jack)
+    enum hubConnectionModeT {
+        CLIENTECHO  ///< Client Echo (client self-to-self)
+        CLIENTFOFI  ///< Client Fan Out and Fan In (but not self-to-self)
     };
     //---------------------------------------------------------
 
