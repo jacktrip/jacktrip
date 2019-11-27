@@ -107,8 +107,9 @@ public:
 
     /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are automatically patched in Jack)
     enum hubConnectionModeT {
+        SERVERTOCLIENT, ///< Normal Mode, Sever to All Clients (but not client to any client)
         CLIENTECHO,  ///< Client Echo (client self-to-self)
-        CLIENTFOFI  ///< Client Fan Out and Fan In (but not self-to-self)
+        CLIENTFOFI  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
     };
     //---------------------------------------------------------
 
