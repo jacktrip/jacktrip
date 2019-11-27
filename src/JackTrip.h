@@ -107,7 +107,7 @@ public:
 
     /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are automatically patched in Jack)
     enum hubConnectionModeT {
-        CLIENTECHO  ///< Client Echo (client self-to-self)
+        CLIENTECHO,  ///< Client Echo (client self-to-self)
         CLIENTFOFI  ///< Client Fan Out and Fan In (but not self-to-self)
     };
     //---------------------------------------------------------
@@ -487,6 +487,7 @@ private:
     const char* mJackClientName; ///< JackAudio Client Name
 
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
+    JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Connection Mode
 
     QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 
