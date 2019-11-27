@@ -83,6 +83,7 @@ Settings::Settings() :
     mUseJack(true),
     mChanfeDefaultSR(false),
     mChanfeDefaultBS(false),
+    mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true)
 {}
 
@@ -136,6 +137,7 @@ void Settings::parseInput(int argc, char** argv)
     { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "verbose", no_argument, NULL, 'V' }, // Verbose mode
+    { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
 };
@@ -145,7 +147,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RT:F:DvVh", longopts, NULL)) != -1 )
+                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RT:F:p:DvVh", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -288,6 +290,18 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             gVerboseFlag = true;
             if (gVerboseFlag) std::cout << "Verbose mode" << std::endl;
+            break;
+        case 'p':
+            //-------------------------------------------------------
+            if      ( atoi(optarg) == 0 ) {
+                mHubConnectionMode = JackTrip::CLIENTECHO; }
+            else if ( atoi(optarg) == 1 ) {
+                mHubConnectionMode = JackTrip::CLIENTFOFI; }
+            else {
+                std::cerr << "--bitres ERROR: Wrong HubConnectionMode: "
+                          << atoi(optarg) << " is not supported." << endl;
+                printUsage();
+                std::exit(1); }
             break;
         case 'h':
             //-------------------------------------------------------
