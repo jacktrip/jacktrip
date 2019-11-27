@@ -157,6 +157,8 @@ void UdpMasterListener::run()
             int id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
             // If the address is not new, we need to remove the client from the pool
             // before re-starting the connection
+
+            qDebug() << id << " ***********";
             if (id == -1) {
                 int id_remove;
                 id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
