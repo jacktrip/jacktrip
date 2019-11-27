@@ -283,6 +283,11 @@ public:
     void setConnectionMode(JackTrip::connectionModeT connection_mode)
     { mConnectionMode = connection_mode; }
 
+    JackTrip::hubConnectionModeT getHubConnectionModeT() const
+    { return mHubConnectionModeT; }
+    void setHubConnectionModeT(JackTrip::hubConnectionModeT connection_mode)
+    { mHubConnectionModeT = connection_mode; }
+
     JackTrip::jacktripModeT getJackTripMode() const
     { return mJackTripMode; }
 
@@ -488,7 +493,7 @@ private:
     const char* mJackClientName; ///< JackAudio Client Name
 
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
-    JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Connection Mode
+    JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Hub Server Jack Audio Patch Connection Mode
 
     QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 
