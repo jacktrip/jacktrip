@@ -185,8 +185,6 @@ void JMess::connectSpawnedPorts(int nChans)
         QChar c = QString(ports[out_i]).at(numberField);
         QString s = (c.isDigit())?QString(c):bogus;
 
-        qDebug() << out_i << numberField << tmp << c << s << bogus << s.toInt();
-
         if((s!=bogus) && (s.toInt()<(gMAX_WAIRS-1)))
         {
             bool newOne = true;
@@ -199,8 +197,8 @@ void JMess::connectSpawnedPorts(int nChans)
             }
         }
     }
-    for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
-    qDebug() << "---------------------------------";
+//    for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
+//    qDebug() << "---------------------------------";
     disconnectAll();
     //////////////////////
     //    // from hubLogger connects client to itself

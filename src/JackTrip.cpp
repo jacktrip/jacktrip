@@ -153,6 +153,7 @@ void JackTrip::setupAudio(
                                                  mAudioBitResolution);
 
 #ifdef WAIRTOMASTER // WAIR
+        qDebug() << "mPeerAddress" << mPeerAddress;
         QByteArray tmp = QString(WAIR_AUDIO_NAME+QString::number(ID)).toLatin1();
         mJackClientName = tmp.constData();
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" << mJackClientName << std::endl;

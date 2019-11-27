@@ -55,6 +55,12 @@ const int gDefaultNumOutChannels = 2;
 #define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
 #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
 const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
+
+// hubpatch = 2 for TUB ensemble patching
+const QString gDOMAIN_TRIPLE = QString("10.11.12"); // for TUB multiclient hub
+const int gMIN_TUB = 0; // lowest client address
+const int gMAX_TUB = 9; // highest client address
+
 #ifdef WAIR // wair
 // uses hub mode
 // hard wire the number of netrev (comb filter) channels
