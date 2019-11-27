@@ -389,9 +389,9 @@ public slots:
    */
     void slotUdpWaitingTooLongClientGoneProbably(int wait_msec)
     {
-        int wait_time = 30000; // msec
+        int wait_time = 10000; // msec
         if ( !(wait_msec%wait_time) ) {
-            std::cerr << "UDP WAITED MORE THAN 30 seconds." << std::endl;
+            std::cerr << "UDP WAITED MORE THAN 10 seconds." << std::endl;
             emit signalNoUdpPacketsForSeconds();
         }
     }
