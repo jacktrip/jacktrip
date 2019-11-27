@@ -182,10 +182,10 @@ void JMess::connectSpawnedPorts(int nChans)
     int numberField = QString(WAIR_AUDIO_NAME).size();
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
         bool tmp = QString(ports[out_i]).contains(WAIR_AUDIO_NAME);
-        QChar c = QString(ports[out_i]).at(numberField);
+        QChar c = QString(ports[out_i]).at(numberField+1);
         QString s = (c.isDigit())?QString(c):bogus;
 
-        qDebug() << out_i << " *****" << tmp << c << s << bogus << s.toInt();
+        qDebug() << out_i << numberField << tmp << c << s << bogus << s.toInt();
 
         if((s!=bogus) && (s.toInt()<(gMAX_WAIRS-1)))
         {
