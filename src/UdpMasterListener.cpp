@@ -445,7 +445,7 @@ void UdpMasterListener::connectPatch(bool spawn)
 {
     cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
     JMess tmp;
-//    tmp.connectSpawnedPorts(gDefaultNumInChannels); // change gDefaultNumInChannels if more than stereo LAIR interconnects
+    tmp.connectSpawnedPorts(gDefaultNumInChannels); // change gDefaultNumInChannels if more than stereo LAIR interconnects
 //    //  tmp.disconnectAll();
 //      // enumerateRunningThreadIDs();
 }
