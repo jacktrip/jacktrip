@@ -127,7 +127,7 @@ void UdpMasterListener::run()
     while ( !mStopped )
     {
         cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
-        cout << "JackTrip HUB SERVER: Hub auto audio patch =" << mHubPatch << endl;
+        cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
         cout << "=======================================================" << endl;
         while ( !TcpServer.waitForNewConnection(1000) )
         { if (mStopped) { return; } } // block until a new connection is received
@@ -211,6 +211,7 @@ void UdpMasterListener::run()
 #ifdef WAIR // WAIR
             if (isWAIR()) connectMesh(true); // invoked with -Sw
 #endif // endwhere
+            if (getHubPatch()) connectPatch(true); // invoked with -p > 0
         }
     }
 
@@ -412,6 +413,7 @@ int UdpMasterListener::releaseThread(int id)
 #ifdef WAIR // wair
     if (isWAIR()) connectMesh(false); // invoked with -Sw
 #endif // endwhere
+    if (getHubPatch()) connectPatch(false); // invoked with -p > 0
     return 0; /// \todo Check if we really need to return an argument here
 }
 
@@ -437,6 +439,15 @@ void UdpMasterListener::enumerateRunningThreadIDs()
     }
 }
 #endif // endwhere
+
+void UdpMasterListener::connectPatch(bool spawn)
+{
+    cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
+//    JMess tmp;
+//    tmp.connectSpawnedPorts(gDefaultNumInChannels); // change gDefaultNumInChannels if more than stereo LAIR interconnects
+//    //  tmp.disconnectAll();
+//      // enumerateRunningThreadIDs();
+}
 
 // TODO:
 // USE bool QAbstractSocket::isValid () const to check if socket is connect. if not, exit loop

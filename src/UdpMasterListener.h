@@ -139,9 +139,11 @@ public :
     void setWAIR(int b) {mWAIR = b;}
     bool isWAIR() {return mWAIR;}
 #endif // endwhere
+    void connectPatch(bool spawn);
 public :
     unsigned int mHubPatch;
     void setHubPatch(unsigned int p) {mHubPatch = p;}
+    unsigned int getHubPatch() {return mHubPatch;}
 
 };
 
