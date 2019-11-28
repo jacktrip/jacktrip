@@ -212,6 +212,10 @@ void UdpMasterListener::run()
 #ifdef WAIR // WAIR
             if (isWAIR()) connectMesh(true); // invoked with -Sw
 #endif // endwhere
+
+            qDebug() << "mPeerAddress" << mActiveAddress[id][0] << mActiveAddress[id][1];
+
+
             if (getHubPatch()) connectPatch(true); // invoked with -p > 0
         }
     }
