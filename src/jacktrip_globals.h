@@ -60,8 +60,8 @@ const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digi
 // hubpatch = 2 for TUB ensemble patching
 const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
 const QString gTUB_AUDIO_NAME = QString("TUB"); // for TUB multiclient hub
-const int gMIN_TUB = 0; // lowest client address
-const int gMAX_TUB = 9; // highest client address
+const int gMIN_TUB = 214; // lowest client address
+const int gMAX_TUB = 223; // highest client address
 
 #ifdef WAIR // wair
 // uses hub mode

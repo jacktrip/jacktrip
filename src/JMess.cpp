@@ -249,22 +249,20 @@ void JMess::connectTUB(int nChans)
     for (int i = 1; i<gMAX_WAIRS; i++) // clients are 1-based, 1...9
         for (int l = 1; l<=nChans; l++) // chans are 1-based, 1...2
     {
-            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
-            QString serverAudio = QString("par20straightWire");
-        qDebug() << "connect " << client << ":receive_ " << l
+       QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
+       QString serverAudio = QString("par20straightWire");
+       qDebug() << "connect " << client << ":receive_ " << l
                  <<"with " << serverAudio << "in_" << l-1;
 
-//        QString left = (QString(WAIR_AUDIO_NAME + QString::number(LAIRS[i]) +
-//                                ":receive_" + QString::number(l)));
-//        QString right = (QString(WAIR_AUDIO_NAME + QString::number(LAIRS[k]) +
-//                                 ":send_" + QString::number(l)));
+       QString left = QString(client + ":receive_" + QString::number(l));
+       QString right = QString(serverAudio + ":in_" + QString::number(l-1));
 
-//        if (0 !=
-//                jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
-//            qDebug() << "WARNING: port: " << left
-//                     << "and port: " << right
-//                     << " could not be connected.";
-//        }
+        if (0 !=
+                jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+            qDebug() << "WARNING: port: " << left
+                     << "and port: " << right
+                     << " could not be connected.";
+        }
 
     }
 }
