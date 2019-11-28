@@ -249,7 +249,7 @@ void JMess::connectTUB(int nChans)
     for (int i = 1; i<gMAX_WAIRS; i++) // clients are 1-based, 1...9
         for (int l = 1; l<=nChans; l++) // chans are 1-based, 1...2
     {
-            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(26+i);
+            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
             QString serverAudio = QString("par20straightWire");
         qDebug() << "connect " << client << ":receive_ " << l
                  <<"with " << serverAudio << "in_" << l-1;
