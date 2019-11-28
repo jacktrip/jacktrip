@@ -57,9 +57,8 @@ const int gDefaultNumOutChannels = 2;
 const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
 const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
 
-// hubpatch = 2 for TUB ensemble patching
+// hubpatch = 3 for TUB ensemble patching
 const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
-const QString gTUB_AUDIO_NAME = QString("TUB"); // for TUB multiclient hub
 const int gMIN_TUB = 215; // lowest client address
 const int gMAX_TUB = 215; // highest client address
 

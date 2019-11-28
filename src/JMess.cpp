@@ -243,6 +243,31 @@ void JMess::connectSpawnedPorts(int nChans)
 }
 
 //*******************************************************************************
+// connectTUB is called when in hubpatch mode 3 = RESERVEDMATRIX
+// TU Berlin Raspberry Pi ensemble, Winter 2019
+// this gets run on the ensemble's hub server with
+// ./jacktrip -S -p3
+// it connects a set of client jacktrips with known hardwired IP addresses
+// to a known hardwired audio process with known hardwired audio port names
+// clients can connect / disconnect dynamically but this just runs through the
+// audio connection sequence bruteforce at every new connection and
+// those that are preexisting won't change
+// the new one will connect accordingly and
+// those that fail because they don't exist will fail, no worries
+
+// setting the connections tested with
+//const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
+//const int gMIN_TUB = 215; // lowest client address
+//const int gMAX_TUB = 215; // highest client address
+
+// for deployment change jacktrip_globals.h to
+//const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
+//const int gMIN_TUB = 11; // lowest client address
+//const int gMAX_TUB = 19; // highest client address
+// and give the proper audio process
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
+//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "someSC"
+// assumes in_ / out_ which would be lucky
 void JMess::connectTUB(int nChans)
 // called from UdpMasterListener::connectPatch
 {
@@ -251,7 +276,7 @@ void JMess::connectTUB(int nChans)
         {
             // jacktrip to SC
             QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
-            QString serverAudio = QString("par20straightWire");
+            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER);
             qDebug() << "connect " << client << ":receive_ " << l
                      <<"with " << serverAudio << "in_" << l-1;
 
@@ -280,9 +305,6 @@ void JMess::connectTUB(int nChans)
             }
         }
 }
-
-
-
 
 //-------------------------------------------------------------------------------
 /*! \brief Disconnect all the clients.
