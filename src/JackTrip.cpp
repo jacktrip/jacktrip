@@ -160,6 +160,7 @@ void JackTrip::setupAudio(
         mJackClientName = tmp.constData();
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
                       mJackClientName << std::endl;
+
 #endif // endwhere
 
         mAudioInterface->setClientName(mJackClientName);

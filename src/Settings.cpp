@@ -299,6 +299,8 @@ void Settings::parseInput(int argc, char** argv)
                 mHubConnectionMode = JackTrip::CLIENTECHO; }
             else if ( atoi(optarg) == 2 ) {
                 mHubConnectionMode = JackTrip::CLIENTFOFI; }
+            else if ( atoi(optarg) == 3 ) {
+                mHubConnectionMode = JackTrip::RESERVEDMATRIX; }
             else {
                 std::cerr << "--bitres ERROR: Wrong HubConnectionMode: "
                           << atoi(optarg) << " is not supported." << endl;
@@ -371,7 +373,7 @@ void Settings::printUsage()
     cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
     cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
-    cout << " -p, --hubpatch    # (0, 1, 2)            Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback (default: 0)" << endl;
+    cout << " -p, --hubpatch    # (0, 1, 2, 3)         Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;

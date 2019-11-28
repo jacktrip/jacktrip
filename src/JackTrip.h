@@ -109,7 +109,8 @@ public:
     enum hubConnectionModeT {
         SERVERTOCLIENT, ///< Normal Mode, Sever to All Clients (but not client to any client)
         CLIENTECHO,  ///< Client Echo (client self-to-self)
-        CLIENTFOFI  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
+        CLIENTFOFI,  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
+        RESERVEDMATRIX  ///< Reserved for custom patch matrix (for TUB ensemble)
     };
     //---------------------------------------------------------
 
