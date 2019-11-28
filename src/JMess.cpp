@@ -197,8 +197,8 @@ void JMess::connectSpawnedPorts(int nChans)
             }
         }
     }
-//    for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
-//    qDebug() << "---------------------------------";
+    //    for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
+    //    qDebug() << "---------------------------------";
     disconnectAll();
     //////////////////////
     //    // from hubLogger connects client to itself
@@ -246,25 +246,39 @@ void JMess::connectSpawnedPorts(int nChans)
 void JMess::connectTUB(int nChans)
 // called from UdpMasterListener::connectPatch
 {
-    for (int i = 1; i<gMAX_WAIRS; i++) // clients are 1-based, 1...9
+    for (int i = 0; i<=gMAX_TUB-gMIN_TUB; i++) // last IP decimal octet
         for (int l = 1; l<=nChans; l++) // chans are 1-based, 1...2
-    {
-       QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
-       QString serverAudio = QString("par20straightWire");
-       qDebug() << "connect " << client << ":receive_ " << l
-                 <<"with " << serverAudio << "in_" << l-1;
+        {
+            // jacktrip to SC
+            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
+            QString serverAudio = QString("par20straightWire");
+            qDebug() << "connect " << client << ":receive_ " << l
+                     <<"with " << serverAudio << "in_" << l-1;
 
-       QString left = QString(client + ":receive_" + QString::number(l));
-       QString right = QString(serverAudio + ":in_" + QString::number(l-1));
+            QString left = QString(client + ":receive_" + QString::number(l));
+            QString right = QString(serverAudio + ":in_" + QString::number(l-1));
 
-        if (0 !=
-                jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
-            qDebug() << "WARNING: port: " << left
-                     << "and port: " << right
-                     << " could not be connected.";
+            if (0 !=
+                    jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                qDebug() << "WARNING: port: " << left
+                         << "and port: " << right
+                         << " could not be connected.";
+            }
+
+            // SC to jacktrip
+            qDebug() << "connect " << serverAudio << ":out_ " << l-1
+                     <<"with " << client << "send_" << l;
+
+            left = QString(serverAudio + ":out_" + QString::number(l-1));
+            right = QString(client + ":send_" + QString::number(l));
+
+            if (0 !=
+                    jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                qDebug() << "WARNING: port: " << left
+                         << "and port: " << right
+                         << " could not be connected.";
+            }
         }
-
-    }
 }
 
 
