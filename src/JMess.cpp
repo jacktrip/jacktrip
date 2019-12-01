@@ -249,25 +249,38 @@ void JMess::connectSpawnedPorts(int nChans)
 // ./jacktrip -S -p3
 // it connects a set of client jacktrips with known hardwired IP addresses
 // to a known hardwired audio process with known hardwired audio port names
-// clients can connect / disconnect dynamically but this just runs through the
-// audio connection sequence bruteforce at every new connection and
+// when clients connect / disconnect dynamically this just runs through the
+// audio connection sequence bruteforce at every new connection change
 // those that are preexisting won't change
-// the new one will connect accordingly and
+// a new one will connect accordingly and
 // those that fail because they don't exist will fail, no worries
 
-// setting the connections tested with
-//const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
-//const int gMIN_TUB = 215; // lowest client address
-//const int gMAX_TUB = 215; // highest client address
+// setting the connections tested with jacktrip_globals.h
+// const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
+// const int gMIN_TUB = 215; // lowest client address
+// const int gMAX_TUB = 215; // highest client address
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
+#define ENUMERATE ""
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_ "
 
 // for deployment change jacktrip_globals.h to
-//const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
-//const int gMIN_TUB = 11; // lowest client address
-//const int gMAX_TUB = 19; // highest client address
-// and give the proper audio process
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
-//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "someSC"
-// assumes in_ / out_ which would be lucky
+// const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
+// const int gMIN_TUB = 11; // lowest client address
+// const int gMAX_TUB = 19; // highest client address
+// and give the proper audio process and connection names
+
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "POE_"
+// #define ENUMERATE QString::number(i)
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":receive_"
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":send_ "
+// On server side it is SC jack-clients with indivisual names:
+// POE_0...POE_16
+// and each has (at this moment) one port in/out:
+// receive_1
+// send_1
+// I think it should be extended to 4 in/out ports per client.
+
 void JMess::connectTUB(int nChans)
 // called from UdpMasterListener::connectPatch
 {
@@ -276,29 +289,33 @@ void JMess::connectTUB(int nChans)
         {
             // jacktrip to SC
             QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
-            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER);
+            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER) + ENUMERATE;
             qDebug() << "connect " << client << ":receive_ " << l
-                     <<"with " << serverAudio << "in_" << l-1;
+                     <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << l-1;
 
             QString left = QString(client + ":receive_" + QString::number(l));
-            QString right = QString(serverAudio + ":in_" + QString::number(l-1));
+            QString right = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN +
+                                    QString::number(l-1));
 
             if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    jack_connect(mClient, left.toStdString().c_str(),
+                                 right.toStdString().c_str())) {
                 qDebug() << "WARNING: port: " << left
                          << "and port: " << right
                          << " could not be connected.";
             }
 
             // SC to jacktrip
-            qDebug() << "connect " << serverAudio << ":out_ " << l-1
-                     <<"with " << client << "send_" << l;
+            qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
+                     << l-1 <<"with " << client << ":send_" << l;
 
-            left = QString(serverAudio + ":out_" + QString::number(l-1));
+            left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
+                           QString::number(l-1));
             right = QString(client + ":send_" + QString::number(l));
 
             if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    jack_connect(mClient, left.toStdString().c_str(),
+                                 right.toStdString().c_str())) {
                 qDebug() << "WARNING: port: " << left
                          << "and port: " << right
                          << " could not be connected.";
