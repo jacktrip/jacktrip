@@ -262,7 +262,7 @@ void JMess::connectSpawnedPorts(int nChans)
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
 #define ENUMERATE ""
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_ "
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 
 // for deployment change jacktrip_globals.h to
 // const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
