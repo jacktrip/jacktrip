@@ -272,7 +272,7 @@ void JMess::connectSpawnedPorts(int nChans)
 // for deployment change jacktrip_globals.h to
 // const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
 // const int gMIN_TUB = 11; // lowest client address
-// const int gMAX_TUB = 19; // highest client address
+// const int gMAX_TUB = 20; // highest client address
 // and give the proper audio process and connection names
 
  #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "POE_"

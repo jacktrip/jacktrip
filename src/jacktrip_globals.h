@@ -58,9 +58,16 @@ const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
 const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
 
 // hubpatch = 3 for TUB ensemble patching
-const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
-const int gMIN_TUB = 245; // lowest client address
-const int gMAX_TUB = 245; // highest client address
+///////////////////////////////
+// test NUC as server
+//const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
+//const int gMIN_TUB = 245; // lowest client address
+//const int gMAX_TUB = 245; // highest client address
+///////////////////////////////
+// test Riviera as server
+ const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
+ const int gMIN_TUB = 11; // lowest client address
+ const int gMAX_TUB = 20; // highest client address
 
 #ifdef WAIR // wair
 // uses hub mode
