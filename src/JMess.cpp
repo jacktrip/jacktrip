@@ -259,21 +259,26 @@ void JMess::connectSpawnedPorts(int nChans)
 // const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
 // const int gMIN_TUB = 215; // lowest client address
 // const int gMAX_TUB = 215; // highest client address
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
-#define ENUMERATE ""
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 
+///////////////////////////////
+// test NUC as server
+//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
+//#define ENUMERATE ""
+//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
+//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
+
+///////////////////////////////
+// test Riviera as server
 // for deployment change jacktrip_globals.h to
 // const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
 // const int gMIN_TUB = 11; // lowest client address
 // const int gMAX_TUB = 19; // highest client address
 // and give the proper audio process and connection names
 
-// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "POE_"
-// #define ENUMERATE QString::number(i)
-// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":receive_"
-// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":send_ "
+ #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "POE_"
+ #define ENUMERATE QString::number(i)
+ #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":receive_"
+ #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":send_ "
 // On server side it is SC jack-clients with indivisual names:
 // POE_0...POE_16
 // and each has (at this moment) one port in/out:
