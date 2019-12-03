@@ -291,12 +291,12 @@ void JMess::connectTUB(int nChans)
 // called from UdpMasterListener::connectPatch
 {
     for (int i = 0; i<=gMAX_TUB-gMIN_TUB; i++) // last IP decimal octet
-        for (int l = 1; l<=nChans; l++) // chans are 1-based, 1...2
+        for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
         {
             // jacktrip to SC
             QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
             QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER);
-int tmp = (i/2) + l + 1; // 1-based?
+            int tmp = (i/2) + l;
             qDebug() << "connect " << client << ":receive_ " << l
                      <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
 
