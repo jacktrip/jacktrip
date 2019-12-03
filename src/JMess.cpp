@@ -275,10 +275,10 @@ void JMess::connectSpawnedPorts(int nChans)
 // const int gMAX_TUB = 20; // highest client address
 // and give the proper audio process and connection names
 
- #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "POE_"
- #define ENUMERATE QString::number(i)
- #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":receive_"
- #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":send_ "
+ #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "SuperCollider"
+ #define ENUMERATE ENUMERATE ""
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 // On server side it is SC jack-clients with indivisual names:
 // POE_0...POE_16
 // and each has (at this moment) one port in/out:
@@ -286,6 +286,8 @@ void JMess::connectSpawnedPorts(int nChans)
 // send_1
 // I think it should be extended to 4 in/out ports per client.
 
+// this is brute force, does not look at individual clients, just patches the whole ensemble
+// each time
 void JMess::connectTUB(int nChans)
 // called from UdpMasterListener::connectPatch
 {
@@ -295,12 +297,13 @@ void JMess::connectTUB(int nChans)
             // jacktrip to SC
             QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
             QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER) + ENUMERATE;
+int tmp = (i/2) + l + 1; // 1-based?
             qDebug() << "connect " << client << ":receive_ " << l
-                     <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << l-1;
+                     <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
 
             QString left = QString(client + ":receive_" + QString::number(l));
             QString right = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN +
-                                    QString::number(l-1));
+                                    QString::number(tmp));
 
             if (0 !=
                     jack_connect(mClient, left.toStdString().c_str(),
@@ -312,10 +315,10 @@ void JMess::connectTUB(int nChans)
 
             // SC to jacktrip
             qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
-                     << l-1 <<"with " << client << ":send_" << l;
+                     << tmp <<"with " << client << ":send_" << l;
 
             left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
-                           QString::number(l-1));
+                           QString::number(tmp));
             right = QString(client + ":send_" + QString::number(l));
 
             if (0 !=
