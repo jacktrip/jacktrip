@@ -276,7 +276,6 @@ void JMess::connectSpawnedPorts(int nChans)
 // and give the proper audio process and connection names
 
  #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "SuperCollider"
- #define ENUMERATE ENUMERATE ""
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 // On server side it is SC jack-clients with indivisual names:
@@ -296,7 +295,7 @@ void JMess::connectTUB(int nChans)
         {
             // jacktrip to SC
             QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
-            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER) + ENUMERATE;
+            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER);
 int tmp = (i/2) + l + 1; // 1-based?
             qDebug() << "connect " << client << ":receive_ " << l
                      <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
