@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -45,25 +45,25 @@
 class RingBufferWavetable : public RingBuffer
 {
 public:
-  /** \brief The class constructor
+    /** \brief The class constructor
    * \param SlotSize Size of one slot in bytes
    * \param NumSlots Number of slots
    */
-  RingBufferWavetable(int SlotSize, int NumSlots) : RingBuffer(SlotSize, NumSlots) {}
+    RingBufferWavetable(int SlotSize, int NumSlots) : RingBuffer(SlotSize, NumSlots) {}
 
-  /** \brief The class destructor
+    /** \brief The class destructor
    */
-  virtual ~RingBufferWavetable() {}
+    virtual ~RingBufferWavetable() {}
 
 protected:
-  /** \brief Sets the memory in the Read Slot when uderrun occurs. This loops as a 
+    /** \brief Sets the memory in the Read Slot when uderrun occurs. This loops as a
    * wavetable in the last received packet.
    * \param ptrToReadSlot Pointer to read slot from the RingBuffer
    */
-  virtual void setUnderrunReadSlot(int8_t* ptrToReadSlot)
-  {
-    setMemoryInReadSlotWithLastReadSlot(ptrToReadSlot);
-  }
+    virtual void setUnderrunReadSlot(int8_t* ptrToReadSlot)
+    {
+        setMemoryInReadSlotWithLastReadSlot(ptrToReadSlot);
+    }
 
 };
 

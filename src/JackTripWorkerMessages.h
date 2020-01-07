@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -45,30 +45,30 @@
 
 class JackTripWorkerMessages : public QObject
 {
-  Q_OBJECT;
+    Q_OBJECT;
 
 public:
-  JackTripWorkerMessages() {};
-  virtual ~JackTripWorkerMessages() {};
+    JackTripWorkerMessages() {};
+    virtual ~JackTripWorkerMessages() {};
 
-  void play()
-  {
-    std::cout << "********** PALYING ***********************************" << std::endl;
-    QTimer *timer = new QTimer(this);
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(slotTest()), Qt::QueuedConnection);
-    timer->start(300);
-  }
+    void play()
+    {
+        std::cout << "********** PALYING ***********************************" << std::endl;
+        QTimer *timer = new QTimer(this);
+        QObject::connect(timer, SIGNAL(timeout()), this, SLOT(slotTest()), Qt::QueuedConnection);
+        timer->start(300);
+    }
 
 public slots:
-  void slotTest()
-  {
-    std::cout << "---JackTripWorkerMessages slotTest()---" << std::endl;
-  }
- 
+    void slotTest()
+    {
+        std::cout << "---JackTripWorkerMessages slotTest()---" << std::endl;
+    }
+
 signals:
-  void signalTest();
-  /// Signal to stop the event loop inside the JackTripWorker Thread
-  void signalStopEventLoop();
+    void signalTest();
+    /// Signal to stop the event loop inside the JackTripWorker Thread
+    void signalStopEventLoop();
 
 };
 

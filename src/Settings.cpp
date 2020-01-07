@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -99,34 +99,34 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     static struct option longopts[] = {
         // These options set a flag, has to be sepcified as a long option --verbose
-        { "verbose", no_argument, &gVerboseFlag, 1 },
-        // These options don't set a flag.
-        { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
-        { "server", no_argument, NULL, 's' }, // Run in server mode
-        { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
-        { "localaddress", required_argument, NULL, 'L' }, // set local address e.g., 127.0.0.2 for second instance on same host
-        { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
-        { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
-        { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
-        { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
-        { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
-        { "queue", required_argument, NULL, 'q' }, // Queue Length
-        { "redundancy", required_argument, NULL, 'r' }, // Redundancy
-        { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
-        { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
-        { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
-        { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
-        { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
-        { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
-        { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
-        { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
-        { "deviceid", required_argument, NULL, 'd' }, // Set RTAudio device id to use
-        { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
-        { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
-        { "version", no_argument, NULL, 'v' }, // Version Number
-        { "help", no_argument, NULL, 'h' }, // Print Help
-        { NULL, 0, NULL, 0 }
-    };
+    { "verbose", no_argument, &gVerboseFlag, 1 },
+    // These options don't set a flag.
+    { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
+    { "server", no_argument, NULL, 's' }, // Run in server mode
+    { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+    { "localaddress", required_argument, NULL, 'L' }, // set local address e.g., 127.0.0.2 for second instance on same host
+    { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
+    { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
+    { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
+    { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
+    { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
+    { "queue", required_argument, NULL, 'q' }, // Queue Length
+    { "redundancy", required_argument, NULL, 'r' }, // Redundancy
+    { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
+    { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
+    { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
+    { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
+    { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
+    { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
+    { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
+    { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
+    { "deviceid", required_argument, NULL, 'd' }, // Set RTAudio device id to use
+    { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
+    { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
+    { "version", no_argument, NULL, 'v' }, // Version Number
+    { "help", no_argument, NULL, 'h' }, // Print Help
+    { NULL, 0, NULL, 0 }
+};
 
     // Parse Command Line Arguments
     //----------------------------------------------------------------------------
@@ -391,10 +391,10 @@ void Settings::startJackTrip()
         if ( mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER ) {
             mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
 
-//        if(mLocalAddress!=QString()) // default
-//            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
-//        else
-//            mJackTrip->setLocalAddress(QHostAddress::Any);
+        //        if(mLocalAddress!=QString()) // default
+        //            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
+        //        else
+        //            mJackTrip->setLocalAddress(QHostAddress::Any);
 
         // Set Ports
         //cout << "SETTING ALL PORTS" << endl;
@@ -426,7 +426,7 @@ void Settings::startJackTrip()
         if (mChanfeDefaultSR) {
             mJackTrip->setSampleRate(mSampleRate);
         }
-        
+
         // Chanfe defualt device ID
         if (mChanfeDefaultID) {
             mJackTrip->setDeviceID(mDeviceID);

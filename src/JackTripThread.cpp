@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -48,31 +48,31 @@ using std::cout; using std::endl;
 //*******************************************************************************
 void JackTripThread::run()
 {
-  JackTrip jacktrip(mJackTripMode);
-  jacktrip.setAllPorts(mPortNum);
-  
-  if ( mJackTripMode == JackTrip::CLIENT )
+    JackTrip jacktrip(mJackTripMode);
+    jacktrip.setAllPorts(mPortNum);
+
+    if ( mJackTripMode == JackTrip::CLIENT )
     {
-      jacktrip.setPeerAddress(mPeerAddress);
+        jacktrip.setPeerAddress(mPeerAddress);
     }
 
-  NetKS netks;
-  jacktrip.appendProcessPlugin(&netks);
-  //netks.play();
+    NetKS netks;
+    jacktrip.appendProcessPlugin(&netks);
+    //netks.play();
 
 
-  //QThread::sleep(1);
-  jacktrip.start();
-  //netks.play();
-  jacktrip.wait();
+    //QThread::sleep(1);
+    jacktrip.start();
+    //netks.play();
+    jacktrip.wait();
 
 
-  cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
-  //QThread::sleep(9999999);
+    cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
+    //QThread::sleep(9999999);
 
 
 
-  /*
+    /*
   jack_client_t* mClient;
   const char* client_name = "JackThread";
   const char* server_name = NULL;
@@ -83,7 +83,7 @@ void JackTripThread::run()
 
   if (mClient == NULL) {
     fprintf (stderr, "jack_client_open() failed, "
-    	     "status = 0x%2.0x\n", status);
+             "status = 0x%2.0x\n", status);
     if (status & JackServerFailed) {
       fprintf (stderr, "Unable to connect to JACK server\n");
     }

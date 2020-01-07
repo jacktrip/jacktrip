@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -60,7 +60,7 @@ class JackTrip; // forward declaration
 
 
 /** \brief Base class that defines the transmission protocol.
- * 
+ *
  * This base class defines most of the common method to setup and connect
  * sockets using the individual protocols (UDP, TCP, SCTP, etc).
  *
@@ -91,27 +91,27 @@ class JackTrip; // forward declaration
  */
 class DataProtocol : public QThread
 {
-  Q_OBJECT;
+    Q_OBJECT;
 
 public:
 
-  //----------ENUMS------------------------------------------
-  /// \brief Enum to define packet header types
-  enum packetHeaderTypeT {
-    DEFAULT, ///< Default application header
-    JAMLINK, ///< Header to use with Jamlinks
-    EMPTY    ///< Empty Header
-  };
+    //----------ENUMS------------------------------------------
+    /// \brief Enum to define packet header types
+    enum packetHeaderTypeT {
+        DEFAULT, ///< Default application header
+        JAMLINK, ///< Header to use with Jamlinks
+        EMPTY    ///< Empty Header
+    };
 
-  /// \brief Enum to define class modes, SENDER or RECEIVER
-  enum runModeT {
-    SENDER, ///< Set class as a Sender (send packets)
-    RECEIVER ///< Set class as a Receiver (receives packets)
-  };
-  //---------------------------------------------------------
+    /// \brief Enum to define class modes, SENDER or RECEIVER
+    enum runModeT {
+        SENDER, ///< Set class as a Sender (send packets)
+        RECEIVER ///< Set class as a Receiver (receives packets)
+    };
+    //---------------------------------------------------------
 
 
-  /** \brief The class constructor 
+    /** \brief The class constructor
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param runmode Sets the run mode, use either DataProtocol::SENDER or
    * DataProtocol::RECEIVER
@@ -119,94 +119,94 @@ public:
    * \param bind_port Port number to bind for this socket (this is the receive or send port depending on the runmode)
    * \param peer_port Peer port number (this is the receive or send port depending on the runmode)
    */
-  DataProtocol(JackTrip* jacktrip,
-	       const runModeT runmode,
-	       int bind_port, int peer_port);
-  
-  /// \brief The class destructor
-  virtual ~DataProtocol();
-  
-  /** \brief Implements the thread loop
+    DataProtocol(JackTrip* jacktrip,
+                 const runModeT runmode,
+                 int bind_port, int peer_port);
+
+    /// \brief The class destructor
+    virtual ~DataProtocol();
+
+    /** \brief Implements the thread loop
    *
    * Depending on the runmode, with will run a DataProtocol::SENDER thread or
    * DataProtocol::RECEIVER thread
    */
-  virtual void run() = 0;
+    virtual void run() = 0;
 
-  /// \brief Stops the execution of the Thread
-  virtual void stop() {
-    QMutexLocker lock(&mMutex);
-    mStopped = true;
-  }
+    /// \brief Stops the execution of the Thread
+    virtual void stop() {
+        QMutexLocker lock(&mMutex);
+        mStopped = true;
+    }
 
-  /** \brief Sets the size of the audio part of the packets
+    /** \brief Sets the size of the audio part of the packets
    * \param size_bytes Size in bytes
    */
-  void setAudioPacketSize(const size_t size_bytes){ mAudioPacketSize = size_bytes; }
+    void setAudioPacketSize(const size_t size_bytes){ mAudioPacketSize = size_bytes; }
 
-  /** \brief Get the size of the audio part of the packets
+    /** \brief Get the size of the audio part of the packets
    * \return size_bytes Size in bytes
    */
-  size_t getAudioPacketSizeInBites() { return(mAudioPacketSize); }
+    size_t getAudioPacketSizeInBites() { return(mAudioPacketSize); }
 
-  /** \brief Set the peer address
+    /** \brief Set the peer address
    * \param peerHostOrIP IPv4 number or host name
    * \todo implement here instead of in the subclass UDP
    */
-  virtual void setPeerAddress(const char* peerHostOrIP) = 0;
+    virtual void setPeerAddress(const char* peerHostOrIP) = 0;
 
-  /** \brief Set the peer incomming (receiving) port number
+    /** \brief Set the peer incomming (receiving) port number
    * \param port Port number
    * \todo implement here instead of in the subclass UDP
    */
-  virtual void setPeerPort(int port) = 0;
+    virtual void setPeerPort(int port) = 0;
 
-  //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
-  //				     uint16_t& port) = 0;
+    //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+    //				     uint16_t& port) = 0;
 
 
 signals:
 
-  void signalError(const char* error_message);
-  void signalReceivedConnectionFromPeer();
+    void signalError(const char* error_message);
+    void signalReceivedConnectionFromPeer();
 
 
 protected:
 
-  /** \brief Get the Run Mode of the object
+    /** \brief Get the Run Mode of the object
    * \return SENDER or RECEIVER
    */
-  runModeT getRunMode() const { return mRunMode; }
+    runModeT getRunMode() const { return mRunMode; }
 
-  /// Boolean stop the execution of the thread
-  volatile bool mStopped;
-  /// Boolean to indicate if the RECEIVER is waiting to obtain peer address
-  volatile bool mHasPeerAddress;
-  /// Boolean that indicates if a packet was received
-  volatile bool mHasPacketsToReceive;
-  QMutex mMutex;
+    /// Boolean stop the execution of the thread
+    volatile bool mStopped;
+    /// Boolean to indicate if the RECEIVER is waiting to obtain peer address
+    volatile bool mHasPeerAddress;
+    /// Boolean that indicates if a packet was received
+    volatile bool mHasPacketsToReceive;
+    QMutex mMutex;
 
 
 private:
 
-  int mLocalPort; ///< Local Port number to Bind
-  int mPeerPort; ///< Peer Port number to Bind
-  const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
-  
-  struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
-  struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
-  
-  /// Number of clients running to check for ports already used
-  /// \note Unimplemented, try to find another way to check for used ports
-  static int sClientsRunning;
-  
-  size_t mAudioPacketSize; ///< Packet audio part size
+    int mLocalPort; ///< Local Port number to Bind
+    int mPeerPort; ///< Peer Port number to Bind
+    const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
+
+    struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
+    struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+
+    /// Number of clients running to check for ports already used
+    /// \note Unimplemented, try to find another way to check for used ports
+    static int sClientsRunning;
+
+    size_t mAudioPacketSize; ///< Packet audio part size
 
 
-  /// \todo check a better way to access the header from the subclasses
+    /// \todo check a better way to access the header from the subclasses
 protected:
-  //PacketHeader* mHeader; ///< Packet Header
-  JackTrip* mJackTrip; ///< JackTrip mediator class
+    //PacketHeader* mHeader; ///< Packet Header
+    JackTrip* mJackTrip; ///< JackTrip mediator class
 
 };
 

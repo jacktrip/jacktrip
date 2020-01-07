@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -54,13 +54,13 @@ void test_threads_client(const char* peer_address);
 
 void main_tests(int /*argc*/, char** argv)
 {
-  if (argv[1][0] == 's' )
+    if (argv[1][0] == 's' )
     {
-      test_threads_server();
+        test_threads_server();
     }
-  else if (argv[1][0] == 'c' )
-    { 
-      test_threads_client("171.64.197.209");
+    else if (argv[1][0] == 'c' )
+    {
+        test_threads_client("171.64.197.209");
     }
 }
 
@@ -68,17 +68,17 @@ void main_tests(int /*argc*/, char** argv)
 // Test many servers running at the same time
 void test_threads_server()
 {
-  QVector<JackTripThread*> jacktrips;
-  jacktrips.resize(num_jacktrips);
-  int port_num;
-  for (int i = 0; i < num_jacktrips; i++)
+    QVector<JackTripThread*> jacktrips;
+    jacktrips.resize(num_jacktrips);
+    int port_num;
+    for (int i = 0; i < num_jacktrips; i++)
     {
-      port_num = base_port + i*10;
-      cout << "Port Number: " << port_num << endl;
-      jacktrips[i] = new JackTripThread(JackTrip::SERVER);
-      jacktrips[i]->setPort(port_num);
-      jacktrips[i]->start(QThread::NormalPriority);
-      //sleep(1);
+        port_num = base_port + i*10;
+        cout << "Port Number: " << port_num << endl;
+        jacktrips[i] = new JackTripThread(JackTrip::SERVER);
+        jacktrips[i]->setPort(port_num);
+        jacktrips[i]->start(QThread::NormalPriority);
+        //sleep(1);
     }
 }
 
@@ -86,18 +86,18 @@ void test_threads_server()
 // Test many servers running at the same time
 void test_threads_client(const char* peer_address)
 {
-  QVector<JackTripThread*> jacktrips;
-  jacktrips.resize(num_jacktrips);
-  int port_num;
-  for (int i = 0; i < num_jacktrips; i++)
+    QVector<JackTripThread*> jacktrips;
+    jacktrips.resize(num_jacktrips);
+    int port_num;
+    for (int i = 0; i < num_jacktrips; i++)
     {
-      port_num = base_port + i*10;
-      cout << "Port Number: " << port_num << endl;
-      jacktrips[i] = new JackTripThread(JackTrip::CLIENT);
-      jacktrips[i]->setPort(port_num);
-      jacktrips[i]->setPeerAddress(peer_address);
-      //sleep(1);
-      jacktrips[i]->start(QThread::NormalPriority);
-      //sleep(1);
+        port_num = base_port + i*10;
+        cout << "Port Number: " << port_num << endl;
+        jacktrips[i] = new JackTripThread(JackTrip::CLIENT);
+        jacktrips[i]->setPort(port_num);
+        jacktrips[i]->setPeerAddress(peer_address);
+        //sleep(1);
+        jacktrips[i]->start(QThread::NormalPriority);
+        //sleep(1);
     }
 }

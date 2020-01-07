@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -41,25 +41,25 @@
 #include "DataProtocol.h"
 
 /** \brief UDP implementation of DataProtocol class
- * 
- * 
+ *
+ *
  *
  */
 class UdpDataProtocol : public DataProtocol
 {
 public:
 
-  /** \brief The class constructor 
+    /** \brief The class constructor
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
    * \param peerHostOrIP IPv4 number or host name
    */
-  UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP);
+    UdpDataProtocol(const runModeT runmode, const char* peerHostOrIP);
 
-  /** \brief The class destructor
+    /** \brief The class destructor
    */
-  virtual ~UdpDataProtocol() {};
+    virtual ~UdpDataProtocol() {};
 
-  /** \brief Receives a packet
+    /** \brief Receives a packet
    *
    * This function makes sure we recieve a complete packet
    * of size n
@@ -67,9 +67,9 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual size_t receivePacket(char* buf, size_t n);
+    virtual size_t receivePacket(char* buf, size_t n);
 
-  /** \brief Sends a packet
+    /** \brief Sends a packet
    *
    * This function meakes sure we send a complete packet
    * of size n
@@ -77,16 +77,16 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-  virtual size_t sendPacket(const char* buff, size_t n);
+    virtual size_t sendPacket(const char* buff, size_t n);
 
-  //virtual void run();
+    //virtual void run();
 
 
 private:
 
-  void setBindSocket();
+    void setBindSocket();
 
-  int mSockFd; ///< Socket file descriptor 
+    int mSockFd; ///< Socket file descriptor
 };
 
 #endif
