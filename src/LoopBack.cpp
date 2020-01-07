@@ -55,4 +55,3 @@ void LoopBack::compute(int nframes, float** inputs, float** outputs)
         memcpy(outputs[i], inputs[i], sizeof(sample_t) * nframes);
     }
 }
-

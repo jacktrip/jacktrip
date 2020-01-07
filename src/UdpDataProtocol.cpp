@@ -47,7 +47,8 @@
 #include <cerrno>
 #include <stdexcept>
 #ifdef __WIN_32__
-#include <winsock.h>
+//#include <winsock.h>
+#include <winsock2.h> //cc need SD_SEND
 #endif
 #if defined (__LINUX__) || (__MAC__OSX__)
 #include <sys/socket.h> // for POSIX Sockets
@@ -74,8 +75,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
 {
     mStopped = false;
     if (mRunMode == RECEIVER) {
-        QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
-                         jacktrip, SLOT(slotUdpWatingTooLong(int)), Qt::QueuedConnection);
+        QObject::connect(this, SIGNAL(signalWaitingTooLong(int)),
+                         jacktrip, SLOT(slotUdpWaitingTooLongClientGoneProbably(int)), Qt::QueuedConnection);
     }
 }
 
@@ -314,6 +315,17 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
+    if (gVerboseFlag) switch ( mRunMode )
+    {
+    case RECEIVER : {
+        std::cout << "step 3" << std::endl;
+        break; }
+
+    case SENDER : {
+        std::cout << "step 4" << std::endl;
+        break; }
+    }
+
     //QObject::connect(this, SIGNAL(signalError(const char*)),
     //                 mJackTrip, SLOT(slotStopProcesses()),
     //                 Qt::QueuedConnection);
@@ -321,6 +333,7 @@ void UdpDataProtocol::run()
     // Creat and bind sockets
     QUdpSocket UdpSocket;
     try {
+        if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before bindSocket(UdpSocket)" << std::endl;
         bindSocket(UdpSocket); // Bind Socket
     } catch ( const std::exception & e ) {
         emit signalError( e.what() );
@@ -331,6 +344,7 @@ void UdpDataProtocol::run()
     QHostAddress PeerAddress;
     PeerAddress = mPeerAddress;
 
+    if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy Variables" << std::endl;
     // Setup Audio Packet buffer
     size_t audio_packet_size = getAudioPacketSizeInBites();
     //cout << "audio_packet_size: " << audio_packet_size << endl;
@@ -343,7 +357,7 @@ void UdpDataProtocol::run()
     mFullPacket = new int8_t[full_packet_size];
     std::memset(mFullPacket, 0, full_packet_size); // set buffer to 0
 
-    bool timeout = false; // Time out flag for packets that arrive too late
+    //  bool timeout = false; // Time out flag for packets that arrive too late
 
     // Put header in first packet
     mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
@@ -357,23 +371,87 @@ void UdpDataProtocol::run()
     std::memset(full_redundant_packet, 0, full_redundant_packet_size); // Initialize to 0
 
     // Set realtime priority (function in jacktrip_globals.h)
-    set_crossplatform_realtime_priority();
+    if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before set_crossplatform_realtime_priority()" << std::endl;
+    std::cout << "Experimental version -- not using set_crossplatform_realtime_priority()" << std::endl;
+    //set_crossplatform_realtime_priority();
+
+    /////////////////////
+    // to see thread priorities
+    // sudo ps -eLo pri,rtprio,cls,pid,nice,cmd | grep -E 'jackd|jacktrip|rtc|RTPRI' | sort -r
+
+    // from David Runge
+
+    //  It seems that it tries to apply the highest available SCHED_FIFO to
+    //  jacktrip or half of it (?) [1] (although that's not what you would want,
+    //  as this would mean assigning a higher priority to jacktrip than e.g. to
+    //  the audio interface and e.g. IRQs that need to be taken care of).
+
+    //  The version on github [2] (current 1.1) is actually worse off, as it
+    //  just hardcodes RTPRIO 99 (which means jacktrip will compete with the
+    //  Linux kernel watchdog, if the user trying to launch jacktrip is even
+    //  allowed to use that high of a priority!).
+    //  On most systems this will not work at all (aside from it being outright
+    //  dangerous). On Arch (and also Ubuntu) the sane default is to allow
+    //  rtprio 95 to a privileged user group (e.g. 'realtime' or 'audio', etc.)
+
+    //  It would be very awesome, if setting the priority would be dealt with by
+    //  a command line flag to jacktrip (e.g. `jacktrip --priority=50`) and
+    //  otherwise defaulting to a much much lower number (e.g. 10), so the
+    //  application can be run out-of-the-box (even without being in a
+    //  privileged group).
+
+    // from Nando
+
+    //  You should actually be using the priority that jack gives you when you
+    //  create the realtime thread, that puts your process "behind" - so to
+    //  speak - the processing that jack does on behalf of all its clients, and
+    //  behind (in a properly configured system) the audio interface processing
+    //  interrupt. No need to select a priority yourself.
+
+    //  In a Fedora system I run jack with a priority of 65 (the Fedora packages
+    //  changed the default to a much lower one which is a big no-no). The
+    //  clients inherit 60, I think. Some clients that have their own internal
+    //  structure of processes (jconvolver) run multiple threads and use
+    //  priorities below 60 for them (ie: they start with what jack gave them).
+
+    //  If you need to run a thread (not the audio thread) with higher priority
+    //  you could retrieve the priority that jack gave you and add some magic
+    //  number to get it to be above jack itself (10 would be fine in my
+    //  experience).
+
+    //without setting it
+    //        PRI RTPRIO CLS   PID  NI CMD
+    //         60     20  FF  4348   - /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+    //         55     15  FF  9835   - ./jacktrip -s
+    //         19      -  TS  9835   0 ./jacktrip -s
+    //         19      -  TS  9835   0 ./jacktrip -s
+    //         19      -  TS  9835   0 ./jacktrip -s
+    //         19      -  TS  9835   0 ./jacktrip -s
+    //         19      -  TS  9835   0 ./jacktrip -s
+    //         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+    //         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+    //         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+    //         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
+
+    // jack puts its clients in FF at 5 points below itself
 
     switch ( mRunMode )
     {
     case RECEIVER : {
         // Connect signals and slots for packets arriving too late notifications
-        QObject::connect(this, SIGNAL(signalWatingTooLong(int)),
-                         this, SLOT(printUdpWaitedTooLong(int)),
+        QObject::connect(this, SIGNAL(signalWaitingTooLong(int)),
+                         this, SLOT(printUdpWaitedTooLong30msec(int)),
                          Qt::QueuedConnection);
         //-----------------------------------------------------------------------------------
         // Wait for the first packet to be ready and obtain address
         // from that packet
+        if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before !UdpSocket.hasPendingDatagrams()" << std::endl;
         std::cout << "Waiting for Peer..." << std::endl;
         // This blocks waiting for the first packet
         while ( !UdpSocket.hasPendingDatagrams() ) {
             if (mStopped) { return; }
             QThread::msleep(100);
+            if (gVerboseFlag) std::cout << "100ms  " << std::flush;
         }
         int first_packet_size = UdpSocket.pendingDatagramSize();
         // The following line is the same as
@@ -383,9 +461,12 @@ void UdpDataProtocol::run()
         //std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
         receivePacket( UdpSocket, reinterpret_cast<char*>(first_packet), first_packet_size);
         // Check that peer has the same audio settings
+        if (gVerboseFlag) std::cout << std::endl << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->checkPeerSettings()" << std::endl;
         mJackTrip->checkPeerSettings(first_packet);
+        if (gVerboseFlag) std::cout << "step 7" << std::endl;
+        if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->parseAudioPacket()" << std::endl;
         mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
-        std::cout << "Received Connection for Peer!" << std::endl;
+        std::cout << "Received Connection from Peer!" << std::endl;
         emit signalReceivedConnectionFromPeer();
 
         // Redundancy Variables
@@ -396,6 +477,7 @@ void UdpDataProtocol::run()
         uint16_t last_seq_num = 0;    // Store last package sequence number
         uint16_t newer_seq_num = 0;   // Store newer sequence number
 
+        if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while ( !mStopped )
         {
             // Timer to report packets arriving too late
@@ -403,7 +485,8 @@ void UdpDataProtocol::run()
             // that uses signals and slots and can also report with packets have not
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
-            timeout = waitForReady(UdpSocket, 60000); //60 seconds
+            //        timeout = cc unused!
+            waitForReady(UdpSocket, 60000); //60 seconds
 
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
             /*
@@ -454,35 +537,39 @@ void UdpDataProtocol::run()
 
 
 //*******************************************************************************
-bool UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
+//bool
+void UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
 {
     int loop_resolution_usec = 100; // usecs to wait on each loop
     int emit_resolution_usec = 10000; // 10 milliseconds
     int timeout_usec = timeout_msec * 1000;
-    int ellaped_time_usec = 0; // Ellapsed time in milliseconds
+    int elapsed_time_usec = 0; // Ellapsed time in milliseconds
 
-    while ( ( !(UdpSocket.hasPendingDatagrams()) && (ellaped_time_usec <= timeout_usec) )
+    while ( ( !(
+                  UdpSocket.hasPendingDatagrams() &&
+                  (UdpSocket.pendingDatagramSize() > 0)
+                  ) && (elapsed_time_usec <= timeout_usec) )
             && !mStopped ){
-        if (mStopped) { return false; }
+        //    if (mStopped) { return false; }
         QThread::usleep(loop_resolution_usec);
-        ellaped_time_usec += loop_resolution_usec;
+        elapsed_time_usec += loop_resolution_usec;
 
-        if ( !(ellaped_time_usec % emit_resolution_usec) ) {
-            emit signalWatingTooLong(static_cast<int>(ellaped_time_usec/1000));
+        if ( !(elapsed_time_usec % emit_resolution_usec) ) {
+            emit signalWaitingTooLong(static_cast<int>(elapsed_time_usec/1000));
         }
     }
-
-    if ( ellaped_time_usec >= timeout_usec )
-    {
-        emit signalWatingTooLong(ellaped_time_usec/1000);
-        return false;
-    }
-    return true;
+    // cc under what condition?
+    //  if ( elapsed_time_usec >= timeout_usec )
+    //  {
+    //    emit signalWaitingTooLong(elapsed_time_usec/1000);
+    //    return false;
+    //  }
+    //  return true;
 }
 
 
 //*******************************************************************************
-void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
+void UdpDataProtocol::printUdpWaitedTooLong30msec(int wait_msec)
 {
     int wait_time = 30; // msec
     if ( !(wait_msec%wait_time) ) {

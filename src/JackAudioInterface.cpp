@@ -55,7 +55,6 @@
 
 using std::cout; using std::endl;
 
-
 // sJackMutex definition
 QMutex JackAudioInterface::sJackMutex;
 
@@ -63,16 +62,25 @@ QMutex JackAudioInterface::sJackMutex;
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
                                        int NumInChans, int NumOutChans,
+                                       #ifdef WAIR // wair
+                                       int NumNetRevChans,
+                                       #endif // endwhere
                                        AudioInterface::audioBitResolutionT AudioBitResolution,
-                                       const char* ClienName) :
+                                       const char* ClientName) :
     AudioInterface(jacktrip,
                    NumInChans, NumOutChans,
+                   #ifdef WAIR // wair
+                   NumNetRevChans,
+                   #endif // endwhere
                    AudioBitResolution),
     mNumInChans(NumInChans), mNumOutChans(NumOutChans),
+    #ifdef WAIR // WAIR
+    mNumNetRevChans(NumNetRevChans),
+    #endif // endwhere
     //mAudioBitResolution(AudioBitResolution*8),
     mBitResolutionMode(AudioBitResolution),
     mClient(NULL),
-    mClientName(ClienName),
+    mClientName(ClientName),
     mJackTrip(jacktrip)
 {}
 
@@ -96,7 +104,9 @@ void JackAudioInterface::setupClient()
 {
     const char* client_name = mClientName;
     const char* server_name = NULL;
-    jack_options_t options = JackNoStartServer;
+    // was  jack_options_t options = JackNoStartServer;
+    // and then jack_options_t options = JackLoadName;
+    jack_options_t options = JackNullOption; // from jackSimpleClient example
     jack_status_t status;
 
     // Try to connect to the server
@@ -104,7 +114,11 @@ void JackAudioInterface::setupClient()
     /// verbose message, check how to desable them.
     {
         QMutexLocker locker(&sJackMutex);
+#ifndef WAIR // WAIR
         mClient = jack_client_open (client_name, options, &status, server_name);
+#else
+        mClient = jack_client_open (client_name, JackUseExactName, &status, server_name);
+#endif // endwhere
     }
 
     if (mClient == NULL) {

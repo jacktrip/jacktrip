@@ -57,6 +57,9 @@ UdpMasterListener::UdpMasterListener(int server_port) :
     //mJTWorker(NULL),
     mServerPort(server_port),
     mStopped(false),
+    #ifdef WAIR // wair
+    mWAIR(false),
+    #endif // endwhere
     mTotalRunningThreads(0)
 {
     // Register JackTripWorker with the master listener
@@ -120,14 +123,15 @@ void UdpMasterListener::run()
     const int tcpTimeout = 5*1000;
 
 
-    cout << "JackTrip MULTI-THREADED SERVER: TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
+    cout << "JackTrip HUB SERVER: TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
     while ( !mStopped )
     {
-        cout << "JackTrip MULTI-THREADED SERVER: Waiting for client connections..." << endl;
+        cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
+        cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
         cout << "=======================================================" << endl;
         while ( !TcpServer.waitForNewConnection(1000) )
         { if (mStopped) { return; } } // block until a new connection is received
-        cout << "JackTrip MULTI-THREADED SERVER: Client Connection Received!" << endl;
+        cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 
         // Control loop to be able to exit if UDPs or TCPs error ocurr
         for (int dum = 0; dum<1; dum++) {
@@ -137,14 +141,14 @@ void UdpMasterListener::run()
                 break;
             }
             PeerAddress = clientConnection->peerAddress();
-            cout << "JackTrip MULTI-THREADED SERVER: Client Connect Received from Address : "
+            cout << "JackTrip HUB SERVER: Client Connect Received from Address : "
                  << PeerAddress.toString().toStdString() << endl;
 
             // Get UDP port from client
             // ------------------------
             peer_udp_port = readClientUdpPort(clientConnection);
             if ( peer_udp_port == 0 ) { break; }
-            cout << "JackTrip MULTI-THREADED SERVER: Client UDP Port is = " << peer_udp_port << endl;
+            cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
 
             // Check is client is new or not
             // -----------------------------
@@ -153,6 +157,7 @@ void UdpMasterListener::run()
             int id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
             // If the address is not new, we need to remove the client from the pool
             // before re-starting the connection
+
             if (id == -1) {
                 int id_remove;
                 id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
@@ -160,7 +165,7 @@ void UdpMasterListener::run()
                 mJTWorkers->at(id_remove)->stopThread();
                 // block until the thread has been removed from the pool
                 while ( isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port) == -1 ) {
-                    cout << "JackTrip MULTI-THREADED SERVER: Removing JackTripWorker from pool..." << endl;
+                    cout << "JackTrip HUB SERVER: Removing JackTripWorker from pool..." << endl;
                     QThread::msleep(10);
                 }
                 // Get a new ID for this client
@@ -180,7 +185,7 @@ void UdpMasterListener::run()
             // ---------------------------
             clientConnection->close();
             delete clientConnection;
-            cout << "JackTrip MULTI-THREADED SERVER: Client TCP Socket Closed!" << endl;
+            cout << "JackTrip HUB SERVER: Client TCP Connection Closed!" << endl;
 
             // Spawn Thread to Pool
             // --------------------
@@ -188,7 +193,7 @@ void UdpMasterListener::run()
             delete mJTWorkers->at(id); // just in case the Worker was previously created
             mJTWorkers->replace(id, new JackTripWorker(this));
             // redirect port and spawn listener
-            cout << "---> JackTrip MULTI-THREADED SERVER: Spawning Listener..." << endl;
+            cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
             {
                 QMutexLocker lock(&mMutex);
                 mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
@@ -196,14 +201,22 @@ void UdpMasterListener::run()
                         1); /// \todo temp default to 1 channel
             }
             //send one thread to the pool
-            cout << "---> JackTrip MULTI-THREADED SERVER: Starting Thread..." << endl;
+            cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
             mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority);
             // wait until one is complete before another spawns
             while (mJTWorkers->at(id)->isSpawning()) { QThread::msleep(10); }
             //mTotalRunningThreads++;
-            cout << "JackTrip MULTI-THREADED SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
+            cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
             cout << "===============================================================" << endl;
             QThread::msleep(100);
+#ifdef WAIR // WAIR
+            if (isWAIR()) connectMesh(true); // invoked with -Sw
+#endif // endwhere
+
+            qDebug() << "mPeerAddress" << mActiveAddress[id][0] << mActiveAddress[id][1];
+
+
+            if (getHubPatch()) connectPatch(true); // invoked with -p > 0
         }
     }
 
@@ -266,7 +279,7 @@ int UdpMasterListener::readClientUdpPort(QTcpSocket* clientConnection)
     // Read the size of the package
     // ----------------------------
     //tcpClient.waitForReadyRead();
-    cout << "Reading UDP port from Server..." << endl;
+    cout << "JackTrip HUB SERVER: Reading UDP port from Client..." << endl;
     while (clientConnection->bytesAvailable() < (int)sizeof(uint16_t)) {
         if (!clientConnection->waitForReadyRead()) {
             std::cerr << "TCP Socket ERROR: " << clientConnection->errorString().toStdString() <<  endl;
@@ -274,7 +287,7 @@ int UdpMasterListener::readClientUdpPort(QTcpSocket* clientConnection)
         }
     }
 
-    cout << "Ready To Read From Socket!" << endl;
+    if (gVerboseFlag) cout << "Ready To Read From Client!" << endl;
     // Read UDP Port Number from Server
     // --------------------------------
     int udp_port;
@@ -402,10 +415,46 @@ int UdpMasterListener::releaseThread(int id)
     mActiveAddress[id][0] = 0;
     mActiveAddress[id][1] = 0;
     mTotalRunningThreads--;
+#ifdef WAIR // wair
+    if (isWAIR()) connectMesh(false); // invoked with -Sw
+#endif // endwhere
+    if (getHubPatch()) connectPatch(false); // invoked with -p > 0
     return 0; /// \todo Check if we really need to return an argument here
 }
 
+#ifdef WAIR // wair
+#include "JMess.h"
+//*******************************************************************************
+void UdpMasterListener::connectMesh(bool spawn)
+{
+    cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change mesh" << endl;
+    JMess tmp;
+    tmp.connectSpawnedPorts(gDefaultNumInChannels); // change gDefaultNumInChannels if more than stereo LAIR interconnects
+    //  tmp.disconnectAll();
+    //  enumerateRunningThreadIDs();
+}
+
+//*******************************************************************************
+void UdpMasterListener::enumerateRunningThreadIDs()
+{
+    for (int id = 0; id<gMaxThreads; id++ )
+    {
+        if ( mActiveAddress[id][0] )
+        { qDebug() << id; }
+    }
+}
+#endif // endwhere
+
+#include "JMess.h"
+void UdpMasterListener::connectPatch(bool spawn)
+{
+    cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
+    JMess tmp;
+    if (getHubPatch() == JackTrip::RESERVEDMATRIX)
+        tmp.connectTUB(gDefaultNumInChannels); else
+            tmp.connectSpawnedPorts(gDefaultNumInChannels);
+    // change gDefaultNumInChannels if more than stereo LAIR interconnects
+}
 
 // TODO:
 // USE bool QAbstractSocket::isValid () const to check if socket is connect. if not, exit loop
-

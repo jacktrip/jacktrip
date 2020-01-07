@@ -98,11 +98,19 @@ public:
         RTAUDIO  ///< RtAudio Mode
     };
 
-    /// \brief Enum for Connection Mode (useful for connections to MultiClient Server)
+    /// \brief Enum for Connection Mode (in packet header)
     enum connectionModeT {
         NORMAL, ///< Normal Mode
         KSTRONG,  ///< Karplus Strong
         JAMTEST  ///< Karplus Strong
+    };
+
+    /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are automatically patched in Jack)
+    enum hubConnectionModeT {
+        SERVERTOCLIENT, ///< Normal Mode, Sever to All Clients (but not client to any client)
+        CLIENTECHO,  ///< Client Echo (client self-to-self)
+        CLIENTFOFI,  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
+        RESERVEDMATRIX  ///< Reserved for custom patch matrix (for TUB ensemble)
     };
     //---------------------------------------------------------
 
@@ -118,6 +126,9 @@ public:
     JackTrip(jacktripModeT JacktripMode = CLIENT,
              dataProtocolT DataProtocolType = UDP,
              int NumChans = gDefaultNumInChannels,
+         #ifdef WAIR // wair
+             int NumNetRevChans = 0,
+         #endif // endwhere
              int BufferQueueLength = gDefaultQueueLength,
              unsigned int redundancy = gDefaultRedundancy,
              AudioInterface::audioBitResolutionT AudioBitResolution =
@@ -134,7 +145,9 @@ public:
     virtual ~JackTrip();
 
     /// \brief Starting point for the thread
-    virtual void run() {}
+    virtual void run() {
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->run" << std::endl;
+    }
 
     /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
     virtual void setPeerAddress(const char* PeerHostOrIP);
@@ -146,7 +159,11 @@ public:
     virtual void appendProcessPlugin(ProcessPlugin* plugin);
 
     /// \brief Start the processing threads
-    virtual void startProcess() throw(std::invalid_argument);
+    virtual void startProcess(
+        #ifdef WAIRTOMASTER // wair
+            int ID
+        #endif // endwhere
+            ) throw(std::invalid_argument);
 
     /// \brief Stop the processing threads
     virtual void stop();
@@ -270,6 +287,11 @@ public:
     void setConnectionMode(JackTrip::connectionModeT connection_mode)
     { mConnectionMode = connection_mode; }
 
+    JackTrip::hubConnectionModeT getHubConnectionModeT() const
+    { return mHubConnectionModeT; }
+    void setHubConnectionModeT(JackTrip::hubConnectionModeT connection_mode)
+    { mHubConnectionModeT = connection_mode; }
+
     JackTrip::jacktripModeT getJackTripMode() const
     { return mJackTripMode; }
 
@@ -355,7 +377,14 @@ public:
     int getHeaderSizeInBytes() const
     { return mPacketHeader->getHeaderSizeInBytes(); }
     virtual int getTotalAudioPacketSizeInBytes() const
-    { return mAudioInterface->getSizeInBytesPerChannel() * mNumChans; }
+    {
+#ifdef WAIR // WAIR
+        if (mNumNetRevChans)
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
+        else // not wair
+#endif // endwhere
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumChans;
+    }
     //@}
     //------------------------------------------------------------------------------------
 
@@ -376,11 +405,11 @@ public slots:
    *
    * It is used to remove the thread from the server.
    */
-    void slotUdpWatingTooLong(int wait_msec)
+    void slotUdpWaitingTooLongClientGoneProbably(int wait_msec)
     {
-        int wait_time = 30000; // msec
+        int wait_time = 10000; // msec
         if ( !(wait_msec%wait_time) ) {
-            std::cerr << "UDP WAITED MORE THAN 30 seconds." << std::endl;
+            std::cerr << "UDP WAITED MORE THAN 10 seconds." << std::endl;
             emit signalNoUdpPacketsForSeconds();
         }
     }
@@ -403,7 +432,11 @@ signals:
 public:
 
     /// \brief Set the AudioInteface object
-    virtual void setupAudio();
+    virtual void setupAudio(
+        #ifdef WAIRTOMASTER // WAIR
+            int ID
+        #endif // endwhere
+            );
     /// \brief Close the JackAudioInteface and disconnects it from JACK
     void closeAudio();
     /// \brief Set the DataProtocol objects
@@ -434,6 +467,9 @@ private:
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
     int mNumChans; ///< Number of Channels (inputs = outputs)
+#ifdef WAIR // WAIR
+    int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
+#endif // endwhere
     int mBufferQueueLength; ///< Audio Buffer from network queue length
     uint32_t mSampleRate; ///< Sample Rate
     uint32_t mDeviceID; ///< RTAudio DeviceID
@@ -464,6 +500,7 @@ private:
     const char* mJackClientName; ///< JackAudio Client Name
 
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
+    JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Hub Server Jack Audio Patch Connection Mode
 
     QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
 
@@ -475,5 +512,3 @@ private:
 };
 
 #endif
-
-

@@ -91,6 +91,13 @@ private:
     char* mClientName; ///< JackClient Name
     bool mUnderrrunZero; ///< Use Underrun to Zero mode
 
+#ifdef WAIR // wair
+    int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
+    int mClientAddCombLen; ///< cmd line adjustment of net comb
+    double mClientRoomSize; ///< freeverb room size
+    bool mWAIR; ///< WAIR mode
+#endif // endwhere
+
     bool mLoopBack; ///< Loop-back mode
     bool mJamLink; ///< JamLink mode
     bool mEmptyHeader; ///< EmptyHeader mode
@@ -104,6 +111,7 @@ private:
     unsigned int mSampleRate;
     unsigned int mDeviceID;
     unsigned int mAudioBufferSize;
+    unsigned int mHubConnectionMode;
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
 };
 

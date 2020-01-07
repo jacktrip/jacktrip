@@ -121,6 +121,10 @@ private:
 
     int mID; ///< ID thread number
     int mNumChans; ///< Number of Channels
+#ifdef WAIR // wair
+    int mNumNetRevChans; ///< Number of Net Channels = net combs
+    bool mWAIR;
+#endif // endwhere
 };
 
 

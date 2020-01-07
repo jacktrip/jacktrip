@@ -39,7 +39,7 @@
 #define __DATAPROTOCOL_H__
 
 #ifdef __WIN_32__
-#include <winsock.h>
+#include <winsock2.h>
 #endif
 
 #ifndef __WIN_32__

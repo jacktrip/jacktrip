@@ -1,5 +1,12 @@
 ---
 master
+
+---
+1.2
+- (fixed) Compilation under ubuntu
+- (removed) Rtaudio mode and dependencies
+- (fixed) IPv4-mapped IPv6 addressing bug
+...
 - (fixed) Fixed compilation for  MacOSX10.11.sdk.
 - (update) Updated to RtAudio 4.1.1, and using shared lib in linux.
 
@@ -29,7 +36,7 @@ master
 - (fixed) Now compiles on 64bits machines
 - (fixed) Improved exceptions handling
 - (added) Basic Karplus-Strong model added as Plug-in
-- (added) Some functionality reimplemented using signals and slots for 
+- (added) Some functionality reimplemented using signals and slots for
           more flexibility
 - (added) Multiple-Client-Server in alpha testing, expect it working in the next release
 

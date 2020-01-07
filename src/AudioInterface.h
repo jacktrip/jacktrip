@@ -85,6 +85,9 @@ public:
    */
     AudioInterface(JackTrip* jacktrip,
                    int NumInChans, int NumOutChans,
+               #ifdef WAIR // wair
+                   int NumNetRevChans,
+               #endif // endwhere
                    AudioInterface::audioBitResolutionT AudioBitResolution =
             AudioInterface::BIT16);
     /// \brief The class destructor
@@ -201,6 +204,11 @@ private:
     JackTrip* mJackTrip; ///< JackTrip Mediator Class pointer
     int mNumInChans;///< Number of Input Channels
     int mNumOutChans; ///<  Number of Output Channels
+#ifdef WAIR // wair
+    int mNumNetRevChans; ///<  Number of Network Audio Channels (net comb filters)
+    QVarLengthArray<sample_t*> mNetInBuffer; ///< Vector of Input buffers/channel read from net
+    QVarLengthArray<sample_t*> mAPInBuffer; ///< Vector of Input buffers/channel for AllPass input
+#endif // endwhere
     int mAudioBitResolution; ///< Bit resolution in audio samples
     AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
     uint32_t mSampleRate; ///< Sampling Rate

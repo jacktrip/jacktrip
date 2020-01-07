@@ -145,6 +145,12 @@ int set_fifo_priority (bool half)
     if (true) // (!getuid () || !geteuid ())
     {
         priority = get_fifo_priority (half);
+        #ifdef __UBUNTU__
+              priority = 95; // anything higher is ignored silently by Ubuntu 18.04
+        #endif
+              fprintf (stderr,
+                       "\n running elevated priority for network threads, but Ubuntu 18.04 maxed out at priority %d rather than 99 in Fedora 28\n",
+                       priority);
         p.sched_priority = priority;
 
         if (sched_setscheduler (0, SCHED_FIFO, &p) == -1)
@@ -219,5 +225,3 @@ void set_crossplatform_realtime_priority()
 #endif
 
 }
-
-

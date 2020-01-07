@@ -54,10 +54,20 @@
 #include "jacktrip_globals.h"
 using std::cout; using std::endl;
 
+#include <QDebug>
+#include <QLoggingCategory>
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+    fprintf(stderr, "%s\n", localMsg.constData());
+    fflush(stderr);
+}
 
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+    QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+    qInstallMessageHandler(myMessageOutput);
 
     bool testing = false;
     if ( argc > 1 ) {
@@ -70,9 +80,9 @@ int main(int argc, char** argv)
         cout << "=========TESTING=========" << endl;
         //main_tests(argc, argv); // test functions
         JackTrip jacktrip;
-        RtAudioInterface rtaudio(&jacktrip);
+        //RtAudioInterface rtaudio(&jacktrip);
         //rtaudio.setup();
-        rtaudio.listAllInterfaces();
+        //rtaudio.listAllInterfaces();
         //rtaudio.printDeviceInfo(0);
 
         //while (true) sleep(9999);
@@ -99,6 +109,8 @@ int main(int argc, char** argv)
             return -1;
         }
     }
+    if (gVerboseFlag) std::cout << "step 6" << std::endl;
+    if (gVerboseFlag) std::cout << "jacktrip_main before app.exec()" << std::endl;
 
     return app.exec();
 }

@@ -80,14 +80,14 @@ private slots:
 
     //=========== FROM FAUST ===================================================
 private:
-    float 	fbutton0;
-    float 	fVec0[2];
-    float 	fRec0[2];
-    int 	iRec1[2];
-    float 	fVec1[2];
+    float fbutton0;
+    float fVec0[2];
+    float fRec0[2];
+    int   iRec1[2];
+    float fVec1[2];
 public:
-    virtual int getNumInputs() 	{ return 1; }
-    virtual int getNumOutputs() 	{ return 1; }
+    virtual int getNumInputs() { return 1; }
+    virtual int getNumOutputs() { return 1; }
     static void classInit(int /*samplingFreq*/) {}
     virtual void instanceInit(int samplingFreq) {
         fSamplingFreq = samplingFreq;
@@ -134,4 +134,3 @@ public:
 
 
 #endif // __NETKS_H__
-

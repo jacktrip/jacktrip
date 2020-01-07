@@ -47,6 +47,9 @@
 #include "UdpMasterListener.h"
 #include "NetKS.h"
 #include "LoopBack.h"
+#ifdef WAIR // wair
+#include "dcblock2gain.dsp.h"
+#endif // endwhere
 #ifdef __JAMTEST__
 #include "JamTest.h"
 #endif
@@ -55,19 +58,15 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener) :
-    mUdpMasterListener(NULL),
+    mUdpMasterListener(udpmasterlistener),
     mSpawning(false),
     mID(0),
     mNumChans(1)
+  #ifdef WAIR // wair
+  ,mNumNetRevChans(0),
+    mWAIR(false)
+  #endif // endwhere
 {
-    /* From the QT Documentation:
-  QThreadPool supports executing the same QRunnable more than once
-  by calling tryStart(this) from within QRunnable::run(). If autoDelete is
-  enabled the QRunnable will be deleted when the last thread exits the
-  run function. Calling start() multiple times with the same QRunnable
-  when autoDelete is enabled creates a race condition and is not recommended.
-  */
-    mUdpMasterListener = udpmasterlistener;
     setAutoDelete(false); // stick around after calling run()
     //mNetks = new NetKS;
     //mNetks->play();
@@ -120,10 +119,53 @@ void JackTripWorker::run()
 
         // Create and setup JackTrip Object
         //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
-        cout << "---> JackTripWorker: Creating jacktip objects..." << endl;
+        if (gVerboseFlag) cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
+
+#ifdef WAIR // WAIR
+        // forces    BufferQueueLength to 2
+        // need to parse numNetChans from incoming header
+        // but force to 16 for now
+#define FORCEBUFFERQ 2
+        if (mUdpMasterListener->isWAIR()) { // invoked with -Sw
+            mWAIR = true;
+            mNumNetRevChans = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
+        } else {};
+#endif // endwhere
+
 #ifndef __JAMTEST__
+#ifdef WAIR // WAIR
+        //        bool tmp = mJTWorkers->at(id)->isWAIR();
+        //        qDebug() << "is WAIR?" <<  tmp ;
+        qDebug() << "mNumNetRevChans" <<  mNumNetRevChans ;
+
+        JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans,
+                          mNumNetRevChans, FORCEBUFFERQ);
+        JackTrip * mJackTrip = &jacktrip;
+#else // endwhere
         JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
-#endif
+#endif // not wair
+
+#ifdef WAIR // WAIR
+        // Add Plugins
+        if ( mWAIR ) {
+            cout << "Running in WAIR Mode..." << endl;
+            cout << gPrintSeparator << std::endl;
+            switch ( mNumNetRevChans )
+            {
+            case 16 : // freeverb
+                mJackTrip->appendProcessPlugin(new dcblock2gain(mNumChans)); // plugin slot 0
+                ///////////////
+                //            mJackTrip->appendProcessPlugin(new comb16server(mNumNetChans));
+                // -S LAIR no AP  mJackTrip->appendProcessPlugin(new AP8(mNumChans));
+                break;
+            default:
+                throw std::invalid_argument("Settings: mNumNetChans doesn't correspond to Faust plugin");
+                break;
+            }
+        }
+#endif // endwhere
+#endif // ifndef __JAMTEST__
+
 #ifdef __JAMTEST__
         JamTest jacktrip(JackTrip::SERVERPINGSERVER); // ########### JamTest #################
         //JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
@@ -131,7 +173,7 @@ void JackTripWorker::run()
 
         // Connect signals and slots
         // -------------------------
-        cout << "---> JackTripWorker: Connecting signals and slots..." << endl;
+        if (gVerboseFlag) cout << "---> JackTripWorker: Connecting signals and slots..." << endl;
         // Connection to terminate JackTrip when packets haven't arrive for
         // a certain amount of time
         QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()),
@@ -150,7 +192,7 @@ void JackTripWorker::run()
         jacktrip.setBindPorts(mServerPort);
         //jacktrip.setPeerPorts(mClientPort);
 
-        cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
+        if (gVerboseFlag) cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
         int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
         if ( PeerConnectionMode == -1 ) {
             mUdpMasterListener->releaseThread(mID);
@@ -159,10 +201,14 @@ void JackTripWorker::run()
         }
 
         // Start Threads and event loop
-        cout << "---> JackTripWorker: startProcess..." << endl;
-        jacktrip.startProcess();
-        cout << "---> JackTripWorker: start..." << endl;
-        jacktrip.start(); // ########### JamTest Only #################
+        if (gVerboseFlag) cout << "---> JackTripWorker: startProcess..." << endl;
+        jacktrip.startProcess(
+            #ifdef WAIRTOMASTER // wair
+                    mID
+            #endif // endwhere
+                    );
+        // if (gVerboseFlag) cout << "---> JackTripWorker: start..." << endl;
+        // jacktrip.start(); // ########### JamTest Only #################
 
         // Thread is already spawning, so release the lock
         { QMutexLocker locker(&mMutex); mSpawning = false; }
@@ -228,7 +274,7 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
         while ( (!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout) ) {
             sleep.wait(&mutex,sleepTime);
             elapsedTime += sleepTime;
-            //cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
+            if (gVerboseFlag) cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
         }
     }
     // Check if we time out or not
@@ -249,11 +295,11 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     int PeerNumChannels = jacktrip.getPeerNumChannels(full_packet);
     int PeerConnectionMode = jacktrip.getPeerConnectionMode(full_packet);
 
-    cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;
-    cout << "--->JackTripWorker: getPeerSamplingRate = " << PeerSamplingRate << endl;
-    cout << "--->JackTripWorker: getPeerBitResolution = " << PeerBitResolution << endl;
-    cout << "--->JackTripWorker: getPeerNumChannels = " << PeerNumChannels << endl;
-    cout << "--->JackTripWorker: getPeerConnectionMode = " << PeerConnectionMode << endl;
+    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;
+    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerSamplingRate = " << PeerSamplingRate << endl;
+    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerBitResolution = " << PeerBitResolution << endl;
+    cout << "--->JackTripWorker: PeerNumChannels = " << PeerNumChannels << endl;
+    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerConnectionMode = " << PeerConnectionMode << endl;
 
     jacktrip.setNumChannels(PeerNumChannels);
     return PeerConnectionMode;

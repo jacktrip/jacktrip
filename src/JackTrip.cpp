@@ -68,6 +68,9 @@ void sigint_handler(int sig)
 JackTrip::JackTrip(jacktripModeT JacktripMode,
                    dataProtocolT DataProtocolType,
                    int NumChans,
+                   #ifdef WAIR // WAIR
+                   int NumNetRevChans,
+                   #endif // endwhere
                    int BufferQueueLength,
                    unsigned int redundancy,
                    AudioInterface::audioBitResolutionT AudioBitResolution,
@@ -80,6 +83,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mPacketHeaderType(PacketHeaderType),
     mAudiointerfaceMode(JackTrip::JACK),
     mNumChans(NumChans),
+    #ifdef WAIR // WAIR
+    mNumNetRevChans(NumNetRevChans),
+    #endif // endwhere
     mBufferQueueLength(BufferQueueLength),
     mSampleRate(gDefaultSampleRate),
     mDeviceID(gDefaultDeviceID),
@@ -123,7 +129,11 @@ JackTrip::~JackTrip()
 
 
 //*******************************************************************************
-void JackTrip::setupAudio()
+void JackTrip::setupAudio(
+        #ifdef WAIRTOMASTER // WAIR
+        int ID
+        #endif // endwhere
+        )
 {
     // Check if mAudioInterface has already been created or not
     if (mAudioInterface != NULL)  { // if it has been created, disconnet it from JACK and delete it
@@ -136,8 +146,26 @@ void JackTrip::setupAudio()
     // Create AudioInterface Client Object
     if ( mAudiointerfaceMode == JackTrip::JACK ) {
 #ifndef __NO_JACK__
-        mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before new JackAudioInterface" << std::endl;
+        mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans,
+                                         #ifdef WAIR // wair
+                                                 mNumNetRevChans,
+                                         #endif // endwhere
+                                                 mAudioBitResolution);
+
+#ifdef WAIRTOMASTER // WAIR
+        qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
+        QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
+        QByteArray tmp = mPeerAddress.toLatin1();
+        mJackClientName = tmp.constData();
+        std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
+                      mJackClientName << std::endl;
+
+#endif // endwhere
+
         mAudioInterface->setClientName(mJackClientName);
+
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->setup" << std::endl;
         mAudioInterface->setup();
         mSampleRate = mAudioInterface->getSampleRate();
         mDeviceID = mAudioInterface->getDeviceID();
@@ -286,7 +314,11 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 
 
 //*******************************************************************************
-void JackTrip::startProcess() throw(std::invalid_argument)
+void JackTrip::startProcess(
+        #ifdef WAIRTOMASTER // WAIR
+        int ID
+        #endif // endwhere
+        ) throw(std::invalid_argument)
 { //signal that catches ctrl c in rtaudio-asio mode
 #if defined (__WIN_32__)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
@@ -296,11 +328,27 @@ void JackTrip::startProcess() throw(std::invalid_argument)
 #endif
     // Check if ports are already binded by another process on this machine
     // ------------------------------------------------------------------
+    if (gVerboseFlag) std::cout << "step 1" << std::endl;
+
+    if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)" << std::endl;
+#if defined __WIN_32__
+    //cc fixed windows crash with this print statement!
+    qDebug() << "before  mJackTrip->startProcess"
+             << mReceiverBindPort<< mSenderBindPort;
+    //        msleep(2000);
+#endif
     checkIfPortIsBinded(mReceiverBindPort);
+    if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mSenderBindPort)" << std::endl;
     checkIfPortIsBinded(mSenderBindPort);
     // Set all classes and parameters
     // ------------------------------
-    setupAudio();
+    if (gVerboseFlag) std::cout << "  JackTrip:startProcess before setupAudio" << std::endl;
+    setupAudio(
+            #ifdef WAIRTOMASTER // wair
+                ID
+            #endif // endwhere
+                );
+    //cc redundant with instance creator  createHeader(mPacketHeaderType); next line fixme
     createHeader(mPacketHeaderType);
     setupDataProtocol();
     setupRingBuffers();
@@ -324,12 +372,18 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     switch ( mJackTripMode )
     {
     case CLIENT :
+        if (gVerboseFlag) std::cout << "step 2c client only" << std::endl;
+        if (gVerboseFlag) std::cout << "  JackTrip:startProcess case CLIENT before clientStart" << std::endl;
         clientStart();
         break;
     case SERVER :
+        if (gVerboseFlag) std::cout << "step 2s server only" << std::endl;
+        if (gVerboseFlag) std::cout << "  JackTrip:startProcess case SERVER before serverStart" << std::endl;
         serverStart();
         break;
     case CLIENTTOPINGSERVER :
+        if (gVerboseFlag) std::cout << "step 2C client only" << std::endl;
+        if (gVerboseFlag) std::cout << "  JackTrip:startProcess case CLIENTTOPINGSERVER before clientPingToServerStart" << std::endl;
         if ( clientPingToServerStart() == -1 ) { // if error on server start (-1) we return inmediatly
             mTcpConnectionError = true;
             slotStopProcesses();
@@ -337,6 +391,8 @@ void JackTrip::startProcess() throw(std::invalid_argument)
         }
         break;
     case SERVERPINGSERVER :
+        if (gVerboseFlag) std::cout << "step 2S server only (same as 2s)" << std::endl;
+        if (gVerboseFlag) std::cout << "  JackTrip:startProcess case SERVERPINGSERVER before serverStart" << std::endl;
         if ( serverStart(true) == -1 ) { // if error on server start (-1) we return inmediatly
             slotStopProcesses();
             return;
@@ -348,15 +404,27 @@ void JackTrip::startProcess() throw(std::invalid_argument)
     }
 
     // Start Threads
+    if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mDataProtocolReceiver->start" << std::endl;
+    mDataProtocolReceiver->start();
+    QThread::msleep(1);
+    if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mDataProtocolSender->start" << std::endl;
+    mDataProtocolSender->start();
+    /*
+     * changed order so that audio starts after receiver and sender
+     * because UdpDataProtocol:run0 before set_crossplatform_realtime_priority()
+     * causes an audio hiccup from jack JackPosixSemaphore::TimedWait err = Interrupted system call
+     * new QThread::msleep(1);
+     * to allow sender to start
+     */
+    QThread::msleep(1);
+    if (gVerboseFlag) std::cout << "step 5" << std::endl;
+    if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mAudioInterface->startProcess" << std::endl;
     mAudioInterface->startProcess();
 
     for (int i = 0; i < mProcessPlugins.size(); ++i) {
         mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
     }
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
-    mDataProtocolReceiver->start();
-    QThread::msleep(1);
-    mDataProtocolSender->start();
 }
 
 
@@ -408,25 +476,26 @@ void JackTrip::clientStart() throw(std::invalid_argument)
 
 
 //*******************************************************************************
-int JackTrip::serverStart(bool timeout, int udpTimeout)
+int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
 throw(std::invalid_argument, std::runtime_error)
 {
     // Set the peer address
     if ( !mPeerAddress.isEmpty() ) {
-        std::cout << "WARNING: SERVER mode: Peer Address was set but will be deleted." << endl;
+        if (gVerboseFlag) std::cout << "WARNING: SERVER mode: Peer Address was set but will be deleted." << endl;
         //throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
         mPeerAddress.clear();
         //return;
     }
 
     // Get the client address when it connects
-    cout << "Waiting for Connection From Client..." << endl;
     QHostAddress peerHostAddress;
     uint16_t peer_port;
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before QUdpSocket UdpSockTemp" << std::endl;
     QUdpSocket UdpSockTemp;// Create socket to wait for client
 
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before UdpSockTemp.bind(AnyIPv4)" << std::endl;
     // Bind the socket
-    if ( !UdpSockTemp.bind(QHostAddress::Any, mReceiverBindPort,
+    if ( !UdpSockTemp.bind(QHostAddress::AnyIPv4, mReceiverBindPort,
                            QUdpSocket::DefaultForPlatform) )
     {
         std::cerr << "in JackTrip: Could not bind UDP socket. It may be already binded." << endl;
@@ -447,30 +516,54 @@ throw(std::invalid_argument, std::runtime_error)
             return -1;
         }
     } else {
+        if (gVerboseFlag) std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()" << std::endl;
+        cout << "Waiting for Connection From a Client..." << endl;
         while ( !UdpSockTemp.hasPendingDatagrams() ) {
             if (mStopped == true) { emit signalUdpTimeOut(); return -1; }
+            if (gVerboseFlag) std::cout << sleepTime << "ms  " << std::flush;
             QThread::msleep(sleepTime);
         }
     }
-    char buf[1];
+    //    char buf[1];
+    //    // set client address
+    //    UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &peer_port);
+    //    UdpSockTemp.close(); // close the socket
+
+    // IPv6 addition from fyfe
+    // Get the datagram size to avoid problems with IPv6
+    qint64 datagramSize = UdpSockTemp.pendingDatagramSize();
+    char buf[datagramSize];
     // set client address
-    UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &peer_port);
+    UdpSockTemp.readDatagram(buf, datagramSize, &peerHostAddress, &peer_port);
     UdpSockTemp.close(); // close the socket
 
-    mPeerAddress = peerHostAddress.toString();
-    cout << "Client Connection Received from IP : "
-         << qPrintable(mPeerAddress) << endl;
-    cout << gPrintSeparator << endl;
+    // Check for mapped IPv4->IPv6 addresses that look like ::ffff:x.x.x.x
+    if (peerHostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+        bool mappedIPv4;
+        uint32_t address = peerHostAddress.toIPv4Address(&mappedIPv4);
+        // If the IPv4 address is mapped to IPv6, convert it to IPv4
+        if (mappedIPv4) {
+            QHostAddress ipv4Address = QHostAddress(address);
+            mPeerAddress = ipv4Address.toString();
+        }
+    }
+    else {
+        mPeerAddress = peerHostAddress.toString();
+    }
 
     // Set the peer address to send packets (in the protocol sender)
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before mDataProtocolSender->setPeerAddress()" << std::endl;
     mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().constData() );
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before mDataProtocolReceiver->setPeerAddress()" << std::endl;
     mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().constData() );
-    // We reply to the same port the peer sent the packets from
-    // This way we can go through NAT
-    // Because of the NAT traversal scheme, the portn need to be
-    // "symetric", e.g.:
-    // from Client to Server : src = 4474, dest = 4464
-    // from Server to Client : src = 4464, dest = 4474
+    //     We reply to the same port the peer sent the packets from
+    //     This way we can go through NAT
+    //     Because of the NAT traversal scheme, the portn need to be
+    //     "symetric", e.g.:
+    //     from Client to Server : src = 4474, dest = 4464
+    //     from Server to Client : src = 4464, dest = 4474
+    // no -- all are the same -- 4464
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before setting all peer_port instances to " << peer_port << std::endl;
     mDataProtocolSender->setPeerPort(peer_port);
     mDataProtocolReceiver->setPeerPort(peer_port);
     setPeerPorts(peer_port);
@@ -492,7 +585,7 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
         return -1;
     }
 
-    // Creat Socket Objects
+    // Create Socket Objects
     // --------------------
     QTcpSocket tcpClient;
     QHostAddress serverHostAddress;
@@ -501,13 +594,13 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     // Connect Socket to Server and wait for response
     // ----------------------------------------------
     tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
-    cout << "Connecting to TCP Server..." << endl;
+    if (gVerboseFlag) cout << "Connecting to TCP Server..." << endl;
     if (!tcpClient.waitForConnected()) {
         std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
         //std::exit(1);
         return -1;
     }
-    cout << "TCP Socket Connected to Server!" << endl;
+    if (gVerboseFlag) cout << "TCP Socket Connected to Server!" << endl;
     emit signalTcpClientConnected();
 
     // Send Client Port Number to Server
@@ -519,11 +612,11 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     while ( tcpClient.bytesToWrite() > 0 ) {
         tcpClient.waitForBytesWritten(-1);
     }
-    cout << "Port sent to Client" << endl;
+    if (gVerboseFlag) cout << "Port sent to Server" << endl;
 
     // Read the size of the package
     // ----------------------------
-    cout << "Reading UDP port from Server..." << endl;
+    if (gVerboseFlag) cout << "Reading UDP port from Server..." << endl;
     while (tcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
         if (!tcpClient.waitForReadyRead()) {
             std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
@@ -531,7 +624,7 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
             return -1;
         }
     }
-    cout << "Ready To Read From Socket!" << endl;
+    if (gVerboseFlag) cout << "Ready To Read From Socket!" << endl;
 
     // Read UDP Port Number from Server
     // --------------------------------
@@ -546,7 +639,7 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     // --------------------
     tcpClient.close(); // Close the socket
     //cout << "TCP Socket Closed!" << endl;
-    cout << "Connection Succesfull!" << endl;
+    if (gVerboseFlag) cout << "Connection Succesfull!" << endl;
 
     // Set with the received UDP port
     // ------------------------------
@@ -737,9 +830,10 @@ void JackTrip::checkPeerSettings(int8_t* full_packet)
 void JackTrip::checkIfPortIsBinded(int port)
 {
     QUdpSocket UdpSockTemp;// Create socket to wait for client
-
     // Bind the socket
-    if ( !UdpSockTemp.bind(QHostAddress::Any, port, QUdpSocket::DontShareAddress) )
+    //cc        if ( !UdpSockTemp.bind(QHostAddress::AnyIPv4, port, QUdpSocket::DontShareAddress) )
+    if ( !UdpSockTemp.bind(QHostAddress::Any, port,
+                           QUdpSocket::DontShareAddress) )
     {
         UdpSockTemp.close(); // close the socket
         throw std::runtime_error(

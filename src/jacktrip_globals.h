@@ -44,13 +44,40 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.1"; ///< JackTrip version
+const char* const gVersion = "1.2"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
 //@{
 const int gDefaultNumInChannels = 2;
 const int gDefaultNumOutChannels = 2;
+
+#define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
+// #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
+const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
+const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
+
+// hubpatch = 3 for TUB ensemble patching
+///////////////////////////////
+// test NUC as server
+//const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
+//const int gMIN_TUB = 245; // lowest client address
+//const int gMAX_TUB = 245; // highest client address
+///////////////////////////////
+// test Riviera as server
+ const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
+ const int gMIN_TUB = 11; // lowest client address
+ const int gMAX_TUB = 20; // highest client address
+
+#ifdef WAIR // wair
+// uses hub mode
+// hard wire the number of netrev (comb filter) channels
+  #define NUMNETREVCHANSbecauseNOTINRECEIVEDheader 16 // for jacktripworker, jmess
+  const int gDefaultNumNetRevChannels = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
+  const int gDefaultAddCombFilterLength = 0;
+  const int gDefaultCombFilterFeedback = 0;
+#endif // endwhere
+
 //const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
 //    JackAudioInterface::BIT16;
 const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
