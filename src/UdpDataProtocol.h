@@ -146,7 +146,7 @@ signals:
 
     /// \brief Signals when waiting every 10 milliseconds, with the total wait on wait_msec
     /// \param wait_msec Total wait in milliseconds
-    void signalWatingTooLong(int wait_msec);
+    void signalWaitingTooLong(int wait_msec);
 
 
     //private:
@@ -165,7 +165,7 @@ protected:
    * \return returns true if there is data available for reading;
    * otherwise it returns false (if an error occurred or the operation timed out)
    */
-    bool waitForReady(QUdpSocket& UdpSocket, int timeout_msec);
+    void waitForReady(QUdpSocket& UdpSocket, int timeout_msec);
 
     /** \brief Redundancy algorythm at the receiving end
     */

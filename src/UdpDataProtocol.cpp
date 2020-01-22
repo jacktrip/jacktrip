@@ -569,7 +569,7 @@ void UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
 
 
 //*******************************************************************************
-void UdpDataProtocol::printUdpWaitedTooLong30msec(int wait_msec)
+void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
 {
     int wait_time = 30; // msec
     if ( !(wait_msec%wait_time) ) {
