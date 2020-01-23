@@ -208,24 +208,6 @@ int set_fifo_priority (bool half)
 #endif //__LINUX__
 
 
-#if defined ( __LINUX__ )
-//*******************************************************************************
-int set_realtime_priority (void)
-{
-    struct sched_param schp;
-
-    memset (&schp, 0, sizeof (schp));
-    schp.sched_priority = sched_get_priority_max (SCHED_FIFO);
-    if (sched_setscheduler (0, SCHED_FIFO, &schp) != 0)
-    {
-        perror ("set_scheduler");
-        return -1;
-    }
-    return 0;
-}
-#endif //__LINUX__
-
-
 #if defined ( __WIN_32__ )
 int win_priority()
 {

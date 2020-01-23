@@ -137,7 +137,6 @@ void set_crossplatform_realtime_priority();
 int get_fifo_priority (bool half);
 /// \brief Set fifo priority (if user has sufficient privileges).
 int set_fifo_priority (bool half);
-int set_realtime_priority (void);
 #endif //__LINUX__
 //@}
 
