@@ -209,18 +209,15 @@ int setRealtimeProcessPriority (bool half)
 
 
 #if defined ( __WIN_32__ )
-int setRealtimeProcessPriority()
+void setRealtimeProcessPriority()
 {
     if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0)
     {
-        printf("set Priority Class failed \n");
-        return -1;
+        std::cerr << "Failed to set process priority class." << std::endl;
     }
-    if(SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0)
+    if (SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0)
     {
-        printf("set Thread Priority failed \n");
-        return -1;
+        std::cerr << "Failed to set thread priority." << std::endl;
     }
-    return GetThreadPriority(GetCurrentThread());
 }
 #endif //__WIN_32__
