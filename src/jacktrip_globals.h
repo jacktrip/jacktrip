@@ -128,31 +128,8 @@ const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
 //*******************************************************************************
 /// \name Global Functions
 
-void set_crossplatform_realtime_priority();
+void setRealtimeProcessPriority();
 
-//@{
-// Linux Specific Functions
-#if defined ( __LINUX__ )
-/// \brief Returns fifo priority
-int get_fifo_priority (bool half);
-/// \brief Set fifo priority (if user has sufficient privileges).
-int set_fifo_priority (bool half);
-#endif //__LINUX__
-//@}
-
-//@{
-// Mac OS X Specific Functions
-#if defined ( __MAC_OSX__ )
-int set_realtime(int period, int computation, int constraint);
-#endif //__MAC_OSX__
-//@}
-
-//@{
-// Windows Specific Functions
-#if defined ( __WIN_32__ )
-int win_priority();
-#endif //__WIN_32__
-//@}
 
 //*******************************************************************************
 /// \name JackTrip Server parameters

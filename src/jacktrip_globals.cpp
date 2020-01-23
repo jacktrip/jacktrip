@@ -60,11 +60,11 @@
 
 // The following function is taken from the chromium source code
 // https://github.com/chromium/chromium/blob/master/base/threading/platform_thread_mac.mm
-// For the following function setPriorityRealtimeAudio() only: Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// For the following function setRealtimeProcessPriority() only: Copyright (c) 2012 The Chromium Authors. All rights reserved.
 
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
-void setPriorityRealtimeAudio() {
+void setRealtimeProcessPriority() {
     // Increase thread priority to real-time.
 
     // Please note that the thread_policy_set() calls may fail in
@@ -167,7 +167,7 @@ int get_fifo_priority (bool half)
 
 #if defined ( __LINUX__ )
 //*******************************************************************************
-int set_fifo_priority (bool half)
+int setRealtimeProcessPriority (bool half)
 {
     struct sched_param p;
     int priority;
@@ -209,7 +209,7 @@ int set_fifo_priority (bool half)
 
 
 #if defined ( __WIN_32__ )
-int win_priority()
+int setRealtimeProcessPriority()
 {
     if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0)
     {
@@ -224,18 +224,3 @@ int win_priority()
     return GetThreadPriority(GetCurrentThread());
 }
 #endif //__WIN_32__
-
-
-void set_crossplatform_realtime_priority()
-{
-#if defined ( __LINUX__ )
-    set_fifo_priority (false);
-#endif //__LINUX__
-#if defined ( __MAC_OSX__ )
-    setPriorityRealtimeAudio();
-#endif //__MAC_OSX__
-#if defined __WIN_32__
-    win_priority();
-#endif
-
-}
