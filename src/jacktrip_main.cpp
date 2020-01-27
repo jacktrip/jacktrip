@@ -50,7 +50,9 @@
 #include "LoopBack.h"
 #include "PacketHeader.h"
 //#include "JackTripThread.h"
+#ifdef __RT_AUDIO__
 #include "RtAudioInterface.h"
+#endif
 #include "jacktrip_tests.cpp"
 #include "jacktrip_globals.h"
 
