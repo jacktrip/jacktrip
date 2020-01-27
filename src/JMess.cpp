@@ -290,7 +290,6 @@ void JMess::connectSpawnedPorts(int nChans)
 void JMess::connectTUB(int /*nChans*/)
 // called from UdpMasterListener::connectPatch
 {
-    disconnectAll();
     for (int i = 0; i<=gMAX_TUB-gMIN_TUB; i++) // last IP decimal octet
         for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
         {

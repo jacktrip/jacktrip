@@ -60,7 +60,8 @@ UdpMasterListener::UdpMasterListener(int server_port) :
     #ifdef WAIR // wair
     mWAIR(false),
     #endif // endwhere
-    mTotalRunningThreads(0)
+    mTotalRunningThreads(0),
+    m_connectDefaultAudioPorts(false)
 {
     // Register JackTripWorker with the master listener
     //mJTWorker = new JackTripWorker(this);
@@ -196,9 +197,13 @@ void UdpMasterListener::run()
             cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
             {
                 QMutexLocker lock(&mMutex);
-                mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id][0],
-                        server_udp_port, mActiveAddress[id][1],
-                        1); /// \todo temp default to 1 channel
+                mJTWorkers->at(id)->setJackTrip(id,
+                                                mActiveAddress[id][0],
+                                                server_udp_port,
+                                                mActiveAddress[id][1],
+                                                1,
+                                                m_connectDefaultAudioPorts
+                                                ); /// \todo temp default to 1 channel
             }
             //send one thread to the pool
             cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;

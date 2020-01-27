@@ -76,6 +76,8 @@ public:
 
     int releaseThread(int id);
 
+    void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts) { m_connectDefaultAudioPorts = connectDefaultAudioPorts; }
+
 private slots:
     void testReceive()
     { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
@@ -130,6 +132,8 @@ private:
     volatile bool mStopped;
     int mTotalRunningThreads; ///< Number of Threads running in the pool
     QMutex mMutex;
+
+    bool m_connectDefaultAudioPorts;
 
 #ifdef WAIR // wair
     bool mWAIR;

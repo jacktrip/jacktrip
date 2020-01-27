@@ -413,6 +413,7 @@ void Settings::startJackTrip()
         udpmaster->setWAIR(mWAIR);
 #endif // endwhere
         udpmaster->setHubPatch(mHubConnectionMode);
+        udpmaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
         udpmaster->start();
 

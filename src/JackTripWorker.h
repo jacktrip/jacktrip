@@ -82,9 +82,13 @@ public:
     /// \brief Sets the JackTripWorker properties
     /// \param id ID number
     /// \param address
-    void setJackTrip(int id, uint32_t client_address,
-                     uint16_t server_port, uint16_t client_port,
-                     int num_channels);
+    void setJackTrip(int id,
+                     uint32_t client_address,
+                     uint16_t server_port,
+                     uint16_t client_port,
+                     int num_channels,
+                     bool connectDefaultAudioPorts
+                     );
     /// Stop and remove thread from pool
     void stopThread();
     int getID()
@@ -110,6 +114,7 @@ private:
     //QHostAddress mClientAddress; ///< Client Address
     uint32_t mClientAddress;
     uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client
+    bool m_connectDefaultAudioPorts;
 
     /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt>
     uint16_t mClientPort;
