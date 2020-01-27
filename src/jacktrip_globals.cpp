@@ -36,8 +36,6 @@
  */
 
 #include <iostream>
-#include <cstring>
-#include <cstdio>
 
 #if defined ( __LINUX__ )
     #include <sched.h>
@@ -52,15 +50,13 @@
 #endif //__MAC_OSX__
 
 #include "jacktrip_globals.h"
-#include "jacktrip_types.h"
-
 
 
 #if defined ( __MAC_OSX__ )
 
 // The following function is taken from the chromium source code
 // https://github.com/chromium/chromium/blob/master/base/threading/platform_thread_mac.mm
-// For the following function setRealtimeProcessPriority() only: Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// For the following macOS implementation of the function setRealtimeProcessPriority() only: Copyright (c) 2012 The Chromium Authors. All rights reserved.
 
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
@@ -149,61 +145,18 @@ void setRealtimeProcessPriority() {
 
 #if defined ( __LINUX__ )
 //*******************************************************************************
-int get_fifo_priority (bool half)
+void setRealtimeProcessPriority()
 {
-    int min, max, priority;
-    min = sched_get_priority_min (SCHED_FIFO);
-    max = sched_get_priority_max (SCHED_FIFO);
-    if (half) {
-        priority = (max  - (max - min) / 2); }
-    else {
-        priority = max; }
+    int priority = sched_get_priority_max(SCHED_FIFO); // 99 is the highest possible
+#ifdef __UBUNTU__
+    priority = 95; // anything higher is silently ignored by Ubuntu 18.04
+#endif
 
-    //priority=min;
-    return priority;
-}
-#endif //__LINUX__
+    struct sched_param sp = { .sched_priority = priority };
 
-
-#if defined ( __LINUX__ )
-//*******************************************************************************
-int setRealtimeProcessPriority (bool half)
-{
-    struct sched_param p;
-    int priority;
-    //  scheduling priority
-
-
-    if (true) // (!getuid () || !geteuid ())
-    {
-        priority = get_fifo_priority (half);
-        #ifdef __UBUNTU__
-              priority = 95; // anything higher is ignored silently by Ubuntu 18.04
-        #endif
-              fprintf (stderr,
-                       "\n running elevated priority for network threads, but Ubuntu 18.04 maxed out at priority %d rather than 99 in Fedora 28\n",
-                       priority);
-        p.sched_priority = priority;
-
-        if (sched_setscheduler (0, SCHED_FIFO, &p) == -1)
-        {
-            fprintf (stderr,
-                     "\ncould not activate scheduling with priority %d\n",
-                     priority);
-            return -1;
-        }
-        seteuid (getuid ());
-        //fprintf (stderr,
-        //       "\nset scheduling priority to %d (SCHED_FIFO)\n",
-        //       priority);
+    if (sched_setscheduler(0, SCHED_FIFO, &sp) == -1) {
+        std::cerr << "Failed to set the scheduler policy and priority." << std::endl;;
     }
-    else
-    {
-        fprintf (stderr,
-                 "\ninsufficient privileges to set scheduling priority\n");
-        priority = 0;
-    }
-    return priority;
 }
 #endif //__LINUX__
 

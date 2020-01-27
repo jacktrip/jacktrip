@@ -411,7 +411,7 @@ void JackTrip::startProcess(
     mDataProtocolSender->start();
     /*
      * changed order so that audio starts after receiver and sender
-     * because UdpDataProtocol:run0 before set_crossplatform_realtime_priority()
+     * because UdpDataProtocol:run0 before setRealtimeProcessPriority()
      * causes an audio hiccup from jack JackPosixSemaphore::TimedWait err = Interrupted system call
      * new QThread::msleep(1);
      * to allow sender to start
