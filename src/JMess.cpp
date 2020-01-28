@@ -312,22 +312,24 @@ void JMess::connectTUB(int /*nChans*/)
                          << " could not be connected.";
             }
 
-            // SC to jacktrip
-            tmp += 4; // increase tmp for port offest
-            qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
-                     << tmp <<"with " << client << ":send_" << l;
+//not needed for concert on 5-Feb-2020, temporarily disabled
+//            // SC to jacktrip
+//            tmp += 4; // increase tmp for port offest
+//            qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
+//                     << tmp <<"with " << client << ":send_" << l;
 
-            left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
-                           QString::number(tmp));
-            right = QString(client + ":send_" + QString::number(l));
+//            left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
+//                           QString::number(tmp));
+//            right = QString(client + ":send_" + QString::number(l));
 
-            if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(),
-                                 right.toStdString().c_str())) {
-                qDebug() << "WARNING: port: " << left
-                         << "and port: " << right
-                         << " could not be connected.";
-            }
+//            if (0 !=
+//                    jack_connect(mClient, left.toStdString().c_str(),
+//                                 right.toStdString().c_str())) {
+//                qDebug() << "WARNING: port: " << left
+//                         << "and port: " << right
+//                         << " could not be connected.";
+//            }
+
         }
 }
 
