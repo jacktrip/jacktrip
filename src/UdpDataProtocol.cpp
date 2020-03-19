@@ -440,7 +440,7 @@ void UdpDataProtocol::run()
     case RECEIVER : {
         // Connect signals and slots for packets arriving too late notifications
         QObject::connect(this, SIGNAL(signalWaitingTooLong(int)),
-                         this, SLOT(printUdpWaitedTooLong30msec(int)),
+                         this, SLOT(printUdpWaitedTooLong(int)),
                          Qt::QueuedConnection);
         //-----------------------------------------------------------------------------------
         // Wait for the first packet to be ready and obtain address
