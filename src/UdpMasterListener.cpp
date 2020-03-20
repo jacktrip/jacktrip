@@ -220,7 +220,6 @@ void UdpMasterListener::run()
 
             qDebug() << "mPeerAddress" << mActiveAddress[id][0] << mActiveAddress[id][1];
 
-            qDebug() << "ccccccccccccc              run" << getHubPatch();
             connectPatch(true);
         }
     }

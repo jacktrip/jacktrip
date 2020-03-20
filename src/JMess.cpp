@@ -179,13 +179,13 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
     ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
 
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
-        qDebug() << QString(ports[out_i]);
+        //        qDebug() << QString(ports[out_i]);
         bool systemPort = QString(ports[out_i]).contains(QString("system"));
 
         QString str = QString(ports[out_i]);
         //  for example              "171.64.197.121:receive_1"
         QString s = str.section(':', 0, 0);
-        qDebug() << s << systemPort;
+        //        qDebug() << s << systemPort;
         //  for example              "171.64.197.121"
 
         bool newOne = !systemPort;
@@ -194,21 +194,48 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
         {
             IPS[ctr] = s;
             ctr++;
-            //            qDebug() << ports[out_i] << systemPort << s;
+            //                        qDebug() << ports[out_i] << systemPort << s;
         }
     }
-
+    for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
     disconnectAll();
 
     int k = 0;
     int jLimit = 1;
 
+    // FULLMIX is the union of CLIENTFOFI, CLIENTECHO
+
+    // implements CLIENTFOFI, CLIENTECHO -- also FULLMIX part which is CLIENTECHO
     for (int i = 0; i<ctr; i++) {
         if (hubPatch == JackTrip::CLIENTFOFI) jLimit = (ctr-1);
-        else if (hubPatch == JackTrip::FULLMIX) jLimit = ctr;
+        for (int j = 0; j<jLimit; j++) {
+            if ((hubPatch == JackTrip::CLIENTECHO)||(hubPatch == JackTrip::FULLMIX)) k = i;
+            else if (hubPatch == JackTrip::CLIENTFOFI) k = (j+(i+1))%ctr;
+            for (int l = 1; l<=nChans; l++) { // chans are 1-based
+                qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+                         <<"with " << IPS[k]+":send_"+QString::number(l);
+
+                QString left = IPS[i] +
+                        ":receive_" + QString::number(l);
+                QString right = IPS[k] +
+                        ":send_" + QString::number(l);
+
+                if (0 !=
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
+            }
+        }
+    }
+
+    // implements FULLMIX part which is CLIENTFOFI
+    for (int i = 0; i<ctr; i++) {
+        if (hubPatch == JackTrip::FULLMIX) jLimit = (ctr-1);
         for (int j = 0; j<jLimit; j++) {
             if (hubPatch == JackTrip::CLIENTECHO) k = i;
-            else if (hubPatch == JackTrip::CLIENTFOFI) k = (j+(i+1))%ctr;
+            else if (hubPatch == JackTrip::FULLMIX) k = (j+(i+1))%ctr;
             for (int l = 1; l<=nChans; l++) { // chans are 1-based
                 qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
                          <<"with " << IPS[k]+":send_"+QString::number(l);
