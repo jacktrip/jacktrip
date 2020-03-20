@@ -71,7 +71,7 @@ public:
   void connectPorts(QString xmlInFile);
   void setConnectedPorts();
   /// \brief Cross connect ports between net combs, -l LAIR mode
-  void connectSpawnedPorts(int nChans);
+  void connectSpawnedPorts(int nChans, int hubPatch);
   void connectTUB(int nChans);
 
 private:
