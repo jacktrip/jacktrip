@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -52,10 +52,10 @@
 class UdpMasterListener; // forward declaration
 
 
-/** \brief Prototype of the worker class that will be cloned through sending threads to the 
+/** \brief Prototype of the worker class that will be cloned through sending threads to the
  * Thread Pool
  *
- * This class can be send to the ThreadPool using the start() method. Each time 
+ * This class can be send to the ThreadPool using the start() method. Each time
  * it is sent, it'll became "independent" of the prototype, which means
  * that the prototype state can be changed, and used to send and start
  * another thread into the pool. setAutoDelete must be set to false
@@ -65,62 +65,66 @@ class UdpMasterListener; // forward declaration
 // inside a QThread
 class JackTripWorker : public QObject, public QRunnable
 {
-  Q_OBJECT; // QRunnable is not a QObject, so I have to inherit from QObject as well
-  
+    Q_OBJECT; // QRunnable is not a QObject, so I have to inherit from QObject as well
+
 public:
-  /// \brief The class constructor
-  JackTripWorker(UdpMasterListener* udpmasterlistener);
-  /// \brief The class destructor
-  virtual ~JackTripWorker();
-  
-  /// \brief Implements the Thread Loop.
-  /// To start the thread, call start() ( DO NOT CALL run() ).
-  void run();
-  /// \brief Check if the Thread is Spawning
-  /// \return true is it is spawning, false if it's already running
-  bool isSpawning();
-  /// \brief Sets the JackTripWorker properties
-  /// \param id ID number
-  /// \param address
-  void setJackTrip(int id, uint32_t client_address,
-		   uint16_t server_port, uint16_t client_port,
-		   int num_channels);
-  /// Stop and remove thread from pool
-  void stopThread();
-  int getID()
-  {
-    return mID;
-  }
+    /// \brief The class constructor
+    JackTripWorker(UdpMasterListener* udpmasterlistener);
+    /// \brief The class destructor
+    virtual ~JackTripWorker();
+
+    /// \brief Implements the Thread Loop.
+    /// To start the thread, call start() ( DO NOT CALL run() ).
+    void run();
+    /// \brief Check if the Thread is Spawning
+    /// \return true is it is spawning, false if it's already running
+    bool isSpawning();
+    /// \brief Sets the JackTripWorker properties
+    /// \param id ID number
+    /// \param address
+    void setJackTrip(int id, uint32_t client_address,
+                     uint16_t server_port, uint16_t client_port,
+                     int num_channels);
+    /// Stop and remove thread from pool
+    void stopThread();
+    int getID()
+    {
+        return mID;
+    }
 
 
 private slots:
-  void slotTest()
-  { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
+    void slotTest()
+    { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
 
 
 signals:
-  void signalRemoveThread();
+    void signalRemoveThread();
 
 
 private:
-  int setJackTripFromClientHeader(JackTrip& jacktrip);
-  JackTrip::connectionModeT getConnectionModeFromHeader();
+    int setJackTripFromClientHeader(JackTrip& jacktrip);
+    JackTrip::connectionModeT getConnectionModeFromHeader();
 
-  UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
-  //QHostAddress mClientAddress; ///< Client Address
-  uint32_t mClientAddress;
-  uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client
+    UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
+    //QHostAddress mClientAddress; ///< Client Address
+    uint32_t mClientAddress;
+    uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client
 
-  /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt> 
-  uint16_t mClientPort;
+    /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt>
+    uint16_t mClientPort;
 
-  /// Thread spawning internal lock.
-  /// If true, the prototype is working on creating (spawning) a new thread
-  volatile bool mSpawning;
-  QMutex mMutex; ///< Mutex to protect mSpawning
+    /// Thread spawning internal lock.
+    /// If true, the prototype is working on creating (spawning) a new thread
+    volatile bool mSpawning;
+    QMutex mMutex; ///< Mutex to protect mSpawning
 
-  int mID; ///< ID thread number
-  int mNumChans; ///< Number of Channels
+    int mID; ///< ID thread number
+    int mNumChans; ///< Number of Channels
+#ifdef WAIR // wair
+    int mNumNetRevChans; ///< Number of Net Channels = net combs
+    bool mWAIR;
+#endif // endwhere
 };
 
 

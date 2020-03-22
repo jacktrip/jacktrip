@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -54,51 +54,63 @@
 #include "jacktrip_globals.h"
 using std::cout; using std::endl;
 
+#include <QDebug>
+#include <QLoggingCategory>
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+    fprintf(stderr, "%s\n", localMsg.constData());
+    fflush(stderr);
+}
 
 int main(int argc, char** argv)
 {
-  QCoreApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
+    QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+    qInstallMessageHandler(myMessageOutput);
 
-  bool testing = false;
-  if ( argc > 1 ) {
-    if ( !strcmp(argv[1], "test") ) {
-      testing = true;
+    bool testing = false;
+    if ( argc > 1 ) {
+        if ( !strcmp(argv[1], "test") ) {
+            testing = true;
+        }
     }
-  }
 
-  if ( testing ) {
-    cout << "=========TESTING=========" << endl;
-    //main_tests(argc, argv); // test functions
-    JackTrip jacktrip;
-    RtAudioInterface rtaudio(&jacktrip);
-    //rtaudio.setup();
-    rtaudio.listAllInterfaces();
-    //rtaudio.printDeviceInfo(0);
+    if ( testing ) {
+        cout << "=========TESTING=========" << endl;
+        //main_tests(argc, argv); // test functions
+        JackTrip jacktrip;
+        //RtAudioInterface rtaudio(&jacktrip);
+        //rtaudio.setup();
+        //rtaudio.listAllInterfaces();
+        //rtaudio.printDeviceInfo(0);
 
-    //while (true) sleep(9999);
-  }
-  else {
-    //---------------------------------------
-
-    // Get Settings from user
-    // ----------------------
-    try
-    {
-      // Get Settings from user
-      // ----------------------
-      Settings* settings = new Settings;
-      settings->parseInput(argc, argv);
-      settings->startJackTrip();
+        //while (true) sleep(9999);
     }
-    catch ( const std::exception & e )
-    {
-      std::cerr << "ERROR:" << endl;
-      std::cerr << e.what() << endl;
-      std::cerr << "Exiting JackTrip..." << endl;
-      std::cerr << gPrintSeparator << endl;
-      return -1;
-    }
-  }
+    else {
+        //---------------------------------------
 
-  return app.exec();
+        // Get Settings from user
+        // ----------------------
+        try
+        {
+            // Get Settings from user
+            // ----------------------
+            Settings* settings = new Settings;
+            settings->parseInput(argc, argv);
+            settings->startJackTrip();
+        }
+        catch ( const std::exception & e )
+        {
+            std::cerr << "ERROR:" << endl;
+            std::cerr << e.what() << endl;
+            std::cerr << "Exiting JackTrip..." << endl;
+            std::cerr << gPrintSeparator << endl;
+            return -1;
+        }
+    }
+    if (gVerboseFlag) std::cout << "step 6" << std::endl;
+    if (gVerboseFlag) std::cout << "jacktrip_main before app.exec()" << std::endl;
+
+    return app.exec();
 }

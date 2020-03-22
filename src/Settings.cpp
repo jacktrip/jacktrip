@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -38,6 +38,12 @@
 #include "Settings.h"
 #include "LoopBack.h"
 #include "NetKS.h"
+
+#ifdef WAIR // wair
+#include "ap8x2.dsp.h"
+#include "Stk16.dsp.h"
+#endif // endwhere
+
 #include "UdpMasterListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
@@ -65,6 +71,10 @@ Settings::Settings() :
     mClientName(NULL),
     mUnderrrunZero(false),
     mLoopBack(false),
+    #ifdef WAIR // WAIR
+    mNumNetRevChans(0),
+    mWAIR(false),
+    #endif // endwhere
     mJamLink(false),
     mEmptyHeader(false),
     mJackTripServer(false),
@@ -74,6 +84,7 @@ Settings::Settings() :
     mChanfeDefaultSR(false),
     mChanfeDefaultID(0),
     mChanfeDefaultBS(false),
+    mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true)
 {}
 
@@ -98,48 +109,68 @@ void Settings::parseInput(int argc, char** argv)
     // options descriptor
     //----------------------------------------------------------------------------
     static struct option longopts[] = {
-        // These options set a flag, has to be sepcified as a long option --verbose
-        { "verbose", no_argument, &gVerboseFlag, 1 },
         // These options don't set a flag.
-        { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
-        { "server", no_argument, NULL, 's' }, // Run in server mode
-        { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
-        { "localaddress", required_argument, NULL, 'L' }, // set local address e.g., 127.0.0.2 for second instance on same host
-        { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
-        { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
-        { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
-        { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
-        { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
-        { "queue", required_argument, NULL, 'q' }, // Queue Length
-        { "redundancy", required_argument, NULL, 'r' }, // Redundancy
-        { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
-        { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
-        { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
-        { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
-        { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
-        { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
-        { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
-        { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
-        { "deviceid", required_argument, NULL, 'd' }, // Set RTAudio device id to use
-        { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
-        { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
-        { "version", no_argument, NULL, 'v' }, // Version Number
-        { "help", no_argument, NULL, 'h' }, // Print Help
-        { NULL, 0, NULL, 0 }
-    };
+    { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
+#ifdef WAIR // WAIR
+    { "wair", no_argument, NULL, 'w' }, // Run in LAIR mode, sets numnetrevchannels
+    { "addcombfilterlength", required_argument, NULL, 'N' }, // added comb filter length
+    { "combfilterfeedback", required_argument, NULL, 'H' }, // comb filter feedback
+#endif // endwhere
+    { "server", no_argument, NULL, 's' }, // Run in server mode
+    { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+    { "localaddress", required_argument, NULL, 'L' }, // set local address e.g., 127.0.0.2 for second instance on same host
+    { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
+    { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
+    { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
+    { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
+    { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
+    { "queue", required_argument, NULL, 'q' }, // Queue Length
+    { "redundancy", required_argument, NULL, 'r' }, // Redundancy
+    { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
+    { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
+    { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
+    { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
+    { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
+    { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
+    { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
+    { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
+    { "deviceid", required_argument, NULL, 'd' }, // Set RTAudio device id to use
+    { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
+    { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
+    { "version", no_argument, NULL, 'v' }, // Version Number
+    { "verbose", no_argument, NULL, 'V' }, // Verbose mode
+    { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
+    { "help", no_argument, NULL, 'h' }, // Print Help
+    { NULL, 0, NULL, 0 }
+};
 
     // Parse Command Line Arguments
     //----------------------------------------------------------------------------
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:sc:SC:o:B:P:q:r:b:zljeJ:RTd:F:Dvh", longopts, NULL)) != -1 )
+                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVh", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
             //-------------------------------------------------------
             mNumChans = atoi(optarg);
             break;
+#ifdef WAIR
+        case 'w':
+            //-------------------------------------------------------
+            mWAIR = true;
+            mNumNetRevChans = gDefaultNumNetRevChannels; // fixed amount sets number of network channels and comb filters for WAIR
+            break;
+        case 'N':
+            //-------------------------------------------------------
+            mClientAddCombLen = atoi(optarg); // cmd line comb length adjustment
+            break;
+        case 'H': // comb feedback adjustment
+            //-------------------------------------------------------
+            mClientRoomSize = atof(optarg); // cmd line comb feedback adjustment
+            break;
+#endif // endwhere
         case 's': // Run in server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;
@@ -257,10 +288,31 @@ void Settings::parseInput(int argc, char** argv)
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2015 Juan-Pablo Caceres, Chris Chafe." << endl;
+            cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
             cout << "" << endl;
             std::exit(0);
+            break;
+        case 'V':
+            //-------------------------------------------------------
+            gVerboseFlag = true;
+            if (gVerboseFlag) std::cout << "Verbose mode" << std::endl;
+            break;
+        case 'p':
+            //-------------------------------------------------------
+            if      ( atoi(optarg) == 0 ) {
+                mHubConnectionMode = JackTrip::SERVERTOCLIENT; }
+            if      ( atoi(optarg) == 1 ) {
+                mHubConnectionMode = JackTrip::CLIENTECHO; }
+            else if ( atoi(optarg) == 2 ) {
+                mHubConnectionMode = JackTrip::CLIENTFOFI; }
+            else if ( atoi(optarg) == 3 ) {
+                mHubConnectionMode = JackTrip::RESERVEDMATRIX; }
+            else {
+                std::cerr << "--bitres ERROR: Wrong HubConnectionMode: "
+                          << atoi(optarg) << " is not supported." << endl;
+                printUsage();
+                std::exit(1); }
             break;
         case 'h':
             //-------------------------------------------------------
@@ -295,7 +347,7 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
-    cout << "Copyright (c) 2008-2015 Juan-Pablo Caceres, Chris Chafe." << endl;
+    cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
     cout << "VERSION: " << gVersion << endl;
     cout << "" << endl;
@@ -309,6 +361,17 @@ void Settings::printUsage()
     cout << "OPTIONAL ARGUMENTS: " << endl;
     cout << " -n, --numchannels #                      Number of Input and Output Channels (default: "
          << 2 << ")" << endl;
+#ifdef WAIR // WAIR
+    cout << " -w, --wair                               Run in WAIR Mode" << endl;
+    cout << " -N, --addcombfilterlength #              comb length adjustment for WAIR (default "
+         << gDefaultAddCombFilterLength << ")" << endl;
+    cout << " -H, --combfilterfeedback #               comb feedback adjustment for WAIR (default "
+         << gDefaultCombFilterFeedback << ")" << endl;
+#endif // endwhere
+    cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
+         << gDefaultQueueLength << ")" << endl;
+    cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
+         << endl;
     cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
          << gDefaultQueueLength << ")" << endl;
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
@@ -317,6 +380,7 @@ void Settings::printUsage()
     cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
     cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
+    cout << " -p, --hubpatch    # (0, 1, 2, 3)         Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
@@ -332,6 +396,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
+    cout << " -V, --verbose                            Verbose mode, prints debug messages" << endl;
     cout << " -h, --help                               Prints this Help" << endl;
     cout << "" << endl;
 }
@@ -344,6 +409,11 @@ void Settings::startJackTrip()
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
         UdpMasterListener* udpmaster = new UdpMasterListener;
+#ifdef WAIR // WAIR
+        udpmaster->setWAIR(mWAIR);
+#endif // endwhere
+        udpmaster->setHubPatch(mHubConnectionMode);
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
         udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------
@@ -365,7 +435,14 @@ void Settings::startJackTrip()
 
         //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
         //	    mBufferQueueLength, mAudioBitResolution);
+#ifdef WAIR // WAIR
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip mNumNetRevChans = " << mNumNetRevChans << std::endl;
+#endif // endwhere
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
         mJackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
+                         #ifdef WAIR // wair
+                                 mNumNetRevChans,
+                         #endif // endwhere
                                  mBufferQueueLength, mRedundancy, mAudioBitResolution);
 
         // Set connect or not default audio ports. Only work for jack
@@ -391,14 +468,16 @@ void Settings::startJackTrip()
         if ( mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER ) {
             mJackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
 
-//        if(mLocalAddress!=QString()) // default
-//            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
-//        else
-//            mJackTrip->setLocalAddress(QHostAddress::Any);
+        //        if(mLocalAddress!=QString()) // default
+        //            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
+        //        else
+        //            mJackTrip->setLocalAddress(QHostAddress::Any);
 
         // Set Ports
         //cout << "SETTING ALL PORTS" << endl;
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setBindPorts" << std::endl;
         mJackTrip->setBindPorts(mBindPortNum);
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setPeerPorts" << std::endl;
         mJackTrip->setPeerPorts(mPeerPortNum);
 
         // Set in JamLink Mode
@@ -426,7 +505,7 @@ void Settings::startJackTrip()
         if (mChanfeDefaultSR) {
             mJackTrip->setSampleRate(mSampleRate);
         }
-        
+
         // Chanfe defualt device ID
         if (mChanfeDefaultID) {
             mJackTrip->setDeviceID(mDeviceID);
@@ -457,9 +536,38 @@ void Settings::startJackTrip()
             // -------------------------------------------------------------
         }
 
+#ifdef WAIR // WAIR
+        if ( mWAIR ) {
+            cout << "Running in WAIR Mode..." << endl;
+            cout << gPrintSeparator << std::endl;
+            switch ( mNumNetRevChans )
+            {
+            case 16 :
+            {
+                mJackTrip->appendProcessPlugin(new ap8x2(mNumChans)); // plugin slot 0
+                /////////////////////////////////////////////////////////
+                Stk16* plugin = new Stk16(mNumNetRevChans);
+                plugin->Stk16::initCombClient(mClientAddCombLen, mClientRoomSize);
+                mJackTrip->appendProcessPlugin(plugin); // plugin slot 1
+            }
+                break;
+            default:
+                throw std::invalid_argument("Settings: mNumNetRevChans doesn't correspond to Faust plugin");
+                break;
+            }
+        }
+#endif // endwhere
+
         // Start JackTrip
-        mJackTrip->startProcess();
-        mJackTrip->start();
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
+        mJackTrip->startProcess(
+            #ifdef WAIRTOMASTER // WAIR
+                    0 // for WAIR compatibility, ID in jack client name
+            #endif // endwhere
+                    );
+        //        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->start" << std::endl;
+        // this is a noop
+        //        mJackTrip->start();
 
         /*
        sleep(10);

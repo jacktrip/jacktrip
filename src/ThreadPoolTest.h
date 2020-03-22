@@ -19,58 +19,58 @@
 
 
 class ThreadPoolTest : public QObject, public QRunnable
-//class ThreadPoolTest : public QThread
+        //class ThreadPoolTest : public QThread
 {
-  Q_OBJECT;
-  
+    Q_OBJECT;
+
 public:
-  ThreadPoolTest()
-  {
-    setAutoDelete(false);
-  }
+    ThreadPoolTest()
+    {
+        setAutoDelete(false);
+    }
 
-  void run()
-  {
-    JackTripWorkerMessages jtm;
-    QThread testThread;
-    //jtm.moveToThread(&testThread);
+    void run()
+    {
+        JackTripWorkerMessages jtm;
+        QThread testThread;
+        //jtm.moveToThread(&testThread);
 
-    //QObject::connect(&jtm, SIGNAL(signalTest()), &jtm, SLOT(slotTest()), Qt::QueuedConnection);
-    testThread.start();
-    jtm.play();
-    //testThread.wait();
-    
-    //std::cout << "--------------- BEFORE ---------------" << std::endl;
-    //NetKS netks;
-    //netks.play();
-    //std::cout << "--------------- AFTER ---------------" << std::endl;
-    
-    QEventLoop loop;
-    //QObject::connect(this, SIGNAL(stopELoop()), &loop, SLOT(quit()), Qt::QueuedConnection);
-    loop.exec();
-    //std::cout << "--------------- EXITING QRUNNABLE---------------" << std::endl;
-    /*
+        //QObject::connect(&jtm, SIGNAL(signalTest()), &jtm, SLOT(slotTest()), Qt::QueuedConnection);
+        testThread.start();
+        jtm.play();
+        //testThread.wait();
+
+        //std::cout << "--------------- BEFORE ---------------" << std::endl;
+        //NetKS netks;
+        //netks.play();
+        //std::cout << "--------------- AFTER ---------------" << std::endl;
+
+        QEventLoop loop;
+        //QObject::connect(this, SIGNAL(stopELoop()), &loop, SLOT(quit()), Qt::QueuedConnection);
+        loop.exec();
+        //std::cout << "--------------- EXITING QRUNNABLE---------------" << std::endl;
+        /*
     while (true) {
       std::cout << "Hello world from thread" << std::endl;
       sleep(1);
     }
     */
-  }
+    }
 
-  void stop()
-  {
-    std::cout << "--------------- ELOOP STOP---------------" << std::endl;
-    emit stopELoop();
-  }
+    void stop()
+    {
+        std::cout << "--------------- ELOOP STOP---------------" << std::endl;
+        emit stopELoop();
+    }
 
 signals:
-  void stopELoop();
+    void stopELoop();
 
 private slots:
-  void fromServer()
-  {
-    std::cout << "--------------- SIGNAL RECEIVED ---------------" << std::endl;
-  }
+    void fromServer()
+    {
+        std::cout << "--------------- SIGNAL RECEIVED ---------------" << std::endl;
+    }
 
 };
 

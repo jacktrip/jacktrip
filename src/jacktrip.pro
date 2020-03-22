@@ -2,22 +2,38 @@
 # Created by Juan-Pablo Caceres
 #******************************
 
+CONFIG += c++11 console
+CONFIG -= app_bundle
+
 CONFIG += qt thread debug_and_release build_all
 CONFIG(debug, debug|release) {
   TARGET = jacktrip_debug
   } else {
   TARGET = jacktrip
   }
+
 QT -= gui
 QT += network
+
+# rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOMASTER
+# DEFINES += WAIR
+DEFINES += WAIRTOMASTER
+
 # http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
-DEFINES += __RT_AUDIO__
+#cc DEFINES += __RT_AUDIO__
 # Configuration without Jack
 nojack {
   DEFINES += __NO_JACK__
 }
+
+# for plugins
+INCLUDEPATH += ../faust-src-lair/stk
+
 !win32 {
   INCLUDEPATH+=/usr/local/include
+# wair needs stk, can be had from linux this way
+# INCLUDEPATH+=/usr/include/stk
+# LIBS += -L/usr/local/lib -ljack -lstk -lm
   LIBS += -L/usr/local/lib -ljack -lm
   nojack {
     message(Building NONJACK)
@@ -26,7 +42,7 @@ nojack {
 }
 
 macx {
-  message(MAC OS X)
+  message(Building on MAC OS X)
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
   QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
   #QMAKE_MAC_SDK = macosx10.9
@@ -38,8 +54,30 @@ macx {
   }
 
 linux-g++ | linux-g++-64 {
-  LIBS += -lasound -lrtaudio
+#   LIBS += -lasound -lrtaudio
   QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
+
+FEDORA = $$system(cat /proc/version | grep -o fc)
+
+contains( FEDORA, fc): {
+  message(building on fedora)
+}
+
+UBUNTU = $$system(cat /proc/version | grep -o Ubuntu)
+
+contains( UBUNTU, Ubuntu): {
+  message(building on  Ubuntu)
+
+# workaround for Qt bug under ubuntu 18.04
+# gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)
+# QMake version 3.1
+# Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
+  INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
+
+# sets differences from original fedora version
+  DEFINES += __UBUNTU__
+}
+
   QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
   }
@@ -54,27 +92,34 @@ linux-g++-64 {
   QMAKE_CXXFLAGS += -fPIC -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
   }
 
+
 win32 {
   message(win32)
-  CONFIG += x86 console
-  QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
-  LIBS += -lWs2_32 -lOle32 #needed by rtaudio/asio
-  LIBS += "../externals/includes/QTWindows/libjack.lib"
+#cc  CONFIG += x86 console
+CONFIG += c++11 console
+INCLUDEPATH += C:\Users\cc\Downloads\jack2-master\jack2-master\common
+LIBS += -LC:\Users\cc\Documents\jackSimpleClient\lib -ljack
+#cc  QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
+  #QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++ -lpthread
+  LIBS += -lWs2_32 #cc -lOle32 #needed by rtaudio/asio
+#cc  LIBS += "../externals/includes/QTWindows/libjack.lib"
   DEFINES += __WIN_32__
-  DEFINES -= UNICODE #RtAudio for Qt
+#cc    DEFINES -= UNICODE #RtAudio for Qt
+INCLUDEPATH += ../../Downloads/jack2-master/jack2-master/common
+LIBS += -LC:\Users\cc\Documents\jackSimpleClient\lib -ljack
 }
-
-
-
 
 DESTDIR = .
 QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 target.path = /usr/bin
 INSTALLS += target
 
+# for plugins
+INCLUDEPATH += ../faust-src-lair
 
 # Input
 HEADERS += DataProtocol.h \
+           JMess.h \
            JackTrip.h \
            jacktrip_globals.h \
            jacktrip_types.h \
@@ -92,13 +137,13 @@ HEADERS += DataProtocol.h \
            ThreadPoolTest.h \
            UdpDataProtocol.h \
            UdpMasterListener.h \
-           AudioInterface.h \
-           RtAudioInterface.h
-           #JamTest.h
+           AudioInterface.h
+
 !nojack {
-SOURCES += JackAudioInterface.h
+HEADERS += JackAudioInterface.h
 }
 SOURCES += DataProtocol.cpp \
+           JMess.cpp \
            JackTrip.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
@@ -110,11 +155,10 @@ SOURCES += DataProtocol.cpp \
            ProcessPlugin.cpp \
            RingBuffer.cpp \
            Settings.cpp \
-           #tests.cpp \
            UdpDataProtocol.cpp \
            UdpMasterListener.cpp \
-           AudioInterface.cpp \
-           RtAudioInterface.cpp
+           AudioInterface.cpp
+
 !nojack {
 SOURCES += JackAudioInterface.cpp
 }
@@ -127,21 +171,6 @@ win32 {
 macx | win32 {
 INCLUDEPATH += ../externals/rtaudio-4.1.1/
 DEPENDPATH += ../externals/rtaudio-4.1.1/
-HEADERS += ../externals/rtaudio-4.1.1/RtAudio.h
-SOURCES += ../externals/rtaudio-4.1.1/RtAudio.cpp
-}
-
-win32 {
-HEADERS += asio.h \
-           asiodrivers.h \
-           asiolist.h \
-           asiodrvr.h \
-           asiosys.h \
-           ginclude.h \
-           iasiodrv.h \
-           iasiothiscallresolver.h
-SOURCES += asio.cpp \
-           asiodrivers.cpp \
-           asiolist.cpp \
-           iasiothiscallresolver.cpp
+HEADERS +=
+SOURCES +=
 }

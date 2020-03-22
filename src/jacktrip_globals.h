@@ -5,7 +5,7 @@
 
   Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-  
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -44,17 +44,44 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.1"; ///< JackTrip version
+const char* const gVersion = "1.2"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
 //@{
 const int gDefaultNumInChannels = 2;
 const int gDefaultNumOutChannels = 2;
+
+#define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
+// #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
+const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
+const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
+
+// hubpatch = 3 for TUB ensemble patching
+///////////////////////////////
+// test NUC as server
+//const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
+//const int gMIN_TUB = 245; // lowest client address
+//const int gMAX_TUB = 245; // highest client address
+///////////////////////////////
+// test Riviera as server
+ const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
+ const int gMIN_TUB = 11; // lowest client address
+ const int gMAX_TUB = 20; // highest client address
+
+#ifdef WAIR // wair
+// uses hub mode
+// hard wire the number of netrev (comb filter) channels
+  #define NUMNETREVCHANSbecauseNOTINRECEIVEDheader 16 // for jacktripworker, jmess
+  const int gDefaultNumNetRevChannels = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
+  const int gDefaultAddCombFilterLength = 0;
+  const int gDefaultCombFilterFeedback = 0;
+#endif // endwhere
+
 //const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
 //    JackAudioInterface::BIT16;
 const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
-    AudioInterface::BIT16;
+        AudioInterface::BIT16;
 const int gDefaultQueueLength = 4;
 const int gDefaultOutputQueueLength = 4;
 const uint32_t gDefaultSampleRate = 48000;
@@ -118,7 +145,7 @@ int set_realtime_priority (void);
 // Mac OS X Specific Functions
 #if defined ( __MAC_OSX__ )
 int set_realtime(int period, int computation, int constraint);
-#endif //__MAC_OSX__ 
+#endif //__MAC_OSX__
 //@}
 
 //@{
