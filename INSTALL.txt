@@ -5,12 +5,12 @@ JackTrip: A System for High-Quality Audio Network Performance over the Internet.
 ---
 MacOS X (10.9 or higher) installation:
 
-If you are installing on MacOS X, a binary is provided with each release (download the latest release from https://github.com/jcacerec/jacktrip/releases before proceeding). You just need to have JackOSX installed on your machine
-http://www.jackosx.com/
+If you are installing on MacOS X, a binary is provided with each release (download the latest release from https://github.com/jacktrip/jacktrip/releases before proceeding).
+You need to have a working jack installation on your machine (see below).
 
 To install (using Terminal):
 
-$ git clone https://github.com/jcacerec/jacktrip.git
+$ git clone https://github.com/jacktrip/jacktrip.git
 $ cd jacktrip/jacktrip/src
 $ sudo cp jacktrip /usr/local/bin/
   (enter your password when prompted)
@@ -19,10 +19,20 @@ $ sudo chmod 755 /usr/local/bin/jacktrip
   (now you can run jacktrip from any directory using Terminal)
 
 
+To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
+
+  * Open jacktrip.pro using QtCreator
+  * Choose a correctly configured Kit
+  * Install Jack:
+    brew install jack
+    brew install qjackctl
+
+
+
 ---
 Fedora 22 installation:
 
-To install on Fedora (and possibly other Linux distributions), you need qt5, and jack-audio-connection-kit-devel. You also need rtaudio. If you don’t have the latest package, install from source: 
+To install on Fedora (and possibly other Linux distributions), you need qt5, and jack-audio-connection-kit-devel. You also need rtaudio. If you don’t have the latest package, install from source:
 
 $ git clone https://github.com/thestk/rtaudio
 $ cd rtaudio
@@ -34,7 +44,7 @@ $ sudo ln -s /usr/local/lib/librtaudio.so.4 /lib64/
 
 Then to install jacktrip:
 
-$ git clone https://github.com/jcacerec/jacktrip.git
+$ git clone https://github.com/jacktrip/jacktrip.git
 $ cd jacktrip/jacktrip/src
 $ ./build
 $ sudo make install
@@ -54,7 +64,7 @@ and install qt from the qt site.
 
 If you want to build on MacOS X, you need JackOSX
 http://www.jackosx.com/
-and Qt 5.3 or higher. 
+and Qt 5.3 or higher.
 
 It is also possible to build without jack, see below.
 
@@ -90,7 +100,7 @@ $ sudo chmod 755 /usr/local/bin/jacktrip
 
 
 ---
-WINDOWS (XP and later) 
+WINDOWS (XP and later)
 
 Dependencies:
 
@@ -104,15 +114,15 @@ the default is Program Files/Jacktrip.
 The installer also adds the executable Jacktrip.exe in the System32 directory, so that it can be executed
 from a command prompt from any working directory.
 
-This executable (jacktrip.exe) can be found in the bin directory, along with the Dynamic 
+This executable (jacktrip.exe) can be found in the bin directory, along with the Dynamic
 Link Libraries (DLLs) it links to.
 
 
 Building:
 
-The easiest way to build is to download the free Qt Creator IDE from http://qt.nokia.com/products/ 
+The easiest way to build is to download the free Qt Creator IDE from http://qt.nokia.com/products/
 
-Make a copy of the src and externals directories into a new directory of your choice, open the jacktrip.pro 
+Make a copy of the src and externals directories into a new directory of your choice, open the jacktrip.pro
 file in src, and build the project.
 
 You can alternatively download the MinGW (Minimalist GNU for Windows), a Windows port of the GNU
@@ -120,22 +130,22 @@ compiler from http://www.mingw.org/ and use mingw32-make from a command terminal
 
 Building is not supported with Microsoft Visual Studio Compilers.
 
-Note: compiling with modifications in the .pro file (like adding a new source or header file) requires 
+Note: compiling with modifications in the .pro file (like adding a new source or header file) requires
 qmake which is only available in the Qt Creator package.
 
 ---
 
-BUILD WARNING 
+BUILD WARNING
 
 Always keep the /src and /externals directories under the same directory.
 
 ---
 Post Configuration
-Detailed instructions at 
+Detailed instructions at
 http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/
 
 
 ---
 Using JackTrip
-Detailed instructions at 
+Detailed instructions at
 http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/
