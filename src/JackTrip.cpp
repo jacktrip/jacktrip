@@ -45,7 +45,6 @@
 #endif
 
 #include <iostream>
-//#include <unistd.h> // for usleep, sleep
 #include <cstdlib>
 #include <stdexcept>
 
