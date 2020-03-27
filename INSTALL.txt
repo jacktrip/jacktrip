@@ -5,8 +5,8 @@ JackTrip: A System for High-Quality Audio Network Performance over the Internet.
 ---
 MacOS X (10.9 or higher) installation:
 
-If you are installing on MacOS X, a binary is provided with each release (download the latest release from https://github.com/jcacerec/jacktrip/releases before proceeding). You just need to have JackOSX installed on your machine
-http://www.jackosx.com/
+If you are installing on MacOS X, a binary is provided with each release (download the latest release from https://github.com/jacktrip/jacktrip/releases before proceeding).
+You need to have a working jack installation on your machine (see below).
 
 To install (using Terminal):
 
@@ -19,13 +19,14 @@ $ sudo chmod 755 /usr/local/bin/jacktrip
   (now you can run jacktrip from any directory using Terminal)
 
 
-To build using QtCreator:
 
-* Open jacktrip.pro using QtCreator
-* Choose a correctly configured Kit (for example using clang)
-* Install Jack:
-  brew install jack
-  brew install qjackctl
+To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
+
+  * Open jacktrip.pro using QtCreator
+  * Choose a correctly configured Kit
+  * Install Jack:
+    brew install jack
+    brew install qjackctl
 
 
 ---
@@ -43,7 +44,7 @@ $ sudo ln -s /usr/local/lib/librtaudio.so.4 /lib64/
 
 Then to install jacktrip:
 
-$ git clone https://github.com/jcacerec/jacktrip.git
+$ git clone https://github.com/jacktrip/jacktrip.git
 $ cd jacktrip/jacktrip/src
 $ ./build
 $ sudo make install
@@ -127,11 +128,14 @@ Open the `src/jacktrip.pro` and configure the project.
 Make sure to select the MinGW compiler (for example the one shipped with QtCreator).
 Building with Clang or Microsoft Visual Studio Compilers is currently not supported!
 
+
 Download Jack2 from https://jackaudio.org/downloads/
 Make sure to install Jack into `C:\Program Files (x86)\Jack` (as this is the path where the jacktrip build script will look for it).
 
 Hit build in QtCreator.
 
+Note: compiling with modifications in the .pro file (like adding a new source or header file) requires
+qmake which is only available in the Qt Creator package.
 
 ---
 
