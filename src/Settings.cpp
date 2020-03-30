@@ -302,14 +302,16 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             if      ( atoi(optarg) == 0 ) {
                 mHubConnectionMode = JackTrip::SERVERTOCLIENT; }
-            if      ( atoi(optarg) == 1 ) {
+            else if ( atoi(optarg) == 1 ) {
                 mHubConnectionMode = JackTrip::CLIENTECHO; }
             else if ( atoi(optarg) == 2 ) {
                 mHubConnectionMode = JackTrip::CLIENTFOFI; }
             else if ( atoi(optarg) == 3 ) {
                 mHubConnectionMode = JackTrip::RESERVEDMATRIX; }
+            else if ( atoi(optarg) == 4 ) {
+                mHubConnectionMode = JackTrip::FULLMIX; }
             else {
-                std::cerr << "--bitres ERROR: Wrong HubConnectionMode: "
+                std::cerr << "-p ERROR: Wrong HubConnectionMode: "
                           << atoi(optarg) << " is not supported." << endl;
                 printUsage();
                 std::exit(1); }
@@ -380,7 +382,7 @@ void Settings::printUsage()
     cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
     cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
-    cout << " -p, --hubpatch    # (0, 1, 2, 3)         Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB (default: 0)" << endl;
+    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4)         Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
@@ -413,6 +415,7 @@ void Settings::startJackTrip()
         udpmaster->setWAIR(mWAIR);
 #endif // endwhere
         udpmaster->setHubPatch(mHubConnectionMode);
+        udpmaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
         udpmaster->start();
 

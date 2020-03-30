@@ -94,19 +94,17 @@ linux-g++-64 {
 
 
 win32 {
-  message(win32)
+  message(Building on win32)
 #cc  CONFIG += x86 console
-CONFIG += c++11 console
-INCLUDEPATH += C:\Users\cc\Downloads\jack2-master\jack2-master\common
-LIBS += -LC:\Users\cc\Documents\jackSimpleClient\lib -ljack
+  CONFIG += c++11 console
+  INCLUDEPATH += "C:\Program Files (x86)\Jack\includes"
+  LIBS += "C:\Program Files (x86)\Jack\lib\libjack64.lib"
+  LIBS += "C:\Program Files (x86)\Jack\lib\libjackserver64.lib"
 #cc  QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
   #QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++ -lpthread
   LIBS += -lWs2_32 #cc -lOle32 #needed by rtaudio/asio
-#cc  LIBS += "../externals/includes/QTWindows/libjack.lib"
   DEFINES += __WIN_32__
 #cc    DEFINES -= UNICODE #RtAudio for Qt
-INCLUDEPATH += ../../Downloads/jack2-master/jack2-master/common
-LIBS += -LC:\Users\cc\Documents\jackSimpleClient\lib -ljack
 }
 
 DESTDIR = .

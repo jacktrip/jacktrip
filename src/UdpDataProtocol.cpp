@@ -371,9 +371,9 @@ void UdpDataProtocol::run()
     std::memset(full_redundant_packet, 0, full_redundant_packet_size); // Initialize to 0
 
     // Set realtime priority (function in jacktrip_globals.h)
-    if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before set_crossplatform_realtime_priority()" << std::endl;
-    std::cout << "Experimental version -- not using set_crossplatform_realtime_priority()" << std::endl;
-    //set_crossplatform_realtime_priority();
+    if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before setRealtimeProcessPriority()" << std::endl;
+    std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
+    //setRealtimeProcessPriority();
 
     /////////////////////
     // to see thread priorities
@@ -440,7 +440,7 @@ void UdpDataProtocol::run()
     case RECEIVER : {
         // Connect signals and slots for packets arriving too late notifications
         QObject::connect(this, SIGNAL(signalWaitingTooLong(int)),
-                         this, SLOT(printUdpWaitedTooLong30msec(int)),
+                         this, SLOT(printUdpWaitedTooLong(int)),
                          Qt::QueuedConnection);
         //-----------------------------------------------------------------------------------
         // Wait for the first packet to be ready and obtain address

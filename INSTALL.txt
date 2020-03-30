@@ -19,6 +19,7 @@ $ sudo chmod 755 /usr/local/bin/jacktrip
   (now you can run jacktrip from any directory using Terminal)
 
 
+
 To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
 
   * Open jacktrip.pro using QtCreator
@@ -26,7 +27,6 @@ To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
   * Install Jack:
     brew install jack
     brew install qjackctl
-
 
 
 ---
@@ -120,15 +120,19 @@ Link Libraries (DLLs) it links to.
 
 Building:
 
-The easiest way to build is to download the free Qt Creator IDE from http://qt.nokia.com/products/
+The easiest way to build is to download the free Qt Creator IDE from https://www.qt.io/download since the jacktrip buildscript is written in qmake.
 
-Make a copy of the src and externals directories into a new directory of your choice, open the jacktrip.pro
-file in src, and build the project.
+Use `git clone https://github.com/jacktrip/jacktrip.git` to download a fresh copy of the repo.
+Open the `src/jacktrip.pro` and configure the project.
 
-You can alternatively download the MinGW (Minimalist GNU for Windows), a Windows port of the GNU
-compiler from http://www.mingw.org/ and use mingw32-make from a command terminal to build the makefile.
+Make sure to select the MinGW compiler (for example the one shipped with QtCreator).
+Building with Clang or Microsoft Visual Studio Compilers is currently not supported!
 
-Building is not supported with Microsoft Visual Studio Compilers.
+
+Download Jack2 from https://jackaudio.org/downloads/
+Make sure to install Jack into `C:\Program Files (x86)\Jack` (as this is the path where the jacktrip build script will look for it).
+
+Hit build in QtCreator.
 
 Note: compiling with modifications in the .pro file (like adding a new source or header file) requires
 qmake which is only available in the Qt Creator package.

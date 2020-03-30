@@ -38,6 +38,8 @@
 #include <iostream>
 
 #include <QCoreApplication>
+#include <QDebug>
+#include <QLoggingCategory>
 
 #include "JackAudioInterface.h"
 #include "UdpDataProtocol.h"
@@ -48,26 +50,23 @@
 #include "LoopBack.h"
 #include "PacketHeader.h"
 //#include "JackTripThread.h"
+#ifdef __RT_AUDIO__
 #include "RtAudioInterface.h"
+#endif
 #include "jacktrip_tests.cpp"
-
 #include "jacktrip_globals.h"
-using std::cout; using std::endl;
 
-#include <QDebug>
-#include <QLoggingCategory>
-void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+
+void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/, const QString& msg)
 {
-    QByteArray localMsg = msg.toLocal8Bit();
-    fprintf(stderr, "%s\n", localMsg.constData());
-    fflush(stderr);
+    std::cerr << msg.toStdString() << std::endl;
 }
 
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
-    qInstallMessageHandler(myMessageOutput);
+    qInstallMessageHandler(qtMessageHandler);
 
     bool testing = false;
     if ( argc > 1 ) {
@@ -77,7 +76,7 @@ int main(int argc, char** argv)
     }
 
     if ( testing ) {
-        cout << "=========TESTING=========" << endl;
+        std::cout << "=========TESTING=========" << std::endl;
         //main_tests(argc, argv); // test functions
         JackTrip jacktrip;
         //RtAudioInterface rtaudio(&jacktrip);
@@ -88,10 +87,7 @@ int main(int argc, char** argv)
         //while (true) sleep(9999);
     }
     else {
-        //---------------------------------------
-
-        // Get Settings from user
-        // ----------------------
+        // catch all potential exeptions
         try
         {
             // Get Settings from user
@@ -102,10 +98,10 @@ int main(int argc, char** argv)
         }
         catch ( const std::exception & e )
         {
-            std::cerr << "ERROR:" << endl;
-            std::cerr << e.what() << endl;
-            std::cerr << "Exiting JackTrip..." << endl;
-            std::cerr << gPrintSeparator << endl;
+            std::cerr << "ERROR:" << std::endl;
+            std::cerr << e.what() << std::endl;
+            std::cerr << "Exiting JackTrip..." << std::endl;
+            std::cerr << gPrintSeparator << std::endl;
             return -1;
         }
     }

@@ -59,6 +59,7 @@ using std::cout; using std::endl;
 //*******************************************************************************
 JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener) :
     mUdpMasterListener(udpmasterlistener),
+    m_connectDefaultAudioPorts(false),
     mSpawning(false),
     mID(0),
     mNumChans(1)
@@ -81,9 +82,12 @@ JackTripWorker::~JackTripWorker()
 
 
 //*******************************************************************************
-void JackTripWorker::setJackTrip(int id, uint32_t client_address,
-                                 uint16_t server_port, uint16_t client_port,
-                                 int num_channels)
+void JackTripWorker::setJackTrip(int id,
+                                 uint32_t client_address,
+                                 uint16_t server_port,
+                                 uint16_t client_port,
+                                 int num_channels,
+                                 bool connectDefaultAudioPorts)
 {
     { //Start Spawning, so lock mSpawning
         QMutexLocker locker(&mMutex);
@@ -96,6 +100,7 @@ void JackTripWorker::setJackTrip(int id, uint32_t client_address,
     mServerPort = server_port;
     mClientPort = client_port;
     mNumChans = num_channels;
+    m_connectDefaultAudioPorts = connectDefaultAudioPorts;
 }
 
 
@@ -170,6 +175,8 @@ void JackTripWorker::run()
         JamTest jacktrip(JackTrip::SERVERPINGSERVER); // ########### JamTest #################
         //JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
 #endif
+
+        jacktrip.setConnectDefaultAudioPorts(m_connectDefaultAudioPorts);
 
         // Connect signals and slots
         // -------------------------

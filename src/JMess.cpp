@@ -31,6 +31,7 @@
  */
 
 #include "JMess.h"
+#include "JackTrip.h"
 #include "jacktrip_globals.h"
 #include <QDebug>
 
@@ -165,13 +166,11 @@ void JMess::setConnectedPorts()
     free(ports);
 }
 //*******************************************************************************
-void JMess::connectSpawnedPorts(int nChans)
+void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // called from UdpMasterListener::connectMesh
 {
-    int LAIRS[gMAX_WAIRS];
+    QString IPS[gMAX_WAIRS];
     int ctr = 0;
-    for (int i = 0; i<gMAX_WAIRS; i++) LAIRS[i] = -1;
-    QString bogus("badNumberField");
 
     const char **ports, **connections; //vector of ports and connections
     QVector<QString> OutputInput(2); //helper variable
@@ -179,55 +178,47 @@ void JMess::connectSpawnedPorts(int nChans)
     //Get active output ports.
     ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
 
-    int numberField = QString(WAIR_AUDIO_NAME).size();
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
-        bool tmp = QString(ports[out_i]).contains(WAIR_AUDIO_NAME);
-        QChar c = QString(ports[out_i]).at(numberField);
-        QString s = (c.isDigit())?QString(c):bogus;
+        //        qDebug() << QString(ports[out_i]);
+        bool systemPort = QString(ports[out_i]).contains(QString("system"));
 
-        if((s!=bogus) && (s.toInt()<(gMAX_WAIRS-1)))
+        QString str = QString(ports[out_i]);
+        //  for example              "171.64.197.121:receive_1"
+        QString s = str.section(':', 0, 0);
+        //        qDebug() << s << systemPort;
+        //  for example              "171.64.197.121"
+
+        bool newOne = !systemPort;
+        for (int i = 0; i<ctr; i++) if (newOne && (IPS[i]==s)) newOne = false;
+        if (newOne)
         {
-            bool newOne = true;
-            for (int i = 0; i<ctr; i++) if (newOne && (LAIRS[i]==s.toInt())) newOne = false;
-            if (newOne)
-            {
-                LAIRS[ctr] = s.toInt();
-                ctr++;
-                qDebug() << ports[out_i] << tmp << s;
-            }
+            IPS[ctr] = s;
+            ctr++;
+            //                        qDebug() << ports[out_i] << systemPort << s;
         }
     }
-    //    for (int i = 0; i<gMAX_WAIRS; i++) qDebug() << i << LAIRS[i]; // list connected LAIR IDs
-    //    qDebug() << "---------------------------------";
+    for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
     disconnectAll();
-    //////////////////////
-    //    // from hubLogger connects client to itself
-    //    for (int i = 0; i<ctr; i++)
-    //        {
-    //            int k = i; // (j+(i+1))%ctr;
-    //////////////////////////////////////////////////////////////////
-#define CONNECT_CLIENT_TO_SELF
 
-    for (int i = 0; i<ctr; i++)
-#ifdef CONNECT_CLIENT_TO_SELF
-#else
-        for (int j = 0; j<(ctr-1); j++)
-#endif
-        {
-#ifdef CONNECT_CLIENT_TO_SELF
-            int k = i;
-#else
-            int k = (j+(i+1))%ctr;
-#endif
-            for (int l = 1; l<=nChans; l++) // chans are 1-based
-            {
-                qDebug() << "connect LAIR" << LAIRS[i] << ":receive_ " << l
-                         <<"with LAIR" << LAIRS[k] << "send_" << l;
+    int k = 0;
+    int jLimit = 1;
 
-                QString left = (QString(WAIR_AUDIO_NAME + QString::number(LAIRS[i]) +
-                                        ":receive_" + QString::number(l)));
-                QString right = (QString(WAIR_AUDIO_NAME + QString::number(LAIRS[k]) +
-                                         ":send_" + QString::number(l)));
+    // FULLMIX is the union of CLIENTFOFI, CLIENTECHO
+
+    // implements CLIENTFOFI, CLIENTECHO -- also FULLMIX part which is CLIENTECHO
+    for (int i = 0; i<ctr; i++) {
+        if (hubPatch == JackTrip::CLIENTFOFI) jLimit = (ctr-1);
+        for (int j = 0; j<jLimit; j++) {
+            if ((hubPatch == JackTrip::CLIENTECHO)||(hubPatch == JackTrip::FULLMIX)) k = i;
+            else if (hubPatch == JackTrip::CLIENTFOFI) k = (j+(i+1))%ctr;
+            for (int l = 1; l<=nChans; l++) { // chans are 1-based
+                qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+                         <<"with " << IPS[k]+":send_"+QString::number(l);
+
+                QString left = IPS[i] +
+                        ":receive_" + QString::number(l);
+                QString right = IPS[k] +
+                        ":send_" + QString::number(l);
 
                 if (0 !=
                         jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
@@ -235,15 +226,40 @@ void JMess::connectSpawnedPorts(int nChans)
                              << "and port: " << right
                              << " could not be connected.";
                 }
-
             }
         }
+    }
+
+    // implements FULLMIX part which is CLIENTFOFI
+    for (int i = 0; i<ctr; i++) {
+        if (hubPatch == JackTrip::FULLMIX) jLimit = (ctr-1);
+        for (int j = 0; j<jLimit; j++) {
+            if (hubPatch == JackTrip::CLIENTECHO) k = i;
+            else if (hubPatch == JackTrip::FULLMIX) k = (j+(i+1))%ctr;
+            for (int l = 1; l<=nChans; l++) { // chans are 1-based
+                qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+                         <<"with " << IPS[k]+":send_"+QString::number(l);
+
+                QString left = IPS[i] +
+                        ":receive_" + QString::number(l);
+                QString right = IPS[k] +
+                        ":send_" + QString::number(l);
+
+                if (0 !=
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
+            }
+        }
+    }
 
     free(ports);
 }
 
 //*******************************************************************************
-// connectTUB is called when in hubpatch mode 3 = RESERVEDMATRIX
+// connectTUB is called when in hubpatch mode 4 = RESERVEDMATRIX
 // TU Berlin Raspberry Pi ensemble, Winter 2019
 // this gets run on the ensemble's hub server with
 // ./jacktrip -S -p3
@@ -275,7 +291,7 @@ void JMess::connectSpawnedPorts(int nChans)
 // const int gMAX_TUB = 20; // highest client address
 // and give the proper audio process and connection names
 
- #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "SuperCollider"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "SuperCollider"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 // On server side it is SC jack-clients with indivisual names:
@@ -287,7 +303,7 @@ void JMess::connectSpawnedPorts(int nChans)
 
 // this is brute force, does not look at individual clients, just patches the whole ensemble
 // each time
-void JMess::connectTUB(int nChans)
+void JMess::connectTUB(int /*nChans*/)
 // called from UdpMasterListener::connectPatch
 {
     for (int i = 0; i<=gMAX_TUB-gMIN_TUB; i++) // last IP decimal octet
@@ -313,6 +329,7 @@ void JMess::connectTUB(int nChans)
             }
 
             // SC to jacktrip
+            tmp += 4; // increase tmp for port offest
             qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
                      << tmp <<"with " << client << ":send_" << l;
 
@@ -327,6 +344,7 @@ void JMess::connectTUB(int nChans)
                          << "and port: " << right
                          << " could not be connected.";
             }
+
         }
 }
 
