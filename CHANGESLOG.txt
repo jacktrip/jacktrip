@@ -2,9 +2,11 @@
 master
 
 ---
-1.2
+1.2 (release candidate, not yet tagged)
+- (added) jack patching modes (-p) for Hub Mode server (-S)
 - (fixed) Compilation under ubuntu
-- (removed) Rtaudio mode and dependencies
+- (removed) setRealtimeProcessPriority()
+- (removed) Rtaudio mode (but still has dependencies)
 - (fixed) IPv4-mapped IPv6 addressing bug
 ...
 - (fixed) Fixed compilation for  MacOSX10.11.sdk.
