@@ -4,6 +4,7 @@ master
 ---
 1.2
 - (fixed) Compilation under ubuntu
+- (removed) Rtaudio mode and dependencies
 - (fixed) IPv4-mapped IPv6 addressing bug
 ...
 - (fixed) Fixed compilation for  MacOSX10.11.sdk.
