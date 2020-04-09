@@ -89,6 +89,12 @@ public:
    */
     void setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument);
 
+#if defined (__WIN_32__)
+    SOCKET setSocket(SOCKET sock_fd) throw(std::runtime_error);
+#else
+    int setSocket(int sock_fd) throw(std::runtime_error);
+#endif
+
     /** \brief Receives a packet. It blocks until a packet is received
    *
    * This function makes sure we recieve a complete packet
@@ -154,7 +160,11 @@ protected:
 
     /** \brief Binds the UDP socket to the available address and specified port
    */
-    void bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error);
+#if defined (__WIN_32_)
+    SOCKET bindSocket() throw(std::runtime_error);
+#else
+    int bindSocket() throw(std::runtime_error);
+#endif
 
     /** \brief This function blocks until data is available for reading in the
    * QUdpSocket. The function will timeout after timeout_msec microseconds.
@@ -191,6 +201,8 @@ private:
     int mBindPort; ///< Local Port number to Bind
     int mPeerPort; ///< Peer Port number
     const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
+    bool mIPv6; /// Use IPv6
+    QUdpSocket mUdpSocket;
 
     QHostAddress mPeerAddress; ///< The Peer Address
 

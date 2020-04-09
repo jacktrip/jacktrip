@@ -417,6 +417,12 @@ void Settings::startJackTrip()
         udpmaster->setHubPatch(mHubConnectionMode);
         udpmaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
+        // Set buffers to zero when underrun
+        if ( mUnderrrunZero ) {
+            cout << "Setting buffers to zero when underrun..." << endl;
+            cout << gPrintSeparator << std::endl;
+            udpmaster->setUnderRunMode(JackTrip::ZEROS);
+        }
         udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------
