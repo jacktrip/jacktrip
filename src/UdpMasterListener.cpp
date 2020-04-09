@@ -443,7 +443,7 @@ void UdpMasterListener::enumerateRunningThreadIDs()
 {
     for (int id = 0; id<gMaxThreads; id++ )
     {
-        if ( !mActiveAddress.address.isEmpty() )
+        if ( !mActiveAddress[id].address.isEmpty() )
         { qDebug() << id; }
     }
 }
