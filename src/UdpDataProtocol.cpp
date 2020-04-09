@@ -136,6 +136,7 @@ int UdpDataProtocol::setSocket(int sock_fd) throw(std::runtime_error)
 {
     QMutexLocker locker(&sUdpMutex);
 
+    //If we haven't been passed a valid socket, then we should bind one.
 #if defined (__WIN_32__)
     if (sock_fd == INVALID_SOCKET) {
 #else
@@ -144,6 +145,7 @@ int UdpDataProtocol::setSocket(int sock_fd) throw(std::runtime_error)
         sock_fd = bindSocket();
     }
 
+    //The socket will be connected if we're using IPv4, otherwise just use it in the bound state.
     QAbstractSocket::SocketState socketState;
     if (mIPv6) {
         socketState = QUdpSocket::BoundState;
@@ -272,7 +274,7 @@ int UdpDataProtocol::bindSocket() throw(std::runtime_error)
         UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::BoundState,
                                       QUdpSocket::WriteOnly);
     }*/
-    if (mRunMode == RECEIVER && !mIPv6) {
+    if (!mIPv6) {
 #if defined (__LINUX__) || (__MAC_OSX__)
         // Set peer IPv4 Address. Don't worry about this in IPv6.
         // Instead use the port in the bound state, not the connected state.
