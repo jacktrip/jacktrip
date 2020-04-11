@@ -129,7 +129,6 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
 
 void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error)
 {
-
     QMutexLocker locker(&sUdpMutex);
 
 #if defined __WIN_32__
@@ -282,6 +281,8 @@ void UdpDataProtocol::bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error
             UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::BoundState,
                                       QUdpSocket::ReadOnly);
         }
+        cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
+        cout << gPrintSeparator << endl;
     }
 
     // OLD CODE WITHOUT POSIX FIX--------------------------------------------------
