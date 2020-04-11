@@ -56,6 +56,8 @@
 #include <QMutex>
 #include <QMutexLocker>
 
+#include <QSharedPointer>
+
 class JackTrip; // forward declaration
 
 
@@ -164,11 +166,7 @@ public:
     //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
     //				     uint16_t& port) = 0;
 
-#if defined (__WIN_32__)
-    virtual SOCKET setSocket(SOCKET sock_fd) = 0;
-#else
-    virtual int setSocket(int sock_fd) = 0;
-#endif
+    virtual void setSocket(QSharedPointer<QAbstractSocket> &socket, QSharedPointer<QMutex> sendRecvMutex) = 0;
 
 signals:
 
