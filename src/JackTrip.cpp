@@ -404,6 +404,14 @@ void JackTrip::startProcess(
         break;
     }
 
+    // Have the threads share a socket that each QUdpSocket object operates at half duplex.
+#if defined (__WIN_32__)
+    SOCKET sock_fd = mDataProtocolReceiver->setSocket(INVALID_SOCKET);
+#else
+    int sock_fd = mDataProtocolReceiver->setSocket(-1);
+#endif
+    mDataProtocolSender->setSocket(sock_fd);
+
     // Start Threads
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mDataProtocolReceiver->start" << std::endl;
     mDataProtocolReceiver->start();
