@@ -156,7 +156,7 @@ void JackTrip::setupAudio(
 #ifdef WAIRTOMASTER // WAIR
         qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
-        QByteArray tmp = mPeerAddress.replace(":", ".").toLatin1();
+        QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
         if(mPeerAddress.toStdString()!="")
             mJackClientName = tmp.constData();
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
@@ -403,14 +403,6 @@ void JackTrip::startProcess(
         throw std::invalid_argument("Jacktrip Mode  undefined");
         break;
     }
-
-    // Have the threads share a socket that each QUdpSocket object operates at half duplex.
-#if defined (__WIN_32__)
-    SOCKET sock_fd = mDataProtocolReceiver->setSocket(INVALID_SOCKET);
-#else
-    int sock_fd = mDataProtocolReceiver->setSocket(-1);
-#endif
-    mDataProtocolSender->setSocket(sock_fd);
 
     // Start Threads
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mDataProtocolReceiver->start" << std::endl;
