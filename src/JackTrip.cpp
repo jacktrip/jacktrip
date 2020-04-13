@@ -52,7 +52,6 @@
 #include <QHostInfo>
 #include <QThread>
 #include <QTcpSocket>
-#include <QSharedPointer>
 
 using std::cout; using std::endl;
 
@@ -405,11 +404,14 @@ void JackTrip::startProcess(
         break;
     }
 
-    // Have the threads share a single QUdpSocket object that operates at full duplex.
-    QSharedPointer<QAbstractSocket> socket;
-    QSharedPointer<QMutex> mutex(new QMutex);
-    mDataProtocolReceiver->setSocket(socket, mutex);
-    mDataProtocolSender->setSocket(socket, mutex);
+    // Have the threads share a single socket that operates at full duplex.
+#if defined (__WIN_32__)
+    SOCKET sock_fd = INVALID_SOCKET;
+#else
+    int sock_fd = -1;
+#endif
+    mDataProtocolReceiver->setSocket(sock_fd);
+    mDataProtocolSender->setSocket(sock_fd);
 
     // Start Threads
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mDataProtocolReceiver->start" << std::endl;

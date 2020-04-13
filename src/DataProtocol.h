@@ -40,6 +40,7 @@
 
 #ifdef __WIN_32__
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
 #ifndef __WIN_32__
@@ -55,8 +56,6 @@
 #include <QHostAddress>
 #include <QMutex>
 #include <QMutexLocker>
-
-#include <QSharedPointer>
 
 class JackTrip; // forward declaration
 
@@ -166,7 +165,11 @@ public:
     //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
     //				     uint16_t& port) = 0;
 
-    virtual void setSocket(QSharedPointer<QAbstractSocket> &socket, QSharedPointer<QMutex> sendRecvMutex) = 0;
+#if defined (__WIN_32__)
+    virtual void setSocket(SOCKET &socket) = 0;
+#else
+    virtual void setSocket(int &socket) = 0;
+#endif
 
 signals:
 

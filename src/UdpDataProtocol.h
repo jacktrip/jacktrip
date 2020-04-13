@@ -89,7 +89,11 @@ public:
    */
     void setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument);
 
-    void setSocket(QSharedPointer<QAbstractSocket> &socket, QSharedPointer<QMutex> sendRecvMutex) throw(std::runtime_error);
+#if defined (__WIN_32__)
+    void setSocket(SOCKET &socket) throw(std::runtime_error);
+#else
+    void setSocket(int &socket) throw(std::runtime_error);
+#endif
 
     /** \brief Receives a packet. It blocks until a packet is received
    *
@@ -100,7 +104,7 @@ public:
    * \return number of bytes read, -1 on error
    */
     //virtual int receivePacket(char* buf, const size_t n);
-    virtual int receivePacket(QUdpSocket* UdpSocket, char* buf, const size_t n);
+    virtual int receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n);
 
     /** \brief Sends a packet
    *
@@ -110,15 +114,14 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-    virtual int sendPacket(QUdpSocket* UdpSocket, const QHostAddress& PeerAddress,
-                           const char* buf, const size_t n);
+    virtual int sendPacket(const char* buf, const size_t n);
 
     /** \brief Obtains the peer address from the first UDP packet received. This address
    * is used by the SERVER mode to connect back to the client.
    * \param peerHostAddress QHostAddress to store the peer address
    * \param port Receiving port
    */
-    virtual void getPeerAddressFromFirstPacket(QUdpSocket* UdpSocket,
+    virtual void getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
                                                QHostAddress& peerHostAddress,
                                                uint16_t& port);
 
@@ -130,7 +133,7 @@ public:
     /** \brief Sets the peer port number
     */
     void setPeerPort(int port)
-    { mPeerPort = port; }
+    { mPeerPort = port; mPeerAddr.sin_port = htons(mPeerPort); mPeerAddr6.sin6_port = htons(mPeerPort); }
 
     /** \brief Implements the Thread Loop. To start the thread, call start()
    * ( DO NOT CALL run() )
@@ -171,11 +174,11 @@ protected:
    * \return returns true if there is data available for reading;
    * otherwise it returns false (if an error occurred or the operation timed out)
    */
-    void waitForReady(QUdpSocket* UdpSocket, int timeout_msec);
+    void waitForReady(QUdpSocket& UdpSocket, int timeout_msec);
 
     /** \brief Redundancy algorythm at the receiving end
     */
-    virtual void receivePacketRedundancy(QUdpSocket* UdpSocket,
+    virtual void receivePacketRedundancy(QUdpSocket& UdpSocket,
                                          int8_t* full_redundant_packet,
                                          int full_redundant_packet_size,
                                          int full_packet_size,
@@ -185,9 +188,7 @@ protected:
 
     /** \brief Redundancy algorythm at the sender's end
     */
-    virtual void sendPacketRedundancy(QUdpSocket* UdpSocket,
-                                      QHostAddress& PeerAddress,
-                                      int8_t* full_redundant_packet,
+    virtual void sendPacketRedundancy(int8_t* full_redundant_packet,
                                       int full_redundant_packet_size,
                                       int full_packet_size);
 
@@ -198,16 +199,23 @@ private:
     int mPeerPort; ///< Peer Port number
     const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
     bool mIPv6; /// Use IPv6
-    QSharedPointer<QUdpSocket> mUdpSocket; 
 
     QHostAddress mPeerAddress; ///< The Peer Address
+#if defined (__WIN_32__)
+    SOCKADDR_IN mPeerAddr;
+    SOCKADDR_IN6 mPeerAddr6;
+    SOCKET mSocket;
+#else
+    struct sockaddr_in mPeerAddr;
+    struct sockaddr_in6 mPeerAddr6;
+    int mSocket;
+#endif
 
     int8_t* mAudioPacket; ///< Buffer to store Audio Packets
     int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
 
     unsigned int mUdpRedundancyFactor; ///< Factor of redundancy
     static QMutex sUdpMutex; ///< Mutex to make thread safe the binding process
-    QSharedPointer<QMutex> mSendRecvMutex;
 };
 
 #endif // __UDPDATAPROTOCOL_H__

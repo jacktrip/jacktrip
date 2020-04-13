@@ -76,6 +76,11 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
 {
     mStopped = false;
     mIPv6 = false;
+    std::memset(&mPeerAddr, 0, sizeof(mPeerAddr));
+    std::memset(&mPeerAddr6, 0, sizeof(mPeerAddr6));
+    mPeerAddr.sin_port = htons(mPeerPort);
+    mPeerAddr6.sin6_port = htons(mPeerPort);
+    
     if (mRunMode == RECEIVER) {
         QObject::connect(this, SIGNAL(signalWaitingTooLong(int)),
                          jacktrip, SLOT(slotUdpWaitingTooLongClientGoneProbably(int)), Qt::QueuedConnection);
@@ -118,45 +123,48 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
         throw std::invalid_argument( error_message.toStdString());
     }
     /*
-  else {
-    std::cout << "Peer Address set to: "
-        << mPeerAddress.toString().toStdString() << std::endl;
-    cout << gPrintSeparator << endl;
-    usleep(100);
-  }
-  */
-}
-
-void UdpDataProtocol::setSocket(QSharedPointer<QAbstractSocket> &socket, QSharedPointer<QMutex> mutex) throw(std::runtime_error)
-{
-    QMutexLocker locker(&sUdpMutex);
-
-    //If we haven't been passed a valid socket, then we should bind one.
-    if (socket.isNull()) {
-#if defined (__WIN_32__)
-        SOCKET sock_fd = bindSocket();
-#else
-        int sock_fd = bindSocket();
-#endif
-        //The socket will be connected if we're using IPv4, otherwise just use it in the bound state.
-        QAbstractSocket::SocketState socketState;
-        if (mIPv6) {
-            socketState = QUdpSocket::BoundState;
-        } else {
-            socketState = QUdpSocket::ConnectedState;
-        }
-        mUdpSocket = QSharedPointer<QUdpSocket>(new QUdpSocket);
-        mUdpSocket->setSocketDescriptor(sock_fd, socketState, QUdpSocket::ReadWrite);
-        socket = mUdpSocket.staticCast<QAbstractSocket>();        
-
-        cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
+    else {
+        std::cout << "Peer Address set to: "
+            << mPeerAddress.toString().toStdString() << std::endl;
         cout << gPrintSeparator << endl;
+        usleep(100);
+    }
+    */
+
+    // Save our address as an appropriate address structure
+    if (mIPv6) {
+        mPeerAddr6.sin6_family = AF_INET6;
+        ::inet_pton(AF_INET6, mPeerAddress.toString().toLatin1().constData(),
+                    &mPeerAddr6.sin6_addr);
     } else {
-        mUdpSocket = socket.staticCast<QUdpSocket>();
-        cout << "HOT DIGGITY DAFFODIL" << endl;
+        mPeerAddr.sin_family = AF_INET;
+        ::inet_pton(AF_INET, mPeerAddress.toString().toLatin1().constData(),
+                    &mPeerAddr.sin_addr);
     }
 
-    mSendRecvMutex = mutex;
+}
+
+#if defined (__WIN_32__)
+void UdpDataProtocol::setSocket(SOCKET &socket) throw(std::runtime_error)
+#else
+void UdpDataProtocol::setSocket(int &socket) throw(std::runtime_error)
+#endif
+{
+    //If we haven't been passed a valid socket, then we should bind one.
+#if defined (__WIN_32__)
+    if (socket == INVALID_SOCKET) {
+#else
+    if (socket == -1) {
+#endif
+        try {
+            if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before bindSocket(UdpSocket)" << std::endl;
+            socket = bindSocket(); // Bind Socket
+        } catch ( const std::exception & e ) {
+            emit signalError( e.what() );
+            return;
+        }
+    }
+    mSocket = socket;
 }
 
 
@@ -167,6 +175,8 @@ SOCKET UdpDataProtocol::bindSocket() throw(std::runtime_error)
 int UdpDataProtocol::bindSocket() throw(std::runtime_error)
 #endif
 {
+    QMutexLocker locker(&sUdpMutex);
+
 #if defined __WIN_32__
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -192,20 +202,18 @@ int UdpDataProtocol::bindSocket() throw(std::runtime_error)
         return INVALID_SOCKET;
     }
 
-    // Creat socket descriptor
     SOCKET sock_fd;
-    SOCKADDR_IN local_addr;
-    SOCKADDR_IN6 local_addr6;
 #endif
 
 #if defined ( __LINUX__ ) || (__MAC_OSX__)
     int sock_fd;
+#endif
+
     //Set local IPv4 or IPv6 Address
     struct sockaddr_in local_addr;
     struct sockaddr_in6 local_addr6;
-#endif
 
-    // Creat socket descriptor
+    // Create socket descriptor
     if (mIPv6) {
         sock_fd = socket(AF_INET6, SOCK_DGRAM, 0);
         std::memset(&local_addr6, 0, sizeof(local_addr6));
@@ -238,7 +246,6 @@ int UdpDataProtocol::bindSocket() throw(std::runtime_error)
 #endif
 
     // Bind the Socket
-#if defined ( __LINUX__ ) || ( __MAC_OSX__ )
     if (mIPv6) {
         if ( (::bind(sock_fd, (struct sockaddr *) &local_addr6, sizeof(local_addr6))) < 0 )
         { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
@@ -246,67 +253,27 @@ int UdpDataProtocol::bindSocket() throw(std::runtime_error)
         if ( (::bind(sock_fd, (struct sockaddr *) &local_addr, sizeof(local_addr))) < 0 )
         { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
     }
-#endif
-#if defined (__WIN_32__)
-    //int bound;
-    //bound = bind(sock_fd, (SOCKADDR *) &local_addr, sizeof(local_addr));
-    if (mIPv6) {
-        if ( (bind(sock_fd, (SOCKADDR *) &local_addr6, sizeof(local_addr6))) == SOCKET_ERROR )
-        { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
-    } else {
-        if ( (bind(sock_fd, (SOCKADDR *) &local_addr, sizeof(local_addr))) == SOCKET_ERROR )
-        { throw std::runtime_error("ERROR: UDP Socket Bind Error"); }
-    }
-#endif
 
     // To be able to use the two UDP sockets bound to the same port number,
     // we connect the receiver and issue a SHUT_WR.
 
-    // This didn't work for IPv6, so instead, share a full duplex socket between
-    // two half duplex QUdpSocket objects.
+    // This didn't work for IPv6, so we'll instead share a full duplex socket.
     /*if (mRunMode == SENDER) {
         // We use the sender as an unconnected UDP socket
         UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::BoundState,
                                       QUdpSocket::WriteOnly);
     }*/
     if (!mIPv6) {
-#if defined (__LINUX__) || (__MAC_OSX__)
-        // Set peer IPv4 Address. Don't worry about this in IPv6.
-        // Instead use the port in the bound state, not the connected state.
+        // Connect only if we're using IPv4.
         // (Connecting presents an issue when a host has multiple IP addresses and the peer decides to send from
         // a different address. While this generally won't be a problem for IPv4, it will for IPv6.)
-        struct sockaddr_in peer_addr;
-        bzero(&peer_addr, sizeof(peer_addr));
-        peer_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
-        peer_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
-        peer_addr.sin_port = htons(mPeerPort); //set local port
-        // Connect the socket and issue a Write shutdown (to make it a
-        // reader socket only)
-        if ( (::inet_pton(AF_INET, mPeerAddress.toString().toLatin1().constData(),
-                          &peer_addr.sin_addr)) < 1 )
-        { throw std::runtime_error("ERROR: Invalid address presentation format"); }
-        if ( (::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr))) < 0)
+        if ( (::connect(sock_fd, (struct sockaddr *) &mPeerAddr, sizeof(mPeerAddr))) < 0)
         { throw std::runtime_error("ERROR: Could not connect UDP socket"); }
+#if defined (__LINUX__) || (__MAC_OSX__)
         //if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
-        //{ throw std::runtime_error("ERROR: Could suntdown SHUT_WR UDP socket"); }
+        //{ throw std::runtime_error("ERROR: Could shutdown SHUT_WR UDP socket"); }
 #endif
 #if defined __WIN_32__
-        // Set peer IPv4 Address
-        SOCKADDR_IN peer_addr;
-        std::memset(&peer_addr, 0, sizeof(peer_addr)); // set buffer to 0
-        peer_addr.sin_family = AF_INET; //AF_INET: IPv4 Protocol
-        peer_addr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY: let the kernel decide the active address
-        peer_addr.sin_port = htons(mPeerPort); //set local port
-        // Connect the socket and issue a Write shutdown (to make it a
-        // reader socket only)
-        peer_addr.sin_addr.s_addr = inet_addr(mPeerAddress.toString().toLatin1().constData());
-        int con = (::connect(sock_fd, (struct sockaddr *) &peer_addr, sizeof(peer_addr)));
-        if ( con < 0)
-        {
-            fprintf(stderr, "ERROR: Could not connect UDP socket");
-            throw std::runtime_error("ERROR: Could not connect UDP socket");
-        }
-        //cout<<"connect returned: "<<con<<endl;
         /*int shut_sr = shutdown(sock_fd, SD_SEND);  //shut down sender's receive function
         if ( shut_sr< 0)
         {
@@ -343,45 +310,38 @@ int UdpDataProtocol::bindSocket() throw(std::runtime_error)
 
 
 //*******************************************************************************
-int UdpDataProtocol::receivePacket(QUdpSocket* UdpSocket, char* buf, const size_t n)
+int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n)
 {
     // Block until There's something to read
-    while ( (UdpSocket->pendingDatagramSize() < n) && !mStopped ) { QThread::usleep(100); }
-    mSendRecvMutex->lock();
-    int n_bytes = UdpSocket->readDatagram(buf, n);
-    mSendRecvMutex->unlock();
+    while ( (UdpSocket.pendingDatagramSize() < n) && !mStopped ) { QThread::usleep(100); }
+    int n_bytes = UdpSocket.readDatagram(buf, n);
     return n_bytes;
 }
 
 
 //*******************************************************************************
-int UdpDataProtocol::sendPacket(QUdpSocket* UdpSocket, const QHostAddress& PeerAddress,
-                                const char* buf, const size_t n)
+int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
     int n_bytes;
-    mSendRecvMutex->lock();
-    if (UdpSocket->state() == QUdpSocket::BoundState) {
-        n_bytes = UdpSocket->writeDatagram(buf, n, PeerAddress, mPeerPort);
+    if (mIPv6) {
+        n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr *) &mPeerAddr6, sizeof(mPeerAddr6));
     } else {
-        n_bytes = UdpSocket->write(buf, n);
+        n_bytes = ::send(mSocket, buf, n, 0);
     }
-    mSendRecvMutex->unlock();
     return n_bytes;
 }
 
 
 //*******************************************************************************
-void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket* UdpSocket,
+void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
                                                     QHostAddress& peerHostAddress,
                                                     uint16_t& port)
 {
-    while ( !UdpSocket->hasPendingDatagrams() ) {
+    while ( !UdpSocket.hasPendingDatagrams() ) {
         msleep(100);
     }
     char buf[1];
-    mSendRecvMutex->lock();
-    UdpSocket->readDatagram(buf, 1, &peerHostAddress, &port);
-    mSendRecvMutex->unlock();
+    UdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
 }
 
 
@@ -403,18 +363,20 @@ void UdpDataProtocol::run()
     //                 mJackTrip, SLOT(slotStopProcesses()),
     //                 Qt::QueuedConnection);
 
-    // Creat and bind sockets - Done earlier now so that we can share the socket.
-    /*QUdpSocket UdpSocket;
-    try {
-        if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before bindSocket(UdpSocket)" << std::endl;
-        bindSocket(UdpSocket); // Bind Socket
-    } catch ( const std::exception & e ) {
-        emit signalError( e.what() );
-        return;
-    }*/
-
-    QHostAddress PeerAddress;
-    PeerAddress = mPeerAddress;
+    //Wrap our socket in a QUdpSocket object if we're the receiver, for convenience.
+    //If we're the sender, we'll just write directly to our socket.
+    QUdpSocket UdpSocket;
+    if (mRunMode == RECEIVER) {
+        if (mIPv6) {
+            UdpSocket.setSocketDescriptor(mSocket, QUdpSocket::BoundState,
+                                          QUdpSocket::ReadOnly);
+        } else {
+            UdpSocket.setSocketDescriptor(mSocket, QUdpSocket::ConnectedState,
+                                          QUdpSocket::ReadOnly);
+        }
+        cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
+        cout << gPrintSeparator << endl;
+    }
 
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy Variables" << std::endl;
     // Setup Audio Packet buffer
@@ -520,18 +482,18 @@ void UdpDataProtocol::run()
         if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before !UdpSocket.hasPendingDatagrams()" << std::endl;
         std::cout << "Waiting for Peer..." << std::endl;
         // This blocks waiting for the first packet
-        while ( !mUdpSocket->hasPendingDatagrams() ) {
+        while ( !UdpSocket.hasPendingDatagrams() ) {
             if (mStopped) { return; }
             QThread::msleep(100);
             if (gVerboseFlag) std::cout << "100ms  " << std::flush;
         }
-        int first_packet_size = mUdpSocket->pendingDatagramSize();
+        int first_packet_size = UdpSocket.pendingDatagramSize();
         // The following line is the same as
         int8_t* first_packet = new int8_t[first_packet_size];
         /// \todo fix this to avoid memory leaks
         // but avoids memory leaks
         //std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
-        receivePacket( mUdpSocket.data(), reinterpret_cast<char*>(first_packet), first_packet_size);
+        receivePacket( UdpSocket, reinterpret_cast<char*>(first_packet), first_packet_size);
         // Check that peer has the same audio settings
         if (gVerboseFlag) std::cout << std::endl << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->checkPeerSettings()" << std::endl;
         mJackTrip->checkPeerSettings(first_packet);
@@ -558,7 +520,7 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-            waitForReady(mUdpSocket.data(), 60000); //60 seconds
+            waitForReady(UdpSocket, 60000); //60 seconds
 
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
             /*
@@ -573,7 +535,7 @@ void UdpDataProtocol::run()
         mJackTrip->writeAudioBuffer(mAudioPacket);
         */
             //----------------------------------------------------------------------------------
-            receivePacketRedundancy(mUdpSocket.data(),
+            receivePacketRedundancy(UdpSocket,
                                     full_redundant_packet,
                                     full_redundant_packet_size,
                                     full_packet_size,
@@ -597,9 +559,7 @@ void UdpDataProtocol::run()
         sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
         */
             //----------------------------------------------------------------------------------
-            sendPacketRedundancy(mUdpSocket.data(),
-                                 PeerAddress,
-                                 full_redundant_packet,
+            sendPacketRedundancy(full_redundant_packet,
                                  full_redundant_packet_size,
                                  full_packet_size);
         }
@@ -610,7 +570,7 @@ void UdpDataProtocol::run()
 
 //*******************************************************************************
 //bool
-void UdpDataProtocol::waitForReady(QUdpSocket* UdpSocket, int timeout_msec)
+void UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
 {
     int loop_resolution_usec = 100; // usecs to wait on each loop
     int emit_resolution_usec = 10000; // 10 milliseconds
@@ -618,8 +578,8 @@ void UdpDataProtocol::waitForReady(QUdpSocket* UdpSocket, int timeout_msec)
     int elapsed_time_usec = 0; // Ellapsed time in milliseconds
 
     while ( ( !(
-                  UdpSocket->hasPendingDatagrams() &&
-                  (UdpSocket->pendingDatagramSize() > 0)
+                  UdpSocket.hasPendingDatagrams() &&
+                  (UdpSocket.pendingDatagramSize() > 0)
                   ) && (elapsed_time_usec <= timeout_usec) )
             && !mStopped ){
         //    if (mStopped) { return false; }
@@ -651,7 +611,7 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
 
 
 //*******************************************************************************
-void UdpDataProtocol::receivePacketRedundancy(QUdpSocket* UdpSocket,
+void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
                                               int8_t* full_redundant_packet,
                                               int full_redundant_packet_size,
                                               int full_packet_size,
@@ -698,9 +658,7 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket* UdpSocket,
 }
 
 //*******************************************************************************
-void UdpDataProtocol::sendPacketRedundancy(QUdpSocket* UdpSocket,
-                                           QHostAddress& PeerAddress,
-                                           int8_t* full_redundant_packet,
+void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
                                            int full_redundant_packet_size,
                                            int full_packet_size)
 {
@@ -721,7 +679,7 @@ void UdpDataProtocol::sendPacketRedundancy(QUdpSocket* UdpSocket,
     //int random_integer = rand();
     //if ( random_integer > (RAND_MAX/10) )
     //{
-    sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(full_redundant_packet),
+    sendPacket( reinterpret_cast<char*>(full_redundant_packet),
                 full_redundant_packet_size);
     //}
     //---------------------------------------------------------------------------------
