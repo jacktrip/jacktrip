@@ -230,26 +230,29 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
         }
     }
 
-    // implements FULLMIX part which is CLIENTFOFI
-    for (int i = 0; i<ctr; i++) {
-        if (hubPatch == JackTrip::FULLMIX) jLimit = (ctr-1);
-        for (int j = 0; j<jLimit; j++) {
-            if (hubPatch == JackTrip::CLIENTECHO) k = i;
-            else if (hubPatch == JackTrip::FULLMIX) k = (j+(i+1))%ctr;
-            for (int l = 1; l<=nChans; l++) { // chans are 1-based
-                qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
-                         <<"with " << IPS[k]+":send_"+QString::number(l);
+    // do it again to implement the FULLMIX part which is CLIENTFOFI
+    if (hubPatch == JackTrip::FULLMIX) {
+        jLimit = (ctr-1); // same as CLIENTFOFI
+        /*************/
+        // todo: the next block should be in a method, it's a repeat of the above
+        for (int i = 0; i<ctr; i++) {
+            for (int j = 0; j<jLimit; j++) {
+                k = (j+(i+1))%ctr;
+                for (int l = 1; l<=nChans; l++) { // chans are 1-based
+                    qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+                             <<"with " << IPS[k]+":send_"+QString::number(l);
 
-                QString left = IPS[i] +
-                        ":receive_" + QString::number(l);
-                QString right = IPS[k] +
-                        ":send_" + QString::number(l);
+                    QString left = IPS[i] +
+                            ":receive_" + QString::number(l);
+                    QString right = IPS[k] +
+                            ":send_" + QString::number(l);
 
-                if (0 !=
-                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
-                    qDebug() << "WARNING: port: " << left
-                             << "and port: " << right
-                             << " could not be connected.";
+                    if (0 !=
+                            jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                        qDebug() << "WARNING: port: " << left
+                                 << "and port: " << right
+                                 << " could not be connected.";
+                    }
                 }
             }
         }
@@ -470,3 +473,4 @@ void JMess::connectPorts(QString xmlInFile)
     //  }
 
 }
+

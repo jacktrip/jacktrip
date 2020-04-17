@@ -78,7 +78,9 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mIPv6 = false;
     std::memset(&mPeerAddr, 0, sizeof(mPeerAddr));
     std::memset(&mPeerAddr6, 0, sizeof(mPeerAddr6));
+    mPeerAddr.sin_family = AF_INET;
     mPeerAddr.sin_port = htons(mPeerPort);
+    mPeerAddr6.sin6_family = AF_INET6;
     mPeerAddr6.sin6_port = htons(mPeerPort);
     
     if (mRunMode == RECEIVER) {
@@ -131,13 +133,11 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
     }
     */
 
-    // Save our address as an appropriate address structure
+    // Save our address to the appropriate address structure
     if (mIPv6) {
-        mPeerAddr6.sin6_family = AF_INET6;
         ::inet_pton(AF_INET6, mPeerAddress.toString().toLatin1().constData(),
                     &mPeerAddr6.sin6_addr);
     } else {
-        mPeerAddr.sin_family = AF_INET;
         ::inet_pton(AF_INET, mPeerAddress.toString().toLatin1().constData(),
                     &mPeerAddr.sin_addr);
     }

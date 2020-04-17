@@ -201,13 +201,11 @@ private:
     bool mIPv6; /// Use IPv6
 
     QHostAddress mPeerAddress; ///< The Peer Address
-#if defined (__WIN_32__)
-    SOCKADDR_IN mPeerAddr;
-    SOCKADDR_IN6 mPeerAddr6;
-    SOCKET mSocket;
-#else
     struct sockaddr_in mPeerAddr;
     struct sockaddr_in6 mPeerAddr6;
+#if defined (__WIN_32__)
+    SOCKET mSocket;
+#else
     int mSocket;
 #endif
 
