@@ -103,19 +103,20 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument)
 {
     // Get DNS Address
-    QHostInfo info = QHostInfo::fromName(peerHostOrIP);
-    if (!info.addresses().isEmpty()) {
-        // use the first IP address
-        mPeerAddress = info.addresses().first();
-        if (mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol) {
-            mIPv6 = true;
+    if (!mPeerAddress.setAddress(peerHostOrIP)) {
+        QHostInfo info = QHostInfo::fromName(peerHostOrIP);
+        if (!info.addresses().isEmpty()) {
+            // use the first IP address
+            mPeerAddress = info.addresses().first();
         }
         //cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
     }
 
     // check if the ip address is valid
-    if ( mPeerAddress.isNull() ) {
+    if ( mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol ) {
+        mIPv6 = true;
+    } else if ( mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol ) {
         QString error_message = "Incorrect presentation format address\n '";
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");

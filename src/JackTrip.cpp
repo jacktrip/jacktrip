@@ -601,10 +601,12 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     // --------------------
     QTcpSocket tcpClient;
     QHostAddress serverHostAddress;
-    QHostInfo info = QHostInfo::fromName(mPeerAddress);
-    if (!info.addresses().isEmpty()) {
-        // use the first IP address
-        serverHostAddress = info.addresses().first();
+    if (!serverHostAddress.setAddress(mPeerAddress)) {
+        QHostInfo info = QHostInfo::fromName(mPeerAddress);
+        if (!info.addresses().isEmpty()) {
+            // use the first IP address
+            serverHostAddress = info.addresses().first();
+        }
     }
 
     // Connect Socket to Server and wait for response
