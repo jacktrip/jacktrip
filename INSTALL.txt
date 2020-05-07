@@ -11,7 +11,7 @@ You need to have a working jack installation on your machine (see below).
 To install (using Terminal):
 
 $ git clone https://github.com/jacktrip/jacktrip.git
-$ cd jacktrip/jacktrip/src
+$ cd jacktrip/src
 $ sudo cp jacktrip /usr/local/bin/
   (enter your password when prompted)
 
