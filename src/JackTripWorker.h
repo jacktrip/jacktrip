@@ -47,6 +47,7 @@
 #include <QMutex>
 
 #include "JackTrip.h"
+#include "jacktrip_globals.h"
 
 //class JackTrip; // forward declaration
 class UdpMasterListener; // forward declaration
@@ -69,7 +70,7 @@ class JackTripWorker : public QObject, public QRunnable
 
 public:
     /// \brief The class constructor
-    JackTripWorker(UdpMasterListener* udpmasterlistener, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
+    JackTripWorker(UdpMasterListener* udpmasterlistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
     /// \brief The class destructor
     virtual ~JackTripWorker();
 
@@ -124,6 +125,7 @@ private:
     volatile bool mSpawning;
     QMutex mMutex; ///< Mutex to protect mSpawning
     JackTrip::underrunModeT mUnderRunMode;
+    int mBufferQueueLength;
 
     int mID; ///< ID thread number
     int mNumChans; ///< Number of Channels

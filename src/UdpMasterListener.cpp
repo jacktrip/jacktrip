@@ -192,7 +192,7 @@ void UdpMasterListener::run()
             // --------------------
             // Register JackTripWorker with the master listener
             delete mJTWorkers->at(id); // just in case the Worker was previously created
-            mJTWorkers->replace(id, new JackTripWorker(this, mUnderRunMode));
+            mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode));
             // redirect port and spawn listener
             cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
             {
@@ -204,6 +204,8 @@ void UdpMasterListener::run()
                                                 1,
                                                 m_connectDefaultAudioPorts
                                                ); /// \todo temp default to 1 channel
+
+                qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
             }
             //send one thread to the pool
             cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;

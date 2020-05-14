@@ -422,6 +422,7 @@ void Settings::startJackTrip()
             cout << "Setting buffers to zero when underrun..." << endl;
             cout << gPrintSeparator << std::endl;
             udpmaster->setUnderRunMode(JackTrip::ZEROS);
+            udpmaster->setBufferQueueLength(mBufferQueueLength);
         }
         udpmaster->start();
 

@@ -138,6 +138,7 @@ private:
     int mTotalRunningThreads; ///< Number of Threads running in the pool
     QMutex mMutex;
     JackTrip::underrunModeT mUnderRunMode;
+    int mBufferQueueLength;
 
     bool m_connectDefaultAudioPorts;
 
@@ -155,8 +156,8 @@ public :
     void setHubPatch(unsigned int p) {mHubPatch = p;}
     unsigned int getHubPatch() {return mHubPatch;}
 
-    void setUnderRunMode(JackTrip::underrunModeT UnderRunMode)
-    { mUnderRunMode = UnderRunMode; }
+    void setUnderRunMode(JackTrip::underrunModeT UnderRunMode) { mUnderRunMode = UnderRunMode; }
+    void setBufferQueueLength(int BufferQueueLength) { mBufferQueueLength = BufferQueueLength; }
 };
 
 
