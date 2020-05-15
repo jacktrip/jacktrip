@@ -84,6 +84,9 @@ UdpMasterListener::UdpMasterListener(int server_port) :
 
     // SoundWIRE ports open are UDP 61000-62000
     mBasePort = 61000;
+
+    mUnderRunMode = JackTrip::WAVETABLE;
+    mBufferQueueLength = gDefaultQueueLength;
 }
 
 
