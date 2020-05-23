@@ -49,10 +49,15 @@
 #include <QTcpServer>
 #include <QMutex>
 
+#include "JackTrip.h"
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
 class JackTripWorker; // forward declaration
 
+typedef struct {
+    QString address;
+    int16_t port;
+} addressPortPair;
 
 /** \brief Master UDP listener on the Server.
  *
@@ -106,15 +111,15 @@ private:
     //void sendToPoolPrototype(int id);
 
     /** \brief Check if address is already handled, if not add to array
-   * \param IPv4 address as a number
+   * \param address as string (IPv4 or IPv6)
    * \return -1 if address is busy, id number if not
    */
-    int isNewAddress(uint32_t address, uint16_t port);
+    int isNewAddress(QString address, uint16_t port);
 
     /** \brief Returns the ID of the client in the pool. If the client
     * is not in the pool yet, returns -1.
     */
-    int getPoolID(uint32_t address, uint16_t port);
+    int getPoolID(QString address, uint16_t port);
 
     //QUdpSocket mUdpMasterSocket; ///< The UDP socket
     //QHostAddress mPeerAddress; ///< The Peer Address
@@ -125,13 +130,15 @@ private:
 
     int mServerPort; //< Server known port number
     int mBasePort;
-    uint32_t mActiveAddress[gMaxThreads][2]; ///< Active addresses pool numbers (32 bits IPv4 numbers)
-    QHash<uint32_t, uint16_t> mActiveAddresPortPair;
+    addressPortPair mActiveAddress[gMaxThreads]; ///< Active address pool addresses
+    QHash<QString, uint16_t> mActiveAddressPortPair;
 
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
     int mTotalRunningThreads; ///< Number of Threads running in the pool
     QMutex mMutex;
+    JackTrip::underrunModeT mUnderRunMode;
+    int mBufferQueueLength;
 
     bool m_connectDefaultAudioPorts;
 
@@ -149,6 +156,8 @@ public :
     void setHubPatch(unsigned int p) {mHubPatch = p;}
     unsigned int getHubPatch() {return mHubPatch;}
 
+    void setUnderRunMode(JackTrip::underrunModeT UnderRunMode) { mUnderRunMode = UnderRunMode; }
+    void setBufferQueueLength(int BufferQueueLength) { mBufferQueueLength = BufferQueueLength; }
 };
 
 

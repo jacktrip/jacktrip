@@ -75,8 +75,8 @@ UdpMasterListener::UdpMasterListener(int server_port) :
     mThreadPool.setExpiryTimeout(3000); // msec (-1) = forever
     // Inizialize IP addresses
     for (int i = 0; i<gMaxThreads; i++) {
-        mActiveAddress[i][0] = 0; // 32-bit ints
-        mActiveAddress[i][1] = 0; // 32-bit ints
+        mActiveAddress[i].address = ""; // Address strings
+        mActiveAddress[i].port = 0;
     }
     // Set the base dynamic port
     // The Dynamic and/or Private Ports are those from 49152 through 65535
@@ -84,6 +84,9 @@ UdpMasterListener::UdpMasterListener(int server_port) :
 
     // SoundWIRE ports open are UDP 61000-62000
     mBasePort = 61000;
+
+    mUnderRunMode = JackTrip::WAVETABLE;
+    mBufferQueueLength = gDefaultQueueLength;
 }
 
 
@@ -154,24 +157,24 @@ void UdpMasterListener::run()
             // Check is client is new or not
             // -----------------------------
             // Check if Address is not already in the thread pool
-            // check by comparing 32-bit addresses
-            int id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
+            // check by comparing address strings (To handle IPv4 and IPv6.)
+            int id = isNewAddress(PeerAddress.toString(), peer_udp_port);
             // If the address is not new, we need to remove the client from the pool
             // before re-starting the connection
 
             if (id == -1) {
                 int id_remove;
-                id_remove = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
+                id_remove = getPoolID(PeerAddress.toString(), peer_udp_port);
                 // stop the thread
                 mJTWorkers->at(id_remove)->stopThread();
                 // block until the thread has been removed from the pool
-                while ( isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port) == -1 ) {
+                while ( isNewAddress(PeerAddress.toString(), peer_udp_port) == -1 ) {
                     cout << "JackTrip HUB SERVER: Removing JackTripWorker from pool..." << endl;
                     QThread::msleep(10);
                 }
                 // Get a new ID for this client
                 //id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
-                id = getPoolID(PeerAddress.toIPv4Address(), peer_udp_port);
+                id = getPoolID(PeerAddress.toString(), peer_udp_port);
             }
             // Assign server port and send it to Client
             server_udp_port = mBasePort+id;
@@ -192,18 +195,20 @@ void UdpMasterListener::run()
             // --------------------
             // Register JackTripWorker with the master listener
             delete mJTWorkers->at(id); // just in case the Worker was previously created
-            mJTWorkers->replace(id, new JackTripWorker(this));
+            mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode));
             // redirect port and spawn listener
             cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
             {
                 QMutexLocker lock(&mMutex);
                 mJTWorkers->at(id)->setJackTrip(id,
-                                                mActiveAddress[id][0],
-                        server_udp_port,
-                        mActiveAddress[id][1],
-                        1,
-                        m_connectDefaultAudioPorts
-                        ); /// \todo temp default to 1 channel
+                                                mActiveAddress[id].address,
+                                                server_udp_port,
+                                                mActiveAddress[id].port,
+                                                1,
+                                                m_connectDefaultAudioPorts
+                                               ); /// \todo temp default to 1 channel
+
+                qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
             }
             //send one thread to the pool
             cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
@@ -218,7 +223,7 @@ void UdpMasterListener::run()
             if (isWAIR()) connectMesh(true); // invoked with -Sw
 #endif // endwhere
 
-            qDebug() << "mPeerAddress" << mActiveAddress[id][0] << mActiveAddress[id][1];
+            qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
 
             connectPatch(true);
         }
@@ -354,7 +359,7 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std
 
 //*******************************************************************************
 // check by comparing 32-bit addresses
-int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
+int UdpMasterListener::isNewAddress(QString address, uint16_t port)
 {
     QMutexLocker lock(&mMutex);
     bool busyAddress = false;
@@ -368,7 +373,7 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
   }
   */
     for (int i = 0; i<gMaxThreads; i++) {
-        if ( address==mActiveAddress[i][0] &&  port==mActiveAddress[i][1]) {
+        if ( address==mActiveAddress[i].address &&  port==mActiveAddress[i].port) {
             id = i;
             busyAddress = true;
         }
@@ -382,10 +387,10 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
         id = 0;
         bool foundEmptyAddress = false;
         while ( !foundEmptyAddress && (id<gMaxThreads) ) {
-            if ( (mActiveAddress[id][0] == 0) &&  (mActiveAddress[id][1] == 0) ) {
+            if ( mActiveAddress[id].address.isEmpty() &&  (mActiveAddress[id].port == 0) ) {
                 foundEmptyAddress = true;
-                mActiveAddress[id][0] = address;
-                mActiveAddress[id][1] = port;
+                mActiveAddress[id].address = address;
+                mActiveAddress[id].port = port;
             }  else {
                 id++;
             }
@@ -399,13 +404,13 @@ int UdpMasterListener::isNewAddress(uint32_t address, uint16_t port)
 
 
 //*******************************************************************************
-int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
+int UdpMasterListener::getPoolID(QString address, uint16_t port)
 {
     QMutexLocker lock(&mMutex);
     //for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
     for (int id = 0; id<gMaxThreads; id++ )
     {
-        if ( address==mActiveAddress[id][0] &&  port==mActiveAddress[id][1])
+        if ( address==mActiveAddress[id].address &&  port==mActiveAddress[id].port)
         { return id; }
     }
     return -1;
@@ -416,8 +421,8 @@ int UdpMasterListener::getPoolID(uint32_t address, uint16_t port)
 int UdpMasterListener::releaseThread(int id)
 {
     QMutexLocker lock(&mMutex);
-    mActiveAddress[id][0] = 0;
-    mActiveAddress[id][1] = 0;
+    mActiveAddress[id].address = "";
+    mActiveAddress[id].port = 0;
     mTotalRunningThreads--;
 #ifdef WAIR // wair
     if (isWAIR()) connectMesh(false); // invoked with -Sw
@@ -443,7 +448,7 @@ void UdpMasterListener::enumerateRunningThreadIDs()
 {
     for (int id = 0; id<gMaxThreads; id++ )
     {
-        if ( mActiveAddress[id][0] )
+        if ( !mActiveAddress[id].address.isEmpty() )
         { qDebug() << id; }
     }
 }

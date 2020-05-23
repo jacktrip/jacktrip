@@ -40,6 +40,7 @@
 
 #ifdef __WIN_32__
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
 #ifndef __WIN_32__
@@ -164,6 +165,11 @@ public:
     //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
     //				     uint16_t& port) = 0;
 
+#if defined (__WIN_32__)
+    virtual void setSocket(SOCKET &socket) = 0;
+#else
+    virtual void setSocket(int &socket) = 0;
+#endif
 
 signals:
 

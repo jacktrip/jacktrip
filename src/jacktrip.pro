@@ -104,6 +104,7 @@ win32 {
   #QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++ -lpthread
   LIBS += -lWs2_32 #cc -lOle32 #needed by rtaudio/asio
   DEFINES += __WIN_32__
+  DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
 #cc    DEFINES -= UNICODE #RtAudio for Qt
 }
 
