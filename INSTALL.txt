@@ -30,9 +30,22 @@ To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
 
 
 ---
-Fedora 22 installation (also tested on Ubuntu 18.04):
+Fedora installation (also tested on Ubuntu Studio):
 
-To install on Fedora (and possibly other Linux distributions), you need qt5, and jack-audio-connection-kit-devel. You also need rtaudio. If you don’t have the latest package, install from source:
+To install on Fedora (and possibly other Linux distributions), you need qt5, jack-audio-connection-kit-devel, and rtaudio.
+
+How to install qt5 and other needed tools on Fedora: 
+dnf install qt5-devel
+dnf groupinstall "C Development Tools and Libraries"
+dnf groupinstall "Development Tools"
+dnf install jack-audio-connection-kit-devel alsa-lib-devel iperf qjackctl audacity git
+
+Ubuntu Studio already comes with jack and qjackctl but you may have to install libjack-dev. Other basic tools can be installed on Ubuntu with:
+
+sudo apt install build-essential
+
+
+For rtaudio, if you don’t have the latest package, install from source:
 
 $ git clone https://github.com/thestk/rtaudio
 $ cd rtaudio
@@ -48,8 +61,6 @@ $ git clone https://github.com/jacktrip/jacktrip.git
 $ cd jacktrip/src
 $ ./build
 $ sudo make install
-
-
 
 
 ---
@@ -92,7 +103,7 @@ $ qmake -config nojack jacktrip.pro
 $ make release
 
 
-If you want to install install (using Terminal): on the /src directory type:
+If you want to install (using Terminal): on the /src directory type:
 
 $ sudo cp jacktrip /usr/local/bin/
   (enter your password when prompted)
