@@ -45,9 +45,7 @@
 //*******************************************************************************
 void Limiter::compute(int nframes, float** inputs, float** outputs)
 {
-    for ( int i = 0; i < getNumInputs(); i++ ) {
-        // Everything that comes out, copy back to inputs
-        //memcpy(inputs[i], outputs[i], sizeof(sample_t) * nframes);
-        memcpy(outputs[i], inputs[i], sizeof(sample_t) * nframes);
+    for ( int i = 0; i < mNumClients; i++ ) {
+      limiterP[i]->compute(nframes, inputs, outputs);
     }
 }

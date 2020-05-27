@@ -3,14 +3,16 @@ name: "limiterdsp"
 Code generated with Faust 2.24.0 (https://faust.grame.fr)
 Compilation options: -lang cpp -inpl -scal -ftz 0
 
-Faust source:
+Faust compiler input source:
 
 import("stdfaust.lib");
 N = hslider("[0] NumClientsAssumed",2,1,64,1);
 gain = 1.0 / sqrt(float(N)); // assume power-based client sum
+//limiter = co.limiter_basic_mono.dsp;
 limiter = component("limiter_basic_mono.dsp");
 process = *(gain) : limiter;
 
+Faust compiler output follows:
 ------------------------------------------------------------ */
 
 #ifndef  __limiterdsp_H__

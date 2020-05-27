@@ -44,6 +44,7 @@
 
 #include "ProcessPlugin.h"
 #include "limiterdsp.h"
+#include <vector>
 
 /** \brief The Limiter class confines the output dynamic range to a
  *  "dynamic range lane" determined by the assumed number of clients.
@@ -51,24 +52,56 @@
 class Limiter : public ProcessPlugin
 {
 public:
-    /// \brief The class constructor sets the number of channels to limit
-    Limiter(int numchans, int numclients) { // xtor
-      mNumChannels = numchans;
-      mNumClients = numclients;
-      std::cout << "Limiter: constructed for "
-	   << mNumChannels << " channels and "
-	   << mNumClients << " assumed clients\n";
-    };
-    /// \brief The class destructor
-    virtual ~Limiter() {};
+  /// \brief The class constructor sets the number of channels to limit
+  Limiter(int numchans, int numclients) { // xtor
+    mNumChannels = numchans;
+    mNumClients = numclients;
 
-    int getNumInputs() override { return(mNumChannels); };
-    int getNumOutputs() override { return(mNumChannels); };
-    void compute(int nframes, float** inputs, float** outputs) override;
+    for ( int i = 0; i < mNumClients; i++ ) {
+      limiterP.push_back(new limiterdsp);
+      limiterUIP.push_back(new APIUI);
+      limiterP[i]->buildUserInterface(limiterUIP[i]);
+    }
+
+    std::cout << "Limiter: constructed for "
+              << mNumChannels << " channels and "
+              << mNumClients << " assumed clients\n";
+  }
+
+  /// \brief The class destructor
+  virtual ~Limiter() {
+    for ( int i = 0; i < mNumClients; i++ ) {
+      delete limiterP[i];
+      delete limiterUIP[i];
+    }
+    limiterP.clear();
+    limiterUIP.clear();
+  }
+
+  void init(int samplingRate) override {
+    ProcessPlugin::init(samplingRate);
+#ifdef DEBUG
+    if (samplingRate != fSamplingFreq) {
+      std::cerr << "Sampling rate not set by superclass!\n";
+      std::exit(1); }
+#endif
+    fs = float(fSamplingFreq);
+    for ( int i = 0; i < mNumClients; i++ ) {
+      limiterP[i]->init(fs); // compression filter parameters depend on sampling rate
+      int ndx = limiterUIP[i]->getParamIndex("NumClientsAssumed");
+      limiterUIP[i]->setParamValue(ndx, mNumClients);
+    }
+  }
+  int getNumInputs() override { return(mNumChannels); }
+  int getNumOutputs() override { return(mNumChannels); }
+  void compute(int nframes, float** inputs, float** outputs) override;
 
 private:
-    int mNumChannels;
-    int mNumClients;
+  float fs;
+  int mNumChannels;
+  int mNumClients;
+  std::vector<limiterdsp*> limiterP;
+  std::vector<APIUI*> limiterUIP;
 };
 
 #endif

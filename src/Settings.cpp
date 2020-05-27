@@ -567,6 +567,12 @@ void Settings::startJackTrip()
 	    cout << "Set up Limiter for " << mNumClientsAssumed << " assumed clients ..." << endl;
             cout << gPrintSeparator << std::endl;
             Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
+	    if (mSampleRate <= 0) {
+	      std::cerr << "Sampling rate found to be zero when creating the limiter: sample-rate "
+			<< mSampleRate << " is not supported." << endl;
+	      // printUsage();
+	      std::exit(1); }
+            limiter->init(mSampleRate);
             mJackTrip->appendProcessPlugin(limiter);
         }
 
