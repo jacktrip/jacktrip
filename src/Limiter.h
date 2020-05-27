@@ -59,7 +59,7 @@ public:
 
     for ( int i = 0; i < mNumClients; i++ ) {
       limiterP.push_back(new limiterdsp);
-      limiterUIP.push_back(new APIUI);
+      limiterUIP.push_back(new APIUI); // #included in limiterdsp.h
       limiterP[i]->buildUserInterface(limiterUIP[i]);
     }
 

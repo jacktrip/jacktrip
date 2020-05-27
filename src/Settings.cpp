@@ -573,7 +573,7 @@ void Settings::startJackTrip()
 	      // printUsage();
 	      std::exit(1); }
             limiter->init(mSampleRate);
-            mJackTrip->appendProcessPlugin(limiter);
+            mJackTrip->appendProcessPlugin(limiter); // responsible for freeing when done
         }
 
 #ifdef WAIR // WAIR
