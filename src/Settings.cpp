@@ -145,7 +145,7 @@ void Settings::parseInput(int argc, char** argv)
     { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
     { "help", no_argument, NULL, 'h' }, // Print Help
     { "limiteroff", no_argument, NULL, 'O' }, // Turn off limiter => Overflow OK
-    { "assumednumclients", no_argument, NULL, 'a' }, // assumed number of clients (sound sources)
+    { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources)
     { NULL, 0, NULL, 0 }
 };
 
@@ -433,6 +433,13 @@ void Settings::startJackTrip()
         udpmaster->setHubPatch(mHubConnectionMode);
         udpmaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
+        // Set buffers to zero when underrun
+        if ( mUnderrrunZero ) {
+            cout << "Setting buffers to zero when underrun..." << endl;
+            cout << gPrintSeparator << std::endl;
+            udpmaster->setUnderRunMode(JackTrip::ZEROS);
+        }
+        udpmaster->setBufferQueueLength(mBufferQueueLength);
         udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------
