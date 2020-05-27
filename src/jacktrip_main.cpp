@@ -56,7 +56,6 @@
 #include "jacktrip_tests.cpp"
 #include "jacktrip_globals.h"
 
-
 void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/, const QString& msg)
 {
     std::cerr << msg.toStdString() << std::endl;

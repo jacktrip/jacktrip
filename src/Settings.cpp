@@ -407,10 +407,10 @@ void Settings::printUsage()
     cout << " -a, --assumednumclients                  Assumed number of clients summing audio (default: 2)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
-    cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
-    cout << "   --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
-    cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
-    cout << "   --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
+    cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
+    cout << " -T, --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
+    cout << " -F, --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
+    cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
