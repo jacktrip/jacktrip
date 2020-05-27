@@ -37,6 +37,7 @@
 
 #include "Settings.h"
 #include "LoopBack.h"
+#include "Limiter.h"
 #include "NetKS.h"
 
 #ifdef WAIR // wair
@@ -85,7 +86,9 @@ Settings::Settings() :
     mChanfeDefaultID(0),
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
-    mConnectDefaultAudioPorts(true)
+    mConnectDefaultAudioPorts(true),
+    mLimit(true),
+    mNumClientsAssumed(2)
 {}
 
 //*******************************************************************************
@@ -141,6 +144,8 @@ void Settings::parseInput(int argc, char** argv)
     { "verbose", no_argument, NULL, 'V' }, // Verbose mode
     { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
     { "help", no_argument, NULL, 'h' }, // Print Help
+    { "limiteroff", no_argument, NULL, 'O' }, // Turn off limiter => Overflow OK
+    { "assumednumclients", no_argument, NULL, 'a' }, // assumed number of clients (sound sources)
     { NULL, 0, NULL, 0 }
 };
 
@@ -149,7 +154,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVh", longopts, NULL)) != -1 )
+                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVhOa:", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -321,6 +326,19 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(0);
             break;
+        case 'O': // limiter Off
+            //-------------------------------------------------------
+            mLimit = false;
+            break;
+        case 'a': // assumed number of clients
+            //-------------------------------------------------------
+	    mNumClientsAssumed = atoi(optarg);
+	    if(mNumClientsAssumed < 1) {
+                std::cerr << "-p ERROR: Must have at least one assumed sound source: "
+                          << atoi(optarg) << " is not supported." << endl;
+                printUsage();
+                std::exit(1); }
+            break;
         default:
             //-------------------------------------------------------
             printUsage();
@@ -374,21 +392,19 @@ void Settings::printUsage()
          << gDefaultQueueLength << ")" << endl;
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
          << endl;
-    cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
-         << gDefaultQueueLength << ")" << endl;
-    cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
-         << endl;
     cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
-    cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
-    cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
+    cout << " -B, --bindport    #                      Set only the bind port number (default: 4464)" << endl;
+    cout << " -P, --peerport    #                      Set only the Peer port number (default: 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4)         Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
-    cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
-    cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
-    cout << " --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
+    cout << " -J, --clientname                             Change default client name (default: JackTrip)" << endl;
+    cout << " -L, --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
+    cout << " -D, --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
+    cout << " -O, --limiteroff                         Turn off output audio limiter (default: limiter on)" << endl;
+    cout << " -a, --assumednumclients                  Assumed number of clients summing audio (default: 2)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
@@ -417,13 +433,6 @@ void Settings::startJackTrip()
         udpmaster->setHubPatch(mHubConnectionMode);
         udpmaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
-        // Set buffers to zero when underrun
-        if ( mUnderrrunZero ) {
-            cout << "Setting buffers to zero when underrun..." << endl;
-            cout << gPrintSeparator << std::endl;
-            udpmaster->setUnderRunMode(JackTrip::ZEROS);
-        }
-        udpmaster->setBufferQueueLength(mBufferQueueLength);
         udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------
@@ -544,6 +553,14 @@ void Settings::startJackTrip()
             //mJackTrip->appendProcessPlugin(netks);
             //netks->play();
             // -------------------------------------------------------------
+        }
+
+	// Limiter goes last in the plugin sequence:
+        if ( mLimit ) {
+	    cout << "Set up Limiter for " << mNumClientsAssumed << " assumed clients ..." << endl;
+            cout << gPrintSeparator << std::endl;
+            Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
+            mJackTrip->appendProcessPlugin(limiter);
         }
 
 #ifdef WAIR // WAIR

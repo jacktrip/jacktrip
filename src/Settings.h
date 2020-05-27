@@ -70,6 +70,10 @@ public:
 
     bool getLoopBack() { return mLoopBack; }
 
+    bool getLimit() { return mLimit; }
+
+    unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }
+
 
 public slots:
     void slotExitProgram()
@@ -113,6 +117,8 @@ private:
     unsigned int mAudioBufferSize;
     unsigned int mHubConnectionMode;
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
+    bool mLimit; ///< include a limiter as the last ProcessPlugin
+    unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
 };
 
 #endif
