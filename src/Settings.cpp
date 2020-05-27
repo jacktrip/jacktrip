@@ -87,7 +87,7 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mLimit(true),
+    mLimit(false),
     mNumClientsAssumed(2)
 {}
 
@@ -144,7 +144,7 @@ void Settings::parseInput(int argc, char** argv)
     { "verbose", no_argument, NULL, 'V' }, // Verbose mode
     { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
     { "help", no_argument, NULL, 'h' }, // Print Help
-    { "limiteroff", no_argument, NULL, 'O' }, // Turn off limiter => Overflow OK
+    { "limiteron", no_argument, NULL, 'O' }, // Turn on limiter
     { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources)
     { NULL, 0, NULL, 0 }
 };
@@ -326,9 +326,9 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(0);
             break;
-        case 'O': // limiter Off
+        case 'O': // limiter On
             //-------------------------------------------------------
-            mLimit = false;
+            mLimit = true;
             break;
         case 'a': // assumed number of clients
             //-------------------------------------------------------
@@ -403,7 +403,7 @@ void Settings::printUsage()
     cout << " -J, --clientname                             Change default client name (default: JackTrip)" << endl;
     cout << " -L, --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " -D, --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
-    cout << " -O, --limiteroff                         Turn off output audio limiter (default: limiter on)" << endl;
+    cout << " -O, --limiteron                         Turn on audio output limiter (default: limiter off)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of clients summing audio (default: 2)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
