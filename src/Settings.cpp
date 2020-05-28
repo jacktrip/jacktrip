@@ -457,7 +457,7 @@ void Settings::startJackTrip()
         //---------------------------------------------------------------
     }
 
-    else {
+    else { // client mode:
 
         //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
         //	    mBufferQueueLength, mAudioBitResolution);
@@ -567,12 +567,7 @@ void Settings::startJackTrip()
 	    cout << "Set up Limiter for " << mNumClientsAssumed << " assumed clients ..." << endl;
             cout << gPrintSeparator << std::endl;
             Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
-	    if (mSampleRate <= 0) {
-	      std::cerr << "Sampling rate found to be zero when creating the limiter: sample-rate "
-			<< mSampleRate << " is not supported." << endl;
-	      // printUsage();
-	      std::exit(1); }
-            limiter->init(mSampleRate);
+	    // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
             mJackTrip->appendProcessPlugin(limiter); // responsible for freeing when done
         }
 

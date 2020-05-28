@@ -28,26 +28,26 @@ Faust compiler output follows:
 
 #ifndef FAUSTFLOAT
 #define FAUSTFLOAT float
-#endif 
+#endif
 
 #include <algorithm>
 #include <cmath>
 #include <math.h>
 
 
-#ifndef FAUSTCLASS 
+#ifndef FAUSTCLASS
 #define FAUSTCLASS limiterdsp
 #endif
 
-#ifdef __APPLE__ 
+#ifdef __APPLE__
 #define exp10f __exp10f
 #define exp10 __exp10
 #endif
 
 class limiterdsp : public dsp {
-	
+
  private:
-	
+
 	int fSampleRate;
 	float fConst0;
 	float fConst1;
@@ -64,10 +64,10 @@ class limiterdsp : public dsp {
 	float fRec0[2];
 	int iConst6;
 	int IOTA;
-	
+
  public:
-	
-	void metadata(Meta* m) { 
+
+	void metadata(Meta* m) {
 		m->declare("analyzers.lib/name", "Faust Analyzer Library");
 		m->declare("analyzers.lib/version", "0.1");
 		m->declare("basics.lib/name", "Faust Basic Element Library");
@@ -122,10 +122,10 @@ class limiterdsp : public dsp {
 		}
 		return rate;
 	}
-	
+
 	static void classInit(int sample_rate) {
 	}
-	
+
 	virtual void instanceConstants(int sample_rate) {
 		fSampleRate = sample_rate;
 		fConst0 = std::min<float>(192000.0f, std::max<float>(1.0f, float(fSampleRate)));
@@ -136,11 +136,11 @@ class limiterdsp : public dsp {
 		fConst5 = (1.0f - fConst4);
 		iConst6 = int((0.00499999989f * fConst0));
 	}
-	
+
 	virtual void instanceResetUserInterface() {
 		fHslider0 = FAUSTFLOAT(2.0f);
 	}
-	
+
 	virtual void instanceClear() {
 		for (int l0 = 0; (l0 < 2); l0 = (l0 + 1)) {
 			iRec5[l0] = 0;
@@ -162,7 +162,7 @@ class limiterdsp : public dsp {
 		}
 		IOTA = 0;
 	}
-	
+
 	virtual void init(int sample_rate) {
 		classInit(sample_rate);
 		instanceInit(sample_rate);
@@ -172,22 +172,22 @@ class limiterdsp : public dsp {
 		instanceResetUserInterface();
 		instanceClear();
 	}
-	
+
 	virtual limiterdsp* clone() {
 		return new limiterdsp();
 	}
-	
+
 	virtual int getSampleRate() {
 		return fSampleRate;
 	}
-	
+
 	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("limiterdsp");
 		ui_interface->declare(&fHslider0, "0", "");
 		ui_interface->addHorizontalSlider("NumClientsAssumed", &fHslider0, 2.0f, 1.0f, 64.0f, 1.0f);
 		ui_interface->closeBox();
 	}
-	
+
 	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
 		FAUSTFLOAT* input0 = inputs[0];
 		FAUSTFLOAT* output0 = outputs[0];

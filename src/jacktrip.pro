@@ -110,7 +110,7 @@ win32 {
 
 DESTDIR = .
 QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
-target.path = /usr/bin
+target.path = $${PREFIX}/bin
 INSTALLS += target
 
 # for plugins

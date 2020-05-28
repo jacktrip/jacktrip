@@ -53,16 +53,14 @@ class Limiter : public ProcessPlugin
 {
 public:
   /// \brief The class constructor sets the number of channels to limit
-  Limiter(int numchans, int numclients) { // xtor
-    mNumChannels = numchans;
-    mNumClients = numclients;
-
+  Limiter(int numchans, int numclients) // xtor
+    : inited(false), mNumChannels(numchans), mNumClients(numclients)
+  { 
     for ( int i = 0; i < mNumClients; i++ ) {
       limiterP.push_back(new limiterdsp);
       limiterUIP.push_back(new APIUI); // #included in limiterdsp.h
       limiterP[i]->buildUserInterface(limiterUIP[i]);
     }
-
     std::cout << "Limiter: constructed for "
               << mNumChannels << " channels and "
               << mNumClients << " assumed clients\n";
@@ -91,12 +89,14 @@ public:
       int ndx = limiterUIP[i]->getParamIndex("NumClientsAssumed");
       limiterUIP[i]->setParamValue(ndx, mNumClients);
     }
+    inited = true;
   }
   int getNumInputs() override { return(mNumChannels); }
   int getNumOutputs() override { return(mNumChannels); }
   void compute(int nframes, float** inputs, float** outputs) override;
 
 private:
+  bool inited;
   float fs;
   int mNumChannels;
   int mNumClients;
