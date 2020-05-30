@@ -45,9 +45,19 @@
 //*******************************************************************************
 void Limiter::compute(int nframes, float** inputs, float** outputs)
 {
+  static uint nSkippedFrames = 0;
   if (not inited) {
-    std::cout << "Limiter: compute() called before init(fs)\n";
-    std::exit(1);
+    nSkippedFrames++;
+    if ((nSkippedFrames % 1000) == 1) {
+      std::cout << "Limiter: compute() called before init(fs)\n";
+      // it happens, so don't std::exit(1);
+      if (nSkippedFrames>1) {
+	std::cout << "Limiter: compute() called " << nSkippedFrames << " times before init(fs)\n";
+      } else {
+	init(48000);
+	std::cout << "Limiter: *** guessed sampling rate 48000 Hz ***\n";
+      }
+    }
   }
   for ( int i = 0; i < mNumClients; i++ ) {
     limiterP[i]->compute(nframes, inputs, outputs);
