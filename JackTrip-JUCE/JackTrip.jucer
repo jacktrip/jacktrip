@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="VBYMkh" name="JackTrip" projectType="guiapp" jucerVersion="5.4.7"
+              headerPath="/usr/local/include&#10;../../../externals/rtaudio-4.1.1"
+              defines="JUCE">
+  <MAINGROUP id="Dr5phK" name="JackTrip">
+    <GROUP id="{ECC825B0-93E7-29D6-A377-80AEAA7951B7}" name="Source">
+      <FILE id="teCUfB" name="DataProtocol.cpp" compile="1" resource="0"
+            file="../src/DataProtocol.cpp"/>
+      <FILE id="k2WPWh" name="AudioInterface.h" compile="0" resource="0"
+            file="../src/AudioInterface.h"/>
+      <FILE id="po1yYe" name="ThreadPoolTest.h" compile="0" resource="0"
+            file="../src/ThreadPoolTest.h"/>
+      <FILE id="C2hOMU" name="TestRingBuffer.h" compile="0" resource="0"
+            file="../src/TestRingBuffer.h"/>
+      <FILE id="mGEbLV" name="RtAudioInterface.h" compile="0" resource="0"
+            file="../src/RtAudioInterface.h"/>
+      <FILE id="aNv5KA" name="RtAudioInterface.cpp" compile="1" resource="0"
+            file="../src/RtAudioInterface.cpp"/>
+      <FILE id="l1W2vD" name="RingBufferWavetable.h" compile="0" resource="0"
+            file="../src/RingBufferWavetable.h"/>
+      <FILE id="FWlE3F" name="RingBuffer.h" compile="0" resource="0" file="../src/RingBuffer.h"/>
+      <FILE id="xyZBqe" name="RingBuffer.cpp" compile="1" resource="0" file="../src/RingBuffer.cpp"/>
+      <FILE id="N8i8i7" name="ProcessPlugin.h" compile="0" resource="0" file="../src/ProcessPlugin.h"/>
+      <FILE id="oqY4vA" name="ProcessPlugin.cpp" compile="1" resource="0"
+            file="../src/ProcessPlugin.cpp"/>
+      <FILE id="ooKr9j" name="PacketHeader.h" compile="0" resource="0" file="../src/PacketHeader.h"/>
+      <FILE id="RwXZ0Q" name="PacketHeader.cpp" compile="1" resource="0"
+            file="../src/PacketHeader.cpp"/>
+      <FILE id="BOmD9r" name="NetKS.h" compile="0" resource="0" file="../src/NetKS.h"/>
+      <FILE id="QJImoI" name="LoopBack.h" compile="0" resource="0" file="../src/LoopBack.h"/>
+      <FILE id="Y5d0fN" name="LoopBack.cpp" compile="1" resource="0" file="../src/LoopBack.cpp"/>
+      <FILE id="juPnrC" name="JackTripWorkerMessages.h" compile="0" resource="0"
+            file="../src/JackTripWorkerMessages.h"/>
+      <FILE id="uBij9k" name="JackTripThread.h" compile="0" resource="0"
+            file="../src/JackTripThread.h"/>
+      <FILE id="UhuhFz" name="JackTripThread.cpp" compile="1" resource="0"
+            file="../src/JackTripThread.cpp"/>
+      <FILE id="jGQw8I" name="JackTrip.h" compile="0" resource="0" file="../src/JackTrip.h"/>
+      <FILE id="jt9GOe" name="JackAudioInterface.h" compile="0" resource="0"
+            file="../src/JackAudioInterface.h"/>
+      <FILE id="Z7eIJI" name="JackAudioInterface.cpp" compile="1" resource="0"
+            file="../src/JackAudioInterface.cpp"/>
+      <FILE id="sTKuTU" name="JMess.h" compile="0" resource="0" file="../src/JMess.h"/>
+      <FILE id="fUp4Xt" name="jacktrip_types.h" compile="0" resource="0"
+            file="../src/jacktrip_types.h"/>
+      <FILE id="SV6WdL" name="jacktrip_tests.cpp" compile="1" resource="0"
+            file="../src/jacktrip_tests.cpp"/>
+      <FILE id="kRhph9" name="jacktrip_globals.cpp" compile="1" resource="0"
+            file="../src/jacktrip_globals.cpp"/>
+      <FILE id="QK2CDG" name="limiterdsp.h" compile="0" resource="0" file="../src/limiterdsp.h"/>
+      <FILE id="BPIVy8" name="jacktrip_globals.h" compile="0" resource="0"
+            file="../src/jacktrip_globals.h"/>
+      <FILE id="irXysD" name="UdpMasterListener.h" compile="0" resource="0"
+            file="../src/UdpMasterListener.h"/>
+      <FILE id="mD7Fna" name="UdpMasterListener.cpp" compile="1" resource="0"
+            file="../src/UdpMasterListener.cpp"/>
+      <FILE id="zIcrgK" name="UdpDataProtocol.h" compile="0" resource="0"
+            file="../src/UdpDataProtocol.h"/>
+      <FILE id="HvBB8h" name="UdpDataProtocol.cpp" compile="1" resource="0"
+            file="../src/UdpDataProtocol.cpp"/>
+      <FILE id="bzpfTC" name="Settings.h" compile="0" resource="0" file="../src/Settings.h"/>
+      <FILE id="MHcSj6" name="JackTripWorker.h" compile="0" resource="0"
+            file="../src/JackTripWorker.h"/>
+      <FILE id="tCA2ak" name="JackTripWorker.cpp" compile="1" resource="0"
+            file="../src/JackTripWorker.cpp"/>
+      <FILE id="wrJmq8" name="JackTrip.cpp" compile="1" resource="0" file="../src/JackTrip.cpp"/>
+      <FILE id="AFatd9" name="DataProtocol.h" compile="0" resource="0" file="../src/DataProtocol.h"/>
+      <FILE id="rGSjzg" name="AudioInterface.cpp" compile="1" resource="0"
+            file="../src/AudioInterface.cpp"/>
+      <FILE id="LOxXgE" name="JMess.cpp" compile="1" resource="0" file="../src/JMess.cpp"/>
+      <FILE id="fcURoX" name="Limiter.cpp" compile="1" resource="0" file="../src/Limiter.cpp"/>
+      <FILE id="MMAKgR" name="Settings.cpp" compile="1" resource="0" file="../src/Settings.cpp"/>
+      <FILE id="Ionuyo" name="Limiter.h" compile="0" resource="0" file="../src/Limiter.h"/>
+      <FILE id="tXW6D1" name="jacktrip_main.cpp" compile="1" resource="0"
+            file="../src/jacktrip_main.cpp"/>
+      <FILE id="JXCWOq" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="mNFVvW" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="YNhMdT" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../Users/jos/JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../Users/jos/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../Users/jos/JUCE/modules"/>
+      </MODULEPATHS>
+    </LINUX_MAKE>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
+</JUCERPROJECT>

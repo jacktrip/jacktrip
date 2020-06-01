@@ -41,9 +41,11 @@
 //#include <tr1/memory> //for shared_ptr
 #include <stdexcept>
 
+#ifndef JUCE
 #include <QObject>
 #include <QString>
 #include <QUdpSocket>
+#endif
 
 #include "DataProtocol.h"
 #include "AudioInterface.h"

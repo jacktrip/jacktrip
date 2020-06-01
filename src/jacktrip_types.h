@@ -40,7 +40,9 @@
 #define __JACKTRIP_TYPES_H__
 
 //#include <jack/types.h>
+#ifndef JUCE
 #include <QtGlobal> //For QT4 types
+#endif
 
 //namespace JackTripNamespace
 //{

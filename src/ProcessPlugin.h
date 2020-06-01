@@ -39,7 +39,9 @@
 #define __PROCESSPLUGIN_H__
 
 #include <jack/jack.h>
+#ifndef JUCE
 #include <QThread>
+#endif
 
 /** \brief Interface for the process plugins to add to the JACK callback process in
  * JackAudioInterface

@@ -38,9 +38,11 @@
 #ifndef __RINGBUFFER_H__
 #define __RINGBUFFER_H__
 
+#ifndef JUCE
 #include <QWaitCondition>
 #include <QMutex>
 #include <QMutexLocker>
+#endif
 
 #include "jacktrip_types.h"
 
