@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
 
-    // qDebug() << "=== JACKTRIP BEGINS ===\n";
+    qDebug() << "=== JACKTRIP BEGINS ===\n";
 
     bool testing = false;
     if ( argc > 1 ) {

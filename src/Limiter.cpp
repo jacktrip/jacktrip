@@ -54,8 +54,13 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
       if (nSkippedFrames>1) {
 	std::cout << "Limiter: compute() called " << nSkippedFrames << " times before init(fs)\n";
       } else {
-	init(48000);
-	std::cout << "Limiter: *** guessed sampling rate 48000 Hz ***\n";
+	if (fSamplingFreq <= 0) {
+	  fSamplingFreq = 48000;
+	  std::cout << "Limiter: *** GUESSED sampling rate to be 48000 Hz ***\n";
+	}
+	init(fSamplingFreq);
+	inited = true; // It never comes!  Faust modules are presently mishandled
+	std::cout << "Limiter: init done here now since it was found to never happen above\n";
       }
     }
   }
