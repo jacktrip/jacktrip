@@ -1,5 +1,9 @@
 import("stdfaust.lib");
 
+// See also ./limiterdsp.dsp
+// which adds a simple gain scaling based on the number of
+// summing jacktrip clients assumed.
+
 //-----------------------`(co.)limiter_basic_mono`-----------------------------
  // Simple lookahead limiter based on IOhannes Zmölnig post, which is in
  // turn based on the thesis by Peter Falkner "Entwicklung eines digitalen
