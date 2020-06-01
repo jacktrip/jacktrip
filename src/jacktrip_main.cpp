@@ -37,9 +37,11 @@
 
 #include <iostream>
 
+#ifndef JUCE
 #include <QCoreApplication>
 #include <QDebug>
 #include <QLoggingCategory>
+#endif
 
 #include "JackAudioInterface.h"
 #include "UdpDataProtocol.h"
