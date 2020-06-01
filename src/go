@@ -1,0 +1,7 @@
+jacktrip -s -p2 &
+mkdir jacktrip_debug
+make debug
+lldb jacktrip_debug
+r -O -c 127.0.0.1 -o10
+b main
+b Limiter::compute
