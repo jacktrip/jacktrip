@@ -24,7 +24,7 @@
       <FILE id="N8i8i7" name="ProcessPlugin.h" compile="0" resource="0" file="../src/ProcessPlugin.h"/>
       <FILE id="oqY4vA" name="ProcessPlugin.cpp" compile="1" resource="0"
             file="../src/ProcessPlugin.cpp"/>
-      <FILE id="ooKr9j" name="PacketHeader.h" compile="0" resource="0" file="../src/PacketHeader.h"/>
+      <FILE id="ooKr9j" name="PacketHeader.h" compile="1" resource="0" file="../src/PacketHeader.h"/>
       <FILE id="RwXZ0Q" name="PacketHeader.cpp" compile="1" resource="0"
             file="../src/PacketHeader.cpp"/>
       <FILE id="BOmD9r" name="NetKS.h" compile="0" resource="0" file="../src/NetKS.h"/>
