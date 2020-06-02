@@ -165,7 +165,7 @@ SOURCES += DataProtocol.cpp \
 SOURCES += JackAudioInterface.cpp
 }
 
-# RtAduio Input
+# RtAudio Input
 win32 {
   INCLUDEPATH += ../externals/rtaudio-4.1.1/include
   DEPENDPATH += ../externals/rtaudio-4.1.1/include

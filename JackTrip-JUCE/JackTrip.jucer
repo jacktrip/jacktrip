@@ -82,7 +82,8 @@
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" frameworkSearchPaths="/Users/jos/QtOS/5.14.2/clang_64/lib"
-               extraFrameworks="QtNetwork, QtCore">
+               extraFrameworks="QtNetwork, QtCore" externalLibraries="jack"
+               extraLinkerFlags="-L/usr/local/Cellar/jack/0.125.0_4/lib">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
         <CONFIGURATION isDebug="0" name="Release"/>
@@ -102,7 +103,7 @@
         <MODULEPATH id="juce_opengl" path="../../../Users/jos/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="__LINUX__">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="__LINUX__&#10;__LINUX_ALSA__">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
         <CONFIGURATION isDebug="0" name="Release"/>
