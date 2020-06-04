@@ -34,7 +34,7 @@ master
 
 ---
 1.0.3
-- (added) Redundancy Algorithm for UDP Packets to to avoid glitches with packet losses
+- (added) Redundancy Algorithm for UDP Packets to avoid glitches with packet losses
 - (fixed) Now compiles on 64bits machines
 - (fixed) Improved exceptions handling
 - (added) Basic Karplus-Strong model added as Plug-in
