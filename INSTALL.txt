@@ -83,7 +83,7 @@ to use the app) type the following:
    ./build nojack
 
 If the previous script doesn't work on a different Linux flavor, try building
-the Makfiles yourself. You'd need qmake. Then you can build by:
+the Makefiles yourself. You'd need qmake. Then you can build by:
 $ qmake jacktrip.pro
 $ make release
 
