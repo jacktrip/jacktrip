@@ -359,6 +359,8 @@ void Settings::printUsage()
     cout << "REQUIRED ARGUMENTS: " << endl;
     cout << " -s, --server                             Run in Server Mode" << endl;
     cout << " -c, --client <peer_hostname_or_IP_num>   Run in Client Mode" << endl;
+    cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;
+    cout << " -C, --pingtoserver <peer_name_or_IP>     Run in Hub Client Mode" << endl;
     cout << endl;
     cout << "OPTIONAL ARGUMENTS: " << endl;
     cout << " -n, --numchannels #                      Number of Input and Output Channels (default: "
@@ -374,15 +376,11 @@ void Settings::printUsage()
          << gDefaultQueueLength << ")" << endl;
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
          << endl;
-    cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
-         << gDefaultQueueLength << ")" << endl;
-    cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
-         << endl;
     cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
     cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
     cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
-    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4)         Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix (default: 0)" << endl;
+    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4)      Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
