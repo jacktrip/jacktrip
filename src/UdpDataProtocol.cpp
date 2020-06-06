@@ -78,9 +78,7 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mIPv6 = false;
     std::memset(&mPeerAddr, 0, sizeof(mPeerAddr));
     std::memset(&mPeerAddr6, 0, sizeof(mPeerAddr6));
-    mPeerAddr.sin_family = AF_INET;
     mPeerAddr.sin_port = htons(mPeerPort);
-    mPeerAddr6.sin6_family = AF_INET6;
     mPeerAddr6.sin6_port = htons(mPeerPort);
     
     if (mRunMode == RECEIVER) {
@@ -103,7 +101,11 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument)
 {
     // Get DNS Address
+#if defined (__LINUX__) || (__MAC__OSX__)
+    //Don't make the following code conditional on windows
+    //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
+#endif
         QHostInfo info = QHostInfo::fromName(peerHostOrIP);
         if (!info.addresses().isEmpty()) {
             // use the first IP address
@@ -111,12 +113,14 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
         }
         //cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
+#if defined (__LINUX__) || (__MAC__OSX__)
     }
+#endif
 
     // check if the ip address is valid
     if ( mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol ) {
         mIPv6 = true;
-    } else if ( mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol ) {
+    } else  if ( mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol ) {
         QString error_message = "Incorrect presentation format address\n '";
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");
@@ -134,15 +138,16 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
     }
     */
 
-    // Save our address to the appropriate address structure
+    // Save our address as an appropriate address structure
     if (mIPv6) {
+        mPeerAddr6.sin6_family = AF_INET6;
         ::inet_pton(AF_INET6, mPeerAddress.toString().toLatin1().constData(),
                     &mPeerAddr6.sin6_addr);
     } else {
+        mPeerAddr.sin_family = AF_INET;
         ::inet_pton(AF_INET, mPeerAddress.toString().toLatin1().constData(),
                     &mPeerAddr.sin_addr);
     }
-
 }
 
 #if defined (__WIN_32__)
@@ -323,6 +328,24 @@ int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_
 //*******************************************************************************
 int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
+/*#if defined (__WIN_32__)
+    //Alternative windows specific code that uses winsock equivalents of the bsd socket functions.
+    DWORD n_bytes;
+    WSABUF buffer;
+    int error;
+    buffer.len = n;
+    buffer.buf = (char *)buf;
+
+    if (mIPv6) {
+        error = WSASendTo(mSocket, &buffer, 1, &n_bytes, 0, (struct sockaddr *) &mPeerAddr6, sizeof(mPeerAddr6), 0, 0);
+    } else {
+        error = WSASend(mSocket, &buffer, 1, &n_bytes, 0, 0, 0);
+    }
+    if (error == SOCKET_ERROR) {
+        cout << "Socket Error: " << WSAGetLastError() << endl;
+    }
+    return (int)n_bytes;
+#else*/
     int n_bytes;
     if (mIPv6) {
         n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr *) &mPeerAddr6, sizeof(mPeerAddr6));
@@ -330,6 +353,7 @@ int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
         n_bytes = ::send(mSocket, buf, n, 0);
     }
     return n_bytes;
+//#endif
 }
 
 
@@ -547,6 +571,8 @@ void UdpDataProtocol::run()
         break; }
 
     case SENDER : {
+        //Make sure we don't start sending packets too soon.
+        QThread::msleep(100);
         //-----------------------------------------------------------------------------------
         while ( !mStopped )
         {
