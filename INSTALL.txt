@@ -1,35 +1,11 @@
-Jacktrip : Build Instructions for Linux and MacOS X
+Jacktrip : Build Instructions for Linux and Windows
 
 JackTrip: A System for High-Quality Audio Network Performance over the Internet.
 
----
-MacOS X (10.9 or higher) installation:
-
-If you are installing on MacOS X, a binary is provided with each release (download the latest release from https://github.com/jacktrip/jacktrip/releases before proceeding).
-You need to have a working jack installation on your machine (see below).
-
-To install (using Terminal):
-
-$ git clone https://github.com/jacktrip/jacktrip.git
-$ cd jacktrip/src
-$ sudo cp jacktrip /usr/local/bin/
-  (enter your password when prompted)
-
-$ sudo chmod 755 /usr/local/bin/jacktrip
-  (now you can run jacktrip from any directory using Terminal)
-
-
-
-To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
-
-  * Open jacktrip.pro using QtCreator
-  * Choose a correctly configured Kit
-  * Install Jack:
-    brew install jack
-    brew install qjackctl
-
+Note: For macOS 10.9 or higher, see the file INSTALL_mac.md
 
 ---
+
 Fedora installation (also tested on Ubuntu Studio):
 
 To install on Fedora (and possibly other Linux distributions), you need qt5, jack-audio-connection-kit-devel, and rtaudio.
@@ -85,7 +61,7 @@ It is also possible to build without jack, see below.
 ---
 Build:
 
-If you're on Mac OS X or Fedora Linux and have all the dependencies installed,
+If you're on Fedora Linux and have all the dependencies installed,
 you can build by simply going to the /src directory and typing the following:
     ./build
 
@@ -101,15 +77,6 @@ $ make release
 Or without Jack support:
 $ qmake -config nojack jacktrip.pro
 $ make release
-
-
-If you want to install (using Terminal): on the /src directory type:
-
-$ sudo cp jacktrip /usr/local/bin/
-  (enter your password when prompted)
-
-$ sudo chmod 755 /usr/local/bin/jacktrip
-  (now you can run jacktrip from any directory using Terminal)
 
 
 ---
