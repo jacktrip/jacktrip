@@ -319,7 +319,7 @@ void JackTrip::startProcess(
         #ifdef WAIRTOMASTER // WAIR
         int ID
         #endif // endwhere
-        ) throw(std::invalid_argument)
+        )
 { //signal that catches ctrl c in rtaudio-asio mode
 #if defined (__WIN_32__)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
@@ -470,7 +470,7 @@ void JackTrip::waitThreads()
 
 
 //*******************************************************************************
-void JackTrip::clientStart() throw(std::invalid_argument)
+void JackTrip::clientStart()
 {
     // For the Client mode, the peer (or server) address has to be specified by the user
     if ( mPeerAddress.isEmpty() ) {
@@ -487,7 +487,6 @@ void JackTrip::clientStart() throw(std::invalid_argument)
 
 //*******************************************************************************
 int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
-throw(std::invalid_argument, std::runtime_error)
 {
     // Set the peer address
     if ( !mPeerAddress.isEmpty() ) {
@@ -584,7 +583,7 @@ throw(std::invalid_argument, std::runtime_error)
 
 
 //*******************************************************************************
-int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
+int JackTrip::clientPingToServerStart()
 {
     //mConnectionMode = JackTrip::KSTRONG;
     //mConnectionMode = JackTrip::JAMTEST;

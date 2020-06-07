@@ -164,7 +164,7 @@ public:
         #ifdef WAIRTOMASTER // wair
             int ID
         #endif // endwhere
-            ) throw(std::invalid_argument);
+            );
 
     /// \brief Stop the processing threads
     virtual void stop();
@@ -445,16 +445,15 @@ public:
     /// \brief Set the RingBuffer objects
     void setupRingBuffers();
     /// \brief Starts for the CLIENT mode
-    void clientStart() throw(std::invalid_argument);
+    void clientStart();
     /// \brief Starts for the SERVER mode
     /// \param timout Set the server to timeout after 2 seconds if no client connections are received.
     /// Usefull for the multithreaded server
     /// \return 0 on success, -1 on error
-    int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer)
-    throw(std::invalid_argument, std::runtime_error);
+    int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer);
     /// \brief Stats for the Client to Ping Server
     /// \return -1 on error, 0 on success
-    virtual int clientPingToServerStart() throw(std::invalid_argument);
+    virtual int clientPingToServerStart();
 
 private:
     //void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,

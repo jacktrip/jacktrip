@@ -342,7 +342,7 @@ void UdpMasterListener::sendToPoolPrototype(int id)
 
 
 //*******************************************************************************
-void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std::runtime_error)
+void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 {
     // QHostAddress::Any : let the kernel decide the active address
     if ( !udpsocket.bind(QHostAddress::Any,

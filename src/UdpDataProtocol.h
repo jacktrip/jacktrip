@@ -87,12 +87,12 @@ public:
     /** \brief Set the Peer address to connect to
    * \param peerHostOrIP IPv4 number or host name
    */
-    void setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument);
+    void setPeerAddress(const char* peerHostOrIP);
 
 #if defined (__WIN_32__)
-    void setSocket(SOCKET &socket) throw(std::runtime_error);
+    void setSocket(SOCKET &socket);
 #else
-    void setSocket(int &socket) throw(std::runtime_error);
+    void setSocket(int &socket);
 #endif
 
     /** \brief Receives a packet. It blocks until a packet is received
@@ -160,9 +160,9 @@ protected:
     /** \brief Binds the UDP socket to the available address and specified port
    */
 #if defined (__WIN_32__)
-    SOCKET bindSocket() throw(std::runtime_error);
+    SOCKET bindSocket();
 #else
-    int bindSocket() throw(std::runtime_error);
+    int bindSocket();
 #endif
 
     /** \brief This function blocks until data is available for reading in the

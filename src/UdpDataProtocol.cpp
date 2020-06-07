@@ -98,7 +98,7 @@ UdpDataProtocol::~UdpDataProtocol()
 
 
 //*******************************************************************************
-void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument)
+void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
 #if defined (__LINUX__) || (__MAC__OSX__)
@@ -151,9 +151,9 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
 }
 
 #if defined (__WIN_32__)
-void UdpDataProtocol::setSocket(SOCKET &socket) throw(std::runtime_error)
+void UdpDataProtocol::setSocket(SOCKET &socket)
 #else
-void UdpDataProtocol::setSocket(int &socket) throw(std::runtime_error)
+void UdpDataProtocol::setSocket(int &socket)
 #endif
 {
     //If we haven't been passed a valid socket, then we should bind one.
@@ -176,9 +176,9 @@ void UdpDataProtocol::setSocket(int &socket) throw(std::runtime_error)
 
 //*******************************************************************************
 #if defined (__WIN_32__)
-SOCKET UdpDataProtocol::bindSocket() throw(std::runtime_error)
+SOCKET UdpDataProtocol::bindSocket()
 #else
-int UdpDataProtocol::bindSocket() throw(std::runtime_error)
+int UdpDataProtocol::bindSocket()
 #endif
 {
     QMutexLocker locker(&sUdpMutex);
