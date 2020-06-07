@@ -9,7 +9,7 @@ defines = []
 if host_machine.system() == 'linux'
 	defines += '-D__LINUX__'
 elif host_machine.system() == 'osx'
-	defines += '-D__MAC_OS_X__'
+	defines += '-D__MAC_OSX__'
 elif host_machine.system() == 'windows'
 	defines += '-D__WIN_32__'
 endif
