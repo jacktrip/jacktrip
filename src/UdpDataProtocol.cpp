@@ -431,7 +431,7 @@ void UdpDataProtocol::run()
 
     // Set realtime priority (function in jacktrip_globals.h)
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before setRealtimeProcessPriority()" << std::endl;
-    std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
+    //std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
     //setRealtimeProcessPriority();
 
     /////////////////////
