@@ -535,6 +535,11 @@ void UdpDataProtocol::run()
         uint16_t current_seq_num = 0; // Store current sequence number
         uint16_t last_seq_num = 0;    // Store last package sequence number
         uint16_t newer_seq_num = 0;   // Store newer sequence number
+        mTotCount = 0;
+        mLostCount = 0;
+        mOutOfOrderCount = 0;
+        mRevivedCount = 0;
+        mStatCount = 0;
 
         if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while ( !mStopped )
@@ -655,6 +660,18 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
             mJackTrip->getPeerSequenceNumber(full_redundant_packet);
     current_seq_num = newer_seq_num;
 
+    if (0 != last_seq_num) {
+        int16_t lost = newer_seq_num - last_seq_num - 1;
+        if (0 > lost) {
+            // Out of order packet, should be ignored
+            ++mOutOfOrderCount;
+            return;
+        }
+        else if (0 != lost) {
+            mLostCount += lost;
+        }
+        mTotCount += 1 + lost;
+    }
 
     //cout << current_seq_num << " ";
     int redun_last_index = 0;
@@ -670,6 +687,7 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
                 mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
         //cout << current_seq_num << " ";
     }
+    mRevivedCount += redun_last_index;
     //cout << endl;
 
     last_seq_num = newer_seq_num; // Save last read packet
@@ -682,6 +700,22 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
         mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
         mJackTrip->writeAudioBuffer(mAudioPacket);
     }
+}
+
+//*******************************************************************************
+bool UdpDataProtocol::getStats(DataProtocol::PktStat* stat)
+{
+    if (0 == mStatCount) {
+        mLostCount = 0;
+        mOutOfOrderCount = 0;
+        mRevivedCount = 0;
+    }
+    stat->tot = mTotCount;
+    stat->lost = mLostCount;
+    stat->outOfOrder = mOutOfOrderCount;
+    stat->revived = mRevivedCount;
+    stat->statCount = mStatCount++;
+    return true;
 }
 
 //*******************************************************************************

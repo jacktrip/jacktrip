@@ -142,6 +142,7 @@ public:
    */
     virtual void run();
 
+    virtual bool getStats(PktStat* stat);
 
 private slots:
     void printUdpWaitedTooLong(int wait_msec);
@@ -214,6 +215,12 @@ private:
 
     unsigned int mUdpRedundancyFactor; ///< Factor of redundancy
     static QMutex sUdpMutex; ///< Mutex to make thread safe the binding process
+
+    std::atomic<uint32_t>  mTotCount;
+    std::atomic<uint32_t>  mLostCount;
+    std::atomic<uint32_t>  mOutOfOrderCount;
+    std::atomic<uint32_t>  mRevivedCount;
+    uint32_t  mStatCount;
 };
 
 #endif // __UDPDATAPROTOCOL_H__

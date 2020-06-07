@@ -52,6 +52,8 @@
 #include <QHostInfo>
 #include <QThread>
 #include <QTcpSocket>
+#include <QTimer>
+#include <QDateTime>
 
 using std::cout; using std::endl;
 
@@ -109,7 +111,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mReceivedConnection(false),
     mTcpConnectionError(false),
     mStopped(false),
-    mConnectDefaultAudioPorts(true)
+    mConnectDefaultAudioPorts(true),
+    mIOStatLogStream(std::cout.rdbuf())
 {
     createHeader(mPacketHeaderType);
 }
@@ -437,6 +440,54 @@ void JackTrip::startProcess(
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
 }
 
+//*******************************************************************************
+void JackTrip::startIOStatTimer(int timeout_sec, const std::ostream& log_stream)
+{
+    mIOStatLogStream.rdbuf(log_stream.rdbuf());
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
+    timer->start(timeout_sec*1000);
+}
+
+//*******************************************************************************
+void JackTrip::onStatTimer()
+{
+    DataProtocol::PktStat pkt_stat;
+    if (!mDataProtocolReceiver->getStats(&pkt_stat)) {
+        return;
+    }
+    bool reset = (0 == pkt_stat.statCount);
+    RingBuffer::IOStat recv_io_stat;
+    if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) {
+        return;
+    }
+    RingBuffer::IOStat send_io_stat;
+    if (!mSendRingBuffer->getStats(&send_io_stat, reset)) {
+        return;
+    }
+    QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
+    int32_t skew = recv_io_stat.underruns - recv_io_stat.overflows
+                - pkt_stat.lost + pkt_stat.revived;
+
+    static QMutex mutex;
+    QMutexLocker locker(&mutex);
+    mIOStatLogStream << now.toLocal8Bit().constData()
+      << " " << getPeerAddress().toLocal8Bit().constData()
+      << " send: "
+      << send_io_stat.underruns
+      << "/" << send_io_stat.overflows
+      << " recv: "
+      << recv_io_stat.underruns
+      << "/" << recv_io_stat.overflows
+      << " prot: "
+      << pkt_stat.lost
+      << "/" << pkt_stat.outOfOrder
+      << "/" << pkt_stat.revived
+      << " tot: "
+      << pkt_stat.tot
+      << " skew: " << skew
+      << endl;
+}
 
 //*******************************************************************************
 void JackTrip::stop()

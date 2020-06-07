@@ -86,6 +86,8 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots) :
     mWritePosition = ( (NumSlots/2) * SlotSize ) % mTotalSize;
     // Udpate Full Slots accordingly
     mFullSlots = (NumSlots/2);
+    mUnderruns = 0;
+    mOverflows = 0;
 }
 
 
@@ -226,6 +228,7 @@ void RingBuffer::underrunReset()
     //mFullSlots += mNumSlots/2;
     // There's nothing new to read, so we clear the whole buffer (Set the entire buffer to 0)
     std::memset(mRingBuffer, 0, mTotalSize);
+    ++mUnderruns;
 }
 
 
@@ -237,6 +240,7 @@ void RingBuffer::overflowReset()
     //mReadPosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
     mReadPosition = ( mReadPosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
     mFullSlots -= mNumSlots/2;
+    mOverflows += mNumSlots/2 + 1;
 }
 
 
@@ -247,4 +251,16 @@ void RingBuffer::debugDump() const
     cout << "mReadPosition = " << mReadPosition << endl;
     cout << "mWritePosition = " << mWritePosition << endl;
     cout <<  "mFullSlots = " << mFullSlots << endl;
+}
+
+//*******************************************************************************
+bool RingBuffer::getStats(RingBuffer::IOStat* stat, bool reset)
+{
+    if (reset) {
+        mUnderruns = 0;
+        mOverflows = 0;
+    }
+    stat->underruns = mUnderruns;
+    stat->overflows = mOverflows;
+    return true;
 }

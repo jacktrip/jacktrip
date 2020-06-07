@@ -85,7 +85,8 @@ Settings::Settings() :
     mChanfeDefaultID(0),
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
-    mConnectDefaultAudioPorts(true)
+    mConnectDefaultAudioPorts(true),
+    mIOStatTimeout(0)
 {}
 
 //*******************************************************************************
@@ -140,6 +141,8 @@ void Settings::parseInput(int argc, char** argv)
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "verbose", no_argument, NULL, 'V' }, // Verbose mode
     { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
+    { "iostat", required_argument, NULL, 'I' }, // Set IO stat timeout
+    { "iostatlog", required_argument, NULL, 'G' }, // Set IO stat log file
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
 };
@@ -316,6 +319,25 @@ void Settings::parseInput(int argc, char** argv)
                 printUsage();
                 std::exit(1); }
             break;
+        case 'I': // IO Stat timeout
+            //-------------------------------------------------------
+            mIOStatTimeout = atoi(optarg);
+            if (0 > mIOStatTimeout) {
+                std::cerr << "--iostat ERROR: negative timeout." << endl;
+                printUsage();
+                std::exit(1);
+            }
+            break;
+        case 'G': // IO Stat log file
+            //-------------------------------------------------------
+            mIOStatStream.open(optarg);
+            if (!mIOStatStream.is_open()) {
+                std::cerr << "--iostatlog FAILED to open " << optarg
+                          << " for writing." << endl;
+                printUsage();
+                std::exit(1);
+            }
+            break;
         case 'h':
             //-------------------------------------------------------
             printUsage();
@@ -394,6 +416,10 @@ void Settings::printUsage()
     cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
     cout << "   --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
+    cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
+    cout << "   --iostat <time_in_secs>                Turn on IO stat reporting with specified interval (in seconds)" << endl;
+    cout << "   --iostatlog <log_file>                 Save stat log into a file (default: print in stdout)" << endl;
+    cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
     cout << " -V, --verbose                            Verbose mode, prints debug messages" << endl;
@@ -409,6 +435,7 @@ void Settings::startJackTrip()
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
         UdpMasterListener* udpmaster = new UdpMasterListener;
+        udpmaster->setSettings(this);
 #ifdef WAIR // WAIR
         udpmaster->setWAIR(mWAIR);
 #endif // endwhere
@@ -573,6 +600,9 @@ void Settings::startJackTrip()
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );
+        if (0 < getIOStatTimeout()) {
+            mJackTrip->startIOStatTimer(getIOStatTimeout(), getIOStatStream());
+        }
         //        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->start" << std::endl;
         // this is a noop
         //        mJackTrip->start();

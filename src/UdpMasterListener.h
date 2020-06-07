@@ -53,6 +53,7 @@
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
 class JackTripWorker; // forward declaration
+class Settings;
 
 typedef struct {
     QString address;
@@ -82,6 +83,9 @@ public:
     int releaseThread(int id);
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts) { m_connectDefaultAudioPorts = connectDefaultAudioPorts; }
+
+    void setSettings(Settings* s) {m_settings = s;}
+    Settings* getSettings() const {return m_settings;}
 
 private slots:
     void testReceive()
@@ -141,6 +145,7 @@ private:
     int mBufferQueueLength;
 
     bool m_connectDefaultAudioPorts;
+    Settings* m_settings;
 
 #ifdef WAIR // wair
     bool mWAIR;
