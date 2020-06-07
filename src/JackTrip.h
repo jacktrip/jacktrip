@@ -392,6 +392,8 @@ public:
     void printTextTest() {std::cout << "=== JackTrip PRINT ===" << std::endl;}
     void printTextTest2() {std::cout << "=== JackTrip PRINT2 ===" << std::endl;}
 
+    void startIOStatTimer(int timeout_sec, const std::ostream& log_stream);
+
 public slots:
     /// \brief Slot to stop all the processes and threads
     virtual void slotStopProcesses()
@@ -418,6 +420,7 @@ public slots:
     { std::cout << "=== TESTING ===" << std::endl; }
     void slotReceivedConnectionFromPeer()
     { mReceivedConnection = true; }
+    void onStatTimer();
 
 
 signals:
@@ -509,6 +512,7 @@ private:
     volatile bool mStopped;
 
     bool mConnectDefaultAudioPorts; ///< Connect or not default audio ports
+    std::ostream mIOStatLogStream;
 };
 
 #endif
