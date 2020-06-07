@@ -89,6 +89,12 @@ public:
    */
     void setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument);
 
+#if defined (__WIN_32__)
+    void setSocket(SOCKET &socket) throw(std::runtime_error);
+#else
+    void setSocket(int &socket) throw(std::runtime_error);
+#endif
+
     /** \brief Receives a packet. It blocks until a packet is received
    *
    * This function makes sure we recieve a complete packet
@@ -108,8 +114,7 @@ public:
    * \param n size of packet to receive
    * \return number of bytes read, -1 on error
    */
-    virtual int sendPacket(QUdpSocket& UdpSocket, const QHostAddress& PeerAddress,
-                           const char* buf, const size_t n);
+    virtual int sendPacket(const char* buf, const size_t n);
 
     /** \brief Obtains the peer address from the first UDP packet received. This address
    * is used by the SERVER mode to connect back to the client.
@@ -128,7 +133,7 @@ public:
     /** \brief Sets the peer port number
     */
     void setPeerPort(int port)
-    { mPeerPort = port; }
+    { mPeerPort = port; mPeerAddr.sin_port = htons(mPeerPort); mPeerAddr6.sin6_port = htons(mPeerPort); }
 
     /** \brief Implements the Thread Loop. To start the thread, call start()
    * ( DO NOT CALL run() )
@@ -154,7 +159,11 @@ protected:
 
     /** \brief Binds the UDP socket to the available address and specified port
    */
-    void bindSocket(QUdpSocket& UdpSocket) throw(std::runtime_error);
+#if defined (__WIN_32__)
+    SOCKET bindSocket() throw(std::runtime_error);
+#else
+    int bindSocket() throw(std::runtime_error);
+#endif
 
     /** \brief This function blocks until data is available for reading in the
    * QUdpSocket. The function will timeout after timeout_msec microseconds.
@@ -179,9 +188,7 @@ protected:
 
     /** \brief Redundancy algorythm at the sender's end
     */
-    virtual void sendPacketRedundancy(QUdpSocket& UdpSocket,
-                                      QHostAddress& PeerAddress,
-                                      int8_t* full_redundant_packet,
+    virtual void sendPacketRedundancy(int8_t* full_redundant_packet,
                                       int full_redundant_packet_size,
                                       int full_packet_size);
 
@@ -191,8 +198,16 @@ private:
     int mBindPort; ///< Local Port number to Bind
     int mPeerPort; ///< Peer Port number
     const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
+    bool mIPv6; /// Use IPv6
 
     QHostAddress mPeerAddress; ///< The Peer Address
+    struct sockaddr_in mPeerAddr;
+    struct sockaddr_in6 mPeerAddr6;
+#if defined (__WIN_32__)
+    SOCKET mSocket;
+#else
+    int mSocket;
+#endif
 
     int8_t* mAudioPacket; ///< Buffer to store Audio Packets
     int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)

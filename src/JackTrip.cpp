@@ -49,6 +49,7 @@
 #include <stdexcept>
 
 #include <QHostAddress>
+#include <QHostInfo>
 #include <QThread>
 #include <QTcpSocket>
 
@@ -155,7 +156,7 @@ void JackTrip::setupAudio(
 #ifdef WAIRTOMASTER // WAIR
         qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
-        QByteArray tmp = mPeerAddress.toLatin1();
+        QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
         if(mPeerAddress.toStdString()!="")
             mJackClientName = tmp.constData();
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
@@ -403,6 +404,15 @@ void JackTrip::startProcess(
         break;
     }
 
+    // Have the threads share a single socket that operates at full duplex.
+#if defined (__WIN_32__)
+    SOCKET sock_fd = INVALID_SOCKET;
+#else
+    int sock_fd = -1;
+#endif
+    mDataProtocolReceiver->setSocket(sock_fd);
+    mDataProtocolSender->setSocket(sock_fd);
+
     // Start Threads
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mDataProtocolReceiver->start" << std::endl;
     mDataProtocolReceiver->start();
@@ -493,9 +503,9 @@ throw(std::invalid_argument, std::runtime_error)
     if (gVerboseFlag) std::cout << "JackTrip:serverStart before QUdpSocket UdpSockTemp" << std::endl;
     QUdpSocket UdpSockTemp;// Create socket to wait for client
 
-    if (gVerboseFlag) std::cout << "JackTrip:serverStart before UdpSockTemp.bind(AnyIPv4)" << std::endl;
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before UdpSockTemp.bind(Any)" << std::endl;
     // Bind the socket
-    if ( !UdpSockTemp.bind(QHostAddress::AnyIPv4, mReceiverBindPort,
+    if ( !UdpSockTemp.bind(QHostAddress::Any, mReceiverBindPort,
                            QUdpSocket::DefaultForPlatform) )
     {
         std::cerr << "in JackTrip: Could not bind UDP socket. It may be already binded." << endl;
@@ -545,6 +555,8 @@ throw(std::invalid_argument, std::runtime_error)
         if (mappedIPv4) {
             QHostAddress ipv4Address = QHostAddress(address);
             mPeerAddress = ipv4Address.toString();
+        } else {
+            mPeerAddress = peerHostAddress.toString();
         }
     }
     else {
@@ -589,7 +601,13 @@ int JackTrip::clientPingToServerStart() throw(std::invalid_argument)
     // --------------------
     QTcpSocket tcpClient;
     QHostAddress serverHostAddress;
-    serverHostAddress.setAddress(mPeerAddress);
+    if (!serverHostAddress.setAddress(mPeerAddress)) {
+        QHostInfo info = QHostInfo::fromName(mPeerAddress);
+        if (!info.addresses().isEmpty()) {
+            // use the first IP address
+            serverHostAddress = info.addresses().first();
+        }
+    }
 
     // Connect Socket to Server and wait for response
     // ----------------------------------------------

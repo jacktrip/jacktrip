@@ -57,9 +57,11 @@
 using std::cout; using std::endl;
 
 //*******************************************************************************
-JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener) :
+JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode) :
     mUdpMasterListener(udpmasterlistener),
     m_connectDefaultAudioPorts(false),
+    mBufferQueueLength(BufferQueueLength),
+    mUnderRunMode(UnderRunMode),
     mSpawning(false),
     mID(0),
     mNumChans(1)
@@ -83,7 +85,7 @@ JackTripWorker::~JackTripWorker()
 
 //*******************************************************************************
 void JackTripWorker::setJackTrip(int id,
-                                 uint32_t client_address,
+                                 QString client_address,
                                  uint16_t server_port,
                                  uint16_t client_port,
                                  int num_channels,
@@ -114,7 +116,7 @@ void JackTripWorker::run()
 
     { QMutexLocker locker(&mMutex); mSpawning = true; }
 
-    QHostAddress ClientAddress;
+    //QHostAddress ClientAddress;
 
     // Try catching any exceptions that come from JackTrip
     try
@@ -147,7 +149,7 @@ void JackTripWorker::run()
                           mNumNetRevChans, FORCEBUFFERQ);
         JackTrip * mJackTrip = &jacktrip;
 #else // endwhere
-        JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
+        JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, mBufferQueueLength);
 #endif // not wair
 
 #ifdef WAIR // WAIR
@@ -178,6 +180,9 @@ void JackTripWorker::run()
 
         jacktrip.setConnectDefaultAudioPorts(m_connectDefaultAudioPorts);
 
+        // Set our underrun mode
+        jacktrip.setUnderRunMode(mUnderRunMode);
+
         // Connect signals and slots
         // -------------------------
         if (gVerboseFlag) cout << "---> JackTripWorker: Connecting signals and slots..." << endl;
@@ -191,11 +196,12 @@ void JackTripWorker::run()
         QObject::connect(this, SIGNAL(signalRemoveThread()),
                          &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
-        ClientAddress.setAddress(mClientAddress);
+        //ClientAddress.setAddress(mClientAddress);
         // If I don't type this line, I get a bus error in the next line.
         // I still haven't figure out why
-        ClientAddress.toString().toLatin1().constData();
-        jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
+        //ClientAddress.toString().toLatin1().constData();
+        //jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
+        jacktrip.setPeerAddress(mClientAddress.toLatin1().constData());
         jacktrip.setBindPorts(mServerPort);
         //jacktrip.setPeerPorts(mClientPort);
 

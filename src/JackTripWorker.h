@@ -47,6 +47,7 @@
 #include <QMutex>
 
 #include "JackTrip.h"
+#include "jacktrip_globals.h"
 
 //class JackTrip; // forward declaration
 class UdpMasterListener; // forward declaration
@@ -69,7 +70,7 @@ class JackTripWorker : public QObject, public QRunnable
 
 public:
     /// \brief The class constructor
-    JackTripWorker(UdpMasterListener* udpmasterlistener);
+    JackTripWorker(UdpMasterListener* udpmasterlistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
     /// \brief The class destructor
     virtual ~JackTripWorker();
 
@@ -83,7 +84,7 @@ public:
     /// \param id ID number
     /// \param address
     void setJackTrip(int id,
-                     uint32_t client_address,
+                     QString client_address,
                      uint16_t server_port,
                      uint16_t client_port,
                      int num_channels,
@@ -112,7 +113,7 @@ private:
 
     UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
     //QHostAddress mClientAddress; ///< Client Address
-    uint32_t mClientAddress;
+    QString mClientAddress;
     uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client
     bool m_connectDefaultAudioPorts;
 
@@ -123,6 +124,8 @@ private:
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning;
     QMutex mMutex; ///< Mutex to protect mSpawning
+    JackTrip::underrunModeT mUnderRunMode;
+    int mBufferQueueLength;
 
     int mID; ///< ID thread number
     int mNumChans; ///< Number of Channels
