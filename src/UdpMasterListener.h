@@ -98,7 +98,7 @@ private:
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
-    static void bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std::runtime_error);
+    static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
     int readClientUdpPort(QTcpSocket* clientConnection);
     int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
