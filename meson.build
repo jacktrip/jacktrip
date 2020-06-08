@@ -21,7 +21,6 @@ moc_h = ['src/DataProtocol.h',
 	'src/NetKS.h',
 	'src/PacketHeader.h',
 	'src/Settings.h',
-	'src/ThreadPoolTest.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpMasterListener.h']
 moc_files = qt5.preprocess(moc_headers : moc_h)
