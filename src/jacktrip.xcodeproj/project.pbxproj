@@ -1,0 +1,1143 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+		5E618435888B9D49F8540165 = {
+			buildActionMask = 2147483647;
+			files = (
+				);
+			isa = PBXShellScriptBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Qt Qmake";
+			shellPath = "/bin/sh";
+			shellScript = "make -C /Users/jos/w/jacktrip-github/src -f jacktrip.xcodeproj/qt_makeqmake.mak";
+			showEnvVarsInLog = "0";
+		};
+		542C79331983463E2881BDEA = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/DataProtocol.cpp";
+			name = "DataProtocol.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		682F40355FB78AE807A973ED = {
+			fileRef = "542C79331983463E2881BDEA";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		9229711629CA5ED78170C196 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JMess.cpp";
+			name = "JMess.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		DC6DADB895C865A89B4AB1A6 = {
+			fileRef = "9229711629CA5ED78170C196";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		F67FE135A8AD856433183FDC = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackTrip.cpp";
+			name = "JackTrip.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		CD517699FF391C05FC07E5FA = {
+			fileRef = "F67FE135A8AD856433183FDC";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		D9C47E2E1FB68704301BF8D9 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/Limiter.cpp";
+			name = "Limiter.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		19EBBA0EF2625634D5182FFA = {
+			fileRef = "D9C47E2E1FB68704301BF8D9";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		04C89E59A3C5145146A62A5D = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/jacktrip_globals.cpp";
+			name = "jacktrip_globals.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		6A6F0BE6A9BEFC6CBDC8C2D5 = {
+			fileRef = "04C89E59A3C5145146A62A5D";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		D4D9FD74F4A2CA685F7B7BFD = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/jacktrip_main.cpp";
+			name = "jacktrip_main.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		0B3F36926155E778AB91FDF0 = {
+			fileRef = "D4D9FD74F4A2CA685F7B7BFD";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		C94D334C1F424BE9BE7D061F = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackTripThread.cpp";
+			name = "JackTripThread.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		21D56F36B30B2426C505BFBF = {
+			fileRef = "C94D334C1F424BE9BE7D061F";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		8A124D17718B06FAE7532073 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackTripWorker.cpp";
+			name = "JackTripWorker.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		8CC9E23461EE302C3E30819D = {
+			fileRef = "8A124D17718B06FAE7532073";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		7CF2757740CD6ACB677780DB = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/LoopBack.cpp";
+			name = "LoopBack.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		4D5443D2BD50C2D6EEE261FE = {
+			fileRef = "7CF2757740CD6ACB677780DB";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		25127065DD945A82E0C7929A = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/PacketHeader.cpp";
+			name = "PacketHeader.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		A045C3CAE7BC76C7CD90A508 = {
+			fileRef = "25127065DD945A82E0C7929A";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		EF04F48376168606A111FA36 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/ProcessPlugin.cpp";
+			name = "ProcessPlugin.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		DDF00BD5F342C18562959FAA = {
+			fileRef = "EF04F48376168606A111FA36";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		D52F2E47954D29391B1E86C5 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/RingBuffer.cpp";
+			name = "RingBuffer.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		9582A341484A750C9F2B9C5E = {
+			fileRef = "D52F2E47954D29391B1E86C5";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		44F0F339F9CE2E9530CCE8A9 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/Settings.cpp";
+			name = "Settings.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		00A11739F27021F94ECB504E = {
+			fileRef = "44F0F339F9CE2E9530CCE8A9";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		52341FF845501B77AC93F74E = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/UdpDataProtocol.cpp";
+			name = "UdpDataProtocol.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		A9E60F59D318D2ADD4CDE1D8 = {
+			fileRef = "52341FF845501B77AC93F74E";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		77AA47CAFC1FF646883A47DC = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/UdpMasterListener.cpp";
+			name = "UdpMasterListener.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		E85588CBCC952B32A8A92F64 = {
+			fileRef = "77AA47CAFC1FF646883A47DC";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		69EC3A4AD63590C5E4AF4D4A = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/AudioInterface.cpp";
+			name = "AudioInterface.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		648BF03135211C45E2C2ECD9 = {
+			fileRef = "69EC3A4AD63590C5E4AF4D4A";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		EDBF65729DF8BB4A07AC0730 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackAudioInterface.cpp";
+			name = "JackAudioInterface.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		BDBCC8240EF583B8F68DA92C = {
+			fileRef = "EDBF65729DF8BB4A07AC0730";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		2A11B8655B3637F541A9A8E5 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_DataProtocol.cpp";
+			name = "moc_DataProtocol.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		07D2A4331F4CC2C8B5AFB5E8 = {
+			fileRef = "2A11B8655B3637F541A9A8E5";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		AD8467ADAA1A83AD35B541DF = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_JackTrip.cpp";
+			name = "moc_JackTrip.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		877218415A466B56E497ECAB = {
+			fileRef = "AD8467ADAA1A83AD35B541DF";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		CD931AB9EEBBAAEC3A50A410 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_JackTripWorker.cpp";
+			name = "moc_JackTripWorker.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		99A3E1F202946D4F98D6174C = {
+			fileRef = "CD931AB9EEBBAAEC3A50A410";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		60C3DF0B9E0CB4737940940F = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_JackTripWorkerMessages.cpp";
+			name = "moc_JackTripWorkerMessages.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		14FF28096F9A2F34F53FE08C = {
+			fileRef = "60C3DF0B9E0CB4737940940F";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		E5CF883B9E972503B7E99BD0 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_NetKS.cpp";
+			name = "moc_NetKS.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		D44EDD6312D89DA2107DC990 = {
+			fileRef = "E5CF883B9E972503B7E99BD0";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		EACEF5F299629A9BA3469FBB = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_PacketHeader.cpp";
+			name = "moc_PacketHeader.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		B377D3CD6025D4D6BA8B96D3 = {
+			fileRef = "EACEF5F299629A9BA3469FBB";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		09F6FB6D442F0363C06BF1BC = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_Settings.cpp";
+			name = "moc_Settings.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		DC343154BC693FFEF5182986 = {
+			fileRef = "09F6FB6D442F0363C06BF1BC";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		949529F92C910B8D11A4DE4E = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_ThreadPoolTest.cpp";
+			name = "moc_ThreadPoolTest.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		745A1835F936437EB6929369 = {
+			fileRef = "949529F92C910B8D11A4DE4E";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		F4E68B583306C695291773BE = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_UdpDataProtocol.cpp";
+			name = "moc_UdpDataProtocol.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		609C073A4B87114D442B60DA = {
+			fileRef = "F4E68B583306C695291773BE";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		8181E6F39EFEACFEDB52006F = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/moc_UdpMasterListener.cpp";
+			name = "moc_UdpMasterListener.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		96E8AC4009BBE8A9C83E8B9B = {
+			fileRef = "8181E6F39EFEACFEDB52006F";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		43877CD8ED932588545EE743 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/DataProtocol.h";
+			name = "DataProtocol.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		178CC5AD11B27C55C3234FC4 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JMess.h";
+			name = "JMess.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		B5051186495EB7C6DB2A20B6 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackTrip.h";
+			name = "JackTrip.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		8EB085273E460F99C8BD4C55 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/Limiter.h";
+			name = "Limiter.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		39B5F4C57159F8AEDE2E4011 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/jacktrip_globals.h";
+			name = "jacktrip_globals.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		C2E047D1473B042C0360671D = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/jacktrip_types.h";
+			name = "jacktrip_types.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		F368FD229592270487B00E94 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackTripThread.h";
+			name = "JackTripThread.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		370C78685FE293C5A9F39C23 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackTripWorker.h";
+			name = "JackTripWorker.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		06AE7011BB1A05010D32F302 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackTripWorkerMessages.h";
+			name = "JackTripWorkerMessages.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		B861DE5AA6F048FE15FCCF86 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/LoopBack.h";
+			name = "LoopBack.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		47136CF3EE93C11EC6F1CFD8 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/NetKS.h";
+			name = "NetKS.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		10C0760A3DA3CC4D64EE097F = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/PacketHeader.h";
+			name = "PacketHeader.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		6DFE87270DFB05EF99124F07 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/ProcessPlugin.h";
+			name = "ProcessPlugin.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		27B77FA5EA6555E1BA3A3032 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/RingBuffer.h";
+			name = "RingBuffer.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		4D66BC68493F515B31881E0F = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/RingBufferWavetable.h";
+			name = "RingBufferWavetable.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		CAB5B91F696D2F4D92E1C814 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/Settings.h";
+			name = "Settings.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		7F2E8E19A11EC327F49B30F7 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/TestRingBuffer.h";
+			name = "TestRingBuffer.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		1242343062C835998663D294 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/ThreadPoolTest.h";
+			name = "ThreadPoolTest.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		A9CAFDA66E4C036ACFC44E6F = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/UdpDataProtocol.h";
+			name = "UdpDataProtocol.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		2FEC91F669AA64415A2C2E2D = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/UdpMasterListener.h";
+			name = "UdpMasterListener.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		9885A7E72E6BD04262341315 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/AudioInterface.h";
+			name = "AudioInterface.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		CF855C15C5B42321BF1551CC = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/limiterdsp.h";
+			name = "limiterdsp.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		C6F7B0F551EEA651789EE3B6 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/JackAudioInterface.h";
+			name = "JackAudioInterface.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
+		65A723C3BC89B35FB3D85A59 = {
+			isa = PBXFileReference;
+			path = "/opt/local/libexec/qt5/mkspecs/features/data/dummy.cpp";
+			name = "dummy.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		E0FA722321D1B268BF8AF3A4 = {
+			fileRef = "65A723C3BC89B35FB3D85A59";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
+		16BA63DF56384616A62529A8 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/jacktrip.pro";
+			name = "jacktrip.pro";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "text";
+		};
+		3983BC9E53B9D9A143CC6A16 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/.qmake.stash";
+			name = ".qmake.stash";
+			sourceTree = "<absolute>";
+		};
+		25B08E2869634E9BCBA333A2 = {
+			isa = PBXGroup;
+			children = (
+				"2A11B8655B3637F541A9A8E5",
+				"AD8467ADAA1A83AD35B541DF",
+				"CD931AB9EEBBAAEC3A50A410",
+				"60C3DF0B9E0CB4737940940F",
+				"E5CF883B9E972503B7E99BD0",
+				"EACEF5F299629A9BA3469FBB",
+				"09F6FB6D442F0363C06BF1BC",
+				"949529F92C910B8D11A4DE4E",
+				"F4E68B583306C695291773BE",
+				"8181E6F39EFEACFEDB52006F");
+			name = "Generated Sources";
+			sourceTree = "<group>";
+		};
+		2EB56BE3C2D93CDAB0C52E67 = {
+			isa = PBXGroup;
+			children = (
+				"542C79331983463E2881BDEA",
+				"9229711629CA5ED78170C196",
+				"F67FE135A8AD856433183FDC",
+				"D9C47E2E1FB68704301BF8D9",
+				"04C89E59A3C5145146A62A5D",
+				"D4D9FD74F4A2CA685F7B7BFD",
+				"C94D334C1F424BE9BE7D061F",
+				"8A124D17718B06FAE7532073",
+				"7CF2757740CD6ACB677780DB",
+				"25127065DD945A82E0C7929A",
+				"EF04F48376168606A111FA36",
+				"D52F2E47954D29391B1E86C5",
+				"44F0F339F9CE2E9530CCE8A9",
+				"52341FF845501B77AC93F74E",
+				"77AA47CAFC1FF646883A47DC",
+				"69EC3A4AD63590C5E4AF4D4A",
+				"EDBF65729DF8BB4A07AC0730",
+				"43877CD8ED932588545EE743",
+				"178CC5AD11B27C55C3234FC4",
+				"B5051186495EB7C6DB2A20B6",
+				"8EB085273E460F99C8BD4C55",
+				"39B5F4C57159F8AEDE2E4011",
+				"C2E047D1473B042C0360671D",
+				"F368FD229592270487B00E94",
+				"370C78685FE293C5A9F39C23",
+				"06AE7011BB1A05010D32F302",
+				"B861DE5AA6F048FE15FCCF86",
+				"47136CF3EE93C11EC6F1CFD8",
+				"10C0760A3DA3CC4D64EE097F",
+				"6DFE87270DFB05EF99124F07",
+				"27B77FA5EA6555E1BA3A3032",
+				"4D66BC68493F515B31881E0F",
+				"CAB5B91F696D2F4D92E1C814",
+				"7F2E8E19A11EC327F49B30F7",
+				"1242343062C835998663D294",
+				"A9CAFDA66E4C036ACFC44E6F",
+				"2FEC91F669AA64415A2C2E2D",
+				"9885A7E72E6BD04262341315",
+				"CF855C15C5B42321BF1551CC",
+				"C6F7B0F551EEA651789EE3B6");
+			name = "Sources";
+			sourceTree = "<group>";
+		};
+		B8254625CFD509ED2A24A166 = {
+			isa = PBXGroup;
+			children = (
+				"65A723C3BC89B35FB3D85A59");
+			name = "Sources [moc_predefs]";
+			sourceTree = "<group>";
+		};
+		74B182DB50CB5611B5C1C297 = {
+			isa = PBXGroup;
+			children = (
+				"16BA63DF56384616A62529A8",
+				"3983BC9E53B9D9A143CC6A16");
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		7EF0942E79C014DCEC8976BC = {
+			buildActionMask = 2147483647;
+			files = (
+				);
+			isa = PBXShellScriptBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Qt Preprocessors";
+			shellPath = "/bin/sh";
+			shellScript = "make -C /Users/jos/w/jacktrip-github/src -f jacktrip.xcodeproj/qt_preprocess.mak";
+			showEnvVarsInLog = "0";
+		};
+		F7E50F631C51CD5B5DC0BC43 = {
+			buildActionMask = 2147483647;
+			files = (
+				"682F40355FB78AE807A973ED",
+				"DC6DADB895C865A89B4AB1A6",
+				"CD517699FF391C05FC07E5FA",
+				"19EBBA0EF2625634D5182FFA",
+				"6A6F0BE6A9BEFC6CBDC8C2D5",
+				"0B3F36926155E778AB91FDF0",
+				"21D56F36B30B2426C505BFBF",
+				"8CC9E23461EE302C3E30819D",
+				"4D5443D2BD50C2D6EEE261FE",
+				"A045C3CAE7BC76C7CD90A508",
+				"DDF00BD5F342C18562959FAA",
+				"9582A341484A750C9F2B9C5E",
+				"00A11739F27021F94ECB504E",
+				"A9E60F59D318D2ADD4CDE1D8",
+				"E85588CBCC952B32A8A92F64",
+				"648BF03135211C45E2C2ECD9",
+				"BDBCC8240EF583B8F68DA92C",
+				"07D2A4331F4CC2C8B5AFB5E8",
+				"877218415A466B56E497ECAB",
+				"99A3E1F202946D4F98D6174C",
+				"14FF28096F9A2F34F53FE08C",
+				"D44EDD6312D89DA2107DC990",
+				"B377D3CD6025D4D6BA8B96D3",
+				"DC343154BC693FFEF5182986",
+				"745A1835F936437EB6929369",
+				"609C073A4B87114D442B60DA",
+				"96E8AC4009BBE8A9C83E8B9B",
+				"E0FA722321D1B268BF8AF3A4");
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Compile Sources";
+		};
+		C1CE7CCE556455D63F207E9C = {
+			isa = PBXFileReference;
+			name = "jack";
+			path = "/usr/local/lib/libjack.dylib";
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		2D5A796ECC904360457D2C40 = {
+			fileRef = "C1CE7CCE556455D63F207E9C";
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		BEF9DFDA6822604126A7E233 = {
+			isa = PBXFileReference;
+			name = "CoreAudio.framework";
+			path = "/System/Library/Frameworks/CoreAudio.framework";
+			refType = 0;
+			sourceTree = "<absolute>";
+			lastKnownFileType = "wrapper.framework";
+		};
+		35A1A39F8EAB37889EB3D397 = {
+			fileRef = "BEF9DFDA6822604126A7E233";
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4D765E1B1EA6C757220C63E7 = {
+			isa = PBXFileReference;
+			name = "CoreFoundation.framework";
+			path = "/System/Library/Frameworks/CoreFoundation.framework";
+			refType = 0;
+			sourceTree = "<absolute>";
+			lastKnownFileType = "wrapper.framework";
+		};
+		F8B465CE34D8DF87AAE95913 = {
+			fileRef = "4D765E1B1EA6C757220C63E7";
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C242693706E2CBAB837148DB = {
+			isa = PBXFileReference;
+			name = "QtNetwork.framework";
+			path = "/opt/local/libexec/qt5/lib/QtNetwork.framework";
+			refType = 0;
+			sourceTree = "<absolute>";
+			lastKnownFileType = "wrapper.framework";
+		};
+		F9DC02627440703180DF227B = {
+			fileRef = "C242693706E2CBAB837148DB";
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		9A5130A1A1900D11A62B89C2 = {
+			isa = PBXFileReference;
+			name = "QtCore.framework";
+			path = "/opt/local/libexec/qt5/lib/QtCore.framework";
+			refType = 0;
+			sourceTree = "<absolute>";
+			lastKnownFileType = "wrapper.framework";
+		};
+		24D7E9F63F918C2502655F60 = {
+			fileRef = "9A5130A1A1900D11A62B89C2";
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		2B774D8E4178765CE52EAAF5 = {
+			isa = PBXFileReference;
+			name = "DiskArbitration.framework";
+			path = "/System/Library/Frameworks/DiskArbitration.framework";
+			refType = 0;
+			sourceTree = "<absolute>";
+			lastKnownFileType = "wrapper.framework";
+		};
+		A99B2AA0F9CBBDD12BA126A4 = {
+			fileRef = "2B774D8E4178765CE52EAAF5";
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		A1A67BEAA744704B29168D39 = {
+			isa = PBXFileReference;
+			name = "IOKit.framework";
+			path = "/System/Library/Frameworks/IOKit.framework";
+			refType = 0;
+			sourceTree = "<absolute>";
+			lastKnownFileType = "wrapper.framework";
+		};
+		8D267F2E4776F0ECA2F49DC8 = {
+			fileRef = "A1A67BEAA744704B29168D39";
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AF39DD055C3EF8226FBE929D = {
+			children = (
+				"C1CE7CCE556455D63F207E9C",
+				"BEF9DFDA6822604126A7E233",
+				"4D765E1B1EA6C757220C63E7",
+				"C242693706E2CBAB837148DB",
+				"9A5130A1A1900D11A62B89C2",
+				"2B774D8E4178765CE52EAAF5",
+				"A1A67BEAA744704B29168D39");
+			isa = PBXGroup;
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		D1C883685E82D5676953459A = {
+			buildActionMask = 2147483647;
+			files = (
+				"2D5A796ECC904360457D2C40",
+				"35A1A39F8EAB37889EB3D397",
+				"F8B465CE34D8DF87AAE95913",
+				"F9DC02627440703180DF227B",
+				"24D7E9F63F918C2502655F60",
+				"A99B2AA0F9CBBDD12BA126A4",
+				"8D267F2E4776F0ECA2F49DC8");
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Link Binary With Libraries";
+		};
+		22A3C80B8558A6FDC35DB108 = {
+			isa = PBXFileReference;
+			includeInIndex = 0;
+			explicitFileType = "compiled.mach-o.executable";
+			path = "jacktrip";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		FE0A091FDBFB3E9C31B7A1BD = {
+			children = (
+				"22A3C80B8558A6FDC35DB108");
+			isa = PBXGroup;
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		E8C543AB96796ECAA2E65C57 = {
+			children = (
+				"2EB56BE3C2D93CDAB0C52E67",
+				"25B08E2869634E9BCBA333A2",
+				"B8254625CFD509ED2A24A166",
+				"74B182DB50CB5611B5C1C297",
+				"AF39DD055C3EF8226FBE929D",
+				"FE0A091FDBFB3E9C31B7A1BD");
+			isa = PBXGroup;
+			name = "jacktrip";
+			sourceTree = "<group>";
+		};
+		4AAB4899FB9C144666B14872 = {
+			buildPhases = (
+				"5E618435888B9D49F8540165",
+				"7EF0942E79C014DCEC8976BC");
+			dependencies = (
+				);
+			buildConfigurationList = 6CC3B5D2136C7CD6A5CF5A59;
+			isa = PBXAggregateTarget;
+			buildRules = (
+);
+			productName = "Qt Preprocess";
+			name = "Qt Preprocess";
+		};
+		18397B1281E9BBED4770D398 = {
+			isa = PBXTargetDependency;
+			target = "4AAB4899FB9C144666B14872";
+		};
+		E2DA8C2AF1ED2ABF26B57603 = {
+			buildPhases = (
+				"F7E50F631C51CD5B5DC0BC43",
+				"D1C883685E82D5676953459A");
+			dependencies = (
+				"18397B1281E9BBED4770D398");
+			productReference = "22A3C80B8558A6FDC35DB108";
+			buildConfigurationList = 6CC3B5D2136C7CD6A5CF5A59;
+			isa = PBXNativeTarget;
+			buildRules = (
+);
+			productType = "com.apple.product-type.tool";
+			name = "jacktrip";
+			productName = "jacktrip";
+		};
+		3AA6C32AC930069E80220CF1 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = "NO";
+				"ARCHS[sdk=macosx*]" = "x86_64";
+				COPY_PHASE_STRIP = "NO";
+				DEVELOPMENT_TEAM = "8MQ2649MG7";
+				ENABLE_BITCODE = "NO";
+				GCC_OPTIMIZATION_LEVEL = "0";
+				ONLY_ACTIVE_ARCH = "YES";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.moforte.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "jacktrip";
+				QMAKE_FULL_VERSION = "1.0.0";
+				QMAKE_PKGINFO_TYPEINFO = "????";
+				QMAKE_SHORT_VERSION = "1.0";
+				QT_LIBRARY_SUFFIX = "";
+				SDKROOT = "macosx";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				CC = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang";
+				LDPLUSPLUS = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++";
+				SYMROOT = ".xcode";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				DYLIB_CURRENT_VERSION = "1.0.0";
+				DYLIB_COMPATIBILITY_VERSION = "1.0";
+				MACOSX_DEPLOYMENT_TARGET = "10.9";
+				HEADER_SEARCH_PATHS = (
+					".",
+					"../faust-src-lair/stk",
+					"/usr/local/include",
+					"../faust-src-lair",
+					"../externals/rtaudio-4.1.1",
+					"/opt/local/libexec/qt5/lib/QtNetwork.framework/Headers",
+					"/opt/local/libexec/qt5/lib/QtCore.framework/Headers",
+					".",
+					"/opt/local/libexec/qt5/mkspecs/macx-clang");
+				LIBRARY_SEARCH_PATHS = (
+					"/usr/local/lib",
+					"/System/Library/Frameworks/",
+					"/opt/local/libexec/qt5/lib");
+				FRAMEWORK_SEARCH_PATHS = (
+					"/opt/local/libexec/qt5/lib",
+					"/opt/local/libexec/qt5/lib");
+				OTHER_CFLAGS = (
+					"-pipe",
+					"-Wall",
+					"-Wextra",
+					"-fPIC",
+					"-DWAIRTOMASTER",
+					"-D__MAC_OSX__",
+					"-DQT_NO_DEBUG",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB");
+				OTHER_CPLUSPLUSFLAGS = (
+					"-pipe",
+					"-stdlib=libc++",
+					"-D__MACOSX_CORE__",
+					"-std=gnu++11",
+					"-Wall",
+					"-Wextra",
+					"-fPIC",
+					"-DWAIRTOMASTER",
+					"-D__MAC_OSX__",
+					"-DQT_NO_DEBUG",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB");
+				OTHER_LDFLAGS = (
+						"-stdlib=libc++",
+						"-headerpad_max_install_names",
+						"-Wl,-rpath,@executable_path/../Frameworks",
+						"-F/opt/local/libexec/qt5/lib",
+						"-L/usr/local/lib",
+						"-lm");
+				ARCHS = "x86_64";
+			};
+			name = "Debug";
+		};
+		77418F46922677BB04ED38DD = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = "NO";
+				"ARCHS[sdk=macosx*]" = "x86_64";
+				COPY_PHASE_STRIP = "NO";
+				DEVELOPMENT_TEAM = "8MQ2649MG7";
+				ENABLE_BITCODE = "NO";
+				GCC_OPTIMIZATION_LEVEL = "0";
+				ONLY_ACTIVE_ARCH = "YES";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.moforte.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "jacktrip";
+				QMAKE_FULL_VERSION = "1.0.0";
+				QMAKE_PKGINFO_TYPEINFO = "????";
+				QMAKE_SHORT_VERSION = "1.0";
+				QT_LIBRARY_SUFFIX = "";
+				SDKROOT = "macosx";
+				PRODUCT_NAME = "jacktrip";
+			};
+			name = "Debug";
+		};
+		339EE1B2CC4FC24589A0EA95 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = "NO";
+				"ARCHS[sdk=macosx*]" = "x86_64";
+				COPY_PHASE_STRIP = "NO";
+				DEVELOPMENT_TEAM = "8MQ2649MG7";
+				ENABLE_BITCODE = "NO";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.moforte.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "jacktrip";
+				QMAKE_FULL_VERSION = "1.0.0";
+				QMAKE_PKGINFO_TYPEINFO = "????";
+				QMAKE_SHORT_VERSION = "1.0";
+				QT_LIBRARY_SUFFIX = "";
+				SDKROOT = "macosx";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				CC = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang";
+				LDPLUSPLUS = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++";
+				SYMROOT = ".xcode";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				DYLIB_CURRENT_VERSION = "1.0.0";
+				DYLIB_COMPATIBILITY_VERSION = "1.0";
+				MACOSX_DEPLOYMENT_TARGET = "10.9";
+				HEADER_SEARCH_PATHS = (
+					".",
+					"../faust-src-lair/stk",
+					"/usr/local/include",
+					"../faust-src-lair",
+					"../externals/rtaudio-4.1.1",
+					"/opt/local/libexec/qt5/lib/QtNetwork.framework/Headers",
+					"/opt/local/libexec/qt5/lib/QtCore.framework/Headers",
+					".",
+					"/opt/local/libexec/qt5/mkspecs/macx-clang");
+				LIBRARY_SEARCH_PATHS = (
+					"/usr/local/lib",
+					"/System/Library/Frameworks/",
+					"/opt/local/libexec/qt5/lib");
+				FRAMEWORK_SEARCH_PATHS = (
+					"/opt/local/libexec/qt5/lib",
+					"/opt/local/libexec/qt5/lib");
+				OTHER_CFLAGS = (
+					"-pipe",
+					"-Wall",
+					"-Wextra",
+					"-fPIC",
+					"-DWAIRTOMASTER",
+					"-D__MAC_OSX__",
+					"-DQT_NO_DEBUG",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB");
+				OTHER_CPLUSPLUSFLAGS = (
+					"-pipe",
+					"-stdlib=libc++",
+					"-D__MACOSX_CORE__",
+					"-std=gnu++11",
+					"-Wall",
+					"-Wextra",
+					"-fPIC",
+					"-DWAIRTOMASTER",
+					"-D__MAC_OSX__",
+					"-DQT_NO_DEBUG",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB");
+				OTHER_LDFLAGS = (
+						"-stdlib=libc++",
+						"-headerpad_max_install_names",
+						"-Wl,-rpath,@executable_path/../Frameworks",
+						"-F/opt/local/libexec/qt5/lib",
+						"-L/usr/local/lib",
+						"-lm");
+				ARCHS = "x86_64";
+			};
+			name = "Release";
+		};
+		6666AA5E688052234F6758D8 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = "NO";
+				"ARCHS[sdk=macosx*]" = "x86_64";
+				COPY_PHASE_STRIP = "NO";
+				DEVELOPMENT_TEAM = "8MQ2649MG7";
+				ENABLE_BITCODE = "NO";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.moforte.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "jacktrip";
+				QMAKE_FULL_VERSION = "1.0.0";
+				QMAKE_PKGINFO_TYPEINFO = "????";
+				QMAKE_SHORT_VERSION = "1.0";
+				QT_LIBRARY_SUFFIX = "";
+				SDKROOT = "macosx";
+				PRODUCT_NAME = "jacktrip";
+			};
+			name = "Release";
+		};
+		DAC4C1AA5EDEA1C85E9CA5E6 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				"3AA6C32AC930069E80220CF1",
+				"339EE1B2CC4FC24589A0EA95");
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		6CC3B5D2136C7CD6A5CF5A59 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				"77418F46922677BB04ED38DD",
+				"6666AA5E688052234F6758D8");
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		6DB9C3763D02B1415CD9D565 = {
+			hasScannedForEncodings = 1;
+			compatibilityVersion = "Xcode 3.2";
+			isa = PBXProject;
+			mainGroup = "E8C543AB96796ECAA2E65C57";
+			productRefGroup = "FE0A091FDBFB3E9C31B7A1BD";
+			buildConfigurationList = "DAC4C1AA5EDEA1C85E9CA5E6";
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				"E2DA8C2AF1ED2ABF26B57603",
+				"4AAB4899FB9C144666B14872");
+			attributes = {
+				TargetAttributes = {
+				};
+			};
+		};
+	};
+	rootObject = "6DB9C3763D02B1415CD9D565";
+}

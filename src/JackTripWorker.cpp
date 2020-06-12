@@ -160,7 +160,7 @@ void JackTripWorker::run()
             switch ( mNumNetRevChans )
             {
             case 16 : // freeverb
-                mJackTrip->appendProcessPlugin(new dcblock2gain(mNumChans)); // plugin slot 0
+                mJackTrip->appendProcessPluginFromNetwork(new dcblock2gain(mNumChans)); // plugin slot 0
                 ///////////////
                 //            mJackTrip->appendProcessPlugin(new comb16server(mNumNetChans));
                 // -S LAIR no AP  mJackTrip->appendProcessPlugin(new AP8(mNumChans));

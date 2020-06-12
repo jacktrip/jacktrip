@@ -122,13 +122,23 @@ public:
     virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
                           QVarLengthArray<sample_t*>& out_buffer,
                           unsigned int n_frames);
-    /** \brief Append a ProcessPlugin. The order of processing is determined by
-   * the order by which appending is done.
-   * \param plugin a ProcesPlugin smart pointer. Create the object instance
+   /** \brief appendProcessPluginToNetwork(): Append a ProcessPlugin for outgoing audio. 
+   * The processing order equals order they were appended.
+   * This processing is in the JackTrip client before sending to the network.
+   * \param plugin a ProcessPlugin smart pointer. Create the object instance
    * using something like:\n
    * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
    */
-    virtual void appendProcessPlugin(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
+   /** \brief appendProcessPluginFromNetwork():
+   * Same as appendProcessPluginToNetwork() except that these plugins operate
+   * on the audio received from the network (typically from a JackTrip server).
+   * The complete processing chain then looks like this:
+   * audio -> JACK -> JackTrip client -> processPlugin to network
+   *               -> remote JackTrip server
+   *               -> JackTrip client -> processPlugin from network -> JACK -> audio
+   */
+    virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
@@ -219,7 +229,8 @@ private:
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mBufferSizeInSamples; ///< Buffer size in samples
     size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
-    QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
     QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
     QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer

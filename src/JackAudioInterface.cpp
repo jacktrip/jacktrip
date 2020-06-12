@@ -358,7 +358,7 @@ void JackAudioInterface::connectDefaultPorts()
 
 
 
-// OLD CODE
+// OLD CODE (some moved to parent class AudioInterface.cpp)
 // ==============================================================================
 
 //*******************************************************************************

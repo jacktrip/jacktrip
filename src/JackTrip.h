@@ -159,7 +159,8 @@ public:
    * \param plugin Pointer to ProcessPlugin Class
    */
     //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
-    virtual void appendProcessPlugin(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
+    virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
 
     /// \brief Start the processing threads
     virtual void startProcess(
@@ -505,7 +506,8 @@ private:
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
     JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Hub Server Jack Audio Patch Connection Mode
 
-    QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
 
     volatile bool mReceivedConnection; ///< Bool of received connection from peer
     volatile bool mTcpConnectionError;

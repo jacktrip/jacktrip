@@ -49,18 +49,18 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
   if (not inited) {
     nSkippedFrames++;
     if ((nSkippedFrames % 1000) == 1) {
-      std::cout << "Limiter: compute() called before init(fs)\n";
+      std::cout << "Limiter " << this << ": compute() called before init(fs)\n";
       // it happens, so don't std::exit(1);
       if (nSkippedFrames>1) {
-	std::cout << "Limiter: compute() called " << nSkippedFrames << " times before init(fs)\n";
+	std::cout << "Limiter " << this << ": compute() called " << nSkippedFrames << " times before init(fs)\n";
       } else {
 	if (fSamplingFreq <= 0) {
 	  fSamplingFreq = 48000;
-	  std::cout << "Limiter: *** GUESSED sampling rate to be 48000 Hz ***\n";
+	  std::cout << "Limiter " << this << ": *** GUESSED sampling rate to be 48000 Hz ***\n";
 	}
 	init(fSamplingFreq);
 	inited = true; // It never comes!  Faust modules are presently mishandled
-	std::cout << "Limiter: init done here now since it was found to never happen above\n";
+	std::cout << "Limiter " << this << ": init done here now since it was found to never happen above\n";
       }
     }
   }

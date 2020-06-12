@@ -307,10 +307,17 @@ void JackTrip::setPeerAddress(const char* PeerHostOrIP)
 
 
 //*******************************************************************************
-void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
-    mProcessPlugins.append(plugin);
-    //mAudioInterface->appendProcessPlugin(plugin);
+    mProcessPluginsToNetwork.append(plugin); // ownership transferred
+    //mAudioInterface->appendProcessPluginToNetwork(plugin);
+}
+
+//*******************************************************************************
+void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
+{
+    mProcessPluginsFromNetwork.append(plugin); // ownership transferred
+    //mAudioInterface->appendProcessPluginFromNetwork(plugin);
 }
 
 
@@ -431,8 +438,11 @@ void JackTrip::startProcess(
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mAudioInterface->startProcess" << std::endl;
     mAudioInterface->startProcess();
 
-    for (int i = 0; i < mProcessPlugins.size(); ++i) {
-        mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
+    for (int i = 0; i < mProcessPluginsFromNetwork.size(); ++i) {
+        mAudioInterface->appendProcessPluginFromNetwork(mProcessPluginsFromNetwork[i]);
+    }
+    for (int i = 0; i < mProcessPluginsToNetwork.size(); ++i) {
+        mAudioInterface->appendProcessPluginToNetwork(mProcessPluginsToNetwork[i]);
     }
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
 }

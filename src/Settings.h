@@ -59,6 +59,14 @@ public:
     Settings();
     virtual ~Settings();
 
+    /// \brief Limiter modes
+    enum LIMITER_MODE {
+		       LIMITER_NONE,
+		       LIMITER_INCOMING, // from network
+		       LIMITER_OUTGOING, // to network
+		       LIMITER_BOTH
+    };
+
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
 
@@ -70,10 +78,10 @@ public:
 
     bool getLoopBack() { return mLoopBack; }
 
-    bool getLimit() { return mLimit; }
 
     unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }
 
+    LIMITER_MODE getLimit() { return mLimit; }
 
 public slots:
     void slotExitProgram()
@@ -117,7 +125,7 @@ private:
     unsigned int mAudioBufferSize;
     unsigned int mHubConnectionMode;
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
-    bool mLimit; ///< include a limiter as the last ProcessPlugin
+    LIMITER_MODE mLimit; ///< audio limiter controls
     unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
 };
 

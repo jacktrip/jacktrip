@@ -87,7 +87,7 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mLimit(false),
+    mLimit(LIMITER_NONE),
     mNumClientsAssumed(2)
 {}
 
@@ -144,7 +144,7 @@ void Settings::parseInput(int argc, char** argv)
     { "verbose", no_argument, NULL, 'V' }, // Verbose mode
     { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
     { "help", no_argument, NULL, 'h' }, // Print Help
-    { "limiteron", no_argument, NULL, 'O' }, // Turn on limiter
+    { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
     { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources)
     { NULL, 0, NULL, 0 }
 };
@@ -154,7 +154,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVhOa:", longopts, NULL)) != -1 )
+                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVhO:a:", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -326,11 +326,23 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(0);
             break;
-        case 'O': // limiter On
-            //-------------------------------------------------------
-            mLimit = true;
-            break;
-        case 'a': // assumed number of clients
+        case 'O': // Overflow limiter (i, o, or io)
+	  //-------------------------------------------------------
+	  if (strncmp(optarg,"io",2)==0 || strncmp(optarg,"IO",2)==0) {
+	    mLimit = LIMITER_BOTH;
+	    cout << "Setting up Limiter for both INCOMING and OUTGOING\n";
+	  } else if (tolower(optarg[0]) == 'i') {
+	    mLimit = LIMITER_INCOMING;
+	    cout << "Setting up Limiter for INCOMING from network\n";
+	  } else if (tolower(optarg[0]) == 'o') {
+	    mLimit = LIMITER_OUTGOING;
+	    cout << "Setting up Limiter for OUTGOING to network\n";
+	  } else {
+	    mLimit = LIMITER_NONE;
+	    cout << "NO LIMITER\n";
+	  }
+	  break;
+        case 'a': // assumed number of clients (applies to outgoing limiter)
             //-------------------------------------------------------
 	    mNumClientsAssumed = atoi(optarg);
 	    if(mNumClientsAssumed < 1) {
@@ -403,7 +415,7 @@ void Settings::printUsage()
     cout << " -J, --clientname                             Change default client name (default: JackTrip)" << endl;
     cout << " -L, --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " -D, --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
-    cout << " -O, --limiteron                         Turn on audio output limiter (default: limiter off)" << endl;
+    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio output limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of clients summing audio (default: 2)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
@@ -550,26 +562,32 @@ void Settings::startJackTrip()
             //mJackTrip->appendProcessPlugin(loopback.get());
 
             LoopBack* loopback = new LoopBack(mNumChans);
-            mJackTrip->appendProcessPlugin(loopback);
+            mJackTrip->appendProcessPluginFromNetwork(loopback);
 
             // ----- Test Karplus Strong -----------------------------------
             //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
-            //mJackTrip->appendProcessPlugin(loopback);
+            //mJackTrip->appendProcessPluginFromNetwork(loopback);
             //loopback->play();
             //NetKS* netks = new NetKS;
-            //mJackTrip->appendProcessPlugin(netks);
+            //mJackTrip->appendProcessPluginFromNetwork(netks);
             //netks->play();
             // -------------------------------------------------------------
         }
 
-	// Limiter goes last in the plugin sequence:
-        if ( mLimit ) {
-	    cout << "Set up Limiter for " << mNumClientsAssumed << " assumed clients ..." << endl;
-            cout << gPrintSeparator << std::endl;
-            Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
+	// Limiters go last in the plugin sequence:
+        if ( mLimit != LIMITER_NONE) {
+          if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
+	    cout << "Set up OUTGOING LIMITER for " << mNumClientsAssumed << " assumed clients ..." << endl;
+	    Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
 	    // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
-            mJackTrip->appendProcessPlugin(limiter); // responsible for freeing when done
-        }
+	    mJackTrip->appendProcessPluginToNetwork(limiter); // responsible for freeing when done
+	  }
+          if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
+	    cout << "Set up INCOMING LIMITER\n";
+	    Limiter* limiter = new Limiter(mNumChans,1); // no sharing of return audio
+	    mJackTrip->appendProcessPluginFromNetwork(limiter); // responsible for freeing when done
+	  }
+	}
 
 #ifdef WAIR // WAIR
         if ( mWAIR ) {
@@ -579,11 +597,11 @@ void Settings::startJackTrip()
             {
             case 16 :
             {
-                mJackTrip->appendProcessPlugin(new ap8x2(mNumChans)); // plugin slot 0
+                mJackTrip->appendProcessPluginFromNetwork(new ap8x2(mNumChans)); // plugin slot 0
                 /////////////////////////////////////////////////////////
                 Stk16* plugin = new Stk16(mNumNetRevChans);
                 plugin->Stk16::initCombClient(mClientAddCombLen, mClientRoomSize);
-                mJackTrip->appendProcessPlugin(plugin); // plugin slot 1
+                mJackTrip->appendProcessPluginFromNetwork(plugin); // plugin slot 1
             }
                 break;
             default:
