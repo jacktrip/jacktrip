@@ -4,14 +4,14 @@ test: jackgtk alsagtk jackqt alsaqt ladspa ossgtk bench plot sndfile jackconsole
 
 svg:
 	$(MAKE) -f Makefile.svg
-	
+
 puredata :
 	install -d puredatadir
 	$(MAKE) DEST='puredatadir/' ARCH='puredata.cpp' LIB='' -f Makefile.pdcompile
 
 alsagtk :
 	install -d alsagtkdir
-	$(MAKE) DEST='alsagtkdir/' ARCH='alsa-gtk.cpp' LIB='-lpthread -lasound  `pkg-config --cflags --libs gtk+-2.0`' -f Makefile.compile
+	$(MAKE) DEST='alsagtkdir/' ARCH='alsa-gtk.cpp' LIB='-lpthread -lasound	`pkg-config --cflags --libs gtk+-2.0`' -f Makefile.compile
 
 jackgtk :
 	install -d jackgtkdir
@@ -28,7 +28,7 @@ alsaqt :
 ladspa :
 	install -d ladspadir
 	$(MAKE) DEST='ladspadir/' ARCH='ladspa.cpp' LIB='-fPIC -shared' EXT='.so' -f Makefile.ladspacompile
-	
+
 jackwx :
 	install -d jackwxdir
 	$(MAKE) DEST='jackwxdir/' ARCH='jack-wx.cpp' LIB='`pkg-config jack  --cflags --libs` `wx-config --cflags --libs`' -f Makefile.compile
@@ -47,7 +47,7 @@ pagtk :
 
 pawx :
 	install -d pawxdir
-	$(MAKE) DEST='pawxdir/' ARCH='pa-wx.cpp' LIB='-lpthread  -lportaudio `wx-config --cflags --libs`' -f Makefile.compile
+	$(MAKE) DEST='pawxdir/' ARCH='pa-wx.cpp' LIB='-lpthread	 -lportaudio `wx-config --cflags --libs`' -f Makefile.compile
 
 module :
 	install -d moduledir
@@ -97,3 +97,10 @@ clean :
 	rm -rf alsagtkdir jackgtkdir alsaqtdir jackqtdir vecalsagtkdir vecjackgtkdir ladspadir jackwxdir ossgtkdir osswxdir pagtkdir pawxdir moduledir bundledir mspdir vstdir benchdir sndfiledir plotdir benchdir supercolliderdir puredatadir qdir plotdir jackconsoledir matlabplotdir *-ps *-svg
 
 
+lh limiterdsp.h: limiterdsp.dsp
+	faust -inpl -cn limiterdsp -a faust2header.cpp limiterdsp.dsp -o limiterdsp.cpp
+	(cat limiterdsp.cpp | sed -e /template/d | sed -e s/mydsp/limiterdsp/g) > limiterdsp.h
+
+lth limitertest.h: limitertest.dsp
+	faust -inpl -cn limitertest -a faust2header.cpp limitertest.dsp -o limitertest.cpp
+	(cat limitertest.cpp | sed -e /template/d | sed -e s/mydsp/limitertest/g) > limitertest.h
