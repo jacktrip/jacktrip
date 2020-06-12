@@ -43,7 +43,8 @@
 #define __LIMITER_H__
 
 #include "ProcessPlugin.h"
-#include "limiterdsp.h"
+//#include "limiterdsp.h"
+#include "limitertest.h"
 #include <vector>
 
 /** \brief The Limiter class confines the output dynamic range to a
