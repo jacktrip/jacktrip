@@ -237,6 +237,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
 
 #ifndef WAIR // NOT WAIR:
+
+#ifdef COPY_BUFFER_FROM_NETWORK
     for (int i = 0; i < mNumInChans; i++) {
         std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
         std::memcpy(mInProcessBuffer[i], out_buffer[i], sizeof(sample_t) * n_frames);
@@ -244,10 +246,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     for (int i = 0; i < mNumOutChans; i++) {
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
-
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
       mProcessPluginsFromNetwork[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
     }
+#else
+    for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
+      mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer.data(), out_buffer.data()); // process in-place
+    }
+#endif
 
 #else // WAIR
     for (int i = 0; i < ((mNumNetRevChans)?mNumNetRevChans:mNumOutChans); i++) {

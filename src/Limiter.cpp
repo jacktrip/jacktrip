@@ -65,6 +65,8 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
     }
   }
   for ( int i = 0; i < mNumChannels; i++ ) {
-    limiterP[i]->compute(nframes, inputs, outputs);
+    float* faustInputs[1] { inputs[i] };
+    float* faustOutputs[1] { outputs[i] };
+    limiterP[i]->compute(nframes, faustInputs, faustOutputs);
   }
 }
