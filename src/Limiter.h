@@ -56,7 +56,7 @@ public:
   Limiter(int numchans, int numclients) // xtor
     : inited(false), mNumChannels(numchans), mNumClients(numclients)
   { 
-    for ( int i = 0; i < mNumClients; i++ ) {
+    for ( int i = 0; i < mNumChannels; i++ ) {
       limiterP.push_back(new limiterdsp);
       limiterUIP.push_back(new APIUI); // #included in limiterdsp.h
       limiterP[i]->buildUserInterface(limiterUIP[i]);
@@ -68,7 +68,7 @@ public:
 
   /// \brief The class destructor
   virtual ~Limiter() {
-    for ( int i = 0; i < mNumClients; i++ ) {
+    for ( int i = 0; i < mNumChannels; i++ ) {
       delete limiterP[i];
       delete limiterUIP[i];
     }
@@ -84,7 +84,7 @@ public:
       std::exit(1); }
 #endif
     fs = float(fSamplingFreq);
-    for ( int i = 0; i < mNumClients; i++ ) {
+    for ( int i = 0; i < mNumChannels; i++ ) {
       limiterP[i]->init(fs); // compression filter parameters depend on sampling rate
       int ndx = limiterUIP[i]->getParamIndex("NumClientsAssumed");
       limiterUIP[i]->setParamValue(ndx, mNumClients);

@@ -272,7 +272,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 #endif // endwhere
 
     for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
-      mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), in_buffer.data());
+      mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), in_buffer.data()); // process in place
     }
 
     // 3) Finally, send packets to peer

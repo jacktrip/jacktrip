@@ -577,13 +577,14 @@ void Settings::startJackTrip()
 	// Limiters go last in the plugin sequence:
         if ( mLimit != LIMITER_NONE) {
           if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
-	    cout << "Set up OUTGOING LIMITER for " << mNumClientsAssumed << " assumed clients ..." << endl;
+	    cout << "Set up OUTGOING LIMITER for " << mNumChans << " output channels and "
+		 << mNumClientsAssumed << " assumed client(s) ..." << endl;
 	    Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
 	    // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
 	    mJackTrip->appendProcessPluginToNetwork(limiter); // responsible for freeing when done
 	  }
           if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
-	    cout << "Set up INCOMING LIMITER\n";
+	    cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
 	    Limiter* limiter = new Limiter(mNumChans,1); // no sharing of return audio
 	    mJackTrip->appendProcessPluginFromNetwork(limiter); // responsible for freeing when done
 	  }

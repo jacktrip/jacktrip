@@ -64,7 +64,7 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
       }
     }
   }
-  for ( int i = 0; i < mNumClients; i++ ) {
+  for ( int i = 0; i < mNumChannels; i++ ) {
     limiterP[i]->compute(nframes, inputs, outputs);
   }
 }
