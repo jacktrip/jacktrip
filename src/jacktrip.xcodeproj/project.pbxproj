@@ -604,6 +604,12 @@
 			sourceTree = "<absolute>";
 			lastKnownFileType = "text";
 		};
+		3983BC9E53B9D9A143CC6A16 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/.qmake.stash";
+			name = ".qmake.stash";
+			sourceTree = "<absolute>";
+		};
 		25B08E2869634E9BCBA333A2 = {
 			isa = PBXGroup;
 			children = (
@@ -676,7 +682,8 @@
 		74B182DB50CB5611B5C1C297 = {
 			isa = PBXGroup;
 			children = (
-				"16BA63DF56384616A62529A8");
+				"16BA63DF56384616A62529A8",
+				"3983BC9E53B9D9A143CC6A16");
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};

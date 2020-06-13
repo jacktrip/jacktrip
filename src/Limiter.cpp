@@ -64,9 +64,19 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
       }
     }
   }
+#ifdef SINE_TEST
+  float sineTestOut[nframes];
+  float* faustSineOuts[1] { sineTestOut };
+#endif
   for ( int i = 0; i < mNumChannels; i++ ) {
     float* faustInputs[1] { inputs[i] };
     float* faustOutputs[1] { outputs[i] };
     limiterP[i]->compute(nframes, faustInputs, faustOutputs);
+#ifdef SINE_TEST
+    limiterTestP[i]->compute(nframes, faustSineOuts, faustSineOuts);
+    for ( int n = 0; n < nframes; n++ ) {
+      faustOutputs[0][n] += faustSineOuts[0][n];
+    }
+#endif
   }
 }

@@ -42,9 +42,14 @@
 #ifndef __LIMITER_H__
 #define __LIMITER_H__
 
-#include "ProcessPlugin.h"
-//#include "limiterdsp.h"
+#define SINE_TEST
+
+#ifdef SINE_TEST
 #include "limitertest.h"
+#endif
+
+#include "ProcessPlugin.h"
+#include "limiterdsp.h"
 #include <vector>
 
 /** \brief The Limiter class confines the output dynamic range to a
@@ -61,6 +66,11 @@ public:
       limiterP.push_back(new limiterdsp);
       limiterUIP.push_back(new APIUI); // #included in limiterdsp.h
       limiterP[i]->buildUserInterface(limiterUIP[i]);
+#ifdef SINE_TEST
+      limiterTestP.push_back(new limitertest);
+      limiterTestUIP.push_back(new APIUI); // #included in limitertest.h
+      limiterTestP[i]->buildUserInterface(limiterTestUIP[i]);
+#endif
     }
     std::cout << "Limiter: constructed for "
               << mNumChannels << " channels and "
@@ -89,6 +99,13 @@ public:
       limiterP[i]->init(fs); // compression filter parameters depend on sampling rate
       int ndx = limiterUIP[i]->getParamIndex("NumClientsAssumed");
       limiterUIP[i]->setParamValue(ndx, mNumClients);
+#ifdef SINE_TEST
+      limiterTestP[i]->init(fs); // oscillator parameters depend on sampling rate
+      ndx = limiterTestUIP[i]->getParamIndex("Amp");
+      limiterTestUIP[i]->setParamValue(ndx, 0.2);
+      ndx = limiterTestUIP[i]->getParamIndex("Freq");
+      limiterTestUIP[i]->setParamValue(ndx, 100.0 * (float(i)*1.5) * (mNumClients>1?1.25:1.0)); // Maj 7 chord for stereo
+#endif
     }
     inited = true;
   }
@@ -103,6 +120,10 @@ private:
   int mNumClients;
   std::vector<limiterdsp*> limiterP;
   std::vector<APIUI*> limiterUIP;
+#ifdef SINE_TEST
+  std::vector<limitertest*> limiterTestP;
+  std::vector<APIUI*> limiterTestUIP;
+#endif
 };
 
 #endif

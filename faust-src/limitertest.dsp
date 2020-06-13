@@ -1,6 +1,6 @@
-// Temporary sine-test substitution for the limiter
+// Sine-test used by ../src/Limiter.cpp
 
 import("stdfaust.lib");
-N = hslider("[0] NumClientsAssumed",2,1,64,1);
-freq = 100.0 * (5.0/4.0)^(N-1);
-process = 0.2 * os.oscrs(freq);
+freq = hslider("[0] Freq",100.0,20.0,10000.0,1);
+amp = hslider("[0] Amp",0.2,0.0,1.0,0.0001);
+process = amp * os.oscrs(freq);
