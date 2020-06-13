@@ -1,15 +1,22 @@
-What's integrated in jacktrip is limiterdsp.dsp, which includes limiter.dsp.
+The audio limiter in use by jacktrip is limiterdsp.dsp
 
-You can use fausteditor.grame.fr to compile and download an executable.
-With Faust installed, you can do it at the command line:
+To regenerate ../src/limiterdsp.h, you can say (if you have Faust installed)
 
-To make a standalone JACK app for Mac, say
+  make headers
 
-faust2jaqt limiterdsp.dsp
+in this directory to create headers/limiterdsp.h
+and then copy that to ../src/.
+
+To test the limiter separately, you can load it into
+fausteditor.grame.fr to compile and download an executable.  With
+Faust installed, you can do it at the command line.  To make a
+standalone JACK app for Mac, say
+
+  faust2jaqt limiterdsp.dsp
 
 For Linux, you want either that or
 
-faust2jack limiterdsp.dsp
+  faust2jack limiterdsp.dsp
 
 (to use GTK in place of Qt for the GUI).
 
