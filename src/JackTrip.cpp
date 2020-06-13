@@ -93,6 +93,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mDeviceID(gDefaultDeviceID),
     mAudioBufferSize(gDefaultBufferSizeInSamples),
     mAudioBitResolution(AudioBitResolution),
+    mLoopBack(false),
     mDataProtocolSender(NULL),
     mDataProtocolReceiver(NULL),
     mAudioInterface(NULL),
@@ -195,6 +196,8 @@ void JackTrip::setupAudio(
         mAudioInterface->setup();
 #endif
     }
+
+    mAudioInterface->setLoopBack(mLoopBack);
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
@@ -895,7 +898,6 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
     std::memcpy(audio_packet, audio_part, getTotalAudioPacketSizeInBytes());
 }
-
 
 //*******************************************************************************
 void JackTrip::checkPeerSettings(int8_t* full_packet)

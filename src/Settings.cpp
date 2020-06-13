@@ -590,8 +590,12 @@ void Settings::startJackTrip()
             //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
             //mJackTrip->appendProcessPlugin(loopback.get());
 
+#if 0 // previous technique:
             LoopBack* loopback = new LoopBack(mNumChans);
             mJackTrip->appendProcessPluginFromNetwork(loopback);
+#else // simpler method ( see AudioInterface.cpp callback() ):
+            mJackTrip->setLoopBack(true);
+#endif
 
             // ----- Test Karplus Strong -----------------------------------
             //std::tr1::shared_ptr<NetKS> loopback(new NetKS());

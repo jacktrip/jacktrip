@@ -57,7 +57,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
     mAudioBitResolution(AudioBitResolution*8),
     mBitResolutionMode(AudioBitResolution),
     mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
-    mInputPacket(NULL), mOutputPacket(NULL)
+    mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false)
 {
 #ifndef WAIR
     //cc
@@ -211,6 +211,15 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio fr
                               QVarLengthArray<sample_t*>& out_buffer, // audio to JACK
                               unsigned int n_frames) // number of audio samples
 {
+  if (mLoopBack) {
+    int nChans = std::min(mNumInChans,mNumOutChans);
+    for (int i=0; i<nChans; i++) {
+      for (uint n=0; n<n_frames; n++) {
+        out_buffer[i][n] = in_buffer[i][n];
+      }
+    }
+    return;
+  }
   computeProcessFromNetwork(out_buffer, n_frames); // receive audio from network - INCOMING
   for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
     // process all incoming channels with Faust modules in-place:

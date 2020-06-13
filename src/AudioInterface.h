@@ -174,6 +174,7 @@ public:
     { mBufferSizeInSamples = buf_size; }
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(const char* ClientName) = 0;
+    virtual void setLoopBack(bool b) { mLoopBack = b; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -235,6 +236,7 @@ private:
     QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+    bool mLoopBack;
 };
 
 #endif // __AUDIOINTERFACE_H__

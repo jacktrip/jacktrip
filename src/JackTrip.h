@@ -276,7 +276,8 @@ public:
     { mAudiointerfaceMode = audiointerface_mode; }
     virtual void setAudioInterface(AudioInterface* const AudioInterface)
     { mAudioInterface = AudioInterface; }
-
+    virtual void setLoopBack(bool b)
+    { mLoopBack = b; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -307,6 +308,7 @@ public:
 
     bool tcpConnectionError()
     { return mTcpConnectionError; }
+
     //@}
     //------------------------------------------------------------------------------------
 
@@ -481,6 +483,7 @@ private:
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
+    bool mLoopBack;
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 
     /// Pointer to Abstract Type DataProtocol that sends packets
