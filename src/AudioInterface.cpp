@@ -93,7 +93,7 @@ AudioInterface::~AudioInterface()
 {
     delete[] mInputPacket;
     delete[] mOutputPacket;
-#ifndef WAIR // WAIR
+#ifndef WAIR // NOT WAIR:
     for (int i = 0; i < mNumInChans; i++) {
         delete[] mInProcessBuffer[i];
     }
@@ -160,7 +160,7 @@ void AudioInterface::setup()
 
     int nframes = getBufferSizeInSamples();
 
-#ifndef WAIR // WAIR
+#ifndef WAIR // NOT WAIR:
     for (int i = 0; i < mNumInChans; i++) {
         mInProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
@@ -275,7 +275,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // ----------------------------------
 
 #ifdef WAIR // WAIR
-    //    qDebug() << "--" << mProcessPlugins.size();
+    //    qDebug() << "--" << mProcessPluginsFromNetwork.size();
     bool client = (mProcessPluginsFromNetwork.size() == 2);
 #define COMBDSP 1 // client
 #define APDSP 0 // client
@@ -300,10 +300,6 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
 
 #ifndef WAIR // NOT WAIR:
-
-    // Needed for reverb etc.:
-#define COPY_BUFFER_FROM_NETWORK
-#ifdef COPY_BUFFER_FROM_NETWORK
     for (int i = 0; i < mNumInChans; i++) {
         std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
         std::memcpy(mInProcessBuffer[i], out_buffer[i], sizeof(sample_t) * n_frames);
@@ -312,17 +308,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-      mProcessPluginsFromNetwork[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
+        mProcessPluginsFromNetwork[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
     }
-#else
-    // ======== RUN FAUST PLUGINS FOR THE OUTPUT STREAM =========
-    for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-      mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer.data(), out_buffer.data()); // process in-place
-    }
-    // ==========================================================
-#endif
-
-#else // WAIR
+#else // WAIR:
     for (int i = 0; i < ((mNumNetRevChans)?mNumNetRevChans:mNumOutChans); i++) {
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
@@ -344,18 +332,13 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
-    // ======== RUN FAUST PLUGINS FOR THE INPUT STREAM =========
+    // Run Faust plugins for the outoing stream:
     for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
       mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), in_buffer.data()); // process in place
     }
-    // ==========================================================
 
-    // 3) Finally, send packets to peer
-    // --------------------------------
-
-    // ===== SEND AUDIO CHANNELS TO NETWORK =====
+    // 3) Finally, send packets to network:
     computeProcessToNetwork(in_buffer, n_frames);
-    // ==========================================
 
 #ifdef WAIR // WAIR
     // aib2 + cob16 to nob16
@@ -393,7 +376,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         for (int i = 0; i < mNumOutChans; i++) {
             std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
         }
-        mProcessPlugins[APDSP]->compute(n_frames, mAPInBuffer.data(), out_buffer.data());
+        mProcessPluginsFromNetwork[APDSP]->compute(n_frames, mAPInBuffer.data(), out_buffer.data());
         // compute ap2 into aob2
 
         //#define ADD_DIRECT
