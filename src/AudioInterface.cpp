@@ -204,6 +204,66 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 }
 
 
+#if 1 // Audio callback and two network IO functions (see #else for original more complex versions with WAIR support)
+
+//*******************************************************************************
+void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio from JACK
+                              QVarLengthArray<sample_t*>& out_buffer, // audio to JACK
+                              unsigned int n_frames) // number of audio samples
+{
+  computeProcessFromNetwork(out_buffer, n_frames); // receive audio from network - INCOMING
+  for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
+    // process all incoming channels with Faust modules in-place:
+    mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer.data(), out_buffer.data());
+  }
+  for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
+    // process all outgoing channels with Faust modules in place:
+    mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), in_buffer.data());
+  }
+  computeProcessToNetwork(in_buffer, n_frames); // send processed audio to network - OUTGOING
+}
+
+//*******************************************************************************
+// Before sending and reading to Jack, we have to round to the sample resolution
+// that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
+// by default
+void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_buffer,
+                                               unsigned int n_frames)
+{
+  // Output Process (from NETWORK to JACK)
+  // ----------------------------------------------------------------
+  // Read Audio buffer from RingBuffer (read from incoming packets)
+  mJackTrip->receiveNetworkPacket( mOutputPacket );
+
+  // Extract the contatenated audio channel blocks to send to JACK in separate arrays:
+  for (int i = 0; i < mNumOutChans; i++) {
+    for (unsigned int j = 0; j < n_frames; j++) {
+      // Change the bit resolution on each sample
+      fromBitToSampleConversion(&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
+				&(out_buffer[i][j]), mBitResolutionMode );
+    }
+  }
+}
+
+void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
+                                             unsigned int n_frames)
+{
+  // Input Process (from JACK to NETWORK)
+
+  // Concatenate  all the channels from JACK to form packet for the Net
+  for (int i = 0; i < mNumInChans; i++) {
+    for (unsigned int j = 0; j < n_frames; j++) {
+      // Change the bit resolution on each sample
+      fromSampleToBitConversion(in_buffer[i],
+				&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
+				mBitResolutionMode );
+    }
+  }
+  mJackTrip->sendNetworkPacket( mInputPacket ); // send audio buffer to network
+}
+
+#else // ======== older versions (three functions) with WAIR support =============
+
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
@@ -241,6 +301,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
 #ifndef WAIR // NOT WAIR:
 
+    // Needed for reverb etc.:
+#define COPY_BUFFER_FROM_NETWORK
 #ifdef COPY_BUFFER_FROM_NETWORK
     for (int i = 0; i < mNumInChans; i++) {
         std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
@@ -348,7 +410,6 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     }
 #endif // endwhere
 
-
     ///************PROTORYPE FOR CELT**************************
     ///********************************************************
     /*
@@ -365,7 +426,6 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     ///********************************************************
 
 }
-
 
 //*******************************************************************************
 // Before sending and reading to Jack, we have to round to the sample resolution
@@ -465,6 +525,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     mJackTrip->sendNetworkPacket( mInputPacket );
 }
 
+#endif // ======== END older versions (three functions) with WAIR support =============
 
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
