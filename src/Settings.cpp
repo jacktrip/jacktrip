@@ -87,6 +87,7 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
+    mIOStatTimeout(0),
     mLimit(LIMITER_NONE),
     mNumClientsAssumed(2)
 {}
@@ -143,6 +144,8 @@ void Settings::parseInput(int argc, char** argv)
     { "version", no_argument, NULL, 'v' }, // Version Number
     { "verbose", no_argument, NULL, 'V' }, // Verbose mode
     { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
+    { "iostat", required_argument, NULL, 'I' }, // Set IO stat timeout
+    { "iostatlog", required_argument, NULL, 'G' }, // Set IO stat log file
     { "help", no_argument, NULL, 'h' }, // Print Help
     { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
     { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources)
@@ -154,7 +157,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVhO:a:", longopts, NULL)) != -1 )
+                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVhIGO:a:", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -321,6 +324,25 @@ void Settings::parseInput(int argc, char** argv)
                 printUsage();
                 std::exit(1); }
             break;
+        case 'I': // IO Stat timeout
+            //-------------------------------------------------------
+            mIOStatTimeout = atoi(optarg);
+            if (0 > mIOStatTimeout) {
+                std::cerr << "--iostat ERROR: negative timeout." << endl;
+                printUsage();
+                std::exit(1);
+            }
+            break;
+        case 'G': // IO Stat log file
+            //-------------------------------------------------------
+            mIOStatStream.open(optarg);
+            if (!mIOStatStream.is_open()) {
+                std::cerr << "--iostatlog FAILED to open " << optarg
+                          << " for writing." << endl;
+                printUsage();
+                std::exit(1);
+            }
+            break;
         case 'h':
             //-------------------------------------------------------
             printUsage();
@@ -389,6 +411,8 @@ void Settings::printUsage()
     cout << "REQUIRED ARGUMENTS: " << endl;
     cout << " -s, --server                             Run in Server Mode" << endl;
     cout << " -c, --client <peer_hostname_or_IP_num>   Run in Client Mode" << endl;
+    cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;
+    cout << " -C, --pingtoserver <peer_name_or_IP>     Run in Hub Client Mode" << endl;
     cout << endl;
     cout << "OPTIONAL ARGUMENTS: " << endl;
     cout << " -n, --numchannels #                      Number of Input and Output Channels (default: "
@@ -408,7 +432,7 @@ void Settings::printUsage()
     cout << " -B, --bindport    #                      Set only the bind port number (default: 4464)" << endl;
     cout << " -P, --peerport    #                      Set only the Peer port number (default: 4464)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
-    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4)         Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix (default: 0)" << endl;
+    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4)      Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
@@ -423,6 +447,10 @@ void Settings::printUsage()
     cout << " -T, --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
     cout << " -F, --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
     cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
+    cout << endl;
+    cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
+    cout << "   --iostat <time_in_secs>                Turn on IO stat reporting with specified interval (in seconds)" << endl;
+    cout << "   --iostatlog <log_file>                 Save stat log into a file (default: print in stdout)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -439,6 +467,7 @@ void Settings::startJackTrip()
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
         UdpMasterListener* udpmaster = new UdpMasterListener;
+        udpmaster->setSettings(this);
 #ifdef WAIR // WAIR
         udpmaster->setWAIR(mWAIR);
 #endif // endwhere
@@ -619,6 +648,9 @@ void Settings::startJackTrip()
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );
+        if (0 < getIOStatTimeout()) {
+            mJackTrip->startIOStatTimer(getIOStatTimeout(), getIOStatStream());
+        }
         //        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->start" << std::endl;
         // this is a noop
         //        mJackTrip->start();

@@ -171,6 +171,15 @@ public:
     virtual void setSocket(int &socket) = 0;
 #endif
 
+    struct PktStat {
+        uint32_t tot;
+        uint32_t lost;
+        uint32_t outOfOrder;
+        uint32_t revived;
+        uint32_t statCount;
+    };
+    virtual bool getStats(PktStat*) {return false;}
+
 signals:
 
     void signalError(const char* error_message);

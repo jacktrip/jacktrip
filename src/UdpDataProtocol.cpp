@@ -78,9 +78,7 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mIPv6 = false;
     std::memset(&mPeerAddr, 0, sizeof(mPeerAddr));
     std::memset(&mPeerAddr6, 0, sizeof(mPeerAddr6));
-    mPeerAddr.sin_family = AF_INET;
     mPeerAddr.sin_port = htons(mPeerPort);
-    mPeerAddr6.sin6_family = AF_INET6;
     mPeerAddr6.sin6_port = htons(mPeerPort);
     
     if (mRunMode == RECEIVER) {
@@ -100,10 +98,14 @@ UdpDataProtocol::~UdpDataProtocol()
 
 
 //*******************************************************************************
-void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invalid_argument)
+void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
+#if defined (__LINUX__) || (__MAC__OSX__)
+    //Don't make the following code conditional on windows
+    //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
+#endif
         QHostInfo info = QHostInfo::fromName(peerHostOrIP);
         if (!info.addresses().isEmpty()) {
             // use the first IP address
@@ -111,12 +113,14 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
         }
         //cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
+#if defined (__LINUX__) || (__MAC__OSX__)
     }
+#endif
 
     // check if the ip address is valid
     if ( mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol ) {
         mIPv6 = true;
-    } else if ( mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol ) {
+    } else  if ( mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol ) {
         QString error_message = "Incorrect presentation format address\n '";
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");
@@ -134,21 +138,22 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP) throw(std::invali
     }
     */
 
-    // Save our address to the appropriate address structure
+    // Save our address as an appropriate address structure
     if (mIPv6) {
+        mPeerAddr6.sin6_family = AF_INET6;
         ::inet_pton(AF_INET6, mPeerAddress.toString().toLatin1().constData(),
                     &mPeerAddr6.sin6_addr);
     } else {
+        mPeerAddr.sin_family = AF_INET;
         ::inet_pton(AF_INET, mPeerAddress.toString().toLatin1().constData(),
                     &mPeerAddr.sin_addr);
     }
-
 }
 
 #if defined (__WIN_32__)
-void UdpDataProtocol::setSocket(SOCKET &socket) throw(std::runtime_error)
+void UdpDataProtocol::setSocket(SOCKET &socket)
 #else
-void UdpDataProtocol::setSocket(int &socket) throw(std::runtime_error)
+void UdpDataProtocol::setSocket(int &socket)
 #endif
 {
     //If we haven't been passed a valid socket, then we should bind one.
@@ -171,9 +176,9 @@ void UdpDataProtocol::setSocket(int &socket) throw(std::runtime_error)
 
 //*******************************************************************************
 #if defined (__WIN_32__)
-SOCKET UdpDataProtocol::bindSocket() throw(std::runtime_error)
+SOCKET UdpDataProtocol::bindSocket()
 #else
-int UdpDataProtocol::bindSocket() throw(std::runtime_error)
+int UdpDataProtocol::bindSocket()
 #endif
 {
     QMutexLocker locker(&sUdpMutex);
@@ -323,6 +328,24 @@ int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_
 //*******************************************************************************
 int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
+/*#if defined (__WIN_32__)
+    //Alternative windows specific code that uses winsock equivalents of the bsd socket functions.
+    DWORD n_bytes;
+    WSABUF buffer;
+    int error;
+    buffer.len = n;
+    buffer.buf = (char *)buf;
+
+    if (mIPv6) {
+        error = WSASendTo(mSocket, &buffer, 1, &n_bytes, 0, (struct sockaddr *) &mPeerAddr6, sizeof(mPeerAddr6), 0, 0);
+    } else {
+        error = WSASend(mSocket, &buffer, 1, &n_bytes, 0, 0, 0);
+    }
+    if (error == SOCKET_ERROR) {
+        cout << "Socket Error: " << WSAGetLastError() << endl;
+    }
+    return (int)n_bytes;
+#else*/
     int n_bytes;
     if (mIPv6) {
         n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr *) &mPeerAddr6, sizeof(mPeerAddr6));
@@ -330,6 +353,7 @@ int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
         n_bytes = ::send(mSocket, buf, n, 0);
     }
     return n_bytes;
+//#endif
 }
 
 
@@ -407,7 +431,7 @@ void UdpDataProtocol::run()
 
     // Set realtime priority (function in jacktrip_globals.h)
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before setRealtimeProcessPriority()" << std::endl;
-    std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
+    //std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
     //setRealtimeProcessPriority();
 
     /////////////////////
@@ -511,6 +535,11 @@ void UdpDataProtocol::run()
         uint16_t current_seq_num = 0; // Store current sequence number
         uint16_t last_seq_num = 0;    // Store last package sequence number
         uint16_t newer_seq_num = 0;   // Store newer sequence number
+        mTotCount = 0;
+        mLostCount = 0;
+        mOutOfOrderCount = 0;
+        mRevivedCount = 0;
+        mStatCount = 0;
 
         if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while ( !mStopped )
@@ -547,6 +576,8 @@ void UdpDataProtocol::run()
         break; }
 
     case SENDER : {
+        //Make sure we don't start sending packets too soon.
+        QThread::msleep(100);
         //-----------------------------------------------------------------------------------
         while ( !mStopped )
         {
@@ -629,6 +660,18 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
             mJackTrip->getPeerSequenceNumber(full_redundant_packet);
     current_seq_num = newer_seq_num;
 
+    if (0 != last_seq_num) {
+        int16_t lost = newer_seq_num - last_seq_num - 1;
+        if (0 > lost) {
+            // Out of order packet, should be ignored
+            ++mOutOfOrderCount;
+            return;
+        }
+        else if (0 != lost) {
+            mLostCount += lost;
+        }
+        mTotCount += 1 + lost;
+    }
 
     //cout << current_seq_num << " ";
     int redun_last_index = 0;
@@ -644,6 +687,7 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
                 mJackTrip->getPeerSequenceNumber( full_redundant_packet + (i*full_packet_size) );
         //cout << current_seq_num << " ";
     }
+    mRevivedCount += redun_last_index;
     //cout << endl;
 
     last_seq_num = newer_seq_num; // Save last read packet
@@ -656,6 +700,22 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
         mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
         mJackTrip->writeAudioBuffer(mAudioPacket);
     }
+}
+
+//*******************************************************************************
+bool UdpDataProtocol::getStats(DataProtocol::PktStat* stat)
+{
+    if (0 == mStatCount) {
+        mLostCount = 0;
+        mOutOfOrderCount = 0;
+        mRevivedCount = 0;
+    }
+    stat->tot = mTotCount;
+    stat->lost = mLostCount;
+    stat->outOfOrder = mOutOfOrderCount;
+    stat->revived = mRevivedCount;
+    stat->statCount = mStatCount++;
+    return true;
 }
 
 //*******************************************************************************

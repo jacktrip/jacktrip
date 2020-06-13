@@ -102,6 +102,11 @@ public:
    */
     void readSlotNonBlocking(int8_t* ptrToReadSlot);
 
+    struct IOStat {
+        uint32_t underruns;
+        uint32_t overflows;
+    };
+    virtual bool getStats(IOStat* stat, bool reset);
 
 protected:
 
@@ -141,6 +146,8 @@ private:
     QMutex mMutex; ///< Mutex to protect read and write operations
     QWaitCondition mBufferIsNotFull; ///< Buffer not full condition to monitor threads
     QWaitCondition mBufferIsNotEmpty; ///< Buffer not empty condition to monitor threads
+    std::atomic<uint32_t> mUnderruns;
+    std::atomic<uint32_t> mOverflows;
 };
 
 #endif

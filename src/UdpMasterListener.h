@@ -53,6 +53,7 @@
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
 class JackTripWorker; // forward declaration
+class Settings;
 
 typedef struct {
     QString address;
@@ -83,6 +84,9 @@ public:
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts) { m_connectDefaultAudioPorts = connectDefaultAudioPorts; }
 
+    void setSettings(Settings* s) {m_settings = s;}
+    Settings* getSettings() const {return m_settings;}
+
 private slots:
     void testReceive()
     { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
@@ -98,7 +102,7 @@ private:
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
-    static void bindUdpSocket(QUdpSocket& udpsocket, int port) throw(std::runtime_error);
+    static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
     int readClientUdpPort(QTcpSocket* clientConnection);
     int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
@@ -141,6 +145,7 @@ private:
     int mBufferQueueLength;
 
     bool m_connectDefaultAudioPorts;
+    Settings* m_settings;
 
 #ifdef WAIR // wair
     bool mWAIR;

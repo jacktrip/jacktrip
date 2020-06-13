@@ -167,7 +167,7 @@ public:
         #ifdef WAIRTOMASTER // wair
             int ID
         #endif // endwhere
-            ) throw(std::invalid_argument);
+            );
 
     /// \brief Stop the processing threads
     virtual void stop();
@@ -395,6 +395,8 @@ public:
     void printTextTest() {std::cout << "=== JackTrip PRINT ===" << std::endl;}
     void printTextTest2() {std::cout << "=== JackTrip PRINT2 ===" << std::endl;}
 
+    void startIOStatTimer(int timeout_sec, const std::ostream& log_stream);
+
 public slots:
     /// \brief Slot to stop all the processes and threads
     virtual void slotStopProcesses()
@@ -421,6 +423,7 @@ public slots:
     { std::cout << "=== TESTING ===" << std::endl; }
     void slotReceivedConnectionFromPeer()
     { mReceivedConnection = true; }
+    void onStatTimer();
 
 
 signals:
@@ -448,16 +451,15 @@ public:
     /// \brief Set the RingBuffer objects
     void setupRingBuffers();
     /// \brief Starts for the CLIENT mode
-    void clientStart() throw(std::invalid_argument);
+    void clientStart();
     /// \brief Starts for the SERVER mode
     /// \param timout Set the server to timeout after 2 seconds if no client connections are received.
     /// Usefull for the multithreaded server
     /// \return 0 on success, -1 on error
-    int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer)
-    throw(std::invalid_argument, std::runtime_error);
+    int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer);
     /// \brief Stats for the Client to Ping Server
     /// \return -1 on error, 0 on success
-    virtual int clientPingToServerStart() throw(std::invalid_argument);
+    virtual int clientPingToServerStart();
 
 private:
     //void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
@@ -514,6 +516,7 @@ private:
     volatile bool mStopped;
 
     bool mConnectDefaultAudioPorts; ///< Connect or not default audio ports
+    std::ostream mIOStatLogStream;
 };
 
 #endif

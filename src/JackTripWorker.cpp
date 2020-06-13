@@ -47,6 +47,7 @@
 #include "UdpMasterListener.h"
 #include "NetKS.h"
 #include "LoopBack.h"
+#include "Settings.h"
 #ifdef WAIR // wair
 #include "dcblock2gain.dsp.h"
 #endif // endwhere
@@ -127,6 +128,7 @@ void JackTripWorker::run()
         // Create and setup JackTrip Object
         //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
         if (gVerboseFlag) cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
+        Settings* settings = mUdpMasterListener->getSettings();
 
 #ifdef WAIR // WAIR
         // forces    BufferQueueLength to 2
@@ -220,6 +222,9 @@ void JackTripWorker::run()
                     mID
             #endif // endwhere
                     );
+        if (0 != settings->getIOStatTimeout()) {
+            jacktrip.startIOStatTimer(settings->getIOStatTimeout(), settings->getIOStatStream());
+        }
         // if (gVerboseFlag) cout << "---> JackTripWorker: start..." << endl;
         // jacktrip.start(); // ########### JamTest Only #################
 

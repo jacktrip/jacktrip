@@ -40,6 +40,7 @@
 #define __SETTINGS_H__
 
 #include <cstdlib>
+#include <fstream>
 
 #include "DataProtocol.h"
 
@@ -77,6 +78,11 @@ public:
     void printUsage();
 
     bool getLoopBack() { return mLoopBack; }
+    int getIOStatTimeout() const {return mIOStatTimeout;}
+    const std::ostream& getIOStatStream() const
+    {
+        return mIOStatStream.is_open() ? (std::ostream&)mIOStatStream : std::cout;
+    }
 
 
     unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }
@@ -125,6 +131,8 @@ private:
     unsigned int mAudioBufferSize;
     unsigned int mHubConnectionMode;
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
+    int mIOStatTimeout;
+    std::ofstream mIOStatStream;
     LIMITER_MODE mLimit; ///< audio limiter controls
     unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
 };
