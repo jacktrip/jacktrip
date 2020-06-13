@@ -93,10 +93,10 @@ jackconsole :
 	install -d jackconsoledir
 	$(MAKE) DEST='jackconsoledir/' ARCH='jack-console.cpp' LIB='`pkg-config --cflags --libs jack `' -f Makefile.compile
 
-clean :
-	-rm -rf alsagtkdir jackgtkdir alsaqtdir jackqtdir vecalsagtkdir vecjackgtkdir ladspadir jackwxdir ossgtkdir osswxdir pagtkdir pawxdir moduledir bundledir mspdir vstdir benchdir sndfiledir plotdir benchdir supercolliderdir puredatadir qdir plotdir jackconsoledir matlabplotdir *-ps *-svg
-	-/bin/rm limiterdsp.cpp
+h headers : 
+	install -d headersdir
+	$(MAKE) DEST='headersdir/' ARCH='faust2header.cpp' -f Makefile.headers
 
-lh limiterdsp.h: limiterdsp.dsp
-	faust -inpl -cn limiterdsp -a faust2header.cpp limiterdsp.dsp -o limiterdsp.cpp
-	(cat limiterdsp.cpp | sed -e /template/d | sed -e s/mydsp/limiterdsp/g) > limiterdsp.h
+clean :
+	-rm -rf alsagtkdir jackgtkdir alsaqtdir jackqtdir vecalsagtkdir vecjackgtkdir ladspadir jackwxdir ossgtkdir osswxdir pagtkdir pawxdir moduledir bundledir mspdir vstdir benchdir sndfiledir plotdir benchdir supercolliderdir puredatadir qdir plotdir jackconsoledir matlabplotdir *-ps *-svg headersdir
+

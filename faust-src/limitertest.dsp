@@ -1,4 +1,4 @@
-// Temporary test substitution for the limiter
+// Temporary sine-test substitution for the limiter
 
 import("stdfaust.lib");
 N = hslider("[0] NumClientsAssumed",2,1,64,1);
