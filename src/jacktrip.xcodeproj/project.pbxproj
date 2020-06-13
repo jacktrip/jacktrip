@@ -959,7 +959,6 @@
 					"/opt/local/libexec/qt5/lib");
 				OTHER_CFLAGS = (
 					"-pipe",
-					"-O2",
 					"-Wall",
 					"-Wextra",
 					"-fPIC",
@@ -972,7 +971,6 @@
 					"-pipe",
 					"-stdlib=libc++",
 					"-D__MACOSX_CORE__",
-					"-O2",
 					"-std=gnu++11",
 					"-Wall",
 					"-Wextra",
@@ -1056,7 +1054,6 @@
 					"/opt/local/libexec/qt5/lib");
 				OTHER_CFLAGS = (
 					"-pipe",
-					"-O2",
 					"-Wall",
 					"-Wextra",
 					"-fPIC",
@@ -1069,7 +1066,6 @@
 					"-pipe",
 					"-stdlib=libc++",
 					"-D__MACOSX_CORE__",
-					"-O2",
 					"-std=gnu++11",
 					"-Wall",
 					"-Wextra",

@@ -225,7 +225,10 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     }
 #endif // endwhere
 
+    // ==== RECEIVE AUDIO CHANNELS FROM NETWORK ====
     computeProcessFromNetwork(out_buffer, n_frames);
+    // =============================================
+
 #ifdef WAIR // WAIR
     // nib16 result now in mNetInBuffer
 #endif // endwhere
@@ -250,9 +253,11 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
       mProcessPluginsFromNetwork[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
     }
 #else
+    // ======== RUN FAUST PLUGINS FOR THE OUTPUT STREAM =========
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
       mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer.data(), out_buffer.data()); // process in-place
     }
+    // ==========================================================
 #endif
 
 #else // WAIR
@@ -277,13 +282,18 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
+    // ======== RUN FAUST PLUGINS FOR THE INPUT STREAM =========
     for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
       mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), in_buffer.data()); // process in place
     }
+    // ==========================================================
 
     // 3) Finally, send packets to peer
     // --------------------------------
+
+    // ===== SEND AUDIO CHANNELS TO NETWORK =====
     computeProcessToNetwork(in_buffer, n_frames);
+    // ==========================================
 
 #ifdef WAIR // WAIR
     // aib2 + cob16 to nob16

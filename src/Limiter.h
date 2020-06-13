@@ -104,7 +104,7 @@ public:
       ndx = limiterTestUIP[i]->getParamIndex("Amp");
       limiterTestUIP[i]->setParamValue(ndx, 0.2);
       ndx = limiterTestUIP[i]->getParamIndex("Freq");
-      limiterTestUIP[i]->setParamValue(ndx, 100.0 * (float(i)*1.5) * (mNumClients>1?1.25:1.0)); // Maj 7 chord for stereo
+      limiterTestUIP[i]->setParamValue(ndx, 110.0 * pow(1.5,double(i)) * (mNumClients>1?1.25:1.0)); // Maj 7 chord for stereo
 #endif
     }
     inited = true;

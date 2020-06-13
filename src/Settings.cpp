@@ -415,7 +415,7 @@ void Settings::printUsage()
     cout << " -J, --clientname                             Change default client name (default: JackTrip)" << endl;
     cout << " -L, --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " -D, --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
-    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio output limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
+    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of clients summing audio (default: 2)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
@@ -585,7 +585,7 @@ void Settings::startJackTrip()
 	  }
           if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
 	    cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
-	    Limiter* limiter = new Limiter(mNumChans,1); // no sharing of return audio
+	    Limiter* limiter = new Limiter(mNumChans,1); // mNumClientsAssumed not needed in this direction
 	    mJackTrip->appendProcessPluginFromNetwork(limiter); // responsible for freeing when done
 	  }
 	}
