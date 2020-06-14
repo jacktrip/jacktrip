@@ -212,7 +212,7 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 }
 
 
-#if 1 // Audio callback and two network IO functions (see #else for original more complex versions with WAIR support)
+#if 0 // Audio callback and two network IO functions (see #else for original more complex versions with WAIR support)
 
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio from JACK
