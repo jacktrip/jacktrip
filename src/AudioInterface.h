@@ -224,6 +224,7 @@ private:
     QVarLengthArray<sample_t*> mNetInBuffer; ///< Vector of Input buffers/channel read from net
     QVarLengthArray<sample_t*> mAPInBuffer; ///< Vector of Input buffers/channel for AllPass input
 #endif // endwhere
+    QVarLengthArray<sample_t*> mInBufCopy; ///< needed in callback() to modify JACK audio input
     int mAudioBitResolution; ///< Bit resolution in audio samples
     AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
     uint32_t mSampleRate; ///< Sampling Rate
@@ -237,6 +238,9 @@ private:
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
     bool mLoopBack;
+protected:
+    bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
+    const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
 };
 
 #endif // __AUDIOINTERFACE_H__

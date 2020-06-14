@@ -52,31 +52,29 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
       std::cout << "Limiter " << this << ": compute() called before init(fs)\n";
       // it happens, so don't std::exit(1);
       if (nSkippedFrames>1) {
-	std::cout << "Limiter " << this << ": compute() called " << nSkippedFrames << " times before init(fs)\n";
+        std::cout << "Limiter " << this << ": compute() called " << nSkippedFrames << " times before init(fs)\n";
       } else {
-	if (fSamplingFreq <= 0) {
-	  fSamplingFreq = 48000;
-	  std::cout << "Limiter " << this << ": *** GUESSED sampling rate to be 48000 Hz ***\n";
-	}
-	init(fSamplingFreq);
-	inited = true; // It never comes!  Faust modules are presently mishandled
-	std::cout << "Limiter " << this << ": init done here now since it was found to never happen above\n";
+        if (fSamplingFreq <= 0) {
+          fSamplingFreq = 48000;
+          std::cout << "Limiter " << this << ": *** GUESSED sampling rate to be 48000 Hz ***\n";
+        }
+        init(fSamplingFreq);
+        inited = true; // It never comes!  Faust modules are presently mishandled
+        std::cout << "Limiter " << this << ": init done here now since it was found to never happen above\n";
       }
     }
   }
 #ifdef SINE_TEST
   float sineTestOut[nframes];
-  float* faustSineOuts[1] { sineTestOut };
+  float* faustSigs[1] { sineTestOut };
 #endif
   for ( int i = 0; i < mNumChannels; i++ ) {
-    float* faustInputs[1] { inputs[i] };
-    float* faustOutputs[1] { outputs[i] };
+    limiterP[i]->compute(nframes, &inputs[i], &outputs[i]);
 #ifdef SINE_TEST
-    limiterTestP[i]->compute(nframes, faustSineOuts, faustSineOuts);
+    limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
     for ( int n = 0; n < nframes; n++ ) {
-      faustInputs[0][n] += faustSineOuts[0][n];
+      outputs[i][n] = outputs[i][n] + sineTestOut[n];
     }
 #endif
-    limiterP[i]->compute(nframes, faustInputs, faustOutputs);
   }
 }

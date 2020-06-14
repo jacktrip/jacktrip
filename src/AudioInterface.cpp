@@ -57,7 +57,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
     mAudioBitResolution(AudioBitResolution*8),
     mBitResolutionMode(AudioBitResolution),
     mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
-    mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false)
+    mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false), mProcessingAudio(false)
 {
 #ifndef WAIR
     //cc
@@ -85,6 +85,11 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
         mAPInBuffer[i] = NULL;
     }
 #endif // endwhere
+
+    mInBufCopy.resize(mNumInChans);
+    for (int i=0; i<mNumInChans; i++) {
+      mInBufCopy[i] = new sample_t[MAX_AUDIO_BUFFER_SIZE]; // required for processing audio input
+    }
 }
 
 
@@ -121,6 +126,9 @@ AudioInterface::~AudioInterface()
     }
     for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
       delete mProcessPluginsToNetwork[i];
+    }
+    for (int i=0; i<mNumInChans; i++) {
+      delete mInBufCopy[i];
     }
 }
 
@@ -211,25 +219,50 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio fr
                               QVarLengthArray<sample_t*>& out_buffer, // audio to JACK
                               unsigned int n_frames) // number of audio samples
 {
-  if (mLoopBack) {
+  mProcessingAudio = true;  ///< tell derived class to leave buffers alone for now
+
+  // ==== LOOPBACK ====
+
+  if (mLoopBack) { // ignore network and simply loop local audio-interface's input to its output:
     int nChans = std::min(mNumInChans,mNumOutChans);
     for (int i=0; i<nChans; i++) {
-      for (uint n=0; n<n_frames; n++) {
-        out_buffer[i][n] = in_buffer[i][n];
-      }
+      std::memcpy(out_buffer[i], in_buffer[i], sizeof(sample_t) * n_frames);
     }
+    mProcessingAudio = false;
     return;
   }
+
+  // ==== INCOMING PACKETS TO AUDIO OUT ====
+
   computeProcessFromNetwork(out_buffer, n_frames); // receive audio from network - INCOMING
   for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
     // process all incoming channels with Faust modules in-place:
     mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer.data(), out_buffer.data());
   }
-  for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
-    // process all outgoing channels with Faust modules in place:
-    mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), in_buffer.data());
+
+  // ==== OUTGOING PACKETS FROM AUDIO IN ====
+
+  int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
+  if (nop>0) { // cannot modify in_buffer so make a copy
+    if (mInBufCopy.size() < mNumInChans) {
+      std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
+      exit(1);
+    }
+    if (MAX_AUDIO_BUFFER_SIZE < n_frames) {
+      std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
+                << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
+      exit(1);
+    }
+    for (int i = 0; i < nop; i++) {
+      // process all outgoing channels with Faust modules:
+      mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), mInBufCopy.data());
+    }
+    computeProcessToNetwork(mInBufCopy, n_frames);
+  } else {
+    computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
   }
-  computeProcessToNetwork(in_buffer, n_frames); // send processed audio to network - OUTGOING
+
+  mProcessingAudio = false;
 }
 
 //*******************************************************************************
@@ -249,7 +282,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
     for (unsigned int j = 0; j < n_frames; j++) {
       // Change the bit resolution on each sample
       fromBitToSampleConversion(&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-				&(out_buffer[i][j]), mBitResolutionMode );
+                                &(out_buffer[i][j]), mBitResolutionMode );
     }
   }
 }
@@ -264,8 +297,8 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     for (unsigned int j = 0; j < n_frames; j++) {
       // Change the bit resolution on each sample
       fromSampleToBitConversion(in_buffer[i],
-				&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-				mBitResolutionMode );
+                                &mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
+                                mBitResolutionMode );
     }
   }
   mJackTrip->sendNetworkPacket( mInputPacket ); // send audio buffer to network
@@ -452,7 +485,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
             //--------
             // This should be faster for 32 bits
             //std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
-            //		mSizeInBytesPerChannel);
+            //          mSizeInBytesPerChannel);
             //--------
             sample_t* tmp_sample = out_buffer[i]; //sample buffer for channel i
             for (unsigned int j = 0; j < n_frames; j++) {
@@ -498,7 +531,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             //--------
             // This should be faster for 32 bits
             //std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
-            //		mSizeInBytesPerChannel);
+            //          mSizeInBytesPerChannel);
             //--------
             sample_t* tmp_sample = in_buffer[i]; //sample buffer for channel i
             sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output process
