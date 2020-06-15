@@ -457,7 +457,10 @@ void UdpMasterListener::enumerateRunningThreadIDs()
 #include "JMess.h"
 void UdpMasterListener::connectPatch(bool spawn)
 {
-    cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
+    if (getHubPatch() == JackTrip::NONE)
+      cout << "Hub server auto patch disabled" << endl;
+    else
+      cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
     JMess tmp;
     // default is patch 0, which connects server audio to all clients
     // these are the other cases:
