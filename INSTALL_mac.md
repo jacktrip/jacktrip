@@ -22,7 +22,7 @@ Set the permissions for the jacktrip binary there:
 
 sudo chmod 755 jacktrip
 
-Enter your password when requested (it will not display). You can now use JackTrip from the /jacktrip/bin directory. 
+Enter your password when requested (it will not display). You can now use JackTrip from the /Applications/jacktrip/bin directory. 
 
 ## Usage notes
 
