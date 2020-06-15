@@ -139,6 +139,11 @@ public:
    *               -> JackTrip client -> processPlugin from network -> JACK -> audio
    */
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
+   /** \brief initPlugins():
+   * Initialize all ProcessPlugin modules.
+   * The audio sampling rate (mSampleRate) must be set at this time.
+   */
+    void initPlugins();
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).

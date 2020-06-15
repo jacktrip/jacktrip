@@ -649,16 +649,39 @@ void AudioInterface::fromBitToSampleConversion
 //*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
-    /// \todo check that channels in ProcessPlugins are less or same that jack channels
-    /// if ( plugin->getNumInputs() ) {}
-    mProcessPluginsToNetwork.append(plugin);
+  if (plugin->getNumInputs() < mNumInChans) {
+    std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
+	      << typeid(plugin).name() << " REJECTED due to having "
+	      << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
+	      << mNumInChans << " inputs\n";
+    return;
+  }
+  mProcessPluginsToNetwork.append(plugin);
 }
 
 void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 {
-    /// \todo check that channels in ProcessPlugins are less or same that jack channels
-    /// if ( plugin->getNumInputs() ) {}
-    mProcessPluginsFromNetwork.append(plugin);
+  if (plugin->getNumOutputs() > mNumOutChans) {
+    std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
+	      << typeid(plugin).name() << " REJECTED due to having "
+	      << plugin->getNumOutputs() << " inputs, while the JACK audio output requires "
+	      << mNumOutChans << " outputs\n";
+    return;
+  }
+  mProcessPluginsFromNetwork.append(plugin);
+}
+
+void AudioInterface::initPlugins()
+{
+  std::cout << "Initializing "
+	    << mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()
+	    << " Faust plugins at sampling rate " << mSampleRate << "\n";
+  for (ProcessPlugin* plugin : mProcessPluginsFromNetwork) {
+    plugin->init(mSampleRate);
+  }
+  for (ProcessPlugin* plugin : mProcessPluginsToNetwork) {
+    plugin->init(mSampleRate);
+  }
 }
 
 //*******************************************************************************
