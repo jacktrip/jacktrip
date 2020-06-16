@@ -212,9 +212,9 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 }
 
 
-#if 0 // THIS CODE BLOCK IS FOR DEBUGGING ONLY (see #else block below)
+#if 0 // THIS CODE BLOCK IS FOR TESTING/DEBUGGING ONLY
 // (JACK audio callback and two network IO functions without WAIR support)
-
+// (Set to "if 0" to get #else block below before any git push)
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio from JACK
                               QVarLengthArray<sample_t*>& out_buffer, // audio to JACK
