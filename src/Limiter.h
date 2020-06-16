@@ -89,11 +89,10 @@ public:
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-#ifdef DEBUG
+    std::cout << "Limiter: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }
-#endif
     fs = float(fSamplingFreq);
     for ( int i = 0; i < mNumChannels; i++ ) {
       limiterP[i]->init(fs); // compression filter parameters depend on sampling rate

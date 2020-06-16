@@ -450,7 +450,7 @@ void JackTrip::startProcess(
     for (int i = 0; i < mProcessPluginsToNetwork.size(); ++i) {
         mAudioInterface->appendProcessPluginToNetwork(mProcessPluginsToNetwork[i]);
     }
-    mAudioInterface->initPlugins();
+    mAudioInterface->initPlugins(); // mSampleRate assumed settled now
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
 }
 

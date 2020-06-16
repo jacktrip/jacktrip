@@ -673,14 +673,16 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 
 void AudioInterface::initPlugins()
 {
-  std::cout << "Initializing "
-	    << mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()
-	    << " Faust plugins at sampling rate " << mSampleRate << "\n";
-  for (ProcessPlugin* plugin : mProcessPluginsFromNetwork) {
-    plugin->init(mSampleRate);
-  }
-  for (ProcessPlugin* plugin : mProcessPluginsToNetwork) {
-    plugin->init(mSampleRate);
+  int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size();
+  if (nPlugins > 0) {
+    std::cout << "Initializing Faust plugins (have " << nPlugins
+	      << ") at sampling rate " << mSampleRate << "\n";
+    for (ProcessPlugin* plugin : mProcessPluginsFromNetwork) {
+      plugin->init(mSampleRate);
+    }
+    for (ProcessPlugin* plugin : mProcessPluginsToNetwork) {
+      plugin->init(mSampleRate);
+    }
   }
 }
 
