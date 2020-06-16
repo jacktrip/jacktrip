@@ -58,7 +58,7 @@ class limiterdsp : public dsp {
 	int iRec5[2];
 	FAUSTFLOAT fHslider0;
 	int IOTA;
-	float fVec0[1024];
+	float fVec0[32];
 	float fRec4[2];
 	int iRec2[2];
 	float fRec1[2];
@@ -138,12 +138,12 @@ class limiterdsp : public dsp {
 	virtual void instanceConstants(int sample_rate) {
 		fSampleRate = sample_rate;
 		fConst0 = std::min<float>(192000.0f, std::max<float>(1.0f, float(fSampleRate)));
-		fConst1 = std::exp((0.0f - (100.0f / fConst0)));
+		fConst1 = std::exp((0.0f - (100000.0f / fConst0)));
 		fConst2 = (1.0f - fConst1);
 		fConst3 = (0.100000001f * fConst0);
 		fConst4 = std::exp((0.0f - (0.333333343f / fConst0)));
 		fConst5 = (1.0f - fConst4);
-		iConst6 = int((0.00499999989f * fConst0));
+		iConst6 = int((9.99999975e-05f * fConst0));
 	}
 	
 	virtual void instanceResetUserInterface() {
@@ -155,7 +155,7 @@ class limiterdsp : public dsp {
 			iRec5[l0] = 0;
 		}
 		IOTA = 0;
-		for (int l1 = 0; (l1 < 1024); l1 = (l1 + 1)) {
+		for (int l1 = 0; (l1 < 32); l1 = (l1 + 1)) {
 			fVec0[l1] = 0.0f;
 		}
 		for (int l2 = 0; (l2 < 2); l2 = (l2 + 1)) {
@@ -205,7 +205,7 @@ class limiterdsp : public dsp {
 			float fTemp0 = float(input0[i]);
 			iRec5[0] = ((iRec5[1] + 1) % int(std::max<float>(1.0f, (fConst3 * float(iRec2[1])))));
 			float fTemp1 = (fSlow0 * fTemp0);
-			fVec0[(IOTA & 1023)] = fTemp1;
+			fVec0[(IOTA & 31)] = fTemp1;
 			float fTemp2 = std::fabs(std::fabs(fTemp1));
 			fRec4[0] = std::max<float>((float((iRec5[0] > 0)) * fRec4[1]), fTemp2);
 			iRec2[0] = (fRec4[0] >= fTemp2);
@@ -213,7 +213,7 @@ class limiterdsp : public dsp {
 			fRec1[0] = ((fConst1 * fRec1[1]) + (fConst2 * fRec3));
 			float fTemp3 = std::fabs(fRec1[0]);
 			fRec0[0] = std::max<float>(fTemp3, ((fConst4 * fRec0[1]) + (fConst5 * fTemp3)));
-			output0[i] = FAUSTFLOAT((std::min<float>(1.0f, (1.0f / std::max<float>(fRec0[0], 1.1920929e-07f))) * fVec0[((IOTA - iConst6) & 1023)]));
+			output0[i] = FAUSTFLOAT((std::min<float>(1.0f, (0.5f / std::max<float>(fRec0[0], 1.1920929e-07f))) * fVec0[((IOTA - iConst6) & 31)]));
 			iRec5[1] = iRec5[0];
 			IOTA = (IOTA + 1);
 			fRec4[1] = fRec4[0];

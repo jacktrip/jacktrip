@@ -212,8 +212,8 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 }
 
 
-#if 0
-// Audio callback and two network IO functions (see #else for original more complex versions with WAIR support)
+#if 0 // THIS CODE BLOCK IS FOR DEBUGGING ONLY (see #else block below)
+// (JACK audio callback and two network IO functions without WAIR support)
 
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio from JACK
@@ -263,6 +263,11 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio fr
   for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
     // process all incoming channels with Faust modules in-place:
     mProcessPluginsFromNetwork[i]->compute(n_frames, OUT_BUFFER.data(), OUT_BUFFER.data());
+  }
+
+  // Could this be needed?
+  for (int i = 0; i < mNumInChans; i++) {
+    std::memcpy(mInProcessBuffer[i], OUT_BUFFER[i], sizeof(sample_t) * n_frames);
   }
 
   // ==== OUTGOING PACKETS FROM AUDIO IN ====
