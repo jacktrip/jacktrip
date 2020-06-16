@@ -348,31 +348,33 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(0);
             break;
-        case 'O': // Overflow limiter (i, o, or io)
+        case 'O': { // Overflow limiter (i, o, or io)
 	  //-------------------------------------------------------
-	  if (strncmp(optarg,"io",2)==0 || strncmp(optarg,"IO",2)==0) {
-	    mLimit = LIMITER_BOTH;
-	    cout << "Setting up Limiter for both INCOMING and OUTGOING\n";
-	  } else if (tolower(optarg[0]) == 'i') {
-	    mLimit = LIMITER_INCOMING;
-	    cout << "Setting up Limiter for INCOMING from network\n";
-	  } else if (tolower(optarg[0]) == 'o') {
-	    mLimit = LIMITER_OUTGOING;
-	    cout << "Setting up Limiter for OUTGOING to network\n";
-	  } else {
-	    mLimit = LIMITER_NONE;
-	    cout << "NO LIMITER\n";
-	  }
-	  break;
+          char c1 = tolower(optarg[0]);
+          char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : NULL);
+          if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
+            mLimit = LIMITER_BOTH;
+            cout << "Setting up Limiter for both INCOMING and OUTGOING\n";
+          } else if (c1 == 'i') {
+            mLimit = LIMITER_INCOMING;
+            cout << "Setting up Limiter for INCOMING from network\n";
+          } else if (c1 == 'o') {
+            mLimit = LIMITER_OUTGOING;
+            cout << "Setting up Limiter for OUTGOING to network\n";
+          } else {
+            mLimit = LIMITER_NONE;
+            cout << "NO LIMITER\n";
+          }
+          break; }
         case 'a': // assumed number of clients (applies to outgoing limiter)
-            //-------------------------------------------------------
-	    mNumClientsAssumed = atoi(optarg);
-	    if(mNumClientsAssumed < 1) {
-                std::cerr << "-p ERROR: Must have at least one assumed sound source: "
-                          << atoi(optarg) << " is not supported." << endl;
-                printUsage();
-                std::exit(1); }
-            break;
+          //-------------------------------------------------------
+          mNumClientsAssumed = atoi(optarg);
+          if(mNumClientsAssumed < 1) {
+            std::cerr << "-p ERROR: Must have at least one assumed sound source: "
+                      << atoi(optarg) << " is not supported." << endl;
+            printUsage();
+            std::exit(1); }
+          break;
         default:
             //-------------------------------------------------------
             printUsage();
