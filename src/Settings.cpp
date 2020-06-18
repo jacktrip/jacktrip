@@ -442,7 +442,7 @@ void Settings::printUsage()
     cout << " -L, --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " -D, --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
-    cout << " -a, --assumednumclients                  Assumed number of clients summing audio (default: 2)" << endl;
+    cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (default: 2)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;

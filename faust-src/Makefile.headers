@@ -4,7 +4,7 @@ headers  := $(addprefix $(DEST), $(dspsrc:.dsp=.h))
 all :  $(headers)
 
 $(DEST)%.h : %.dsp
-	faust -inpl $(VEC) -cn $(<:.dsp=) -a $(ARCH) $< -o $(DEST)$(<:.dsp=).cpp
+	faust -i -inpl $(VEC) -cn $(<:.dsp=) -a $(ARCH) $< -o $(DEST)$(<:.dsp=).cpp
 	(cat $(@:.h=).cpp | sed -e /template/d | sed -e s/mydsp/$(<:.dsp=)/g) > $@
 	/bin/rm $(@:.h=).cpp
 
