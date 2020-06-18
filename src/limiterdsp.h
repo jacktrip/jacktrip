@@ -1392,7 +1392,7 @@ class dsp {
          *
          * @param ui_interface - the user interface builder
          */
-        virtual void buildUserInterface(APIUI* ui_interface) = 0;
+        virtual void buildUserInterface(UI* ui_interface) = 0;
 
         /* Returns the sample rate currently used by the instance */
         virtual int getSampleRate() = 0;
@@ -1480,7 +1480,7 @@ class decorator_dsp : public dsp {
 
         virtual int getNumInputs() { return fDSP->getNumInputs(); }
         virtual int getNumOutputs() { return fDSP->getNumOutputs(); }
-        virtual void buildUserInterface(APIUI* ui_interface) { fDSP->buildUserInterface(ui_interface); }
+        virtual void buildUserInterface(UI* ui_interface) { fDSP->buildUserInterface(ui_interface); }
         virtual int getSampleRate() { return fDSP->getSampleRate(); }
         virtual void init(int sample_rate) { fDSP->init(sample_rate); }
         virtual void instanceInit(int sample_rate) { fDSP->instanceInit(sample_rate); }
@@ -1711,7 +1711,7 @@ class limiterdsp : public dsp {
 		return fSampleRate;
 	}
 
-	virtual void buildUserInterface(APIUI* ui_interface) {
+	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("limiterdsp");
 		ui_interface->declare(&fHslider0, "0", "");
 		ui_interface->addHorizontalSlider("NumClientsAssumed", &fHslider0, 2.0f, 1.0f, 64.0f, 1.0f);
