@@ -35,6 +35,8 @@
 #include "jacktrip_globals.h"
 #include <QDebug>
 
+// sJackMutex definition
+QMutex JMess::sJMessMutex;
 
 //-------------------------------------------------------------------------------
 /*! \brief Constructs a JMess object that has a jack client.
@@ -169,8 +171,8 @@ void JMess::setConnectedPorts()
 void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // called from UdpMasterListener::connectMesh
 {
-    static QMutex mutex;
-    QMutexLocker locker(&mutex);
+
+    QMutexLocker locker(&sJMessMutex);
 
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
