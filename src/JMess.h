@@ -44,6 +44,7 @@
 //#include <QXmlSimpleReader>
 //#include <QXmlInputSource>
 //#include <QXmlContentHandler>
+#include <QMutexLocker>
 
 #include <jack/jack.h>
 
@@ -87,5 +88,6 @@ private:
   //OuputPortN InputPortN
   QVector<QVector<QString> > mConnectedPorts;
   QVector<QVector<QString> > mPortsToConnect;
+  static QMutex sJMessMutex; ///< Mutex to make thread safe jack functions that are not
 };
 #endif
