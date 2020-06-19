@@ -373,14 +373,16 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
 #ifndef WAIR // NOT WAIR:
     for (int i = 0; i < mNumInChans; i++) {
-        std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
         std::memcpy(mInProcessBuffer[i], out_buffer[i], sizeof(sample_t) * n_frames);
     }
-    for (int i = 0; i < mNumOutChans; i++) {
-        std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
-    }
-    for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-        mProcessPluginsFromNetwork[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
+    if (mProcessPluginsFromNetwork.size() <= 0) {
+      for (int i = 0; i < mNumOutChans; i++) {
+	std::memcpy(mOutProcessBuffer[i], mInProcessBuffer[i], sizeof(sample_t) * n_frames);
+      }
+    } else {
+      for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
+	mProcessPluginsFromNetwork[i]->compute(n_frames, mInProcessBuffer.data(), mOutProcessBuffer.data());
+      }
     }
 #else // WAIR:
     for (int i = 0; i < ((mNumNetRevChans)?mNumNetRevChans:mNumOutChans); i++) {
