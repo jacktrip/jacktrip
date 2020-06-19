@@ -70,6 +70,9 @@ UdpMasterListener::UdpMasterListener(int server_port) :
         mJTWorkers->insert(i, NULL);
     }
 
+    qDebug() << "mThreadPool default maxThreadCount =" << mThreadPool.maxThreadCount();
+    mThreadPool.setMaxThreadCount(mThreadPool.maxThreadCount() * 16);
+    qDebug() << "mThreadPool maxThreadCount set to" << mThreadPool.maxThreadCount();
 
     //mJTWorkers = new JackTripWorker(this);
     mThreadPool.setExpiryTimeout(3000); // msec (-1) = forever
