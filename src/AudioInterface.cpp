@@ -266,9 +266,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio fr
   }
 
   // Could this be needed?
-  for (int i = 0; i < mNumInChans; i++) {
-    std::memcpy(mInProcessBuffer[i], OUT_BUFFER[i], sizeof(sample_t) * n_frames);
-  }
+  // for (int i = 0; i < mNumInChans; i++) {
+  //   std::memcpy(mInProcessBuffer[i], OUT_BUFFER[i], sizeof(sample_t) * n_frames);
+  // }
 
   // ==== OUTGOING PACKETS FROM AUDIO IN ====
 
@@ -405,12 +405,29 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 #endif // endwhere
 
     // Run Faust plugins for the outoing stream:
-    for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
-      mProcessPluginsToNetwork[i]->compute(n_frames, in_buffer.data(), in_buffer.data()); // process in place
+    int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
+    if (nop>0) { // cannot modify IN_BUFFER so make a copy
+      //#ifdef DEBUG
+      if (mInBufCopy.size() < mNumInChans) {
+	std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
+	exit(1);
+      }
+      if (MAX_AUDIO_BUFFER_SIZE < n_frames) {
+	std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
+		  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
+	exit(1);
+      }
+      //#endif
+      for (int i = 0; i < nop; i++) {
+	// process all outgoing channels with Faust modules:
+	mProcessPluginsToNetwork[i]->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+      }
+      // 3) Finally, send packets to network:
+      computeProcessToNetwork(mInBufCopy, n_frames);
+    } else {
+      // 3) Finally, send packets to network:
+      computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
     }
-
-    // 3) Finally, send packets to network:
-    computeProcessToNetwork(in_buffer, n_frames);
 
 #ifdef WAIR // WAIR
     // aib2 + cob16 to nob16
