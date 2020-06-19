@@ -351,7 +351,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'O': { // Overflow limiter (i, o, or io)
 	  //-------------------------------------------------------
           char c1 = tolower(optarg[0]);
-          char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : NULL);
+          char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
           if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
             mLimit = LIMITER_BOTH;
             cout << "Setting up Limiter for both INCOMING and OUTGOING\n";

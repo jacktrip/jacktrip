@@ -373,7 +373,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
 #ifndef WAIR // NOT WAIR:
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-      mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer[i]);
+      mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer.data(), out_buffer.data());
     }
 #else // WAIR:
     for (int i = 0; i < ((mNumNetRevChans)?mNumNetRevChans:mNumOutChans); i++) {
@@ -401,14 +401,17 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
     if (nop>0) { // cannot modify IN_BUFFER so make a copy
       //#ifdef DEBUG
-      if (mInBufCopy.size() < mNumInChans) {
+      if (mInBufCopy.size() < mNumInChans) { // created in constructor above
 	std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
 	exit(1);
       }
-      if (MAX_AUDIO_BUFFER_SIZE < n_frames) {
+      if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
 	std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
 		  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
 	exit(1);
+      }
+      for (int i=0; i<mNumInChans; i++) {
+	std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
       }
       //#endif
       for (int i = 0; i < nop; i++) {
