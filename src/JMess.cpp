@@ -169,6 +169,9 @@ void JMess::setConnectedPorts()
 void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // called from UdpMasterListener::connectMesh
 {
+    static QMutex mutex;
+    QMutexLocker locker(&mutex);
+
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
 
@@ -212,8 +215,8 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
             if ((hubPatch == JackTrip::CLIENTECHO)||(hubPatch == JackTrip::FULLMIX)) k = i;
             else if (hubPatch == JackTrip::CLIENTFOFI) k = (j+(i+1))%ctr;
             for (int l = 1; l<=nChans; l++) { // chans are 1-based
-                qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
-                         <<"with " << IPS[k]+":send_"+QString::number(l);
+//                qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+//                         <<"with " << IPS[k]+":send_"+QString::number(l);
 
                 QString left = IPS[i] +
                         ":receive_" + QString::number(l);
@@ -239,8 +242,8 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
             for (int j = 0; j<jLimit; j++) {
                 k = (j+(i+1))%ctr;
                 for (int l = 1; l<=nChans; l++) { // chans are 1-based
-                    qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
-                             <<"with " << IPS[k]+":send_"+QString::number(l);
+//                    qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+//                             <<"with " << IPS[k]+":send_"+QString::number(l);
 
                     QString left = IPS[i] +
                             ":receive_" + QString::number(l);
