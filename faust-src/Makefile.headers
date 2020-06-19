@@ -3,8 +3,10 @@ headers  := $(addprefix $(DEST), $(dspsrc:.dsp=.h))
 
 all :  $(headers)
 
+# inline all included headers: faust -i -inpl $(VEC) -cn $(<:.dsp=) -a $(ARCH) $< -o $(DEST)$(<:.dsp=).cpp
+
 $(DEST)%.h : %.dsp
-	faust -i -inpl $(VEC) -cn $(<:.dsp=) -a $(ARCH) $< -o $(DEST)$(<:.dsp=).cpp
+	faust -inpl $(VEC) -cn $(<:.dsp=) -a $(ARCH) $< -o $(DEST)$(<:.dsp=).cpp
 	(cat $(@:.h=).cpp | sed -e /template/d | sed -e s/mydsp/$(<:.dsp=)/g) > $@
 	/bin/rm $(@:.h=).cpp
 
