@@ -202,7 +202,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
             //                        qDebug() << ports[out_i] << systemPort << s;
         }
     }
-    for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
+//    for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
     disconnectAll();
 
     int k = 0;
