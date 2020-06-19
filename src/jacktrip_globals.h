@@ -55,7 +55,8 @@ const int gDefaultNumOutChannels = 2;
 #define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
 // #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
 const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
-const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
+const int gMAX_WAIRS = 128; // FIXME, should agree with maxThreadCount
+// jmess revision needed for string parse if > 1 digit
 
 // hubpatch = 3 for TUB ensemble patching
 ///////////////////////////////
