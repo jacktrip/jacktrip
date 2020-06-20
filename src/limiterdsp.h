@@ -345,9 +345,7 @@ struct Meta
 
 struct Soundfile;
 
-#ifndef REAL
 template <typename REAL>
-#endif
 
 struct UIReal
 {
