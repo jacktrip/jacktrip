@@ -161,7 +161,7 @@ public:
 
     /// \brief Start the processing threads
     virtual void startProcess(
-        #ifdef WAIRTOMASTER // wair
+        #ifdef WAIRTOHUB // wair
             int ID
         #endif // endwhere
             );
@@ -437,7 +437,7 @@ public:
 
     /// \brief Set the AudioInteface object
     virtual void setupAudio(
-        #ifdef WAIRTOMASTER // WAIR
+        #ifdef WAIRTOHUB // WAIR
             int ID
         #endif // endwhere
             );
