@@ -451,8 +451,8 @@ void Settings::printUsage()
     cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
-    cout << "   --iostat <time_in_secs>                Turn on IO stat reporting with specified interval (in seconds)" << endl;
-    cout << "   --iostatlog <log_file>                 Save stat log into a file (default: print in stdout)" << endl;
+    cout << " -I, --iostat <time_in_secs>                Turn on IO stat reporting with specified interval (in seconds)" << endl;
+    cout << " -G, --iostatlog <log_file>                 Save stat log into a file (default: print in stdout)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
