@@ -30,13 +30,13 @@
 //*****************************************************************
 
 /**
- * \file UdpMasterListener.h
+ * \file UdpHubListener.h
  * \author Juan-Pablo Caceres and Chris Chafe
  * \date September 2008
  */
 
-#ifndef __UDPMASTERLISTENER_H__
-#define __UDPMASTERLISTENER_H__
+#ifndef __UDPHUBLISTENER_H__
+#define __UDPHUBLISTENER_H__
 
 #include <iostream>
 #include <stdexcept>
@@ -60,18 +60,18 @@ typedef struct {
     int16_t port;
 } addressPortPair;
 
-/** \brief Master UDP listener on the Server.
+/** \brief Hub UDP listener on the Server.
  *
  * This creates a server that will listen on the well know port (the server port) and will
  * spawn JackTrip threads into the Thread pool. Clients request a connection.
  */
-class UdpMasterListener : public QThread
+class UdpHubListener : public QThread
 {
     Q_OBJECT;
 
 public:
-    UdpMasterListener(int server_port = gServerUdpPort);
-    virtual ~UdpMasterListener();
+    UdpHubListener(int server_port = gServerUdpPort);
+    virtual ~UdpHubListener();
 
     /// \brief Implements the Thread Loop. To start the thread, call start()
     /// ( DO NOT CALL run() )
@@ -125,7 +125,7 @@ private:
     */
     int getPoolID(QString address, uint16_t port);
 
-    //QUdpSocket mUdpMasterSocket; ///< The UDP socket
+    //QUdpSocket mUdpHubSocket; ///< The UDP socket
     //QHostAddress mPeerAddress; ///< The Peer Address
 
     //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
@@ -166,4 +166,4 @@ public :
 };
 
 
-#endif //__UDPMASTERLISTENER_H__
+#endif //__UDPHUBLISTENER_H__

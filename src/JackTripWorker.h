@@ -50,7 +50,7 @@
 #include "jacktrip_globals.h"
 
 //class JackTrip; // forward declaration
-class UdpMasterListener; // forward declaration
+class UdpHubListener; // forward declaration
 
 
 /** \brief Prototype of the worker class that will be cloned through sending threads to the
@@ -70,7 +70,7 @@ class JackTripWorker : public QObject, public QRunnable
 
 public:
     /// \brief The class constructor
-    JackTripWorker(UdpMasterListener* udpmasterlistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
+    JackTripWorker(UdpHubListener* udpmasterlistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
     /// \brief The class destructor
     virtual ~JackTripWorker();
 
@@ -111,7 +111,7 @@ private:
     int setJackTripFromClientHeader(JackTrip& jacktrip);
     JackTrip::connectionModeT getConnectionModeFromHeader();
 
-    UdpMasterListener* mUdpMasterListener; ///< Master Listener Socket
+    UdpHubListener* mUdpHubListener; ///< Hub Listener Socket
     //QHostAddress mClientAddress; ///< Client Address
     QString mClientAddress;
     uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client

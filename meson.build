@@ -22,7 +22,7 @@ moc_h = ['src/DataProtocol.h',
 	'src/PacketHeader.h',
 	'src/Settings.h',
 	'src/UdpDataProtocol.h',
-	'src/UdpMasterListener.h']
+	'src/UdpHubListener.h']
 moc_files = qt5.preprocess(moc_headers : moc_h)
 
 src = ['src/DataProtocol.cpp',
@@ -38,7 +38,7 @@ src = ['src/DataProtocol.cpp',
 	'src/RingBuffer.cpp',
 	'src/Settings.cpp',
 	'src/UdpDataProtocol.cpp',
-	'src/UdpMasterListener.cpp',
+	'src/UdpHubListener.cpp',
 	'src/AudioInterface.cpp',
 	'src/JackAudioInterface.cpp']
 

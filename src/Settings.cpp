@@ -44,7 +44,7 @@
 #include "Stk16.dsp.h"
 #endif // endwhere
 
-#include "UdpMasterListener.h"
+#include "UdpHubListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
 
@@ -434,7 +434,7 @@ void Settings::startJackTrip()
 
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
-        UdpMasterListener* udpmaster = new UdpMasterListener;
+        UdpHubListener* udpmaster = new UdpHubListener;
         udpmaster->setSettings(this);
 #ifdef WAIR // WAIR
         udpmaster->setWAIR(mWAIR);
@@ -596,7 +596,7 @@ void Settings::startJackTrip()
         // Start JackTrip
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
         mJackTrip->startProcess(
-            #ifdef WAIRTOMASTER // WAIR
+            #ifdef WAIRTOHUB // WAIR
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );
