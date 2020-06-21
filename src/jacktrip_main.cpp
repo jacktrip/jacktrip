@@ -36,6 +36,7 @@
  */
 
 #include <iostream>
+#include <ctime>
 
 #ifndef JUCE
 #include <QCoreApplication>
@@ -69,7 +70,10 @@ int main(int argc, char** argv)
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
 
-    qDebug() << "=== JACKTRIP BEGINS ===\n";
+    time_t now = time(0); // current date/time based on current system
+    char* dt = ctime(&now); // convert now to string form
+    qDebug() << "=== JACKTRIP (" << argv[0] << "): jos branch built" << dt
+	     << "            including limiters and latest branch merges\n";
 
     bool testing = false;
     if ( argc > 1 ) {
