@@ -159,9 +159,10 @@ void JackTrip::setupAudio(
 #ifdef WAIRTOMASTER // WAIR
         qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
-        QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
-        if(mPeerAddress.toStdString()!="")
-            mJackClientName = tmp.constData();
+        //Set our Jack client name if we're a hub server or a custom name hasn't been set
+	if(mPeerAddress.toStdString()!="" && (mJackClientName == "JackTrip" || mJackTripMode == SERVERPINGSERVER)) {
+            mJackClientName = QString(mPeerAddress).replace(":", ".").toLatin1().constData();
+        }
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
                       mJackClientName << std::endl;
 
