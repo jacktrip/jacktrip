@@ -18,7 +18,7 @@ addons:
   apt:
     update: true
     packages:
-      - g++-9
+      - g++-7
       - qt5-default
       - qttools5-dev-tools
       - libjack-dev 
@@ -32,7 +32,7 @@ addons:
 before_install:
   # workaround for homebrew qmake not being symlinked into $PATH
   # see https://stackoverflow.com/questions/48847505/why-cant-i-use-qmake-on-mac-after-installing-it
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/qt/bin:$PATH" fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/qt/bin:$PATH"; fi
 
 script: 
   - cd src
