@@ -55,7 +55,7 @@ macx {
 
 linux-g++ | linux-g++-64 {
 #   LIBS += -lasound -lrtaudio
-  QMAKE_CXXFLAGS += -std=c++11 -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
+  QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
 
 FEDORA = $$system(cat /proc/version | grep -o fc)
 
