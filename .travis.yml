@@ -32,13 +32,13 @@ addons:
 script: 
   # linux: force gcc-6
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then 
-      sudo update-alternatives --remove-all gcc
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 90 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+      sudo update-alternatives --remove-all gcc;
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 90 --slave /usr/bin/g++ g++ /usr/bin/g++-6;
     fi
   # mac: workaround for homebrew-installed headers
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then 
-      export C_INCLUDE_PATH="/usr/local/include"
-      export CPLUS_INCLUDE_PATH="/usr/local/include"
+      export C_INCLUDE_PATH="/usr/local/include";
+      export CPLUS_INCLUDE_PATH="/usr/local/include";
       export LIBRARY_PATH="/usr/local/lib";
     fi
   # mac: workaround for homebrew qmake not being symlinked into $PATH
