@@ -43,7 +43,7 @@ INCLUDEPATH += ../faust-src-lair/stk
 
 macx {
   message(Building on MAC OS X)
-  QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
+  QMAKE_CXXFLAGS += -I/usr/local/include -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
   QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
   #QMAKE_MAC_SDK = macosx10.9
   CONFIG -= app_bundle
@@ -55,7 +55,7 @@ macx {
 
 linux-g++ | linux-g++-64 {
 #   LIBS += -lasound -lrtaudio
-  QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
+  QMAKE_CXXFLAGS += -std=c++11 -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
 
 FEDORA = $$system(cat /proc/version | grep -o fc)
 
