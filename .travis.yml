@@ -6,6 +6,7 @@ language:
   - cpp
 
 dist: bionic
+osx_image: xcode11.6
 
 branches:
   - master
@@ -25,7 +26,7 @@ addons:
       - libjack-dev 
       - librtaudio-dev
   homebrew:
-    update: true
+    # update: true
     packages:
       - jack
       - qt
