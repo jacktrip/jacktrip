@@ -18,7 +18,7 @@ addons:
   apt:
     update: true
     packages:
-      - g++-7
+      - g++-6
       - qt5-default
       - qttools5-dev-tools
       - libjack-dev 
