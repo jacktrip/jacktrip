@@ -6,7 +6,6 @@ language:
   - cpp
 
 dist: bionic
-osx_image: xcode11.6
 
 branches:
   - master
@@ -14,7 +13,6 @@ branches:
 
 env:
   global:
-  - PKGS_LINUX="qt5-default qttools5-dev-tools libjack-dev librtaudio-dev"
   - PKGS_OSX="jack qt rt-audio"
   
 addons:
@@ -25,33 +23,19 @@ addons:
       - qttools5-dev-tools
       - libjack-dev 
       - librtaudio-dev
-  homebrew:
-    # update: true
-    packages:
-      - jack
-      - qt
-      - rt-audio
 
-script: 
-  # # linux: force gcc-6
-  # - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  #     sudo update-alternatives --remove-all gcc;
-  #     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 90 --slave /usr/bin/g++ g++ /usr/bin/g++-6;
-  #   fi
-  # mac: workaround for homebrew-installed headers
+before_script:
+  # manually install brew packages as homebrew is broken in the default osx image
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then 
-      export C_INCLUDE_PATH="/usr/local/include";
-      export CPLUS_INCLUDE_PATH="/usr/local/include";
-      export LIBRARY_PATH="/usr/local/lib";
+      brew install $PKGS_OSX
     fi
   # mac: workaround for homebrew qmake not being symlinked into $PATH
   # see https://stackoverflow.com/questions/48847505/why-cant-i-use-qmake-on-mac-after-installing-it
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then 
       export PATH="/usr/local/opt/qt/bin:$PATH";
     fi
-  - ls /usr/local/include
-  - qmake-qt5 --version
-  - gcc -v && g++ -v
+
+script: 
   - cd src
   - ./build
   
