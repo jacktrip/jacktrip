@@ -25,6 +25,7 @@ addons:
       - libjack-dev 
       - librtaudio-dev
   homebrew:
+    update: true
     packages:
       - jack
       - qt
@@ -48,6 +49,7 @@ script:
       export PATH="/usr/local/opt/qt/bin:$PATH";
     fi
   - ls /usr/local/include
+  - qmake-qt5 --version
   - gcc -v && g++ -v
   - cd src
   - ./build
