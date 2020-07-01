@@ -13,10 +13,26 @@ env:
   global:
   - PKGS_LINUX="qt5-default qttools5-dev-tools libjack-dev librtaudio-dev"
   - PKGS_OSX="jack qt rt-audio"
+  
+addons:
+  apt:
+    update: true
+    packages:
+      - g++-9
+      - qt5-default
+      - qttools5-dev-tools
+      - libjack-dev 
+      - librtaudio-dev
+  homebrew:
+    packages:
+      - jack
+      - qt
+      - rt-audio
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; sudo apt-get install $PKGS_LINUX; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install $PKGS_OSX; fi
+  # workaround for homebrew qmake not being symlinked into $PATH
+  # see https://stackoverflow.com/questions/48847505/why-cant-i-use-qmake-on-mac-after-installing-it
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/qt/bin:$PATH" fi
 
 script: 
   - cd src
