@@ -31,15 +31,18 @@ addons:
 
 before_install:
   # linux: use gcc-6
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CC=gcc-6; export CXX=g++-6; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CC="gcc-6"; export CXX="g++-6"; fi
+  - gcc -v && g++ -v
   # mac: workaround for homebrew-installed headers
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export C_INCLUDE_PATH="/usr/local/include"; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export CPLUS_INCLUDE_PATH="/usr/local/include"; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export LIBRARY_PATH="/usr/local/lib"; fi
   # mac: workaround for homebrew qmake not being symlinked into $PATH
   # see https://stackoverflow.com/questions/48847505/why-cant-i-use-qmake-on-mac-after-installing-it
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/qt/bin:$PATH"; fi
 
 script: 
+  - gcc -v && g++ -v
   - cd src
   - ./build
   
