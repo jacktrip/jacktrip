@@ -47,7 +47,7 @@ script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then 
       export PATH="/usr/local/opt/qt/bin:$PATH";
     fi
-
+  - ls /usr/local/include
   - gcc -v && g++ -v
   - cd src
   - ./build
