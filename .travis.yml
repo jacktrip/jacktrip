@@ -5,6 +5,7 @@ os:
 language: 
   - cpp
 
+# force updated ubuntu distribution with up-to-date gcc
 dist: bionic
 
 branches:
