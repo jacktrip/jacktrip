@@ -5,6 +5,8 @@ os:
 language: 
   - cpp
 
+dist: bionic
+
 branches:
   - master
   - travis
@@ -18,7 +20,6 @@ addons:
   apt:
     update: true
     packages:
-      - g++-6
       - qt5-default
       - qttools5-dev-tools
       - libjack-dev 
@@ -30,11 +31,11 @@ addons:
       - rt-audio
 
 script: 
-  # linux: force gcc-6
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then 
-      sudo update-alternatives --remove-all gcc;
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 90 --slave /usr/bin/g++ g++ /usr/bin/g++-6;
-    fi
+  # # linux: force gcc-6
+  # - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  #     sudo update-alternatives --remove-all gcc;
+  #     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 90 --slave /usr/bin/g++ g++ /usr/bin/g++-6;
+  #   fi
   # mac: workaround for homebrew-installed headers
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then 
       export C_INCLUDE_PATH="/usr/local/include";
@@ -43,7 +44,10 @@ script:
     fi
   # mac: workaround for homebrew qmake not being symlinked into $PATH
   # see https://stackoverflow.com/questions/48847505/why-cant-i-use-qmake-on-mac-after-installing-it
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/qt/bin:$PATH"; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then 
+      export PATH="/usr/local/opt/qt/bin:$PATH";
+    fi
+
   - gcc -v && g++ -v
   - cd src
   - ./build
