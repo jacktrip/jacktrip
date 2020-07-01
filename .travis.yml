@@ -6,7 +6,7 @@ language:
   - cpp
 
 branches:
-  - main
+  - master
   - travis
 
 env:
