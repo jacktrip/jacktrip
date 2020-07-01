@@ -1,0 +1,29 @@
+os:
+  - linux
+  - osx
+
+language: 
+  - cpp
+
+branches:
+  - main
+  - travis
+
+env:
+  global:
+  - PKGS_LINUX=qt5-default qttools5-dev-tools jack-audio-connection-kit-devel rtaudio
+  - PKGS_OSX=jack qt rt-audio
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; sudo apt-get install $PKGS_LINUX; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install $PKGS_OSX; fi
+
+script: 
+  - cd src
+  - ./build
+  
+after_success:
+  - echo "Success!"
+
+after_failure:
+  - echo "Something went wrong :("
