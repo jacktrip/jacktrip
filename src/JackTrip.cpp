@@ -79,7 +79,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
                    DataProtocol::packetHeaderTypeT PacketHeaderType,
                    underrunModeT UnderRunMode,
                    int receiver_bind_port, int sender_bind_port,
-                   int receiver_peer_port, int sender_peer_port) :
+                   int receiver_peer_port, int sender_peer_port, int tcp_peer_port) :
     mJackTripMode(JacktripMode),
     mDataProtocol(DataProtocolType),
     mPacketHeaderType(PacketHeaderType),
@@ -104,7 +104,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mSenderPeerPort(sender_peer_port),
     mSenderBindPort(sender_bind_port),
     mReceiverPeerPort(receiver_peer_port),
-    mTcpServerPort(4464),
+    mTcpServerPort(tcp_peer_port),
     mRedundancy(redundancy),
     mJackClientName("JackTrip"),
     mConnectionMode(JackTrip::NORMAL),
@@ -662,7 +662,7 @@ int JackTrip::clientPingToServerStart()
     // Connect Socket to Server and wait for response
     // ----------------------------------------------
     tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
-    if (gVerboseFlag) cout << "Connecting to TCP Server..." << endl;
+    if (gVerboseFlag) cout << "Connecting to TCP Server at " << mTcpServerPort << "..." << endl;
     if (!tcpClient.waitForConnected()) {
         std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
         //std::exit(1);
@@ -680,7 +680,7 @@ int JackTrip::clientPingToServerStart()
     while ( tcpClient.bytesToWrite() > 0 ) {
         tcpClient.waitForBytesWritten(-1);
     }
-    if (gVerboseFlag) cout << "Port sent to Server" << endl;
+    if (gVerboseFlag) cout << "Port " << mReceiverBindPort << " sent to Server" << endl;
 
     // Read the size of the package
     // ----------------------------

@@ -68,6 +68,7 @@ Settings::Settings() :
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
+    mServerUdpPortNum(NULL),
     mClientName(NULL),
     mUnderrrunZero(false),
     mLoopBack(false),
@@ -152,12 +153,15 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVh", longopts, NULL)) != -1 )
+                              "n:N:H:sc:SC:o:B:P:U:q:r:b:zlwjeJ:RTd:F:p:DvVh", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
             //-------------------------------------------------------
             mNumChans = atoi(optarg);
+            break;
+        case 'U': // UDP Bind Port
+            mServerUdpPortNum = atoi(optarg);
             break;
 #ifdef WAIR
         case 'w':
@@ -434,7 +438,7 @@ void Settings::startJackTrip()
 
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
-        UdpHubListener* udpmaster = new UdpHubListener;
+        UdpHubListener* udpmaster = new UdpHubListener(mBindPortNum,mServerUdpPortNum);
         udpmaster->setSettings(this);
 #ifdef WAIR // WAIR
         udpmaster->setWAIR(mWAIR);
@@ -478,7 +482,15 @@ void Settings::startJackTrip()
                          #ifdef WAIR // wair
                                  mNumNetRevChans,
                          #endif // endwhere
-                                 mBufferQueueLength, mRedundancy, mAudioBitResolution);
+                                 mBufferQueueLength, mRedundancy, mAudioBitResolution,
+                                 /*DataProtocol::packetHeaderTypeT PacketHeaderType = */DataProtocol::DEFAULT,
+                                 /*underrunModeT UnderRunMode = */ mUnderRunMode,
+                                 /* int receiver_bind_port = */ gDefaultPort,
+                                 /*int sender_bind_port = */ gDefaultPort,
+                                 /*int receiver_peer_port = */ gDefaultPort,
+                                 /* int sender_peer_port = */ gDefaultPort,
+                                 mPeerPortNum
+                                 );
 
         // Set connect or not default audio ports. Only work for jack
         mJackTrip->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);

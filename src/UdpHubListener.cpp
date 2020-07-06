@@ -53,9 +53,10 @@ using std::cout; using std::endl;
 
 
 //*******************************************************************************
-UdpHubListener::UdpHubListener(int server_port) :
+UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     //mJTWorker(NULL),
     mServerPort(server_port),
+    mServerUdpPort(server_udp_port),//final udp base port number
     mStopped(false),
     #ifdef WAIR // wair
     mWAIR(false),
@@ -86,7 +87,12 @@ UdpHubListener::UdpHubListener(int server_port) :
     // mBasePort = ( rand() % ( (65535 - gMaxThreads) - 49152 ) ) + 49152;
 
     // SoundWIRE ports open are UDP 61000-62000
-    mBasePort = 61000;
+    // (server_port - gDefaultPort) apply TCP offset to UDP too
+    if (mServerUdpPort != NULL){
+      mBasePort = mServerUdpPort;
+    } else {
+      mBasePort = 61000 + (server_port - gDefaultPort);
+    }
 
     mUnderRunMode = JackTrip::WAVETABLE;
     mBufferQueueLength = gDefaultQueueLength;
