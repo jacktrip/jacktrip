@@ -28,15 +28,17 @@ elif [[ $platform == 'macosx' ]]; then
 fi
 
 # Build
+mkdir -p ../builddir
+cd ../builddir
 if [[ $1 == 'nojack' ]]; then
     echo "Building without Jack"
-    $QCMD -spec $QSPEC -config nojack jacktrip.pro
+    $QCMD -spec $QSPEC -config nojack ../src/jacktrip.pro
     make clean
-    $QCMD -spec $QSPEC -config nojack jacktrip.pro
+    $QCMD -spec $QSPEC -config nojack ../src/jacktrip.pro
     make release
 else
-    $QCMD -spec $QSPEC jacktrip.pro
+    $QCMD -spec $QSPEC ../src/jacktrip.pro
     make clean
-    $QCMD -spec $QSPEC jacktrip.pro
+    $QCMD -spec $QSPEC ../src/jacktrip.pro
     make release
 fi
