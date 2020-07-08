@@ -10,6 +10,8 @@ dist: bionic
 
 branches:
   - master
+  - develop
+  - travis2
 
 env:
   global:
