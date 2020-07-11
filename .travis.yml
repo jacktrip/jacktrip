@@ -28,7 +28,7 @@ addons:
 
 before_script:
   # manually install brew packages as addon: homebrew is broken in the default osx image
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install $PKGS_OSX; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install $PKGS_OSX; fi
   # mac: workaround for homebrew qmake not being symlinked into $PATH
   # see https://stackoverflow.com/questions/48847505/why-cant-i-use-qmake-on-mac-after-installing-it
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/qt/bin:$PATH"; fi
