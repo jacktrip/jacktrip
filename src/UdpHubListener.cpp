@@ -129,7 +129,7 @@ void UdpHubListener::run()
     // ------------------------------
     QTcpServer TcpServer;
     if ( !TcpServer.listen(QHostAddress::Any, mServerPort) ) {
-        std::cerr << "TCP Socket Server ERROR: " << TcpServer.errorString().toStdString() <<  endl;
+        std::cerr << "TCP Socket Server ERROR on Port " << mServerPort << ": " << TcpServer.errorString().toStdString() <<  endl;
         std::exit(1);
     }
 
