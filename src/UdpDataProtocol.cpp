@@ -188,7 +188,7 @@ int UdpDataProtocol::bindSocket()
     WSADATA wsaData;
     int err;
 
-    wVersionRequested = MAKEWORD( 1, 1 );
+    wVersionRequested = MAKEWORD( 2, 2 );
 
     err = WSAStartup( wVersionRequested, &wsaData );
     if ( err != 0 ) {
@@ -200,8 +200,8 @@ int UdpDataProtocol::bindSocket()
 
     // Confirm that the Windows Sockets DLL supports 1.1. or higher
 
-    if ( LOBYTE( wsaData.wVersion ) != 1 ||
-         HIBYTE( wsaData.wVersion ) != 1 ) {
+    if ( LOBYTE( wsaData.wVersion ) != 2 ||
+         HIBYTE( wsaData.wVersion ) != 2 ) {
         // Tell the user that we couldn't find a useable
         // winsock.dll.
         WSACleanup( );
