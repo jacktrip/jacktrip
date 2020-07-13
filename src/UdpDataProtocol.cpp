@@ -576,8 +576,11 @@ void UdpDataProtocol::run()
         break; }
 
     case SENDER : {
+        /*
+         * version skew? testing without this line
         //Make sure we don't start sending packets too soon.
         QThread::msleep(100);
+        */
         //-----------------------------------------------------------------------------------
         while ( !mStopped )
         {
