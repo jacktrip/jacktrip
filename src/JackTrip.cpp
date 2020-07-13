@@ -157,7 +157,6 @@ void JackTrip::setupAudio(
                                                  mAudioBitResolution);
 
 #ifdef WAIRTOHUB // WAIR
-        qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
         if(mPeerAddress.toStdString()!="")
