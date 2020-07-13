@@ -86,12 +86,12 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     // The Dynamic and/or Private Ports are those from 49152 through 65535
     // mBasePort = ( rand() % ( (65535 - gMaxThreads) - 49152 ) ) + 49152;
 
-    // SoundWIRE ports open are UDP 61000-62000
+    // SoundWIRE ports open are UDP 61002-62000
     // (server_port - gDefaultPort) apply TCP offset to UDP too
     if (mServerUdpPort != NULL){
       mBasePort = mServerUdpPort;
     } else {
-      mBasePort = 61000 + (server_port - gDefaultPort);
+      mBasePort = 61002 + (server_port - gDefaultPort);
     }
 
     mUnderRunMode = JackTrip::WAVETABLE;
