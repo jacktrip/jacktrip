@@ -438,6 +438,7 @@ void Settings::startJackTrip()
 
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
+        if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
         UdpHubListener* udpmaster = new UdpHubListener(mBindPortNum,mServerUdpPortNum);
         udpmaster->setSettings(this);
 #ifdef WAIR // WAIR
