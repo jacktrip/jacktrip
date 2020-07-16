@@ -133,7 +133,7 @@ private:
     QThreadPool mThreadPool; ///< The Thread Pool
 
     int mServerPort; //< Server known port number
-    int mServerUdpPort; //< Server final udp port number
+    int mServerUdpPort; //< Server udp base port number
     int mBasePort;
     addressPortPair mActiveAddress[gMaxThreads]; ///< Active address pool addresses
     QHash<QString, uint16_t> mActiveAddressPortPair;
