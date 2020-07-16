@@ -204,14 +204,18 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mBindPortNum += atoi(optarg);
             mPeerPortNum += atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Bind Port: " << mBindPortNum << std::endl;
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Peer Port: " << mPeerPortNum << std::endl;
             break;
         case 'B': // Bind Port
             //-------------------------------------------------------
             mBindPortNum = atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Bind Port: " << mBindPortNum << std::endl;
             break;
         case 'P': // Peer Port
             //-------------------------------------------------------
             mPeerPortNum = atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Peer Port: " << mPeerPortNum << std::endl;
             break;
         case 'b':
             //-------------------------------------------------------
