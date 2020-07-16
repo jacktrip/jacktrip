@@ -486,10 +486,10 @@ void Settings::startJackTrip()
                                  mBufferQueueLength, mRedundancy, mAudioBitResolution,
                                  /*DataProtocol::packetHeaderTypeT PacketHeaderType = */DataProtocol::DEFAULT,
                                  /*underrunModeT UnderRunMode = */ mUnderRunMode,
-                                 /* int receiver_bind_port = */ gDefaultPort,
-                                 /*int sender_bind_port = */ gDefaultPort,
-                                 /*int receiver_peer_port = */ gDefaultPort,
-                                 /* int sender_peer_port = */ gDefaultPort,
+                                 /* int receiver_bind_port = */ mBindPortNum,
+                                 /*int sender_bind_port = */ mBindPortNum,
+                                 /*int receiver_peer_port = */ mPeerPortNum,
+                                 /* int sender_peer_port = */ mPeerPortNum,
                                  mPeerPortNum
                                  );
 
