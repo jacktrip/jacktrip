@@ -94,6 +94,8 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
       mBasePort = 61002 + (server_port - gDefaultPort);
     }
 
+    cout << "JackTrip HUB SERVER: UDP Base Port set to " << mBasePort << endl;
+
     mUnderRunMode = JackTrip::WAVETABLE;
     mBufferQueueLength = gDefaultQueueLength;
 }
@@ -187,6 +189,8 @@ void UdpHubListener::run()
             }
             // Assign server port and send it to Client
             server_udp_port = mBasePort+id;
+            cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: " << server_udp_port << endl;
+
             if ( sendUdpPort(clientConnection, server_udp_port) == 0 ) {
                 clientConnection->close();
                 delete clientConnection;

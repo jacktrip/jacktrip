@@ -707,7 +707,7 @@ int JackTrip::clientPingToServerStart()
     // --------------------
     tcpClient.close(); // Close the socket
     //cout << "TCP Socket Closed!" << endl;
-    if (gVerboseFlag) cout << "Connection Succesfull!" << endl;
+    if (gVerboseFlag) cout << "Connection Successful!" << endl;
 
     // Set with the received UDP port
     // ------------------------------
