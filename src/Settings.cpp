@@ -509,6 +509,10 @@ void Settings::startJackTrip()
             cout << "Setting buffers to zero when underrun..." << endl;
             cout << gPrintSeparator << std::endl;
             mJackTrip->setUnderRunMode(JackTrip::ZEROS);
+        } else {
+            cout << "Setting buffers to wavetable when underrun..." << endl;
+            cout << gPrintSeparator << std::endl;
+            mJackTrip->setUnderRunMode(JackTrip::WAVETABLE);
         }
 
         // Set peer address in server mode
