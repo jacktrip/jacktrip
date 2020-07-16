@@ -664,7 +664,7 @@ int JackTrip::clientPingToServerStart()
     tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
     if (gVerboseFlag) cout << "Connecting to TCP Server at " << mTcpServerPort << "..." << endl;
     if (!tcpClient.waitForConnected()) {
-        std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
+        std::cerr << "TCP Socket ERROR on mTcpServerPort " << mTcpServerPort << ": " << tcpClient.errorString().toStdString() <<  endl;
         //std::exit(1);
         return -1;
     }
