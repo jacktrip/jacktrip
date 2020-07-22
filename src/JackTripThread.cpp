@@ -60,12 +60,12 @@ void JackTripThread::run()
     jacktrip.appendProcessPlugin(&netks);
     //netks.play();
 
-
+/*
     //QThread::sleep(1);
     jacktrip.start();
     //netks.play();
     jacktrip.wait();
-
+*/
 
     cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
     //QThread::sleep(9999999);

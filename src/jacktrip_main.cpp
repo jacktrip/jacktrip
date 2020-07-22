@@ -55,6 +55,7 @@
 #endif
 #include "jacktrip_tests.cpp"
 #include "jacktrip_globals.h"
+#include <signal.h>
 
 
 void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/, const QString& msg)
@@ -62,11 +63,28 @@ void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/,
     std::cerr << msg.toStdString() << std::endl;
 }
 
+static int setupUnixSignalHandler(__sighandler_t handler)
+{
+    //Setup our SIGINT handler.
+    struct sigaction sigInt;
+    sigInt.sa_handler = handler;
+    sigemptyset(&sigInt.sa_mask);
+    sigInt.sa_flags = 0;
+    sigInt.sa_flags |= SA_RESTART;
+    
+    if (sigaction(SIGINT, &sigInt, 0)) {
+        return 1;
+    }
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
+    QScopedPointer<JackTrip> jackTrip;
+    QScopedPointer<UdpMasterListener> udpMaster;
 
     bool testing = false;
     if ( argc > 1 ) {
@@ -92,9 +110,31 @@ int main(int argc, char** argv)
         {
             // Get Settings from user
             // ----------------------
-            Settings* settings = new Settings;
-            settings->parseInput(argc, argv);
-            settings->startJackTrip();
+            Settings settings;
+            settings.parseInput(argc, argv);
+            
+            //Either start our hub server or our jacktrip process as appropriate.
+            if (settings.isHubServer()) {
+                udpMaster.reset(settings.getConfiguredHubServer());
+                if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
+                QObject::connect(udpMaster.data(), &UdpMasterListener::signalStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+                setupUnixSignalHandler(UdpMasterListener::sigIntHandler);
+                udpMaster->start();
+            } else {
+                jackTrip.reset(settings.getConfiguredJackTrip());
+                if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
+                QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+                setupUnixSignalHandler(JackTrip::sigIntHandler);
+    #ifdef WAIRTOMASTER // WAIR
+                jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
+    #else
+                jackTrip->startProcess();
+    #endif // endwhere
+            }
+        
+            if (gVerboseFlag) std::cout << "step 6" << std::endl;
+            if (gVerboseFlag) std::cout << "jmain before app->exec()" << std::endl;
+            
         }
         catch ( const std::exception & e )
         {
