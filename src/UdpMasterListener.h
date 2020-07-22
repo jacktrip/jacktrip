@@ -40,6 +40,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
 
 #include <QThread>
 #include <QThreadPool>
@@ -83,9 +84,8 @@ public:
     int releaseThread(int id);
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts) { m_connectDefaultAudioPorts = connectDefaultAudioPorts; }
-
-    void setSettings(Settings* s) {m_settings = s;}
-    Settings* getSettings() const {return m_settings;}
+    
+    static void sigIntHandler(int unused) { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
 
 private slots:
     void testReceive()
@@ -95,6 +95,7 @@ signals:
     void Listening();
     void ClientAddressSet();
     void signalRemoveThread(int id);
+    void signalStopped();
 
 
 private:
@@ -124,6 +125,8 @@ private:
     * is not in the pool yet, returns -1.
     */
     int getPoolID(QString address, uint16_t port);
+    
+    void stopAllThreads();
 
     //QUdpSocket mUdpMasterSocket; ///< The UDP socket
     //QHostAddress mPeerAddress; ///< The Peer Address
@@ -139,14 +142,17 @@ private:
 
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
+    static bool sSigInt;
     int mTotalRunningThreads; ///< Number of Threads running in the pool
     QMutex mMutex;
     JackTrip::underrunModeT mUnderRunMode;
     int mBufferQueueLength;
 
     bool m_connectDefaultAudioPorts;
-    Settings* m_settings;
 
+    int mIOStatTimeout;
+    QSharedPointer<std::ofstream> mIOStatStream;
+    
 #ifdef WAIR // wair
     bool mWAIR;
     void connectMesh(bool spawn);
@@ -163,6 +169,9 @@ public :
 
     void setUnderRunMode(JackTrip::underrunModeT UnderRunMode) { mUnderRunMode = UnderRunMode; }
     void setBufferQueueLength(int BufferQueueLength) { mBufferQueueLength = BufferQueueLength; }
+    
+    void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
+    void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
 };
 
 

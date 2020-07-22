@@ -64,7 +64,7 @@
  * Classes that uses JackTrip methods need to register with it.
  */
 
-class JackTrip : public QThread
+class JackTrip : public QObject
 {
     Q_OBJECT;
 
@@ -111,7 +111,8 @@ public:
         CLIENTECHO,  ///< Client Echo (client self-to-self)
         CLIENTFOFI,  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
         RESERVEDMATRIX,  ///< Reserved for custom patch matrix (for TUB ensemble)
-        FULLMIX  ///< Client Fan Out to Clients and Fan In from Clients (including self-to-self)
+        FULLMIX,  ///< Client Fan Out to Clients and Fan In from Clients (including self-to-self)
+        NOAUTO  ///< No automatic patching
     };
     //---------------------------------------------------------
 
@@ -133,9 +134,9 @@ public:
              int BufferQueueLength = gDefaultQueueLength,
              unsigned int redundancy = gDefaultRedundancy,
              AudioInterface::audioBitResolutionT AudioBitResolution =
-            AudioInterface::BIT16,
+             AudioInterface::BIT16,
              DataProtocol::packetHeaderTypeT PacketHeaderType =
-            DataProtocol::DEFAULT,
+             DataProtocol::DEFAULT,
              underrunModeT UnderRunMode = WAVETABLE,
              int receiver_bind_port = gDefaultPort,
              int sender_bind_port = gDefaultPort,
@@ -144,11 +145,14 @@ public:
 
     /// \brief The class destructor
     virtual ~JackTrip();
+    
+    static void sigIntHandler(int unused) { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
+    static bool sSigInt;
 
     /// \brief Starting point for the thread
-    virtual void run() {
+    /*virtual void run() {
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->run" << std::endl;
-    }
+    }*/
 
     /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
     virtual void setPeerAddress(const char* PeerHostOrIP);
@@ -231,6 +235,9 @@ public:
     /// \brief Set the number of audio channels
     virtual void setNumChannels(int num_chans)
     { mNumChans = num_chans; }
+    
+    virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
+    virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
 
     /// Set to connect or not default audio ports (only implemented in Jack)
     virtual void setConnectDefaultAudioPorts(bool connect)
@@ -392,13 +399,10 @@ public:
     void printTextTest() {std::cout << "=== JackTrip PRINT ===" << std::endl;}
     void printTextTest2() {std::cout << "=== JackTrip PRINT2 ===" << std::endl;}
 
-    void startIOStatTimer(int timeout_sec, const std::ostream& log_stream);
-
 public slots:
     /// \brief Slot to stop all the processes and threads
     virtual void slotStopProcesses()
     {
-        std::cout << "Stopping JackTrip..." << std::endl;
         mStopped = true;
         this->stop();
     }
@@ -510,8 +514,11 @@ private:
     volatile bool mReceivedConnection; ///< Bool of received connection from peer
     volatile bool mTcpConnectionError;
     volatile bool mStopped;
+    volatile bool mHasShutdown;
 
     bool mConnectDefaultAudioPorts; ///< Connect or not default audio ports
+    QSharedPointer<std::ofstream> mIOStatStream;
+    int mIOStatTimeout;
     std::ostream mIOStatLogStream;
 };
 

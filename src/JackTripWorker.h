@@ -96,8 +96,10 @@ public:
     {
         return mID;
     }
-
-
+    
+    void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
+    void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
+    
 private slots:
     void slotTest()
     { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
@@ -105,7 +107,6 @@ private slots:
 
 signals:
     void signalRemoveThread();
-
 
 private:
     int setJackTripFromClientHeader(JackTrip& jacktrip);
@@ -126,6 +127,9 @@ private:
     QMutex mMutex; ///< Mutex to protect mSpawning
     JackTrip::underrunModeT mUnderRunMode;
     int mBufferQueueLength;
+    
+    int mIOStatTimeout;
+    QSharedPointer<std::ofstream> mIOStatStream;
 
     int mID; ///< ID thread number
     int mNumChans; ///< Number of Channels

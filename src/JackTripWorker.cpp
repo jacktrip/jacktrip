@@ -45,7 +45,7 @@
 #include "JackTripWorker.h"
 #include "JackTrip.h"
 #include "UdpMasterListener.h"
-#include "NetKS.h"
+//#include "NetKS.h"
 #include "LoopBack.h"
 #include "Settings.h"
 #ifdef WAIR // wair
@@ -65,7 +65,8 @@ JackTripWorker::JackTripWorker(UdpMasterListener* udpmasterlistener, int BufferQ
     mUnderRunMode(UnderRunMode),
     mSpawning(false),
     mID(0),
-    mNumChans(1)
+    mNumChans(1),
+    mIOStatTimeout(0)
   #ifdef WAIR // wair
   ,mNumNetRevChans(0),
     mWAIR(false)
@@ -128,7 +129,6 @@ void JackTripWorker::run()
         // Create and setup JackTrip Object
         //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
         if (gVerboseFlag) cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
-        Settings* settings = mUdpMasterListener->getSettings();
 
 #ifdef WAIR // WAIR
         // forces    BufferQueueLength to 2
@@ -184,6 +184,10 @@ void JackTripWorker::run()
 
         // Set our underrun mode
         jacktrip.setUnderRunMode(mUnderRunMode);
+        if (mIOStatTimeout > 0) {
+            jacktrip.setIOStatTimeout(mIOStatTimeout);
+            jacktrip.setIOStatStream(mIOStatStream);
+        }
 
         // Connect signals and slots
         // -------------------------
@@ -222,9 +226,6 @@ void JackTripWorker::run()
                     mID
             #endif // endwhere
                     );
-        if (0 != settings->getIOStatTimeout()) {
-            jacktrip.startIOStatTimer(settings->getIOStatTimeout(), settings->getIOStatStream());
-        }
         // if (gVerboseFlag) cout << "---> JackTripWorker: start..." << endl;
         // jacktrip.start(); // ########### JamTest Only #################
 
@@ -233,11 +234,11 @@ void JackTripWorker::run()
 
         event_loop.exec(); // Excecution will block here until exit() the QEventLoop
         //--------------------------------------------------------------------------
-
+        
         { QMutexLocker locker(&mMutex); mSpawning = true; }
 
         // wait for jacktrip to be done before exiting the Worker Thread
-        jacktrip.wait();
+        //jacktrip.wait();
 
     }
     catch ( const std::exception & e )

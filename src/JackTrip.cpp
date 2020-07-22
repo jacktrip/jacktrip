@@ -66,6 +66,8 @@ void sigint_handler(int sig)
 }
 #endif
 
+bool JackTrip::sSigInt = false;
+
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode,
                    dataProtocolT DataProtocolType,
@@ -111,7 +113,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mReceivedConnection(false),
     mTcpConnectionError(false),
     mStopped(false),
+    mHasShutdown(false),
     mConnectDefaultAudioPorts(true),
+    mIOStatTimeout(0),
     mIOStatLogStream(std::cout.rdbuf())
 {
     createHeader(mPacketHeaderType);
@@ -121,7 +125,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
 //*******************************************************************************
 JackTrip::~JackTrip()
 {
-    wait();
+    //wait();
     delete mDataProtocolSender;
     delete mDataProtocolReceiver;
     delete mAudioInterface;
@@ -160,7 +164,7 @@ void JackTrip::setupAudio(
         qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
-	if(mPeerAddress.toStdString()!="" && (mJackClientName == gJackDefaultClientName || mJackTripMode == SERVERPINGSERVER)) {
+        if(mPeerAddress.toStdString()!="" && (mJackClientName == gJackDefaultClientName || mJackTripMode == SERVERPINGSERVER)) {
             mJackClientName = QString(mPeerAddress).replace(":", ".").toLatin1().constData();
         }
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
@@ -366,6 +370,8 @@ void JackTrip::startProcess(
                      Qt::QueuedConnection);
     QObject::connect(this, SIGNAL(signalUdpTimeOut()),
                      this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    QObject::connect(mDataProtocolSender, &DataProtocol::signalCeaseTransmission,
+                     this, &JackTrip::slotStopProcesses, Qt::QueuedConnection);
 
     //QObject::connect(mDataProtocolSender, SIGNAL(signalError(const char*)),
     //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
@@ -439,15 +445,17 @@ void JackTrip::startProcess(
         mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
     }
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
-}
-
-//*******************************************************************************
-void JackTrip::startIOStatTimer(int timeout_sec, const std::ostream& log_stream)
-{
-    mIOStatLogStream.rdbuf(log_stream.rdbuf());
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
-    timer->start(timeout_sec*1000);
+    
+    //Start our IO stat timer
+    if (mIOStatTimeout > 0) {
+        cout << "STATS" << mIOStatTimeout << endl;
+        if (!mIOStatStream.isNull()) {
+            mIOStatLogStream.rdbuf(((std::ostream *)mIOStatStream.data())->rdbuf());
+        }
+        QTimer *timer = new QTimer(this);
+        connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
+        timer->start(mIOStatTimeout*1000);
+    }
 }
 
 //*******************************************************************************
@@ -493,6 +501,13 @@ void JackTrip::onStatTimer()
 //*******************************************************************************
 void JackTrip::stop()
 {
+    //Make sure we're only run once
+    if (mHasShutdown) {
+        return;
+    }
+    mHasShutdown = true;
+    std::cout << "Stopping JackTrip..." << std::endl;
+    
     // Stop The Sender
     mDataProtocolSender->stop();
     mDataProtocolSender->wait();
@@ -567,7 +582,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
     int elapsedTime = 0;
     if (timeout) {
         while ( (!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout) ) {
-            if (mStopped == true) { emit signalUdpTimeOut(); UdpSockTemp.close(); return -1; }
+            if (mStopped == true || sSigInt == true) { emit signalUdpTimeOut(); UdpSockTemp.close(); return -1; }
             QThread::msleep(sleepTime);
             elapsedTime += sleepTime;
         }
@@ -580,7 +595,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
         if (gVerboseFlag) std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()" << std::endl;
         cout << "Waiting for Connection From a Client..." << endl;
         while ( !UdpSockTemp.hasPendingDatagrams() ) {
-            if (mStopped == true) { emit signalUdpTimeOut(); return -1; }
+            if (mStopped == true || sSigInt == true) { emit signalUdpTimeOut(); return -1; }
             if (gVerboseFlag) std::cout << sleepTime << "ms  " << std::flush;
             QThread::msleep(sleepTime);
         }

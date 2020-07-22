@@ -184,7 +184,7 @@ signals:
 
     void signalError(const char* error_message);
     void signalReceivedConnectionFromPeer();
-
+    void signalCeaseTransmission();
 
 protected:
 
