@@ -44,6 +44,8 @@
 #include <QObject>
 #include <QString>
 #include <QUdpSocket>
+#include <QTcpSocket>
+#include <QTimer>
 
 #include "DataProtocol.h"
 #include "AudioInterface.h"
@@ -169,9 +171,10 @@ public:
             int ID
         #endif // endwhere
             );
+    virtual void completeConnection();
 
     /// \brief Stop the processing threads
-    virtual void stop();
+    virtual void stop(QString errorMessage = "");
 
     /// \brief Wait for all the threads to finish. This functions is used when JackTrip is
     /// run as a thread
@@ -403,7 +406,6 @@ public slots:
     /// \brief Slot to stop all the processes and threads
     virtual void slotStopProcesses()
     {
-        mStopped = true;
         this->stop();
     }
 
@@ -425,17 +427,22 @@ public slots:
     void slotReceivedConnectionFromPeer()
     { mReceivedConnection = true; }
     void onStatTimer();
-
+    
+private slots:
+    void receivedConnectionTCP();
+    void receivedDataTCP();
+    void receivedDataUDP();
+    void udpTimerTick();
+    void tcpTimerTick();
 
 signals:
-
     void signalUdpTimeOut();
     /// \brief Signal emitted when all the processes and threads are stopped
     void signalProcessesStopped();
     /// \brief Signal emitted when no UDP Packets have been received for a while
     void signalNoUdpPacketsForSeconds();
     void signalTcpClientConnected();
-
+    void signalError(const QString &errorMessage);
 
 public:
 
@@ -483,6 +490,13 @@ private:
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
+    
+    QTimer mTimeoutTimer;
+    int mSleepTime;
+    int mElapsedTime;
+    int mEndTime;
+    QTcpSocket mTcpClient;
+    QUdpSocket mUdpSockTemp;
 
     /// Pointer to Abstract Type DataProtocol that sends packets
     DataProtocol* mDataProtocolSender;

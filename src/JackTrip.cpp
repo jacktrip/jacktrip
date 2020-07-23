@@ -51,7 +51,6 @@
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QThread>
-#include <QTcpSocket>
 #include <QTimer>
 #include <QDateTime>
 
@@ -116,7 +115,13 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mHasShutdown(false),
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0),
-    mIOStatLogStream(std::cout.rdbuf())
+    mIOStatLogStream(std::cout.rdbuf()),
+    mTimeoutTimer(this),
+    mSleepTime(100),
+    mElapsedTime(0),
+    mEndTime(0),
+    mUdpSockTemp(this),
+    mTcpClient(this)
 {
     createHeader(mPacketHeaderType);
 }
@@ -368,8 +373,8 @@ void JackTrip::startProcess(
     QObject::connect(mDataProtocolReceiver, SIGNAL(signalReceivedConnectionFromPeer()),
                      this, SLOT(slotReceivedConnectionFromPeer()),
                      Qt::QueuedConnection);
-    QObject::connect(this, SIGNAL(signalUdpTimeOut()),
-                     this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    //QObject::connect(this, SIGNAL(signalUdpTimeOut()),
+    //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
     QObject::connect(mDataProtocolSender, &DataProtocol::signalCeaseTransmission,
                      this, &JackTrip::slotStopProcesses, Qt::QueuedConnection);
 
@@ -396,8 +401,7 @@ void JackTrip::startProcess(
         if (gVerboseFlag) std::cout << "step 2C client only" << std::endl;
         if (gVerboseFlag) std::cout << "  JackTrip:startProcess case CLIENTTOPINGSERVER before clientPingToServerStart" << std::endl;
         if ( clientPingToServerStart() == -1 ) { // if error on server start (-1) we return inmediatly
-            mTcpConnectionError = true;
-            slotStopProcesses();
+            stop("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
             return;
         }
         break;
@@ -405,15 +409,18 @@ void JackTrip::startProcess(
         if (gVerboseFlag) std::cout << "step 2S server only (same as 2s)" << std::endl;
         if (gVerboseFlag) std::cout << "  JackTrip:startProcess case SERVERPINGSERVER before serverStart" << std::endl;
         if ( serverStart(true) == -1 ) { // if error on server start (-1) we return inmediatly
-            slotStopProcesses();
+            stop();
             return;
         }
         break;
     default:
-        throw std::invalid_argument("Jacktrip Mode  undefined");
+        throw std::invalid_argument("Jacktrip Mode undefined");
         break;
     }
+}
 
+void JackTrip::completeConnection()
+{
     // Have the threads share a single socket that operates at full duplex.
 #if defined (__WIN_32__)
     SOCKET sock_fd = INVALID_SOCKET;
@@ -498,120 +505,79 @@ void JackTrip::onStatTimer()
       << endl;
 }
 
-//*******************************************************************************
-void JackTrip::stop()
+void JackTrip::receivedConnectionTCP()
 {
-    //Make sure we're only run once
-    if (mHasShutdown) {
+    mTimeoutTimer.stop();
+    if (gVerboseFlag) cout << "TCP Socket Connected to Server!" << endl;
+    emit signalTcpClientConnected();
+
+    // Send Client Port Number to Server
+    // ---------------------------------
+    char port_buf[sizeof(mReceiverBindPort)];
+    std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
+
+    mTcpClient.write(port_buf, sizeof(mReceiverBindPort));
+    while ( mTcpClient.bytesToWrite() > 0 ) {
+        mTcpClient.waitForBytesWritten(-1);
+    }
+    if (gVerboseFlag) cout << "Port sent to Server" << endl;
+    //Continued in receivedDataTCP slot
+}
+
+void JackTrip::receivedDataTCP()
+{
+    if (mTcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
         return;
     }
-    mHasShutdown = true;
-    std::cout << "Stopping JackTrip..." << std::endl;
     
-    // Stop The Sender
-    mDataProtocolSender->stop();
-    mDataProtocolSender->wait();
+    // Read the size of the package
+    // ----------------------------
+    if (gVerboseFlag) cout << "Reading UDP port from Server..." << endl;
+    if (gVerboseFlag) cout << "Ready To Read From Socket!" << endl;
 
-    // Stop The Receiver
-    mDataProtocolReceiver->stop();
-    mDataProtocolReceiver->wait();
+    // Read UDP Port Number from Server
+    // --------------------------------
+    uint32_t udp_port;
+    int size = sizeof(udp_port);
+    char port_buf[sizeof(mReceiverBindPort)];
+    //char port_buf[size];
+    mTcpClient.read(port_buf, size);
+    std::memcpy(&udp_port, port_buf, size);
+    //cout << "Received UDP Port Number: " << udp_port << endl;
 
-    // Stop the audio processes
-    //mAudioInterface->stopProcess();
-    closeAudio();
+    // Close the TCP Socket
+    // --------------------
+    mTcpClient.close(); // Close the socket
+    //cout << "TCP Socket Closed!" << endl;
+    if (gVerboseFlag) cout << "Connection Succesfull!" << endl;
 
-    cout << "JackTrip Processes STOPPED!" << endl;
+    // Set with the received UDP port
+    // ------------------------------
+    setPeerPorts(udp_port);
+    mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+    mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+    mDataProtocolSender->setPeerPort(udp_port);
+    mDataProtocolReceiver->setPeerPort(udp_port);
+    cout << "Server Address set to: " << mPeerAddress.toStdString() << " Port: " << udp_port << std::endl;
     cout << gPrintSeparator << endl;
-
-    // Emit the jack stopped signal
-    emit signalProcessesStopped();
+    completeConnection();
 }
 
-
-//*******************************************************************************
-void JackTrip::waitThreads()
+void JackTrip::receivedDataUDP()
 {
-    mDataProtocolSender->wait();
-    mDataProtocolReceiver->wait();
-}
-
-
-//*******************************************************************************
-void JackTrip::clientStart()
-{
-    // For the Client mode, the peer (or server) address has to be specified by the user
-    if ( mPeerAddress.isEmpty() ) {
-        throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
-    }
-    else {
-        mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
-        mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
-        cout << "Peer Address set to: " << mPeerAddress.toStdString() << std::endl;
-        cout << gPrintSeparator << endl;
-    }
-}
-
-
-//*******************************************************************************
-int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
-{
-    // Set the peer address
-    if ( !mPeerAddress.isEmpty() ) {
-        if (gVerboseFlag) std::cout << "WARNING: SERVER mode: Peer Address was set but will be deleted." << endl;
-        //throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
-        mPeerAddress.clear();
-        //return;
-    }
-
-    // Get the client address when it connects
+    //Stop our timer.
+    mTimeoutTimer.stop();
+    
     QHostAddress peerHostAddress;
     uint16_t peer_port;
-    if (gVerboseFlag) std::cout << "JackTrip:serverStart before QUdpSocket UdpSockTemp" << std::endl;
-    QUdpSocket UdpSockTemp;// Create socket to wait for client
-
-    if (gVerboseFlag) std::cout << "JackTrip:serverStart before UdpSockTemp.bind(Any)" << std::endl;
-    // Bind the socket
-    if ( !UdpSockTemp.bind(QHostAddress::Any, mReceiverBindPort,
-                           QUdpSocket::DefaultForPlatform) )
-    {
-        std::cerr << "in JackTrip: Could not bind UDP socket. It may be already binded." << endl;
-        throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
-    }
-    // Listen to client
-    int sleepTime = 100; // ms
-    int elapsedTime = 0;
-    if (timeout) {
-        while ( (!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout) ) {
-            if (mStopped == true || sSigInt == true) { emit signalUdpTimeOut(); UdpSockTemp.close(); return -1; }
-            QThread::msleep(sleepTime);
-            elapsedTime += sleepTime;
-        }
-        if (!UdpSockTemp.hasPendingDatagrams()) {
-            emit signalUdpTimeOut();
-            cout << "JackTrip Server Timed Out!" << endl;
-            return -1;
-        }
-    } else {
-        if (gVerboseFlag) std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()" << std::endl;
-        cout << "Waiting for Connection From a Client..." << endl;
-        while ( !UdpSockTemp.hasPendingDatagrams() ) {
-            if (mStopped == true || sSigInt == true) { emit signalUdpTimeOut(); return -1; }
-            if (gVerboseFlag) std::cout << sleepTime << "ms  " << std::flush;
-            QThread::msleep(sleepTime);
-        }
-    }
-    //    char buf[1];
-    //    // set client address
-    //    UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &peer_port);
-    //    UdpSockTemp.close(); // close the socket
-
+    
     // IPv6 addition from fyfe
     // Get the datagram size to avoid problems with IPv6
-    qint64 datagramSize = UdpSockTemp.pendingDatagramSize();
+    qint64 datagramSize = mUdpSockTemp.pendingDatagramSize();
     char buf[datagramSize];
     // set client address
-    UdpSockTemp.readDatagram(buf, datagramSize, &peerHostAddress, &peer_port);
-    UdpSockTemp.close(); // close the socket
+    mUdpSockTemp.readDatagram(buf, datagramSize, &peerHostAddress, &peer_port);
+    mUdpSockTemp.close(); // close the socket
 
     // Check for mapped IPv4->IPv6 addresses that look like ::ffff:x.x.x.x
     if (peerHostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
@@ -645,7 +611,147 @@ int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
     mDataProtocolSender->setPeerPort(peer_port);
     mDataProtocolReceiver->setPeerPort(peer_port);
     setPeerPorts(peer_port);
+    completeConnection();
+}
+
+void JackTrip::udpTimerTick()
+{
+    if (mStopped || sSigInt) {
+        //Stop everything.
+        mUdpSockTemp.close();
+        mTimeoutTimer.stop();
+        stop();
+    }
+    
+    if (gVerboseFlag) std::cout << mSleepTime << "ms  " << std::flush;
+    mElapsedTime += mSleepTime;
+    if (mEndTime > 0 && mElapsedTime >= mEndTime) {
+        mUdpSockTemp.close();
+        mTimeoutTimer.stop();
+        cout << "JackTrip Server Timed Out!" << endl;
+        stop("JackTrip Server Timed Out");
+    }
+}
+
+void JackTrip::tcpTimerTick()
+{
+    if (mStopped || sSigInt) {
+        //Stop everything.
+        mTcpClient.close();
+        mTimeoutTimer.stop();
+        stop();
+    }
+    
+    mElapsedTime += mSleepTime;
+    if (mEndTime > 0 && mElapsedTime >= mEndTime) {
+        mTcpClient.close();
+        mTimeoutTimer.stop();
+        cout << "JackTrip Server Timed Out!" << endl;
+        stop("Initial TCP Connection Timed Out");
+    }
+    
+}
+
+//*******************************************************************************
+void JackTrip::stop(QString errorMessage)
+{
+    mStopped = true;
+    //Make sure we're only run once
+    if (mHasShutdown) {
+        return;
+    }
+    mHasShutdown = true;
+    std::cout << "Stopping JackTrip..." << std::endl;
+    
+    // Stop The Sender
+    mDataProtocolSender->stop();
+    mDataProtocolSender->wait();
+
+    // Stop The Receiver
+    mDataProtocolReceiver->stop();
+    mDataProtocolReceiver->wait();
+
+    // Stop the audio processes
+    //mAudioInterface->stopProcess();
+    closeAudio();
+
+    cout << "JackTrip Processes STOPPED!" << endl;
+    cout << gPrintSeparator << endl;
+
+    // Emit the jack stopped signal
+    if (errorMessage.isEmpty()) {
+        emit signalProcessesStopped();
+    } else {
+        emit signalError(errorMessage);
+    }
+}
+
+
+//*******************************************************************************
+void JackTrip::waitThreads()
+{
+    mDataProtocolSender->wait();
+    mDataProtocolReceiver->wait();
+}
+
+
+//*******************************************************************************
+void JackTrip::clientStart()
+{
+    // For the Client mode, the peer (or server) address has to be specified by the user
+    if ( mPeerAddress.isEmpty() ) {
+        throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
+    }
+    else {
+        mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
+        mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
+        cout << "Peer Address set to: " << mPeerAddress.toStdString() << std::endl;
+        cout << gPrintSeparator << endl;
+        completeConnection();
+    }
+}
+
+
+//*******************************************************************************
+int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
+{
+    // Set the peer address
+    if ( !mPeerAddress.isEmpty() ) {
+        if (gVerboseFlag) std::cout << "WARNING: SERVER mode: Peer Address was set but will be deleted." << endl;
+        //throw std::invalid_argument("Peer Address has to be set if you run in CLIENT mode");
+        mPeerAddress.clear();
+        //return;
+    }
+
+    // Get the client address when it connects
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before mUdpSockTemp.bind(Any)" << std::endl;
+    // Bind the socket
+    if ( !mUdpSockTemp.bind(QHostAddress::Any, mReceiverBindPort,
+                           QUdpSocket::DefaultForPlatform) )
+    {
+        std::cerr << "in JackTrip: Could not bind UDP socket. It may be already binded." << endl;
+        throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
+    }
+    connect(&mUdpSockTemp, &QUdpSocket::readyRead, this, &JackTrip::receivedDataUDP);
+    
+    // Start timer and then wait for a signal to read datagrams.
+    mElapsedTime = 0;
+    if (timeout) {
+        mEndTime = udpTimeout;
+    }
+    mTimeoutTimer.setInterval(mSleepTime);
+    connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::udpTimerTick);
+    mTimeoutTimer.start();
+    
+    if (gVerboseFlag) std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()" << std::endl;
+    cout << "Waiting for Connection From a Client..." << endl;
     return 0;
+    // Continued in the receivedDataUDP slot.
+
+    //    char buf[1];
+    //    // set client address
+    //    UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &peer_port);
+    //    UdpSockTemp.close(); // close the socket
 }
 
 
@@ -665,7 +771,6 @@ int JackTrip::clientPingToServerStart()
 
     // Create Socket Objects
     // --------------------
-    QTcpSocket tcpClient;
     QHostAddress serverHostAddress;
     if (!serverHostAddress.setAddress(mPeerAddress)) {
         QHostInfo info = QHostInfo::fromName(mPeerAddress);
@@ -677,64 +782,18 @@ int JackTrip::clientPingToServerStart()
 
     // Connect Socket to Server and wait for response
     // ----------------------------------------------
-    tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    connect(&mTcpClient, &QTcpSocket::readyRead, this, &JackTrip::receivedDataTCP);
+    connect(&mTcpClient, &QTcpSocket::connected, this, &JackTrip::receivedConnectionTCP);
+    mElapsedTime = 0;
+    mEndTime = 5000; //Timeout after 5 seconds.
+    mTimeoutTimer.setInterval(mSleepTime);
+    connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
+    mTimeoutTimer.start();
+    mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    
     if (gVerboseFlag) cout << "Connecting to TCP Server..." << endl;
-    if (!tcpClient.waitForConnected()) {
-        std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
-        //std::exit(1);
-        return -1;
-    }
-    if (gVerboseFlag) cout << "TCP Socket Connected to Server!" << endl;
-    emit signalTcpClientConnected();
-
-    // Send Client Port Number to Server
-    // ---------------------------------
-    char port_buf[sizeof(mReceiverBindPort)];
-    std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
-
-    tcpClient.write(port_buf, sizeof(mReceiverBindPort));
-    while ( tcpClient.bytesToWrite() > 0 ) {
-        tcpClient.waitForBytesWritten(-1);
-    }
-    if (gVerboseFlag) cout << "Port sent to Server" << endl;
-
-    // Read the size of the package
-    // ----------------------------
-    if (gVerboseFlag) cout << "Reading UDP port from Server..." << endl;
-    while (tcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
-        if (!tcpClient.waitForReadyRead()) {
-            std::cerr << "TCP Socket ERROR: " << tcpClient.errorString().toStdString() <<  endl;
-            //std::exit(1);
-            return -1;
-        }
-    }
-    if (gVerboseFlag) cout << "Ready To Read From Socket!" << endl;
-
-    // Read UDP Port Number from Server
-    // --------------------------------
-    uint32_t udp_port;
-    int size = sizeof(udp_port);
-    //char port_buf[size];
-    tcpClient.read(port_buf, size);
-    std::memcpy(&udp_port, port_buf, size);
-    //cout << "Received UDP Port Number: " << udp_port << endl;
-
-    // Close the TCP Socket
-    // --------------------
-    tcpClient.close(); // Close the socket
-    //cout << "TCP Socket Closed!" << endl;
-    if (gVerboseFlag) cout << "Connection Succesfull!" << endl;
-
-    // Set with the received UDP port
-    // ------------------------------
-    setPeerPorts(udp_port);
-    mDataProtocolReceiver->setPeerAddress( mPeerAddress.toLatin1().data() );
-    mDataProtocolSender->setPeerAddress( mPeerAddress.toLatin1().data() );
-    mDataProtocolSender->setPeerPort(udp_port);
-    mDataProtocolReceiver->setPeerPort(udp_port);
-    cout << "Server Address set to: " << mPeerAddress.toStdString() << " Port: " << udp_port << std::endl;
-    cout << gPrintSeparator << endl;
     return 0;
+    // Continued in the receivedConnectionTCP slot.
 
     /*
   else {

@@ -122,14 +122,16 @@ void UdpMasterListener::run()
     // ------------------------------
     QTcpServer TcpServer;
     if ( !TcpServer.listen(QHostAddress::Any, mServerPort) ) {
-        std::cerr << "TCP Socket Server ERROR: " << TcpServer.errorString().toStdString() <<  endl;
-        std::exit(1);
+        QString error_message = QString("TCP Socket Server ERROR: ").append(TcpServer.errorString());
+        std::cerr << error_message.toStdString() << endl;
+        emit signalError(error_message);
+        return;
     }
 
     const int tcpTimeout = 5*1000;
 
     cout << "JackTrip HUB SERVER: TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
-    while ( !mStopped && !sSigInt)
+    while (!mStopped && !sSigInt)
     {
         cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
         cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
@@ -190,7 +192,7 @@ void UdpMasterListener::run()
                 releaseThread(id);
                 break;
             }
-
+    std::cout << "Blah" << std::endl;
             // Close and Delete the socket
             // ---------------------------
             clientConnection->close();
