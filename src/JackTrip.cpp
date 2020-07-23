@@ -171,8 +171,11 @@ void JackTrip::setupAudio(
 
         if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->setup" << std::endl;
         mAudioInterface->setup();
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->getSampleRate" << std::endl;
         mSampleRate = mAudioInterface->getSampleRate();
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->getDeviceID" << std::endl;
         mDeviceID = mAudioInterface->getDeviceID();
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples" << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif //__NON_JACK__
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
@@ -662,9 +665,9 @@ int JackTrip::clientPingToServerStart()
     // Connect Socket to Server and wait for response
     // ----------------------------------------------
     tcpClient.connectToHost(serverHostAddress, mTcpServerPort);
-    if (gVerboseFlag) cout << "Connecting to TCP Server at " << mTcpServerPort << "..." << endl;
+    if (gVerboseFlag) cout << "Connecting to TCP Server at " <<  serverHostAddress.toString().toLatin1().constData() << " port " << mTcpServerPort << "..." << endl;
     if (!tcpClient.waitForConnected()) {
-        std::cerr << "TCP Socket ERROR on mTcpServerPort " << mTcpServerPort << ": " << tcpClient.errorString().toStdString() <<  endl;
+        std::cerr << "TCP Socket ERROR at " << mTcpServerPort << ": " << tcpClient.errorString().toStdString() <<  endl;
         //std::exit(1);
         return -1;
     }
