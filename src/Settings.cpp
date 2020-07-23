@@ -126,6 +126,7 @@ void Settings::parseInput(int argc, char** argv)
     { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
     { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
     { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
+    { "udpbaseport", required_argument, NULL, 'U' }, // Server udp base port (defaults to 61000)
     { "queue", required_argument, NULL, 'q' }, // Queue Length
     { "redundancy", required_argument, NULL, 'r' }, // Redundancy
     { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
@@ -409,6 +410,7 @@ void Settings::printUsage()
     cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
     cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
     cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
+    cout << " --udpbaseport                            Set only the server udp base port number (default: 61000)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4)      Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
