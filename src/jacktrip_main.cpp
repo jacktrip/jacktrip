@@ -63,7 +63,7 @@ void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/,
     std::cerr << msg.toStdString() << std::endl;
 }
 
-static int setupUnixSignalHandler(__sighandler_t handler)
+static int setupUnixSignalHandler(void (*handler)(int))
 {
     //Setup our SIGINT handler.
     struct sigaction sigInt;
