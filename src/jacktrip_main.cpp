@@ -118,12 +118,14 @@ int main(int argc, char** argv)
                 udpMaster.reset(settings.getConfiguredHubServer());
                 if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
                 QObject::connect(udpMaster.data(), &UdpMasterListener::signalStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+                QObject::connect(udpMaster.data(), &UdpMasterListener::signalError, &app, &QCoreApplication::quit, Qt::QueuedConnection);
                 setupUnixSignalHandler(UdpMasterListener::sigIntHandler);
                 udpMaster->start();
             } else {
                 jackTrip.reset(settings.getConfiguredJackTrip());
                 if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
                 QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+                QObject::connect(jackTrip.data(), &JackTrip::signalError, &app, &QCoreApplication::quit, Qt::QueuedConnection);
                 setupUnixSignalHandler(JackTrip::sigIntHandler);
     #ifdef WAIRTOMASTER // WAIR
                 jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
