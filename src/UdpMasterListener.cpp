@@ -192,7 +192,7 @@ void UdpMasterListener::run()
                 releaseThread(id);
                 break;
             }
-    std::cout << "Blah" << std::endl;
+
             // Close and Delete the socket
             // ---------------------------
             clientConnection->close();
