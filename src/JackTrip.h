@@ -57,7 +57,7 @@
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
-#include <signal.h>
+//#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
  * to a listening server) to send audio streams in the network.
  *
@@ -422,10 +422,12 @@ public slots:
             emit signalNoUdpPacketsForSeconds();
         }
     }
+    void slotUdpWaitingTooLong()
+    { emit signalUdpWaitingTooLong(); }
     void slotPrintTest()
     { std::cout << "=== TESTING ===" << std::endl; }
     void slotReceivedConnectionFromPeer()
-    { mReceivedConnection = true; }
+    { mReceivedConnection = true; emit signalReceivedConnectionFromPeer(); }
     void onStatTimer();
     
 private slots:
@@ -436,13 +438,15 @@ private slots:
     void tcpTimerTick();
 
 signals:
-    void signalUdpTimeOut();
+    //void signalUdpTimeOut();
     /// \brief Signal emitted when all the processes and threads are stopped
     void signalProcessesStopped();
     /// \brief Signal emitted when no UDP Packets have been received for a while
     void signalNoUdpPacketsForSeconds();
     void signalTcpClientConnected();
     void signalError(const QString &errorMessage);
+    void signalReceivedConnectionFromPeer();
+    void signalUdpWaitingTooLong();
 
 public:
 

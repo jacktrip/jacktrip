@@ -58,12 +58,12 @@ using std::cout; using std::endl;
 
 //the following function has to remain outside the Jacktrip class definition
 //its purpose is to close the app when control c is hit by the user in rtaudio/asio4all mode
-#if defined __WIN_32__
+/*if defined __WIN_32__
 void sigint_handler(int sig)
 {
     exit(0);
 }
-#endif
+#endif*/
 
 bool JackTrip::sSigInt = false;
 
@@ -334,12 +334,12 @@ void JackTrip::startProcess(
         #endif // endwhere
         )
 { //signal that catches ctrl c in rtaudio-asio mode
-#if defined (__WIN_32__)
+/*#if defined (__WIN_32__)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
         perror("signal");
         exit(1);
     }
-#endif
+#endif*/
     // Check if ports are already binded by another process on this machine
     // ------------------------------------------------------------------
     if (gVerboseFlag) std::cout << "step 1" << std::endl;
@@ -375,6 +375,8 @@ void JackTrip::startProcess(
                      Qt::QueuedConnection);
     //QObject::connect(this, SIGNAL(signalUdpTimeOut()),
     //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    QObject::connect((UdpDataProtocol *)mDataProtocolReceiver, &UdpDataProtocol::signalUdpWaitingTooLong, this,
+                     &JackTrip::slotUdpWaitingTooLong, Qt::QueuedConnection);
     QObject::connect(mDataProtocolSender, &DataProtocol::signalCeaseTransmission,
                      this, &JackTrip::slotStopProcesses, Qt::QueuedConnection);
 
@@ -517,9 +519,9 @@ void JackTrip::receivedConnectionTCP()
     std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
 
     mTcpClient.write(port_buf, sizeof(mReceiverBindPort));
-    while ( mTcpClient.bytesToWrite() > 0 ) {
+    /*while ( mTcpClient.bytesToWrite() > 0 ) {
         mTcpClient.waitForBytesWritten(-1);
-    }
+    }*/
     if (gVerboseFlag) cout << "Port sent to Server" << endl;
     //Continued in receivedDataTCP slot
 }
