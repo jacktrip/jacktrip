@@ -177,7 +177,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
 
-    const char **ports, **connections; //vector of ports and connections
+    const char **ports; //vector of ports
     QVector<QString> OutputInput(2); //helper variable
 
     //Get active output ports.
