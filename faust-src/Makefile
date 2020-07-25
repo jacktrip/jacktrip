@@ -93,7 +93,7 @@ jackconsole :
 	install -d jackconsoledir
 	$(MAKE) DEST='jackconsoledir/' ARCH='jack-console.cpp' LIB='`pkg-config --cflags --libs jack `' -f Makefile.compile
 
-h headers : 
+h headers :
 	install -d headersdir
 	$(MAKE) DEST='headersdir/' ARCH='faust2header.cpp' -f Makefile.headers
 
@@ -102,4 +102,3 @@ ih hi installheaders : headers
 
 clean :
 	-rm -rf alsagtkdir jackgtkdir alsaqtdir jackqtdir vecalsagtkdir vecjackgtkdir ladspadir jackwxdir ossgtkdir osswxdir pagtkdir pawxdir moduledir bundledir mspdir vstdir benchdir sndfiledir plotdir benchdir supercolliderdir puredatadir qdir plotdir jackconsoledir matlabplotdir *-ps *-svg headersdir
-
