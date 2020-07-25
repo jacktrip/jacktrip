@@ -63,6 +63,7 @@ void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/,
     std::cerr << msg.toStdString() << std::endl;
 }
 
+#if defined (__LINUX__) || (__MAC_OSX__)
 static int setupUnixSignalHandler(void (*handler)(int))
 {
     //Setup our SIGINT handler.
@@ -77,6 +78,24 @@ static int setupUnixSignalHandler(void (*handler)(int))
     }
     return 0;
 }
+#else
+bool isHubServer = false;
+
+BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
+{
+    switch (fdwCtrlType) {
+        case CTRL_C_EVENT:
+            if (isHubServer) {
+                UdpMasterListener::sigIntHandler(0);
+            } else {
+                JackTrip::sigIntHandler(0);
+            }
+            return true;
+        default:
+            return false;
+    }
+}
+#endif
 
 int main(int argc, char** argv)
 {
@@ -119,19 +138,28 @@ int main(int argc, char** argv)
                 if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
                 QObject::connect(udpMaster.data(), &UdpMasterListener::signalStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
                 QObject::connect(udpMaster.data(), &UdpMasterListener::signalError, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+#if defined (__LINUX__) || (__MAC_OSX__)
                 setupUnixSignalHandler(UdpMasterListener::sigIntHandler);
+#else
+                isHubServer = true;
+                SetConsoleCtrlHandler(windowsCtrlHandler, true);
+#endif
                 udpMaster->start();
             } else {
                 jackTrip.reset(settings.getConfiguredJackTrip());
                 if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
                 QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
                 QObject::connect(jackTrip.data(), &JackTrip::signalError, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+#if defined (__LINUX__) || (__MAC_OSX__)
                 setupUnixSignalHandler(JackTrip::sigIntHandler);
-    #ifdef WAIRTOMASTER // WAIR
+#else
+                std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
+#endif
+#ifdef WAIRTOMASTER // WAIR
                 jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
-    #else
+#else
                 jackTrip->startProcess();
-    #endif // endwhere
+#endif // endwhere
             }
         
             if (gVerboseFlag) std::cout << "step 6" << std::endl;
