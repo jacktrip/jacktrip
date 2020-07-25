@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file UdpMasterListener.cpp
+ * \file UdpHubListener.cpp
  * \author Juan-Pablo Caceres and Chris Chafe
  * \date September 2008
  */
@@ -45,7 +45,7 @@
 #include <QStringList>
 #include <QMutexLocker>
 
-#include "UdpMasterListener.h"
+#include "UdpHubListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
 
@@ -53,7 +53,7 @@ using std::cout; using std::endl;
 
 
 //*******************************************************************************
-UdpMasterListener::UdpMasterListener(int server_port) :
+UdpHubListener::UdpHubListener(int server_port) :
     //mJTWorker(NULL),
     mServerPort(server_port),
     mStopped(false),
@@ -63,7 +63,7 @@ UdpMasterListener::UdpMasterListener(int server_port) :
     mTotalRunningThreads(0),
     m_connectDefaultAudioPorts(false)
 {
-    // Register JackTripWorker with the master listener
+    // Register JackTripWorker with the hub listener
     //mJTWorker = new JackTripWorker(this);
     mJTWorkers = new QVector<JackTripWorker*>;
     for (int i = 0; i<gMaxThreads; i++) {
@@ -91,7 +91,7 @@ UdpMasterListener::UdpMasterListener(int server_port) :
 
 
 //*******************************************************************************
-UdpMasterListener::~UdpMasterListener()
+UdpHubListener::~UdpHubListener()
 {
     QMutexLocker lock(&mMutex);
     mThreadPool.waitForDone();
@@ -108,7 +108,7 @@ UdpMasterListener::~UdpMasterListener()
 // the client is already on the thread pool, it means that a new connection is
 // requested (the old was desconnected). So we have to remove that thread from
 // the pool and then connect again.
-void UdpMasterListener::run()
+void UdpHubListener::run()
 {
     mStopped = false;
 
@@ -193,7 +193,7 @@ void UdpMasterListener::run()
 
             // Spawn Thread to Pool
             // --------------------
-            // Register JackTripWorker with the master listener
+            // Register JackTripWorker with the hub listener
             delete mJTWorkers->at(id); // just in case the Worker was previously created
             mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode));
             // redirect port and spawn listener
@@ -231,12 +231,12 @@ void UdpMasterListener::run()
 
     /*
   // Create objects on the stack
-  QUdpSocket MasterUdpSocket;
+  QUdpSocket HubUdpSocket;
   QHostAddress PeerAddress;
   uint16_t peer_port; // Ougoing Peer port, in case they're not using the default
 
   // Bind the socket to the well known port
-  bindUdpSocket(MasterUdpSocket, mServerPort);
+  bindUdpSocket(HubUdpSocket, mServerPort);
 
   char buf[1];
   cout << "Server Listening in UDP Port: " << mServerPort << endl;
@@ -245,11 +245,11 @@ void UdpMasterListener::run()
   while ( !mStopped )
   {
     //cout << "WAITING........................." << endl;
-    while ( MasterUdpSocket.hasPendingDatagrams() )
+    while ( HubUdpSocket.hasPendingDatagrams() )
     {
       cout << "Received request from Client!" << endl;
       // Get Client IP Address and outgoing port from packet
-      int rv = MasterUdpSocket.readDatagram(buf, 1, &PeerAddress, &peer_port);
+      int rv = HubUdpSocket.readDatagram(buf, 1, &PeerAddress, &peer_port);
       cout << "Peer Port in Server ==== " << peer_port << endl;
       if (rv < 0) { std::cerr << "ERROR: Bad UDP packet read..." << endl; }
 
@@ -283,7 +283,7 @@ void UdpMasterListener::run()
 
 //*******************************************************************************
 // Returns 0 on error
-int UdpMasterListener::readClientUdpPort(QTcpSocket* clientConnection)
+int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
 {
     // Read the size of the package
     // ----------------------------
@@ -309,7 +309,7 @@ int UdpMasterListener::readClientUdpPort(QTcpSocket* clientConnection)
 
 
 //*******************************************************************************
-int UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
+int UdpHubListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
 {
     // Send Port Number to Client
     // --------------------------
@@ -331,7 +331,7 @@ int UdpMasterListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
 
 //*******************************************************************************
 /*
-void UdpMasterListener::sendToPoolPrototype(int id)
+void UdpHubListener::sendToPoolPrototype(int id)
 {
   mJTWorker->setJackTrip(id, mActiveAddress[id][0],
                          mBasePort+(2*id), mActiveAddress[id][1],
@@ -342,7 +342,7 @@ void UdpMasterListener::sendToPoolPrototype(int id)
 
 
 //*******************************************************************************
-void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
+void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 {
     // QHostAddress::Any : let the kernel decide the active address
     if ( !udpsocket.bind(QHostAddress::Any,
@@ -359,7 +359,7 @@ void UdpMasterListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 
 //*******************************************************************************
 // check by comparing 32-bit addresses
-int UdpMasterListener::isNewAddress(QString address, uint16_t port)
+int UdpHubListener::isNewAddress(QString address, uint16_t port)
 {
     QMutexLocker lock(&mMutex);
     bool busyAddress = false;
@@ -404,7 +404,7 @@ int UdpMasterListener::isNewAddress(QString address, uint16_t port)
 
 
 //*******************************************************************************
-int UdpMasterListener::getPoolID(QString address, uint16_t port)
+int UdpHubListener::getPoolID(QString address, uint16_t port)
 {
     QMutexLocker lock(&mMutex);
     //for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
@@ -418,7 +418,7 @@ int UdpMasterListener::getPoolID(QString address, uint16_t port)
 
 
 //*******************************************************************************
-int UdpMasterListener::releaseThread(int id)
+int UdpHubListener::releaseThread(int id)
 {
     QMutexLocker lock(&mMutex);
     mActiveAddress[id].address = "";
@@ -434,7 +434,7 @@ int UdpMasterListener::releaseThread(int id)
 #ifdef WAIR // wair
 #include "JMess.h"
 //*******************************************************************************
-void UdpMasterListener::connectMesh(bool spawn)
+void UdpHubListener::connectMesh(bool spawn)
 {
     cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change mesh" << endl;
     JMess tmp;
@@ -444,7 +444,7 @@ void UdpMasterListener::connectMesh(bool spawn)
 }
 
 //*******************************************************************************
-void UdpMasterListener::enumerateRunningThreadIDs()
+void UdpHubListener::enumerateRunningThreadIDs()
 {
     for (int id = 0; id<gMaxThreads; id++ )
     {
@@ -455,7 +455,7 @@ void UdpMasterListener::enumerateRunningThreadIDs()
 #endif // endwhere
 
 #include "JMess.h"
-void UdpMasterListener::connectPatch(bool spawn)
+void UdpHubListener::connectPatch(bool spawn)
 {
     cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
     JMess tmp;

@@ -15,9 +15,9 @@ CONFIG(debug, debug|release) {
 QT -= gui
 QT += network
 
-# rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOMASTER
+# rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOHUB
 # DEFINES += WAIR
-DEFINES += WAIRTOMASTER
+DEFINES += WAIRTOHUB
 
 # http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
 #cc DEFINES += __RT_AUDIO__
@@ -136,7 +136,7 @@ HEADERS += DataProtocol.h \
            TestRingBuffer.h \
            ThreadPoolTest.h \
            UdpDataProtocol.h \
-           UdpMasterListener.h \
+           UdpHubListener.h \
            AudioInterface.h \
            limiterdsp.h
 
@@ -158,7 +158,7 @@ SOURCES += DataProtocol.cpp \
            RingBuffer.cpp \
            Settings.cpp \
            UdpDataProtocol.cpp \
-           UdpMasterListener.cpp \
+           UdpHubListener.cpp \
            AudioInterface.cpp
 
 !nojack {

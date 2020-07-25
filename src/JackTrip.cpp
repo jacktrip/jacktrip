@@ -134,7 +134,7 @@ JackTrip::~JackTrip()
 
 //*******************************************************************************
 void JackTrip::setupAudio(
-        #ifdef WAIRTOMASTER // WAIR
+        #ifdef WAIRTOHUB // WAIR
         int ID
         #endif // endwhere
         )
@@ -157,7 +157,7 @@ void JackTrip::setupAudio(
                                          #endif // endwhere
                                                  mAudioBitResolution);
 
-#ifdef WAIRTOMASTER // WAIR
+#ifdef WAIRTOHUB // WAIR
         qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
@@ -329,7 +329,7 @@ void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 
 //*******************************************************************************
 void JackTrip::startProcess(
-        #ifdef WAIRTOMASTER // WAIR
+        #ifdef WAIRTOHUB // WAIR
         int ID
         #endif // endwhere
         )
@@ -358,7 +358,7 @@ void JackTrip::startProcess(
     // ------------------------------
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before setupAudio" << std::endl;
     setupAudio(
-            #ifdef WAIRTOMASTER // wair
+            #ifdef WAIRTOHUB // wair
                 ID
             #endif // endwhere
                 );

@@ -45,7 +45,7 @@
 #include "Stk16.dsp.h"
 #endif // endwhere
 
-#include "UdpMasterListener.h"
+#include "UdpHubListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
 
@@ -468,22 +468,22 @@ void Settings::startJackTrip()
 
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
-        UdpMasterListener* udpmaster = new UdpMasterListener;
-        udpmaster->setSettings(this);
+        UdpHubListener* udphub = new UdpHubListener;
+        udphub->setSettings(this);
 #ifdef WAIR // WAIR
-        udpmaster->setWAIR(mWAIR);
+        udphub->setWAIR(mWAIR);
 #endif // endwhere
-        udpmaster->setHubPatch(mHubConnectionMode);
-        udpmaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
-        if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
+        udphub->setHubPatch(mHubConnectionMode);
+        udphub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
         // Set buffers to zero when underrun
         if ( mUnderrrunZero ) {
             cout << "Setting buffers to zero when underrun..." << endl;
             cout << gPrintSeparator << std::endl;
-            udpmaster->setUnderRunMode(JackTrip::ZEROS);
+            udphub->setUnderRunMode(JackTrip::ZEROS);
         }
-        udpmaster->setBufferQueueLength(mBufferQueueLength);
-        udpmaster->start();
+        udphub->setBufferQueueLength(mBufferQueueLength);
+        udphub->start();
 
         //---Thread Pool Test--------------------------------------------
         /*
@@ -650,7 +650,7 @@ void Settings::startJackTrip()
         // Start JackTrip
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
         mJackTrip->startProcess(
-            #ifdef WAIRTOMASTER // WAIR
+            #ifdef WAIRTOHUB // WAIR
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );

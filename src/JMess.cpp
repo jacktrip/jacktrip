@@ -167,7 +167,7 @@ void JMess::setConnectedPorts()
 }
 //*******************************************************************************
 void JMess::connectSpawnedPorts(int nChans, int hubPatch)
-// called from UdpMasterListener::connectMesh
+// called from UdpHubListener::connectMesh
 {
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
@@ -307,7 +307,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // this is brute force, does not look at individual clients, just patches the whole ensemble
 // each time
 void JMess::connectTUB(int /*nChans*/)
-// called from UdpMasterListener::connectPatch
+// called from UdpHubListener::connectPatch
 {
     for (int i = 0; i<=gMAX_TUB-gMIN_TUB; i++) // last IP decimal octet
         for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
