@@ -70,6 +70,9 @@ UdpHubListener::UdpHubListener(int server_port) :
         mJTWorkers->insert(i, NULL);
     }
 
+    qDebug() << "mThreadPool default maxThreadCount =" << mThreadPool.maxThreadCount();
+    mThreadPool.setMaxThreadCount(mThreadPool.maxThreadCount() * 16);
+    qDebug() << "mThreadPool maxThreadCount set to" << mThreadPool.maxThreadCount();
 
     //mJTWorkers = new JackTripWorker(this);
     mThreadPool.setExpiryTimeout(3000); // msec (-1) = forever
@@ -208,7 +211,7 @@ void UdpHubListener::run()
                                                 m_connectDefaultAudioPorts
                                                ); /// \todo temp default to 1 channel
 
-                qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
+//                qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
             }
             //send one thread to the pool
             cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
@@ -223,7 +226,7 @@ void UdpHubListener::run()
             if (isWAIR()) connectMesh(true); // invoked with -Sw
 #endif // endwhere
 
-            qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
+//            qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
 
             connectPatch(true);
         }
