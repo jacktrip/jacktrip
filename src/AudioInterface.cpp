@@ -478,7 +478,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     }
 #endif // endwhere
 
-    ///************PROTORYPE FOR CELT**************************
+    ///************PROTOTYPE FOR CELT**************************
     ///********************************************************
     /*
   CELTMode* mode;
@@ -528,7 +528,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
             //--------
             // This should be faster for 32 bits
             //std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
-            //          mSizeInBytesPerChannel);
+            //         mSizeInBytesPerChannel);
             //--------
             sample_t* tmp_sample = out_buffer[i]; //sample buffer for channel i
             for (unsigned int j = 0; j < n_frames; j++) {
@@ -574,7 +574,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             //--------
             // This should be faster for 32 bits
             //std::memcpy(&mInputPacket[i*mSizeInBytesPerChannel], mInBuffer[i],
-            //          mSizeInBytesPerChannel);
+            //         mSizeInBytesPerChannel);
             //--------
             sample_t* tmp_sample = in_buffer[i]; //sample buffer for channel i
             sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output process
