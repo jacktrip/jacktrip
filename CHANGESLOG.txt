@@ -1,5 +1,8 @@
 ---
-master
+master (this branch name will be deprecated when github follows through on interest in eliminating such terminology)
+
+- (fixed) refactor "Master" to be "Hub"
+- (fixed) 1.2 correctly tagged
 
 ---
 1.2 (release candidate, not yet tagged)
