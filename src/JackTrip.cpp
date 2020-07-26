@@ -162,8 +162,8 @@ void JackTrip::setupAudio(
         QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
         if(mPeerAddress.toStdString()!="")
             mJackClientName = tmp.constData();
-        std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
-                      mJackClientName << std::endl;
+//        std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
+//                      mJackClientName << std::endl;
 
 #endif // endwhere
 
@@ -339,10 +339,8 @@ void JackTrip::startProcess(
 
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)" << std::endl;
 #if defined __WIN_32__
-    //cc fixed windows crash with this print statement!
-    qDebug() << "before  mJackTrip->startProcess"
-             << mReceiverBindPort<< mSenderBindPort;
-    //        msleep(2000);
+    //cc fixed windows crash with this print statement! hope to delete
+//    qDebug() << "before  mJackTrip->startProcess"  << mReceiverBindPort<< mSenderBindPort;
 #endif
     checkIfPortIsBinded(mReceiverBindPort);
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mSenderBindPort)" << std::endl;

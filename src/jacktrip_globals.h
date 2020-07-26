@@ -44,7 +44,7 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.2"; ///< JackTrip version
+const char* const gVersion = "1.2chris13jul"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
@@ -90,7 +90,7 @@ const uint32_t gDefaultDeviceID = 0;
 const uint32_t gDefaultBufferSizeInSamples = 128;
 const QString gDefaultLocalAddress = QString();
 const int gDefaultRedundancy = 1;
-const int gTimeOutMultiThreadedServer = 5000; // seconds
+const int gTimeOutMultiThreadedServer = 10000; // seconds
 const int gWaitCounter = 60;
 //@}
 
