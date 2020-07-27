@@ -44,7 +44,7 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.2beta2"; ///< JackTrip version
+const char* const gVersion = "1.2chris13jul"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
@@ -55,7 +55,8 @@ const int gDefaultNumOutChannels = 2;
 #define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
 // #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
 const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
-const int gMAX_WAIRS = 10; // jmess revision needed for string parse if > 1 digit
+const int gMAX_WAIRS = 128; // FIXME, should agree with maxThreadCount
+// jmess revision needed for string parse if > 1 digit
 
 // hubpatch = 3 for TUB ensemble patching
 ///////////////////////////////
@@ -89,7 +90,7 @@ const uint32_t gDefaultDeviceID = 0;
 const uint32_t gDefaultBufferSizeInSamples = 128;
 const QString gDefaultLocalAddress = QString();
 const int gDefaultRedundancy = 1;
-const int gTimeOutMultiThreadedServer = 5000; // seconds
+const int gTimeOutMultiThreadedServer = 10000; // seconds
 const int gWaitCounter = 60;
 //@}
 

@@ -44,7 +44,7 @@
 #include "Stk16.dsp.h"
 #endif // endwhere
 
-#include "UdpMasterListener.h"
+#include "UdpHubListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
 
@@ -291,7 +291,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
+            cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
             cout << "" << endl;
             std::exit(0);
@@ -371,7 +371,7 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
-    cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
+    cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
     cout << "VERSION: " << gVersion << endl;
     cout << "" << endl;
@@ -434,7 +434,7 @@ void Settings::startJackTrip()
 
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
-        UdpMasterListener* udpmaster = new UdpMasterListener;
+        UdpHubListener* udpmaster = new UdpHubListener;
         udpmaster->setSettings(this);
 #ifdef WAIR // WAIR
         udpmaster->setWAIR(mWAIR);
@@ -596,7 +596,7 @@ void Settings::startJackTrip()
         // Start JackTrip
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
         mJackTrip->startProcess(
-            #ifdef WAIRTOMASTER // WAIR
+            #ifdef WAIRTOHUB // WAIR
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );
