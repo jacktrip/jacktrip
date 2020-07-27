@@ -120,19 +120,20 @@ private:
 
     /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt>
     uint16_t mClientPort;
+    
+    int mBufferQueueLength;
+    JackTrip::underrunModeT mUnderRunMode;
 
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning;
     QMutex mMutex; ///< Mutex to protect mSpawning
-    JackTrip::underrunModeT mUnderRunMode;
-    int mBufferQueueLength;
-    
-    int mIOStatTimeout;
-    QSharedPointer<std::ofstream> mIOStatStream;
 
     int mID; ///< ID thread number
     int mNumChans; ///< Number of Channels
+    
+    int mIOStatTimeout;
+    QSharedPointer<std::ofstream> mIOStatStream;
 #ifdef WAIR // wair
     int mNumNetRevChans; ///< Number of Net Channels = net combs
     bool mWAIR;

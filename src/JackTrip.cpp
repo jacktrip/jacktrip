@@ -109,19 +109,19 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mRedundancy(redundancy),
     mJackClientName(gJackDefaultClientName),
     mConnectionMode(JackTrip::NORMAL),
+    mTimeoutTimer(this),
+    mSleepTime(100),
+    mElapsedTime(0),
+    mEndTime(0),
+    mTcpClient(this),
+    mUdpSockTemp(this),
     mReceivedConnection(false),
     mTcpConnectionError(false),
     mStopped(false),
     mHasShutdown(false),
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0),
-    mIOStatLogStream(std::cout.rdbuf()),
-    mTimeoutTimer(this),
-    mSleepTime(100),
-    mElapsedTime(0),
-    mEndTime(0),
-    mUdpSockTemp(this),
-    mTcpClient(this)
+    mIOStatLogStream(std::cout.rdbuf())
 {
     createHeader(mPacketHeaderType);
 }
@@ -169,7 +169,7 @@ void JackTrip::setupAudio(
         qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
-        if (mPeerAddress.toStdString() != "" && (mJackClientName == gJackDefaultClientName || mJackTripMode == SERVERPINGSERVER)) {
+        if(mPeerAddress.toStdString()!="" && (mJackClientName == gJackDefaultClientName || mJackTripMode == SERVERPINGSERVER)) {
             mJackClientName = QString(mPeerAddress).replace(":", ".").toLatin1().constData();
         }
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<

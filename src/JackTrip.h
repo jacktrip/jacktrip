@@ -494,13 +494,6 @@ private:
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
-    
-    QTimer mTimeoutTimer;
-    int mSleepTime;
-    int mElapsedTime;
-    int mEndTime;
-    QTcpSocket mTcpClient;
-    QUdpSocket mUdpSockTemp;
 
     /// Pointer to Abstract Type DataProtocol that sends packets
     DataProtocol* mDataProtocolSender;
@@ -528,6 +521,13 @@ private:
     JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Hub Server Jack Audio Patch Connection Mode
 
     QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+    
+    QTimer mTimeoutTimer;
+    int mSleepTime;
+    int mElapsedTime;
+    int mEndTime;
+    QTcpSocket mTcpClient;
+    QUdpSocket mUdpSockTemp;
 
     volatile bool mReceivedConnection; ///< Bool of received connection from peer
     volatile bool mTcpConnectionError;
