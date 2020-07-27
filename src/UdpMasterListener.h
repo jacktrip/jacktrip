@@ -96,7 +96,7 @@ signals:
     void ClientAddressSet();
     void signalRemoveThread(int id);
     void signalStopped();
-
+    void signalError(const QString &errorMessage);
 
 private:
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
