@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Disconnect All
+~/slork/bin/jmess-1.0.3 -D
+
+# All clients' say into Max
+jack_connect node-1:receive_1 Max:in1
+jack_connect node-2:receive_1 Max:in2
+jack_connect node-3:receive_1 Max:in3
+jack_connect node-4:receive_1 Max:in4
+jack_connect node-5:receive_1 Max:in5
+jack_connect node-6:receive_1 Max:in6
+jack_connect node-7:receive_1 Max:in7
+jack_connect node-8:receive_1 Max:in8
+jack_connect node-9:receive_1 Max:in9
+jack_connect node-10:receive_1 Max:in10
+jack_connect node-11:receive_1 Max:in11
+jack_connect node-12:receive_1 Max:in12
+
+
+# All clients' hear from Max
+jack_connect Max:out1 node-1:send_1
+jack_connect Max:out2 node-2:send_1
+jack_connect Max:out3 node-3:send_1
+jack_connect Max:out4 node-4:send_1
+jack_connect Max:out5 node-5:send_1
+jack_connect Max:out6 node-6:send_1
+jack_connect Max:out7 node-7:send_1
+jack_connect Max:out8 node-8:send_1
+jack_connect Max:out9 node-9:send_1
+jack_connect Max:out10 node-10:send_1
+jack_connect Max:out11 node-11:send_1
+jack_connect Max:out12 node-12:send_1
+
+# echo KLUDGE: also connecting Max output 6 to this machine\'s hemi
+# jack_connect Max:out6 system:playback_1
+# jack_connect Max:out6 system:playback_2
+# jack_connect Max:out6 system:playback_3
+# jack_connect Max:out6 system:playback_4
+# jack_connect Max:out6 system:playback_5
+# jack_connect Max:out6 system:playback_6

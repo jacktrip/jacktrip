@@ -1,0 +1,14 @@
+killall chuck; killall miniAudicle; killall audicle
+kill -9 `ps -ef | grep /Applications/Max.app | awk '{print $2}'`
+kill -9 `ps -ef | grep /Applications/FaceTime.app | awk '{print $2}'`
+kill -9 `ps -ef | grep /Applications/Wekinator.app | awk '{print $2}'`
+kill -9 `ps -ef | grep FaceOSC_Wekinator_14Inputs.app | awk '{print $2}'`
+kill -9 `ps -ef | grep /users/lja/vr2019 | awk '{print $2}'`
+
+killall jacktrip; killall jackd
+
+killall FaceOSC; killall python
+killall Preview
+
+audiodevice input "MOTU UltraLite mk3 Hybrid"
+audiodevice output "MOTU UltraLite mk3 Hybrid"

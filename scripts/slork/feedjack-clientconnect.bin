@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Disconnect All
+~/slork/bin/jmess-1.0.3 -D
+
+for PROG in Max miniAudicle
+ do
+    # Injection from MOTU input 1 (on the front!) into ${PROG}
+    jack_connect system:capture_1 ${PROG}:in1
+
+    # Hear from jacktrip to ${PROG}
+    jack_connect JackTrip:receive_1 ${PROG}:in2
+
+    # ${PROG} 1-6 to hemi
+    jack_connect ${PROG}:out1 system:playback_1
+    jack_connect ${PROG}:out2 system:playback_2
+    jack_connect ${PROG}:out3 system:playback_3
+    jack_connect ${PROG}:out4 system:playback_4
+    jack_connect ${PROG}:out5 system:playback_5
+    jack_connect ${PROG}:out6 system:playback_6
+
+    # Pre-fader say from ${PROG} to MOTU
+    jack_connect ${PROG}:out7 system:playback_7
+
+    # ${PROG} 1-6 to say (for injection)
+    echo \(special workaround for Kunwoo and Avery\)
+    jack_connect ${PROG}:out1 JackTrip:send_1
+    jack_connect ${PROG}:out2 JackTrip:send_1
+    jack_connect ${PROG}:out3 JackTrip:send_1
+    jack_connect ${PROG}:out4 JackTrip:send_1
+    jack_connect ${PROG}:out5 JackTrip:send_1
+    jack_connect ${PROG}:out6 JackTrip:send_1
+
+done
+
+
+# post-fader say to jacktrip
+jack_connect system:capture_3 JackTrip:send_1
+
+# post-fader say to hemi
+jack_connect system:capture_3 system:playback_1
+jack_connect system:capture_3 system:playback_2
+jack_connect system:capture_3 system:playback_3
+jack_connect system:capture_3 system:playback_4
+jack_connect system:capture_3 system:playback_5
+jack_connect system:capture_3 system:playback_6
