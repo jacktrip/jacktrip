@@ -148,7 +148,8 @@ public:
     /// \brief The class destructor
     virtual ~JackTrip();
     
-    static void sigIntHandler(int unused) { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
+    static void sigIntHandler(__attribute__((unused)) int unused)
+    { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
     static bool sSigInt;
 
     /// \brief Starting point for the thread
@@ -167,7 +168,7 @@ public:
 
     /// \brief Start the processing threads
     virtual void startProcess(
-        #ifdef WAIRTOMASTER // wair
+        #ifdef WAIRTOHUB // wair
             int ID
         #endif // endwhere
             );
@@ -452,7 +453,7 @@ public:
 
     /// \brief Set the AudioInteface object
     virtual void setupAudio(
-        #ifdef WAIRTOMASTER // WAIR
+        #ifdef WAIRTOHUB // WAIR
             int ID
         #endif // endwhere
             );

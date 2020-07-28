@@ -76,7 +76,7 @@ JMess::~JMess()
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::writeOutput(QString xmlOutFile)
+void JMess::writeOutput(__attribute__((unused)) QString xmlOutFile)
 {
     //  QDomDocument jmess_xml;   QDomElement root;
     //  QDomElement connection;   QDomElement output;
@@ -167,12 +167,12 @@ void JMess::setConnectedPorts()
 }
 //*******************************************************************************
 void JMess::connectSpawnedPorts(int nChans, int hubPatch)
-// called from UdpMasterListener::connectMesh
+// called from UdpHubListener::connectMesh
 {
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
 
-    const char **ports, **connections; //vector of ports and connections
+    const char **ports; //, **connections; //vector of ports and connections
     QVector<QString> OutputInput(2); //helper variable
 
     //Get active output ports.
@@ -307,7 +307,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // this is brute force, does not look at individual clients, just patches the whole ensemble
 // each time
 void JMess::connectTUB(int /*nChans*/)
-// called from UdpMasterListener::connectPatch
+// called from UdpHubListener::connectPatch
 {
     for (int i = 0; i<=gMAX_TUB-gMIN_TUB; i++) // last IP decimal octet
         for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
@@ -383,7 +383,7 @@ void JMess::disconnectAll()
  * read the file.
  */
 //-------------------------------------------------------------------------------
-int JMess::parseXML(QString xmlInFile)
+int JMess::parseXML(__attribute__((unused)) QString xmlInFile)
 {
     //  mPortsToConnect.clear();
     //  QString errorStr;
@@ -450,7 +450,7 @@ int JMess::parseXML(QString xmlInFile)
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::connectPorts(QString xmlInFile)
+void JMess::connectPorts(__attribute__((unused)) QString xmlInFile)
 {
     QVector<QString> OutputInput(2);
 

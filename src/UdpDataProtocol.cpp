@@ -121,7 +121,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
     if ( mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol ) {
         mIPv6 = true;
     } else  if ( mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol ) {
-        QString error_message = "Incorrect presentation format address\n '";
+        QString error_message = "Incorrect presentation format address\n'";
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");
         //std::cerr << "ERROR: Incorrect presentation format address" << endl;
@@ -188,7 +188,7 @@ int UdpDataProtocol::bindSocket()
     WSADATA wsaData;
     int err;
 
-    wVersionRequested = MAKEWORD( 1, 1 );
+    wVersionRequested = MAKEWORD( 2, 2 );
 
     err = WSAStartup( wVersionRequested, &wsaData );
     if ( err != 0 ) {
@@ -200,8 +200,8 @@ int UdpDataProtocol::bindSocket()
 
     // Confirm that the Windows Sockets DLL supports 1.1. or higher
 
-    if ( LOBYTE( wsaData.wVersion ) != 1 ||
-         HIBYTE( wsaData.wVersion ) != 1 ) {
+    if ( LOBYTE( wsaData.wVersion ) != 2 ||
+         HIBYTE( wsaData.wVersion ) != 2 ) {
         // Tell the user that we couldn't find a useable
         // winsock.dll.
         WSACleanup( );
@@ -319,7 +319,9 @@ int UdpDataProtocol::bindSocket()
 int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n)
 {
     // Block until There's something to read
-    while ( (UdpSocket.pendingDatagramSize() < n) && !mStopped ) { QThread::usleep(100); }
+    while ( ((UdpSocket.pendingDatagramSize() < 0) || ((uint64_t)UdpSocket.pendingDatagramSize() < n)) && !mStopped ) {
+        QThread::usleep(100);
+    }
     int n_bytes = UdpSocket.readDatagram(buf, n);
     return n_bytes;
 }
@@ -636,6 +638,7 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
     int wait_time = 30; // msec
     if ( !(wait_msec%wait_time) ) {
         std::cerr << "UDP waiting too long (more than " << wait_time << "ms) for " << mPeerAddress.toString().toStdString() << "..." << endl;
+        emit signalUdpWaitingTooLong();
     }
 }
 

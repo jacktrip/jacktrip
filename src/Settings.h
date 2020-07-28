@@ -49,7 +49,7 @@
 #endif //__NO_JACK__
 
 #include "JackTrip.h"
-#include "UdpMasterListener.h"
+#include "UdpHubListener.h"
 
 /** \brief Class to set usage options and parse settings from input
  */
@@ -64,7 +64,7 @@ public:
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
 
-    UdpMasterListener *getConfiguredHubServer();
+    UdpHubListener *getConfiguredHubServer();
     JackTrip *getConfiguredJackTrip();
 
     /// \brief Prints usage help

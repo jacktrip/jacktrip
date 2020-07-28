@@ -427,32 +427,32 @@ void Settings::printUsage()
 
 
 //*******************************************************************************
-UdpMasterListener *Settings::getConfiguredHubServer()
+UdpHubListener *Settings::getConfiguredHubServer()
 {
-    UdpMasterListener *udpMaster = new UdpMasterListener;
-    //udpMaster->setSettings(this);
+    UdpHubListener *udpHub = new UdpHubListener;
+    //udpHub->setSettings(this);
 #ifdef WAIR // WAIR
-    udpmaster->setWAIR(mWAIR);
+    udpHub->setWAIR(mWAIR);
 #endif // endwhere
-    udpMaster->setHubPatch(mHubConnectionMode);
+    udpHub->setHubPatch(mHubConnectionMode);
     if (mHubConnectionMode == JackTrip::NOAUTO) {
-        udpMaster->setConnectDefaultAudioPorts(false);
+        udpHub->setConnectDefaultAudioPorts(false);
     } else {
-        udpMaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
+        udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
     }
     // Set buffers to zero when underrun
     if ( mUnderrunZero ) {
         cout << "Setting buffers to zero when underrun..." << endl;
         cout << gPrintSeparator << std::endl;
-        udpMaster->setUnderRunMode(JackTrip::ZEROS);
+        udpHub->setUnderRunMode(JackTrip::ZEROS);
     }
-    udpMaster->setBufferQueueLength(mBufferQueueLength);
+    udpHub->setBufferQueueLength(mBufferQueueLength);
     
     if (mIOStatTimeout > 0) {
-        udpMaster->setIOStatTimeout(mIOStatTimeout);
-        udpMaster->setIOStatStream(mIOStatStream);
+        udpHub->setIOStatTimeout(mIOStatTimeout);
+        udpHub->setIOStatStream(mIOStatStream);
     }
-    return udpMaster;
+    return udpHub;
 }
 
 JackTrip *Settings::getConfiguredJackTrip()

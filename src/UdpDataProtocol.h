@@ -146,14 +146,14 @@ public:
 
 private slots:
     void printUdpWaitedTooLong(int wait_msec);
-
+    
 
 signals:
 
     /// \brief Signals when waiting every 10 milliseconds, with the total wait on wait_msec
     /// \param wait_msec Total wait in milliseconds
     void signalWaitingTooLong(int wait_msec);
-
+    void signalUdpWaitingTooLong();
 
     //private:
 protected:
@@ -193,9 +193,7 @@ protected:
                                       int full_redundant_packet_size,
                                       int full_packet_size);
 
-
 private:
-
     int mBindPort; ///< Local Port number to Bind
     int mPeerPort; ///< Peer Port number
     const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER

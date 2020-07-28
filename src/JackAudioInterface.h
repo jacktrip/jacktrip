@@ -113,7 +113,7 @@ public:
     virtual uint32_t getBufferSizeInSamples() const;
     /// \brief Get the Jack Server Buffer Size, in bytes
     virtual uint32_t getBufferSizeInBytes() const
-    { return (getBufferSizeInSamples() * getAudioBitResolution()/8); }
+    { return (getBufferSizeInSamples() * getAudioBitResolution() / 8); }
     /// \brief Get size of each audio per channel, in bytes
     virtual size_t getSizeInBytesPerChannel() const;
     //------------------------------------------------------------------
