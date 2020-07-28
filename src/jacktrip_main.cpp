@@ -86,7 +86,7 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
     switch (fdwCtrlType) {
         case CTRL_C_EVENT:
             if (isHubServer) {
-                UdpMasterListener::sigIntHandler(0);
+                UdpHubListener::sigIntHandler(0);
             } else {
                 JackTrip::sigIntHandler(0);
             }
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
     QScopedPointer<JackTrip> jackTrip;
-    QScopedPointer<UdpMasterListener> udpMaster;
+    QScopedPointer<UdpHubListener> udpHub;
 
     bool testing = false;
     if ( argc > 1 ) {
@@ -134,17 +134,17 @@ int main(int argc, char** argv)
             
             //Either start our hub server or our jacktrip process as appropriate.
             if (settings.isHubServer()) {
-                udpMaster.reset(settings.getConfiguredHubServer());
-                if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
-                QObject::connect(udpMaster.data(), &UdpMasterListener::signalStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
-                QObject::connect(udpMaster.data(), &UdpMasterListener::signalError, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+                udpHub.reset(settings.getConfiguredHubServer());
+                if (gVerboseFlag) std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
+                QObject::connect(udpHub.data(), &UdpHubListener::signalStopped, &app, &QCoreApplication::quit, Qt::QueuedConnection);
+                QObject::connect(udpHub.data(), &UdpHubListener::signalError, &app, &QCoreApplication::quit, Qt::QueuedConnection);
 #if defined (__LINUX__) || (__MAC_OSX__)
-                setupUnixSignalHandler(UdpMasterListener::sigIntHandler);
+                setupUnixSignalHandler(UdpHubListener::sigIntHandler);
 #else
                 isHubServer = true;
                 SetConsoleCtrlHandler(windowsCtrlHandler, true);
 #endif
-                udpMaster->start();
+                udpHub->start();
             } else {
                 jackTrip.reset(settings.getConfiguredJackTrip());
                 if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
@@ -155,7 +155,7 @@ int main(int argc, char** argv)
 #else
                 std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
 #endif
-#ifdef WAIRTOMASTER // WAIR
+#ifdef WAIRTOHUB // WAIR
                 jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
 #else
                 jackTrip->startProcess();
