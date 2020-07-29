@@ -5,7 +5,7 @@ You can use it between any combination of machines e.g., one end using Linux can
 
 QJackTrip provides the option of either a graphical or command line interface. If run with no arguments, it will default to the graphical user interface. (The command switches for the terminal are identical to JackTrip, and these can be listed by running "qjacktrip -h".)
 
-As this is a preliminary release of the branch, the installation and bulid instructions haven't been updated yet. The process should be almost identical to JackTrip, but the renamed build script (build-script) and the Qt project file (qjacktrip.pro) can be found in the top level folder. Running "./build-script" will output the compiled program in the "build" directory. There's also a script in the "os x" directory that will put together an app file for the Mac.
+As this is a preliminary release of the branch, the installation and bulid instructions haven't been updated yet. The process should be almost identical to JackTrip, but the renamed build script (build-script) and the Qt project file (qjacktrip.pro) can be found in the top level folder. Running "./build-script" will output the compiled program in the "build" directory. There's also a script in the "os x" directory that will put together an app bundle for the Mac.
 
 Alternatively, CMake can be used to build the project. From the top level folder, run the following commands:  
 mkdir build  
