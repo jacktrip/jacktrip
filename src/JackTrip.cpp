@@ -369,8 +369,8 @@ void JackTrip::startProcess(
     setupRingBuffers();
     // Connect Signals and Slots
     // -------------------------
-    QObject::connect(mPacketHeader, SIGNAL(signalError(const char*)),
-                     this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    QObject::connect(mPacketHeader, &PacketHeader::signalError,
+                     this, &JackTrip::slotStopProcessesDueToError, Qt::QueuedConnection);
     QObject::connect(mDataProtocolReceiver, SIGNAL(signalReceivedConnectionFromPeer()),
                      this, SLOT(slotReceivedConnectionFromPeer()),
                      Qt::QueuedConnection);

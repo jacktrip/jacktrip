@@ -65,7 +65,11 @@ void QJackTrip::closeEvent(QCloseEvent *event)
 
 void QJackTrip::processFinished()
 {
+    if (!m_jackTripRunning) {
+        return;
+    }
     m_jackTripRunning = false;
+    m_ui->disconnectButton->setEnabled(false);
     if (m_ui->typeComboBox->currentText() == "Hub Server") {
         m_udpHub.reset();
     } else {
@@ -146,6 +150,7 @@ void QJackTrip::receivedIP(QNetworkReply* reply)
     } else {
         QByteArray address = reply->readAll();
         m_ui->ipLabel->setText(QString("External IP address: ").append(address));
+        m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     }
     reply->deleteLater();
 }
@@ -193,6 +198,7 @@ void QJackTrip::start()
                              Qt::QueuedConnection);
             QObject::connect(m_udpHub.data(), &UdpHubListener::signalError, this, &QJackTrip::processError, 
                              Qt::QueuedConnection);
+            m_ui->disconnectButton->setEnabled(true);
             m_udpHub->start();
             m_ui->statusBar->showMessage("Hub Server Started");
         } else {
@@ -246,6 +252,7 @@ void QJackTrip::start()
             QObject::connect(m_jackTrip.data(), &JackTrip::signalUdpWaitingTooLong, this,
                              &QJackTrip::udpWaitingTooLong);
             m_ui->statusBar->showMessage("Waiting for Peer...");
+            m_ui->disconnectButton->setEnabled(true);
 #ifdef WAIRTOHUB // WAIR
             m_jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
 #else
@@ -262,12 +269,11 @@ void QJackTrip::start()
         m_jackTripRunning = false;
         enableUi(true);
         m_ui->connectButton->setEnabled(true);
+        m_ui->disconnectButton->setEnabled(false);
         m_ui->statusBar->clearMessage();
         
         return;
     }
-    
-    m_ui->disconnectButton->setEnabled(true);
 }
 
 void QJackTrip::stop()

@@ -95,6 +95,13 @@ UdpDataProtocol::~UdpDataProtocol()
 {
     delete[] mAudioPacket;
     delete[] mFullPacket;
+    if (mRunMode == RECEIVER) {
+#ifdef __WIN_32__
+        closesocket(mSocket);
+#else
+        ::close(mSocket);
+#endif
+    }
     wait();
 }
 
@@ -584,7 +591,6 @@ void UdpDataProtocol::run()
                                     last_seq_num,
                                     newer_seq_num);
         }
-        ::close(mSocket);
         break; }
 
     case SENDER : {
@@ -806,7 +812,7 @@ bool UdpDataProtocol::datagramAvailable()
     burre.len = sizeof(c);
     DWORD n = 0;
     DWORD flags = MSG_PEEK;
-    int ret = WSARecv(mSocket, &buffer, 1, &n, &flags);
+    int ret = WSARecv(mSocket, &buffer, 1, &n, &flags, NULL, NULL);
     if (ret == 0) {
         //True if no error,
         return true;
@@ -822,4 +828,3 @@ bool UdpDataProtocol::datagramAvailable()
     return (n != -1 || errno == EMSGSIZE);
 #endif
 }
-

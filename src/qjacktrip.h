@@ -31,6 +31,7 @@
 #include <QCloseEvent>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QMutex>
 #include "UdpHubListener.h"
 #include "JackTrip.h"
 

@@ -406,9 +406,9 @@ public:
 public slots:
     /// \brief Slot to stop all the processes and threads
     virtual void slotStopProcesses()
-    {
-        this->stop();
-    }
+    { this->stop(); }
+    virtual void slotStopProcessesDueToError(const QString &errorMessage)
+    { this->stop(errorMessage); }
 
     /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds
    * when UDP has waited for more than 30 seconds.
