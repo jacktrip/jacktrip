@@ -106,7 +106,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mReceiverPeerPort(receiver_peer_port),
     mTcpServerPort(4464),
     mRedundancy(redundancy),
-    mJackClientName("JackTrip"),
+    mJackClientName(gJackDefaultClientName),
     mConnectionMode(JackTrip::NORMAL),
     mReceivedConnection(false),
     mTcpConnectionError(false),
@@ -133,7 +133,7 @@ JackTrip::~JackTrip()
 
 //*******************************************************************************
 void JackTrip::setupAudio(
-        #ifdef WAIRTOMASTER // WAIR
+        #ifdef WAIRTOHUB // WAIR
         int ID
         #endif // endwhere
         )
@@ -156,15 +156,14 @@ void JackTrip::setupAudio(
                                          #endif // endwhere
                                                  mAudioBitResolution);
 
-#ifdef WAIRTOMASTER // WAIR
-        qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
-        QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
-        QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
-        if(mPeerAddress.toStdString()!="")
-            mJackClientName = tmp.constData();
-        std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
-                      mJackClientName << std::endl;
-
+#ifdef WAIRTOHUB // WAIR
+        //Set our Jack client name if we're a hub server or a custom name hasn't been set
+	      if ( mPeerAddress.toStdString() != "" &&
+	          (mJackClientName == gJackDefaultClientName || mJackTripMode == SERVERPINGSERVER)) {
+            mJackClientName = QString(mPeerAddress).replace(":", ".").toLatin1().constData();
+        }
+//        std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
+//                      mJackClientName << std::endl;
 #endif // endwhere
 
         mAudioInterface->setClientName(mJackClientName);
@@ -319,7 +318,7 @@ void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
 
 //*******************************************************************************
 void JackTrip::startProcess(
-        #ifdef WAIRTOMASTER // WAIR
+        #ifdef WAIRTOHUB // WAIR
         int ID
         #endif // endwhere
         )
@@ -336,10 +335,8 @@ void JackTrip::startProcess(
 
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)" << std::endl;
 #if defined __WIN_32__
-    //cc fixed windows crash with this print statement!
-    qDebug() << "before  mJackTrip->startProcess"
-             << mReceiverBindPort<< mSenderBindPort;
-    //        msleep(2000);
+    //cc fixed windows crash with this print statement! hope to delete
+//    qDebug() << "before  mJackTrip->startProcess"  << mReceiverBindPort<< mSenderBindPort;
 #endif
     checkIfPortIsBinded(mReceiverBindPort);
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mSenderBindPort)" << std::endl;
@@ -348,7 +345,7 @@ void JackTrip::startProcess(
     // ------------------------------
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before setupAudio" << std::endl;
     setupAudio(
-            #ifdef WAIRTOMASTER // wair
+            #ifdef WAIRTOHUB // wair
                 ID
             #endif // endwhere
                 );

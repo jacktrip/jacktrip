@@ -16,7 +16,7 @@ And as of spring 2020 it moved back to GitHub for the current development.
 ## Links ##
   * Preliminary [Documentation](http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/) and [API](http://ccrma.stanford.edu/groups/soundwire/software/jacktrip/annotated.html).
   * Subscribe to the [Mailing List](http://groups.google.com/group/jacktrip-users).
-  * [CCRMA](http://ccrma.stanford.edu/) .
+  * [CCRMA](http://ccrma.stanford.edu/).
   * [SoundWIRE group](http://ccrma.stanford.edu/groups/soundwire/).
   * [Juan-Pablo Caceres](https://ccrma.stanford.edu/~jcaceres/).
 
