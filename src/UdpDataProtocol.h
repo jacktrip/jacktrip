@@ -41,7 +41,6 @@
 #include <stdexcept>
 
 #include <QThread>
-#include <QUdpSocket>
 #include <QHostAddress>
 #include <QMutex>
 
@@ -104,7 +103,7 @@ public:
    * \return number of bytes read, -1 on error
    */
     //virtual int receivePacket(char* buf, const size_t n);
-    virtual int receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n);
+    virtual int receivePacket(char* buf, const size_t n);
 
     /** \brief Sends a packet
    *
@@ -121,8 +120,7 @@ public:
    * \param peerHostAddress QHostAddress to store the peer address
    * \param port Receiving port
    */
-    virtual void getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
-                                               QHostAddress& peerHostAddress,
+    virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
                                                uint16_t& port);
 
     /** \brief Sets the bind port number
@@ -167,7 +165,7 @@ protected:
 #endif
 
     /** \brief This function blocks until data is available for reading in the
-   * QUdpSocket. The function will timeout after timeout_msec microseconds.
+   * socket. The function will timeout after timeout_msec microseconds.
    *
    * This function is intended to replace QAbstractSocket::waitForReadyRead which has
    * some problems with multithreading.
@@ -175,12 +173,11 @@ protected:
    * \return returns true if there is data available for reading;
    * otherwise it returns false (if an error occurred or the operation timed out)
    */
-    void waitForReady(QUdpSocket& UdpSocket, int timeout_msec);
+    void waitForReady(int timeout_msec);
 
     /** \brief Redundancy algorythm at the receiving end
     */
-    virtual void receivePacketRedundancy(QUdpSocket& UdpSocket,
-                                         int8_t* full_redundant_packet,
+    virtual void receivePacketRedundancy(int8_t* full_redundant_packet,
                                          int full_redundant_packet_size,
                                          int full_packet_size,
                                          uint16_t& current_seq_num,
@@ -194,6 +191,8 @@ protected:
                                       int full_packet_size);
 
 private:
+    bool datagramAvailable();
+    
     int mBindPort; ///< Local Port number to Bind
     int mPeerPort; ///< Peer Port number
     const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
