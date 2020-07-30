@@ -158,9 +158,9 @@ void JackTrip::setupAudio(
 
 #ifdef WAIRTOHUB // WAIR
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
-	      if ( mPeerAddress.toStdString() != "" &&
-	          (mJackClientName.constData() == gJackDefaultClientName.constData() || mJackTripMode == SERVERPINGSERVER)) {
-	          mJackClientName = QString(mPeerAddress).replace(":", ".");
+        if ( mPeerAddress.toStdString() != "" &&
+            (mJackClientName.constData() == gJackDefaultClientName.constData() || mJackTripMode == SERVERPINGSERVER)) {
+            mJackClientName = QString(mPeerAddress).replace(":", ".");
         }
 //        std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
 //                      mJackClientName << std::endl;
