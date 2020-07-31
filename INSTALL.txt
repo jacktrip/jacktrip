@@ -32,10 +32,10 @@ To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
 ---
 Fedora installation (also tested on Ubuntu Studio):
 
-To install on Fedora (and possibly other Linux distributions), you need qt5, jack-audio-connection-kit-devel, and rtaudio.
+To install on Fedora (and possibly other Linux distributions), you need qt5, qtchooser, jack-audio-connection-kit-devel, and rtaudio.
 
 How to install qt5 and other needed tools on Fedora: 
-dnf install qt5-devel
+dnf install qt5-devel qtchooser
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
 dnf install jack-audio-connection-kit-devel alsa-lib-devel iperf qjackctl audacity git
