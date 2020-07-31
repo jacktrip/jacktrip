@@ -60,7 +60,7 @@ private slots:
     void chooseRunType(const QString &type);
     void addressChanged(const QString &address);
     void receivedIP(QNetworkReply *reply);
-    void resetAdvancedOptions();
+    void resetOptions();
     void start();
     void stop();
     void exit();
@@ -68,6 +68,8 @@ private slots:
 private:
     void enableUi(bool enabled);
     void advancedOptionsForHubServer(bool isHubServer);
+    void loadSettings();
+    void saveSettings();
     
     QScopedPointer<Ui::QJackTrip> m_ui;
     QScopedPointer<UdpHubListener> m_udpHub;

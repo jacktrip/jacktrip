@@ -27,6 +27,7 @@
 #include "ui_qjacktrip.h"
 #include "about.h"
 #include <QMessageBox>
+#include <QSettings>
 
 QJackTrip::QJackTrip(QWidget *parent) :
     QMainWindow(parent),
@@ -42,7 +43,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     connect(m_ui->connectButton, &QPushButton::released, this, &QJackTrip::start);
     connect(m_ui->disconnectButton, &QPushButton::released, this, &QJackTrip::stop);
     connect(m_ui->exitButton, &QPushButton::released, this, &QJackTrip::exit);
-    connect(m_ui->useDefaultsButton, &QPushButton::released, this, &QJackTrip::resetAdvancedOptions);
+    connect(m_ui->useDefaultsButton, &QPushButton::released, this, &QJackTrip::resetOptions);
     connect(m_ui->aboutButton, &QPushButton::released, this, [=](){
             About about(this);
             about.exec();
@@ -54,6 +55,8 @@ QJackTrip::QJackTrip(QWidget *parent) :
     //Use the ipify API to find our external IP address.
     m_netManager->get(QNetworkRequest(QUrl("https://api.ipify.org")));
     m_ui->statusBar->showMessage(QString("QJackTrip version ").append(gVersion));
+    
+    loadSettings();
 }
 
 void QJackTrip::closeEvent(QCloseEvent *event)
@@ -155,14 +158,22 @@ void QJackTrip::receivedIP(QNetworkReply* reply)
     reply->deleteLater();
 }
 
-void QJackTrip::resetAdvancedOptions()
+void QJackTrip::resetOptions()
 {
+    //Reset our basic options
+    m_ui->channelSpinBox->setValue(2);
+    m_ui->autoPatchComboBox->setCurrentIndex(0);
+    m_ui->zeroCheckBox->setChecked(false);
+    
+    //Then advanced options
     m_ui->clientNameEdit->setText("");
     m_ui->portOffsetSpinBox->setValue(0);
     m_ui->queueLengthSpinBox->setValue(gDefaultQueueLength);
     m_ui->redundancySpinBox->setValue(1);
     m_ui->resolutionComboBox->setCurrentIndex(1);
     m_ui->connectAudioCheckBox->setChecked(true);
+    
+    saveSettings();
 }
 
 void QJackTrip::start()
@@ -294,6 +305,7 @@ void QJackTrip::exit()
     }
     m_isExiting = true;
     m_ui->exitButton->setEnabled(false);
+    saveSettings();
     if (m_jackTripRunning) {
         stop();
     } else {
@@ -323,5 +335,44 @@ void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
     m_ui->connectAudioCheckBox->setVisible(!isHubServer);
 }
 
+void QJackTrip::loadSettings()
+{
+#ifdef __MAC_OSX__
+    QSettings settings("psi-borg.org", "QJackTrip");
+#else
+    QSettings settings("psi-borg", "QJackTrip");
+#endif
+    m_ui->typeComboBox->setCurrentIndex(settings.value("RunMode", 0).toInt());
+    m_ui->addressEdit->setText(settings.value("LastAddress", "").toString());
+    m_ui->channelSpinBox->setValue(settings.value("Channels", 2).toInt());
+    m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
+    m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
+    m_ui->clientNameEdit->setText(settings.value("ClientName", "").toString());
+    m_ui->portOffsetSpinBox->setValue(settings.value("PortOffset", 0).toInt());
+    m_ui->queueLengthSpinBox->setValue(settings.value("QueueLength", 4).toInt());
+    m_ui->redundancySpinBox->setValue(settings.value("Redundancy", 1).toInt());
+    m_ui->resolutionComboBox->setCurrentIndex(settings.value("resolution", 1).toInt());
+    m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
+}
+
+void QJackTrip::saveSettings()
+{
+#ifdef __MAC_OSX__
+    QSettings settings("psi-borg.org", "QJackTrip");
+#else
+    QSettings settings("psi-borg", "QJackTrip");
+#endif
+    settings.setValue("RunMode", m_ui->typeComboBox->currentIndex());
+    settings.setValue("LastAddress", m_ui->addressEdit->text());
+    settings.setValue("Channels", m_ui->channelSpinBox->value());
+    settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
+    settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
+    settings.setValue("ClientName", m_ui->clientNameEdit->text());
+    settings.setValue("PortOffset", m_ui->portOffsetSpinBox->value());
+    settings.setValue("QueueLength", m_ui->queueLengthSpinBox->value());
+    settings.setValue("Redundancy", m_ui->redundancySpinBox->value());
+    settings.setValue("Resolution", m_ui->resolutionComboBox->currentIndex());
+    settings.setValue("ConnectAudio", m_ui->connectAudioCheckBox->isChecked());
+}
 
 QJackTrip::~QJackTrip() = default;
