@@ -14,13 +14,7 @@ fi
 
 # Set qmake command name
 if [[ $platform == 'linux' ]]; then
-    if hash qmake-qt5 2>/dev/null; then
-	echo "Using qmake-qt5"
-	QCMD=qmake-qt5
-    elif hash qmake 2>/dev/null; then #in case qt was compiled by user
-	echo "Using qmake"
-	QCMD=qmake
-    fi
+    QCMD='qtchooser -run-tool=qmake -qt=5'
     QSPEC=linux-g++
 elif [[ $platform == 'macosx' ]]; then
     QCMD=qmake
