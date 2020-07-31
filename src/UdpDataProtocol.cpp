@@ -408,8 +408,6 @@ void UdpDataProtocol::run()
     //                 mJackTrip, SLOT(slotStopProcesses()),
     //                 Qt::QueuedConnection);
 
-    //Wrap our socket in a QUdpSocket object if we're the receiver, for convenience.
-    //If we're the sender, we'll just write directly to our socket.
     if (mRunMode == RECEIVER) {
         cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
         cout << gPrintSeparator << endl;
@@ -804,6 +802,8 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
 
 bool UdpDataProtocol::datagramAvailable()
 {
+    //Currently using a simplified version of the way QUdpSocket checks for datagrams.
+    //TODO: Consider changing to use poll() or select().
     char c;
 #if defined (__WIN_32__)
     //Need to use the winsock version of the function for MSG_PEEK
