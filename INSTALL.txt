@@ -103,7 +103,7 @@ $ qmake -config nojack jacktrip.pro
 $ make release
 
 
-If you want to install (using Terminal): on the /src directory type:
+If you want to install (using Terminal): on the /builddir directory type:
 
 $ sudo cp jacktrip /usr/local/bin/
   (enter your password when prompted)
