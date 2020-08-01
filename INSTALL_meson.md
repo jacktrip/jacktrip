@@ -3,10 +3,10 @@
 ## Install Dependencies
 
 Fedora:
-dnf install meson qt5-qtbase-devel rtaudio-devel jack-audio-connection-kit-devel
+dnf install meson qt5-qtbase-devel rtaudio-devel jack-audio-connection-kit-devel qtchooser
 
 Debian/Ubuntu:
-apt install meson build-essential qtbase5-dev librtaudio-dev libjack-jackd2-dev
+apt install meson build-essential qtbase5-dev librtaudio-dev libjack-jackd2-dev qtchooser
 
 MacOS with brew (not tested):
 brew install meson qt rt-audio jack
