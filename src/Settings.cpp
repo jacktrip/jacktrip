@@ -408,7 +408,7 @@ void Settings::printUsage()
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
     cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
     cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
-    cout << " --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
+    cout << " --nojackportsconnect                     Don't connect default audio ports in jack, including not doing hub auto audio patch in HUB SERVER mode." << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
