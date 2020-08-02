@@ -110,7 +110,13 @@ win32 {
 
 DESTDIR = .
 QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
-target.path = /usr/bin
+
+# isEmpty(PREFIX) will allow path to be changed during the command line
+# call to qmake, e.g. qmake PREFIX=/usr
+isEmpty(PREFIX) {
+ PREFIX = /usr/local
+}
+target.path = $${PREFIX}/bin/
 INSTALLS += target
 
 # for plugins
