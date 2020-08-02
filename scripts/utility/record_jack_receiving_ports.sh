@@ -15,7 +15,7 @@ for IP in "${uniqIPs[@]}"
 do
   printf '%s\n' "IP: ${IP}"
   NOW=$( date '+%F_%H:%M:%S' )
-  xterm -hold -e "ecasound -f:,1,48000 -i jack,${IP} -o rec_${IP}_${NOW}_output.wav" > /dev/null 2>&1 &
+  ecasound -f:,1,48000 -i jack,${IP} -o rec_${IP}_${NOW}_output.wav &
 done 
 
 echo "Press ESC key to stop recording"
