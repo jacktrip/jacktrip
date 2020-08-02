@@ -116,7 +116,7 @@ QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 isEmpty(PREFIX) {
  PREFIX = /usr/local
 }
-target.path = $${PREFIX}/bin/
+target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # for plugins
