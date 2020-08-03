@@ -70,7 +70,7 @@ class JackTripWorker : public QObject, public QRunnable
 
 public:
     /// \brief The class constructor
-    JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
+    JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE, QString clientName = "");
     /// \brief The class destructor
     virtual ~JackTripWorker();
 
@@ -123,6 +123,7 @@ private:
     
     int mBufferQueueLength;
     JackTrip::underrunModeT mUnderRunMode;
+    QString mClientName;
 
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread

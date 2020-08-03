@@ -158,7 +158,7 @@ public:
     }*/
 
     /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
-    virtual void setPeerAddress(const char* PeerHostOrIP);
+    virtual void setPeerAddress(QString PeerHostOrIP);
 
     /** \brief Append a process plugin. Processes will be appended in order
    * \param plugin Pointer to ProcessPlugin Class
@@ -234,8 +234,10 @@ public:
         mReceiverPeerPort = port;
     }
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(const char* ClientName)
-    { mJackClientName = ClientName; }
+    virtual void setClientName(QString clientName)
+    { mJackClientName = clientName; }
+    virtual void setRemoteClientName(QString remoteClientName)
+    { mRemoteClientName = remoteClientName; }
     /// \brief Set the number of audio channels
     virtual void setNumChannels(int num_chans)
     { mNumChans = num_chans; }
@@ -516,7 +518,9 @@ private:
     int mTcpServerPort;
 
     unsigned int mRedundancy; ///< Redundancy factor in network data
-    const char* mJackClientName; ///< JackAudio Client Name
+    QString mJackClientName; ///< JackAudio Client Name
+    QByteArray mJackClientNameData;
+    QString mRemoteClientName; ///< Remote JackAudio Client Name for hub client mode
 
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
     JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Hub Server Jack Audio Patch Connection Mode

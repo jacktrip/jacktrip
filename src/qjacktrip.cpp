@@ -115,7 +115,6 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->connectButton->setEnabled(!m_ui->addressEdit->text().isEmpty());
         m_ui->connectButton->setText("Connect");
         m_ui->disconnectButton->setText("Disconnect");
-        
     } else {
         m_ui->addressEdit->setEnabled(false);
         m_ui->addressLabel->setEnabled(false);
@@ -136,6 +135,14 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->channelSpinBox->setVisible(true);
         m_ui->channelLabel->setVisible(true);
         advancedOptionsForHubServer(false);
+    }
+
+    if (type == "Hub Client") {
+        m_ui->remoteNameEdit->setVisible(true);
+        m_ui->remoteNameLabel->setVisible(true);
+    } else {
+        m_ui->remoteNameEdit->setVisible(false);
+        m_ui->remoteNameLabel->setVisible(false);
     }
 }
 
@@ -167,6 +174,7 @@ void QJackTrip::resetOptions()
     
     //Then advanced options
     m_ui->clientNameEdit->setText("");
+    m_ui->remoteNameEdit->setText("");
     m_ui->portOffsetSpinBox->setValue(0);
     m_ui->queueLengthSpinBox->setValue(gDefaultQueueLength);
     m_ui->redundancySpinBox->setValue(1);
@@ -244,14 +252,17 @@ void QJackTrip::start()
             
             // Set peer address in client mode
             if (jackTripMode == JackTrip::CLIENT || jackTripMode == JackTrip::CLIENTTOPINGSERVER) {
-                m_jackTrip->setPeerAddress(m_ui->addressEdit->text().toLatin1().data());
+                m_jackTrip->setPeerAddress(m_ui->addressEdit->text());
+                if (jackTripMode == JackTrip::CLIENTTOPINGSERVER && !m_ui->remoteNameEdit->text().isEmpty()) {
+                    m_jackTrip->setRemoteClientName(m_ui->remoteNameEdit->text());
+                }
             }
             
             m_jackTrip->setBindPorts(gDefaultPort + m_ui->portOffsetSpinBox->value());
             m_jackTrip->setPeerPorts(gDefaultPort + m_ui->portOffsetSpinBox->value());
             
             if (!m_ui->clientNameEdit->text().isEmpty()) {
-                m_jackTrip->setClientName(m_ui->clientNameEdit->text().toStdString().c_str());
+                m_jackTrip->setClientName(m_ui->clientNameEdit->text());
             }
             
             QObject::connect(m_jackTrip.data(), &JackTrip::signalProcessesStopped, this, &QJackTrip::processFinished, 
@@ -348,6 +359,7 @@ void QJackTrip::loadSettings()
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->clientNameEdit->setText(settings.value("ClientName", "").toString());
+    m_ui->remoteNameEdit->setText(settings.value("RemoteName", "").toString());
     m_ui->portOffsetSpinBox->setValue(settings.value("PortOffset", 0).toInt());
     m_ui->queueLengthSpinBox->setValue(settings.value("QueueLength", 4).toInt());
     m_ui->redundancySpinBox->setValue(settings.value("Redundancy", 1).toInt());
@@ -368,6 +380,7 @@ void QJackTrip::saveSettings()
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
     settings.setValue("ClientName", m_ui->clientNameEdit->text());
+    settings.setValue("RemoteName", m_ui->remoteNameEdit->text());
     settings.setValue("PortOffset", m_ui->portOffsetSpinBox->value());
     settings.setValue("QueueLength", m_ui->queueLengthSpinBox->value());
     settings.setValue("Redundancy", m_ui->redundancySpinBox->value());

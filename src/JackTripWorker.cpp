@@ -58,11 +58,12 @@
 using std::cout; using std::endl;
 
 //*******************************************************************************
-JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode) :
+JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode, QString clientName) :
     mUdpHubListener(udphublistener),
     m_connectDefaultAudioPorts(false),
     mBufferQueueLength(BufferQueueLength),
     mUnderRunMode(UnderRunMode),
+    mClientName(clientName),
     mSpawning(false),
     mID(0),
     mNumChans(1),
@@ -188,6 +189,10 @@ void JackTripWorker::run()
             jacktrip.setIOStatTimeout(mIOStatTimeout);
             jacktrip.setIOStatStream(mIOStatStream);
         }
+        
+        if (!mClientName.isEmpty()) {
+            jacktrip.setClientName(mClientName);
+        }
 
         // Connect signals and slots
         // -------------------------
@@ -207,7 +212,7 @@ void JackTripWorker::run()
         // I still haven't figure out why
         //ClientAddress.toString().toLatin1().constData();
         //jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
-        jacktrip.setPeerAddress(mClientAddress.toLatin1().constData());
+        jacktrip.setPeerAddress(mClientAddress);
         jacktrip.setBindPorts(mServerPort);
         //jacktrip.setPeerPorts(mClientPort);
 

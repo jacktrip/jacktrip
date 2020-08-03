@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>531</height>
+    <height>555</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -263,7 +263,61 @@
         <string>Advanced options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="7" column="0" colspan="2">
+        <item row="5" column="0">
+         <widget class="QLabel" name="resolutionLabel">
+          <property name="text">
+           <string>Audio &amp;Bit Resolution</string>
+          </property>
+          <property name="buddy">
+           <cstring>resolutionComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="clientNameEdit">
+          <property name="maxLength">
+           <number>64</number>
+          </property>
+          <property name="placeholderText">
+           <string>JackTrip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QSpinBox" name="queueLengthSpinBox">
+          <property name="minimum">
+           <number>2</number>
+          </property>
+          <property name="value">
+           <number>4</number>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="connectAudioLayout">
+          <item>
+           <widget class="QCheckBox" name="connectAudioCheckBox">
+            <property name="text">
+             <string>&amp;Connect default audio ports</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="queueLengthLabel">
+          <property name="text">
+           <string>Buffer &amp;Queue Length</string>
+          </property>
+          <property name="buddy">
+           <cstring>queueLengthSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="2">
          <layout class="QHBoxLayout" name="useDefaultsLayout">
           <item>
            <spacer name="useDefaultsSpacer">
@@ -287,57 +341,7 @@
           </item>
          </layout>
         </item>
-        <item row="3" column="1">
-         <widget class="QSpinBox" name="redundancySpinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="clientNameLabel">
-          <property name="text">
-           <string>Custom Client &amp;Name</string>
-          </property>
-          <property name="buddy">
-           <cstring>clientNameEdit</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="resolutionLabel">
-          <property name="text">
-           <string>Audio &amp;Bit Resolution</string>
-          </property>
-          <property name="buddy">
-           <cstring>resolutionComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="clientNameEdit">
-          <property name="maxLength">
-           <number>32</number>
-          </property>
-          <property name="placeholderText">
-           <string>JackTrip</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="redundancyLabel">
-          <property name="text">
-           <string>&amp;Redundancy</string>
-          </property>
-          <property name="buddy">
-           <cstring>redundancySpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
+        <item row="5" column="1">
          <widget class="QComboBox" name="resolutionComboBox">
           <property name="currentIndex">
            <number>1</number>
@@ -364,58 +368,27 @@
           </item>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="portOffsetLabel">
+        <item row="0" column="0">
+         <widget class="QLabel" name="clientNameLabel">
           <property name="text">
-           <string>Port &amp;Offset</string>
+           <string>Custom Client &amp;Name</string>
           </property>
           <property name="buddy">
-           <cstring>portOffsetSpinBox</cstring>
+           <cstring>clientNameEdit</cstring>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="queueLengthLabel">
-          <property name="text">
-           <string>Buffer &amp;Queue Length</string>
-          </property>
-          <property name="buddy">
-           <cstring>queueLengthSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="portOffsetSpinBox">
-          <property name="maximum">
-           <number>999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QSpinBox" name="queueLengthSpinBox">
+        <item row="4" column="1">
+         <widget class="QSpinBox" name="redundancySpinBox">
           <property name="minimum">
-           <number>2</number>
+           <number>1</number>
           </property>
           <property name="value">
-           <number>4</number>
+           <number>1</number>
           </property>
          </widget>
         </item>
-        <item row="5" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="connectAudioLayout">
-          <item>
-           <widget class="QCheckBox" name="connectAudioCheckBox">
-            <property name="text">
-             <string>&amp;Connect default audio ports</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="6" column="0">
+        <item row="7" column="0">
          <spacer name="advancedVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -427,6 +400,47 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="portOffsetLabel">
+          <property name="text">
+           <string>Port &amp;Offset</string>
+          </property>
+          <property name="buddy">
+           <cstring>portOffsetSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="portOffsetSpinBox">
+          <property name="maximum">
+           <number>999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="redundancyLabel">
+          <property name="text">
+           <string>&amp;Redundancy</string>
+          </property>
+          <property name="buddy">
+           <cstring>redundancySpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="remoteNameEdit">
+          <property name="maxLength">
+           <number>64</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="remoteNameLabel">
+          <property name="text">
+           <string>Remote Client Name</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

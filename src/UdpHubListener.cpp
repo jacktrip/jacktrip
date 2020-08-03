@@ -158,7 +158,8 @@ void UdpHubListener::run()
 
             // Get UDP port from client
             // ------------------------
-            peer_udp_port = readClientUdpPort(clientConnection);
+            QString clientName = QString();
+            peer_udp_port = readClientUdpPort(clientConnection, clientName);
             if ( peer_udp_port == 0 ) { break; }
             cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
 
@@ -203,7 +204,7 @@ void UdpHubListener::run()
             // --------------------
             // Register JackTripWorker with the hub listener
             delete mJTWorkers->at(id); // just in case the Worker was previously created
-            mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode));
+            mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
             if (mIOStatTimeout > 0) {
                 mJTWorkers->at(id)->setIOStatTimeout(mIOStatTimeout);
                 mJTWorkers->at(id)->setIOStatStream(mIOStatStream);
@@ -298,7 +299,7 @@ void UdpHubListener::run()
 
 //*******************************************************************************
 // Returns 0 on error
-int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
+int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection, QString &clientName)
 {
     // Read the size of the package
     // ----------------------------
@@ -319,6 +320,13 @@ int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
     char port_buf[size];
     clientConnection->read(port_buf, size);
     std::memcpy(&udp_port, port_buf, size);
+    
+    if (clientConnection->bytesAvailable() == gMaxRemoteNameLength) {
+        char name_buf[gMaxRemoteNameLength];
+        clientConnection->read(name_buf, gMaxRemoteNameLength);
+        clientName = QString::fromUtf8((const char *)name_buf);
+    }
+    
     return udp_port;
 }
 

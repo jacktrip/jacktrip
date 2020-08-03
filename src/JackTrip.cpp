@@ -150,7 +150,7 @@ void JackTrip::setupAudio(
     // Check if mAudioInterface has already been created or not
     if (mAudioInterface != NULL)  { // if it has been created, disconnet it from JACK and delete it
         cout << "WARINING: JackAudio interface was setup already:" << endl;
-        cout << "It will be errased and setup again." << endl;
+        cout << "It will be erased and setup again." << endl;
         cout << gPrintSeparator << endl;
         closeAudio();
     }
@@ -169,16 +169,15 @@ void JackTrip::setupAudio(
         qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
-        if (mPeerAddress.toStdString() != "" &&
-            (mJackClientName == gJackDefaultClientName || mJackTripMode == SERVERPINGSERVER)) {
-            mJackClientName = QString(mPeerAddress).replace(":", ".").toLatin1().constData();
+        if (!mPeerAddress.isEmpty() && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
+            mJackClientName = QString(mPeerAddress).replace(":", "_");
         }
         std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
-                      mJackClientName << std::endl;
+                      mJackClientName.toStdString() << std::endl;
 
 #endif // endwhere
-
-        mAudioInterface->setClientName(mJackClientName);
+        mJackClientNameData = mJackClientName.toUtf8();
+        mAudioInterface->setClientName(mJackClientNameData.data());
 
         if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->setup" << std::endl;
         mAudioInterface->setup();
@@ -314,7 +313,7 @@ void JackTrip::setupRingBuffers()
 
 
 //*******************************************************************************
-void JackTrip::setPeerAddress(const char* PeerHostOrIP)
+void JackTrip::setPeerAddress(QString PeerHostOrIP)
 {
     mPeerAddress = PeerHostOrIP;
 }
@@ -516,10 +515,28 @@ void JackTrip::receivedConnectionTCP()
 
     // Send Client Port Number to Server
     // ---------------------------------
-    char port_buf[sizeof(mReceiverBindPort)];
+    char port_buf[sizeof(mReceiverBindPort) + gMaxRemoteNameLength];
     std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
+    std::memset(port_buf + sizeof(mReceiverBindPort), 0, gMaxRemoteNameLength);
+    if (!mRemoteClientName.isEmpty()) {
+        //If our remote client name is set, send it too.
+        QByteArray name = mRemoteClientName.toUtf8();
+        // Find a clean place to truncate if we're over length.
+        // (Make sure we're not in the middle of a multi-byte characetr.)
+        int length = name.length();
+        //Need to take the final null terminator into account here.
+        if (length > gMaxRemoteNameLength - 1) {
+            length = gMaxRemoteNameLength - 1;
+            while ((length > 0) && ((name.at(length) & 0xc0) == 0x80)) {
+                //We're in the middle of a multi-byte character. Work back.
+                length--;
+            }
+        }
+        name.truncate(length);
+        std::memcpy(port_buf + sizeof(mReceiverBindPort), name.data(), length + 1);
+    }
 
-    mTcpClient.write(port_buf, sizeof(mReceiverBindPort));
+    mTcpClient.write(port_buf, sizeof(port_buf));
     /*while ( mTcpClient.bytesToWrite() > 0 ) {
         mTcpClient.waitForBytesWritten(-1);
     }*/

@@ -487,7 +487,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     // Set peer address in server mode
     if (mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
-        jackTrip->setPeerAddress(mPeerAddress.toLatin1().data()); }
+        jackTrip->setPeerAddress(mPeerAddress); }
         
     //        if(mLocalAddress!=QString()) // default
     //            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
