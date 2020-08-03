@@ -438,9 +438,9 @@ void Settings::printUsage()
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
-    cout << " -J, --clientname                             Change default client name (default: JackTrip)" << endl;
-    cout << " -L, --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
-    cout << " -D, --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
+    cout << " -J, --clientname                         Change default client name (default: JackTrip)" << endl;
+    cout << " -L, --localaddress                       Change default local host IP address (default: 127.0.0.1)" << endl;
+    cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack, including not doing hub auto audio patch in HUB SERVER mode." << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (default: 2)" << endl;
     cout << endl;

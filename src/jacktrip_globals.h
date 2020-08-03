@@ -123,6 +123,7 @@ extern int gVerboseFlag; ///< Verbose mode flag declaration
 /// \name JackAudio
 //@{
 const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
+const char* const gJackDefaultClientName = "JackTrip";
 //@}
 
 
@@ -136,7 +137,7 @@ void setRealtimeProcessPriority();
 /// \name JackTrip Server parameters
 //@{
 /// Maximum Threads that can be run at the same time
-const int gMaxThreads = 290; // some pthread limit around 297?
+const int gMaxThreads = 1024;
 
 /// Public well-known UDP port to where the clients will connect
 const int gServerUdpPort = 4464;

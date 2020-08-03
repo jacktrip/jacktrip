@@ -134,9 +134,14 @@ void UdpHubListener::run()
     while ( !mStopped )
     {
         cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
-        cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
+        if(m_connectDefaultAudioPorts)
+        {
+          cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
+        } else {
+          cout << "JackTrip HUB SERVER: Hub auto audio patch disabled " << endl;
+        }
         cout << "=======================================================" << endl;
-        while ( !TcpServer.waitForNewConnection(1000) )
+        while ( !TcpServer.hasPendingConnections() && !TcpServer.waitForNewConnection(1000) )
         { if (mStopped) { return; } } // block until a new connection is received
         cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 
@@ -460,7 +465,11 @@ void UdpHubListener::enumerateRunningThreadIDs()
 #include "JMess.h"
 void UdpHubListener::connectPatch(bool spawn)
 {
-    cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
+    if(m_connectDefaultAudioPorts) {
+      cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
+    } else {
+      cout << ((spawn)?"spawning":"releasing") << " jacktripWorker" << endl;
+    }
     JMess tmp;
     // default is patch 0, which connects server audio to all clients
     // these are the other cases:
