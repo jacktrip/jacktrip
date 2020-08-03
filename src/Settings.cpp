@@ -66,7 +66,6 @@ Settings::Settings() :
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
-    mClientName(NULL),
     mUnderrunZero(false),
     mLoopBack(false),
     #ifdef WAIR // WAIR
@@ -127,6 +126,7 @@ void Settings::parseInput(int argc, char** argv)
         { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
         { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
         { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
+        { "remotename", required_argument, NULL, 'K' }, // Client name on hub server
         { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
         { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
         { "deviceid", required_argument, NULL, 'd' }, // Set RTAudio device id to use
@@ -146,7 +146,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVh", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:K:RTd:F:p:DvVh", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -259,6 +259,10 @@ void Settings::parseInput(int argc, char** argv)
         case 'J': // Set client Name
             //-------------------------------------------------------
             mClientName = optarg;
+            break;
+        case 'K': // Set Remote client Name
+            //-------------------------------------------------------
+            mRemoteClientName = optarg;
             break;
         case 'R': // RtAudio
             //-------------------------------------------------------
@@ -405,6 +409,7 @@ void Settings::printUsage()
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
     cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
+    cout << " --remotename                             Change default remote client name when connecting to a hub server (the default is derived from this computer's external facing IP address)" << endl;
     cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
     cout << endl;
@@ -474,8 +479,12 @@ JackTrip *Settings::getConfiguredJackTrip()
                      //this, SLOT( slotExitProgram() ));
 
     // Change client name if different from default
-    if (mClientName != NULL) {
+    if (!mClientName.isEmpty()) {
         jackTrip->setClientName(mClientName);
+    }
+    
+    if (!mRemoteClientName.isEmpty() && (mJackTripMode == JackTrip::CLIENTTOPINGSERVER)) {
+        jackTrip->setRemoteClientName(mRemoteClientName);
     }
 
     // Set buffers to zero when underrun
