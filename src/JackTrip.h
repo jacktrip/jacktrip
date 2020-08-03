@@ -519,7 +519,6 @@ private:
 
     unsigned int mRedundancy; ///< Redundancy factor in network data
     QString mJackClientName; ///< JackAudio Client Name
-    QByteArray mJackClientNameData;
     QString mRemoteClientName; ///< Remote JackAudio Client Name for hub client mode
 
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode

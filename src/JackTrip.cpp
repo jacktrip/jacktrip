@@ -176,8 +176,7 @@ void JackTrip::setupAudio(
                       mJackClientName.toStdString() << std::endl;
 
 #endif // endwhere
-        mJackClientNameData = mJackClientName.toUtf8();
-        mAudioInterface->setClientName(mJackClientNameData.data());
+        mAudioInterface->setClientName(mJackClientName);
 
         if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->setup" << std::endl;
         mAudioInterface->setup();

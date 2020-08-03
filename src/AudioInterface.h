@@ -159,7 +159,7 @@ public:
     virtual void setBufferSizeInSamples(uint32_t buf_size)
     { mBufferSizeInSamples = buf_size; }
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(const char* ClientName) = 0;
+    virtual void setClientName(QString ClientName) = 0;
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
