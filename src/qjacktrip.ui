@@ -75,6 +75,9 @@
     </item>
     <item row="0" column="1">
      <widget class="QComboBox" name="typeComboBox">
+      <property name="toolTip">
+       <string/>
+      </property>
       <item>
        <property name="text">
         <string>Client</string>
@@ -310,7 +313,7 @@
         <item row="3" column="0">
          <widget class="QLabel" name="queueLengthLabel">
           <property name="text">
-           <string>Buffer &amp;Queue Length</string>
+           <string>&amp;Queue Buffer Length</string>
           </property>
           <property name="buddy">
            <cstring>queueLengthSpinBox</cstring>
@@ -440,6 +443,9 @@
           <property name="text">
            <string>Remote Client Name</string>
           </property>
+          <property name="buddy">
+           <cstring>remoteNameEdit</cstring>
+          </property>
          </widget>
         </item>
        </layout>
@@ -472,6 +478,7 @@
   <tabstop>zeroCheckBox</tabstop>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
+  <tabstop>remoteNameEdit</tabstop>
   <tabstop>portOffsetSpinBox</tabstop>
   <tabstop>queueLengthSpinBox</tabstop>
   <tabstop>redundancySpinBox</tabstop>
