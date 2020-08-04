@@ -31,6 +31,7 @@ fi
 [ ! -d "build" ] && mkdir build
 cd build
 
+# Build
 if [[ $1 == 'nojack' ]]; then
     echo "Building without Jack"
     $QCMD -spec $QSPEC -config nojack ../qjacktrip.pro
