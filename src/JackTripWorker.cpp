@@ -204,6 +204,7 @@ void JackTripWorker::run()
         // Connection to terminate the local eventloop when jacktrip is done
         QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
                          &event_loop, SLOT(quit()), Qt::QueuedConnection);
+        QObject::connect(&jacktrip, &JackTrip::signalError, &event_loop, &QEventLoop::quit, Qt::QueuedConnection);
         QObject::connect(this, SIGNAL(signalRemoveThread()),
                          &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 

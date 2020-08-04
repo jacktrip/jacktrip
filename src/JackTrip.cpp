@@ -377,7 +377,9 @@ void JackTrip::startProcess(
     QObject::connect((UdpDataProtocol *)mDataProtocolReceiver, &UdpDataProtocol::signalUdpWaitingTooLong, this,
                      &JackTrip::slotUdpWaitingTooLong, Qt::QueuedConnection);
     QObject::connect(mDataProtocolSender, &DataProtocol::signalCeaseTransmission,
-                     this, &JackTrip::slotStopProcesses, Qt::QueuedConnection);
+                     this, &JackTrip::slotStopProcessesDueToError, Qt::QueuedConnection);
+    QObject::connect(mDataProtocolReceiver, &DataProtocol::signalCeaseTransmission,
+                     this, &JackTrip::slotStopProcessesDueToError, Qt::QueuedConnection);
 
     //QObject::connect(mDataProtocolSender, SIGNAL(signalError(const char*)),
     //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);

@@ -332,6 +332,20 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
         QThread::usleep(100);
     }
     int n_bytes = ::recv(mSocket, buf, n, 0);
+    if (n_bytes == 64) {
+        //Control signal (currently just check for exit packet);
+        bool exit = true;
+        for (int i = 0; i < 64; i++) {
+            if (buf[i] != char(0xff)) {
+                exit = false;
+                i = 64;
+            }
+        }
+        if (exit) {
+            emit signalCeaseTransmission("Peer Stopped");
+        }
+        return 0;
+    }
     return n_bytes;
 }
 
@@ -608,6 +622,11 @@ void UdpDataProtocol::run()
                                  full_redundant_packet_size,
                                  full_packet_size);
         }
+        
+        // Send exit packet (with 1 redundant packet).
+        QByteArray exitPacket = QByteArray(64, 0xff);
+        sendPacket(exitPacket.constData(), 64);
+        sendPacket(exitPacket.constData(), 64);
         emit signalCeaseTransmission();
         break; }
     }
@@ -664,8 +683,10 @@ void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
                                               uint16_t& newer_seq_num)
 {
     // This is blocking until we get a packet...
-    receivePacket( reinterpret_cast<char*>(full_redundant_packet),
-                   full_redundant_packet_size);
+    if (receivePacket( reinterpret_cast<char*>(full_redundant_packet), 
+                       full_redundant_packet_size) == 0) {
+        return;
+    }
 
     // Get Packet Sequence Number
     newer_seq_num =
