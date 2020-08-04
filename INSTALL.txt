@@ -85,7 +85,7 @@ It is also possible to build without jack, see below.
 Build:
 
 If you're on Mac OS X or Fedora Linux and have all the dependencies installed,
-you can build by simply going to the /src directory and typing the following:
+you can build by simply going to the project's root directory and typing the following:
     ./build-script
 
 If you want to build without Jack support (meaning that you won't need jack installed
