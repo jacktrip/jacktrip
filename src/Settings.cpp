@@ -290,7 +290,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
+            cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
             cout << "" << endl;
             std::exit(0);
@@ -373,7 +373,7 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
-    cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
+    cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
     cout << "VERSION: " << gVersion << endl;
     cout << "" << endl;
@@ -411,7 +411,7 @@ void Settings::printUsage()
     cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
     cout << " --remotename                             Change default remote client name when connecting to a hub server (the default is derived from this computer's external facing IP address)" << endl;
     cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
-    cout << " --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
+    cout << " --nojackportsconnect                     Don't connect default audio ports in jack, including not doing hub auto audio patch in HUB SERVER mode." << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;

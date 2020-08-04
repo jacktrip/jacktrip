@@ -44,7 +44,7 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.2beta2"; ///< JackTrip version
+const char* const gVersion = "1.2chris13jul"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
@@ -55,7 +55,7 @@ const int gDefaultNumOutChannels = 2;
 #define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
 // #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
 const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
-const int gMAX_WAIRS = 128;// FIXME, should agree with maxThreadCount
+const int gMAX_WAIRS = 128; // FIXME, should agree with maxThreadCount
 // jmess revision needed for string parse if > 1 digit
 
 // hubpatch = 3 for TUB ensemble patching
@@ -138,7 +138,7 @@ void setRealtimeProcessPriority();
 /// \name JackTrip Server parameters
 //@{
 /// Maximum Threads that can be run at the same time
-const int gMaxThreads = 290; // some pthread limit around 297?
+const int gMaxThreads = 1024;
 
 /// Public well-known UDP port to where the clients will connect
 const int gServerUdpPort = 4464;

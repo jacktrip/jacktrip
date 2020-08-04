@@ -909,7 +909,7 @@ typedef struct copr_msg {
  */
 
 #define SOUND_MIXER_NRDEVICES	25
-#define SOUND_MIXER_VOLUME	0	/* Master output level */
+#define SOUND_MIXER_VOLUME	0	/* Hub output level */
 #define SOUND_MIXER_BASS	1	/* Treble level of all output channels */
 #define SOUND_MIXER_TREBLE	2	/* Bass level of all output channels */
 #define SOUND_MIXER_SYNTH	3	/* Volume of synthesier input */

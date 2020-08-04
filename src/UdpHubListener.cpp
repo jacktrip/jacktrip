@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file UdpHubistener.cpp
+ * \file UdpHubListener.cpp
  * \author Juan-Pablo Caceres and Chris Chafe
  * \date September 2008
  */
@@ -72,6 +72,9 @@ UdpHubListener::UdpHubListener(int server_port) :
         mJTWorkers->insert(i, NULL);
     }
 
+    qDebug() << "mThreadPool default maxThreadCount =" << mThreadPool.maxThreadCount();
+    mThreadPool.setMaxThreadCount(mThreadPool.maxThreadCount() * 16);
+    qDebug() << "mThreadPool maxThreadCount set to" << mThreadPool.maxThreadCount();
 
     //mJTWorkers = new JackTripWorker(this);
     mThreadPool.setExpiryTimeout(3000); // msec (-1) = forever
@@ -134,14 +137,19 @@ void UdpHubListener::run()
     while (!mStopped && !sSigInt)
     {
         cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
-        cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
+        if(m_connectDefaultAudioPorts)
+        {
+          cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
+        } else {
+          cout << "JackTrip HUB SERVER: Hub auto audio patch disabled " << endl;
+        }
         cout << "=======================================================" << endl;
         while (  !TcpServer.hasPendingConnections() && !TcpServer.waitForNewConnection(1000) ) {
             if (mStopped || sSigInt) {
                 stopAllThreads();
                 emit signalStopped();
-                return; 
-            } 
+                return;
+            }
         } // block until a new connection is received
         cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 
@@ -221,7 +229,7 @@ void UdpHubListener::run()
                                                 m_connectDefaultAudioPorts
                                                ); /// \todo temp default to 1 channel
 
-                qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
+//                qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
             }
             //send one thread to the pool
             cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
@@ -236,7 +244,7 @@ void UdpHubListener::run()
             if (isWAIR()) connectMesh(true); // invoked with -Sw
 #endif // endwhere
 
-            qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
+//            qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
 
             connectPatch(true);
         }
@@ -484,7 +492,11 @@ void UdpHubListener::connectPatch(bool spawn)
         cout << "Auto hub patching disabled" << endl;
         return;
     }
-    cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
+    if(m_connectDefaultAudioPorts) {
+      cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
+    } else {
+      cout << ((spawn)?"spawning":"releasing") << " jacktripWorker" << endl;
+    }
     JMess tmp;
     // default is patch 0, which connects server audio to all clients
     // these are the other cases:

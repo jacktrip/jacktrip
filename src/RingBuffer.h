@@ -44,6 +44,8 @@
 
 #include "jacktrip_types.h"
 
+#include <atomic>
+
 //using namespace JackTripNamespace;
 
 
