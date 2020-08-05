@@ -488,8 +488,9 @@ void UdpHubListener::enumerateRunningThreadIDs()
 #include "JMess.h"
 void UdpHubListener::connectPatch(bool spawn)
 {
-    if (getHubPatch() == JackTrip::NOAUTO) {
-        cout << "Auto hub patching disabled" << endl;
+    if ((getHubPatch() == JackTrip::NOAUTO) ||
+        (getHubPatch() == JackTrip::SERVERTOCLIENT && !m_connectDefaultAudioPorts)) {
+        cout << ((spawn)?"spawning":"releasing") << " jacktripWorker (auto hub patching disabled)" << endl;
         return;
     }
     if(m_connectDefaultAudioPorts) {
