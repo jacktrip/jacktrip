@@ -1,8 +1,9 @@
 ---
-master (this branch name will be deprecated when github follows through on interest in eliminating such terminology)
-
+1.2.1 (master) (branch name will be deprecated)
+(main and dev) (new branches, respectively for stable and development)
+- (added) src/build script builds in ../builddir
 - (fixed) refactor "Master" to be "Hub"
-- (fixed) 1.2 correctly tagged
+- (fixed) 1.2.1 correctly versioned and tagged
 
 ---
 1.2 (release candidate, not yet tagged)
