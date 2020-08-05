@@ -28,6 +28,7 @@
 #include "about.h"
 #include <QMessageBox>
 #include <QSettings>
+#include <QHostAddress>
 
 QJackTrip::QJackTrip(QWidget *parent) :
     QMainWindow(parent),
@@ -158,11 +159,18 @@ void QJackTrip::addressChanged(const QString &address)
 void QJackTrip::receivedIP(QNetworkReply* reply)
 {
     QMutexLocker locker(&m_requestMutex);
+    //Check whether we're dealing with our IPv4 or IPv6 request.
     if (reply->url().host().startsWith("api6")) {
         if (reply->error() == QNetworkReply::NoError) {
-            m_IPv6Address = reply->readAll();
+            m_IPv6Address = QString(reply->readAll());
+            //Make sure this isn't just a repeat of our IPv4 address.
+            if (QHostAddress(m_IPv6Address).protocol() != QAbstractSocket::IPv6Protocol) {
+                m_IPv6Address.clear();
+                reply->deleteLater();
+                return;
+            }
             if (m_hasIPv4Reply) {
-                m_ui->ipLabel->setText(m_ui->ipLabel->text().append(QString("\n(IPv6: %1)").arg(QString(m_IPv6Address))));
+                m_ui->ipLabel->setText(m_ui->ipLabel->text().append(QString("\n(IPv6: %1)").arg(m_IPv6Address)));
             }
             m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
         }
@@ -175,7 +183,7 @@ void QJackTrip::receivedIP(QNetworkReply* reply)
             m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
         }
         if (!m_IPv6Address.isEmpty()) {
-            m_ui->ipLabel->setText(m_ui->ipLabel->text().append(QString("\n(IPv6: %1)").arg(QString(m_IPv6Address))));
+            m_ui->ipLabel->setText(m_ui->ipLabel->text().append(QString("\n(IPv6: %1)").arg(m_IPv6Address)));
         }
         m_hasIPv4Reply = true;
     }

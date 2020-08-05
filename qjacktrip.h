@@ -80,7 +80,7 @@ private:
     bool m_isExiting;
 
     QMutex m_requestMutex;
-    QByteArray m_IPv6Address;
+    QString m_IPv6Address;
     bool m_hasIPv4Reply;
 };
 
