@@ -32,6 +32,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QMutex>
+#include <QByteArray>
 #include "UdpHubListener.h"
 #include "JackTrip.h"
 
@@ -77,6 +78,10 @@ private:
     QScopedPointer<QNetworkAccessManager> m_netManager;
     bool m_jackTripRunning;
     bool m_isExiting;
+
+    QMutex m_requestMutex;
+    QByteArray m_IPv6Address;
+    bool m_hasIPv4Reply;
 };
 
 #endif // QJACKTRIP_H

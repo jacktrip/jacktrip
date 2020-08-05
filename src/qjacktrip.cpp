@@ -34,7 +34,8 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui(new Ui::QJackTrip),
     m_netManager(new QNetworkAccessManager(this)),
     m_jackTripRunning(false),
-    m_isExiting(false)
+    m_isExiting(false),
+    m_hasIPv4Reply(false)
 {
     m_ui->setupUi(this);
     
@@ -54,6 +55,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     connect(m_netManager.data(), &QNetworkAccessManager::finished, this, &QJackTrip::receivedIP);
     //Use the ipify API to find our external IP address.
     m_netManager->get(QNetworkRequest(QUrl("https://api.ipify.org")));
+    m_netManager->get(QNetworkRequest(QUrl("https://api6.ipify.org")));
     m_ui->statusBar->showMessage(QString("QJackTrip version ").append(gVersion));
     
     loadSettings();
@@ -155,12 +157,27 @@ void QJackTrip::addressChanged(const QString &address)
 
 void QJackTrip::receivedIP(QNetworkReply* reply)
 {
-    if (reply->error() != QNetworkReply::NoError) {
-        m_ui->ipLabel->setText("Unable to determine external IP address.");
+    QMutexLocker locker(&m_requestMutex);
+    if (reply->url().host().startsWith("api6")) {
+        if (reply->error() == QNetworkReply::NoError) {
+            m_IPv6Address = reply->readAll();
+            if (m_hasIPv4Reply) {
+                m_ui->ipLabel->setText(m_ui->ipLabel->text().append(QString("\n(IPv6: %1)").arg(QString(m_IPv6Address))));
+            }
+            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        }
     } else {
-        QByteArray address = reply->readAll();
-        m_ui->ipLabel->setText(QString("External IP address: ").append(address));
-        m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        if (reply->error() != QNetworkReply::NoError) {
+            m_ui->ipLabel->setText("Unable to determine external IP address.");
+        } else {
+            QByteArray address = reply->readAll();
+            m_ui->ipLabel->setText(QString("External IP address: ").append(address));
+            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        }
+        if (!m_IPv6Address.isEmpty()) {
+            m_ui->ipLabel->setText(m_ui->ipLabel->text().append(QString("\n(IPv6: %1)").arg(QString(m_IPv6Address))));
+        }
+        m_hasIPv4Reply = true;
     }
     reply->deleteLater();
 }
