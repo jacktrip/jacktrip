@@ -1,7 +1,7 @@
 ---
 1.2.1 (master) (branch name will be deprecated)
 (main and dev) (new branches, respectively for stable and development)
-- (added) build-script builds in build
+- (added) src/build script builds in ../builddir
 - (fixed) refactor "Master" to be "Hub"
 - (fixed) 1.2.1 correctly versioned and tagged
 
