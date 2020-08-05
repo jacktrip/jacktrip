@@ -138,7 +138,7 @@ void setRealtimeProcessPriority();
 /// \name JackTrip Server parameters
 //@{
 /// Maximum Threads that can be run at the same time
-const int gMaxThreads = 1024; // some pthread limit around 297?
+const int gMaxThreads = 1024;
 
 /// Public well-known UDP port to where the clients will connect
 const int gServerUdpPort = 4464;
