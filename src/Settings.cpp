@@ -290,7 +290,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
+            cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
             cout << "" << endl;
             std::exit(0);
@@ -373,7 +373,7 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
-    cout << "Copyright (c) 2008-2018 Juan-Pablo Caceres, Chris Chafe." << endl;
+    cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
     cout << "VERSION: " << gVersion << endl;
     cout << "" << endl;

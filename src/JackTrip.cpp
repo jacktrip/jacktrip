@@ -346,9 +346,7 @@ void JackTrip::startProcess(
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)" << std::endl;
 #if defined __WIN_32__
     //cc fixed windows crash with this print statement!
-    qDebug() << "before  mJackTrip->startProcess"
-             << mReceiverBindPort<< mSenderBindPort;
-    //        msleep(2000);
+    //qDebug() << "before mJackTrip->startProcess" << mReceiverBindPort<< mSenderBindPort;
 #endif
     checkIfPortIsBinded(mReceiverBindPort);
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mSenderBindPort)" << std::endl;

@@ -72,6 +72,9 @@ UdpHubListener::UdpHubListener(int server_port) :
         mJTWorkers->insert(i, NULL);
     }
 
+    qDebug() << "mThreadPool default maxThreadCount =" << mThreadPool.maxThreadCount();
+    mThreadPool.setMaxThreadCount(mThreadPool.maxThreadCount() * 16);
+    qDebug() << "mThreadPool maxThreadCount set to" << mThreadPool.maxThreadCount();
 
     //mJTWorkers = new JackTripWorker(this);
     mThreadPool.setExpiryTimeout(3000); // msec (-1) = forever
@@ -140,8 +143,8 @@ void UdpHubListener::run()
             if (mStopped || sSigInt) {
                 stopAllThreads();
                 emit signalStopped();
-                return; 
-            } 
+                return;
+            }
         } // block until a new connection is received
         cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 
@@ -480,8 +483,9 @@ void UdpHubListener::enumerateRunningThreadIDs()
 #include "JMess.h"
 void UdpHubListener::connectPatch(bool spawn)
 {
-    if (getHubPatch() == JackTrip::NOAUTO) {
-        cout << "Auto hub patching disabled" << endl;
+    if ((getHubPatch() == JackTrip::NOAUTO) ||
+        (getHubPatch() == JackTrip::SERVERTOCLIENT && !m_connectDefaultAudioPorts)) {
+        cout << ((spawn)?"spawning":"releasing") << " jacktripWorker (auto hub patching disabled)" << endl;
         return;
     }
     cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
