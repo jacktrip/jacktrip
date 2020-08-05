@@ -9,7 +9,7 @@ language:
 dist: bionic
 
 branches:
-  - master
+  - main
 
 env:
   global:
