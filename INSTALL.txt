@@ -1,6 +1,6 @@
-Jacktrip : Build Instructions for Linux and MacOS X
+QJackTrip : Build Instructions for Linux and MacOS X
 
-JackTrip: A System for High-Quality Audio Network Performance over the Internet.
+QJackTrip: Bringing a graphical user interface to JackTrip, a system for high quality audio network performance over the internet.
 
 ---
 MacOS X (10.9 or higher) installation:
@@ -22,7 +22,7 @@ $ sudo chmod 755 /usr/local/bin/jacktrip
 
 To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
 
-  * Open jacktrip.pro using QtCreator
+  * Open qjacktrip.pro using QtCreator
   * Choose a correctly configured Kit
   * Install Jack:
     brew install jack
@@ -58,8 +58,7 @@ $ sudo ln -s /usr/local/lib/librtaudio.so.6 /lib64/
 Then to install jacktrip:
 
 $ git clone https://github.com/jacktrip/jacktrip.git
-$ cd jacktrip/src
-$ ./build
+$ ./build-script
 $ sudo make install
 
 
@@ -86,30 +85,32 @@ It is also possible to build without jack, see below.
 Build:
 
 If you're on Mac OS X or Fedora Linux and have all the dependencies installed,
-you can build by simply going to the /src directory and typing the following:
-    ./build
+you can build by simply going to the project's root directory and typing the following:
+    ./build-script
 
 If you want to build without Jack support (meaning that you won't need jack installed
 to use the app) type the following:
-   ./build nojack
+   ./build-script nojack
 
 If the previous script doesn't work on a different Linux flavor, try building
 the Makefiles yourself. You'd need qmake. Then you can build by:
-$ qmake jacktrip.pro
+$ cd build
+$ qmake ../qjacktrip.pro
 $ make release
 
 Or without Jack support:
-$ qmake -config nojack jacktrip.pro
+$ cd build
+$ qmake -config nojack ../qjacktrip.pro
 $ make release
 
 
-If you want to install (using Terminal): on the /src directory type:
+If you want to install (using Terminal): on the /build directory type:
 
-$ sudo cp jacktrip /usr/local/bin/
+$ sudo cp qjacktrip /usr/local/bin/
   (enter your password when prompted)
 
-$ sudo chmod 755 /usr/local/bin/jacktrip
-  (now you can run jacktrip from any directory using Terminal)
+$ sudo chmod 755 /usr/local/bin/qjacktrip
+  (now you can run qjacktrip from any directory using Terminal)
 
 
 ---
@@ -136,7 +137,7 @@ Building:
 The easiest way to build is to download the free Qt Creator IDE from https://www.qt.io/download since the jacktrip buildscript is written in qmake.
 
 Use `git clone https://github.com/jacktrip/jacktrip.git` to download a fresh copy of the repo.
-Open the `src/jacktrip.pro` and configure the project.
+Open the `qjacktrip.pro` and configure the project.
 
 Make sure to select the MinGW compiler (for example the one shipped with QtCreator).
 Building with Clang or Microsoft Visual Studio Compilers is currently not supported!

@@ -17,29 +17,29 @@ endif
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/JackTripWorker.h',
-	'src/JackTripWorkerMessages.h',
-	'src/NetKS.h',
 	'src/PacketHeader.h',
 	'src/Settings.h',
 	'src/UdpDataProtocol.h',
-	'src/UdpMasterListener.h']
+	'src/UdpHubListener.h',
+	'src/about.h',
+	'src/qjacktrip.h']
 moc_files = qt5.preprocess(moc_headers : moc_h)
 
 src = ['src/DataProtocol.cpp',
 	'src/JMess.cpp',
 	'src/JackTrip.cpp',
 	'src/jacktrip_globals.cpp',
-	'src/jacktrip_main.cpp',
-	'src/JackTripThread.cpp',
 	'src/JackTripWorker.cpp',
 	'src/LoopBack.cpp',
 	'src/PacketHeader.cpp',
-	'src/ProcessPlugin.cpp',
 	'src/RingBuffer.cpp',
 	'src/Settings.cpp',
 	'src/UdpDataProtocol.cpp',
-	'src/UdpMasterListener.cpp',
+	'src/UdpHubListener.cpp',
 	'src/AudioInterface.cpp',
-	'src/JackAudioInterface.cpp']
+	'src/JackAudioInterface.cpp',
+	'src/about.cpp',
+	'src/main.cpp',
+	'src/qjacktrip.cpp']
 
-executable('jacktrip', src, moc_files, dependencies: [qt5_dep, jack_dep, rtaudio_dep, thread_dep], cpp_args: defines, install: true )
+executable('qjacktrip', src, moc_files, dependencies: [qt5_dep, jack_dep, rtaudio_dep, thread_dep], cpp_args: defines, install: true )
