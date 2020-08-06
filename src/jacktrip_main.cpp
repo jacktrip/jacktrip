@@ -75,7 +75,7 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(createApplication(argc, argv));
+    QCoreApplication app(argc, argv);
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
     
