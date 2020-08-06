@@ -9,7 +9,7 @@ language:
 dist: bionic
 
 branches:
-  - main
+  - qjacktrip
 
 env:
   global:
@@ -32,8 +32,7 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/qt/bin:$PATH"; fi
 
 script: 
-  - cd src
-  - ./build
+  - ./build-script
   
 after_success:
   - echo "Success!"

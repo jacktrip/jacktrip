@@ -435,7 +435,7 @@ unsigned int RtApiCore :: getDeviceCount( void )
 {
   // Find out how many audio devices there are, if any.
   UInt32 dataSize;
-  AudioObjectPropertyAddress propertyAddress = { kAudioHardwarePropertyDevices, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementHub };
+  AudioObjectPropertyAddress propertyAddress = { kAudioHardwarePropertyDevices, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
   OSStatus result = AudioObjectGetPropertyDataSize( kAudioObjectSystemObject, &propertyAddress, 0, NULL, &dataSize );
   if ( result != noErr ) {
     errorText_ = "RtApiCore::getDeviceCount: OS-X error getting device info!";
@@ -453,7 +453,7 @@ unsigned int RtApiCore :: getDefaultInputDevice( void )
 
   AudioDeviceID id;
   UInt32 dataSize = sizeof( AudioDeviceID );
-  AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementHub };
+  AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
   OSStatus result = AudioObjectGetPropertyData( kAudioObjectSystemObject, &property, 0, NULL, &dataSize, &id );
   if ( result != noErr ) {
     errorText_ = "RtApiCore::getDefaultInputDevice: OS-X system error getting device.";
@@ -486,7 +486,7 @@ unsigned int RtApiCore :: getDefaultOutputDevice( void )
 
   AudioDeviceID id;
   UInt32 dataSize = sizeof( AudioDeviceID );
-  AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementHub };
+  AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
   OSStatus result = AudioObjectGetPropertyData( kAudioObjectSystemObject, &property, 0, NULL, &dataSize, &id );
   if ( result != noErr ) {
     errorText_ = "RtApiCore::getDefaultOutputDevice: OS-X system error getting device.";
@@ -533,7 +533,7 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   UInt32 dataSize = sizeof( AudioDeviceID ) * nDevices;
   AudioObjectPropertyAddress property = { kAudioHardwarePropertyDevices,
                                           kAudioObjectPropertyScopeGlobal,
-                                          kAudioObjectPropertyElementHub };
+                                          kAudioObjectPropertyElementMaster };
   OSStatus result = AudioObjectGetPropertyData( kAudioObjectSystemObject, &property,
                                                 0, NULL, &dataSize, (void *) &deviceList );
   if ( result != noErr ) {
@@ -765,7 +765,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   UInt32 dataSize = sizeof( AudioDeviceID ) * nDevices;
   AudioObjectPropertyAddress property = { kAudioHardwarePropertyDevices,
                                           kAudioObjectPropertyScopeGlobal,
-                                          kAudioObjectPropertyElementHub };
+                                          kAudioObjectPropertyElementMaster };
   OSStatus result = AudioObjectGetPropertyData( kAudioObjectSystemObject, &property,
                                                 0, NULL, &dataSize, (void *) &deviceList );
   if ( result != noErr ) {

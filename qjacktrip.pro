@@ -7,13 +7,14 @@ CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release build_all
 CONFIG(debug, debug|release) {
-  TARGET = jacktrip_debug
+  TARGET = qjacktrip_debug
   } else {
-  TARGET = jacktrip
+  TARGET = qjacktrip
   }
 
-QT -= gui
+QT += gui
 QT += network
+QT += widgets
 
 # rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOHUB
 # DEFINES += WAIR
@@ -27,7 +28,7 @@ nojack {
 }
 
 # for plugins
-INCLUDEPATH += ../faust-src-lair/stk
+INCLUDEPATH += faust-src-lair/stk
 
 !win32 {
   INCLUDEPATH+=/usr/local/include
@@ -105,6 +106,7 @@ win32 {
   LIBS += -lWs2_32 #cc -lOle32 #needed by rtaudio/asio
   DEFINES += __WIN_32__
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
+  DEFINES += WIN32_LEAN_AND_MEAN
 #cc    DEFINES -= UNICODE #RtAudio for Qt
 }
 
@@ -114,62 +116,63 @@ target.path = /usr/bin
 INSTALLS += target
 
 # for plugins
-INCLUDEPATH += ../faust-src-lair
+INCLUDEPATH += faust-src-lair
 
 # Input
-HEADERS += DataProtocol.h \
-           JMess.h \
-           JackTrip.h \
-           jacktrip_globals.h \
-           jacktrip_types.h \
-           JackTripThread.h \
-           JackTripWorker.h \
-           JackTripWorkerMessages.h \
-           LoopBack.h \
-           NetKS.h \
-           PacketHeader.h \
-           ProcessPlugin.h \
-           RingBuffer.h \
-           RingBufferWavetable.h \
-           Settings.h \
-           TestRingBuffer.h \
-           ThreadPoolTest.h \
-           UdpDataProtocol.h \
-           UdpHubListener.h \
-           AudioInterface.h
+HEADERS += src/DataProtocol.h \
+           src/JMess.h \
+           src/JackTrip.h \
+           src/jacktrip_globals.h \
+           src/jacktrip_types.h \
+           src/JackTripWorker.h \
+           src/LoopBack.h \
+           src/PacketHeader.h \
+           src/ProcessPlugin.h \
+           src/RingBuffer.h \
+           src/RingBufferWavetable.h \
+           src/Settings.h \
+           src/UdpDataProtocol.h \
+           src/UdpHubListener.h \
+           src/AudioInterface.h \
+           src/about.h \
+           src/qjacktrip.h
+#(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
-HEADERS += JackAudioInterface.h
+HEADERS += src/JackAudioInterface.h
 }
-SOURCES += DataProtocol.cpp \
-           JMess.cpp \
-           JackTrip.cpp \
-           jacktrip_globals.cpp \
-           jacktrip_main.cpp \
-           jacktrip_tests.cpp \
-           JackTripThread.cpp \
-           JackTripWorker.cpp \
-           LoopBack.cpp \
-           PacketHeader.cpp \
-           ProcessPlugin.cpp \
-           RingBuffer.cpp \
-           Settings.cpp \
-           UdpDataProtocol.cpp \
-           UdpHubListener.cpp \
-           AudioInterface.cpp
+SOURCES += src/DataProtocol.cpp \
+           src/JMess.cpp \
+           src/JackTrip.cpp \
+           src/jacktrip_globals.cpp \
+           src/JackTripWorker.cpp \
+           src/LoopBack.cpp \
+           src/PacketHeader.cpp \
+           src/RingBuffer.cpp \
+           src/Settings.cpp \
+           src/UdpDataProtocol.cpp \
+           src/UdpHubListener.cpp \
+           src/AudioInterface.cpp \
+           src/about.cpp \
+           src/main.cpp \
+           src/qjacktrip.cpp
+#(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {
-SOURCES += JackAudioInterface.cpp
+SOURCES += src/JackAudioInterface.cpp
 }
+
+FORMS += src/qjacktrip.ui src/about.ui
+RESOURCES += src/qjacktrip.qrc
 
 # RtAduio Input
 win32 {
-  INCLUDEPATH += ../externals/rtaudio-4.1.1/include
-  DEPENDPATH += ../externals/rtaudio-4.1.1/include
+  INCLUDEPATH += externals/rtaudio-4.1.1/include
+  DEPENDPATH += externals/rtaudio-4.1.1/include
 }
 macx | win32 {
-INCLUDEPATH += ../externals/rtaudio-4.1.1/
-DEPENDPATH += ../externals/rtaudio-4.1.1/
+INCLUDEPATH += externals/rtaudio-4.1.1/
+DEPENDPATH += externals/rtaudio-4.1.1/
 HEADERS +=
 SOURCES +=
 }

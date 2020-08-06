@@ -66,7 +66,7 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
                                        int NumNetRevChans,
                                        #endif // endwhere
                                        AudioInterface::audioBitResolutionT AudioBitResolution,
-                                       const char* ClientName) :
+                                       QString ClientName) :
     AudioInterface(jacktrip,
                    NumInChans, NumOutChans,
                    #ifdef WAIR // wair
@@ -102,7 +102,6 @@ void JackAudioInterface::setup()
 //*******************************************************************************
 void JackAudioInterface::setupClient()
 {
-    const char* client_name = mClientName;
     const char* server_name = NULL;
     // was  jack_options_t options = JackNoStartServer;
     // and then jack_options_t options = JackLoadName;
@@ -115,9 +114,9 @@ void JackAudioInterface::setupClient()
     {
         QMutexLocker locker(&sJackMutex);
 #ifndef WAIR // WAIR
-        mClient = jack_client_open (client_name, options, &status, server_name);
+        mClient = jack_client_open (mClientName.toUtf8().constData(), options, &status, server_name);
 #else
-        mClient = jack_client_open (client_name, JackUseExactName, &status, server_name);
+        mClient = jack_client_open (mClientName.toUtf8().constData(), JackUseExactName, &status, server_name);
 #endif // endwhere
     }
 
@@ -136,8 +135,7 @@ void JackAudioInterface::setupClient()
         fprintf (stderr, "JACK server started\n");
     }
     if (status & JackNameNotUnique) {
-        client_name = jack_get_client_name(mClient);
-        fprintf (stderr, "unique name `%s' assigned\n", client_name);
+        fprintf (stderr, "unique name `%s' assigned\n", jack_get_client_name(mClient));
     }
 
     // Set function to call if Jack shuts down
