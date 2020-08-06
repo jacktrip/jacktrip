@@ -120,6 +120,7 @@ INCLUDEPATH += ../faust-src-lair
 HEADERS += DataProtocol.h \
            JMess.h \
            JackTrip.h \
+           Compressor.h \
            Limiter.h \
            jacktrip_globals.h \
            jacktrip_types.h \
@@ -138,6 +139,7 @@ HEADERS += DataProtocol.h \
            UdpDataProtocol.h \
            UdpHubListener.h \
            AudioInterface.h \
+           compressordsp.h \
            limiterdsp.h
 
 !nojack {
@@ -146,6 +148,7 @@ HEADERS += JackAudioInterface.h
 SOURCES += DataProtocol.cpp \
            JMess.cpp \
            JackTrip.cpp \
+           Compressor.cpp \
            Limiter.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \

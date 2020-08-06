@@ -30,82 +30,61 @@
 //*****************************************************************
 
 /**
- * \file Limiter.h
+ * \file Compressor.h
  * \author Julius Smith, based on LoopBack.h
  * \date May 2020
  */
 
 
-/** \brief Applies limiter_lad_mono from the faustlibraries distribution, compressors.lib
+/** \brief Applies compressor_mono from the faustlibraries distribution, compressors.lib
  *
  */
-#ifndef __LIMITER_H__
-#define __LIMITER_H__
-
-//#define SINE_TEST
-
-#ifdef SINE_TEST
-#include "limitertest.h"
-#endif
+#ifndef __COMPRESSOR_H__
+#define __COMPRESSOR_H__
 
 #include "ProcessPlugin.h"
-#include "limiterdsp.h"
+#include "compressordsp.h"
 #include <vector>
 
-/** \brief The Limiter class confines the output dynamic range to a
+/** \brief The Compressor class confines the output dynamic range to a
  *  "dynamic range lane" determined by the assumed number of clients.
  */
-class Limiter : public ProcessPlugin
+class Compressor : public ProcessPlugin
 {
 public:
   /// \brief The class constructor sets the number of channels to limit
-  Limiter(int numchans, int numclients) // xtor
-    : inited(false), mNumChannels(numchans), mNumClients(numclients)
+  Compressor(int numchans) // xtor
+    : inited(false), mNumChannels(numchans)
   { 
     for ( int i = 0; i < mNumChannels; i++ ) {
-      limiterP.push_back(new limiterdsp);
-      limiterUIP.push_back(new APIUI); // #included in limiterdsp.h
-      limiterP[i]->buildUserInterface(limiterUIP[i]);
-#ifdef SINE_TEST
-      limiterTestP.push_back(new limitertest);
-      limiterTestUIP.push_back(new APIUI); // #included in limitertest.h
-      limiterTestP[i]->buildUserInterface(limiterTestUIP[i]);
-#endif
+      compressorP.push_back(new compressordsp);
+      compressorUIP.push_back(new APIUI); // #included in compressordsp.h
+      compressorP[i]->buildUserInterface(compressorUIP[i]);
     }
-    std::cout << "Limiter: constructed for "
-              << mNumChannels << " channels and "
-              << mNumClients << " assumed clients\n";
+    std::cout << "Compressor: constructed for "
+              << mNumChannels << " channels\n";
   }
 
   /// \brief The class destructor
-  virtual ~Limiter() {
+  virtual ~Compressor() {
     for ( int i = 0; i < mNumChannels; i++ ) {
-      delete limiterP[i];
-      delete limiterUIP[i];
+      delete compressorP[i];
+      delete compressorUIP[i];
     }
-    limiterP.clear();
-    limiterUIP.clear();
+    compressorP.clear();
+    compressorUIP.clear();
   }
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-    std::cout << "Limiter: init(" << samplingRate << ")\n";
+    std::cout << "Compressor: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }
     fs = float(fSamplingFreq);
     for ( int i = 0; i < mNumChannels; i++ ) {
-      limiterP[i]->init(fs); // compression filter parameters depend on sampling rate
-      int ndx = limiterUIP[i]->getParamIndex("NumClientsAssumed");
-      limiterUIP[i]->setParamValue(ndx, mNumClients);
-#ifdef SINE_TEST
-      limiterTestP[i]->init(fs); // oscillator parameters depend on sampling rate
-      ndx = limiterTestUIP[i]->getParamIndex("Amp");
-      limiterTestUIP[i]->setParamValue(ndx, 0.2);
-      ndx = limiterTestUIP[i]->getParamIndex("Freq");
-      float sineFreq = 110.0 * pow(1.5,double(i)) * (mNumClients>1?1.25:1.0); // Maj 7 chord for stereo in & out
-      limiterTestUIP[i]->setParamValue(ndx, sineFreq);
-#endif
+      compressorP[i]->init(fs); // compression filter parameters depend on sampling rate
+      // See Limiter.h for how to set compression parameters (same pattern)
     }
     inited = true;
   }
@@ -117,13 +96,8 @@ private:
   bool inited;
   float fs;
   int mNumChannels;
-  int mNumClients;
-  std::vector<limiterdsp*> limiterP;
-  std::vector<APIUI*> limiterUIP;
-#ifdef SINE_TEST
-  std::vector<limitertest*> limiterTestP;
-  std::vector<APIUI*> limiterTestUIP;
-#endif
+  std::vector<compressordsp*> compressorP;
+  std::vector<APIUI*> compressorUIP;
 };
 
 #endif

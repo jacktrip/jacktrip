@@ -38,6 +38,7 @@
 #include "Settings.h"
 #include "LoopBack.h"
 #include "Limiter.h"
+#include "Compressor.h"
 #include "NetKS.h"
 
 #ifdef WAIR // wair
@@ -611,6 +612,10 @@ void Settings::startJackTrip()
 
 	// Limiters go last in the plugin sequence:
         if ( mLimit != LIMITER_NONE) {
+
+	  Compressor* compressor = new Compressor(mNumChans); // Free outgoing compressor with every limiter (FIXME: Add option(s) for this)
+	  mJackTrip->appendProcessPluginToNetwork(compressor); // responsible for freeing when done
+
           if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
 	    cout << "Set up OUTGOING LIMITER for " << mNumChans << " output channels and "
 		 << mNumClientsAssumed << " assumed client(s) ..." << endl;
