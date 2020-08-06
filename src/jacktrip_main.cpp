@@ -25,7 +25,7 @@
 */
 //*****************************************************************
 
-#include <QApplication>
+#include <QCoreApplication>
 #include <QScopedPointer>
 #include <iostream>
 #include <signal.h>
