@@ -51,6 +51,7 @@
 
 using std::cout; using std::endl;
 
+bool UdpHubListener::sSigInt = false;
 
 //*******************************************************************************
 UdpHubListener::UdpHubListener(int server_port) :
@@ -61,9 +62,12 @@ UdpHubListener::UdpHubListener(int server_port) :
     mWAIR(false),
     #endif // endwhere
     mTotalRunningThreads(0),
-    m_connectDefaultAudioPorts(false)
+    mHubPatchDescriptions({"server-to-clients", "client loopback", "client fan out/in but not loopback",
+                           "reserved for TUB", "full mix", "no auto patching"}),
+    m_connectDefaultAudioPorts(false),
+    mIOStatTimeout(0)
 {
-    // Register JackTripWorker with the master listener
+    // Register JackTripWorker with the hub listener
     //mJTWorker = new JackTripWorker(this);
     mJTWorkers = new QVector<JackTripWorker*>;
     for (int i = 0; i<gMaxThreads; i++) {
@@ -123,26 +127,28 @@ void UdpHubListener::run()
     // ------------------------------
     QTcpServer TcpServer;
     if ( !TcpServer.listen(QHostAddress::Any, mServerPort) ) {
-        std::cerr << "TCP Socket Server ERROR: " << TcpServer.errorString().toStdString() <<  endl;
-        std::exit(1);
+        QString error_message = QString("TCP Socket Server ERROR: ").append(TcpServer.errorString());
+        std::cerr << error_message.toStdString() << endl;
+        emit signalError(error_message);
+        return;
     }
 
     const int tcpTimeout = 5*1000;
 
-
     cout << "JackTrip HUB SERVER: TCP Server Listening in Port = " << TcpServer.serverPort() << endl;
-    while ( !mStopped )
+    while (!mStopped && !sSigInt)
     {
         cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
-        if(m_connectDefaultAudioPorts)
-        {
-          cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << endl;
-        } else {
-          cout << "JackTrip HUB SERVER: Hub auto audio patch disabled " << endl;
-        }
+        cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch 
+             << " (" << mHubPatchDescriptions.at(mHubPatch).toStdString() << ")" << endl;
         cout << "=======================================================" << endl;
-        while ( !TcpServer.hasPendingConnections() && !TcpServer.waitForNewConnection(1000) )
-        { if (mStopped) { return; } } // block until a new connection is received
+        while (  !TcpServer.hasPendingConnections() && !TcpServer.waitForNewConnection(1000) ) {
+            if (mStopped || sSigInt) {
+                stopAllThreads();
+                emit signalStopped();
+                return;
+            }
+        } // block until a new connection is received
         cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 
         // Control loop to be able to exit if UDPs or TCPs error ocurr
@@ -158,7 +164,8 @@ void UdpHubListener::run()
 
             // Get UDP port from client
             // ------------------------
-            peer_udp_port = readClientUdpPort(clientConnection);
+            QString clientName = QString();
+            peer_udp_port = readClientUdpPort(clientConnection, clientName);
             if ( peer_udp_port == 0 ) { break; }
             cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
 
@@ -201,9 +208,13 @@ void UdpHubListener::run()
 
             // Spawn Thread to Pool
             // --------------------
-            // Register JackTripWorker with the master listener
+            // Register JackTripWorker with the hub listener
             delete mJTWorkers->at(id); // just in case the Worker was previously created
-            mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode));
+            mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
+            if (mIOStatTimeout > 0) {
+                mJTWorkers->at(id)->setIOStatTimeout(mIOStatTimeout);
+                mJTWorkers->at(id)->setIOStatStream(mIOStatStream);
+            }
             // redirect port and spawn listener
             cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
             {
@@ -216,7 +227,7 @@ void UdpHubListener::run()
                                                 m_connectDefaultAudioPorts
                                                ); /// \todo temp default to 1 channel
 
-//                qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
+                //qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
             }
             //send one thread to the pool
             cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
@@ -231,11 +242,14 @@ void UdpHubListener::run()
             if (isWAIR()) connectMesh(true); // invoked with -Sw
 #endif // endwhere
 
-//            qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
+            //qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
 
             connectPatch(true);
         }
     }
+    
+    stopAllThreads();
+    emit signalStopped();
 
     /*
   // Create objects on the stack
@@ -291,7 +305,7 @@ void UdpHubListener::run()
 
 //*******************************************************************************
 // Returns 0 on error
-int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
+int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection, QString &clientName)
 {
     // Read the size of the package
     // ----------------------------
@@ -312,6 +326,13 @@ int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
     char port_buf[size];
     clientConnection->read(port_buf, size);
     std::memcpy(&udp_port, port_buf, size);
+    
+    if (clientConnection->bytesAvailable() == gMaxRemoteNameLength) {
+        char name_buf[gMaxRemoteNameLength];
+        clientConnection->read(name_buf, gMaxRemoteNameLength);
+        clientName = QString::fromUtf8((const char *)name_buf);
+    }
+    
     return udp_port;
 }
 
@@ -333,7 +354,7 @@ int UdpHubListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
         }
     }
     return 1;
-    cout << "Port sent to Client" << endl;
+    //cout << "Port sent to Client" << endl;
 }
 
 
@@ -465,11 +486,12 @@ void UdpHubListener::enumerateRunningThreadIDs()
 #include "JMess.h"
 void UdpHubListener::connectPatch(bool spawn)
 {
-    if(m_connectDefaultAudioPorts) {
-      cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
-    } else {
-      cout << ((spawn)?"spawning":"releasing") << " jacktripWorker" << endl;
+    if ((getHubPatch() == JackTrip::NOAUTO) ||
+        (getHubPatch() == JackTrip::SERVERTOCLIENT && !m_connectDefaultAudioPorts)) {
+        cout << ((spawn)?"spawning":"releasing") << " jacktripWorker (auto hub patching disabled)" << endl;
+        return;
     }
+    cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
     JMess tmp;
     // default is patch 0, which connects server audio to all clients
     // these are the other cases:
@@ -482,5 +504,17 @@ void UdpHubListener::connectPatch(bool spawn)
     // FIXME: need change to gDefaultNumInChannels if more than stereo
 }
 
+void UdpHubListener::stopAllThreads()
+{
+    QVectorIterator<JackTripWorker*> iterator(*mJTWorkers);
+    while (iterator.hasNext()) {
+        if (iterator.peekNext() != nullptr) {
+            iterator.next()->stopThread();
+        } else {
+            iterator.next();
+        }
+    }
+    mThreadPool.waitForDone();
+}
 // TODO:
 // USE bool QAbstractSocket::isValid () const to check if socket is connect. if not, exit loop

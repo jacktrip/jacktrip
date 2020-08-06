@@ -45,7 +45,7 @@
 #include "JackTripWorker.h"
 #include "JackTrip.h"
 #include "UdpHubListener.h"
-#include "NetKS.h"
+//#include "NetKS.h"
 #include "LoopBack.h"
 #include "Settings.h"
 #ifdef WAIR // wair
@@ -58,14 +58,16 @@
 using std::cout; using std::endl;
 
 //*******************************************************************************
-JackTripWorker::JackTripWorker(UdpHubListener* udpmasterlistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode) :
-    mUdpHubListener(udpmasterlistener),
+JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode, QString clientName) :
+    mUdpHubListener(udphublistener),
     m_connectDefaultAudioPorts(false),
     mBufferQueueLength(BufferQueueLength),
     mUnderRunMode(UnderRunMode),
+    mClientName(clientName),
     mSpawning(false),
     mID(0),
-    mNumChans(1)
+    mNumChans(1),
+    mIOStatTimeout(0)
   #ifdef WAIR // wair
   ,mNumNetRevChans(0),
     mWAIR(false)
@@ -128,7 +130,6 @@ void JackTripWorker::run()
         // Create and setup JackTrip Object
         //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
         if (gVerboseFlag) cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
-        Settings* settings = mUdpHubListener->getSettings();
 
 #ifdef WAIR // WAIR
         // forces    BufferQueueLength to 2
@@ -184,6 +185,14 @@ void JackTripWorker::run()
 
         // Set our underrun mode
         jacktrip.setUnderRunMode(mUnderRunMode);
+        if (mIOStatTimeout > 0) {
+            jacktrip.setIOStatTimeout(mIOStatTimeout);
+            jacktrip.setIOStatStream(mIOStatStream);
+        }
+        
+        if (!mClientName.isEmpty()) {
+            jacktrip.setClientName(mClientName);
+        }
 
         // Connect signals and slots
         // -------------------------
@@ -195,6 +204,7 @@ void JackTripWorker::run()
         // Connection to terminate the local eventloop when jacktrip is done
         QObject::connect(&jacktrip, SIGNAL(signalProcessesStopped()),
                          &event_loop, SLOT(quit()), Qt::QueuedConnection);
+        QObject::connect(&jacktrip, &JackTrip::signalError, &event_loop, &QEventLoop::quit, Qt::QueuedConnection);
         QObject::connect(this, SIGNAL(signalRemoveThread()),
                          &jacktrip, SLOT(slotStopProcesses()), Qt::QueuedConnection);
 
@@ -203,7 +213,7 @@ void JackTripWorker::run()
         // I still haven't figure out why
         //ClientAddress.toString().toLatin1().constData();
         //jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
-        jacktrip.setPeerAddress(mClientAddress.toLatin1().constData());
+        jacktrip.setPeerAddress(mClientAddress);
         jacktrip.setBindPorts(mServerPort);
         //jacktrip.setPeerPorts(mClientPort);
 
@@ -222,9 +232,6 @@ void JackTripWorker::run()
                     mID
             #endif // endwhere
                     );
-        if (0 != settings->getIOStatTimeout()) {
-            jacktrip.startIOStatTimer(settings->getIOStatTimeout(), settings->getIOStatStream());
-        }
         // if (gVerboseFlag) cout << "---> JackTripWorker: start..." << endl;
         // jacktrip.start(); // ########### JamTest Only #################
 
@@ -233,11 +240,11 @@ void JackTripWorker::run()
 
         event_loop.exec(); // Excecution will block here until exit() the QEventLoop
         //--------------------------------------------------------------------------
-
+        
         { QMutexLocker locker(&mMutex); mSpawning = true; }
 
         // wait for jacktrip to be done before exiting the Worker Thread
-        jacktrip.wait();
+        //jacktrip.wait();
 
     }
     catch ( const std::exception & e )
