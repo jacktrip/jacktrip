@@ -397,9 +397,9 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
     ::recvfrom(mSocket, buf, 1, 0, (struct sockaddr*) &addr, &sa_len);
     peerHostAddress.setAddress((struct sockaddr*) &addr);
     if (mIPv6) {
-        port = ((struct sockaddr_in*) &addr)->sin_port;
-    } else {
         port = ((struct sockaddr_in6*) &addr)->sin6_port;
+    } else {
+        port = ((struct sockaddr_in*) &addr)->sin_port;
     }
 }
 
