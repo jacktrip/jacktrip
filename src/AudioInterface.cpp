@@ -397,7 +397,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
-    // Run Faust plugins for the outoing stream:
+    // Run Faust plugins for the outgoing stream:
     int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
     if (nop>0) { // cannot modify IN_BUFFER so make a copy
       //#ifdef DEBUG

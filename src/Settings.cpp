@@ -613,20 +613,28 @@ void Settings::startJackTrip()
 	// Limiters go last in the plugin sequence:
         if ( mLimit != LIMITER_NONE) {
 
-	  Compressor* compressor = new Compressor(mNumChans); // Free outgoing compressor with every limiter (FIXME: Add option(s) for this)
-	  mJackTrip->appendProcessPluginToNetwork(compressor); // responsible for freeing when done
-
           if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
-	    cout << "Set up OUTGOING LIMITER for " << mNumChans << " output channels and "
+
+	    cout << "Set up OUTGOING COMPRESSOR and LIMITER for " << mNumChans << " output channels and "
 		 << mNumClientsAssumed << " assumed client(s) ..." << endl;
+
+	    Compressor* compressor = new Compressor(mNumChans); // Free compressor with every limiter (FIXME: Make option)
+	    mJackTrip->appendProcessPluginToNetwork(compressor); // responsible for freeing when done
+
 	    Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
 	    // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
 	    mJackTrip->appendProcessPluginToNetwork(limiter); // responsible for freeing when done
 	  }
           if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
-	    cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
+
+	    cout << "Set up INCOMING COMPRESSOR and LIMITER for " << mNumChans << " input channels\n";
+
+	    Compressor* compressor = new Compressor(mNumChans);
+	    mJackTrip->appendProcessPluginToNetwork(compressor);
+
 	    Limiter* limiter = new Limiter(mNumChans,1); // mNumClientsAssumed not needed in this direction
-	    mJackTrip->appendProcessPluginFromNetwork(limiter); // responsible for freeing when done
+	    mJackTrip->appendProcessPluginFromNetwork(limiter);
+
 	  }
 	}
 
