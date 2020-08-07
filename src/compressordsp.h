@@ -1667,9 +1667,9 @@ class compressordsp : public dsp {
 	virtual void instanceResetUserInterface() {
 		fCheckbox0 = FAUSTFLOAT(0.0f);
 		fHslider0 = FAUSTFLOAT(40.0f);
-		fHslider1 = FAUSTFLOAT(50.0f);
+		fHslider1 = FAUSTFLOAT(10.0f);
 		fHslider2 = FAUSTFLOAT(5.0f);
-		fHslider3 = FAUSTFLOAT(500.0f);
+		fHslider3 = FAUSTFLOAT(300.0f);
 		fHslider4 = FAUSTFLOAT(-30.0f);
 	}
 	
@@ -1746,13 +1746,13 @@ class compressordsp : public dsp {
 		ui_interface->declare(&fHslider1, "style", "knob");
 		ui_interface->declare(&fHslider1, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain  to approach (exponentially) a new lower target level (the compression  `kicking in')");
 		ui_interface->declare(&fHslider1, "unit", "ms");
-		ui_interface->addHorizontalSlider("Attack", &fHslider1, 50.0f, 1.0f, 1000.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("Attack", &fHslider1, 10.0f, 1.0f, 1000.0f, 0.100000001f);
 		ui_interface->declare(&fHslider3, "2", "");
 		ui_interface->declare(&fHslider3, "scale", "log");
 		ui_interface->declare(&fHslider3, "style", "knob");
 		ui_interface->declare(&fHslider3, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain  to approach (exponentially) a new higher target level (the compression  'releasing')");
 		ui_interface->declare(&fHslider3, "unit", "ms");
-		ui_interface->addHorizontalSlider("Release", &fHslider3, 500.0f, 1.0f, 1000.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("Release", &fHslider3, 300.0f, 1.0f, 1000.0f, 0.100000001f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->declare(&fHslider0, "5", "");
