@@ -67,6 +67,7 @@ Settings::Settings() :
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
     mUnderrunZero(false),
+    mStopOnTimeout(false),
     mLoopBack(false),
     #ifdef WAIR // WAIR
     mNumNetRevChans(0),
@@ -122,6 +123,7 @@ void Settings::parseInput(int argc, char** argv)
         { "redundancy", required_argument, NULL, 'r' }, // Redundancy
         { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
         { "zerounderrun", no_argument, NULL, 'z' }, // Use Underrun to Zeros Mode
+        { "timeout", no_argument, NULL, 't' }, // Quit after 10 second network timeout
         { "loopback", no_argument, NULL, 'l' }, // Run in loopback mode
         { "jamlink", no_argument, NULL, 'j' }, // Run in JamLink mode
         { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
@@ -146,7 +148,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:K:RTd:F:p:DvVh", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:q:r:b:ztlwjeJ:K:RTd:F:p:DvVh", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -244,6 +246,8 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mUnderrunZero = true;
             break;
+        case 't': // quit on timeout
+            mStopOnTimeout = true;
         case 'l': // loopback
             //-------------------------------------------------------
             mLoopBack = true;
@@ -493,6 +497,8 @@ JackTrip *Settings::getConfiguredJackTrip()
         cout << gPrintSeparator << std::endl;
         jackTrip->setUnderRunMode(JackTrip::ZEROS);
     }
+    
+    jackTrip->setStopOnTimeout(mStopOnTimeout);
 
     // Set peer address in server mode
     if (mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {

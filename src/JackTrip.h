@@ -212,6 +212,9 @@ public:
     /// \brief Sets (override) Underrun Mode
     virtual void setUnderRunMode(underrunModeT UnderRunMode)
     { mUnderRunMode = UnderRunMode; }
+    /// \brief Sets whether to quit on timeout.
+    virtual void setStopOnTimeout(bool stopOnTimeout)
+    { mStopOnTimeout = stopOnTimeout; }
     /// \brief Sets port numbers for the local and peer machine.
     /// Receive port is <tt>port</tt>
     virtual void setAllPorts(int port)
@@ -422,6 +425,9 @@ public slots:
         int wait_time = 10000; // msec
         if ( !(wait_msec%wait_time) ) {
             std::cerr << "UDP WAITED MORE THAN 10 seconds." << std::endl;
+            if (mStopOnTimeout) {
+                stop("No network data received for 10 seconds");
+            }
             emit signalNoUdpPacketsForSeconds();
         }
     }
@@ -505,6 +511,7 @@ private:
     AudioInterface* mAudioInterface; ///< Interface to Jack Client
     PacketHeader* mPacketHeader; ///< Pointer to Packet Header
     underrunModeT mUnderRunMode; ///< underrunModeT Mode
+    bool mStopOnTimeout; ///< Stop on 10 second timeout
 
     /// Pointer for the Send RingBuffer
     RingBuffer* mSendRingBuffer;

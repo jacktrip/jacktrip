@@ -85,6 +85,7 @@ private:
     QString mClientName; ///< JackClient Name
     QString mRemoteClientName;
     bool mUnderrunZero; ///< Use Underrun to Zero mode
+    bool mStopOnTimeout; /// < Stop jacktrip after 10 second network timeout
 
 #ifdef WAIR // wair
     int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
