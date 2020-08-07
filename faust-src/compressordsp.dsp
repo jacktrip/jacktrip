@@ -56,12 +56,12 @@ with {
 	attack = env_group(hslider("[1] Attack [unit:ms] [style:knob] [scale:log]
 	[tooltip: Time constant in ms (1/e smoothing time) for the compression gain
 	to approach (exponentially) a new lower target level (the compression
-	`kicking in')]", 50, 1, 1000, 0.1)) : *(0.001) : max(1/ma.SR);
+	`kicking in')]", 10, 1, 1000, 0.1)) : *(0.001) : max(1/ma.SR);
 
 	release = env_group(hslider("[2] Release [unit:ms] [style: knob] [scale:log]
 	[tooltip: Time constant in ms (1/e smoothing time) for the compression gain
 	to approach (exponentially) a new higher target level (the compression
-	'releasing')]", 500, 1, 1000, 0.1)) : *(0.001) : max(1/ma.SR);
+	'releasing')]", 300, 1, 1000, 0.1)) : *(0.001) : max(1/ma.SR);
 
 	makeupgain = comp_group(hslider("[5] Makeup Gain [unit:dB]
 	[tooltip: The compressed-signal output level is increased by this amount
