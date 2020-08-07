@@ -74,7 +74,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mBindPort(bind_port), mPeerPort(peer_port),
     mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL),
-    mUdpRedundancyFactor(udp_redundancy_factor)
+    mUdpRedundancyFactor(udp_redundancy_factor),
+    mStopSignalSent(false)
 {
     mStopped = false;
     mIPv6 = false;
@@ -341,8 +342,10 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
                 i = 64;
             }
         }
-        if (exit) {
+        if (exit && !mStopSignalSent) {
+            mStopSignalSent = true;
             emit signalCeaseTransmission("Peer Stopped");
+            std::cout << "Peer Stopped" <<std::endl;
         }
         return 0;
     }

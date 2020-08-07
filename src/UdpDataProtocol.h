@@ -218,6 +218,8 @@ private:
     std::atomic<uint32_t>  mOutOfOrderCount;
     std::atomic<uint32_t>  mRevivedCount;
     uint32_t  mStatCount;
+    
+    bool mStopSignalSent;
 };
 
 #endif // __UDPDATAPROTOCOL_H__
