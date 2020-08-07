@@ -48,11 +48,17 @@ static int setupUnixSignalHandler(void (*handler)(int))
     sigemptyset(&sigInt.sa_mask);
     sigInt.sa_flags = 0;
     sigInt.sa_flags |= SA_RESTART;
-    
+
+    int result = 0;
     if (sigaction(SIGINT, &sigInt, 0)) {
-        return 1;
+        std::cout << "Unable to register SIGINT handler" << std::endl;
+        result |= 1;
     }
-    return 0;
+    if (sigaction(SIGTERM, &sigInt, 0)) {
+        std::cout << "Unable to register SIGTERM handler" << std::endl;
+        result |= 2;
+    }
+    return result;
 }
 #else
 bool isHubServer = false;
