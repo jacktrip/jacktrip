@@ -39,6 +39,7 @@
 #include "LoopBack.h"
 #include "Limiter.h"
 #include "Compressor.h"
+#include "Reverb.h"
 #include "NetKS.h"
 
 #ifdef WAIR // wair
@@ -90,7 +91,9 @@ Settings::Settings() :
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0),
     mLimit(LIMITER_NONE),
-    mNumClientsAssumed(2)
+    mNumClientsAssumed(2),
+    mEffects(false),
+    mReverbLevel(1.0f)
 {}
 
 //*******************************************************************************
@@ -148,6 +151,7 @@ void Settings::parseInput(int argc, char** argv)
     { "iostat", required_argument, NULL, 'I' }, // Set IO stat timeout
     { "iostatlog", required_argument, NULL, 'G' }, // Set IO stat log file
     { "help", no_argument, NULL, 'h' }, // Print Help
+    { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel 0 to 1.0
     { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
     { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources)
     { NULL, 0, NULL, 0 }
@@ -158,7 +162,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ( (ch = getopt_long(argc, argv,
-                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVhIGO:a:", longopts, NULL)) != -1 )
+                              "n:N:H:sc:SC:o:B:P:q:r:b:zlwjeJ:RTd:F:p:DvVhIGf:O:a:", longopts, NULL)) != -1 )
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -350,7 +354,7 @@ void Settings::parseInput(int argc, char** argv)
             std::exit(0);
             break;
         case 'O': { // Overflow limiter (i, o, or io)
-	  //-------------------------------------------------------
+          //-------------------------------------------------------
           char c1 = tolower(optarg[0]);
           char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
           if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
@@ -376,6 +380,16 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(1); }
           break;
+        case 'f': { // effects (-f reverbLevel 0-1)
+          //-------------------------------------------------------
+          mEffects = true; // turn on 
+	  cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
+          if (strlen(optarg)>0) {
+            mReverbLevel = atof(optarg); // cmd line comb feedback adjustment
+          } else {
+            mReverbLevel = 1.0f;
+          }
+          break; }
         default:
             //-------------------------------------------------------
             printUsage();
@@ -424,7 +438,7 @@ void Settings::printUsage()
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
     cout << " -N, --addcombfilterlength #              comb length adjustment for WAIR (default "
          << gDefaultAddCombFilterLength << ")" << endl;
-    cout << " -H, --combfilterfeedback #               comb feedback adjustment for WAIR (default "
+    cout << " -H, --combfilterfeedback # (roomSize)    comb feedback adjustment for WAIR (default "
          << gDefaultCombFilterFeedback << ")" << endl;
 #endif // endwhere
     cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
@@ -442,6 +456,7 @@ void Settings::printUsage()
     cout << " -J, --clientname                         Change default client name (default: JackTrip)" << endl;
     cout << " -L, --localaddress                       Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack, including not doing hub auto audio patch in HUB SERVER mode." << endl;
+    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming reverb, reverbLevel 0 to 1.0" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (default: 2)" << endl;
     cout << endl;
@@ -504,7 +519,7 @@ void Settings::startJackTrip()
     else { // client mode:
 
         //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
-        //	    mBufferQueueLength, mAudioBitResolution);
+        //          mBufferQueueLength, mAudioBitResolution);
 #ifdef WAIR // WAIR
         if (gVerboseFlag) std::cout << "Settings:startJackTrip mNumNetRevChans = " << mNumNetRevChans << std::endl;
 #endif // endwhere
@@ -610,33 +625,36 @@ void Settings::startJackTrip()
             // -------------------------------------------------------------
         }
 
-	// Limiters go last in the plugin sequence:
+        // Outgoing compressor and Reverb on incoming audio:
+        if ( mEffects ) {
+
+          Compressor* compressor = new Compressor(mNumChans); // FIXME: Make separate option(s) for compressor
+          mJackTrip->appendProcessPluginToNetwork(compressor); // callee responsible for freeing when done
+
+	  if (mReverbLevel > 0.0f && (mNumChans == 1 || mNumChans == 2)) {
+	    Reverb* reverb = new Reverb(mNumChans,mNumChans,mReverbLevel);
+	    mJackTrip->appendProcessPluginFromNetwork(reverb); // callee responsible for freeing when done
+	  } else {
+	    if (mNumChans < 1 || mNumChans > 2) {
+	      std::cerr << "--effects ERROR: Reverb can only handle 1 or 2 audio channels - disabling reverb\n";
+	    }
+	  }
+        }
+        // Limiters go last in the plugin sequence:
         if ( mLimit != LIMITER_NONE) {
-
           if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
-
-	    cout << "Set up OUTGOING COMPRESSOR and LIMITER for " << mNumChans << " output channels and "
-		 << mNumClientsAssumed << " assumed client(s) ..." << endl;
-
-	    Compressor* compressor = new Compressor(mNumChans); // Free compressor with every limiter (FIXME: Make option)
-	    mJackTrip->appendProcessPluginToNetwork(compressor); // responsible for freeing when done
-
-	    Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
-	    // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
-	    mJackTrip->appendProcessPluginToNetwork(limiter); // responsible for freeing when done
-	  }
+            cout << "Set up OUTGOING COMPRESSOR and LIMITER for " << mNumChans << " output channels and "
+                 << mNumClientsAssumed << " assumed client(s) ..." << endl;
+            Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
+            // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
+            mJackTrip->appendProcessPluginToNetwork(limiter); // callee responsible for freeing when done
+          }
           if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
-
-	    cout << "Set up INCOMING COMPRESSOR and LIMITER for " << mNumChans << " input channels\n";
-
-	    Compressor* compressor = new Compressor(mNumChans);
-	    mJackTrip->appendProcessPluginToNetwork(compressor);
-
-	    Limiter* limiter = new Limiter(mNumChans,1); // mNumClientsAssumed not needed in this direction
-	    mJackTrip->appendProcessPluginFromNetwork(limiter);
-
-	  }
-	}
+            cout << "Set up INCOMING COMPRESSOR and LIMITER for " << mNumChans << " input channels\n";
+            Limiter* limiter = new Limiter(mNumChans,1); // mNumClientsAssumed not needed in this direction
+            mJackTrip->appendProcessPluginFromNetwork(limiter);
+          }
+        }
 
 #ifdef WAIR // WAIR
         if ( mWAIR ) {

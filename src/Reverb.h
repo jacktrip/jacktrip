@@ -30,74 +30,82 @@
 //*****************************************************************
 
 /**
- * \file Compressor.h
+ * \file Reverb.h
  * \author Julius Smith, based on Limiter.h
  * \date August 2020
  */
 
 
-/** \brief Applies compressor_mono from the faustlibraries distribution, compressors.lib
+/** \brief Applies reverb_lad_mono from the faustlibraries distribution, compressors.lib
  *
  */
-#ifndef __COMPRESSOR_H__
-#define __COMPRESSOR_H__
+#ifndef __REVERB_H__
+#define __REVERB_H__
+
+//#define SINE_TEST
 
 #include "ProcessPlugin.h"
-#include "compressordsp.h"
-#include <vector>
+#include "freeverbdsp.h" // stereo in and out
+#include "freeverbmonodsp.h" // mono in and out (there is no mono to stereo case in jacktrip as yet)
 
-/** \brief The Compressor class confines the output dynamic range to a
+/** \brief The Reverb class confines the output dynamic range to a
  *  "dynamic range lane" determined by the assumed number of clients.
  */
-class Compressor : public ProcessPlugin
+class Reverb : public ProcessPlugin
 {
 public:
   /// \brief The class constructor sets the number of channels to limit
-  Compressor(int numchans) // xtor
-    : inited(false), mNumChannels(numchans)
+  Reverb(int numInChans, int numOutChans, float reverbLevel) // xtor
+    : inited(false), mNumInChannels(numInChans), mNumOutChannels(numOutChans), mReverbLevel(reverbLevel)
   { 
-    for ( int i = 0; i < mNumChannels; i++ ) {
-      compressorP.push_back(new compressordsp);
-      compressorUIP.push_back(new APIUI); // #included in compressordsp.h
-      compressorP[i]->buildUserInterface(compressorUIP[i]);
-    }
-    std::cout << "Compressor: constructed for "
-              << mNumChannels << " channels\n";
+    reverbStereoP = new freeverbdsp; // stereo input and output
+    reverbMonoP = new freeverbmonodsp; // mono input, stereo output
+    reverbStereoUIP = new APIUI; // #included in freeverbdsp.h
+    reverbMonoUIP = new APIUI;
+    reverbStereoP->buildUserInterface(reverbStereoUIP);
+    reverbMonoP->buildUserInterface(reverbMonoUIP);
+    std::cout << "Reverb: constructed for "
+              << mNumInChannels << " input channels and "
+              << mNumOutChannels << " output channels with reverb level = "
+              << mReverbLevel << "\n";
   }
 
   /// \brief The class destructor
-  virtual ~Compressor() {
-    for ( int i = 0; i < mNumChannels; i++ ) {
-      delete compressorP[i];
-      delete compressorUIP[i];
-    }
-    compressorP.clear();
-    compressorUIP.clear();
+  virtual ~Reverb() {
+    delete reverbStereoP;
+    delete reverbMonoP;
+    delete reverbStereoUIP;
+    delete reverbMonoUIP;
   }
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-    std::cout << "Compressor: init(" << samplingRate << ")\n";
+    std::cout << "Reverb: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }
     fs = float(fSamplingFreq);
-    for ( int i = 0; i < mNumChannels; i++ ) {
-      compressorP[i]->init(fs); // compression filter parameters depend on sampling rate
-      // See Limiter.h for how to set compression parameters (same pattern)
-    }
+    reverbStereoP->init(fs); // compression filter parameters depend on sampling rate
+    reverbMonoP->init(fs); // compression filter parameters depend on sampling rate
+    int ndx = reverbStereoUIP->getParamIndex("Wet");
+    reverbStereoUIP->setParamValue(ndx, mReverbLevel);
+    reverbMonoUIP->setParamValue(ndx, mReverbLevel);
     inited = true;
   }
-  int getNumInputs() override { return(mNumChannels); }
-  int getNumOutputs() override { return(mNumChannels); }
+  int getNumInputs() override { return(mNumInChannels); }
+  int getNumOutputs() override { return(mNumOutChannels); }
   void compute(int nframes, float** inputs, float** outputs) override;
 
 private:
   bool inited;
   float fs;
-  int mNumChannels;
-  std::vector<compressordsp*> compressorP;
-  std::vector<APIUI*> compressorUIP;
+  int mNumInChannels;
+  int mNumOutChannels;
+  int mReverbLevel;
+  freeverbdsp* reverbStereoP;
+  freeverbmonodsp* reverbMonoP;
+  APIUI* reverbStereoUIP;
+  APIUI* reverbMonoUIP;
 };
 
 #endif

@@ -135,6 +135,8 @@ private:
     std::ofstream mIOStatStream;
     LIMITER_MODE mLimit; ///< audio limiter controls
     unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
+    bool mEffects; // turns on compressor and reverb
+    float mReverbLevel; // amount of reverb ("wetness") 0 to 1
 };
 
 #endif

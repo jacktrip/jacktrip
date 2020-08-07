@@ -39,7 +39,6 @@
 #include "Limiter.h"
 #include "jacktrip_types.h"
 
-#include <cstring> // for memcpy
 #include <iostream>
 
 //*******************************************************************************

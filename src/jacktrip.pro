@@ -122,6 +122,7 @@ HEADERS += DataProtocol.h \
            JackTrip.h \
            Compressor.h \
            Limiter.h \
+           Reverb.h \
            jacktrip_globals.h \
            jacktrip_types.h \
            JackTripThread.h \
@@ -140,7 +141,8 @@ HEADERS += DataProtocol.h \
            UdpHubListener.h \
            AudioInterface.h \
            compressordsp.h \
-           limiterdsp.h
+           limiterdsp.h \
+           freeverbdsp.h
 
 !nojack {
 HEADERS += JackAudioInterface.h
@@ -150,6 +152,7 @@ SOURCES += DataProtocol.cpp \
            JackTrip.cpp \
            Compressor.cpp \
            Limiter.cpp \
+           Reverb.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
            jacktrip_tests.cpp \

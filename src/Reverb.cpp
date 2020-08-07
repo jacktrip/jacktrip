@@ -30,31 +30,34 @@
 //*****************************************************************
 
 /**
- * \file Compressor.cpp
+ * \file Reverb.cpp
  * \author Julius Smith, based on LoopBack.h
  * \date July 2008
  */
 
 
-#include "Compressor.h"
+#include "Reverb.h"
 #include "jacktrip_types.h"
 
 #include <iostream>
 
 //*******************************************************************************
-void Compressor::compute(int nframes, float** inputs, float** outputs)
+void Reverb::compute(int nframes, float** inputs, float** outputs)
 {
   static uint nSkippedFrames = 0;
   if (not inited) {
-    std::cerr << "*** Compressor " << this << ": init never called! Doing it now.\n";
+    std::cerr << "*** Reverb " << this << ": init never called! Doing it now.\n";
     if (fSamplingFreq <= 0) {
       fSamplingFreq = 48000;
-      std::cout << "Compressor " << this << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
+      std::cout << "Reverb " << this << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
     }
     init(fSamplingFreq);
     inited = true;
   }
-  for ( int i = 0; i < mNumChannels; i++ ) {
-    compressorP[i]->compute(nframes, &inputs[i], &outputs[i]);
+  if (mNumInChannels == 1) {
+    reverbMonoP->compute(nframes, inputs, outputs);
+  } else {
+    assert(mNumInChannels == 2);
+    reverbStereoP->compute(nframes, inputs, outputs);
   }
 }
