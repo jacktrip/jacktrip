@@ -115,7 +115,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -128,10 +128,92 @@
         <string>Basic options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
+        <item row="7" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="aboutLayout">
+          <item>
+           <spacer name="aboutSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="aboutButton">
+            <property name="text">
+             <string>About</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="5" column="0">
+         <spacer name="basicVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="autoPatchLabel">
+          <property name="maximumSize">
+           <size>
+            <width>130</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Hub auto&amp;patch mode</string>
+          </property>
+          <property name="buddy">
+           <cstring>autoPatchComboBox</cstring>
+          </property>
+         </widget>
+        </item>
         <item row="3" column="0" colspan="2">
          <widget class="QCheckBox" name="zeroCheckBox">
           <property name="text">
            <string>Set buffer to &amp;zero when underrun occurs</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="channelSpinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="channelLabel">
+          <property name="maximumSize">
+           <size>
+            <width>130</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>&amp;Number of channels</string>
+          </property>
+          <property name="buddy">
+           <cstring>channelSpinBox</cstring>
           </property>
          </widget>
         </item>
@@ -167,87 +249,12 @@
           </item>
          </widget>
         </item>
-        <item row="4" column="0">
-         <spacer name="basicVerticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="autoPatchLabel">
-          <property name="maximumSize">
-           <size>
-            <width>130</width>
-            <height>16777215</height>
-           </size>
-          </property>
+        <item row="4" column="0" colspan="2">
+         <widget class="QCheckBox" name="timeoutCheckBox">
           <property name="text">
-           <string>Hub auto&amp;patch mode</string>
-          </property>
-          <property name="buddy">
-           <cstring>autoPatchComboBox</cstring>
+           <string>&amp;Disconnect after 10 seconds of no network activity</string>
           </property>
          </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="channelLabel">
-          <property name="maximumSize">
-           <size>
-            <width>130</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>&amp;Number of channels</string>
-          </property>
-          <property name="buddy">
-           <cstring>channelSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QSpinBox" name="channelSpinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>2</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="aboutLayout">
-          <item>
-           <spacer name="aboutSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="aboutButton">
-            <property name="text">
-             <string>About</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
@@ -474,6 +481,7 @@
  </widget>
  <tabstops>
   <tabstop>typeComboBox</tabstop>
+  <tabstop>addressEdit</tabstop>
   <tabstop>connectButton</tabstop>
   <tabstop>disconnectButton</tabstop>
   <tabstop>exitButton</tabstop>
@@ -481,6 +489,7 @@
   <tabstop>channelSpinBox</tabstop>
   <tabstop>autoPatchComboBox</tabstop>
   <tabstop>zeroCheckBox</tabstop>
+  <tabstop>timeoutCheckBox</tabstop>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
   <tabstop>remoteNameEdit</tabstop>

@@ -129,6 +129,7 @@ void QJackTrip::chooseRunType(const QString &type)
     if (type == "Hub Server") {
         m_ui->channelSpinBox->setVisible(false);
         m_ui->channelLabel->setVisible(false);
+        m_ui->timeoutCheckBox->setVisible(false);
         m_ui->autoPatchComboBox->setVisible(true);
         m_ui->autoPatchLabel->setVisible(true);
         advancedOptionsForHubServer(true);
@@ -137,6 +138,7 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->autoPatchLabel->setVisible(false);
         m_ui->channelSpinBox->setVisible(true);
         m_ui->channelLabel->setVisible(true);
+        m_ui->timeoutCheckBox->setVisible(true);
         advancedOptionsForHubServer(false);
     }
 
@@ -275,6 +277,10 @@ void QJackTrip::start()
                 m_jackTrip->setUnderRunMode(JackTrip::ZEROS);
             }
             
+            if (m_ui->timeoutCheckBox->isChecked()) {
+                m_jackTrip->setStopOnTimeout(true);
+            }
+            
             // Set peer address in client mode
             if (jackTripMode == JackTrip::CLIENT || jackTripMode == JackTrip::CLIENTTOPINGSERVER) {
                 m_jackTrip->setPeerAddress(m_ui->addressEdit->text());
@@ -383,6 +389,7 @@ void QJackTrip::loadSettings()
     m_ui->channelSpinBox->setValue(settings.value("Channels", 2).toInt());
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
+    m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
     m_ui->clientNameEdit->setText(settings.value("ClientName", "").toString());
     m_ui->remoteNameEdit->setText(settings.value("RemoteName", "").toString());
     m_ui->portOffsetSpinBox->setValue(settings.value("PortOffset", 0).toInt());
@@ -404,6 +411,7 @@ void QJackTrip::saveSettings()
     settings.setValue("Channels", m_ui->channelSpinBox->value());
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
+    settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
     settings.setValue("ClientName", m_ui->clientNameEdit->text());
     settings.setValue("RemoteName", m_ui->remoteNameEdit->text());
     settings.setValue("PortOffset", m_ui->portOffsetSpinBox->value());
