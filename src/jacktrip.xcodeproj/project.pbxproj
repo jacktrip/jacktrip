@@ -61,6 +61,21 @@
 					);
 			};
 		};
+		A8D9BA234B89C5F9154E9D42 = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/Compressor.cpp";
+			name = "Compressor.cpp";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.cpp.cpp";
+		};
+		D724C09DE096008872DC1CB4 = {
+			fileRef = "A8D9BA234B89C5F9154E9D42";
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					);
+			};
+		};
 		D9C47E2E1FB68704301BF8D9 = {
 			isa = PBXFileReference;
 			path = "/Users/jos/w/jacktrip-github/src/Limiter.cpp";
@@ -442,6 +457,13 @@
 			sourceTree = "<absolute>";
 			lastKnownFileType = "sourcecode.c.h";
 		};
+		5532C158F9CD3C18D73AA38B = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/Compressor.h";
+			name = "Compressor.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
 		8EB085273E460F99C8BD4C55 = {
 			isa = PBXFileReference;
 			path = "/Users/jos/w/jacktrip-github/src/Limiter.h";
@@ -568,6 +590,13 @@
 			sourceTree = "<absolute>";
 			lastKnownFileType = "sourcecode.c.h";
 		};
+		1890A4BBAF65BA60F451DC9D = {
+			isa = PBXFileReference;
+			path = "/Users/jos/w/jacktrip-github/src/compressordsp.h";
+			name = "compressordsp.h";
+			sourceTree = "<absolute>";
+			lastKnownFileType = "sourcecode.c.h";
+		};
 		CF855C15C5B42321BF1551CC = {
 			isa = PBXFileReference;
 			path = "/Users/jos/w/jacktrip-github/src/limiterdsp.h";
@@ -632,6 +661,7 @@
 				"542C79331983463E2881BDEA",
 				"9229711629CA5ED78170C196",
 				"F67FE135A8AD856433183FDC",
+				"A8D9BA234B89C5F9154E9D42",
 				"D9C47E2E1FB68704301BF8D9",
 				"04C89E59A3C5145146A62A5D",
 				"D4D9FD74F4A2CA685F7B7BFD",
@@ -649,6 +679,7 @@
 				"43877CD8ED932588545EE743",
 				"178CC5AD11B27C55C3234FC4",
 				"B5051186495EB7C6DB2A20B6",
+				"5532C158F9CD3C18D73AA38B",
 				"8EB085273E460F99C8BD4C55",
 				"39B5F4C57159F8AEDE2E4011",
 				"C2E047D1473B042C0360671D",
@@ -667,6 +698,7 @@
 				"A9CAFDA66E4C036ACFC44E6F",
 				"073CC471722B26358EE4AA61",
 				"9885A7E72E6BD04262341315",
+				"1890A4BBAF65BA60F451DC9D",
 				"CF855C15C5B42321BF1551CC",
 				"C6F7B0F551EEA651789EE3B6");
 			name = "Sources";
@@ -704,6 +736,7 @@
 				"682F40355FB78AE807A973ED",
 				"DC6DADB895C865A89B4AB1A6",
 				"CD517699FF391C05FC07E5FA",
+				"D724C09DE096008872DC1CB4",
 				"19EBBA0EF2625634D5182FFA",
 				"6A6F0BE6A9BEFC6CBDC8C2D5",
 				"0B3F36926155E778AB91FDF0",

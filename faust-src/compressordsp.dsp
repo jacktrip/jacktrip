@@ -15,7 +15,7 @@ import("stdfaust.lib");
 // _ : compressor_mono_demo : _;
 // ```
 //------------------------------------------------------------
-compressor_demo = ba.bypass2(cbp,compressor_mono_demo)
+compressor_demo = ba.bypass1(cbp,compressor_mono_demo)
 with {
 	comp_group(x) = vgroup("COMPRESSOR [tooltip: Reference:
 		http://en.wikipedia.org/wiki/Dynamic_range_compression]", x);
@@ -29,7 +29,7 @@ with {
 	meter_group(hbargraph("[1] Compressor Gain [unit:dB] [tooltip: Current gain of
 	the compressor in dB]",-50,+10));
 
-	displaygain = _,_ <: _,_,(abs,abs:+) : _,_,gainview : _,attach;
+	displaygain = _ <: _,abs : _,gainview : attach;
 
 	compressor_stereo_demo =
 	displaygain(co.compressor_stereo(ratio,threshold,attack,release)) :
@@ -37,7 +37,7 @@ with {
 
 	compressor_mono_demo =
 	displaygain(co.compressor_mono(ratio,threshold,attack,release)) :
-	*(makeupgain), *(makeupgain);
+	*(makeupgain);
 
 	ctl_group(x)  = knob_group(hgroup("[3] Compression Control", x));
 
@@ -69,4 +69,4 @@ with {
 	40, -96, 96, 0.1)) : ba.db2linear;
 };
 
-process = dm.compressor_demo;
+process = _ : compressor_demo : _;

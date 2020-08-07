@@ -1577,13 +1577,13 @@ class compressordsp : public dsp {
 	FAUSTFLOAT fHslider1;
 	FAUSTFLOAT fHslider2;
 	FAUSTFLOAT fHslider3;
-	float fRec2[2];
-	float fRec1[2];
-	FAUSTFLOAT fHslider4;
-	float fRec0[2];
 	float fRec5[2];
 	float fRec4[2];
+	FAUSTFLOAT fHslider4;
 	float fRec3[2];
+	float fRec2[2];
+	float fRec1[2];
+	float fRec0[2];
 	FAUSTFLOAT fHbargraph0;
 	
  public:
@@ -1597,9 +1597,12 @@ class compressordsp : public dsp {
 		m->declare("compressors.lib/compression_gain_mono:author", "Julius O. Smith III");
 		m->declare("compressors.lib/compression_gain_mono:copyright", "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>");
 		m->declare("compressors.lib/compression_gain_mono:license", "MIT-style STK-4.3 license");
-		m->declare("compressors.lib/compressor_stereo:author", "Julius O. Smith III");
-		m->declare("compressors.lib/compressor_stereo:copyright", "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>");
-		m->declare("compressors.lib/compressor_stereo:license", "MIT-style STK-4.3 license");
+		m->declare("compressors.lib/compressor_lad_mono:author", "Julius O. Smith III");
+		m->declare("compressors.lib/compressor_lad_mono:copyright", "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>");
+		m->declare("compressors.lib/compressor_lad_mono:license", "MIT-style STK-4.3 license");
+		m->declare("compressors.lib/compressor_mono:author", "Julius O. Smith III");
+		m->declare("compressors.lib/compressor_mono:copyright", "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>");
+		m->declare("compressors.lib/compressor_mono:license", "MIT-style STK-4.3 license");
 		m->declare("compressors.lib/name", "Faust Compressor Effect Library");
 		m->declare("compressors.lib/version", "0.0");
 		m->declare("description", "Compressor demo application, adapted from the Faust Library's dm.compressor_demo in demos.lib");
@@ -1613,27 +1616,21 @@ class compressordsp : public dsp {
 		m->declare("name", "compressor");
 		m->declare("platform.lib/name", "Generic Platform Library");
 		m->declare("platform.lib/version", "0.1");
-		m->declare("routes.lib/name", "Faust Signal Routing Library");
-		m->declare("routes.lib/version", "0.2");
 		m->declare("signals.lib/name", "Faust Signal Routing Library");
 		m->declare("signals.lib/version", "0.0");
 		m->declare("version", "0.0");
 	}
 
 	virtual int getNumInputs() {
-		return 2;
+		return 1;
 	}
 	virtual int getNumOutputs() {
-		return 2;
+		return 1;
 	}
 	virtual int getInputRate(int channel) {
 		int rate;
 		switch ((channel)) {
 			case 0: {
-				rate = 1;
-				break;
-			}
-			case 1: {
 				rate = 1;
 				break;
 			}
@@ -1648,10 +1645,6 @@ class compressordsp : public dsp {
 		int rate;
 		switch ((channel)) {
 			case 0: {
-				rate = 1;
-				break;
-			}
-			case 1: {
 				rate = 1;
 				break;
 			}
@@ -1682,22 +1675,22 @@ class compressordsp : public dsp {
 	
 	virtual void instanceClear() {
 		for (int l0 = 0; (l0 < 2); l0 = (l0 + 1)) {
-			fRec2[l0] = 0.0f;
+			fRec5[l0] = 0.0f;
 		}
 		for (int l1 = 0; (l1 < 2); l1 = (l1 + 1)) {
-			fRec1[l1] = 0.0f;
+			fRec4[l1] = 0.0f;
 		}
 		for (int l2 = 0; (l2 < 2); l2 = (l2 + 1)) {
-			fRec0[l2] = 0.0f;
+			fRec3[l2] = 0.0f;
 		}
 		for (int l3 = 0; (l3 < 2); l3 = (l3 + 1)) {
-			fRec5[l3] = 0.0f;
+			fRec2[l3] = 0.0f;
 		}
 		for (int l4 = 0; (l4 < 2); l4 = (l4 + 1)) {
-			fRec4[l4] = 0.0f;
+			fRec1[l4] = 0.0f;
 		}
 		for (int l5 = 0; (l5 < 2); l5 = (l5 + 1)) {
-			fRec3[l5] = 0.0f;
+			fRec0[l5] = 0.0f;
 		}
 	}
 	
@@ -1771,9 +1764,7 @@ class compressordsp : public dsp {
 	
 	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
 		FAUSTFLOAT* input0 = inputs[0];
-		FAUSTFLOAT* input1 = inputs[1];
 		FAUSTFLOAT* output0 = outputs[0];
-		FAUSTFLOAT* output1 = outputs[1];
 		int iSlow0 = int(float(fCheckbox0));
 		float fSlow1 = std::pow(10.0f, (0.0500000007f * float(fHslider0)));
 		float fSlow2 = std::max<float>(fConst0, (0.00100000005f * float(fHslider1)));
@@ -1790,31 +1781,26 @@ class compressordsp : public dsp {
 		float fSlow13 = (1.0f - fSlow5);
 		for (int i = 0; (i < count); i = (i + 1)) {
 			float fTemp0 = float(input0[i]);
-			float fTemp1 = float(input1[i]);
-			float fTemp2 = (iSlow0 ? 0.0f : fTemp0);
-			float fTemp3 = (iSlow0 ? 0.0f : fTemp1);
-			float fTemp4 = std::fabs((std::fabs(fTemp2) + std::fabs(fTemp3)));
-			float fTemp5 = ((fRec1[1] > fTemp4) ? fSlow11 : fSlow8);
-			fRec2[0] = ((fRec2[1] * fTemp5) + (fTemp4 * (1.0f - fTemp5)));
-			fRec1[0] = fRec2[0];
-			fRec0[0] = ((fRec0[1] * fSlow5) + (fSlow6 * (std::max<float>(((20.0f * std::log10(fRec1[0])) - fSlow12), 0.0f) * fSlow13)));
-			float fTemp6 = std::pow(10.0f, (0.0500000007f * fRec0[0]));
-			float fTemp7 = (fTemp2 * fTemp6);
-			output0[i] = FAUSTFLOAT((iSlow0 ? fTemp0 : (fSlow1 * fTemp7)));
-			float fTemp8 = (fTemp3 * fTemp6);
-			float fTemp9 = std::fabs((std::fabs(fTemp7) + std::fabs(fTemp8)));
-			float fTemp10 = ((fRec4[1] > fTemp9) ? fSlow11 : fSlow8);
-			fRec5[0] = ((fRec5[1] * fTemp10) + (fTemp9 * (1.0f - fTemp10)));
+			float fTemp1 = (iSlow0 ? 0.0f : fTemp0);
+			float fTemp2 = std::fabs(fTemp1);
+			float fTemp3 = ((fRec4[1] > fTemp2) ? fSlow11 : fSlow8);
+			fRec5[0] = ((fRec5[1] * fTemp3) + (fTemp2 * (1.0f - fTemp3)));
 			fRec4[0] = fRec5[0];
-			fRec3[0] = ((fSlow5 * fRec3[1]) + (fSlow6 * (std::max<float>(((20.0f * std::log10(fRec4[0])) - fSlow12), 0.0f) * fSlow13)));
-			fHbargraph0 = FAUSTFLOAT((20.0f * std::log10(std::pow(10.0f, (0.0500000007f * fRec3[0])))));
-			output1[i] = FAUSTFLOAT((iSlow0 ? fTemp1 : (fSlow1 * fTemp8)));
-			fRec2[1] = fRec2[0];
-			fRec1[1] = fRec1[0];
-			fRec0[1] = fRec0[0];
+			fRec3[0] = ((fRec3[1] * fSlow5) + (fSlow6 * (std::max<float>(((20.0f * std::log10(fRec4[0])) - fSlow12), 0.0f) * fSlow13)));
+			float fTemp4 = (fTemp1 * std::pow(10.0f, (0.0500000007f * fRec3[0])));
+			float fTemp5 = std::fabs(fTemp4);
+			float fTemp6 = ((fRec1[1] > fTemp5) ? fSlow11 : fSlow8);
+			fRec2[0] = ((fRec2[1] * fTemp6) + (fTemp5 * (1.0f - fTemp6)));
+			fRec1[0] = fRec2[0];
+			fRec0[0] = ((fSlow5 * fRec0[1]) + (fSlow6 * (std::max<float>(((20.0f * std::log10(fRec1[0])) - fSlow12), 0.0f) * fSlow13)));
+			fHbargraph0 = FAUSTFLOAT((20.0f * std::log10(std::pow(10.0f, (0.0500000007f * fRec0[0])))));
+			output0[i] = FAUSTFLOAT((iSlow0 ? fTemp0 : (fSlow1 * fTemp4)));
 			fRec5[1] = fRec5[0];
 			fRec4[1] = fRec4[0];
 			fRec3[1] = fRec3[0];
+			fRec2[1] = fRec2[0];
+			fRec1[1] = fRec1[0];
+			fRec0[1] = fRec0[0];
 		}
 	}
 
