@@ -66,7 +66,7 @@ Settings::Settings() :
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
-    mServerUdpPortNum(NULL),
+    mServerUdpPortNum(0),
     mUnderrunMode(JackTrip::WAVETABLE),
     mStopOnTimeout(false),
     mLoopBack(false),
@@ -253,7 +253,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'z': // underrun to zero
             //-------------------------------------------------------
-            mUnderrunMode = JACKTRIP::ZEROS;
+            mUnderrunMode = JackTrip::ZEROS;
             break;
         case 't': // quit on timeout
             mStopOnTimeout = true;
@@ -461,10 +461,10 @@ UdpHubListener *Settings::getConfiguredHubServer()
         udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
     }
     // Set buffers to zero when underrun
-    if ( mUnderrunZero ) {
+    if ( mUnderrunMode == JackTrip::ZEROS ) {
         cout << "Setting buffers to zero when underrun..." << endl;
         cout << gPrintSeparator << std::endl;
-        udpHub->setUnderRunMode(JackTrip::ZEROS);
+        udpHub->setUnderRunMode(mUnderrunMode);
     }
     udpHub->setBufferQueueLength(mBufferQueueLength);
     
@@ -485,7 +485,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 #ifdef WAIR // wair
                                       mNumNetRevChans,
 #endif // endwhere
-                                      mBufferQueueLength, mRedundancy, mAudioBitResolution);
+                                      mBufferQueueLength, mRedundancy, mAudioBitResolution,
                                       /*DataProtocol::packetHeaderTypeT PacketHeaderType = */DataProtocol::DEFAULT,
                                       /*underrunModeT UnderRunMode = */ mUnderrunMode,
                                       /* int receiver_bind_port = */ mBindPortNum,
@@ -507,7 +507,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     }
 
     // Set buffers to zero when underrun (Actual setting is handled in constructor.)
-    if (mUnderrunMode == JACKTRIP::ZEROS) {
+    if (mUnderrunMode == JackTrip::ZEROS) {
         cout << "Setting buffers to zero when underrun..." << endl;
         cout << gPrintSeparator << std::endl;
     }

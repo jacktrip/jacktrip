@@ -92,7 +92,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
 
     // SoundWIRE ports open are UDP 61002-62000
     // (server_port - gDefaultPort) apply TCP offset to UDP too
-    if (mServerUdpPort != NULL){
+    if (mServerUdpPort != 0){
       mBasePort = mServerUdpPort;
     } else {
       mBasePort = 61002 + (server_port - gDefaultPort);

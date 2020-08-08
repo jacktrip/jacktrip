@@ -71,7 +71,7 @@ class UdpHubListener : public QThread
     Q_OBJECT;
 
 public:
-    UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = NULL);
+    UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0);
     virtual ~UdpHubListener();
 
     /// \brief Implements the Thread Loop. To start the thread, call start()
