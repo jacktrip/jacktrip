@@ -465,8 +465,8 @@ void Settings::printUsage()
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming reverb, reverbLevel 0 to 1.0" << endl;
-    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
-    cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (default: 2)" << endl;
+    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
+    cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
