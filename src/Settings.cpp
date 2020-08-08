@@ -472,7 +472,7 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack, including not doing hub auto audio patch in HUB SERVER mode." << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
-    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming reverb, reverbLevel 0 to 1.0" << endl;
+    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
@@ -656,6 +656,7 @@ void Settings::startJackTrip()
 	    }
 	  }
         }
+
         // Limiters go last in the plugin sequence:
         if ( mLimit != LIMITER_NONE) {
           if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
