@@ -219,7 +219,6 @@ private:
     std::atomic<uint32_t>  mRevivedCount;
     uint32_t  mStatCount;
     
-    uint8_t mControlPacketSize;
     bool mStopSignalSent;
 };
 
