@@ -356,6 +356,10 @@ void Settings::parseInput(int argc, char** argv)
         case 'O': { // Overflow limiter (i, o, or io)
           //-------------------------------------------------------
           char c1 = tolower(optarg[0]);
+          if (c1 == '-') {
+            std::cerr << "--overflowlimiting (-O) argument i, o, or io is REQUIRED\n";
+                  std::exit(1);
+          }
           char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
           if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
             mLimit = LIMITER_BOTH;
@@ -373,6 +377,10 @@ void Settings::parseInput(int argc, char** argv)
           break; }
         case 'a': // assumed number of clients (applies to outgoing limiter)
           //-------------------------------------------------------
+          if (optarg[0] == '-') {
+            std::cerr << "--assumednumclients (-a) integer argument > 0 is REQUIRED\n";
+                  std::exit(1);
+          }
           mNumClientsAssumed = atoi(optarg);
           if(mNumClientsAssumed < 1) {
             std::cerr << "-p ERROR: Must have at least one assumed sound source: "
@@ -382,22 +390,22 @@ void Settings::parseInput(int argc, char** argv)
           break;
         case 'f': { // effects (-f reverbLevel [0-1])
           //-------------------------------------------------------
-          mEffects = true; // turn on 
-	  cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
-          if (strlen(optarg)>0) {
-            mReverbLevel = atof(optarg); // cmd line comb feedback adjustment
-          } else {
-            mReverbLevel = 1.0f;
+          if (optarg[0] == '-') {
+            std::cerr << "--effects (-f) reverb-level argument [0 to 1.0] is REQUIRED\n";
+            std::exit(1);
           }
+           mEffects = true; // turn on
+            cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
+            mReverbLevel = atof(optarg); // cmd line comb feedback adjustment
           break; }
         case ':': {
-	  printf("\t*** Missing option argument\n", optarg);
-          break; }
+            printf("\t*** Missing option argument\n");
+            break; }
         case '?': {
-	  printf("\t*** Unknown or ambiguous option argument\n", optarg);
-          break; }
+            printf("\t*** Unknown or ambiguous option argument\n");
+           break; }
         default:
-            //-------------------------------------------------------
+           //-------------------------------------------------------
             printUsage();
             std::exit(0);
             break;
