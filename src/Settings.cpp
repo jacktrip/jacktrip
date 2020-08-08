@@ -257,6 +257,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 't': // quit on timeout
             mStopOnTimeout = true;
+            break;
         case 'l': // loopback
             //-------------------------------------------------------
             mLoopBack = true;
@@ -449,7 +450,7 @@ void Settings::printUsage()
 UdpHubListener *Settings::getConfiguredHubServer()
 {
     if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
-    UdpHubListener *udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum);;
+    UdpHubListener *udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum);
     //udpHub->setSettings(this);
 #ifdef WAIR // WAIR
     udpHub->setWAIR(mWAIR);
