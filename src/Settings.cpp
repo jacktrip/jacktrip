@@ -153,7 +153,7 @@ void Settings::parseInput(int argc, char** argv)
     { "help", no_argument, NULL, 'h' }, // Print Help
     { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel 0 to 1.0
     { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
-    { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources)
+    { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
     { NULL, 0, NULL, 0 }
 };
 
@@ -359,16 +359,16 @@ void Settings::parseInput(int argc, char** argv)
           char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
           if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
             mLimit = LIMITER_BOTH;
-            cout << "Setting up Limiter for both INCOMING and OUTGOING\n";
+            cout << "Setting up Overflow Limiter for both INCOMING and OUTGOING\n";
           } else if (c1 == 'i') {
             mLimit = LIMITER_INCOMING;
-            cout << "Setting up Limiter for INCOMING from network\n";
+            cout << "Setting up Overflow Limiter for INCOMING from network\n";
           } else if (c1 == 'o') {
             mLimit = LIMITER_OUTGOING;
-            cout << "Setting up Limiter for OUTGOING to network\n";
+            cout << "Setting up Overflow Limiter for OUTGOING to network\n";
           } else {
-            mLimit = LIMITER_NONE;
-            cout << "NO LIMITER\n";
+            mLimit = LIMITER_OUTGOING;
+            cout << "Setting up Overflow Limiter for OUTGOING to network\n";
           }
           break; }
         case 'a': // assumed number of clients (applies to outgoing limiter)
@@ -380,7 +380,7 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(1); }
           break;
-        case 'f': { // effects (-f reverbLevel 0-1)
+        case 'f': { // effects (-f reverbLevel [0-1])
           //-------------------------------------------------------
           mEffects = true; // turn on 
 	  cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
@@ -389,6 +389,12 @@ void Settings::parseInput(int argc, char** argv)
           } else {
             mReverbLevel = 1.0f;
           }
+          break; }
+        case ':': {
+	  printf("\t*** Missing option argument\n", optarg);
+          break; }
+        case '?': {
+	  printf("\t*** Unknown or ambiguous option argument\n", optarg);
           break; }
         default:
             //-------------------------------------------------------
@@ -456,6 +462,8 @@ void Settings::printUsage()
     cout << " -J, --clientname                         Change default client name (default: JackTrip)" << endl;
     cout << " -L, --localaddress                       Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack, including not doing hub auto audio patch in HUB SERVER mode." << endl;
+    cout << endl;
+    cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming reverb, reverbLevel 0 to 1.0" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (default: no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (default: 2)" << endl;

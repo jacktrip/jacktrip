@@ -37,6 +37,7 @@
 		682F40355FB78AE807A973ED /* DataProtocol.cpp in Compile Sources */ = {isa = PBXBuildFile; fileRef = 542C79331983463E2881BDEA /* DataProtocol.cpp */; settings = {ATTRIBUTES = (); }; };
 		6A6F0BE6A9BEFC6CBDC8C2D5 /* jacktrip_globals.cpp in Compile Sources */ = {isa = PBXBuildFile; fileRef = 04C89E59A3C5145146A62A5D /* jacktrip_globals.cpp */; settings = {ATTRIBUTES = (); }; };
 		745A1835F936437EB6929369 /* moc_ThreadPoolTest.cpp in Compile Sources */ = {isa = PBXBuildFile; fileRef = 949529F92C910B8D11A4DE4E /* moc_ThreadPoolTest.cpp */; settings = {ATTRIBUTES = (); }; };
+		80C9058324DE2DFA005D6D44 /* Reverb.cpp in Compile Sources */ = {isa = PBXBuildFile; fileRef = 80C9058224DE2DFA005D6D44 /* Reverb.cpp */; };
 		877218415A466B56E497ECAB /* moc_JackTrip.cpp in Compile Sources */ = {isa = PBXBuildFile; fileRef = AD8467ADAA1A83AD35B541DF /* moc_JackTrip.cpp */; settings = {ATTRIBUTES = (); }; };
 		8CC9E23461EE302C3E30819D /* JackTripWorker.cpp in Compile Sources */ = {isa = PBXBuildFile; fileRef = 8A124D17718B06FAE7532073 /* JackTripWorker.cpp */; settings = {ATTRIBUTES = (); }; };
 		8D267F2E4776F0ECA2F49DC8 /* IOKit.framework in Link Binary With Libraries */ = {isa = PBXBuildFile; fileRef = A1A67BEAA744704B29168D39 /* IOKit.framework */; };
@@ -103,6 +104,10 @@
 		6DFE87270DFB05EF99124F07 /* ProcessPlugin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ProcessPlugin.h; path = "/Users/jos/w/jacktrip-github/src/ProcessPlugin.h"; sourceTree = "<absolute>"; };
 		7CF2757740CD6ACB677780DB /* LoopBack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LoopBack.cpp; path = "/Users/jos/w/jacktrip-github/src/LoopBack.cpp"; sourceTree = "<absolute>"; };
 		7F2E8E19A11EC327F49B30F7 /* TestRingBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TestRingBuffer.h; path = "/Users/jos/w/jacktrip-github/src/TestRingBuffer.h"; sourceTree = "<absolute>"; };
+		80C9058124DE2DED005D6D44 /* Reverb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reverb.h; sourceTree = "<group>"; };
+		80C9058224DE2DFA005D6D44 /* Reverb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reverb.cpp; sourceTree = "<group>"; };
+		80C9058424DE2E13005D6D44 /* freeverbdsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = freeverbdsp.h; sourceTree = "<group>"; };
+		80C9058524DE2E14005D6D44 /* freeverbmonodsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = freeverbmonodsp.h; sourceTree = "<group>"; };
 		8302309CFD8FF81A6274A5BB /* UdpHubListener.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = UdpHubListener.cpp; path = "/Users/jos/w/jacktrip-github/src/UdpHubListener.cpp"; sourceTree = "<absolute>"; };
 		8A124D17718B06FAE7532073 /* JackTripWorker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = JackTripWorker.cpp; path = "/Users/jos/w/jacktrip-github/src/JackTripWorker.cpp"; sourceTree = "<absolute>"; };
 		8EB085273E460F99C8BD4C55 /* Limiter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Limiter.h; path = "/Users/jos/w/jacktrip-github/src/Limiter.h"; sourceTree = "<absolute>"; };
@@ -159,6 +164,9 @@
 		25B08E2869634E9BCBA333A2 /* Generated Sources */ = {
 			isa = PBXGroup;
 			children = (
+				80C9058424DE2E13005D6D44 /* freeverbdsp.h */,
+				80C9058524DE2E14005D6D44 /* freeverbmonodsp.h */,
+				CF855C15C5B42321BF1551CC /* limiterdsp.h */,
 				2A11B8655B3637F541A9A8E5 /* moc_DataProtocol.cpp */,
 				AD8467ADAA1A83AD35B541DF /* moc_JackTrip.cpp */,
 				CD931AB9EEBBAAEC3A50A410 /* moc_JackTripWorker.cpp */,
@@ -200,7 +208,6 @@
 				178CC5AD11B27C55C3234FC4 /* JMess.h */,
 				D9C47E2E1FB68704301BF8D9 /* Limiter.cpp */,
 				8EB085273E460F99C8BD4C55 /* Limiter.h */,
-				CF855C15C5B42321BF1551CC /* limiterdsp.h */,
 				7CF2757740CD6ACB677780DB /* LoopBack.cpp */,
 				B861DE5AA6F048FE15FCCF86 /* LoopBack.h */,
 				47136CF3EE93C11EC6F1CFD8 /* NetKS.h */,
@@ -208,6 +215,8 @@
 				10C0760A3DA3CC4D64EE097F /* PacketHeader.h */,
 				EF04F48376168606A111FA36 /* ProcessPlugin.cpp */,
 				6DFE87270DFB05EF99124F07 /* ProcessPlugin.h */,
+				80C9058224DE2DFA005D6D44 /* Reverb.cpp */,
+				80C9058124DE2DED005D6D44 /* Reverb.h */,
 				D52F2E47954D29391B1E86C5 /* RingBuffer.cpp */,
 				27B77FA5EA6555E1BA3A3032 /* RingBuffer.h */,
 				4D66BC68493F515B31881E0F /* RingBufferWavetable.h */,
@@ -376,6 +385,7 @@
 				A9E60F59D318D2ADD4CDE1D8 /* UdpDataProtocol.cpp in Compile Sources */,
 				DA018D395087930B8E931329 /* UdpHubListener.cpp in Compile Sources */,
 				648BF03135211C45E2C2ECD9 /* AudioInterface.cpp in Compile Sources */,
+				80C9058324DE2DFA005D6D44 /* Reverb.cpp in Compile Sources */,
 				BDBCC8240EF583B8F68DA92C /* JackAudioInterface.cpp in Compile Sources */,
 				07D2A4331F4CC2C8B5AFB5E8 /* moc_DataProtocol.cpp in Compile Sources */,
 				877218415A466B56E497ECAB /* moc_JackTrip.cpp in Compile Sources */,
