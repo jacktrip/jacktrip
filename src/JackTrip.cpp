@@ -80,7 +80,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
                    DataProtocol::packetHeaderTypeT PacketHeaderType,
                    underrunModeT UnderRunMode,
                    int receiver_bind_port, int sender_bind_port,
-                   int receiver_peer_port, int sender_peer_port) :
+                   int receiver_peer_port, int sender_peer_port, int tcp_peer_port) :
     mJackTripMode(JacktripMode),
     mDataProtocol(DataProtocolType),
     mPacketHeaderType(PacketHeaderType),
@@ -106,7 +106,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mSenderPeerPort(sender_peer_port),
     mSenderBindPort(sender_bind_port),
     mReceiverPeerPort(receiver_peer_port),
-    mTcpServerPort(4464),
+    mTcpServerPort(tcp_peer_port),
     mRedundancy(redundancy),
     mJackClientName(gJackDefaultClientName),
     mConnectionMode(JackTrip::NORMAL),
@@ -173,16 +173,19 @@ void JackTrip::setupAudio(
         if (!mPeerAddress.isEmpty() && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
             mJackClientName = QString(mPeerAddress).replace(":", "_");
         }
-        std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
-                      mJackClientName.toStdString() << std::endl;
+        //std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
+        //              mJackClientName.toStdString() << std::endl;
 
 #endif // endwhere
         mAudioInterface->setClientName(mJackClientName);
 
         if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->setup" << std::endl;
         mAudioInterface->setup();
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->getSampleRate" << std::endl;
         mSampleRate = mAudioInterface->getSampleRate();
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->getDeviceID" << std::endl;
         mDeviceID = mAudioInterface->getDeviceID();
+        if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples" << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif //__NON_JACK__
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
@@ -540,7 +543,7 @@ void JackTrip::receivedConnectionTCP()
     /*while ( mTcpClient.bytesToWrite() > 0 ) {
         mTcpClient.waitForBytesWritten(-1);
     }*/
-    if (gVerboseFlag) cout << "Port sent to Server" << endl;
+    if (gVerboseFlag) cout << "Port " << mReceiverBindPort << " sent to Server" << endl;
     //Continued in receivedDataTCP slot
 }
 
@@ -811,7 +814,7 @@ int JackTrip::clientPingToServerStart()
     mTimeoutTimer.start();
     mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
     
-    if (gVerboseFlag) cout << "Connecting to TCP Server..." << endl;
+    if (gVerboseFlag) cout << "Connecting to TCP Server at " <<  serverHostAddress.toString().toLatin1().constData() << " port " << mTcpServerPort << "..." << endl;
     return 0;
     // Continued in the receivedConnectionTCP slot.
 

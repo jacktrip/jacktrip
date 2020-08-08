@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo killing jacktrip...
+killall jacktrip
+
+echo killing jackd...
+killall jackd
+
+echo the slate is clean

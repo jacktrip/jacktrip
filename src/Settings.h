@@ -82,9 +82,10 @@ private:
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
     int mBindPortNum; ///< Bind Port Number
     int mPeerPortNum; ///< Peer Port Number
+    int mServerUdpPortNum;
     QString mClientName; ///< JackClient Name
     QString mRemoteClientName;
-    bool mUnderrunZero; ///< Use Underrun to Zero mode
+    JackTrip::underrunModeT mUnderrunMode; ///< Underrun mode
     bool mStopOnTimeout; /// < Stop jacktrip after 10 second network timeout
 
 #ifdef WAIR // wair

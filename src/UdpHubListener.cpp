@@ -54,9 +54,10 @@ using std::cout; using std::endl;
 bool UdpHubListener::sSigInt = false;
 
 //*******************************************************************************
-UdpHubListener::UdpHubListener(int server_port) :
+UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     //mJTWorker(NULL),
     mServerPort(server_port),
+    mServerUdpPort(server_udp_port),//final udp base port number
     mStopped(false),
     #ifdef WAIR // wair
     mWAIR(false),
@@ -89,8 +90,15 @@ UdpHubListener::UdpHubListener(int server_port) :
     // The Dynamic and/or Private Ports are those from 49152 through 65535
     // mBasePort = ( rand() % ( (65535 - gMaxThreads) - 49152 ) ) + 49152;
 
-    // SoundWIRE ports open are UDP 61000-62000
-    mBasePort = 61000;
+    // SoundWIRE ports open are UDP 61002-62000
+    // (server_port - gDefaultPort) apply TCP offset to UDP too
+    if (mServerUdpPort != NULL){
+      mBasePort = mServerUdpPort;
+    } else {
+      mBasePort = 61002 + (server_port - gDefaultPort);
+    }
+
+    cout << "JackTrip HUB SERVER: UDP Base Port set to " << mBasePort << endl;
 
     mUnderRunMode = JackTrip::WAVETABLE;
     mBufferQueueLength = gDefaultQueueLength;
@@ -127,7 +135,7 @@ void UdpHubListener::run()
     // ------------------------------
     QTcpServer TcpServer;
     if ( !TcpServer.listen(QHostAddress::Any, mServerPort) ) {
-        QString error_message = QString("TCP Socket Server ERROR: ").append(TcpServer.errorString());
+        QString error_message = QString("TCP Socket Server on Port %1 ERROR: %2").arg(mServerPort).arg(TcpServer.errorString());
         std::cerr << error_message.toStdString() << endl;
         emit signalError(error_message);
         return;
@@ -193,6 +201,8 @@ void UdpHubListener::run()
             }
             // Assign server port and send it to Client
             server_udp_port = mBasePort+id;
+            cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: " << server_udp_port << endl;
+
             if ( sendUdpPort(clientConnection, server_udp_port) == 0 ) {
                 clientConnection->close();
                 delete clientConnection;
