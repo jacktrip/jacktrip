@@ -257,6 +257,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 't': // quit on timeout
             mStopOnTimeout = true;
+            break;
         case 'l': // loopback
             //-------------------------------------------------------
             mLoopBack = true;
