@@ -1,0 +1,31 @@
+#!/bin/bash
+
+echo die
+die
+
+
+echo Launching Jack even without MOTU \(in the background\)
+feedjack-launchjack-even-without-motu &
+
+# a little time for Jack to get settled
+sleep 10
+
+#echo Launching Jack \(in the background\)
+# feedjack-launchjack &
+
+
+echo launching max
+open ~/slork/users/matt/max-choose-JackRouter.maxpat
+open ~/matt/feedback/maxmsp/externals-OSX/shell.mxo 
+# should actually wait until shell finishes loading before opening the patch that uses it...
+open ~/matt/feedback/maxmsp/tune-instruments-gain.maxpat
+
+
+echo Launching Jacktrip servers
+feedjack-launch-n-jacktrip-servers
+
+
+
+echo now do:
+echo     feedjack-serverconnect
+#feedjack-serverconnect

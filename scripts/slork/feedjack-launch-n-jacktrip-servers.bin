@@ -1,0 +1,35 @@
+#!/bin/bash
+
+echo Killing any running instances of jacktrip...
+killall jacktrip
+
+OUTPUTFILEPREFIX="/tmp/jacktrip-server-output-"
+rm $OUTPUTFILEPREFIX*
+
+echo Turning off wifi - thanks Tucker
+networksetup -setairportpower en0 off # disable wifi
+
+
+echo Launching 12 jacktrip servers...
+for i in {1..12}
+ do
+ echo Launching jacktrip server $i
+ let i10=i*10
+ JACKTRIP_CMD="jacktrip -s -z -n 1 -o $i10 --clientname node-$i "
+ OUTPUTFILE="$OUTPUTFILEPREFIX$i"
+ echo "   " $JACKTRIP_CMD
+ $JACKTRIP_CMD </dev/null &> $OUTPUTFILE &
+ echo "   " Redirecting output \(stdout and stderr\) to $OUTPUTFILE
+
+ # Disconnect All - workaround to problem of jacktrip auto-connecting to system audio.  We'll do feedjack-serverconnect later anyway.
+ ~/slork/bin/jmess-1.0.3 -D
+
+ done
+
+LIST_CMD="ls -l $OUTPUTFILEPREFIX*"
+echo $LIST_CMD
+$LIST_CMD
+echo "ls -l $OUTPUTFILEPREFIX*"
+
+echo now do feedjack-serverconnect
+#feedjack-serverconnect

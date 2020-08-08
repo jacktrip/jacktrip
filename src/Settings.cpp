@@ -66,7 +66,8 @@ Settings::Settings() :
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
-    mUnderrunZero(false),
+    mServerUdpPortNum(0),
+    mUnderrunMode(JackTrip::WAVETABLE),
     mStopOnTimeout(false),
     mLoopBack(false),
     #ifdef WAIR // WAIR
@@ -119,6 +120,7 @@ void Settings::parseInput(int argc, char** argv)
         { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
         { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
         { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
+        { "udpbaseport", required_argument, NULL, 'U' }, // Server udp base port (defaults to 61002)
         { "queue", required_argument, NULL, 'q' }, // Queue Length
         { "redundancy", required_argument, NULL, 'r' }, // Redundancy
         { "bitres", required_argument, NULL, 'b' }, // Audio Bit Resolution
@@ -148,12 +150,15 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:q:r:b:ztlwjeJ:K:RTd:F:p:DvVh", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVh", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
             //-------------------------------------------------------
             mNumChans = atoi(optarg);
+            break;
+        case 'U': // UDP Bind Port
+            mServerUdpPortNum = atoi(optarg);
             break;
 #ifdef WAIR
         case 'w':
@@ -196,14 +201,18 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mBindPortNum += atoi(optarg);
             mPeerPortNum += atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Bind Port: " << mBindPortNum << std::endl;
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Peer Port: " << mPeerPortNum << std::endl;
             break;
         case 'B': // Bind Port
             //-------------------------------------------------------
             mBindPortNum = atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Bind Port: " << mBindPortNum << std::endl;
             break;
         case 'P': // Peer Port
             //-------------------------------------------------------
             mPeerPortNum = atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Peer Port: " << mPeerPortNum << std::endl;
             break;
         case 'b':
             //-------------------------------------------------------
@@ -244,7 +253,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'z': // underrun to zero
             //-------------------------------------------------------
-            mUnderrunZero = true;
+            mUnderrunMode = JackTrip::ZEROS;
             break;
         case 't': // quit on timeout
             mStopOnTimeout = true;
@@ -404,9 +413,10 @@ void Settings::printUsage()
          << gDefaultQueueLength << ")" << endl;
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
          << endl;
-    cout << " -o, --portoffset  #                      Receiving port offset from base port " << gDefaultPort << endl;
-    cout << " --bindport        #                      Set only the bind port number (default: 4464)" << endl;
-    cout << " --peerport        #                      Set only the Peer port number (default: 4464)" << endl;
+    cout << " -o, --portoffset  #                      Receiving bind port and peer port offset from default " << gDefaultPort << endl;
+    cout << " -B, --bindport        #                  Set only the bind port number (default: " << gDefaultPort << ")" << endl;
+    cout << " -P, --peerport        #                  Set only the peer port number (default: " << gDefaultPort << ")" << endl;
+    cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
@@ -424,8 +434,8 @@ void Settings::printUsage()
     cout << "   --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
-    cout << "   --iostat <time_in_secs>                Turn on IO stat reporting with specified interval (in seconds)" << endl;
-    cout << "   --iostatlog <log_file>                 Save stat log into a file (default: print in stdout)" << endl;
+    cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
+    cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -438,7 +448,8 @@ void Settings::printUsage()
 //*******************************************************************************
 UdpHubListener *Settings::getConfiguredHubServer()
 {
-    UdpHubListener *udpHub = new UdpHubListener;
+    if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
+    UdpHubListener *udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum);
     //udpHub->setSettings(this);
 #ifdef WAIR // WAIR
     udpHub->setWAIR(mWAIR);
@@ -450,10 +461,10 @@ UdpHubListener *Settings::getConfiguredHubServer()
         udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
     }
     // Set buffers to zero when underrun
-    if ( mUnderrunZero ) {
+    if ( mUnderrunMode == JackTrip::ZEROS ) {
         cout << "Setting buffers to zero when underrun..." << endl;
         cout << gPrintSeparator << std::endl;
-        udpHub->setUnderRunMode(JackTrip::ZEROS);
+        udpHub->setUnderRunMode(mUnderrunMode);
     }
     udpHub->setBufferQueueLength(mBufferQueueLength);
     
@@ -474,13 +485,17 @@ JackTrip *Settings::getConfiguredJackTrip()
 #ifdef WAIR // wair
                                       mNumNetRevChans,
 #endif // endwhere
-                                      mBufferQueueLength, mRedundancy, mAudioBitResolution);
+                                      mBufferQueueLength, mRedundancy, mAudioBitResolution,
+                                      /*DataProtocol::packetHeaderTypeT PacketHeaderType = */DataProtocol::DEFAULT,
+                                      /*underrunModeT UnderRunMode = */ mUnderrunMode,
+                                      /* int receiver_bind_port = */ mBindPortNum,
+                                      /*int sender_bind_port = */ mBindPortNum,
+                                      /*int receiver_peer_port = */ mPeerPortNum,
+                                      /* int sender_peer_port = */ mPeerPortNum,
+                                      mPeerPortNum
+                                      );
     // Set connect or not default audio ports. Only work for jack
     jackTrip->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
-    
-    // Connect Signals and Slots TODO: check where this should be done.
-    //QObject::connect(mJackTrip, SIGNAL( signalProcessesStopped() ),
-                     //this, SLOT( slotExitProgram() ));
 
     // Change client name if different from default
     if (!mClientName.isEmpty()) {
@@ -491,11 +506,10 @@ JackTrip *Settings::getConfiguredJackTrip()
         jackTrip->setRemoteClientName(mRemoteClientName);
     }
 
-    // Set buffers to zero when underrun
-    if (mUnderrunZero) {
+    // Set buffers to zero when underrun (Actual setting is handled in constructor.)
+    if (mUnderrunMode == JackTrip::ZEROS) {
         cout << "Setting buffers to zero when underrun..." << endl;
         cout << gPrintSeparator << std::endl;
-        jackTrip->setUnderRunMode(JackTrip::ZEROS);
     }
     
     jackTrip->setStopOnTimeout(mStopOnTimeout);
@@ -509,12 +523,12 @@ JackTrip *Settings::getConfiguredJackTrip()
     //        else
     //            mJackTrip->setLocalAddress(QHostAddress::Any);
 
-    // Set Ports
+    // Set Ports - Done in constructor now.
     //cout << "SETTING ALL PORTS" << endl;
-    if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setBindPorts" << std::endl;
+    /*if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setBindPorts" << std::endl;
     jackTrip->setBindPorts(mBindPortNum);
     if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setPeerPorts" << std::endl;
-    jackTrip->setPeerPorts(mPeerPortNum);
+    jackTrip->setPeerPorts(mPeerPortNum);*/
 
     // Set in JamLink Mode
     if ( mJamLink ) {
