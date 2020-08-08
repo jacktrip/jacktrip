@@ -248,6 +248,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 't': // quit on timeout
             mStopOnTimeout = true;
+            break;
         case 'l': // loopback
             //-------------------------------------------------------
             mLoopBack = true;
@@ -411,6 +412,7 @@ void Settings::printUsage()
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
+    cout << " -t, --timeout                            Quit after 10 second network timeout" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
     cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
     cout << " --remotename                             Change default remote client name when connecting to a hub server (the default is derived from this computer's external facing IP address)" << endl;
