@@ -2,26 +2,38 @@ Jacktrip : Build Instructions
 
 JackTrip: A System for High-Quality Audio Network Performance over the Internet.
 
+The following are instructions for compiling Jacktrip from source.  Compiling from source is the best way to keep up with the latest changes, both stable and experimental.  For quicker ways to install Jacktrip, go to README.md in the root directory of the project.
 ---
-Dependencies:
+Dependencies(for all operating systems):
+Qt 5.14.2
+Jack
+Note: rtaudio is no longer a dependency
 
-If you're on Fedora, Debian, or Ubuntu, go to the detailed dependency instructions below.
+All Linux
 
-On other Linux distributions, make sure you have the following libraries:
+Fedora:
+dnf install qt5-devel
+dnf groupinstall "C Development Tools and Libraries"
+dnf groupinstall "Development Tools"
+dnf install jack-audio-connection-kit-devel alsa-lib-devel iperf qjackctl audacity git
+Clone the git repo and run ./build in the src directory or use QtCreator to compile
+
+Ubuntu and Debian/Raspbian:
+apt install -y --no-install-recommends gcc g++ librtaudio-dev qt5-default autoconf automake libtool make libjack-jackd2-dev qjackctl audacity git
+Clone the git repo and run ./build in the src directory or use QtCreator to compile
+
+Other Linux distributions:
 the latest Qt
 jack-audio-connection-kit-devel
+Clone the git repo and run ./build in the src directory or use QtCreator to compile
 
 If you are using yum you can just install them (as root) with:
    yum install jack-audio-connection-kit-devel
 and install qt from the qt site.
 
-If you want to build on MacOS X, you need Jack2:
-https://jackaudio.org/downloads/,
-the latest Qt, and possibly other dependencies in the detailed instructions.
+OSX (skip the steps you don't need):
 
-It is also possible to build without jack, see below.
-
-Detailed instructions for OSX dependencies (skip the steps you don't need):
+Install Jack2 https://jackaudio.org/downloads/
 If this command returns the XCode version, you have it installed:
 xcodebuild -version
 If you don't have XCode, go to the AppStore to download and install it.
@@ -31,64 +43,41 @@ If you don't have Homebrew, install it:
 /bin/bash -c "$(curl -fsSLhttps://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 To install git if you don't have it:
 brew install git
+brew install qjackctl
 Install and link qt5:
 brew install qt5
 brew link qt5 --force
-
-Fedora dependencies (also tested on Ubuntu Studio):
-
-To install on Fedora (and possibly other Linux distributions), you need qt5, jack-audio-connection-kit-devel, and rtaudio.
-
-How to install qt5 and other needed tools on Fedora: 
-dnf install qt5-devel
-dnf groupinstall "C Development Tools and Libraries"
-dnf groupinstall "Development Tools"
-dnf install jack-audio-connection-kit-devel alsa-lib-devel iperf qjackctl audacity git
-
-Ubuntu Studio already comes with jack and qjackctl but you may have to install libjack-dev. Other basic tools can be installed on Ubuntu with:
-
-sudo apt install build-essential
-
-Ubuntu and Debian dependencies
-
-apt install -y --no-install-recommends gcc g++ librtaudio-dev qt5-default autoconf automake libtool make libjack-jackd2-dev qjackctl audacity git
+Clone the git repo and run ./build in the src directory or use QtCreator to compile
 
 ---
-Build:
+Build (Linux or Mac OS X):
+You can compile using the build script or QtCreator.
 
-If you're on Mac OS X or Fedora Linux and have all the dependencies installed, clone the repo in the Terminal:
+To clone the repo in the Terminal:
 $ git clone https://github.com/jacktrip/jacktrip.git
+
+To compile using the build script:
 $ cd jacktrip/src
-You can build in the /src directory by typing the following:
 $ ./build
+$ cd ../builddir
+$ ls
+You should see a 'jacktrip' executable in this folder.
 
-The build script generates an executable in the builddir folder at the same level as /src.
-
-If you want to build without Jack support (meaning that you won't need jack installed
-to use the app) type the following:
-$ ./build nojack
-
-If the previous script doesn't work on a different Linux flavor, try building
+If the build script doesn't work on a different Linux flavor, try building
 the Makefiles yourself. You'd need qmake. Then you can build by:
 $ qmake jacktrip.pro
 $ make release
 
-Or without Jack support:
-$ qmake -config nojack jacktrip.pro
-$ make release
-
-To build using QtCreator (tested using QtCreator 4.11 and macOS 10.13.6):
-
+To build using QtCreator:
   * Open jacktrip.pro using QtCreator
   * Choose a correctly configured Kit
-  * Install Jack:
-    brew install jack
-    brew install qjackctl
+
+On MacOS X, QtCreator places the 'jacktrip' executabe by default in a folder with a name like 'build-jacktrip-Desktop_x86_darwin_generic_mach_o_64bit-Release.'
 
 ---
 Installation on MacOS X (10.9 or higher) or Linux:
 
-You need to have a working jack installation on your machine (see Dependencies above).
+You need to have a working Jack installation on your machine (see Dependencies above).
 
 To install using Terminal (skip the first three steps if you've already followed the Build instructions above):
 
@@ -101,10 +90,7 @@ $ sudo cp jacktrip /usr/local/bin/
 
 $ sudo chmod 755 /usr/local/bin/jacktrip
   (now you can run jacktrip from any directory using Terminal)
-
-To access the graphic installer for MacOS X: https://ccrma.stanford.edu/software/jacktrip/osx/index.html
-If you encounter a message blocking you from opening the installer, open System Preferences >> Security & Privacy.  In the General tab, there may be a message about the application not being from an identified developer.  Click "Open Anyway", then "Open" again if there's a further prompt.
-
+  
 ---
 Installation Verification on MacOS X or Linux:
 If you have installed jacktrip, from anywhere in the Terminal, type:
@@ -128,23 +114,12 @@ Dependencies:
 - ASIO4all audio driver is required even with Audio interfaces that support ASIO: www.asio4all.com.
 - Note: Some users have reported success using the PortAudio driver, though it is not currently supported.
 
-Installation:
-
-To download the latest executable for Jacktrip on Windows: https://ccrma.stanford.edu/software/jacktrip/windows/index.html
-
-If you have a copy of the executabe, you may leave it in the `Downloads` directory, or copy it to another folder.  You may have to click "Keep" a few times to tell Windows it's safe to download the file.  If the download succeeds, you'll see a file named `jacktrip.exe`.  Otherwise, you may see partially downloaded files with extensions such as `.crdownload` or `.download` or `.part`, depending on the browser you used.
-
-If you have the installer, simply run the file jacktripInstaller.exe, which will unpack Jacktrip in the directory of your choice.
-The default is `Users/Your User Name/jacktrip1.2IsHere`.
-
-See instructions below for verifying the installation and running Jacktrip.
-
 Building:
 
 The easiest way to build is to download the free Qt Creator IDE from https://www.qt.io/download since the jacktrip buildscript is written in qmake.
 If you do not have Git installed, download it from https://git-scm.com/download/win.
 
-Use `git clone https://github.com/jacktrip/jacktrip.git` to download a fresh copy of the repo.
+Use `git clone https://github.com/jacktrip/jacktrip.git` to download a fresh copy of the repo or `git pull` to update your repo.
 Open the `src/jacktrip.pro` and configure the project.
 
 Make sure to select the MinGW compiler (for example the one shipped with QtCreator).
@@ -160,16 +135,10 @@ In the above example, 5.15.0 is the version of Qt MinGW 64 bit is the compiler. 
 Note: compiling with modifications in the .pro file (like adding a new source or header file) requires
 qmake which is only available in the Qt Creator package.
 
-Installation Verification:
-In the search field (Windows key + R), enter cmd.exe to open the command line.  Use the 'cd' command to navigate to the directory where the executable jacktrip.exe is located.
+Build Verification:
+In the search field (Windows key + R), enter cmd.exe to open the command line.  Use the 'cd' command to navigate to the directory where the executable jacktrip.exe is located, e.g. `C:\Users\Your Name\jacktrip\build-jacktrip-Desktop-Qt_5_15_0_MinGW_64_bit-Release\release`.
 
-For instance, if you downloaded a standalone executable and kept it in the default location:
-cd \Users\Your Name\Downloads
-
-Or if you used the 1.2 installer and chose the default location:
-cd \Users\Your Name\jacktrip1.2IsHere
-
-From here, the following command should return the version of Jacktrip you installed:
+From there, the following command should return the version of Jacktrip you installed:
 jacktrip.exe -v
 
 If you see something like this, you have successfully installed Jacktrip:
@@ -177,7 +146,7 @@ JackTrip VERSION: 1.xx
 Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe.
 SoundWIRE group at CCRMA, Stanford University
 
-Follow the link below to use Jacktrip.
+Follow the link below for instructions on how to use Jacktrip.
 
 ---
 Post Configuration & Using Jacktrip:
