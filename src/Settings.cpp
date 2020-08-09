@@ -391,13 +391,51 @@ void Settings::parseInput(int argc, char** argv)
           break;
         case 'f': { // effects (-f reverbLevel [0-2])
           //-------------------------------------------------------
-          if (optarg[0] == '-') {
+          if (optarg[0] == '-' || strlen(optarg)==0) {
             std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
             std::exit(1);
           }
-           mEffects = true; // turn on
-            cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
-            mReverbLevel = atof(optarg); // cmd line comb feedback adjustment
+#if 1
+          mEffects = true; // turn on
+          cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
+          mReverbLevel = atof(optarg); // cmd line comb feedback adjustment
+#else
+	  // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
+          std::cout << "-f (--effects) arg = " << optarg << endl;
+          ulong nac = strlen(optarg);
+          enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
+          bool inCompressor = false;
+          bool outCompressor = false;
+          bool inZitarev = false;
+          bool outZitarev = false;
+          bool inFreeverb = false;
+          bool outFreeverb = false;
+          int parenLevel = 0;
+          for (ulong i=0; i<nac; i++) {
+            switch(optarg[i]) {
+            case ' ': break;
+            case '\t': break;
+            case 'i': io=IO_IN; break;
+            case 'o': io=IO_OUT; break;
+            case ':': break;
+            case 'c': if (io==IO_IN) { inCompressor = true; } else if (io==IO_OUT) { outCompressor = true; }
+              else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
+              break;
+            case 'f': if (io==IO_IN) { inFreeverb = true; } else if (io==IO_OUT) { outFreeverb = true; }
+              else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
+              break;
+            case 'z': if (io==IO_IN) { inZitarev = true; } else if (io==IO_OUT) { outZitarev = true; }
+              else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
+              break;
+            case '(': parenLevel++;
+              break;
+            case ')': parenLevel--;
+              break;
+            default:
+              break;
+            }
+          }
+#endif
           break; }
         case ':': {
             printf("\t*** Missing option argument\n");

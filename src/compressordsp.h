@@ -3,7 +3,7 @@ author: "Julius Smith"
 license: "MIT Style STK-4.2"
 name: "compressor"
 version: "0.0"
-Code generated with Faust 2.27.1 (https://faust.grame.fr)
+Code generated with Faust 2.28.1 (https://faust.grame.fr)
 Compilation options: -lang cpp -inpl -scal -ftz 0
 ------------------------------------------------------------ */
 
@@ -449,6 +449,12 @@ class PathBuilder
             res += label;
             std::replace(res.begin(), res.end(), ' ', '_');
             return res;
+        }
+    
+        std::string buildLabel(std::string label)
+        {
+            std::replace(label.begin(), label.end(), ' ', '_');
+            return label;
         }
     
         void pushLabel(const std::string& label) { fControlsLevel.push_back(label); }
@@ -908,7 +914,7 @@ class ZoneControl
         ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
         virtual ~ZoneControl() {}
 
-        virtual void update(double v) {}
+        virtual void update(double v) const {}
 
         virtual void setMappingValues(int curve, double amin, double amid, double amax, double min, double init, double max) {}
         virtual void getMappingValues(double& amin, double& amid, double& amax) {}
@@ -937,7 +943,7 @@ class ConverterZoneControl : public ZoneControl
         ConverterZoneControl(FAUSTFLOAT* zone, ValueConverter* converter) : ZoneControl(zone), fValueConverter(converter) {}
         virtual ~ConverterZoneControl() { delete fValueConverter; } // Assuming fValueConverter is not kept elsewhere...
 
-        virtual void update(double v) { *fZone = fValueConverter->ui2faust(v); }
+        virtual void update(double v) const { *fZone = fValueConverter->ui2faust(v); }
 
         ValueConverter* getConverter() { return fValueConverter; }
 
@@ -973,7 +979,7 @@ class CurveZoneControl : public ZoneControl
                 delete(*it);
             }
         }
-        void update(double v) { if (fValueConverters[fCurve]->getActive()) *fZone = fValueConverters[fCurve]->ui2faust(v); }
+        void update(double v) const { if (fValueConverters[fCurve]->getActive()) *fZone = fValueConverters[fCurve]->ui2faust(v); }
 
         void setMappingValues(int curve, double amin, double amid, double amax, double min, double init, double max)
         {
