@@ -101,7 +101,7 @@ private:
   float fs;
   int mNumInChannels;
   int mNumOutChannels;
-  int mReverbLevel;
+  float mReverbLevel;
   freeverbdsp* reverbStereoP;
   freeverbmonodsp* reverbMonoP;
   APIUI* reverbStereoUIP;
