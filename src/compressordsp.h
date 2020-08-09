@@ -1666,11 +1666,11 @@ class compressordsp : public dsp {
 	
 	virtual void instanceResetUserInterface() {
 		fCheckbox0 = FAUSTFLOAT(0.0f);
-		fHslider0 = FAUSTFLOAT(40.0f);
-		fHslider1 = FAUSTFLOAT(10.0f);
-		fHslider2 = FAUSTFLOAT(5.0f);
-		fHslider3 = FAUSTFLOAT(300.0f);
-		fHslider4 = FAUSTFLOAT(-30.0f);
+		fHslider0 = FAUSTFLOAT(2.0f);
+		fHslider1 = FAUSTFLOAT(15.0f);
+		fHslider2 = FAUSTFLOAT(2.0f);
+		fHslider3 = FAUSTFLOAT(40.0f);
+		fHslider4 = FAUSTFLOAT(-24.0f);
 	}
 	
 	virtual void instanceClear() {
@@ -1732,12 +1732,12 @@ class compressordsp : public dsp {
 		ui_interface->declare(&fHslider2, "0", "");
 		ui_interface->declare(&fHslider2, "style", "knob");
 		ui_interface->declare(&fHslider2, "tooltip", "A compression Ratio of N means that for each N dB increase in input  signal level above Threshold, the output level goes up 1 dB");
-		ui_interface->addHorizontalSlider("Ratio", &fHslider2, 5.0f, 1.0f, 20.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("Ratio", &fHslider2, 2.0f, 1.0f, 20.0f, 0.100000001f);
 		ui_interface->declare(&fHslider4, "1", "");
 		ui_interface->declare(&fHslider4, "style", "knob");
 		ui_interface->declare(&fHslider4, "tooltip", "When the signal level exceeds the Threshold (in dB), its level  is compressed according to the Ratio");
 		ui_interface->declare(&fHslider4, "unit", "dB");
-		ui_interface->addHorizontalSlider("Threshold", &fHslider4, -30.0f, -100.0f, 10.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("Threshold", &fHslider4, -24.0f, -100.0f, 10.0f, 0.100000001f);
 		ui_interface->closeBox();
 		ui_interface->declare(0, "4", "");
 		ui_interface->openHorizontalBox("Compression Response");
@@ -1746,19 +1746,19 @@ class compressordsp : public dsp {
 		ui_interface->declare(&fHslider1, "style", "knob");
 		ui_interface->declare(&fHslider1, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain  to approach (exponentially) a new lower target level (the compression  `kicking in')");
 		ui_interface->declare(&fHslider1, "unit", "ms");
-		ui_interface->addHorizontalSlider("Attack", &fHslider1, 10.0f, 1.0f, 1000.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("Attack", &fHslider1, 15.0f, 1.0f, 1000.0f, 0.100000001f);
 		ui_interface->declare(&fHslider3, "2", "");
 		ui_interface->declare(&fHslider3, "scale", "log");
 		ui_interface->declare(&fHslider3, "style", "knob");
 		ui_interface->declare(&fHslider3, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain  to approach (exponentially) a new higher target level (the compression  'releasing')");
 		ui_interface->declare(&fHslider3, "unit", "ms");
-		ui_interface->addHorizontalSlider("Release", &fHslider3, 300.0f, 1.0f, 1000.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("Release", &fHslider3, 40.0f, 1.0f, 1000.0f, 0.100000001f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->declare(&fHslider0, "5", "");
 		ui_interface->declare(&fHslider0, "tooltip", "The compressed-signal output level is increased by this amount  (in dB) to make up for the level lost due to compression");
 		ui_interface->declare(&fHslider0, "unit", "dB");
-		ui_interface->addHorizontalSlider("Makeup Gain", &fHslider0, 40.0f, -96.0f, 96.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("Makeup Gain", &fHslider0, 2.0f, -96.0f, 96.0f, 0.100000001f);
 		ui_interface->closeBox();
 	}
 	

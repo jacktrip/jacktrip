@@ -93,7 +93,8 @@ Settings::Settings() :
     mLimit(LIMITER_NONE),
     mNumClientsAssumed(2),
     mEffects(false),
-    mReverbLevel(1.0f)
+    mReverbLevel(1.0f),
+    mPluginsInited(false)
 {}
 
 //*******************************************************************************
@@ -647,14 +648,14 @@ void Settings::startJackTrip()
           Compressor* compressor = new Compressor(mNumChans); // FIXME: Make separate option(s) for compressor
           mJackTrip->appendProcessPluginToNetwork(compressor); // callee responsible for freeing when done
 
-	  if (mReverbLevel > 0.0f && (mNumChans == 1 || mNumChans == 2)) {
-	    Reverb* reverb = new Reverb(mNumChans,mNumChans,mReverbLevel);
-	    mJackTrip->appendProcessPluginFromNetwork(reverb); // callee responsible for freeing when done
-	  } else {
-	    if (mNumChans < 1 || mNumChans > 2) {
-	      std::cerr << "--effects ERROR: Reverb can only handle 1 or 2 audio channels - disabling reverb\n";
-	    }
-	  }
+          if (mReverbLevel > 0.0f && (mNumChans == 1 || mNumChans == 2)) {
+            Reverb* reverb = new Reverb(mNumChans,mNumChans,mReverbLevel);
+            mJackTrip->appendProcessPluginFromNetwork(reverb); // callee responsible for freeing when done
+          } else {
+            if (mNumChans < 1 || mNumChans > 2) {
+              std::cerr << "--effects ERROR: Reverb can only handle 1 or 2 audio channels - disabling reverb\n";
+            }
+          }
         }
 
         // Limiters go last in the plugin sequence:

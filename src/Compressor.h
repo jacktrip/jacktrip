@@ -54,7 +54,7 @@ class Compressor : public ProcessPlugin
 public:
   /// \brief The class constructor sets the number of channels to limit
   Compressor(int numchans) // xtor
-    : inited(false), mNumChannels(numchans)
+    : mNumChannels(numchans)
   { 
     for ( int i = 0; i < mNumChannels; i++ ) {
       compressorP.push_back(new compressordsp);
@@ -93,7 +93,6 @@ public:
   void compute(int nframes, float** inputs, float** outputs) override;
 
 private:
-  bool inited;
   float fs;
   int mNumChannels;
   std::vector<compressordsp*> compressorP;

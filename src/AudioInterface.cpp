@@ -262,9 +262,11 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio fr
   computeProcessFromNetwork(OUT_BUFFER, n_frames); // receive audio from network - INCOMING
   for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
     // process all incoming channels with Faust modules in-place:
-    mProcessPluginsFromNetwork[i]->compute(n_frames, OUT_BUFFER.data(), OUT_BUFFER.data());
+    ProcessPlugin* p = mProcessPluginsFromNetwork[i];
+    if (p->getInited()) {
+      p->compute(n_frames, OUT_BUFFER.data(), OUT_BUFFER.data());
+    }
   }
-
   // Could this be needed?
   // for (int i = 0; i < mNumInChans; i++) {
   //   std::memcpy(mInProcessBuffer[i], OUT_BUFFER[i], sizeof(sample_t) * n_frames);
@@ -283,15 +285,26 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer, // audio fr
                 << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
       exit(1);
     }
-    for (int i = 0; i < nop; i++) {
-      // process all outgoing channels with Faust modules:
-      mProcessPluginsToNetwork[i]->compute(n_frames, IN_BUFFER.data(), mInBufCopy.data());
+    ProcessPlugin* p = mProcessPluginsToNetwork[0]; // we know nop>0
+    if (p->getInited()) {
+      // process all outgoing channels from audio-in with first Faust module, writing new buffer:
+      p->compute(n_frames, IN_BUFFER.data(), mInBufCopy.data());
+    } else {
+      for (int i=0; i<mNumInChans; i++) {
+	std::memcpy(mInBufCopy[i], IN_BUFFER[i], sizeof(sample_t) * n_frames);
+      }
+    }
+    for (int i = 1; i < nop; i++) {
+      // process all outgoing channels from audio-in with remaining Faust modules, in-place:
+      ProcessPlugin* p = mProcessPluginsToNetwork[i];
+      if (p->getInited()) {
+        p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+      }
     }
     computeProcessToNetwork(mInBufCopy, n_frames);
   } else {
     computeProcessToNetwork(IN_BUFFER, n_frames); // send processed input audio to network - OUTGOING
   }
-
   mProcessingAudio = false;
 }
 
@@ -373,7 +386,10 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
 #ifndef WAIR // NOT WAIR:
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-      mProcessPluginsFromNetwork[i]->compute(n_frames, out_buffer.data(), out_buffer.data());
+      ProcessPlugin* p = mProcessPluginsFromNetwork[i];
+      if (p->getInited()) {
+        p->compute(n_frames, out_buffer.data(), out_buffer.data());
+      }
     }
 #else // WAIR:
     for (int i = 0; i < ((mNumNetRevChans)?mNumNetRevChans:mNumOutChans); i++) {
@@ -402,21 +418,24 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     if (nop>0) { // cannot modify IN_BUFFER so make a copy
       //#ifdef DEBUG
       if (mInBufCopy.size() < mNumInChans) { // created in constructor above
-	std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
-	exit(1);
+        std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
+        exit(1);
       }
       if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
-	std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
+      std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
 		  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
-	exit(1);
+        exit(1);
       }
       for (int i=0; i<mNumInChans; i++) {
-	std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
+        std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
       }
       //#endif
       for (int i = 0; i < nop; i++) {
-	// process all outgoing channels with Faust modules:
-	mProcessPluginsToNetwork[i]->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+        // process all outgoing channels with Faust modules:
+        ProcessPlugin* p = mProcessPluginsToNetwork[i];
+        if (p->getInited()) {
+          p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+        }
       }
       // 3) Finally, send packets to network:
       computeProcessToNetwork(mInBufCopy, n_frames);

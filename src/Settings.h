@@ -137,6 +137,7 @@ private:
     unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
     bool mEffects; // turns on compressor and reverb
     float mReverbLevel; // amount of reverb ("wetness") 0 to 1
+    bool mPluginsInited;
 };
 
 #endif

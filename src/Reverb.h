@@ -56,7 +56,7 @@ class Reverb : public ProcessPlugin
 public:
   /// \brief The class constructor sets the number of channels to limit
   Reverb(int numInChans, int numOutChans, float reverbLevel) // xtor
-    : inited(false), mNumInChannels(numInChans), mNumOutChannels(numOutChans), mReverbLevel(reverbLevel)
+    : mNumInChannels(numInChans), mNumOutChannels(numOutChans), mReverbLevel(reverbLevel)
   { 
     reverbStereoP = new freeverbdsp; // stereo input and output
     reverbMonoP = new freeverbmonodsp; // mono input, stereo output
@@ -97,7 +97,6 @@ public:
   void compute(int nframes, float** inputs, float** outputs) override;
 
 private:
-  bool inited;
   float fs;
   int mNumInChannels;
   int mNumOutChannels;

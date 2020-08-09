@@ -60,7 +60,7 @@ class Limiter : public ProcessPlugin
 public:
   /// \brief The class constructor sets the number of channels to limit
   Limiter(int numchans, int numclients) // xtor
-    : inited(false), mNumChannels(numchans), mNumClients(numclients)
+    : mNumChannels(numchans), mNumClients(numclients)
   { 
     for ( int i = 0; i < mNumChannels; i++ ) {
       limiterP.push_back(new limiterdsp);
@@ -114,7 +114,6 @@ public:
   void compute(int nframes, float** inputs, float** outputs) override;
 
 private:
-  bool inited;
   float fs;
   int mNumChannels;
   int mNumClients;

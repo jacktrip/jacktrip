@@ -1658,7 +1658,7 @@ class limiterdsp : public dsp {
 		fConst1 = std::exp((0.0f - (100000.0f / fConst0)));
 		fConst2 = (1.0f - fConst1);
 		fConst3 = (0.100000001f * fConst0);
-		fConst4 = std::exp((0.0f - (0.333333343f / fConst0)));
+		fConst4 = std::exp((0.0f - (4.0f / fConst0)));
 		fConst5 = (1.0f - fConst4);
 		iConst6 = int((9.99999975e-05f * fConst0));
 	}
