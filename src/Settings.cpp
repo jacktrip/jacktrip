@@ -400,9 +400,10 @@ void Settings::parseInput(int argc, char** argv)
           cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
           mReverbLevel = atof(optarg); // cmd line comb feedback adjustment
 #else
-	  // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
+          // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
           std::cout << "-f (--effects) arg = " << optarg << endl;
           ulong nac = strlen(optarg);
+	  // Move all this into a new Effects class:
           enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
           bool inCompressor = false;
           bool outCompressor = false;
@@ -411,23 +412,61 @@ void Settings::parseInput(int argc, char** argv)
           bool inFreeverb = false;
           bool outFreeverb = false;
           int parenLevel = 0;
+          char lastEffect = NULL;
+          float compressorInLevelChange = 0;
+          float compressorOutLevelChange = 0;
+          float zitarevInLevel = -1.0f;
+          float freeverbInLevel = -1.0f;
+          float zitarevOutLevel = -1.0f;
+          float freeverbOutLevel = -1.0f;
           for (ulong i=0; i<nac; i++) {
+            if (optarg[i]!=')' && parenLevel>0) { continue; }
             switch(optarg[i]) {
             case ' ': break;
+            case ',': break;
+            case ';': break;
             case '\t': break;
             case 'i': io=IO_IN; break;
             case 'o': io=IO_OUT; break;
             case ':': break;
             case 'c': if (io==IO_IN) { inCompressor = true; } else if (io==IO_OUT) { outCompressor = true; }
               else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
+              lastEffect = 'c';
               break;
             case 'f': if (io==IO_IN) { inFreeverb = true; } else if (io==IO_OUT) { outFreeverb = true; }
               else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
+              lastEffect = 'f';
               break;
             case 'z': if (io==IO_IN) { inZitarev = true; } else if (io==IO_OUT) { outZitarev = true; }
               else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
+              lastEffect = 'z';
               break;
             case '(': parenLevel++;
+              for (ulong j=i+1; j<nac; j++) {
+                if (optarg[j] == ')') {
+                  optarg[j] = '\0';
+                  float farg = atof(&optarg[i+1]);
+                  optarg[j] = ')';
+                  if (io==IO_IN) {
+                    if (lastEffect == 'c') {
+                      compressorInLevelChange = farg;
+                    } else if (lastEffect == 'z') {
+                      zitarevInLevel = farg;
+                    } else if (lastEffect == 'f') {
+                      freeverbInLevel = farg;
+                    } // else ignore the argument
+                  } else if (io==IO_OUT) {
+                    if (lastEffect == 'c') {
+                      compressorOutLevelChange = farg;
+                    } else if (lastEffect == 'z') {
+                      zitarevOutLevel = farg;
+                    } else if (lastEffect == 'f') {
+                      freeverbOutLevel = farg;
+                    } // else ignore the argument
+                  } // else ignore the argument
+                  break;
+                }
+              }
               break;
             case ')': parenLevel--;
               break;
