@@ -1,8 +1,8 @@
 import("stdfaust.lib");
 
-// From Faust Libraries demos.lib
+// Modified version from Faust Libraries demos.lib
 
-process = zita_rev1; // to get the library version, say dm.zita_rev1 instead
+process = zita_rev1; // same as dm.zita_rev1 but for wetness control and some defaults
 
 //----------------------------------`(dm.)zita_rev1`------------------------------
 // Example GUI for `zita_rev1_stereo` (mostly following the Linux `zita-rev1` GUI).
@@ -22,7 +22,7 @@ process = zita_rev1; // to get the library version, say dm.zita_rev1 instead
 // <http://www.kokkinizita.net/linuxaudio/zita-rev1-doc/quickguide.html>
 //------------------------------------------------------------
 zita_rev1 = _,_ <: re.zita_rev1_stereo(rdel,f1,f2,t60dc,t60m,fsmax),_,_ : out_eq,_,_ :
-	dry_wet : out_level
+	wet_dry_2(wet) : out_level
 with{
 	fsmax = 48000.0;  // highest sampling rate that will be used
 
@@ -89,16 +89,15 @@ with{
 
 	out_group(x)  = fdn_group(hgroup("[5] Output", x));
 
-	dry_wet(x,y) = *(wet) + dry*x, *(wet) + dry*y with {
-		wet = 0.5*(drywet+1.0);
-		dry = 1.0-wet;
-	};
+	wet_dry(wet,y,x) = wet*y + (1-wet)*x;
 
-	drywet = out_group(vslider("[1] Wet [style:knob] [tooltip: Dry/Wet Mix: -1 = dry, 1 = wet]",
-	0, -1.0, 1.0, 0.01)) : si.smoo;
+	wet_dry_2(wet,y1,y2,x1,x2) = wet_dry(wet,y1,x1), wet_dry(wet,y2,x2);
+
+	wet = out_group(vslider("[1] Wet [style:knob] [tooltip: Dry/Wet Mix: 0 = dry, 1 = wet]",
+	0, 0.0, 1.0, 0.01)) : si.smoo;
 
 	out_level = *(gain),*(gain);
 
 	gain = out_group(vslider("[2] Level [unit:dB] [style:knob] [tooltip: Output scale
-		factor]", -20, -70, 40, 0.1)) : ba.db2linear : si.smoo;
+		factor]", -3, -70, 20, 0.1)) : ba.db2linear : si.smoo;
 };

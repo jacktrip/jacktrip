@@ -116,7 +116,7 @@ public:
       zitarevStereoP->init(fs); // compression filter parameters depend on sampling rate
       zitarevMonoP->init(fs); // compression filter parameters depend on sampling rate
       int ndx = zitarevStereoUIP->getParamIndex("Wet");
-      float zitaLevel = -1.0f + 2*(mReverbLevel-1.0f); // range within zitarev is -1 to 1
+      float zitaLevel = mReverbLevel-1.0f; // range within zitarev is 0 to 1 (our version only)
       zitarevStereoUIP->setParamValue(ndx, zitaLevel);
       zitarevMonoUIP->setParamValue(ndx, zitaLevel);
     }

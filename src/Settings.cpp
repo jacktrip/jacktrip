@@ -152,7 +152,7 @@ void Settings::parseInput(int argc, char** argv)
     { "iostat", required_argument, NULL, 'I' }, // Set IO stat timeout
     { "iostatlog", required_argument, NULL, 'G' }, // Set IO stat log file
     { "help", no_argument, NULL, 'h' }, // Print Help
-    { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel 0 to 1.0
+    { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
     { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
     { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
     { NULL, 0, NULL, 0 }
@@ -389,10 +389,10 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(1); }
           break;
-        case 'f': { // effects (-f reverbLevel [0-1])
+        case 'f': { // effects (-f reverbLevel [0-2])
           //-------------------------------------------------------
           if (optarg[0] == '-') {
-            std::cerr << "--effects (-f) reverb-level argument [0 to 1.0] is REQUIRED\n";
+            std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
             std::exit(1);
           }
            mEffects = true; // turn on
@@ -473,7 +473,7 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack, including not doing hub auto audio patch in HUB SERVER mode." << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
-    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0" << endl;
+    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0 (freeverb) or 1.0+ to 2.0 (zitarev)" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
