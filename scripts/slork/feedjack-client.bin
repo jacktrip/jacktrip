@@ -1,0 +1,81 @@
+#!/bin/bash
+
+if test $# -ne 2; then
+    echo usage: $0 [client-number] [program]
+    echo  client-number is 1-12
+    echo  program is like a max patch or something
+
+    exit -1
+fi
+
+echo I hope you died
+echo Someday this script to check to see if Max or MiniAudicle or jacktrip.. are sunning...
+#die
+
+
+echo Launching Jack \(in the background\) and requiring MOTU
+feedjack-launchjack &
+
+if [ $? -eq 0 ]
+then
+    echo Jack seems to have launched OK.
+else
+    echo Had to set system to MOTU - please try again
+    exit 1
+fi
+
+# a little time for Jack to get settled
+sleep 2
+
+
+echo Launching Jacktrip client
+feedjack-launch-one-jacktrip-client $1 &
+
+# We can't check to see if it was successful because we have to launch
+# it in the background
+
+# if [ $? -eq 0 ]
+# then
+#    echo Jacktrip client seems to have launched OK.
+# else
+#    echo Could not launch jacktrip client - try again.
+#    exit 1
+# fi
+
+
+# Disconnect All - workaround to problem of jacktrip auto-connecting
+# to system audio.  We'll do feedjack-clientconnect later anyway.
+~/slork/bin/jmess-1.0.3 -D
+
+
+echo your program is \"$2\"
+
+# Now see what to launch on the client side
+
+if [ "$2" = "remotespeaker" ]
+then
+    sleep 10
+    echo This machine will just be a remote speaker
+    feedjack-remotespeakerconnect
+else
+
+    # should check to see whether Max is really needed...
+    echo launching max
+    open ~/slork/users/matt/max-choose-JackRouter.maxpat
+    
+    sleep 2
+
+    echo launching the program you asked for:
+    echo $2
+    open-in-dir $2
+
+
+
+    echo Waiting for Max and Jacktrip to finish initializing
+    sleep 10
+
+    echo trying feedjack-clientconnect - You may need to run it again
+    echo     feedjack-clientconnect
+
+    feedjack-clientconnect
+fi

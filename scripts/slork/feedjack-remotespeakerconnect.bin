@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Disconnect All
+~/slork/bin/jmess-1.0.3 -D
+
+    # Hear from jacktrip to hemi
+    jack_connect JackTrip:receive_1 system:playback_1
+    jack_connect JackTrip:receive_1 system:playback_2
+    jack_connect JackTrip:receive_1 system:playback_3
+    jack_connect JackTrip:receive_1 system:playback_4
+    jack_connect JackTrip:receive_1 system:playback_5
+    jack_connect JackTrip:receive_1 system:playback_6
