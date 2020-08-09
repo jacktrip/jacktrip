@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo Launching Jack...
+jackd -dcoreaudio -r44100 -p256
+echo ...Jack has stopped

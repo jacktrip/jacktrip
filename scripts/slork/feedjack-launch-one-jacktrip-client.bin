@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if test $# -ne 1; then
+    echo usage: $0 [client-number]
+    echo where client-number is 1-12
+    exit -1
+fi
+
+echo Killing any running instances of jacktrip...
+killall jacktrip
+
+#serverHostname="sine.local"
+serverHostname="quinoa.local"
+
+echo looking for server \($serverHostname\)...
+serverIP="$(ping -q -c1 $serverHostname | head -1 | awk -F'[()]' '{print $2}')"
+
+# if [ $? -eq 0 && ! -z "$serverIP" ]
+if [ ! -z "$serverIP" ]
+then
+    echo Yay found $serverHostname at IP $serverIP
+else
+    echo Oh no - cannot see $serverHostname on the network
+    echo Please check the ethernet cables and try again.
+    exit 1
+fi
+
+Echo
+echo serverIP is $serverIP
+
+
+let clientnum=$1
+echo you asked to be client $clientnum
+
+let offset=$clientnum*10
+echo so your port offset should be $offset
+
+command="/Users/slork/slork/bin/jacktrip-1.1 -c $serverIP -n 1 -o $offset -z"
+echo $command
+$command
+

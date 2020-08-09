@@ -70,7 +70,7 @@ class UdpHubListener : public QThread
     Q_OBJECT;
 
 public:
-    UdpHubListener(int server_port = gServerUdpPort);
+    UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = NULL);
     virtual ~UdpHubListener();
 
     /// \brief Implements the Thread Loop. To start the thread, call start()
@@ -133,6 +133,7 @@ private:
     QThreadPool mThreadPool; ///< The Thread Pool
 
     int mServerPort; //< Server known port number
+    int mServerUdpPort; //< Server udp base port number
     int mBasePort;
     addressPortPair mActiveAddress[gMaxThreads]; ///< Active address pool addresses
     QHash<QString, uint16_t> mActiveAddressPortPair;
