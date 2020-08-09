@@ -44,7 +44,6 @@
 //*******************************************************************************
 void Limiter::compute(int nframes, float** inputs, float** outputs)
 {
-  static uint nSkippedFrames = 0;
   if (not inited) {
     std::cerr << "*** Limiter " << this << ": init never called! Doing it now.\n";
     if (fSamplingFreq <= 0) {
@@ -52,7 +51,6 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
       std::cout << "Limiter " << this << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
     }
     init(fSamplingFreq);
-    inited = true;
   }
 #ifdef SINE_TEST
   float sineTestOut[nframes];

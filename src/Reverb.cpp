@@ -31,8 +31,8 @@
 
 /**
  * \file Reverb.cpp
- * \author Julius Smith, based on LoopBack.h
- * \date July 2008
+ * \author Julius Smith, based on Limiter.h
+ * \date August 2020
  */
 
 
@@ -44,7 +44,6 @@
 //*******************************************************************************
 void Reverb::compute(int nframes, float** inputs, float** outputs)
 {
-  static uint nSkippedFrames = 0;
   if (not inited) {
     std::cerr << "*** Reverb " << this << ": init never called! Doing it now.\n";
     if (fSamplingFreq <= 0) {
@@ -52,12 +51,20 @@ void Reverb::compute(int nframes, float** inputs, float** outputs)
       std::cout << "Reverb " << this << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
     }
     init(fSamplingFreq);
-    inited = true;
   }
-  if (mNumInChannels == 1) {
-    reverbMonoP->compute(nframes, inputs, outputs);
+  if (mReverbLevel <= 1.0) {
+    if (mNumInChannels == 1) {
+      freeverbMonoP->compute(nframes, inputs, outputs);
+    } else {
+      assert(mNumInChannels == 2);
+      freeverbStereoP->compute(nframes, inputs, outputs);
+    }
   } else {
-    assert(mNumInChannels == 2);
-    reverbStereoP->compute(nframes, inputs, outputs);
+    if (mNumInChannels == 1) {
+      zitarevMonoP->compute(nframes, inputs, outputs);
+    } else {
+      assert(mNumInChannels == 2);
+      zitarevStereoP->compute(nframes, inputs, outputs);
+    }
   }
 }

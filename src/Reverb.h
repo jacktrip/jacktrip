@@ -36,7 +36,7 @@
  */
 
 
-/** \brief Applies reverb_lad_mono from the faustlibraries distribution, compressors.lib
+/** \brief Applies freeverb or zitarev from the faustlibraries distribution: reverbs.lib
  *
  */
 #ifndef __REVERB_H__
@@ -47,6 +47,8 @@
 #include "ProcessPlugin.h"
 #include "freeverbdsp.h" // stereo in and out
 #include "freeverbmonodsp.h" // mono in and out (there is no mono to stereo case in jacktrip as yet)
+#include "zitarevdsp.h" // stereo in and out
+#include "zitarevmonodsp.h" // mono in and out
 
 /** \brief The Reverb class confines the output dynamic range to a
  *  "dynamic range lane" determined by the assumed number of clients.
@@ -58,24 +60,43 @@ public:
   Reverb(int numInChans, int numOutChans, float reverbLevel) // xtor
     : mNumInChannels(numInChans), mNumOutChannels(numOutChans), mReverbLevel(reverbLevel)
   { 
-    reverbStereoP = new freeverbdsp; // stereo input and output
-    reverbMonoP = new freeverbmonodsp; // mono input, stereo output
-    reverbStereoUIP = new APIUI; // #included in freeverbdsp.h
-    reverbMonoUIP = new APIUI;
-    reverbStereoP->buildUserInterface(reverbStereoUIP);
-    reverbMonoP->buildUserInterface(reverbMonoUIP);
     std::cout << "Reverb: constructed for "
               << mNumInChannels << " input channels and "
               << mNumOutChannels << " output channels with reverb level = "
               << mReverbLevel << "\n";
+
+    if (mReverbLevel <= 1.0) { // freeverb:
+      freeverbStereoP = new freeverbdsp; // stereo input and output
+      freeverbMonoP = new freeverbmonodsp; // mono input, stereo output
+      freeverbStereoUIP = new APIUI; // #included in *dsp.h
+      freeverbMonoUIP = new APIUI;
+      freeverbStereoP->buildUserInterface(freeverbStereoUIP);
+      freeverbMonoP->buildUserInterface(freeverbMonoUIP);
+      std::cout << "Using freeverb\n";
+    } else {
+      zitarevStereoP = new zitarevdsp; // stereo input and output
+      zitarevMonoP = new zitarevmonodsp; // mono input, stereo output
+      zitarevStereoUIP = new APIUI;
+      zitarevMonoUIP = new APIUI;
+      zitarevStereoP->buildUserInterface(zitarevStereoUIP);
+      zitarevMonoP->buildUserInterface(zitarevMonoUIP);
+      std::cout << "Using zitarev\n";
+    }
   }
 
   /// \brief The class destructor
   virtual ~Reverb() {
-    delete reverbStereoP;
-    delete reverbMonoP;
-    delete reverbStereoUIP;
-    delete reverbMonoUIP;
+    if (mReverbLevel <= 1.0) { // freeverb:
+      delete freeverbStereoP;
+      delete freeverbMonoP;
+      delete freeverbStereoUIP;
+      delete freeverbMonoUIP;
+    } else {
+      delete zitarevStereoP;
+      delete zitarevMonoP;
+      delete zitarevStereoUIP;
+      delete zitarevMonoUIP;
+    }
   }
 
   void init(int samplingRate) override {
@@ -85,11 +106,20 @@ public:
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }
     fs = float(fSamplingFreq);
-    reverbStereoP->init(fs); // compression filter parameters depend on sampling rate
-    reverbMonoP->init(fs); // compression filter parameters depend on sampling rate
-    int ndx = reverbStereoUIP->getParamIndex("Wet");
-    reverbStereoUIP->setParamValue(ndx, mReverbLevel);
-    reverbMonoUIP->setParamValue(ndx, mReverbLevel);
+    if (mReverbLevel <= 1.0) { // freeverb:
+      freeverbStereoP->init(fs); // compression filter parameters depend on sampling rate
+      freeverbMonoP->init(fs); // compression filter parameters depend on sampling rate
+      int ndx = freeverbStereoUIP->getParamIndex("Wet");
+      freeverbStereoUIP->setParamValue(ndx, mReverbLevel);
+      freeverbMonoUIP->setParamValue(ndx, mReverbLevel);
+    } else { // zitarev:
+      zitarevStereoP->init(fs); // compression filter parameters depend on sampling rate
+      zitarevMonoP->init(fs); // compression filter parameters depend on sampling rate
+      int ndx = zitarevStereoUIP->getParamIndex("Wet");
+      float zitaLevel = -1.0f + 2*(mReverbLevel-1.0f); // range within zitarev is -1 to 1
+      zitarevStereoUIP->setParamValue(ndx, zitaLevel);
+      zitarevMonoUIP->setParamValue(ndx, zitaLevel);
+    }
     inited = true;
   }
   int getNumInputs() override { return(mNumInChannels); }
@@ -100,11 +130,18 @@ private:
   float fs;
   int mNumInChannels;
   int mNumOutChannels;
+
   float mReverbLevel;
-  freeverbdsp* reverbStereoP;
-  freeverbmonodsp* reverbMonoP;
-  APIUI* reverbStereoUIP;
-  APIUI* reverbMonoUIP;
+
+  freeverbdsp* freeverbStereoP;
+  freeverbmonodsp* freeverbMonoP;
+  APIUI* freeverbStereoUIP;
+  APIUI* freeverbMonoUIP;
+
+  zitarevdsp* zitarevStereoP;
+  zitarevmonodsp* zitarevMonoP;
+  APIUI* zitarevStereoUIP;
+  APIUI* zitarevMonoUIP;
 };
 
 #endif

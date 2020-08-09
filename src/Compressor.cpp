@@ -51,7 +51,6 @@ void Compressor::compute(int nframes, float** inputs, float** outputs)
       std::cout << "Compressor " << this << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
     }
     init(fSamplingFreq);
-    inited = true;
   }
   for ( int i = 0; i < mNumChannels; i++ ) {
     compressorP[i]->compute(nframes, &inputs[i], &outputs[i]);
