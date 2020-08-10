@@ -313,6 +313,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             gVerboseFlag = true;
             if (gVerboseFlag) std::cout << "Verbose mode" << std::endl;
+	    mEffects.setVerboseFlag(gVerboseFlag);
             break;
         case 'p':
             //-------------------------------------------------------
@@ -376,8 +377,7 @@ void Settings::parseInput(int argc, char** argv)
             std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
             std::exit(1);
           }
-          int returnCode = mEffects.parseEffectsOptArg(optarg);
-          if (returnCode != 0) {
+          if (0 != mEffects.parseEffectsOptArg(optarg)) {
             std::cerr << "--effects (-f) argument string `" << optarg << "' is malformed\n";
             exit(1);
           }
@@ -410,7 +410,6 @@ void Settings::parseInput(int argc, char** argv)
 
     // Perform allocation that depends on options:
     mEffects.setNumChans(mNumChans);
-    mEffects.setVerboseFlag(gVerboseFlag);
     mEffects.allocateEffects();
 }
 

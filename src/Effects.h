@@ -17,9 +17,6 @@ class Effects
   };
   LIMITER_MODE mLimit; ///< audio limiter controls
   unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
-  float mReverbLevel; // amount of reverb ("wetness") 0 to 2 = [0-1 Freeverb, 1-2 Zitarev (old API)]
-  float mReverbLevelFreeverb; // wetness from 0 to 1
-  float mReverbLevelZitarev; // wetness from 0 to 1
 
   enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
   bool inCompressor = false;
@@ -38,10 +35,11 @@ class Effects
   char lastEffect = NULL;
   float compressorInLevelChange = 0;
   float compressorOutLevelChange = 0;
-  float zitarevInLevel = -1.0f;
-  float freeverbInLevel = -1.0f;
-  float zitarevOutLevel = -1.0f;
-  float freeverbOutLevel = -1.0f;
+  float zitarevInLevel = 1.0f; // "Level" = wetness from 0 to 1
+  float freeverbInLevel = 1.0f;
+  float zitarevOutLevel = 1.0f;
+  float freeverbOutLevel = 1.0f;
+  float mReverbLevel; // for backward compatibility: 0-1 Freeverb, 1-2 Zitarev
   Limiter* inLimiterP = nullptr;
   Limiter* outLimiterP = nullptr;
 
@@ -86,36 +84,42 @@ public:
   void allocateEffects() {
     if (inCompressor) {
       inCompressorP = new Compressor(mNumChans);
+      if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
       outCompressorP = new Compressor(mNumChans);
+      if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
-      inZitarevP = new Reverb(mNumChans,mNumChans, 1.0 + mReverbLevelZitarev);
+      inZitarevP = new Reverb(mNumChans,mNumChans, 1.0 + zitarevInLevel);
+      if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Zitarev)\n"; }
     }
     if (outZitarev) {
-      outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + mReverbLevelZitarev);
+      outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + zitarevOutLevel);
+      if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
     }
     if (inFreeverb) {
-      inFreeverbP = new Reverb(mNumChans, mNumChans, mReverbLevelFreeverb);
+      inFreeverbP = new Reverb(mNumChans, mNumChans, freeverbInLevel);
+      if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Freeverb)\n"; }
     }
     if (outFreeverb) {
-      outFreeverbP = new Reverb(mNumChans, mNumChans, mReverbLevelFreeverb);
+      outFreeverbP = new Reverb(mNumChans, mNumChans, freeverbOutLevel);
+      if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Freeverb)\n"; }
     }
     if ( mLimit != LIMITER_NONE) {
       if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
-	if (gVerboseFlag) {
-	  std::cout << "Set up OUTGOING LIMITER for "
-		    << mNumChans << " output channels and "
-		    << mNumClientsAssumed << " assumed client(s) ...\n";
-	}
+        if (gVerboseFlag) {
+          std::cout << "Set up OUTGOING LIMITER for "
+                    << mNumChans << " output channels and "
+                    << mNumClientsAssumed << " assumed client(s) ...\n";
+        }
         outLimiterP = new Limiter(mNumChans,mNumClientsAssumed);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
       }
       if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
-	if (gVerboseFlag) {
-	  std::cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
-	}
+        if (gVerboseFlag) {
+          std::cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
+        }
         inLimiterP = new Limiter(mNumChans,1); // mNumClientsAssumed not needed this direction
       }
     }
@@ -132,15 +136,15 @@ public:
       inZitarev = mReverbLevel > 1.0;
       inFreeverb = mReverbLevel <= 1.0;
       if (inZitarev) {
-        mReverbLevelZitarev = mReverbLevel - 1.0; // wetness from 0 to 1
+        zitarevInLevel = mReverbLevel - 1.0; // wetness from 0 to 1
       } 
       if (inFreeverb) {
-        mReverbLevelFreeverb = mReverbLevel; // wetness from 0 to 1
+        freeverbInLevel = mReverbLevel; // wetness from 0 to 1
       } 
     } else {
       // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
       if (gVerboseFlag) {
-	std::cout << "-f (--effects) arg = " << optarg << endl;
+        std::cout << "-f (--effects) arg = " << optarg << std::endl;
       }
       ulong nac = strlen(optarg);
     
@@ -213,22 +217,22 @@ public:
     if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
       mLimit = LIMITER_BOTH;
       if (gVerboseFlag) {
-	std::cout << "Setting up Overflow Limiter for both INCOMING and OUTGOING\n";
+        std::cout << "Set up Overflow Limiter for both INCOMING and OUTGOING\n";
       }
     } else if (c1 == 'i') {
       mLimit = LIMITER_INCOMING;
       if (gVerboseFlag) {
-	std::cout << "Setting up Overflow Limiter for INCOMING from network\n";
+        std::cout << "Set up Overflow Limiter for INCOMING from network\n";
       }
     } else if (c1 == 'o') {
       mLimit = LIMITER_OUTGOING;
       if (gVerboseFlag) {
-	std::cout << "Setting up Overflow Limiter for OUTGOING to network\n";
+        std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
       }
     } else {
       mLimit = LIMITER_OUTGOING;
       if (gVerboseFlag) {
-	std::cout << "Setting up Overflow Limiter for OUTGOING to network\n";
+        std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
       }
     }
     return 0;
