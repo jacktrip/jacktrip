@@ -72,9 +72,9 @@ public:
       limiterTestP[i]->buildUserInterface(limiterTestUIP[i]);
 #endif
     }
-    std::cout << "Limiter: constructed for "
-              << mNumChannels << " channels and "
-              << mNumClients << " assumed clients\n";
+    //    std::cout << "Limiter: constructed for "
+    // << mNumChannels << " channels and "
+    // << mNumClients << " assumed clients\n";
   }
 
   /// \brief The class destructor
@@ -89,7 +89,7 @@ public:
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-    std::cout << "Limiter: init(" << samplingRate << ")\n";
+    // std::cout << "Limiter: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }

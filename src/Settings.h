@@ -50,6 +50,8 @@
 
 #include "JackTrip.h"
 
+#include "Effects.h"
+
 /** \brief Class to set usage options and parse settings from input
  */
 class Settings : public QThread
@@ -59,14 +61,6 @@ class Settings : public QThread
 public:
     Settings();
     virtual ~Settings();
-
-    /// \brief Limiter modes
-    enum LIMITER_MODE {
-		       LIMITER_NONE,
-		       LIMITER_INCOMING, // from network
-		       LIMITER_OUTGOING, // to network
-		       LIMITER_BOTH
-    };
 
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
@@ -83,11 +77,6 @@ public:
     {
         return mIOStatStream.is_open() ? (std::ostream&)mIOStatStream : std::cout;
     }
-
-
-    unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }
-
-    LIMITER_MODE getLimit() { return mLimit; }
 
 public slots:
     void slotExitProgram()
@@ -135,11 +124,7 @@ private:
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
     int mIOStatTimeout;
     std::ofstream mIOStatStream;
-    LIMITER_MODE mLimit; ///< audio limiter controls
-    unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
-    bool mEffects; // turns on compressor and reverb
-    float mReverbLevel; // amount of reverb ("wetness") 0 to 1
-    bool mPluginsInited;
+    Effects mEffects;
 };
 
 #endif

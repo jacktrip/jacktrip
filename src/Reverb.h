@@ -60,10 +60,20 @@ public:
   Reverb(int numInChans, int numOutChans, float reverbLevel) // xtor
     : mNumInChannels(numInChans), mNumOutChannels(numOutChans), mReverbLevel(reverbLevel)
   { 
+    if ( mNumInChannels < 1 ) {
+      std::cerr << "*** Reverb.h: must have at least one input audio channels\n";
+      mNumInChannels = 1;
+    }
+    if ( mNumInChannels > 2 ) {
+      std::cerr << "*** Reverb.h: limiting number of audio output channels to 2\n";
+      mNumInChannels = 2;
+    }
+#if 0
     std::cout << "Reverb: constructed for "
               << mNumInChannels << " input channels and "
               << mNumOutChannels << " output channels with reverb level = "
               << mReverbLevel << "\n";
+#endif
 
     if (mReverbLevel <= 1.0) { // freeverb:
       freeverbStereoP = new freeverbdsp; // stereo input and output
@@ -72,7 +82,7 @@ public:
       freeverbMonoUIP = new APIUI;
       freeverbStereoP->buildUserInterface(freeverbStereoUIP);
       freeverbMonoP->buildUserInterface(freeverbMonoUIP);
-      std::cout << "Using freeverb\n";
+      // std::cout << "Using freeverb\n";
     } else {
       zitarevStereoP = new zitarevdsp; // stereo input and output
       zitarevMonoP = new zitarevmonodsp; // mono input, stereo output
@@ -80,7 +90,7 @@ public:
       zitarevMonoUIP = new APIUI;
       zitarevStereoP->buildUserInterface(zitarevStereoUIP);
       zitarevMonoP->buildUserInterface(zitarevMonoUIP);
-      std::cout << "Using zitarev\n";
+      // std::cout << "Using zitarev\n";
     }
   }
 
@@ -101,7 +111,7 @@ public:
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-    std::cout << "Reverb: init(" << samplingRate << ")\n";
+    // std::cout << "Reverb: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }

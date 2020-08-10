@@ -104,6 +104,7 @@
 		6DFE87270DFB05EF99124F07 /* ProcessPlugin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ProcessPlugin.h; path = "/Users/jos/w/jacktrip-github/src/ProcessPlugin.h"; sourceTree = "<absolute>"; };
 		7CF2757740CD6ACB677780DB /* LoopBack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LoopBack.cpp; path = "/Users/jos/w/jacktrip-github/src/LoopBack.cpp"; sourceTree = "<absolute>"; };
 		7F2E8E19A11EC327F49B30F7 /* TestRingBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TestRingBuffer.h; path = "/Users/jos/w/jacktrip-github/src/TestRingBuffer.h"; sourceTree = "<absolute>"; };
+		805376B224E0E5B10010A8FD /* Effects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Effects.h; sourceTree = "<group>"; };
 		8302309CFD8FF81A6274A5BB /* UdpHubListener.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = UdpHubListener.cpp; path = "/Users/jos/w/jacktrip-github/src/UdpHubListener.cpp"; sourceTree = "<absolute>"; };
 		8A124D17718B06FAE7532073 /* JackTripWorker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = JackTripWorker.cpp; path = "/Users/jos/w/jacktrip-github/src/JackTripWorker.cpp"; sourceTree = "<absolute>"; };
 		8EB085273E460F99C8BD4C55 /* Limiter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Limiter.h; path = "/Users/jos/w/jacktrip-github/src/Limiter.h"; sourceTree = "<absolute>"; };
@@ -179,6 +180,7 @@
 		2EB56BE3C2D93CDAB0C52E67 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				805376B224E0E5B10010A8FD /* Effects.h */,
 				69EC3A4AD63590C5E4AF4D4A /* AudioInterface.cpp */,
 				9885A7E72E6BD04262341315 /* AudioInterface.h */,
 				A8D9BA234B89C5F9154E9D42 /* Compressor.cpp */,

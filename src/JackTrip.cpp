@@ -321,15 +321,19 @@ void JackTrip::setPeerAddress(const char* PeerHostOrIP)
 //*******************************************************************************
 void JackTrip::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
+  if (plugin) {
     mProcessPluginsToNetwork.append(plugin); // ownership transferred
     //mAudioInterface->appendProcessPluginToNetwork(plugin);
+  }
 }
 
 //*******************************************************************************
 void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 {
+  if (plugin) {
     mProcessPluginsFromNetwork.append(plugin); // ownership transferred
     //mAudioInterface->appendProcessPluginFromNetwork(plugin);
+  }
 }
 
 

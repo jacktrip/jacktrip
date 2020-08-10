@@ -37,10 +37,8 @@
 
 #include "Settings.h"
 #include "LoopBack.h"
-#include "Limiter.h"
-#include "Compressor.h"
-#include "Reverb.h"
 #include "NetKS.h"
+#include "Effects.h"
 
 #ifdef WAIR // wair
 #include "ap8x2.dsp.h"
@@ -90,12 +88,7 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mIOStatTimeout(0),
-    mLimit(LIMITER_NONE),
-    mNumClientsAssumed(2),
-    mEffects(false),
-    mReverbLevel(1.0f),
-    mPluginsInited(false)
+    mIOStatTimeout(0)
 {}
 
 //*******************************************************************************
@@ -365,137 +358,41 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'O': { // Overflow limiter (i, o, or io)
           //-------------------------------------------------------
-          char c1 = tolower(optarg[0]);
-          if (c1 == '-') {
-            std::cerr << "--overflowlimiting (-O) argument i, o, or io is REQUIRED\n";
-                  std::exit(1);
-          }
-          char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
-          if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
-            mLimit = LIMITER_BOTH;
-            cout << "Setting up Overflow Limiter for both INCOMING and OUTGOING\n";
-          } else if (c1 == 'i') {
-            mLimit = LIMITER_INCOMING;
-            cout << "Setting up Overflow Limiter for INCOMING from network\n";
-          } else if (c1 == 'o') {
-            mLimit = LIMITER_OUTGOING;
-            cout << "Setting up Overflow Limiter for OUTGOING to network\n";
-          } else {
-            mLimit = LIMITER_OUTGOING;
-            cout << "Setting up Overflow Limiter for OUTGOING to network\n";
+          if (0 != mEffects.parseLimiterOptArg(optarg)) {
+            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
+            exit(1);
           }
           break; }
-        case 'a': // assumed number of clients (applies to outgoing limiter)
+        case 'a': { // assumed number of clients (applies to outgoing limiter)
           //-------------------------------------------------------
-          if (optarg[0] == '-') {
-            std::cerr << "--assumednumclients (-a) integer argument > 0 is REQUIRED\n";
-                  std::exit(1);
+          if (0 != mEffects.parseAssumedNumClientsOptArg(optarg)) {
+            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
+            exit(1);
           }
-          mNumClientsAssumed = atoi(optarg);
-          if(mNumClientsAssumed < 1) {
-            std::cerr << "-p ERROR: Must have at least one assumed sound source: "
-                      << atoi(optarg) << " is not supported." << endl;
-            printUsage();
-            std::exit(1); }
-          break;
+          break; }
         case 'f': { // effects (-f reverbLevel [0-2])
           //-------------------------------------------------------
           if (optarg[0] == '-' || strlen(optarg)==0) {
             std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
             std::exit(1);
           }
-#if 1
-          mEffects = true; // turn on
-          cout << "Effects turned on = OUTGOING Compressor and INCOMING Reverb\n";
-          mReverbLevel = atof(optarg); // cmd line comb feedback adjustment
-#else
-          // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
-          std::cout << "-f (--effects) arg = " << optarg << endl;
-          ulong nac = strlen(optarg);
-	  // Move all this into a new Effects class:
-          enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
-          bool inCompressor = false;
-          bool outCompressor = false;
-          bool inZitarev = false;
-          bool outZitarev = false;
-          bool inFreeverb = false;
-          bool outFreeverb = false;
-          int parenLevel = 0;
-          char lastEffect = NULL;
-          float compressorInLevelChange = 0;
-          float compressorOutLevelChange = 0;
-          float zitarevInLevel = -1.0f;
-          float freeverbInLevel = -1.0f;
-          float zitarevOutLevel = -1.0f;
-          float freeverbOutLevel = -1.0f;
-          for (ulong i=0; i<nac; i++) {
-            if (optarg[i]!=')' && parenLevel>0) { continue; }
-            switch(optarg[i]) {
-            case ' ': break;
-            case ',': break;
-            case ';': break;
-            case '\t': break;
-            case 'i': io=IO_IN; break;
-            case 'o': io=IO_OUT; break;
-            case ':': break;
-            case 'c': if (io==IO_IN) { inCompressor = true; } else if (io==IO_OUT) { outCompressor = true; }
-              else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
-              lastEffect = 'c';
-              break;
-            case 'f': if (io==IO_IN) { inFreeverb = true; } else if (io==IO_OUT) { outFreeverb = true; }
-              else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
-              lastEffect = 'f';
-              break;
-            case 'z': if (io==IO_IN) { inZitarev = true; } else if (io==IO_OUT) { outZitarev = true; }
-              else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
-              lastEffect = 'z';
-              break;
-            case '(': parenLevel++;
-              for (ulong j=i+1; j<nac; j++) {
-                if (optarg[j] == ')') {
-                  optarg[j] = '\0';
-                  float farg = atof(&optarg[i+1]);
-                  optarg[j] = ')';
-                  if (io==IO_IN) {
-                    if (lastEffect == 'c') {
-                      compressorInLevelChange = farg;
-                    } else if (lastEffect == 'z') {
-                      zitarevInLevel = farg;
-                    } else if (lastEffect == 'f') {
-                      freeverbInLevel = farg;
-                    } // else ignore the argument
-                  } else if (io==IO_OUT) {
-                    if (lastEffect == 'c') {
-                      compressorOutLevelChange = farg;
-                    } else if (lastEffect == 'z') {
-                      zitarevOutLevel = farg;
-                    } else if (lastEffect == 'f') {
-                      freeverbOutLevel = farg;
-                    } // else ignore the argument
-                  } // else ignore the argument
-                  break;
-                }
-              }
-              break;
-            case ')': parenLevel--;
-              break;
-            default:
-              break;
-            }
+          int returnCode = mEffects.parseEffectsOptArg(optarg);
+          if (returnCode != 0) {
+            std::cerr << "--effects (-f) argument string `" << optarg << "' is malformed\n";
+            exit(1);
           }
-#endif
           break; }
         case ':': {
-            printf("\t*** Missing option argument\n");
-            break; }
+          printf("\t*** Missing option argument\n");
+          break; }
         case '?': {
-            printf("\t*** Unknown or ambiguous option argument\n");
-           break; }
-        default:
-           //-------------------------------------------------------
-            printUsage();
-            std::exit(0);
-            break;
+          printf("\t*** Unknown or ambiguous option argument\n");
+          break; }
+        default: {
+          //-------------------------------------------------------
+          printUsage();
+          std::exit(0);
+          break; }
         }
 
     // Warn user if undefined options where entered
@@ -510,6 +407,11 @@ void Settings::parseInput(int argc, char** argv)
         }
         cout << gPrintSeparator << endl;
     }
+
+    // Perform allocation that depends on options:
+    mEffects.setNumChans(mNumChans);
+    mEffects.setVerboseFlag(gVerboseFlag);
+    mEffects.allocateEffects();
 }
 
 
@@ -742,40 +644,22 @@ void Settings::startJackTrip()
             // -------------------------------------------------------------
         }
 
-        // Outgoing compressor and Reverb on incoming audio:
-        if ( mEffects ) {
+    }
 
-          Compressor* compressor = new Compressor(mNumChans); // FIXME: Make separate option(s) for compressor
-          mJackTrip->appendProcessPluginToNetwork(compressor); // callee responsible for freeing when done
+    // Outgoing/Incoming Compressor and/or Reverb:
+    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
 
-          if (mReverbLevel > 0.0f && (mNumChans == 1 || mNumChans == 2)) {
-            Reverb* reverb = new Reverb(mNumChans,mNumChans,mReverbLevel);
-            mJackTrip->appendProcessPluginFromNetwork(reverb); // callee responsible for freeing when done
-          } else {
-            if (mNumChans < 1 || mNumChans > 2) {
-              std::cerr << "--effects ERROR: Reverb can only handle 1 or 2 audio channels - disabling reverb\n";
-            }
-          }
-        }
-
-        // Limiters go last in the plugin sequence:
-        if ( mLimit != LIMITER_NONE) {
-          if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
-            cout << "Set up OUTGOING COMPRESSOR and LIMITER for " << mNumChans << " output channels and "
-                 << mNumClientsAssumed << " assumed client(s) ..." << endl;
-            Limiter* limiter = new Limiter(mNumChans,mNumClientsAssumed);
-            // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
-            mJackTrip->appendProcessPluginToNetwork(limiter); // callee responsible for freeing when done
-          }
-          if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
-            cout << "Set up INCOMING COMPRESSOR and LIMITER for " << mNumChans << " input channels\n";
-            Limiter* limiter = new Limiter(mNumChans,1); // mNumClientsAssumed not needed in this direction
-            mJackTrip->appendProcessPluginFromNetwork(limiter);
-          }
-        }
+    // Limiters go last in the plugin sequence:
+    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
 
 #ifdef WAIR // WAIR
-        if ( mWAIR ) {
+    if ( mWAIR ) {
             cout << "Running in WAIR Mode..." << endl;
             cout << gPrintSeparator << std::endl;
             switch ( mNumNetRevChans )
@@ -803,7 +687,7 @@ void Settings::startJackTrip()
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );
-        if (0 < getIOStatTimeout()) {
+              if (0 < getIOStatTimeout()) {
             mJackTrip->startIOStatTimer(getIOStatTimeout(), getIOStatStream());
         }
         //        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->start" << std::endl;
@@ -815,9 +699,7 @@ void Settings::startJackTrip()
        cout << "Stoping JackTrip..." << endl;
        mJackTrip->stop();
     */
-    }
 }
-
 
 //*******************************************************************************
 void Settings::stopJackTrip()

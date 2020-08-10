@@ -711,6 +711,7 @@ void AudioInterface::fromBitToSampleConversion
 //*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
+  if (not plugin) { return; }
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
 	      << typeid(plugin).name() << " REJECTED due to having "
@@ -723,6 +724,7 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 
 void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 {
+  if (not plugin) { return; }
   if (plugin->getNumOutputs() > mNumOutChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
 	      << typeid(plugin).name() << " REJECTED due to having "

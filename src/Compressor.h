@@ -61,8 +61,6 @@ public:
       compressorUIP.push_back(new APIUI); // #included in compressordsp.h
       compressorP[i]->buildUserInterface(compressorUIP[i]);
     }
-    std::cout << "Compressor: constructed for "
-              << mNumChannels << " channels\n";
   }
 
   /// \brief The class destructor
@@ -77,7 +75,7 @@ public:
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-    std::cout << "Compressor: init(" << samplingRate << ")\n";
+    // std::cout << "Compressor: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }
