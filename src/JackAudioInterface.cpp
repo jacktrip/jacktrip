@@ -103,6 +103,22 @@ void JackAudioInterface::setup()
 void JackAudioInterface::setupClient()
 {
     const char* server_name = NULL;
+    QByteArray clientName = mClientName.toUtf8();
+#ifdef __MAC_OSX__
+    //Jack seems to have an issue with client names over 27 bytes in OS X
+    size_t maxSize = 27;
+#else
+    size_t maxSize = jack_client_name_size();
+#endif
+    if (clientName.length() > maxSize) {
+        int length = maxSize;
+        //Make sure we don't cut mid multi-byte character.
+        while ((length > 0) && ((clientName.at(length) & 0xc0) == 0x80)) {
+            length--;
+        }
+        clientName.truncate(length);
+    }
+    
     // was  jack_options_t options = JackNoStartServer;
     // and then jack_options_t options = JackLoadName;
     jack_options_t options = JackNullOption; // from jackSimpleClient example
@@ -114,9 +130,9 @@ void JackAudioInterface::setupClient()
     {
         QMutexLocker locker(&sJackMutex);
 #ifndef WAIR // WAIR
-        mClient = jack_client_open (mClientName.toUtf8().constData(), options, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), options, &status, server_name);
 #else
-        mClient = jack_client_open (mClientName.toUtf8().constData(), JackUseExactName, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), JackUseExactName, &status, server_name);
 #endif // endwhere
     }
 
