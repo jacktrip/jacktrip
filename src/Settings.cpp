@@ -389,10 +389,10 @@ void Settings::parseInput(int argc, char** argv)
           printf("\t*** Unknown or ambiguous option argument\n");
           break; }
         default: {
-          //-------------------------------------------------------
-          printUsage();
-          std::exit(0);
-          break; }
+            //-------------------------------------------------------
+            printUsage();
+            std::exit(0);
+            break; }
         }
 
     // Warn user if undefined options where entered
