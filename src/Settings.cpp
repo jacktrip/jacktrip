@@ -490,22 +490,22 @@ void Settings::startJackTrip()
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
         if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
-        UdpHubListener* udphub = new UdpHubListener(mBindPortNum,mServerUdpPortNum);
-        udphub->setSettings(this);
+        UdpHubListener* udpmaster = new UdpHubListener(mBindPortNum,mServerUdpPortNum);
+        udpmaster->setSettings(this);
 #ifdef WAIR // WAIR
-        udphub->setWAIR(mWAIR);
+        udpmaster->setWAIR(mWAIR);
 #endif // endwhere
-        udphub->setHubPatch(mHubConnectionMode);
-        udphub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
-        if (gVerboseFlag) std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
+        udpmaster->setHubPatch(mHubConnectionMode);
+        udpmaster->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before udpmaster->start" << std::endl;
         // Set buffers to zero when underrun
         if ( mUnderrrunZero ) {
             cout << "Setting buffers to zero when underrun..." << endl;
             cout << gPrintSeparator << std::endl;
-            udphub->setUnderRunMode(JackTrip::ZEROS);
+            udpmaster->setUnderRunMode(JackTrip::ZEROS);
         }
-        udphub->setBufferQueueLength(mBufferQueueLength);
-        udphub->start();
+        udpmaster->setBufferQueueLength(mBufferQueueLength);
+        udpmaster->start();
 
         //---Thread Pool Test--------------------------------------------
         /*
@@ -525,7 +525,7 @@ void Settings::startJackTrip()
     else { // client mode:
 
         //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
-        //          mBufferQueueLength, mAudioBitResolution);
+        //         mBufferQueueLength, mAudioBitResolution);
 #ifdef WAIR // WAIR
         if (gVerboseFlag) std::cout << "Settings:startJackTrip mNumNetRevChans = " << mNumNetRevChans << std::endl;
 #endif // endwhere
@@ -658,7 +658,7 @@ void Settings::startJackTrip()
     mJackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
 
 #ifdef WAIR // WAIR
-    if ( mWAIR ) {
+        if ( mWAIR ) {
             cout << "Running in WAIR Mode..." << endl;
             cout << gPrintSeparator << std::endl;
             switch ( mNumNetRevChans )
@@ -686,7 +686,7 @@ void Settings::startJackTrip()
                     0 // for WAIR compatibility, ID in jack client name
             #endif // endwhere
                     );
-              if (0 < getIOStatTimeout()) {
+        if (0 < getIOStatTimeout()) {
             mJackTrip->startIOStatTimer(getIOStatTimeout(), getIOStatStream());
         }
         //        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->start" << std::endl;
