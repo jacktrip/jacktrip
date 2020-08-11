@@ -41,12 +41,8 @@
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
 
-#ifdef JUCE
-#include <vector>
-#else
 #include <QVarLengthArray>
 #include <QVector>
-#endif
 //#include "jacktrip_globals.h"
 
 // Forward declarations
