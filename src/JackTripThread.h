@@ -38,9 +38,7 @@
 #ifndef __JACKTRIPTHREAD_H__
 #define __JACKTRIPTHREAD_H__
 
-#ifndef JUCE
 #include <QThread>
-#endif
 
 #include "JackTrip.h"
 

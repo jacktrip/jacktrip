@@ -40,12 +40,10 @@
 
 #include <stdexcept>
 
-#ifndef JUCE
 #include <QThread>
 #include <QUdpSocket>
 #include <QHostAddress>
 #include <QMutex>
-#endif
 
 #include "DataProtocol.h"
 #include "jacktrip_types.h"

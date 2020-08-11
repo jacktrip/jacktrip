@@ -70,7 +70,7 @@ class JackTripWorker : public QObject, public QRunnable
 
 public:
     /// \brief The class constructor
-    JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
+    JackTripWorker(UdpHubListener* udpmasterlistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
     /// \brief The class destructor
     virtual ~JackTripWorker();
 

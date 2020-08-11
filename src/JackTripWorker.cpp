@@ -58,8 +58,8 @@
 using std::cout; using std::endl;
 
 //*******************************************************************************
-JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode) :
-    mUdpHubListener(udphublistener),
+JackTripWorker::JackTripWorker(UdpHubListener* udpmasterlistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode) :
+    mUdpHubListener(udpmasterlistener),
     m_connectDefaultAudioPorts(false),
     mBufferQueueLength(BufferQueueLength),
     mUnderRunMode(UnderRunMode),

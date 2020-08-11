@@ -64,7 +64,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     mTotalRunningThreads(0),
     m_connectDefaultAudioPorts(false)
 {
-    // Register JackTripWorker with the hub listener
+    // Register JackTripWorker with the master listener
     //mJTWorker = new JackTripWorker(this);
     mJTWorkers = new QVector<JackTripWorker*>;
     for (int i = 0; i<gMaxThreads; i++) {
@@ -211,7 +211,7 @@ void UdpHubListener::run()
 
             // Spawn Thread to Pool
             // --------------------
-            // Register JackTripWorker with the hub listener
+            // Register JackTripWorker with the master listener
             delete mJTWorkers->at(id); // just in case the Worker was previously created
             mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode));
             // redirect port and spawn listener
