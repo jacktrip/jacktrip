@@ -313,7 +313,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             gVerboseFlag = true;
             if (gVerboseFlag) std::cout << "Verbose mode" << std::endl;
-	    mEffects.setVerboseFlag(gVerboseFlag);
+            mEffects.setVerboseFlag(gVerboseFlag);
             break;
         case 'p':
             //-------------------------------------------------------
@@ -409,8 +409,7 @@ void Settings::parseInput(int argc, char** argv)
     }
 
     // Perform allocation that depends on options:
-    mEffects.setNumChans(mNumChans);
-    mEffects.allocateEffects();
+    mEffects.allocateEffects(mNumChans);
 }
 
 

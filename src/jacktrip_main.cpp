@@ -70,8 +70,7 @@ int main(int argc, char** argv)
 
     time_t now = time(0); // current date/time based on current system
     char* dt = ctime(&now); // convert now to string form
-    qDebug() << "=== JACKTRIP (" << argv[0] << "): jos branch built" << dt
-	     << "            including compressor, reverb, limiters, and latest main merge\n";
+    qDebug() << "JackTrip (" << argv[0] << "): built" << dt << "\n";
 
     bool testing = false;
     if ( argc > 1 ) {
