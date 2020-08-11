@@ -57,7 +57,7 @@ void JackTripThread::run()
     }
 
     NetKS netks;
-    jacktrip.appendProcessPlugin(&netks);
+    jacktrip.appendProcessPluginFromNetwork(&netks);
     //netks.play();
 
 

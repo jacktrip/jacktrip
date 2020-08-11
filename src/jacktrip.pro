@@ -110,7 +110,13 @@ win32 {
 
 DESTDIR = .
 QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
-target.path = /usr/bin
+
+# isEmpty(PREFIX) will allow path to be changed during the command line
+# call to qmake, e.g. qmake PREFIX=/usr
+isEmpty(PREFIX) {
+ PREFIX = /usr/local
+}
+target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # for plugins
@@ -120,6 +126,10 @@ INCLUDEPATH += ../faust-src-lair
 HEADERS += DataProtocol.h \
            JMess.h \
            JackTrip.h \
+           Effects.h \
+           Compressor.h \
+           Limiter.h \
+           Reverb.h \
            jacktrip_globals.h \
            jacktrip_types.h \
            JackTripThread.h \
@@ -136,7 +146,10 @@ HEADERS += DataProtocol.h \
            ThreadPoolTest.h \
            UdpDataProtocol.h \
            UdpHubListener.h \
-           AudioInterface.h
+           AudioInterface.h \
+           compressordsp.h \
+           limiterdsp.h \
+           freeverbdsp.h
 
 !nojack {
 HEADERS += JackAudioInterface.h
@@ -144,6 +157,9 @@ HEADERS += JackAudioInterface.h
 SOURCES += DataProtocol.cpp \
            JMess.cpp \
            JackTrip.cpp \
+           Compressor.cpp \
+           Limiter.cpp \
+           Reverb.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
            jacktrip_tests.cpp \
@@ -162,7 +178,7 @@ SOURCES += DataProtocol.cpp \
 SOURCES += JackAudioInterface.cpp
 }
 
-# RtAduio Input
+# RtAudio Input
 win32 {
   INCLUDEPATH += ../externals/rtaudio-4.1.1/include
   DEPENDPATH += ../externals/rtaudio-4.1.1/include

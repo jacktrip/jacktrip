@@ -38,6 +38,7 @@
 #include "Settings.h"
 #include "LoopBack.h"
 //#include "NetKS.h"
+#include "Effects.h"
 
 #ifdef WAIR // wair
 #include "ap8x2.dsp.h"
@@ -141,6 +142,9 @@ void Settings::parseInput(int argc, char** argv)
         { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
         { "iostat", required_argument, NULL, 'I' }, // Set IO stat timeout
         { "iostatlog", required_argument, NULL, 'G' }, // Set IO stat log file
+        { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
+        { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
+        { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
         { "help", no_argument, NULL, 'h' }, // Print Help
         { NULL, 0, NULL, 0 }
     };
@@ -150,7 +154,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVh", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhIGf:O:a:", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -313,6 +317,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             gVerboseFlag = true;
             if (gVerboseFlag) std::cout << "Verbose mode" << std::endl;
+            mEffects.setVerboseFlag(gVerboseFlag);
             break;
         case 'p':
             //-------------------------------------------------------
@@ -359,11 +364,42 @@ void Settings::parseInput(int argc, char** argv)
             printUsage();
             std::exit(0);
             break;
-        default:
+        case 'O': { // Overflow limiter (i, o, or io)
+          //-------------------------------------------------------
+          if (0 != mEffects.parseLimiterOptArg(optarg)) {
+            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
+            exit(1);
+          }
+          break; }
+        case 'a': { // assumed number of clients (applies to outgoing limiter)
+          //-------------------------------------------------------
+          if (0 != mEffects.parseAssumedNumClientsOptArg(optarg)) {
+            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
+            exit(1);
+          }
+          break; }
+        case 'f': { // effects (-f reverbLevel [0-2])
+          //-------------------------------------------------------
+          if (optarg[0] == '-' || strlen(optarg)==0) {
+            std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
+            std::exit(1);
+          }
+          if (0 != mEffects.parseEffectsOptArg(optarg)) {
+            std::cerr << "--effects (-f) argument string `" << optarg << "' is malformed\n";
+            exit(1);
+          }
+          break; }
+        case ':': {
+          printf("\t*** Missing option argument\n");
+          break; }
+        case '?': {
+          printf("\t*** Unknown or ambiguous option argument\n");
+          break; }
+        default: {
             //-------------------------------------------------------
             printUsage();
             std::exit(0);
-            break;
+            break; }
         }
 
     // Warn user if undefined options where entered
@@ -378,6 +414,9 @@ void Settings::parseInput(int argc, char** argv)
         }
         cout << gPrintSeparator << endl;
     }
+
+    // Perform allocation that depends on options:
+    mEffects.allocateEffects(mNumChans);
 }
 
 
@@ -407,7 +446,7 @@ void Settings::printUsage()
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
     cout << " -N, --addcombfilterlength #              comb length adjustment for WAIR (default "
          << gDefaultAddCombFilterLength << ")" << endl;
-    cout << " -H, --combfilterfeedback #               comb feedback adjustment for WAIR (default "
+    cout << " -H, --combfilterfeedback # (roomSize)    comb feedback adjustment for WAIR (default "
          << gDefaultCombFilterFeedback << ")" << endl;
 #endif // endwhere
     cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet Size (default: "
@@ -424,16 +463,21 @@ void Settings::printUsage()
     cout << " -t, --timeout                            Quit after 10 seconds of no network activity" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;
     cout << " -j, --jamlink                            Run in JamLink Mode (Connect to a JamLink Box)" << endl;
-    cout << " --clientname                             Change default client name (default: JackTrip)" << endl;
-    cout << " --remotename                             Change default remote client name when connecting to a hub server (the default is derived from this computer's external facing IP address)" << endl;
-    cout << " --localaddress                           Change default local host IP address (default: 127.0.0.1)" << endl;
-    cout << " --nojackportsconnect                     Don't connect default audio ports in jack" << endl;
+    cout << " -J, --clientname                         Change default client name (default: JackTrip)" << endl;
+    cout << " -K, --remotename                         Change default remote client name when connecting to a hub server (the default is derived from this computer's external facing IP address)" << endl;
+    cout << " -L, --localaddress                       Change default local host IP address (default: 127.0.0.1)" << endl;
+    cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
+    cout << endl;
+    cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
+    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0 (freeverb) or 1.0+ to 2.0 (zitarev)" << endl;
+    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
+    cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
-    cout << " --rtaudio                                Use system's default sound system instead of Jack" << endl;
-    cout << "   --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
-    cout << "   --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
-    cout << "   --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
+    cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
+    cout << " -T, --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
+    cout << " -F, --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
+    cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
@@ -575,8 +619,12 @@ JackTrip *Settings::getConfiguredJackTrip()
         //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
         //mJackTrip->appendProcessPlugin(loopback.get());
 
+#if 0 // previous technique:
         LoopBack* loopback = new LoopBack(mNumChans);
         jackTrip->appendProcessPlugin(loopback);
+#else // simpler method ( see AudioInterface.cpp callback() ):
+        jackTrip->setLoopBack(true);
+#endif
 
         // ----- Test Karplus Strong -----------------------------------
         //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
@@ -593,6 +641,18 @@ JackTrip *Settings::getConfiguredJackTrip()
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
+    // Outgoing/Incoming Compressor and/or Reverb:
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+
+    // Limiters go last in the plugin sequence:
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+
 #ifdef WAIR // WAIR
     if ( mWAIR ) {
         cout << "Running in WAIR Mode..." << endl;
@@ -601,11 +661,16 @@ JackTrip *Settings::getConfiguredJackTrip()
         {
         case 16 :
         {
-            jackTrip->appendProcessPlugin(new ap8x2(mNumChans)); // plugin slot 0
+            jackTrip->appendProcessPluginFromNetwork(new ap8x2(mNumChans)); // plugin slot 0
             /////////////////////////////////////////////////////////
             Stk16* plugin = new Stk16(mNumNetRevChans);
             plugin->Stk16::initCombClient(mClientAddCombLen, mClientRoomSize);
-            jackTrip->appendProcessPlugin(plugin); // plugin slot 1
+            jackTrip->appendProcessPluginFromNetwork(plugin); // plugin slot 1
+        }
+            break;
+        default:
+            throw std::invalid_argument("Settings: mNumNetRevChans doesn't correspond to Faust plugin");
+            break;
         }
             break;
         default:

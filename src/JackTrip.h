@@ -165,7 +165,8 @@ public:
    * \param plugin Pointer to ProcessPlugin Class
    */
     //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
-    virtual void appendProcessPlugin(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
+    virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
 
     /// \brief Start the processing threads
     virtual void startProcess(
@@ -290,7 +291,8 @@ public:
     { mAudiointerfaceMode = audiointerface_mode; }
     virtual void setAudioInterface(AudioInterface* const AudioInterface)
     { mAudioInterface = AudioInterface; }
-
+    virtual void setLoopBack(bool b)
+    { mLoopBack = b; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -321,6 +323,7 @@ public:
 
     bool tcpConnectionError()
     { return mTcpConnectionError; }
+
     //@}
     //------------------------------------------------------------------------------------
 
@@ -503,6 +506,7 @@ private:
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
+    bool mLoopBack;
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 
     /// Pointer to Abstract Type DataProtocol that sends packets
@@ -532,7 +536,8 @@ private:
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
     JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Hub Server Jack Audio Patch Connection Mode
 
-    QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
     
     QTimer mTimeoutTimer;
     int mSleepTime;

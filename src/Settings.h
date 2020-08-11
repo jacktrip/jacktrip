@@ -51,6 +51,8 @@
 #include "JackTrip.h"
 #include "UdpHubListener.h"
 
+#include "Effects.h"
+
 /** \brief Class to set usage options and parse settings from input
  */
 class Settings : public QObject
@@ -112,6 +114,7 @@ private:
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
+    Effects mEffects;
 };
 
 #endif
