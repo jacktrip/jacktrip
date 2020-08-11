@@ -525,7 +525,7 @@ void Settings::startJackTrip()
     else { // client mode:
 
         //JackTrip jacktrip(mJackTripMode, mDataProtocol, mNumChans,
-        //         mBufferQueueLength, mAudioBitResolution);
+        //	    mBufferQueueLength, mAudioBitResolution);
 #ifdef WAIR // WAIR
         if (gVerboseFlag) std::cout << "Settings:startJackTrip mNumNetRevChans = " << mNumNetRevChans << std::endl;
 #endif // endwhere
@@ -698,7 +698,7 @@ void Settings::startJackTrip()
        cout << "Stoping JackTrip..." << endl;
        mJackTrip->stop();
     */
-}
+    }
 
 //*******************************************************************************
 void Settings::stopJackTrip()
