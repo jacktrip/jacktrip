@@ -70,12 +70,14 @@ public:
    * sampling frequency, it should be initialize here.
    */
     virtual void init(int samplingRate) { fSamplingFreq = samplingRate; };
+    virtual bool getInited() { return inited; }
 
     /// \brief Compute process
     virtual void compute(int nframes, float** inputs, float** outputs) = 0;
 
 protected:
     int fSamplingFreq; ///< Faust Data member, Sampling Rate
+    bool inited = false;
 };
 
 #endif

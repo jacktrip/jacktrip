@@ -126,6 +126,10 @@ INCLUDEPATH += ../faust-src-lair
 HEADERS += DataProtocol.h \
            JMess.h \
            JackTrip.h \
+           Effects.h \
+           Compressor.h \
+           Limiter.h \
+           Reverb.h \
            jacktrip_globals.h \
            jacktrip_types.h \
            JackTripThread.h \
@@ -142,7 +146,10 @@ HEADERS += DataProtocol.h \
            ThreadPoolTest.h \
            UdpDataProtocol.h \
            UdpHubListener.h \
-           AudioInterface.h
+           AudioInterface.h \
+           compressordsp.h \
+           limiterdsp.h \
+           freeverbdsp.h
 
 !nojack {
 HEADERS += JackAudioInterface.h
@@ -150,6 +157,9 @@ HEADERS += JackAudioInterface.h
 SOURCES += DataProtocol.cpp \
            JMess.cpp \
            JackTrip.cpp \
+           Compressor.cpp \
+           Limiter.cpp \
+           Reverb.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
            jacktrip_tests.cpp \
@@ -168,7 +178,7 @@ SOURCES += DataProtocol.cpp \
 SOURCES += JackAudioInterface.cpp
 }
 
-# RtAduio Input
+# RtAudio Input
 win32 {
   INCLUDEPATH += ../externals/rtaudio-4.1.1/include
   DEPENDPATH += ../externals/rtaudio-4.1.1/include

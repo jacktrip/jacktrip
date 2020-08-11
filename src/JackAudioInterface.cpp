@@ -264,10 +264,15 @@ void JackAudioInterface::jackShutdown (void*)
 //*******************************************************************************
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
+  if(mProcessingAudio) {
+    std::cerr << "*** JackAudioInterface.cpp: DROPPED A BUFFER because AudioInterface::callback() not finished\n";
+    return 1;
+  }
+
     // Get input and output buffers from JACK
     //-------------------------------------------------------------------
     for (int i = 0; i < mNumInChans; i++) {
-        // Input Ports are READ ONLY
+        // Input Ports are READ ONLY and change as needed (no locks) - make a copy for debugging
         mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
     }
     for (int i = 0; i < mNumOutChans; i++) {
@@ -358,7 +363,7 @@ void JackAudioInterface::connectDefaultPorts()
 
 
 
-// OLD CODE
+// OLD CODE (some moved to parent class AudioInterface.cpp)
 // ==============================================================================
 
 //*******************************************************************************

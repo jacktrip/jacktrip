@@ -50,6 +50,8 @@
 
 #include "JackTrip.h"
 
+#include "Effects.h"
+
 /** \brief Class to set usage options and parse settings from input
  */
 class Settings : public QThread
@@ -75,7 +77,6 @@ public:
     {
         return mIOStatStream.is_open() ? (std::ostream&)mIOStatStream : std::cout;
     }
-
 
 public slots:
     void slotExitProgram()
@@ -123,6 +124,7 @@ private:
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
     int mIOStatTimeout;
     std::ofstream mIOStatStream;
+    Effects mEffects;
 };
 
 #endif

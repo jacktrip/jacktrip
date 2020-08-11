@@ -36,6 +36,7 @@
  */
 
 #include <iostream>
+#include <ctime>
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -56,7 +57,6 @@
 #include "jacktrip_tests.cpp"
 #include "jacktrip_globals.h"
 
-
 void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/, const QString& msg)
 {
     std::cerr << msg.toStdString() << std::endl;
@@ -67,6 +67,10 @@ int main(int argc, char** argv)
     QCoreApplication app(argc, argv);
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
+
+    time_t now = time(0); // current date/time based on current system
+    char* dt = ctime(&now); // convert now to string form
+    qDebug() << "JackTrip (" << argv[0] << "): built" << dt << "\n";
 
     bool testing = false;
     if ( argc > 1 ) {
