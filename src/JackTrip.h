@@ -57,7 +57,6 @@
 
 #include "PacketHeader.h"
 #include "RingBuffer.h"
-#include "Effects.h"
 
 //#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
@@ -540,7 +539,6 @@ private:
 
     QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
-    QSharedPointer<Effects> mEffects;
     
     QTimer mTimeoutTimer;
     int mSleepTime;
