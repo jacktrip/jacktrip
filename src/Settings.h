@@ -114,7 +114,7 @@ private:
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
-    Effects mEffects;
+    Effects *mEffects;
 };
 
 #endif

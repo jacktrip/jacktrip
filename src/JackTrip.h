@@ -56,6 +56,7 @@
 
 #include "PacketHeader.h"
 #include "RingBuffer.h"
+#include "Effects.h"
 
 //#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
@@ -167,6 +168,8 @@ public:
     //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
     virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
+    virtual void setEffects(Effects *effects)
+    { mEffects = effects; }
 
     /// \brief Start the processing threads
     virtual void startProcess(
@@ -538,6 +541,7 @@ private:
 
     QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
+    Effects *mEffects;
     
     QTimer mTimeoutTimer;
     int mSleepTime;
