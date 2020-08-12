@@ -88,7 +88,7 @@ Settings::Settings() :
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0)
 {
-    mEffects = new Effects();
+    mEffects.reset(new Effects());
 }
 
 //*******************************************************************************

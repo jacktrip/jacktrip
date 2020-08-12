@@ -139,7 +139,6 @@ JackTrip::~JackTrip()
     delete mPacketHeader;
     delete mSendRingBuffer;
     delete mReceiveRingBuffer;
-    delete mEffects;
 }
 
 

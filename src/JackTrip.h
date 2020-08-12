@@ -46,6 +46,7 @@
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QTimer>
+#include <QSharedPointer>
 
 #include "DataProtocol.h"
 #include "AudioInterface.h"
@@ -168,7 +169,7 @@ public:
     //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
     virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
-    virtual void setEffects(Effects *effects)
+    virtual void setEffects(QSharedPointer<Effects> effects)
     { mEffects = effects; }
 
     /// \brief Start the processing threads
@@ -541,7 +542,7 @@ private:
 
     QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
-    Effects *mEffects;
+    QSharedPointer<Effects> mEffects;
     
     QTimer mTimeoutTimer;
     int mSleepTime;
