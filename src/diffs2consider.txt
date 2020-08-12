@@ -1,0 +1,101 @@
+diff --git a/src/AudioInterface.cpp b/src/AudioInterface.cpp
+index e0f92de..4333fa3 100644
+--- a/src/AudioInterface.cpp
++++ b/src/AudioInterface.cpp
+@@ -250,9 +250,12 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
+ #ifndef WAIR // NOT WAIR:
+     for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
+        ProcessPlugin* p = mProcessPluginsFromNetwork[i];
+-      if (p->getInited()) {
+-        p->compute(n_frames, out_buffer.data(), out_buffer.data());
++       if (i==0 and not p->getInited()) {
++         break; // all or none
++       } else {
++         assert(p->getInited()); // if this strikes, lock out the audio thread while init'ing
+        }
++       p->compute(n_frames, out_buffer.data(), out_buffer.data());
+     }
+ #else // WAIR:
+     for (int i = 0; i < ((mNumNetRevChans)?mNumNetRevChans:mNumOutChans); i++) {
+@@ -296,9 +299,12 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
+       for (int i = 0; i < nop; i++) {
+         // process all outgoing channels with Faust modules:
+         ProcessPlugin* p = mProcessPluginsToNetwork[i];
+-        if (p->getInited()) {
+-          p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
++        if (i==0 and not p->getInited()) {
++          break; // all or none
++        } else {
++          assert(p->getInited()); // if this strikes, lock out the audio thread while init'ing
+         }
++        p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+       }
+       // 3) Finally, send packets to network:
+       computeProcessToNetwork(mInBufCopy, n_frames);
+diff --git a/src/Compressor.h b/src/Compressor.h
+index c577939..c4db773 100755
+--- a/src/Compressor.h
++++ b/src/Compressor.h
+@@ -88,7 +88,7 @@ public:
+   }
+   int getNumInputs() override { return(mNumChannels); }
+   int getNumOutputs() override { return(mNumChannels); }
+-  void compute(int nframes, float** inputs, float** outputs) override;
++  virtual void compute(int nframes, float** inputs, float** outputs) override;
+ 
+ private:
+   float fs;
+diff --git a/src/Effects.h b/src/Effects.h
+index 7dd8c11..fd84ec1 100644
+--- a/src/Effects.h
++++ b/src/Effects.h
+@@ -283,6 +283,7 @@ public:
+                 << atoi(optarg) << " is not supported." << endl;
+       return 1;
+     }
++    return 0;
+   }
+ };
+ 
+diff --git a/src/Limiter.h b/src/Limiter.h
+index 8db02a8..f69b1dc 100644
+--- a/src/Limiter.h
++++ b/src/Limiter.h
+@@ -111,7 +111,7 @@ public:
+   }
+   int getNumInputs() override { return(mNumChannels); }
+   int getNumOutputs() override { return(mNumChannels); }
+-  void compute(int nframes, float** inputs, float** outputs) override;
++  virtual void compute(int nframes, float** inputs, float** outputs) override;
+ 
+ private:
+   float fs;
+diff --git a/src/ProcessPlugin.h b/src/ProcessPlugin.h
+index 1351e2c..83cd505 100644
+--- a/src/ProcessPlugin.h
++++ b/src/ProcessPlugin.h
+@@ -70,7 +70,10 @@ public:
+    * sampling frequency, it should be initialize here.
+    */
+     virtual void init(int samplingRate) { fSamplingFreq = samplingRate; };
+-    virtual bool getInited() { return inited; }
++
++    virtual bool getInited() {
++      return inited;
++    }
+ 
+     /// \brief Compute process
+     virtual void compute(int nframes, float** inputs, float** outputs) = 0;
+diff --git a/src/Reverb.h b/src/Reverb.h
+index 5fca5e9..f63b877 100644
+--- a/src/Reverb.h
++++ b/src/Reverb.h
+@@ -134,7 +134,7 @@ public:
+   }
+   int getNumInputs() override { return(mNumInChannels); }
+   int getNumOutputs() override { return(mNumOutChannels); }
+-  void compute(int nframes, float** inputs, float** outputs) override;
++  virtual void compute(int nframes, float** inputs, float** outputs) override;
+ 
+ private:
+   float fs;
