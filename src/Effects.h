@@ -89,12 +89,12 @@ public:
   {}
      
   ~Effects() {
-    if (inCompressor) { delete inCompressorP; }
+    /*if (inCompressor) { delete inCompressorP; }
     if (outCompressor) { delete outCompressorP; }
     if (inZitarev) { delete inZitarevP; }
     if (outZitarev) { delete outZitarevP; }
     if (inFreeverb) { delete inFreeverbP; }
-    if (outFreeverb) { delete outFreeverbP; }
+    if (outFreeverb) { delete outFreeverbP; }*/
   }
 
   unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }

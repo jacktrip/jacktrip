@@ -87,9 +87,7 @@ Settings::Settings() :
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0)
-{
-    mEffects.reset(new Effects());
-}
+{}
 
 //*******************************************************************************
 Settings::~Settings() = default;
@@ -319,7 +317,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             gVerboseFlag = true;
             if (gVerboseFlag) std::cout << "Verbose mode" << std::endl;
-            mEffects->setVerboseFlag(gVerboseFlag);
+            mEffects.setVerboseFlag(gVerboseFlag);
             break;
         case 'p':
             //-------------------------------------------------------
@@ -368,14 +366,14 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'O': { // Overflow limiter (i, o, or io)
           //-------------------------------------------------------
-          if (0 != mEffects->parseLimiterOptArg(optarg)) {
+          if (0 != mEffects.parseLimiterOptArg(optarg)) {
             std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
             exit(1);
           }
           break; }
         case 'a': { // assumed number of clients (applies to outgoing limiter)
           //-------------------------------------------------------
-          if (0 != mEffects->parseAssumedNumClientsOptArg(optarg)) {
+          if (0 != mEffects.parseAssumedNumClientsOptArg(optarg)) {
             std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
             exit(1);
           }
@@ -386,7 +384,7 @@ void Settings::parseInput(int argc, char** argv)
             std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
             std::exit(1);
           }
-          if (0 != mEffects->parseEffectsOptArg(optarg)) {
+          if (0 != mEffects.parseEffectsOptArg(optarg)) {
             std::cerr << "--effects (-f) argument string `" << optarg << "' is malformed\n";
             exit(1);
           }
@@ -416,9 +414,6 @@ void Settings::parseInput(int argc, char** argv)
         }
         cout << gPrintSeparator << endl;
     }
-
-    // Perform allocation that depends on options:
-    mEffects->allocateEffects(mNumChans);
 }
 
 
@@ -643,19 +638,20 @@ JackTrip *Settings::getConfiguredJackTrip()
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
+    // Perform allocation for effects:
+    mEffects.allocateEffects(mNumChans);
+
     // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects->getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects->getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects->getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects->getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects->getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects->getInFreeverb() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
 
     // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects->getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects->getOutLimiter() );
-
-    jackTrip->setEffects(mEffects);
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
 
 #ifdef WAIR // WAIR
     if ( mWAIR ) {

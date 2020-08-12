@@ -169,8 +169,6 @@ public:
     //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
     virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
-    virtual void setEffects(QSharedPointer<Effects> effects)
-    { mEffects = effects; }
 
     /// \brief Start the processing threads
     virtual void startProcess(
