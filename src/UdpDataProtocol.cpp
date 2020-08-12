@@ -53,6 +53,8 @@
 #endif
 #if defined (__LINUX__) || (__MAC_OSX__)
 #include <sys/socket.h> // for POSIX Sockets
+#include <unistd.h>
+#include <sys/fcntl.h>
 #endif
 
 using std::cout; using std::endl;
@@ -72,7 +74,9 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mBindPort(bind_port), mPeerPort(peer_port),
     mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL),
-    mUdpRedundancyFactor(udp_redundancy_factor)
+    mUdpRedundancyFactor(udp_redundancy_factor),
+    mControlPacketSize(63),
+    mStopSignalSent(false)
 {
     mStopped = false;
     mIPv6 = false;
@@ -93,6 +97,13 @@ UdpDataProtocol::~UdpDataProtocol()
 {
     delete[] mAudioPacket;
     delete[] mFullPacket;
+    if (mRunMode == RECEIVER) {
+#ifdef __WIN_32__
+        closesocket(mSocket);
+#else
+        ::close(mSocket);
+#endif
+    }
     wait();
 }
 
@@ -121,7 +132,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
     if ( mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol ) {
         mIPv6 = true;
     } else  if ( mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol ) {
-        QString error_message = "Incorrect presentation format address\n '";
+        QString error_message = "Incorrect presentation format address\n'";
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");
         //std::cerr << "ERROR: Incorrect presentation format address" << endl;
@@ -163,7 +174,7 @@ void UdpDataProtocol::setSocket(int &socket)
     if (socket == -1) {
 #endif
         try {
-            if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before bindSocket(UdpSocket)" << std::endl;
+            if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before bindSocket" << std::endl;
             socket = bindSocket(); // Bind Socket
         } catch ( const std::exception & e ) {
             emit signalError( e.what() );
@@ -316,11 +327,29 @@ int UdpDataProtocol::bindSocket()
 
 
 //*******************************************************************************
-int UdpDataProtocol::receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n)
+int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
     // Block until There's something to read
-    while ( (UdpSocket.pendingDatagramSize() < n) && !mStopped ) { QThread::usleep(100); }
-    int n_bytes = UdpSocket.readDatagram(buf, n);
+    while ( !datagramAvailable() && !mStopped ) {
+        QThread::usleep(100);
+    }
+    int n_bytes = ::recv(mSocket, buf, n, 0);
+    if (n_bytes == mControlPacketSize) {
+        //Control signal (currently just check for exit packet);
+        bool exit = true;
+        for (int i = 0; i < mControlPacketSize; i++) {
+            if (buf[i] != char(0xff)) {
+                exit = false;
+                i = mControlPacketSize;
+            }
+        }
+        if (exit && !mStopSignalSent) {
+            mStopSignalSent = true;
+            emit signalCeaseTransmission("Peer Stopped");
+            std::cout << "Peer Stopped" <<std::endl;
+        }
+        return 0;
+    }
     return n_bytes;
 }
 
@@ -358,15 +387,24 @@ int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 
 
 //*******************************************************************************
-void UdpDataProtocol::getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
-                                                    QHostAddress& peerHostAddress,
+void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
                                                     uint16_t& port)
 {
-    while ( !UdpSocket.hasPendingDatagrams() ) {
+    while ( !datagramAvailable() ) {
         msleep(100);
     }
     char buf[1];
-    UdpSocket.readDatagram(buf, 1, &peerHostAddress, &port);
+    
+    struct sockaddr_storage addr;
+    std::memset(&addr, 0, sizeof(addr));
+    socklen_t sa_len = sizeof(addr);
+    ::recvfrom(mSocket, buf, 1, 0, (struct sockaddr*) &addr, &sa_len);
+    peerHostAddress.setAddress((struct sockaddr*) &addr);
+    if (mIPv6) {
+        port = ((struct sockaddr_in6*) &addr)->sin6_port;
+    } else {
+        port = ((struct sockaddr_in*) &addr)->sin_port;
+    }
 }
 
 
@@ -388,19 +426,17 @@ void UdpDataProtocol::run()
     //                 mJackTrip, SLOT(slotStopProcesses()),
     //                 Qt::QueuedConnection);
 
-    //Wrap our socket in a QUdpSocket object if we're the receiver, for convenience.
-    //If we're the sender, we'll just write directly to our socket.
-    QUdpSocket UdpSocket;
     if (mRunMode == RECEIVER) {
-        if (mIPv6) {
-            UdpSocket.setSocketDescriptor(mSocket, QUdpSocket::BoundState,
-                                          QUdpSocket::ReadOnly);
-        } else {
-            UdpSocket.setSocketDescriptor(mSocket, QUdpSocket::ConnectedState,
-                                          QUdpSocket::ReadOnly);
-        }
         cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
         cout << gPrintSeparator << endl;
+        //Make sure our socket is in non-blocking mode.
+#ifdef __WIN_32__
+        u_long nonblock = 1;
+        ioctlsocket(mSocket, FIONBIO, &nonblock);
+#else
+        int flags = ::fcntl(mSocket, F_GETFL, 0);
+        ::fcntl(mSocket, F_SETFL, flags | O_NONBLOCK);
+#endif
     }
 
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy Variables" << std::endl;
@@ -507,18 +543,17 @@ void UdpDataProtocol::run()
         if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before !UdpSocket.hasPendingDatagrams()" << std::endl;
         std::cout << "Waiting for Peer..." << std::endl;
         // This blocks waiting for the first packet
-        while ( !UdpSocket.hasPendingDatagrams() ) {
+        while ( !datagramAvailable() ) {
             if (mStopped) { return; }
             QThread::msleep(100);
             if (gVerboseFlag) std::cout << "100ms  " << std::flush;
         }
-        int first_packet_size = UdpSocket.pendingDatagramSize();
         // The following line is the same as
-        int8_t* first_packet = new int8_t[first_packet_size];
+        int8_t* first_packet = new int8_t[full_redundant_packet_size];
         /// \todo fix this to avoid memory leaks
         // but avoids memory leaks
         //std::tr1::shared_ptr<int8_t> first_packet(new int8_t[first_packet_size]);
-        receivePacket( UdpSocket, reinterpret_cast<char*>(first_packet), first_packet_size);
+        receivePacket( reinterpret_cast<char*>(first_packet), full_redundant_packet_size);
         // Check that peer has the same audio settings
         if (gVerboseFlag) std::cout << std::endl << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->checkPeerSettings()" << std::endl;
         mJackTrip->checkPeerSettings(first_packet);
@@ -550,7 +585,7 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-            waitForReady(UdpSocket, 60000); //60 seconds
+            waitForReady(60000); //60 seconds
 
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
             /*
@@ -565,8 +600,7 @@ void UdpDataProtocol::run()
         mJackTrip->writeAudioBuffer(mAudioPacket);
         */
             //----------------------------------------------------------------------------------
-            receivePacketRedundancy(UdpSocket,
-                                    full_redundant_packet,
+            receivePacketRedundancy(full_redundant_packet,
                                     full_redundant_packet_size,
                                     full_packet_size,
                                     current_seq_num,
@@ -576,7 +610,7 @@ void UdpDataProtocol::run()
         break; }
 
     case SENDER : {
-        while ( !mStopped )
+        while ( !mStopped && !JackTrip::sSigInt )
         {
             // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
             /*
@@ -592,6 +626,12 @@ void UdpDataProtocol::run()
                                  full_redundant_packet_size,
                                  full_packet_size);
         }
+        
+        // Send exit packet (with 1 redundant packet).
+        QByteArray exitPacket = QByteArray(mControlPacketSize, 0xff);
+        sendPacket(exitPacket.constData(), mControlPacketSize);
+        sendPacket(exitPacket.constData(), mControlPacketSize);
+        emit signalCeaseTransmission();
         break; }
     }
 }
@@ -599,17 +639,15 @@ void UdpDataProtocol::run()
 
 //*******************************************************************************
 //bool
-void UdpDataProtocol::waitForReady(QUdpSocket& UdpSocket, int timeout_msec)
+void UdpDataProtocol::waitForReady(int timeout_msec)
 {
     int loop_resolution_usec = 100; // usecs to wait on each loop
     int emit_resolution_usec = 10000; // 10 milliseconds
     int timeout_usec = timeout_msec * 1000;
     int elapsed_time_usec = 0; // Ellapsed time in milliseconds
 
-    while ( ( !(
-                  UdpSocket.hasPendingDatagrams() &&
-                  (UdpSocket.pendingDatagramSize() > 0)
-                  ) && (elapsed_time_usec <= timeout_usec) )
+    while ( !datagramAvailable()
+            && (elapsed_time_usec <= timeout_usec)
             && !mStopped ){
         //    if (mStopped) { return false; }
         QThread::usleep(loop_resolution_usec);
@@ -635,13 +673,13 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
     int wait_time = 30; // msec
     if ( !(wait_msec%wait_time) ) {
         std::cerr << "UDP waiting too long (more than " << wait_time << "ms) for " << mPeerAddress.toString().toStdString() << "..." << endl;
+        emit signalUdpWaitingTooLong();
     }
 }
 
 
 //*******************************************************************************
-void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
-                                              int8_t* full_redundant_packet,
+void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
                                               int full_redundant_packet_size,
                                               int full_packet_size,
                                               uint16_t& current_seq_num,
@@ -649,8 +687,10 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
                                               uint16_t& newer_seq_num)
 {
     // This is blocking until we get a packet...
-    receivePacket( UdpSocket, reinterpret_cast<char*>(full_redundant_packet),
-                   full_redundant_packet_size);
+    if (receivePacket( reinterpret_cast<char*>(full_redundant_packet), 
+                       full_redundant_packet_size) == 0) {
+        return;
+    }
 
     // Get Packet Sequence Number
     newer_seq_num =
@@ -784,3 +824,32 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
   If it has more than one packet that it hasn't yet received, it sends it to the soundcard
   one by one.
 */
+
+bool UdpDataProtocol::datagramAvailable()
+{
+    //Currently using a simplified version of the way QUdpSocket checks for datagrams.
+    //TODO: Consider changing to use poll() or select().
+    char c;
+#if defined (__WIN_32__)
+    //Need to use the winsock version of the function for MSG_PEEK
+    WSABUF buffer;
+    buffer.buf = &c;
+    buffer.len = sizeof(c);
+    DWORD n = 0;
+    DWORD flags = MSG_PEEK;
+    int ret = WSARecv(mSocket, &buffer, 1, &n, &flags, NULL, NULL);
+    if (ret == 0) {
+        //True if no error,
+        return true;
+    } else {
+        //or if our error is that our buffer is too small.
+        int err = WSAGetLastError();
+        return (err == WSAEMSGSIZE);
+    }
+#else
+    ssize_t n;
+    n = ::recv(mSocket, &c, sizeof(c), MSG_PEEK);
+    //We have a datagram if our buffer is too small or if no error.
+    return (n != -1 || errno == EMSGSIZE);
+#endif
+}

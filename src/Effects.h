@@ -89,12 +89,12 @@ public:
   {}
      
   ~Effects() {
-    if (inCompressor) { delete inCompressorP; }
+    /*if (inCompressor) { delete inCompressorP; }
     if (outCompressor) { delete outCompressorP; }
     if (inZitarev) { delete inZitarevP; }
     if (outZitarev) { delete outZitarevP; }
     if (inFreeverb) { delete inFreeverbP; }
-    if (outFreeverb) { delete outFreeverbP; }
+    if (outFreeverb) { delete outFreeverbP; }*/
   }
 
   unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }
@@ -280,9 +280,10 @@ public:
     mNumClientsAssumed = atoi(optarg);
     if(mNumClientsAssumed < 1) {
       std::cerr << "-p ERROR: Must have at least one assumed sound source: "
-                << atoi(optarg) << " is not supported." << endl;
+                << atoi(optarg) << " is not supported." << std::endl;
       return 1;
     }
+    return 0;
   }
 };
 
