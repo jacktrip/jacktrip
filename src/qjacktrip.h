@@ -72,6 +72,8 @@ private:
     void loadSettings();
     void saveSettings();
     
+    void appendPlugins(JackTrip *jackTrip, int numChannels);
+    
     QScopedPointer<Ui::QJackTrip> m_ui;
     QScopedPointer<UdpHubListener> m_udpHub;
     QScopedPointer<JackTrip> m_jackTrip;

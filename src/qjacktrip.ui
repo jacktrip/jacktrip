@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>555</height>
+    <height>577</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,6 +72,13 @@
     <item row="1" column="1">
      <widget class="QLineEdit" name="addressEdit"/>
     </item>
+    <item row="2" column="1">
+     <widget class="QLabel" name="ipLabel">
+      <property name="text">
+       <string>Looking up external IP address...</string>
+      </property>
+     </widget>
+    </item>
     <item row="5" column="0" colspan="2">
      <layout class="QHBoxLayout" name="buttonLayout">
       <item>
@@ -124,6 +131,9 @@
        <bool>false</bool>
       </property>
       <widget class="QWidget" name="basicTab">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <attribute name="title">
         <string>Basic options</string>
        </attribute>
@@ -456,13 +466,257 @@
         </item>
        </layout>
       </widget>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="ipLabel">
-      <property name="text">
-       <string>Looking up external IP address...</string>
-      </property>
+      <widget class="QWidget" name="pluginsTab">
+       <attribute name="title">
+        <string>Plugins</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QGroupBox" name="incomingGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string>Incoming</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="1" column="1">
+            <widget class="QSlider" name="inZitarevWetnessSlider">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+             <property name="tickInterval">
+              <number>20</number>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="inFreeverbLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Wetness</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="inLimiterCheckBox">
+             <property name="text">
+              <string>Limiter</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="inFreeverbCheckBox">
+             <property name="text">
+              <string>Freeverb</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2" alignment="Qt::AlignHCenter">
+            <widget class="QLabel" name="inZitarevLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Wetness</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="inCompressorCheckBox">
+             <property name="text">
+              <string>Compressor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="inZitarevCheckBox">
+             <property name="text">
+              <string>Zitarev</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSlider" name="inFreeverbWetnessSlider">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="singleStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="invertedAppearance">
+              <bool>false</bool>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+             <property name="tickInterval">
+              <number>20</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="outgoingGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string>Outgoing</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="outFreeverbCheckBox">
+             <property name="text">
+              <string>Freeverb</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSlider" name="outFreeverbWetnessSlider">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="singleStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="invertedAppearance">
+              <bool>false</bool>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+             <property name="tickInterval">
+              <number>20</number>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="outFreeverbLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Wetness</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="outZitarevCheckBox">
+             <property name="text">
+              <string>Zitarev</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSlider" name="outZitarevWetnessSlider">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+             <property name="tickInterval">
+              <number>20</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="outZitarevLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Wetness</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="outCompressorCheckBox">
+             <property name="text">
+              <string>Compressor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="outLimiterCheckBox">
+             <property name="text">
+              <string>Limiter</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="outClientsSpinBox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="outLimiterLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Clients</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="pluginsVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -499,6 +753,19 @@
   <tabstop>resolutionComboBox</tabstop>
   <tabstop>connectAudioCheckBox</tabstop>
   <tabstop>useDefaultsButton</tabstop>
+  <tabstop>inFreeverbCheckBox</tabstop>
+  <tabstop>inFreeverbWetnessSlider</tabstop>
+  <tabstop>inZitarevCheckBox</tabstop>
+  <tabstop>inZitarevWetnessSlider</tabstop>
+  <tabstop>inCompressorCheckBox</tabstop>
+  <tabstop>inLimiterCheckBox</tabstop>
+  <tabstop>outFreeverbCheckBox</tabstop>
+  <tabstop>outFreeverbWetnessSlider</tabstop>
+  <tabstop>outZitarevCheckBox</tabstop>
+  <tabstop>outZitarevWetnessSlider</tabstop>
+  <tabstop>outCompressorCheckBox</tabstop>
+  <tabstop>outLimiterCheckBox</tabstop>
+  <tabstop>outClientsSpinBox</tabstop>
  </tabstops>
  <resources>
   <include location="qjacktrip.qrc"/>

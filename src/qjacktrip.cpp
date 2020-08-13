@@ -30,6 +30,10 @@
 #include <QSettings>
 #include <QHostAddress>
 
+#include "Limiter.h"
+#include "Compressor.h"
+#include "Reverb.h"
+
 QJackTrip::QJackTrip(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::QJackTrip),
@@ -49,6 +53,28 @@ QJackTrip::QJackTrip(QWidget *parent) :
     connect(m_ui->aboutButton, &QPushButton::released, this, [=](){
             About about(this);
             about.exec();
+        } );
+    
+    connect(m_ui->inFreeverbCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->inFreeverbLabel->setEnabled(m_ui->inFreeverbCheckBox->isChecked());
+            m_ui->inFreeverbWetnessSlider->setEnabled(m_ui->inFreeverbCheckBox->isChecked());
+        } );
+    connect(m_ui->inZitarevCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->inZitarevLabel->setEnabled(m_ui->inZitarevCheckBox->isChecked());
+            m_ui->inZitarevWetnessSlider->setEnabled(m_ui->inZitarevCheckBox->isChecked());
+        } );
+    
+    connect(m_ui->outFreeverbCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->outFreeverbLabel->setEnabled(m_ui->outFreeverbCheckBox->isChecked());
+            m_ui->outFreeverbWetnessSlider->setEnabled(m_ui->outFreeverbCheckBox->isChecked());
+        } );
+    connect(m_ui->outZitarevCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->outZitarevLabel->setEnabled(m_ui->outZitarevCheckBox->isChecked());
+            m_ui->outZitarevWetnessSlider->setEnabled(m_ui->outZitarevCheckBox->isChecked());
+        } );
+    connect(m_ui->outLimiterCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->outLimiterLabel->setEnabled(m_ui->outLimiterCheckBox->isChecked());
+            m_ui->outClientsSpinBox->setEnabled(m_ui->outLimiterCheckBox->isChecked());
         } );
     m_ui->autoPatchComboBox->setVisible(false);
     m_ui->autoPatchLabel->setVisible(false);
@@ -133,6 +159,7 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->autoPatchComboBox->setVisible(true);
         m_ui->autoPatchLabel->setVisible(true);
         advancedOptionsForHubServer(true);
+        m_ui->optionsTabWidget->removeTab(2);
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
         m_ui->autoPatchLabel->setVisible(false);
@@ -140,6 +167,7 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->channelLabel->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
         advancedOptionsForHubServer(false);
+        m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
     }
 
     if (type == "Hub Client") {
@@ -195,9 +223,10 @@ void QJackTrip::receivedIP(QNetworkReply* reply)
 void QJackTrip::resetOptions()
 {
     //Reset our basic options
-    m_ui->channelSpinBox->setValue(2);
+    /*m_ui->channelSpinBox->setValue(2);
     m_ui->autoPatchComboBox->setCurrentIndex(0);
     m_ui->zeroCheckBox->setChecked(false);
+    m_ui->timeoutCheckBox->setChecked(false);*/
     
     //Then advanced options
     m_ui->clientNameEdit->setText("");
@@ -295,6 +324,9 @@ void QJackTrip::start()
             if (!m_ui->clientNameEdit->text().isEmpty()) {
                 m_jackTrip->setClientName(m_ui->clientNameEdit->text());
             }
+            
+            // Append any plugins
+            appendPlugins(m_jackTrip.data(), m_ui->channelSpinBox->value());
             
             QObject::connect(m_jackTrip.data(), &JackTrip::signalProcessesStopped, this, &QJackTrip::processFinished, 
                              Qt::QueuedConnection);
@@ -397,6 +429,29 @@ void QJackTrip::loadSettings()
     m_ui->redundancySpinBox->setValue(settings.value("Redundancy", 1).toInt());
     m_ui->resolutionComboBox->setCurrentIndex(settings.value("resolution", 1).toInt());
     m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
+    
+    settings.beginGroup("InPlugins");
+    m_ui->inFreeverbCheckBox->setChecked(settings.value("Freeverb", false).toBool());
+    m_ui->inFreeverbWetnessSlider->setValue(settings.value("FreeverbWetness", 0).toInt());
+    m_ui->inZitarevCheckBox->setChecked(settings.value("Zitarev", false).toBool());
+    m_ui->inZitarevWetnessSlider->setValue(settings.value("ZitarevWetness", 0).toInt());
+    m_ui->inCompressorCheckBox->setChecked(settings.value("Compressor", false).toBool());
+    m_ui->inLimiterCheckBox->setChecked(settings.value("Limiter", false).toBool());
+    settings.endGroup();
+    
+    settings.beginGroup("OutPlugins");
+    m_ui->outFreeverbCheckBox->setChecked(settings.value("Freeverb", false).toBool());
+    m_ui->outFreeverbWetnessSlider->setValue(settings.value("FreeverbWetness", 0).toInt());
+    m_ui->outZitarevCheckBox->setChecked(settings.value("Zitarev", false).toBool());
+    m_ui->outZitarevWetnessSlider->setValue(settings.value("ZitarevWetness", 0).toInt());
+    m_ui->outCompressorCheckBox->setChecked(settings.value("Compressor", false).toBool());
+    m_ui->outLimiterCheckBox->setChecked(settings.value("Limiter", false).toBool());
+    m_ui->outClientsSpinBox->setValue(settings.value("Clients", 1).toInt());
+    settings.endGroup();
+    
+    settings.beginGroup("Window");
+    restoreGeometry(settings.value("Geometry").toByteArray());
+    settings.endGroup();
 }
 
 void QJackTrip::saveSettings()
@@ -419,6 +474,72 @@ void QJackTrip::saveSettings()
     settings.setValue("Redundancy", m_ui->redundancySpinBox->value());
     settings.setValue("Resolution", m_ui->resolutionComboBox->currentIndex());
     settings.setValue("ConnectAudio", m_ui->connectAudioCheckBox->isChecked());
+    
+    settings.beginGroup("InPlugins");
+    settings.setValue("Freeverb", m_ui->inFreeverbCheckBox->isChecked());
+    settings.setValue("FreeverbWetness", m_ui->inFreeverbWetnessSlider->value());
+    settings.setValue("Zitarev", m_ui->inZitarevCheckBox->isChecked());
+    settings.setValue("ZitarevWetness", m_ui->inZitarevWetnessSlider->value());
+    settings.setValue("Compressor", m_ui->inCompressorCheckBox->isChecked());
+    settings.setValue("Limiter", m_ui->inLimiterCheckBox->isChecked());
+    settings.endGroup();
+    
+    settings.beginGroup("OutPlugins");
+    settings.setValue("Freeverb", m_ui->outFreeverbCheckBox->isChecked());
+    settings.setValue("FreeverbWetness", m_ui->outFreeverbWetnessSlider->value());
+    settings.setValue("Zitarev", m_ui->outZitarevCheckBox->isChecked());
+    settings.setValue("ZitarevWetness", m_ui->outZitarevWetnessSlider->value());
+    settings.setValue("Compressor", m_ui->outCompressorCheckBox->isChecked());
+    settings.setValue("Limiter", m_ui->outLimiterCheckBox->isChecked());
+    settings.setValue("Clients", m_ui->outClientsSpinBox->value());
+    settings.endGroup();
+    
+    settings.beginGroup("Window");
+    settings.setValue("Geometry", saveGeometry());
+    settings.endGroup();
 }
+
+void QJackTrip::appendPlugins(JackTrip *jackTrip, int numChannels)
+{
+    if (!jackTrip) {
+        return;
+    }
+    
+    //These effects are currently deleted by the AudioInterface of jacktrip.
+    //May need to change this code if we move to smart pointers.
+    if (m_ui->outCompressorCheckBox->isChecked()) {
+        jackTrip->appendProcessPluginToNetwork(new Compressor(numChannels));
+    }
+    if (m_ui->inCompressorCheckBox->isChecked()) {
+        jackTrip->appendProcessPluginFromNetwork(new Compressor(numChannels));
+    }
+    
+    if (m_ui->outZitarevCheckBox->isChecked()) {
+        qreal wetness = m_ui->outZitarevWetnessSlider->value() / 100.0;
+        jackTrip->appendProcessPluginToNetwork(new Reverb(numChannels, numChannels, 1.0 + wetness));
+    }
+    if (m_ui->inZitarevCheckBox->isChecked()) {
+        qreal wetness = m_ui->inZitarevWetnessSlider->value() / 100.0;
+        jackTrip->appendProcessPluginFromNetwork(new Reverb(numChannels, numChannels, 1.0 + wetness));
+    }
+    
+    if (m_ui->outFreeverbCheckBox->isChecked()) {
+        qreal wetness = m_ui->outFreeverbWetnessSlider->value() / 100.0;
+        jackTrip->appendProcessPluginToNetwork(new Reverb(numChannels, numChannels, wetness));
+    }
+    if (m_ui->inFreeverbCheckBox->isChecked()) {
+        qreal wetness = m_ui->inFreeverbWetnessSlider->value() / 100.0;
+        jackTrip->appendProcessPluginFromNetwork(new Reverb(numChannels, numChannels, wetness));
+    }
+    
+    //Limiters go last in the plugin sequence.
+    if (m_ui->inLimiterCheckBox->isChecked()) {
+        jackTrip->appendProcessPluginFromNetwork(new Limiter(numChannels, 1));
+    }
+    if (m_ui->outLimiterCheckBox->isChecked()) {
+        jackTrip->appendProcessPluginToNetwork(new Limiter(numChannels, m_ui->outClientsSpinBox->value()));
+    }
+}
+
 
 QJackTrip::~QJackTrip() = default;
