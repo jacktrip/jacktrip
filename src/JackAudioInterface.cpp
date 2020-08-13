@@ -103,6 +103,22 @@ void JackAudioInterface::setup()
 void JackAudioInterface::setupClient()
 {
     const char* server_name = NULL;
+    QByteArray clientName = mClientName.toUtf8();
+#ifdef __MAC_OSX__
+    //Jack seems to have an issue with client names over 27 bytes in OS X
+    int maxSize = 27;
+#else
+    int maxSize = jack_client_name_size();
+#endif
+    if (clientName.length() > maxSize) {
+        int length = maxSize;
+        //Make sure we don't cut mid multi-byte character.
+        while ((length > 0) && ((clientName.at(length) & 0xc0) == 0x80)) {
+            length--;
+        }
+        clientName.truncate(length);
+    }
+    
     // was  jack_options_t options = JackNoStartServer;
     // and then jack_options_t options = JackLoadName;
     jack_options_t options = JackNullOption; // from jackSimpleClient example
@@ -114,9 +130,9 @@ void JackAudioInterface::setupClient()
     {
         QMutexLocker locker(&sJackMutex);
 #ifndef WAIR // WAIR
-        mClient = jack_client_open (mClientName.toUtf8().constData(), options, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), options, &status, server_name);
 #else
-        mClient = jack_client_open (mClientName.toUtf8().constData(), JackUseExactName, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), JackUseExactName, &status, server_name);
 #endif // endwhere
     }
 
@@ -262,10 +278,15 @@ void JackAudioInterface::jackShutdown (void*)
 //*******************************************************************************
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
+  if(mProcessingAudio) {
+    std::cerr << "*** JackAudioInterface.cpp: DROPPED A BUFFER because AudioInterface::callback() not finished\n";
+    return 1;
+  }
+
     // Get input and output buffers from JACK
     //-------------------------------------------------------------------
     for (int i = 0; i < mNumInChans; i++) {
-        // Input Ports are READ ONLY
+        // Input Ports are READ ONLY and change as needed (no locks) - make a copy for debugging
         mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
     }
     for (int i = 0; i < mNumOutChans; i++) {
@@ -356,7 +377,7 @@ void JackAudioInterface::connectDefaultPorts()
 
 
 
-// OLD CODE
+// OLD CODE (some moved to parent class AudioInterface.cpp)
 // ==============================================================================
 
 //*******************************************************************************

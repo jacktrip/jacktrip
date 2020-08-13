@@ -112,7 +112,13 @@ win32 {
 
 DESTDIR = .
 QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
-target.path = /usr/bin
+
+# isEmpty(PREFIX) will allow path to be changed during the command line
+# call to qmake, e.g. qmake PREFIX=/usr
+isEmpty(PREFIX) {
+ PREFIX = /usr/local
+}
+target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # for plugins
@@ -122,6 +128,10 @@ INCLUDEPATH += faust-src-lair
 HEADERS += src/DataProtocol.h \
            src/JMess.h \
            src/JackTrip.h \
+           src/Effects.h \
+           src/Compressor.h \
+           src/Limiter.h \
+           src/Reverb.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
            src/JackTripWorker.h \
@@ -134,6 +144,9 @@ HEADERS += src/DataProtocol.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
            src/AudioInterface.h \
+           src/compressordsp.h \
+           src/limiterdsp.h \
+           src/freeverbdsp.h \
            src/about.h \
            src/qjacktrip.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
@@ -144,6 +157,9 @@ HEADERS += src/JackAudioInterface.h
 SOURCES += src/DataProtocol.cpp \
            src/JMess.cpp \
            src/JackTrip.cpp \
+           src/Compressor.cpp \
+           src/Limiter.cpp \
+           src/Reverb.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
            src/LoopBack.cpp \

@@ -94,6 +94,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mDeviceID(gDefaultDeviceID),
     mAudioBufferSize(gDefaultBufferSizeInSamples),
     mAudioBitResolution(AudioBitResolution),
+    mLoopBack(false),
     mDataProtocolSender(NULL),
     mDataProtocolReceiver(NULL),
     mAudioInterface(NULL),
@@ -209,6 +210,8 @@ void JackTrip::setupAudio(
 #endif
     }
 
+    mAudioInterface->setLoopBack(mLoopBack);
+
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
     int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
@@ -323,10 +326,21 @@ void JackTrip::setPeerAddress(QString PeerHostOrIP)
 
 
 //*******************************************************************************
-void JackTrip::appendProcessPlugin(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
-    mProcessPlugins.append(plugin);
-    //mAudioInterface->appendProcessPlugin(plugin);
+  if (plugin) {
+    mProcessPluginsToNetwork.append(plugin); // ownership transferred
+    //mAudioInterface->appendProcessPluginToNetwork(plugin);
+  }
+}
+
+//*******************************************************************************
+void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
+{
+  if (plugin) {
+    mProcessPluginsFromNetwork.append(plugin); // ownership transferred
+    //mAudioInterface->appendProcessPluginFromNetwork(plugin);
+  }
 }
 
 
@@ -453,9 +467,13 @@ void JackTrip::completeConnection()
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mAudioInterface->startProcess" << std::endl;
     mAudioInterface->startProcess();
 
-    for (int i = 0; i < mProcessPlugins.size(); ++i) {
-        mAudioInterface->appendProcessPlugin(mProcessPlugins[i]);
+    for (int i = 0; i < mProcessPluginsFromNetwork.size(); ++i) {
+        mAudioInterface->appendProcessPluginFromNetwork(mProcessPluginsFromNetwork[i]);
     }
+    for (int i = 0; i < mProcessPluginsToNetwork.size(); ++i) {
+        mAudioInterface->appendProcessPluginToNetwork(mProcessPluginsToNetwork[i]);
+    }
+    mAudioInterface->initPlugins(); // mSampleRate assumed settled now
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
     
     //Start our IO stat timer
@@ -983,7 +1001,6 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
     std::memcpy(audio_packet, audio_part, getTotalAudioPacketSizeInBytes());
 }
-
 
 //*******************************************************************************
 void JackTrip::checkPeerSettings(int8_t* full_packet)
