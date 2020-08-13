@@ -642,19 +642,17 @@ void Settings::startJackTrip()
             // -------------------------------------------------------------
         }
 
-    }
+        // Outgoing/Incoming Compressor and/or Reverb:
+        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
 
-    // Outgoing/Incoming Compressor and/or Reverb:
-    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
-
-    // Limiters go last in the plugin sequence:
-    mJackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    mJackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+        // Limiters go last in the plugin sequence:
+        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
 
 #ifdef WAIR // WAIR
         if ( mWAIR ) {
@@ -698,6 +696,7 @@ void Settings::startJackTrip()
        mJackTrip->stop();
     */
     }
+}
 
 //*******************************************************************************
 void Settings::stopJackTrip()
