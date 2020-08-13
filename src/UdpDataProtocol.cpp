@@ -75,6 +75,7 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL),
     mUdpRedundancyFactor(udp_redundancy_factor),
+    mControlPacketSize(63),
     mStopSignalSent(false)
 {
     mStopped = false;
@@ -333,13 +334,13 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
         QThread::usleep(100);
     }
     int n_bytes = ::recv(mSocket, buf, n, 0);
-    if (n_bytes == 64) {
+    if (n_bytes == mControlPacketSize) {
         //Control signal (currently just check for exit packet);
         bool exit = true;
-        for (int i = 0; i < 64; i++) {
+        for (int i = 0; i < mControlPacketSize; i++) {
             if (buf[i] != char(0xff)) {
                 exit = false;
-                i = 64;
+                i = mControlPacketSize;
             }
         }
         if (exit && !mStopSignalSent) {
@@ -627,9 +628,9 @@ void UdpDataProtocol::run()
         }
         
         // Send exit packet (with 1 redundant packet).
-        QByteArray exitPacket = QByteArray(64, 0xff);
-        sendPacket(exitPacket.constData(), 64);
-        sendPacket(exitPacket.constData(), 64);
+        QByteArray exitPacket = QByteArray(mControlPacketSize, 0xff);
+        sendPacket(exitPacket.constData(), mControlPacketSize);
+        sendPacket(exitPacket.constData(), mControlPacketSize);
         emit signalCeaseTransmission();
         break; }
     }

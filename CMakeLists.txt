@@ -43,7 +43,14 @@ set(qjacktrip_SRC
   src/RingBuffer.cpp
   src/about.cpp
   src/qjacktrip.qrc
+  src/Compressor.cpp
+  src/Limiter.cpp
+  src/Reverb.cpp
 )
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
+endif ()
 
 add_compile_definitions(WAIRTOHUB)
 

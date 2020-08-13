@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product Name='QJackTrip' Manufacturer='psi-borg'
+        Id='d5a8cca9-264c-41fd-8efc-1cef0850091f'
+        UpgradeCode='70450e42-8a91-4c28-8f00-52c6b8e86e37'
+        Language='1033' Codepage='1252' Version='1.2.1'>
+
+        <Package Id='*' Keywords='Installer' Description='QJackTrip Installer'
+            Comments='Based on Jacktrip, SoundWIRE Group at CCRMA, Stanford' Manufacturer='psi-borg'
+            InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+        <Media Id='1' Cabinet='QJackTrip.cab' EmbedCab='yes' DiskPrompt='Disk 1' />
+        <Property Id='DiskPrompt' Value='QJackTrip Installer File' />
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='ProgramFilesFolder' Name='PFiles'>
+                <Directory Id='INSTALLDIR' Name='QJackTrip'>
+                </Directory>
+            </Directory>
+            <Directory Id='ProgramMenuFolder' Name='Programs'>
+                <Directory Id='ProgramMenuDir' Name='QJackTrip'>
+                    <Component Id="ProgramMenuDir" Guid="2f25e96a-47a5-4eca-b367-a78ce536d9b9">
+                        <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+                        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature Id='NormalInstall' Level='1'>
+            <ComponentGroupRef Id='qjacktrip' />
+            <ComponentRef Id='ProgramMenuDir' />
+        </Feature>
+
+        <Icon Id='qjacktrip.exe' SourceFile='qjacktrip.exe' />
+    </Product>
+</Wix>

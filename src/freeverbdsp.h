@@ -380,7 +380,7 @@ struct UIReal
     
     // -- metadata declarations
     
-    virtual void declare(REAL* zone, const char* key, const char* val) {}
+    virtual void declare(__attribute__((unused)) REAL* zone, __attribute__((unused)) const char* key, __attribute__((unused)) const char* val) {}
 };
 
 struct UI : public UIReal<FAUSTFLOAT>
@@ -843,7 +843,7 @@ class AccUpDownConverter : public UpdatableValueConverter
 
     public:
 
-        AccUpDownConverter(double amin, double amid, double amax, double fmin, double fmid, double fmax) :
+        AccUpDownConverter(double amin, double amid, double amax, double fmin, __attribute__((unused)) double fmid, double fmax) :
             fA2F(amin,amid,amax,fmin,fmax,fmin),
             fF2A(fmin,fmax,amin,amax)				// Special, pseudo inverse of a non monotonic function
         {}
@@ -851,7 +851,7 @@ class AccUpDownConverter : public UpdatableValueConverter
         virtual double ui2faust(double x) { return fA2F(x); }
         virtual double faust2ui(double x) { return fF2A(x); }
 
-        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double fmid, double fmax)
+        virtual void setMappingValues(double amin, double amid, double amax, double fmin, __attribute__((unused)) double fmid, double fmax)
         {
             //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
             fA2F = Interpolator3pt(amin, amid, amax, fmin, fmax, fmin);
@@ -878,7 +878,7 @@ class AccDownUpConverter : public UpdatableValueConverter
 
     public:
 
-        AccDownUpConverter(double amin, double amid, double amax, double fmin, double fmid, double fmax) :
+        AccDownUpConverter(double amin, double amid, double amax, double fmin, __attribute__((unused)) double fmid, double fmax) :
             fA2F(amin,amid,amax,fmax,fmin,fmax),
             fF2A(fmin,fmax,amin,amax)				// Special, pseudo inverse of a non monotonic function
         {}
@@ -886,7 +886,7 @@ class AccDownUpConverter : public UpdatableValueConverter
         virtual double ui2faust(double x) { return fA2F(x); }
         virtual double faust2ui(double x) { return fF2A(x); }
 
-        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double fmid, double fmax)
+        virtual void setMappingValues(double amin, double amid, double amax, double fmin, __attribute__((unused)) double fmid, double fmax)
         {
             //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
             fA2F = Interpolator3pt(amin, amid, amax, fmax, fmin, fmax);
@@ -914,14 +914,15 @@ class ZoneControl
         ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
         virtual ~ZoneControl() {}
 
-        virtual void update(double v) const {}
+        virtual void update(__attribute__((unused)) double v) const {}
 
-        virtual void setMappingValues(int curve, double amin, double amid, double amax, double min, double init, double max) {}
-        virtual void getMappingValues(double& amin, double& amid, double& amax) {}
+        virtual void setMappingValues(__attribute__((unused)) int curve, __attribute__((unused)) double amin, __attribute__((unused)) double amid, 
+                                      __attribute__((unused)) double amax, __attribute__((unused)) double min, __attribute__((unused)) double init, __attribute__((unused)) double max) {}
+        virtual void getMappingValues(__attribute__((unused)) double& amin, __attribute__((unused))  double& amid, __attribute__((unused)) double& amax) {}
 
         FAUSTFLOAT* getZone() { return fZone; }
 
-        virtual void setActive(bool on_off) {}
+        virtual void setActive(__attribute__((unused)) bool on_off) {}
         virtual bool getActive() { return false; }
 
         virtual int getCurve() { return -1; }
@@ -1298,11 +1299,11 @@ class APIUI : public PathBuilder, public Meta, public UI
     
         // -- soundfiles
     
-        virtual void addSoundfile(const char* label, const char* filename, Soundfile** sf_zone) {}
+        virtual void addSoundfile(__attribute__((unused)) const char* label, __attribute__((unused)) const char* filename, __attribute__((unused)) Soundfile** sf_zone) {}
 
         // -- metadata declarations
 
-        virtual void declare(FAUSTFLOAT* zone, const char* key, const char* val)
+        virtual void declare(__attribute__((unused)) FAUSTFLOAT* zone, const char* key, const char* val)
         {
             // Keep metadata
             fCurrentMetadata[key] = val;
@@ -1328,7 +1329,7 @@ class APIUI : public PathBuilder, public Meta, public UI
             }
         }
 
-        virtual void declare(const char* key, const char* val)
+        virtual void declare(__attribute__((unused)) const char* key, __attribute__((unused)) const char* val)
         {}
 
 		//-------------------------------------------------------------------------------
@@ -1737,7 +1738,7 @@ class freeverbdsp : public dsp {
 		return rate;
 	}
 	
-	static void classInit(int sample_rate) {
+	static void classInit(__attribute__((unused)) int sample_rate) {
 	}
 	
 	virtual void instanceConstants(int sample_rate) {

@@ -1775,7 +1775,7 @@ class zitarevmonodsp : public dsp {
 		return rate;
 	}
 	
-	static void classInit(int sample_rate) {
+	static void classInit(__attribute__((unused)) int sample_rate) {
 	}
 	
 	virtual void instanceConstants(int sample_rate) {

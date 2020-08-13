@@ -145,7 +145,7 @@ JackTrip::~JackTrip()
 //*******************************************************************************
 void JackTrip::setupAudio(
         #ifdef WAIRTOHUB // WAIR
-        int ID
+        __attribute__((unused)) int ID
         #endif // endwhere
         )
 {

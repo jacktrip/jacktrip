@@ -69,7 +69,7 @@ class Effects
   Reverb* inFreeverbP = nullptr;
   Reverb* outFreeverbP = nullptr;
   int parenLevel = 0;
-  char lastEffect = NULL;
+  char lastEffect = 0;
   float compressorInLevelChange = 0;
   float compressorOutLevelChange = 0;
   float zitarevInLevel = 1.0f; // "Level" = wetness from 0 to 1
