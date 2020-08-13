@@ -5,9 +5,11 @@ rm -rf QJackTrip.app
 cp -a QJackTrip.app_template QJackTrip.app
 cp -f ../build/qjacktrip QJackTrip.app/Contents/MacOS/
 
-# If you want to create a signed package, modify the codesign parameter below as appropriate.
-macdeployqt QJackTrip.app -codesign="Developer ID Application: Aaron Wyatt"
-# Needed for notarization.
+# If you want to create a signed package, uncomment and modify the codesign parameter below as appropriate.
+macdeployqt QJackTrip.app #-codesign="Developer ID Application: Aaron Wyatt"
+exit 0
+# Needed for notarization:
+# Remove the exit line above and edit the signing identity below as appropriate.
 mkdir -p QJackTrip.app/Contents/Frameworks/Jackmp.framework/Versions/A/Resources
 cd QJackTrip.app/Contents/Frameworks/Jackmp.framework/Versions
 cp /Library/Frameworks/Jackmp.framework/Versions/A/Jackmp A/
