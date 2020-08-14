@@ -112,7 +112,7 @@ void Settings::parseInput(int argc, char** argv)
     // options descriptor
     //----------------------------------------------------------------------------
     static struct option longopts[] = {
-        // These options don't set a flag.
+    // These options don't set a flag.
     { "numchannels", required_argument, NULL, 'n' }, // Number of input and output channels
 #ifdef WAIR // WAIR
     { "wair", no_argument, NULL, 'w' }, // Run in LAIR mode, sets numnetrevchannels
@@ -157,7 +157,7 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     /// \todo Specify mandatory arguments
     int ch;
-    while ( (ch = getopt_long(argc, argv,
+    while ((ch = getopt_long(argc, argv,
                               "n:N:H:sc:SC:o:B:P:U:q:r:b:zlwjeJ:RTd:F:p:DvVhIGf:O:a:", longopts, NULL)) != -1 )
         switch (ch) {
 
@@ -408,8 +408,6 @@ void Settings::parseInput(int argc, char** argv)
         cout << gPrintSeparator << endl;
     }
 
-    // Perform allocation that depends on options:
-    mEffects.allocateEffects(mNumChans);
 }
 
 
@@ -642,17 +640,22 @@ void Settings::startJackTrip()
             // -------------------------------------------------------------
         }
 
-        // Outgoing/Incoming Compressor and/or Reverb:
-        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+	// Allocate audio effects in client, if any:
+	mEffects.allocateEffects(mNumChans);
 
-        // Limiters go last in the plugin sequence:
-        mJackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-        mJackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+	// Outgoing/Incoming Compressor and/or Reverb:
+	mJackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+	mJackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+	mJackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+	mJackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+	mJackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+	mJackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+
+	// Limiters go last in the plugin sequence:
+	mJackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+	mJackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+
+    } // end creation of mJackTrip client
 
 #ifdef WAIR // WAIR
         if ( mWAIR ) {
