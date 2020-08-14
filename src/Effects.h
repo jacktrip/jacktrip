@@ -69,7 +69,7 @@ class Effects
   Reverb* inFreeverbP = nullptr;
   Reverb* outFreeverbP = nullptr;
   int parenLevel = 0;
-  char lastEffect = NULL;
+  char lastEffect = '\0';
   float compressorInLevelChange = 0;
   float compressorOutLevelChange = 0;
   float zitarevInLevel = 1.0f; // "Level" = wetness from 0 to 1
@@ -87,14 +87,23 @@ public:
     mLimit(LIMITER_NONE),
     mNumClientsAssumed(2)
   {}
-     
+
   ~Effects() {
-    if (inCompressor) { delete inCompressorP; }
-    if (outCompressor) { delete outCompressorP; }
-    if (inZitarev) { delete inZitarevP; }
-    if (outZitarev) { delete outZitarevP; }
-    if (inFreeverb) { delete inFreeverbP; }
-    if (outFreeverb) { delete outFreeverbP; }
+    /*
+      Plugin ownership presently passes to JackTrip,
+      and deletion occurs in AudioInterface.cpp. See
+        delete mProcessPluginsFromNetwork[i];
+        delete mProcessPluginsToNetwork[i];
+      there.  If/when we ever do it here:
+	if (inCompressor) { delete inCompressorP; }
+	if (outCompressor) { delete outCompressorP; }
+	if (inZitarev) { delete inZitarevP; }
+	if (outZitarev) { delete outZitarevP; }
+	if (inFreeverb) { delete inFreeverbP; }
+	if (outFreeverb) { delete outFreeverbP; }
+      but if everyone can compile C++11,
+      let's switch to using std::unique_ptr.
+    */
   }
 
   unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }
@@ -165,23 +174,23 @@ public:
     char c = optarg[0];
     if (not isalpha(c)) { // backward compatibility why not?, e.g., "-f 0.5"
       // -f reverbLevelFloat
-      mReverbLevel = atof(optarg); 
+      mReverbLevel = atof(optarg);
       outCompressor = true;
       inZitarev = mReverbLevel > 1.0;
       inFreeverb = mReverbLevel <= 1.0;
       if (inZitarev) {
         zitarevInLevel = mReverbLevel - 1.0; // wetness from 0 to 1
-      } 
+      }
       if (inFreeverb) {
         freeverbInLevel = mReverbLevel; // wetness from 0 to 1
-      } 
+      }
     } else {
       // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
       if (gVerboseFlag) {
         std::cout << "-f (--effects) arg = " << optarg << std::endl;
       }
       ulong nac = strlen(optarg);
-    
+
       for (ulong i=0; i<nac; i++) {
         if (optarg[i]!=')' && parenLevel>0) { continue; }
         switch(optarg[i]) {
@@ -240,7 +249,7 @@ public:
     }
     return returnCode;
   }
-  
+
   int parseLimiterOptArg(char* optarg) {
     char c1 = tolower(optarg[0]);
     if (c1 == '-') {
@@ -248,7 +257,7 @@ public:
       return 1;
     }
     char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
-    if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) { 
+    if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) {
       mLimit = LIMITER_BOTH;
       if (gVerboseFlag) {
         std::cout << "Set up Overflow Limiter for both INCOMING and OUTGOING\n";
@@ -280,9 +289,9 @@ public:
     mNumClientsAssumed = atoi(optarg);
     if(mNumClientsAssumed < 1) {
       std::cerr << "-p ERROR: Must have at least one assumed sound source: "
-                << atoi(optarg) << " is not supported." << endl;
+                << atoi(optarg) << " is not supported." << std::endl;
       return 1;
     }
+    return 0;
   }
 };
-
