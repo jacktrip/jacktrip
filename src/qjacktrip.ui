@@ -492,7 +492,7 @@
               <enum>Qt::Horizontal</enum>
              </property>
              <property name="tickPosition">
-              <enum>QSlider::TicksAbove</enum>
+              <enum>QSlider::TicksBelow</enum>
              </property>
              <property name="tickInterval">
               <number>20</number>
@@ -565,7 +565,7 @@
               <bool>false</bool>
              </property>
              <property name="tickPosition">
-              <enum>QSlider::TicksAbove</enum>
+              <enum>QSlider::TicksBelow</enum>
              </property>
              <property name="tickInterval">
               <number>20</number>
@@ -609,7 +609,7 @@
               <bool>false</bool>
              </property>
              <property name="tickPosition">
-              <enum>QSlider::TicksAbove</enum>
+              <enum>QSlider::TicksBelow</enum>
              </property>
              <property name="tickInterval">
               <number>20</number>
@@ -645,7 +645,7 @@
               <enum>Qt::Horizontal</enum>
              </property>
              <property name="tickPosition">
-              <enum>QSlider::TicksAbove</enum>
+              <enum>QSlider::TicksBelow</enum>
              </property>
              <property name="tickInterval">
               <number>20</number>
