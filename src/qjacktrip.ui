@@ -22,7 +22,8 @@
     <item row="0" column="1">
      <widget class="QComboBox" name="typeComboBox">
       <property name="toolTip">
-       <string/>
+       <string>To connect to a server you need to run as a client.
+To connect to a hub server you need to run as a hub client.</string>
       </property>
       <item>
        <property name="text">
@@ -70,7 +71,11 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLineEdit" name="addressEdit"/>
+     <widget class="QLineEdit" name="addressEdit">
+      <property name="toolTip">
+       <string>Enter the IP address or hostname of the server you want to connect to.</string>
+      </property>
+     </widget>
     </item>
     <item row="2" column="1">
      <widget class="QLabel" name="ipLabel">
@@ -196,6 +201,9 @@
         </item>
         <item row="3" column="0" colspan="2">
          <widget class="QCheckBox" name="zeroCheckBox">
+          <property name="toolTip">
+           <string>Silence the audio when there's a buffer underrun.</string>
+          </property>
           <property name="text">
            <string>Set buffer to &amp;zero when underrun occurs</string>
           </property>
@@ -203,6 +211,9 @@
         </item>
         <item row="0" column="1">
          <widget class="QSpinBox" name="channelSpinBox">
+          <property name="toolTip">
+           <string>Number of input and output channels.</string>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -229,6 +240,9 @@
         </item>
         <item row="1" column="1">
          <widget class="QComboBox" name="autoPatchComboBox">
+          <property name="toolTip">
+           <string>Select how you want audio to be routed by the hub server.</string>
+          </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
@@ -261,6 +275,9 @@
         </item>
         <item row="4" column="0" colspan="2">
          <widget class="QCheckBox" name="timeoutCheckBox">
+          <property name="toolTip">
+           <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
+          </property>
           <property name="text">
            <string>&amp;Disconnect after 10 seconds of no network activity</string>
           </property>
@@ -288,6 +305,9 @@
         </item>
         <item row="0" column="1">
          <widget class="QLineEdit" name="clientNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client.</string>
+          </property>
           <property name="maxLength">
            <number>64</number>
           </property>
@@ -298,6 +318,9 @@
         </item>
         <item row="3" column="1">
          <widget class="QSpinBox" name="queueLengthSpinBox">
+          <property name="toolTip">
+           <string>Set the queue buffer length, in packet size.</string>
+          </property>
           <property name="minimum">
            <number>2</number>
           </property>
@@ -310,6 +333,9 @@
          <layout class="QHBoxLayout" name="connectAudioLayout">
           <item>
            <widget class="QCheckBox" name="connectAudioCheckBox">
+            <property name="toolTip">
+             <string>Connect the Jack client to the default system audio ports.</string>
+            </property>
             <property name="text">
              <string>&amp;Connect default audio ports</string>
             </property>
@@ -362,6 +388,9 @@
         </item>
         <item row="5" column="1">
          <widget class="QComboBox" name="resolutionComboBox">
+          <property name="toolTip">
+           <string>Select the audio bit resolution.</string>
+          </property>
           <property name="currentIndex">
            <number>1</number>
           </property>
@@ -399,6 +428,9 @@
         </item>
         <item row="4" column="1">
          <widget class="QSpinBox" name="redundancySpinBox">
+          <property name="toolTip">
+           <string>Number of redundant packets to be sent to avoid glitches related to packet loss.</string>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -432,6 +464,10 @@
         </item>
         <item row="2" column="1">
          <widget class="QSpinBox" name="portOffsetSpinBox">
+          <property name="toolTip">
+           <string>Set the source and destination port offset from the default value of 4464.
+(Useful for running multiple hub clients behind the same router.)</string>
+          </property>
           <property name="maximum">
            <number>999</number>
           </property>
@@ -449,6 +485,9 @@
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="remoteNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client as it will appear on the hub server.</string>
+          </property>
           <property name="maxLength">
            <number>64</number>
           </property>
@@ -457,7 +496,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="remoteNameLabel">
           <property name="text">
-           <string>Remote Client Name</string>
+           <string>Remote Client &amp;Name</string>
           </property>
           <property name="buddy">
            <cstring>remoteNameEdit</cstring>
@@ -485,6 +524,9 @@
              <property name="enabled">
               <bool>false</bool>
              </property>
+             <property name="toolTip">
+              <string>Set the wet/dry mix.</string>
+             </property>
              <property name="maximum">
               <number>100</number>
              </property>
@@ -511,15 +553,21 @@
            </item>
            <item row="4" column="0">
             <widget class="QCheckBox" name="inLimiterCheckBox">
+             <property name="toolTip">
+              <string>Enable the limiter on incoming audio.</string>
+             </property>
              <property name="text">
-              <string>Limiter</string>
+              <string>&amp;Limiter</string>
              </property>
             </widget>
            </item>
            <item row="0" column="0">
             <widget class="QCheckBox" name="inFreeverbCheckBox">
+             <property name="toolTip">
+              <string>Enable the freeverb plugin on incoming audio.</string>
+             </property>
              <property name="text">
-              <string>Freeverb</string>
+              <string>&amp;Freeverb</string>
              </property>
             </widget>
            </item>
@@ -535,15 +583,21 @@
            </item>
            <item row="3" column="0">
             <widget class="QCheckBox" name="inCompressorCheckBox">
+             <property name="toolTip">
+              <string>Enable the compressor plugin on incoming audio.</string>
+             </property>
              <property name="text">
-              <string>Compressor</string>
+              <string>&amp;Compressor</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
             <widget class="QCheckBox" name="inZitarevCheckBox">
+             <property name="toolTip">
+              <string>Enable the zitarev reverb plugin on incoming audio.</string>
+             </property>
              <property name="text">
-              <string>Zitarev</string>
+              <string>&amp;Zitarev</string>
              </property>
             </widget>
            </item>
@@ -551,6 +605,9 @@
             <widget class="QSlider" name="inFreeverbWetnessSlider">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Set the wet/dry mix.</string>
              </property>
              <property name="maximum">
               <number>100</number>
@@ -586,8 +643,11 @@
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
             <widget class="QCheckBox" name="outFreeverbCheckBox">
+             <property name="toolTip">
+              <string>Enable the freeverb plugin on outgoing audio.</string>
+             </property>
              <property name="text">
-              <string>Freeverb</string>
+              <string>Free&amp;verb</string>
              </property>
             </widget>
            </item>
@@ -595,6 +655,9 @@
             <widget class="QSlider" name="outFreeverbWetnessSlider">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Set the wet/dry mix.</string>
              </property>
              <property name="maximum">
               <number>100</number>
@@ -628,8 +691,11 @@
            </item>
            <item row="1" column="0">
             <widget class="QCheckBox" name="outZitarevCheckBox">
+             <property name="toolTip">
+              <string>Enable the zitarev reverb plugin on outgoing audio.</string>
+             </property>
              <property name="text">
-              <string>Zitarev</string>
+              <string>Zi&amp;tarev</string>
              </property>
             </widget>
            </item>
@@ -637,6 +703,9 @@
             <widget class="QSlider" name="outZitarevWetnessSlider">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Set the wet/dry mix.</string>
              </property>
              <property name="maximum">
               <number>100</number>
@@ -657,6 +726,10 @@
              <property name="enabled">
               <bool>false</bool>
              </property>
+             <property name="toolTip">
+              <string>Moisture is the essence of wetness,
+and wetness is the essence of beauty.</string>
+             </property>
              <property name="text">
               <string>Wetness</string>
              </property>
@@ -664,15 +737,21 @@
            </item>
            <item row="2" column="0">
             <widget class="QCheckBox" name="outCompressorCheckBox">
+             <property name="toolTip">
+              <string>Enable the compressor plugin on outgoing audio.</string>
+             </property>
              <property name="text">
-              <string>Compressor</string>
+              <string>Com&amp;pressor</string>
              </property>
             </widget>
            </item>
            <item row="3" column="0">
             <widget class="QCheckBox" name="outLimiterCheckBox">
+             <property name="toolTip">
+              <string>Enable the limiter on outgoing audio.</string>
+             </property>
              <property name="text">
-              <string>Limiter</string>
+              <string>Li&amp;miter</string>
              </property>
             </widget>
            </item>
@@ -680,6 +759,9 @@
             <widget class="QSpinBox" name="outClientsSpinBox">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter the anticipated number of clients that will be connected to the server.</string>
              </property>
              <property name="minimum">
               <number>1</number>
