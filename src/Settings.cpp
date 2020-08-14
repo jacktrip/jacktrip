@@ -638,7 +638,7 @@ JackTrip *Settings::getConfiguredJackTrip()
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
-    // Perform allocation for effects:
+    // Allocate audio effects in client, if any:
     mEffects.allocateEffects(mNumChans);
 
     // Outgoing/Incoming Compressor and/or Reverb:
