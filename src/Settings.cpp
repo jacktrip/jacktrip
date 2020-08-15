@@ -655,8 +655,6 @@ void Settings::startJackTrip()
 	mJackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
 	mJackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
 
-    } // end creation of mJackTrip client
-
 #ifdef WAIR // WAIR
         if ( mWAIR ) {
             cout << "Running in WAIR Mode..." << endl;
@@ -698,7 +696,8 @@ void Settings::startJackTrip()
        cout << "Stoping JackTrip..." << endl;
        mJackTrip->stop();
     */
-    }
+    } // end creation of mJackTrip client
+}
 
 //*******************************************************************************
 void Settings::stopJackTrip()
