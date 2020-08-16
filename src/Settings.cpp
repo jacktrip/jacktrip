@@ -408,6 +408,18 @@ void Settings::parseInput(int argc, char** argv)
         cout << gPrintSeparator << endl;
     }
 
+    // Exit if options are confused
+    //----------------------------------------------------------------------------
+    if (mEffects.getHaveEffect() && mJackTripServer) {
+      std::cerr << "--effects (-f) ERROR: Cannot presently use effects in HUB SERVER MODE (-S)." << endl;
+      std::exit(1);
+      // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
+    }
+    if (mEffects.getHaveLimiter() && mJackTripServer) {
+      std::cerr << "--overflowlimiting (-O) ERROR: Cannot presently use limiters in HUB SERVER MODE (-S)." << endl;
+      std::exit(1);
+      // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
+    }
 }
 
 
@@ -459,6 +471,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0 (freeverb) or 1.0+ to 2.0 (zitarev)" << endl;
+    cout << " -f, --effects    # (\"[i:[c[(g)]][z|f[(g)]] [o:[c[(g)]]|[z|f[(g)]]]\") Alt FX spec: \"optional incoming and/or outgoing compressor and/or (zitarev-or-freeverb) @ level g in (0-1.0)\"" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
