@@ -29,6 +29,9 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QHostAddress>
+#include <QVector>
+#include <cstdlib>
+#include <ctime>
 
 #include "Limiter.h"
 #include "Compressor.h"
@@ -86,6 +89,15 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui->statusBar->showMessage(QString("QJackTrip version ").append(gVersion));
     
     loadSettings();
+
+    QVector<QLabel *> labels;
+    labels << m_ui->inFreeverbLabel << m_ui->inZitarevLabel << m_ui->outFreeverbLabel;
+    std::srand(std::time(nullptr));
+    int index = std::rand() % 4;
+    if (index < 3) {
+        labels.at(index)->setToolTip(m_ui->outZitarevLabel->toolTip());
+        m_ui->outZitarevLabel->setToolTip("");
+    }
 }
 
 void QJackTrip::closeEvent(QCloseEvent *event)
@@ -119,8 +131,14 @@ void QJackTrip::processFinished()
 void QJackTrip::processError(const QString& errorMessage)
 {
     QMessageBox msgBox;
-    msgBox.setText(QString("Error: ").append(errorMessage));
-    msgBox.setWindowTitle("Doh!");
+    if (errorMessage == "Peer Stopped") {
+        //Report the other end quitting as a regular occurance rather than an error.
+        msgBox.setText(errorMessage);
+        msgBox.setWindowTitle("Disconnected");
+    } else {
+        msgBox.setText(QString("Error: ").append(errorMessage));
+        msgBox.setWindowTitle("Doh!");
+    }
     msgBox.exec();
     processFinished();
 }

@@ -126,6 +126,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
 void DefaultHeader::checkPeerSettings(int8_t* full_packet)
 {
     bool error = false;
+    QString report;
 
     DefaultHeaderStruct* peer_header;
     peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
@@ -138,6 +139,7 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
         std::cerr << "Make sure both machines use same buffer size" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
+        report.append(QString("\n\nPeer Buffer Size is %1\nLocal Buffer Size is %2\nMake sure both machines use the same Buffer Size").arg(peer_header->BufferSize).arg(mHeader.BufferSize));
     }
 
     // Check Sampling Rate
@@ -152,6 +154,7 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
         std::cerr << "Make sure both machines use the same Sampling Rate" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
+        report.append(QString("\n\nPeer Sampling Rate is %1\nLocal Sampling Rate is %2\nMake sure both machines use the same Sampling Rate").arg(peer_header->SamplingRate).arg(mHeader.SamplingRate));
     }
 
     // Check Audio Bit Resolution
@@ -164,6 +167,7 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
         std::cerr << "Make sure both machines use the same Bit Resolution" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
+        report.append(QString("\n\nPeer Audio Bit Resolution is %1\nLocal Audio Bit Resolution is %2\nMake sure both machines use the same Bit Resolution").arg(peer_header->BitResolution).arg(mHeader.BitResolution));
     }
 
     // Exit program if error
@@ -172,7 +176,7 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
         //std::cerr << "Exiting program..." << endl;
         //std::exit(1);
         //throw std::logic_error("Local and Peer Settings don't match");
-        emit signalError("Local and Peer Settings don't match");
+        emit signalError(QString("Local and Peer Settings don't match").append(report));
     }
     /// \todo Check number of channels and other parameters
 }
@@ -292,7 +296,7 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
         //std::exit(1);
         //std::cerr << "WARINING: JamLink only support ONE channel. Run JackTrip using only one channel" << endl;
         //throw std::logic_error("JamLink only support ONE channel. Run JackTrip using only one channel");
-        emit signalError("JamLink only support ONE channel. Run JackTrip using only one channel");
+        emit signalError("JamLink only supports ONE channel. Run JackTrip using only one channel");
 
     }
 
@@ -301,7 +305,7 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
     if ( rate_type != AudioInterface::SR48 ) {
         //std::cerr << "WARINING: JamLink only support 48kHz for communication with JackTrip at the moment." << endl;
         //throw std::logic_error("ERROR: JamLink only support 48kHz for communication with JackTrip at the moment.");
-        emit signalError("ERROR: JamLink only support 48kHz for communication with JackTrip at the moment.");
+        emit signalError("JamLink only supports 48kHz for communication with JackTrip at the moment.");
     }
 
     // Check Buffer Size
@@ -309,7 +313,7 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
     if ( buf_size != 64 ) {
         //std::cerr << "WARINING: JamLink only support 64 buffer size for communication with JackTrip at the moment." << endl;
         //throw std::logic_error("ERROR: JamLink only support 64 buffer size for communication with JackTrip at the moment.");
-        emit signalError("ERROR: JamLink only support 64 buffer size for communication with JackTrip at the moment.");
+        emit signalError("JamLink only supports a buffer size of 64 for communication with JackTrip at the moment.");
     }
 
     mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND) + 64;
