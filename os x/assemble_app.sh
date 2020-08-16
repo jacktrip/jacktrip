@@ -2,6 +2,7 @@
 
 # The qt bin folder needs to be in your PATH for this script to work.
 rm -rf QJackTrip.app
+[ ! -d "QJackTrip.app_template/Contents/MacOS" ] && mkdir QJackTrip.app_template/Contents/MacOS
 cp -a QJackTrip.app_template QJackTrip.app
 cp -f ../build/qjacktrip QJackTrip.app/Contents/MacOS/
 
