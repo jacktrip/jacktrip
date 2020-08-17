@@ -1,0 +1,7 @@
+echo connect to server $1
+jt=../builddir/jacktrip
+#jt=/usr/local/bin/jtj-2020-07-26
+#jt=/usr/local/bin/jtj
+echo "$jt -C $1 -Oio -f \"o:cf(0.1)\" -q8 -n1"
+     $jt -C $1 -Oio -f "o:cf(0.1)" -q8 -n1
+
