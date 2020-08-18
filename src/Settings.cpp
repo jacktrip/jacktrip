@@ -113,8 +113,8 @@ void Settings::parseInput(int argc, char** argv)
         { "addcombfilterlength", required_argument, NULL, 'N' }, // added comb filter length
         { "combfilterfeedback", required_argument, NULL, 'H' }, // comb filter feedback
 #endif // endwhere
-        { "server", no_argument, NULL, 's' }, // Run in server mode
-        { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+        { "server", no_argument, NULL, 's' }, // Run in P2P server mode
+        { "client", required_argument, NULL, 'c' }, // Run in P2P client mode, set server IP address
         { "localaddress", required_argument, NULL, 'L' }, // set local address e.g., 127.0.0.2 for second instance on same host
         { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
         { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
@@ -179,15 +179,15 @@ void Settings::parseInput(int argc, char** argv)
             mClientRoomSize = atof(optarg); // cmd line comb feedback adjustment
             break;
 #endif // endwhere
-        case 's': // Run in server mode
+        case 's': // Run in P2P server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;
             break;
-        case 'S': // Run in jacktripserver mode
+        case 'S': // Run in Hub server mode
             //-------------------------------------------------------
             mJackTripServer = true;
             break;
-        case 'c': // Client mode
+        case 'c': // P2P client mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::CLIENT;
             mPeerAddress = optarg;
@@ -431,8 +431,8 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "Options: " << endl;
     cout << "REQUIRED ARGUMENTS: " << endl;
-    cout << " -s, --server                             Run in Server Mode" << endl;
-    cout << " -c, --client <peer_hostname_or_IP_num>   Run in Client Mode" << endl;
+    cout << " -s, --server                             Run in P2P Server Mode" << endl;
+    cout << " -c, --client <peer_hostname_or_IP_num>   Run in P2P Client Mode" << endl;
     cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;
     cout << " -C, --pingtoserver <peer_name_or_IP>     Run in Hub Client Mode" << endl;
     cout << endl;
