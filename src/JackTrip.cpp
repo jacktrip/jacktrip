@@ -704,9 +704,6 @@ void JackTrip::stop(QString errorMessage)
         return;
     }
     mHasShutdown = true;
-    if (sJackStopped) {
-        std::cout << "The Jack Server was shut down!" << std::endl;
-    }
     std::cout << "Stopping JackTrip..." << std::endl;
     
     // Stop The Sender
@@ -721,8 +718,6 @@ void JackTrip::stop(QString errorMessage)
     //mAudioInterface->stopProcess();
     closeAudio();
     
-    // Reset flags in case we're called from the GUI
-
     cout << "JackTrip Processes STOPPED!" << endl;
     cout << gPrintSeparator << endl;
 
