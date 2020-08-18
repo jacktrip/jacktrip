@@ -78,7 +78,7 @@ public:
                        int NumNetRevChans,
                    #endif // endwhere
                        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-                       const char* ClientName = "JackTrip");
+                       QString ClientName = "JackTrip");
     /// \brief The class destructor
     virtual ~JackAudioInterface();
 
@@ -98,7 +98,7 @@ public:
 
     //--------------SETTERS---------------------------------------------
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(const char* ClientName)
+    virtual void setClientName(QString ClientName)
     { mClientName = ClientName; }
     virtual void setSampleRate(uint32_t /*sample_rate*/)
     { std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
@@ -113,7 +113,7 @@ public:
     virtual uint32_t getBufferSizeInSamples() const;
     /// \brief Get the Jack Server Buffer Size, in bytes
     virtual uint32_t getBufferSizeInBytes() const
-    { return (getBufferSizeInSamples() * getAudioBitResolution()/8); }
+    { return (getBufferSizeInSamples() * getAudioBitResolution() / 8); }
     /// \brief Get size of each audio per channel, in bytes
     virtual size_t getSizeInBytesPerChannel() const;
     //------------------------------------------------------------------
@@ -174,7 +174,7 @@ private:
     AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
 
     jack_client_t* mClient; ///< Jack Client
-    const char* mClientName; ///< Jack Client Name
+    QString mClientName; ///< Jack Client Name
     QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
     QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
     QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
