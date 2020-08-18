@@ -370,7 +370,7 @@ void JMess::disconnectAll()
          it != mConnectedPorts.end(); ++it) {
         OutputInput = *it;
 
-        if (jack_disconnect(mClient, OutputInput[0].toLatin1(), OutputInput[1].toLatin1())) {
+        if (jack_disconnect(mClient, OutputInput[0].toUtf8(), OutputInput[1].toUtf8())) {
             cerr << "WARNING: port: " << qPrintable(OutputInput[0])
                     << "and port: " << qPrintable(OutputInput[1])
                     << " could not be disconnected.\n";
