@@ -88,7 +88,8 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mIOStatTimeout(0)
+    mIOStatTimeout(0),
+    mTestMode(false)
 {}
 
 //*******************************************************************************
@@ -137,7 +138,7 @@ void Settings::parseInput(int argc, char** argv)
     { "emptyheader", no_argument, NULL, 'e' }, // Run in JamLink mode
     { "clientname", required_argument, NULL, 'J' }, // Run in JamLink mode
     { "rtaudio", no_argument, NULL, 'R' }, // Run in JamLink mode
-    { "srate", required_argument, NULL, 'T' }, // Set Sample Rate
+    { "srate", required_argument, NULL,'T ' }, // Set Sample Rate
     { "deviceid", required_argument, NULL, 'd' }, // Set RTAudio device id to use
     { "bufsize", required_argument, NULL, 'F' }, // Set buffer Size
     { "nojackportsconnect" , no_argument, NULL,  'D'}, // Don't connect default Audio Ports
@@ -150,6 +151,7 @@ void Settings::parseInput(int argc, char** argv)
     { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
     { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
     { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
+    { "test-mode", required_argument, NULL, 't' }, // test mode - measure latency and such
     { NULL, 0, NULL, 0 }
 };
 
@@ -381,6 +383,10 @@ void Settings::parseInput(int argc, char** argv)
             std::cerr << "--effects (-f) argument string `" << optarg << "' is malformed\n";
             exit(1);
           }
+          break; }
+        case 't': { // test mode
+          //-------------------------------------------------------
+	  mTestMode = true;
           break; }
         case ':': {
           printf("\t*** Missing option argument\n");

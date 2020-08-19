@@ -78,6 +78,8 @@ public:
         return mIOStatStream.is_open() ? (std::ostream&)mIOStatStream : std::cout;
     }
 
+    bool getTestMode() { return mTestMode; }
+
 public slots:
     void slotExitProgram()
     {
@@ -125,6 +127,7 @@ private:
     int mIOStatTimeout;
     std::ofstream mIOStatStream;
     Effects mEffects;
+    bool mTestMode; ///< Test mode
 };
 
 #endif
