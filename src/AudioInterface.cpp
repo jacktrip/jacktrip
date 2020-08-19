@@ -61,7 +61,8 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
     mAudioBitResolution(AudioBitResolution*8),
     mBitResolutionMode(AudioBitResolution),
     mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
-    mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false), mTestMode(false), mProcessingAudio(false)
+    mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false),
+    mTestMode(false), mTestModeImpulsePending(false), mProcessingAudio(false)
 {
 #ifndef WAIR
     //cc
@@ -216,9 +217,10 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 }
 
 
-uint64_t timeSinceEpochMillisec() {
+uint64_t timeMicroSec() {
   using namespace std::chrono;
-  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  // return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch()).count();
 }
 
 //*******************************************************************************
@@ -246,12 +248,27 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     computeProcessFromNetwork(out_buffer, n_frames);
     // =============================================
 
-    static uint64_t firstTimeMS = 0;
     if (mTestMode) {
-      if (firstTimeMS == 0) {
-        firstTimeMS = timeSinceEpochMillisec();
-      } else {
-        std::cout << timeSinceEpochMillisec() - firstTimeMS << " ";
+      static uint64_t lastTimeUS = 0;
+      std::cout << timeMicroSec() - lastTimeUS << " ";
+      lastTimeUS = timeMicroSec();
+      assert(mNumInChans == mNumOutChans);
+      if (mTestModeImpulsePending) { // look for return impulse:
+        for (int i=0; i<mNumInChans; i++) {
+          uint j0 = 0;
+          for (uint j=0; j<n_frames; j++) {
+            if (out_buffer[i][j] > 0.5f) { // found it
+              if (i==0) {
+                j0 = j;
+                mTestModeImpulseTimeUS = timeMicroSec() - mTestModeImpulseTimeUS;
+                std::cout << mTestModeImpulseTimeUS << " ";
+                mTestModeImpulsePending = false;
+              } else {
+                assert(j==j0);
+              }
+            }
+          }
+        }
       }
     }
 
@@ -294,35 +311,50 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
-    // Run Faust plugins for the outgoing stream:
-    int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
-    if (nop>0) { // cannot modify IN_BUFFER so make a copy
-      //#ifdef DEBUG
-      if (mInBufCopy.size() < mNumInChans) { // created in constructor above
-        std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
-        exit(1);
+    if (mTestMode) { // send test signals (-x option)
+      if (mTestModeImpulsePending) {
+	for (int i=0; i<mNumInChans; i++) {
+	  mInBufCopy[i][0] = 0.0f;
+	}
+      } else { // need an impulse:
+	for (int i=0; i<mNumInChans; i++) {
+	  mInBufCopy[i][0] = 0.999;
+	}
+	mTestModeImpulseTimeUS = timeMicroSec();
+	mTestModeImpulsePending = true;
       }
-      if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
-      std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
-		  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
-        exit(1);
-      }
-      for (int i=0; i<mNumInChans; i++) {
-        std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
-      }
-      //#endif
-      for (int i = 0; i < nop; i++) {
-        // process all outgoing channels with Faust modules:
-        ProcessPlugin* p = mProcessPluginsToNetwork[i];
-        if (p->getInited()) {
-          p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
-        }
-      }
-      // 3) Finally, send packets to network:
       computeProcessToNetwork(mInBufCopy, n_frames);
     } else {
-      // 3) Finally, send packets to network:
-      computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
+      // Run Faust plugins for the outgoing stream:
+      int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
+      if (nop>0) { // cannot modify IN_BUFFER so make a copy
+	//#ifdef DEBUG
+	if (mInBufCopy.size() < mNumInChans) { // created in constructor above
+	  std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
+	  exit(1);
+	}
+	if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
+	  std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
+		    << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
+	  exit(1);
+	}
+	for (int i=0; i<mNumInChans; i++) {
+	  std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
+	}
+	//#endif
+	for (int i = 0; i < nop; i++) {
+	  // process all outgoing channels with Faust modules:
+	  ProcessPlugin* p = mProcessPluginsToNetwork[i];
+	  if (p->getInited()) {
+	    p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+	  }
+	}
+	// 3) Finally, send packets to network:
+	computeProcessToNetwork(mInBufCopy, n_frames);
+      } else {
+	// 3) Finally, send packets to network:
+	computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
+      }
     }
 
 #ifdef WAIR // WAIR
