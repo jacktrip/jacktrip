@@ -49,12 +49,13 @@
 #endif //__NO_JACK__
 
 #include "JackTrip.h"
+#include "UdpHubListener.h"
 
 #include "Effects.h"
 
 /** \brief Class to set usage options and parse settings from input
  */
-class Settings : public QThread
+class Settings : public QObject
 {
     Q_OBJECT;
 
@@ -65,30 +66,16 @@ public:
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
 
-    void startJackTrip();
-    void stopJackTrip();
+    UdpHubListener *getConfiguredHubServer();
+    JackTrip *getConfiguredJackTrip();
 
     /// \brief Prints usage help
     void printUsage();
 
     bool getLoopBack() { return mLoopBack; }
-    int getIOStatTimeout() const {return mIOStatTimeout;}
-    const std::ostream& getIOStatStream() const
-    {
-        return mIOStatStream.is_open() ? (std::ostream&)mIOStatStream : std::cout;
-    }
-
-    bool getTestMode() { return mTestMode; }
-
-public slots:
-    void slotExitProgram()
-    {
-        std::cerr << "Exiting JackTrip..." << std::endl;
-        std::exit(1);
-    }
+    bool isHubServer() { return mJackTripServer; }
 
 private:
-    JackTrip* mJackTrip; ///< JackTrip class
     JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
     JackTrip::dataProtocolT mDataProtocol; ///< Data Protocol
     int mNumChans; ///< Number of Channels (inputs = outputs)
@@ -98,9 +85,10 @@ private:
     int mBindPortNum; ///< Bind Port Number
     int mPeerPortNum; ///< Peer Port Number
     int mServerUdpPortNum;
-    char* mClientName; ///< JackClient Name
-    bool mUnderrrunZero; ///< Use Underrun to Zero mode
-    JackTrip::underrunModeT mUnderRunMode;
+    QString mClientName; ///< JackClient Name
+    QString mRemoteClientName;
+    JackTrip::underrunModeT mUnderrunMode; ///< Underrun mode
+    bool mStopOnTimeout; /// < Stop jacktrip after 10 second network timeout
 
 #ifdef WAIR // wair
     int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
@@ -125,7 +113,7 @@ private:
     unsigned int mHubConnectionMode;
     bool mConnectDefaultAudioPorts; ///< Connect or not jack audio ports
     int mIOStatTimeout;
-    std::ofstream mIOStatStream;
+    QSharedPointer<std::ofstream> mIOStatStream;
     Effects mEffects;
     bool mTestMode; ///< Test mode
 };

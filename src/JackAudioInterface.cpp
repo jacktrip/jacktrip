@@ -66,7 +66,7 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
                                        int NumNetRevChans,
                                        #endif // endwhere
                                        AudioInterface::audioBitResolutionT AudioBitResolution,
-                                       const char* ClientName) :
+                                       QString ClientName) :
     AudioInterface(jacktrip,
                    NumInChans, NumOutChans,
                    #ifdef WAIR // wair
@@ -102,8 +102,23 @@ void JackAudioInterface::setup()
 //*******************************************************************************
 void JackAudioInterface::setupClient()
 {
-    const char* client_name = mClientName;
     const char* server_name = NULL;
+    QByteArray clientName = mClientName.toUtf8();
+#ifdef __MAC_OSX__
+    //Jack seems to have an issue with client names over 27 bytes in OS X
+    int maxSize = 27;
+#else
+    int maxSize = jack_client_name_size();
+#endif
+    if (clientName.length() > maxSize) {
+        int length = maxSize;
+        //Make sure we don't cut mid multi-byte character.
+        while ((length > 0) && ((clientName.at(length) & 0xc0) == 0x80)) {
+            length--;
+        }
+        clientName.truncate(length);
+    }
+    
     // was  jack_options_t options = JackNoStartServer;
     // and then jack_options_t options = JackLoadName;
     jack_options_t options = JackNullOption; // from jackSimpleClient example
@@ -115,9 +130,9 @@ void JackAudioInterface::setupClient()
     {
         QMutexLocker locker(&sJackMutex);
 #ifndef WAIR // WAIR
-        mClient = jack_client_open (client_name, options, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), options, &status, server_name);
 #else
-        mClient = jack_client_open (client_name, JackUseExactName, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), JackUseExactName, &status, server_name);
 #endif // endwhere
     }
 
@@ -136,8 +151,7 @@ void JackAudioInterface::setupClient()
         fprintf (stderr, "JACK server started\n");
     }
     if (status & JackNameNotUnique) {
-        client_name = jack_get_client_name(mClient);
-        fprintf (stderr, "unique name `%s' assigned\n", client_name);
+        fprintf (stderr, "unique name `%s' assigned\n", jack_get_client_name(mClient));
     }
 
     // Set function to call if Jack shuts down

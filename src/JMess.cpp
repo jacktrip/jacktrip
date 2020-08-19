@@ -78,7 +78,7 @@ JMess::~JMess()
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::writeOutput(QString xmlOutFile)
+void JMess::writeOutput(__attribute__((unused)) QString xmlOutFile)
 {
     //  QDomDocument jmess_xml;   QDomElement root;
     //  QDomElement connection;   QDomElement output;
@@ -171,13 +171,12 @@ void JMess::setConnectedPorts()
 void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // called from UdpHubListener::connectMesh
 {
-
     QMutexLocker locker(&sJMessMutex);
-
+    
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
 
-    const char **ports, **connections; //vector of ports and connections
+    const char **ports; //, **connections; //vector of ports and connections
     QVector<QString> OutputInput(2); //helper variable
 
     //Get active output ports.
@@ -202,7 +201,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
             //                        qDebug() << ports[out_i] << systemPort << s;
         }
     }
-//    for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
+    //for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
     disconnectAll();
 
     int k = 0;
@@ -217,8 +216,8 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
             if ((hubPatch == JackTrip::CLIENTECHO)||(hubPatch == JackTrip::FULLMIX)) k = i;
             else if (hubPatch == JackTrip::CLIENTFOFI) k = (j+(i+1))%ctr;
             for (int l = 1; l<=nChans; l++) { // chans are 1-based
-//                qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
-//                         <<"with " << IPS[k]+":send_"+QString::number(l);
+                //qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+                         //<<"with " << IPS[k]+":send_"+QString::number(l);
 
                 QString left = IPS[i] +
                         ":receive_" + QString::number(l);
@@ -244,8 +243,8 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
             for (int j = 0; j<jLimit; j++) {
                 k = (j+(i+1))%ctr;
                 for (int l = 1; l<=nChans; l++) { // chans are 1-based
-//                    qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
-//                             <<"with " << IPS[k]+":send_"+QString::number(l);
+                    //qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
+                             //<<"with " << IPS[k]+":send_"+QString::number(l);
 
                     QString left = IPS[i] +
                             ":receive_" + QString::number(l);
@@ -388,7 +387,7 @@ void JMess::disconnectAll()
  * read the file.
  */
 //-------------------------------------------------------------------------------
-int JMess::parseXML(QString xmlInFile)
+int JMess::parseXML(__attribute__((unused)) QString xmlInFile)
 {
     //  mPortsToConnect.clear();
     //  QString errorStr;
@@ -455,7 +454,7 @@ int JMess::parseXML(QString xmlInFile)
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::connectPorts(QString xmlInFile)
+void JMess::connectPorts(__attribute__((unused)) QString xmlInFile)
 {
     QVector<QString> OutputInput(2);
 
