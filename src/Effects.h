@@ -119,6 +119,17 @@ public:
   ProcessPlugin* getInLimiter() { return inLimiterP; }
   ProcessPlugin* getOutLimiter() { return outLimiterP; }
 
+  bool getHaveEffect() {
+    return
+      inCompressor || outCompressor ||
+      inZitarev || outZitarev || 
+      inFreeverb || outFreeverb ;
+  }
+
+  bool getHaveLimiter() {
+    return mLimit != LIMITER_NONE;
+  }
+
   void setVerboseFlag(int v) {
     gVerboseFlag = v;
   }

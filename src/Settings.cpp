@@ -86,7 +86,8 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mIOStatTimeout(0)
+    mIOStatTimeout(0),
+    mTestMode(false)
 {}
 
 //*******************************************************************************
@@ -142,10 +143,11 @@ void Settings::parseInput(int argc, char** argv)
         { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
         { "iostat", required_argument, NULL, 'I' }, // Set IO stat timeout
         { "iostatlog", required_argument, NULL, 'G' }, // Set IO stat log file
+        { "help", no_argument, NULL, 'h' }, // Print Help
         { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
         { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
         { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
-        { "help", no_argument, NULL, 'h' }, // Print Help
+        { "examine-connection", no_argument, NULL, 'x' }, // test mode - measure latency and such
         { NULL, 0, NULL, 0 }
     };
 
@@ -154,7 +156,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhIGf:O:a:", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -389,6 +391,11 @@ void Settings::parseInput(int argc, char** argv)
             exit(1);
           }
           break; }
+        case 'x': { // examine connection (test mode)
+          //-------------------------------------------------------
+          mTestMode = true;
+          printf("\t*** ENTERING TEST MODE (option -x) ***\n");
+          break; }
         case ':': {
           printf("\t*** Missing option argument\n");
           break; }
@@ -413,6 +420,19 @@ void Settings::parseInput(int argc, char** argv)
             cout << "argument: " << argv[optind] << endl;
         }
         cout << gPrintSeparator << endl;
+    }
+
+    // Exit if options are confused
+    //----------------------------------------------------------------------------
+    if (mEffects.getHaveEffect() && mJackTripServer) {
+      std::cerr << "--effects (-f) ERROR: Cannot presently use effects in HUB SERVER MODE (-S)." << endl;
+      std::exit(1);
+      // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
+    }
+    if (mEffects.getHaveLimiter() && mJackTripServer) {
+      std::cerr << "--overflowlimiting (-O) ERROR: Cannot presently use limiters in HUB SERVER MODE (-S)." << endl;
+      std::exit(1);
+      // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
     }
 }
 
@@ -467,6 +487,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0 (freeverb) or 1.0+ to 2.0 (zitarev)" << endl;
+    cout << " -f, --effects    # (\"[i:[c[(g)]][z|f[(g)]] [o:[c[(g)]]|[z|f[(g)]]]\") Alt FX spec: \"optional incoming and/or outgoing compressor and/or (zitarev-or-freeverb) @ level g in (0-1.0)\"" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
@@ -479,6 +500,7 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
+    cout << " -x, --examine-channel                    Print out connection statistics" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -638,20 +660,26 @@ JackTrip *Settings::getConfiguredJackTrip()
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
-    // Allocate audio effects in client, if any:
-    mEffects.allocateEffects(mNumChans);
+    if (mTestMode) {
 
-    // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+      jackTrip->setTestMode(true);
 
-    // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    } else {
+      // Allocate audio effects in client, if any:
+      mEffects.allocateEffects(mNumChans);
+
+      // Outgoing/Incoming Compressor and/or Reverb:
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+
+      // Limiters go last in the plugin sequence:
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    }
 
 #ifdef WAIR // WAIR
     if ( mWAIR ) {
@@ -682,4 +710,3 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     return jackTrip;
 }
-

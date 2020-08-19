@@ -294,6 +294,8 @@ public:
     { mAudioInterface = AudioInterface; }
     virtual void setLoopBack(bool b)
     { mLoopBack = b; }
+    virtual void setTestMode(bool b)
+    { mTestMode = b; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -556,6 +558,8 @@ private:
     QSharedPointer<std::ofstream> mIOStatStream;
     int mIOStatTimeout;
     std::ostream mIOStatLogStream;
+
+    bool mTestMode;
 };
 
 #endif
