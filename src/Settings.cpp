@@ -156,7 +156,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhIGf:O:a:x", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -394,7 +394,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
           mTestMode = true;
-          printf("\t*** ENTERING TEST MODE ***\n");
+          printf("\t*** ENTERING TEST MODE (option -x) ***\n");
           break; }
         case ':': {
           printf("\t*** Missing option argument\n");
@@ -500,6 +500,7 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
+    cout << " -x, --examine-channel                    Print out connection statistics" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -659,20 +660,26 @@ JackTrip *Settings::getConfiguredJackTrip()
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
-    // Allocate audio effects in client, if any:
-    mEffects.allocateEffects(mNumChans);
+    if (mTestMode) {
 
-    // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+      jackTrip->setTestMode(true);
 
-    // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    } else {
+      // Allocate audio effects in client, if any:
+      mEffects.allocateEffects(mNumChans);
+
+      // Outgoing/Incoming Compressor and/or Reverb:
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+
+      // Limiters go last in the plugin sequence:
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    }
 
 #ifdef WAIR // WAIR
     if ( mWAIR ) {

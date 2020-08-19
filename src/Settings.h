@@ -116,6 +116,7 @@ private:
     QSharedPointer<std::ofstream> mIOStatStream;
     Effects mEffects;
     bool mTestMode; ///< Test mode
+    unsigned int mAudioBufferCount;
 };
 
 #endif

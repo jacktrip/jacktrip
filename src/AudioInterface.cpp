@@ -40,6 +40,10 @@
 #include <iostream>
 #include <cmath>
 
+//#include <ctime>
+#include <chrono>
+#include <cstdint>
+
 using std::cout; using std::endl;
 
 //*******************************************************************************
@@ -57,7 +61,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
     mAudioBitResolution(AudioBitResolution*8),
     mBitResolutionMode(AudioBitResolution),
     mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
-    mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false), mProcessingAudio(false)
+    mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false), mTestMode(false), mProcessingAudio(false)
 {
 #ifndef WAIR
     //cc
@@ -212,6 +216,11 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 }
 
 
+uint64_t timeSinceEpochMillisec() {
+  using namespace std::chrono;
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
@@ -236,6 +245,15 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // ==== RECEIVE AUDIO CHANNELS FROM NETWORK ====
     computeProcessFromNetwork(out_buffer, n_frames);
     // =============================================
+
+    static uint64_t firstTimeMS = 0;
+    if (mTestMode) {
+      if (firstTimeMS == 0) {
+        firstTimeMS = timeSinceEpochMillisec();
+      } else {
+        std::cout << timeSinceEpochMillisec() - firstTimeMS << " ";
+      }
+    }
 
 #ifdef WAIR // WAIR
     // nib16 result now in mNetInBuffer
