@@ -227,13 +227,13 @@ void UdpHubListener::run()
             cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
             cout << "===============================================================" << endl;
             QThread::msleep(100);
+#ifndef __NO_JACK__
 #ifdef WAIR // WAIR
             if (isWAIR()) connectMesh(true); // invoked with -Sw
 #endif // endwhere
-
-//            qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
-
+//            qDebug(j) << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
             connectPatch(true);
+#endif //__NO_JACK__
         }
     }
 
@@ -432,13 +432,16 @@ int UdpHubListener::releaseThread(int id)
     mActiveAddress[id].address = "";
     mActiveAddress[id].port = 0;
     mTotalRunningThreads--;
+#ifndef __NO_JACK__
 #ifdef WAIR // wair
     if (isWAIR()) connectMesh(false); // invoked with -Sw
 #endif // endwhere
     if (getHubPatch()) connectPatch(false); // invoked with -p > 0
+#endif //__NO_JACK__
     return 0; /// \todo Check if we really need to return an argument here
 }
 
+#ifndef __NO_JACK__
 #ifdef WAIR // wair
 #include "JMess.h"
 //*******************************************************************************
@@ -462,7 +465,6 @@ void UdpHubListener::enumerateRunningThreadIDs()
 }
 #endif // endwhere
 
-#include "JMess.h"
 void UdpHubListener::connectPatch(bool spawn)
 {
     if(m_connectDefaultAudioPorts) {
@@ -481,6 +483,7 @@ void UdpHubListener::connectPatch(bool spawn)
         tmp.connectSpawnedPorts(gDefaultNumInChannels,getHubPatch());
     // FIXME: need change to gDefaultNumInChannels if more than stereo
 }
+#endif //__NO_JACK__
 
 // TODO:
 // USE bool QAbstractSocket::isValid () const to check if socket is connect. if not, exit loop

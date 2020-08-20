@@ -118,7 +118,6 @@ INCLUDEPATH += ../faust-src-lair
 
 # Input
 HEADERS += DataProtocol.h \
-           JMess.h \
            JackTrip.h \
            jacktrip_globals.h \
            jacktrip_types.h \
@@ -139,10 +138,10 @@ HEADERS += DataProtocol.h \
            AudioInterface.h
 
 !nojack {
-HEADERS += JackAudioInterface.h
+HEADERS += JackAudioInterface.h \
+           JMess.h
 }
 SOURCES += DataProtocol.cpp \
-           JMess.cpp \
            JackTrip.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
@@ -159,7 +158,8 @@ SOURCES += DataProtocol.cpp \
            AudioInterface.cpp
 
 !nojack {
-SOURCES += JackAudioInterface.cpp
+SOURCES += JackAudioInterface.cpp \
+           JMess.cpp
 }
 
 # RtAduio Input

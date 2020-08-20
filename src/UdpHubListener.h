@@ -147,6 +147,7 @@ private:
     bool m_connectDefaultAudioPorts;
     Settings* m_settings;
 
+#ifndef __NO_JACK__
 #ifdef WAIR // wair
     bool mWAIR;
     void connectMesh(bool spawn);
@@ -156,6 +157,7 @@ public :
     bool isWAIR() {return mWAIR;}
 #endif // endwhere
     void connectPatch(bool spawn);
+#endif //__NO_JACK__
 public :
     unsigned int mHubPatch;
     void setHubPatch(unsigned int p) {mHubPatch = p;}
