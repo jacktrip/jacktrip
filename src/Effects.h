@@ -70,8 +70,8 @@ class Effects
   Reverb* outFreeverbP = nullptr;
   int parenLevel = 0;
   char lastEffect = '\0';
-  float compressorInLevelChange = 0;
-  float compressorOutLevelChange = 0;
+  float compressorInMakeUpGain = 0;
+  float compressorOutMakeUpGain = 0;
   float zitarevInLevel = 1.0f; // "Level" = wetness from 0 to 1
   float freeverbInLevel = 1.0f;
   float zitarevOutLevel = 1.0f;
@@ -183,14 +183,20 @@ public:
     int returnCode = 0;
     if (not isalpha(args[0])) {
       float farg = atof(args);
+      if (farg != 0.0f) {
+	std::cerr << "*** parseCompressorArgs: support incremental makeup gain in Compressor constructor\n";;
+	returnCode = 1;
+      }
       if (io==IO_IN) {
-        compressorInLevelChange = farg;
+        compressorInMakeUpGain = farg;
       } else if (io==IO_OUT) {
-        compressorOutLevelChange = farg;
+        compressorOutMakeUpGain = farg;
       }
     } else {
-      std::cerr << "*** parseCompressorArgs: write this\n";;
+      std::cerr << "*** parseCompressorArgs: write general arg parsing\n";;
       returnCode = 1;
+      // args can be makeUpGain, handled above, or (all optional, any order):
+      // c(c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain)
     }
     return returnCode;
   }
