@@ -1,3 +1,12 @@
+h headers :
+	install -d headersdir
+	$(MAKE) DEST='headersdir/' ARCH='faust2header.cpp' -f Makefile.headers
+
+ih hi installheaders : headers
+	install headersdir/*.h ../src/
+
+# The JackTrip project does not need the remaining make targets, except "clean" is nice to have:
+
 all : jackgtk
 
 test: jackgtk alsagtk jackqt alsaqt ladspa ossgtk bench plot sndfile jackconsole
@@ -92,13 +101,6 @@ supercollider :
 jackconsole :
 	install -d jackconsoledir
 	$(MAKE) DEST='jackconsoledir/' ARCH='jack-console.cpp' LIB='`pkg-config --cflags --libs jack `' -f Makefile.compile
-
-h headers :
-	install -d headersdir
-	$(MAKE) DEST='headersdir/' ARCH='faust2header.cpp' -f Makefile.headers
-
-ih hi installheaders : headers
-	install headersdir/*.h ../src/
 
 clean :
 	-rm -rf alsagtkdir jackgtkdir alsaqtdir jackqtdir vecalsagtkdir vecjackgtkdir ladspadir jackwxdir ossgtkdir osswxdir pagtkdir pawxdir moduledir bundledir mspdir vstdir benchdir sndfiledir plotdir benchdir supercolliderdir puredatadir qdir plotdir jackconsoledir matlabplotdir *-ps *-svg headersdir
