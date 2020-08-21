@@ -95,12 +95,12 @@ public:
         delete mProcessPluginsFromNetwork[i];
         delete mProcessPluginsToNetwork[i];
       there.  If/when we ever do it here:
-	if (inCompressor) { delete inCompressorP; }
-	if (outCompressor) { delete outCompressorP; }
-	if (inZitarev) { delete inZitarevP; }
-	if (outZitarev) { delete outZitarevP; }
-	if (inFreeverb) { delete inFreeverbP; }
-	if (outFreeverb) { delete outFreeverbP; }
+        if (inCompressor) { delete inCompressorP; }
+        if (outCompressor) { delete outCompressorP; }
+        if (inZitarev) { delete inZitarevP; }
+        if (outZitarev) { delete outZitarevP; }
+        if (inFreeverb) { delete inFreeverbP; }
+        if (outFreeverb) { delete outFreeverbP; }
       but if everyone can compile C++11,
       let's switch to using std::unique_ptr.
     */
@@ -122,7 +122,7 @@ public:
   bool getHaveEffect() {
     return
       inCompressor || outCompressor ||
-      inZitarev || outZitarev || 
+      inZitarev || outZitarev ||
       inFreeverb || outFreeverb ;
   }
 
@@ -179,6 +179,22 @@ public:
     }
   }
 
+  int parseCompresserArgs(char* args, InOrOut io) {
+    int returnCode = 0;
+    if (not isalpha(args[0])) {
+      float farg = atof(args);
+      if (io==IO_IN) {
+        compressorInLevelChange = farg;
+      } else if (io==IO_OUT) {
+        compressorOutLevelChange = farg;
+      }
+    } else {
+      std::cerr << "*** parseCompressorArgs: write this\n";;
+      returnCode = 1;
+    }
+    return returnCode;
+  }
+
   int parseEffectsOptArg(char* optarg) {
     int returnCode = 0;
 
@@ -197,6 +213,8 @@ public:
       }
     } else {
       // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
+      // c can be c(makeUpGain) or (all optional, any order):
+      // c(c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain)
       if (gVerboseFlag) {
         std::cout << "-f (--effects) arg = " << optarg << std::endl;
       }
@@ -228,33 +246,38 @@ public:
           for (ulong j=i+1; j<nac; j++) {
             if (optarg[j] == ')') {
               optarg[j] = '\0';
-              float farg = atof(&optarg[i+1]);
-              optarg[j] = ')';
-              if (io==IO_IN) {
-                if (lastEffect == 'c') {
-                  compressorInLevelChange = farg;
-                } else if (lastEffect == 'z') {
+              switch(lastEffect) {
+              case 'c': {
+                returnCode += parseCompresserArgs(&optarg[i+1],io);
+                break; }
+              case 'z': {
+                float farg = atof(&optarg[i+1]);
+                if (io==IO_IN) {
                   zitarevInLevel = farg;
-                } else if (lastEffect == 'f') {
-                  freeverbInLevel = farg;
-                } // else ignore the argument
-              } else if (io==IO_OUT) {
-                if (lastEffect == 'c') {
-                  compressorOutLevelChange = farg;
-                } else if (lastEffect == 'z') {
+                } else if (io==IO_OUT) {
                   zitarevOutLevel = farg;
-                } else if (lastEffect == 'f') {
+                } // else ignore the argument
+                break; }
+              case 'f': {
+                float farg = atof(&optarg[i+1]);
+                if (io==IO_IN) {
+                  freeverbInLevel = farg;
+                } else if (io==IO_OUT) {
                   freeverbOutLevel = farg;
                 } // else ignore the argument
-              } // else ignore the argument
+                break; }
+              default: { // ignore
+                break; }
+              }
+              optarg[j] = ')';
               break;
             }
           }
           break;
         case ')': parenLevel--;
           break;
-        default:
-          break;
+        default: { // ignore
+          break; }
         }
       }
     }
