@@ -65,6 +65,8 @@ class Effects
   bool outFreeverb = false;
   Compressor* inCompressorP = nullptr;
   Compressor* outCompressorP = nullptr;
+  CompressorPreset inCompressorPreset = CompressorPresets::voice; // ./CompressorPresets.h
+  CompressorPreset outCompressorPreset = CompressorPresets::voice;
   Reverb* inZitarevP = nullptr;
   Reverb* outZitarevP = nullptr;
   Reverb* inFreeverbP = nullptr;
@@ -78,7 +80,6 @@ class Effects
   float mReverbLevel; // for backward compatibility: 0-1 Freeverb, 1-2 Zitarev
   Limiter* inLimiterP = nullptr;
   Limiter* outLimiterP = nullptr;
-  CompressorPresetList compressorPresetList;
 
 public:
 
@@ -92,15 +93,15 @@ public:
     /*
       Plugin ownership presently passes to JackTrip,
       and deletion occurs in AudioInterface.cpp. See
-        delete mProcessPluginsFromNetwork[i];
-        delete mProcessPluginsToNetwork[i];
+      delete mProcessPluginsFromNetwork[i];
+      delete mProcessPluginsToNetwork[i];
       there.  If/when we ever do it here:
-        if (inCompressor) { delete inCompressorP; }
-        if (outCompressor) { delete outCompressorP; }
-        if (inZitarev) { delete inZitarevP; }
-        if (outZitarev) { delete outZitarevP; }
-        if (inFreeverb) { delete inFreeverbP; }
-        if (outFreeverb) { delete outFreeverbP; }
+      if (inCompressor) { delete inCompressorP; }
+      if (outCompressor) { delete outCompressorP; }
+      if (inZitarev) { delete inZitarevP; }
+      if (outZitarev) { delete outZitarevP; }
+      if (inFreeverb) { delete inFreeverbP; }
+      if (outFreeverb) { delete outFreeverbP; }
       but if everyone can compile C++11,
       let's switch to using std::unique_ptr.
     */
@@ -137,11 +138,11 @@ public:
   void allocateEffects(int nc) {
     mNumChans = nc;
     if (inCompressor) {
-      inCompressorP = new Compressor(mNumChans, gVerboseFlag, CompressorPresets::voice);
+      inCompressorP = new Compressor(mNumChans, gVerboseFlag, inCompressorPreset);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
-      outCompressorP = new Compressor(mNumChans, gVerboseFlag, CompressorPresets::voice);
+      outCompressorP = new Compressor(mNumChans, gVerboseFlag, outCompressorPreset);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
@@ -179,32 +180,110 @@ public:
     }
   }
 
-  int setCompressorPreset(unsigned long preset, InOrOut io) {
+  int setCompressorPresetIndexFrom1(unsigned long presetIndexFrom1, InOrOut io) {
     int returnCode = 0;
-    if (preset <= 0 && preset > compressorPresetList.presets.size()) {
+    if (presetIndexFrom1 <= 0 || presetIndexFrom1 > CompressorPresets::numPresets) {
+      std::cerr << "*** Effects.h: setCompressorPresetFrom1: Index " << presetIndexFrom1 << " out of range\n";
       returnCode = 1;
     } else {
-      std::cerr << "setCompressorPreset: WRITE ME\n";
+      CompressorPreset stdPreset = CompressorPresets::standardPresets[presetIndexFrom1-1];
+      if (io == IO_IN) {
+        inCompressorPreset = stdPreset;
+      } else if (io == IO_OUT) {
+        outCompressorPreset = stdPreset;
+      } else {
+        std::cerr << "*** Effects.h: setCompressorPresetFrom1: Invalid InOrOut value " << io << "\n";
+        returnCode = 1;
+      }
     }
     return returnCode;
   }
 
-  int parseCompresserArgs(char* args, InOrOut io) {
+  int parseCompresserArgs(char* args, InOrOut inOrOut) {
     // args can be integerPresetNumberFrom1 or (all optional, any order):
     // c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain
     int returnCode = 0;
     if (not isalpha(args[0])) {
-      int preset = atoi(args);
-      returnCode = setCompressorPreset(preset,io);
+      int presetIndexFrom1 = atoi(args);
+      setCompressorPresetIndexFrom1(presetIndexFrom1,inOrOut);
     } else {
-      std::cerr << "*** parseCompressorArgs: write general arg parsing\n";;
-      returnCode = 1;
-      // args can be makeUpGain, handled above, or (all optional, any order):
-      // c(c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain)
-    }
-    return returnCode;
-  }
+      // args can be presetIndexFrom1, handled above, or (all optional, any order):
+      // c(c:compressionRatio, t:thresholdDB, a:attackTimeMS, r:releaseTimeMS, g:makeUpGainDB)
+      // See ./CompressorPresets.h for example settings.
+      if (gVerboseFlag) {
+        std::cout << "parseCompressorArgs = " << args << std::endl;
+      }
+      ulong argLen = strlen(args);
+      char lastParam = '\0';
 
+      CompressorPreset newPreset(CompressorPresets::voice); // Anything unset gets voice value (most gentle)
+
+      for (ulong i=0; i<argLen; i++) {
+        char ch = args[i];
+        if (ch!=')' && parenLevel>0) { continue; }
+        switch(ch) {
+        case ' ': break;
+        case '\t': break;
+        case 'c': case 't': case 'a': case 'r': case 'g':
+          lastParam = args[i];
+          break;
+        case ':': break;
+        default: // must be a floating-point number at this point:
+          if (isalpha(ch)) {
+            std::cerr << "*** Effects.h: parseCompressorArgs: " << ch << " not recognized in args = " << args << "\n";
+            returnCode = 1;
+          } else {
+            float paramValue = -1.0e10;
+            for (ulong j=i; j<argLen; j++) {
+              if (args[j] == ',' || args[j] == ' ') { // comma or space required between parameters
+                char argsj = args[j];
+                args[j] = '\0';
+                paramValue = atof(&args[i]);
+                args[j] = argsj;
+                break;
+              }
+            }
+            if (paramValue == -1.0e10) {
+              std::cerr << "*** Effects.h: parseCompressorArgs: Could not find parameter for "
+                        << lastParam << " in args = " << args << "\n";
+              returnCode = 1;
+            } else {
+              switch (lastParam) {
+              case 'c':
+                newPreset.ratio = paramValue;
+                break;
+              case 't':
+                  newPreset.thresholdDB = paramValue;
+                break;
+              case 'a':
+                  newPreset.attackMS = paramValue;
+                break;
+              case 'r':
+                  newPreset.releaseMS = paramValue;
+                break;
+              case 'g':
+                  newPreset.makeUpGainDB = paramValue;
+                break;
+              default: // cannot happen:
+                std::cerr << "*** Effects.h: parseCompressorArgs: lastParam " << lastParam << " invalid\n";
+                returnCode = 1;
+              } // switch(lastParam)
+            } // have valid parameter from atof
+          } // have valid non-alpha char for parameter
+        } // switch(ch)
+      } // for (ulong i=0; i<argLen; i++) {
+      if (inOrOut == IO_IN) {
+        inCompressorPreset = newPreset;
+      } else if (inOrOut == IO_OUT) {
+        outCompressorPreset = newPreset;
+      } else {
+        std::cerr << "*** Effects.h: parseCompressorArgs: invalid InOrOut value " << inOrOut << "\n";
+        returnCode = 1;
+      }
+    } // long-form compressor args
+    return returnCode;
+  } // int parseCompresserArgs(char* args, InOrOut inOrOut)
+  
   int parseEffectsOptArg(char* optarg) {
     int returnCode = 0;
 
@@ -228,9 +307,9 @@ public:
       if (gVerboseFlag) {
         std::cout << "-f (--effects) arg = " << optarg << std::endl;
       }
-      ulong nac = strlen(optarg);
+      ulong argLen = strlen(optarg);
 
-      for (ulong i=0; i<nac; i++) {
+      for (ulong i=0; i<argLen; i++) {
         if (optarg[i]!=')' && parenLevel>0) { continue; }
         switch(optarg[i]) {
         case ' ': break;
@@ -253,7 +332,7 @@ public:
           lastEffect = 'z';
           break;
         case '(': parenLevel++;
-          for (ulong j=i+1; j<nac; j++) {
+          for (ulong j=i+1; j<argLen; j++) {
             if (optarg[j] == ')') {
               optarg[j] = '\0';
               switch(lastEffect) {
@@ -287,8 +366,8 @@ public:
         case ')': parenLevel--;
           break;
         default:
-	  break; // ignore
-        }
+          break; // ignore
+        } // switch(optarg[i])
       }
     }
     return returnCode;

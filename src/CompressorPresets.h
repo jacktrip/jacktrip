@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 struct CompressorPreset {
   float ratio;
   float thresholdDB;
@@ -22,13 +24,15 @@ namespace CompressorPresets
   const CompressorPreset voice { 2.0f, -24.0f, 15.0f, 40.0f, 2.0f };
   const CompressorPreset horns { 3.0f, -10.0f, 100.0f, 250.0f, 2.0f };
   const CompressorPreset snare { 5.0f, -4.0f, 5.0f, 150.0f, 3.0f };
-  const uint nPresets { 3 };
+  const uint numPresets { 3 };
+  const std::array<CompressorPreset,numPresets> standardPresets { voice, horns, snare };
+  enum CompressorPresetNames { CPN_VOICE, CPN_BRASS, CPN_SNARE, CPN_NUMPRESETS };
 }
 
+#if 0 // not yet using this
 // Dynamic extension of CompressorPresets:
 struct CompressorPresetList {
   std::vector<CompressorPreset*> presets;
-  enum PresetNames { PN_VOICE, PN_BRASS, PN_SNARE, PN_NUMPRESETS };
   CompressorPresetList() { // define some standard presets
     presets.push_back( new CompressorPreset(CompressorPresets::voice) );
     presets.push_back( new CompressorPreset(CompressorPresets::horns) );
@@ -36,6 +40,7 @@ struct CompressorPresetList {
   }
   ~CompressorPresetList() = default;
 };
+#endif
 
 /* Settings from http://www.anythingpeaceful.org/sonar/settings/comp.html
 
