@@ -3,7 +3,7 @@ declare version "0.0";
 declare author "Julius Smith";
 declare license "MIT Style STK-4.2";
 declare description "Compressor demo application, adapted from the Faust Library's dm.compressor_demo in demos.lib";
-declare documentation "https://faust.grame.fr/doc/libraries/#compressors.lib";
+declare documentation "https://faustlibraries.grame.fr/libs/compressors/#cocompressor_mono";
 
 import("stdfaust.lib");
 
