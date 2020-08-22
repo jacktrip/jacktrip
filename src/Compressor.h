@@ -115,6 +115,17 @@ public:
     }
   }
 
+  Compressor(int numchans, // xtor
+	     bool verboseIn = false,
+       CompressorPreset preset = CompressorPresets::voice)
+  {
+    Compressor(numchans,verboseIn,
+    preset.ratio,
+    preset.thresholdDB,
+    preset.attackMS,
+    preset.releaseMS,
+    preset.makeUpGainDB);
+  }
   /// \brief The class destructor
   virtual ~Compressor() {
     for ( int i = 0; i < mNumChannels; i++ ) {

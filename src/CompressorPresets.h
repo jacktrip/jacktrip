@@ -21,6 +21,7 @@ namespace CompressorPresets
   const CompressorPreset voice { 2.0f, -24.0f, 15.0f, 40.0f, 2.0f };
   const CompressorPreset horns { 3.0f, -10.0f, 100.0f, 250.0f, 2.0f };
   const CompressorPreset snare { 5.0f, -4.0f, 5.0f, 150.0f, 3.0f };
+  const uint nPresets { 3 };
 }
 
 // Dynamic extension of CompressorPresets:

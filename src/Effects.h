@@ -137,11 +137,11 @@ public:
   void allocateEffects(int nc) {
     mNumChans = nc;
     if (inCompressor) {
-      inCompressorP = new Compressor(mNumChans, gVerboseFlag);
+      inCompressorP = new Compressor(mNumChans, gVerboseFlag, CompressorPresets::voice);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
-      outCompressorP = new Compressor(mNumChans, gVerboseFlag);
+      outCompressorP = new Compressor(mNumChans, gVerboseFlag, CompressorPresets::voice);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
