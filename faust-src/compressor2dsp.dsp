@@ -31,7 +31,7 @@ with {
 	link = 0; // linkage between channels (irrelevant for mono)
 	FBFF = 1; // cross-fade between feedforward (0) and feedback (1) compression
 	maxGR = -50; // dB - Max Gain Reduction (only affects display)
-	meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 10))))):attach;
+	meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1] Compressor Gain [unit:dB][tooltip: Compressor gain in dB]", maxGR, 10))))):attach;
 	//meter = _; // use gainview below instead to look more like compressordsp.dsp
 	NChans = 1;
 
