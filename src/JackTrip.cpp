@@ -467,15 +467,15 @@ void JackTrip::completeConnection()
     QThread::msleep(1);
     if (gVerboseFlag) std::cout << "step 5" << std::endl;
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mAudioInterface->startProcess" << std::endl;
-    mAudioInterface->startProcess();
-
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); ++i) {
         mAudioInterface->appendProcessPluginFromNetwork(mProcessPluginsFromNetwork[i]);
     }
     for (int i = 0; i < mProcessPluginsToNetwork.size(); ++i) {
         mAudioInterface->appendProcessPluginToNetwork(mProcessPluginsToNetwork[i]);
     }
-    mAudioInterface->initPlugins(); // mSampleRate assumed settled now
+    mAudioInterface->initPlugins(); // mSampleRate known now
+    mAudioInterface->startProcess();
+
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
     
     //Start our IO stat timer

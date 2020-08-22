@@ -617,6 +617,11 @@ void AudioInterface::fromBitToSampleConversion
     }
 }
 
+char* pluginName(ProcessPlugin* plugin) {
+  char* pluginName { const_cast<char*>(typeid(*plugin).name()) };
+  while (isdigit(*pluginName)) { pluginName++; }
+  return pluginName;
+}
 
 //*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
@@ -624,9 +629,9 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-              << typeid(plugin).name() << " REJECTED due to having "
-              << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
-              << mNumInChans << " inputs\n";
+	      << pluginName(plugin) << " REJECTED due to having "
+	      << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
+	      << mNumInChans << " inputs\n";
     return;
   }
   mProcessPluginsToNetwork.append(plugin);
@@ -637,8 +642,8 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumOutputs() > mNumOutChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-              << typeid(plugin).name() << " REJECTED due to having "
-              << plugin->getNumOutputs() << " inputs, while the JACK audio output requires "
+              << pluginName(plugin) << " REJECTED due to having "
+              << plugin->getNumOutputs() << " outputs, while the JACK audio output requires "
               << mNumOutChans << " outputs\n";
     return;
   }

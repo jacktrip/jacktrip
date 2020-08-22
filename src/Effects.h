@@ -286,8 +286,8 @@ public:
           break;
         case ')': parenLevel--;
           break;
-        default: { // ignore
-          break; }
+        default:
+	  break; // ignore
         }
       }
     }
