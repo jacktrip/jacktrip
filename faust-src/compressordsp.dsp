@@ -28,8 +28,7 @@ with {
         cbp = meter_group(checkbox("[0] Bypass  [tooltip: When this is checked, the compressor
                 has no effect]"));
         gainview = co.compression_gain_mono(ratio,threshold,attack,release) : ba.linear2db :
-        meter_group(hbargraph("[1] Compressor Gain [unit:dB] [tooltip: Current gain of
-        the compressor in dB]",-50,+10));
+        meter_group(hbargraph("[1] Compressor Gain [unit:dB] [tooltip: Compressor gain in dB]",-50,+10));
 
         displaygain = _ <: _,abs : _,gainview : attach;
 
