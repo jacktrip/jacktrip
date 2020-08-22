@@ -99,7 +99,6 @@ public:
              float releaseMSIn = 40.0f,
              float makeUpGainDBIn = 2.0f)
     : mNumChannels(numchans)
-    , simpleInit(false)
     , ratio(ratioIn)
     , thresholdDB(thresholdDBIn)
     , attackMS(attackMSIn)
@@ -167,7 +166,6 @@ private:
   int mNumChannels;
   std::vector<compressordsp*> compressorP;
   std::vector<APIUI*> compressorUIP;
-  bool simpleInit;
   float ratio; // 2:1 compression above threshold
   float thresholdDB;
   float attackMS;
