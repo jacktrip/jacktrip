@@ -73,7 +73,7 @@ with {
 	to approach (exponentially) a new higher target level (the compression
 	'releasing')]", 40, 1, 1000, 0.1)) : *(0.001) : max(1/ma.SR);
 
-	makeupgain = comp_group(hslider("[5] Makeup Gain [unit:dB]
+	makeupgain = comp_group(hslider("[5] MakeUpGain [unit:dB]
 	[tooltip: The compressed-signal output level is increased by this amount
 	(in dB) to make up for the level lost due to compression]",
 	2, -96, 96, 0.1)) : ba.db2linear;
