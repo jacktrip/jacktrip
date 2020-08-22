@@ -78,7 +78,7 @@ class Effects
   float mReverbLevel; // for backward compatibility: 0-1 Freeverb, 1-2 Zitarev
   Limiter* inLimiterP = nullptr;
   Limiter* outLimiterP = nullptr;
-  CompressorPresets compressorPresets;
+  CompressorPresetList compressorPresetList;
 
 public:
 
@@ -181,7 +181,7 @@ public:
 
   int setCompressorPreset(unsigned long preset, InOrOut io) {
     int returnCode = 0;
-    if (preset <= 0 && preset > compressorPresets.presets.size()) {
+    if (preset <= 0 && preset > compressorPresetList.presets.size()) {
       returnCode = 1;
     } else {
       std::cerr << "setCompressorPreset: WRITE ME\n";
