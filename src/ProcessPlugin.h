@@ -50,7 +50,7 @@
  * that need specific initialization.
  */
 class ProcessPlugin : public QThread
-{
+{    
 public:
 
     /// \brief The Class Constructor
@@ -72,7 +72,9 @@ public:
     virtual void init(int samplingRate) {
       fSamplingFreq = samplingRate;
       if (verbose) {
-	printf("init(%d)\n",samplingRate);
+        char* derivedClassName { const_cast<char*>(typeid(*this).name()) };
+        while (isdigit(*derivedClassName)) { derivedClassName++; } // I know!
+        printf("%s: init(%d)\n",derivedClassName,samplingRate);
       }
     }
     virtual bool getInited() { return inited; }

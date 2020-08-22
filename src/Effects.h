@@ -40,6 +40,7 @@
 #include "ProcessPlugin.h"
 #include "Limiter.h"
 #include "Compressor.h"
+#include "CompressorPresets.h"
 #include "Reverb.h"
 
 class Effects
@@ -70,8 +71,6 @@ class Effects
   Reverb* outFreeverbP = nullptr;
   int parenLevel = 0;
   char lastEffect = '\0';
-  float compressorInMakeUpGain = 0;
-  float compressorOutMakeUpGain = 0;
   float zitarevInLevel = 1.0f; // "Level" = wetness from 0 to 1
   float freeverbInLevel = 1.0f;
   float zitarevOutLevel = 1.0f;
@@ -79,6 +78,7 @@ class Effects
   float mReverbLevel; // for backward compatibility: 0-1 Freeverb, 1-2 Zitarev
   Limiter* inLimiterP = nullptr;
   Limiter* outLimiterP = nullptr;
+  CompressorPresetList compressorPresetList;
 
 public:
 
@@ -137,11 +137,11 @@ public:
   void allocateEffects(int nc) {
     mNumChans = nc;
     if (inCompressor) {
-      inCompressorP = new Compressor(mNumChans, gVerboseFlag);
+      inCompressorP = new Compressor(mNumChans, gVerboseFlag, CompressorPresets::voice);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
-      outCompressorP = new Compressor(mNumChans, gVerboseFlag);
+      outCompressorP = new Compressor(mNumChans, gVerboseFlag, CompressorPresets::voice);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
@@ -179,19 +179,23 @@ public:
     }
   }
 
+  int setCompressorPreset(unsigned long preset, InOrOut io) {
+    int returnCode = 0;
+    if (preset <= 0 && preset > compressorPresetList.presets.size()) {
+      returnCode = 1;
+    } else {
+      std::cerr << "setCompressorPreset: WRITE ME\n";
+    }
+    return returnCode;
+  }
+
   int parseCompresserArgs(char* args, InOrOut io) {
+    // args can be integerPresetNumberFrom1 or (all optional, any order):
+    // c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain
     int returnCode = 0;
     if (not isalpha(args[0])) {
-      float farg = atof(args);
-      if (farg != 0.0f) {
-	std::cerr << "*** parseCompressorArgs: support incremental makeup gain in Compressor constructor\n";;
-	returnCode = 1;
-      }
-      if (io==IO_IN) {
-        compressorInMakeUpGain = farg;
-      } else if (io==IO_OUT) {
-        compressorOutMakeUpGain = farg;
-      }
+      int preset = atoi(args);
+      returnCode = setCompressorPreset(preset,io);
     } else {
       std::cerr << "*** parseCompressorArgs: write general arg parsing\n";;
       returnCode = 1;
@@ -219,7 +223,7 @@ public:
       }
     } else {
       // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
-      // c can be c(makeUpGain) or (all optional, any order):
+      // c can be c(integerPresetNumberFrom1) or (all optional, any order):
       // c(c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain)
       if (gVerboseFlag) {
         std::cout << "-f (--effects) arg = " << optarg << std::endl;

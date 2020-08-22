@@ -44,6 +44,7 @@
 
 #include "ProcessPlugin.h"
 #include "compressordsp.h"
+#include "CompressorPresets.h"
 #include <vector>
 
 /* Settings from http://www.anythingpeaceful.org/sonar/settings/comp.html
@@ -106,6 +107,7 @@ public:
     , makeUpGainDB(makeUpGainDBIn)
   {
     setVerbose(verboseIn);
+    // presets.push_back(std::make_unique<CompressorPreset>(ratio,thresholdDB,attackMS,releaseMS,makeUpGainDB));
     for ( int i = 0; i < mNumChannels; i++ ) {
       compressorP.push_back(new compressordsp);
       compressorUIP.push_back(new APIUI); // #included in compressordsp.h
@@ -113,6 +115,17 @@ public:
     }
   }
 
+  Compressor(int numchans, // xtor
+	     bool verboseIn = false,
+       CompressorPreset preset = CompressorPresets::voice)
+  {
+    Compressor(numchans,verboseIn,
+    preset.ratio,
+    preset.thresholdDB,
+    preset.attackMS,
+    preset.releaseMS,
+    preset.makeUpGainDB);
+  }
   /// \brief The class destructor
   virtual ~Compressor() {
     for ( int i = 0; i < mNumChannels; i++ ) {
@@ -171,7 +184,6 @@ private:
   float attackMS;
   float releaseMS;
   float makeUpGainDB;
-
 };
 
 #endif
