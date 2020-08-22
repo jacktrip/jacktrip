@@ -50,8 +50,8 @@
 #include "zitarevdsp.h" // stereo in and out
 #include "zitarevmonodsp.h" // mono in and out
 
-/** \brief The Reverb class confines the output dynamic range to a
- *  "dynamic range lane" determined by the assumed number of clients.
+/** \brief A Reverb is an echo-based delay effect,
+ *  providing a virtual acoustic listening space.
  */
 class Reverb : public ProcessPlugin
 {
