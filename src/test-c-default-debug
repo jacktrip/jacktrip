@@ -1,0 +1,3 @@
+echo 'for Xcode debug build:'
+echo './Debug/jacktrip -Oio -f "o:c i:c z(0.9)" -c 127.0.0.1'
+      ./Debug/jacktrip -Oio -f "o:c i:c z(0.9)" -c 127.0.0.1
