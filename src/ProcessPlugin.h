@@ -69,8 +69,14 @@ public:
    * initializes the Sampling Frequency. If a class instance depends on the
    * sampling frequency, it should be initialize here.
    */
-    virtual void init(int samplingRate) { fSamplingFreq = samplingRate; };
+    virtual void init(int samplingRate) {
+      fSamplingFreq = samplingRate;
+      if (verbose) {
+	printf("init(%d)\n",samplingRate);
+      }
+    }
     virtual bool getInited() { return inited; }
+    virtual void setVerbose(bool v) { verbose = v; }
 
     /// \brief Compute process
     virtual void compute(int nframes, float** inputs, float** outputs) = 0;
@@ -78,6 +84,7 @@ public:
 protected:
     int fSamplingFreq; ///< Faust Data member, Sampling Rate
     bool inited = false;
+    bool verbose = false;
 };
 
 #endif

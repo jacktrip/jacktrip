@@ -1612,7 +1612,7 @@ class compressordsp : public dsp {
 		m->declare("compressors.lib/name", "Faust Compressor Effect Library");
 		m->declare("compressors.lib/version", "0.0");
 		m->declare("description", "Compressor demo application, adapted from the Faust Library's dm.compressor_demo in demos.lib");
-		m->declare("documentation", "https://faust.grame.fr/doc/libraries/#compressors.lib");
+		m->declare("documentation", "https://faustlibraries.grame.fr/libs/compressors/#cocompressor_mono");
 		m->declare("filename", "compressordsp.dsp");
 		m->declare("license", "MIT Style STK-4.2");
 		m->declare("maths.lib/author", "GRAME");
@@ -1728,7 +1728,7 @@ class compressordsp : public dsp {
 		ui_interface->declare(&fCheckbox0, "tooltip", "When this is checked, the compressor                 has no effect");
 		ui_interface->addCheckButton("Bypass", &fCheckbox0);
 		ui_interface->declare(&fHbargraph0, "1", "");
-		ui_interface->declare(&fHbargraph0, "tooltip", "Current gain of         the compressor in dB");
+		ui_interface->declare(&fHbargraph0, "tooltip", "Compressor gain in dB");
 		ui_interface->declare(&fHbargraph0, "unit", "dB");
 		ui_interface->addHorizontalBargraph("Compressor Gain", &fHbargraph0, -50.0f, 10.0f);
 		ui_interface->closeBox();
@@ -1765,7 +1765,7 @@ class compressordsp : public dsp {
 		ui_interface->declare(&fHslider0, "5", "");
 		ui_interface->declare(&fHslider0, "tooltip", "The compressed-signal output level is increased by this amount         (in dB) to make up for the level lost due to compression");
 		ui_interface->declare(&fHslider0, "unit", "dB");
-		ui_interface->addHorizontalSlider("Makeup Gain", &fHslider0, 2.0f, -96.0f, 96.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("MakeUpGain", &fHslider0, 2.0f, -96.0f, 96.0f, 0.100000001f);
 		ui_interface->closeBox();
 	}
 	

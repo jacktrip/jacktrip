@@ -57,9 +57,10 @@ class Reverb : public ProcessPlugin
 {
 public:
   /// \brief The class constructor sets the number of channels to limit
-  Reverb(int numInChans, int numOutChans, float reverbLevel) // xtor
+  Reverb(int numInChans, int numOutChans, float reverbLevel = 1.0, bool verboseFlag = false) // xtor
     : mNumInChannels(numInChans), mNumOutChannels(numOutChans), mReverbLevel(reverbLevel)
-  { 
+  {
+    setVerbose(verboseFlag);
     if ( mNumInChannels < 1 ) {
       std::cerr << "*** Reverb.h: must have at least one input audio channels\n";
       mNumInChannels = 1;
