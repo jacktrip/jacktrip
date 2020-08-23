@@ -218,28 +218,36 @@ public:
 
       CompressorPreset newPreset(CompressorPresets::voice); // Anything unset gets voice value (most gentle)
 
+      int nSkip = 0;
       for (ulong i=0; i<argLen; i++) {
+        if (nSkip > 0) {
+          nSkip--;
+          continue;
+        }
         char ch = args[i];
-        if (ch!=')' && parenLevel>0) { continue; }
         switch(ch) {
         case ' ': break;
         case '\t': break;
         case 'c': case 't': case 'a': case 'r': case 'g':
-          lastParam = args[i];
+          lastParam = ch;
           break;
         case ':': break;
         default: // must be a floating-point number at this point:
-          if (isalpha(ch)) {
+          if (ch!='-' && isalpha(ch)) {
             std::cerr << "*** Effects.h: parseCompressorArgs: " << ch << " not recognized in args = " << args << "\n";
             returnCode = 1;
-          } else {
+          } else { // must have a digit or '-' or '.'
+            assert(ch=='-'||ch=='.'||isdigit(ch));
             float paramValue = -1.0e10;
-            for (ulong j=i; j<argLen; j++) {
-              if (args[j] == ',' || args[j] == ' ') { // comma or space required between parameters
+            for (ulong j=i; j<argLen; j++) { // scan ahead for end of number
+              if (args[j] == ',' || args[j] == ' ' || j==argLen-1) { // comma or space required between parameters
                 char argsj = args[j];
-                args[j] = '\0';
+                if (j<argLen-1) { // there's more
+                  args[j] = '\0';
+                }
                 paramValue = atof(&args[i]);
                 args[j] = argsj;
+                nSkip = j-i;
                 break;
               }
             }

@@ -128,6 +128,7 @@ HEADERS += DataProtocol.h \
            JackTrip.h \
            Effects.h \
            Compressor.h \
+           CompressorPresets.h \
            Limiter.h \
            Reverb.h \
            jacktrip_globals.h \
