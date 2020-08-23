@@ -220,7 +220,8 @@ public:
 
       int nSkip = 0;
       for (ulong i=0; i<argLen; i++) {
-        if (nSkip--) {
+        if (nSkip > 0) {
+          nSkip--;
           continue;
         }
         char ch = args[i];
