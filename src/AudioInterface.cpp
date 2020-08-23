@@ -448,6 +448,8 @@ void AudioInterface::fromSampleToBitConversion
     int8_t tmp_8;
     uint8_t tmp_u8; // unsigned to quantize the remainder in 24bits
     int16_t tmp_16;
+    sample_t maximum = 1.0;
+    sample_t minimum = -1.0;
     sample_t tmp_sample;
     sample_t tmp_sample16;
     sample_t tmp_sample8;
@@ -461,7 +463,8 @@ void AudioInterface::fromSampleToBitConversion
         break;
     case BIT16 :
         // 16bit integer between -32768 to 32767
-        tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
+        // 2^15 = 32768.0
+        tmp_sample = floor( std::max(std::min((*input), maximum), minimum) * 32767.0 );
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
         break;
