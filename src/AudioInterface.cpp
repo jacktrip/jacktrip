@@ -522,7 +522,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
         }
     // Send Audio buffer to Network
     mJackTrip->sendNetworkPacket( mInputPacket );
-}
+} // /computeProcessToNetwork
 
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution

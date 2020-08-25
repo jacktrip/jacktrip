@@ -180,6 +180,34 @@ public:
     }
   }
 
+  void printHelp(char* command, char helpCase) {
+    std::cout << "HELP for `" << command << "\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "\n";
+    if (helpCase == 0 || helpCase == 'f') { //
+      std::cout << command << " 0.3 ;; add a default outgoing compressor (for voice) and incoming reverb (freeverb) at wetness 0.3 (wetness from 0 to 1)\n";
+      std::cout << command << " 1.3 ;; add a default outgoing compressor (for voice) and incoming reverb (zitarev) at wetness 0.3 = 1.3-1 (so 1+ to 2 is zitarev wetness)\n";
+      std::cout << "\n";
+      std::cout << command << " \"o:c i:f(0.3)\" ;; freeverb example above using newer API\n";
+      std::cout << command << " \"o:c i:z(0.3)\" ;; zitarev example above using newer API\n";
+      std::cout << "\n";
+    }
+    if (helpCase == 0 || helpCase == 'O') { // limiter (-O option most likely)
+      std::cout << command << " i ;; add limiter to INCOMING audio from network\n";
+      std::cout << command << " o ;; add limiter to OUTGOING audio to network\n";
+      std::cout << "\n";
+    }
+    if (helpCase == 0 || helpCase == 'a') { // assumedNumClients (-a option)
+      std::cout << command << " 1 ;; assume 1 client - fine for loopback test or if only one client plays at a time\n";
+      std::cout << command << " 2 ;; assume 2 clients possibly playing at the same time\n";
+      std::cout << command << " N ;; any integer N can be used - output amplitude is limited to 1/sqrt(N)\n";
+      std::cout << "\n";
+    }
+  }
+
+  // ----------- Compressor stuff --------------
+
   int setCompressorPresetIndexFrom1(unsigned long presetIndexFrom1, InOrOut io) {
     int returnCode = 0;
     if (presetIndexFrom1 <= 0 || presetIndexFrom1 > CompressorPresets::numPresets) {
@@ -291,11 +319,19 @@ public:
     } // long-form compressor args
     return returnCode;
   } // int parseCompresserArgs(char* args, InOrOut inOrOut)
-  
-  int parseEffectsOptArg(char* optarg) {
+
+  // ============== General argument processing for all effects =================
+
+  int parseEffectsOptArg(char* cmd, char* optarg) {
     int returnCode = 0;
 
     char c = optarg[0];
+    if (c == '-' || c==0) {
+      // happens when no argument was specified at the command line
+      returnCode = 1;
+      return;
+    }
+
     if (not isalpha(c)) { // backward compatibility why not?, e.g., "-f 0.5"
       // -f reverbLevelFloat
       mReverbLevel = atof(optarg);
@@ -313,7 +349,7 @@ public:
       // c can be c(integerPresetNumberFrom1) or (all optional, any order):
       // c(c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain)
       if (gVerboseFlag) {
-        std::cout << "-f (--effects) arg = " << optarg << std::endl;
+        std::cout << cmd << " argument = " << optarg << std::endl;
       }
       ulong argLen = strlen(optarg);
 
@@ -324,6 +360,7 @@ public:
         case ',': break;
         case ';': break;
         case '\t': break;
+        case 'h': printHelp(cmd,'f'); break;
         case 'i': io=IO_IN; break;
         case 'o': io=IO_OUT; break;
         case ':': break;
@@ -381,48 +418,60 @@ public:
     return returnCode;
   }
 
-  int parseLimiterOptArg(char* optarg) {
+  int parseLimiterOptArg(char* cmd, char* optarg) {
+    lastEffect = 'O'; // OverflowLimiter
     char c1 = tolower(optarg[0]);
-    if (c1 == '-') {
-      std::cerr << "--overflowlimiting (-O) argument i, o, or io is REQUIRED\n";
+    if (c1 == '-' || c1 == 0) {
+      std::cerr << cmd << " argument i, o, or io is REQUIRED\n";
       return 1;
-    }
-    char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
-    if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) {
-      mLimit = LIMITER_BOTH;
-      if (gVerboseFlag) {
-        std::cout << "Set up Overflow Limiter for both INCOMING and OUTGOING\n";
-      }
-    } else if (c1 == 'i') {
-      mLimit = LIMITER_INCOMING;
-      if (gVerboseFlag) {
-        std::cout << "Set up Overflow Limiter for INCOMING from network\n";
-      }
-    } else if (c1 == 'o') {
-      mLimit = LIMITER_OUTGOING;
-      if (gVerboseFlag) {
-        std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
-      }
+    } else if (c1 == 'h') {
+      printHelp(cmd,'O');
+      return 0;
     } else {
-      mLimit = LIMITER_OUTGOING;
-      if (gVerboseFlag) {
-        std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
+      char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
+      if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) {
+	mLimit = LIMITER_BOTH;
+	if (gVerboseFlag) {
+	  std::cout << "Set up Overflow Limiter for both INCOMING and OUTGOING\n";
+	}
+      } else if (c1 == 'i') {
+	mLimit = LIMITER_INCOMING;
+	if (gVerboseFlag) {
+	  std::cout << "Set up Overflow Limiter for INCOMING from network\n";
+	}
+      } else if (c1 == 'o') {
+	mLimit = LIMITER_OUTGOING;
+	if (gVerboseFlag) {
+	  std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
+	}
+      } else {
+	mLimit = LIMITER_OUTGOING;
+	if (gVerboseFlag) {
+	  std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
+	}
       }
     }
     return 0;
   }
 
-  int parseAssumedNumClientsOptArg(char* optarg) {
-    if (optarg[0] == '-') {
-      std::cerr << "--assumednumclients (-a) integer argument > 0 is REQUIRED\n";
+  int parseAssumedNumClientsOptArg(char* cmd, char* optarg) {
+    lastEffect = 'a'; // assumedNumClients
+    char ch = optarg[0];
+    if (ch == 'h') {
+      printHelp(cmd,'a');
+      return 0;
+    } else if (ch == '-' || isalpha(ch) || ch == 0) {
+      std::cerr << cmd << " argument help or integer > 0 is REQUIRED\n";
       return 1;
+    } else {
+      mNumClientsAssumed = atoi(optarg);
+      if(mNumClientsAssumed < 1) {
+	std::cerr << "-p ERROR: Must have at least one assumed sound source: "
+		  << atoi(optarg) << " is not supported." << std::endl;
+	return 1;
+      }
+      return 0;
     }
-    mNumClientsAssumed = atoi(optarg);
-    if(mNumClientsAssumed < 1) {
-      std::cerr << "-p ERROR: Must have at least one assumed sound source: "
-                << atoi(optarg) << " is not supported." << std::endl;
-      return 1;
-    }
-    return 0;
   }
+
 };

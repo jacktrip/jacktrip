@@ -368,26 +368,34 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'O': { // Overflow limiter (i, o, or io)
           //-------------------------------------------------------
-          if (0 != mEffects.parseLimiterOptArg(optarg)) {
+          char cmd[] { "--overflowlimiting (-O)" };
+          if (gVerboseFlag) {
+            printf("%s argument = %s\n",cmd,optarg);
+          }
+          if (0 != mEffects.parseLimiterOptArg(cmd,optarg)) {
             std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
+            mEffects.printHelp(cmd,ch);
             exit(1);
           }
           break; }
         case 'a': { // assumed number of clients (applies to outgoing limiter)
           //-------------------------------------------------------
-          if (0 != mEffects.parseAssumedNumClientsOptArg(optarg)) {
-            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
+          char cmd[] { "--assumednumclients (-a)" };
+          if (gVerboseFlag) {
+            printf("%s argument = %s\n",cmd,optarg);
+          }
+          if (0 != mEffects.parseAssumedNumClientsOptArg(cmd,optarg)) {
+            std::cerr << cmd << " argument string `" << optarg << "' is malformed\n";
+	    mEffects.printHelp(cmd,ch);
             exit(1);
           }
           break; }
-        case 'f': { // effects (-f reverbLevel [0-2])
+        case 'f': { // --effects (-f) effectsSpecArg
           //-------------------------------------------------------
-          if (optarg[0] == '-' || strlen(optarg)==0) {
-            std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
-            std::exit(1);
-          }
-          if (0 != mEffects.parseEffectsOptArg(optarg)) {
-            std::cerr << "--effects (-f) argument string `" << optarg << "' is malformed\n";
+          char cmd[] { "--effects (-f)" };
+          if (0 != mEffects.parseEffectsOptArg(cmd,optarg)) {
+            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
+            mEffects.printHelp(cmd,ch);
             exit(1);
           }
           break; }
