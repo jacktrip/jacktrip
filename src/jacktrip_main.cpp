@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     qDebug() << "JackTrip (" << argv[0] << "): built" << dt << "\n";
 
     try {
-        Settings settings;
+        Settings settings;	
         settings.parseInput(argc, argv);
         
         //Either start our hub server or our jacktrip process as appropriate.

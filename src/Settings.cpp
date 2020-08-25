@@ -231,17 +231,17 @@ void Settings::parseInput(int argc, char** argv)
             } else if (atoi(optarg) == 32) {
                 mAudioBitResolution = AudioInterface::BIT32;
             } else {
-                std::cerr << "--bitres ERROR: Wrong bit resolution: "
-                          << atoi(optarg) << " is not supported." << endl;
                 printUsage();
+                std::cerr << "--bitres ERROR: Bit resolution: "
+                          << atoi(optarg) << " is not supported." << endl;
                 std::exit(1);
             }
             break;
         case 'q':
             //-------------------------------------------------------
             if ( atoi(optarg) <= 0 ) {
-                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 printUsage();
+                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 std::exit(1); }
             else {
                 mBufferQueueLength = atoi(optarg);
@@ -250,8 +250,8 @@ void Settings::parseInput(int argc, char** argv)
         case 'r':
             //-------------------------------------------------------
             if ( atoi(optarg) <= 0 ) {
-                std::cerr << "--redundancy ERROR: The reduncancy has to be a positive integer" << endl;
                 printUsage();
+                std::cerr << "--redundancy ERROR: The reduncancy has to be a positive integer" << endl;
                 std::exit(1); }
             else {
                 mRedundancy = atoi(optarg);
@@ -336,9 +336,9 @@ void Settings::parseInput(int argc, char** argv)
             } else if ( atoi(optarg) == 5 ) {
                 mHubConnectionMode = JackTrip::NOAUTO;
             } else {
+                printUsage();
                 std::cerr << "-p ERROR: Wrong HubConnectionMode: "
                           << atoi(optarg) << " is not supported." << endl;
-                printUsage();
                 std::exit(1);
             }
             break;
@@ -346,8 +346,8 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mIOStatTimeout = atoi(optarg);
             if (0 > mIOStatTimeout) {
-                std::cerr << "--iostat ERROR: negative timeout." << endl;
                 printUsage();
+                std::cerr << "--iostat ERROR: negative timeout." << endl;
                 std::exit(1);
             }
             break;
@@ -355,9 +355,9 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mIOStatStream.reset(new std::ofstream(optarg));
             if (!mIOStatStream->is_open()) {
+                printUsage();
                 std::cerr << "--iostatlog FAILED to open " << optarg
                           << " for writing." << endl;
-                printUsage();
                 std::exit(1);
             }
             break;
@@ -393,11 +393,14 @@ void Settings::parseInput(int argc, char** argv)
         case 'f': { // --effects (-f) effectsSpecArg
           //-------------------------------------------------------
           char cmd[] { "--effects (-f)" };
-          if (0 != mEffects.parseEffectsOptArg(cmd,optarg)) {
-            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
+          int returnCode = mEffects.parseEffectsOptArg(cmd,optarg);
+	  if (returnCode > 1) {
             mEffects.printHelp(cmd,ch);
-            exit(1);
-          }
+            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
+	    std::exit(1);
+          } else if (returnCode == 1) {
+	    std::exit(0); // something benign but non-continuing like "help"
+	  }
           break; }
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
@@ -405,18 +408,19 @@ void Settings::parseInput(int argc, char** argv)
           printf("ENTERING TEST MODE (option -x) ***\n");
           break; }
         case ':': {
-          printf("*** Missing option argument.\nUSAGE:\n");
           printUsage();
+          printf("*** Missing option argument *** see above for usage\n\n");
           break; }
         case '?': {
-          printf("*** Unknown, missing, or ambiguous option argument.\nUSAGE:\n");
           printUsage();
+          printf("*** Unknown, missing, or ambiguous option argument *** see above for usage\n\n");
+          std::exit(1);
           break; }
         default: {
             //-------------------------------------------------------
-          printf("*** Unrecognized option -%c.\nUSAGE:\n",ch);
           printUsage();
-          std::exit(0);
+          printf("*** Unrecognized option -%c *** see above for usage\n",ch);
+          std::exit(1);
           break; }
         }
 
@@ -458,7 +462,7 @@ void Settings::printUsage()
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
     cout << "VERSION: " << gVersion << endl;
     cout << "" << endl;
-    cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
+    cout << "Usage: jacktrip [-s|-c|-S|-C hostIPAddressOrURL] [options]" << endl;
     cout << "" << endl;
     cout << "Options: " << endl;
     cout << "REQUIRED ARGUMENTS: " << endl;
@@ -482,8 +486,8 @@ void Settings::printUsage()
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
          << endl;
     cout << " -o, --portoffset  #                      Receiving bind port and peer port offset from default " << gDefaultPort << endl;
-    cout << " -B, --bindport        #                  Set only the bind port number (default: " << gDefaultPort << ")" << endl;
-    cout << " -P, --peerport        #                  Set only the peer port number (default: " << gDefaultPort << ")" << endl;
+    cout << " -B, --bindport    #                      Set only the bind port number (default: " << gDefaultPort << ")" << endl;
+    cout << " -P, --peerport    #                      Set only the peer port number (default: " << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
