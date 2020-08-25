@@ -386,7 +386,7 @@ void Settings::parseInput(int argc, char** argv)
           }
           if (0 != mEffects.parseAssumedNumClientsOptArg(cmd,optarg)) {
             std::cerr << cmd << " argument string `" << optarg << "' is malformed\n";
-	    mEffects.printHelp(cmd,ch);
+            mEffects.printHelp(cmd,ch);
             exit(1);
           }
           break; }
@@ -402,19 +402,22 @@ void Settings::parseInput(int argc, char** argv)
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
           mTestMode = true;
-          printf("\t*** ENTERING TEST MODE (option -x) ***\n");
+          printf("ENTERING TEST MODE (option -x) ***\n");
           break; }
         case ':': {
-          printf("\t*** Missing option argument\n");
+          printf("*** Missing option argument.\nUSAGE:\n");
+          printUsage();
           break; }
         case '?': {
-          printf("\t*** Unknown or ambiguous option argument\n");
+          printf("*** Unknown, missing, or ambiguous option argument.\nUSAGE:\n");
+          printUsage();
           break; }
         default: {
             //-------------------------------------------------------
-            printUsage();
-            std::exit(0);
-            break; }
+          printf("*** Unrecognized option -%c.\nUSAGE:\n",ch);
+          printUsage();
+          std::exit(0);
+          break; }
         }
 
     // Warn user if undefined options where entered
@@ -494,8 +497,7 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
-    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0 (freeverb) or 1.0+ to 2.0 (zitarev)" << endl;
-    cout << " -f, --effects    # (\"[i:[c[(g)]][z|f[(g)]] [o:[c[(g)]]|[z|f[(g)]]]\") Alt FX spec: \"optional incoming and/or outgoing compressor and/or (zitarev-or-freeverb) @ level g in (0-1.0)\"" << endl;
+    cout << " -f, --effects    # (help)                Turn on incoming and/or outgoing compressor and/or reverb - see `-f help' for details" << endl;
     cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
