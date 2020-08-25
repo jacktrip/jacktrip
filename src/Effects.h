@@ -181,27 +181,35 @@ public:
   }
 
   void printHelp(char* command, char helpCase) {
-    std::cout << "HELP for `" << command << "\n";
+    std::cout << "HELP for `" << command << "' (end-of-line comments start with `#'\n";
     std::cout << "\n";
     std::cout << "Examples:\n";
     std::cout << "\n";
     if (helpCase == 0 || helpCase == 'f') { //
-      std::cout << command << " 0.3 ;; add a default outgoing compressor (for voice) and incoming reverb (freeverb) at wetness 0.3 (wetness from 0 to 1)\n";
-      std::cout << command << " 1.3 ;; add a default outgoing compressor (for voice) and incoming reverb (zitarev) at wetness 0.3 = 1.3-1 (so 1+ to 2 is zitarev wetness)\n";
+      std::cout << command << " 0.3 # add a default outgoing compressor (for voice) and incoming reverb (freeverb) with wetness 0.3 (wetness from 0 to 1)\n";
+      std::cout << command << " 1.3 # add a default outgoing compressor (for voice) and incoming reverb (zitarev) with wetness 0.3 = 1.3-1 (i.e., 1+ to 2 is for zitarev)\n";
       std::cout << "\n";
-      std::cout << command << " \"o:c i:f(0.3)\" ;; freeverb example above using newer API\n";
-      std::cout << command << " \"o:c i:z(0.3)\" ;; zitarev example above using newer API\n";
+      std::cout << command << " \"o:c i:f(0.3)\" # outgoing-compressor and incoming-freeverb example above using more general string argument\n";
+      std::cout << command << " \"o:c i:z(0.3)\" # outgoing-compressor and incoming-zitarev example above using more general string argument\n";
+      std::cout << command << " \"o:c(1)\" # outgoing compressor, using preset 1 (voice)\n";
+      std::cout << command << " \"o:c(2)\" # outgoing compressor, using preset 2 (horns)\n";
+      std::cout << command << " \"o:c(3)\" # outgoing compressor, using preset 3 (snare)\n";
+      std::cout << command << " \"o:c(c:compressionRatio t:thresholdDB a:attackTimeMS r:releaseTimeMS g:makeUpGainDB)\" # fully general compression-parameter specification (all floats)\n";
+      std::cout << command << " \"o:c(c:2 t:-24 a:15 r:40 g:2)\"   # outgoing compressor, preset 1 details\n";
+      std::cout << command << " \"o:c(c:3 t:-10 a:100 r:250 g:2)\" # outgoing compressor, preset 2 details\n";
+      std::cout << command << " \"o:c(c:5 t:-4 a:5 r:150 g:3)\"    # outgoing compressor, preset 3 details\n";
+      std::cout << "  For more suggested compression settings, see, e.g., http://www.anythingpeaceful.org/sonar/settings/comp.html\n";
       std::cout << "\n";
     }
     if (helpCase == 0 || helpCase == 'O') { // limiter (-O option most likely)
-      std::cout << command << " i ;; add limiter to INCOMING audio from network\n";
-      std::cout << command << " o ;; add limiter to OUTGOING audio to network\n";
+      std::cout << command << " i # add limiter to INCOMING audio from network\n";
+      std::cout << command << " o # add limiter to OUTGOING audio to network\n";
       std::cout << "\n";
     }
     if (helpCase == 0 || helpCase == 'a') { // assumedNumClients (-a option)
-      std::cout << command << " 1 ;; assume 1 client - fine for loopback test or if only one client plays at a time\n";
-      std::cout << command << " 2 ;; assume 2 clients possibly playing at the same time\n";
-      std::cout << command << " N ;; any integer N can be used - output amplitude is limited to 1/sqrt(N)\n";
+      std::cout << command << " 1 # assume 1 client - fine for loopback test or if only one client plays at a time\n";
+      std::cout << command << " 2 # assume 2 clients possibly playing at the same time\n";
+      std::cout << command << " N # any integer N can be used - output amplitude is limited to 1/sqrt(N)\n";
       std::cout << "\n";
     }
   }
@@ -263,7 +271,7 @@ public:
         default: // must be a floating-point number at this point:
           if (ch!='-' && isalpha(ch)) {
             std::cerr << "*** Effects.h: parseCompressorArgs: " << ch << " not recognized in args = " << args << "\n";
-            returnCode = 1;
+            returnCode = 2;
           } else { // must have a digit or '-' or '.'
             assert(ch=='-'||ch=='.'||isdigit(ch));
             float paramValue = -1.0e10;
@@ -282,7 +290,7 @@ public:
             if (paramValue == -1.0e10) {
               std::cerr << "*** Effects.h: parseCompressorArgs: Could not find parameter for "
                         << lastParam << " in args = " << args << "\n";
-              returnCode = 1;
+              returnCode = 2;
             } else {
               switch (lastParam) {
               case 'c':
@@ -302,7 +310,7 @@ public:
                 break;
               default: // cannot happen:
                 std::cerr << "*** Effects.h: parseCompressorArgs: lastParam " << lastParam << " invalid\n";
-                returnCode = 1;
+                returnCode = 3; // "reality failure"
               } // switch(lastParam)
             } // have valid parameter from atof
           } // have valid non-alpha char for parameter
@@ -314,7 +322,7 @@ public:
         outCompressorPreset = newPreset;
       } else {
         std::cerr << "*** Effects.h: parseCompressorArgs: invalid InOrOut value " << inOrOut << "\n";
-        returnCode = 1;
+        returnCode = 2;
       }
     } // long-form compressor args
     return returnCode;
@@ -323,16 +331,13 @@ public:
   // ============== General argument processing for all effects =================
 
   int parseEffectsOptArg(char* cmd, char* optarg) {
-    int returnCode = 0;
+    int returnCode = 0; // 0 means go, 1 means exit without error, higher => error exit
 
     char c = optarg[0];
     if (c == '-' || c==0) {
-      // happens when no argument was specified at the command line
-      returnCode = 1;
-      return;
-    }
-
-    if (not isalpha(c)) { // backward compatibility why not?, e.g., "-f 0.5"
+      // happens when no -f argument specified
+      returnCode = 2;
+    } else if (not isalpha(c)) { // backward compatibility why not?, e.g., "-f 0.5"
       // -f reverbLevelFloat
       mReverbLevel = atof(optarg);
       outCompressor = true;
@@ -344,7 +349,7 @@ public:
       if (inFreeverb) {
         freeverbInLevel = mReverbLevel; // wetness from 0 to 1
       }
-    } else {
+    } else { // long-form argument:
       // -f "i:[c][f|z][(reverbLevel)]], o:[c][f|z][(rl)]"
       // c can be c(integerPresetNumberFrom1) or (all optional, any order):
       // c(c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain)
@@ -360,7 +365,7 @@ public:
         case ',': break;
         case ';': break;
         case '\t': break;
-        case 'h': printHelp(cmd,'f'); break;
+        case 'h': printHelp(cmd,'f'); returnCode = 1; break;
         case 'i': io=IO_IN; break;
         case 'o': io=IO_OUT; break;
         case ':': break;
