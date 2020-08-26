@@ -218,9 +218,15 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 
 
 uint64_t timeMicroSec() {
+#if 0
   using namespace std::chrono;
   // return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch()).count();
+#else
+  clock_t tics_since_launch = std::clock();
+  double timeUS = double(tics_since_launch)/double(CLOCKS_PER_SEC);
+  return (uint64_t)timeUS;
+#endif
 }
 
 //*******************************************************************************
