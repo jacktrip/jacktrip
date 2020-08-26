@@ -1,7 +1,7 @@
 declare name "compressor2"; // more modern feedback-compressor with release-to-threshold
 declare version "0.0";
-declare author "Bart Brouns and Julius Smith";
-declare license "GPLv3";
+declare author "Julius Smith";
+declare license "MIT Style STK-4.2"; // but using GPLv3
 declare description "adapted from ./compressordsp.dsp adding use of co.FBFFcompressor_N_chan";
 declare documentation "https://faustlibraries.grame.fr/libs/compressors/#cofffbcompressor_n_chan";
 
