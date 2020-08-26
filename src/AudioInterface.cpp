@@ -218,7 +218,7 @@ size_t AudioInterface::getSizeInBytesPerChannel() const
 
 
 uint64_t timeMicroSec() {
-#if 0
+#if 1
   using namespace std::chrono;
   // return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch()).count();
@@ -266,12 +266,13 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
             if (out_buffer[i][j] > 0.1f) { // found it
               if (i==0) {
                 j0 = j;
-                mTestModeImpulseTimeUS = timeMicroSec() - mTestModeImpulseTimeUS;
-                std::cout << (mTestModeImpulseTimeUS/1000) << " (" << j << ") ";
+                int64_t curTimeUS = timeMicroSec(); // time since launch in us
+                int64_t impulseDelay = curTimeUS - mTestModeImpulseTimeUS;
+                std::cout << (impulseDelay/1000) << " "; // << " (" << j << ") ";
                 mTestModeImpulsePending = false;
               } else {
                 if (j!=j0) {
-                  std::cout << " *** TEST MODE: CHANNELS NOT IDENTICAL AS EXPECTED *** ";
+                  std::cout << " *** TEST MODE: AUDIO CHANNELS NOT IDENTICAL AS EXPECTED *** ";
                 }
               }
             }
@@ -322,14 +323,15 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     if (mTestMode) { // send test signals (-x option)
       if (mTestModeImpulsePending) {
         const uint64_t timeOut = 500e3; // time out after waiting 500 ms
-        if (timeMicroSec() > mTestModeImpulseTimeUS + timeOut) {
-          std::cout << "*** TIMED OUT waiting for return impulse ***\n";
+        if (timeMicroSec() > (mTestModeImpulseTimeUS + timeOut)) {
+          std::cout << "\n*** TIMED OUT waiting for return impulse *** sending a new one\n";
           for (int i=0; i<mNumInChans; i++) {
             mInBufCopy[i][0] = 0.999f; // repeat impulse as 1st probably was missed
+            // mTestModeImpulseTimeUS = timeMicroSec(); // don't measure across lost packets
           }
         } else {
           for (int i=0; i<mNumInChans; i++) {
-            mInBufCopy[i][0] = 0.0f; // still waiting to find last impulse
+            mInBufCopy[i][0] = 0.0f; // send zeros until a new one is needed
           }
         }
       } else { // need an impulse:
