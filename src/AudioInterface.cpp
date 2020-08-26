@@ -257,14 +257,16 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         for (int i=0; i<mNumInChans; i++) {
           uint j0 = 0;
           for (uint j=0; j<n_frames; j++) {
-            if (out_buffer[i][j] > 0.5f) { // found it
+            if (out_buffer[i][j] > 0.1f) { // found it
               if (i==0) {
                 j0 = j;
                 mTestModeImpulseTimeUS = timeMicroSec() - mTestModeImpulseTimeUS;
                 std::cout << (mTestModeImpulseTimeUS/1000) << " (" << j << ") ";
                 mTestModeImpulsePending = false;
               } else {
-                assert(j==j0); // expect all buffers to behave identically
+                if (j!=j0) {
+                  std::cout << " *** TEST MODE: CHANNELS NOT IDENTICAL AS EXPECTED *** ";
+                }
               }
             }
           }
@@ -313,8 +315,16 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
     if (mTestMode) { // send test signals (-x option)
       if (mTestModeImpulsePending) {
-        for (int i=0; i<mNumInChans; i++) {
-          mInBufCopy[i][0] = 0.0f;
+        const uint64_t timeOut = 500e3; // time out after waiting 500 ms
+        if (timeMicroSec() > mTestModeImpulseTimeUS + timeOut) {
+          std::cout << "*** TIMED OUT waiting for return impulse ***\n";
+          for (int i=0; i<mNumInChans; i++) {
+            mInBufCopy[i][0] = 0.999f; // repeat impulse as 1st probably was missed
+          }
+        } else {
+          for (int i=0; i<mNumInChans; i++) {
+            mInBufCopy[i][0] = 0.0f; // still waiting to find last impulse
+          }
         }
       } else { // need an impulse:
         for (int i=0; i<mNumInChans; i++) {
@@ -629,9 +639,9 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-	      << pluginName(plugin) << " REJECTED due to having "
-	      << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
-	      << mNumInChans << " inputs\n";
+              << pluginName(plugin) << " REJECTED due to having "
+              << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
+              << mNumInChans << " inputs\n";
     return;
   }
   mProcessPluginsToNetwork.append(plugin);
