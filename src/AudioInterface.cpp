@@ -267,8 +267,10 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
               if (i==0) {
                 j0 = j;
                 int64_t curTimeUS = timeMicroSec(); // time since launch in us
-                int64_t impulseDelay = curTimeUS - mTestModeImpulseTimeUS;
-                std::cout << (impulseDelay/1000) << " "; // << " (" << j << ") ";
+                int64_t impulseDelayUS = curTimeUS - mTestModeImpulseTimeUS;
+                float impulseDelaySec = float(impulseDelayUS) * 1.0e-6;
+                float impulseDelayBuffers = impulseDelaySec / (float(n_frames)/float(mSampleRate));
+                printf("%0.1f ",impulseDelayBuffers); // << " (" << j << ") ";
                 mTestModeImpulsePending = false;
               } else {
                 if (j!=j0) {
@@ -324,7 +326,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
       if (mTestModeImpulsePending) {
         const uint64_t timeOut = 500e3; // time out after waiting 500 ms
         if (timeMicroSec() > (mTestModeImpulseTimeUS + timeOut)) {
-          std::cout << "\n*** TIMED OUT waiting for return impulse *** sending a new one\n";
+          std::cout << "\n*** TEST MODE (-x): TIMED OUT waiting for return impulse *** sending a new one\n";
           for (int i=0; i<mNumInChans; i++) {
             mInBufCopy[i][0] = 0.999f; // repeat impulse as 1st probably was missed
             // mTestModeImpulseTimeUS = timeMicroSec(); // don't measure across lost packets

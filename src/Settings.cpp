@@ -520,7 +520,7 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
-    cout << " -x, --examine-channel                    Print out connection statistics" << endl;
+    cout << " -x, --examine-channel                    Measure and print round-trip audio delay in buffers" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
