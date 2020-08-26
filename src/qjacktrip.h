@@ -33,6 +33,7 @@
 #include <QNetworkReply>
 #include <QMutex>
 #include <QByteArray>
+#include <QString>
 #include "UdpHubListener.h"
 #include "JackTrip.h"
 
@@ -73,6 +74,9 @@ private:
     void saveSettings();
     
     void appendPlugins(JackTrip *jackTrip, int numChannels);
+    
+    QString commandLineFromCurrentOptions();
+    void showCommandLineMessageBox();
     
     QScopedPointer<Ui::QJackTrip> m_ui;
     QScopedPointer<UdpHubListener> m_udpHub;

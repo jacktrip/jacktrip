@@ -52,6 +52,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     connect(m_ui->connectButton, &QPushButton::released, this, &QJackTrip::start);
     connect(m_ui->disconnectButton, &QPushButton::released, this, &QJackTrip::stop);
     connect(m_ui->exitButton, &QPushButton::released, this, &QJackTrip::exit);
+    connect(m_ui->commandLineButton, &QPushButton::released, this, &QJackTrip::showCommandLineMessageBox);
     connect(m_ui->useDefaultsButton, &QPushButton::released, this, &QJackTrip::resetOptions);
     connect(m_ui->aboutButton, &QPushButton::released, this, [=](){
             About about(this);
@@ -185,7 +186,9 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->channelLabel->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
         advancedOptionsForHubServer(false);
-        m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
+        if (m_ui->optionsTabWidget->count() < 3) {
+            m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
+        }
     }
 
     if (type == "Hub Client") {
@@ -559,5 +562,127 @@ void QJackTrip::appendPlugins(JackTrip *jackTrip, int numChannels)
     }
 }
 
+QString QJackTrip::commandLineFromCurrentOptions()
+{
+    QString commandLine = "qjacktrip";
+    
+    if (m_ui->typeComboBox->currentText() == "Client") {
+        commandLine.append(" -c ").append(m_ui->addressEdit->text());
+    } else if (m_ui->typeComboBox->currentText() == "Server") {
+        commandLine.append(" -s");
+    } else if (m_ui->typeComboBox->currentText() == "Hub Client") {
+        commandLine.append(" -C ").append(m_ui->addressEdit->text());
+    } else {
+        commandLine.append(" -S");
+    }
+    
+    if (m_ui->zeroCheckBox->isChecked()) {
+        commandLine.append(" -z");
+    }
+    
+    if (m_ui->typeComboBox->currentText() == "Hub Server") {
+        int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
+        if (hubConnectionMode > 2) {
+            //Adjust for the RESERVEDMATRIX gap.
+            hubConnectionMode++;
+        }
+        if (hubConnectionMode > 0) {
+            commandLine.append(QString(" -p %1").arg(hubConnectionMode));
+        }
+    } else {
+        if (m_ui->channelSpinBox->value() != gDefaultNumInChannels) {
+            commandLine.append(QString(" -n %1").arg(m_ui->channelSpinBox->value()));
+        }
+        if (m_ui->timeoutCheckBox->isChecked()) {
+            commandLine.append(" -t");
+        }
+    }
+    
+    if (m_ui->queueLengthSpinBox->value() != gDefaultQueueLength) {
+        commandLine.append(QString(" -q %1").arg(m_ui->queueLengthSpinBox->value()));
+    }
+    
+    if (m_ui->typeComboBox->currentText() != "Hub Server") {
+        if (!m_ui->clientNameEdit->text().isEmpty()) {
+            commandLine.append(QString(" -J \"%1\"").arg(m_ui->clientNameEdit->text()));
+        }
+        if (m_ui->typeComboBox->currentText() == "Hub Client" && !m_ui->remoteNameEdit->text().isEmpty()) {
+            commandLine.append(QString(" -K \"%1\"").arg(m_ui->remoteNameEdit->text()));
+        }
+        if (m_ui->portOffsetSpinBox->value() > 0) {
+            commandLine.append(QString(" -o %1").arg(m_ui->portOffsetSpinBox->value()));
+        }
+        if (m_ui->redundancySpinBox->value() > 1) {
+            commandLine.append(QString(" -r %1").arg(m_ui->redundancySpinBox->value()));
+        }
+        if (m_ui->resolutionComboBox->currentText() != "16") {
+            commandLine.append(" -b ").append(m_ui->resolutionComboBox->currentText());
+        }
+        if (!m_ui->connectAudioCheckBox->isChecked()) {
+            commandLine.append(" -D");
+        }
+        
+        if (m_ui->inLimiterCheckBox->isChecked() || m_ui->outLimiterCheckBox->isChecked()) {
+            commandLine.append(" -O ");
+            if (m_ui->inLimiterCheckBox->isChecked()) {
+                commandLine.append("i");
+            }
+            if (m_ui->outLimiterCheckBox->isChecked()) {
+                commandLine.append("o");
+                if (m_ui->outClientsSpinBox->value() != 2) {
+                    commandLine.append(QString(" -a %1").arg(m_ui->outClientsSpinBox->value()));
+                }
+            }
+        }
+        
+        bool inEffects = m_ui->inFreeverbCheckBox->isChecked() || m_ui->inZitarevCheckBox->isChecked() || 
+            m_ui->inCompressorCheckBox->isChecked();
+        bool outEffects = m_ui->outFreeverbCheckBox->isChecked() || m_ui->outZitarevCheckBox->isChecked() || 
+            m_ui->outCompressorCheckBox->isChecked();
+        if (inEffects || outEffects) {
+            commandLine.append(" -f \"");
+            if (inEffects) {
+                commandLine.append("i:");
+                if (m_ui->inCompressorCheckBox->isChecked()) {
+                    commandLine.append("c");
+                }
+                if (m_ui->inFreeverbCheckBox->isChecked()) {
+                    commandLine.append(QString("f(%1)").arg(m_ui->inFreeverbWetnessSlider->value() / 100.0));
+                }
+                if (m_ui->inZitarevCheckBox->isChecked()) {
+                    commandLine.append(QString("f(%1)").arg(m_ui->inZitarevWetnessSlider->value() / 100.0));
+                }
+                if (outEffects) {
+                    commandLine.append(", ");
+                }
+            }
+            if (outEffects) {
+                commandLine.append("o:");
+                if (m_ui->outCompressorCheckBox->isChecked()) {
+                    commandLine.append("c");
+                }
+                if (m_ui->outFreeverbCheckBox->isChecked()) {
+                    commandLine.append(QString("f(%1)").arg(m_ui->outFreeverbWetnessSlider->value() / 100.0));
+                }
+                if (m_ui->outZitarevCheckBox->isChecked()) {
+                    commandLine.append(QString("f(%1)").arg(m_ui->outZitarevWetnessSlider->value() / 100.0));
+                }
+            }
+            commandLine.append("\"");
+        }
+    }
+    
+    return commandLine;
+}
+
+void QJackTrip::showCommandLineMessageBox()
+{
+    QMessageBox msgBox;
+    QString messageText = QString("The equivalent command line for the current options is:\n\n%1").arg(commandLineFromCurrentOptions());
+    msgBox.setText(messageText);
+    msgBox.setWindowTitle("Command Line");
+    msgBox.setTextInteractionFlags(Qt::TextSelectableByMouse);
+    msgBox.exec();
+}
 
 QJackTrip::~QJackTrip() = default;
