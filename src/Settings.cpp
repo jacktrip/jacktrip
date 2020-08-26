@@ -372,14 +372,14 @@ void Settings::parseInput(int argc, char** argv)
           if (gVerboseFlag) {
             printf("%s argument = %s\n",cmd,optarg);
           }
-	  int returnCode = mEffects.parseLimiterOptArg(cmd,optarg);
-	  if (returnCode > 1) {
+          int returnCode = mEffects.parseLimiterOptArg(cmd,optarg);
+          if (returnCode > 1) {
             mEffects.printHelp(cmd,ch);
             std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
-	    std::exit(1);
+            std::exit(1);
           } else if (returnCode == 1) {
-	    std::exit(0); // benign but not continuing such as "help"
-	  }
+            std::exit(0); // benign but not continuing such as "help"
+          }
           break; }
         case 'a': { // assumed number of clients (applies to outgoing limiter)
           //-------------------------------------------------------
@@ -387,26 +387,26 @@ void Settings::parseInput(int argc, char** argv)
           if (gVerboseFlag) {
             printf("%s argument = %s\n",cmd,optarg);
           }
-	  int returnCode = mEffects.parseAssumedNumClientsOptArg(cmd,optarg);
-	  if (returnCode > 1) {
+          int returnCode = mEffects.parseAssumedNumClientsOptArg(cmd,optarg);
+          if (returnCode > 1) {
             mEffects.printHelp(cmd,ch);
             std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
-	    std::exit(1);
+            std::exit(1);
           } else if (returnCode == 1) {
-	    std::exit(0); // help printed
-	  }
+            std::exit(0); // help printed
+          }
           break; }
         case 'f': { // --effects (-f) effectsSpecArg
           //-------------------------------------------------------
           char cmd[] { "--effects (-f)" };
           int returnCode = mEffects.parseEffectsOptArg(cmd,optarg);
-	  if (returnCode > 1) {
+          if (returnCode > 1) {
             mEffects.printHelp(cmd,ch);
             std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
-	    std::exit(1);
+            std::exit(1);
           } else if (returnCode == 1) {
-	    std::exit(0); // something benign but non-continuing like "help"
-	  }
+            std::exit(0); // something benign but non-continuing like "help"
+          }
           break; }
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
@@ -471,7 +471,7 @@ void Settings::printUsage()
     cout << "Usage: jacktrip [-s|-c|-S|-C hostIPAddressOrURL] [options]" << endl;
     cout << "" << endl;
     cout << "Options: " << endl;
-    cout << "REQUIRED ARGUMENTS: " << endl;
+    cout << "REQUIRED ARGUMENTS: One of:" << endl;
     cout << " -s, --server                             Run in Server Mode" << endl;
     cout << " -c, --client <peer_hostname_or_IP_num>   Run in Client Mode" << endl;
     cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;
