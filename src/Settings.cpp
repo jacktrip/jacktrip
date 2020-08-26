@@ -372,11 +372,14 @@ void Settings::parseInput(int argc, char** argv)
           if (gVerboseFlag) {
             printf("%s argument = %s\n",cmd,optarg);
           }
-          if (0 != mEffects.parseLimiterOptArg(cmd,optarg)) {
-            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
+	  int returnCode = mEffects.parseLimiterOptArg(cmd,optarg);
+	  if (returnCode > 1) {
             mEffects.printHelp(cmd,ch);
-            exit(1);
-          }
+            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
+	    std::exit(1);
+          } else if (returnCode == 1) {
+	    std::exit(0); // benign but not continuing such as "help"
+	  }
           break; }
         case 'a': { // assumed number of clients (applies to outgoing limiter)
           //-------------------------------------------------------
@@ -384,11 +387,14 @@ void Settings::parseInput(int argc, char** argv)
           if (gVerboseFlag) {
             printf("%s argument = %s\n",cmd,optarg);
           }
-          if (0 != mEffects.parseAssumedNumClientsOptArg(cmd,optarg)) {
-            std::cerr << cmd << " argument string `" << optarg << "' is malformed\n";
+	  int returnCode = mEffects.parseAssumedNumClientsOptArg(cmd,optarg);
+	  if (returnCode > 1) {
             mEffects.printHelp(cmd,ch);
-            exit(1);
-          }
+            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
+	    std::exit(1);
+          } else if (returnCode == 1) {
+	    std::exit(0); // help printed
+	  }
           break; }
         case 'f': { // --effects (-f) effectsSpecArg
           //-------------------------------------------------------
@@ -489,7 +495,7 @@ void Settings::printUsage()
     cout << " -B, --bindport    #                      Set only the bind port number (default: " << gDefaultPort << ")" << endl;
     cout << " -P, --peerport    #                      Set only the peer port number (default: " << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
-    cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
+    cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16, 32 uses floating-point)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -t, --timeout                            Quit after 10 seconds of no network activity" << endl;
@@ -501,15 +507,15 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
-    cout << " -f, --effects    # (help)                Turn on incoming and/or outgoing compressor and/or reverb - see `-f help' for details" << endl;
-    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
-    cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
+    cout << " -f, --effects    #|paramString|help      Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
+    cout << " -O, --overflowlimiting  i|o|io|help      Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
+    cout << " -a, --assumednumclients # (1,2,...)      Assumed number of Clients (sources) mixing at Hub Server (otherwise 2 assumed by -O)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
-    cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
-    cout << " -T, --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
-    cout << " -F, --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
-    cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
+    cout << " -R, --rtaudio                            Use system's default sound system instead of Jack" << endl;
+    cout << " -T, --srate         #                    Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
+    cout << " -F, --bufsize       #                    Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
+    cout << " -d, --deviceid      #                    The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
