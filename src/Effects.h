@@ -181,35 +181,35 @@ public:
   }
 
   void printHelp(char* command, char helpCase) {
-    std::cout << "HELP for `" << command << "' (end-of-line comments start with `#'\n";
+    std::cout << "HELP for `" << command << "' (end-of-line comments start with `//')\n";
     std::cout << "\n";
     std::cout << "Examples:\n";
     std::cout << "\n";
     if (helpCase == 0 || helpCase == 'f') { //
-      std::cout << command << " 0.3 # add a default outgoing compressor (for voice) and incoming reverb (freeverb) with wetness 0.3 (wetness from 0 to 1)\n";
-      std::cout << command << " 1.3 # add a default outgoing compressor (for voice) and incoming reverb (zitarev) with wetness 0.3 = 1.3-1 (i.e., 1+ to 2 is for zitarev)\n";
+      std::cout << command << " 0.3 // add a default outgoing compressor (for voice) and incoming reverb (freeverb) with wetness 0.3 (wetness from 0 to 1)\n";
+      std::cout << command << " 1.3 // add a default outgoing compressor (for voice) and incoming reverb (zitarev) with wetness 0.3 = 1.3-1 (i.e., 1+ to 2 is for zitarev)\n";
       std::cout << "\n";
-      std::cout << command << " \"o:c i:f(0.3)\" # outgoing-compressor and incoming-freeverb example above using more general string argument\n";
-      std::cout << command << " \"o:c i:z(0.3)\" # outgoing-compressor and incoming-zitarev example above using more general string argument\n";
-      std::cout << command << " \"o:c(1)\" # outgoing compressor, using preset 1 (voice)\n";
-      std::cout << command << " \"o:c(2)\" # outgoing compressor, using preset 2 (horns)\n";
-      std::cout << command << " \"o:c(3)\" # outgoing compressor, using preset 3 (snare)\n";
-      std::cout << command << " \"o:c(c:compressionRatio t:thresholdDB a:attackTimeMS r:releaseTimeMS g:makeUpGainDB)\" # fully general compression-parameter specification (all floats)\n";
-      std::cout << command << " \"o:c(c:2 t:-24 a:15 r:40 g:2)\"   # outgoing compressor, preset 1 details\n";
-      std::cout << command << " \"o:c(c:3 t:-10 a:100 r:250 g:2)\" # outgoing compressor, preset 2 details\n";
-      std::cout << command << " \"o:c(c:5 t:-4 a:5 r:150 g:3)\"    # outgoing compressor, preset 3 details\n";
-      std::cout << "  For more suggested compression settings, see, e.g., http://www.anythingpeaceful.org/sonar/settings/comp.html\n";
+      std::cout << command << " \"o:c i:f(0.3)\" // outgoing-compressor and incoming-freeverb example above using more general string argument\n";
+      std::cout << command << " \"o:c i:z(0.3)\" // outgoing-compressor and incoming-zitarev example above using more general string argument\n";
+      std::cout << command << " \"o:c(1)\" // outgoing compressor, using preset 1 (designed for voice - see below for details)\n";
+      std::cout << command << " \"o:c(2)\" // outgoing compressor, using preset 2 (for horns)\n";
+      std::cout << command << " \"o:c(3)\" // outgoing compressor, using preset 3 (for snare)\n";
+      std::cout << command << " \"o:c(c:compressionRatio t:thresholdDB a:attackTimeMS r:releaseTimeMS g:makeUpGainDB)\" // general compression parameter specification (all floats)\n";
+      std::cout << command << " \"o:c(c:2 t:-24 a:15 r:40 g:2)\"   // outgoing compressor, preset 1 details\n";
+      std::cout << command << " \"o:c(c:3 t:-10 a:100 r:250 g:2)\" // outgoing compressor, preset 2 details\n";
+      std::cout << command << " \"o:c(c:5 t:-4 a:5 r:150 g:3)\"    // outgoing compressor, preset 3 details\n";
+      std::cout << "  For these and more suggested compression settings, see http://www.anythingpeaceful.org/sonar/settings/comp.html\n";
       std::cout << "\n";
     }
     if (helpCase == 0 || helpCase == 'O') { // limiter (-O option most likely)
-      std::cout << command << " i # add limiter to INCOMING audio from network\n";
-      std::cout << command << " o # add limiter to OUTGOING audio to network\n";
+      std::cout << command << " i // add limiter to INCOMING audio from network (only helpful for floats, i.e., -b32 used by server)\n";
+      std::cout << command << " o // add limiter to OUTGOING audio to network (prevents your sound from harshly clipping going out)\n";
       std::cout << "\n";
     }
     if (helpCase == 0 || helpCase == 'a') { // assumedNumClients (-a option)
-      std::cout << command << " 1 # assume 1 client - fine for loopback test or if only one client plays at a time\n";
-      std::cout << command << " 2 # assume 2 clients possibly playing at the same time\n";
-      std::cout << command << " N # any integer N can be used - output amplitude is limited to 1/sqrt(N)\n";
+      std::cout << command << " 1 // assume 1 client - fine for loopback test, or if only one client plays at a time, or server uses -b32 and -Oi is used\n";
+      std::cout << command << " 2 // assume 2 clients possibly playing at the same time\n";
+      std::cout << command << " N // any integer N>0 can be used - the outgoing limiter will divide final amplitude by 1/sqrt(N) to reduce overages in server\n";
       std::cout << "\n";
     }
   }
@@ -424,14 +424,15 @@ public:
   }
 
   int parseLimiterOptArg(char* cmd, char* optarg) {
+    int returnCode = 0;
     lastEffect = 'O'; // OverflowLimiter
     char c1 = tolower(optarg[0]);
     if (c1 == '-' || c1 == 0) {
       std::cerr << cmd << " argument i, o, or io is REQUIRED\n";
-      return 1;
+      returnCode = 2;
     } else if (c1 == 'h') {
       printHelp(cmd,'O');
-      return 0;
+      returnCode = 1;
     } else {
       char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
       if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) {
@@ -450,33 +451,31 @@ public:
 	  std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
 	}
       } else {
-	mLimit = LIMITER_OUTGOING;
-	if (gVerboseFlag) {
-	  std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
-	}
+	returnCode = 2;
       }
     }
-    return 0;
+    return returnCode;
   }
 
   int parseAssumedNumClientsOptArg(char* cmd, char* optarg) {
+    int returnCode = 0;
     lastEffect = 'a'; // assumedNumClients
     char ch = optarg[0];
     if (ch == 'h') {
       printHelp(cmd,'a');
-      return 0;
+      returnCode = 1;
     } else if (ch == '-' || isalpha(ch) || ch == 0) {
       std::cerr << cmd << " argument help or integer > 0 is REQUIRED\n";
-      return 1;
+      returnCode = 2;
     } else {
       mNumClientsAssumed = atoi(optarg);
       if(mNumClientsAssumed < 1) {
 	std::cerr << "-p ERROR: Must have at least one assumed sound source: "
 		  << atoi(optarg) << " is not supported." << std::endl;
-	return 1;
+	returnCode = 2;
       }
-      return 0;
     }
+    return returnCode;
   }
 
 };
