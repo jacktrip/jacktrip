@@ -512,7 +512,7 @@ void JackTrip::onStatTimer()
 
     static QMutex mutex;
     QMutexLocker locker(&mutex);
-    mIOStatLogStream << now.toLocal8Bit().constData()
+    mIOStatLogStream << (mTestMode ? "\n" : "") << now.toLocal8Bit().constData()
       << " " << getPeerAddress().toLocal8Bit().constData()
       << " underrun/overflow on send: "
       << send_io_stat.underruns

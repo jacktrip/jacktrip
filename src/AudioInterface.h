@@ -242,7 +242,7 @@ private:
     bool mLoopBack;
     bool mTestMode;
     bool mTestModeImpulsePending;
-    uint64_t mTestModeImpulseTimeUS;
+    int64_t mTestModeImpulseTimeUS;
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
