@@ -287,7 +287,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                 mTestModeRoundTripMeanSquare = elapsedSamplesMS * elapsedSamplesMS;
               }
               if (mTestModeRoundTripCount == 1.0) {
-                std::cout << "\nJackTrip Test Mode (-x):\n";
+                std::cout << "\nJackTrip Test Mode (-x printIntervalInSeconds):\n";
                 if (mTestModeIntervalSec == 0.0) {
                   printf("Printing each round-trip latency then cumulative (mean and [standard deviation]) in ms");
                 } else {
