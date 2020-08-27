@@ -250,7 +250,6 @@ private:
     double mTestModeRoundTripMeanSquare {0.0};
     double mTestModeRoundTripCount {0.0};
     int mTestModeBufferSkip { 100 };
-    bool mTestModeIntroPrinted { false };
 
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair

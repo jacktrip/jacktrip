@@ -286,9 +286,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                 mTestModeRoundTripMean = elapsedSamplesMS;
                 mTestModeRoundTripMeanSquare = elapsedSamplesMS * elapsedSamplesMS;
               }
-              if (not mTestModeIntroPrinted) {
+              if (mTestModeRoundTripCount == 1.0) {
                 std::cout << "\nJackTrip Test Mode (-x): Printing measured `each buffer's round-trip time and cumulative (mean [standard deviation])' in milliseconds:\n";
-                mTestModeIntroPrinted = true;
               }
               //printf("%d (%d) ", elapsedSamplesMS, impulseDelayMS); // measured time is "buffer time" not sample time
               printf("%lld (%0.0f [%0.0f]) ", elapsedSamplesMS, mTestModeRoundTripMean,
