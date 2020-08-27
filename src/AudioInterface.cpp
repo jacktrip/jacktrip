@@ -294,7 +294,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                   printf("Printing mean and [standard deviation] audio round-trip latency in ms every %0.2f seconds",
                   mTestModeIntervalSec);
                 }
-		printf(" after skipping first %d buffers:\n", mTestModeBufferSkipStart);
+                printf(" after skipping first %d buffers:\n", mTestModeBufferSkipStart);
                 // not printing this presently: printf("( * means buffer skipped due missing timestamp)\n");
                 mTestModeLastPrintTimeUS = timeMicroSec();
               }
@@ -309,6 +309,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                 printf("%0.0f [%0.0f] ", mTestModeRoundTripMean, stdDev);
                 mTestModeLastPrintTimeUS = curTimeUS;
               }
+              std::cout << std::flush;
             } else {
               // not printing this presently: printf("* "); // we got the impulse but lost its timestamp in samples
             }
