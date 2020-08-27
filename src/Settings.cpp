@@ -471,7 +471,7 @@ void Settings::printUsage()
     cout << "Usage: jacktrip [-s|-c|-S|-C hostIPAddressOrURL] [options]" << endl;
     cout << "" << endl;
     cout << "Options: " << endl;
-    cout << "REQUIRED ARGUMENTS: " << endl;
+    cout << "REQUIRED ARGUMENTS: One of:" << endl;
     cout << " -s, --server                             Run in P2P Server Mode" << endl;
     cout << " -c, --client <peer_hostname_or_IP_num>   Run in P2P Client Mode" << endl;
     cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;

@@ -240,9 +240,18 @@ private:
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
     bool mLoopBack;
-    bool mTestMode;
-    bool mTestModeImpulsePending;
+    bool mTestMode { false };
+    bool mTestModeImpulsePending { false };
     int64_t mTestModeImpulseTimeUS;
+    int64_t mTestModeImpulseTimeSamples {0};
+    static constexpr float mTestModeImpulseAmplitude {0.1f};
+    uint64_t mTestModeSampleCount {0};
+    double mTestModeRoundTripMean {0.0};
+    double mTestModeRoundTripMeanSquare {0.0};
+    double mTestModeRoundTripCount {0.0};
+    int mTestModeBufferSkip { 100 };
+    bool mTestModeIntroPrinted { false };
+
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
