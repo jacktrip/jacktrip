@@ -124,7 +124,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0),
     mIOStatLogStream(std::cout.rdbuf()),
-    mTestMode(false)
+    mTestMode(false),
+    mTestModeIntervalSec(1.0)
 {
     createHeader(mPacketHeaderType);
 }
@@ -212,7 +213,7 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
-    mAudioInterface->setTestMode(mTestMode);
+    mAudioInterface->setTestMode(mTestMode,mTestModeIntervalSec);
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;

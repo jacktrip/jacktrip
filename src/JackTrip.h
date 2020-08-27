@@ -294,8 +294,8 @@ public:
     { mAudioInterface = AudioInterface; }
     virtual void setLoopBack(bool b)
     { mLoopBack = b; }
-    virtual void setTestMode(bool b)
-    { mTestMode = b; }
+    virtual void setTestMode(bool b, float tmis)
+    { mTestMode = b; mTestModeIntervalSec = tmis; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -560,6 +560,7 @@ private:
     std::ostream mIOStatLogStream;
 
     bool mTestMode;
+    float mTestModeIntervalSec;
 };
 
 #endif

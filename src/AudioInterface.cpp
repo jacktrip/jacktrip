@@ -263,13 +263,13 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
           if (out_buffer[0][n] > 0.5 * mTestModeImpulseAmplitude) { // found it
             int64_t elapsedSamples = -1;
             if (n >= n_frames-1) {
-	      // Impulse timestamp didn't make it so we skip this one.
+              // Impulse timestamp didn't make it so we skip this one.
             } else {
               elapsedSamples = mTestModeSampleCount + (int64_t)(32768.0f * out_buffer[0][n+1]);
               mTestModeSampleCount = 0; // reset sample counter between impulses
               mTestModeRoundTripCount += 1.0;
             }
-            int64_t curTimeUS = timeMicroSec(); // time since launch in us
+            // int64_t curTimeUS = timeMicroSec(); // time since launch in us
             // int64_t impulseDelayUS = curTimeUS - mTestModeImpulseTimeUS;
             // float impulseDelaySec = float(impulseDelayUS) * 1.0e-6;
             // float impulseDelayBuffers = impulseDelaySec / (float(n_frames)/float(mSampleRate));
@@ -287,13 +287,30 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                 mTestModeRoundTripMeanSquare = elapsedSamplesMS * elapsedSamplesMS;
               }
               if (mTestModeRoundTripCount == 1.0) {
-                std::cout << "\nJackTrip Test Mode (-x): Printing measured `each buffer's round-trip time and cumulative (mean [standard deviation])' in milliseconds:\n";
+                std::cout << "\nJackTrip Test Mode (-x):\n";
+                if (mTestModeIntervalSec == 0.0) {
+                  printf("Printing each round-trip latency then cumulative (mean and [standard deviation]) in ms");
+                } else {
+                  printf("Printing mean and [standard deviation] audio round-trip latency in ms every %0.2f seconds",
+                  mTestModeIntervalSec);
+                }
+		printf(" after skipping first %d buffers:\n", mTestModeBufferSkipStart);
+                // not printing this presently: printf("( * means buffer skipped due missing timestamp)\n");
+                mTestModeLastPrintTimeUS = timeMicroSec();
               }
               //printf("%d (%d) ", elapsedSamplesMS, impulseDelayMS); // measured time is "buffer time" not sample time
-              printf("%lld (%0.0f [%0.0f]) ", elapsedSamplesMS, mTestModeRoundTripMean,
-                     sqrt(mTestModeRoundTripMeanSquare - (mTestModeRoundTripMean*mTestModeRoundTripMean)));
+              int64_t curTimeUS = timeMicroSec(); // time since launch in us
+              double timeSinceLastPrint = double(curTimeUS - mTestModeLastPrintTimeUS);
+              float stdDev = sqrt(mTestModeRoundTripMeanSquare - (mTestModeRoundTripMean*mTestModeRoundTripMean));
+              if (timeSinceLastPrint >= mTestModeIntervalSec * 1.0e6) {
+                if (mTestModeIntervalSec == 0.0) {
+                  printf("%lld (%0.0f [%0.0f]) ", elapsedSamplesMS, mTestModeRoundTripMean, stdDev);
+                }
+                printf("%0.0f [%0.0f] ", mTestModeRoundTripMean, stdDev);
+                mTestModeLastPrintTimeUS = curTimeUS;
+              }
             } else {
-              printf("* "); // we got the impulse but lost its sample-based timestamp
+              // not printing this presently: printf("* "); // we got the impulse but lost its timestamp in samples
             }
             mTestModeImpulsePending = false;
           }

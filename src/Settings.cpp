@@ -86,8 +86,9 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mIOStatTimeout(0),
-    mTestMode(false)
+    mTestMode(false),
+    mTestModeIntervalSec(1.0f),
+    mIOStatTimeout(0)
 {}
 
 //*******************************************************************************
@@ -147,7 +148,7 @@ void Settings::parseInput(int argc, char** argv)
         { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
         { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
         { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
-        { "examine-connection", no_argument, NULL, 'x' }, // test mode - measure latency and such
+        { "examine-audio-delay", required_argument, NULL, 'x' }, // test mode - measure audio round-trip latency statistics
         { NULL, 0, NULL, 0 }
     };
 
@@ -156,7 +157,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -411,7 +412,18 @@ void Settings::parseInput(int argc, char** argv)
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
           mTestMode = true;
-          printf("ENTERING TEST MODE (option -x) ***\n");
+          if (optarg == 0 || optarg[0] == '-' || optarg[0] == 0) { // happens when no -f argument specified
+            printUsage();
+            std::cerr << "--examine-audio-delay (-x) ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
+            std::exit(1);
+          }
+          mTestModeIntervalSec = atof(optarg); // seconds
+          printf("ENTERING TEST MODE (option -x intervalInSeconds)\n");
+          if (mTestModeIntervalSec == 0.0) {
+            printf("\tPrinting each buffer delay then cumulative (mean and [standard deviation]) in ms\n");
+          } else {
+            printf("\tPrinting mean [standard deviation] audio round-trip time every %0.3f seconds in ms\n",mTestModeIntervalSec);
+          }
           break; }
         case ':': {
           printUsage();
@@ -520,7 +532,7 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
-    cout << " -x, --examine-channel                    Measure and print round-trip audio delay in buffers" << endl;
+    cout << " -x, --examine-audio-delay #              Print round-trip audio delay statistics every # sec" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -682,7 +694,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     if (mTestMode) {
 
-      jackTrip->setTestMode(true);
+      jackTrip->setTestMode(true,mTestModeIntervalSec);
 
     } else {
     // Allocate audio effects in client, if any:
