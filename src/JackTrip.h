@@ -83,8 +83,8 @@ public:
 
     /// \brief Enum for the JackTrip mode
     enum jacktripModeT {
-        SERVER, ///< Run in Server Mode
-        CLIENT,  ///< Run in Client Mode
+        SERVER, ///< Run in P2P Server Mode
+        CLIENT,  ///< Run in P2P Client Mode
         CLIENTTOPINGSERVER, ///< Client of the Ping Server Mode
         SERVERPINGSERVER ///< Server of the MultiThreaded JackTrip
     };
@@ -294,8 +294,8 @@ public:
     { mAudioInterface = AudioInterface; }
     virtual void setLoopBack(bool b)
     { mLoopBack = b; }
-    virtual void setTestMode(bool b)
-    { mTestMode = b; }
+    virtual void setTestMode(bool b, float tmis)
+    { mTestMode = b; mTestModeIntervalSec = tmis; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -560,6 +560,7 @@ private:
     std::ostream mIOStatLogStream;
 
     bool mTestMode;
+    float mTestModeIntervalSec;
 };
 
 #endif

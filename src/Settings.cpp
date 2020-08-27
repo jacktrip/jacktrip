@@ -86,8 +86,9 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mIOStatTimeout(0),
-    mTestMode(false)
+    mTestMode(false),
+    mTestModeIntervalSec(1.0f),
+    mIOStatTimeout(0)
 {}
 
 //*******************************************************************************
@@ -114,8 +115,8 @@ void Settings::parseInput(int argc, char** argv)
         { "addcombfilterlength", required_argument, NULL, 'N' }, // added comb filter length
         { "combfilterfeedback", required_argument, NULL, 'H' }, // comb filter feedback
 #endif // endwhere
-        { "server", no_argument, NULL, 's' }, // Run in server mode
-        { "client", required_argument, NULL, 'c' }, // Run in client mode, set server IP address
+        { "server", no_argument, NULL, 's' }, // Run in P2P server mode
+        { "client", required_argument, NULL, 'c' }, // Run in P2P client mode, set server IP address
         { "localaddress", required_argument, NULL, 'L' }, // set local address e.g., 127.0.0.2 for second instance on same host
         { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
         { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
@@ -147,7 +148,7 @@ void Settings::parseInput(int argc, char** argv)
         { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
         { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
         { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
-        { "examine-connection", no_argument, NULL, 'x' }, // test mode - measure latency and such
+        { "examine-audio-delay", required_argument, NULL, 'x' }, // test mode - measure audio round-trip latency statistics
         { NULL, 0, NULL, 0 }
     };
 
@@ -156,7 +157,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -181,15 +182,15 @@ void Settings::parseInput(int argc, char** argv)
             mClientRoomSize = atof(optarg); // cmd line comb feedback adjustment
             break;
 #endif // endwhere
-        case 's': // Run in server mode
+        case 's': // Run in P2P server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;
             break;
-        case 'S': // Run in jacktripserver mode
+        case 'S': // Run in Hub server mode
             //-------------------------------------------------------
             mJackTripServer = true;
             break;
-        case 'c': // Client mode
+        case 'c': // P2P client mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::CLIENT;
             mPeerAddress = optarg;
@@ -411,7 +412,18 @@ void Settings::parseInput(int argc, char** argv)
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
           mTestMode = true;
-          printf("ENTERING TEST MODE (option -x) ***\n");
+          if (optarg == 0 || optarg[0] == '-' || optarg[0] == 0) { // happens when no -f argument specified
+            printUsage();
+            std::cerr << "--examine-audio-delay (-x) ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
+            std::exit(1);
+          }
+          mTestModeIntervalSec = atof(optarg); // seconds
+          printf("ENTERING TEST MODE (option -x intervalInSeconds)\n");
+          if (mTestModeIntervalSec == 0.0) {
+            printf("\tPrinting each buffer delay then cumulative (mean and [standard deviation]) in ms\n");
+          } else {
+            printf("\tPrinting mean [standard deviation] audio round-trip time every %0.3f seconds in ms\n",mTestModeIntervalSec);
+          }
           break; }
         case ':': {
           printUsage();
@@ -424,10 +436,10 @@ void Settings::parseInput(int argc, char** argv)
           break; }
         default: {
             //-------------------------------------------------------
-          printUsage();
+            printUsage();
           printf("*** Unrecognized option -%c *** see above for usage\n",ch);
           std::exit(1);
-          break; }
+            break; }
         }
 
     // Warn user if undefined options where entered
@@ -472,8 +484,8 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "Options: " << endl;
     cout << "REQUIRED ARGUMENTS: One of:" << endl;
-    cout << " -s, --server                             Run in Server Mode" << endl;
-    cout << " -c, --client <peer_hostname_or_IP_num>   Run in Client Mode" << endl;
+    cout << " -s, --server                             Run in P2P Server Mode" << endl;
+    cout << " -c, --client <peer_hostname_or_IP_num>   Run in P2P Client Mode" << endl;
     cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;
     cout << " -C, --pingtoserver <peer_name_or_IP>     Run in Hub Client Mode" << endl;
     cout << endl;
@@ -492,8 +504,8 @@ void Settings::printUsage()
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
          << endl;
     cout << " -o, --portoffset  #                      Receiving bind port and peer port offset from default " << gDefaultPort << endl;
-    cout << " -B, --bindport    #                      Set only the bind port number (default: " << gDefaultPort << ")" << endl;
-    cout << " -P, --peerport    #                      Set only the peer port number (default: " << gDefaultPort << ")" << endl;
+    cout << " -B, --bindport        #                  Set only the bind port number (default: " << gDefaultPort << ")" << endl;
+    cout << " -P, --peerport        #                  Set only the peer port number (default: " << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16, 32 uses floating-point)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
@@ -512,15 +524,15 @@ void Settings::printUsage()
     cout << " -a, --assumednumclients # (1,2,...)      Assumed number of Clients (sources) mixing at Hub Server (otherwise 2 assumed by -O)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
-    cout << " -R, --rtaudio                            Use system's default sound system instead of Jack" << endl;
-    cout << " -T, --srate         #                    Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
-    cout << " -F, --bufsize       #                    Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
-    cout << " -d, --deviceid      #                    The rtaudio device id --rtaudio mode only (default: 0)" << endl;
+    cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
+    cout << " -T, --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
+    cout << " -F, --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
+    cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
-    cout << " -x, --examine-channel                    Measure and print round-trip audio delay in buffers" << endl;
+    cout << " -x, --examine-audio-delay #              Print round-trip audio delay statistics every # sec" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -682,23 +694,23 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     if (mTestMode) {
 
-      jackTrip->setTestMode(true);
+      jackTrip->setTestMode(true,mTestModeIntervalSec);
 
     } else {
-      // Allocate audio effects in client, if any:
-      mEffects.allocateEffects(mNumChans);
+    // Allocate audio effects in client, if any:
+    mEffects.allocateEffects(mNumChans);
 
-      // Outgoing/Incoming Compressor and/or Reverb:
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+    // Outgoing/Incoming Compressor and/or Reverb:
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
 
-      // Limiters go last in the plugin sequence:
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    // Limiters go last in the plugin sequence:
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
     }
 
 #ifdef WAIR // WAIR
