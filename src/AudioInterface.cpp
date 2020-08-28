@@ -304,9 +304,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
               float stdDev = sqrt(mTestModeRoundTripMeanSquare - (mTestModeRoundTripMean*mTestModeRoundTripMean));
               if (timeSinceLastPrint >= mTestModeIntervalSec * 1.0e6) {
                 if (mTestModeIntervalSec == 0.0) {
-                  printf("%lld (%0.0f [%0.0f]) ", elapsedSamplesMS, mTestModeRoundTripMean, stdDev);
+                  printf("%lld (%0.1f [%0.1f]) ", elapsedSamplesMS, mTestModeRoundTripMean, stdDev);
                 }
-                printf("%0.0f [%0.0f] ", mTestModeRoundTripMean, stdDev);
+                printf("%0.1f [%0.1f] ", mTestModeRoundTripMean, stdDev);
                 mTestModeLastPrintTimeUS = curTimeUS;
               }
               std::cout << std::flush;
