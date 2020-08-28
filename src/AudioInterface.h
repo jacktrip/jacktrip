@@ -250,7 +250,7 @@ private:
     double mTestModeRoundTripMean { 0.0 };
     double mTestModeRoundTripMeanSquare { 0.0 };
     double mTestModeRoundTripCount { 0.0 };
-    const int mTestModeBufferSkipStart { 500 };
+    const int mTestModeBufferSkipStart { 100 };
     int mTestModeBufferSkip { mTestModeBufferSkipStart };
     static constexpr float mTestModeImpulseAmplitude { 0.1f };
     static constexpr int mTestModeNumAmpCells { 10 };
