@@ -318,13 +318,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                 }
                 if (mTestModeRoundTripCount == 1.0) {
                   printf("JackTrip Test Mode (option -x printIntervalInSeconds=%0.3f)\n",mTestModeIntervalSec);
-                  printf("You will hear a test impulse-train in channel %d (from 0) with ramping amplitude\n",mTestModeSendChannel);
+                  printf("\tYou will hear a test impulse-train in channel %d (from 0) with ramping amplitude\n",
+			 mTestModeSendChannel);
                   if (mTestModeIntervalSec == 0.0) {
-                    printf("Printing each audio buffer round-trip latency in ms followed by cumulative (mean and [standard deviation])");
+                    printf("\tPrinting each audio buffer round-trip latency in ms followed by cumulative (mean and [standard deviation])");
                   } else {
-                    printf("Printing cumulative mean and [standard deviation] of audio round-trip latency in ms");
+                    printf("\tPrinting cumulative mean and [standard deviation] of audio round-trip latency in ms");
+		    printf(" every %0.3f seconds", mTestModeIntervalSec);
                   }
-                  printf(" every %0.3f seconds", mTestModeIntervalSec);
                   printf(" after skipping first %d buffers:\n", mTestModeBufferSkipStart);
                   // not printing this presently: printf("( * means buffer skipped due missing timestamp or lost impulse)\n");
                   mTestModeLastPrintTimeUS = timeMicroSec();

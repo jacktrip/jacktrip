@@ -224,7 +224,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'b':
             //-------------------------------------------------------
             if (atoi(optarg) == 8) {
-	      mAudioBitResolution = AudioInterface::BIT8;
+              mAudioBitResolution = AudioInterface::BIT8;
             } else if (atoi(optarg) == 16) {
                 mAudioBitResolution = AudioInterface::BIT16;
             } else if (atoi(optarg) == 24) {
@@ -457,22 +457,23 @@ void Settings::parseInput(int argc, char** argv)
     // Exit if options are confused
     //----------------------------------------------------------------------------
     if (mEffects.getHaveEffect() && mJackTripServer) {
-      std::cerr << "--effects (-f) ERROR: Cannot presently use effects in HUB SERVER MODE (-S)." << endl;
+      std::cerr << "--effects (-f) ERROR: Cannot presently use effects in HUB SERVER MODE (-S)." << std::endl;
       std::exit(1);
       // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
     }
     if (mEffects.getHaveLimiter() && mJackTripServer) {
-      std::cerr << "--overflowlimiting (-O) ERROR: Cannot presently use limiters in HUB SERVER MODE (-S)." << endl;
+      std::cerr << "--overflowlimiting (-O) ERROR: Cannot presently use limiters in HUB SERVER MODE (-S)." << std::endl;
       std::exit(1);
       // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
     }
     if (mTestMode
-	&& (mAudioBitResolution != AudioInterface::BIT16)
-	&& (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
+        && (mAudioBitResolution != AudioInterface::BIT16)
+        && (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
       // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
-      std::cerr << "--examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported\n" << endl;
+      std::cerr << "--examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported\n" << std::endl;
       std::exit(1);
     }
+}
 
 //*******************************************************************************
 void Settings::printUsage()
