@@ -254,18 +254,15 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // =============================================
 
     if (mTestMode) {
-      // static uint64_t lastTimeUS = 0;
-      // std::cout << timeMicroSec() - lastTimeUS << " ";
-      // lastTimeUS = timeMicroSec();
-      assert(mNumInChans == mNumOutChans);
       if (mTestModeImpulsePending) { // look for return impulse in channel 0:
+        assert(mTestModeSendChannel<mNumOutChans);
         for (uint n=0; n<n_frames; n++) {
-          if (out_buffer[0][n] > 0.5 * mTestModeImpulseAmplitude) { // found it
+          if (out_buffer[mTestModeSendChannel][n] > 0.5 * mTestModeImpulseAmplitude) { // found it
             int64_t elapsedSamples = -1;
             if (n >= n_frames-1) {
               // Impulse timestamp didn't make it so we skip this one.
             } else {
-              elapsedSamples = mTestModeSampleCount + (int64_t)(32768.0f * out_buffer[0][n+1]);
+              elapsedSamples = mTestModeSampleCount + (int64_t)(32768.0f * out_buffer[mTestModeSendChannel][n+1]);
               mTestModeSampleCount = 0; // reset sample counter between impulses
               mTestModeRoundTripCount += 1.0;
             }
@@ -371,18 +368,18 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         sendImpulse = true;
       }
       if (sendImpulse) {
-        assert(mNumInChans>=1);
-        mInBufCopy[0][0] = mTestModeImpulseAmplitude;
+        assert(mTestModeSendChannel < mNumInChans);
+        mInBufCopy[mTestModeSendChannel][0] = mTestModeImpulseAmplitude;
         mTestModeImpulsePending = true;
         mTestModeImpulseTimeUS = timeMicroSec();
         mTestModeImpulseTimeSamples = mTestModeSampleCount;
         // also send impulse time:
       } else {
-        mInBufCopy[0][0] = 0.0f; // send zeros until a new one is needed
+        mInBufCopy[mTestModeSendChannel][0] = 0.0f; // send zeros until a new one is needed
       }
       // In either case, sent current sample-count:
       if (n_frames>1) { // always true?
-        mInBufCopy[0][1] = float(mTestModeSampleCount)/32768.0f; // survives if there is no digital processing at the server
+        mInBufCopy[mTestModeSendChannel][1] = float(mTestModeSampleCount)/32768.0f; // survives if there is no digital processing at the server
       } else {
         std::cerr << "\n*** AudioInterface.cpp: Test Mode: Timestamp cannot fit into a lenth " << n_frames << " buffer ***\n";
       }

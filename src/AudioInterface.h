@@ -176,7 +176,7 @@ public:
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString ClientName) = 0;
     virtual void setLoopBack(bool b) { mLoopBack = b; }
-    virtual void setTestMode(bool b, float tmis) { mTestMode = b; mTestModeIntervalSec = tmis; }
+    virtual void setTestMode(bool b, float tmis, int tmsc) { mTestMode = b; mTestModeIntervalSec = tmis; mTestModeSendChannel = tmsc; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -253,6 +253,7 @@ private:
     double mTestModeRoundTripCount { 0.0 };
     const int mTestModeBufferSkipStart {100 };
     int mTestModeBufferSkip { mTestModeBufferSkipStart };
+    int mTestModeSendChannel { 0 };
 
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair

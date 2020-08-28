@@ -294,8 +294,8 @@ public:
     { mAudioInterface = AudioInterface; }
     virtual void setLoopBack(bool b)
     { mLoopBack = b; }
-    virtual void setTestMode(bool b, float tmis)
-    { mTestMode = b; mTestModeIntervalSec = tmis; }
+    virtual void setTestMode(bool b, float tmis, int tmsc)
+    { mTestMode = b; mTestModeIntervalSec = tmis; mTestModeSendChannel = tmsc; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -561,6 +561,7 @@ private:
 
     bool mTestMode;
     float mTestModeIntervalSec;
+    int mTestModeSendChannel;
 };
 
 #endif

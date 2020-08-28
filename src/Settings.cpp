@@ -86,9 +86,9 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
+    mIOStatTimeout(0),
     mTestMode(false),
-    mTestModeIntervalSec(1.0f),
-    mIOStatTimeout(0)
+    mTestModeIntervalSec(1.0f)
 {}
 
 //*******************************************************************************
@@ -446,13 +446,18 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     if (optind < argc) {
         cout << gPrintSeparator << endl;
-        cout << "WARINING: The following entered options have no effect." << endl;
+        cout << "WARNING: The following entered options have no effect." << endl;
         cout << "          They will be ignored!" << endl;
         cout << "          Type 'jacktrip -h' to see options." << endl;
         for( ; optind < argc; optind++) {
             cout << "argument: " << argv[optind] << endl;
         }
         cout << gPrintSeparator << endl;
+    }
+
+    if (mTestMode) {
+      assert(mNumChans>0);
+      mTestModeSendChannel = mNumChans-1; // use top channel since channel 0 is a clap track on CCRMA loopback servers
     }
 
     // Exit if options are confused
@@ -564,7 +569,7 @@ UdpHubListener *Settings::getConfiguredHubServer()
         udpHub->setUnderRunMode(mUnderrunMode);
     }
     udpHub->setBufferQueueLength(mBufferQueueLength);
-    
+
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
         udpHub->setIOStatStream(mIOStatStream);
@@ -598,7 +603,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     if (!mClientName.isEmpty()) {
         jackTrip->setClientName(mClientName);
     }
-    
+
     if (!mRemoteClientName.isEmpty() && (mJackTripMode == JackTrip::CLIENTTOPINGSERVER)) {
         jackTrip->setRemoteClientName(mRemoteClientName);
     }
@@ -608,13 +613,13 @@ JackTrip *Settings::getConfiguredJackTrip()
         cout << "Setting buffers to zero when underrun..." << endl;
         cout << gPrintSeparator << std::endl;
     }
-    
+
     jackTrip->setStopOnTimeout(mStopOnTimeout);
 
     // Set peer address in server mode
     if (mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
         jackTrip->setPeerAddress(mPeerAddress); }
-        
+
     //        if(mLocalAddress!=QString()) // default
     //            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
     //        else
@@ -686,7 +691,7 @@ JackTrip *Settings::getConfiguredJackTrip()
         //netks->play();
         // -------------------------------------------------------------
     }
-    
+
     if (mIOStatTimeout > 0) {
         jackTrip->setIOStatTimeout(mIOStatTimeout);
         jackTrip->setIOStatStream(mIOStatStream);
@@ -694,7 +699,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     if (mTestMode) {
 
-      jackTrip->setTestMode(true,mTestModeIntervalSec);
+      jackTrip->setTestMode(true,mTestModeIntervalSec,mTestModeSendChannel);
 
     } else {
     // Allocate audio effects in client, if any:

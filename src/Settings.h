@@ -117,6 +117,7 @@ private:
     Effects mEffects;
     bool mTestMode; ///< Test mode
     float mTestModeIntervalSec;
+    int mTestModeSendChannel;
 };
 
 #endif

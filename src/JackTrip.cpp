@@ -213,7 +213,7 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
-    mAudioInterface->setTestMode(mTestMode,mTestModeIntervalSec);
+    mAudioInterface->setTestMode(mTestMode,mTestModeIntervalSec,mTestModeSendChannel);
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
