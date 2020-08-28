@@ -246,14 +246,19 @@ private:
     int64_t mTestModeLastPrintTimeUS { 0 };
     int64_t mTestModeImpulseTimeUS { 0 };
     int64_t mTestModeImpulseTimeSamples { 0 };
-    static constexpr float mTestModeImpulseAmplitude { 0.1f };
-    uint64_t mTestModeSampleCount { 0 };
+    uint64_t mTestModeSampleCount { 1 }; // 0 not used
     double mTestModeRoundTripMean { 0.0 };
     double mTestModeRoundTripMeanSquare { 0.0 };
     double mTestModeRoundTripCount { 0.0 };
-    const int mTestModeBufferSkipStart {100 };
+    const int mTestModeBufferSkipStart { 500 };
     int mTestModeBufferSkip { mTestModeBufferSkipStart };
+    static constexpr float mTestModeImpulseAmplitude { 0.1f };
+    static constexpr int mTestModeNumAmpCells { 10 };
+    static constexpr float mTestModeAmpCellHeight { mTestModeImpulseAmplitude/mTestModeNumAmpCells };
     int mTestModeSendChannel { 0 };
+    int mTestModePendingCell { 0 }; // 0 is not used
+    float getImpulseAmp();
+    int getImpulseCellNum(float amp);
 
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair

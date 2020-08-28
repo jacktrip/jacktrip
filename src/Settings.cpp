@@ -224,7 +224,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'b':
             //-------------------------------------------------------
             if (atoi(optarg) == 8) {
-                mAudioBitResolution = AudioInterface::BIT8;
+	      mAudioBitResolution = AudioInterface::BIT8;
             } else if (atoi(optarg) == 16) {
                 mAudioBitResolution = AudioInterface::BIT16;
             } else if (atoi(optarg) == 24) {
@@ -418,12 +418,6 @@ void Settings::parseInput(int argc, char** argv)
             std::exit(1);
           }
           mTestModeIntervalSec = atof(optarg); // seconds
-          printf("ENTERING TEST MODE (option -x intervalInSeconds)\n");
-          if (mTestModeIntervalSec == 0.0) {
-            printf("\tPrinting each buffer delay then cumulative (mean and [standard deviation]) in ms\n");
-          } else {
-            printf("\tPrinting mean and [standard deviation] audio round-trip latency in ms every %0.3f seconds\n",mTestModeIntervalSec);
-          }
           break; }
         case ':': {
           printUsage();
@@ -472,8 +466,13 @@ void Settings::parseInput(int argc, char** argv)
       std::exit(1);
       // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
     }
-}
-
+    if (mTestMode
+	&& (mAudioBitResolution != AudioInterface::BIT16)
+	&& (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
+      // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
+      std::cerr << "--examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported\n" << endl;
+      std::exit(1);
+    }
 
 //*******************************************************************************
 void Settings::printUsage()

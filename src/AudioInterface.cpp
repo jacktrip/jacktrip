@@ -228,6 +228,29 @@ uint64_t timeMicroSec() {
 #endif
 }
 
+float AudioInterface::getImpulseAmp() {
+  mTestModePendingCell += 1; // only called when no impulse is pending
+  if (mTestModePendingCell >= mTestModeNumAmpCells) {
+    mTestModePendingCell = 1; // wrap-around, not using zero
+  }
+  float imp = float(mTestModePendingCell) * (mTestModeImpulseAmplitude/float(mTestModeNumAmpCells));
+  return imp;
+}
+
+int AudioInterface::getImpulseCellNum(float amp) {
+  float ch = mTestModeAmpCellHeight;
+  float cell = amp / ch;
+  int iCell = round(cell);
+  if (iCell > mTestModeNumAmpCells - 1) {
+    std::cerr << "*** AudioInterface.cpp: getImpulseCellNum("<<amp<<"): Return pulse amplitude is beyond maximum expected\n";
+    iCell = mTestModeNumAmpCells-1;
+  } else if (iCell < 0) {
+    std::cerr << "*** AudioInterface.cpp: getImpulseCellNum("<<amp<<"): Return pulse amplitude is below minimum expected\n";
+    iCell = 0;
+  }
+  return iCell;
+}
+
 //*******************************************************************************
 void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
@@ -257,64 +280,76 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
       if (mTestModeImpulsePending) { // look for return impulse in channel 0:
         assert(mTestModeSendChannel<mNumOutChans);
         for (uint n=0; n<n_frames; n++) {
-          if (out_buffer[mTestModeSendChannel][n] > 0.5 * mTestModeImpulseAmplitude) { // found it
-            int64_t elapsedSamples = -1;
-            if (n >= n_frames-1) {
-              // Impulse timestamp didn't make it so we skip this one.
-            } else {
-              elapsedSamples = mTestModeSampleCount + (int64_t)(32768.0f * out_buffer[mTestModeSendChannel][n+1]);
-              mTestModeSampleCount = 0; // reset sample counter between impulses
-              mTestModeRoundTripCount += 1.0;
-            }
-            // int64_t curTimeUS = timeMicroSec(); // time since launch in us
-            // int64_t impulseDelayUS = curTimeUS - mTestModeImpulseTimeUS;
-            // float impulseDelaySec = float(impulseDelayUS) * 1.0e-6;
-            // float impulseDelayBuffers = impulseDelaySec / (float(n_frames)/float(mSampleRate));
-            // int64_t impulseDelayMS = (int64_t)round(double(impulseDelayUS)/1000.0);
-            if (elapsedSamples > 0) {
-              int64_t elapsedSamplesMS = (int64_t)round(1000.0 * double(elapsedSamples)/double(mSampleRate)); // ms
-              if (mTestModeRoundTripCount > 1.0) {
-                double prevSum = mTestModeRoundTripMean * (mTestModeRoundTripCount-1.0); // undo previous normalization
-                mTestModeRoundTripMean = (prevSum + elapsedSamplesMS) / mTestModeRoundTripCount; // add latest and renormalize
-                double prevSumSq = mTestModeRoundTripMeanSquare * (mTestModeRoundTripCount-1.0); // undo previous normalization
-
-                mTestModeRoundTripMeanSquare = (prevSumSq + elapsedSamplesMS*elapsedSamplesMS) / mTestModeRoundTripCount;
+          float amp = out_buffer[mTestModeSendChannel][n];
+          if (amp > 0.5 * mTestModeAmpCellHeight) { // got something
+            int cellNum =  getImpulseCellNum(out_buffer[mTestModeSendChannel][n]);
+            if (cellNum != mTestModePendingCell) { // not our impulse!
+              std::cerr <<
+                "*** AudioInterface.cpp: computeProcessFromNetwork: Received pulse amplitude "
+                        << amp << " (cell " << cellNum << ") while looking for cell "
+                        << mTestModePendingCell << " - ABORTING CURRENT PULSE\n";
+              mTestModeImpulsePending = false;
+            } else { // found our impulse:
+              int64_t elapsedSamples = -1;
+              if (n >= n_frames-1) {
+                // Impulse timestamp didn't make it so we skip this one.
               } else {
-                mTestModeRoundTripMean = elapsedSamplesMS;
-                mTestModeRoundTripMeanSquare = elapsedSamplesMS * elapsedSamplesMS;
+                float currentTestSampleCount = - 32768.0f * out_buffer[mTestModeSendChannel][n+1];
+                elapsedSamples = mTestModeSampleCount + int64_t(currentTestSampleCount);
+                mTestModeSampleCount = 1; // reset sample counter between impulses
+                mTestModeRoundTripCount += 1.0;
               }
-              if (mTestModeRoundTripCount == 1.0) {
-                std::cout << "\nJackTrip Test Mode (-x printIntervalInSeconds):\n";
-                if (mTestModeIntervalSec == 0.0) {
-                  printf("Printing each round-trip latency then cumulative (mean and [standard deviation]) in ms");
+              // int64_t curTimeUS = timeMicroSec(); // time since launch in us
+              // int64_t impulseDelayUS = curTimeUS - mTestModeImpulseTimeUS;
+              // float impulseDelaySec = float(impulseDelayUS) * 1.0e-6;
+              // float impulseDelayBuffers = impulseDelaySec / (float(n_frames)/float(mSampleRate));
+              // int64_t impulseDelayMS = (int64_t)round(double(impulseDelayUS)/1000.0);
+              if (elapsedSamples > 0) {
+                int64_t elapsedSamplesMS = (int64_t)round(1000.0 * double(elapsedSamples)/double(mSampleRate)); // ms
+                if (mTestModeRoundTripCount > 1.0) {
+                  double prevSum = mTestModeRoundTripMean * (mTestModeRoundTripCount-1.0); // undo previous normalization
+                  mTestModeRoundTripMean = (prevSum + elapsedSamplesMS) / mTestModeRoundTripCount; // add latest and renormalize
+                  double prevSumSq = mTestModeRoundTripMeanSquare * (mTestModeRoundTripCount-1.0); // undo previous normalization
+
+                  mTestModeRoundTripMeanSquare = (prevSumSq + elapsedSamplesMS*elapsedSamplesMS) / mTestModeRoundTripCount;
                 } else {
-                  printf("Printing mean and [standard deviation] audio round-trip latency in ms every %0.3f seconds",
-                  mTestModeIntervalSec);
+                  mTestModeRoundTripMean = elapsedSamplesMS;
+                  mTestModeRoundTripMeanSquare = elapsedSamplesMS * elapsedSamplesMS;
                 }
-                printf(" after skipping first %d buffers:\n", mTestModeBufferSkipStart);
-                // not printing this presently: printf("( * means buffer skipped due missing timestamp)\n");
-                mTestModeLastPrintTimeUS = timeMicroSec();
-              }
-              //printf("%d (%d) ", elapsedSamplesMS, impulseDelayMS); // measured time is "buffer time" not sample time
-              int64_t curTimeUS = timeMicroSec(); // time since launch in us
-              double timeSinceLastPrint = double(curTimeUS - mTestModeLastPrintTimeUS);
-              float stdDev = sqrt(mTestModeRoundTripMeanSquare - (mTestModeRoundTripMean*mTestModeRoundTripMean));
-              if (timeSinceLastPrint >= mTestModeIntervalSec * 1.0e6) {
-                if (mTestModeIntervalSec == 0.0) {
-                  printf("%lld (%0.1f [%0.1f]) ", elapsedSamplesMS, mTestModeRoundTripMean, stdDev);
+                if (mTestModeRoundTripCount == 1.0) {
+                  printf("JackTrip Test Mode (option -x printIntervalInSeconds=%0.3f)\n",mTestModeIntervalSec);
+                  printf("You will hear a test impulse-train in channel %d (from 0) with ramping amplitude\n",mTestModeSendChannel);
+                  if (mTestModeIntervalSec == 0.0) {
+                    printf("Printing each audio buffer round-trip latency in ms followed by cumulative (mean and [standard deviation])");
+                  } else {
+                    printf("Printing cumulative mean and [standard deviation] of audio round-trip latency in ms");
+                  }
+                  printf(" every %0.3f seconds", mTestModeIntervalSec);
+                  printf(" after skipping first %d buffers:\n", mTestModeBufferSkipStart);
+                  // not printing this presently: printf("( * means buffer skipped due missing timestamp or lost impulse)\n");
+                  mTestModeLastPrintTimeUS = timeMicroSec();
                 }
-                printf("%0.1f [%0.1f] ", mTestModeRoundTripMean, stdDev);
-                mTestModeLastPrintTimeUS = curTimeUS;
+                //printf("%d (%d) ", elapsedSamplesMS, impulseDelayMS); // measured time is "buffer time" not sample time
+                int64_t curTimeUS = timeMicroSec(); // time since launch in us
+                double timeSinceLastPrintUS = double(curTimeUS - mTestModeLastPrintTimeUS);
+                float stdDev = sqrt(mTestModeRoundTripMeanSquare - (mTestModeRoundTripMean*mTestModeRoundTripMean));
+                if (timeSinceLastPrintUS >= mTestModeIntervalSec * 1.0e6) {
+                  if (mTestModeIntervalSec == 0.0) { printf("%lld (", elapsedSamplesMS); }
+                  printf("%0.1f [%0.1f]", mTestModeRoundTripMean, stdDev);
+                  if (mTestModeIntervalSec == 0.0) { printf(") "); } else { printf(" "); }
+                  mTestModeLastPrintTimeUS = curTimeUS;
+                }
+                std::cout << std::flush;
+              } else {
+                // not printing this presently: printf("* "); // we got the impulse but lost its timestamp in samples
               }
-              std::cout << std::flush;
-            } else {
-              // not printing this presently: printf("* "); // we got the impulse but lost its timestamp in samples
-            }
-            mTestModeImpulsePending = false;
-          }
-        }
-      }
-    }
+              mTestModeImpulsePending = false;
+            } // found our impulse
+            // remain pending until timeout, hoping to find our return pulse
+          } // got something
+        } // loop over samples
+      } // mTestModeImpulsePending
+    } // mTestMode
 
 #ifdef WAIR // WAIR
     // nib16 result now in mNetInBuffer
@@ -369,17 +404,17 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
       }
       if (sendImpulse) {
         assert(mTestModeSendChannel < mNumInChans);
-        mInBufCopy[mTestModeSendChannel][0] = mTestModeImpulseAmplitude;
+        mInBufCopy[mTestModeSendChannel][0] = getImpulseAmp();
         mTestModeImpulsePending = true;
         mTestModeImpulseTimeUS = timeMicroSec();
-        mTestModeImpulseTimeSamples = mTestModeSampleCount;
+        mTestModeImpulseTimeSamples = mTestModeSampleCount; // timer in samples for current impulse loopback test
         // also send impulse time:
       } else {
         mInBufCopy[mTestModeSendChannel][0] = 0.0f; // send zeros until a new one is needed
       }
       // In either case, sent current sample-count:
       if (n_frames>1) { // always true?
-        mInBufCopy[mTestModeSendChannel][1] = float(mTestModeSampleCount)/32768.0f; // survives if there is no digital processing at the server
+        mInBufCopy[mTestModeSendChannel][1] = -float(mTestModeSampleCount)/32768.0f; // survives if there is no digital processing at the server
       } else {
         std::cerr << "\n*** AudioInterface.cpp: Test Mode: Timestamp cannot fit into a lenth " << n_frames << " buffer ***\n";
       }
