@@ -291,7 +291,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                 if (mTestModeIntervalSec == 0.0) {
                   printf("Printing each round-trip latency then cumulative (mean and [standard deviation]) in ms");
                 } else {
-                  printf("Printing mean and [standard deviation] audio round-trip latency in ms every %0.2f seconds",
+                  printf("Printing mean and [standard deviation] audio round-trip latency in ms every %0.3f seconds",
                   mTestModeIntervalSec);
                 }
                 printf(" after skipping first %d buffers:\n", mTestModeBufferSkipStart);

@@ -422,7 +422,7 @@ void Settings::parseInput(int argc, char** argv)
           if (mTestModeIntervalSec == 0.0) {
             printf("\tPrinting each buffer delay then cumulative (mean and [standard deviation]) in ms\n");
           } else {
-            printf("\tPrinting mean [standard deviation] audio round-trip time every %0.3f seconds in ms\n",mTestModeIntervalSec);
+            printf("\tPrinting mean and [standard deviation] audio round-trip latency in ms every %0.3f seconds\n",mTestModeIntervalSec);
           }
           break; }
         case ':': {
