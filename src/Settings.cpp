@@ -450,23 +450,26 @@ void Settings::parseInput(int argc, char** argv)
     assert(mNumChans>0);
     mAudioTester.setSendChannel(mNumChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
 
-    // Exit if options are confused
+    // Exit if options are incompatible
     //----------------------------------------------------------------------------
-    if (mEffects.getHaveEffect() && mJackTripServer) {
-      std::cerr << "--effects (-f) ERROR: Cannot presently use effects in HUB SERVER MODE (-S)." << std::endl;
+    bool haveSomeServerMode = not ((mJackTripMode == JackTrip::CLIENT) || (mJackTripMode == JackTrip::CLIENTTOPINGSERVER));
+    if (mEffects.getHaveEffect() && haveSomeServerMode) {
+      std::cerr << "*** --effects (-f) ERROR: Effects not yet supported server modes (-S and -s).\n\n";
       std::exit(1);
-      // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
     }
-    if (mEffects.getHaveLimiter() && mJackTripServer) {
-      std::cerr << "--overflowlimiting (-O) ERROR: Cannot presently use limiters in HUB SERVER MODE (-S)." << std::endl;
+    if (mEffects.getHaveLimiter() && haveSomeServerMode) {
+      std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
       std::exit(1);
-      // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
+    }
+    if (mAudioTester.getEnabled() && haveSomeServerMode) {
+      std::cerr << "*** --examine-audio-delay (-x) ERROR: Audio latency measurement not supported in server modes (-S and -s)\n\n";
+      std::exit(1);
     }
     if (mAudioTester.getEnabled()
         && (mAudioBitResolution != AudioInterface::BIT16)
         && (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
       // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
-      std::cerr << "--examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported\n" << std::endl;
+      std::cerr << "*** --examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported for audio latency measurement.\n\n";
       std::exit(1);
     }
 }

@@ -212,7 +212,9 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
-    mAudioTesterP->setSampleRate(mSampleRate);
+    if (mAudioTesterP) { // if we're a hub server, this will be a nullptr - MAJOR REFACTOR NEEDED, in my opinion
+      mAudioTesterP->setSampleRate(mSampleRate);
+    }
     mAudioInterface->setAudioTesterP(mAudioTesterP);
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
