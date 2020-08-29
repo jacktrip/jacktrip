@@ -72,7 +72,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 	  // float impulseDelayBuffers = impulseDelaySec / (float(n_frames)/float(sampleRate));
 	  // int64_t impulseDelayMS = (int64_t)round(double(impulseDelayUS)/1000.0);
 	  if (elapsedSamples > 0) { // found impulse and reset, time to print buffer results:
-	    double elapsedSamplesMS = round(1000.0 * double(elapsedSamples)/double(sampleRate)); // ms
+	    double elapsedSamplesMS = 1000.0 * double(elapsedSamples)/double(sampleRate); // ms
 	    if (roundTripCount > 1.0) {
 	      double prevSum = roundTripMean * (roundTripCount-1.0); // undo previous normalization
 	      roundTripMean = (prevSum + elapsedSamplesMS) / roundTripCount; // add latest and renormalize
