@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
-    
+
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
 
@@ -106,9 +106,9 @@ int main(int argc, char *argv[])
     qDebug() << "JackTrip (" << argv[0] << "): built" << dt << "\n";
 
     try {
-        Settings settings;	
+        Settings settings;
         settings.parseInput(argc, argv);
-        
+
         //Either start our hub server or our jacktrip process as appropriate.
         if (settings.isHubServer()) {
             udpHub.reset(settings.getConfiguredHubServer());
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
             jackTrip->startProcess();
 #endif // endwhere
         }
-        
+
         if (gVerboseFlag) std::cout << "step 6" << std::endl;
         if (gVerboseFlag) std::cout << "jmain before app->exec()" << std::endl;
     } catch (const std::exception &e) {
@@ -152,6 +152,6 @@ int main(int argc, char *argv[])
         std::cerr << gPrintSeparator << std::endl;
         return -1;
     }
-    
+
     return app.exec();
 }
