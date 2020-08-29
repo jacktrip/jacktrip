@@ -86,9 +86,7 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mIOStatTimeout(0),
-    mTestMode(false),
-    mTestModeIntervalSec(1.0f)
+    mIOStatTimeout(0)
 {}
 
 //*******************************************************************************
@@ -411,13 +409,13 @@ void Settings::parseInput(int argc, char** argv)
           break; }
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
-          mTestMode = true;
+          mAudioTester.setEnabled(true);
           if (optarg == 0 || optarg[0] == '-' || optarg[0] == 0) { // happens when no -f argument specified
             printUsage();
             std::cerr << "--examine-audio-delay (-x) ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
             std::exit(1);
           }
-          mTestModeIntervalSec = atof(optarg); // seconds
+          mAudioTester.setPrintIntervalSec(atof(optarg));
           break; }
         case ':': {
           printUsage();
@@ -449,10 +447,8 @@ void Settings::parseInput(int argc, char** argv)
         cout << gPrintSeparator << endl;
     }
 
-    if (mTestMode) {
-      assert(mNumChans>0);
-      mTestModeSendChannel = mNumChans-1; // use top channel since channel 0 is a clap track on CCRMA loopback servers
-    }
+    assert(mNumChans>0);
+    mAudioTester.setSendChannel(mNumChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
 
     // Exit if options are confused
     //----------------------------------------------------------------------------
@@ -466,7 +462,7 @@ void Settings::parseInput(int argc, char** argv)
       std::exit(1);
       // FIXME: What about the case (mJackTripMode == JackTrip::SERVER)? Can it work?
     }
-    if (mTestMode
+    if (mAudioTester.getEnabled()
         && (mAudioBitResolution != AudioInterface::BIT16)
         && (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
       // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
@@ -697,25 +693,23 @@ JackTrip *Settings::getConfiguredJackTrip()
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
-    if (mTestMode) {
+    jackTrip->setAudioTesterP(&mAudioTester);
 
-      jackTrip->setTestMode(true,mTestModeIntervalSec,mTestModeSendChannel);
+    if (not mAudioTester.getEnabled()) { // No effects plugins allowed while testing:
+      // Allocate audio effects in client, if any:
+      mEffects.allocateEffects(mNumChans);
 
-    } else {
-    // Allocate audio effects in client, if any:
-    mEffects.allocateEffects(mNumChans);
+      // Outgoing/Incoming Compressor and/or Reverb:
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
 
-    // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
-
-    // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+      // Limiters go last in the plugin sequence:
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
     }
 
 #ifdef WAIR // WAIR

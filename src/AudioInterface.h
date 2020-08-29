@@ -40,6 +40,7 @@
 
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
+#include "AudioTester.h"
 
 #include <QVarLengthArray>
 #include <QVector>
@@ -176,7 +177,7 @@ public:
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString ClientName) = 0;
     virtual void setLoopBack(bool b) { mLoopBack = b; }
-    virtual void setTestMode(bool b, float tmis, int tmsc) { mTestMode = b; mTestModeIntervalSec = tmis; mTestModeSendChannel = tmsc; }
+    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -240,26 +241,7 @@ private:
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
     bool mLoopBack;
-    bool mTestMode { false };
-    float mTestModeIntervalSec { 1.0f };
-    bool mTestModeImpulsePending { false };
-    int64_t mTestModeLastPrintTimeUS { 0 };
-    int64_t mTestModeImpulseTimeUS { 0 };
-    int64_t mTestModeImpulseTimeSamples { 0 };
-    uint64_t mTestModeSampleCount { 1 }; // 0 not used
-    double mTestModeRoundTripMean { 0.0 };
-    double mTestModeRoundTripMeanSquare { 0.0 };
-    double mTestModeRoundTripCount { 0.0 };
-    const int mTestModeBufferSkipStart { 100 };
-    int mTestModeBufferSkip { mTestModeBufferSkipStart };
-    static constexpr float mTestModeImpulseAmplitude { 0.1f };
-    static constexpr int mTestModeNumAmpCells { 10 };
-    static constexpr float mTestModeAmpCellHeight { mTestModeImpulseAmplitude/mTestModeNumAmpCells };
-    int mTestModeSendChannel { 0 };
-    int mTestModePendingCell { 0 }; // 0 is not used
-    float getImpulseAmp();
-    int getImpulseCellNum(float amp);
-
+    AudioTester* mAudioTesterP { nullptr };
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;

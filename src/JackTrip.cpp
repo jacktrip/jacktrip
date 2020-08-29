@@ -124,8 +124,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0),
     mIOStatLogStream(std::cout.rdbuf()),
-    mTestMode(false),
-    mTestModeIntervalSec(1.0)
+    mAudioTesterP(nullptr)
 {
     createHeader(mPacketHeaderType);
 }
@@ -213,7 +212,8 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
-    mAudioInterface->setTestMode(mTestMode,mTestModeIntervalSec,mTestModeSendChannel);
+    mAudioTesterP->setSampleRate(mSampleRate);
+    mAudioInterface->setAudioTesterP(mAudioTesterP);
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
@@ -513,7 +513,7 @@ void JackTrip::onStatTimer()
 
     static QMutex mutex;
     QMutexLocker locker(&mutex);
-    mIOStatLogStream << (mTestMode ? "\n" : "") << now.toLocal8Bit().constData()
+    mIOStatLogStream << (mAudioTesterP->getEnabled() ? "\n" : "") << now.toLocal8Bit().constData()
       << " " << getPeerAddress().toLocal8Bit().constData()
       << " underrun/overflow on send: "
       << send_io_stat.underruns

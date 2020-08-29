@@ -131,6 +131,7 @@ HEADERS += DataProtocol.h \
            CompressorPresets.h \
            Limiter.h \
            Reverb.h \
+           AudioTester.h \
            jacktrip_globals.h \
            jacktrip_types.h \
            JackTripThread.h \

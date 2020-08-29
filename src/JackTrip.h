@@ -57,6 +57,7 @@
 
 #include "PacketHeader.h"
 #include "RingBuffer.h"
+#include "AudioTester.h"
 
 //#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
@@ -294,8 +295,7 @@ public:
     { mAudioInterface = AudioInterface; }
     virtual void setLoopBack(bool b)
     { mLoopBack = b; }
-    virtual void setTestMode(bool b, float tmis, int tmsc)
-    { mTestMode = b; mTestModeIntervalSec = tmis; mTestModeSendChannel = tmsc; }
+    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -559,9 +559,7 @@ private:
     int mIOStatTimeout;
     std::ostream mIOStatLogStream;
 
-    bool mTestMode;
-    float mTestModeIntervalSec;
-    int mTestModeSendChannel;
+    AudioTester* mAudioTesterP;
 };
 
 #endif
