@@ -237,9 +237,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // =============================================
 
     if (mAudioTesterP->getEnabled()) {
-      if (mAudioTesterP->getBufferSkip() <= 0) { // must set breakpoints here
-        mAudioTesterP->lookForReturnPulse(out_buffer, n_frames);
-      }
+      mAudioTesterP->lookForReturnPulse(out_buffer, n_frames);
     }
 
 #ifdef WAIR // WAIR
@@ -282,9 +280,6 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 #endif // endwhere
 
     if (mAudioTesterP->getEnabled()) {
-      if (mAudioTesterP->getBufferSkip() == 1) { // must set breakpoints here
-        printf("Initial buffers skipped\n");
-      }
       mAudioTesterP->writeImpulse(mInBufCopy, in_buffer, n_frames);
       computeProcessToNetwork(mInBufCopy, n_frames);
     } else { // Run Faust plugins for the outgoing stream:
