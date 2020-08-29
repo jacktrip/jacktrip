@@ -237,6 +237,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     computeProcessFromNetwork(out_buffer, n_frames);
     // =============================================
 
+    // out_buffer is from the network and goes "out" to local audio
+    // hardware via JACK:
+
+    // mAudioTesterP will be nullptr for hub server's JackTripWorker instances
+    if (mAudioTesterP && mAudioTesterP->getEnabled()) {
+      mAudioTesterP->lookForReturnPulse(out_buffer, n_frames);
+    }
+
 #ifdef WAIR // WAIR
     // nib16 result now in mNetInBuffer
 #endif // endwhere
@@ -276,7 +284,11 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
-    // Run Faust plugins for the outgoing stream:
+    // mAudioTesterP will be nullptr for hub server's JackTripWorker instances
+    if (mAudioTesterP && mAudioTesterP->getEnabled()) { // in_buffer is "in" from local audio hardware via JACK
+      mAudioTesterP->writeImpulse(mInBufCopy, in_buffer, n_frames);
+      computeProcessToNetwork(mInBufCopy, n_frames);
+    } else { // Run Faust plugins for the outgoing stream:
     int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
     if (nop>0) { // cannot modify IN_BUFFER so make a copy
       //#ifdef DEBUG
@@ -286,7 +298,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
       }
       if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
       std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
-		  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
+                  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
         exit(1);
       }
       for (int i=0; i<mNumInChans; i++) {
@@ -305,6 +317,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     } else {
       // 3) Finally, send packets to network:
       computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
+    }
     }
 
 #ifdef WAIR // WAIR
@@ -473,7 +486,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
         }
     // Send Audio buffer to Network
     mJackTrip->sendNetworkPacket( mInputPacket );
-}
+} // /computeProcessToNetwork
 
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
@@ -575,9 +588,9 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-	      << typeid(plugin).name() << " REJECTED due to having "
-	      << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
-	      << mNumInChans << " inputs\n";
+              << typeid(plugin).name() << " REJECTED due to having "
+              << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
+              << mNumInChans << " inputs\n";
     return;
   }
   mProcessPluginsToNetwork.append(plugin);
@@ -588,9 +601,9 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumOutputs() > mNumOutChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-	      << typeid(plugin).name() << " REJECTED due to having "
-	      << plugin->getNumOutputs() << " inputs, while the JACK audio output requires "
-	      << mNumOutChans << " outputs\n";
+              << typeid(plugin).name() << " REJECTED due to having "
+              << plugin->getNumOutputs() << " inputs, while the JACK audio output requires "
+              << mNumOutChans << " outputs\n";
     return;
   }
   mProcessPluginsFromNetwork.append(plugin);
@@ -601,7 +614,7 @@ void AudioInterface::initPlugins()
   int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size();
   if (nPlugins > 0) {
     std::cout << "Initializing Faust plugins (have " << nPlugins
-	      << ") at sampling rate " << mSampleRate << "\n";
+              << ") at sampling rate " << mSampleRate << "\n";
     for (ProcessPlugin* plugin : mProcessPluginsFromNetwork) {
       plugin->init(mSampleRate);
     }
