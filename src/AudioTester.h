@@ -57,7 +57,7 @@ class AudioTester
   int64_t lastPrintTimeUS { 0 };
   int64_t impulseTimeUS { 0 };
   int64_t impulseTimeSamples { 0 };
-  uint64_t sampleCount { 1 }; // 0 not used
+  uint64_t sampleCountSinceImpulse { 1 }; // 0 not used
   double roundTripMean { 0.0 };
   double roundTripMeanSquare { 0.0 };
   double roundTripCount { 0.0 };

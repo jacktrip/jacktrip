@@ -37,6 +37,7 @@
 
 #include "AudioTester.h"
 
+// Called 1st in Audiointerface.cpp
 void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 				     unsigned int n_frames) {
   if (not enabled) {
@@ -60,9 +61,9 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 	  if (n >= n_frames-1) {
 	    // Impulse timestamp didn't make it so we skip this one.
 	  } else {
-	    float currentTestSampleCount = - 32768.0f * out_buffer[sendChannel][n+1];
-	    elapsedSamples = sampleCount + int64_t(currentTestSampleCount);
-	    sampleCount = 1; // reset sample counter between impulses
+	    float sampleCountWhenImpulseSent = - 32768.0f * out_buffer[sendChannel][n+1];
+	    elapsedSamples = sampleCountSinceImpulse + n - int64_t(sampleCountWhenImpulseSent);
+	    sampleCountSinceImpulse = 1; // reset sample counter between impulses
 	    roundTripCount += 1.0;
 	  }
 	  // int64_t curTimeUS = timeMicroSec(); // time since launch in us
@@ -70,7 +71,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 	  // float impulseDelaySec = float(impulseDelayUS) * 1.0e-6;
 	  // float impulseDelayBuffers = impulseDelaySec / (float(n_frames)/float(sampleRate));
 	  // int64_t impulseDelayMS = (int64_t)round(double(impulseDelayUS)/1000.0);
-	  if (elapsedSamples > 0) {
+	  if (elapsedSamples > 0) { // found impulse and reset, time to print buffer results:
 	    double elapsedSamplesMS = round(1000.0 * double(elapsedSamples)/double(sampleRate)); // ms
 	    if (roundTripCount > 1.0) {
 	      double prevSum = roundTripMean * (roundTripCount-1.0); // undo previous normalization
@@ -78,7 +79,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 	      double prevSumSq = roundTripMeanSquare * (roundTripCount-1.0); // undo previous normalization
 
 	      roundTripMeanSquare = (prevSumSq + elapsedSamplesMS*elapsedSamplesMS) / roundTripCount;
-	    } else {
+	    } else { // just getting started:
 	      roundTripMean = elapsedSamplesMS;
 	      roundTripMeanSquare = elapsedSamplesMS * elapsedSamplesMS;
 	    }
@@ -115,9 +116,11 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
           // remain pending until timeout, hoping to find our return pulse
       } // got something
     } // loop over samples
+    sampleCountSinceImpulse += n_frames; // gets reset to 1 when impulse is found, counts freely until then
   } // ImpulsePending
 }
 
+// Called 2nd in Audiointerface.cpp
 void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
 			       QVarLengthArray<sample_t*>& in_buffer,
 			       unsigned int n_frames) {
@@ -143,18 +146,19 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
       mInBufCopy[sendChannel][0] = getImpulseAmp();
       impulsePending = true;
       impulseTimeUS = timeMicroSec();
-      impulseTimeSamples = sampleCount; // timer in samples for current impulse loopback test
-      // also send impulse time:
+      impulseTimeSamples = sampleCountSinceImpulse; // timer in samples for current impulse loopback test
+      // Also send impulse time:
+      if (n_frames>1) { // always true?
+	mInBufCopy[sendChannel][1] = -float(impulseTimeSamples)/32768.0f; // survives if there is no digital processing at the server
+      } else {
+	std::cerr << "\n*** AudioTester.h: Timestamp cannot fit into a lenth " << n_frames << " buffer ***\n";
+      }
     } else {
       mInBufCopy[sendChannel][0] = 0.0f; // send zeros until a new impulse is needed
+      if (n_frames>1) {
+	mInBufCopy[sendChannel][1] = 0.0f;
+      }
     }
-    // In either case, sent current sample-count:
-    if (n_frames>1) { // always true?
-      mInBufCopy[sendChannel][1] = -float(sampleCount)/32768.0f; // survives if there is no digital processing at the server
-    } else {
-      std::cerr << "\n*** AudioTester.h: Timestamp cannot fit into a lenth " << n_frames << " buffer ***\n";
-    }
-    sampleCount += n_frames; // reset to 1 when sent impulse is found
   } else {
     bufferSkip--;
   }

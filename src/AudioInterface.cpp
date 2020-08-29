@@ -236,6 +236,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     computeProcessFromNetwork(out_buffer, n_frames);
     // =============================================
 
+    // out_buffer is from the network and goes "out" to local audio
+    // hardware via JACK:
+
     if (mAudioTesterP->getEnabled()) {
       mAudioTesterP->lookForReturnPulse(out_buffer, n_frames);
     }
@@ -279,7 +282,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
-    if (mAudioTesterP->getEnabled()) {
+    if (mAudioTesterP->getEnabled()) { // in_buffer is "in" from local audio hardware via JACK
       mAudioTesterP->writeImpulse(mInBufCopy, in_buffer, n_frames);
       computeProcessToNetwork(mInBufCopy, n_frames);
     } else { // Run Faust plugins for the outgoing stream:
