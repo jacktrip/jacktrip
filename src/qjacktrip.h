@@ -34,8 +34,10 @@
 #include <QMutex>
 #include <QByteArray>
 #include <QString>
+#include <QTemporaryFile>
 #include "UdpHubListener.h"
 #include "JackTrip.h"
+#include "messageDialog.h"
 
 namespace Ui {
 class QJackTrip;
@@ -73,6 +75,7 @@ private:
     void loadSettings();
     void saveSettings();
     
+    void setupStatsWindow();
     void appendPlugins(JackTrip *jackTrip, int numChannels);
     
     QString commandLineFromCurrentOptions();
@@ -82,6 +85,8 @@ private:
     QScopedPointer<UdpHubListener> m_udpHub;
     QScopedPointer<JackTrip> m_jackTrip;
     QScopedPointer<QNetworkAccessManager> m_netManager;
+    QScopedPointer<MessageDialog> m_messageDialog;
+    QSharedPointer<QTemporaryFile> m_ioStatsOutput;
     bool m_jackTripRunning;
     bool m_isExiting;
 

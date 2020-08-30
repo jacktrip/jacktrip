@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
         //Remove the console that appears if we're in windows.
         FreeConsole();
 #endif
+        app->setApplicationName("QJackTrip");
         w.reset(new QJackTrip);
         QObject::connect(w.data(), &QJackTrip::signalExit, app.data(), &QCoreApplication::quit, Qt::QueuedConnection);
         w->show();

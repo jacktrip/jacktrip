@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>577</height>
+    <height>596</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -293,58 +293,18 @@ To connect to a hub server you need to run as a hub client.</string>
         <string>Advanced options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="5" column="0">
-         <widget class="QLabel" name="resolutionLabel">
-          <property name="text">
-           <string>Audio &amp;Bit Resolution</string>
+        <item row="10" column="0">
+         <spacer name="advancedVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
-          <property name="buddy">
-           <cstring>resolutionComboBox</cstring>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
           </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="clientNameEdit">
-          <property name="toolTip">
-           <string>Set the name of the Jack client.</string>
-          </property>
-          <property name="maxLength">
-           <number>64</number>
-          </property>
-          <property name="placeholderText">
-           <string>JackTrip</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QSpinBox" name="queueLengthSpinBox">
-          <property name="toolTip">
-           <string>Set the queue buffer length, in packet size.</string>
-          </property>
-          <property name="minimum">
-           <number>2</number>
-          </property>
-          <property name="value">
-           <number>4</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="connectAudioLayout">
-          <item>
-           <widget class="QCheckBox" name="connectAudioCheckBox">
-            <property name="toolTip">
-             <string>Connect the Jack client to the default system audio ports.</string>
-            </property>
-            <property name="text">
-             <string>&amp;Connect default audio ports</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         </spacer>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="queueLengthLabel">
@@ -362,38 +322,27 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="8" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="useDefaultsLayout">
-          <item>
-           <spacer name="useDefaultsSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="commandLineButton">
-            <property name="text">
-             <string>Get Command &amp;Line</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="useDefaultsButton">
-            <property name="text">
-             <string>Use &amp;Defaults</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="4" column="0">
+         <widget class="QLabel" name="redundancyLabel">
+          <property name="text">
+           <string>&amp;Redundancy</string>
+          </property>
+          <property name="buddy">
+           <cstring>redundancySpinBox</cstring>
+          </property>
+         </widget>
         </item>
-        <item row="5" column="1">
+        <item row="5" column="0">
+         <widget class="QLabel" name="resolutionLabel">
+          <property name="text">
+           <string>Audio &amp;Bit Resolution</string>
+          </property>
+          <property name="buddy">
+           <cstring>resolutionComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" colspan="2">
          <widget class="QComboBox" name="resolutionComboBox">
           <property name="toolTip">
            <string>Select the audio bit resolution.</string>
@@ -423,17 +372,20 @@ To connect to a hub server you need to run as a hub client.</string>
           </item>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="clientNameLabel">
-          <property name="text">
-           <string>Custom Client &amp;Name</string>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="clientNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client.</string>
           </property>
-          <property name="buddy">
-           <cstring>clientNameEdit</cstring>
+          <property name="maxLength">
+           <number>64</number>
+          </property>
+          <property name="placeholderText">
+           <string>JackTrip</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="4" column="1" colspan="2">
          <widget class="QSpinBox" name="redundancySpinBox">
           <property name="toolTip">
            <string>Number of redundant packets to be sent to avoid glitches related to packet loss.</string>
@@ -446,18 +398,28 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="0">
-         <spacer name="advancedVerticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="remoteNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client as it will appear on the hub server.</string>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
+          <property name="maxLength">
+           <number>64</number>
           </property>
-         </spacer>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="3">
+         <widget class="QCheckBox" name="connectAudioCheckBox">
+          <property name="toolTip">
+           <string>Connect the Jack client to the default system audio ports.</string>
+          </property>
+          <property name="text">
+           <string>&amp;Connect default audio ports</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="portOffsetLabel">
@@ -466,37 +428,6 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
           <property name="buddy">
            <cstring>portOffsetSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QSpinBox" name="portOffsetSpinBox">
-          <property name="toolTip">
-           <string>Set the source and destination port offset from the default value of 4464.
-(Useful for running multiple hub clients behind the same router.)</string>
-          </property>
-          <property name="maximum">
-           <number>999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="redundancyLabel">
-          <property name="text">
-           <string>&amp;Redundancy</string>
-          </property>
-          <property name="buddy">
-           <cstring>redundancySpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="remoteNameEdit">
-          <property name="toolTip">
-           <string>Set the name of the Jack client as it will appear on the hub server.</string>
-          </property>
-          <property name="maxLength">
-           <number>64</number>
           </property>
          </widget>
         </item>
@@ -509,6 +440,101 @@ To connect to a hub server you need to run as a hub client.</string>
            <cstring>remoteNameEdit</cstring>
           </property>
          </widget>
+        </item>
+        <item row="3" column="1" colspan="2">
+         <widget class="QSpinBox" name="queueLengthSpinBox">
+          <property name="toolTip">
+           <string>Set the queue buffer length, in packet size.</string>
+          </property>
+          <property name="minimum">
+           <number>2</number>
+          </property>
+          <property name="value">
+           <number>4</number>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QCheckBox" name="ioStatsCheckBox">
+          <property name="text">
+           <string>Display IO Stats</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="2">
+         <widget class="QSpinBox" name="portOffsetSpinBox">
+          <property name="toolTip">
+           <string>Set the source and destination port offset from the default value of 4464.
+(Useful for running multiple hub clients behind the same router.)</string>
+          </property>
+          <property name="maximum">
+           <number>999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="2">
+         <widget class="QLabel" name="ioStatsLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Reporting Interval (s)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="clientNameLabel">
+          <property name="text">
+           <string>Custom Client &amp;Name</string>
+          </property>
+          <property name="buddy">
+           <cstring>clientNameEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="1">
+         <widget class="QSpinBox" name="ioStatsSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0" colspan="3">
+         <layout class="QHBoxLayout" name="useDefaultsLayout">
+          <item>
+           <spacer name="useDefaultsSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="commandLineButton">
+            <property name="text">
+             <string>Get Command &amp;Line</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="useDefaultsButton">
+            <property name="text">
+             <string>Use &amp;Defaults</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -843,7 +869,6 @@ and wetness is the essence of beauty.</string>
   <tabstop>queueLengthSpinBox</tabstop>
   <tabstop>redundancySpinBox</tabstop>
   <tabstop>resolutionComboBox</tabstop>
-  <tabstop>connectAudioCheckBox</tabstop>
   <tabstop>commandLineButton</tabstop>
   <tabstop>useDefaultsButton</tabstop>
   <tabstop>inFreeverbCheckBox</tabstop>

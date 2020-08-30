@@ -41,6 +41,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::QJackTrip),
     m_netManager(new QNetworkAccessManager(this)),
+    m_messageDialog(new MessageDialog(this)),
     m_jackTripRunning(false),
     m_isExiting(false),
     m_hasIPv4Reply(false)
@@ -57,6 +58,10 @@ QJackTrip::QJackTrip(QWidget *parent) :
     connect(m_ui->aboutButton, &QPushButton::released, this, [=](){
             About about(this);
             about.exec();
+        } );
+    connect(m_ui->ioStatsCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->ioStatsLabel->setEnabled(m_ui->ioStatsCheckBox->isChecked());
+            m_ui->ioStatsSpinBox->setEnabled(m_ui->ioStatsCheckBox->isChecked());
         } );
     
     connect(m_ui->inFreeverbCheckBox, &QCheckBox::stateChanged, this, [=](){
@@ -114,6 +119,9 @@ void QJackTrip::processFinished()
         return;
     }
     m_jackTripRunning = false;
+    if (m_ui->ioStatsCheckBox->isChecked()) {
+        m_messageDialog->stopMonitoring();
+    }
     m_ui->disconnectButton->setEnabled(false);
     if (m_ui->typeComboBox->currentText() == "Hub Server") {
         m_udpHub.reset();
@@ -257,6 +265,8 @@ void QJackTrip::resetOptions()
     m_ui->redundancySpinBox->setValue(1);
     m_ui->resolutionComboBox->setCurrentIndex(1);
     m_ui->connectAudioCheckBox->setChecked(true);
+    m_ui->ioStatsCheckBox->setChecked(false);
+    m_ui->ioStatsSpinBox->setValue(1);
     
     saveSettings();
 }
@@ -289,6 +299,13 @@ void QJackTrip::start()
                 m_udpHub->setUnderRunMode(JackTrip::ZEROS);
             }
             m_udpHub->setBufferQueueLength(m_ui->queueLengthSpinBox->value());
+            
+            // Open our stats window if needed
+            if (m_ui->ioStatsCheckBox->isChecked()) {
+                setupStatsWindow();
+                m_udpHub->setIOStatTimeout(m_ui->ioStatsSpinBox->value());
+                m_udpHub->setIOStatStream(QSharedPointer<std::ofstream>(new std::ofstream(m_ioStatsOutput->fileName().toUtf8().constData())));
+            }
             
             QObject::connect(m_udpHub.data(), &UdpHubListener::signalStopped, this, &QJackTrip::processFinished,
                              Qt::QueuedConnection);
@@ -344,6 +361,13 @@ void QJackTrip::start()
             
             if (!m_ui->clientNameEdit->text().isEmpty()) {
                 m_jackTrip->setClientName(m_ui->clientNameEdit->text());
+            }
+            
+            // Open our stats window if needed
+            if (m_ui->ioStatsCheckBox->isChecked()) {
+                setupStatsWindow();
+                m_jackTrip->setIOStatTimeout(m_ui->ioStatsSpinBox->value());
+                m_jackTrip->setIOStatStream(QSharedPointer<std::ofstream>(new std::ofstream(m_ioStatsOutput->fileName().toUtf8().constData())));
             }
             
             // Append any plugins
@@ -451,6 +475,11 @@ void QJackTrip::loadSettings()
     m_ui->resolutionComboBox->setCurrentIndex(settings.value("resolution", 1).toInt());
     m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
     
+    settings.beginGroup("IOStats");
+    m_ui->ioStatsCheckBox->setChecked(settings.value("Display", false).toBool());
+    m_ui->ioStatsSpinBox->setValue(settings.value("ReportingInterval", 1).toInt());
+    settings.endGroup();
+    
     settings.beginGroup("InPlugins");
     m_ui->inFreeverbCheckBox->setChecked(settings.value("Freeverb", false).toBool());
     m_ui->inFreeverbWetnessSlider->setValue(settings.value("FreeverbWetness", 0).toInt());
@@ -496,6 +525,11 @@ void QJackTrip::saveSettings()
     settings.setValue("Resolution", m_ui->resolutionComboBox->currentIndex());
     settings.setValue("ConnectAudio", m_ui->connectAudioCheckBox->isChecked());
     
+    settings.beginGroup("IOStats");
+    settings.setValue("Display", m_ui->ioStatsCheckBox->isChecked());
+    settings.setValue("ReportingInterval", m_ui->ioStatsSpinBox->value());
+    settings.endGroup();
+    
     settings.beginGroup("InPlugins");
     settings.setValue("Freeverb", m_ui->inFreeverbCheckBox->isChecked());
     settings.setValue("FreeverbWetness", m_ui->inFreeverbWetnessSlider->value());
@@ -518,6 +552,15 @@ void QJackTrip::saveSettings()
     settings.beginGroup("Window");
     settings.setValue("Geometry", saveGeometry());
     settings.endGroup();
+}
+
+void QJackTrip::setupStatsWindow()
+{
+    m_ioStatsOutput.reset(new QTemporaryFile());
+    m_ioStatsOutput->open();
+    m_messageDialog->setStatsFile(m_ioStatsOutput);
+    m_messageDialog->show();
+    m_messageDialog->startMonitoring();
 }
 
 void QJackTrip::appendPlugins(JackTrip *jackTrip, int numChannels)
@@ -620,6 +663,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
         if (!m_ui->connectAudioCheckBox->isChecked()) {
             commandLine.append(" -D");
+        }
+        if (m_ui->ioStatsCheckBox->isChecked()) {
+            commandLine.append(QString(" -I %1").arg(m_ui->ioStatsSpinBox->value()));
         }
         
         if (m_ui->inLimiterCheckBox->isChecked() || m_ui->outLimiterCheckBox->isChecked()) {

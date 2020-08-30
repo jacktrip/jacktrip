@@ -148,6 +148,7 @@ HEADERS += src/DataProtocol.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
            src/about.h \
+           src/messageDialog.h \
            src/qjacktrip.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
@@ -171,6 +172,7 @@ SOURCES += src/DataProtocol.cpp \
            src/AudioInterface.cpp \
            src/about.cpp \
            src/main.cpp \
+           src/messageDialog.cpp \
            src/qjacktrip.cpp
 #(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
@@ -178,7 +180,7 @@ SOURCES += src/DataProtocol.cpp \
 SOURCES += src/JackAudioInterface.cpp
 }
 
-FORMS += src/qjacktrip.ui src/about.ui
+FORMS += src/qjacktrip.ui src/about.ui src/messageDialog.ui
 RESOURCES += src/qjacktrip.qrc
 
 # RtAduio Input

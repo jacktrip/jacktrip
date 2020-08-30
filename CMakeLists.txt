@@ -42,6 +42,7 @@ set(qjacktrip_SRC
   src/PacketHeader.cpp
   src/RingBuffer.cpp
   src/about.cpp
+  src/messageDialog.cpp
   src/qjacktrip.qrc
   src/Compressor.cpp
   src/Limiter.cpp
