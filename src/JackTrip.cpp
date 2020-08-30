@@ -477,7 +477,7 @@ void JackTrip::completeConnection()
         mAudioInterface->appendProcessPluginToNetwork(mProcessPluginsToNetwork[i]);
     }
     mAudioInterface->initPlugins();  // mSampleRate known now, which plugins require
-    mAudioInterface->startProcess(); // Tell JACK server we are ready to roll
+    mAudioInterface->startProcess(); // Tell JACK server we are ready for audio flow now
 
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
     
@@ -515,7 +515,10 @@ void JackTrip::onStatTimer()
 
     static QMutex mutex;
     QMutexLocker locker(&mutex);
-    mIOStatLogStream << (mAudioTesterP->getEnabled() ? "\n" : "") << now.toLocal8Bit().constData()
+    if (mAudioTesterP && mAudioTesterP->getEnabled()) {
+      mIOStatLogStream << "\n";
+    }
+    mIOStatLogStream << now.toLocal8Bit().constData()
       << " " << getPeerAddress().toLocal8Bit().constData()
       << " underrun/overflow on send: "
       << send_io_stat.underruns
