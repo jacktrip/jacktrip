@@ -36,6 +36,7 @@
  */
 
 #include "AudioTester.h"
+#include <assert.h>
 
 // Called 1st in Audiointerface.cpp
 void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
