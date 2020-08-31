@@ -319,7 +319,8 @@ public:
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
     { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot); }
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
-    { mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot); }
+    { mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
+      if (gVerboseFlag) mReceiveRingBuffer->debugDump(); }
     virtual void readAudioBuffer(int8_t* ptrToReadSlot)
     { mSendRingBuffer->readSlotBlocking(ptrToReadSlot); }
     virtual void writeAudioBuffer(const int8_t* ptrToSlot)

@@ -247,10 +247,12 @@ void RingBuffer::overflowReset()
 //*******************************************************************************
 void RingBuffer::debugDump() const
 {
-    cout << "mTotalSize = " << mTotalSize << endl;
-    cout << "mReadPosition = " << mReadPosition << endl;
+    cout << "mTotalSize = " << mTotalSize << " ; ";
+    cout <<  "mFullSlots = " << mFullSlots << " ; ";
+    cout <<  "mUnderruns = " << mUnderruns << " ; ";
+    cout <<  "mOverflows = " << mOverflows << " ; ";
+    cout << "mReadPosition = " << mReadPosition << " ; ";
     cout << "mWritePosition = " << mWritePosition << endl;
-    cout <<  "mFullSlots = " << mFullSlots << endl;
 }
 
 //*******************************************************************************

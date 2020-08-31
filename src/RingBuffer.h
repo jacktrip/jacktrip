@@ -107,6 +107,8 @@ public:
         uint32_t overflows;
     };
     virtual bool getStats(IOStat* stat, bool reset);
+    /// \brief Helper method to debug, prints member variables to terminal
+    void debugDump() const;
 
 protected:
 
@@ -130,8 +132,6 @@ private:
     void underrunReset();
     /// \brief Resets the ring buffer for writes over-flows non-blocking
     void overflowReset();
-    /// \brief Helper method to debug, prints member variables to terminal
-    void debugDump() const;
 
     const int mSlotSize; ///< The size of one slot in byes
     const int mNumSlots; ///< Number of Slots

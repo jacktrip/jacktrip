@@ -655,17 +655,21 @@ void UdpDataProtocol::receivePacketRedundancy(QUdpSocket& UdpSocket,
     // Get Packet Sequence Number
     newer_seq_num =
             mJackTrip->getPeerSequenceNumber(full_redundant_packet);
+    if (gVerboseFlag) cout << "current_seq_num: " << current_seq_num << " ; newer_seq_num: " << newer_seq_num << endl;
     current_seq_num = newer_seq_num;
+
 
     if (0 != last_seq_num) {
         int16_t lost = newer_seq_num - last_seq_num - 1;
         if (0 > lost) {
             // Out of order packet, should be ignored
             ++mOutOfOrderCount;
+            if (gVerboseFlag) cout << "mOutOfOrderCount = " << mOutOfOrderCount << " ; ";
             return;
         }
         else if (0 != lost) {
             mLostCount += lost;
+            if (gVerboseFlag) cout << "mLostCount = " << mLostCount << " ; ";
         }
         mTotCount += 1 + lost;
     }
