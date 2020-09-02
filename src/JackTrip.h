@@ -209,6 +209,8 @@ public:
     /// \brief Sets (override) Buffer Queue Length Mode after construction
     virtual void setBufferQueueLength(int BufferQueueLength)
     { mBufferQueueLength = BufferQueueLength; }
+    virtual void setBufferStrategy(int BufferStrategy)
+    { mBufferStrategy = BufferStrategy; }
     /// \brief Sets (override) Audio Bit Resolution after construction
     virtual void setAudioBitResolution(AudioInterface::audioBitResolutionT AudioBitResolution)
     { mAudioBitResolution = AudioBitResolution; }
@@ -338,13 +340,15 @@ public:
     virtual int getPacketSizeInBytes();
     void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
-    { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot); }
+    { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0); }
+    virtual void receiveBroadcastPacket(int8_t* ptrToReadSlot)
+    { mReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot); }
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
     { mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot); }
     virtual void readAudioBuffer(int8_t* ptrToReadSlot)
     { mSendRingBuffer->readSlotBlocking(ptrToReadSlot); }
-    virtual void writeAudioBuffer(const int8_t* ptrToSlot)
-    { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
+    virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, int lostLen)
+    { return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen); }
     uint32_t getBufferSizeInSamples() const
     { return mAudioBufferSize; /*return mAudioInterface->getBufferSizeInSamples();*/ }
     uint32_t getDeviceID() const
@@ -412,6 +416,14 @@ public:
 
     void printTextTest() {std::cout << "=== JackTrip PRINT ===" << std::endl;}
     void printTextTest2() {std::cout << "=== JackTrip PRINT2 ===" << std::endl;}
+
+    void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
+    {
+        mSimulatedLossRate = loss;
+        mSimulatedJitterRate = jitter;
+        mSimulatedDelayRel = delay_rel;
+    }
+    void setBroadcast(int broadcast_queue) {mBroadcastQueueLength = broadcast_queue;}
 
 public slots:
     /// \brief Slot to stop all the processes and threads
@@ -503,6 +515,8 @@ private:
     int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
 #endif // endwhere
     int mBufferQueueLength; ///< Audio Buffer from network queue length
+    int mBufferStrategy;
+    int mBroadcastQueueLength;
     uint32_t mSampleRate; ///< Sample Rate
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
@@ -556,6 +570,9 @@ private:
     QSharedPointer<std::ofstream> mIOStatStream;
     int mIOStatTimeout;
     std::ostream mIOStatLogStream;
+    double mSimulatedLossRate;
+    double mSimulatedJitterRate;
+    double mSimulatedDelayRel;
 };
 
 #endif
