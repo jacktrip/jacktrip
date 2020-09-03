@@ -398,23 +398,25 @@ void Settings::parseInput(int argc, char** argv)
         case 'g': { // --gate (-g) gateSpecArg
           // -g 0 => no gate (same as not having the option at all)
           // -g 1 => default gate (typical settings)
-          //	Silent buffers are autodetected and not sent over the network.
-          //	A trivial implementation is to quietly drop silent
-          //	packets and replace packet underrun with zeros (-z,
-          //	right?).  A better implementation is to define an escape
-          //	in the audio stream, as this can be generalized to any
-          //	compression format.  Maybe something like this:
+          //    Silent buffers are autodetected and not sent over the network.
+          //    A trivial implementation is to quietly drop silent
+          //    packets and replace packet underrun with zeros (-z,
+          //    right?).  A better implementation is to define an escape
+          //    in the audio stream, as this can be generalized to any
+          //    compression format.  Maybe something like this:
           //         In -g 1 mode, -32768 followed by 1 in the 16-bit audio buffer means a buffer of zeros.
           //         Similarly, -128 followed by 1 in the 8-bit audio buffer means a buffer of zeros.
           //         Similarly, -1.0 followed by 1.0 in the 32-bit (float) audio buffer means a buffer of zeros.
-          //         Call this MAXNEG followed by protocol number.
-          // -g N => "--general-protocol N" (consistent with g 0 and 1 and can mean anything)
-          //         In this mode, MAXNEG followed by N starts some arbitrary new compression format, for example.
-          //         If 8-bit is to be supported, max N is 255.
-          //         In other number formats, only the low-order byte is reserved for the protocol number.
-          //         There is no essential need to have the protocol number follow MAXNEG, but
+          //         Call this MAXNEG followed by protocol number (PN).
+          //         There is no essential need to have the PN follow MAXNEG, but
           //         having it means we can use a different protocol for each audio buffer.
           //         In particular, continuing to use the gate protocol for silence is convenient.
+          // -g N => "--general-protocol N" (consistent with g 0 and 1 and can mean anything)
+          //         In this mode, MAXNEG followed by N starts some new compression format, for example.
+          //         (Note that perceptual audio coding in general starts with a frequency-dependent gate relative
+          //         to the audio masking threshold, so shoveling it into '-g' isn't all that bad.)
+          //         If 8-bit is to be supported, max N is 255.
+          //         In other number formats, only the low-order byte is reserved for the PN.
           // -g -X => gate with threshold at -X dB
           // -g "t:thresholdDB a:attackTimeMS r:releaseTimeMS h:holdTimeSec" => general setting
           //     saying 'auto' for thresholdDB triggers attempts to set threshold automatically?
