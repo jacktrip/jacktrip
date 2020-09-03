@@ -19,34 +19,6 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="1">
-     <widget class="QComboBox" name="typeComboBox">
-      <property name="toolTip">
-       <string>To connect to a server you need to run as a client.
-To connect to a hub server you need to run as a hub client.</string>
-      </property>
-      <item>
-       <property name="text">
-        <string>Client</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Server</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Hub Client</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Hub Server</string>
-       </property>
-      </item>
-     </widget>
-    </item>
     <item row="1" column="0">
      <widget class="QLabel" name="addressLabel">
       <property name="enabled">
@@ -56,66 +28,11 @@ To connect to a hub server you need to run as a hub client.</string>
        <string>&amp;Address of server</string>
       </property>
       <property name="buddy">
-       <cstring>addressEdit</cstring>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="typeLabel">
-      <property name="text">
-       <string>&amp;Run JackTrip as</string>
-      </property>
-      <property name="buddy">
-       <cstring>typeComboBox</cstring>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="addressEdit">
-      <property name="toolTip">
-       <string>Enter the IP address or hostname of the server you want to connect to.</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="ipLabel">
-      <property name="text">
-       <string>Looking up external IP address...</string>
+       <cstring>addressComboBox</cstring>
       </property>
      </widget>
     </item>
     <item row="5" column="0" colspan="2">
-     <layout class="QHBoxLayout" name="buttonLayout">
-      <item>
-       <widget class="QPushButton" name="connectButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Connect</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="disconnectButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Disconnect</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="exitButton">
-        <property name="text">
-         <string>Exit</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="4" column="0" colspan="2">
      <widget class="QTabWidget" name="optionsTabWidget">
       <property name="enabled">
        <bool>true</bool>
@@ -185,11 +102,11 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="autoPatchLabel">
-          <property name="maximumSize">
-           <size>
-            <width>130</width>
-            <height>16777215</height>
-           </size>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="text">
            <string>Hub auto&amp;patch mode</string>
@@ -224,11 +141,11 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="channelLabel">
-          <property name="maximumSize">
-           <size>
-            <width>130</width>
-            <height>16777215</height>
-           </size>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="text">
            <string>&amp;Number of channels</string>
@@ -295,6 +212,12 @@ To connect to a hub server you need to run as a hub client.</string>
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="2" column="0">
          <widget class="QLabel" name="localPortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>&amp;Local Port</string>
           </property>
@@ -305,6 +228,12 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="11" column="0">
          <widget class="QCheckBox" name="ioStatsCheckBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>Display IO Stats</string>
           </property>
@@ -312,6 +241,12 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="remoteNameLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>Remote Client &amp;Name</string>
           </property>
@@ -368,6 +303,12 @@ To connect to a hub server you need to run as a hub client.</string>
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>Reporting Interval (s)</string>
           </property>
@@ -375,13 +316,28 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="remotePortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
-           <string>Remote Port</string>
+           <string>Remote &amp;Port</string>
+          </property>
+          <property name="buddy">
+           <cstring>remotePortSpinBox</cstring>
           </property>
          </widget>
         </item>
         <item row="7" column="0">
          <widget class="QLabel" name="resolutionLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>Audio &amp;Bit Resolution</string>
           </property>
@@ -405,6 +361,12 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="6" column="0">
          <widget class="QLabel" name="redundancyLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>&amp;Redundancy</string>
           </property>
@@ -415,11 +377,11 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="5" column="0">
          <widget class="QLabel" name="queueLengthLabel">
-          <property name="maximumSize">
-           <size>
-            <width>126</width>
-            <height>16777215</height>
-           </size>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="text">
            <string>&amp;Queue Buffer Length</string>
@@ -441,6 +403,12 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="clientNameLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>Custom Client &amp;Name</string>
           </property>
@@ -567,8 +535,17 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="4" column="0">
          <widget class="QLabel" name="basePortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>UDP Base Port</string>
+          </property>
+          <property name="buddy">
+           <cstring>basePortSpinBox</cstring>
           </property>
          </widget>
         </item>
@@ -890,6 +867,104 @@ and wetness is the essence of beauty.</string>
       </widget>
      </widget>
     </item>
+    <item row="1" column="1">
+     <widget class="QComboBox" name="addressComboBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>Enter the IP address or the hostname of the server you want to connect to.</string>
+      </property>
+      <property name="editable">
+       <bool>true</bool>
+      </property>
+      <property name="maxCount">
+       <number>5</number>
+      </property>
+      <property name="insertPolicy">
+       <enum>QComboBox::NoInsert</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="typeLabel">
+      <property name="text">
+       <string>&amp;Run JackTrip as</string>
+      </property>
+      <property name="buddy">
+       <cstring>typeComboBox</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLabel" name="ipLabel">
+      <property name="text">
+       <string>Looking up external IP address...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="typeComboBox">
+      <property name="toolTip">
+       <string>To connect to a server you need to run as a client.
+To connect to a hub server you need to run as a hub client.</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Client</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Server</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Hub Client</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Hub Server</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="6" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="buttonLayout">
+      <item>
+       <widget class="QPushButton" name="connectButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Connect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="disconnectButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Disconnect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="exitButton">
+        <property name="text">
+         <string>Exit</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -906,7 +981,7 @@ and wetness is the essence of beauty.</string>
  </widget>
  <tabstops>
   <tabstop>typeComboBox</tabstop>
-  <tabstop>addressEdit</tabstop>
+  <tabstop>addressComboBox</tabstop>
   <tabstop>connectButton</tabstop>
   <tabstop>disconnectButton</tabstop>
   <tabstop>exitButton</tabstop>
@@ -919,9 +994,14 @@ and wetness is the essence of beauty.</string>
   <tabstop>clientNameEdit</tabstop>
   <tabstop>remoteNameEdit</tabstop>
   <tabstop>localPortSpinBox</tabstop>
+  <tabstop>remotePortSpinBox</tabstop>
+  <tabstop>basePortSpinBox</tabstop>
   <tabstop>queueLengthSpinBox</tabstop>
   <tabstop>redundancySpinBox</tabstop>
   <tabstop>resolutionComboBox</tabstop>
+  <tabstop>connectAudioCheckBox</tabstop>
+  <tabstop>ioStatsCheckBox</tabstop>
+  <tabstop>ioStatsSpinBox</tabstop>
   <tabstop>commandLineButton</tabstop>
   <tabstop>useDefaultsButton</tabstop>
   <tabstop>inFreeverbCheckBox</tabstop>

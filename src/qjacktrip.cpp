@@ -49,7 +49,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui->setupUi(this);
     
     connect(m_ui->typeComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::chooseRunType);
-    connect(m_ui->addressEdit, &QLineEdit::textChanged, this, &QJackTrip::addressChanged);
+    connect(m_ui->addressComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::addressChanged);
     connect(m_ui->connectButton, &QPushButton::released, this, &QJackTrip::start);
     connect(m_ui->disconnectButton, &QPushButton::released, this, &QJackTrip::stop);
     connect(m_ui->exitButton, &QPushButton::released, this, &QJackTrip::exit);
@@ -173,15 +173,15 @@ void QJackTrip::chooseRunType(const QString &type)
 {
     //Update ui to reflect choice of run mode.
     if (type.endsWith("Client")) {
-        m_ui->addressEdit->setEnabled(true);
+        m_ui->addressComboBox->setEnabled(true);
         m_ui->addressLabel->setEnabled(true);
-        m_ui->connectButton->setEnabled(!m_ui->addressEdit->text().isEmpty());
+        m_ui->connectButton->setEnabled(!m_ui->addressComboBox->currentText().isEmpty());
         m_ui->remotePortSpinBox->setVisible(true);
         m_ui->remotePortLabel->setVisible(true);
         m_ui->connectButton->setText("Connect");
         m_ui->disconnectButton->setText("Disconnect");
     } else {
-        m_ui->addressEdit->setEnabled(false);
+        m_ui->addressComboBox->setEnabled(false);
         m_ui->addressLabel->setEnabled(false);
         m_ui->remotePortSpinBox->setVisible(false);
         m_ui->remotePortLabel->setVisible(false);
@@ -366,7 +366,7 @@ void QJackTrip::start()
             
             // Set peer address in client mode
             if (jackTripMode == JackTrip::CLIENT || jackTripMode == JackTrip::CLIENTTOPINGSERVER) {
-                m_jackTrip->setPeerAddress(m_ui->addressEdit->text());
+                m_jackTrip->setPeerAddress(m_ui->addressComboBox->currentText());
                 if (jackTripMode == JackTrip::CLIENTTOPINGSERVER && !m_ui->remoteNameEdit->text().isEmpty()) {
                     m_jackTrip->setRemoteClientName(m_ui->remoteNameEdit->text());
                 }
@@ -421,6 +421,15 @@ void QJackTrip::start()
         
         return;
     }
+    
+    //Add the address to our server history.
+    QString serverAddress = m_ui->addressComboBox->currentText();
+    int serverIndex = m_ui->addressComboBox->findText(serverAddress);
+    if (serverIndex != -1) {
+        m_ui->addressComboBox->removeItem(serverIndex);
+    }
+    m_ui->addressComboBox->insertItem(0, serverAddress);
+    m_ui->addressComboBox->setCurrentIndex(0);
 }
 
 void QJackTrip::stop()
@@ -455,7 +464,7 @@ void QJackTrip::enableUi(bool enabled)
     m_ui->typeLabel->setEnabled(enabled);
     m_ui->typeComboBox->setEnabled(enabled);
     m_ui->addressLabel->setEnabled(enabled && m_ui->typeComboBox->currentText().endsWith("Client"));
-    m_ui->addressEdit->setEnabled(enabled && m_ui->typeComboBox->currentText().endsWith("Client"));
+    m_ui->addressComboBox->setEnabled(enabled && m_ui->typeComboBox->currentText().endsWith("Client"));
 }
 
 void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
@@ -484,7 +493,6 @@ void QJackTrip::loadSettings()
     QSettings settings("psi-borg", "QJackTrip");
 #endif
     m_ui->typeComboBox->setCurrentIndex(settings.value("RunMode", 0).toInt());
-    m_ui->addressEdit->setText(settings.value("LastAddress", "").toString());
     m_ui->channelSpinBox->setValue(settings.value("Channels", gDefaultNumInChannels).toInt());
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
@@ -498,6 +506,17 @@ void QJackTrip::loadSettings()
     m_ui->redundancySpinBox->setValue(settings.value("Redundancy", gDefaultRedundancy).toInt());
     m_ui->resolutionComboBox->setCurrentIndex(settings.value("Resolution", 1).toInt());
     m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
+    
+    settings.beginGroup("RecentServers");
+    for (int i = 1; i <= 5; i++) {
+        QString address = settings.value(QString("Server%1").arg(i),"").toString();
+        if (!address.isEmpty()) {
+            m_ui->addressComboBox->addItem(address);
+        }
+    }
+    settings.endGroup();
+    //Need to get this here so it isn't overwritten by the previous section.
+    m_ui->addressComboBox->setCurrentText(settings.value("LastAddress", "").toString());
     
     settings.beginGroup("IOStats");
     m_ui->ioStatsCheckBox->setChecked(settings.value("Display", false).toBool());
@@ -536,7 +555,7 @@ void QJackTrip::saveSettings()
     QSettings settings("psi-borg", "QJackTrip");
 #endif
     settings.setValue("RunMode", m_ui->typeComboBox->currentIndex());
-    settings.setValue("LastAddress", m_ui->addressEdit->text());
+    settings.setValue("LastAddress", m_ui->addressComboBox->currentText());
     settings.setValue("Channels", m_ui->channelSpinBox->value());
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
@@ -550,6 +569,12 @@ void QJackTrip::saveSettings()
     settings.setValue("Redundancy", m_ui->redundancySpinBox->value());
     settings.setValue("Resolution", m_ui->resolutionComboBox->currentIndex());
     settings.setValue("ConnectAudio", m_ui->connectAudioCheckBox->isChecked());
+    
+    settings.beginGroup("RecentServers");
+    for (int i = 0; i < m_ui->addressComboBox->count(); i++) {
+        settings.setValue(QString("Server%1").arg(i + 1), m_ui->addressComboBox->itemText(i));
+    }
+    settings.endGroup();
     
     settings.beginGroup("IOStats");
     settings.setValue("Display", m_ui->ioStatsCheckBox->isChecked());
@@ -636,11 +661,11 @@ QString QJackTrip::commandLineFromCurrentOptions()
     QString commandLine = "qjacktrip";
     
     if (m_ui->typeComboBox->currentText() == "Client") {
-        commandLine.append(" -c ").append(m_ui->addressEdit->text());
+        commandLine.append(" -c ").append(m_ui->addressComboBox->currentText());
     } else if (m_ui->typeComboBox->currentText() == "Server") {
         commandLine.append(" -s");
     } else if (m_ui->typeComboBox->currentText() == "Hub Client") {
-        commandLine.append(" -C ").append(m_ui->addressEdit->text());
+        commandLine.append(" -C ").append(m_ui->addressComboBox->currentText());
     } else {
         commandLine.append(" -S");
     }
