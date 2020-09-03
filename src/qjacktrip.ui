@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>596</height>
+    <height>667</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -293,7 +293,34 @@ To connect to a hub server you need to run as a hub client.</string>
         <string>Advanced options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="10" column="0">
+        <item row="2" column="0">
+         <widget class="QLabel" name="localPortLabel">
+          <property name="text">
+           <string>&amp;Local Port</string>
+          </property>
+          <property name="buddy">
+           <cstring>localPortSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QCheckBox" name="ioStatsCheckBox">
+          <property name="text">
+           <string>Display IO Stats</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="remoteNameLabel">
+          <property name="text">
+           <string>Remote Client &amp;Name</string>
+          </property>
+          <property name="buddy">
+           <cstring>remoteNameEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="0">
          <spacer name="advancedVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -306,7 +333,87 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </spacer>
         </item>
+        <item row="8" column="0" colspan="3">
+         <widget class="QCheckBox" name="connectAudioCheckBox">
+          <property name="toolTip">
+           <string>Connect the Jack client to the default system audio ports.</string>
+          </property>
+          <property name="text">
+           <string>&amp;Connect default audio ports</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="2">
+         <widget class="QSpinBox" name="localPortSpinBox">
+          <property name="toolTip">
+           <string>Set the local port to use for the connection. The default is 4464.
+(Useful for running multiple hub clients behind the same router.)</string>
+          </property>
+          <property name="minimum">
+           <number>1024</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>4464</number>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2">
+         <widget class="QLabel" name="ioStatsLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Reporting Interval (s)</string>
+          </property>
+         </widget>
+        </item>
         <item row="3" column="0">
+         <widget class="QLabel" name="remotePortLabel">
+          <property name="text">
+           <string>Remote Port</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="resolutionLabel">
+          <property name="text">
+           <string>Audio &amp;Bit Resolution</string>
+          </property>
+          <property name="buddy">
+           <cstring>resolutionComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="clientNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client.</string>
+          </property>
+          <property name="maxLength">
+           <number>64</number>
+          </property>
+          <property name="placeholderText">
+           <string>JackTrip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="redundancyLabel">
+          <property name="text">
+           <string>&amp;Redundancy</string>
+          </property>
+          <property name="buddy">
+           <cstring>redundancySpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
          <widget class="QLabel" name="queueLengthLabel">
           <property name="maximumSize">
            <size>
@@ -322,27 +429,40 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="redundancyLabel">
-          <property name="text">
-           <string>&amp;Redundancy</string>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="remoteNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client as it will appear on the hub server.</string>
           </property>
-          <property name="buddy">
-           <cstring>redundancySpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="resolutionLabel">
-          <property name="text">
-           <string>Audio &amp;Bit Resolution</string>
-          </property>
-          <property name="buddy">
-           <cstring>resolutionComboBox</cstring>
+          <property name="maxLength">
+           <number>64</number>
           </property>
          </widget>
         </item>
-        <item row="5" column="1" colspan="2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="clientNameLabel">
+          <property name="text">
+           <string>Custom Client &amp;Name</string>
+          </property>
+          <property name="buddy">
+           <cstring>clientNameEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QSpinBox" name="ioStatsSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="1" colspan="2">
          <widget class="QComboBox" name="resolutionComboBox">
           <property name="toolTip">
            <string>Select the audio bit resolution.</string>
@@ -372,20 +492,7 @@ To connect to a hub server you need to run as a hub client.</string>
           </item>
          </widget>
         </item>
-        <item row="0" column="1" colspan="2">
-         <widget class="QLineEdit" name="clientNameEdit">
-          <property name="toolTip">
-           <string>Set the name of the Jack client.</string>
-          </property>
-          <property name="maxLength">
-           <number>64</number>
-          </property>
-          <property name="placeholderText">
-           <string>JackTrip</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1" colspan="2">
+        <item row="6" column="1" colspan="2">
          <widget class="QSpinBox" name="redundancySpinBox">
           <property name="toolTip">
            <string>Number of redundant packets to be sent to avoid glitches related to packet loss.</string>
@@ -398,50 +505,7 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1" colspan="2">
-         <widget class="QLineEdit" name="remoteNameEdit">
-          <property name="toolTip">
-           <string>Set the name of the Jack client as it will appear on the hub server.</string>
-          </property>
-          <property name="maxLength">
-           <number>64</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="3">
-         <widget class="QCheckBox" name="connectAudioCheckBox">
-          <property name="toolTip">
-           <string>Connect the Jack client to the default system audio ports.</string>
-          </property>
-          <property name="text">
-           <string>&amp;Connect default audio ports</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="portOffsetLabel">
-          <property name="text">
-           <string>Port &amp;Offset</string>
-          </property>
-          <property name="buddy">
-           <cstring>portOffsetSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="remoteNameLabel">
-          <property name="text">
-           <string>Remote Client &amp;Name</string>
-          </property>
-          <property name="buddy">
-           <cstring>remoteNameEdit</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1" colspan="2">
+        <item row="5" column="1" colspan="2">
          <widget class="QSpinBox" name="queueLengthSpinBox">
           <property name="toolTip">
            <string>Set the queue buffer length, in packet size.</string>
@@ -454,58 +518,23 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
-         <widget class="QCheckBox" name="ioStatsCheckBox">
-          <property name="text">
-           <string>Display IO Stats</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1" colspan="2">
-         <widget class="QSpinBox" name="portOffsetSpinBox">
+        <item row="3" column="1" colspan="2">
+         <widget class="QSpinBox" name="remotePortSpinBox">
           <property name="toolTip">
-           <string>Set the source and destination port offset from the default value of 4464.
-(Useful for running multiple hub clients behind the same router.)</string>
-          </property>
-          <property name="maximum">
-           <number>999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="2">
-         <widget class="QLabel" name="ioStatsLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Reporting Interval (s)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="clientNameLabel">
-          <property name="text">
-           <string>Custom Client &amp;Name</string>
-          </property>
-          <property name="buddy">
-           <cstring>clientNameEdit</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="1">
-         <widget class="QSpinBox" name="ioStatsSpinBox">
-          <property name="enabled">
-           <bool>false</bool>
+           <string>Set the remote port to use for the connection. The default is 4464.</string>
           </property>
           <property name="minimum">
-           <number>1</number>
+           <number>1024</number>
           </property>
           <property name="maximum">
-           <number>120</number>
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>4464</number>
           </property>
          </widget>
         </item>
-        <item row="11" column="0" colspan="3">
+        <item row="13" column="0" colspan="3">
          <layout class="QHBoxLayout" name="useDefaultsLayout">
           <item>
            <spacer name="useDefaultsSpacer">
@@ -535,6 +564,30 @@ To connect to a hub server you need to run as a hub client.</string>
            </widget>
           </item>
          </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="basePortLabel">
+          <property name="text">
+           <string>UDP Base Port</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1" colspan="2">
+         <widget class="QSpinBox" name="basePortSpinBox">
+          <property name="toolTip">
+           <string>Set the base UDP port to be used by connecting hub clients. The default is 61002.
+(You should manually set this if running multiple hub servers on the same machine.)</string>
+          </property>
+          <property name="minimum">
+           <number>1024</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>61002</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -865,7 +918,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
   <tabstop>remoteNameEdit</tabstop>
-  <tabstop>portOffsetSpinBox</tabstop>
+  <tabstop>localPortSpinBox</tabstop>
   <tabstop>queueLengthSpinBox</tabstop>
   <tabstop>redundancySpinBox</tabstop>
   <tabstop>resolutionComboBox</tabstop>

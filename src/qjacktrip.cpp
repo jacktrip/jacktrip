@@ -94,6 +94,13 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_netManager->get(QNetworkRequest(QUrl("https://api6.ipify.org")));
     m_ui->statusBar->showMessage(QString("QJackTrip version ").append(gVersion));
     
+    //Set up our interface for the default Client run mode.
+    //(loadSettings will take care of the UI in all other cases.)
+    m_ui->remoteNameLabel->setVisible(false);
+    m_ui->remoteNameEdit->setVisible(false);
+    m_ui->basePortLabel->setVisible(false);
+    m_ui->basePortSpinBox->setVisible(false);
+    
     loadSettings();
 
     QVector<QLabel *> labels;
@@ -169,11 +176,15 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->addressEdit->setEnabled(true);
         m_ui->addressLabel->setEnabled(true);
         m_ui->connectButton->setEnabled(!m_ui->addressEdit->text().isEmpty());
+        m_ui->remotePortSpinBox->setVisible(true);
+        m_ui->remotePortLabel->setVisible(true);
         m_ui->connectButton->setText("Connect");
         m_ui->disconnectButton->setText("Disconnect");
     } else {
         m_ui->addressEdit->setEnabled(false);
         m_ui->addressLabel->setEnabled(false);
+        m_ui->remotePortSpinBox->setVisible(false);
+        m_ui->remotePortLabel->setVisible(false);
         m_ui->connectButton->setText("Start");
         m_ui->disconnectButton->setText("Stop");
         m_ui->connectButton->setEnabled(true);
@@ -260,9 +271,11 @@ void QJackTrip::resetOptions()
     //Then advanced options
     m_ui->clientNameEdit->setText("");
     m_ui->remoteNameEdit->setText("");
-    m_ui->portOffsetSpinBox->setValue(0);
+    m_ui->localPortSpinBox->setValue(gDefaultPort);
+    m_ui->remotePortSpinBox->setValue(gDefaultPort);
+    m_ui->basePortSpinBox->setValue(61002);
     m_ui->queueLengthSpinBox->setValue(gDefaultQueueLength);
-    m_ui->redundancySpinBox->setValue(1);
+    m_ui->redundancySpinBox->setValue(gDefaultRedundancy);
     m_ui->resolutionComboBox->setCurrentIndex(1);
     m_ui->connectAudioCheckBox->setChecked(true);
     m_ui->ioStatsCheckBox->setChecked(false);
@@ -280,7 +293,7 @@ void QJackTrip::start()
     //Start the appropriate JackTrip process.
     try {
         if (m_ui->typeComboBox->currentText() == "Hub Server") {
-            m_udpHub.reset(new UdpHubListener());
+            m_udpHub.reset(new UdpHubListener(m_ui->localPortSpinBox->value(), m_ui->basePortSpinBox->value()));
             int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
             if (hubConnectionMode > 2) {
                 //Adjust for the RESERVEDMATRIX gap.
@@ -336,6 +349,9 @@ void QJackTrip::start()
             }
             
             m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP, m_ui->channelSpinBox->value(),
+#ifdef WAIR // wair
+                                          0,
+#endif // endwhere
                                           m_ui->queueLengthSpinBox->value(), m_ui->redundancySpinBox->value(),
                                           resolution));
             m_jackTrip->setConnectDefaultAudioPorts(true);
@@ -356,8 +372,9 @@ void QJackTrip::start()
                 }
             }
             
-            m_jackTrip->setBindPorts(gDefaultPort + m_ui->portOffsetSpinBox->value());
-            m_jackTrip->setPeerPorts(gDefaultPort + m_ui->portOffsetSpinBox->value());
+            m_jackTrip->setBindPorts(m_ui->localPortSpinBox->value());
+            m_jackTrip->setPeerPorts(m_ui->remotePortSpinBox->value());
+            m_jackTrip->setPeerHandshakePort(m_ui->remotePortSpinBox->value());
             
             if (!m_ui->clientNameEdit->text().isEmpty()) {
                 m_jackTrip->setClientName(m_ui->clientNameEdit->text());
@@ -445,13 +462,18 @@ void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
 {
     m_ui->clientNameLabel->setVisible(!isHubServer);
     m_ui->clientNameEdit->setVisible(!isHubServer);
-    m_ui->portOffsetLabel->setVisible(!isHubServer);
-    m_ui->portOffsetSpinBox->setVisible(!isHubServer);
     m_ui->redundancyLabel->setVisible(!isHubServer);
     m_ui->redundancySpinBox->setVisible(!isHubServer);
     m_ui->resolutionLabel->setVisible(!isHubServer);
     m_ui->resolutionComboBox->setVisible(!isHubServer);
     m_ui->connectAudioCheckBox->setVisible(!isHubServer);
+    m_ui->basePortLabel->setVisible(isHubServer);
+    m_ui->basePortSpinBox->setVisible(isHubServer);
+    if (isHubServer) {
+        m_ui->localPortSpinBox->setToolTip("Set the local TCP port to use for the initial handshake connection. The default is 4464.");
+    } else {
+        m_ui->localPortSpinBox->setToolTip("Set the local port to use for the connection. The default is 4464.\n(Useful for running multiple hub clients behind the same router.)");
+    }
 }
 
 void QJackTrip::loadSettings()
@@ -463,16 +485,18 @@ void QJackTrip::loadSettings()
 #endif
     m_ui->typeComboBox->setCurrentIndex(settings.value("RunMode", 0).toInt());
     m_ui->addressEdit->setText(settings.value("LastAddress", "").toString());
-    m_ui->channelSpinBox->setValue(settings.value("Channels", 2).toInt());
+    m_ui->channelSpinBox->setValue(settings.value("Channels", gDefaultNumInChannels).toInt());
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
     m_ui->clientNameEdit->setText(settings.value("ClientName", "").toString());
     m_ui->remoteNameEdit->setText(settings.value("RemoteName", "").toString());
-    m_ui->portOffsetSpinBox->setValue(settings.value("PortOffset", 0).toInt());
-    m_ui->queueLengthSpinBox->setValue(settings.value("QueueLength", 4).toInt());
-    m_ui->redundancySpinBox->setValue(settings.value("Redundancy", 1).toInt());
-    m_ui->resolutionComboBox->setCurrentIndex(settings.value("resolution", 1).toInt());
+    m_ui->localPortSpinBox->setValue(settings.value("LocalPort", gDefaultPort).toInt());
+    m_ui->remotePortSpinBox->setValue(settings.value("RemotePort", gDefaultPort).toInt());
+    m_ui->basePortSpinBox->setValue(settings.value("BasePort", 61002).toInt());
+    m_ui->queueLengthSpinBox->setValue(settings.value("QueueLength", gDefaultQueueLength).toInt());
+    m_ui->redundancySpinBox->setValue(settings.value("Redundancy", gDefaultRedundancy).toInt());
+    m_ui->resolutionComboBox->setCurrentIndex(settings.value("Resolution", 1).toInt());
     m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
     
     settings.beginGroup("IOStats");
@@ -519,7 +543,9 @@ void QJackTrip::saveSettings()
     settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
     settings.setValue("ClientName", m_ui->clientNameEdit->text());
     settings.setValue("RemoteName", m_ui->remoteNameEdit->text());
-    settings.setValue("PortOffset", m_ui->portOffsetSpinBox->value());
+    settings.setValue("LocalPort", m_ui->localPortSpinBox->value());
+    settings.setValue("RemotePort", m_ui->remotePortSpinBox->value());
+    settings.setValue("BasePort", m_ui->basePortSpinBox->value());
     settings.setValue("QueueLength", m_ui->queueLengthSpinBox->value());
     settings.setValue("Redundancy", m_ui->redundancySpinBox->value());
     settings.setValue("Resolution", m_ui->resolutionComboBox->currentIndex());
@@ -645,15 +671,27 @@ QString QJackTrip::commandLineFromCurrentOptions()
         commandLine.append(QString(" -q %1").arg(m_ui->queueLengthSpinBox->value()));
     }
     
-    if (m_ui->typeComboBox->currentText() != "Hub Server") {
+    //Port settings
+    if (m_ui->localPortSpinBox->value() != gDefaultPort) {
+        commandLine.append(QString(" -B %1").arg(m_ui->localPortSpinBox->value()));
+    }
+    if (m_ui->typeComboBox->currentText().endsWith("Client")) {
+        if (m_ui->remotePortSpinBox->value() != gDefaultPort) {
+            commandLine.append(QString(" -P %1").arg(m_ui->remotePortSpinBox->value()));
+        }
+    }
+    
+    if (m_ui->typeComboBox->currentText() == "Hub Server") {
+        int offset = m_ui->localPortSpinBox->value() - gDefaultPort;
+        if (m_ui->basePortSpinBox->value() != 61002 + offset) {
+            commandLine.append(QString(" -U %1").arg(m_ui->basePortSpinBox->value()));
+        }
+    } else {
         if (!m_ui->clientNameEdit->text().isEmpty()) {
             commandLine.append(QString(" -J \"%1\"").arg(m_ui->clientNameEdit->text()));
         }
         if (m_ui->typeComboBox->currentText() == "Hub Client" && !m_ui->remoteNameEdit->text().isEmpty()) {
             commandLine.append(QString(" -K \"%1\"").arg(m_ui->remoteNameEdit->text()));
-        }
-        if (m_ui->portOffsetSpinBox->value() > 0) {
-            commandLine.append(QString(" -o %1").arg(m_ui->portOffsetSpinBox->value()));
         }
         if (m_ui->redundancySpinBox->value() > 1) {
             commandLine.append(QString(" -r %1").arg(m_ui->redundancySpinBox->value()));

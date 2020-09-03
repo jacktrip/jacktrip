@@ -240,6 +240,10 @@ public:
         mSenderPeerPort = port;
         mReceiverPeerPort = port;
     }
+    void setPeerHandshakePort(int port)
+    {
+        mTcpServerPort = port;
+    }
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString clientName)
     { mJackClientName = clientName; }
