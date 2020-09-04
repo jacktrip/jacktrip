@@ -556,7 +556,8 @@ void UdpDataProtocol::run()
             QThread::msleep(100);
             if (gVerboseFlag) std::cout << "100ms  " << std::flush;
         }
-        full_redundant_packet = new int8_t[0x10000];  // max UDP datagram size
+        full_redundant_packet_size = 0x10000;  // max UDP datagram size
+        full_redundant_packet = new int8_t[full_redundant_packet_size];
         full_redundant_packet_size = receivePacket(reinterpret_cast<char*>(full_redundant_packet), full_redundant_packet_size);
         // Check that peer has the same audio settings
         if (gVerboseFlag) std::cout << std::endl << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->checkPeerSettings()" << std::endl;
@@ -570,7 +571,8 @@ void UdpDataProtocol::run()
              << " + " << mJackTrip->getPeerBufferSize(full_redundant_packet)
              << " * " << mJackTrip->getNumChannels() << " * " << (int)mJackTrip->getAudioBitResolution()/8 << endl;
         cout << "full_packet_size: " << full_packet_size << " / " << mJackTrip->getPacketSizeInBytes() << endl;
-        */
+        cout << "full_redundant_packet_size: " << full_redundant_packet_size << endl;
+        // */
 
         if (gVerboseFlag) std::cout << "step 7" << std::endl;
         if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->parseAudioPacket()" << std::endl;
