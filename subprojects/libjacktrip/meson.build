@@ -21,8 +21,8 @@ subdir('src')
 pkg_mod = import('pkgconfig')
 pkg_mod.generate(libraries : libjacktrip,
                  version : '1.2.1',
-                 name : 'libjacktrip',
-                 filebase : 'foobar',
+                 name : 'jacktrip',
+                 filebase : 'jacktrip',
                  description : 'A Library to barnicate your foos.')
 
 libjacktrip_dep = declare_dependency(include_directories : inc,

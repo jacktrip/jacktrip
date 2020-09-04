@@ -12,7 +12,7 @@ jacktrip_sources = ['DataProtocol.cpp',
 	'LoopBack.cpp',
 	'JMess.cpp']
 
-libjacktrip = shared_library('libjacktrip',
+libjacktrip = shared_library('jacktrip',
                         jacktrip_sources,
                         moc_files,
                         include_directories : inc,

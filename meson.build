@@ -6,7 +6,7 @@ qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
 jack_dep = dependency('jack')
 thread_dep = dependency('threads')
 
-libjacktrip_dep = dependency('libjacktrip', fallback: ['libjacktrip','libjacktrip_dep'])
+libjacktrip_dep = dependency('jacktrip', fallback: ['libjacktrip','libjacktrip_dep'])
 
 
 defines = []
