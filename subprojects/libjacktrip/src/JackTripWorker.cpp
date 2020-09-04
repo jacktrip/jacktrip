@@ -47,7 +47,7 @@
 #include "UdpHubListener.h"
 //#include "NetKS.h"
 #include "LoopBack.h"
-#include "Settings.h"
+//#include "Settings.h"
 #ifdef WAIR // wair
 #include "dcblock2gain.dsp.h"
 #endif // endwhere
@@ -189,7 +189,7 @@ void JackTripWorker::run()
             jacktrip.setIOStatTimeout(mIOStatTimeout);
             jacktrip.setIOStatStream(mIOStatStream);
         }
-        
+
         if (!mClientName.isEmpty()) {
             jacktrip.setClientName(mClientName);
         }
@@ -240,7 +240,7 @@ void JackTripWorker::run()
 
         event_loop.exec(); // Excecution will block here until exit() the QEventLoop
         //--------------------------------------------------------------------------
-        
+
         { QMutexLocker locker(&mMutex); mSpawning = true; }
 
         // wait for jacktrip to be done before exiting the Worker Thread

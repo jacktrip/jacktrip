@@ -472,7 +472,7 @@ void JackTrip::completeConnection()
     }
     mAudioInterface->initPlugins(); // mSampleRate assumed settled now
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
-    
+
     //Start our IO stat timer
     if (mIOStatTimeout > 0) {
         cout << "STATS" << mIOStatTimeout << endl;
@@ -567,7 +567,7 @@ void JackTrip::receivedDataTCP()
     if (mTcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
         return;
     }
-    
+
     // Read the size of the package
     // ----------------------------
     if (gVerboseFlag) cout << "Reading UDP port from Server..." << endl;
@@ -605,10 +605,10 @@ void JackTrip::receivedDataUDP()
 {
     //Stop our timer.
     mTimeoutTimer.stop();
-    
+
     QHostAddress peerHostAddress;
     uint16_t peer_port;
-    
+
     // IPv6 addition from fyfe
     // Get the datagram size to avoid problems with IPv6
     qint64 datagramSize = mUdpSockTemp.pendingDatagramSize();
@@ -660,7 +660,7 @@ void JackTrip::udpTimerTick()
         mTimeoutTimer.stop();
         stop();
     }
-    
+
     if (gVerboseFlag) std::cout << mSleepTime << "ms  " << std::flush;
     mElapsedTime += mSleepTime;
     if (mEndTime > 0 && mElapsedTime >= mEndTime) {
@@ -679,7 +679,7 @@ void JackTrip::tcpTimerTick()
         mTimeoutTimer.stop();
         stop();
     }
-    
+
     mElapsedTime += mSleepTime;
     if (mEndTime > 0 && mElapsedTime >= mEndTime) {
         mTcpClient.close();
@@ -687,7 +687,7 @@ void JackTrip::tcpTimerTick()
         cout << "JackTrip Server Timed Out!" << endl;
         stop("Initial TCP Connection Timed Out");
     }
-    
+
 }
 
 //*******************************************************************************
@@ -700,7 +700,7 @@ void JackTrip::stop(QString errorMessage)
     }
     mHasShutdown = true;
     std::cout << "Stopping JackTrip..." << std::endl;
-    
+
     // Stop The Sender
     mDataProtocolSender->stop();
     mDataProtocolSender->wait();
@@ -771,7 +771,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
         throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
     }
     connect(&mUdpSockTemp, &QUdpSocket::readyRead, this, &JackTrip::receivedDataUDP);
-    
+
     // Start timer and then wait for a signal to read datagrams.
     mElapsedTime = 0;
     if (timeout) {
@@ -780,7 +780,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
     mTimeoutTimer.setInterval(mSleepTime);
     connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::udpTimerTick);
     mTimeoutTimer.start();
-    
+
     if (gVerboseFlag) std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()" << std::endl;
     cout << "Waiting for Connection From a Client..." << endl;
     return 0;
@@ -828,7 +828,7 @@ int JackTrip::clientPingToServerStart()
     connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
     mTimeoutTimer.start();
     mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
-    
+
     if (gVerboseFlag) cout << "Connecting to TCP Server at " <<  serverHostAddress.toString().toLatin1().constData() << " port " << mTcpServerPort << "..." << endl;
     return 0;
     // Continued in the receivedConnectionTCP slot.

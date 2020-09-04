@@ -48,6 +48,7 @@
 #include "UdpHubListener.h"
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
+#include "JMess.h"
 
 using std::cout; using std::endl;
 
@@ -147,7 +148,7 @@ void UdpHubListener::run()
     while (!mStopped && !sSigInt)
     {
         cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
-        cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch 
+        cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch
              << " (" << mHubPatchDescriptions.at(mHubPatch).toStdString() << ")" << endl;
         cout << "=======================================================" << endl;
         while (  !TcpServer.hasPendingConnections() && !TcpServer.waitForNewConnection(1000) ) {
@@ -257,7 +258,7 @@ void UdpHubListener::run()
             connectPatch(true);
         }
     }
-    
+
     stopAllThreads();
     emit signalStopped();
 
@@ -336,13 +337,13 @@ int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection, QString &cli
     char port_buf[size];
     clientConnection->read(port_buf, size);
     std::memcpy(&udp_port, port_buf, size);
-    
+
     if (clientConnection->bytesAvailable() == gMaxRemoteNameLength) {
         char name_buf[gMaxRemoteNameLength];
         clientConnection->read(name_buf, gMaxRemoteNameLength);
         clientName = QString::fromUtf8((const char *)name_buf);
     }
-    
+
     return udp_port;
 }
 
@@ -493,7 +494,6 @@ void UdpHubListener::enumerateRunningThreadIDs()
 }
 #endif // endwhere
 
-#include "JMess.h"
 void UdpHubListener::connectPatch(bool spawn)
 {
     if ((getHubPatch() == JackTrip::NOAUTO) ||

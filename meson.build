@@ -5,6 +5,9 @@ qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
 jack_dep = dependency('jack')
 thread_dep = dependency('threads')
 
+libjacktrip_dep = dependency('libjacktrip', fallback: ['libjacktrip','libjacktrip_dep'])
+
+
 defines = []
 if host_machine.system() == 'linux'
 	defines += '-D__LINUX__'
@@ -45,4 +48,4 @@ src = ['src/DataProtocol.cpp',
 	'src/Limiter.cpp',
 	'src/Reverb.cpp']
 
-executable('jacktrip', src, moc_files, dependencies: [qt5_dep, jack_dep, thread_dep], cpp_args: defines, install: true )
+executable('jacktrip', src, moc_files, dependencies: [libjacktrip_dep, qt5_dep, jack_dep, thread_dep], cpp_args: defines, install: true )
