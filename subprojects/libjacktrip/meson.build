@@ -15,14 +15,6 @@ elif host_machine.system() == 'windows'
 	defines += '-D__WIN_32__'
 endif
 
-moc_h = ['src/DataProtocol.h',
-	'include/JackTrip.h',
-	'src/JackTripWorker.h',
-	'src/PacketHeader.h',
-	'src/UdpDataProtocol.h',
-	'include/UdpHubListener.h']
-moc_files = qt5.preprocess(moc_headers : moc_h)
-
 subdir('include')
 subdir('src')
 

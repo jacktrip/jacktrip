@@ -42,11 +42,9 @@
 #include <cstdlib>
 #include <fstream>
 
-#include "DataProtocol.h"
+// #include "DataProtocol.h"
 
-#ifndef __NO_JACK__
-#include "JackAudioInterface.h"
-#endif //__NO_JACK__
+#include "AudioInterface.h"
 
 #include "JackTrip.h"
 #include "UdpHubListener.h"
