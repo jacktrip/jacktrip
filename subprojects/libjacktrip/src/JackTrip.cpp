@@ -67,6 +67,9 @@ void sigint_handler(int sig)
 
 bool JackTrip::sSigInt = false;
 
+// TODO: Remove this!!!
+int gVerboseFlag = 0;
+
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode,
                    dataProtocolT DataProtocolType,

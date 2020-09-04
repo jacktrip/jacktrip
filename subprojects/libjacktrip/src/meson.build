@@ -9,10 +9,13 @@ jacktrip_sources = ['DataProtocol.cpp',
 	'UdpHubListener.cpp',
 	'AudioInterface.cpp',
 	'JackAudioInterface.cpp',
-	'LoopBack.cpp']
+	'LoopBack.cpp',
+	'JMess.cpp']
 
 libjacktrip = shared_library('libjacktrip',
                         jacktrip_sources,
+                        moc_files,
                         include_directories : inc,
                         dependencies : dependencies,
+                        cpp_args: defines,
                         install : true)
