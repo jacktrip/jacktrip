@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo Checking whether system sound input is MOTU...
+audiodevice input 2> /dev/null | grep MOTU
+if [ $? -eq 0 ]
+then
+    echo Yay found MOTU input!
+else
+    echo System sound input is not MOTU:
+    audiodevice input 2> /dev/null 
+    echo Attempting to set to MOTU:
+    system-sound-to-motu
+    echo Now try again...
+    exit 1
+fi
+
+echo Checking whether system sound output is MOTU...
+audiodevice output 2> /dev/null | grep MOTU
+if [ $? -eq 0 ]
+then
+    echo Yay found MOTU output!
+else
+    echo System sound output is not MOTU:
+    audiodevice output 2> /dev/null 
+    echo Attempting to set to MOTU:
+    system-sound-to-motu
+    echo Now try again...
+    exit 2
+fi
+
+
+feedjack-launchjack-even-without-motu
