@@ -472,7 +472,6 @@ int UdpHubListener::releaseThread(int id)
 }
 
 #ifdef WAIR // wair
-#include "JMess.h"
 //*******************************************************************************
 void UdpHubListener::connectMesh(bool spawn)
 {
