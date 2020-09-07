@@ -84,7 +84,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
     mOverflowDropStep = mMaxLatency / 2;
     mLevelCur = mMaxLatency;
     mLevel = mLevelCur;
-    mMinLevelThreshold = (1.9 - std::min(1.0, mFPP*0.004)) * mSlotSize;
+    mMinLevelThreshold = 1.9 * mSlotSize;
     mBroadcastPosition = 0;
     mBroadcastPositionCorr = 0.0;
     mLastCorrCounter = 0;
