@@ -484,8 +484,12 @@ void Settings::parseInput(int argc, char** argv)
       std::exit(1);
     }
     if (mEffects.getHaveLimiter() && haveSomeServerMode) {
-      std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
-      std::exit(1);
+      if (mEffects.getLimit() != Effects::LIMITER_MODE::LIMITER_OUTGOING) { // default case
+	std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
+      }
+      mEffects.setNoLimiters();
+      // don't exit since an outgoing limiter is now the default (could exit for incoming case):
+      // std::exit(1);
     }
     if (mAudioTester.getEnabled() && haveSomeServerMode) {
       std::cerr << "*** --examine-audio-delay (-x) ERROR: Audio latency measurement not supported in server modes (-S and -s)\n\n";
@@ -550,7 +554,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects    #|paramString|help      Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
-    cout << " -O, --overflowlimiting  i|o|io|help      Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
+    cout << " -O, --overflowlimiting  i|o|io|n|help      Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both, n=no limiters (default=o)" << endl;
     cout << " -a, --assumednumclients help|# (1,2,...) Assumed number of Clients (sources) mixing at Hub Server (otherwise 2 assumed by -O)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;

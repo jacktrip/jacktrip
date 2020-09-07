@@ -47,12 +47,14 @@ class Effects
 {
   int mNumChans;
   int gVerboseFlag = 0;
+public:
   enum LIMITER_MODE {
                      LIMITER_NONE,
                      LIMITER_INCOMING, // from network
                      LIMITER_OUTGOING, // to network
                      LIMITER_BOTH
   };
+private:
   LIMITER_MODE mLimit; ///< audio limiter controls
   unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
 
@@ -85,8 +87,8 @@ public:
 
   Effects() :
     mNumChans(2),
-    mLimit(LIMITER_NONE),
-    mNumClientsAssumed(2)
+    mLimit(LIMITER_OUTGOING),
+    mNumClientsAssumed(1)
   {}
 
   ~Effects() {
@@ -110,6 +112,7 @@ public:
   unsigned int getNumClientsAssumed() { return mNumClientsAssumed; }
 
   LIMITER_MODE getLimit() { return mLimit; }
+  void setNoLimiters() { mLimit = LIMITER_NONE; }
 
   ProcessPlugin* getInCompressor() { return inCompressorP; }
   ProcessPlugin* getOutCompressor() { return outCompressorP; }
