@@ -8,7 +8,7 @@ thread_dep = dependency('threads')
 defines = []
 if host_machine.system() == 'linux'
 	defines += '-D__LINUX__'
-elif host_machine.system() == 'osx'
+elif host_machine.system() == 'darwin'
 	defines += '-D__MAC_OSX__'
 elif host_machine.system() == 'windows'
 	defines += '-D__WIN_32__'
