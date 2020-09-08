@@ -39,6 +39,9 @@ src = ['src/DataProtocol.cpp',
 	'src/UdpDataProtocol.cpp',
 	'src/UdpHubListener.cpp',
 	'src/AudioInterface.cpp',
-	'src/JackAudioInterface.cpp']
+	'src/JackAudioInterface.cpp',
+	'src/Compressor.cpp',
+	'src/Limiter.cpp',
+	'src/Reverb.cpp']
 
 executable('jacktrip', src, moc_files, dependencies: [qt5_dep, jack_dep, thread_dep], cpp_args: defines, install: true )
