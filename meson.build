@@ -2,7 +2,6 @@ project('jacktrip', 'cpp', version: '1.2')
 qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
 jack_dep = dependency('jack')
-rtaudio_dep = dependency('rtaudio')
 thread_dep = dependency('threads')
 
 defines = []
@@ -42,4 +41,4 @@ src = ['src/DataProtocol.cpp',
 	'src/AudioInterface.cpp',
 	'src/JackAudioInterface.cpp']
 
-executable('jacktrip', src, moc_files, dependencies: [qt5_dep, jack_dep, rtaudio_dep, thread_dep], cpp_args: defines, install: true )
+executable('jacktrip', src, moc_files, dependencies: [qt5_dep, jack_dep, thread_dep], cpp_args: defines, install: true )
