@@ -42,7 +42,7 @@
 #include <QScopedPointer>
 #include <iostream>
 #include <signal.h>
-#include "jacktrip_globals.h"
+// #include "jacktrip_globals.h"
 #include "Settings.h"
 #include "UdpHubListener.h"
 #include <QLoggingCategory>

@@ -47,7 +47,7 @@
 #include <QMutex>
 
 #include "JackTrip.h"
-#include "jacktrip_globals.h"
+//#include "jacktrip_globals.h"
 
 //class JackTrip; // forward declaration
 class UdpHubListener; // forward declaration

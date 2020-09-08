@@ -48,10 +48,10 @@
 #include <QVarLengthArray>
 #include <QMutex>
 
-
-#include "jacktrip_types.h"
 #include "ProcessPlugin.h"
 #include "AudioInterface.h"
+
+using sample_t = float;
 
 //class JackTrip; //forward declaration
 

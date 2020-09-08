@@ -37,7 +37,6 @@
 
 
 #include "Limiter.h"
-#include "jacktrip_types.h"
 
 #include <iostream>
 

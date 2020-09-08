@@ -51,8 +51,8 @@
 #include <QMutex>
 
 #include "JackTrip.h"
-#include "jacktrip_types.h"
 #include "jacktrip_globals.h"
+
 class JackTripWorker; // forward declaration
 class Settings;
 

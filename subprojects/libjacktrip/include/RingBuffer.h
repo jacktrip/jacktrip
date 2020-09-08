@@ -42,8 +42,6 @@
 #include <QMutex>
 #include <QMutexLocker>
 
-#include "jacktrip_types.h"
-
 #include <atomic>
 
 //using namespace JackTripNamespace;
