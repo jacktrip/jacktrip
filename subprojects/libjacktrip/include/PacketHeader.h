@@ -47,8 +47,6 @@
 
 #include "jacktrip_globals.h"
 
-using sample_t = float;
-
 class JackTrip; // Forward Declaration
 
 

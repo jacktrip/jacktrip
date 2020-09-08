@@ -72,7 +72,7 @@ class JackTrip : public QObject
     Q_OBJECT;
 
 public:
-
+    using sample_t = float;
     //----------ENUMS------------------------------------------
     /// \brief Enum for the data Protocol. At this time only UDP is implemented
     enum dataProtocolT {

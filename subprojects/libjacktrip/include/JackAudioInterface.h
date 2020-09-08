@@ -51,8 +51,6 @@
 #include "ProcessPlugin.h"
 #include "AudioInterface.h"
 
-using sample_t = float;
-
 //class JackTrip; //forward declaration
 
 
@@ -64,7 +62,7 @@ using sample_t = float;
 class JackAudioInterface : public AudioInterface
 {
 public:
-
+    using sample_t = float;
     /** \brief The class constructor
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param NumInChans Number of Input Channels

@@ -45,7 +45,6 @@
 #include <QMutex>
 
 #include "DataProtocol.h"
-#include "jacktrip_types.h"
 #include "jacktrip_globals.h"
 
 /** \brief UDP implementation of DataProtocol class

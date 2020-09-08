@@ -44,7 +44,6 @@
 #include <QVector>
 //#include "jacktrip_globals.h"
 
-using sample_t = float;
 
 // Forward declarations
 class JackTrip;
@@ -57,7 +56,7 @@ class JackTrip;
 class AudioInterface
 {
 public:
-
+    using sample_t = float;
     /// \brief Enum for Audio Resolution in bits
     enum audioBitResolutionT {
         BIT8  = 1, ///< 8 bits
