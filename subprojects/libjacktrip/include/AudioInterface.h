@@ -39,11 +39,12 @@
 #define __AUDIOINTERFACE_H__
 
 #include "ProcessPlugin.h"
-#include "jacktrip_types.h"
 
 #include <QVarLengthArray>
 #include <QVector>
 //#include "jacktrip_globals.h"
+
+using sample_t = float;
 
 // Forward declarations
 class JackTrip;
