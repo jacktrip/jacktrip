@@ -15,4 +15,5 @@ install_headers(['JackTrip.h',
 	'PacketHeader.h',
 	'jacktrip_globals.h',
 	'RingBuffer.h',
-	'LoopBack.h'])
+	'LoopBack.h'],
+	subdir: 'jacktrip')
