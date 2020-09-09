@@ -45,10 +45,10 @@
 #include <QStringList>
 #include <QMutexLocker>
 
-#include "UdpHubListener.h"
-#include "JackTripWorker.h"
-#include "jacktrip_globals.h"
-#include "JMess.h"
+#include <jacktrip/UdpHubListener.h>
+#include <jacktrip/JackTripWorker.h>
+#include <jacktrip/jacktrip_globals.h>
+#include <jacktrip/JMess.h>
 
 using std::cout; using std::endl;
 

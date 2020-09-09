@@ -36,7 +36,7 @@
  */
 
 
-#include "RingBuffer.h"
+#include <jacktrip/RingBuffer.h>
 
 #include <iostream>
 #include <cstring>

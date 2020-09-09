@@ -35,8 +35,8 @@
  * \date July 2009
  */
 
-#include "AudioInterface.h"
-#include "JackTrip.h"
+#include <jacktrip/AudioInterface.h>
+#include <jacktrip/JackTrip.h>
 #include <iostream>
 #include <cmath>
 

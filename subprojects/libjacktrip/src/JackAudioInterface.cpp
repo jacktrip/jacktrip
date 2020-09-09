@@ -35,9 +35,9 @@
  * \date June 2008
  */
 
-#include "JackAudioInterface.h"
-#include "jacktrip_globals.h"
-#include "JackTrip.h"
+#include <jacktrip/JackAudioInterface.h>
+#include <jacktrip/jacktrip_globals.h>
+#include <jacktrip/JackTrip.h>
 
 #include <cstdlib>
 #include <cstring>

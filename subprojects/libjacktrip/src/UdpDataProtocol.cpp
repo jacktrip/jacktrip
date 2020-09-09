@@ -35,9 +35,9 @@
  * \date June 2008
  */
 
-#include "UdpDataProtocol.h"
-#include "jacktrip_globals.h"
-#include "JackTrip.h"
+#include <jacktrip/UdpDataProtocol.h>
+#include <jacktrip/jacktrip_globals.h>
+#include <jacktrip/JackTrip.h>
 
 #include <QHostInfo>
 

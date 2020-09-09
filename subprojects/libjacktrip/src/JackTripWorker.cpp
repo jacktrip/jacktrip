@@ -42,11 +42,11 @@
 #include <QMutexLocker>
 #include <QWaitCondition>
 
-#include "JackTripWorker.h"
-#include "JackTrip.h"
-#include "UdpHubListener.h"
+#include <jacktrip/JackTripWorker.h>
+#include <jacktrip/JackTrip.h>
+#include <jacktrip/UdpHubListener.h>
 //#include "NetKS.h"
-#include "LoopBack.h"
+#include <jacktrip/LoopBack.h>
 //#include "Settings.h"
 #ifdef WAIR // wair
 #include "dcblock2gain.dsp.h"

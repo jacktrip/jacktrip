@@ -30,9 +30,9 @@
  * JMess.cpp
  */
 
-#include "JMess.h"
-#include "JackTrip.h"
-#include "jacktrip_globals.h"
+#include <jacktrip/JMess.h>
+#include <jacktrip/JackTrip.h>
+#include <jacktrip/jacktrip_globals.h>
 #include <QDebug>
 
 // sJackMutex definition

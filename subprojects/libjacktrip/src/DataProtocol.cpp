@@ -35,9 +35,9 @@
  * \date June 2008
  */
 
-#include "DataProtocol.h"
-#include "jacktrip_globals.h"
-#include "JackTrip.h"
+#include <jacktrip/DataProtocol.h>
+#include <jacktrip/jacktrip_globals.h>
+#include <jacktrip/JackTrip.h>
 
 #include <iostream>
 #include <cstdlib>

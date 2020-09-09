@@ -35,13 +35,13 @@
  * \date July 2008
  */
 
-#include "JackTrip.h"
-#include "UdpDataProtocol.h"
-#include "RingBufferWavetable.h"
-#include "jacktrip_globals.h"
-#include "JackAudioInterface.h"
+#include <jacktrip/JackTrip.h>
+#include <jacktrip/UdpDataProtocol.h>
+#include <jacktrip/RingBufferWavetable.h>
+#include <jacktrip/jacktrip_globals.h>
+#include <jacktrip/JackAudioInterface.h>
 #ifdef __RT_AUDIO__
-#include "RtAudioInterface.h"
+#include <jacktrip/RtAudioInterface.h>
 #endif
 
 #include <iostream>

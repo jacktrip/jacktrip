@@ -49,7 +49,7 @@
     #include <mach/thread_policy.h>
 #endif //__MAC_OSX__
 
-#include "jacktrip_globals.h"
+#include <jacktrip/jacktrip_globals.h>
 
 
 #if defined ( __MAC_OSX__ )

@@ -35,8 +35,8 @@
  * \date July 2008
  */
 
-#include "PacketHeader.h"
-#include "JackTrip.h"
+#include <jacktrip/PacketHeader.h>
+#include <jacktrip/JackTrip.h>
 
 #include <sys/time.h>
 #include <cstdlib>
