@@ -43,7 +43,7 @@
 
 #include <QTimer>
 
-#include "ProcessPlugin.h"
+#include <jacktrip/ProcessPlugin.h>
 
 /** \brief A simple (basic) network Karplus Strong.
  *

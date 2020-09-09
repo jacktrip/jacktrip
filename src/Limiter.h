@@ -48,7 +48,7 @@
 #include "limitertest.h"
 #endif
 
-#include "ProcessPlugin.h"
+#include <jacktrip/ProcessPlugin.h>
 #include "limiterdsp.h"
 #include <vector>
 

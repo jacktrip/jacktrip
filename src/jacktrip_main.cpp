@@ -43,9 +43,10 @@
 #include <iostream>
 #include <signal.h>
 // #include "jacktrip_globals.h"
-#include "Settings.h"
-#include "UdpHubListener.h"
 #include <QLoggingCategory>
+
+#include <jacktrip/UdpHubListener.h>
+#include "Settings.h"
 
 void qtMessageHandler(__attribute__((unused)) QtMsgType type, __attribute__((unused)) const QMessageLogContext &context, const QString &msg)
 {

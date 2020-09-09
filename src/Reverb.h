@@ -44,7 +44,7 @@
 
 //#define SINE_TEST
 
-#include "ProcessPlugin.h"
+#include <jacktrip/ProcessPlugin.h>
 #include "freeverbdsp.h" // stereo in and out
 #include "freeverbmonodsp.h" // mono in and out (there is no mono to stereo case in jacktrip as yet)
 #include "zitarevdsp.h" // stereo in and out

@@ -37,7 +37,7 @@
 
 #pragma once
 
-#include "ProcessPlugin.h"
+#include <jacktrip/ProcessPlugin.h>
 #include "Limiter.h"
 #include "Compressor.h"
 #include "Reverb.h"

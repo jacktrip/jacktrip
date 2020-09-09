@@ -36,7 +36,7 @@
  */
 
 #include "Settings.h"
-#include "LoopBack.h"
+#include <jacktrip/LoopBack.h>
 //#include "NetKS.h"
 #include "Effects.h"
 
@@ -46,7 +46,7 @@
 #endif // endwhere
 
 //#include "JackTripWorker.h"
-#include "jacktrip_globals.h"
+#include <jacktrip/jacktrip_globals.h>
 
 #include <iostream>
 #include <getopt.h> // for command line parsing

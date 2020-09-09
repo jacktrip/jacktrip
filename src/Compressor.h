@@ -42,7 +42,7 @@
 #ifndef __COMPRESSOR_H__
 #define __COMPRESSOR_H__
 
-#include "ProcessPlugin.h"
+#include <jacktrip/ProcessPlugin.h>
 #include "compressordsp.h"
 #include <vector>
 

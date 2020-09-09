@@ -44,10 +44,10 @@
 
 // #include "DataProtocol.h"
 
-#include "AudioInterface.h"
+#include <jacktrip/AudioInterface.h>
 
-#include "JackTrip.h"
-#include "UdpHubListener.h"
+#include <jacktrip/JackTrip.h>
+#include <jacktrip/UdpHubListener.h>
 
 #include "Effects.h"
 
