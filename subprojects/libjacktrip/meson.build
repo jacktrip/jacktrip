@@ -1,4 +1,5 @@
-project('libjacktrip', 'cpp', version: '1.2.1')
+project('libjacktrip', 'cpp', version: '1.2.1',
+		default_options: ['cpp_std=c++11'])
 qt5 = import('qt5')
 dependencies = [dependency('qt5', modules: ['Core', 'Network']),
 	dependency('jack'),
