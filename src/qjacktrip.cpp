@@ -221,7 +221,8 @@ void QJackTrip::chooseRunType(const QString &type)
 
 void QJackTrip::addressChanged(const QString &address)
 {
-    if (m_ui->typeComboBox->currentText().endsWith("Client")) {
+    //Make sure we check that JackTrip isn't running. (This gets called when we save our recent address list.)
+    if (m_ui->typeComboBox->currentText().endsWith("Client") && !m_jackTripRunning) {
         m_ui->connectButton->setEnabled(!address.isEmpty());
     }
 }
