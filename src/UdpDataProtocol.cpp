@@ -57,6 +57,12 @@
 #include <sys/fcntl.h>
 #endif
 
+#if defined ( __MAC_OSX__ )
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <mach/thread_policy.h>
+#endif
+
 using std::cout; using std::endl;
 
 // NOTE: It's better not to use
@@ -469,6 +475,18 @@ void UdpDataProtocol::run()
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before setRealtimeProcessPriority()" << std::endl;
     //std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
     //setRealtimeProcessPriority();
+#ifdef __MAC_OSX__
+     mach_port_t mach_thread_id = mach_thread_self();
+
+    // Fix the thread priority. (Prevents it from being lowered when the GUI enters background.)
+    thread_extended_policy_data_t policy;
+    policy.timeshare = 0;
+    kern_return_t result = thread_policy_set(mach_thread_id, THREAD_EXTENDED_POLICY, reinterpret_cast<thread_policy_t>(&policy), 
+                                             THREAD_EXTENDED_POLICY_COUNT);
+    if (result == KERN_SUCCESS) {
+        if (gVerboseFlag) std::cout << "Using fixed thread priority." << std::endl;
+    }
+#endif
 
     /////////////////////
     // to see thread priorities
