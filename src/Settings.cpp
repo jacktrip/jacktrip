@@ -498,11 +498,8 @@ UdpHubListener *Settings::getConfiguredHubServer()
     udpHub->setWAIR(mWAIR);
 #endif // endwhere
     udpHub->setHubPatch(mHubConnectionMode);
-    if (mHubConnectionMode == JackTrip::NOAUTO) {
-        udpHub->setConnectDefaultAudioPorts(false);
-    } else {
-        udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
-    }
+    // Connect default audio ports must be set after the connection mode.
+    udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
     // Set buffers to zero when underrun
     if ( mUnderrunMode == JackTrip::ZEROS ) {
         cout << "Setting buffers to zero when underrun..." << endl;

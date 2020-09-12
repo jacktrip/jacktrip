@@ -147,11 +147,13 @@ void JackAudioInterface::setupClient()
         //std::exit(1);
         throw std::runtime_error("Maybe the JACK server is not running?");
     }
+    
+    mAssignedClientName = jack_get_client_name(mClient);
     if (status & JackServerStarted) {
         fprintf (stderr, "JACK server started\n");
     }
     if (status & JackNameNotUnique) {
-        fprintf (stderr, "unique name `%s' assigned\n", jack_get_client_name(mClient));
+        fprintf (stderr, "unique name `%s' assigned\n", mAssignedClientName.toUtf8().constData());
     }
 
     // Set function to call if Jack shuts down

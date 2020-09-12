@@ -47,6 +47,7 @@ set(qjacktrip_SRC
   src/Compressor.cpp
   src/Limiter.cpp
   src/Reverb.cpp
+  src/Patcher.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

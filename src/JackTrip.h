@@ -372,6 +372,14 @@ public:
         { return getNumInputChannels(); }
         else { return 0; }
     }
+    QString getAssignedClientName()
+    {
+        if (mAudioInterface && mAudiointerfaceMode == JackTrip::JACK) {
+            return static_cast<JackAudioInterface *>(mAudioInterface)->getAssignedClientName();
+        } else {
+            return "";
+        }
+    }
     virtual void checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber()
     { mPacketHeader->increaseSequenceNumber(); }

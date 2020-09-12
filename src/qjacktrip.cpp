@@ -302,11 +302,6 @@ void QJackTrip::start()
             }
             
             m_udpHub->setHubPatch(hubConnectionMode);
-            if (hubConnectionMode == JackTrip::NOAUTO) {
-                m_udpHub->setConnectDefaultAudioPorts(false);
-            } else {
-                m_udpHub->setConnectDefaultAudioPorts(true);
-            }
             
             if (m_ui->zeroCheckBox->isChecked()) {
                 // Set buffers to zero when underrun

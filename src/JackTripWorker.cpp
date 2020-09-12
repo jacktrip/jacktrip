@@ -232,6 +232,7 @@ void JackTripWorker::run()
                     mID
             #endif // endwhere
                     );
+        mAssignedClientName = jacktrip.getAssignedClientName();
         // if (gVerboseFlag) cout << "---> JackTripWorker: start..." << endl;
         // jacktrip.start(); // ########### JamTest Only #################
 

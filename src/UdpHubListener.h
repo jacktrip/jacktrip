@@ -53,13 +53,15 @@
 #include "JackTrip.h"
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
+#include "Patcher.h"
 class JackTripWorker; // forward declaration
 class Settings;
 
 typedef struct {
     QString address;
     int16_t port;
-} addressPortPair;
+    QString clientName;
+} addressPortNameTriple;
 
 /** \brief Hub UDP listener on the Server.
  *
@@ -82,7 +84,14 @@ public:
 
     int releaseThread(int id);
 
-    void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts) { m_connectDefaultAudioPorts = connectDefaultAudioPorts; }
+    void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
+    {
+        //Only allow us to override this in the default patching mode. (Or TUB mode.)
+        //(Allows -D to continue to function as a synonym for -p5.)
+        if (mHubPatch == JackTrip::SERVERTOCLIENT || mHubPatch == JackTrip::RESERVEDMATRIX) {
+            m_connectDefaultAudioPorts = connectDefaultAudioPorts;
+        }
+    }
     
     static void sigIntHandler(__attribute__((unused)) int unused)
     { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
@@ -142,8 +151,8 @@ private:
     int mServerPort; //< Server known port number
     int mServerUdpPort; //< Server udp base port number
     int mBasePort;
-    addressPortPair mActiveAddress[gMaxThreads]; ///< Active address pool addresses
-    QHash<QString, uint16_t> mActiveAddressPortPair;
+    addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool addresses
+    //QHash<QString, uint16_t> mActiveAddressPortPair;
 
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
@@ -156,6 +165,7 @@ private:
     
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
+    Patcher mPatcher;
 
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
@@ -168,10 +178,20 @@ public :
     void setWAIR(int b) {mWAIR = b;}
     bool isWAIR() {return mWAIR;}
 #endif // endwhere
-    void connectPatch(bool spawn);
+    void connectPatch(bool spawn, const QString &clientName);
 public :
     unsigned int mHubPatch;
-    void setHubPatch(unsigned int p) {mHubPatch = p;}
+    void setHubPatch(unsigned int p)
+    {
+        mHubPatch = p;
+        mPatcher.setPatchMode(static_cast<JackTrip::hubConnectionModeT>(p));
+        //Set the correct audio port connection setting for our chosen patch mode.
+        if (mHubPatch == JackTrip::SERVERTOCLIENT) {
+            m_connectDefaultAudioPorts = true;
+        } else {
+            m_connectDefaultAudioPorts = false;
+        }
+    }
     unsigned int getHubPatch() {return mHubPatch;}
 
     void setUnderRunMode(JackTrip::underrunModeT UnderRunMode) { mUnderRunMode = UnderRunMode; }

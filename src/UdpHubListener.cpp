@@ -49,6 +49,8 @@
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
 
+#include "JMess.h"
+
 using std::cout; using std::endl;
 
 bool UdpHubListener::sSigInt = false;
@@ -86,6 +88,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     for (int i = 0; i<gMaxThreads; i++) {
         mActiveAddress[i].address = ""; // Address strings
         mActiveAddress[i].port = 0;
+        mActiveAddress[i].clientName = "";
     }
     // Set the base dynamic port
     // The Dynamic and/or Private Ports are those from 49152 through 65535
@@ -244,6 +247,7 @@ void UdpHubListener::receivedClientInfo()
     mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority);
     // wait until one is complete before another spawns
     while (mJTWorkers->at(id)->isSpawning()) { QThread::msleep(10); }
+    mActiveAddress[id].clientName = mJTWorkers->at(id)->getAssignedClientName();
     //mTotalRunningThreads++;
     cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
     cout << "===============================================================" << endl;
@@ -254,7 +258,7 @@ void UdpHubListener::receivedClientInfo()
 
     //qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
 
-    connectPatch(true);
+    connectPatch(true, mActiveAddress[id].clientName);
 }
 
 void UdpHubListener::stopCheck()
@@ -460,12 +464,12 @@ int UdpHubListener::releaseThread(int id)
 #ifdef WAIR // wair
     if (isWAIR()) connectMesh(false); // invoked with -Sw
 #endif // endwhere
-    if (getHubPatch()) connectPatch(false); // invoked with -p > 0
+    connectPatch(false, mActiveAddress[id].clientName); // invoked with -p > 0
+    mActiveAddress[id].clientName = "";
     return 0; /// \todo Check if we really need to return an argument here
 }
 
 #ifdef WAIR // wair
-#include "JMess.h"
 //*******************************************************************************
 void UdpHubListener::connectMesh(bool spawn)
 {
@@ -487,8 +491,7 @@ void UdpHubListener::enumerateRunningThreadIDs()
 }
 #endif // endwhere
 
-#include "JMess.h"
-void UdpHubListener::connectPatch(bool spawn)
+void UdpHubListener::connectPatch(bool spawn, const QString &clientName)
 {
     if ((getHubPatch() == JackTrip::NOAUTO) ||
         (getHubPatch() == JackTrip::SERVERTOCLIENT && !m_connectDefaultAudioPorts)) {
@@ -496,16 +499,19 @@ void UdpHubListener::connectPatch(bool spawn)
         return;
     }
     cout << ((spawn)?"spawning":"releasing") << " jacktripWorker so change patch" << endl;
-    JMess tmp;
-    // default is patch 0, which connects server audio to all clients
-    // these are the other cases:
-    if (getHubPatch() == JackTrip::RESERVEDMATRIX) // special patch for TU Berlin ensemble
+    if (getHubPatch() == JackTrip::RESERVEDMATRIX) {
+        //This is a special patch for the TU Berlin ensemble.
+        //Use the old JMess mechanism.
+        JMess tmp;
         tmp.connectTUB(gDefaultNumInChannels);
-    else if ((getHubPatch() == JackTrip::CLIENTECHO) || // client loopback for testing
-             (getHubPatch() == JackTrip::CLIENTFOFI) || // all clients to all clients except self
-             (getHubPatch() == JackTrip::FULLMIX)) // all clients to all clients including self
-        tmp.connectSpawnedPorts(gDefaultNumInChannels,getHubPatch());
-    // FIXME: need change to gDefaultNumInChannels if more than stereo
+        // FIXME: need change to gDefaultNumInChannels if more than stereo
+    } else {
+        if (spawn) {
+            mPatcher.registerClient(clientName);
+        } else {
+            mPatcher.unregisterClient(clientName);
+        }
+    }
 }
 
 void UdpHubListener::stopAllThreads()
