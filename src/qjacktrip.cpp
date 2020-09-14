@@ -350,7 +350,7 @@ void QJackTrip::start()
 #endif // endwhere
                                           m_ui->queueLengthSpinBox->value(), m_ui->redundancySpinBox->value(),
                                           resolution));
-            m_jackTrip->setConnectDefaultAudioPorts(true);
+            m_jackTrip->setConnectDefaultAudioPorts(m_ui->connectAudioCheckBox->isChecked());
             if (m_ui->zeroCheckBox->isChecked()) {
                 // Set buffers to zero when underrun
                 m_jackTrip->setUnderRunMode(JackTrip::ZEROS);
