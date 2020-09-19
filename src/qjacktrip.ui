@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>667</height>
+    <height>697</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,6 +31,104 @@
        <cstring>addressComboBox</cstring>
       </property>
      </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QComboBox" name="addressComboBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>Enter the IP address or the hostname of the server you want to connect to.</string>
+      </property>
+      <property name="editable">
+       <bool>true</bool>
+      </property>
+      <property name="maxCount">
+       <number>5</number>
+      </property>
+      <property name="insertPolicy">
+       <enum>QComboBox::NoInsert</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="typeLabel">
+      <property name="text">
+       <string>&amp;Run JackTrip as</string>
+      </property>
+      <property name="buddy">
+       <cstring>typeComboBox</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLabel" name="ipLabel">
+      <property name="text">
+       <string>Looking up external IP address...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="typeComboBox">
+      <property name="toolTip">
+       <string>To connect to a server you need to run as a client.
+To connect to a hub server you need to run as a hub client.</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Client</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Server</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Hub Client</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Hub Server</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="6" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="buttonLayout">
+      <item>
+       <widget class="QPushButton" name="connectButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Connect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="disconnectButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Disconnect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="exitButton">
+        <property name="text">
+         <string>Exit</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item row="5" column="0" colspan="2">
      <widget class="QTabWidget" name="optionsTabWidget">
@@ -60,74 +158,14 @@
         <string>Basic options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="7" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="aboutLayout">
-          <item>
-           <spacer name="aboutSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="aboutButton">
-            <property name="text">
-             <string>About</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="5" column="0">
-         <spacer name="basicVerticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="autoPatchLabel">
+        <item row="0" column="1" colspan="2">
+         <widget class="QSpinBox" name="channelSpinBox">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="text">
-           <string>Hub auto&amp;patch mode</string>
-          </property>
-          <property name="buddy">
-           <cstring>autoPatchComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QCheckBox" name="zeroCheckBox">
-          <property name="toolTip">
-           <string>Silence the audio when there's a buffer underrun.</string>
-          </property>
-          <property name="text">
-           <string>Set buffer to &amp;zero when underrun occurs</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QSpinBox" name="channelSpinBox">
           <property name="toolTip">
            <string>Number of input and output channels.</string>
           </property>
@@ -155,7 +193,148 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="6" column="0" colspan="3">
+         <widget class="QGroupBox" name="authGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0" colspan="2">
+            <widget class="QCheckBox" name="authCheckBox">
+             <property name="text">
+              <string>&amp;Use Authentication</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="passwordEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::Password</enum>
+             </property>
+             <property name="cursorPosition">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="usernameEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="passwordLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Password</string>
+             </property>
+             <property name="buddy">
+              <cstring>passwordEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="usernameLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Username</string>
+             </property>
+             <property name="buddy">
+              <cstring>usernameEdit</cstring>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="9" column="0" colspan="3">
+         <layout class="QHBoxLayout" name="aboutLayout">
+          <item>
+           <spacer name="aboutSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="aboutButton">
+            <property name="text">
+             <string>About</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="autoPatchLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Hub auto&amp;patch mode</string>
+          </property>
+          <property name="buddy">
+           <cstring>autoPatchComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="3">
+         <widget class="QCheckBox" name="zeroCheckBox">
+          <property name="toolTip">
+           <string>Silence the audio when there's a buffer underrun.</string>
+          </property>
+          <property name="text">
+           <string>Set buffer to &amp;zero when underrun occurs</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="3">
+         <widget class="QCheckBox" name="timeoutCheckBox">
+          <property name="toolTip">
+           <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
+          </property>
+          <property name="text">
+           <string>&amp;Disconnect after 10 seconds of no network activity</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <spacer name="basicVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="1" colspan="2">
          <widget class="QComboBox" name="autoPatchComboBox">
           <property name="toolTip">
            <string>Select how you want audio to be routed by the hub server.</string>
@@ -190,14 +369,90 @@
           </item>
          </widget>
         </item>
-        <item row="4" column="0" colspan="2">
-         <widget class="QCheckBox" name="timeoutCheckBox">
-          <property name="toolTip">
-           <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
+        <item row="5" column="0" colspan="3">
+         <widget class="QGroupBox" name="requireAuthGroupBox">
+          <property name="title">
+           <string/>
           </property>
-          <property name="text">
-           <string>&amp;Disconnect after 10 seconds of no network activity</string>
-          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="2" column="0">
+            <widget class="QLabel" name="certLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Certificate File</string>
+             </property>
+             <property name="buddy">
+              <cstring>certEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="keyLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Key File</string>
+             </property>
+             <property name="buddy">
+              <cstring>keyEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="keyBrowse">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Browse</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QCheckBox" name="requireAuthCheckBox">
+             <property name="text">
+              <string>&amp;Require Authentication</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="certEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QPushButton" name="certBrowse">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Browse</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="keyEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="3">
+            <widget class="QLabel" name="authDisclaimerLabel">
+             <property name="text">
+              <string>(This is a work in progress and needs to be manually configured outside of the app. Only use if you know what you're doing.)</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -867,104 +1122,6 @@ and wetness is the essence of beauty.</string>
       </widget>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="addressComboBox">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="toolTip">
-       <string>Enter the IP address or the hostname of the server you want to connect to.</string>
-      </property>
-      <property name="editable">
-       <bool>true</bool>
-      </property>
-      <property name="maxCount">
-       <number>5</number>
-      </property>
-      <property name="insertPolicy">
-       <enum>QComboBox::NoInsert</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="typeLabel">
-      <property name="text">
-       <string>&amp;Run JackTrip as</string>
-      </property>
-      <property name="buddy">
-       <cstring>typeComboBox</cstring>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLabel" name="ipLabel">
-      <property name="text">
-       <string>Looking up external IP address...</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QComboBox" name="typeComboBox">
-      <property name="toolTip">
-       <string>To connect to a server you need to run as a client.
-To connect to a hub server you need to run as a hub client.</string>
-      </property>
-      <item>
-       <property name="text">
-        <string>Client</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Server</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Hub Client</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Hub Server</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="6" column="0" colspan="2">
-     <layout class="QHBoxLayout" name="buttonLayout">
-      <item>
-       <widget class="QPushButton" name="connectButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Connect</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="disconnectButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Disconnect</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="exitButton">
-        <property name="text">
-         <string>Exit</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -990,6 +1147,14 @@ To connect to a hub server you need to run as a hub client.</string>
   <tabstop>autoPatchComboBox</tabstop>
   <tabstop>zeroCheckBox</tabstop>
   <tabstop>timeoutCheckBox</tabstop>
+  <tabstop>requireAuthCheckBox</tabstop>
+  <tabstop>certEdit</tabstop>
+  <tabstop>certBrowse</tabstop>
+  <tabstop>keyEdit</tabstop>
+  <tabstop>keyBrowse</tabstop>
+  <tabstop>authCheckBox</tabstop>
+  <tabstop>usernameEdit</tabstop>
+  <tabstop>passwordEdit</tabstop>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
   <tabstop>remoteNameEdit</tabstop>

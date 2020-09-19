@@ -30,6 +30,7 @@
 #include <QSettings>
 #include <QHostAddress>
 #include <QVector>
+#include <QFileDialog>
 #include <cstdlib>
 #include <ctime>
 
@@ -48,16 +49,39 @@ QJackTrip::QJackTrip(QWidget *parent) :
 {
     m_ui->setupUi(this);
     
+    //Create all our UI connections.
     connect(m_ui->typeComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::chooseRunType);
     connect(m_ui->addressComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::addressChanged);
     connect(m_ui->connectButton, &QPushButton::released, this, &QJackTrip::start);
     connect(m_ui->disconnectButton, &QPushButton::released, this, &QJackTrip::stop);
     connect(m_ui->exitButton, &QPushButton::released, this, &QJackTrip::exit);
+    connect(m_ui->certBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
+    connect(m_ui->keyBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
     connect(m_ui->commandLineButton, &QPushButton::released, this, &QJackTrip::showCommandLineMessageBox);
     connect(m_ui->useDefaultsButton, &QPushButton::released, this, &QJackTrip::resetOptions);
+    connect(m_ui->usernameEdit, &QLineEdit::textChanged, this, &QJackTrip::credentialsChanged);
+    connect(m_ui->passwordEdit, &QLineEdit::textChanged, this, &QJackTrip::credentialsChanged);
+    connect(m_ui->certEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
+    connect(m_ui->keyEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
     connect(m_ui->aboutButton, &QPushButton::released, this, [=](){
             About about(this);
             about.exec();
+        } );
+    connect(m_ui->authCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->usernameLabel->setEnabled(m_ui->authCheckBox->isChecked());
+            m_ui->usernameEdit->setEnabled(m_ui->authCheckBox->isChecked());
+            m_ui->passwordLabel->setEnabled(m_ui->authCheckBox->isChecked());
+            m_ui->passwordEdit->setEnabled(m_ui->authCheckBox->isChecked());
+            credentialsChanged();
+        } );
+    connect(m_ui->requireAuthCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->certLabel->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->certEdit->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->certBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->keyLabel->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->keyEdit->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->keyBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            authFilesChanged();
         } );
     connect(m_ui->ioStatsCheckBox, &QCheckBox::stateChanged, this, [=](){
             m_ui->ioStatsLabel->setEnabled(m_ui->ioStatsCheckBox->isChecked());
@@ -100,6 +124,8 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui->remoteNameEdit->setVisible(false);
     m_ui->basePortLabel->setVisible(false);
     m_ui->basePortSpinBox->setVisible(false);
+    m_ui->requireAuthGroupBox->setVisible(false);
+    m_ui->authGroupBox->setVisible(false);
     
     loadSettings();
 
@@ -123,6 +149,7 @@ void QJackTrip::closeEvent(QCloseEvent *event)
 void QJackTrip::processFinished()
 {
     if (!m_jackTripRunning) {
+        //Don't execute this if our process isn't actually running.
         return;
     }
     m_jackTripRunning = false;
@@ -175,7 +202,11 @@ void QJackTrip::chooseRunType(const QString &type)
     if (type.endsWith("Client")) {
         m_ui->addressComboBox->setEnabled(true);
         m_ui->addressLabel->setEnabled(true);
-        m_ui->connectButton->setEnabled(!m_ui->addressComboBox->currentText().isEmpty());
+        if (type == "Hub Client") {
+            credentialsChanged();
+        } else {
+            m_ui->connectButton->setEnabled(!m_ui->addressComboBox->currentText().isEmpty());
+        }
         m_ui->remotePortSpinBox->setVisible(true);
         m_ui->remotePortLabel->setVisible(true);
         m_ui->connectButton->setText("Connect");
@@ -196,11 +227,14 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->timeoutCheckBox->setVisible(false);
         m_ui->autoPatchComboBox->setVisible(true);
         m_ui->autoPatchLabel->setVisible(true);
+        m_ui->requireAuthGroupBox->setVisible(true);
         advancedOptionsForHubServer(true);
         m_ui->optionsTabWidget->removeTab(2);
+        authFilesChanged();
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
         m_ui->autoPatchLabel->setVisible(false);
+        m_ui->requireAuthGroupBox->setVisible(false);
         m_ui->channelSpinBox->setVisible(true);
         m_ui->channelLabel->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
@@ -213,17 +247,73 @@ void QJackTrip::chooseRunType(const QString &type)
     if (type == "Hub Client") {
         m_ui->remoteNameEdit->setVisible(true);
         m_ui->remoteNameLabel->setVisible(true);
+        m_ui->authGroupBox->setVisible(true);
     } else {
         m_ui->remoteNameEdit->setVisible(false);
         m_ui->remoteNameLabel->setVisible(false);
+        m_ui->authGroupBox->setVisible(false);
     }
 }
 
 void QJackTrip::addressChanged(const QString &address)
 {
-    //Make sure we check that JackTrip isn't running. (This gets called when we save our recent address list.)
-    if (m_ui->typeComboBox->currentText().endsWith("Client") && !m_jackTripRunning) {
+    //Make sure we check that JackTrip isn't running.
+    //(This also gets called when we save our recent address list on connecting to a server.)
+    if (m_jackTripRunning) {
+        return;
+    }
+    if (m_ui->typeComboBox->currentText() == "Client") {
         m_ui->connectButton->setEnabled(!address.isEmpty());
+    } else if (m_ui->typeComboBox->currentText() == "Hub Client") {
+        credentialsChanged();
+    }
+}
+
+void QJackTrip::authFilesChanged()
+{
+    if (m_ui->typeComboBox->currentText() != "Hub Server") {
+        return;
+    }
+    
+    if (m_ui->requireAuthCheckBox->isChecked() && 
+        (m_ui->certEdit->text().isEmpty() || m_ui->keyEdit->text().isEmpty())) {
+        m_ui->connectButton->setEnabled(false);
+    } else {
+        m_ui->connectButton->setEnabled(true);
+    }
+}
+
+void QJackTrip::credentialsChanged()
+{
+    if (m_ui->typeComboBox->currentText() != "Hub Client") {
+        return;
+    }
+    
+    if (m_ui->authCheckBox->isChecked() && 
+        (m_ui->usernameEdit->text().isEmpty() || m_ui->passwordEdit->text().isEmpty())) {
+        m_ui->connectButton->setEnabled(false);
+    } else {
+        m_ui->connectButton->setEnabled(!m_ui->addressComboBox->currentText().isEmpty());
+    }
+}
+
+void QJackTrip::browseForFile()
+{
+    QPushButton *sender = static_cast<QPushButton *>(QObject::sender());
+    QString fileType;
+    QLineEdit *fileEdit;
+    if (sender == m_ui->certBrowse) {
+        fileType = "Certificates (*.crt *.pem)";
+        fileEdit = m_ui->certEdit;
+    } else {
+        fileType = "Keys (*.key *.pem)";
+        fileEdit = m_ui->keyEdit;
+    }
+    QString fileName = QFileDialog::getOpenFileName(this, "Open File", m_lastPath, fileType);
+    if (!fileName.isEmpty()) {
+        fileEdit->setText(fileName);
+        fileEdit->setFocus(Qt::OtherFocusReason);
+        m_lastPath = QFileInfo(fileName).canonicalFilePath();
     }
 }
 
@@ -309,6 +399,13 @@ void QJackTrip::start()
             }
             m_udpHub->setBufferQueueLength(m_ui->queueLengthSpinBox->value());
             
+            // Enable authentication if needed
+            if (m_ui->requireAuthCheckBox->isChecked()) {
+                m_udpHub->setRequireAuth(true);
+                m_udpHub->setCertFile(m_ui->certEdit->text());
+                m_udpHub->setKeyFile(m_ui->keyEdit->text());
+            }
+            
             // Open our stats window if needed
             if (m_ui->ioStatsCheckBox->isChecked()) {
                 setupStatsWindow();
@@ -375,6 +472,13 @@ void QJackTrip::start()
             if (!m_ui->clientNameEdit->text().isEmpty()) {
                 m_jackTrip->setClientName(m_ui->clientNameEdit->text());
             }
+            
+            // Set credentials if we're using authentication
+           if (m_ui->authCheckBox->isChecked()) {
+               m_jackTrip->setUseAuth(true);
+               m_jackTrip->setUsername(m_ui->usernameEdit->text());
+               m_jackTrip->setPassword(m_ui->passwordEdit->text());
+           }
             
             // Open our stats window if needed
             if (m_ui->ioStatsCheckBox->isChecked()) {
@@ -502,6 +606,7 @@ void QJackTrip::loadSettings()
     m_ui->redundancySpinBox->setValue(settings.value("Redundancy", gDefaultRedundancy).toInt());
     m_ui->resolutionComboBox->setCurrentIndex(settings.value("Resolution", 1).toInt());
     m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
+    m_lastPath = settings.value("LastPath", QDir::homePath()).toString();
     
     settings.beginGroup("RecentServers");
     for (int i = 1; i <= 5; i++) {
@@ -513,6 +618,14 @@ void QJackTrip::loadSettings()
     settings.endGroup();
     //Need to get this here so it isn't overwritten by the previous section.
     m_ui->addressComboBox->setCurrentText(settings.value("LastAddress", "").toString());
+    
+    settings.beginGroup("Auth");
+    m_ui->requireAuthCheckBox->setChecked(settings.value("Require", false).toBool());
+    m_ui->certEdit->setText(settings.value("CertFile", "").toString());
+    m_ui->keyEdit->setText(settings.value("KeyFile", "").toString());
+    m_ui->authCheckBox->setChecked(settings.value("Use", false).toBool());
+     m_ui->usernameEdit->setText(settings.value("Username", "").toString());
+    settings.endGroup();
     
     settings.beginGroup("IOStats");
     m_ui->ioStatsCheckBox->setChecked(settings.value("Display", false).toBool());
@@ -565,11 +678,20 @@ void QJackTrip::saveSettings()
     settings.setValue("Redundancy", m_ui->redundancySpinBox->value());
     settings.setValue("Resolution", m_ui->resolutionComboBox->currentIndex());
     settings.setValue("ConnectAudio", m_ui->connectAudioCheckBox->isChecked());
+    settings.setValue("LastPath", m_lastPath);
     
     settings.beginGroup("RecentServers");
     for (int i = 0; i < m_ui->addressComboBox->count(); i++) {
         settings.setValue(QString("Server%1").arg(i + 1), m_ui->addressComboBox->itemText(i));
     }
+    settings.endGroup();
+    
+    settings.beginGroup("Auth");
+    settings.setValue("Require", m_ui->requireAuthCheckBox->isChecked());
+    settings.setValue("CertFile", m_ui->certEdit->text());
+    settings.setValue("KeyFile", m_ui->keyEdit->text());
+    settings.setValue("Use", m_ui->authCheckBox->isChecked());
+    settings.setValue("Username", m_ui->usernameEdit->text());
     settings.endGroup();
     
     settings.beginGroup("IOStats");

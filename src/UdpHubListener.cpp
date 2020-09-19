@@ -40,10 +40,12 @@
 #include <stdexcept>
 #include <cstring>
 
-#include <QTcpServer>
-#include <QTcpSocket>
+#include <QSslSocket>
+#include <QSslKey>
 #include <QStringList>
 #include <QMutexLocker>
+#include <QFile>
+#include <QtEndian>
 
 #include "UdpHubListener.h"
 #include "JackTripWorker.h"
@@ -61,6 +63,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     mTcpServer(this),
     mServerPort(server_port),
     mServerUdpPort(server_udp_port),//final udp base port number
+    mRequireAuth(false),
     mStopped(false),
     #ifdef WAIR // wair
     mWAIR(false),
@@ -133,12 +136,62 @@ void UdpHubListener::start()
 
     // Bind the TCP server
     // ------------------------------
-    QObject::connect(&mTcpServer, &QTcpServer::newConnection, this, &UdpHubListener::receivedNewConnection);
+    QObject::connect(&mTcpServer, &SslServer::newConnection, this, &UdpHubListener::receivedNewConnection);
     if ( !mTcpServer.listen(QHostAddress::Any, mServerPort) ) {
         QString error_message = QString("TCP Socket Server on Port %1 ERROR: %2").arg(mServerPort).arg(mTcpServer.errorString());
         std::cerr << error_message.toStdString() << endl;
         emit signalError(error_message);
         return;
+    }
+    
+    if (mRequireAuth) {
+        cout << "JackTrip HUB SERVER: Enabling authentication" << endl;
+        // Check that SSL is avaialable
+        bool error = false;
+        QString error_message;
+        if (!QSslSocket::supportsSsl()) {
+            error = true;
+            error_message = "SSL not supported. Make sure you have the appropriate SSL libraries\ninstalled to enable authentication.";
+        }
+        
+        // Load our certificate and private key
+        if (!error) {
+            QFile certFile(mCertFile);
+            if (certFile.open(QIODevice::ReadOnly)) {
+                QSslCertificate cert(certFile.readAll());
+                if (!cert.isNull()) {
+                    mTcpServer.setCertificate(cert);
+                } else {
+                    error = true;
+                    error_message = "Unable to load certificate file.";
+                }
+            } else {
+                error = true;
+                error_message = "Could not find certificate file.";
+            }
+        }
+        
+        if (!error) {
+            QFile keyFile(mKeyFile);
+            if (keyFile.open(QIODevice::ReadOnly)) {
+                QSslKey key(&keyFile, QSsl::Rsa);
+                if (!key.isNull()) {
+                    mTcpServer.setPrivateKey(key);
+                } else {
+                    error = true;
+                    error_message = "Unable to read RSA private key file.";
+                }
+            } else {
+                error = true;
+                error_message = "Could not find RSA private key file.";
+            }
+        }
+        
+        if (error) {
+            std::cerr << "ERROR: " << error_message.toStdString() << endl;
+            emit signalError(error_message);
+            return;
+        }
     }
     
     cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
@@ -154,14 +207,14 @@ void UdpHubListener::start()
     
 void UdpHubListener::receivedNewConnection()
 {
-    QTcpSocket *clientSocket = mTcpServer.nextPendingConnection();
+    QSslSocket *clientSocket = static_cast<QSslSocket *>(mTcpServer.nextPendingConnection());
     connect(clientSocket, &QAbstractSocket::readyRead, this, &UdpHubListener::receivedClientInfo);
     cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 }
 
 void UdpHubListener::receivedClientInfo()
 {
-    QTcpSocket* clientConnection = static_cast<QTcpSocket*>(QObject::sender());
+    QSslSocket* clientConnection = static_cast<QSslSocket*>(QObject::sender());
     
     QHostAddress PeerAddress = clientConnection->peerAddress();
     cout << "JackTrip HUB SERVER: Client Connect Received from Address : "
@@ -171,13 +224,54 @@ void UdpHubListener::receivedClientInfo()
     // ------------------------
     QString clientName = QString();
     cout << "JackTrip HUB SERVER: Reading UDP port from Client..." << endl;
-    if (clientConnection->bytesAvailable() < (int)sizeof(uint16_t)) {
-        // We don't have enough data. Wait for the next readyRead notification.
-        return;
+    int peer_udp_port;
+    if (!clientConnection->isEncrypted()) {
+        if (clientConnection->bytesAvailable() < (int)sizeof(qint32)) {
+            // We don't have enough data. Wait for the next readyRead notification.
+            return;
+        }
+        peer_udp_port = readClientUdpPort(clientConnection, clientName);
+        // Use our peer port to check if we need to authenticate our client.
+        // (We use values above the max port number of 65535 to achieve this. Since the port
+        // number was always sent as a 32 bit integer, it meants we can squeeze this functionality
+        // in here without breaking older clients when authentication isn't required.)
+        if (peer_udp_port == Auth::OK) {
+            if (!mRequireAuth) {
+                // We're not using authentication. Let the client know and close the connection.
+                cout << "JackTrip HUB SERVER: Client attempting unnecessary authentication. Disconnecting." << endl;
+                sendUdpPort(clientConnection, Auth::NOTREQUIRED);
+                clientConnection->close();
+                clientConnection->deleteLater();
+                return;
+            }
+            // Initiate the SSL handshake, and wait for more data to arrive once it's been established.
+            sendUdpPort(clientConnection, Auth::OK);
+            clientConnection->startServerEncryption();
+            return;
+        } else if (mRequireAuth) {
+            // Let our client know we're not accepting connections without authentication.
+            cout << "JackTrip HUB SERVER: Client not authenticating. Disconnecting." << endl;
+            sendUdpPort(clientConnection, Auth::REQUIRED);
+            clientConnection->close();
+            clientConnection->deleteLater();
+            return;
+        }
+    } else {
+        // This branch executes when our socket is already in SSL mode and we're expecting to read
+        // our authentication data.
+        peer_udp_port = checkAuthAndReadPort(clientConnection, clientName);
+        if (peer_udp_port > 65535) {
+            // Our client hasn't provided valid credentials. Send an error code and close the connection.
+            cout << "JackTrip HUB SERVER: Authentication failed. Disconnecting." << endl;
+            sendUdpPort(clientConnection, peer_udp_port);
+            clientConnection->close();
+            clientConnection->deleteLater();
+            return;
+        }
     }
-    int peer_udp_port = readClientUdpPort(clientConnection, clientName);
-    //TODO: Check if this is the best way to handle this now that we've refactored this code.
-    if ( peer_udp_port == 0 ) { return; }
+    // If we haven't received our port, wait for more data to arrive.
+    if (peer_udp_port == 0) { return; }
+    
     cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
     
     // Check is client is new or not
@@ -324,17 +418,20 @@ void UdpHubListener::stopCheck()
 
 //*******************************************************************************
 // Returns 0 on error
-int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection, QString &clientName)
+int UdpHubListener::readClientUdpPort(QSslSocket* clientConnection, QString &clientName)
 {
     if (gVerboseFlag) cout << "Ready To Read From Client!" << endl;
     // Read UDP Port Number from Server
     // --------------------------------
-    int udp_port;
+    qint32 udp_port;
     int size = sizeof(udp_port);
     char port_buf[size];
     clientConnection->read(port_buf, size);
-    std::memcpy(&udp_port, port_buf, size);
+    udp_port = qFromLittleEndian<qint32>(port_buf);
+    //std::memcpy(&udp_port, port_buf, size);
     
+    // Check if we have enough data available to set our remote client name
+    // (Optional so that we don't block here with earlier clients that don't send it.)
     if (clientConnection->bytesAvailable() == gMaxRemoteNameLength) {
         char name_buf[gMaxRemoteNameLength];
         clientConnection->read(name_buf, gMaxRemoteNameLength);
@@ -344,14 +441,86 @@ int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection, QString &cli
     return udp_port;
 }
 
+int UdpHubListener::checkAuthAndReadPort (QSslSocket *clientConnection, QString &clientName)
+{
+    if (gVerboseFlag) cout << "Ready To Read Authentication Data From Client!" << endl;
+    // Because we don't know how long our username and password are, we have to peek at our
+    // data to read the expected lengths and know if we have enough to work with.
+    
+    // Currently, we expect to receive:
+    // 4 bytes: LE int giving our port number.
+    // 64 bytes: Maximum 63 byte jack client name (with null terminator).
+    // 4 bytes: Username length, not including null terminator.
+    // 4 bytes: Password length, not including null terminator.
+    // Variable length: Our username and password, each with added null terminator.
+    
+    int size = gMaxRemoteNameLength + (3 * sizeof(qint32));
+    if (clientConnection->bytesAvailable() < size) {
+        return 0;
+    }
+    
+    qint32 usernameLength, passwordLength;
+    char buf[size];
+    clientConnection->peek(buf, size);
+    usernameLength = qFromLittleEndian<qint32>(buf + gMaxRemoteNameLength + sizeof(qint32));
+    passwordLength = qFromLittleEndian<qint32>(buf + gMaxRemoteNameLength + (2 * sizeof(qint32)));
+    
+    // Check if we have enough data.
+    if (clientConnection->bytesAvailable() < size + usernameLength + passwordLength + 2) {
+        return 0;
+    }
+    
+    // Get our port.
+    qint32 udp_port;
+    size = sizeof(udp_port);
+    char port_buf[size];
+    clientConnection->read(port_buf, size);
+    udp_port = qFromLittleEndian<qint32>(port_buf);
+    
+    // Then our jack client name.
+    char name_buf[gMaxRemoteNameLength];
+    clientConnection->read(name_buf, gMaxRemoteNameLength);
+    clientName = QString::fromUtf8((const char *)name_buf);
+    
+    // We can discard our username and password length since we already have them.
+    clientConnection->read(port_buf, size);
+    clientConnection->read(port_buf, size);
+    
+    // And then get our username and password.
+    QString username, password;
+    char *username_buf = new char [usernameLength + 1];
+    clientConnection->read(username_buf, usernameLength + 1);
+    username = QString::fromUtf8((const char *)username_buf);
+    delete [] username_buf;
+    
+    char *password_buf = new char [passwordLength + 1];
+    clientConnection->read(password_buf, passwordLength + 1);
+    password = QString::fromUtf8((const char *)password_buf);
+    delete [] password_buf;
+    
+    // Check if our credentials are valid, and return either an error code or our port.
+    Auth::AuthResponseT response = mAuth.checkCredentials(username, password);
+    if (response == Auth::OK) {
+        return udp_port;
+    } else {
+        return response;
+    }
+}
+
 
 //*******************************************************************************
-int UdpHubListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
+int UdpHubListener::sendUdpPort(QSslSocket* clientConnection, qint32 udp_port)
 {
     // Send Port Number to Client
     // --------------------------
     char port_buf[sizeof(udp_port)];
-    std::memcpy(port_buf, &udp_port, sizeof(udp_port));
+    //std::memcpy(port_buf, &udp_port, sizeof(udp_port));
+    qToLittleEndian<qint32>(udp_port, port_buf);
+    if (udp_port < 65536) {
+        std::cout << "Writing port: " << udp_port << std::endl;
+    } else {
+         std::cout << "Writing auth response: " << udp_port << std::endl;
+    }
     clientConnection->write(port_buf, sizeof(udp_port));
     while ( clientConnection->bytesToWrite() > 0 ) {
         if ( clientConnection->state() == QAbstractSocket::ConnectedState ) {

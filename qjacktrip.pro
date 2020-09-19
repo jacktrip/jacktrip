@@ -150,7 +150,9 @@ HEADERS += src/DataProtocol.h \
            src/about.h \
            src/messageDialog.h \
            src/qjacktrip.h \
-           src/Patcher.h
+           src/Patcher.h \
+           src/SslServer.h \
+           src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
@@ -175,7 +177,9 @@ SOURCES += src/DataProtocol.cpp \
            src/main.cpp \
            src/messageDialog.cpp \
            src/qjacktrip.cpp \
-           src/Patcher.cpp
+           src/Patcher.cpp \
+           src/SslServer.cpp \
+           src/Auth.cpp
 #(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {

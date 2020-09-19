@@ -63,6 +63,9 @@ private slots:
     void udpWaitingTooLong();
     void chooseRunType(const QString &type);
     void addressChanged(const QString &address);
+    void authFilesChanged();
+    void credentialsChanged();
+    void browseForFile();
     void receivedIP(QNetworkReply *reply);
     void resetOptions();
     void start();
@@ -93,6 +96,7 @@ private:
     QMutex m_requestMutex;
     QString m_IPv6Address;
     bool m_hasIPv4Reply;
+    QString m_lastPath;
 };
 
 #endif // QJACKTRIP_H

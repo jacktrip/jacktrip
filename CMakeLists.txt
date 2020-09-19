@@ -48,6 +48,8 @@ set(qjacktrip_SRC
   src/Limiter.cpp
   src/Reverb.cpp
   src/Patcher.cpp
+  src/SslServer.cpp
+  src/Auth.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

@@ -40,6 +40,7 @@
 #include "RingBufferWavetable.h"
 #include "jacktrip_globals.h"
 #include "JackAudioInterface.h"
+#include "Auth.h"
 #ifdef __RT_AUDIO__
 #include "RtAudioInterface.h"
 #endif
@@ -53,6 +54,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QDateTime>
+#include <QtEndian>
 
 using std::cout; using std::endl;
 
@@ -109,6 +111,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mSenderBindPort(sender_bind_port),
     mReceiverPeerPort(receiver_peer_port),
     mTcpServerPort(tcp_peer_port),
+    mUseAuth(false),
     mRedundancy(redundancy),
     mJackClientName(gJackDefaultClientName),
     mConnectionMode(JackTrip::NORMAL),
@@ -533,11 +536,21 @@ void JackTrip::receivedConnectionTCP()
     if (gVerboseFlag) cout << "TCP Socket Connected to Server!" << endl;
     emit signalTcpClientConnected();
 
+    // If we're planning to authenticate, signal the server.
+    if (mUseAuth) {
+        char port_buf[sizeof(qint32)];
+        qToLittleEndian<qint32>(Auth::OK, port_buf);
+        mTcpClient.write(port_buf, sizeof(port_buf));
+        if (gVerboseFlag) cout << "Auth request sent to Server" << endl;
+        return;
+    }
     // Send Client Port Number to Server
     // ---------------------------------
-    char port_buf[sizeof(mReceiverBindPort) + gMaxRemoteNameLength];
-    std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
-    std::memset(port_buf + sizeof(mReceiverBindPort), 0, gMaxRemoteNameLength);
+    char port_buf[sizeof(qint32) + gMaxRemoteNameLength];
+    qToLittleEndian<qint32>(mReceiverBindPort, port_buf);
+    //std::memcpy(port_buf, &mReceiverBindPort, sizeof(mReceiverBindPort));
+    
+    std::memset(port_buf + sizeof(qint32), 0, gMaxRemoteNameLength);
     if (!mRemoteClientName.isEmpty()) {
         //If our remote client name is set, send it too.
         QByteArray name = mRemoteClientName.toUtf8();
@@ -553,7 +566,7 @@ void JackTrip::receivedConnectionTCP()
             }
         }
         name.truncate(length);
-        std::memcpy(port_buf + sizeof(mReceiverBindPort), name.data(), length + 1);
+        std::memcpy(port_buf + sizeof(qint32), name.data(), length + 1);
     }
 
     mTcpClient.write(port_buf, sizeof(port_buf));
@@ -566,7 +579,42 @@ void JackTrip::receivedConnectionTCP()
 
 void JackTrip::receivedDataTCP()
 {
-    if (mTcpClient.bytesAvailable() < (int)sizeof(uint16_t)) {
+    if (mUseAuth && !mTcpClient.isEncrypted()) {
+        // If we're using authentication and haven't established a secure connection yet
+        // check that our server supports it.
+        qint32 authResponse;
+        int size = sizeof(authResponse);
+        char auth_buf[size];
+        mTcpClient.read(auth_buf, size);
+        authResponse = qFromLittleEndian<qint32>(auth_buf);
+        if (authResponse == Auth::OK) {
+            mTcpClient.startClientEncryption();
+        } else {
+            if (authResponse == Auth::NOTREQUIRED) {
+                stop("The server does not require authentication");
+            } else {
+                stop("The server does not support authentication");
+                //Send a header sized packet to the server so we don't lock up the main/UdpHubListener thread on the
+                //server. (Prevents a denial of service.) TODO: This should ultimately be fixed server side,
+                //but work around it here so we don't interfere with older deployments.
+                if (mUdpSockTemp.bind(QHostAddress::Any, mReceiverBindPort, QUdpSocket::DefaultForPlatform)) {
+                    QThread::msleep(100);
+                    DefaultHeader temp(nullptr);
+                    size = temp.getHeaderSizeInBytes();
+                    int8_t* header = new int8_t[size];
+                    //The header doesn't need to make sense, it just has to be non-zero so we don't cause any
+                    //divide by zero errors on the other end.
+                    memset(header, 1, size);
+                    mUdpSockTemp.writeDatagram((const char *)header, size, mTcpClient.peerAddress(), authResponse);
+                    mUdpSockTemp.close();
+                }
+            }
+            mTcpClient.close();
+        }
+        return;
+    }
+    
+    if (mTcpClient.bytesAvailable() < (int)sizeof(qint32)) {
         return;
     }
     
@@ -579,16 +627,36 @@ void JackTrip::receivedDataTCP()
     // --------------------------------
     uint32_t udp_port;
     int size = sizeof(udp_port);
-    char port_buf[sizeof(mReceiverBindPort)];
-    //char port_buf[size];
+    char port_buf[size];
     mTcpClient.read(port_buf, size);
-    std::memcpy(&udp_port, port_buf, size);
+    udp_port = qFromLittleEndian<qint32>(port_buf);
+    //std::memcpy(&udp_port, port_buf, size);
     //cout << "Received UDP Port Number: " << udp_port << endl;
 
     // Close the TCP Socket
     // --------------------
     mTcpClient.close(); // Close the socket
     //cout << "TCP Socket Closed!" << endl;
+    
+    // If we sent authentication data, check if our authentication attempt was succesfull
+    if (mUseAuth && udp_port > 65535) {
+        if (udp_port == Auth::WRONGCREDS) {
+            stop("Incorrect username or password.");
+        } else if (udp_port == Auth::WRONGTIME) {
+            stop("You are not authorized to access the server at this time.");
+        } else {
+            stop("Unknown authentication error.");
+        }
+        return;
+    } else if (udp_port > 65535) {
+        if (udp_port == Auth::REQUIRED) {
+            stop("The server you are attempting to connect to requires authentication.");
+        } else {
+            stop("Unknown authentication error.");
+        }
+        return;
+    }
+    
     if (gVerboseFlag) cout << "Connection Succesfull!" << endl;
 
     // Set with the received UDP port
@@ -602,6 +670,51 @@ void JackTrip::receivedDataTCP()
     cout << gPrintSeparator << endl;
     completeConnection();
 }
+
+void JackTrip::connectionSecured()
+{
+    //Now that the connection is encrypted, send out port, and credentials.
+    //(Remember to include an additional 2 bytes for the username and password terminators.)
+    QByteArray username = mUsername.toUtf8();
+    QByteArray password = mPassword.toUtf8();
+    int size = (sizeof(qint32) * 3) + gMaxRemoteNameLength + username.length() + password.length() + 2;
+    char *buf = new char[size];
+    int location = sizeof(qint32);
+    std::memset(buf, 0, size);
+    qToLittleEndian<qint32>(mReceiverBindPort, buf);
+    
+    if (!mRemoteClientName.isEmpty()) {
+        //If our remote client name is set, send it too.
+        QByteArray name = mRemoteClientName.toUtf8();
+        // Find a clean place to truncate if we're over length.
+        // (Make sure we're not in the middle of a multi-byte character.)
+        int length = name.length();
+        //Need to take the final null terminator into account here.
+        if (length > gMaxRemoteNameLength - 1) {
+            length = gMaxRemoteNameLength - 1;
+            while ((length > 0) && ((name.at(length) & 0xc0) == 0x80)) {
+                //We're in the middle of a multi-byte character. Work back.
+                length--;
+            }
+        }
+        name.truncate(length);
+        std::memcpy(buf + location, name.data(), length + 1);
+    }
+    location += gMaxRemoteNameLength;
+    
+    qToLittleEndian<qint32>(username.length(), buf + location);
+    location += sizeof(qint32);
+    qToLittleEndian<qint32>(password.length(), buf + location);
+    location += sizeof(qint32);
+    
+    std::memcpy(buf + location, username.data(), username.length() + 1);
+    location += username.length() + 1;
+    std::memcpy(buf + location, password.data(), password.length() + 1);
+    
+    mTcpClient.write(buf, size);
+    if (gVerboseFlag) cout << "Port " << mReceiverBindPort << " sent to Server with credentials" << endl;
+}
+
 
 void JackTrip::receivedDataUDP()
 {
@@ -809,6 +922,18 @@ int JackTrip::clientPingToServerStart()
     if ( mPeerAddress.isEmpty() ) {
         throw std::invalid_argument("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
         return -1;
+    }
+    
+    // If we're using authentication, check that SSL support is available.
+    if (mUseAuth) {
+        if (!QSslSocket::supportsSsl()) {
+            QString error_message = "SSL not supported. Make sure you have the appropriate SSL libraries\ninstalled to enable authentication.";
+            std::cerr << "ERROR: " << error_message.toStdString() << endl;
+            stop(error_message);
+            return -1;
+        } else {
+            QObject::connect(&mTcpClient, &QSslSocket::encrypted, this, &JackTrip::connectionSecured, Qt::QueuedConnection);
+        }
     }
 
     // Create Socket Objects

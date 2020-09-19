@@ -44,7 +44,7 @@
 #include <QObject>
 #include <QString>
 #include <QUdpSocket>
-#include <QTcpSocket>
+#include <QSslSocket>
 #include <QTimer>
 #include <QSharedPointer>
 
@@ -244,6 +244,12 @@ public:
     {
         mTcpServerPort = port;
     }
+    void setUseAuth(bool auth)
+    { mUseAuth = auth; }
+    void setUsername(QString username)
+    { mUsername = username; }
+    void setPassword(QString password)
+    { mPassword = password; }
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString clientName)
     { mJackClientName = clientName; }
@@ -460,6 +466,7 @@ public slots:
 private slots:
     void receivedConnectionTCP();
     void receivedDataTCP();
+    void connectionSecured();
     void receivedDataUDP();
     void udpTimerTick();
     void tcpTimerTick();
@@ -542,6 +549,10 @@ private:
     int mSenderBindPort; ///< Outgoing (sending) port for local machine
     int mReceiverPeerPort; ///< Outgoing (sending) port for peer machine
     int mTcpServerPort;
+    
+    bool mUseAuth;
+    QString mUsername;
+    QString mPassword;
 
     unsigned int mRedundancy; ///< Redundancy factor in network data
     QString mJackClientName; ///< JackAudio Client Name
@@ -557,7 +568,7 @@ private:
     int mSleepTime;
     int mElapsedTime;
     int mEndTime;
-    QTcpSocket mTcpClient;
+    QSslSocket mTcpClient;
     QUdpSocket mUdpSockTemp;
 
     volatile bool mReceivedConnection; ///< Bool of received connection from peer

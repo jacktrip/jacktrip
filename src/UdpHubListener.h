@@ -46,14 +46,15 @@
 #include <QThreadPool>
 #include <QUdpSocket>
 #include <QHostAddress>
-#include <QTcpSocket>
-#include <QTcpServer>
+#include "SslServer.h"
 #include <QMutex>
 
 #include "JackTrip.h"
 #include "jacktrip_types.h"
 #include "jacktrip_globals.h"
 #include "Patcher.h"
+#include "Auth.h"
+
 class JackTripWorker; // forward declaration
 class Settings;
 
@@ -117,8 +118,9 @@ private:
    */
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
-    int readClientUdpPort(QTcpSocket* clientConnection, QString &clientName);
-    int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
+    int readClientUdpPort(QSslSocket* clientConnection, QString &clientName);
+    int checkAuthAndReadPort(QSslSocket* clientConnection, QString &clientName);
+    int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
 
 
     /** \brief Send the JackTripWorker to the thread pool. This will run
@@ -147,12 +149,17 @@ private:
     QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorker s
     QThreadPool mThreadPool; ///< The Thread Pool
 
-    QTcpServer mTcpServer;
+    SslServer mTcpServer;
     int mServerPort; //< Server known port number
     int mServerUdpPort; //< Server udp base port number
     int mBasePort;
     addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool addresses
     //QHash<QString, uint16_t> mActiveAddressPortPair;
+    
+    bool mRequireAuth;
+    QString mCertFile;
+    QString mKeyFile;
+    Auth mAuth;
 
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
@@ -180,6 +187,10 @@ public :
 #endif // endwhere
     void connectPatch(bool spawn, const QString &clientName);
 public :
+    void setRequireAuth(bool requireAuth) { mRequireAuth = requireAuth; }
+    void setCertFile(QString certFile) { mCertFile = certFile; }
+    void setKeyFile(QString keyFile) { mKeyFile = keyFile; }
+    
     unsigned int mHubPatch;
     void setHubPatch(unsigned int p)
     {
