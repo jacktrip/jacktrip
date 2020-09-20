@@ -932,6 +932,8 @@ int JackTrip::clientPingToServerStart()
             stop(error_message);
             return -1;
         } else {
+            // At the moment, don't verify the certificate so we can use self signed ones.
+            mTcpClient.setPeerVerifyMode(QSslSocket::VerifyNone);
             QObject::connect(&mTcpClient, &QSslSocket::encrypted, this, &JackTrip::connectionSecured, Qt::QueuedConnection);
         }
     }
