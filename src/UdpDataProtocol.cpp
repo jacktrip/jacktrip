@@ -610,7 +610,7 @@ void UdpDataProtocol::run()
         break; }
 
     case SENDER : {
-        while ( !mStopped && !JackTrip::sSigInt )
+        while ( !mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped )
         {
             // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
             /*

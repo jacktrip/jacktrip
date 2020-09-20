@@ -268,7 +268,9 @@ int JackAudioInterface::stopProcess() const
 void JackAudioInterface::jackShutdown (void*)
 {
     //std::cout << "The Jack Server was shut down!" << std::endl;
-    throw std::runtime_error("The Jack Server was shut down!");
+    JackTrip::sJackStopped = true;
+    std::cout << "The Jack Server was shut down!" << std::endl;
+    //throw std::runtime_error("The Jack Server was shut down!");
     //std::cout << "Exiting program..." << std::endl;
     //std::exit(1);
 }
