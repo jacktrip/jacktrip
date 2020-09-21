@@ -490,6 +490,7 @@ void UdpDataProtocol::run()
     if (result == KERN_SUCCESS) {
         if (gVerboseFlag) std::cout << "Using fixed thread priority." << std::endl;
     }
+#endif
     // Anton Runov: uncommenting setRealtimeProcessPriority below, but using much lower priority value
     // on Linux. Other platforms might require more changes.
 #if defined (__LINUX__)
