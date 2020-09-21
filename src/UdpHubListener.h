@@ -176,6 +176,12 @@ private:
 
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
+
+    int mBufferStrategy;
+    int mBroadcastQueue;
+    double mSimulatedLossRate;
+    double mSimulatedJitterRate;
+    double mSimulatedDelayRel;
     
 #ifdef WAIR // wair
     bool mWAIR;
@@ -210,6 +216,16 @@ public :
     
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
+
+    void setBufferStrategy(int BufferStrategy) { mBufferStrategy = BufferStrategy; }
+    void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
+    {
+        mSimulatedLossRate = loss;
+        mSimulatedJitterRate = jitter;
+        mSimulatedDelayRel = delay_rel;
+    }
+    void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
+
 };
 
 

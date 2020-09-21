@@ -168,6 +168,7 @@ void JackAudioInterface::setupClient()
     // Initialize Buffer array to read and write audio
     mInBuffer.resize(mNumInChans);
     mOutBuffer.resize(mNumOutChans);
+    mBroadcastBuffer.resize(mNumOutChans);
 }
 
 
@@ -194,6 +195,18 @@ void JackAudioInterface::createChannels()
         mOutPorts[i] = jack_port_register (mClient, outName.toLatin1(),
                                            JACK_DEFAULT_AUDIO_TYPE,
                                            JackPortIsOutput, 0);
+    }
+    //Create Broadcast Ports
+    if (mBroadcast) {
+        mBroadcastPorts.resize(mNumOutChans);
+        for (int i = 0; i < mNumInChans; i++)
+        {
+            QString outName;
+            QTextStream (&outName) << "broadcast_" << i+1;
+            mBroadcastPorts[i] = jack_port_register (mClient, outName.toLatin1(),
+                                               JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsOutput, 0);
+        }
     }
 }
 
@@ -306,6 +319,14 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
     //-------------------------------------------------------------------
 
     AudioInterface::callback(mInBuffer, mOutBuffer, nframes);
+
+    if (mBroadcast) {
+        for (int i = 0; i < mNumOutChans; i++) {
+            // Broadcast Ports are WRITABLE
+            mBroadcastBuffer[i] = (sample_t*) jack_port_get_buffer(mBroadcastPorts[i], nframes);
+        }
+        AudioInterface::broadcastCallback(mBroadcastBuffer, nframes);
+    }
     return 0;
 }
 

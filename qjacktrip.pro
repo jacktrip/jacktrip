@@ -135,6 +135,7 @@ HEADERS += src/DataProtocol.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
            src/JackTripWorker.h \
+           src/JitterBuffer.cpp \
            src/LoopBack.h \
            src/PacketHeader.h \
            src/ProcessPlugin.h \
@@ -166,6 +167,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Reverb.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
+           src/JitterBuffer.cpp \
            src/LoopBack.cpp \
            src/PacketHeader.cpp \
            src/RingBuffer.cpp \

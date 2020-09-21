@@ -134,12 +134,12 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
     // Check Buffer Size
     if ( peer_header->BufferSize != mHeader.BufferSize )
     {
-        std::cerr << "ERROR: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
-        std::cerr << "       Local Buffer Size is : " << mHeader.BufferSize << endl;
-        std::cerr << "Make sure both machines use same buffer size" << endl;
-        std::cerr << gPrintSeparator << endl;
-        error = true;
-        report.append(QString("\n\nPeer Buffer Size is %1\nLocal Buffer Size is %2\nMake sure both machines use the same Buffer Size").arg(peer_header->BufferSize).arg(mHeader.BufferSize));
+        std::cerr << "WARNING: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
+        std::cerr << "         Local Buffer Size is : " << mHeader.BufferSize << endl;
+        //std::cerr << "Make sure both machines use same buffer size" << endl;
+        //std::cerr << gPrintSeparator << endl;
+        //error = true;
+        //report.append(QString("\n\nPeer Buffer Size is %1\nLocal Buffer Size is %2\nMake sure both machines use the same Buffer Size").arg(peer_header->BufferSize).arg(mHeader.BufferSize));
     }
 
     // Check Sampling Rate

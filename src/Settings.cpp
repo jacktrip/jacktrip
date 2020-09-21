@@ -58,6 +58,12 @@ using std::cout; using std::endl;
 
 int gVerboseFlag = 0;
 
+enum JTLongOptIDS {
+  OPT_BUFSTRATEGY = 1001,
+  OPT_SIMLOSS,
+  OPT_SIMJITTER,
+  OPT_BROADCAST,
+};
 
 //*******************************************************************************
 Settings::Settings() :
@@ -70,6 +76,7 @@ Settings::Settings() :
     mServerUdpPortNum(0),
     mUnderrunMode(JackTrip::WAVETABLE),
     mStopOnTimeout(false),
+    mBufferStrategy(1),
     mLoopBack(false),
     #ifdef WAIR // WAIR
     mNumNetRevChans(0),
@@ -86,7 +93,11 @@ Settings::Settings() :
     mChanfeDefaultBS(false),
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
-    mIOStatTimeout(0)
+    mIOStatTimeout(0),
+    mSimulatedLossRate(0.0),
+    mSimulatedJitterRate(0.0),
+    mSimulatedDelayRel(0.0),
+    mBroadcastQueue(0)
 {}
 
 //*******************************************************************************
@@ -95,6 +106,8 @@ Settings::~Settings() = default;
 //*******************************************************************************
 void Settings::parseInput(int argc, char** argv)
 {
+    // Always use decimal point for floating point numbers
+    setlocale( LC_NUMERIC, "C" );
     // If no command arguments are given, print instructions
     if(argc == 1) {
         printUsage();
@@ -145,6 +158,10 @@ void Settings::parseInput(int argc, char** argv)
         { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
         { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
         { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
+        { "bufstrategy", required_argument, NULL, OPT_BUFSTRATEGY }, // Set bufstrategy
+        { "simloss", required_argument, NULL, OPT_SIMLOSS },
+        { "simjitter", required_argument, NULL, OPT_SIMJITTER },
+        { "broadcast", required_argument, NULL, OPT_BROADCAST },
         { "help", no_argument, NULL, 'h' }, // Print Help
         { NULL, 0, NULL, 0 }
     };
@@ -237,7 +254,13 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'q':
             //-------------------------------------------------------
-            if ( atoi(optarg) <= 0 ) {
+            if (0 == strncmp(optarg, "auto", 4)) {
+              mBufferQueueLength = -atoi(optarg+4);
+              if (0 == mBufferQueueLength) {
+                mBufferQueueLength = -500;
+              }
+            }
+            else if ( atoi(optarg) <= 0 ) {
                 std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 printUsage();
                 std::exit(1); }
@@ -359,6 +382,30 @@ void Settings::parseInput(int argc, char** argv)
                 std::exit(1);
             }
             break;
+        case OPT_BUFSTRATEGY: // Buf strategy
+            mBufferStrategy = atoi(optarg);
+            if (-1 > mBufferStrategy || 2 < mBufferStrategy) {
+                std::cerr << "Unsupported buffer strategy " << optarg << endl;
+                printUsage();
+                std::exit(1);
+            }
+            break;
+        case OPT_SIMLOSS: // Simulate packet loss
+            mSimulatedLossRate = atof(optarg);
+            break;
+        case OPT_SIMJITTER: // Simulate jitter
+            char* endp;
+            mSimulatedJitterRate = strtod(optarg, &endp);
+            if (0 == *endp) {
+                mSimulatedDelayRel = 1.0;
+            }
+            else {
+                mSimulatedDelayRel = atof(endp+1);
+            }
+            break;
+        case OPT_BROADCAST: // Broadcast output
+            mBroadcastQueue = atoi(optarg);
+            break;
         case 'h':
             //-------------------------------------------------------
             printUsage();
@@ -464,6 +511,8 @@ void Settings::printUsage()
     cout << " -K, --remotename                         Change default remote client name when connecting to a hub server (the default is derived from this computer's external facing IP address)" << endl;
     cout << " -L, --localaddress                       Change default local host IP address (default: 127.0.0.1)" << endl;
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
+    cout << " --bufstrategy     # (0, 1, 2)            Use alternative jitter buffer" << endl;
+    cout << " --broadcast <broadcast_queue>            Turn on broadcast output ports with extra queue (requires new jitter buffer)" << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0 (freeverb) or 1.0+ to 2.0 (zitarev)" << endl;
@@ -479,6 +528,10 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
+    cout << endl;
+    cout << "ARGUMENTS TO SIMULATE NETWORK ISSUES:" << endl;
+    cout << " --simloss <rate>                         Simulate packet loss" << endl;
+    cout << " --simjitter <rate>,<d>                   Simulate jitter, d is max delay in packets" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -507,6 +560,11 @@ UdpHubListener *Settings::getConfiguredHubServer()
         udpHub->setUnderRunMode(mUnderrunMode);
     }
     udpHub->setBufferQueueLength(mBufferQueueLength);
+
+    udpHub->setBufferStrategy(mBufferStrategy);
+    udpHub->setNetIssuesSimulation(mSimulatedLossRate,
+        mSimulatedJitterRate, mSimulatedDelayRel);
+    udpHub->setBroadcast(mBroadcastQueue);
     
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
@@ -605,6 +663,10 @@ JackTrip *Settings::getConfiguredJackTrip()
     if (mChanfeDefaultBS) {
         jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize);
     }
+    jackTrip->setBufferStrategy(mBufferStrategy);
+    jackTrip->setNetIssuesSimulation(mSimulatedLossRate,
+        mSimulatedJitterRate, mSimulatedDelayRel);
+    jackTrip->setBroadcast(mBroadcastQueue);
 
     // Add Plugins
     if (mLoopBack) {
