@@ -120,6 +120,12 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     int mBroadcastQueue;
+    
+    bool mAuth;
+    QString mCertFile;
+    QString mKeyFile;
+    QString mUsername;
+    QString mPassword;
 };
 
 #endif

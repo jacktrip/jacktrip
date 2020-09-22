@@ -174,7 +174,6 @@ void QJackTrip::resizeEvent(QResizeEvent* event)
     int width = m_ui->JitterTab->contentsRect().width() - m_ui->JitterTab->contentsMargins().left() - 
                 m_ui->JitterTab->contentsMargins().right() - m_ui->JitterTab->layout()->contentsMargins().left() -
                 m_ui->JitterTab->layout() ->contentsMargins().right();
-    std::cout << width << " " << m_ui->requireAuthGroupBox->contentsMargins().left() << std::endl;
     
     QRect rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap, m_ui->strategyExplanationLabel->text());
     m_ui->strategyExplanationLabel->setMinimumHeight(rect.height());

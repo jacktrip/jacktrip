@@ -63,6 +63,10 @@ enum JTLongOptIDS {
   OPT_SIMLOSS,
   OPT_SIMJITTER,
   OPT_BROADCAST,
+  OPT_AUTHCERT,
+  OPT_AUTHKEY,
+  OPT_AUTHUSER,
+  OPT_AUTHPASS
 };
 
 //*******************************************************************************
@@ -97,7 +101,8 @@ Settings::Settings() :
     mSimulatedLossRate(0.0),
     mSimulatedJitterRate(0.0),
     mSimulatedDelayRel(0.0),
-    mBroadcastQueue(0)
+    mBroadcastQueue(0),
+    mAuth(false)
 {}
 
 //*******************************************************************************
@@ -162,6 +167,11 @@ void Settings::parseInput(int argc, char** argv)
         { "simloss", required_argument, NULL, OPT_SIMLOSS },
         { "simjitter", required_argument, NULL, OPT_SIMJITTER },
         { "broadcast", required_argument, NULL, OPT_BROADCAST },
+        { "auth", no_argument, NULL, 'A' }, // Enable authentication between hub client and hub server
+        { "certfile", required_argument, NULL, OPT_AUTHCERT }, // Certificate for server authentication
+        { "keyfile", required_argument, NULL, OPT_AUTHKEY }, // Private key for server authentication
+        { "username", required_argument, NULL, OPT_AUTHUSER }, // Username when using authentication as a hub client
+        { "password", required_argument, NULL, OPT_AUTHPASS }, // Password when using authentication as a hub client
         { "help", no_argument, NULL, 'h' }, // Print Help
         { NULL, 0, NULL, 0 }
     };
@@ -171,7 +181,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:A", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -436,6 +446,21 @@ void Settings::parseInput(int argc, char** argv)
             exit(1);
           }
           break; }
+        case 'A': {
+          mAuth = true;
+          break; }
+        case OPT_AUTHCERT:
+          mCertFile = optarg;
+          break;
+        case OPT_AUTHKEY:
+          mKeyFile = optarg;
+          break;
+        case OPT_AUTHUSER:
+          mUsername = optarg;
+          break;
+        case OPT_AUTHPASS:
+          mPassword = optarg;
+          break;
         case ':': {
           printf("\t*** Missing option argument\n");
           break; }
@@ -520,10 +545,10 @@ void Settings::printUsage()
     cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
-    cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
-    cout << " -T, --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
-    cout << " -F, --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
-    cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
+    cout << " -R, --rtaudio                            Use system's default sound system instead of Jack" << endl;
+    cout << " -T, --srate         #                    Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
+    cout << " -F, --bufsize       #                    Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
+    cout << " -d, --deviceid      #                    The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
@@ -533,6 +558,12 @@ void Settings::printUsage()
     cout << " --simloss <rate>                         Simulate packet loss" << endl;
     cout << " --simjitter <rate>,<d>                   Simulate jitter, d is max delay in packets" << endl;
     cout << endl;
+    cout << "ARGUMENTS FOR HUB CLIENT/SERVER AUTHENTICATION:" << endl;
+    cout << " -A, --auth                               Use authentication on the client side, or require it on the server side" << endl;
+    cout << " --certfile                               The certificate file to use on the hub server" << endl;
+    cout << " --keyfile                                The private key file to use on the hub server" << endl;
+    cout << " --username                               The username to use when connecting as a hub client" << endl;
+    cout << " --password                               The password to use when connecting as a hub client" << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
     cout << " -V, --verbose                            Verbose mode, prints debug messages" << endl;
@@ -569,6 +600,13 @@ UdpHubListener *Settings::getConfiguredHubServer()
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
         udpHub->setIOStatStream(mIOStatStream);
+    }
+    
+    if (mAuth) {
+        //(We don't need to check the validity of these files because it's done by the UdpHubListener.)
+        udpHub->setRequireAuth(mAuth);
+        udpHub->setCertFile(mCertFile);
+        udpHub->setKeyFile(mKeyFile);
     }
     return udpHub;
 }
@@ -667,6 +705,13 @@ JackTrip *Settings::getConfiguredJackTrip()
     jackTrip->setNetIssuesSimulation(mSimulatedLossRate,
         mSimulatedJitterRate, mSimulatedDelayRel);
     jackTrip->setBroadcast(mBroadcastQueue);
+    
+    // Set auth details if we're in hub client mode
+    if (mAuth && mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
+        jackTrip->setUseAuth(true);
+        jackTrip->setUsername(mUsername);
+        jackTrip->setPassword(mPassword);
+    }
 
     // Add Plugins
     if (mLoopBack) {

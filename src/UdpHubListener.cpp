@@ -160,6 +160,14 @@ void UdpHubListener::start()
             error_message = "SSL not supported. Make sure you have the appropriate SSL libraries\ninstalled to enable authentication.";
         }
         
+        if (mCertFile.isEmpty()) {
+            error = true;
+            error_message = "No certificate file specified.";
+        } else if (mKeyFile.isEmpty()) {
+            error = true;
+            error_message = "No private key file specified.";
+        }
+        
         // Load our certificate and private key
         if (!error) {
             QFile certFile(mCertFile);

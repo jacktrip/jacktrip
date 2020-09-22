@@ -635,8 +635,10 @@ void JackTrip::receivedDataTCP()
             mTcpClient.startClientEncryption();
         } else {
             if (authResponse == Auth::NOTREQUIRED) {
+                std::cout << "ERROR: The Server does not require authentication." << std::endl;
                 stop("The server does not require authentication");
             } else {
+                std::cout << "ERROR: The Server does not support authentication." << std::endl;
                 stop("The server does not support authentication");
                 //Send a header sized packet to the server so we don't lock up the main/UdpHubListener thread on the
                 //server. (Prevents a denial of service.) TODO: This should ultimately be fixed server side,
@@ -684,20 +686,26 @@ void JackTrip::receivedDataTCP()
     
     // If we sent authentication data, check if our authentication attempt was succesfull
     if (mUseAuth && udp_port > 65535) {
+        QString error_message;
         if (udp_port == Auth::WRONGCREDS) {
-            stop("Incorrect username or password.");
+            error_message = "Incorrect username or password.";
         } else if (udp_port == Auth::WRONGTIME) {
-            stop("You are not authorized to access the server at this time.");
+            error_message = "You are not authorized to access the server at this time.";
         } else {
-            stop("Unknown authentication error.");
+            error_message = "Unknown authentication error.";
         }
+        std::cout << "ERROR: " << error_message.toStdString() << std::endl;
+        stop(error_message);
         return;
     } else if (udp_port > 65535) {
+        QString error_message;
         if (udp_port == Auth::REQUIRED) {
-            stop("The server you are attempting to connect to requires authentication.");
+            error_message = "The server you are attempting to connect to requires authentication.";
         } else {
-            stop("Unknown authentication error.");
+            error_message = "Unknown authentication error.";
         }
+        std::cout << "ERROR: " << error_message.toStdString() << std::endl;
+        stop(error_message);
         return;
     }
     
@@ -972,7 +980,12 @@ int JackTrip::clientPingToServerStart()
     if (mUseAuth) {
         if (!QSslSocket::supportsSsl()) {
             QString error_message = "SSL not supported. Make sure you have the appropriate SSL libraries\ninstalled to enable authentication.";
-            std::cerr << "ERROR: " << error_message.toStdString() << endl;
+            std::cerr << "ERROR: " << error_message.toStdString() << std::endl;
+            stop(error_message);
+            return -1;
+        } else  if (mUsername.isEmpty() || mPassword.isEmpty()) {
+            QString error_message = "You must supply a username and password to authenticate with a hub server.";
+            std::cerr << "ERROR: " << error_message.toStdString() << std::endl;
             stop(error_message);
             return -1;
         } else {
