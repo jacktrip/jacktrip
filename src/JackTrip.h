@@ -57,6 +57,7 @@
 
 #include "PacketHeader.h"
 #include "RingBuffer.h"
+#include "AudioTester.h"
 
 //#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
@@ -295,6 +296,7 @@ public:
     { mAudioInterface = AudioInterface; }
     virtual void setLoopBack(bool b)
     { mLoopBack = b; }
+    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -557,6 +559,8 @@ private:
     QSharedPointer<std::ofstream> mIOStatStream;
     int mIOStatTimeout;
     std::ostream mIOStatLogStream;
+
+    AudioTester* mAudioTesterP;
 };
 
 #endif

@@ -52,6 +52,7 @@
 #include "UdpHubListener.h"
 
 #include "Effects.h"
+#include "AudioTester.h"
 
 /** \brief Class to set usage options and parse settings from input
  */
@@ -115,6 +116,7 @@ private:
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
     Effects mEffects;
+    AudioTester mAudioTester;
 };
 
 #endif

@@ -130,6 +130,7 @@ HEADERS += DataProtocol.h \
            Compressor.h \
            Limiter.h \
            Reverb.h \
+           AudioTester.h \
            jacktrip_globals.h \
            jacktrip_types.h \
            JackTripThread.h \
@@ -160,6 +161,7 @@ SOURCES += DataProtocol.cpp \
            Compressor.cpp \
            Limiter.cpp \
            Reverb.cpp \
+           AudioTester.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
            jacktrip_tests.cpp \
