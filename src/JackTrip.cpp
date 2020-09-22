@@ -133,7 +133,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mIOStatLogStream(std::cout.rdbuf()),
     mSimulatedLossRate(0.0),
     mSimulatedJitterRate(0.0),
-    mSimulatedDelayRel(0.0)
+    mSimulatedDelayRel(0.0),
     mAudioTesterP(nullptr)
 {
     createHeader(mPacketHeaderType);
