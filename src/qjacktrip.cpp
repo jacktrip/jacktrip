@@ -87,6 +87,23 @@ QJackTrip::QJackTrip(QWidget *parent) :
             m_ui->ioStatsLabel->setEnabled(m_ui->ioStatsCheckBox->isChecked());
             m_ui->ioStatsSpinBox->setEnabled(m_ui->ioStatsCheckBox->isChecked());
         } );
+    connect(m_ui->jitterCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->bufferStrategyLabel->setEnabled(m_ui->jitterCheckBox->isChecked());
+            m_ui->bufferStrategyComboBox->setEnabled(m_ui->jitterCheckBox->isChecked());
+            m_ui->strategyExplanationLabel->setEnabled(m_ui->jitterCheckBox->isChecked());
+            m_ui->bufferLine->setEnabled(m_ui->jitterCheckBox->isChecked());
+            m_ui->autoQueueCheckBox->setEnabled(m_ui->jitterCheckBox->isChecked());
+            m_ui->autoQueueLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+            m_ui->autoQueueSpinBox->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) ;
+            m_ui->packetsLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+            m_ui->autoQueueExplanationLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+        } );
+    connect(m_ui->autoQueueCheckBox, &QCheckBox::stateChanged, this, [=](){
+            m_ui->autoQueueLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+            m_ui->autoQueueSpinBox->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) ;
+            m_ui->packetsLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+            m_ui->autoQueueExplanationLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+        } );
     
     connect(m_ui->inFreeverbCheckBox, &QCheckBox::stateChanged, this, [=](){
             m_ui->inFreeverbLabel->setEnabled(m_ui->inFreeverbCheckBox->isChecked());
@@ -144,6 +161,31 @@ void QJackTrip::closeEvent(QCloseEvent *event)
     //Ignore the close event so that we can override the handling of it.
     event->ignore();
     exit();
+}
+
+void QJackTrip::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event);
+    //We need to fix the layout of our word wrapped labels.
+    //The font should be the same for all of them so we can reuse the one QFontMetrics object
+    QFontMetrics metrics(m_ui->strategyExplanationLabel->font());
+    //This seems like a convoluted way to get what is effectively our layout geometry,
+    //but until we look at the jitter tab, the layout geometry is unset.
+    int width = m_ui->JitterTab->contentsRect().width() - m_ui->JitterTab->contentsMargins().left() - 
+                m_ui->JitterTab->contentsMargins().right() - m_ui->JitterTab->layout()->contentsMargins().left() -
+                m_ui->JitterTab->layout() ->contentsMargins().right();
+    std::cout << width << " " << m_ui->requireAuthGroupBox->contentsMargins().left() << std::endl;
+    
+    QRect rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap, m_ui->strategyExplanationLabel->text());
+    m_ui->strategyExplanationLabel->setMinimumHeight(rect.height());
+    rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap, m_ui->autoQueueExplanationLabel->text());
+    m_ui->autoQueueExplanationLabel->setMinimumHeight(rect.height());
+    
+    width = m_ui->requireAuthGroupBox->contentsRect().width() - m_ui->requireAuthGroupBox->contentsMargins().left() - 
+            m_ui->requireAuthGroupBox->contentsMargins().right() - m_ui->requireAuthGroupBox->layout()->contentsMargins().left() -
+            m_ui->requireAuthGroupBox->contentsMargins().right();
+    rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap, m_ui->authDisclaimerLabel->text());
+    m_ui->authDisclaimerLabel->setMinimumHeight(rect.height());
 }
 
 void QJackTrip::processFinished()
@@ -229,7 +271,7 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->autoPatchLabel->setVisible(true);
         m_ui->requireAuthGroupBox->setVisible(true);
         advancedOptionsForHubServer(true);
-        m_ui->optionsTabWidget->removeTab(2);
+        m_ui->optionsTabWidget->removeTab(3);
         authFilesChanged();
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
@@ -239,7 +281,7 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->channelLabel->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
         advancedOptionsForHubServer(false);
-        if (m_ui->optionsTabWidget->count() < 3) {
+        if (m_ui->optionsTabWidget->count() < 4) {
             m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
         }
     }
@@ -397,7 +439,18 @@ void QJackTrip::start()
                 // Set buffers to zero when underrun
                 m_udpHub->setUnderRunMode(JackTrip::ZEROS);
             }
-            m_udpHub->setBufferQueueLength(m_ui->queueLengthSpinBox->value());
+            
+            if (!m_ui->jitterCheckBox->isChecked()) {
+                m_udpHub->setBufferStrategy(-1);
+                m_udpHub->setBufferQueueLength(m_ui->queueLengthSpinBox->value());
+            } else {
+                m_udpHub->setBufferStrategy(m_ui->bufferStrategyComboBox->currentIndex() + 1);
+                if (m_ui->autoQueueCheckBox->isChecked()) {
+                    m_udpHub->setBufferQueueLength(-(m_ui->autoQueueSpinBox->value()));
+                } else {
+                    m_udpHub->setBufferQueueLength(m_ui->queueLengthSpinBox->value());
+                }
+            }
             
             // Enable authentication if needed
             if (m_ui->requireAuthCheckBox->isChecked()) {
@@ -455,6 +508,15 @@ void QJackTrip::start()
             
             if (m_ui->timeoutCheckBox->isChecked()) {
                 m_jackTrip->setStopOnTimeout(true);
+            }
+            
+            if (m_ui->jitterCheckBox->isChecked()) {
+                m_jackTrip->setBufferStrategy(m_ui->bufferStrategyComboBox->currentIndex() + 1);
+                if (m_ui->autoQueueCheckBox->isChecked()) {
+                    m_jackTrip->setBufferQueueLength(-(m_ui->autoQueueSpinBox->value()));
+                }
+            } else {
+                m_jackTrip->setBufferStrategy(-1);
             }
             
             // Set peer address in client mode
@@ -632,6 +694,13 @@ void QJackTrip::loadSettings()
     m_ui->ioStatsSpinBox->setValue(settings.value("ReportingInterval", 1).toInt());
     settings.endGroup();
     
+    settings.beginGroup("JitterBuffer");
+    m_ui->jitterCheckBox->setChecked(settings.value("Enabled", false).toBool());
+    m_ui->bufferStrategyComboBox->setCurrentIndex(settings.value("Strategy", 1).toInt() - 1);
+    m_ui->autoQueueCheckBox->setChecked(settings.value("AutoQueue", false).toBool());
+    m_ui->autoQueueSpinBox->setValue(settings.value("TuningParameter", 500).toInt());
+    settings.endGroup();
+    
     settings.beginGroup("InPlugins");
     m_ui->inFreeverbCheckBox->setChecked(settings.value("Freeverb", false).toBool());
     m_ui->inFreeverbWetnessSlider->setValue(settings.value("FreeverbWetness", 0).toInt());
@@ -697,6 +766,13 @@ void QJackTrip::saveSettings()
     settings.beginGroup("IOStats");
     settings.setValue("Display", m_ui->ioStatsCheckBox->isChecked());
     settings.setValue("ReportingInterval", m_ui->ioStatsSpinBox->value());
+    settings.endGroup();
+    
+    settings.beginGroup("JitterBuffer");
+    settings.setValue("Enabled", m_ui->jitterCheckBox->isChecked());
+    settings.setValue("Strategy", m_ui->bufferStrategyComboBox->currentIndex() + 1);
+    settings.setValue("AutoQueue", m_ui->autoQueueCheckBox->isChecked());
+    settings.setValue("TuningParameter", m_ui->autoQueueSpinBox->value());
     settings.endGroup();
     
     settings.beginGroup("InPlugins");
@@ -810,7 +886,21 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
     }
     
-    if (m_ui->queueLengthSpinBox->value() != gDefaultQueueLength) {
+    int bufStrategy = -1;
+    if (m_ui->jitterCheckBox->isChecked()) {
+        bufStrategy = m_ui->bufferStrategyComboBox->currentIndex() + 1;
+    }
+    if (bufStrategy != 1) {
+        commandLine.append(QString(" --bufstrategy %1").arg(bufStrategy));
+    }
+    
+    if (m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) {
+        if (m_ui->autoQueueSpinBox->value() == 500) {
+            commandLine.append(QString(" -q auto"));
+        } else {
+            commandLine.append(QString(" -q auto%1").arg(m_ui->autoQueueSpinBox->value()));
+        }
+    } else if (m_ui->queueLengthSpinBox->value() != gDefaultQueueLength) {
         commandLine.append(QString(" -q %1").arg(m_ui->queueLengthSpinBox->value()));
     }
     
@@ -844,9 +934,6 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
         if (!m_ui->connectAudioCheckBox->isChecked()) {
             commandLine.append(" -D");
-        }
-        if (m_ui->ioStatsCheckBox->isChecked()) {
-            commandLine.append(QString(" -I %1").arg(m_ui->ioStatsSpinBox->value()));
         }
         
         if (m_ui->inLimiterCheckBox->isChecked() || m_ui->outLimiterCheckBox->isChecked()) {
@@ -897,6 +984,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
             }
             commandLine.append("\"");
         }
+    }
+    if (m_ui->ioStatsCheckBox->isChecked()) {
+        commandLine.append(QString(" -I %1").arg(m_ui->ioStatsSpinBox->value()));
     }
     
     return commandLine;

@@ -52,6 +52,7 @@ public:
     ~QJackTrip() override;
     
     void closeEvent(QCloseEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 signals:
     void signalExit();

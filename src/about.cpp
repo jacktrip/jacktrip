@@ -27,6 +27,8 @@
 #include "ui_about.h"
 #include "jacktrip_globals.h"
 
+const QString About::sBuildID = "2020092100";
+
 About::About(QWidget *parent) :
     QDialog(parent),
     m_ui(new Ui::About)
@@ -35,9 +37,20 @@ About::About(QWidget *parent) :
     connect(m_ui->closeButton, &QPushButton::released, this, [=](){ this->done(0); });
     
     m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%VERSION%", gVersion));
+    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%BUILD%", sBuildID));
 #ifdef __MAC_OSX__
     m_ui->aboutImage->setPixmap(QPixmap(":/qjacktrip/about@2x.png"));
 #endif
+    
+    aboutText.setHtml(m_ui->aboutLabel->text());
+    aboutText.setDefaultFont(m_ui->aboutLabel->font());
+}
+
+void About::resizeEvent(QResizeEvent *event)
+{
+    QDialog::resizeEvent(event);
+    aboutText.setTextWidth(m_ui->textLayout->geometry().width());
+    m_ui->aboutLabel->setMinimumHeight(aboutText.size().height());
 }
 
 About::~About() = default;

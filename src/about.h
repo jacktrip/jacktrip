@@ -28,6 +28,7 @@
 
 #include <QDialog>
 #include <QScopedPointer>
+#include <QTextDocument>
 
 namespace Ui {
 class About;
@@ -41,8 +42,13 @@ public:
     explicit About(QWidget *parent = nullptr);
     ~About() override;
     
+    void resizeEvent(QResizeEvent *event) override;
+    
+    static const QString sBuildID;
+    
 private:
     QScopedPointer<Ui::About> m_ui;
+    QTextDocument aboutText;
 };
 
 #endif // ABOUT_H
