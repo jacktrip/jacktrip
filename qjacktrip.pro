@@ -132,6 +132,7 @@ HEADERS += src/DataProtocol.h \
            src/Compressor.h \
            src/Limiter.h \
            src/Reverb.h \
+           src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
            src/JackTripWorker.h \
@@ -165,6 +166,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
            src/Reverb.cpp \
+           src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
            src/JitterBuffer.cpp \

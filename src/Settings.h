@@ -52,6 +52,7 @@
 #include "UdpHubListener.h"
 
 #include "Effects.h"
+#include "AudioTester.h"
 
 /** \brief Class to set usage options and parse settings from input
  */
@@ -126,6 +127,8 @@ private:
     QString mKeyFile;
     QString mUsername;
     QString mPassword;
+    
+    AudioTester mAudioTester;
 };
 
 #endif
