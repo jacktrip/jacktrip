@@ -47,6 +47,7 @@ set(qjacktrip_SRC
   src/Compressor.cpp
   src/Limiter.cpp
   src/Reverb.cpp
+  src/AudioTester.cpp
   src/Patcher.cpp
   src/SslServer.cpp
   src/Auth.cpp
