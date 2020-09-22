@@ -66,6 +66,7 @@ void sigint_handler(int sig)
 #endif*/
 
 bool JackTrip::sSigInt = false;
+bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode,
@@ -127,6 +128,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mAudioTesterP(nullptr)
 {
     createHeader(mPacketHeaderType);
+    sJackStopped = false;
 }
 
 
@@ -146,7 +148,7 @@ JackTrip::~JackTrip()
 //*******************************************************************************
 void JackTrip::setupAudio(
         #ifdef WAIRTOHUB // WAIR
-        int ID
+        __attribute__((unused)) int ID
         #endif // endwhere
         )
 {
@@ -662,7 +664,7 @@ void JackTrip::receivedDataUDP()
 
 void JackTrip::udpTimerTick()
 {
-    if (mStopped || sSigInt) {
+    if (mStopped || sSigInt || sJackStopped) {
         //Stop everything.
         mUdpSockTemp.close();
         mTimeoutTimer.stop();
@@ -681,7 +683,7 @@ void JackTrip::udpTimerTick()
 
 void JackTrip::tcpTimerTick()
 {
-    if (mStopped || sSigInt) {
+    if (mStopped || sSigInt || sJackStopped) {
         //Stop everything.
         mTcpClient.close();
         mTimeoutTimer.stop();
@@ -720,12 +722,14 @@ void JackTrip::stop(QString errorMessage)
     // Stop the audio processes
     //mAudioInterface->stopProcess();
     closeAudio();
-
+    
     cout << "JackTrip Processes STOPPED!" << endl;
     cout << gPrintSeparator << endl;
 
     // Emit the jack stopped signal
-    if (errorMessage.isEmpty()) {
+    if (sJackStopped) {
+        emit signalError("The Jack Server was shut down!");
+    } else if (errorMessage.isEmpty()) {
         emit signalProcessesStopped();
     } else {
         emit signalError(errorMessage);

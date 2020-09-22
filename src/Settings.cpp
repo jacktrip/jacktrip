@@ -729,20 +729,20 @@ JackTrip *Settings::getConfiguredJackTrip()
     jackTrip->setAudioTesterP(&mAudioTester);
 
     if (not mAudioTester.getEnabled()) { // No effects plugins allowed while testing:
-    // Allocate audio effects in client, if any:
-    mEffects.allocateEffects(mNumChans);
+      // Allocate audio effects in client, if any:
+      mEffects.allocateEffects(mNumChans);
 
-    // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+      // Outgoing/Incoming Compressor and/or Reverb:
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
 
-    // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+      // Limiters go last in the plugin sequence:
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
     }
 
 #ifdef WAIR // WAIR

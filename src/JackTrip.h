@@ -154,6 +154,7 @@ public:
     static void sigIntHandler(__attribute__((unused)) int unused)
     { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
     static bool sSigInt;
+    static bool sJackStopped;
 
     /// \brief Starting point for the thread
     /*virtual void run() {
