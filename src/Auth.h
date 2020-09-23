@@ -39,6 +39,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QFileSystemWatcher>
 
 class Auth : public QObject
 {
@@ -57,8 +58,12 @@ public:
     ~Auth();
     
     AuthResponseT checkCredentials(QString username, QString password);
+
+private slots:
+    void reloadAuthFile();
     
 private:
+    void loadAuthFile(QString filename);
     bool checkTime(QString username);
     
     char char64(int value);
@@ -68,6 +73,9 @@ private:
     QStringList m_days;
     QHash<QString, QString> m_passwordTable;
     QHash<QString, QString> m_timesTable;
+    
+    QString m_authFileName;
+    QFileSystemWatcher m_authFileWatcher;
 };
 
 #endif // __AUTH_H__
