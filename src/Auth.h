@@ -59,11 +59,15 @@ public:
     AuthResponseT checkCredentials(QString username, QString password);
     
 private:
+    bool checkTime(QString username);
+    
     char char64(int value);
     QByteArray charGroup(unsigned char byte3, unsigned char byte2, unsigned char byte1, unsigned int n);
     QByteArray generateSha512Hash(QString passwordString, QString saltString);
     
-    QHash<QString, QString> passwordTable;
+    QStringList m_days;
+    QHash<QString, QString> m_passwordTable;
+    QHash<QString, QString> m_timesTable;
 };
 
 #endif // __AUTH_H__

@@ -39,8 +39,10 @@
 #include <QCryptographicHash>
 #include <QFile>
 #include <QTextStream>
+#include <QDate>
 
-Auth::Auth()
+Auth::Auth() :
+    m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"})
 {
     // Still under development. At the moment, just read the contents of the auth file
     // in the current directory.
@@ -51,7 +53,7 @@ Auth::Auth()
         QTextStream input(&file);
         while (!input.atEnd()) {
             QStringList lineParts = input.readLine().split(":");
-            if (lineParts.count() < 2) {
+            if (lineParts.count() < 3) {
                 // We don't have a correctly formatted line. Ignore it.
                 continue;
             }
@@ -67,7 +69,8 @@ Auth::Auth()
                 }
             }
             
-            passwordTable[lineParts.at(0)] = lineParts.at(1);
+            m_passwordTable[lineParts.at(0)] = lineParts.at(1);
+            m_timesTable[lineParts.at(0)] = lineParts.at(2);
         }
     }
 }
@@ -78,17 +81,67 @@ Auth::AuthResponseT Auth::checkCredentials (QString username, QString password)
         return WRONGCREDS;
     }
     
-    if (passwordTable.contains(username)) {
+    if (m_passwordTable.contains(username)) {
         // Check our generated hash against our stored hash.
-        QString salt = passwordTable[username].section("$", 2, 2);
+        QString salt = m_passwordTable[username].section("$", 2, 2);
         QString hash(generateSha512Hash(password, salt));
         
-        if (hash == passwordTable[username]) {
-            return OK;
+        if (hash == m_passwordTable[username]) {
+            if (checkTime(username)) {
+                return OK;
+            } else {
+                return WRONGTIME;
+            }
         }
     }
     
     return WRONGCREDS;
+}
+
+bool Auth::checkTime(QString username)
+{
+    QStringList times = m_timesTable[username].split(",");
+    // First check for the all or none cases.
+    if (times.count() == 1 && times.at(0).isEmpty()) {
+        return false;
+    } else if (times.contains("*")) {
+        return true;
+    }
+    
+    // Now check for weekly schedule information.
+    QString dayOfWeek = m_days.at(QDate::currentDate().dayOfWeek() - 1);
+    for (int i = 0; i < times.count(); i++) {
+        if (times.at(i).startsWith(dayOfWeek)) {
+            QString accessTime = QString(times.at(i)).remove(0, 2);
+            //Check for the all day option first.
+            if (accessTime == "*") {
+                return true;
+            }
+            
+            //See if we can interpret it as a time range.
+            bool valid = false;
+            QStringList range = accessTime.split("-");
+            if (range.count() == 2) {
+                QTime start = QTime::fromString(range.at(0), "hhmm");
+                QTime end = QTime::fromString(range.at(1), "hhmm");
+                
+                if (start.isValid() && end.isValid()) {
+                    valid = true;
+                    if (QTime::currentTime() >= start && QTime::currentTime() <= end) {
+                        return true;
+                    }
+                }
+            }
+            if (!valid) {
+                std::cout << "WARNING: The access time \"" << times.at(i).toStdString() 
+                          << "\" in the auth file for user \"" << username.toStdString()
+                          << "\" is not valid." << std::endl;
+            }
+        }
+    }
+    
+    // We didn't find a match.
+    return false;
 }
 
 char Auth::char64 (int value)
