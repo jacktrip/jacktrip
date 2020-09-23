@@ -45,6 +45,7 @@
 #include <QStringList>
 #include <QMutexLocker>
 #include <QFile>
+#include <QFileInfo>
 #include <QtEndian>
 
 #include "UdpHubListener.h"
@@ -201,11 +202,20 @@ void UdpHubListener::start()
             }
         }
         
+        if (!error) {
+            QFileInfo credsInfo(mCredsFile);
+            if (!credsInfo.exists() || !credsInfo.isFile()) {
+                error = true;
+                error_message = "Could not find credentials file.";
+            }
+        }
+        
         if (error) {
             std::cerr << "ERROR: " << error_message.toStdString() << endl;
             emit signalError(error_message);
             return;
         }
+        mAuth.reset(new Auth(mCredsFile));
     }
     
     cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
@@ -516,7 +526,7 @@ int UdpHubListener::checkAuthAndReadPort (QSslSocket *clientConnection, QString 
     delete [] password_buf;
     
     // Check if our credentials are valid, and return either an error code or our port.
-    Auth::AuthResponseT response = mAuth.checkCredentials(username, password);
+    Auth::AuthResponseT response = mAuth->checkCredentials(username, password);
     if (response == Auth::OK) {
         return udp_port;
     } else {

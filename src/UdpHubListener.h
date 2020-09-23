@@ -159,7 +159,8 @@ private:
     bool mRequireAuth;
     QString mCertFile;
     QString mKeyFile;
-    Auth mAuth;
+    QString mCredsFile;
+    QScopedPointer<Auth> mAuth;
 
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
@@ -196,6 +197,7 @@ public :
     void setRequireAuth(bool requireAuth) { mRequireAuth = requireAuth; }
     void setCertFile(QString certFile) { mCertFile = certFile; }
     void setKeyFile(QString keyFile) { mKeyFile = keyFile; }
+    void setCredsFile(QString credsFile) { mCredsFile = credsFile; }
     
     unsigned int mHubPatch;
     void setHubPatch(unsigned int p)

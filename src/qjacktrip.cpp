@@ -57,12 +57,14 @@ QJackTrip::QJackTrip(QWidget *parent) :
     connect(m_ui->exitButton, &QPushButton::released, this, &QJackTrip::exit);
     connect(m_ui->certBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
     connect(m_ui->keyBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
+    connect(m_ui->credsBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
     connect(m_ui->commandLineButton, &QPushButton::released, this, &QJackTrip::showCommandLineMessageBox);
     connect(m_ui->useDefaultsButton, &QPushButton::released, this, &QJackTrip::resetOptions);
     connect(m_ui->usernameEdit, &QLineEdit::textChanged, this, &QJackTrip::credentialsChanged);
     connect(m_ui->passwordEdit, &QLineEdit::textChanged, this, &QJackTrip::credentialsChanged);
     connect(m_ui->certEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
     connect(m_ui->keyEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
+    connect(m_ui->credsEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
     connect(m_ui->aboutButton, &QPushButton::released, this, [=](){
             About about(this);
             about.exec();
@@ -81,6 +83,9 @@ QJackTrip::QJackTrip(QWidget *parent) :
             m_ui->keyLabel->setEnabled(m_ui->requireAuthCheckBox->isChecked());
             m_ui->keyEdit->setEnabled(m_ui->requireAuthCheckBox->isChecked());
             m_ui->keyBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->credsLabel->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->credsEdit->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+            m_ui->credsBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
             authFilesChanged();
         } );
     connect(m_ui->ioStatsCheckBox, &QCheckBox::stateChanged, this, [=](){
@@ -303,7 +308,7 @@ void QJackTrip::addressChanged(const QString &address)
     if (m_jackTripRunning) {
         return;
     }
-    if (m_ui->typeComboBox->currentText() == "Client") {
+    if (m_ui->typeComboBox->currentText() == "P2P Client") {
         m_ui->connectButton->setEnabled(!address.isEmpty());
     } else if (m_ui->typeComboBox->currentText() == "Hub Client") {
         credentialsChanged();
@@ -317,7 +322,7 @@ void QJackTrip::authFilesChanged()
     }
     
     if (m_ui->requireAuthCheckBox->isChecked() && 
-        (m_ui->certEdit->text().isEmpty() || m_ui->keyEdit->text().isEmpty())) {
+        (m_ui->certEdit->text().isEmpty() || m_ui->keyEdit->text().isEmpty() || m_ui->credsEdit->text().isEmpty())) {
         m_ui->connectButton->setEnabled(false);
     } else {
         m_ui->connectButton->setEnabled(true);
@@ -346,15 +351,18 @@ void QJackTrip::browseForFile()
     if (sender == m_ui->certBrowse) {
         fileType = "Certificates (*.crt *.pem)";
         fileEdit = m_ui->certEdit;
-    } else {
+    } else if (sender == m_ui->keyBrowse) {
         fileType = "Keys (*.key *.pem)";
         fileEdit = m_ui->keyEdit;
+    } else {
+        fileType = "";
+        fileEdit = m_ui->credsEdit;
     }
     QString fileName = QFileDialog::getOpenFileName(this, "Open File", m_lastPath, fileType);
     if (!fileName.isEmpty()) {
         fileEdit->setText(fileName);
         fileEdit->setFocus(Qt::OtherFocusReason);
-        m_lastPath = QFileInfo(fileName).canonicalFilePath();
+        m_lastPath = QFileInfo(fileName).canonicalPath();
     }
 }
 
@@ -456,6 +464,7 @@ void QJackTrip::start()
                 m_udpHub->setRequireAuth(true);
                 m_udpHub->setCertFile(m_ui->certEdit->text());
                 m_udpHub->setKeyFile(m_ui->keyEdit->text());
+                m_udpHub->setCredsFile(m_ui->credsEdit->text());
             }
             
             // Open our stats window if needed
@@ -474,9 +483,9 @@ void QJackTrip::start()
             m_ui->statusBar->showMessage("Hub Server Started");
         } else {
             JackTrip::jacktripModeT jackTripMode;
-            if (m_ui->typeComboBox->currentText() == "Client") {
+            if (m_ui->typeComboBox->currentText() == "P2P Client") {
                 jackTripMode = JackTrip::CLIENT;
-            } else if (m_ui->typeComboBox->currentText() == "Server") {
+            } else if (m_ui->typeComboBox->currentText() == "P2P Server") {
                 jackTripMode = JackTrip::SERVER;
             } else {
                 jackTripMode = JackTrip::CLIENTTOPINGSERVER;
@@ -684,6 +693,7 @@ void QJackTrip::loadSettings()
     m_ui->requireAuthCheckBox->setChecked(settings.value("Require", false).toBool());
     m_ui->certEdit->setText(settings.value("CertFile", "").toString());
     m_ui->keyEdit->setText(settings.value("KeyFile", "").toString());
+    m_ui->credsEdit->setText(settings.value("CredsFile", "").toString());
     m_ui->authCheckBox->setChecked(settings.value("Use", false).toBool());
      m_ui->usernameEdit->setText(settings.value("Username", "").toString());
     settings.endGroup();
@@ -758,6 +768,7 @@ void QJackTrip::saveSettings()
     settings.setValue("Require", m_ui->requireAuthCheckBox->isChecked());
     settings.setValue("CertFile", m_ui->certEdit->text());
     settings.setValue("KeyFile", m_ui->keyEdit->text());
+    settings.setValue("CredsFile", m_ui->credsEdit->text());
     settings.setValue("Use", m_ui->authCheckBox->isChecked());
     settings.setValue("Username", m_ui->usernameEdit->text());
     settings.endGroup();
@@ -853,9 +864,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
 {
     QString commandLine = "qjacktrip";
     
-    if (m_ui->typeComboBox->currentText() == "Client") {
+    if (m_ui->typeComboBox->currentText() == "P2P Client") {
         commandLine.append(" -c ").append(m_ui->addressComboBox->currentText());
-    } else if (m_ui->typeComboBox->currentText() == "Server") {
+    } else if (m_ui->typeComboBox->currentText() == "P2P Server") {
         commandLine.append(" -s");
     } else if (m_ui->typeComboBox->currentText() == "Hub Client") {
         commandLine.append(" -C ").append(m_ui->addressComboBox->currentText());
@@ -910,6 +921,34 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->typeComboBox->currentText().endsWith("Client")) {
         if (m_ui->remotePortSpinBox->value() != gDefaultPort) {
             commandLine.append(QString(" -P %1").arg(m_ui->remotePortSpinBox->value()));
+        }
+    }
+    
+    //Auth settings
+    if (m_ui->typeComboBox->currentText().startsWith("Hub")) {
+        if (m_ui->typeComboBox->currentText() == "Hub Server") {
+            if (m_ui->requireAuthCheckBox->isChecked()) {
+                commandLine.append(QString(" -A"));
+                if (!m_ui->certEdit->text().isEmpty()) {
+                    commandLine.append(" --certfile ").append(m_ui->certEdit->text());
+                }
+                if (!m_ui->keyEdit->text().isEmpty()) {
+                    commandLine.append(" --keyfile ").append(m_ui->keyEdit->text());
+                }
+                if (!m_ui->credsEdit->text().isEmpty()) {
+                    commandLine.append(" --credsfile ").append(m_ui->credsEdit->text());
+                }
+            }
+        } else {
+            if (m_ui->authCheckBox->isChecked()) {
+                commandLine.append(QString(" -A"));
+                if (!m_ui->usernameEdit->text().isEmpty()) {
+                    commandLine.append(" --username ").append(m_ui->usernameEdit->text());
+                }
+                if (!m_ui->passwordEdit->text().isEmpty()) {
+                    commandLine.append(" --password <password>");
+                }
+            }
         }
     }
     

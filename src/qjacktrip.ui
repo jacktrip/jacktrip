@@ -22,17 +22,17 @@
     <item row="0" column="1">
      <widget class="QComboBox" name="typeComboBox">
       <property name="toolTip">
-       <string>To connect to a server you need to run as a client.
+       <string>To connect to a p2p (peer to peer) server you need to run as a p2p client.
 To connect to a hub server you need to run as a hub client.</string>
       </property>
       <item>
        <property name="text">
-        <string>Client</string>
+        <string>P2P Client</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>Server</string>
+        <string>P2P Server</string>
        </property>
       </item>
       <item>
@@ -80,6 +80,10 @@ To connect to a hub server you need to run as a hub client.</string>
     </item>
     <item row="3" column="1">
      <widget class="QLabel" name="ipLabel">
+      <property name="toolTip">
+       <string>If running as a server, this is the address you should supply to the other clients.
+(You will need to enable any port forwarding on your router manually.)</string>
+      </property>
       <property name="text">
        <string>Looking up external IP address...</string>
       </property>
@@ -204,6 +208,9 @@ To connect to a hub server you need to run as a hub client.</string>
           <layout class="QGridLayout" name="gridLayout_6">
            <item row="0" column="0" colspan="2">
             <widget class="QCheckBox" name="authCheckBox">
+             <property name="toolTip">
+              <string>Supply a username and password to connect to the server.</string>
+             </property>
              <property name="text">
               <string>&amp;Use Authentication</string>
              </property>
@@ -213,6 +220,9 @@ To connect to a hub server you need to run as a hub client.</string>
             <widget class="QLineEdit" name="passwordEdit">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your password. (This will not be shown or saved.)</string>
              </property>
              <property name="echoMode">
               <enum>QLineEdit::Password</enum>
@@ -226,6 +236,9 @@ To connect to a hub server you need to run as a hub client.</string>
             <widget class="QLineEdit" name="usernameEdit">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your username for the server.</string>
              </property>
             </widget>
            </item>
@@ -375,6 +388,26 @@ To connect to a hub server you need to run as a hub client.</string>
            <string/>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
+           <item row="3" column="2">
+            <widget class="QPushButton" name="keyBrowse">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Browse</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="3">
+            <widget class="QLabel" name="authDisclaimerLabel">
+             <property name="text">
+              <string>(This is a work in progress and needs to be manually configured outside of the app. Only use if you know what you're doing.)</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
            <item row="2" column="0">
             <widget class="QLabel" name="certLabel">
              <property name="enabled">
@@ -401,20 +434,13 @@ To connect to a hub server you need to run as a hub client.</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="2">
-            <widget class="QPushButton" name="keyBrowse">
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="keyEdit">
              <property name="enabled">
               <bool>false</bool>
              </property>
-             <property name="text">
-              <string>Browse</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0" colspan="2">
-            <widget class="QCheckBox" name="requireAuthCheckBox">
-             <property name="text">
-              <string>&amp;Require Authentication</string>
+             <property name="toolTip">
+              <string>Choose the private key that the server should use for the SSL connection.</string>
              </property>
             </widget>
            </item>
@@ -422,6 +448,9 @@ To connect to a hub server you need to run as a hub client.</string>
             <widget class="QLineEdit" name="certEdit">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Choose the certificate file that the server should use to establish an initial SSL connection.</string>
              </property>
             </widget>
            </item>
@@ -435,20 +464,46 @@ To connect to a hub server you need to run as a hub client.</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="keyEdit">
-             <property name="enabled">
-              <bool>false</bool>
+           <item row="0" column="0" colspan="2">
+            <widget class="QCheckBox" name="requireAuthCheckBox">
+             <property name="toolTip">
+              <string>Require clients to connect with a username and password.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Require Authentication</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0" colspan="3">
-            <widget class="QLabel" name="authDisclaimerLabel">
-             <property name="text">
-              <string>(This is a work in progress and needs to be manually configured outside of the app. Only use if you know what you're doing.)</string>
+           <item row="4" column="0">
+            <widget class="QLabel" name="credsLabel">
+             <property name="enabled">
+              <bool>false</bool>
              </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+             <property name="text">
+              <string>&amp;Credentials File</string>
+             </property>
+             <property name="buddy">
+              <cstring>credsEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="credsEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Choose the file containing the list of usernames and passwords.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QPushButton" name="credsBrowse">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Browse</string>
              </property>
             </widget>
            </item>
@@ -489,8 +544,11 @@ To connect to a hub server you need to run as a hub client.</string>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>Display IO stats in another window.</string>
+          </property>
           <property name="text">
-           <string>Display IO Stats</string>
+           <string>Display &amp;IO Stats</string>
           </property>
          </widget>
         </item>
@@ -565,7 +623,10 @@ To connect to a hub server you need to run as a hub client.</string>
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Reporting Interval (s)</string>
+           <string>Reporting &amp;Interval (s)</string>
+          </property>
+          <property name="buddy">
+           <cstring>ioStatsSpinBox</cstring>
           </property>
          </widget>
         </item>
@@ -677,6 +738,9 @@ To connect to a hub server you need to run as a hub client.</string>
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="toolTip">
+           <string>Choose how often stats should be reported.</string>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -774,6 +838,9 @@ To connect to a hub server you need to run as a hub client.</string>
           </item>
           <item>
            <widget class="QPushButton" name="commandLineButton">
+            <property name="toolTip">
+             <string>Show the equivalent command line for the current settings.</string>
+            </property>
             <property name="text">
              <string>Get Command &amp;Line</string>
             </property>
@@ -797,7 +864,7 @@ To connect to a hub server you need to run as a hub client.</string>
            </sizepolicy>
           </property>
           <property name="text">
-           <string>UDP Base Port</string>
+           <string>&amp;UDP Base Port</string>
           </property>
           <property name="buddy">
            <cstring>basePortSpinBox</cstring>
@@ -895,7 +962,10 @@ To connect to a hub server you need to run as a hub client.</string>
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Aim to drop no more than one in every</string>
+           <string>Aim to &amp;drop no more than one in every</string>
+          </property>
+          <property name="buddy">
+           <cstring>autoQueueSpinBox</cstring>
           </property>
          </widget>
         </item>
@@ -934,8 +1004,11 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="0" column="0" colspan="2">
          <widget class="QCheckBox" name="jitterCheckBox">
+          <property name="toolTip">
+           <string>Enable the jitter buffer. This will eventually become the default.</string>
+          </property>
           <property name="text">
-           <string>Enable Jitter Buffer (EXPERIMENTAL)</string>
+           <string>Enable &amp;Jitter Buffer (EXPERIMENTAL)</string>
           </property>
          </widget>
         </item>
@@ -951,7 +1024,10 @@ To connect to a hub server you need to run as a hub client.</string>
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Use buffer strategy</string>
+           <string>Use buffer &amp;strategy</string>
+          </property>
+          <property name="buddy">
+           <cstring>bufferStrategyComboBox</cstring>
           </property>
          </widget>
         </item>
@@ -976,7 +1052,7 @@ Buffer strategy 2 is optimized to keep the latency stable, so that the delay exp
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Automatically set the queue length</string>
+           <string>Automatically set the &amp;queue length</string>
           </property>
          </widget>
         </item>
@@ -1311,6 +1387,8 @@ and wetness is the essence of beauty.</string>
   <tabstop>certBrowse</tabstop>
   <tabstop>keyEdit</tabstop>
   <tabstop>keyBrowse</tabstop>
+  <tabstop>credsEdit</tabstop>
+  <tabstop>credsBrowse</tabstop>
   <tabstop>authCheckBox</tabstop>
   <tabstop>usernameEdit</tabstop>
   <tabstop>passwordEdit</tabstop>
@@ -1328,6 +1406,10 @@ and wetness is the essence of beauty.</string>
   <tabstop>ioStatsSpinBox</tabstop>
   <tabstop>commandLineButton</tabstop>
   <tabstop>useDefaultsButton</tabstop>
+  <tabstop>jitterCheckBox</tabstop>
+  <tabstop>bufferStrategyComboBox</tabstop>
+  <tabstop>autoQueueCheckBox</tabstop>
+  <tabstop>autoQueueSpinBox</tabstop>
   <tabstop>inFreeverbCheckBox</tabstop>
   <tabstop>inFreeverbWetnessSlider</tabstop>
   <tabstop>inZitarevCheckBox</tabstop>

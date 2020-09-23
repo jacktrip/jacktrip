@@ -125,6 +125,7 @@ private:
     bool mAuth;
     QString mCertFile;
     QString mKeyFile;
+    QString mCredsFile;
     QString mUsername;
     QString mPassword;
     

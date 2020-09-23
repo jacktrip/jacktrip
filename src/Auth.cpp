@@ -40,39 +40,19 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDate>
+#include <QThread>
 
-Auth::Auth() :
-    m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"})
+Auth::Auth(QString fileName) :
+    m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}),
+    m_authFileName(fileName)
 {
     // Still under development. At the moment, just read the contents of the auth file
     // in the current directory.
+    loadAuthFile(m_authFileName);
     
-    QFile file("auth");
-    if (file.open(QIODevice::ReadOnly)) {
-        // Read our file into our password table
-        QTextStream input(&file);
-        while (!input.atEnd()) {
-            QStringList lineParts = input.readLine().split(":");
-            if (lineParts.count() < 3) {
-                // We don't have a correctly formatted line. Ignore it.
-                continue;
-            }
-            
-            // Check that our password hash is useable.
-            if (lineParts.at(1).startsWith("$6$")) {
-                QStringList hashParts = lineParts.at(1).split("$");
-                if (hashParts.count() < 4) {
-                    continue;
-                }
-                if (hashParts.at(2).isEmpty() || hashParts.at(3).isEmpty()) {
-                    continue;
-                }
-            }
-            
-            m_passwordTable[lineParts.at(0)] = lineParts.at(1);
-            m_timesTable[lineParts.at(0)] = lineParts.at(2);
-        }
-    }
+    // Monitor the file for any changes. (Reload when it does.)
+    m_authFileWatcher.addPath(m_authFileName);
+    QObject::connect(&m_authFileWatcher, &QFileSystemWatcher::fileChanged, this, &Auth::reloadAuthFile, Qt::QueuedConnection);
 }
 
 Auth::AuthResponseT Auth::checkCredentials (QString username, QString password)
@@ -96,6 +76,61 @@ Auth::AuthResponseT Auth::checkCredentials (QString username, QString password)
     }
     
     return WRONGCREDS;
+}
+
+void Auth::reloadAuthFile()
+{
+    //Some text editors will replace the original file instead of modifying the existing one.
+    //Re-add our file to the watcher. (This has no effect if it's still there.)
+    QThread::msleep(200);
+    std::cout << "Auth file changed. Reloading..." << std::endl;
+    m_authFileWatcher.addPath(m_authFileName);
+    loadAuthFile(m_authFileName);
+}
+
+void Auth::loadAuthFile(QString filename)
+{
+    QFile file(filename);
+    if (file.open(QIODevice::ReadOnly)) {
+        m_passwordTable.clear();
+        m_timesTable.clear();
+        
+        // Read our file into our password table
+        QTextStream input(&file);
+        int lineNumber = 0;
+        while (!input.atEnd()) {
+            lineNumber++;
+            QStringList lineParts = input.readLine().split(":");
+            if (lineParts.count() < 3) {
+                // We don't have a correctly formatted line. Ignore it.
+                std::cout << "WARNING: Incorrectly formatted line in auth file ignored. (Line " << lineNumber
+                          << ")" << std::endl;
+                continue;
+            }
+            
+            // Check that our password hash is useable.
+            bool invalid = false;
+            if (lineParts.at(1).startsWith("$6$")) {
+                QStringList hashParts = lineParts.at(1).split("$");
+                if (hashParts.count() < 4) {
+                    invalid = true;
+                } else if (hashParts.at(2).isEmpty() || hashParts.at(3).isEmpty()) {
+                    invalid = true;
+                }
+            } else {
+                invalid = true;
+            }
+            if (invalid) {
+                std::cout << "WARNING: Invalid password hash in auth file. (Line " << lineNumber
+                          << ")" << std::endl;
+                continue;
+            }
+            
+            m_passwordTable[lineParts.at(0)] = lineParts.at(1);
+            m_timesTable[lineParts.at(0)] = lineParts.at(2);
+        }
+        file.close();
+    }
 }
 
 bool Auth::checkTime(QString username)

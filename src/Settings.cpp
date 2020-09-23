@@ -65,6 +65,7 @@ enum JTLongOptIDS {
   OPT_BROADCAST,
   OPT_AUTHCERT,
   OPT_AUTHKEY,
+  OPT_AUTHCREDS,
   OPT_AUTHUSER,
   OPT_AUTHPASS
 };
@@ -170,6 +171,7 @@ void Settings::parseInput(int argc, char** argv)
         { "auth", no_argument, NULL, 'A' }, // Enable authentication between hub client and hub server
         { "certfile", required_argument, NULL, OPT_AUTHCERT }, // Certificate for server authentication
         { "keyfile", required_argument, NULL, OPT_AUTHKEY }, // Private key for server authentication
+        { "credsfile", required_argument, NULL, OPT_AUTHCREDS }, // Username and password store for server authentication
         { "username", required_argument, NULL, OPT_AUTHUSER }, // Username when using authentication as a hub client
         { "password", required_argument, NULL, OPT_AUTHPASS }, // Password when using authentication as a hub client
         { "help", no_argument, NULL, 'h' }, // Print Help
@@ -456,6 +458,9 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_AUTHKEY:
           mKeyFile = optarg;
           break;
+        case OPT_AUTHCREDS:
+          mCredsFile = optarg;
+          break;
         case OPT_AUTHUSER:
           mUsername = optarg;
           break;
@@ -591,8 +596,10 @@ void Settings::printUsage()
     cout << " -A, --auth                               Use authentication on the client side, or require it on the server side" << endl;
     cout << " --certfile                               The certificate file to use on the hub server" << endl;
     cout << " --keyfile                                The private key file to use on the hub server" << endl;
+    cout << " --credsfile                              The file containing the stored usernames and passwords" << endl;
     cout << " --username                               The username to use when connecting as a hub client" << endl;
     cout << " --password                               The password to use when connecting as a hub client" << endl;
+    cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
     cout << " -V, --verbose                            Verbose mode, prints debug messages" << endl;
@@ -636,6 +643,7 @@ UdpHubListener *Settings::getConfiguredHubServer()
         udpHub->setRequireAuth(mAuth);
         udpHub->setCertFile(mCertFile);
         udpHub->setKeyFile(mKeyFile);
+        udpHub->setCredsFile(mCredsFile);
     }
     return udpHub;
 }
