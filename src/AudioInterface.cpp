@@ -497,11 +497,28 @@ bool is_big_endian(void)
     return bint.c[0] == 1;  // 1 if bigEndine, 4 if littleEndian
 }
 
+#ifdef TEST_SAMPLE_CONVERSIONS
+sample_t nextTestSample() {
+  static sample_t testSamples[] = { -1.5, -1, -0.5, 0, 0.5, 1.0, 1.5 };
+  static int tsp = 0;
+  static const int nts = 7;
+  sample_t testSamp = testSamples[tsp++];
+  if (tsp >= nts) {
+    tsp = 0;
+  }
+  return testSamp;
+}
+#endif
+
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
 // 24 bit is not working yet
 void AudioInterface::fromSampleToBitConversion
+#ifdef TEST_SAMPLE_CONVERSIONS
+(sample_t* input,
+#else
 (const sample_t* const input,
+#endif
  int8_t* output,
  const AudioInterface::audioBitResolutionT targetBitResolution)
 {
@@ -511,6 +528,9 @@ void AudioInterface::fromSampleToBitConversion
     double tmp_sample;
     sample_t tmp_sample16;
     sample_t tmp_sample8;
+#ifdef TEST_SAMPLE_CONVERSIONS
+    *input = nextTestSample();
+#endif
     switch (targetBitResolution)
     {
     case BIT8 :
@@ -524,7 +544,7 @@ void AudioInterface::fromSampleToBitConversion
         // tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
         tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
-        std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
+        std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
         break;
     case BIT24 : {
         // tmp_sample = (*input) * 32768.0; // 2^15 = 32768.0

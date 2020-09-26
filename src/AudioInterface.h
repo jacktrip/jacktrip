@@ -149,7 +149,13 @@ public:
    * appropriate size to hold the value. The caller is responsible to allocate
    * enough space to store the result.
    */
-    static void fromSampleToBitConversion(const sample_t* const input,
+#define TEST_SAMPLE_CONVERSIONS
+    static void fromSampleToBitConversion(
+#ifdef TEST_SAMPLE_CONVERSIONS
+					  sample_t* input,
+#else
+					  const sample_t* const input,
+#endif
                                           int8_t* output,
                                           const AudioInterface::audioBitResolutionT targetBitResolution);
     /** \brief Convert a audioBitResolutionT bit resolution number into a
