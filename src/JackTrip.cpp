@@ -323,6 +323,7 @@ void JackTrip::setupRingBuffers()
                                                   gDefaultOutputQueueLength);
         mReceiveRingBuffer = new RingBufferWavetable(slot_size,
                                                      mBufferQueueLength);
+        mPacketHeader->setBufferRequiresSameSettings(true);
         /*
     mSendRingBuffer = new RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
                 gDefaultOutputQueueLength);
@@ -336,6 +337,7 @@ void JackTrip::setupRingBuffers()
         if (0 > mBufferStrategy) {
             mReceiveRingBuffer = new RingBuffer(slot_size,
                                                 mBufferQueueLength);
+            mPacketHeader->setBufferRequiresSameSettings(true);
         }
         else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
@@ -441,8 +443,8 @@ void JackTrip::startProcess(
 
     //QObject::connect(mDataProtocolSender, SIGNAL(signalError(const char*)),
     //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
-    QObject::connect(mDataProtocolReceiver, SIGNAL(signalError(const char*)),
-                     this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
+    QObject::connect(mDataProtocolReceiver, &DataProtocol::signalError,
+                     this, &JackTrip::slotStopProcessesDueToError, Qt::QueuedConnection);
 
     // Start the threads for the specific mode
     // ---------------------------------------
@@ -1196,9 +1198,9 @@ void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
 }
 
 //*******************************************************************************
-void JackTrip::checkPeerSettings(int8_t* full_packet)
+bool JackTrip::checkPeerSettings(int8_t* full_packet)
 {
-    mPacketHeader->checkPeerSettings(full_packet);
+    return mPacketHeader->checkPeerSettings(full_packet);
 }
 
 

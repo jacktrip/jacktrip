@@ -392,7 +392,7 @@ public:
             return "";
         }
     }
-    virtual void checkPeerSettings(int8_t* full_packet);
+    virtual bool checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber()
     { mPacketHeader->increaseSequenceNumber(); }
     int getSequenceNumber() const

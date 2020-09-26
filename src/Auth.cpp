@@ -46,8 +46,7 @@ Auth::Auth(QString fileName) :
     m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}),
     m_authFileName(fileName)
 {
-    // Still under development. At the moment, just read the contents of the auth file
-    // in the current directory.
+    // Load our credentials file.
     loadAuthFile(m_authFileName);
     
     // Monitor the file for any changes. (Reload when it does.)

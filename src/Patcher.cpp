@@ -92,22 +92,15 @@ void Patcher::registerClient(const QString &clientName)
         }
     }
     
-    //Then our sending ports.
-    for (int i = 0; inPorts[i]; i++) {
-        QString client = QString(inPorts[i]).section(":", 0, 0);
-        if (client == clientName) {
-            QString channel = QString(inPorts[i]).section("_", -1, -1);
-            for (int j = 0; outPorts[j]; j++) {
-                //First check if this is one of our other clients. (Fan out/in and full mix.)
-                if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
+    //Then our sending ports. We only need to check for other clients here.
+    //(Any loopback connections will have been made in the previous loop.)
+    if (m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::FULLMIX) {
+        for (int i = 0; inPorts[i]; i++) {
+            QString client = QString(inPorts[i]).section(":", 0, 0);
+            if (client == clientName) {
+                QString channel = QString(inPorts[i]).section("_", -1, -1);
+                for (int j = 0; outPorts[j]; j++) {
                     if (m_clients.contains(QString(outPorts[j]).section(":", 0, 0)) 
-                        && QString(outPorts[j]).section("_", -1, -1) == channel) {
-                        jack_connect(m_jackClient, outPorts[j], inPorts[i]);
-                    }
-                }
-                //Then check if it's our registering client. (Client Echo and full mix.)
-                if (m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::FULLMIX) {
-                    if (QString(outPorts[j]).section(":", 0, 0) == clientName 
                         && QString(outPorts[j]).section("_", -1, -1) == channel) {
                         jack_connect(m_jackClient, outPorts[j], inPorts[i]);
                     }

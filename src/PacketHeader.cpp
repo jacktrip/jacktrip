@@ -74,6 +74,7 @@ int gettimeofday(struct timeval* p, void* tz /* IGNORED */);
 //#######################################################################
 //***********************************************************************
 PacketHeader::PacketHeader(JackTrip* jacktrip) :
+    mBufferRequiresSameSettings(false),
     mSeqNumber(0), mJackTrip(jacktrip)
 {}
 
@@ -123,7 +124,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
 
 
 //***********************************************************************
-void DefaultHeader::checkPeerSettings(int8_t* full_packet)
+bool DefaultHeader::checkPeerSettings(int8_t* full_packet)
 {
     bool error = false;
     QString report;
@@ -134,12 +135,17 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
     // Check Buffer Size
     if ( peer_header->BufferSize != mHeader.BufferSize )
     {
-        std::cerr << "WARNING: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
-        std::cerr << "         Local Buffer Size is : " << mHeader.BufferSize << endl;
-        //std::cerr << "Make sure both machines use same buffer size" << endl;
-        //std::cerr << gPrintSeparator << endl;
-        //error = true;
-        //report.append(QString("\n\nPeer Buffer Size is %1\nLocal Buffer Size is %2\nMake sure both machines use the same Buffer Size").arg(peer_header->BufferSize).arg(mHeader.BufferSize));
+        if (mBufferRequiresSameSettings) {
+            std::cerr << "ERROR: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
+            std::cerr << "       Local Buffer Size is : " << mHeader.BufferSize << endl;
+            std::cerr << "Make sure both machines use same buffer size" << endl;
+            std::cerr << gPrintSeparator << endl;
+            error = true;
+            report.append(QString("\n\nPeer Buffer Size is %1\nLocal Buffer Size is %2\nMake sure both machines use the same Buffer Size").arg(peer_header->BufferSize).arg(mHeader.BufferSize));
+        } else {
+            std::cerr << "WARNING: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
+            std::cerr << "         Local Buffer Size is : " << mHeader.BufferSize << endl;
+        }
     }
 
     // Check Sampling Rate
@@ -178,6 +184,8 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
         //throw std::logic_error("Local and Peer Settings don't match");
         emit signalError(QString("Local and Peer Settings don't match").append(report));
     }
+    
+    return !error;
     /// \todo Check number of channels and other parameters
 }
 

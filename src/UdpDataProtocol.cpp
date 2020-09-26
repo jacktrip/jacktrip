@@ -580,7 +580,13 @@ void UdpDataProtocol::run()
         full_redundant_packet_size = receivePacket(reinterpret_cast<char*>(full_redundant_packet), full_redundant_packet_size);
         // Check that peer has the same audio settings
         if (gVerboseFlag) std::cout << std::endl << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->checkPeerSettings()" << std::endl;
-        mJackTrip->checkPeerSettings(full_redundant_packet);
+        if (!mJackTrip->checkPeerSettings(full_redundant_packet)) {
+            // If our peer settings aren't compatible, don't continue.
+            // (The checkPeerSettings function needs to signal the JackTrip instance with the exact error message.)
+            delete full_redundant_packet;
+            full_redundant_packet = NULL;
+            return;
+        }
 
         int peer_chans = mJackTrip->getPeerNumChannels(full_redundant_packet);
         full_packet_size = mJackTrip->getHeaderSizeInBytes()

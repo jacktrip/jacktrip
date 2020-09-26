@@ -133,7 +133,7 @@ public:
     /// \brief Parse the packet header and take appropriate measures (like change settings, or
     /// quit the program if peer settings don't match)
     virtual void parseHeader() = 0;
-    virtual void checkPeerSettings(int8_t* full_packet) = 0;
+    virtual bool checkPeerSettings(int8_t* full_packet) = 0;
 
     virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const = 0;
     virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
@@ -162,11 +162,14 @@ public:
     /// \param full_packet Pointer to full packet (audio+header). Size must be
     /// sizeof(header part) + sizeof(audio part)
     virtual void putHeaderInPacket(int8_t* full_packet) = 0;
-
+    void setBufferRequiresSameSettings(bool sameSettings)
+    { mBufferRequiresSameSettings = sameSettings; }
 
 signals:
     void signalError(const QString &error_message);
 
+protected:
+    bool mBufferRequiresSameSettings;
 
 private:
     uint16_t mSeqNumber;
@@ -190,7 +193,7 @@ public:
 
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
-    virtual void checkPeerSettings(int8_t* full_packet);
+    virtual bool checkPeerSettings(int8_t* full_packet);
     virtual void increaseSequenceNumber()
     { mHeader.SeqNumber++; }
     virtual uint16_t getSequenceNumber() const
@@ -237,7 +240,7 @@ public:
 
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
-    virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
+    virtual bool checkPeerSettings(int8_t* /*full_packet*/) { return true; }
 
     virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
     virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
@@ -274,7 +277,7 @@ public:
 
     virtual void fillHeaderCommonFromAudio() {}
     virtual void parseHeader() {}
-    virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
+    virtual bool checkPeerSettings(int8_t* /*full_packet*/) { return true; }
     virtual void increaseSequenceNumber() {}
     virtual int getHeaderSizeInBytes() const { return 0; }
 
