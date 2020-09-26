@@ -285,8 +285,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
     // mAudioTesterP will be nullptr for hub server's JackTripWorker instances
     if (mAudioTesterP && mAudioTesterP->getEnabled()) { // in_buffer is "in" from local audio hardware via JACK
-        mAudioTesterP->writeImpulse(mInBufCopy, in_buffer, n_frames);
-        computeProcessToNetwork(mInBufCopy, n_frames);
+      mAudioTesterP->writeImpulse(mInBufCopy, in_buffer, n_frames);
+      computeProcessToNetwork(mInBufCopy, n_frames);
     } else { // Run Faust plugins for the outgoing stream:
       int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
       if (nop>0) { // cannot modify IN_BUFFER so make a copy
@@ -598,7 +598,8 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-              << pluginName(plugin) << " REJECTED due to having "
+//              << pluginName(plugin) << " REJECTED due to having "
+              << typeid(plugin).name() << " REJECTED due to having "
               << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
               << mNumInChans << " inputs\n";
     return;

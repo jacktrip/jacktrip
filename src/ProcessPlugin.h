@@ -50,7 +50,7 @@
  * that need specific initialization.
  */
 class ProcessPlugin : public QThread
-{    
+{
 public:
 
     /// \brief The Class Constructor
