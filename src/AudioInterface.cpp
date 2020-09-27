@@ -507,11 +507,8 @@ void AudioInterface::fromSampleToBitConversion
  const AudioInterface::audioBitResolutionT targetBitResolution)
 {
     int8_t tmp_8;
-    uint8_t tmp_u8; // unsigned to quantize the remainder in 24bits
     int16_t tmp_16;
     double tmp_sample;
-    sample_t tmp_sample16;
-    sample_t tmp_sample8;
     switch (targetBitResolution)
     {
     case BIT8 :
