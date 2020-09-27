@@ -526,8 +526,6 @@ void AudioInterface::fromSampleToBitConversion
     int8_t tmp_8;
     int16_t tmp_16;
     double tmp_sample;
-    sample_t tmp_sample16;
-    sample_t tmp_sample8;
 #ifdef TEST_SAMPLE_CONVERSIONS
     *input = nextTestSample();
 #endif
