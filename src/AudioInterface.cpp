@@ -517,7 +517,7 @@ void AudioInterface::fromSampleToBitConversion
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
         break;
-   case BIT24 :
+    case BIT24 :
         // To convert to 24 bits, we first quantize the number to 16bit
         tmp_sample = (*input) * 32768.0; // 2^15 = 32768.0
         tmp_sample16 = floor(tmp_sample);
