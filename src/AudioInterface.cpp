@@ -512,7 +512,7 @@ void AudioInterface::fromSampleToBitConversion
         break;
     case BIT16 :
         // 16bit integer between -32768 to 32767
-        // tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
+        // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
         tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
@@ -537,7 +537,7 @@ void AudioInterface::fromSampleToBitConversion
     case BIT32 :
         tmp_sample = *input;
         // not necessary yet:
-        // tmp_sample = std::max(-1.0f, std::min(1.0f, tmp_sample));
+        // tmp_sample = std::max(-1.0, std::min(1.0, tmp_sample));
         std::memcpy(output, &tmp_sample, 4); // 32bit = 4 bytes
         break;
     }
