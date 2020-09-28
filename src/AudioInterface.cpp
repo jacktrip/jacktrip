@@ -558,7 +558,7 @@ void AudioInterface::fromSampleToBitConversion
     case BIT32 :
         tmp_sample = *input;
         // not necessary yet:
-        // tmp_sample = std::max(-1.0f, std::min(1.0f, tmp_sample));
+        // tmp_sample = std::max(-1.0, std::min(1.0, tmp_sample));
         std::memcpy(output, &tmp_sample, 4); // 32bit = 4 bytes
         break;
     }
