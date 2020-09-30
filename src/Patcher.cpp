@@ -94,7 +94,7 @@ void Patcher::registerClient(const QString &clientName)
     
     //Then our sending ports. We only need to check for other clients here.
     //(Any loopback connections will have been made in the previous loop.)
-    if (m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::FULLMIX) {
+    if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
         for (int i = 0; inPorts[i]; i++) {
             QString client = QString(inPorts[i]).section(":", 0, 0);
             if (client == clientName) {
