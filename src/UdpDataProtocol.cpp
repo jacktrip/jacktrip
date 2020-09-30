@@ -487,8 +487,20 @@ void UdpDataProtocol::run()
     policy.timeshare = 0;
     kern_return_t result = thread_policy_set(mach_thread_id, THREAD_EXTENDED_POLICY, reinterpret_cast<thread_policy_t>(&policy), 
                                              THREAD_EXTENDED_POLICY_COUNT);
-    if (result == KERN_SUCCESS) {
-        if (gVerboseFlag) std::cout << "Using fixed thread priority." << std::endl;
+    if (result != KERN_SUCCESS) {
+        std::cerr << "Failed to make thread fixed priority. " << result << std::endl;
+    } else {
+        // Increase thread priority
+        thread_precedence_policy_data_t precedence;
+        //(BASEPRI_FOREGROUND = 47)
+        precedence.importance = 50;
+        result = thread_policy_set(mach_thread_id,
+                                THREAD_PRECEDENCE_POLICY,
+                                reinterpret_cast<thread_policy_t>(&precedence),
+                                THREAD_PRECEDENCE_POLICY_COUNT);
+        if (result != KERN_SUCCESS) {
+            std::cerr << "Failed to set thread priority. " << result << std::endl;
+        }
     }
 #endif
     // Anton Runov: uncommenting setRealtimeProcessPriority below, but using much lower priority value

@@ -37,9 +37,11 @@ QCoreApplication *createApplication(int &argc, char *argv[])
 {
     //Find the name that the app was called with.
     //(Don't use QString because we should create our QApplication first.)
+    char* argv0 = strdup(argv[0]);
     char* command;
     char* token;
-    token = strtok(argv[0], "/");
+    
+    token = strtok(argv0, "/");
     command = token;
     while (token != NULL) {
         token = strtok (NULL, "/");
@@ -47,6 +49,7 @@ QCoreApplication *createApplication(int &argc, char *argv[])
             command = token;
         }
     }
+    free(argv0);
     
     //If we have command line arguments or have been called as jacktrip, run on the command line.
     if (argc == 1 && (strcmp(command, "jacktrip") != 0)) {
