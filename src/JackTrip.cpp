@@ -174,7 +174,6 @@ void JackTrip::setupAudio(
                                                  mAudioBitResolution);
 
 #ifdef WAIRTOHUB // WAIR
-        qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
         if (!mPeerAddress.isEmpty() && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
@@ -235,8 +234,6 @@ void JackTrip::setupAudio(
     }
     std::cout << gPrintSeparator << std::endl;
     cout << "The Number of Channels is: " << mAudioInterface->getNumInputChannels() << endl;
-    std::cout << gPrintSeparator << std::endl;
-    cout << "The RTAudio device ID is: " << mAudioInterface->getDeviceID() << endl;
     std::cout << gPrintSeparator << std::endl;
     QThread::usleep(100);
 }
