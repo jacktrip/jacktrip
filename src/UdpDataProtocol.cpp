@@ -648,6 +648,7 @@ void UdpDataProtocol::run()
                                         current_seq_num,
                                         last_seq_num,
                                         newer_seq_num);
+	}
 #endif
             
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
