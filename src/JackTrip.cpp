@@ -347,6 +347,7 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer = new JitterBuffer(mAudioBufferSize, mBufferQueueLength,
                                         mSampleRate, mBufferStrategy,
                                         mBroadcastQueueLength, mNumChans, mAudioBitResolution);
+            static_cast<JitterBuffer *>(mReceiveRingBuffer)->setJackTrip(this);
         }
         /*
     mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,

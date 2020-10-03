@@ -56,11 +56,11 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 #endif
-
-#if defined ( __MAC_OSX__ )
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <mach/thread_policy.h>
+#ifdef __MAC_OSX__
+#include <sys/event.h>
+#endif
+#ifdef __LINUX__
+#include <sys/epoll.h>
 #endif
 
 using std::cout; using std::endl;
@@ -339,9 +339,9 @@ int UdpDataProtocol::bindSocket()
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
     // Block until There's something to read
-    while ( !datagramAvailable() && !mStopped ) {
+    /*while ( !datagramAvailable() && !mStopped ) {
         QThread::usleep(100);
-    }
+    }*/
     int n_bytes = ::recv(mSocket, buf, n, 0);
     if (n_bytes == mControlPacketSize) {
         //Control signal (currently just check for exit packet);
@@ -479,34 +479,16 @@ void UdpDataProtocol::run()
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before setRealtimeProcessPriority()" << std::endl;
     //std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
     //setRealtimeProcessPriority();
-#ifdef __MAC_OSX__
-     mach_port_t mach_thread_id = mach_thread_self();
 
-    // Fix the thread priority. (Prevents it from being lowered when the GUI enters background.)
-    thread_extended_policy_data_t policy;
-    policy.timeshare = 0;
-    kern_return_t result = thread_policy_set(mach_thread_id, THREAD_EXTENDED_POLICY, reinterpret_cast<thread_policy_t>(&policy), 
-                                             THREAD_EXTENDED_POLICY_COUNT);
-    if (result != KERN_SUCCESS) {
-        std::cerr << "Failed to make thread fixed priority. " << result << std::endl;
-    } else {
-        // Increase thread priority
-        thread_precedence_policy_data_t precedence;
-        //(BASEPRI_FOREGROUND = 47)
-        precedence.importance = 50;
-        result = thread_policy_set(mach_thread_id,
-                                THREAD_PRECEDENCE_POLICY,
-                                reinterpret_cast<thread_policy_t>(&precedence),
-                                THREAD_PRECEDENCE_POLICY_COUNT);
-        if (result != KERN_SUCCESS) {
-            std::cerr << "Failed to set thread priority. " << result << std::endl;
-        }
-    }
-#endif
     // Anton Runov: uncommenting setRealtimeProcessPriority below, but using much lower priority value
     // on Linux. Other platforms might require more changes.
+    // Aaron: and on OS X. Need to set this to avoid problems with the process priority being lowered
+    // when the GUI enters the backrgound.
 #if defined (__LINUX__)
     setRealtimeProcessPriority();
+#endif
+#if defined (__MAC_OSX__)
+    setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(), mJackTrip->getSampleRate());
 #endif
 
     /////////////////////
@@ -631,6 +613,24 @@ void UdpDataProtocol::run()
         mRevivedCount = 0;
         mStatCount = 0;
 
+        //Set up our platform specific polling mechanism. (kqueue, epoll)
+#ifdef __MAC_OSX__
+        int kq = kqueue();
+        struct kevent change;
+        struct kevent event;
+        EV_SET(&change, mSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+        struct timespec timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_nsec = 10000000;
+#endif
+#ifdef __LINUX__
+        int epollfd = epoll_create1(0);
+        struct epoll_event change, event;
+        change.events = EPOLLIN;
+        change.data.fd = mSocket;
+        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
+#endif
+
         if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while ( !mStopped )
         {
@@ -640,8 +640,16 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
+#ifdef __WIN_32__
             waitForReady(60000); //60 seconds
-
+            receivePacketRedundancy(full_redundant_packet,
+                                        full_redundant_packet_size,
+                                        full_packet_size,
+                                        current_seq_num,
+                                        last_seq_num,
+                                        newer_seq_num);
+#endif
+            
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
             /*
         // This is blocking until we get a packet...
@@ -655,13 +663,29 @@ void UdpDataProtocol::run()
         mJackTrip->writeAudioBuffer(mAudioPacket);
         */
             //----------------------------------------------------------------------------------
-            receivePacketRedundancy(full_redundant_packet,
-                                    full_redundant_packet_size,
-                                    full_packet_size,
-                                    current_seq_num,
-                                    last_seq_num,
-                                    newer_seq_num);
+#ifndef __WIN_32__
+#ifdef __MAC_OSX__
+            int n = kevent(kq, &change, 1, &event, 1, &timeout);
+#else
+            int n = epoll_wait(epollfd, &event, 1, 10);
+#endif
+            if (n > 0) {
+                receivePacketRedundancy(full_redundant_packet,
+                                        full_redundant_packet_size,
+                                        full_packet_size,
+                                        current_seq_num,
+                                        last_seq_num,
+                                        newer_seq_num);
+            } else {
+                emit signalWaitingTooLong(10);
+            }
         }
+#ifdef __MAC_OSX__
+        close(kq);
+#else
+        close(epollfd);
+#endif
+#endif // __WIN_32__
         break; }
 
     case SENDER : {
@@ -752,7 +776,7 @@ void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
 {
     // This is blocking until we get a packet...
     if (receivePacket( reinterpret_cast<char*>(full_redundant_packet), 
-                       full_redundant_packet_size) == 0) {
+                       full_redundant_packet_size) <= 0) {
         return;
     }
 

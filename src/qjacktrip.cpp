@@ -102,12 +102,22 @@ QJackTrip::QJackTrip(QWidget *parent) :
             m_ui->autoQueueSpinBox->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) ;
             m_ui->packetsLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
             m_ui->autoQueueExplanationLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+            if (m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) {
+                m_autoQueueIndicator.setText("Auto queue: enabled");
+            } else {
+                m_autoQueueIndicator.setText("Auto queue: disabled");
+            }
         } );
     connect(m_ui->autoQueueCheckBox, &QCheckBox::stateChanged, this, [=](){
             m_ui->autoQueueLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
             m_ui->autoQueueSpinBox->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) ;
             m_ui->packetsLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
             m_ui->autoQueueExplanationLabel->setEnabled(m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked());
+            if (m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) {
+                m_autoQueueIndicator.setText("Auto queue: enabled");
+            } else {
+                m_autoQueueIndicator.setText("Auto queue: disabled");
+            }
         } );
     
     connect(m_ui->inFreeverbCheckBox, &QCheckBox::stateChanged, this, [=](){
@@ -158,6 +168,14 @@ QJackTrip::QJackTrip(QWidget *parent) :
     if (index < 3) {
         labels.at(index)->setToolTip(m_ui->outZitarevLabel->toolTip());
         m_ui->outZitarevLabel->setToolTip("");
+    }
+    
+    //Add an autoqueue indicator to the status bar.
+    m_ui->statusBar->addPermanentWidget(&m_autoQueueIndicator);
+    if (m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) {
+        m_autoQueueIndicator.setText("Auto queue: enabled");
+    } else {
+        m_autoQueueIndicator.setText("Auto queue: disabled");
     }
 }
 
@@ -235,6 +253,11 @@ void QJackTrip::processError(const QString& errorMessage)
 void QJackTrip::receivedConnectionFromPeer()
 {
     m_ui->statusBar->showMessage("Received Connection from Peer!");
+}
+
+void QJackTrip::queueLengthChanged(int queueLength)
+{
+    m_autoQueueIndicator.setText(QString("Auto queue: %1").arg(queueLength));
 }
 
 void QJackTrip::udpWaitingTooLong()
@@ -568,6 +591,8 @@ void QJackTrip::start()
                              &QJackTrip::receivedConnectionFromPeer, Qt::QueuedConnection);
             QObject::connect(m_jackTrip.data(), &JackTrip::signalUdpWaitingTooLong, this,
                              &QJackTrip::udpWaitingTooLong);
+            QObject::connect(m_jackTrip.data(), &JackTrip::signalQueueLengthChanged, this, &QJackTrip::queueLengthChanged,
+                             Qt::QueuedConnection);
             m_ui->statusBar->showMessage("Waiting for Peer...");
             m_ui->disconnectButton->setEnabled(true);
 #ifdef WAIRTOHUB // WAIR

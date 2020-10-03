@@ -445,6 +445,7 @@ public:
         mSimulatedDelayRel = delay_rel;
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueueLength = broadcast_queue;}
+    void queueLengthChanged(int queueLength) { emit signalQueueLengthChanged(queueLength); }
 
 public slots:
     /// \brief Slot to stop all the processes and threads
@@ -495,6 +496,7 @@ signals:
     void signalError(const QString &errorMessage);
     void signalReceivedConnectionFromPeer();
     void signalUdpWaitingTooLong();
+    void signalQueueLengthChanged(int queueLength);
 
 public:
 

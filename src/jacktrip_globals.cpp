@@ -60,7 +60,7 @@
 
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
-void setRealtimeProcessPriority() {
+void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
     // Increase thread priority to real-time.
 
     // Please note that the thread_policy_set() calls may fail in
@@ -108,8 +108,8 @@ void setRealtimeProcessPriority() {
     // Define constants determining how much time the audio thread can
     // use in a given time quantum.  All times are in milliseconds.
 
-    // About 128 frames @44.1KHz
-    const double kTimeQuantum = 2.9;
+    // Work out how many milliseconds we have in each buffer cycle
+    const double kTimeQuantum = 1000 * (double)bufferSize / (double)sampleRate;
 
     // Time guaranteed each quantum.
     const double kAudioTimeNeeded = kGuaranteedAudioDutyCycle * kTimeQuantum;

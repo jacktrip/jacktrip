@@ -35,6 +35,7 @@
 #include <QByteArray>
 #include <QString>
 #include <QTemporaryFile>
+#include <QLabel>
 #include "UdpHubListener.h"
 #include "JackTrip.h"
 #include "messageDialog.h"
@@ -62,6 +63,7 @@ private slots:
     void processError(const QString &errorMessage);
     void receivedConnectionFromPeer();
     void udpWaitingTooLong();
+    void queueLengthChanged(int queueLength);
     void chooseRunType(const QString &type);
     void addressChanged(const QString &address);
     void authFilesChanged();
@@ -98,6 +100,8 @@ private:
     QString m_IPv6Address;
     bool m_hasIPv4Reply;
     QString m_lastPath;
+    
+    QLabel m_autoQueueIndicator;
 };
 
 #endif // QJACKTRIP_H

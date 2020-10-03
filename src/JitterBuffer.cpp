@@ -50,7 +50,8 @@ using std::cout; using std::endl;
 //*******************************************************************************
 JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strategy,
                                           int bcast_qlen, int channels, int bit_res) :
-    RingBuffer(0, 0)
+    RingBuffer(0, 0),
+    mJackTrip(nullptr)
 {
     int total_size = sample_rate * channels * bit_res * 2; // 2 secs of audio
     int slot_size = buf_samples * channels * bit_res;
@@ -225,6 +226,9 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
                     std::abs(mAutoQueueCorr*k - mMaxLatency + mSlotSize/2) > 0.6*mSlotSize) {
                 mMaxLatency = mSlotSize * std::ceil(mAutoQueueCorr*k/mSlotSize);
                 cout << "AutoQueue: " << mMaxLatency / mSlotSize << endl;
+                if (mJackTrip != nullptr) {
+                    mJackTrip->queueLengthChanged(mMaxLatency / mSlotSize);
+                }
             }
         }
     }
