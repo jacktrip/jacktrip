@@ -477,6 +477,7 @@ void QJackTrip::start()
                 m_udpHub->setBufferStrategy(m_ui->bufferStrategyComboBox->currentIndex() + 1);
                 if (m_ui->autoQueueCheckBox->isChecked()) {
                     m_udpHub->setBufferQueueLength(-(m_ui->autoQueueSpinBox->value()));
+                    m_autoQueueIndicator.setText("Auto queue: enabled");
                 } else {
                     m_udpHub->setBufferQueueLength(m_ui->queueLengthSpinBox->value());
                 }
@@ -545,6 +546,7 @@ void QJackTrip::start()
                 m_jackTrip->setBufferStrategy(m_ui->bufferStrategyComboBox->currentIndex() + 1);
                 if (m_ui->autoQueueCheckBox->isChecked()) {
                     m_jackTrip->setBufferQueueLength(-(m_ui->autoQueueSpinBox->value()));
+                    m_autoQueueIndicator.setText("Auto queue: enabled");
                 }
             } else {
                 m_jackTrip->setBufferStrategy(-1);
