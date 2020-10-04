@@ -47,6 +47,7 @@
     #include <mach/mach.h>
     #include <mach/mach_time.h>
     #include <mach/thread_policy.h>
+    #include <sys/qos.h>
 #endif //__MAC_OSX__
 
 #include "jacktrip_globals.h"
@@ -61,6 +62,9 @@
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
 void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
+    // Try to prevent the thread from getting thrown under the bus for energy saving or thermal reasons.
+    pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+
     // Increase thread priority to real-time.
 
     // Please note that the thread_policy_set() calls may fail in

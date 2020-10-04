@@ -33,12 +33,6 @@
 #include "UdpHubListener.h"
 #include <QLoggingCategory>
 
-#if defined ( __MAC_OSX__ )
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <mach/thread_policy.h>
-#endif //__MAC_OSX__
-
 QCoreApplication *createApplication(int &argc, char *argv[])
 {
     //Find the name that the app was called with.
@@ -122,19 +116,6 @@ int main(int argc, char *argv[])
 #ifdef __WIN_32__
         //Remove the console that appears if we're in windows.
         FreeConsole();
-#endif
-#ifdef __MAC_OSX__
-        mach_port_t mach_thread_id = mach_thread_self();
-
-        // Make thread fixed priority.
-        thread_extended_policy_data_t policy;
-        policy.timeshare = 0;  // Set to 1 for a non-fixed thread.
-        kern_return_t result = thread_policy_set(mach_thread_id, THREAD_EXTENDED_POLICY,
-                                                 reinterpret_cast<thread_policy_t>(&policy),
-                                                 THREAD_EXTENDED_POLICY_COUNT);
-        if (result != KERN_SUCCESS) {
-            std::cerr << "Failed to make thread fixed priority. " << result << std::endl;
-        }
 #endif
         app->setApplicationName("QJackTrip");
         w.reset(new QJackTrip);
