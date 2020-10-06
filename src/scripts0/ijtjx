@@ -1,0 +1,3 @@
+echo Assuming jos branch:
+echo cp -p ./Debug/jacktrip /usr/local/bin/jtj
+     cp -p ./Debug/jacktrip /usr/local/bin/jt

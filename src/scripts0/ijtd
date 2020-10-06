@@ -1,0 +1,3 @@
+echo Assuming dev branch:
+echo cp -p ../builddir/jacktrip /usr/local/bin/jtd
+     cp -p ../builddir/jacktrip /usr/local/bin/jtd

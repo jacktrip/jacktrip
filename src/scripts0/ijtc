@@ -1,0 +1,3 @@
+echo Assuming jos branch:
+echo scp ../builddir/jacktrip ccrma-gate.stanford.edu:~jos/web/bin/jacktrip-ltd-v$1-mac
+     scp ../builddir/jacktrip ccrma-gate.stanford.edu:~jos/web/bin/jacktrip-ltd-v$1-mac
