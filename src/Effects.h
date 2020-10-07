@@ -88,7 +88,7 @@ public:
   Effects() :
     mNumChans(2),
     mLimit(LIMITER_OUTGOING),
-    mNumClientsAssumed(1)
+    mNumClientsAssumed(2)
   {}
 
   ~Effects() {
@@ -230,7 +230,7 @@ public:
         inCompressorPreset = stdPreset;
       } else if (io == IO_OUT) {
         outCompressorPreset = stdPreset;
-      } else {
+      } else if (io != IO_NEITHER) {
         std::cerr << "*** Effects.h: setCompressorPresetFrom1: Invalid InOrOut value " << io << "\n";
         returnCode = 1;
       }
@@ -323,7 +323,7 @@ public:
         inCompressorPreset = newPreset;
       } else if (inOrOut == IO_OUT) {
         outCompressorPreset = newPreset;
-      } else {
+      } else if (inOrOut != IO_NEITHER) {
         std::cerr << "*** Effects.h: parseCompressorArgs: invalid InOrOut value " << inOrOut << "\n";
         returnCode = 2;
       }
@@ -375,14 +375,17 @@ public:
         case 'c': if (io==IO_IN) { inCompressor = true; } else if (io==IO_OUT) { outCompressor = true; }
           else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
           lastEffect = 'c';
+	  io = IO_NEITHER;
           break;
         case 'f': if (io==IO_IN) { inFreeverb = true; } else if (io==IO_OUT) { outFreeverb = true; }
           else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
           lastEffect = 'f';
+	  io = IO_NEITHER;
           break;
         case 'z': if (io==IO_IN) { inZitarev = true; } else if (io==IO_OUT) { outZitarev = true; }
           else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
           lastEffect = 'z';
+	  io = IO_NEITHER;
           break;
         case '(': parenLevel++;
           for (ulong j=i+1; j<argLen; j++) {
@@ -452,6 +455,11 @@ public:
 	mLimit = LIMITER_OUTGOING;
 	if (gVerboseFlag) {
 	  std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
+	}
+      } else if (c1 == 'n') {
+	mLimit = LIMITER_NONE;
+	if (gVerboseFlag) {
+	  std::cout << "NO Overflow Limiters\n";
 	}
       } else {
 	returnCode = 2;
