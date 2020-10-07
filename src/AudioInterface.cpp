@@ -606,23 +606,18 @@ void AudioInterface::fromBitToSampleConversion
     }
 }
 
-char* pluginName(ProcessPlugin* plugin) {
-  char* pluginName { const_cast<char*>(typeid(*plugin).name()) };
-  while (isdigit(*pluginName)) { pluginName++; }
-  return pluginName;
-}
-
 //*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
   if (not plugin) { return; }
 
-#define TEST_PLUGIN_NAME
+//#define TEST_PLUGIN_NAME
 #ifdef TEST_PLUGIN_NAME
   std::cout << "Plugin name = " 
-	    << pluginName(plugin) 
+	    << plugin->getName()
 	    << " = subset of mangled name = "
-	    << typeid(*plugin).name() << "\n";
+	    << typeid(*plugin).name()
+	    << "\n";
 #endif
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
@@ -639,7 +634,7 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumOutputs() > mNumOutChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-              << pluginName(plugin) << " REJECTED due to having "
+              << plugin->getName() << " REJECTED due to having "
               << plugin->getNumOutputs() << " outputs, while the JACK audio output requires "
               << mNumOutChans << " outputs\n";
     return;

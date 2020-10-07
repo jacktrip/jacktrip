@@ -65,6 +65,12 @@ public:
 
     //virtual void buildUserInterface(UI* interface) = 0;
 
+    virtual char* getName() {
+      char* pluginName { const_cast<char*>(typeid(*this).name()) }; // get name of DERIVED class
+      while (isdigit(*pluginName)) { pluginName++; }
+      return pluginName;
+    }
+
     /** \brief Do proper Initialization of members and class instances. By default this
    * initializes the Sampling Frequency. If a class instance depends on the
    * sampling frequency, it should be initialize here.
@@ -72,8 +78,7 @@ public:
     virtual void init(int samplingRate) {
       fSamplingFreq = samplingRate;
       if (verbose) {
-        char* derivedClassName { const_cast<char*>(typeid(*this).name()) };
-        while (isdigit(*derivedClassName)) { derivedClassName++; } // remove leading manglage
+        char* derivedClassName = getName();
         printf("%s: init(%d)\n",derivedClassName,samplingRate);
       }
     }

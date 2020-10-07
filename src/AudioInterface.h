@@ -149,8 +149,8 @@ public:
    * appropriate size to hold the value. The caller is responsible to allocate
    * enough space to store the result.
    */
-#define TEST_SAMPLE_CONVERSIONS
     static void fromSampleToBitConversion(
+//#define TEST_SAMPLE_CONVERSIONS
 #ifdef TEST_SAMPLE_CONVERSIONS
 					  sample_t* input,
 #else
