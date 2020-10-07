@@ -127,7 +127,7 @@ Use `git clone https://github.com/jacktrip/jacktrip.git` to download a fresh cop
 
 On Windows 10, the easiest way to build is in the command line:
 To add the location of qmake to the path, in the Windows search bar, type "environment variable" and click on the Environment Variables button in the Advanced tab of System Properties.  Find the Path variable in System variables, click Edit, and enter the location of qmake, e.g. `C:\Qt\5.15.0\mingw81_64\bin`, where 5.15.0 is the version of Qt you installed.
-To verify you have g++ installed, type `which g++` in the command line.  If the command returns `not found` rather than a path, go to the Qt Maintenance Tool, which might be in a directory such as `C:\Qt\maintenancetool.exe`, and remove, then reinstall Qt.
+To verify you have g++ installed, type `where g++` in the command line.  If the command returns `not found` rather than a path, go to the Qt Maintenance Tool, which might be in a directory such as `C:\Qt\maintenancetool.exe`, and remove, then reinstall Qt.
 In the command line, use the `cd` command to navigate to the project directory, e.g. `cd jacktrip` and execute the following commands:
 mkdir builddir (this step creates the build directory, and is only necessary if you're building for the first time)
 cd builddir
