@@ -3,7 +3,7 @@ author: "Julius Smith"
 license: "MIT Style STK-4.2"
 name: "compressor"
 version: "0.0"
-Code generated with Faust 2.28.1 (https://faust.grame.fr)
+Code generated with Faust 2.28.5 (https://faust.grame.fr)
 Compilation options: -lang cpp -inpl -scal -ftz 0
 ------------------------------------------------------------ */
 
@@ -1612,6 +1612,7 @@ class compressordsp : public dsp {
 		m->declare("compressors.lib/name", "Faust Compressor Effect Library");
 		m->declare("compressors.lib/version", "0.0");
 		m->declare("description", "Compressor demo application, adapted from the Faust Library's dm.compressor_demo in demos.lib");
+		m->declare("documentation", "https://faustlibraries.grame.fr/libs/compressors/#cocompressor_mono");
 		m->declare("filename", "compressordsp.dsp");
 		m->declare("license", "MIT Style STK-4.2");
 		m->declare("maths.lib/author", "GRAME");
@@ -1719,15 +1720,15 @@ class compressordsp : public dsp {
 	}
 	
 	virtual void buildUserInterface(UI* ui_interface) {
-		ui_interface->declare(0, "tooltip", "Reference:   http://en.wikipedia.org/wiki/Dynamic_range_compression");
+		ui_interface->declare(0, "tooltip", "References:                 https://faustlibraries.grame.fr/libs/compressors/                 http://en.wikipedia.org/wiki/Dynamic_range_compression");
 		ui_interface->openVerticalBox("COMPRESSOR");
 		ui_interface->declare(0, "0", "");
 		ui_interface->openHorizontalBox("0x00");
 		ui_interface->declare(&fCheckbox0, "0", "");
-		ui_interface->declare(&fCheckbox0, "tooltip", "When this is checked, the compressor   has no effect");
+		ui_interface->declare(&fCheckbox0, "tooltip", "When this is checked, the compressor                 has no effect");
 		ui_interface->addCheckButton("Bypass", &fCheckbox0);
 		ui_interface->declare(&fHbargraph0, "1", "");
-		ui_interface->declare(&fHbargraph0, "tooltip", "Current gain of  the compressor in dB");
+		ui_interface->declare(&fHbargraph0, "tooltip", "Compressor gain in dB");
 		ui_interface->declare(&fHbargraph0, "unit", "dB");
 		ui_interface->addHorizontalBargraph("Compressor Gain", &fHbargraph0, -50.0f, 10.0f);
 		ui_interface->closeBox();
@@ -1737,11 +1738,11 @@ class compressordsp : public dsp {
 		ui_interface->openHorizontalBox("Compression Control");
 		ui_interface->declare(&fHslider2, "0", "");
 		ui_interface->declare(&fHslider2, "style", "knob");
-		ui_interface->declare(&fHslider2, "tooltip", "A compression Ratio of N means that for each N dB increase in input  signal level above Threshold, the output level goes up 1 dB");
+		ui_interface->declare(&fHslider2, "tooltip", "A compression Ratio of N means that for each N dB increase in input         signal level above Threshold, the output level goes up 1 dB");
 		ui_interface->addHorizontalSlider("Ratio", &fHslider2, 2.0f, 1.0f, 20.0f, 0.100000001f);
 		ui_interface->declare(&fHslider4, "1", "");
 		ui_interface->declare(&fHslider4, "style", "knob");
-		ui_interface->declare(&fHslider4, "tooltip", "When the signal level exceeds the Threshold (in dB), its level  is compressed according to the Ratio");
+		ui_interface->declare(&fHslider4, "tooltip", "When the signal level exceeds the Threshold (in dB), its level         is compressed according to the Ratio");
 		ui_interface->declare(&fHslider4, "unit", "dB");
 		ui_interface->addHorizontalSlider("Threshold", &fHslider4, -24.0f, -100.0f, 10.0f, 0.100000001f);
 		ui_interface->closeBox();
@@ -1750,21 +1751,21 @@ class compressordsp : public dsp {
 		ui_interface->declare(&fHslider1, "1", "");
 		ui_interface->declare(&fHslider1, "scale", "log");
 		ui_interface->declare(&fHslider1, "style", "knob");
-		ui_interface->declare(&fHslider1, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain  to approach (exponentially) a new lower target level (the compression  `kicking in')");
+		ui_interface->declare(&fHslider1, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain         to approach (exponentially) a new lower target level (the compression         `kicking in')");
 		ui_interface->declare(&fHslider1, "unit", "ms");
 		ui_interface->addHorizontalSlider("Attack", &fHslider1, 15.0f, 1.0f, 1000.0f, 0.100000001f);
 		ui_interface->declare(&fHslider3, "2", "");
 		ui_interface->declare(&fHslider3, "scale", "log");
 		ui_interface->declare(&fHslider3, "style", "knob");
-		ui_interface->declare(&fHslider3, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain  to approach (exponentially) a new higher target level (the compression  'releasing')");
+		ui_interface->declare(&fHslider3, "tooltip", "Time constant in ms (1/e smoothing time) for the compression gain         to approach (exponentially) a new higher target level (the compression         'releasing')");
 		ui_interface->declare(&fHslider3, "unit", "ms");
 		ui_interface->addHorizontalSlider("Release", &fHslider3, 40.0f, 1.0f, 1000.0f, 0.100000001f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->declare(&fHslider0, "5", "");
-		ui_interface->declare(&fHslider0, "tooltip", "The compressed-signal output level is increased by this amount  (in dB) to make up for the level lost due to compression");
+		ui_interface->declare(&fHslider0, "tooltip", "The compressed-signal output level is increased by this amount         (in dB) to make up for the level lost due to compression");
 		ui_interface->declare(&fHslider0, "unit", "dB");
-		ui_interface->addHorizontalSlider("Makeup Gain", &fHslider0, 2.0f, -96.0f, 96.0f, 0.100000001f);
+		ui_interface->addHorizontalSlider("MakeUpGain", &fHslider0, 2.0f, -96.0f, 96.0f, 0.100000001f);
 		ui_interface->closeBox();
 	}
 	
