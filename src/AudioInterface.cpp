@@ -616,9 +616,16 @@ char* pluginName(ProcessPlugin* plugin) {
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
   if (not plugin) { return; }
+
+#define TEST_PLUGIN_NAME
+#ifdef TEST_PLUGIN_NAME
+  std::cout << "Plugin name = " 
+	    << pluginName(plugin) 
+	    << " = subset of mangled name = "
+	    << typeid(*plugin).name() << "\n";
+#endif
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-//              << pluginName(plugin) << " REJECTED due to having "
               << typeid(plugin).name() << " REJECTED due to having "
               << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
               << mNumInChans << " inputs\n";

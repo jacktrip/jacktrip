@@ -90,7 +90,6 @@ public:
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-    // std::cout << "Limiter: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }

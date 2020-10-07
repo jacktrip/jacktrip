@@ -73,7 +73,7 @@ public:
       fSamplingFreq = samplingRate;
       if (verbose) {
         char* derivedClassName { const_cast<char*>(typeid(*this).name()) };
-        while (isdigit(*derivedClassName)) { derivedClassName++; } // I know!
+        while (isdigit(*derivedClassName)) { derivedClassName++; } // remove leading manglage
         printf("%s: init(%d)\n",derivedClassName,samplingRate);
       }
     }
