@@ -23,34 +23,36 @@
 */
 //*****************************************************************
 
-#include "about.h"
-#include "ui_about.h"
-#include "jacktrip_globals.h"
+#include "NoNap.h"
+#include <Foundation/Foundation.h>
 
-const QString About::sBuildID = "2020100800";
+NoNap::NoNap() :
+    m_preventNap(false)
+{}
 
-About::About(QWidget *parent) :
-    QDialog(parent),
-    m_ui(new Ui::About)
+void NoNap::disableNap()
 {
-    m_ui->setupUi(this);
-    connect(m_ui->closeButton, &QPushButton::released, this, [=](){ this->done(0); });
-    
-    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%VERSION%", gVersion));
-    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%BUILD%", sBuildID));
-#ifdef __MAC_OSX__
-    m_ui->aboutImage->setPixmap(QPixmap(":/qjacktrip/about@2x.png"));
-#endif
-    
-    aboutText.setHtml(m_ui->aboutLabel->text());
-    aboutText.setDefaultFont(m_ui->aboutLabel->font());
+    if (m_preventNap) {
+        return;
+    }
+    m_preventNap = true;
+    m_activity = [[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityLatencyCritical | NSActivityUserInitiated reason:@"Disable App Nap"];
+    [(id)m_activity retain];
 }
 
-void About::resizeEvent(QResizeEvent *event)
+void NoNap::enableNap()
 {
-    QDialog::resizeEvent(event);
-    aboutText.setTextWidth(m_ui->textLayout->geometry().width());
-    m_ui->aboutLabel->setMinimumHeight(aboutText.size().height());
+    if (!m_preventNap) {
+        return;
+    }
+    m_preventNap = false;
+    [[NSProcessInfo processInfo] endActivity:(id)m_activity];
+    [(id)m_activity release];
 }
 
-About::~About() = default;
+NoNap::~NoNap()
+{
+    if (m_preventNap) {
+        enableNap();
+    }
+}

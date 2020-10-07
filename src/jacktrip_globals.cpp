@@ -62,7 +62,7 @@
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
 void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
-    // Try to prevent the thread from getting thrown under the bus for energy saving or thermal reasons.
+    // Set thread QoS to allow maximum performance.
     pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
 
     // Increase thread priority to real-time.
@@ -106,7 +106,8 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
     // means the scheduler would give half the time to the thread.
     // These values have empirically been found to yield good behavior.
     // Good means that audio performance is high and other threads won't starve.
-    const double kGuaranteedAudioDutyCycle = 0.75;
+    //const double kGuaranteedAudioDutyCycle = 0.75;
+    const double kGuaranteedAudioDutyCycle = 0.5;
     const double kMaxAudioDutyCycle = 0.85;
 
     // Define constants determining how much time the audio thread can

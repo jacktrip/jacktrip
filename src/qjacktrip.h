@@ -40,6 +40,10 @@
 #include "JackTrip.h"
 #include "messageDialog.h"
 
+#ifdef __MAC_OSX__
+#include "NoNap.h"
+#endif
+
 namespace Ui {
 class QJackTrip;
 }
@@ -102,6 +106,10 @@ private:
     QString m_lastPath;
     
     QLabel m_autoQueueIndicator;
+    
+#ifdef __MAC_OSX__
+    NoNap m_noNap;
+#endif
 };
 
 #endif // QJACKTRIP_H

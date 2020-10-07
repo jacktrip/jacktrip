@@ -52,6 +52,7 @@ macx {
   # can change between 32bits (x86) or 64bits(x86_64) Change this to go back to 32 bits (x86)
   LIBS += -framework CoreAudio -framework CoreFoundation
   DEFINES += __MAC_OSX__
+  CONFIG += objective_c
   }
 
 linux-g++ | linux-g++-64 {
@@ -136,7 +137,7 @@ HEADERS += src/DataProtocol.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
            src/JackTripWorker.h \
-           src/JitterBuffer.cpp \
+           src/JitterBuffer.h \
            src/LoopBack.h \
            src/PacketHeader.h \
            src/ProcessPlugin.h \
@@ -188,6 +189,11 @@ SOURCES += src/DataProtocol.cpp \
 
 !nojack {
 SOURCES += src/JackAudioInterface.cpp
+}
+
+macx {
+  HEADERS += src/NoNap.h
+  OBJECTIVE_SOURCES += src/NoNap.mm
 }
 
 FORMS += src/qjacktrip.ui src/about.ui src/messageDialog.ui

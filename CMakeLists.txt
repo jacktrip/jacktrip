@@ -30,6 +30,7 @@ set(qjacktrip_SRC
   src/main.cpp
   src/qjacktrip.cpp
   src/Settings.cpp
+  src/jacktrip_globals.cpp
   src/JackTrip.cpp
   src/UdpHubListener.cpp
   src/JackTripWorker.cpp
@@ -41,6 +42,7 @@ set(qjacktrip_SRC
   src/LoopBack.cpp
   src/PacketHeader.cpp
   src/RingBuffer.cpp
+  src/JitterBuffer.cpp
   src/about.cpp
   src/messageDialog.cpp
   src/qjacktrip.qrc
@@ -55,6 +57,10 @@ set(qjacktrip_SRC
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set (qjacktrip_SRC ${qjacktrip_SRC} src/NoNap.mm)
+  set (CMAKE_C_FLAGS "-x objective-c")
+  set (CMAKE_EXE_LINKER_FLAGS "-framework Foundation")
 endif ()
 
 add_compile_definitions(WAIRTOHUB)

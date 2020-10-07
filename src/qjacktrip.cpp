@@ -217,6 +217,9 @@ void QJackTrip::processFinished()
         return;
     }
     m_jackTripRunning = false;
+#ifdef __MAC_OSX__
+    m_noNap.enableNap();
+#endif
     if (m_ui->ioStatsCheckBox->isChecked()) {
         m_messageDialog->stopMonitoring();
     }
@@ -627,6 +630,10 @@ void QJackTrip::start()
     }
     m_ui->addressComboBox->insertItem(0, serverAddress);
     m_ui->addressComboBox->setCurrentIndex(0);
+    
+#ifdef __MAC_OSX__
+    m_noNap.disableNap();
+#endif
 }
 
 void QJackTrip::stop()

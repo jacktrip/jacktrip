@@ -23,34 +23,21 @@
 */
 //*****************************************************************
 
-#include "about.h"
-#include "ui_about.h"
-#include "jacktrip_globals.h"
+#ifndef __NONAP_H__
+#define __NONAP_H__
 
-const QString About::sBuildID = "2020100800";
-
-About::About(QWidget *parent) :
-    QDialog(parent),
-    m_ui(new Ui::About)
+class NoNap
 {
-    m_ui->setupUi(this);
-    connect(m_ui->closeButton, &QPushButton::released, this, [=](){ this->done(0); });
+public:
+    NoNap();
+    ~NoNap();
     
-    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%VERSION%", gVersion));
-    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%BUILD%", sBuildID));
-#ifdef __MAC_OSX__
-    m_ui->aboutImage->setPixmap(QPixmap(":/qjacktrip/about@2x.png"));
-#endif
+    void disableNap();
+    void enableNap();
     
-    aboutText.setHtml(m_ui->aboutLabel->text());
-    aboutText.setDefaultFont(m_ui->aboutLabel->font());
-}
+private:
+    void *m_activity;
+    bool m_preventNap;
+};
 
-void About::resizeEvent(QResizeEvent *event)
-{
-    QDialog::resizeEvent(event);
-    aboutText.setTextWidth(m_ui->textLayout->geometry().width());
-    m_ui->aboutLabel->setMinimumHeight(aboutText.size().height());
-}
-
-About::~About() = default;
+#endif // __NONAP_H__
