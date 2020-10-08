@@ -87,9 +87,9 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
         return;
     }
 
-    // Set to relatively high priority.
+    // Set to relatively high priority. (BASEPRI_FOREGROUND = 47)
     thread_precedence_policy_data_t precedence;
-    precedence.importance = 63;
+    precedence.importance = 52;
     result = thread_policy_set(mach_thread_id,
                                THREAD_PRECEDENCE_POLICY,
                                reinterpret_cast<thread_policy_t>(&precedence),

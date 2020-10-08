@@ -35,6 +35,8 @@
  * \date June 2008
  */
 
+//#define __MANUAL_POLL__
+
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
 #include "JackTrip.h"
@@ -51,15 +53,14 @@
 #include <winsock2.h> //cc need SD_SEND
 #include <ws2tcpip.h> // for IPv6
 #endif
-#if defined (__LINUX__) || (__MAC_OSX__)
+#if defined (__LINUX__) || defined (__MAC_OSX__)
 #include <sys/socket.h> // for POSIX Sockets
 #include <unistd.h>
 #include <sys/fcntl.h>
 #endif
-#ifdef __MAC_OSX__
+#if defined (__MAC_OSX__) && !defined (__MANUAL_POLL__)
 #include <sys/event.h>
-#endif
-#ifdef __LINUX__
+#elif defined (__LINUX__) && !defined (__MANUAL_POLL__)
 #include <sys/epoll.h>
 #endif
 
@@ -121,7 +122,7 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
-#if defined (__LINUX__) || (__MAC_OSX__)
+#if defined (__LINUX__) || defined (__MAC_OSX__)
     //Don't make the following code conditional on windows
     //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
@@ -133,7 +134,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         }
         //cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
-#if defined (__LINUX__) || (__MAC_OSX__)
+#if defined (__LINUX__) || defined (__MAC_OSX__)
     }
 #endif
 
@@ -231,7 +232,7 @@ int UdpDataProtocol::bindSocket()
     SOCKET sock_fd;
 #endif
 
-#if defined ( __LINUX__ ) || (__MAC_OSX__)
+#if defined ( __LINUX__ ) || defined (__MAC_OSX__)
     int sock_fd;
 #endif
 
@@ -295,7 +296,7 @@ int UdpDataProtocol::bindSocket()
         // a different address. While this generally won't be a problem for IPv4, it will for IPv6.)
         if ( (::connect(sock_fd, (struct sockaddr *) &mPeerAddr, sizeof(mPeerAddr))) < 0)
         { throw std::runtime_error("ERROR: Could not connect UDP socket"); }
-#if defined (__LINUX__) || (__MAC_OSX__)
+#if defined (__LINUX__) || defined (__MAC_OSX__)
         //if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
         //{ throw std::runtime_error("ERROR: Could shutdown SHUT_WR UDP socket"); }
 #endif
@@ -614,7 +615,7 @@ void UdpDataProtocol::run()
         mStatCount = 0;
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
-#ifdef __MAC_OSX__
+#if defined (__MAC_OSX__) && !defined (__MANUAL_POLL__)
         int kq = kqueue();
         struct kevent change;
         struct kevent event;
@@ -622,8 +623,7 @@ void UdpDataProtocol::run()
         struct timespec timeout;
         timeout.tv_sec = 0;
         timeout.tv_nsec = 10000000;
-#endif
-#ifdef __LINUX__
+#elif defined (__LINUX__) && !defined (__MANUAL_POLL__)
         int epollfd = epoll_create1(0);
         struct epoll_event change, event;
         change.events = EPOLLIN;
@@ -640,7 +640,7 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-#ifdef __WIN_32__
+#if defined (__WIN_32__) || defined (__MANUAL_POLL__)
             waitForReady(60000); //60 seconds
             receivePacketRedundancy(full_redundant_packet,
                                         full_redundant_packet_size,
@@ -649,7 +649,7 @@ void UdpDataProtocol::run()
                                         last_seq_num,
                                         newer_seq_num);
 	}
-#endif
+#else
             
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
             /*
@@ -664,7 +664,7 @@ void UdpDataProtocol::run()
         mJackTrip->writeAudioBuffer(mAudioPacket);
         */
             //----------------------------------------------------------------------------------
-#ifndef __WIN_32__
+
 #ifdef __MAC_OSX__
             int n = kevent(kq, &change, 1, &event, 1, &timeout);
 #else
@@ -686,7 +686,7 @@ void UdpDataProtocol::run()
 #else
         close(epollfd);
 #endif
-#endif // __WIN_32__
+#endif // __WIN_32__ || __MANUAL_POLL__
         break; }
 
     case SENDER : {
