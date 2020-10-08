@@ -26,6 +26,8 @@
 #ifndef __NONAP_H__
 #define __NONAP_H__
 
+#include <objc/objc.h>
+
 class NoNap
 {
 public:
@@ -36,7 +38,7 @@ public:
     void enableNap();
     
 private:
-    void *m_activity;
+    id m_activity;
     bool m_preventNap;
 };
 

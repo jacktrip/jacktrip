@@ -37,7 +37,7 @@ void NoNap::disableNap()
     }
     m_preventNap = true;
     m_activity = [[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityLatencyCritical | NSActivityUserInitiated reason:@"Disable App Nap"];
-    [(id)m_activity retain];
+    [m_activity retain];
 }
 
 void NoNap::enableNap()
@@ -46,8 +46,8 @@ void NoNap::enableNap()
         return;
     }
     m_preventNap = false;
-    [[NSProcessInfo processInfo] endActivity:(id)m_activity];
-    [(id)m_activity release];
+    [[NSProcessInfo processInfo] endActivity:m_activity];
+    [m_activity release];
 }
 
 NoNap::~NoNap()
