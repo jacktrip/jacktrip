@@ -4,7 +4,6 @@ os:
 
 language: 
   - cpp
-  - objective-c
 
 # force updated ubuntu distribution with up-to-date gcc
 dist: bionic
