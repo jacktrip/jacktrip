@@ -1,4 +1,10 @@
-// clang++ -g -std=c++14 -I/opt/local/include  -L/opt/local/lib  thist2.cpp   -o thist2
+/*
+  C-c C-c
+  clang++ -g -std=c++14 -I/opt/local/include  -L/opt/local/lib  thist2.cpp   -o thist2
+  C-x `
+  M-x lldb
+  b main
+*/
 
 #include <iostream>
 #include <vector>
