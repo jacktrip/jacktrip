@@ -108,7 +108,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
               if (printIntervalSec == 0.0) { printf(") "); } else { printf(" "); }
               lastPrintTimeUS = curTimeUS;
               if (printIntervalSec >= 1.0) { // print histogram
-		std::cout << "\n" << getLatencyHistogramString() << "\n";
+                std::cout << "\n" << getLatencyHistogramString() << "\n";
               }
             }
             std::cout << std::flush;
