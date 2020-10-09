@@ -193,7 +193,7 @@ private:
     std::string rows = "";
     for (int i = histStart; i <= histLast; ++i) {
       int hi = int(std::round(histScale * double(latencyHistogram[i])));
-      std::string istr = std::to_string(std::round(latencyHistogramCellWidth * double(i)));
+      std::string istr = std::to_string(int(std::round(latencyHistogramCellWidth * double(i))));
       std::string histr = std::to_string(hi);
       std::string row = "["+istr+"ms]="+histr+":";
       for (int j=0; j<hi; j++) {
