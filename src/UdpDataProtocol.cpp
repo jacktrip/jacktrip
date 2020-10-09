@@ -615,7 +615,8 @@ void UdpDataProtocol::run()
         mStatCount = 0;
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
-#if defined (__MAC_OSX__) && !defined (__MANUAL_POLL__)
+#if !defined (__MANUAL_POLL__)
+#if defined (__MAC_OSX__)
         int kq = kqueue();
         struct kevent change;
         struct kevent event;
@@ -623,13 +624,15 @@ void UdpDataProtocol::run()
         struct timespec timeout;
         timeout.tv_sec = 0;
         timeout.tv_nsec = 10000000;
-#elif defined (__LINUX__) && !defined (__MANUAL_POLL__)
+#else
         int epollfd = epoll_create1(0);
         struct epoll_event change, event;
         change.events = EPOLLIN;
         change.data.fd = mSocket;
         epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
 #endif
+        int waitTime = 0;
+#endif // __MANUAL_POLL__
 
         if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while ( !mStopped )
@@ -671,6 +674,7 @@ void UdpDataProtocol::run()
             int n = epoll_wait(epollfd, &event, 1, 10);
 #endif
             if (n > 0) {
+                waitTime = 0;
                 receivePacketRedundancy(full_redundant_packet,
                                         full_redundant_packet_size,
                                         full_packet_size,
@@ -678,7 +682,8 @@ void UdpDataProtocol::run()
                                         last_seq_num,
                                         newer_seq_num);
             } else {
-                emit signalWaitingTooLong(10);
+                waitTime += 10;
+                emit signalWaitingTooLong(waitTime);
             }
         }
 #ifdef __MAC_OSX__

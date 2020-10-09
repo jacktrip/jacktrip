@@ -27,7 +27,7 @@
 #include "ui_about.h"
 #include "jacktrip_globals.h"
 
-const QString About::sBuildID = "2020100800";
+const QString About::sBuildID = "2020100900";
 
 About::About(QWidget *parent) :
     QDialog(parent),
