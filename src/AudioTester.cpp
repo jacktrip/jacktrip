@@ -55,8 +55,14 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
           std::cerr <<
             "*** AudioTester.h: computeProcessFromNetwork: Received pulse amplitude "
                     << amp << " (cell " << cellNum << ") while looking for cell "
-                    << pendingCell << " - ABORTING CURRENT PULSE\n";
-          impulsePending = false;
+                    << pendingCell << "\n";
+
+	  if (cellNum > pendingCell) { // we missed it
+	    std::cerr << " - ABORTING CURRENT PULSE\n";
+	    impulsePending = false;
+	  } else { // somehow we got the previous pulse again - repeated packet or underrun-caused repetition (old buffer)
+	    std::cerr << " - IGNORING FOUND PULSE AND KEEP WAITING\n";
+	  }
         } else { // found our impulse:
           int64_t elapsedSamples = -1;
           if (n >= n_frames-1) {
