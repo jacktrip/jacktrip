@@ -69,10 +69,10 @@ class AudioTester
   const int numAmpCells { 10 };
   const float ampCellHeight { impulseAmplitude/numAmpCells };
 
-  const double latencyHistogramCellWidth { 5.0 };
+  const double latencyHistogramCellWidth { 5.0 }; // latency range in ms covered one cell
   const double latencyHistogramCellMin { 0.0 };
-  const double latencyHistogramCellMax { 100.0 };
-  const int latencyHistogramPrintCountMax { 72 };
+  const double latencyHistogramCellMax { 20.0 };  // in cells, so 5x this is max latency in ms
+  const int latencyHistogramPrintCountMax { 72 }; // normalize when asterisks exceed this number
 
   int pendingCell { 0 }; // 0 is not used
   float sampleRate { 48000.0f };
@@ -193,10 +193,10 @@ private:
     std::string rows = "";
     for (int i = histStart; i <= histLast; ++i) {
       int hi = int(std::round(histScale * double(latencyHistogram[i])));
-      std::string istr = std::to_string(i);
+      std::string istr = std::to_string(std::round(latencyHistogramCellWidth * double(i)));
       std::string histr = std::to_string(hi);
-      std::string row = "["+istr+"]="+histr+":";
-      for (int j=0; j<latencyHistogram[i]; j++) {
+      std::string row = "["+istr+"ms]="+histr+":";
+      for (int j=0; j<hi; j++) {
         row += marker;
       }
       rows += row + "\n";
