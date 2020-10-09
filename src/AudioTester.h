@@ -71,7 +71,7 @@ class AudioTester
 
   const double latencyHistogramCellWidth { 5.0 }; // latency range in ms covered one cell
   const double latencyHistogramCellMin { 0.0 };
-  const double latencyHistogramCellMax { 20.0 };  // in cells, so 5x this is max latency in ms
+  const double latencyHistogramCellMax { 19.0 };  // in cells, so 5x this is max latency in ms
   const int latencyHistogramPrintCountMax { 72 }; // normalize when asterisks exceed this number
 
   int pendingCell { 0 }; // 0 is not used
@@ -141,7 +141,9 @@ private:
   }
 
   void extendLatencyHistogram(double latencyMS) {
-    int latencyCell = static_cast<int>(floor(std::max(latencyHistogramCellMin, std::min(latencyHistogramCellMax, latencyMS / latencyHistogramCellWidth))));
+    int latencyCell = static_cast<int>(floor(std::max(latencyHistogramCellMin,
+                                                      std::min(latencyHistogramCellMax,
+                                                               latencyMS / latencyHistogramCellWidth))));
     latencyHistogram[latencyCell] += 1;
   }
 
@@ -192,15 +194,22 @@ private:
     }
     std::string rows = "";
     for (int i = histStart; i <= histLast; ++i) {
-      int hi = int(std::round(histScale * double(latencyHistogram[i])));
+      int hi = latencyHistogram[i];
+      int hin = int(std::round(histScale * double(hi)));
       std::string istr = std::to_string(int(std::round(latencyHistogramCellWidth * double(i))));
+      std::string istrm1 = std::to_string(int(std::round(latencyHistogramCellWidth * double(i-1))));
+      // std::string histr = boost::format("%02d",hi);
       std::string histr = std::to_string(hi);
-      std::string row = "["+istr+"ms]="+histr+":";
-      for (int j=0; j<hi; j++) {
+      while (histr.length()<3) {
+        histr = " " + histr;
+      }
+      std::string row = "["+istrm1+"-"+istr+"ms]="+histr+":";
+      for (int j=0; j<hin; j++) {
         row += marker;
       }
       rows += row + "\n";
     }
+    rows += " and above\n";
     return rows;
   }
 
