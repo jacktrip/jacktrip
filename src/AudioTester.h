@@ -44,6 +44,8 @@
 #include <chrono>
 #include <cstdint>
 #include <cmath>
+#include <string>
+#include <map>
 
 #include <QVarLengthArray>
 
@@ -63,9 +65,14 @@ class AudioTester
   double roundTripCount { 0.0 };
   const int bufferSkipStart { 100 };
   int bufferSkip { bufferSkipStart };
-  static constexpr float impulseAmplitude { 0.1f };
-  static constexpr int numAmpCells { 10 };
-  static constexpr float ampCellHeight { impulseAmplitude/numAmpCells };
+  const float impulseAmplitude { 0.1f };
+  const int numAmpCells { 10 };
+  const float ampCellHeight { impulseAmplitude/numAmpCells };
+
+  const double latencyHistogramCellWidth { 5.0 };
+  const double latencyHistogramCellMin { 0.0 };
+  const double latencyHistogramCellMax { 100.0 };
+  const int latencyHistogramPrintCountMax { 72 };
 
   int pendingCell { 0 }; // 0 is not used
   float sampleRate { 48000.0f };
@@ -125,6 +132,76 @@ private:
     double timeUS = double(tics_since_launch)/double(CLOCKS_PER_SEC);
     return (uint64_t)timeUS;
 #endif
+  }
+
+  std::map<int, int> latencyHistogram;
+
+  std::map<int, int> getLatencyHistogram() {
+    return latencyHistogram;
+  }
+
+  void extendLatencyHistogram(double latencyMS) {
+    int latencyCell = static_cast<int>(floor(std::max(latencyHistogramCellMin, std::min(latencyHistogramCellMax, latencyMS / latencyHistogramCellWidth))));
+    latencyHistogram[latencyCell] += 1;
+  }
+
+  int latencyHistogramCountMax() {
+    int lhMax = 0;
+    int histStart = latencyHistogramFirstNonzeroCellIndex();
+    int histLast = latencyHistogramLastNonzeroCellIndex();
+    for (int i = histStart; i <= histLast; ++i) {
+      int lhi = latencyHistogram[i];
+      if (lhi > lhMax) {
+        lhMax = lhi;
+      }
+    }
+    return lhMax;
+  }
+
+  int latencyHistogramFirstNonzeroCellIndex() {
+    for (int i=latencyHistogramCellMin; i <= latencyHistogramCellMax; i++) {
+      if (latencyHistogram[i]>0) {
+        return i;
+      }
+    }
+    std::cerr << "*** AudioTester: LATENCY HISTOGRAM IS EMPTY!\n";
+    return -1;
+  }
+
+  int latencyHistogramLastNonzeroCellIndex() {
+    for (int i=latencyHistogramCellMax; i>=latencyHistogramCellMin; i--) {
+      if (latencyHistogram[i]>0) {
+        return i;
+      }
+    }
+    std::cerr << "*** AudioTester: LATENCY HISTOGRAM IS EMPTY!\n";
+    return -1;
+  }
+
+  std::string getLatencyHistogramString() {
+    int histStart = latencyHistogramFirstNonzeroCellIndex();
+    int histLast = latencyHistogramLastNonzeroCellIndex();
+    std::string marker = "*";
+    double histScale = 1.0;
+    int lhcm = latencyHistogramCountMax();
+    int lhpcm = latencyHistogramPrintCountMax;
+    bool normalizing = lhpcm < lhcm;
+    if (normalizing) {
+      marker = "#";
+      histScale = double(lhpcm) / double(lhcm);
+    }
+    std::string rows = "";
+    for (int i = histStart; i <= histLast; ++i) {
+      int hi = int(std::round(histScale * double(latencyHistogram[i])));
+      std::string istr = std::to_string(i);
+      std::string histr = std::to_string(hi);
+      std::string row = "["+istr+"]="+histr+":";
+      for (int j=0; j<latencyHistogram[i]; j++) {
+        row += marker;
+      }
+      rows += row + "\n";
+    }
+    return rows;
   }
 
 };
