@@ -102,7 +102,6 @@ void JackAudioInterface::setup()
 //*******************************************************************************
 void JackAudioInterface::setupClient()
 {
-    const char* server_name = NULL;
     QByteArray clientName = mClientName.toUtf8();
 #ifdef __MAC_OSX__
     //Jack seems to have an issue with client names over 27 bytes in OS X
@@ -130,9 +129,9 @@ void JackAudioInterface::setupClient()
     {
         QMutexLocker locker(&sJackMutex);
 #ifndef WAIR // WAIR
-        mClient = jack_client_open (clientName.constData(), options, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), options, &status);
 #else
-        mClient = jack_client_open (clientName.constData(), JackUseExactName, &status, server_name);
+        mClient = jack_client_open (clientName.constData(), JackUseExactName, &status);
 #endif // endwhere
     }
 
@@ -281,7 +280,9 @@ int JackAudioInterface::stopProcess() const
 void JackAudioInterface::jackShutdown (void*)
 {
     //std::cout << "The Jack Server was shut down!" << std::endl;
-    throw std::runtime_error("The Jack Server was shut down!");
+    JackTrip::sJackStopped = true;
+    std::cout << "The Jack Server was shut down!" << std::endl;
+    //throw std::runtime_error("The Jack Server was shut down!");
     //std::cout << "Exiting program..." << std::endl;
     //std::exit(1);
 }

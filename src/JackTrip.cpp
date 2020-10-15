@@ -67,6 +67,7 @@ void sigint_handler(int sig)
 #endif*/
 
 bool JackTrip::sSigInt = false;
+bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode,
@@ -129,9 +130,11 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mIOStatLogStream(std::cout.rdbuf()),
     mSimulatedLossRate(0.0),
     mSimulatedJitterRate(0.0),
-    mSimulatedDelayRel(0.0)
+    mSimulatedDelayRel(0.0),
+    mAudioTesterP(nullptr)
 {
     createHeader(mPacketHeaderType);
+    sJackStopped = false;
 }
 
 
@@ -151,7 +154,7 @@ JackTrip::~JackTrip()
 //*******************************************************************************
 void JackTrip::setupAudio(
         #ifdef WAIRTOHUB // WAIR
-        int ID
+        __attribute__((unused)) int ID
         #endif // endwhere
         )
 {
@@ -174,7 +177,6 @@ void JackTrip::setupAudio(
                                                  mAudioBitResolution);
 
 #ifdef WAIRTOHUB // WAIR
-        qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
         if (!mPeerAddress.isEmpty() && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
@@ -220,6 +222,10 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
+    if (mAudioTesterP) { // if we're a hub server, this will be a nullptr - MAJOR REFACTOR NEEDED, in my opinion
+      mAudioTesterP->setSampleRate(mSampleRate);
+    }
+    mAudioInterface->setAudioTesterP(mAudioTesterP);
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
@@ -235,8 +241,6 @@ void JackTrip::setupAudio(
     }
     std::cout << gPrintSeparator << std::endl;
     cout << "The Number of Channels is: " << mAudioInterface->getNumInputChannels() << endl;
-    std::cout << gPrintSeparator << std::endl;
-    cout << "The RTAudio device ID is: " << mAudioInterface->getDeviceID() << endl;
     std::cout << gPrintSeparator << std::endl;
     QThread::usleep(100);
 }
@@ -500,15 +504,15 @@ void JackTrip::completeConnection()
     QThread::msleep(1);
     if (gVerboseFlag) std::cout << "step 5" << std::endl;
     if (gVerboseFlag) std::cout << "  JackTrip:startProcess before mAudioInterface->startProcess" << std::endl;
-    mAudioInterface->startProcess();
-
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); ++i) {
         mAudioInterface->appendProcessPluginFromNetwork(mProcessPluginsFromNetwork[i]);
     }
     for (int i = 0; i < mProcessPluginsToNetwork.size(); ++i) {
         mAudioInterface->appendProcessPluginToNetwork(mProcessPluginsToNetwork[i]);
     }
-    mAudioInterface->initPlugins(); // mSampleRate assumed settled now
+    mAudioInterface->initPlugins();  // mSampleRate known now, which plugins require
+    mAudioInterface->startProcess(); // Tell JACK server we are ready for audio flow now
+
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
     
     //Start our IO stat timer
@@ -543,6 +547,9 @@ void JackTrip::onStatTimer()
 
     static QMutex mutex;
     QMutexLocker locker(&mutex);
+    if (mAudioTesterP && mAudioTesterP->getEnabled()) {
+      mIOStatLogStream << "\n";
+    }
     mIOStatLogStream << now.toLocal8Bit().constData()
       << " " << getPeerAddress().toLocal8Bit().constData()
       << " send: "
@@ -701,7 +708,7 @@ void JackTrip::receivedDataUDP()
 
 void JackTrip::udpTimerTick()
 {
-    if (mStopped || sSigInt) {
+    if (mStopped || sSigInt || sJackStopped) {
         //Stop everything.
         mUdpSockTemp.close();
         mTimeoutTimer.stop();
@@ -720,7 +727,7 @@ void JackTrip::udpTimerTick()
 
 void JackTrip::tcpTimerTick()
 {
-    if (mStopped || sSigInt) {
+    if (mStopped || sSigInt || sJackStopped) {
         //Stop everything.
         mTcpClient.close();
         mTimeoutTimer.stop();
@@ -759,12 +766,14 @@ void JackTrip::stop(QString errorMessage)
     // Stop the audio processes
     //mAudioInterface->stopProcess();
     closeAudio();
-
+    
     cout << "JackTrip Processes STOPPED!" << endl;
     cout << gPrintSeparator << endl;
 
     // Emit the jack stopped signal
-    if (errorMessage.isEmpty()) {
+    if (sJackStopped) {
+        emit signalError("The Jack Server was shut down!");
+    } else if (errorMessage.isEmpty()) {
         emit signalProcessesStopped();
     } else {
         emit signalError(errorMessage);

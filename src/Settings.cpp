@@ -163,6 +163,7 @@ void Settings::parseInput(int argc, char** argv)
         { "simjitter", required_argument, NULL, OPT_SIMJITTER },
         { "broadcast", required_argument, NULL, OPT_BROADCAST },
         { "help", no_argument, NULL, 'h' }, // Print Help
+        { "examine-audio-delay", required_argument, NULL, 'x' }, // test mode - measure audio round-trip latency statistics
         { NULL, 0, NULL, 0 }
     };
 
@@ -171,7 +172,7 @@ void Settings::parseInput(int argc, char** argv)
     /// \todo Specify mandatory arguments
     int ch;
     while ((ch = getopt_long(argc, argv,
-                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:", longopts, NULL)) != -1)
+                             "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:", longopts, NULL)) != -1)
         switch (ch) {
 
         case 'n': // Number of input and output channels
@@ -436,6 +437,16 @@ void Settings::parseInput(int argc, char** argv)
             exit(1);
           }
           break; }
+        case 'x': { // examine connection (test mode)
+          //-------------------------------------------------------
+          mAudioTester.setEnabled(true);
+          if (optarg == 0 || optarg[0] == '-' || optarg[0] == 0) { // happens when no -f argument specified
+            printUsage();
+            std::cerr << "--examine-audio-delay (-x) ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
+            std::exit(1);
+          }
+          mAudioTester.setPrintIntervalSec(atof(optarg));
+          break; }
         case ':': {
           printf("\t*** Missing option argument\n");
           break; }
@@ -461,8 +472,25 @@ void Settings::parseInput(int argc, char** argv)
         }
         cout << gPrintSeparator << endl;
     }
-}
 
+    assert(mNumChans>0);
+    mAudioTester.setSendChannel(mNumChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
+
+    // Exit if options are incompatible
+    //----------------------------------------------------------------------------
+    bool haveSomeServerMode = not ((mJackTripMode == JackTrip::CLIENT) || (mJackTripMode == JackTrip::CLIENTTOPINGSERVER));
+    if (mAudioTester.getEnabled() && haveSomeServerMode) {
+      std::cerr << "*** --examine-audio-delay (-x) ERROR: Audio latency measurement not supported in server modes (-S and -s)\n\n";
+      std::exit(1);
+    }
+    if (mAudioTester.getEnabled()
+        && (mAudioBitResolution != AudioInterface::BIT16)
+        && (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
+      // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
+      std::cerr << "*** --examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported for audio latency measurement.\n\n";
+      std::exit(1);
+    }
+}
 
 //*******************************************************************************
 void Settings::printUsage()
@@ -474,10 +502,10 @@ void Settings::printUsage()
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
     cout << "VERSION: " << gVersion << endl;
     cout << "" << endl;
-    cout << "Usage: jacktrip [-s|-c host] [options]" << endl;
+    cout << "Usage: jacktrip [-s|-c|-S|-C hostIPAddressOrURL] [options]" << endl;
     cout << "" << endl;
     cout << "Options: " << endl;
-    cout << "REQUIRED ARGUMENTS: " << endl;
+    cout << "REQUIRED ARGUMENTS: One of:" << endl;
     cout << " -s, --server                             Run in P2P Server Mode" << endl;
     cout << " -c, --client <peer_hostname_or_IP_num>   Run in P2P Client Mode" << endl;
     cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;
@@ -528,6 +556,7 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
+    cout << " -x, --examine-audio-delay #              Print round-trip audio delay statistics every # sec" << endl;
     cout << endl;
     cout << "ARGUMENTS TO SIMULATE NETWORK ISSUES:" << endl;
     cout << " --simloss <rate>                         Simulate packet loss" << endl;
@@ -602,7 +631,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     if (!mClientName.isEmpty()) {
         jackTrip->setClientName(mClientName);
     }
-    
+
     if (!mRemoteClientName.isEmpty() && (mJackTripMode == JackTrip::CLIENTTOPINGSERVER)) {
         jackTrip->setRemoteClientName(mRemoteClientName);
     }
@@ -612,13 +641,13 @@ JackTrip *Settings::getConfiguredJackTrip()
         cout << "Setting buffers to zero when underrun..." << endl;
         cout << gPrintSeparator << std::endl;
     }
-    
+
     jackTrip->setStopOnTimeout(mStopOnTimeout);
 
     // Set peer address in server mode
     if (mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
         jackTrip->setPeerAddress(mPeerAddress); }
-        
+
     //        if(mLocalAddress!=QString()) // default
     //            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
     //        else
@@ -694,26 +723,30 @@ JackTrip *Settings::getConfiguredJackTrip()
         //netks->play();
         // -------------------------------------------------------------
     }
-    
+
     if (mIOStatTimeout > 0) {
         jackTrip->setIOStatTimeout(mIOStatTimeout);
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
-    // Allocate audio effects in client, if any:
-    mEffects.allocateEffects(mNumChans);
+    jackTrip->setAudioTesterP(&mAudioTester);
 
-    // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+    if (not mAudioTester.getEnabled()) { // No effects plugins allowed while testing:
+      // Allocate audio effects in client, if any:
+      mEffects.allocateEffects(mNumChans);
 
-    // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+      // Outgoing/Incoming Compressor and/or Reverb:
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+
+      // Limiters go last in the plugin sequence:
+      jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+      jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    }
 
 #ifdef WAIR // WAIR
     if ( mWAIR ) {
@@ -744,4 +777,3 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     return jackTrip;
 }
-

@@ -630,7 +630,7 @@ void UdpDataProtocol::run()
     case SENDER : {
         full_redundant_packet = new int8_t[full_redundant_packet_size];
         std::memset(full_redundant_packet, 0, full_redundant_packet_size); // Initialize to 0
-        while ( !mStopped && !JackTrip::sSigInt )
+        while ( !mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped )
         {
             // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
             /*

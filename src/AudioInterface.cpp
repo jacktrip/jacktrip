@@ -237,6 +237,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     computeProcessFromNetwork(out_buffer, n_frames);
     // =============================================
 
+    // out_buffer is from the network and goes "out" to local audio
+    // hardware via JACK:
+
+    // mAudioTesterP will be nullptr for hub server's JackTripWorker instances
+    if (mAudioTesterP && mAudioTesterP->getEnabled()) {
+      mAudioTesterP->lookForReturnPulse(out_buffer, n_frames);
+    }
+
 #ifdef WAIR // WAIR
     // nib16 result now in mNetInBuffer
 #endif // endwhere
@@ -276,35 +284,40 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
-    // Run Faust plugins for the outgoing stream:
-    int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
-    if (nop>0) { // cannot modify IN_BUFFER so make a copy
-      //#ifdef DEBUG
-      if (mInBufCopy.size() < mNumInChans) { // created in constructor above
-        std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
-        exit(1);
-      }
-      if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
-      std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
-		  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
-        exit(1);
-      }
-      for (int i=0; i<mNumInChans; i++) {
-        std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
-      }
-      //#endif
-      for (int i = 0; i < nop; i++) {
-        // process all outgoing channels with Faust modules:
-        ProcessPlugin* p = mProcessPluginsToNetwork[i];
-        if (p->getInited()) {
-          p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
-        }
-      }
-      // 3) Finally, send packets to network:
+    // mAudioTesterP will be nullptr for hub server's JackTripWorker instances
+    if (mAudioTesterP && mAudioTesterP->getEnabled()) { // in_buffer is "in" from local audio hardware via JACK
+      mAudioTesterP->writeImpulse(mInBufCopy, in_buffer, n_frames);
       computeProcessToNetwork(mInBufCopy, n_frames);
-    } else {
-      // 3) Finally, send packets to network:
-      computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
+    } else { // Run Faust plugins for the outgoing stream:
+      int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
+      if (nop>0) { // cannot modify IN_BUFFER so make a copy
+	//#ifdef DEBUG
+	if (mInBufCopy.size() < mNumInChans) { // created in constructor above
+	  std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
+	  exit(1);
+	}
+	if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
+	  std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
+		    << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
+	  exit(1);
+	}
+	for (int i=0; i<mNumInChans; i++) {
+	  std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
+	}
+	//#endif
+	for (int i = 0; i < nop; i++) {
+	  // process all outgoing channels with Faust modules:
+	  ProcessPlugin* p = mProcessPluginsToNetwork[i];
+	  if (p->getInited()) {
+	    p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+	  }
+	}
+	// 3) Finally, send packets to network:
+	computeProcessToNetwork(mInBufCopy, n_frames);
+      } else {
+	// 3) Finally, send packets to network:
+	computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
+      }
     }
 
 #ifdef WAIR // WAIR
@@ -504,7 +517,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
         }
     // Send Audio buffer to Network
     mJackTrip->sendNetworkPacket( mInputPacket );
-}
+} // /computeProcessToNetwork
 
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
@@ -517,22 +530,23 @@ void AudioInterface::fromSampleToBitConversion
     int8_t tmp_8;
     uint8_t tmp_u8; // unsigned to quantize the remainder in 24bits
     int16_t tmp_16;
-    sample_t tmp_sample;
+    double tmp_sample;
     sample_t tmp_sample16;
     sample_t tmp_sample8;
     switch (targetBitResolution)
     {
     case BIT8 :
         // 8bit integer between -128 to 127
-        tmp_sample = floor( (*input) * 128.0 ); // 2^7 = 128.0
+        tmp_sample = std::max(-127.0, std::min(127.0, std::round( (*input) * 127.0 ))); // 2^7 = 128
         tmp_8 = static_cast<int8_t>(tmp_sample);
         std::memcpy(output, &tmp_8, 1); // 8bits = 1 bytes
         break;
     case BIT16 :
         // 16bit integer between -32768 to 32767
-        tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
+        // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
+        tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
-        std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
+        std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
         break;
     case BIT24 :
         // To convert to 24 bits, we first quantize the number to 16bit
@@ -552,7 +566,10 @@ void AudioInterface::fromSampleToBitConversion
         std::memcpy(output+2, &tmp_u8, 1); // 8bits = 1 bytes
         break;
     case BIT32 :
-        std::memcpy(output, input, 4); // 32bit = 4 bytes
+        tmp_sample = *input;
+        // not necessary yet:
+        // tmp_sample = std::max(-1.0, std::min(1.0, tmp_sample));
+        std::memcpy(output, &tmp_sample, 4); // 32bit = 4 bytes
         break;
     }
 }
@@ -606,9 +623,9 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumInputs() < mNumInChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-	      << typeid(plugin).name() << " REJECTED due to having "
-	      << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
-	      << mNumInChans << " inputs\n";
+              << typeid(plugin).name() << " REJECTED due to having "
+              << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
+              << mNumInChans << " inputs\n";
     return;
   }
   mProcessPluginsToNetwork.append(plugin);
@@ -619,9 +636,9 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
   if (not plugin) { return; }
   if (plugin->getNumOutputs() > mNumOutChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
-	      << typeid(plugin).name() << " REJECTED due to having "
-	      << plugin->getNumOutputs() << " inputs, while the JACK audio output requires "
-	      << mNumOutChans << " outputs\n";
+              << typeid(plugin).name() << " REJECTED due to having "
+              << plugin->getNumOutputs() << " inputs, while the JACK audio output requires "
+              << mNumOutChans << " outputs\n";
     return;
   }
   mProcessPluginsFromNetwork.append(plugin);
@@ -632,7 +649,7 @@ void AudioInterface::initPlugins()
   int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size();
   if (nPlugins > 0) {
     std::cout << "Initializing Faust plugins (have " << nPlugins
-	      << ") at sampling rate " << mSampleRate << "\n";
+              << ") at sampling rate " << mSampleRate << "\n";
     for (ProcessPlugin* plugin : mProcessPluginsFromNetwork) {
       plugin->init(mSampleRate);
     }

@@ -40,6 +40,7 @@
 
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
+#include "AudioTester.h"
 
 #include <QVarLengthArray>
 #include <QVector>
@@ -179,6 +180,7 @@ public:
     virtual void setClientName(QString ClientName) = 0;
     virtual void setLoopBack(bool b) { mLoopBack = b; }
     virtual void enableBroadcastOutput() {}
+    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -242,6 +244,7 @@ private:
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
     bool mLoopBack;
+    AudioTester* mAudioTesterP { nullptr };
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
