@@ -63,6 +63,7 @@ int gVerboseFlag = 0;
 Settings::Settings() :
     mJackTripMode(JackTrip::SERVER),
     mDataProtocol(JackTrip::UDP),
+    mNumChans(2), // FIXME-IO: DELETE THIS
     mNumInChans(2),
     mNumOutChans(2),
     mBufferQueueLength(gDefaultQueueLength),
@@ -161,7 +162,9 @@ void Settings::parseInput(int argc, char** argv)
 
         case 'n': // Number of input and output channels
             //-------------------------------------------------------
-            mNumChans = atoi(optarg);
+            mNumChans = atoi(optarg);// FIXME-IO: ALLOW GENERAL SPEC: -n "i:2, o:1" for example
+            mNumInChans = mNumChans; // FIXME-IO: ALLOW GENERAL SPEC
+            mNumOutChans = mNumChans;// FIXME-IO: ALLOW GENERAL SPEC
             break;
         case 'U': // UDP Bind Port
             mServerUdpPortNum = atoi(optarg);
@@ -427,8 +430,8 @@ void Settings::parseInput(int argc, char** argv)
         cout << gPrintSeparator << endl;
     }
 
-    assert(mNumChans>0);
-    mAudioTester.setSendChannel(mNumChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
+    assert(mNumOutChans>0);
+    mAudioTester.setSendChannel(mNumOutChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
 
     // Exit if options are incompatible
     //----------------------------------------------------------------------------
@@ -442,6 +445,11 @@ void Settings::parseInput(int argc, char** argv)
         && (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
       // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
       std::cerr << "*** --examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported for audio latency measurement.\n\n";
+      std::exit(1);
+    }
+
+    if (mNumOutChans != mNumInChans) { // FIXME-IO: DELETE THIS TEST WHEN READY
+      std::cerr << "*** --numchannels (-n) ERROR: Number of input and output channels must presently be equal.\n\n";
       std::exit(1);
     }
 }
@@ -554,7 +562,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     if (gVerboseFlag) std::cout << "Settings:startJackTrip mNumNetRevChans = " << mNumNetRevChans << std::endl;
 #endif // endwhere
     if (gVerboseFlag) std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
-    JackTrip *jackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumChans,
+    JackTrip *jackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumInChans, mNumOutChans,
 #ifdef WAIR // wair
                                       mNumNetRevChans,
 #endif // endwhere
@@ -672,7 +680,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     if (not mAudioTester.getEnabled()) { // No effects plugins allowed while testing:
       // Allocate audio effects in client, if any:
-      mEffects.allocateEffects(mNumChans);
+      mEffects.allocateEffects(mNumOutChans);
 
       // Outgoing/Incoming Compressor and/or Reverb:
       jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );

@@ -447,7 +447,7 @@ void UdpDataProtocol::run()
     std::memset(mAudioPacket, 0, audio_packet_size); // set buffer to 0
 
     // Setup Full Packet buffer
-    int full_packet_size = mJackTrip->getPacketSizeInBytes();
+    int full_packet_size = mJackTrip->getOutgoingPacketSizeInBytes();
     //cout << "full_packet_size: " << full_packet_size << endl;
     mFullPacket = new int8_t[full_packet_size];
     std::memset(mFullPacket, 0, full_packet_size); // set buffer to 0
@@ -558,8 +558,8 @@ void UdpDataProtocol::run()
         if (gVerboseFlag) std::cout << std::endl << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->checkPeerSettings()" << std::endl;
         mJackTrip->checkPeerSettings(first_packet);
         if (gVerboseFlag) std::cout << "step 7" << std::endl;
-        if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->parseAudioPacket()" << std::endl;
-        mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+        if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before mJackTrip->parseAudioIncomingPacket()" << std::endl;
+        mJackTrip->parseAudioIncomingPacket(mFullPacket, mAudioPacket);
         std::cout << "Received Connection from Peer!" << std::endl;
         emit signalReceivedConnectionFromPeer();
 
@@ -734,7 +734,7 @@ void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
         memcpy(mFullPacket,
                full_redundant_packet + (i*full_packet_size),
                full_packet_size);
-        mJackTrip->parseAudioPacket(mFullPacket, mAudioPacket);
+        mJackTrip->parseAudioIncomingPacket(mFullPacket, mAudioPacket);
         mJackTrip->writeAudioBuffer(mAudioPacket);
     }
 }

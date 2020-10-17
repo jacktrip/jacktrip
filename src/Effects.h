@@ -44,8 +44,7 @@
 
 class Effects
 {
-  in mNumInChans;
-  in mNumOutChans;
+  int mNumChans;
   int gVerboseFlag = 0;
   enum LIMITER_MODE {
                      LIMITER_NONE,
@@ -84,8 +83,7 @@ class Effects
 public:
 
   Effects() :
-    mNumInChans(2),
-    mNumOutChans(2),
+    mNumChans(0),
     mLimit(LIMITER_NONE),
     mNumClientsAssumed(2)
   {}
@@ -125,13 +123,14 @@ public:
     gVerboseFlag = v;
   }
 
-  void allocateEffects() {
+  void allocateEffects(int numChans) {
+    mNumChans = numChans;
     if (inCompressor) {
-      inCompressorP = new Compressor(mNumInChans);
+      inCompressorP = new Compressor(mNumChans);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
-      outCompressorP = new Compressor(mNumOutChans);
+      outCompressorP = new Compressor(mNumChans);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
@@ -139,32 +138,32 @@ public:
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Zitarev)\n"; }
     }
     if (outZitarev) {
-      outZitarevP = new Reverb(mNumOutChans, mNumOutChans, 1.0 + zitarevOutLevel);
+      outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + zitarevOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
     }
     if (inFreeverb) {
-      inFreeverbP = new Reverb(mNumInChans, mNumInChans, freeverbInLevel);
+      inFreeverbP = new Reverb(mNumChans, mNumChans, freeverbInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Freeverb)\n"; }
     }
     if (outFreeverb) {
-      outFreeverbP = new Reverb(mNumOutChans, mNumOutChans, freeverbOutLevel);
+      outFreeverbP = new Reverb(mNumChans, mNumChans, freeverbOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Freeverb)\n"; }
     }
     if ( mLimit != LIMITER_NONE) {
       if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
         if (gVerboseFlag) {
           std::cout << "Set up OUTGOING LIMITER for "
-                    << mOutNumChans << " output channels and "
+                    << mNumChans << " output channels and "
                     << mNumClientsAssumed << " assumed client(s) ...\n";
         }
-        outLimiterP = new Limiter(mNumOutChans,mNumClientsAssumed);
+        outLimiterP = new Limiter(mNumChans,mNumClientsAssumed);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
       }
       if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
         if (gVerboseFlag) {
-          std::cout << "Set up INCOMING LIMITER for " << mNumInChans << " input channels\n";
+          std::cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
         }
-        inLimiterP = new Limiter(mNumInChans,1); // mNumClientsAssumed not needed this direction
+        inLimiterP = new Limiter(mNumChans,1); // mNumClientsAssumed not needed this direction
       }
     }
   }

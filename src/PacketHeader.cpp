@@ -77,6 +77,10 @@ PacketHeader::PacketHeader(JackTrip* jacktrip) :
     mSeqNumber(0), mJackTrip(jacktrip)
 {}
 
+//***********************************************************************
+void PacketHeader::setNumChannels(int nc) {
+  std::cerr << "*** PacketHeader: Must override setNumChannels\n";
+}
 
 //***********************************************************************
 uint64_t PacketHeader::usecTime()
@@ -102,12 +106,9 @@ DefaultHeader::DefaultHeader(JackTrip* jacktrip) :
     mHeader.BufferSize = 0;
     mHeader.SamplingRate = 0;
     mHeader.BitResolution = 0;
-    //mHeader.NumInChannels = 0;
-    //mHeader.NumOutChannels = 0;
     mHeader.NumChannels = 0;
     mHeader.ConnectionMode = 0;
 }
-
 
 //***********************************************************************
 void DefaultHeader::fillHeaderCommonFromAudio()
@@ -116,11 +117,15 @@ void DefaultHeader::fillHeaderCommonFromAudio()
     mHeader.BufferSize = mJackTrip->getBufferSizeInSamples();
     mHeader.SamplingRate = mJackTrip->getSampleRateType ();
     mHeader.BitResolution = mJackTrip->getAudioBitResolution();
-    mHeader.NumChannels = mJackTrip->getNumChannels();
+    mHeader.NumChannels = mJackTrip->getNumOutgoingChannels();
     mHeader.ConnectionMode = static_cast<int>(mJackTrip->getConnectionMode());
     //printHeader();
 }
 
+//***********************************************************************
+void DefaultHeader::setNumChannels(int nc) {
+  std::cerr << "*** DefaultHeader: Must override setNumChannels\n";
+}
 
 //***********************************************************************
 void DefaultHeader::checkPeerSettings(int8_t* full_packet)
@@ -281,11 +286,15 @@ JamLinkHeader::JamLinkHeader(JackTrip* jacktrip) :
 }
 
 
+void JamLinkHeader::setNumChannels(int nc) {
+  std::cerr << "*** JamLinkHeader: setNumChannels() not supported in header format\n";
+}
+
 //***********************************************************************
 void JamLinkHeader::fillHeaderCommonFromAudio()
 {
     // Check number of channels
-    int num_inchannels = mJackTrip->getNumInputChannels();
+  int num_inchannels = mJackTrip->getNumIncomingChannels();
     if ( num_inchannels != 1 ) {
         //std::cerr << "ERROR: JamLink only support ONE channel. Run JackTrip using only one channel"
         //	      << endl;
@@ -348,3 +357,8 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
 EmptyHeader::EmptyHeader(JackTrip* jacktrip) :
     PacketHeader(jacktrip), mJackTrip(jacktrip)
 {}
+
+void EmptyHeader::setNumChannels(int nc) {
+  std::cerr << "*** EmptyHeader: setNumChannels() not supported in empty header format\n";
+}
+

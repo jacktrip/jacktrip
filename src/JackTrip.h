@@ -131,7 +131,8 @@ public:
    */
     JackTrip(jacktripModeT JacktripMode = CLIENT,
              dataProtocolT DataProtocolType = UDP,
-             int NumChans = gDefaultNumInChannels,
+             int NumInChans = gDefaultNumInChannels,
+             int NumOutChans = gDefaultNumInChannels,
          #ifdef WAIR // wair
              int NumNetRevChans = 0,
          #endif // endwhere
@@ -247,9 +248,15 @@ public:
     virtual void setRemoteClientName(QString remoteClientName)
     { mRemoteClientName = remoteClientName; }
     /// \brief Set the number of audio channels
+    virtual void setNumChannels(int num_chans) // FIXME-IO: DELETE THIS FUNCTION
+    {
+      mNumChans = num_chans;
+      mNumInChans = num_chans;
+      mNumOutChans = num_chans;
+    }
     virtual void setNumInChannels(int num_in_chans)
     { mNumInChans = num_in_chans; }
-    virtual void setNumOutChannels(outt num_out_chans)
+    virtual void setNumOutChannels(int num_out_chans)
     { mNumOutChans = num_out_chans; }
     
     virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
@@ -340,8 +347,9 @@ public:
     /// \todo Document all these functions
     virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
     void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
-    virtual int getPacketSizeInBytes();
-    void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
+    virtual int getIncomingPacketSizeInBytes();
+    virtual int getOutgoingPacketSizeInBytes();
+    void parseAudioIncomingPacket(int8_t* full_packet, int8_t* audio_packet);
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
     { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot); }
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
@@ -362,9 +370,9 @@ public:
 
     uint8_t getAudioBitResolution() const
     { return mAudioBitResolution*8; /*return mAudioInterface->getAudioBitResolution();*/ }
-    unsigned int getNumInputChannels() const
+    unsigned int getNumIncomingChannels() const
     { return mNumInChans; /*return mAudioInterface->getNumInputChannels();*/ }
-    unsigned int getNumOutputChannels() const
+    unsigned int getNumOutgoingChannels() const
     { return mNumOutChans; /*return mAudioInterface->getNumOutputChannels();*/ }
     virtual void checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber()
@@ -397,7 +405,7 @@ public:
     { return mAudioInterface->getSizeInBytesPerChannel(); }
     int getHeaderSizeInBytes() const
     { return mPacketHeader->getHeaderSizeInBytes(); }
-    virtual int getTotalAudioPacketSizeInBytes() const
+    virtual int getTotalAudioPacketSizeInBytes() const // FIXME-IO: DELETE THIS
     {
 #ifdef WAIR // WAIR
         if (mNumNetRevChans)
@@ -405,6 +413,14 @@ public:
         else // not wair
 #endif // endwhere
             return mAudioInterface->getSizeInBytesPerChannel() * mNumChans;
+    }
+    virtual int getTotalAudioIncomingPacketSizeInBytes() const
+    {
+      return mAudioInterface->getSizeInBytesPerChannel() * mNumInChans;
+    }
+    virtual int getTotalAudioOutgoingPacketSizeInBytes() const
+    {
+      return mAudioInterface->getSizeInBytesPerChannel() * mNumOutChans;
     }
     //@}
     //------------------------------------------------------------------------------------
@@ -497,7 +513,9 @@ private:
     DataProtocol::packetHeaderTypeT mPacketHeaderType; ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
-    int mNumChans; ///< Number of Channels (inputs = outputs)
+    int mNumChans; ///< Number of Channels (inputs = outputs) - // FIXME-IO: DELETE THIS
+    int mNumInChans; ///< Number of Incoming Input Channels FROM the network
+    int mNumOutChans; ///< Number of Outgoing Output Channels TO the network
 #ifdef WAIR // WAIR
     int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
 #endif // endwhere

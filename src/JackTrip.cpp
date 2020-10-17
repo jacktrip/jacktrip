@@ -71,7 +71,8 @@ bool JackTrip::sJackStopped = false;
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode,
                    dataProtocolT DataProtocolType,
-                   int NumChans,
+                   int NumInChans,
+                   int NumOutChans,
                    #ifdef WAIR // WAIR
                    int NumNetRevChans,
                    #endif // endwhere
@@ -86,7 +87,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mDataProtocol(DataProtocolType),
     mPacketHeaderType(PacketHeaderType),
     mAudiointerfaceMode(JackTrip::JACK),
-    mNumChans(NumChans),
+    mNumChans(NumOutChans), // FIXME-IO: DELETE THIS
+    mNumInChans(NumInChans),
+    mNumOutChans(NumOutChans),
     #ifdef WAIR // WAIR
     mNumNetRevChans(NumNetRevChans),
     #endif // endwhere
@@ -164,7 +167,7 @@ void JackTrip::setupAudio(
     if ( mAudiointerfaceMode == JackTrip::JACK ) {
 #ifndef __NO_JACK__
         if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before new JackAudioInterface" << std::endl;
-        mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans,
+        mAudioInterface = new JackAudioInterface(this, mNumInChans, mNumOutChans,
                                          #ifdef WAIR // wair
                                                  mNumNetRevChans,
                                          #endif // endwhere
@@ -194,7 +197,7 @@ void JackTrip::setupAudio(
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
 #ifdef __RT_AUDIO__
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumInChans, mNumOutChans, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -204,7 +207,7 @@ void JackTrip::setupAudio(
     }
     else if ( mAudiointerfaceMode == JackTrip::RTAUDIO ) {
 #ifdef __RT_AUDIO__
-        mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumInChans, mNumOutChans, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -276,8 +279,8 @@ void JackTrip::setupDataProtocol()
     //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
     //mDataProtocolReceiver->setAudioPacketSize
     //  (mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-    mDataProtocolSender->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
-    mDataProtocolReceiver->setAudioPacketSize(getTotalAudioPacketSizeInBytes());
+    mDataProtocolSender->setAudioPacketSize(getTotalAudioOutgoingPacketSizeInBytes());
+    mDataProtocolReceiver->setAudioPacketSize(getTotalAudioIncomingPacketSizeInBytes());
 }
 
 
@@ -979,36 +982,46 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
 //*******************************************************************************
 void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
 {
-    mPacketHeader->fillHeaderCommonFromAudio();
-    mPacketHeader->putHeaderInPacket(full_packet);
+  mPacketHeader->fillHeaderCommonFromAudio();
+  mPacketHeader->setNumChannels(getNumOutgoingChannels());
+  mPacketHeader->putHeaderInPacket(full_packet);
 
     int8_t* audio_part;
     audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
     //std::memcpy(audio_part, audio_packet, mAudioInterface->getBufferSizeInBytes());
     //std::memcpy(audio_part, audio_packet, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-    std::memcpy(audio_part, audio_packet, getTotalAudioPacketSizeInBytes());
+    std::memcpy(audio_part, audio_packet, getTotalAudioOutgoingPacketSizeInBytes());
 }
 
 
 //*******************************************************************************
-int JackTrip::getPacketSizeInBytes()
+int JackTrip::getIncomingPacketSizeInBytes()
 {
     //return (mAudioInterface->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
     //return (mAudioInterface->getSizeInBytesPerChannel() * mNumChans  +
     //mPacketHeader->getHeaderSizeInBytes());
-    return (getTotalAudioPacketSizeInBytes()  +
+    return (getTotalAudioIncomingPacketSizeInBytes()  +
+            mPacketHeader->getHeaderSizeInBytes());
+}
+
+int JackTrip::getOutgoingPacketSizeInBytes()
+{
+    //return (mAudioInterface->getBufferSizeInBytes() + mPacketHeader->getHeaderSizeInBytes());
+    //return (mAudioInterface->getSizeInBytesPerChannel() * mNumChans  +
+    //mPacketHeader->getHeaderSizeInBytes());
+    return (getTotalAudioOutgoingPacketSizeInBytes()  +
             mPacketHeader->getHeaderSizeInBytes());
 }
 
 
 //*******************************************************************************
-void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
+void JackTrip::parseAudioIncomingPacket(int8_t* full_packet, int8_t* audio_packet)
 {
     int8_t* audio_part;
     audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getBufferSizeInBytes());
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
-    std::memcpy(audio_packet, audio_part, getTotalAudioPacketSizeInBytes());
+    std::memcpy(audio_packet, audio_part, getTotalAudioIncomingPacketSizeInBytes());
 }
 
 //*******************************************************************************

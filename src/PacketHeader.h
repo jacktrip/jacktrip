@@ -129,6 +129,9 @@ public:
     static uint64_t usecTime();
     /// \todo Implement this using a JackTrip Method (Mediator) member instead of the
     /// reference to JackAudio
+
+    virtual void setNumChannels(int nc) = 0;
+
     virtual void fillHeaderCommonFromAudio() = 0;
     /// \brief Parse the packet header and take appropriate measures (like change settings, or
     /// quit the program if peer settings don't match)
@@ -188,6 +191,7 @@ public:
     DefaultHeader(JackTrip* jacktrip);
     virtual ~DefaultHeader() {}
 
+    virtual void setNumChannels(int nc);
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
     virtual void checkPeerSettings(int8_t* full_packet);
@@ -235,6 +239,7 @@ public:
     JamLinkHeader(JackTrip* jacktrip);
     virtual ~JamLinkHeader() {}
 
+    virtual void setNumChannels(int nc);
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
     virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
@@ -272,6 +277,7 @@ public:
     EmptyHeader(JackTrip* jacktrip);
     virtual ~EmptyHeader() {}
 
+    virtual void setNumChannels(int nc);
     virtual void fillHeaderCommonFromAudio() {}
     virtual void parseHeader() {}
     virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
