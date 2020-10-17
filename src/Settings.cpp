@@ -168,7 +168,7 @@ void Settings::parseInput(int argc, char** argv)
             mNumChans = atoi(optarg);// FIXME-IO: ALLOW GENERAL SPEC: -n "i:2, o:1" for example
             mNumIncomingChans = mNumChans; // FIXME-IO: ALLOW GENERAL SPEC
             mNumOutgoingChans = mNumChans;// FIXME-IO: ALLOW GENERAL SPEC
-          } else {
+          } else { // expect format -n "i:n o:m" or any permuation of that
             enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
             ulong nac = strlen(optarg);
             mNumIncomingChans = 2; // going default
@@ -182,7 +182,7 @@ void Settings::parseInput(int argc, char** argv)
               case 'i': io=IO_IN; break;
               case 'o': io=IO_OUT; break;
               case ':': break;
-              default: // assume pointed at a number (int) or end of string:
+              default: { // assume pointed at a number (int)
                 char ci = optarg[i];
                 assert(isdigit(ci));
                 int nc;
@@ -209,7 +209,7 @@ void Settings::parseInput(int argc, char** argv)
                             << " malformed\n";
                   exit(1);
                 }
-                break;
+                break; } // default
               } // switch(optarg[i])
             } // for (ulong i=0; i<nac; i++)
           } // isalpha(c1)
