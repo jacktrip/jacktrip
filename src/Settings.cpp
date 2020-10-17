@@ -63,7 +63,8 @@ int gVerboseFlag = 0;
 Settings::Settings() :
     mJackTripMode(JackTrip::SERVER),
     mDataProtocol(JackTrip::UDP),
-    mNumChans(2),
+    mNumInChans(2),
+    mNumOutChans(2),
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),

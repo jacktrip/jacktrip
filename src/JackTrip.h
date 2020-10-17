@@ -247,8 +247,10 @@ public:
     virtual void setRemoteClientName(QString remoteClientName)
     { mRemoteClientName = remoteClientName; }
     /// \brief Set the number of audio channels
-    virtual void setNumChannels(int num_chans)
-    { mNumChans = num_chans; }
+    virtual void setNumInChannels(int num_in_chans)
+    { mNumInChans = num_in_chans; }
+    virtual void setNumOutChannels(outt num_out_chans)
+    { mNumOutChans = num_out_chans; }
     
     virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
@@ -361,15 +363,9 @@ public:
     uint8_t getAudioBitResolution() const
     { return mAudioBitResolution*8; /*return mAudioInterface->getAudioBitResolution();*/ }
     unsigned int getNumInputChannels() const
-    { return mNumChans; /*return mAudioInterface->getNumInputChannels();*/ }
+    { return mNumInChans; /*return mAudioInterface->getNumInputChannels();*/ }
     unsigned int getNumOutputChannels() const
-    { return mNumChans; /*return mAudioInterface->getNumOutputChannels();*/ }
-    unsigned int getNumChannels() const
-    {
-        if (getNumInputChannels() == getNumOutputChannels())
-        { return getNumInputChannels(); }
-        else { return 0; }
-    }
+    { return mNumOutChans; /*return mAudioInterface->getNumOutputChannels();*/ }
     virtual void checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber()
     { mPacketHeader->increaseSequenceNumber(); }
