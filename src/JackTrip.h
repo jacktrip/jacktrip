@@ -252,14 +252,14 @@ public:
     virtual void setNumChannels(int num_chans) // FIXME-IO: DELETE THIS FUNCTION
     {
       mNumChans = num_chans;
-      mNumInChans = num_chans;
-      mNumOutChans = num_chans;
+      mNumIncomingChans = num_chans;
+      mNumOutgoingChans = num_chans;
     }
     //nc: #endif
-    virtual void setNumInChannels(int num_in_chans)
-    { mNumInChans = num_in_chans; }
-    virtual void setNumOutChannels(int num_out_chans)
-    { mNumOutChans = num_out_chans; }
+    virtual void setNumIncomingChannels(int num_in_chans)
+    { mNumIncomingChans = num_in_chans; }
+    virtual void setNumOutgoingChannels(int num_out_chans)
+    { mNumOutgoingChans = num_out_chans; }
     
     virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
@@ -373,9 +373,9 @@ public:
     uint8_t getAudioBitResolution() const
     { return mAudioBitResolution*8; /*return mAudioInterface->getAudioBitResolution();*/ }
     unsigned int getNumIncomingChannels() const
-    { return mNumInChans; /*return mAudioInterface->getNumInputChannels();*/ }
+    { return mNumIncomingChans; /*return mAudioInterface->getNumInputChannels();*/ }
     unsigned int getNumOutgoingChannels() const
-    { return mNumOutChans; /*return mAudioInterface->getNumOutputChannels();*/ }
+    { return mNumOutgoingChans; /*return mAudioInterface->getNumOutputChannels();*/ }
     virtual void checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber()
     { mPacketHeader->increaseSequenceNumber(); }
@@ -420,11 +420,11 @@ public:
     //nc: #endif
     virtual int getTotalAudioIncomingPacketSizeInBytes() const
     {
-      return mAudioInterface->getSizeInBytesPerChannel() * mNumInChans;
+      return mAudioInterface->getSizeInBytesPerChannel() * mNumIncomingChans;
     }
     virtual int getTotalAudioOutgoingPacketSizeInBytes() const
     {
-      return mAudioInterface->getSizeInBytesPerChannel() * mNumOutChans;
+      return mAudioInterface->getSizeInBytesPerChannel() * mNumOutgoingChans;
     }
     //@}
     //------------------------------------------------------------------------------------
@@ -520,8 +520,8 @@ private:
     //nc: #ifdef NUMCHANS // cannot delete this until ring-buffer is split into incoming/outgoing
     int mNumChans; ///< Number of Channels (inputs = outputs) - // FIXME-IO: DELETE THIS
     //nc: #endif
-    int mNumInChans; ///< Number of Incoming Input Channels FROM the network
-    int mNumOutChans; ///< Number of Outgoing Output Channels TO the network
+    int mNumIncomingChans; ///< Number of Incoming Input Channels FROM the network
+    int mNumOutgoingChans; ///< Number of Outgoing Output Channels TO the network
 #ifdef WAIR // WAIR
     int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
 #endif // endwhere

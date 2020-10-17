@@ -90,8 +90,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     //nc: #ifdef NUMCHANS // cannot delete this until ring-buffer is split into incoming/outgoing
     mNumChans(NumOutChans), // FIXME-IO: DELETE THIS
     //nc: #endif
-    mNumInChans(NumInChans),
-    mNumOutChans(NumOutChans),
+    mNumIncomingChans(NumInChans),
+    mNumOutgoingChans(NumOutChans),
     #ifdef WAIR // WAIR
     mNumNetRevChans(NumNetRevChans),
     #endif // endwhere
@@ -169,7 +169,9 @@ void JackTrip::setupAudio(
     if ( mAudiointerfaceMode == JackTrip::JACK ) {
 #ifndef __NO_JACK__
         if (gVerboseFlag) std::cout << "  JackTrip:setupAudio before new JackAudioInterface" << std::endl;
-        mAudioInterface = new JackAudioInterface(this, mNumInChans, mNumOutChans,
+        mAudioInterface = new JackAudioInterface(this,
+						 mNumOutgoingChans, // local #audioIns = #outgoing
+						 mNumIncomingChans, // #incoming = #audioOuts local
                                          #ifdef WAIR // wair
                                                  mNumNetRevChans,
                                          #endif // endwhere
@@ -199,7 +201,7 @@ void JackTrip::setupAudio(
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
 #ifdef __RT_AUDIO__
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        mAudioInterface = new RtAudioInterface(this, mNumInChans, mNumOutChans, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumOutgoingChans, mNumIncomingChans, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -209,7 +211,7 @@ void JackTrip::setupAudio(
     }
     else if ( mAudiointerfaceMode == JackTrip::RTAUDIO ) {
 #ifdef __RT_AUDIO__
-        mAudioInterface = new RtAudioInterface(this, mNumInChans, mNumOutChans, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumOutgoingChans, mNumIncomingChans, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
