@@ -87,7 +87,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mDataProtocol(DataProtocolType),
     mPacketHeaderType(PacketHeaderType),
     mAudiointerfaceMode(JackTrip::JACK),
+    //nc: #ifdef NUMCHANS // cannot delete this until ring-buffer is split into incoming/outgoing
     mNumChans(NumOutChans), // FIXME-IO: DELETE THIS
+    //nc: #endif
     mNumInChans(NumInChans),
     mNumOutChans(NumOutChans),
     #ifdef WAIR // WAIR

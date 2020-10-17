@@ -248,12 +248,14 @@ public:
     virtual void setRemoteClientName(QString remoteClientName)
     { mRemoteClientName = remoteClientName; }
     /// \brief Set the number of audio channels
+    //nc: #ifdef NUMCHANS // cannot delete this until ring-buffer is split into incoming/outgoing
     virtual void setNumChannels(int num_chans) // FIXME-IO: DELETE THIS FUNCTION
     {
       mNumChans = num_chans;
       mNumInChans = num_chans;
       mNumOutChans = num_chans;
     }
+    //nc: #endif
     virtual void setNumInChannels(int num_in_chans)
     { mNumInChans = num_in_chans; }
     virtual void setNumOutChannels(int num_out_chans)
@@ -405,6 +407,7 @@ public:
     { return mAudioInterface->getSizeInBytesPerChannel(); }
     int getHeaderSizeInBytes() const
     { return mPacketHeader->getHeaderSizeInBytes(); }
+    //nc: #ifdef NUMCHANS // cannot delete this until ring-buffer is split into incoming/outgoing
     virtual int getTotalAudioPacketSizeInBytes() const // FIXME-IO: DELETE THIS
     {
 #ifdef WAIR // WAIR
@@ -414,6 +417,7 @@ public:
 #endif // endwhere
             return mAudioInterface->getSizeInBytesPerChannel() * mNumChans;
     }
+    //nc: #endif
     virtual int getTotalAudioIncomingPacketSizeInBytes() const
     {
       return mAudioInterface->getSizeInBytesPerChannel() * mNumInChans;
@@ -513,7 +517,9 @@ private:
     DataProtocol::packetHeaderTypeT mPacketHeaderType; ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
+    //nc: #ifdef NUMCHANS // cannot delete this until ring-buffer is split into incoming/outgoing
     int mNumChans; ///< Number of Channels (inputs = outputs) - // FIXME-IO: DELETE THIS
+    //nc: #endif
     int mNumInChans; ///< Number of Incoming Input Channels FROM the network
     int mNumOutChans; ///< Number of Outgoing Output Channels TO the network
 #ifdef WAIR // WAIR
