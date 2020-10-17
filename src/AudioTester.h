@@ -209,7 +209,9 @@ private:
       }
       rows += row + "\n";
     }
-    rows += " and above\n";
+    if (histLast == latencyHistogramCellMax) {
+      rows += " and above\n";
+    }
     return rows;
   }
 
