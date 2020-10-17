@@ -80,8 +80,8 @@ private:
     JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
     JackTrip::dataProtocolT mDataProtocol; ///< Data Protocol
     int mNumChans; ///< Number of Channels (inputs = outputs) - // FIXME-IO: DELETE THIS
-    int mNumInChans; ///< Number of Incoming Input Channels FROM the network
-    int mNumOutChans; ///< Number of Outgoing Output Channels TO the network
+    int mNumIncomingChans; ///< Number of Incoming Input Channels FROM the network
+    int mNumOutgoingChans; ///< Number of Outgoing Output Channels TO the network
     int mBufferQueueLength; ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution;
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode

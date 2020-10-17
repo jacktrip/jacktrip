@@ -51,6 +51,7 @@
 #include <iostream>
 #include <getopt.h> // for command line parsing
 #include <cstdlib>
+#include <ctype.h>
 
 //#include "ThreadPoolTest.h"
 
@@ -64,8 +65,8 @@ Settings::Settings() :
     mJackTripMode(JackTrip::SERVER),
     mDataProtocol(JackTrip::UDP),
     mNumChans(2), // FIXME-IO: DELETE THIS
-    mNumInChans(2),
-    mNumOutChans(2),
+    mNumIncomingChans(2),
+    mNumOutgoingChans(2),
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
@@ -160,12 +161,61 @@ void Settings::parseInput(int argc, char** argv)
                              "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:", longopts, NULL)) != -1)
         switch (ch) {
 
-        case 'n': // Number of input and output channels
-            //-------------------------------------------------------
+        case 'n': { // Number of input and output channels
+          //-------------------------------------------------------
+          char c1 = tolower(optarg[0]);
+          if (not isalpha(c1)) {
             mNumChans = atoi(optarg);// FIXME-IO: ALLOW GENERAL SPEC: -n "i:2, o:1" for example
-            mNumInChans = mNumChans; // FIXME-IO: ALLOW GENERAL SPEC
-            mNumOutChans = mNumChans;// FIXME-IO: ALLOW GENERAL SPEC
-            break;
+            mNumIncomingChans = mNumChans; // FIXME-IO: ALLOW GENERAL SPEC
+            mNumOutgoingChans = mNumChans;// FIXME-IO: ALLOW GENERAL SPEC
+          } else {
+            enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
+            ulong nac = strlen(optarg);
+            mNumIncomingChans = 2; // going default
+            mNumOutgoingChans = 2;
+            for (ulong i=0; i<nac; i++) {
+              switch(tolower(optarg[i])) {
+              case ' ': break;
+              case ',': break;
+              case ';': break;
+              case '\t': break;
+              case 'i': io=IO_IN; break;
+              case 'o': io=IO_OUT; break;
+              case ':': break;
+              default: // assume pointed at a number (int) or end of string:
+                char ci = optarg[i];
+                assert(isdigit(ci));
+                int nc;
+                char nulled = '\0';
+                for (ulong j=i+1; j<nac; j++) { // find end of integer:
+                  if (!isdigit(optarg[j])) { // end of integer found
+                    nulled = optarg[j];
+                    optarg[j] = '\0';
+                    nc = atoi(&optarg[i]);
+                    optarg[j] = nulled;
+                    break; // terminate search for end of integer
+                  }
+                } // integer search
+                if (nulled == '\0') { // integer goes to end of string
+                  nc = atoi(&optarg[i]);
+                }
+                if (io==IO_IN) {
+                  mNumIncomingChans = nc;
+                } else if (io==IO_OUT) {
+                  mNumOutgoingChans = nc;
+                } else {
+                  std::cerr << "*** --numchannels (-n) argument "
+                            << optarg
+                            << " malformed\n";
+                  exit(1);
+                }
+                break;
+              } // switch(optarg[i])
+            } // for (ulong i=0; i<nac; i++)
+          } // isalpha(c1)
+          printf("Number of incoming audio channels from the network = %d\n", mNumIncomingChans);
+          printf("Number of outgoing audio channels to the network = %d\n", mNumOutgoingChans);
+          break; }
         case 'U': // UDP Bind Port
             mServerUdpPortNum = atoi(optarg);
             break;
@@ -430,8 +480,8 @@ void Settings::parseInput(int argc, char** argv)
         cout << gPrintSeparator << endl;
     }
 
-    assert(mNumOutChans>0);
-    mAudioTester.setSendChannel(mNumOutChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
+    assert(mNumOutgoingChans>0);
+    mAudioTester.setSendChannel(mNumOutgoingChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
 
     // Exit if options are incompatible
     //----------------------------------------------------------------------------
@@ -448,7 +498,7 @@ void Settings::parseInput(int argc, char** argv)
       std::exit(1);
     }
 
-    if (mNumOutChans != mNumInChans) { // FIXME-IO: DELETE THIS TEST WHEN READY
+    if (mNumOutgoingChans != mNumIncomingChans) { // FIXME-IO: DELETE THIS TEST WHEN READY
       std::cerr << "*** --numchannels (-n) ERROR: Number of input and output channels must presently be equal.\n\n";
       std::exit(1);
     }
@@ -562,7 +612,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     if (gVerboseFlag) std::cout << "Settings:startJackTrip mNumNetRevChans = " << mNumNetRevChans << std::endl;
 #endif // endwhere
     if (gVerboseFlag) std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
-    JackTrip *jackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumInChans, mNumOutChans,
+    JackTrip *jackTrip = new JackTrip(mJackTripMode, mDataProtocol, mNumIncomingChans, mNumOutgoingChans,
 #ifdef WAIR // wair
                                       mNumNetRevChans,
 #endif // endwhere
@@ -680,7 +730,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     if (not mAudioTester.getEnabled()) { // No effects plugins allowed while testing:
       // Allocate audio effects in client, if any:
-      mEffects.allocateEffects(mNumOutChans,mNumInChans);
+      mEffects.allocateEffects(mNumOutgoingChans,mNumIncomingChans);
 
       // Outgoing/Incoming Compressor and/or Reverb:
       jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
