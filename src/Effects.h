@@ -44,7 +44,8 @@
 
 class Effects
 {
-  int mNumChans;
+  int mNumIncomingChans;
+  int mNumOutgoingChans;
   int gVerboseFlag = 0;
   enum LIMITER_MODE {
                      LIMITER_NONE,
@@ -83,7 +84,8 @@ class Effects
 public:
 
   Effects() :
-    mNumChans(0),
+    mNumIncomingChans(0),
+    mNumOutgoingChans(0),
     mLimit(LIMITER_NONE),
     mNumClientsAssumed(2)
   {}
@@ -123,47 +125,48 @@ public:
     gVerboseFlag = v;
   }
 
-  void allocateEffects(int numChans) {
-    mNumChans = numChans;
+  void allocateEffects(int numOutgoingChans, int numIncomingChans) {
+    mNumIncomingChans = numIncomingChans;
+    mNumOutgoingChans = numOutgoingChans;
     if (inCompressor) {
-      inCompressorP = new Compressor(mNumChans);
+      inCompressorP = new Compressor(mNumIncomingChans);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
-      outCompressorP = new Compressor(mNumChans);
+      outCompressorP = new Compressor(mNumOutgoingChans);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
-      inZitarevP = new Reverb(mNumChans,mNumChans, 1.0 + zitarevInLevel);
+      inZitarevP = new Reverb(mNumIncomingChans,mNumIncomingChans, 1.0 + zitarevInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Zitarev)\n"; }
     }
     if (outZitarev) {
-      outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + zitarevOutLevel);
+      outZitarevP = new Reverb(mNumOutgoingChans, mNumOutgoingChans, 1.0 + zitarevOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
     }
     if (inFreeverb) {
-      inFreeverbP = new Reverb(mNumChans, mNumChans, freeverbInLevel);
+      inFreeverbP = new Reverb(mNumIncomingChans, mNumIncomingChans, freeverbInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Freeverb)\n"; }
     }
     if (outFreeverb) {
-      outFreeverbP = new Reverb(mNumChans, mNumChans, freeverbOutLevel);
+      outFreeverbP = new Reverb(mNumOutgoingChans, mNumOutgoingChans, freeverbOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Freeverb)\n"; }
     }
     if ( mLimit != LIMITER_NONE) {
       if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
         if (gVerboseFlag) {
           std::cout << "Set up OUTGOING LIMITER for "
-                    << mNumChans << " output channels and "
+                    << mNumOutgoingChans << " outgoing audio channels and "
                     << mNumClientsAssumed << " assumed client(s) ...\n";
         }
-        outLimiterP = new Limiter(mNumChans,mNumClientsAssumed);
+        outLimiterP = new Limiter(mNumOutgoingChans,mNumClientsAssumed);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
       }
       if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
         if (gVerboseFlag) {
-          std::cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
+          std::cout << "Set up INCOMING LIMITER for " << mNumIncomingChans << " incoming channels\n";
         }
-        inLimiterP = new Limiter(mNumChans,1); // mNumClientsAssumed not needed this direction
+        inLimiterP = new Limiter(mNumIncomingChans,1); // mNumClientsAssumed not needed this direction
       }
     }
   }

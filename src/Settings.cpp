@@ -680,7 +680,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     if (not mAudioTester.getEnabled()) { // No effects plugins allowed while testing:
       // Allocate audio effects in client, if any:
-      mEffects.allocateEffects(mNumOutChans);
+      mEffects.allocateEffects(mNumOutChans,mNumInChans);
 
       // Outgoing/Incoming Compressor and/or Reverb:
       jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
