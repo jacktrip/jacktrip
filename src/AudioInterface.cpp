@@ -593,7 +593,7 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 
 //#define TEST_PLUGIN_NAME
 #ifdef TEST_PLUGIN_NAME
-  std::cout << "Plugin name = " 
+  std::cout << "Plugin name = "
 	    << plugin->getName()
 	    << " = subset of mangled name = "
 	    << typeid(*plugin).name()
