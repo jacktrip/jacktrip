@@ -165,10 +165,10 @@ void Settings::parseInput(int argc, char** argv)
           //-------------------------------------------------------
           char c1 = tolower(optarg[0]);
           if (not isalpha(c1)) {
-            mNumChans = atoi(optarg);// FIXME-IO: ALLOW GENERAL SPEC: -n "i:2, o:1" for example
-            mNumIncomingChans = mNumChans; // FIXME-IO: ALLOW GENERAL SPEC
-            mNumOutgoingChans = mNumChans;// FIXME-IO: ALLOW GENERAL SPEC
-          } else { // expect format -n "i:n o:m" or any permuation of that
+            mNumChans = atoi(optarg);
+            mNumIncomingChans = mNumChans;
+            mNumOutgoingChans = mNumChans;
+          } else { // expect format -n "i:n o:m" or the like
             enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
             ulong nac = strlen(optarg);
             mNumIncomingChans = 2; // going default
