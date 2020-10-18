@@ -51,6 +51,7 @@
 #include <iostream>
 #include <getopt.h> // for command line parsing
 #include <cstdlib>
+#include <assert.h>
 
 //#include "ThreadPoolTest.h"
 
