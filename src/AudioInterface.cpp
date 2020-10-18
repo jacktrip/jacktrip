@@ -39,6 +39,7 @@
 #include "JackTrip.h"
 #include <iostream>
 #include <cmath>
+#include <assert.h>
 
 using std::cout; using std::endl;
 
