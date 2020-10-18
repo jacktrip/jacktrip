@@ -676,7 +676,6 @@ JackTrip *Settings::getConfiguredJackTrip()
     jackTrip->setAudioTesterP(&mAudioTester);
 
     // Allocate audio effects in client, if any:
-    mEffects.allocateEffects(mNumChans);
     int nReservedChans = mAudioTester.getEnabled() ? 1 : 0; // no fx allowed on tester channel
     mEffects.allocateEffects(mNumChans-nReservedChans);
     
