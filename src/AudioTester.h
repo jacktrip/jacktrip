@@ -44,6 +44,8 @@
 #include <chrono>
 #include <cstdint>
 #include <cmath>
+#include <string>
+#include <map>
 
 #include <QVarLengthArray>
 
@@ -63,9 +65,14 @@ class AudioTester
   double roundTripCount { 0.0 };
   const int bufferSkipStart { 100 };
   int bufferSkip { bufferSkipStart };
-  static constexpr float impulseAmplitude { 0.1f };
-  static constexpr int numAmpCells { 10 };
-  static constexpr float ampCellHeight { impulseAmplitude/numAmpCells };
+  const float impulseAmplitude { 0.1f };
+  const int numAmpCells { 10 };
+  const float ampCellHeight { impulseAmplitude/numAmpCells };
+
+  const double latencyHistogramCellWidth { 5.0 }; // latency range in ms covered one cell
+  const double latencyHistogramCellMin { 0.0 };
+  const double latencyHistogramCellMax { 19.0 };  // in cells, so 5x this is max latency in ms
+  const int latencyHistogramPrintCountMax { 72 }; // normalize when asterisks exceed this number
 
   int pendingCell { 0 }; // 0 is not used
   float sampleRate { 48000.0f };
@@ -125,6 +132,87 @@ private:
     double timeUS = double(tics_since_launch)/double(CLOCKS_PER_SEC);
     return (uint64_t)timeUS;
 #endif
+  }
+
+  std::map<int, int> latencyHistogram;
+
+  std::map<int, int> getLatencyHistogram() {
+    return latencyHistogram;
+  }
+
+  void extendLatencyHistogram(double latencyMS) {
+    int latencyCell = static_cast<int>(floor(std::max(latencyHistogramCellMin,
+                                                      std::min(latencyHistogramCellMax,
+                                                               latencyMS / latencyHistogramCellWidth))));
+    latencyHistogram[latencyCell] += 1;
+  }
+
+  int latencyHistogramCountMax() {
+    int lhMax = 0;
+    int histStart = latencyHistogramFirstNonzeroCellIndex();
+    int histLast = latencyHistogramLastNonzeroCellIndex();
+    for (int i = histStart; i <= histLast; ++i) {
+      int lhi = latencyHistogram[i];
+      if (lhi > lhMax) {
+        lhMax = lhi;
+      }
+    }
+    return lhMax;
+  }
+
+  int latencyHistogramFirstNonzeroCellIndex() {
+    for (int i=latencyHistogramCellMin; i <= latencyHistogramCellMax; i++) {
+      if (latencyHistogram[i]>0) {
+        return i;
+      }
+    }
+    std::cerr << "*** AudioTester: LATENCY HISTOGRAM IS EMPTY!\n";
+    return -1;
+  }
+
+  int latencyHistogramLastNonzeroCellIndex() {
+    for (int i=latencyHistogramCellMax; i>=latencyHistogramCellMin; i--) {
+      if (latencyHistogram[i]>0) {
+        return i;
+      }
+    }
+    std::cerr << "*** AudioTester: LATENCY HISTOGRAM IS EMPTY!\n";
+    return -1;
+  }
+
+  std::string getLatencyHistogramString() {
+    int histStart = latencyHistogramFirstNonzeroCellIndex();
+    int histLast = latencyHistogramLastNonzeroCellIndex();
+    std::string marker = "*";
+    double histScale = 1.0;
+    int lhcm = latencyHistogramCountMax();
+    int lhpcm = latencyHistogramPrintCountMax;
+    bool normalizing = lhpcm < lhcm;
+    if (normalizing) {
+      marker = "#";
+      histScale = double(lhpcm) / double(lhcm);
+    }
+    std::string rows = "";
+    for (int i = histStart; i <= histLast; ++i) {
+      int hi = latencyHistogram[i];
+      int hin = int(std::round(histScale * double(hi)));
+      std::string istr = std::to_string(int(std::round(latencyHistogramCellWidth * double(i))));
+      std::string istrm1 = std::to_string(int(std::round(latencyHistogramCellWidth * double(i-1))));
+      // std::string histr = boost::format("%02d",hi);
+      std::string histr = std::to_string(hi);
+      while (histr.length()<3) {
+        histr = " " + histr;
+      }
+      std::string row = "["+istrm1+"-"+istr+"ms]="+histr+":";
+      for (int j=0; j<hin; j++) {
+        row += marker;
+      }
+      rows += row + "\n";
+    }
+    if (histLast == latencyHistogramCellMax) {
+      rows += " and above\n";
+    }
+    return rows;
   }
 
 };
