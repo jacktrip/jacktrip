@@ -123,6 +123,10 @@ public:
     gVerboseFlag = v;
   }
 
+  int getNumChans() {
+    return mNumChans;
+  }
+
   void allocateEffects(int nc) {
     mNumChans = nc;
     if (inCompressor) {

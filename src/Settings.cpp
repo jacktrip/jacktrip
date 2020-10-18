@@ -427,7 +427,12 @@ void Settings::parseInput(int argc, char** argv)
     }
 
     assert(mNumChans>0);
-    mAudioTester.setSendChannel(mNumChans-1); // use top channel - channel 0 is a clap track on CCRMA loopback servers
+    mAudioTester.setSendChannel(mNumChans-1); // use last channel for latency testing
+    // Originally, testing only in the last channel was adopted
+    // because channel 0 ("left") was a clap track on CCRMA loopback
+    // servers.  Now, however, we also do it in order to easily keep
+    // effects in all but the last channel, enabling silent testing
+    // in the last channel in parallel with normal operation of the others.
 
     // Exit if options are incompatible
     //----------------------------------------------------------------------------
@@ -507,7 +512,7 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
-    cout << " -x, --examine-audio-delay #              Print round-trip audio delay statistics every # sec" << endl;
+    cout << " -x, --examine-audio-delay #              Print round-trip audio delay statistics every # sec for last audio channel" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -669,22 +674,23 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     jackTrip->setAudioTesterP(&mAudioTester);
 
-    if (not mAudioTester.getEnabled()) { // No effects plugins allowed while testing:
-      // Allocate audio effects in client, if any:
-      mEffects.allocateEffects(mNumChans);
+    // Allocate audio effects in client, if any:
+    mEffects.allocateEffects(mNumChans);
+    int nReservedChans = mAudioTester.getEnabled() ? 1 : 0; // no fx allowed on tester channel
+    mEffects.allocateEffects(mNumChans-nReservedChans);
 
-      // Outgoing/Incoming Compressor and/or Reverb:
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
 
-      // Limiters go last in the plugin sequence:
-      jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-      jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
-    }
+    // Outgoing/Incoming Compressor and/or Reverb:
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
+
+    // Limiters go last in the plugin sequence:
+    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
+    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
 
 #ifdef WAIR // WAIR
     if ( mWAIR ) {
