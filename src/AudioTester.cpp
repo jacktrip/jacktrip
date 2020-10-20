@@ -45,7 +45,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
     std::cerr << "*** AudioTester.h: lookForReturnPulse: NOT ENABLED\n";
     return;
   }
-  if (impulsePending) { // look for return impulse in channel 0:
+  if (impulsePending) { // look for return impulse in channel sendChannel:
     assert(sendChannel<out_buffer.size());
     for (uint n=0; n<n_frames; n++) {
       float amp = out_buffer[sendChannel][n];

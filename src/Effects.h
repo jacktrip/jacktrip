@@ -41,6 +41,7 @@
 #include "Limiter.h"
 #include "Compressor.h"
 #include "Reverb.h"
+#include <assert.h>
 
 class Effects
 {
@@ -123,29 +124,39 @@ public:
     gVerboseFlag = v;
   }
 
+  int getNumChans() {
+    return mNumChans;
+  }
+
   void allocateEffects(int nc) {
     mNumChans = nc;
     if (inCompressor) {
+      assert(inCompressorP == nullptr);
       inCompressorP = new Compressor(mNumChans);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
+      assert(outCompressorP == nullptr);
       outCompressorP = new Compressor(mNumChans);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
+      assert(inZitarevP == nullptr);
       inZitarevP = new Reverb(mNumChans,mNumChans, 1.0 + zitarevInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Zitarev)\n"; }
     }
     if (outZitarev) {
+      assert(outZitarevP == nullptr);
       outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + zitarevOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
     }
     if (inFreeverb) {
+      assert(inFreeverbP == nullptr);
       inFreeverbP = new Reverb(mNumChans, mNumChans, freeverbInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Freeverb)\n"; }
     }
     if (outFreeverb) {
+      assert(outFreeverbP == nullptr);
       outFreeverbP = new Reverb(mNumChans, mNumChans, freeverbOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Freeverb)\n"; }
     }
@@ -156,6 +167,7 @@ public:
                     << mNumChans << " output channels and "
                     << mNumClientsAssumed << " assumed client(s) ...\n";
         }
+        assert(outLimiterP == nullptr);
         outLimiterP = new Limiter(mNumChans,mNumClientsAssumed);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
       }
@@ -163,6 +175,7 @@ public:
         if (gVerboseFlag) {
           std::cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
         }
+        assert(inLimiterP == nullptr);
         inLimiterP = new Limiter(mNumChans,1); // mNumClientsAssumed not needed this direction
       }
     }

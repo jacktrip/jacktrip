@@ -92,6 +92,7 @@ public:
   void setEnabled(bool e) { enabled = e; }
   void setPrintIntervalSec(float s) { printIntervalSec = s; }
   void setSendChannel(int c) { sendChannel = c; }
+  int getSendChannel() { return sendChannel; }
   int getPendingCell() { return pendingCell; }
   void setPendingCell(int pc) { pendingCell = pc; }
   void setSampleRate(float fs) { sampleRate = fs; }
