@@ -42,6 +42,7 @@
 #include "Compressor.h"
 #include "CompressorPresets.h"
 #include "Reverb.h"
+#include <assert.h>
 
 class Effects
 {
@@ -95,15 +96,15 @@ public:
     /*
       Plugin ownership presently passes to JackTrip,
       and deletion occurs in AudioInterface.cpp. See
-      delete mProcessPluginsFromNetwork[i];
-      delete mProcessPluginsToNetwork[i];
+        delete mProcessPluginsFromNetwork[i];
+        delete mProcessPluginsToNetwork[i];
       there.  If/when we ever do it here:
-      if (inCompressor) { delete inCompressorP; }
-      if (outCompressor) { delete outCompressorP; }
-      if (inZitarev) { delete inZitarevP; }
-      if (outZitarev) { delete outZitarevP; }
-      if (inFreeverb) { delete inFreeverbP; }
-      if (outFreeverb) { delete outFreeverbP; }
+	if (inCompressor) { delete inCompressorP; }
+	if (outCompressor) { delete outCompressorP; }
+	if (inZitarev) { delete inZitarevP; }
+	if (outZitarev) { delete outZitarevP; }
+	if (inFreeverb) { delete inFreeverbP; }
+	if (outFreeverb) { delete outFreeverbP; }
       but if everyone can compile C++11,
       let's switch to using std::unique_ptr.
     */
@@ -138,30 +139,40 @@ public:
     gVerboseFlag = v;
   }
 
+  int getNumChans() {
+    return mNumChans;
+  }
+
   void allocateEffects(int nc) {
     mNumChans = nc;
     if (inCompressor) {
-      inCompressorP = new Compressor(mNumChans, gVerboseFlag, inCompressorPreset);
+      assert(inCompressorP == nullptr);
+      inCompressorP = new Compressor(mNumChans);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
-      outCompressorP = new Compressor(mNumChans, gVerboseFlag, outCompressorPreset);
+      assert(outCompressorP == nullptr);
+      outCompressorP = new Compressor(mNumChans);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
-      inZitarevP = new Reverb(mNumChans,mNumChans, 1.0 + zitarevInLevel, gVerboseFlag);
+      assert(inZitarevP == nullptr);
+      inZitarevP = new Reverb(mNumChans,mNumChans, 1.0 + zitarevInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Zitarev)\n"; }
     }
     if (outZitarev) {
-      outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + zitarevOutLevel, gVerboseFlag);
+      assert(outZitarevP == nullptr);
+      outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + zitarevOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
     }
     if (inFreeverb) {
-      inFreeverbP = new Reverb(mNumChans, mNumChans, freeverbInLevel, gVerboseFlag);
+      assert(inFreeverbP == nullptr);
+      inFreeverbP = new Reverb(mNumChans, mNumChans, freeverbInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Freeverb)\n"; }
     }
     if (outFreeverb) {
-      outFreeverbP = new Reverb(mNumChans, mNumChans, freeverbOutLevel, gVerboseFlag);
+      assert(outFreeverbP == nullptr);
+      outFreeverbP = new Reverb(mNumChans, mNumChans, freeverbOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Freeverb)\n"; }
     }
     if ( mLimit != LIMITER_NONE) {
@@ -171,13 +182,15 @@ public:
                     << mNumChans << " output channels and "
                     << mNumClientsAssumed << " assumed client(s) ...\n";
         }
-        outLimiterP = new Limiter(mNumChans, mNumClientsAssumed, gVerboseFlag);
+        assert(outLimiterP == nullptr);
+        outLimiterP = new Limiter(mNumChans,mNumClientsAssumed);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
       }
       if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
         if (gVerboseFlag) {
           std::cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
         }
+	assert(inLimiterP == nullptr);
         inLimiterP = new Limiter(mNumChans, 1, gVerboseFlag); // mNumClientsAssumed not needed this direction
       }
     }
@@ -396,10 +409,10 @@ public:
                 returnCode += parseCompresserArgs(&optarg[i+1],io);
                 break; }
               case 'z': {
-                float farg = atof(&optarg[i+1]);
-                if (io==IO_IN) {
+              float farg = atof(&optarg[i+1]);
+              if (io==IO_IN) {
                   zitarevInLevel = farg;
-                } else if (io==IO_OUT) {
+              } else if (io==IO_OUT) {
                   zitarevOutLevel = farg;
                 } // else ignore the argument
                 break; }
@@ -440,28 +453,28 @@ public:
       printHelp(cmd,'O');
       returnCode = 1;
     } else {
-      char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
-      if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) {
-	mLimit = LIMITER_BOTH;
-	if (gVerboseFlag) {
-	  std::cout << "Set up Overflow Limiter for both INCOMING and OUTGOING\n";
-	}
-      } else if (c1 == 'i') {
-	mLimit = LIMITER_INCOMING;
-	if (gVerboseFlag) {
-	  std::cout << "Set up Overflow Limiter for INCOMING from network\n";
-	}
-      } else if (c1 == 'o') {
-	mLimit = LIMITER_OUTGOING;
-	if (gVerboseFlag) {
-	  std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
-	}
+    char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
+    if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) {
+      mLimit = LIMITER_BOTH;
+      if (gVerboseFlag) {
+        std::cout << "Set up Overflow Limiter for both INCOMING and OUTGOING\n";
+      }
+    } else if (c1 == 'i') {
+      mLimit = LIMITER_INCOMING;
+      if (gVerboseFlag) {
+        std::cout << "Set up Overflow Limiter for INCOMING from network\n";
+      }
+    } else if (c1 == 'o') {
+      mLimit = LIMITER_OUTGOING;
+      if (gVerboseFlag) {
+        std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
+      }
       } else if (c1 == 'n') {
 	mLimit = LIMITER_NONE;
 	if (gVerboseFlag) {
 	  std::cout << "NO Overflow Limiters\n";
 	}
-      } else {
+    } else {
 	returnCode = 2;
       }
     }
@@ -479,10 +492,10 @@ public:
       std::cerr << cmd << " argument help or integer > 0 is REQUIRED\n";
       returnCode = 2;
     } else {
-      mNumClientsAssumed = atoi(optarg);
-      if(mNumClientsAssumed < 1) {
-	std::cerr << "-p ERROR: Must have at least one assumed sound source: "
-		  << atoi(optarg) << " is not supported." << std::endl;
+    mNumClientsAssumed = atoi(optarg);
+    if(mNumClientsAssumed < 1) {
+      std::cerr << "-p ERROR: Must have at least one assumed sound source: "
+                << atoi(optarg) << " is not supported." << std::endl;
 	returnCode = 2;
       }
     }
