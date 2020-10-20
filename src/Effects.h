@@ -106,12 +106,12 @@ public:
         delete mProcessPluginsFromNetwork[i];
         delete mProcessPluginsToNetwork[i];
       there.  If/when we ever do it here:
-	if (inCompressor) { delete inCompressorP; }
-	if (outCompressor) { delete outCompressorP; }
-	if (inZitarev) { delete inZitarevP; }
-	if (outZitarev) { delete outZitarevP; }
-	if (inFreeverb) { delete inFreeverbP; }
-	if (outFreeverb) { delete outFreeverbP; }
+        if (inCompressor) { delete inCompressorP; }
+        if (outCompressor) { delete outCompressorP; }
+        if (inZitarev) { delete inZitarevP; }
+        if (outZitarev) { delete outZitarevP; }
+        if (inFreeverb) { delete inFreeverbP; }
+        if (outFreeverb) { delete outFreeverbP; }
       but if everyone can compile C++11,
       let's switch to using std::unique_ptr.
     */
@@ -184,7 +184,7 @@ public:
     // LIMITER MUST GO LAST:
     if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
       if (gVerboseFlag) {
-	std::cout << "Set up INCOMING LIMITER for " << mNumIncomingChans << " input channels\n";
+        std::cout << "Set up INCOMING LIMITER for " << mNumIncomingChans << " input channels\n";
       }
       assert(inLimiterP == nullptr);
       inLimiterP = new Limiter(mNumIncomingChans, 1, gVerboseFlag); // mNumClientsAssumed not needed this direction
@@ -230,7 +230,7 @@ public:
         assert(outLimiterP == nullptr);
         outLimiterP = new Limiter(mNumOutgoingChans,mNumClientsAssumed);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
-	outgoingEffects.push_back(outLimiterP);
+        outgoingEffects.push_back(outLimiterP);
       }
     }
     outgoingEffectsAllocated = true;
@@ -429,17 +429,14 @@ public:
         case 'c': if (io==IO_IN) { inCompressor = true; } else if (io==IO_OUT) { outCompressor = true; }
           else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
           lastEffect = 'c';
-	  io = IO_NEITHER;
           break;
         case 'f': if (io==IO_IN) { inFreeverb = true; } else if (io==IO_OUT) { outFreeverb = true; }
           else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
           lastEffect = 'f';
-	  io = IO_NEITHER;
           break;
         case 'z': if (io==IO_IN) { inZitarev = true; } else if (io==IO_OUT) { outZitarev = true; }
           else { std::cerr << "-f arg `" << optarg << "' malformed\n"; exit(1); }
           lastEffect = 'z';
-	  io = IO_NEITHER;
           break;
         case '(': parenLevel++;
           for (ulong j=i+1; j<argLen; j++) {
@@ -511,12 +508,12 @@ public:
         std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
       }
       } else if (c1 == 'n') {
-	mLimit = LIMITER_NONE;
-	if (gVerboseFlag) {
-	  std::cout << "NO Overflow Limiters\n";
-	}
+        mLimit = LIMITER_NONE;
+        if (gVerboseFlag) {
+          std::cout << "NO Overflow Limiters\n";
+        }
     } else {
-	returnCode = 2;
+        returnCode = 2;
       }
     }
     return returnCode;
@@ -537,7 +534,7 @@ public:
     if(mNumClientsAssumed < 1) {
       std::cerr << "-p ERROR: Must have at least one assumed sound source: "
                 << atoi(optarg) << " is not supported." << std::endl;
-	returnCode = 2;
+        returnCode = 2;
       }
     }
     return returnCode;
