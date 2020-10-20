@@ -160,7 +160,7 @@ public:
     mNumIncomingChans = nIncomingChans;
     if (incomingEffectsAllocated) {
       std::cerr << "*** Effects.h: attempt to allocate incoming effects more than once\n";
-      return;
+      std::exit(1);
     }
     std::vector<ProcessPlugin*> incomingEffects;
     if (inCompressor) {
@@ -198,7 +198,7 @@ public:
     mNumOutgoingChans = nOutgoingChans;
     if (outgoingEffectsAllocated) {
       std::cerr << "*** Effects.h: attempt to allocate outgoing effects more than once\n";
-      return;
+      std::exit(1);
     }
     std::vector<ProcessPlugin*> outgoingEffects;
     if (outCompressor) {
