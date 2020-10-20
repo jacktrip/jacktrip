@@ -104,7 +104,7 @@ public:
       if (ndx >= 0) {
         compressorUIP[i]->setParamValue(ndx, p);
         if (verbose) {
-          std::cout << "Compressor.h: parameter " << pName << " set to " << p << "\n";
+          std::cout << "Compressor.h: parameter " << pName << " set to " << p << " on audio channel " << i << "\n";
         }
       } else {
         std::cerr << "*** Compressor.h: Could not find parameter named " << pName << "\n";

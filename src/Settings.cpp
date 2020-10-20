@@ -740,11 +740,11 @@ JackTrip *Settings::getConfiguredJackTrip()
     // Allocate audio effects in client, if any:
     int nReservedChans = mAudioTester.getEnabled() ? 1 : 0; // no fx allowed on tester channel
     std::vector<ProcessPlugin*> outgoingEffects = mEffects.allocateOutgoingEffects(mNumChans-nReservedChans);
-    for (ProcessPlugin* p : outgoingEffects) {
+    for (auto p : outgoingEffects) {
       jackTrip->appendProcessPluginToNetwork( p );
     }
     std::vector<ProcessPlugin*> incomingEffects = mEffects.allocateIncomingEffects(mNumChans-nReservedChans);
-    for (ProcessPlugin* p : incomingEffects) {
+    for (auto p : incomingEffects) {
       jackTrip->appendProcessPluginFromNetwork( p );
     }
 
