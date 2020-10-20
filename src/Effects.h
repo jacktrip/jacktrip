@@ -43,10 +43,12 @@
 #include "CompressorPresets.h"
 #include "Reverb.h"
 #include <assert.h>
+#include <vector>
 
 class Effects
 {
-  int mNumChans;
+  int mNumIncomingChans;
+  int mNumOutgoingChans;
   int gVerboseFlag = 0;
 public:
   enum LIMITER_MODE {
@@ -66,6 +68,8 @@ private:
   bool outZitarev = false;
   bool inFreeverb = false;
   bool outFreeverb = false;
+  bool incomingEffectsAllocated = false;
+  bool outgoingEffectsAllocated = false;
   Compressor* inCompressorP = nullptr;
   Compressor* outCompressorP = nullptr;
   CompressorPreset inCompressorPreset = CompressorPresets::voice; // ./CompressorPresets.h
@@ -87,8 +91,11 @@ private:
 public:
 
   Effects() :
-    mNumChans(2),
-    mLimit(LIMITER_OUTGOING),
+    mNumIncomingChans(2),
+    mNumOutgoingChans(2),
+    // JOS recommends: mLimit(LIMITER_OUTGOING),
+    // Paranoid choice:
+    mLimit(LIMITER_NONE),
     mNumClientsAssumed(2)
   {}
 
@@ -139,61 +146,95 @@ public:
     gVerboseFlag = v;
   }
 
-  int getNumChans() {
-    return mNumChans;
+  int getNumIncomingChans() {
+    return mNumIncomingChans;
   }
 
-  void allocateEffects(int nc) {
-    mNumChans = nc;
+  int getOutgoingNumChans() {
+    return mNumOutgoingChans;
+  }
+
+  // call these next two after it is decided what effects we will be using for the duration:
+
+  std::vector<ProcessPlugin*> allocateIncomingEffects(int nIncomingChans) {
+    mNumIncomingChans = nIncomingChans;
+    if (incomingEffectsAllocated) {
+      std::cerr << "*** Effects.h: attempt to allocate incoming effects more than once\n";
+      return;
+    }
+    std::vector<ProcessPlugin*> incomingEffects;
     if (inCompressor) {
       assert(inCompressorP == nullptr);
-      inCompressorP = new Compressor(mNumChans, gVerboseFlag, inCompressorPreset);
+      inCompressorP = new Compressor(mNumIncomingChans, gVerboseFlag, inCompressorPreset);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
-    }
-    if (outCompressor) {
-      assert(outCompressorP == nullptr);
-      outCompressorP = new Compressor(mNumChans, gVerboseFlag, outCompressorPreset);
-      if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
+      incomingEffects.push_back(inCompressorP);
     }
     if (inZitarev) {
       assert(inZitarevP == nullptr);
-      inZitarevP = new Reverb(mNumChans,mNumChans, 1.0 + zitarevInLevel);
+      inZitarevP = new Reverb(mNumIncomingChans,mNumIncomingChans, 1.0 + zitarevInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Zitarev)\n"; }
-    }
-    if (outZitarev) {
-      assert(outZitarevP == nullptr);
-      outZitarevP = new Reverb(mNumChans, mNumChans, 1.0 + zitarevOutLevel);
-      if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
+      incomingEffects.push_back(inZitarevP);
     }
     if (inFreeverb) {
       assert(inFreeverbP == nullptr);
-      inFreeverbP = new Reverb(mNumChans, mNumChans, freeverbInLevel);
+      inFreeverbP = new Reverb(mNumIncomingChans, mNumIncomingChans, freeverbInLevel);
       if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Freeverb)\n"; }
+      incomingEffects.push_back(inFreeverbP);
+    }
+    // LIMITER MUST GO LAST:
+    if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
+      if (gVerboseFlag) {
+	std::cout << "Set up INCOMING LIMITER for " << mNumIncomingChans << " input channels\n";
+      }
+      assert(inLimiterP == nullptr);
+      inLimiterP = new Limiter(mNumIncomingChans, 1, gVerboseFlag); // mNumClientsAssumed not needed this direction
+      incomingEffects.push_back(inLimiterP);
+    }
+    incomingEffectsAllocated = true;
+    return incomingEffects;
+  }
+
+  std::vector<ProcessPlugin*> allocateOutgoingEffects(int nOutgoingChans) {
+    mNumOutgoingChans = nOutgoingChans;
+    if (outgoingEffectsAllocated) {
+      std::cerr << "*** Effects.h: attempt to allocate outgoing effects more than once\n";
+      return;
+    }
+    std::vector<ProcessPlugin*> outgoingEffects;
+    if (outCompressor) {
+      assert(outCompressorP == nullptr);
+      outCompressorP = new Compressor(mNumOutgoingChans, gVerboseFlag, outCompressorPreset);
+      if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
+      outgoingEffects.push_back(outCompressorP);
+    }
+    if (outZitarev) {
+      assert(outZitarevP == nullptr);
+      outZitarevP = new Reverb(mNumOutgoingChans, mNumOutgoingChans, 1.0 + zitarevOutLevel);
+      if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
+      outgoingEffects.push_back(outZitarevP);
     }
     if (outFreeverb) {
       assert(outFreeverbP == nullptr);
-      outFreeverbP = new Reverb(mNumChans, mNumChans, freeverbOutLevel);
+      outFreeverbP = new Reverb(mNumOutgoingChans, mNumOutgoingChans, freeverbOutLevel);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Freeverb)\n"; }
+      outgoingEffects.push_back(outFreeverbP);
     }
+    // LIMITER MUST GO LAST:
     if ( mLimit != LIMITER_NONE) {
       if ( mLimit == LIMITER_OUTGOING || mLimit == LIMITER_BOTH) {
         if (gVerboseFlag) {
           std::cout << "Set up OUTGOING LIMITER for "
-                    << mNumChans << " output channels and "
+                    << mNumOutgoingChans << " output channels and "
                     << mNumClientsAssumed << " assumed client(s) ...\n";
         }
         assert(outLimiterP == nullptr);
-        outLimiterP = new Limiter(mNumChans,mNumClientsAssumed);
+        outLimiterP = new Limiter(mNumOutgoingChans,mNumClientsAssumed);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
-      }
-      if ( mLimit == LIMITER_INCOMING || mLimit == LIMITER_BOTH) {
-        if (gVerboseFlag) {
-          std::cout << "Set up INCOMING LIMITER for " << mNumChans << " input channels\n";
-        }
-	assert(inLimiterP == nullptr);
-        inLimiterP = new Limiter(mNumChans, 1, gVerboseFlag); // mNumClientsAssumed not needed this direction
+	outgoingEffects.push_back(outLimiterP);
       }
     }
+    outgoingEffectsAllocated = true;
+    return outgoingEffects;
   }
 
   void printHelp(char* command, char helpCase) {

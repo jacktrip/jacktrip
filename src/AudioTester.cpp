@@ -61,7 +61,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 	    std::cerr << " - ABORTING CURRENT PULSE\n";
 	    impulsePending = false;
 	  } else { // somehow we got the previous pulse again - repeated packet or underrun-caused repetition (old buffer)
-	    std::cerr << " - IGNORING FOUND PULSE AND KEEP WAITING\n";
+	    std::cerr << " - IGNORING FOUND PULSE WAITING FURTHER\n";
 	  }
         } else { // found our impulse:
           int64_t elapsedSamples = -1;

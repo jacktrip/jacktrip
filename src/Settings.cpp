@@ -739,19 +739,14 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     // Allocate audio effects in client, if any:
     int nReservedChans = mAudioTester.getEnabled() ? 1 : 0; // no fx allowed on tester channel
-    mEffects.allocateEffects(mNumChans-nReservedChans);
-    
-    // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
-
-    // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    std::vector<ProcessPlugin*> outgoingEffects = mEffects.allocateOutgoingEffects(mNumChans-nReservedChans);
+    for (ProcessPlugin* p : outgoingEffects) {
+      jackTrip->appendProcessPluginToNetwork( p );
+    }
+    std::vector<ProcessPlugin*> incomingEffects = mEffects.allocateIncomingEffects(mNumChans-nReservedChans);
+    for (ProcessPlugin* p : incomingEffects) {
+      jackTrip->appendProcessPluginFromNetwork( p );
+    }
 
 #ifdef WAIR // WAIR
     if ( mWAIR ) {
