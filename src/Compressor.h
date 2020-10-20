@@ -55,7 +55,7 @@ class Compressor : public ProcessPlugin
 public:
   /// \brief The class constructor sets the number of channels to limit
   Compressor(int numchans, // xtor
-	     bool verboseIn = false,
+             bool verboseIn = false,
              float ratioIn = 2.0f, // 2:1 compression above threshold
              float thresholdDBIn = -24.0f,
              float attackMSIn = 15.0f,
@@ -78,14 +78,14 @@ public:
   }
 
   Compressor(int numchans, // xtor
-	     bool verboseIn = false,
-	     CompressorPreset preset = CompressorPresets::voice) :
+             bool verboseIn = false,
+             CompressorPreset preset = CompressorPresets::voice) :
     Compressor(numchans,verboseIn,
-	       preset.ratio,
-	       preset.thresholdDB,
-	       preset.attackMS,
-	       preset.releaseMS,
-	       preset.makeUpGainDB)
+               preset.ratio,
+               preset.thresholdDB,
+               preset.attackMS,
+               preset.releaseMS,
+               preset.makeUpGainDB)
   {}
   /// \brief The class destructor
   virtual ~Compressor() {

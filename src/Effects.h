@@ -147,12 +147,12 @@ public:
     mNumChans = nc;
     if (inCompressor) {
       assert(inCompressorP == nullptr);
-      inCompressorP = new Compressor(mNumChans);
+      inCompressorP = new Compressor(mNumChans, gVerboseFlag, inCompressorPreset);
       if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
     }
     if (outCompressor) {
       assert(outCompressorP == nullptr);
-      outCompressorP = new Compressor(mNumChans);
+      outCompressorP = new Compressor(mNumChans, gVerboseFlag, outCompressorPreset);
       if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
     }
     if (inZitarev) {
