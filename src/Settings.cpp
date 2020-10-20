@@ -52,6 +52,7 @@
 #include <getopt.h> // for command line parsing
 #include <cstdlib>
 #include <assert.h>
+#include <ctype.h>
 
 //#include "ThreadPoolTest.h"
 
@@ -455,23 +456,25 @@ void Settings::parseInput(int argc, char** argv)
           break; }
         default: {
             //-------------------------------------------------------
-            printUsage();
+          printUsage();
           printf("*** Unrecognized option -%c *** see above for usage\n",ch);
           std::exit(1);
-            break; }
+	  break; }
         }
 
     // Warn user if undefined options where entered
     //----------------------------------------------------------------------------
     if (optind < argc) {
+      if (strcmp(argv[optind],"help")!=0) {
         cout << gPrintSeparator << endl;
-        cout << "WARNING: The following entered options have no effect." << endl;
-        cout << "          They will be ignored!" << endl;
-        cout << "          Type 'jacktrip -h' to see options." << endl;
+        cout << "*** Unexpected command-line argument(s): ";
         for( ; optind < argc; optind++) {
-            cout << "argument: " << argv[optind] << endl;
+          cout << argv[optind] << " ";
         }
-        cout << gPrintSeparator << endl;
+        cout << endl << gPrintSeparator << endl;
+      }
+      printUsage();
+      std::exit(1);
     }
 
     assert(mNumChans>0);
@@ -491,7 +494,7 @@ void Settings::parseInput(int argc, char** argv)
     }
     if (mEffects.getHaveLimiter() && haveSomeServerMode) {
       if (mEffects.getLimit() != Effects::LIMITER_MODE::LIMITER_OUTGOING) { // default case
-	std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
+        std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
       }
       mEffects.setNoLimiters();
       // don't exit since an outgoing limiter is now the default (could exit for incoming case):
