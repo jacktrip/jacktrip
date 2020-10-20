@@ -465,7 +465,7 @@ void Settings::parseInput(int argc, char** argv)
         std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
       }
       mEffects.setNoLimiters();
-      // don't exit since an outgoing limiter is now the default (could exit for incoming case):
+      // don't exit since an outgoing limiter should be the default (could exit for incoming case):
       // std::exit(1);
     }
     if (mAudioTester.getEnabled() && haveSomeServerMode) {
