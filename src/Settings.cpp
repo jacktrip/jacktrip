@@ -232,17 +232,17 @@ void Settings::parseInput(int argc, char** argv)
             } else if (atoi(optarg) == 32) {
                 mAudioBitResolution = AudioInterface::BIT32;
             } else {
-                std::cerr << "--bitres ERROR: Wrong bit resolution: "
-                          << atoi(optarg) << " is not supported." << endl;
                 printUsage();
+                std::cerr << "--bitres ERROR: Bit resolution: "
+                          << atoi(optarg) << " is not supported." << endl;
                 std::exit(1);
             }
             break;
         case 'q':
             //-------------------------------------------------------
             if ( atoi(optarg) <= 0 ) {
-                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 printUsage();
+                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 std::exit(1); }
             else {
                 mBufferQueueLength = atoi(optarg);
@@ -251,8 +251,8 @@ void Settings::parseInput(int argc, char** argv)
         case 'r':
             //-------------------------------------------------------
             if ( atoi(optarg) <= 0 ) {
-                std::cerr << "--redundancy ERROR: The reduncancy has to be a positive integer" << endl;
                 printUsage();
+                std::cerr << "--redundancy ERROR: The reduncancy has to be a positive integer" << endl;
                 std::exit(1); }
             else {
                 mRedundancy = atoi(optarg);
@@ -337,9 +337,9 @@ void Settings::parseInput(int argc, char** argv)
             } else if ( atoi(optarg) == 5 ) {
                 mHubConnectionMode = JackTrip::NOAUTO;
             } else {
+                printUsage();
                 std::cerr << "-p ERROR: Wrong HubConnectionMode: "
                           << atoi(optarg) << " is not supported." << endl;
-                printUsage();
                 std::exit(1);
             }
             break;
@@ -347,8 +347,8 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mIOStatTimeout = atoi(optarg);
             if (0 > mIOStatTimeout) {
-                std::cerr << "--iostat ERROR: negative timeout." << endl;
                 printUsage();
+                std::cerr << "--iostat ERROR: negative timeout." << endl;
                 std::exit(1);
             }
             break;
@@ -356,9 +356,9 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mIOStatStream.reset(new std::ofstream(optarg));
             if (!mIOStatStream->is_open()) {
+                printUsage();
                 std::cerr << "--iostatlog FAILED to open " << optarg
                           << " for writing." << endl;
-                printUsage();
                 std::exit(1);
             }
             break;
@@ -397,7 +397,7 @@ void Settings::parseInput(int argc, char** argv)
             std::exit(0); // help printed
           }
           break; }
-        case 'f': { // effects (-f reverbLevel [0-2])
+        case 'f': { // --effects (-f) effectsSpecArg
           //-------------------------------------------------------
           char cmd[] { "--effects (-f)" };
           int returnCode = mEffects.parseEffectsOptArg(cmd,optarg);
@@ -420,29 +420,35 @@ void Settings::parseInput(int argc, char** argv)
           mAudioTester.setPrintIntervalSec(atof(optarg));
           break; }
         case ':': {
-          printf("\t*** Missing option argument\n");
+          printUsage();
+          printf("*** Missing option argument *** see above for usage\n\n");
           break; }
         case '?': {
-          printf("\t*** Unknown or ambiguous option argument\n");
+          printUsage();
+          printf("*** Unknown, missing, or ambiguous option argument *** see above for usage\n\n");
+          std::exit(1);
           break; }
         default: {
             //-------------------------------------------------------
             printUsage();
-            std::exit(0);
+          printf("*** Unrecognized option -%c *** see above for usage\n",ch);
+          std::exit(1);
             break; }
         }
 
     // Warn user if undefined options where entered
     //----------------------------------------------------------------------------
     if (optind < argc) {
+      if (strcmp(argv[optind],"help")!=0) {
         cout << gPrintSeparator << endl;
-        cout << "WARINING: The following entered options have no effect." << endl;
-        cout << "          They will be ignored!" << endl;
-        cout << "          Type 'jacktrip -h' to see options." << endl;
+        cout << "*** Unexpected command-line argument(s): ";
         for( ; optind < argc; optind++) {
-            cout << "argument: " << argv[optind] << endl;
+          cout << argv[optind] << " ";
         }
-        cout << gPrintSeparator << endl;
+        cout << endl << gPrintSeparator << endl;
+      }
+      printUsage();
+      std::exit(1);
     }
 
     assert(mNumChans>0);
@@ -518,7 +524,7 @@ void Settings::printUsage()
     cout << " -B, --bindport        #                  Set only the bind port number (default: " << gDefaultPort << ")" << endl;
     cout << " -P, --peerport        #                  Set only the peer port number (default: " << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
-    cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16)" << endl;
+    cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16, 32 uses floating-point)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -t, --timeout                            Quit after 10 seconds of no network activity" << endl;
