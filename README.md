@@ -17,6 +17,15 @@ make
 
 # License
 **IMPORTANT:** The code for the graphical user interface portion of this branch is released under version 3.0 of the GPL. (The full text of this can be found in COPYING.) Only files that were part of the original JackTrip project are covered by the more permissive license in LICENSE. The changes made to these files to allow the GUI to work will be folded back into the 'aaron' branch, so you should use that branch if you want to take advantage of the underlying changes while remaining unencumbered by the terms of the GPL.
+# Installation
+## Linux ##
+Linux installation instructions can be found in INSTALL.txt in the src directory of the project.
+
+## OSX or Windows ##
+Installers and executables are the easiest way to install QJackTrip. These can be found at:
+https://www.psi-borg.org/other-dev.html
+
+To keep up with the latest changes, both experimental and stable, follow instructions to compile from source in INSTALL.txt in the src directory of the project.
 
 # Raspberry Pi
 

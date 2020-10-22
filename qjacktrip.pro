@@ -131,6 +131,7 @@ HEADERS += src/DataProtocol.h \
            src/JackTrip.h \
            src/Effects.h \
            src/Compressor.h \
+           src/CompressorPresets.h \
            src/Limiter.h \
            src/Reverb.h \
            src/AudioTester.h \

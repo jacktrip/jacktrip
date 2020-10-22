@@ -28,6 +28,7 @@ moc_files = qt5.preprocess(moc_headers : moc_h)
 src = ['src/DataProtocol.cpp',
 	'src/JMess.cpp',
 	'src/JackTrip.cpp',
+	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
 	'src/LoopBack.cpp',
