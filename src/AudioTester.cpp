@@ -45,7 +45,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
     std::cerr << "*** AudioTester.h: lookForReturnPulse: NOT ENABLED\n";
     return;
   }
-  if (impulsePending) { // look for return impulse in channel 0:
+  if (impulsePending) { // look for return impulse in channel sendChannel:
     assert(sendChannel<out_buffer.size());
     for (uint n=0; n<n_frames; n++) {
       float amp = out_buffer[sendChannel][n];
@@ -74,11 +74,11 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
           // int64_t impulseDelayMS = (int64_t)round(double(impulseDelayUS)/1000.0);
           if (elapsedSamples > 0) { // found impulse and reset, time to print buffer results:
             double elapsedSamplesMS = 1000.0 * double(elapsedSamples)/double(sampleRate); // ms
+            extendLatencyHistogram(elapsedSamplesMS);
             if (roundTripCount > 1.0) {
               double prevSum = roundTripMean * (roundTripCount-1.0); // undo previous normalization
               roundTripMean = (prevSum + elapsedSamplesMS) / roundTripCount; // add latest and renormalize
               double prevSumSq = roundTripMeanSquare * (roundTripCount-1.0); // undo previous normalization
-
               roundTripMeanSquare = (prevSumSq + elapsedSamplesMS*elapsedSamplesMS) / roundTripCount;
             } else { // just getting started:
               roundTripMean = elapsedSamplesMS;
@@ -107,6 +107,9 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
               printf("%0.1f [%0.1f]", roundTripMean, stdDev);
               if (printIntervalSec == 0.0) { printf(") "); } else { printf(" "); }
               lastPrintTimeUS = curTimeUS;
+              if (printIntervalSec >= 1.0) { // print histogram
+                std::cout << "\n" << getLatencyHistogramString() << "\n";
+              }
             }
             std::cout << std::flush;
           } else {

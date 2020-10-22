@@ -39,6 +39,7 @@
 #include "JackTrip.h"
 #include <iostream>
 #include <cmath>
+#include <assert.h>
 
 using std::cout; using std::endl;
 
@@ -590,11 +591,14 @@ void AudioInterface::fromBitToSampleConversion
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
   if (not plugin) { return; }
-  if (plugin->getNumInputs() < mNumInChans) {
+  int nTestChans = (mAudioTesterP && mAudioTesterP->getEnabled()) ? 1 : 0;
+  int nPluginChans = mNumInChans - nTestChans;
+  assert(nTestChans==0 || (mAudioTesterP->getSendChannel() == mNumInChans-1));
+  if (plugin->getNumInputs() < nPluginChans) {
     std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
               << typeid(plugin).name() << " REJECTED due to having "
               << plugin->getNumInputs() << " inputs, while the audio to JACK needs "
-              << mNumInChans << " inputs\n";
+              << nPluginChans << " inputs\n";
     return;
   }
   mProcessPluginsToNetwork.append(plugin);
@@ -603,11 +607,14 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 {
   if (not plugin) { return; }
-  if (plugin->getNumOutputs() > mNumOutChans) {
-    std::cerr << "*** AudioInterface.cpp: appendProcessPluginToNetwork: ProcessPlugin "
+  int nTestChans = (mAudioTesterP && mAudioTesterP->getEnabled()) ? 1 : 0;
+  int nPluginChans = mNumOutChans - nTestChans;
+  assert(nTestChans==0 || (mAudioTesterP->getSendChannel() == mNumOutChans-1));
+  if (plugin->getNumOutputs() > nPluginChans) {
+    std::cerr << "*** AudioInterface.cpp: appendProcessPluginFromNetwork: ProcessPlugin "
               << typeid(plugin).name() << " REJECTED due to having "
               << plugin->getNumOutputs() << " inputs, while the JACK audio output requires "
-              << mNumOutChans << " outputs\n";
+              << nPluginChans << " outputs\n";
     return;
   }
   mProcessPluginsFromNetwork.append(plugin);

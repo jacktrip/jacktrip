@@ -41,6 +41,7 @@
 
 #include <cstdlib>
 #include <fstream>
+#include <vector>
 
 #include "DataProtocol.h"
 
