@@ -3,7 +3,7 @@ h headers :
 	$(MAKE) DEST='headersdir/' ARCH='faust2header.cpp' -f Makefile.headers
 
 ih hi installheaders : headers
-	install headersdir/*.h ../src/
+	install -m 0444 headersdir/*.h ../src/
 
 # The JackTrip project does not need the remaining make targets, except "clean" is nice to have:
 

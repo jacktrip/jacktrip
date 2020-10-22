@@ -53,10 +53,10 @@
 class Compressor : public ProcessPlugin
 {
 public:
-  /// \brief The class constructor sets the number of channels to limit
+  /// \brief The class constructor sets the number of audio channels and default parameters.
   Compressor(int numchans, // xtor
              bool verboseIn = false,
-             float ratioIn = 2.0f, // 2:1 compression above threshold
+             float ratioIn = 2.0f,
              float thresholdDBIn = -24.0f,
              float attackMSIn = 15.0f,
              float releaseMSIn = 40.0f,
@@ -120,7 +120,6 @@ public:
     fs = float(fSamplingFreq);
     for ( int i = 0; i < mNumChannels; i++ ) {
       compressorP[i]->init(fs); // compression filter parameters depend on sampling rate
-      // See Limiter.h for how to set compression parameters (same pattern)
     }
     setParamAllChannels("Ratio", ratio);
     setParamAllChannels("Threshold", thresholdDB);
@@ -139,7 +138,7 @@ private:
   int mNumChannels;
   std::vector<compressordsp*> compressorP;
   std::vector<APIUI*> compressorUIP;
-  float ratio; // 2:1 compression above threshold
+  float ratio;
   float thresholdDB;
   float attackMS;
   float releaseMS;

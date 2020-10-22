@@ -144,10 +144,10 @@ void Settings::parseInput(int argc, char** argv)
         { "hubpatch", required_argument, NULL, 'p' }, // Set hubConnectionMode for auto patch in Jack
         { "iostat", required_argument, NULL, 'I' }, // Set IO stat timeout
         { "iostatlog", required_argument, NULL, 'G' }, // Set IO stat log file
-        { "help", no_argument, NULL, 'h' }, // Print Help
         { "effects", required_argument, NULL, 'f' }, // Turn on outgoing compressor and incoming reverb, reverbLevel arg
         { "overflowlimiting", required_argument, NULL, 'O' }, // Turn On limiter, cases 'i', 'o', 'io'
         { "assumednumclients", required_argument, NULL, 'a' }, // assumed number of clients (sound sources) (otherwise 2)
+        { "help", no_argument, NULL, 'h' }, // Print Help
         { "examine-audio-delay", required_argument, NULL, 'x' }, // test mode - measure audio round-trip latency statistics
         { NULL, 0, NULL, 0 }
     };
@@ -456,10 +456,10 @@ void Settings::parseInput(int argc, char** argv)
           break; }
         default: {
             //-------------------------------------------------------
-          printUsage();
+            printUsage();
           printf("*** Unrecognized option -%c *** see above for usage\n",ch);
           std::exit(1);
-	  break; }
+            break; }
         }
 
     // Warn user if undefined options where entered
@@ -497,7 +497,7 @@ void Settings::parseInput(int argc, char** argv)
         std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
       }
       mEffects.setNoLimiters();
-      // don't exit since an outgoing limiter is now the default (could exit for incoming case):
+      // don't exit since an outgoing limiter should be the default (could exit for incoming case):
       // std::exit(1);
     }
     if (mAudioTester.getEnabled() && haveSomeServerMode) {
