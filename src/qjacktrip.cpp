@@ -36,6 +36,7 @@
 
 #include "Limiter.h"
 #include "Compressor.h"
+#include "CompressorPresets.h"
 #include "Reverb.h"
 
 QJackTrip::QJackTrip(QWidget *parent) :
@@ -861,10 +862,10 @@ void QJackTrip::appendPlugins(JackTrip *jackTrip, int numChannels)
     //These effects are currently deleted by the AudioInterface of jacktrip.
     //May need to change this code if we move to smart pointers.
     if (m_ui->outCompressorCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginToNetwork(new Compressor(numChannels));
+        jackTrip->appendProcessPluginToNetwork(new Compressor(numChannels, false, CompressorPresets::voice));
     }
     if (m_ui->inCompressorCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginFromNetwork(new Compressor(numChannels));
+        jackTrip->appendProcessPluginFromNetwork(new Compressor(numChannels, false, CompressorPresets::voice));
     }
     
     if (m_ui->outZitarevCheckBox->isChecked()) {
