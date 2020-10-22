@@ -431,8 +431,8 @@ void Settings::parseInput(int argc, char** argv)
         default: {
             //-------------------------------------------------------
             printUsage();
-          printf("*** Unrecognized option -%c *** see above for usage\n",ch);
-          std::exit(1);
+            printf("*** Unrecognized option -%c *** see above for usage\n",ch);
+            std::exit(1);
             break; }
         }
 
