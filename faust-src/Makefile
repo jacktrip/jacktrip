@@ -2,9 +2,8 @@ h headers :
 	install -d headersdir
 	$(MAKE) DEST='headersdir/' ARCH='faust2header.cpp' -f Makefile.headers
 
-# install sets the "executable" bit, so we use cp instead:
 ih hi installheaders : headers
-	/bin/cp -p headersdir/*.h ../src/
+	install -m 0444 headersdir/*.h ../src/
 
 # The JackTrip project does not need the remaining make targets, except "clean" is nice to have:
 
