@@ -252,7 +252,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             if ( atoi(optarg) <= 0 ) {
                 printUsage();
-                std::cerr << "--redundancy ERROR: The reduncancy has to be a positive integer" << endl;
+                std::cerr << "--redundancy ERROR: The redundancy has to be a positive integer" << endl;
                 std::exit(1); }
             else {
                 mRedundancy = atoi(optarg);
@@ -457,8 +457,8 @@ void Settings::parseInput(int argc, char** argv)
         default: {
             //-------------------------------------------------------
             printUsage();
-          printf("*** Unrecognized option -%c *** see above for usage\n",ch);
-          std::exit(1);
+            printf("*** Unrecognized option -%c *** see above for usage\n",ch);
+            std::exit(1);
             break; }
         }
 
