@@ -52,6 +52,7 @@
 #include <getopt.h> // for command line parsing
 #include <cstdlib>
 #include <assert.h>
+#include <ctype.h>
 
 //#include "ThreadPoolTest.h"
 
@@ -368,27 +369,44 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'O': { // Overflow limiter (i, o, or io)
           //-------------------------------------------------------
-          if (0 != mEffects.parseLimiterOptArg(optarg)) {
-            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
-            exit(1);
+          char cmd[] { "--overflowlimiting (-O)" };
+          if (gVerboseFlag) {
+            printf("%s argument = %s\n",cmd,optarg);
+          }
+          int returnCode = mEffects.parseLimiterOptArg(cmd,optarg);
+          if (returnCode > 1) {
+            mEffects.printHelp(cmd,ch);
+            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
+            std::exit(1);
+          } else if (returnCode == 1) {
+            std::exit(0); // benign but not continuing such as "help"
           }
           break; }
         case 'a': { // assumed number of clients (applies to outgoing limiter)
           //-------------------------------------------------------
-          if (0 != mEffects.parseAssumedNumClientsOptArg(optarg)) {
-            std::cerr << "--overflowlimiting (-O) argument string `" << optarg << "' is malformed\n";
-            exit(1);
+          char cmd[] { "--assumednumclients (-a)" };
+          if (gVerboseFlag) {
+            printf("%s argument = %s\n",cmd,optarg);
+          }
+          int returnCode = mEffects.parseAssumedNumClientsOptArg(cmd,optarg);
+          if (returnCode > 1) {
+            mEffects.printHelp(cmd,ch);
+            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
+            std::exit(1);
+          } else if (returnCode == 1) {
+            std::exit(0); // help printed
           }
           break; }
         case 'f': { // effects (-f reverbLevel [0-2])
           //-------------------------------------------------------
-          if (optarg[0] == '-' || strlen(optarg)==0) {
-            std::cerr << "--effects (-f) reverb-level argument [0 to 1.0, or 1.0 to 2.0] is REQUIRED\n";
+          char cmd[] { "--effects (-f)" };
+          int returnCode = mEffects.parseEffectsOptArg(cmd,optarg);
+          if (returnCode > 1) {
+            mEffects.printHelp(cmd,ch);
+            std::cerr << cmd << " required argument `" << optarg << "' is malformed\n";
             std::exit(1);
-          }
-          if (0 != mEffects.parseEffectsOptArg(optarg)) {
-            std::cerr << "--effects (-f) argument string `" << optarg << "' is malformed\n";
-            exit(1);
+          } else if (returnCode == 1) {
+            std::exit(0); // something benign but non-continuing like "help"
           }
           break; }
         case 'x': { // examine connection (test mode)
@@ -438,6 +456,18 @@ void Settings::parseInput(int argc, char** argv)
     // Exit if options are incompatible
     //----------------------------------------------------------------------------
     bool haveSomeServerMode = not ((mJackTripMode == JackTrip::CLIENT) || (mJackTripMode == JackTrip::CLIENTTOPINGSERVER));
+    if (mEffects.getHaveEffect() && haveSomeServerMode) {
+      std::cerr << "*** --effects (-f) ERROR: Effects not yet supported server modes (-S and -s).\n\n";
+      std::exit(1);
+    }
+    if (mEffects.getHaveLimiter() && haveSomeServerMode) {
+      if (mEffects.getLimit() != Effects::LIMITER_MODE::LIMITER_OUTGOING) { // default case
+        std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported server modes (-S and -s).\n\n";
+      }
+      mEffects.setNoLimiters();
+      // don't exit since an outgoing limiter should be the default (could exit for incoming case):
+      // std::exit(1);
+    }
     if (mAudioTester.getEnabled() && haveSomeServerMode) {
       std::cerr << "*** --examine-audio-delay (-x) ERROR: Audio latency measurement not supported in server modes (-S and -s)\n\n";
       std::exit(1);
@@ -500,9 +530,9 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
-    cout << " -f, --effects    # (reverbLevel)         Turn on outgoing compressor and incoming mono or stereo reverb, reverbLevel 0 to 1.0 (freeverb) or 1.0+ to 2.0 (zitarev)" << endl;
-    cout << " -O, --overflowlimiting    # (i, o, io)   Turn on audio limiter, i=incoming from network, o=outgoing to network, io=both (otherwise no limiters)" << endl;
-    cout << " -a, --assumednumclients                  Assumed number of sources mixing at server (otherwise 2 assumed)" << endl;
+    cout << " -f, --effects    #|paramString|help      Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
+    cout << " -O, --overflowlimiting  i|o|io|n|help      Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both, n=no limiters (default=o)" << endl;
+    cout << " -a, --assumednumclients help|# (1,2,...) Assumed number of Clients (sources) mixing at Hub Server (otherwise 2 assumed by -O)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
@@ -677,19 +707,14 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     // Allocate audio effects in client, if any:
     int nReservedChans = mAudioTester.getEnabled() ? 1 : 0; // no fx allowed on tester channel
-    mEffects.allocateEffects(mNumChans-nReservedChans);
-    
-    // Outgoing/Incoming Compressor and/or Reverb:
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutCompressor() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInCompressor() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutZitarev() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInZitarev() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutFreeverb() );
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInFreeverb() );
-
-    // Limiters go last in the plugin sequence:
-    jackTrip->appendProcessPluginFromNetwork( mEffects.getInLimiter() );
-    jackTrip->appendProcessPluginToNetwork( mEffects.getOutLimiter() );
+    std::vector<ProcessPlugin*> outgoingEffects = mEffects.allocateOutgoingEffects(mNumChans-nReservedChans);
+    for (auto p : outgoingEffects) {
+      jackTrip->appendProcessPluginToNetwork( p );
+    }
+    std::vector<ProcessPlugin*> incomingEffects = mEffects.allocateIncomingEffects(mNumChans-nReservedChans);
+    for (auto p : incomingEffects) {
+      jackTrip->appendProcessPluginFromNetwork( p );
+    }
 
 #ifdef WAIR // WAIR
     if ( mWAIR ) {
