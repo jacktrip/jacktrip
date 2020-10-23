@@ -32,7 +32,8 @@
 /**
  * \file AudioTester.h
  * \author Julius Smith
- * \date August 2020
+ * \license MIT
+ * \date Aug-Oct 2020
  */
 
 #pragma once
@@ -97,6 +98,7 @@ public:
   void setPendingCell(int pc) { pendingCell = pc; }
   void setSampleRate(float fs) { sampleRate = fs; }
   int getBufferSkip() { return bufferSkip; } // used for debugging breakpoints
+  void printHelp(char* command, char helpCase);
 
 private:
 
