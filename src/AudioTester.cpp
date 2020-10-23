@@ -32,7 +32,8 @@
 /**
  * \file AudioTester.cpp
  * \author Julius Smith
- * \date August 2020
+ * \license MIT
+ * \date Aug-Oct 2020
  */
 
 #include "AudioTester.h"
@@ -181,14 +182,13 @@ void AudioTester::printHelp(char* command, [[maybe_unused]] char helpCase) {
   std::cout << "including an ASCII latency histogram if printIntervalSec is 1.0 or more.\n";
   std::cout << "\n";
   std::cout << "A test impulse is sent to the server in the last audio channel,\n";
-  std::cout << "  and the number of samples until it returns is measured.\n";
+  std::cout << "  the number of samples until it returns is measured, and this repeats.\n";
   std::cout << "The jacktrip server must provide audio loopback (e.g., -p4).\n";
-  std::cout << "The cumulative mean and standard-deviation are computed for the measured loopback times.\n";
-  std::cout << "If printIntervalSec is zero, the roundtrip-time in milliseconds is printed for each individual impulse.\n";
-  std::cout << "If printIntervalSec is positive, the cumulative mean and standard-deviation are printed after each print interval.\n";
+  std::cout << "The cumulative mean and standard-deviation (\"statistics\") are computed for the measured loopback times,\n";
+  std::cout << "  and printed every printIntervalSec seconds.\n";
+  std::cout << "If printIntervalSec is zero, the roundtrip-time and statistics in milliseconds are printed for each individual impulse.\n";
+  std::cout << "If printIntervalSec is positive, statistics are printed after each print interval, with no individual measurements.\n";
   std::cout << "If printIntervalSec is 1.0 or larger, a cumulative histogram of all impulse roundtrip-times is printed as well.\n";
   std::cout << "The first 100 audio buffers are skipped in order to measure only steady-state network-audio-delay performance.\n";
   std::cout << "Lower audio channels are not affected, enabling latency measurement and display during normal operation.\n";
 }
-
-
