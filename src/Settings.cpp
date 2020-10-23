@@ -411,10 +411,15 @@ void Settings::parseInput(int argc, char** argv)
           break; }
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
+          char cmd[] { "--examine-audio-delay (-x)" };
+          if (tolower(optarg[0])=='h') {
+            mAudioTester.printHelp(cmd,ch);
+            std::exit(0);
+          }
           mAudioTester.setEnabled(true);
           if (optarg == 0 || optarg[0] == '-' || optarg[0] == 0) { // happens when no -f argument specified
             printUsage();
-            std::cerr << "--examine-audio-delay (-x) ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
+            std::cerr << cmd << " ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
             std::exit(1);
           }
           mAudioTester.setPrintIntervalSec(atof(optarg));
@@ -536,20 +541,21 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
-    cout << " -f, --effects    #|paramString|help      Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
-    cout << " -O, --overflowlimiting  i|o|io|n|help      Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both, n=no limiters (default=o)" << endl;
+    cout << " -f, --effects # | paramString | help     Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
+    cout << " -O, --overflowlimiting  i|o|io|n|help    Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both, n=no limiters (default=o)" << endl;
     cout << " -a, --assumednumclients help|# (1,2,...) Assumed number of Clients (sources) mixing at Hub Server (otherwise 2 assumed by -O)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
-    cout << " -R, --rtaudio                                Use system's default sound system instead of Jack" << endl;
-    cout << " -T, --srate         #                      Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
-    cout << " -F, --bufsize       #                      Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
-    cout << " -d, --deviceid      #                      The rtaudio device id --rtaudio mode only (default: 0)" << endl;
+    cout << " -R, --rtaudio                            Use system's default sound system instead of Jack" << endl;
+    cout << " -T, --srate         #                    Set the sampling rate, works on --rtaudio mode only (default: 48000)" << endl;
+    cout << " -F, --bufsize       #                    Set the buffer size, works on --rtaudio mode only (default: 128)" << endl;
+    cout << " -d, --deviceid      #                    The rtaudio device id --rtaudio mode only (default: 0)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
-    cout << " -x, --examine-audio-delay #              Print round-trip audio delay statistics, for last audio channel, every # sec, including an ASCII latency histogram if # >= 1.0" << endl;
+    cout << " -x, --examine-audio-delay <print_interval_in_secs> | help\n";
+    cout << "                                          Print round-trip audio delay statistics. See `-x help' for details." << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
