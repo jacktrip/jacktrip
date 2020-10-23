@@ -437,10 +437,15 @@ void Settings::parseInput(int argc, char** argv)
           break; }
         case 'x': { // examine connection (test mode)
           //-------------------------------------------------------
+          char cmd[] { "--examine-audio-delay (-x)" };
+          if (tolower(optarg[0])=='h') {
+            mAudioTester.printHelp(cmd,ch);
+            std::exit(0);
+          }
           mAudioTester.setEnabled(true);
           if (optarg == 0 || optarg[0] == '-' || optarg[0] == 0) { // happens when no -f argument specified
             printUsage();
-            std::cerr << "--examine-audio-delay (-x) ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
+            std::cerr << cmd << " ERROR: Print-interval argument REQUIRED (set to 0.0 to see every delay)\n";
             std::exit(1);
           }
           mAudioTester.setPrintIntervalSec(atof(optarg));
@@ -575,7 +580,7 @@ void Settings::printUsage()
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with specified interval (in seconds)" << endl;
     cout << " -G, --iostatlog <log_file>               Save stat log into a file (default: print in stdout)" << endl;
-    cout << " -x, --examine-audio-delay #              Print round-trip audio delay statistics, for last audio channel, every # sec, including an ASCII latency histogram if # >= 1.0" << endl;
+    cout << " -x, --examine-audio-delay #|help         Print round-trip audio delay statistics, for last audio channel, every # sec, including an ASCII latency histogram if # >= 1.0" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
