@@ -32,7 +32,8 @@
 /**
  * \file AudioTester.cpp
  * \author Julius Smith
- * \date August 2020
+ * \license MIT
+ * \date Aug-Oct 2020
  */
 
 #include "AudioTester.h"
@@ -45,7 +46,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
     std::cerr << "*** AudioTester.h: lookForReturnPulse: NOT ENABLED\n";
     return;
   }
-  if (impulsePending) { // look for return impulse in channel 0:
+  if (impulsePending) { // look for return impulse in channel sendChannel:
     assert(sendChannel<out_buffer.size());
     for (uint n=0; n<n_frames; n++) {
       float amp = out_buffer[sendChannel][n];
@@ -55,8 +56,14 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
           std::cerr <<
             "*** AudioTester.h: computeProcessFromNetwork: Received pulse amplitude "
                     << amp << " (cell " << cellNum << ") while looking for cell "
-                    << pendingCell << " - ABORTING CURRENT PULSE\n";
-          impulsePending = false;
+                    << pendingCell << "\n";
+
+          if (cellNum > pendingCell) { // we missed it
+            std::cerr << " - ABORTING CURRENT PULSE\n";
+            impulsePending = false;
+          } else { // somehow we got the previous pulse again - repeated packet or underrun-caused repetition (old buffer)
+            std::cerr << " - IGNORING FOUND PULSE WAITING FURTHER\n";
+          }
         } else { // found our impulse:
           int64_t elapsedSamples = -1;
           if (n >= n_frames-1) {
@@ -74,11 +81,11 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
           // int64_t impulseDelayMS = (int64_t)round(double(impulseDelayUS)/1000.0);
           if (elapsedSamples > 0) { // found impulse and reset, time to print buffer results:
             double elapsedSamplesMS = 1000.0 * double(elapsedSamples)/double(sampleRate); // ms
+            extendLatencyHistogram(elapsedSamplesMS);
             if (roundTripCount > 1.0) {
               double prevSum = roundTripMean * (roundTripCount-1.0); // undo previous normalization
               roundTripMean = (prevSum + elapsedSamplesMS) / roundTripCount; // add latest and renormalize
               double prevSumSq = roundTripMeanSquare * (roundTripCount-1.0); // undo previous normalization
-
               roundTripMeanSquare = (prevSumSq + elapsedSamplesMS*elapsedSamplesMS) / roundTripCount;
             } else { // just getting started:
               roundTripMean = elapsedSamplesMS;
@@ -107,6 +114,9 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
               printf("%0.1f [%0.1f]", roundTripMean, stdDev);
               if (printIntervalSec == 0.0) { printf(") "); } else { printf(" "); }
               lastPrintTimeUS = curTimeUS;
+              if (printIntervalSec >= 1.0) { // print histogram
+                std::cout << "\n" << getLatencyHistogramString() << "\n";
+              }
             }
             std::cout << std::flush;
           } else {
@@ -163,4 +173,22 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
   } else {
     bufferSkip--;
   }
+}
+
+void AudioTester::printHelp(char* command, [[maybe_unused]] char helpCase) {
+  std::cout << "HELP for \"" << command << " printIntervalSec\" // (end-of-line comments start with `//'):\n";
+  std::cout << "\n";
+  std::cout << "Print roundtrip audio delay statistics for the highest-numbered audio channel every printIntervalSec seconds,\n";
+  std::cout << "including an ASCII latency histogram if printIntervalSec is 1.0 or more.\n";
+  std::cout << "\n";
+  std::cout << "A test impulse is sent to the server in the last audio channel,\n";
+  std::cout << "  the number of samples until it returns is measured, and this repeats.\n";
+  std::cout << "The jacktrip server must provide audio loopback (e.g., -p4).\n";
+  std::cout << "The cumulative mean and standard-deviation (\"statistics\") are computed for the measured loopback times,\n";
+  std::cout << "  and printed every printIntervalSec seconds.\n";
+  std::cout << "If printIntervalSec is zero, the roundtrip-time and statistics in milliseconds are printed for each individual impulse.\n";
+  std::cout << "If printIntervalSec is positive, statistics are printed after each print interval, with no individual measurements.\n";
+  std::cout << "If printIntervalSec is 1.0 or larger, a cumulative histogram of all impulse roundtrip-times is printed as well.\n";
+  std::cout << "The first 100 audio buffers are skipped in order to measure only steady-state network-audio-delay performance.\n";
+  std::cout << "Lower audio channels are not affected, enabling latency measurement and display during normal operation.\n";
 }
