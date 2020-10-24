@@ -427,6 +427,7 @@ public:
         mSimulatedDelayRel = delay_rel;
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueueLength = broadcast_queue;}
+    void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
 
 public slots:
     /// \brief Slot to stop all the processes and threads
@@ -576,6 +577,7 @@ private:
     double mSimulatedLossRate;
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
+    bool mUseRtUdpPriority;
 
     AudioTester* mAudioTesterP;
 };

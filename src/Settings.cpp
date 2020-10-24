@@ -65,6 +65,7 @@ enum JTLongOptIDS {
   OPT_SIMLOSS,
   OPT_SIMJITTER,
   OPT_BROADCAST,
+  OPT_RTUDPPRIORITY,
 };
 
 //*******************************************************************************
@@ -99,7 +100,8 @@ Settings::Settings() :
     mSimulatedLossRate(0.0),
     mSimulatedJitterRate(0.0),
     mSimulatedDelayRel(0.0),
-    mBroadcastQueue(0)
+    mBroadcastQueue(0),
+    mUseRtUdpPriority(false)
 {}
 
 //*******************************************************************************
@@ -164,6 +166,7 @@ void Settings::parseInput(int argc, char** argv)
         { "simloss", required_argument, NULL, OPT_SIMLOSS },
         { "simjitter", required_argument, NULL, OPT_SIMJITTER },
         { "broadcast", required_argument, NULL, OPT_BROADCAST },
+        { "udprt", no_argument, NULL, OPT_RTUDPPRIORITY },
         { "help", no_argument, NULL, 'h' }, // Print Help
         { "examine-audio-delay", required_argument, NULL, 'x' }, // test mode - measure audio round-trip latency statistics
         { NULL, 0, NULL, 0 }
@@ -409,6 +412,9 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_BROADCAST: // Broadcast output
             mBroadcastQueue = atoi(optarg);
             break;
+        case OPT_RTUDPPRIORITY: // Use RT priority for UDPDataProtocol thread
+            mUseRtUdpPriority = true;
+            break;
         case 'h':
             //-------------------------------------------------------
             printUsage();
@@ -588,6 +594,7 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
     cout << " --bufstrategy     # (0, 1, 2)            Use alternative jitter buffer" << endl;
     cout << " --broadcast <broadcast_queue>            Turn on broadcast output ports with extra queue (requires new jitter buffer)" << endl;
+    cout << " --udprt                                  Use RT thread priority for network I/O" << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects # | paramString | help     Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
@@ -645,6 +652,7 @@ UdpHubListener *Settings::getConfiguredHubServer()
     udpHub->setNetIssuesSimulation(mSimulatedLossRate,
         mSimulatedJitterRate, mSimulatedDelayRel);
     udpHub->setBroadcast(mBroadcastQueue);
+    udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
     
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
@@ -747,6 +755,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     jackTrip->setNetIssuesSimulation(mSimulatedLossRate,
         mSimulatedJitterRate, mSimulatedDelayRel);
     jackTrip->setBroadcast(mBroadcastQueue);
+    jackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
 
     // Add Plugins
     if (mLoopBack) {

@@ -81,6 +81,7 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
     mSimulatedLossRate = 0.0;
     mSimulatedJitterRate = 0.0;
     mSimulatedDelayRel = 0.0;
+    mUseRtUdpPriority = false;
 }
 
 
@@ -225,6 +226,7 @@ void JackTripWorker::run()
         jacktrip.setNetIssuesSimulation(mSimulatedLossRate,
             mSimulatedJitterRate, mSimulatedDelayRel);
         jacktrip.setBroadcast(mBroadcastQueue);
+        jacktrip.setUseRtUdpPriority(mUseRtUdpPriority);
 
         if (gVerboseFlag) cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
         int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
