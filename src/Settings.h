@@ -78,6 +78,8 @@ public:
     bool isHubServer() { return mJackTripServer; }
 
 private:
+    void disableEcho(bool disabled);
+    
     JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
     JackTrip::dataProtocolT mDataProtocol; ///< Data Protocol
     int mNumChans; ///< Number of Channels (inputs = outputs)

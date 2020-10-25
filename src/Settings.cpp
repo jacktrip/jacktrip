@@ -54,6 +54,13 @@
 #include <assert.h>
 #include <ctype.h>
 
+#ifdef __WIN_32__
+#include <windows.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
+
 //#include "ThreadPoolTest.h"
 
 using std::cout; using std::endl;
@@ -652,8 +659,8 @@ void Settings::printUsage()
     cout << " --certfile                               The certificate file to use on the hub server" << endl;
     cout << " --keyfile                                The private key file to use on the hub server" << endl;
     cout << " --credsfile                              The file containing the stored usernames and passwords" << endl;
-    cout << " --username                               The username to use when connecting as a hub client" << endl;
-    cout << " --password                               The password to use when connecting as a hub client" << endl;
+    cout << " --username                               The username to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
+    cout << " --password                               The password to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -803,6 +810,20 @@ JackTrip *Settings::getConfiguredJackTrip()
     // Set auth details if we're in hub client mode
     if (mAuth && mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
         jackTrip->setUseAuth(true);
+        if (mUsername.isEmpty()) {
+            std::cout << "Username: ";
+            std::string username;
+            std::cin >> username;
+            mUsername = QString(username.c_str());
+        }
+        if (mPassword.isEmpty()) {
+            std::cout << "Password: ";
+            disableEcho(true);
+            std::string password;
+            std::cin >> password;
+            mPassword = QString(password.c_str());
+            disableEcho(false);
+        }
         jackTrip->setUsername(mUsername);
         jackTrip->setPassword(mPassword);
     }
@@ -877,4 +898,29 @@ JackTrip *Settings::getConfiguredJackTrip()
 #endif // endwhere
 
     return jackTrip;
+}
+
+void Settings::disableEcho(bool disabled)
+{
+#ifdef __WIN_32__
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORK mode;
+    GetConsoleMode(hStdin, &mode);
+    
+    if (disabled) {
+        mode &= ~ENABLE_ECHO_INPUT;
+    } else {
+        mode |= ENABLE_ECHO_INPUT;
+    }
+    SetConsoleMode(hStdin, mode);
+#else
+    struct termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
+    if (disabled) {
+        tty.c_lflag &= ~ECHO;
+    } else {
+        tty.c_lflag |= ECHO;
+    }
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+#endif
 }
