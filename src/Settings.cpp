@@ -904,7 +904,7 @@ void Settings::disableEcho(bool disabled)
 {
 #ifdef __WIN_32__
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-    DWORK mode;
+    DWORD mode;
     GetConsoleMode(hStdin, &mode);
     
     if (disabled) {

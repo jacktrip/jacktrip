@@ -611,7 +611,7 @@ void UdpDataProtocol::run()
         mStatCount = 0;
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
-#if !defined (__MANUAL_POLL__)
+#if !defined (__MANUAL_POLL__) && !defined (__WIN_32__)
 #if defined (__MAC_OSX__)
         int kq = kqueue();
         struct kevent change;
