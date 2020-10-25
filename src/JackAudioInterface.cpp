@@ -81,6 +81,7 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
     mBitResolutionMode(AudioBitResolution),
     mClient(NULL),
     mClientName(ClientName),
+    mBroadcast(false),
     mJackTrip(jacktrip)
 {}
 
