@@ -42,8 +42,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <stdexcept>
-#include "JackTrip.h"
 #include <cmath>
+#include "JackTrip.h"
 
 using std::cout; using std::endl;
 

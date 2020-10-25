@@ -65,6 +65,7 @@ enum JTLongOptIDS {
   OPT_SIMLOSS,
   OPT_SIMJITTER,
   OPT_BROADCAST,
+  OPT_RTUDPPRIORITY,
   OPT_AUTHCERT,
   OPT_AUTHKEY,
   OPT_AUTHCREDS,
@@ -105,6 +106,7 @@ Settings::Settings() :
     mSimulatedJitterRate(0.0),
     mSimulatedDelayRel(0.0),
     mBroadcastQueue(0),
+    mUseRtUdpPriority(false),
     mAuth(false)
 {}
 
@@ -170,6 +172,7 @@ void Settings::parseInput(int argc, char** argv)
         { "simloss", required_argument, NULL, OPT_SIMLOSS },
         { "simjitter", required_argument, NULL, OPT_SIMJITTER },
         { "broadcast", required_argument, NULL, OPT_BROADCAST },
+        { "udprt", no_argument, NULL, OPT_RTUDPPRIORITY },
         { "auth", no_argument, NULL, 'A' }, // Enable authentication between hub client and hub server
         { "certfile", required_argument, NULL, OPT_AUTHCERT }, // Certificate for server authentication
         { "keyfile", required_argument, NULL, OPT_AUTHKEY }, // Private key for server authentication
@@ -276,7 +279,6 @@ void Settings::parseInput(int argc, char** argv)
               }
             }
             else if ( atoi(optarg) <= 0 ) {
-                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 printUsage();
                 std::cerr << "--queue ERROR: The queue has to be equal or greater than 2" << endl;
                 std::exit(1); }
@@ -421,6 +423,9 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case OPT_BROADCAST: // Broadcast output
             mBroadcastQueue = atoi(optarg);
+            break;
+        case OPT_RTUDPPRIORITY: // Use RT priority for UDPDataProtocol thread
+            mUseRtUdpPriority = true;
             break;
         case 'h':
             //-------------------------------------------------------
@@ -619,6 +624,7 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports in jack" << endl;
     cout << " --bufstrategy     # (0, 1, 2)            Use alternative jitter buffer" << endl;
     cout << " --broadcast <broadcast_queue>            Turn on broadcast output ports with extra queue (requires new jitter buffer)" << endl;
+    cout << " --udprt                                  Use RT thread priority for network I/O" << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects # | paramString | help     Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
@@ -681,6 +687,7 @@ UdpHubListener *Settings::getConfiguredHubServer()
     udpHub->setNetIssuesSimulation(mSimulatedLossRate,
         mSimulatedJitterRate, mSimulatedDelayRel);
     udpHub->setBroadcast(mBroadcastQueue);
+    udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
     
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
@@ -791,6 +798,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     jackTrip->setNetIssuesSimulation(mSimulatedLossRate,
         mSimulatedJitterRate, mSimulatedDelayRel);
     jackTrip->setBroadcast(mBroadcastQueue);
+    jackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
     
     // Set auth details if we're in hub client mode
     if (mAuth && mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {

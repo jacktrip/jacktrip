@@ -269,7 +269,7 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
         int delta = mBroadcastPositionCorr / mMinStepSize;
         if (0 != delta) {
             mBroadcastPositionCorr -= delta * mMinStepSize;
-            if (2 == mAudioBitRes) {
+            if (2 == mAudioBitRes && (int32_t)(mWritePosition - mBroadcastPosition) > len) {
                 // interpolate
                 len += delta * mMinStepSize;
             }

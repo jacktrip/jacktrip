@@ -183,6 +183,7 @@ private:
     double mSimulatedLossRate;
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
+    bool mUseRtUdpPriority;
     
 #ifdef WAIR // wair
     bool mWAIR;
@@ -227,6 +228,7 @@ public :
         mSimulatedDelayRel = delay_rel;
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
+    void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
 
 };
 

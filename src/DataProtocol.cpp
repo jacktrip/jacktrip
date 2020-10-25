@@ -52,7 +52,7 @@ using std::cout; using std::endl;
 DataProtocol::DataProtocol(JackTrip* jacktrip,
                            const runModeT runmode,
                            int /*bind_port*/, int /*peer_port*/) :
-    mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mJackTrip(jacktrip)
+    mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mJackTrip(jacktrip), mUseRtPriority(false)
 {}
 
 

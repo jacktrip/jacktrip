@@ -116,6 +116,8 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     mSimulatedLossRate = 0.0;
     mSimulatedJitterRate = 0.0;
     mSimulatedDelayRel = 0.0;
+
+    mUseRtUdpPriority = false;
 }
 
 
@@ -349,6 +351,7 @@ void UdpHubListener::receivedClientInfo()
     mJTWorkers->at(id)->setBufferStrategy(mBufferStrategy);
     mJTWorkers->at(id)->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate, mSimulatedDelayRel);
     mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
+    mJTWorkers->at(id)->setUseRtUdpPriority(mUseRtUdpPriority);
     // redirect port and spawn listener
     cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
     {

@@ -479,18 +479,14 @@ void UdpDataProtocol::run()
     // Set realtime priority (function in jacktrip_globals.h)
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before setRealtimeProcessPriority()" << std::endl;
     //std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
-    //setRealtimeProcessPriority();
-
-    // Anton Runov: uncommenting setRealtimeProcessPriority below, but using much lower priority value
-    // on Linux. Other platforms might require more changes.
-    // Aaron: and on OS X. Need to set this to avoid problems with the process priority being lowered
-    // when the GUI enters the backrgound.
-#if defined (__LINUX__)
-    setRealtimeProcessPriority();
-#endif
+    // Anton Runov: making setRealtimeProcessPriority optional
+    if (mUseRtPriority) {
 #if defined (__MAC_OSX__)
-    setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(), mJackTrip->getSampleRate());
+        setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(), mJackTrip->getSampleRate());
+#else
+        setRealtimeProcessPriority();
 #endif
+    }
 
     /////////////////////
     // to see thread priorities

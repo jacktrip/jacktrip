@@ -122,6 +122,7 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     int mBroadcastQueue;
+    bool mUseRtUdpPriority;
     
     bool mAuth;
     QString mCertFile;
