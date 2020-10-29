@@ -137,6 +137,7 @@ HEADERS += DataProtocol.h \
            JackTripThread.h \
            JackTripWorker.h \
            JackTripWorkerMessages.h \
+           JitterBuffer.cpp \
            LoopBack.h \
            NetKS.h \
            PacketHeader.h \
@@ -168,6 +169,7 @@ SOURCES += DataProtocol.cpp \
            jacktrip_tests.cpp \
            JackTripThread.cpp \
            JackTripWorker.cpp \
+           JitterBuffer.cpp \
            LoopBack.cpp \
            PacketHeader.cpp \
            ProcessPlugin.cpp \
