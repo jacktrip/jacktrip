@@ -116,6 +116,8 @@ public:
     * \param in_buffer Array of output audio samplers for each channel. The user
     * is reponsible to check that each channel has n_frames samplers
     */
+    virtual void broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
+                          unsigned int n_frames);
     virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
                           QVarLengthArray<sample_t*>& out_buffer,
                           unsigned int n_frames);
@@ -177,6 +179,7 @@ public:
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString ClientName) = 0;
     virtual void setLoopBack(bool b) { mLoopBack = b; }
+    virtual void enableBroadcastOutput() {}
     virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
     //------------------------------------------------------------------
 
