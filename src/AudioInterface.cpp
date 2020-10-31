@@ -520,6 +520,10 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     mJackTrip->sendNetworkPacket( mInputPacket );
 } // /computeProcessToNetwork
 
+uint32_t AudioInterface::mClipCount { 0 };
+uint32_t AudioInterface::mNextWarning { 1 };
+double AudioInterface::mPeakMagnitude { 0.0 };
+
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
 // 24 bit is not working yet
@@ -542,13 +546,32 @@ void AudioInterface::fromSampleToBitConversion
         tmp_8 = static_cast<int8_t>(tmp_sample);
         std::memcpy(output, &tmp_8, 1); // 8bits = 1 bytes
         break;
-    case BIT16 :
+    case BIT16 : {
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
+        tmp_sample = double(*input);
+        if (fabs(tmp_sample) >= 1.0) {
+          mClipCount++;
+          mPeakMagnitude = std::max(mPeakMagnitude,fabs(tmp_sample));
+          if (mClipCount==mNextWarning) {
+            double mPeakMagnitudeDB = 20.0 * std::log10(mPeakMagnitude);
+            std::cerr << "*** AudioInterface.cpp: Audio HARD-CLIPPED on output to Internet!\n"
+                      << "\tReduce your input level(s) by " << mPeakMagnitudeDB << " dB FS.\n";
+            if (mClipCount>1) {
+              std::cerr << "\tMaximum amplitude over the last "
+                      << mNextWarning << " audio samples was "
+                        << mPeakMagnitude << ", or " << mPeakMagnitudeDB << " dB FS\n";
+            }
+            mPeakMagnitude = 0.0; // reset for next group measurement
+            if (mNextWarning < 1000) { // don't let it stop reporting for too long
+              mNextWarning *= 10;
+            }
+          }
+        }
         tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
-        break;
+        break; }
     case BIT24 :
         // To convert to 24 bits, we first quantize the number to 16bit
         tmp_sample = (*input) * 32768.0; // 2^15 = 32768.0

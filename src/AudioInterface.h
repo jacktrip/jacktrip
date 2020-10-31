@@ -245,6 +245,9 @@ private:
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
     bool mLoopBack;
     AudioTester* mAudioTesterP { nullptr };
+    static uint32_t mClipCount;   // must be static as long as fromSampleToBitConversion() is
+    static uint32_t mNextWarning; // must be static as long as fromSampleToBitConversion() is
+    static double mPeakMagnitude; // must be static as long as fromSampleToBitConversion() is
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
