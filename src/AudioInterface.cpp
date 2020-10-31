@@ -556,7 +556,7 @@ void AudioInterface::fromSampleToBitConversion
           if (mClipCount==mNextWarning) {
             double mPeakMagnitudeDB = 20.0 * std::log10(mPeakMagnitude);
             std::cerr << "*** AudioInterface.cpp: Audio HARD-CLIPPED on output to Internet!\n"
-                      << "\tReduce your input level(s) by " << mPeakMagnitudeDB << " dB FS.\n";
+                      << "\tReduce your input level(s) by " << mPeakMagnitudeDB << " dB.\n";
             if (mClipCount>1) {
               std::cerr << "\tMaximum amplitude over the last "
                       << mNextWarning << " audio samples was "
