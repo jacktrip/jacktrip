@@ -560,7 +560,7 @@ void AudioInterface::fromSampleToBitConversion
             if (mClipCount>1) {
               std::cerr << "\tMaximum amplitude over the last "
                       << mNextWarning << " audio samples was "
-                        << mPeakMagnitude << ", or " << mPeakMagnitudeDB << " dB FS\n";
+                        << mPeakMagnitude << ", or " << mPeakMagnitudeDB << " dBFS\n";
             }
             mPeakMagnitude = 0.0; // reset for next group measurement
             if (mNextWarning < 1000) { // don't let it stop reporting for too long
