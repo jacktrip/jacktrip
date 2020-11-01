@@ -137,7 +137,7 @@ HEADERS += DataProtocol.h \
            JackTripThread.h \
            JackTripWorker.h \
            JackTripWorkerMessages.h \
-           JitterBuffer.cpp \
+           JitterBuffer.h \
            LoopBack.h \
            NetKS.h \
            PacketHeader.h \
