@@ -548,13 +548,18 @@ void AudioInterface::fromSampleToBitConversion
         tmp_8 = static_cast<int8_t>(tmp_sample);
         std::memcpy(output, &tmp_8, 1); // 8bits = 1 bytes
         break;
-    case BIT16 :
+    case BIT16 : {
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
-        tmp_sample = double(*input);
-        if (fabs(tmp_sample) >= 1.0) {
+        const double maxAmp16 = 32767.0; // 2^15 = 32768
+        double scaledSample = std::round( (*input) * maxAmp16 );
+        tmp_sample = std::max(-maxAmp16, std::min(maxAmp16, scaledSample));
+        tmp_16 = static_cast<int16_t>(tmp_sample);
+        std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
+        double absScaledSample = fabs(scaledSample);
+        if (absScaledSample > maxAmp16) {
           clipCount++;
-          peakMagnitude = std::max(peakMagnitude,fabs(tmp_sample));
+          peakMagnitude = std::max(peakMagnitude,absScaledSample/maxAmp16);
           if (clipCount==nextWarning) {
             double peakMagnitudeDB = 20.0 * std::log10(peakMagnitude);
             std::cerr << "*** AudioInterface.cpp: Audio HARD-CLIPPED on output to Internet!\n"
@@ -572,10 +577,7 @@ void AudioInterface::fromSampleToBitConversion
             }
           }
         }
-        tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
-        tmp_16 = static_cast<int16_t>(tmp_sample);
-        std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
-        break;
+        break; }
     case BIT24 :
         // To convert to 24 bits, we first quantize the number to 16bit
         tmp_sample = (*input) * 32768.0; // 2^15 = 32768.0
