@@ -568,8 +568,8 @@ void AudioInterface::fromSampleToBitConversion
             if (nextWarning < maxWarningInterval) { // don't let it stop reporting for too long
               nextWarning *= 10;
             } else {
-	      clipCount=0;
-	    }
+              clipCount=0;
+            }
           }
         }
         tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
