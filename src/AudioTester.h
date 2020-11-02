@@ -145,7 +145,7 @@ private:
   void extendLatencyHistogram(double latencyMS) {
     int latencyCell = static_cast<int>(floor(std::max(latencyHistogramCellMin,
                                                       std::min(latencyHistogramCellMax,
-                                                               latencyMS / latencyHistogramCellWidth))));
+                                                               std::floor(latencyMS / latencyHistogramCellWidth)))));
     latencyHistogram[latencyCell] += 1;
   }
 
@@ -198,8 +198,8 @@ private:
     for (int i = histStart; i <= histLast; ++i) {
       int hi = latencyHistogram[i];
       int hin = int(std::round(histScale * double(hi)));
-      std::string istr = std::to_string(int(std::round(latencyHistogramCellWidth * double(i))));
-      std::string istrm1 = std::to_string(int(std::round(latencyHistogramCellWidth * double(i-1))));
+      std::string istrm1 = std::to_string(int(latencyHistogramCellWidth * double(i)));
+      std::string istr = std::to_string(int(latencyHistogramCellWidth * double(i+1)));
       // std::string histr = boost::format("%02d",hi);
       std::string histr = std::to_string(hi);
       while (histr.length()<3) {
