@@ -2,7 +2,7 @@
 
 import("stdfaust.lib");
 N = hslider("[0] NumClientsAssumed",2,1,64,1);
-softClipLevel = 0.5; // start compressing at this amplitude
+softClipLevel = 0.5; // start compressing at this amplitude (-6dBFS)
 gain = 1.0 / sqrt(float(N)); // assume power-based client sum
 // lookahead(s), threshold, attack(s), hold(s), release(s)
 limiter = co.limiter_lad_mono(0.0001, softClipLevel, 0.00001, 0.1, 0.25); // GPLv3 license
