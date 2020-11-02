@@ -154,7 +154,7 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
       assert(sendChannel < mInBufCopy.size());
       mInBufCopy[sendChannel][0] = getImpulseAmp();
       for (uint n=1; n<n_frames; n++) {
-	mInBufCopy[sendChannel][n] = 0;
+        mInBufCopy[sendChannel][n] = 0;
       }
       impulsePending = true;
       impulseTimeUS = timeMicroSec();
