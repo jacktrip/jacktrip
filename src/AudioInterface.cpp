@@ -285,40 +285,37 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // compute cob16
 #endif // endwhere
 
-    // mAudioTesterP will be nullptr for hub server's JackTripWorker instances
-    if (mAudioTesterP && mAudioTesterP->getEnabled()) { // in_buffer is "in" from local audio hardware via JACK
-      mAudioTesterP->writeImpulse(mInBufCopy, in_buffer, n_frames);
-      computeProcessToNetwork(mInBufCopy, n_frames);
-    } else { // Run Faust plugins for the outgoing stream:
-      int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
-      if (nop>0) { // cannot modify IN_BUFFER so make a copy
-	//#ifdef DEBUG
-	if (mInBufCopy.size() < mNumInChans) { // created in constructor above
-	  std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
-	  exit(1);
-	}
-	if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
-	  std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
-		    << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
-	  exit(1);
-	}
-	for (int i=0; i<mNumInChans; i++) {
-	  std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
-	}
-	//#endif
-	for (int i = 0; i < nop; i++) {
-	  // process all outgoing channels with Faust modules:
-	  ProcessPlugin* p = mProcessPluginsToNetwork[i];
-	  if (p->getInited()) {
-	    p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
-	  }
-	}
-	// 3) Finally, send packets to network:
-	computeProcessToNetwork(mInBufCopy, n_frames);
-      } else {
-	// 3) Finally, send packets to network:
-	computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
+    // 3) Send packets to network:
+    // mAudioTesterP will be nullptr for hub server's JackTripWorker instances:
+    bool audioTesting = (mAudioTesterP && mAudioTesterP->getEnabled());
+    int nop = mProcessPluginsToNetwork.size(); // number of OUTGOING processing modules
+    if (nop>0 || audioTesting) { // cannot modify in_buffer, so make a copy
+      // in_buffer is "in" from local audio hardware via JACK
+      if (mInBufCopy.size() < mNumInChans) { // created in constructor above
+        std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - insufficient room reserved\n";
+        exit(1);
       }
+      if (MAX_AUDIO_BUFFER_SIZE < n_frames) { // allocated in constructor above
+        std::cerr << "*** AudioInterface.cpp: n_frames = " << n_frames
+                  << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
+        exit(1);
+      }
+      for (int i=0; i<mNumInChans; i++) {
+        std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
+      }
+      for (int i = 0; i < nop; i++) {
+        // process all outgoing channels with ProcessPlugins:
+        ProcessPlugin* p = mProcessPluginsToNetwork[i];
+        if (p->getInited()) {
+          p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+        }
+      }
+      if (audioTesting) {
+        mAudioTesterP->writeImpulse(mInBufCopy, n_frames); // writes last channel of mInBufCopy with test impulse
+      }
+      computeProcessToNetwork(mInBufCopy, n_frames);
+    } else { // copy saved if no plugins and no audio testing in progress:
+      computeProcessToNetwork(in_buffer, n_frames); // send processed input audio to network - OUTGOING
     }
 
 #ifdef WAIR // WAIR

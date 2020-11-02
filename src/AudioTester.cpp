@@ -133,7 +133,6 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 
 // Called 2nd in Audiointerface.cpp
 void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
-                               QVarLengthArray<sample_t*>& in_buffer,
                                unsigned int n_frames) {
   if (not enabled) {
     std::cerr << "*** AudioTester.h: writeImpulse: NOT ENABLED\n";
@@ -152,9 +151,11 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
       sendImpulse = true;
     }
     if (sendImpulse) {
-      assert(sendChannel < in_buffer.size());
       assert(sendChannel < mInBufCopy.size());
       mInBufCopy[sendChannel][0] = getImpulseAmp();
+      for (uint n=1; n<n_frames; n++) {
+	mInBufCopy[sendChannel][n] = 0;
+      }
       impulsePending = true;
       impulseTimeUS = timeMicroSec();
       impulseTimeSamples = sampleCountSinceImpulse; // timer in samples for current impulse loopback test

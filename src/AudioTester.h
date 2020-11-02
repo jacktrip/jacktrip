@@ -86,7 +86,6 @@ public:
                                        unsigned int n_frames);
 
   void writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
-                    QVarLengthArray<sample_t*>& in_buffer,
                     unsigned int n_frames);
 
   bool getEnabled() { return enabled; }
