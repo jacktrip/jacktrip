@@ -625,7 +625,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
     cout << " -f, --effects # | paramString | help     Turn on incoming and/or outgoing compressor and/or reverb in Client - see `-f help' for details" << endl;
-    cout << " -O, --overflowlimiting  i|o|io|n|help    Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both, n=no limiters (default=n)" << endl;
+    cout << " -O, --overflowlimiting  i|o|io|n|help    Turn on audio limiter in Client, i=incoming from network, o=outgoing to network, io=both, n=no limiters (default=o)" << endl;
     cout << " -a, --assumednumclients help|# (1,2,...) Assumed number of Clients (sources) mixing at Hub Server (otherwise 2 assumed by -O)" << endl;
     cout << endl;
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
