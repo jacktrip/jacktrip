@@ -6,6 +6,6 @@ grid('on');
 axis('tight');
 xlabel('Time (samples)');
 ylabel('Amplitude (dB)');
-legend('input', 'lad-mono','FB-linear', 'FB-log', 'Env');
+legend('input', 'cmpr-lad-mono','lim-lad-mono','FB-linear', 'FB-log', 'Env');
 title('Sine-response for limiters in <faustlibraries>/compressors.lib','fontsize',12);
 print -dpdf 'limiter-sine-test.pdf'

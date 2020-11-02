@@ -14,7 +14,8 @@ ratio = 4;
 threshDB = -6;  // dB
 softClipAmp = 10.0^(threshDB/20.0); // start compressing at this amplitude
 hardClipAmp = 1.0; // hard clipping at this amplitude
-ceiling = 0.707; // leave some room before hard clipping
+//ceiling = 0.707; // leave some room before hard clipping
+ceiling = 1.0; // leave no room before hard clipping - limiter must do it all
 strength = min(ratio-1.0,5)/5.0; // crude hack - will be wrong
 att = 0.001/3;   // sec
 rel = 0.001;    // sec
@@ -33,13 +34,14 @@ import("compressors.lib");
 //limiter(0) = co.limiter_1176_R4_mono; // uses softClipAmp 0.5
 //limiter(0) = co.compressor_mono(lad,ratio,threshDB,att,rel);
 limiter(0) = co.compressor_lad_mono(lad,ratio,threshDB,att,rel) * ceiling;
-limiter(1) = @(ladsamps):co.FBcompressor_N_chan(strength, threshDB, att, rel, knee, prePost0, link, meter, 1) * ceiling;
-limiter(2) = @(ladsamps):co.FBcompressor_N_chan(strength, threshDB, att, rel, knee, prePost1, link, meter, 1) * ceiling;
+limiter(1) = co.limiter_lad_mono(lad, softClipAmp, att, hold, rel) * ceiling;
+limiter(2) = @(ladsamps):co.FBcompressor_N_chan(strength, threshDB, att, rel, knee, prePost0, link, meter, 1) * ceiling;
+limiter(3) = @(ladsamps):co.FBcompressor_N_chan(strength, threshDB, att, rel, knee, prePost1, link, meter, 1) * ceiling;
 limiteri = _ <: select3(limsel,par(i,N,limiter(i)));
 limsel = hslider("[2] Limiter [style:radio{'limiter_1176':0; 'limiter_basic':1; 'FBcompressor':2 }]",0,0,2,1);
 // Listen (faust2caqt): process =  limiter : *(gain) : thruMeter; // shows our confined dynamic range segment
 // Look (faust2octave):
-N = 3; // number of limiters in test
+N = 4; // number of limiters in test
 maxamp = 1;
 freq = 1000;
 ncyc = 4; // number of cycles per region
