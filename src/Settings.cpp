@@ -97,7 +97,7 @@ Settings::Settings() :
     mHubConnectionMode(JackTrip::SERVERTOCLIENT),
     mConnectDefaultAudioPorts(true),
     mIOStatTimeout(0),
-    mEffects(true), // outgoing limiter ON by default
+    mEffects(false), // outgoing limiter OFF by default
     mSimulatedLossRate(0.0),
     mSimulatedJitterRate(0.0),
     mSimulatedDelayRel(0.0),
