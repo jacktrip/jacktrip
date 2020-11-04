@@ -32,9 +32,9 @@
 /**
  * \file Limiter.h
  * \author Julius Smith, based on LoopBack.h
- * \date May 2020
+ * \date May-Nov 2020
+ * \license MIT
  */
-
 
 /** \brief Applies limiter_lad_mono from the faustlibraries distribution, compressors.lib
  *
@@ -51,6 +51,7 @@
 #include "ProcessPlugin.h"
 #include "limiterdsp.h"
 #include <vector>
+#include "assert.h"
 
 /** \brief The Limiter class confines the output dynamic range to a
  *  "dynamic range lane" determined by the assumed number of clients.
@@ -61,6 +62,7 @@ public:
   /// \brief The class constructor sets the number of channels to limit
   Limiter(int numchans, int numclients, bool verboseFlag = false) // xtor
     : mNumChannels(numchans), mNumClients(numclients)
+    , warningAmp(0.0), warnCount(0), peakMagnitude(0.0), nextWarning(1)
   {
     setVerbose(verboseFlag);
     for ( int i = 0; i < mNumChannels; i++ ) {
@@ -113,6 +115,51 @@ public:
   int getNumOutputs() override { return(mNumChannels); }
   void compute(int nframes, float** inputs, float** outputs) override;
 
+  void setWarningAmplitude(double wa) { // setting to 0 turns off warnings
+    warningAmp = std::max(0.0,std::min(1.0,wa));
+  }
+
+ private:
+
+  void checkAmplitudes(int nframes, float* buf) {
+    const int maxWarningInterval { 10000 }; // this could become an option
+    assert(warningAmp > 0.0);
+    assert(mNumClients > 0);
+    for (int i=0; i<nframes; i++) {
+      double tmp_sample = double(buf[i]);
+      double limiterAmp = fabs(tmp_sample)/sqrt(double(mNumClients)); // KEEP IN SYNC with gain in ../faust-src/limiterdsp.dsp
+      if (limiterAmp >= warningAmp) {
+        warnCount++;
+        peakMagnitude = std::max(peakMagnitude,limiterAmp);
+        if (warnCount==nextWarning) {
+          double peakMagnitudeDB = 20.0 * std::log10(peakMagnitude);
+          double warningAmpDB = 20.0 * std::log10(warningAmp);
+          if (warnCount==1) {
+            if (warningAmp == 1.0) {
+              std::cerr << "*** Limiter.cpp: Audio HARD-CLIPPED!\n";
+              fprintf(stderr, "\tReduce your audio input level(s) by %0.1f dB to avoid this.\n", peakMagnitudeDB);
+            } else {
+              fprintf(stderr,
+                      "*** Limiter.cpp: Amplitude levels must stay below %0.1f dBFS to avoid compression.\n",
+                      warningAmpDB);
+              fprintf(stderr, "\tReduce input level(s) by %0.1f dB to achieve this.\n",
+                      peakMagnitudeDB-warningAmpDB);
+            }
+          } else {
+            fprintf(stderr, "\tReduce audio input level(s) by %0.1f dB to avoid limiter compression distortion.\n",
+                    peakMagnitudeDB-warningAmpDB);
+          }
+          peakMagnitude = 0.0; // reset for next group measurement
+          if (nextWarning < maxWarningInterval) { // don't let it stop reporting for too long
+            nextWarning *= 10;
+          } else {
+            warnCount=0;
+          }
+        } // warnCount==nextWarning
+      } // above warningAmp
+    } // loop over frames
+  } // checkAmplitudes()
+
 private:
   float fs;
   int mNumChannels;
@@ -123,6 +170,10 @@ private:
   std::vector<limitertest*> limiterTestP;
   std::vector<APIUI*> limiterTestUIP;
 #endif
+  double warningAmp;
+  uint32_t warnCount;
+  double peakMagnitude;
+  uint32_t nextWarning;
 };
 
 #endif

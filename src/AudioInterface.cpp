@@ -517,7 +517,9 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     mJackTrip->sendNetworkPacket( mInputPacket );
 } // /computeProcessToNetwork
 
+#ifdef ENABLE_DISTORTION_WARNINGS
 double AudioInterface::warningAmp { 0.5 }; // -6 dB = limiter threshold when it is on
+#endif
 
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
@@ -527,11 +529,13 @@ void AudioInterface::fromSampleToBitConversion
  int8_t* output,
  const AudioInterface::audioBitResolutionT targetBitResolution)
 {
+#ifdef ENABLE_DISTORTION_WARNINGS
     // Note that this member function is static:
     static uint32_t warnCount { 0 };
     static double peakMagnitude { 0.0 };
     static uint32_t nextWarning { 1 };
     const int maxWarningInterval { 10000 }; // this could become an option
+#endif
 
     int8_t tmp_8;
     uint8_t tmp_u8; // unsigned to quantize the remainder in 24bits
@@ -551,6 +555,7 @@ void AudioInterface::fromSampleToBitConversion
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
         tmp_sample = double(*input);
+#ifdef ENABLE_DISTORTION_WARNINGS
         if (warningAmp > 0.0) {
           if (fabs(tmp_sample) >= warningAmp) {
             warnCount++;
@@ -581,6 +586,7 @@ void AudioInterface::fromSampleToBitConversion
             }
           }
         }
+#endif // ENABLE_DISTORTION_WARNINGS
         tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
