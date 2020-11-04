@@ -166,10 +166,8 @@ void UdpHubListener::receivedNewConnection()
     cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 }
 
-void UdpHubListener::receivedClientInfo()
+void UdpHubListener::receivedClientInfo(QTcpSocket *clientConnection)
 {
-    QTcpSocket* clientConnection = static_cast<QTcpSocket*>(QObject::sender());
-    
     QHostAddress PeerAddress = clientConnection->peerAddress();
     cout << "JackTrip HUB SERVER: Client Connect Received from Address : "
          << PeerAddress.toString().toStdString() << endl;
