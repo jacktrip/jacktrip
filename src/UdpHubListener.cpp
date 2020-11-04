@@ -103,6 +103,14 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
 
     mUnderRunMode = JackTrip::WAVETABLE;
     mBufferQueueLength = gDefaultQueueLength;
+
+    mBufferStrategy = 1;
+    mBroadcastQueue = 0;
+    mSimulatedLossRate = 0.0;
+    mSimulatedJitterRate = 0.0;
+    mSimulatedDelayRel = 0.0;
+
+    mUseRtUdpPriority = false;
 }
 
 
@@ -152,7 +160,9 @@ void UdpHubListener::start()
 void UdpHubListener::receivedNewConnection()
 {
     QTcpSocket *clientSocket = mTcpServer.nextPendingConnection();
-    connect(clientSocket, &QAbstractSocket::readyRead, this, &UdpHubListener::receivedClientInfo);
+    connect(clientSocket, &QAbstractSocket::readyRead, this, [=]{
+            receivedClientInfo(clientSocket);
+        });
     cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 }
 
@@ -225,6 +235,11 @@ void UdpHubListener::receivedClientInfo()
         mJTWorkers->at(id)->setIOStatTimeout(mIOStatTimeout);
         mJTWorkers->at(id)->setIOStatStream(mIOStatStream);
     }
+    mJTWorkers->at(id)->setBufferStrategy(mBufferStrategy);
+    mJTWorkers->at(id)->setNetIssuesSimulation(mSimulatedLossRate,
+    mSimulatedJitterRate, mSimulatedDelayRel);
+    mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
+    mJTWorkers->at(id)->setUseRtUdpPriority(mUseRtUdpPriority);
     // redirect port and spawn listener
     cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
     {

@@ -41,6 +41,7 @@
 
 #include <cstdlib>
 #include <fstream>
+#include <vector>
 
 #include "DataProtocol.h"
 
@@ -52,6 +53,7 @@
 #include "UdpHubListener.h"
 
 #include "Effects.h"
+#include "AudioTester.h"
 
 /** \brief Class to set usage options and parse settings from input
  */
@@ -89,6 +91,7 @@ private:
     QString mRemoteClientName;
     JackTrip::underrunModeT mUnderrunMode; ///< Underrun mode
     bool mStopOnTimeout; /// < Stop jacktrip after 10 second network timeout
+    int mBufferStrategy;
 
 #ifdef WAIR // wair
     int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
@@ -115,6 +118,12 @@ private:
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
     Effects mEffects;
+    double mSimulatedLossRate;
+    double mSimulatedJitterRate;
+    double mSimulatedDelayRel;
+    int mBroadcastQueue;
+    bool mUseRtUdpPriority;
+    AudioTester mAudioTester;
 };
 
 #endif

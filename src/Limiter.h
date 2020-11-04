@@ -59,9 +59,10 @@ class Limiter : public ProcessPlugin
 {
 public:
   /// \brief The class constructor sets the number of channels to limit
-  Limiter(int numchans, int numclients) // xtor
+  Limiter(int numchans, int numclients, bool verboseFlag = false) // xtor
     : mNumChannels(numchans), mNumClients(numclients)
-  { 
+  {
+    setVerbose(verboseFlag);
     for ( int i = 0; i < mNumChannels; i++ ) {
       limiterP.push_back(new limiterdsp);
       limiterUIP.push_back(new APIUI); // #included in limiterdsp.h
@@ -89,7 +90,6 @@ public:
 
   void init(int samplingRate) override {
     ProcessPlugin::init(samplingRate);
-    // std::cout << "Limiter: init(" << samplingRate << ")\n";
     if (samplingRate != fSamplingFreq) {
       std::cerr << "Sampling rate not set by superclass!\n";
       std::exit(1); }

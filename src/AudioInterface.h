@@ -40,6 +40,7 @@
 
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
+#include "AudioTester.h"
 
 #include <QVarLengthArray>
 #include <QVector>
@@ -115,6 +116,8 @@ public:
     * \param in_buffer Array of output audio samplers for each channel. The user
     * is reponsible to check that each channel has n_frames samplers
     */
+    virtual void broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
+                          unsigned int n_frames);
     virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
                           QVarLengthArray<sample_t*>& out_buffer,
                           unsigned int n_frames);
@@ -176,6 +179,8 @@ public:
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString ClientName) = 0;
     virtual void setLoopBack(bool b) { mLoopBack = b; }
+    virtual void enableBroadcastOutput() {}
+    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -239,6 +244,7 @@ private:
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
     bool mLoopBack;
+    AudioTester* mAudioTesterP { nullptr };
 protected:
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
