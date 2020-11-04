@@ -543,8 +543,8 @@ public:
           std::cout << "Set up NO Overflow Limiters\n";
         }
       } // gVerboseFlag
-      return returnCode;
     } // optarg cases
+    return returnCode;
   } // parseLimiterOptArg()
 
   int parseAssumedNumClientsOptArg(char* cmd, char* optarg) {
