@@ -105,7 +105,7 @@ private:
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
-    void receivedClientInfo(QSslSocket *clientConnection);
+    void receivedClientInfo(QTcpSocket *clientConnection);
 
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
