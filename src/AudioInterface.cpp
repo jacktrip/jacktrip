@@ -554,8 +554,8 @@ void AudioInterface::fromSampleToBitConversion
     case BIT16 :
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
-        tmp_sample = double(*input);
 #ifdef ENABLE_DISTORTION_WARNINGS
+        tmp_sample = double(*input);
         if (warningAmp > 0.0) {
           if (fabs(tmp_sample) >= warningAmp) {
             warnCount++;
