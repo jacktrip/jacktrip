@@ -517,6 +517,8 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     mJackTrip->sendNetworkPacket( mInputPacket );
 } // /computeProcessToNetwork
 
+double AudioInterface::warningAmp { 0.5 }; // -6 dB = limiter threshold when it is on
+
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
 // 24 bit is not working yet
@@ -526,7 +528,7 @@ void AudioInterface::fromSampleToBitConversion
  const AudioInterface::audioBitResolutionT targetBitResolution)
 {
     // Note that this member function is static:
-    static uint32_t clipCount { 0 };
+    static uint32_t warnCount { 0 };
     static double peakMagnitude { 0.0 };
     static uint32_t nextWarning { 1 };
     const int maxWarningInterval { 10000 }; // this could become an option
@@ -549,23 +551,33 @@ void AudioInterface::fromSampleToBitConversion
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
         tmp_sample = double(*input);
-        if (fabs(tmp_sample) >= 1.0) {
-          clipCount++;
-          peakMagnitude = std::max(peakMagnitude,fabs(tmp_sample));
-          if (clipCount==nextWarning) {
-            double peakMagnitudeDB = 20.0 * std::log10(peakMagnitude);
-            std::cerr << "*** AudioInterface.cpp: Audio HARD-CLIPPED on output to Internet!\n"
-                      << "\tReduce your input level(s) by " << peakMagnitudeDB << " dB.\n";
-            if (clipCount>1) {
-              std::cerr << "\tMaximum amplitude over the last "
-                        << nextWarning << " CLIPPED audio samples was "
-                        << peakMagnitude << ", or " << peakMagnitudeDB << " dBFS\n";
-            }
-            peakMagnitude = 0.0; // reset for next group measurement
-            if (nextWarning < maxWarningInterval) { // don't let it stop reporting for too long
-              nextWarning *= 10;
-            } else {
-              clipCount=0;
+        if (warningAmp > 0.0) {
+          if (fabs(tmp_sample) >= warningAmp) {
+            warnCount++;
+            peakMagnitude = std::max(peakMagnitude,fabs(tmp_sample));
+            if (warnCount==nextWarning) {
+              double peakMagnitudeDB = 20.0 * std::log10(peakMagnitude);
+              double warningAmpDB = 20.0 * std::log10(warningAmp);
+              if (warnCount==1) {
+                if (warningAmp == 1.0) {
+                  std::cerr << "*** AudioInterface.cpp: Audio HARD-CLIPPED on output to Internet!\n";
+                  fprintf(stderr, "\tReduce your input level(s) by %0.1f dB to avoid this.\n", peakMagnitudeDB);
+                } else {
+                  fprintf(stderr,
+                          "*** AudioInterface.cpp: Amplitude levels recommended to stay below %0.1f dBFS.\n",
+                          warningAmpDB);
+                  fprintf(stderr, "\tReduce input level(s) by more than %0.1f dB to achieve this.\n",
+                          peakMagnitudeDB-warningAmpDB);
+                }
+              } else {
+                fprintf(stderr, "\tReduce input level(s) by more than %0.1f dB.\n",peakMagnitudeDB-warningAmpDB);
+              }
+              peakMagnitude = 0.0; // reset for next group measurement
+              if (nextWarning < maxWarningInterval) { // don't let it stop reporting for too long
+                nextWarning *= 10;
+              } else {
+                warnCount=0;
+              }
             }
           }
         }
