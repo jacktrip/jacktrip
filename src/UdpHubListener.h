@@ -91,7 +91,6 @@ private slots:
     void testReceive()
     { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
     void receivedNewConnection();
-    void receivedClientInfo();
     void stopCheck();
 
 signals:
@@ -106,6 +105,8 @@ private:
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
+    void receivedClientInfo(QSslSocket *clientConnection);
+
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
     int readClientUdpPort(QTcpSocket* clientConnection, QString &clientName);
