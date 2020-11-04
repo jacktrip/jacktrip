@@ -263,7 +263,7 @@ public:
     if (helpCase == 0 || helpCase == 'O') { // limiter (-O option most likely)
       std::cout << command << " i   // add limiter to INCOMING audio from network (only helpful for floats, i.e., -b32 used by server)\n";
       std::cout << command << " o   // add limiter to OUTGOING audio to network (prevents your sound from harshly clipping going out)\n";
-      std::cout << command << " ow  // print sparse warnings and guidance when limiter must compress audio about to overflow\n";
+      std::cout << command << " ow  // also warn and advise on levels when outgoing limiter compresses audio near clipping\n";
       std::cout << command << " io  // add limiter to both INCOMING and OUTGOING audio\n";
       std::cout << command << " iow // limiters both ways and compression warnings on outgoing direction only\n";
       std::cout << "\n";
