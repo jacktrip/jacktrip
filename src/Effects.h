@@ -90,12 +90,10 @@ private:
 
 public:
 
-  Effects() :
+  Effects(bool outGoingLimiterOn=true) :
     mNumIncomingChans(2),
     mNumOutgoingChans(2),
-    // JOS recommends: mLimit(LIMITER_OUTGOING),
-    // Paranoid choice:
-    mLimit(LIMITER_NONE),
+    mLimit(outGoingLimiterOn ? LIMITER_OUTGOING : LIMITER_NONE),
     mNumClientsAssumed(2)
   {}
 
