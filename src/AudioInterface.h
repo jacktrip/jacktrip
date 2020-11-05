@@ -212,7 +212,6 @@ public:
     static int getSampleRateFromType(samplingRateT rate_type);
     //------------------------------------------------------------------
 
-
 private:
 
     /// \brief Compute the process to receive packets
