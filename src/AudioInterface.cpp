@@ -517,10 +517,6 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
     mJackTrip->sendNetworkPacket( mInputPacket );
 } // /computeProcessToNetwork
 
-#ifdef ENABLE_DISTORTION_WARNINGS
-double AudioInterface::warningAmp { 0.5 }; // -6 dB = limiter threshold when it is on
-#endif
-
 //*******************************************************************************
 // This function quantize from 32 bit to a lower bit resolution
 // 24 bit is not working yet
@@ -529,14 +525,6 @@ void AudioInterface::fromSampleToBitConversion
  int8_t* output,
  const AudioInterface::audioBitResolutionT targetBitResolution)
 {
-#ifdef ENABLE_DISTORTION_WARNINGS
-    // Note that this member function is static:
-    static uint32_t warnCount { 0 };
-    static double peakMagnitude { 0.0 };
-    static uint32_t nextWarning { 1 };
-    const int maxWarningInterval { 10000 }; // this could become an option
-#endif
-
     int8_t tmp_8;
     uint8_t tmp_u8; // unsigned to quantize the remainder in 24bits
     int16_t tmp_16;
@@ -554,39 +542,6 @@ void AudioInterface::fromSampleToBitConversion
     case BIT16 :
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
-#ifdef ENABLE_DISTORTION_WARNINGS
-        tmp_sample = double(*input);
-        if (warningAmp > 0.0) {
-          if (fabs(tmp_sample) >= warningAmp) {
-            warnCount++;
-            peakMagnitude = std::max(peakMagnitude,fabs(tmp_sample));
-            if (warnCount==nextWarning) {
-              double peakMagnitudeDB = 20.0 * std::log10(peakMagnitude);
-              double warningAmpDB = 20.0 * std::log10(warningAmp);
-              if (warnCount==1) {
-                if (warningAmp == 1.0) {
-                  std::cerr << "*** AudioInterface.cpp: Audio HARD-CLIPPED on output to Internet!\n";
-                  fprintf(stderr, "\tReduce your input level(s) by %0.1f dB to avoid this.\n", peakMagnitudeDB);
-                } else {
-                  fprintf(stderr,
-                          "*** AudioInterface.cpp: Amplitude levels recommended to stay below %0.1f dBFS.\n",
-                          warningAmpDB);
-                  fprintf(stderr, "\tReduce input level(s) by more than %0.1f dB to achieve this.\n",
-                          peakMagnitudeDB-warningAmpDB);
-                }
-              } else {
-                fprintf(stderr, "\tReduce input level(s) by more than %0.1f dB.\n",peakMagnitudeDB-warningAmpDB);
-              }
-              peakMagnitude = 0.0; // reset for next group measurement
-              if (nextWarning < maxWarningInterval) { // don't let it stop reporting for too long
-                nextWarning *= 10;
-              } else {
-                warnCount=0;
-              }
-            }
-          }
-        }
-#endif // ENABLE_DISTORTION_WARNINGS
         tmp_sample = std::max(-32767.0, std::min(32767.0, std::round( (*input) * 32767.0 ))); // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)

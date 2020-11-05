@@ -212,13 +212,6 @@ public:
     static int getSampleRateFromType(samplingRateT rate_type);
     //------------------------------------------------------------------
 
-#ifdef ENABLE_DISTORTION_WARNINGS
-    static double warningAmp; // static so it can be set before an instance exists
-    static void setWarningAmplitude(double wa) { // setting to 0 turns off warnings
-      warningAmp = std::max(0.0,std::min(1.0,wa));
-    }
-#endif // ENABLE_DISTORTION_WARNINGS
-
 private:
 
     /// \brief Compute the process to receive packets
