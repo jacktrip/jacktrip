@@ -525,6 +525,14 @@ void AudioInterface::fromSampleToBitConversion
  int8_t* output,
  const AudioInterface::audioBitResolutionT targetBitResolution)
 {
+
+  /*********************************************************************
+  // FOR THE LATEST CLIPPING-WARNING IMPLEMENTATION, SEE COMMIT 37c1d5b
+  // AND SEARCH FOR ENABLE_DISTORTION_WARNINGS
+  // This version contains the puzzling overloud hard-clipping, sounding
+  // as if it's really wrapping around (at least to my ears).
+  *********************************************************************/
+
     // Note that this member function is static:
     static uint32_t clipCount { 0 };
     static double peakMagnitude { 0.0 };
@@ -550,7 +558,13 @@ void AudioInterface::fromSampleToBitConversion
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
         const double maxAmp16 = 32767.0; // 2^15 = 32768
         double scaledSample = std::round( (*input) * maxAmp16 );
-        tmp_sample = std::max(-maxAmp16, std::min(maxAmp16, scaledSample));
+        tmp_sample = std::max(-maxAmp16, std::min(maxAmp16, scaledSample)); // FIXME: THIS SOUNDS WORSE THAN IT SHOULD - WHY?
+        // TEST HACK: tmp_sample = std::max(-maxAmp16+1, std::min(maxAmp16-1, scaledSample)); // check for fencepost bug - JUST AS BAD
+        // TEST HACK: tmp_sample = std::max(-maxAmp16*0.75, std::min(maxAmp16*0.75, scaledSample)); // MUCH BETTER! WHY???
+        // TEST HACK: tmp_sample = std::max(-maxAmp16/2, std::min(maxAmp16/2, scaledSample)); // same quality as 0.75 I think
+        // TEST HACK: tmp_sample = scaledSample; // jacktrip original (bad, of course, and I think about the same as maxAmp16[-1])
+        // None of this is an issue when an outgoing limiter is in use, so let's just do that. No idea where the downstream gain is,
+        // or MSB lossage, etc.
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(output, &tmp_16, 2); // 2 bytes output in Little Endian order (LSB -> smallest address)
         double absScaledSample = fabs(scaledSample);
