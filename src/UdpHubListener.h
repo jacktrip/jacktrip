@@ -66,7 +66,7 @@ typedef struct {
  * This creates a server that will listen on the well know port (the server port) and will
  * spawn JackTrip threads into the Thread pool. Clients request a connection.
  */
-class UdpHubListener : public QThread
+class UdpHubListener : public QObject
 {
     Q_OBJECT;
 
@@ -74,9 +74,8 @@ public:
     UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0);
     virtual ~UdpHubListener();
 
-    /// \brief Implements the Thread Loop. To start the thread, call start()
-    /// ( DO NOT CALL run() )
-    void run();
+    /// \brief Starts the TCP server
+    void start();
 
     /// \brief Stops the execution of the Thread
     void stop() { mStopped = true; }
@@ -91,6 +90,8 @@ public:
 private slots:
     void testReceive()
     { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
+    void receivedNewConnection();
+    void stopCheck();
 
 signals:
     void Listening();
@@ -104,6 +105,8 @@ private:
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
+    void receivedClientInfo(QTcpSocket *clientConnection);
+
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
     int readClientUdpPort(QTcpSocket* clientConnection, QString &clientName);
@@ -136,6 +139,7 @@ private:
     QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorker s
     QThreadPool mThreadPool; ///< The Thread Pool
 
+    QTcpServer mTcpServer;
     int mServerPort; //< Server known port number
     int mServerUdpPort; //< Server udp base port number
     int mBasePort;
@@ -145,6 +149,7 @@ private:
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
     static bool sSigInt;
+    QTimer mStopCheckTimer;
     int mTotalRunningThreads; ///< Number of Threads running in the pool
     QMutex mMutex;
     JackTrip::underrunModeT mUnderRunMode;
