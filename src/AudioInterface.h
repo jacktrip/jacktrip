@@ -213,7 +213,7 @@ public:
     //------------------------------------------------------------------
 
 
- private:
+private:
 
     /// \brief Compute the process to receive packets
     void computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_buffer,
