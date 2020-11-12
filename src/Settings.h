@@ -84,8 +84,8 @@ private:
     int mBufferQueueLength; ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution;
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
-    int mBindPortNum; ///< Bind Port Number
-    int mPeerPortNum; ///< Peer Port Number
+    int mLocalPortNum; ///< Port Number on this side, where the current JT server or client process is running (defaults to 4464)
+    int mRemotePortNum; ///< // Port on the other side, where the remote JT server or client process is running (defaults to 4464) e.g. if this side is the client, the remote is the server, and vice versa
     int mServerUdpPortNum;
     QString mClientName; ///< JackClient Name
     QString mRemoteClientName;

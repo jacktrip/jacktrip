@@ -19,7 +19,7 @@ fi
 gnome-terminal -- command jackd -dalsa -dhw:0 -r48000 -p1024 -n2 > /dev/null 2>&1
 #command jacktrip -C 171.64.197.165 >> output.txt 2>&1 &
 sleep 5
-command jacktrip -C 171.64.197.165 > output.txt 2>&1 &
+command ../../builddir/jacktrip -C 171.64.197.165 > output.txt 2>&1 &
 sleep 5
 outputmsg=`cat output.txt`
 echo "$outputmsg"

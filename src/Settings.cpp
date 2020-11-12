@@ -66,6 +66,8 @@ enum JTLongOptIDS {
   OPT_SIMJITTER,
   OPT_BROADCAST,
   OPT_RTUDPPRIORITY,
+  OPT_LOCALPORT,
+  OPT_REMOTEPORT
 };
 
 //*******************************************************************************
@@ -75,7 +77,7 @@ Settings::Settings() :
     mNumChans(2),
     mBufferQueueLength(gDefaultQueueLength),
     mAudioBitResolution(AudioInterface::BIT16),
-    mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
+    mLocalPortNum(gDefaultPort), mRemotePortNum(gDefaultPort),
     mServerUdpPortNum(0),
     mUnderrunMode(JackTrip::WAVETABLE),
     mStopOnTimeout(false),
@@ -137,8 +139,8 @@ void Settings::parseInput(int argc, char** argv)
         { "jacktripserver", no_argument, NULL, 'S' }, // Run in JamLink mode
         { "pingtoserver", required_argument, NULL, 'C' }, // Run in ping to server mode, set server IP address
         { "portoffset", required_argument, NULL, 'o' }, // Port Offset from 4464
-        { "bindport", required_argument, NULL, 'B' }, // Port Offset from 4464
-        { "peerport", required_argument, NULL, 'P' }, // Port Offset from 4464
+        { "localport", required_argument, NULL, OPT_LOCALPORT }, // Port on this side, where the current JT server or client process is running (defaults to 4464)
+        { "remoteport", required_argument, NULL, OPT_REMOTEPORT }, // Port on the other side, where the remote JT server or client process is running (defaults to 4464) e.g. if this side is the client, the remote is the server, and vice versa
         { "udpbaseport", required_argument, NULL, 'U' }, // Server udp base port (defaults to 61002)
         { "queue", required_argument, NULL, 'q' }, // Queue Length
         { "redundancy", required_argument, NULL, 'r' }, // Redundancy
@@ -185,7 +187,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mNumChans = atoi(optarg);
             break;
-        case 'U': // UDP Bind Port
+        case 'U': // UDP Local Port
             mServerUdpPortNum = atoi(optarg);
             break;
 #ifdef WAIR
@@ -227,20 +229,20 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'o': // Port Offset
             //-------------------------------------------------------
-            mBindPortNum += atoi(optarg);
-            mPeerPortNum += atoi(optarg);
-            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Bind Port: " << mBindPortNum << std::endl;
-            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Peer Port: " << mPeerPortNum << std::endl;
+            mLocalPortNum += atoi(optarg);
+            mRemotePortNum += atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Local Port: " << mLocalPortNum << std::endl;
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Remote Port: " << mRemotePortNum << std::endl;
             break;
-        case 'B': // Bind Port
+        case OPT_LOCALPORT: // Local Port
             //-------------------------------------------------------
-            mBindPortNum = atoi(optarg);
-            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Bind Port: " << mBindPortNum << std::endl;
+            mLocalPortNum = atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Local Port: " << mLocalPortNum << std::endl;
             break;
-        case 'P': // Peer Port
+        case OPT_REMOTEPORT: // Remote Port
             //-------------------------------------------------------
-            mPeerPortNum = atoi(optarg);
-            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Peer Port: " << mPeerPortNum << std::endl;
+            mRemotePortNum = atoi(optarg);
+            if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Remote Port: " << mRemotePortNum << std::endl;
             break;
         case 'b':
             //-------------------------------------------------------
@@ -561,9 +563,9 @@ void Settings::printUsage()
     cout << "Options: " << endl;
     cout << "REQUIRED ARGUMENTS: One of:" << endl;
     cout << " -s, --server                             Run in P2P Server Mode" << endl;
-    cout << " -c, --client <peer_hostname_or_IP_num>   Run in P2P Client Mode" << endl;
+    cout << " -c, --client <remote_hostname_or_IP_num>   Run in P2P Client Mode" << endl;
     cout << " -S, --jacktripserver                     Run in Hub Server Mode" << endl;
-    cout << " -C, --pingtoserver <peer_name_or_IP>     Run in Hub Client Mode" << endl;
+    cout << " -C, --pingtoserver <remote_name_or_IP>     Run in Hub Client Mode" << endl;
     cout << endl;
     cout << "OPTIONAL ARGUMENTS: " << endl;
     cout << " -n, --numchannels #                      Number of Input and Output Channels (default: "
@@ -579,9 +581,9 @@ void Settings::printUsage()
          << gDefaultQueueLength << ")" << endl;
     cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid glitches with packet losses (default: 1)"
          << endl;
-    cout << " -o, --portoffset  #                      Receiving bind port and peer port offset from default " << gDefaultPort << endl;
-    cout << " -B, --bindport        #                  Set only the bind port number (default: " << gDefaultPort << ")" << endl;
-    cout << " -P, --peerport        #                  Set only the peer port number (default: " << gDefaultPort << ")" << endl;
+    cout << " -o, --portoffset  #                      Receiving local port and remote port offset from default " << gDefaultPort << endl;
+    cout << " --localport        #                  Set only the local port number (default: " << gDefaultPort << ")" << endl;
+    cout << " --remoteport        #                  Set only the remote port number (default: " << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16, 32 uses floating-point)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
@@ -629,8 +631,8 @@ void Settings::printUsage()
 //*******************************************************************************
 UdpHubListener *Settings::getConfiguredHubServer()
 {
-    if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
-    UdpHubListener *udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum);
+    if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Local Port: " << mLocalPortNum << std::endl;
+    UdpHubListener *udpHub = new UdpHubListener(mLocalPortNum, mServerUdpPortNum);
     //udpHub->setSettings(this);
 #ifdef WAIR // WAIR
     udpHub->setWAIR(mWAIR);
@@ -675,11 +677,11 @@ JackTrip *Settings::getConfiguredJackTrip()
                                       mBufferQueueLength, mRedundancy, mAudioBitResolution,
                                       /*DataProtocol::packetHeaderTypeT PacketHeaderType = */DataProtocol::DEFAULT,
                                       /*underrunModeT UnderRunMode = */ mUnderrunMode,
-                                      /* int receiver_bind_port = */ mBindPortNum,
-                                      /*int sender_bind_port = */ mBindPortNum,
-                                      /*int receiver_peer_port = */ mPeerPortNum,
-                                      /* int sender_peer_port = */ mPeerPortNum,
-                                      mPeerPortNum
+                                      /* int receiver_local_port = */ mLocalPortNum,
+                                      /*int sender_local_port = */ mLocalPortNum,
+                                      /*int receiver_remote_port = */ mRemotePortNum,
+                                      /* int sender_remote_port = */ mRemotePortNum,
+                                      mRemotePortNum
                                       );
     // Set connect or not default audio ports. Only work for jack
     jackTrip->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
@@ -701,7 +703,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     jackTrip->setStopOnTimeout(mStopOnTimeout);
 
-    // Set peer address in server mode
+    // Set remote address in server mode
     if (mJackTripMode == JackTrip::CLIENT || mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
         jackTrip->setPeerAddress(mPeerAddress); }
 
@@ -712,10 +714,10 @@ JackTrip *Settings::getConfiguredJackTrip()
 
     // Set Ports - Done in constructor now.
     //cout << "SETTING ALL PORTS" << endl;
-    /*if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setBindPorts" << std::endl;
-    jackTrip->setBindPorts(mBindPortNum);
-    if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setPeerPorts" << std::endl;
-    jackTrip->setPeerPorts(mPeerPortNum);*/
+    /*if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setLocalPorts" << std::endl;
+    jackTrip->setLocalPorts(mLocalPortNum);
+    if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setRemotePorts" << std::endl;
+    jackTrip->setRemotePorts(mRemotePortNum);*/
 
     // Set in JamLink Mode
     if ( mJamLink ) {
