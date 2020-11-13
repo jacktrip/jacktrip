@@ -36,7 +36,6 @@
  */
 
 #include <iostream>
-#include <ctime>
 
 #include <QCoreApplication>
 #include <QScopedPointer>
@@ -100,10 +99,6 @@ int main(int argc, char *argv[])
 
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
-
-    time_t now = time(0); // current date/time based on current system
-    char* dt = ctime(&now); // convert now to string form
-    qDebug() << "JackTrip (" << argv[0] << "): built" << dt << "\n";
 
     try {
         Settings settings;
