@@ -44,7 +44,7 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.2.1"; ///< JackTrip version
+const char* const gVersion = "1.3.0 (beta release candidate)"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
