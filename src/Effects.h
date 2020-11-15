@@ -60,6 +60,7 @@ public:
 private:
   LIMITER_MODE mLimit; ///< audio limiter controls
   unsigned int mNumClientsAssumed; ///< assumed number of clients (audio sources)
+  double limiterWarningAmplitude;
 
   enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
   bool inCompressor = false;
@@ -90,13 +91,12 @@ private:
 
 public:
 
-  Effects() :
+  Effects(bool outGoingLimiterOn=true) :
     mNumIncomingChans(2),
     mNumOutgoingChans(2),
-    // JOS recommends: mLimit(LIMITER_OUTGOING),
-    // Paranoid choice:
-    mLimit(LIMITER_NONE),
-    mNumClientsAssumed(2)
+    mLimit(outGoingLimiterOn ? LIMITER_OUTGOING : LIMITER_NONE),
+    mNumClientsAssumed(2),
+    limiterWarningAmplitude(0.0)
   {}
 
   ~Effects() {
@@ -188,6 +188,7 @@ public:
       }
       assert(inLimiterP == nullptr);
       inLimiterP = new Limiter(mNumIncomingChans, 1, gVerboseFlag); // mNumClientsAssumed not needed this direction
+      // Never needed in normal practice for incoming limiter: inLimiterP->setWarningAmplitude(limiterWarningAmplitude);
       incomingEffects.push_back(inLimiterP);
     }
     incomingEffectsAllocated = true;
@@ -229,6 +230,7 @@ public:
         }
         assert(outLimiterP == nullptr);
         outLimiterP = new Limiter(mNumOutgoingChans,mNumClientsAssumed);
+        outLimiterP->setWarningAmplitude(limiterWarningAmplitude);
         // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
         outgoingEffects.push_back(outLimiterP);
       }
@@ -259,8 +261,11 @@ public:
       std::cout << "\n";
     }
     if (helpCase == 0 || helpCase == 'O') { // limiter (-O option most likely)
-      std::cout << command << " i // add limiter to INCOMING audio from network (only helpful for floats, i.e., -b32 used by server)\n";
-      std::cout << command << " o // add limiter to OUTGOING audio to network (prevents your sound from harshly clipping going out)\n";
+      std::cout << command << " i   // add limiter to INCOMING audio from network (only helpful for floats, i.e., -b32 used by server)\n";
+      std::cout << command << " o   // add limiter to OUTGOING audio to network (prevents your sound from harshly clipping going out)\n";
+      std::cout << command << " ow  // also warn and advise on levels when outgoing limiter compresses audio near clipping\n";
+      std::cout << command << " io  // add limiter to both INCOMING and OUTGOING audio\n";
+      std::cout << command << " iow // limiters both ways and compression warnings on outgoing direction only\n";
       std::cout << "\n";
     }
     if (helpCase == 0 || helpCase == 'a') { // assumedNumClients (-a option)
@@ -483,41 +488,64 @@ public:
   int parseLimiterOptArg(char* cmd, char* optarg) {
     int returnCode = 0;
     lastEffect = 'O'; // OverflowLimiter
-    char c1 = tolower(optarg[0]);
-    if (c1 == '-' || c1 == 0) {
+    char ch = tolower(optarg[0]);
+    if (ch == '-' || ch == 0) {
       std::cerr << cmd << " argument i, o, or io is REQUIRED\n";
       returnCode = 2;
-    } else if (c1 == 'h') {
+    } else if (ch == 'h') {
       printHelp(cmd,'O');
       returnCode = 1;
     } else {
-    char c2 = (strlen(optarg)>1 ? tolower(optarg[1]) : '\0');
-    if ((c1 == 'i' && c2 == 'o') || (c1 == 'o' && c2 == 'i')) {
-      mLimit = LIMITER_BOTH;
-      if (gVerboseFlag) {
-        std::cout << "Set up Overflow Limiter for both INCOMING and OUTGOING\n";
+      bool haveIncoming = false;
+      bool haveOutgoing = false;
+      bool haveWarnings = false;
+      for (int i=0; i<strlen(optarg); i++) {
+        ch = tolower(optarg[i]);
+        switch(ch) {
+        case ' ': break;
+        case '\t': break;
+        case 'i':
+          haveIncoming = true;
+          break;
+        case 'o':
+          haveOutgoing = true;
+          break;
+        case 'w':
+          haveWarnings = true;
+          break;
+        case 'n':
+          haveIncoming = false;
+          haveOutgoing = false;
+          break;
+        default:
+          std::cerr << "*** Effects.h: parseLimiterOptArg: Unrecognized option " << ch << "\n";
+          returnCode = 2;
+        } // switch(ch)
+      } // process optarg char ch
+      mLimit = (haveIncoming && haveOutgoing ? LIMITER_BOTH
+                : (haveIncoming ? LIMITER_INCOMING
+                   : (haveOutgoing ? LIMITER_OUTGOING : LIMITER_NONE)));
+      if (haveWarnings) {
+        limiterWarningAmplitude = 0.5; // KEEP IN SYNC WITH LIMITER THRESHOLD/CEILING 'softClipLevel' in ../faust-src/limiterdsp.dsp
+        // the warning amplitude and limiter compression threshold can of course be brought as a parameters, e.g. w(0.5)
       }
-    } else if (c1 == 'i') {
-      mLimit = LIMITER_INCOMING;
       if (gVerboseFlag) {
-        std::cout << "Set up Overflow Limiter for INCOMING from network\n";
-      }
-    } else if (c1 == 'o') {
-      mLimit = LIMITER_OUTGOING;
-      if (gVerboseFlag) {
-        std::cout << "Set up Overflow Limiter for OUTGOING to network\n";
-      }
-      } else if (c1 == 'n') {
-        mLimit = LIMITER_NONE;
-        if (gVerboseFlag) {
-          std::cout << "NO Overflow Limiters\n";
+        if(haveIncoming) {
+          std::cout << "Set up INCOMING Overflow Limiter\n";
         }
-    } else {
-        returnCode = 2;
-      }
-    }
+        if(haveOutgoing) {
+          std::cout << "Set up OUTGOING Overflow Limiter\n";
+        }
+        if(haveWarnings) {
+          std::cout << "Enable DISTORTION WARNINGS in Overflow Limiters\n";
+        }
+        if(not haveIncoming and not haveOutgoing) {
+          std::cout << "Set up NO Overflow Limiters\n";
+        }
+      } // gVerboseFlag
+    } // optarg cases
     return returnCode;
-  }
+  } // parseLimiterOptArg()
 
   int parseAssumedNumClientsOptArg(char* cmd, char* optarg) {
     int returnCode = 0;
