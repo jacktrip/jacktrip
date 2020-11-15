@@ -145,7 +145,7 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
       const uint64_t timeOut = 500e3; // time out after waiting 500 ms
       if (timeMicroSec() > (impulseTimeUS + timeOut)) {
         sendImpulse = true;
-        std::cout << "\n*** TEST MODE (-x): TIMED OUT waiting for return impulse *** sending a new one\n";
+        std::cout << "\n*** Audio Latency Test (-x): TIMED OUT waiting for return impulse *** sending a new one\n";
       }
     } else { // time for the next repeating impulse:
       sendImpulse = true;

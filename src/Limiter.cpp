@@ -32,9 +32,9 @@
 /**
  * \file Limiter.cpp
  * \author Julius Smith, based on LoopBack.h
- * \date July 2008
+ * \date May-Nov 2020
+ * \license MIT
  */
-
 
 #include "Limiter.h"
 #include "jacktrip_types.h"
@@ -57,6 +57,9 @@ void Limiter::compute(int nframes, float** inputs, float** outputs)
   float* faustSigs[1] { sineTestOut };
 #endif
   for ( int i = 0; i < mNumChannels; i++ ) {
+    if (warningAmp > 0.0) {
+      checkAmplitudes(nframes, inputs[i]); // we presently do one check across all channels
+    }
     limiterP[i]->compute(nframes, &inputs[i], &outputs[i]);
 #ifdef SINE_TEST
     limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
