@@ -19,10 +19,13 @@ Note: rtaudio is no longer a dependency
 All Linux
 
 Fedora:
+dnf install jacktrip 
+OR
 dnf install qt5-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
 dnf install jack-audio-connection-kit-devel alsa-lib-devel iperf qjackctl audacity git
+
 Clone the git repo and run ./build in the src directory or use QtCreator to compile
 
 Ubuntu and Debian/Raspbian:
