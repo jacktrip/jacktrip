@@ -61,7 +61,8 @@ public:
 
 signals:
     void signalExit();
-    
+    void signalHide();
+
 private slots:
     void processFinished();
     void processError(const QString &errorMessage);
@@ -75,9 +76,11 @@ private slots:
     void browseForFile();
     void receivedIP(QNetworkReply *reply);
     void resetOptions();
+    void exit();
+
+public slots:
     void start();
     void stop();
-    void exit();
     
 private:
     void enableUi(bool enabled);

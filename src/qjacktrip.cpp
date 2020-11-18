@@ -59,6 +59,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     connect(m_ui->certBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
     connect(m_ui->keyBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
     connect(m_ui->credsBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
+    m_ui->exitButton->hide();
     connect(m_ui->commandLineButton, &QPushButton::released, this, &QJackTrip::showCommandLineMessageBox);
     connect(m_ui->useDefaultsButton, &QPushButton::released, this, &QJackTrip::resetOptions);
     connect(m_ui->usernameEdit, &QLineEdit::textChanged, this, &QJackTrip::credentialsChanged);
@@ -191,7 +192,8 @@ void QJackTrip::closeEvent(QCloseEvent *event)
 {
     //Ignore the close event so that we can override the handling of it.
     event->ignore();
-    exit();
+    emit signalHide();
+    //exit();
 }
 
 void QJackTrip::resizeEvent(QResizeEvent* event)
