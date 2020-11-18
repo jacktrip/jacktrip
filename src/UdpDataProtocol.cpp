@@ -443,7 +443,7 @@ void UdpDataProtocol::run()
     }
 
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy Variables" << std::endl;
-    // Setup Audio Packet buffer
+    // Setup Outgoing Audio Packet buffer
     size_t audio_packet_size = getAudioPacketSizeInBites();
     //cout << "audio_packet_size: " << audio_packet_size << endl;
     mAudioPacket = new int8_t[audio_packet_size];
