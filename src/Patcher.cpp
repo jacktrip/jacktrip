@@ -38,20 +38,13 @@
 #include "Patcher.h"
 
 Patcher::Patcher() :
-    m_patchMode(JackTrip::SERVERTOCLIENT)
-{
-    m_jackClient = jack_client_open("jthubpatcher", JackNullOption, &m_status);
-    if (m_jackClient == NULL) {
-        std::cout << "Unable to start patcher JACK client: Patching disabled\n" << std::endl;
-    }
-}
+    m_patchMode(JackTrip::SERVERTOCLIENT),
+    m_jackClient(nullptr)
+{}
 
 void Patcher::setPatchMode(JackTrip::hubConnectionModeT patchMode)
 {
-    //If our jack client didn't open, keeping this set to the default value will disable patching.
-    if (m_jackClient) {
-        m_patchMode = patchMode;
-    }
+    m_patchMode = patchMode;
 }
 
 void Patcher::registerClient(const QString &clientName)
@@ -62,6 +55,17 @@ void Patcher::registerClient(const QString &clientName)
         //Nothing to do here other than track our clients.
         m_clients.append(clientName);
         return;
+    }
+    
+    //If our jack client isn't running, start it.
+    if (!m_jackClient) {
+        m_jackClient = jack_client_open("jthubpatcher", JackNoStartServer, &m_status);
+        if (!m_jackClient) {
+            std::cout << "Unable to start patcher JACK client: Patching disabled\n" << std::endl;
+            return;
+        } else {
+            jack_on_shutdown(m_jackClient, &Patcher::shutdownCallback, this);
+        }
     }
     
     const char **outPorts, **inPorts;
@@ -120,7 +124,16 @@ void Patcher::unregisterClient(const QString &clientName)
     m_clients.removeAll(clientName);
 }
 
+void Patcher::shutdownCallback(void *arg)
+{
+    Patcher *patcher = static_cast<Patcher *>(arg);
+    jack_client_close(patcher->m_jackClient);
+    patcher->m_jackClient = nullptr;
+}
+
 Patcher::~Patcher()
 {
-    jack_client_close(m_jackClient);
+    if (m_jackClient) {
+        jack_client_close(m_jackClient);
+    }
 }

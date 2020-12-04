@@ -56,6 +56,9 @@ public:
     void registerClient(const QString &clientName);
     void unregisterClient(const QString &clientName);
     
+    //Jack shutdown callback
+    static void shutdownCallback(void *arg);
+    
 private:
     QStringList m_clients;
     JackTrip::hubConnectionModeT m_patchMode;

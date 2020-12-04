@@ -141,6 +141,7 @@ private:
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning;
+    bool mStopped;
     QMutex mMutex; ///< Mutex to protect mSpawning
 
     int mID; ///< ID thread number

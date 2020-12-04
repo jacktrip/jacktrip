@@ -65,6 +65,7 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
     mUnderRunMode(UnderRunMode),
     mClientName(clientName),
     mSpawning(false),
+    mStopped(false),
     mID(0),
     mNumChans(1),
     mIOStatTimeout(0)
@@ -123,7 +124,14 @@ void JackTripWorker::run()
     This is not supported, exceptions thrown in worker threads must be
     caught before control returns to Qt Concurrent.'*/
 
-    { QMutexLocker locker(&mMutex); mSpawning = true; }
+    {
+        //Check if we still need to run this.
+        QMutexLocker locker(&mMutex);
+        if (mStopped) {
+            mSpawning = false;
+            mUdpHubListener->releaseThread(mID);
+        }
+    }
 
     //QHostAddress ClientAddress;
 
@@ -230,7 +238,7 @@ void JackTripWorker::run()
 
         if (gVerboseFlag) cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
         int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
-        if ( PeerConnectionMode == -1 ) {
+        if ( PeerConnectionMode == -1 || mStopped ) {
             mUdpHubListener->releaseThread(mID);
             { QMutexLocker locker(&mMutex); mSpawning = false; }
             return;
@@ -248,7 +256,15 @@ void JackTripWorker::run()
         // jacktrip.start(); // ########### JamTest Only #################
 
         // Thread is already spawning, so release the lock
-        { QMutexLocker locker(&mMutex); mSpawning = false; }
+        {
+            QMutexLocker lock(&mMutex);
+            mSpawning = false;
+            if (mStopped) {
+                jacktrip.slotStopProcesses();
+                mUdpHubListener->releaseThread(mID);
+                return;
+            }
+        }
 
         event_loop.exec(); // Excecution will block here until exit() the QEventLoop
         //--------------------------------------------------------------------------
@@ -355,5 +371,6 @@ bool JackTripWorker::isSpawning()
 void JackTripWorker::stopThread()
 {
     QMutexLocker locker(&mMutex);
+    mStopped = true;
     emit signalRemoveThread();
 }

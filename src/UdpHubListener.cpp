@@ -234,14 +234,14 @@ void UdpHubListener::start()
 void UdpHubListener::receivedNewConnection()
 {
     QSslSocket *clientSocket = static_cast<QSslSocket *>(mTcpServer.nextPendingConnection());
-    connect(clientSocket, &QAbstractSocket::readyRead, this, &UdpHubListener::receivedClientInfo);
+    connect(clientSocket, &QAbstractSocket::readyRead, this, [=]{
+            receivedClientInfo(clientSocket);
+        });
     cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 }
 
-void UdpHubListener::receivedClientInfo()
+void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
 {
-    QSslSocket* clientConnection = static_cast<QSslSocket*>(QObject::sender());
-    
     QHostAddress PeerAddress = clientConnection->peerAddress();
     cout << "JackTrip HUB SERVER: Client Connect Received from Address : "
          << PeerAddress.toString().toStdString() << endl;
@@ -307,7 +307,7 @@ void UdpHubListener::receivedClientInfo()
     int id = isNewAddress(PeerAddress.toString(), peer_udp_port);
     // If the address is not new, we need to remove the client from the pool
     // before re-starting the connection
-
+    
     if (id == -1) {
         int id_remove;
         id_remove = getPoolID(PeerAddress.toString(), peer_udp_port);
