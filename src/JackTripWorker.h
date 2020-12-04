@@ -110,8 +110,6 @@ public:
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
     
-    QString getAssignedClientName() { return mAssignedClientName; }
-    
 private slots:
     void slotTest()
     { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
@@ -136,7 +134,6 @@ private:
     int mBufferQueueLength;
     JackTrip::underrunModeT mUnderRunMode;
     QString mClientName;
-    QString mAssignedClientName;
 
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
