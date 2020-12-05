@@ -84,6 +84,7 @@ public:
     void stop() { mStopped = true; }
 
     void registerClientWithPatcher(QString &clientName);
+    void unregisterClientWithPatcher(QString &clientName);
     int releaseThread(int id, QString clientName = "");
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)

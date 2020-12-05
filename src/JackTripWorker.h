@@ -161,6 +161,7 @@ private:
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning;
     volatile bool mRunning;
+    volatile bool mPatched;
     QMutex mMutex; ///< Mutex to protect changes to jacktrip instance
 
     int mID; ///< ID thread number

@@ -608,6 +608,14 @@ void UdpHubListener::registerClientWithPatcher(QString& clientName)
     connectPatch(true, clientName);
 }
 
+void UdpHubListener::unregisterClientWithPatcher(QString& clientName)
+{
+#ifdef WAIR // wair
+    if (isWAIR()) connectMesh(false); // invoked with -Sw
+#endif // endwhere
+    connectPatch(false, clientName);
+}
+
 //*******************************************************************************
 int UdpHubListener::releaseThread(int id, QString clientName)
 {

@@ -62,7 +62,9 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
     mBufferQueueLength(BufferQueueLength),
     mUnderRunMode(UnderRunMode),
     mClientName(clientName),
+    mSpawning(false),
     mRunning(false),
+    mPatched(false),
     mID(0),
     mNumChans(1),
     mIOStatTimeout(0)
@@ -102,6 +104,10 @@ void JackTripWorker::setJackTrip(int id,
     mUdpSockTemp.close();
     if (mRunning) {
         mJackTrip->slotStopProcesses();
+        if (mPatched) {
+            mUdpHubListener->unregisterClientWithPatcher(mAssignedClientName);
+            mPatched = false;
+        }
         mRunning = false;
     }
     //Set as spawning from this point on.
@@ -249,9 +255,13 @@ void JackTripWorker::stopThread()
     if (mRunning) {
         mRunning = false;
         mJackTrip->slotStopProcesses();
-        mUdpHubListener->releaseThread(mID, mAssignedClientName);
-    }
-    if (mSpawning) {
+        if (mPatched) {
+            mUdpHubListener->releaseThread(mID, mAssignedClientName);
+            mPatched = false;
+        } else {
+            mUdpHubListener->releaseThread(mID);
+        }
+    } else if (mSpawning) {
         mSpawning = false;
         mUdpSockTemp.close();
         mTimeoutTimer.stop();
@@ -344,13 +354,20 @@ void JackTripWorker::jacktripStopped()
         return;
     }
     mRunning = false;
-    mUdpHubListener->releaseThread(mID, mAssignedClientName);
+    if (mPatched) {
+        mUdpHubListener->releaseThread(mID, mAssignedClientName);
+        mPatched = false;
+    } else {
+        mUdpHubListener->releaseThread(mID);
+    }
 }
 
 void JackTripWorker::alertPatcher()
 {
+    QMutexLocker lock(&mMutex);
     if (mRunning) {
         mAssignedClientName = mJackTrip->getAssignedClientName();
         mUdpHubListener->registerClientWithPatcher(mAssignedClientName);
+        mPatched = true;
     }
 }
