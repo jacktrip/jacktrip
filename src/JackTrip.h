@@ -498,6 +498,7 @@ signals:
     void signalReceivedConnectionFromPeer();
     void signalUdpWaitingTooLong();
     void signalQueueLengthChanged(int queueLength);
+    void signalAudioStarted();
 
 public:
 

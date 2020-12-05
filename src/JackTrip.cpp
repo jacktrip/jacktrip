@@ -526,6 +526,7 @@ void JackTrip::completeConnection()
     mAudioInterface->startProcess(); // Tell JACK server we are ready for audio flow now
 
     if (mConnectDefaultAudioPorts) {  mAudioInterface->connectDefaultPorts(); }
+    emit signalAudioStarted();
     
     //Start our IO stat timer
     if (mIOStatTimeout > 0) {

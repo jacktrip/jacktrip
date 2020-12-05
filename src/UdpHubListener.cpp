@@ -79,21 +79,12 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     //mJTWorker = new JackTripWorker(this);
     mJTWorkers = new QVector<JackTripWorker*>;
     for (int i = 0; i<gMaxThreads; i++) {
-        mJTWorkers->insert(i, NULL);
+        mJTWorkers->append(nullptr);
     }
 
-    qDebug() << "mThreadPool default maxThreadCount =" << mThreadPool.maxThreadCount();
-    mThreadPool.setMaxThreadCount(mThreadPool.maxThreadCount() * 16);
-    qDebug() << "mThreadPool maxThreadCount set to" << mThreadPool.maxThreadCount();
+    qDebug() << "mThreadPool default maxThreadCount =" << QThread::idealThreadCount();
+    qDebug() << "mThreadPool maxThreadCount previously set to" << QThread::idealThreadCount() * 16;
 
-    //mJTWorkers = new JackTripWorker(this);
-    mThreadPool.setExpiryTimeout(3000); // msec (-1) = forever
-    // Inizialize IP addresses
-    for (int i = 0; i<gMaxThreads; i++) {
-        mActiveAddress[i].address = ""; // Address strings
-        mActiveAddress[i].port = 0;
-        mActiveAddress[i].clientName = "";
-    }
     // Set the base dynamic port
     // The Dynamic and/or Private Ports are those from 49152 through 65535
     // mBasePort = ( rand() % ( (65535 - gMaxThreads) - 49152 ) ) + 49152;
@@ -125,7 +116,6 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
 UdpHubListener::~UdpHubListener()
 {
     QMutexLocker lock(&mMutex);
-    mThreadPool.waitForDone();
     //delete mJTWorker;
     for (int i = 0; i<gMaxThreads; i++) {
         delete mJTWorkers->at(i);
@@ -137,7 +127,7 @@ UdpHubListener::~UdpHubListener()
 //*******************************************************************************
 // Now that the first handshake is with TCP server, if the addreess/peer port of
 // the client is already on the thread pool, it means that a new connection is
-// requested (the old was desconnected). So we have to remove that thread from
+// requested (the old was disconnected). So we have to remove that thread from
 // the pool and then connect again.
 void UdpHubListener::start()
 {
@@ -304,29 +294,15 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
     // -----------------------------
     // Check if Address is not already in the thread pool
     // check by comparing address strings (To handle IPv4 and IPv6.)
-    int id = isNewAddress(PeerAddress.toString(), peer_udp_port);
-    // If the address is not new, we need to remove the client from the pool
-    // before re-starting the connection
+    // If it is, a new JackTripWorker will be created, otherwise the existing one will be reused.
+    int id = getJackTripWorker(PeerAddress.toString(), peer_udp_port, clientName);
     
-    if (id == -1) {
-        int id_remove;
-        id_remove = getPoolID(PeerAddress.toString(), peer_udp_port);
-        // stop the thread
-        mJTWorkers->at(id_remove)->stopThread();
-        // block until the thread has been removed from the pool
-        while ( isNewAddress(PeerAddress.toString(), peer_udp_port) == -1 ) {
-            cout << "JackTrip HUB SERVER: Removing JackTripWorker from pool..." << endl;
-            QThread::msleep(10);
-        }
-        // Get a new ID for this client
-        //id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
-        id = getPoolID(PeerAddress.toString(), peer_udp_port);
-    }
     // Assign server port and send it to Client
-    int server_udp_port = mBasePort+id;
-    cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: " << server_udp_port << endl;
+    if (id != -1) {
+        cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: " << mJTWorkers->at(id)->getServerPort() << endl;
+    }
     
-     if ( sendUdpPort(clientConnection, server_udp_port) == 0 ) {
+     if ( id == -1 || sendUdpPort(clientConnection, mJTWorkers->at(id)->getServerPort()) == 0 ) {
         clientConnection->close();
         clientConnection->deleteLater();
         releaseThread(id);
@@ -339,11 +315,6 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
     clientConnection->deleteLater();
     cout << "JackTrip HUB SERVER: Client TCP Connection Closed!" << endl;
 
-    // Spawn Thread to Pool
-    // --------------------
-    // Register JackTripWorker with the hub listener
-    delete mJTWorkers->at(id); // just in case the Worker was previously created
-    mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
     if (mIOStatTimeout > 0) {
         mJTWorkers->at(id)->setIOStatTimeout(mIOStatTimeout);
         mJTWorkers->at(id)->setIOStatStream(mIOStatStream);
@@ -352,37 +323,8 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
     mJTWorkers->at(id)->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate, mSimulatedDelayRel);
     mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
     mJTWorkers->at(id)->setUseRtUdpPriority(mUseRtUdpPriority);
-    // redirect port and spawn listener
-    cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
-    {
-        QMutexLocker lock(&mMutex);
-        mJTWorkers->at(id)->setJackTrip(id,
-                                        mActiveAddress[id].address,
-                                        server_udp_port,
-                                        mActiveAddress[id].port,
-                                        1,
-                                        m_connectDefaultAudioPorts
-                                        ); /// \todo temp default to 1 channel
-
-        //qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address << mActiveAddress[id].port;
-    }
-    //send one thread to the pool
     cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
-    mThreadPool.start(mJTWorkers->at(id), QThread::TimeCriticalPriority);
-    // wait until one is complete before another spawns
-    while (mJTWorkers->at(id)->isSpawning()) { QThread::msleep(10); }
-    mActiveAddress[id].clientName = mJTWorkers->at(id)->getAssignedClientName();
-    //mTotalRunningThreads++;
-    cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
-    cout << "===============================================================" << endl;
-    QThread::msleep(100);
-#ifdef WAIR // WAIR
-    if (isWAIR()) connectMesh(true); // invoked with -Sw
-#endif // endwhere
-
-    //qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
-
-    connectPatch(true, mActiveAddress[id].clientName);
+    mJTWorkers->at(id)->start();
 }
 
 void UdpHubListener::stopCheck()
@@ -595,47 +537,49 @@ void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 
 //*******************************************************************************
 // check by comparing 32-bit addresses
-int UdpHubListener::isNewAddress(QString address, uint16_t port)
+int UdpHubListener::getJackTripWorker(QString address, uint16_t port, QString &clientName)
 {
     QMutexLocker lock(&mMutex);
     bool busyAddress = false;
     int id = 0;
 
-    /*
-  while ( !busyAddress && (id<mThreadPool.activeThreadCount()) )
-  {
-    if ( address==mActiveAddress[id][0] &&  port==mActiveAddress[id][1]) { busyAddress = true; }
-    id++;
-  }
-  */
     for (int i = 0; i<gMaxThreads; i++) {
-        if ( address==mActiveAddress[i].address &&  port==mActiveAddress[i].port) {
+        if ( mJTWorkers->at(id) != nullptr && address == mJTWorkers->at(id)->getClientAddress() &&
+            port == mJTWorkers->at(id)->getServerPort() )
+        {
             id = i;
             busyAddress = true;
         }
     }
     if ( !busyAddress ) {
-        /*
-    mActiveAddress[id][0] = address;
-    mActiveAddress[id][1] = port;
-  } else {
-  */
         id = 0;
         bool foundEmptyAddress = false;
         while ( !foundEmptyAddress && (id<gMaxThreads) ) {
-            if ( mActiveAddress[id].address.isEmpty() &&  (mActiveAddress[id].port == 0) ) {
+            if ( mJTWorkers->at(id) == nullptr ) {
                 foundEmptyAddress = true;
-                mActiveAddress[id].address = address;
-                mActiveAddress[id].port = port;
-            }  else {
+            } else {
                 id++;
             }
+        }
+        if (!foundEmptyAddress) {
+            //Out of available threads.
+            return -1;
         }
     }
     if (!busyAddress) {
         mTotalRunningThreads++;
+        mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
     }
-    return ((busyAddress) ? -1 : id);
+    
+    cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
+    mJTWorkers->at(id)->setJackTrip(id,
+                                    address,
+                                    mBasePort + id,
+                                    port,
+                                    1,
+                                    m_connectDefaultAudioPorts
+                                    ); /// \todo temp default to 1 channel
+    return id;
 }
 
 
@@ -646,25 +590,38 @@ int UdpHubListener::getPoolID(QString address, uint16_t port)
     //for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
     for (int id = 0; id<gMaxThreads; id++ )
     {
-        if ( address==mActiveAddress[id].address &&  port==mActiveAddress[id].port)
+        if ( mJTWorkers->at(id) != nullptr && address == mJTWorkers->at(id)->getClientAddress() &&
+            port == mJTWorkers->at(id)->getServerPort() )
         { return id; }
     }
     return -1;
 }
 
+void UdpHubListener::registerClientWithPatcher(QString& clientName)
+{
+    cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
+    cout << "===============================================================" << endl;
+#ifdef WAIR // WAIR
+    if (isWAIR()) connectMesh(true); // invoked with -Sw
+#endif // endwhere
+    //qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
+    connectPatch(true, clientName);
+}
 
 //*******************************************************************************
-int UdpHubListener::releaseThread(int id)
+int UdpHubListener::releaseThread(int id, QString clientName)
 {
     QMutexLocker lock(&mMutex);
-    mActiveAddress[id].address = "";
-    mActiveAddress[id].port = 0;
     mTotalRunningThreads--;
 #ifdef WAIR // wair
     if (isWAIR()) connectMesh(false); // invoked with -Sw
 #endif // endwhere
-    connectPatch(false, mActiveAddress[id].clientName); // invoked with -p > 0
-    mActiveAddress[id].clientName = "";
+    //Don't bother notifying our patcher if we're shutting down.
+    if (!sSigInt && !mStopped && !clientName.isEmpty()) {
+        connectPatch(false, clientName); // invoked with -p > 0
+    }
+    mJTWorkers->at(id)->deleteLater();
+    mJTWorkers->replace(id, nullptr);
     return 0; /// \todo Check if we really need to return an argument here
 }
 
@@ -684,7 +641,7 @@ void UdpHubListener::enumerateRunningThreadIDs()
 {
     for (int id = 0; id<gMaxThreads; id++ )
     {
-        if ( !mActiveAddress[id].address.isEmpty() )
+        if ( mJTWorkers->at(id) != nullptr )
         { qDebug() << id; }
     }
 }
@@ -723,7 +680,6 @@ void UdpHubListener::stopAllThreads()
             iterator.next();
         }
     }
-    mThreadPool.waitForDone();
 }
 // TODO:
 // USE bool QAbstractSocket::isValid () const to check if socket is connect. if not, exit loop

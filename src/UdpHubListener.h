@@ -58,11 +58,11 @@
 class JackTripWorker; // forward declaration
 class Settings;
 
-typedef struct {
+/*typedef struct {
     QString address;
     int16_t port;
     QString clientName;
-} addressPortNameTriple;
+} addressPortNameTriple;*/
 
 /** \brief Hub UDP listener on the Server.
  *
@@ -83,7 +83,8 @@ public:
     /// \brief Stops the execution of the Thread
     void stop() { mStopped = true; }
 
-    int releaseThread(int id);
+    void registerClientWithPatcher(QString &clientName);
+    int releaseThread(int id, QString clientName = "");
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
     {
@@ -130,11 +131,11 @@ private:
    */
     //void sendToPoolPrototype(int id);
 
-    /** \brief Check if address is already handled, if not add to array
+    /** \brief Check if address is already handled and reuse or create a JackTripWorker as appropriate
    * \param address as string (IPv4 or IPv6)
-   * \return -1 if address is busy, id number if not
+   * \return id number of JackTripWorker
    */
-    int isNewAddress(QString address, uint16_t port);
+    int getJackTripWorker(QString address, uint16_t port, QString &clientName);
 
     /** \brief Returns the ID of the client in the pool. If the client
     * is not in the pool yet, returns -1.
@@ -147,14 +148,13 @@ private:
     //QHostAddress mPeerAddress; ///< The Peer Address
 
     //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
-    QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorker s
-    QThreadPool mThreadPool; ///< The Thread Pool
+    QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorkers
 
     SslServer mTcpServer;
     int mServerPort; //< Server known port number
     int mServerUdpPort; //< Server udp base port number
     int mBasePort;
-    addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool addresses
+    //addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool addresses
     //QHash<QString, uint16_t> mActiveAddressPortPair;
     
     bool mRequireAuth;

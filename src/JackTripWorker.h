@@ -40,14 +40,16 @@
 
 #include <iostream>
 
-#include <QThreadPool>
 #include <QObject>
-#include <QEventLoop>
+#include <QUdpSocket>
 #include <QHostAddress>
 #include <QMutex>
 
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
+#ifdef __JAMTEST__
+#include "JamTest.h"
+#endif
 
 //class JackTrip; // forward declaration
 class UdpHubListener; // forward declaration
@@ -64,9 +66,9 @@ class UdpHubListener; // forward declaration
  */
 // Note that it is not possible to start run() as an event loop. That has to be implemented
 // inside a QThread
-class JackTripWorker : public QObject, public QRunnable
+class JackTripWorker : public QObject
 {
-    Q_OBJECT; // QRunnable is not a QObject, so I have to inherit from QObject as well
+    Q_OBJECT;
 
 public:
     /// \brief The class constructor
@@ -74,12 +76,14 @@ public:
     /// \brief The class destructor
     virtual ~JackTripWorker();
 
-    /// \brief Implements the Thread Loop.
-    /// To start the thread, call start() ( DO NOT CALL run() ).
-    void run();
+    /// \brief Starts the jacktrip process
+    void start();
     /// \brief Check if the Thread is Spawning
     /// \return true is it is spawning, false if it's already running
-    bool isSpawning();
+    bool isSpawning() { QMutexLocker lock(&mMutex); return mSpawning; }
+    /// \brief Check if jacktrip is running
+    /// \return true if it is running, false if not
+    bool isRunning() { QMutexLocker lock(&mMutex); return mRunning; }
     /// \brief Sets the JackTripWorker properties
     /// \param id ID number
     /// \param address
@@ -111,18 +115,33 @@ public:
     void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
     
     QString getAssignedClientName() { return mAssignedClientName; }
+    uint16_t getServerPort() { return mServerPort; }
+    uint16_t getClientPort() { return mClientPort; }
+    QString getClientAddress() { return mClientAddress; }
     
 private slots:
     void slotTest()
     { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
-
+    void receivedDataUDP();
+    void udpTimerTick();
+    void jacktripStopped();
+    void alertPatcher();
 
 signals:
     void signalRemoveThread();
 
 private:
-    int setJackTripFromClientHeader(JackTrip& jacktrip);
     JackTrip::connectionModeT getConnectionModeFromHeader();
+    
+    QUdpSocket mUdpSockTemp;
+    QTimer mTimeoutTimer;
+    int mSleepTime;
+    int mElapsedTime;
+#ifdef __JAMTEST__
+    QScopedPointer<JamTest> mJackTrip;
+#else
+    QScopedPointer<JackTrip> mJackTrip;
+#endif
 
     UdpHubListener* mUdpHubListener; ///< Hub Listener Socket
     //QHostAddress mClientAddress; ///< Client Address
@@ -141,8 +160,8 @@ private:
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning;
-    bool mStopped;
-    QMutex mMutex; ///< Mutex to protect mSpawning
+    volatile bool mRunning;
+    QMutex mMutex; ///< Mutex to protect changes to jacktrip instance
 
     int mID; ///< ID thread number
     int mNumChans; ///< Number of Channels
