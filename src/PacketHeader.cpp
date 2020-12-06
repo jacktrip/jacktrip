@@ -155,12 +155,14 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
     }
 
     // Check Audio Bit Resolution
-    if ( peer_header->BitResolution != mHeader.BitResolution )
+    int bitResPeer  = static_cast<int>(peer_header->BitResolution);
+    int bitResLocal = static_cast<int>(mHeader.BitResolution);
+    if (bitResPeer == 40) { bitResPeer = 8; } // mu-law remote
+    if (bitResLocal == 40) { bitResLocal = 8; } // mu-law local
+    if ( bitResPeer != bitResLocal ) // for now we don't warn of mu-law mismatch, to allow server to be unaware
     {
-        std::cerr << "ERROR: Peer Audio Bit Resolution is  : "
-                  << static_cast<int>(peer_header->BitResolution) << endl;
-        std::cerr << "       Local Audio Bit Resolution is : "
-                  << static_cast<int>(mHeader.BitResolution) << endl;
+        std::cerr << "ERROR: Peer Audio Bit Resolution is  : " << bitResPeer << endl;
+        std::cerr << "       Local Audio Bit Resolution is : " << bitResLocal << endl;
         std::cerr << "Make sure both machines use the same Bit Resolution" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
