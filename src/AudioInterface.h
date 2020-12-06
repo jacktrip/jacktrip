@@ -63,7 +63,8 @@ public:
         BIT8  = 1, ///< 8 bits
         BIT16 = 2, ///< 16 bits (default)
         BIT24 = 3, ///< 24 bits
-        BIT32 = 4  ///< 32 bits
+        BIT32 = 4, ///< 32 bits
+        BIT8M = 5  ///< 8 bits mu-law
     };
 
     /// \brief Sampling Rates supported by JACK

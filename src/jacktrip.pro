@@ -152,7 +152,8 @@ HEADERS += DataProtocol.h \
            AudioInterface.h \
            compressordsp.h \
            limiterdsp.h \
-           freeverbdsp.h
+           freeverbdsp.h \
+           mulaw.h
 
 !nojack {
 HEADERS += JackAudioInterface.h

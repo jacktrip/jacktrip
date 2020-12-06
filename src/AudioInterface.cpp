@@ -40,6 +40,7 @@
 #include <iostream>
 #include <cmath>
 #include <assert.h>
+#include "mulaw.h"
 
 using std::cout; using std::endl;
 
@@ -546,14 +547,22 @@ void AudioInterface::fromSampleToBitConversion
     sample_t tmp_sample16;
     sample_t tmp_sample8;
     switch (targetBitResolution)
-    {
-    case BIT8 :
+      {
+      case BIT8 : {
         // 8bit integer between -128 to 127
         tmp_sample = std::max(-127.0, std::min(127.0, std::round( (*input) * 127.0 ))); // 2^7 = 128
         tmp_8 = static_cast<int8_t>(tmp_sample);
         std::memcpy(output, &tmp_8, 1); // 8bits = 1 bytes
-        break;
-    case BIT16 : {
+        break; }
+      case BIT8M : {
+        // 8bit mu-law
+        const double maxAmp16 = 32767.0; // 2^15 = 32768
+        double scaledSample = std::round( (*input) * maxAmp16 );
+        tmp_sample = std::max(-maxAmp16, std::min(maxAmp16, scaledSample));
+        tmp_8 = LinearToMuLawSample(short(tmp_sample));
+        std::memcpy(output, &tmp_8, 1); // 8bits = 1 bytes
+        break; }
+      case BIT16 : {
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
         const double maxAmp16 = 32767.0; // 2^15 = 32768
@@ -589,7 +598,7 @@ void AudioInterface::fromSampleToBitConversion
           }
         }
         break; }
-    case BIT24 :
+      case BIT24 : {
         // To convert to 24 bits, we first quantize the number to 16bit
         tmp_sample = (*input) * 32768.0; // 2^15 = 32768.0
         tmp_sample16 = floor(tmp_sample);
@@ -605,13 +614,13 @@ void AudioInterface::fromSampleToBitConversion
         // and the 8bit number in the third bite
         std::memcpy(output, &tmp_16, 2); // 16bits = 2 bytes
         std::memcpy(output+2, &tmp_u8, 1); // 8bits = 1 bytes
-        break;
-    case BIT32 :
+        break; }
+      case BIT32 : {
         tmp_sample = *input;
         // not necessary yet:
         // tmp_sample = std::max(-1.0, std::min(1.0, tmp_sample));
         std::memcpy(output, &tmp_sample, 4); // 32bit = 4 bytes
-        break;
+        break; }
     }
 }
 
@@ -630,17 +639,23 @@ void AudioInterface::fromBitToSampleConversion
     sample_t tmp_sample8;
     switch (sourceBitResolution)
     {
-    case BIT8 :
+    case BIT8 : {
         tmp_8 = *input;
         tmp_sample = static_cast<sample_t>(tmp_8) / 128.0;
         std::memcpy(output, &tmp_sample, 4); // 4 bytes
-        break;
-    case BIT16 :
+        break; }
+    case BIT8M : {
+        tmp_8 = *input;
+        short tmp_16 = MuLawToLinearSample(tmp_8);
+        tmp_sample = sample_t(double(tmp_16)/32768.0);
+        std::memcpy(output, &tmp_sample, 4); // 4 bytes
+        break; }
+    case BIT16 : {
         tmp_16 = *( reinterpret_cast<const int16_t*>(input) ); // *((int16_t*) input);
         tmp_sample = static_cast<sample_t>(tmp_16) / 32768.0;
         std::memcpy(output, &tmp_sample, 4); // 4 bytes
-        break;
-    case BIT24 :
+        break; }
+    case BIT24 : {
         // We first extract the 16bit and 8bit number from the 3 bytes
         tmp_16 = *( reinterpret_cast<const int16_t*>(input) );
         tmp_u8 = *( reinterpret_cast<const uint8_t*>(input+2) );
@@ -650,10 +665,10 @@ void AudioInterface::fromBitToSampleConversion
         tmp_sample8 = static_cast<sample_t>(tmp_u8) / 256.0;
         tmp_sample =  (tmp_sample16 +  tmp_sample8) / 32768.0;
         std::memcpy(output, &tmp_sample, 4); // 4 bytes
-        break;
-    case BIT32 :
+        break; }
+    case BIT32 : {
         std::memcpy(output, input, 4); // 4 bytes
-        break;
+        break; }
     }
 }
 
