@@ -101,7 +101,7 @@ DefaultHeader::DefaultHeader(JackTrip* jacktrip) :
     mHeader.SeqNumber = 0;
     mHeader.BufferSize = 0;
     mHeader.SamplingRate = 0;
-    mHeader.AudioSampleFormat = 0;
+    mHeader.AudioSampleFormat = AudioInterface::BIT16;
     //mHeader.NumInChannels = 0;
     //mHeader.NumOutChannels = 0;
     mHeader.NumChannels = 0;
