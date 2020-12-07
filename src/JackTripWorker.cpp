@@ -227,6 +227,7 @@ void JackTripWorker::run()
             mSimulatedJitterRate, mSimulatedDelayRel);
         jacktrip.setBroadcast(mBroadcastQueue);
         jacktrip.setUseRtUdpPriority(mUseRtUdpPriority);
+        jacktrip.setAudioSampleFormat(mAudioSampleFormat);
 
         if (gVerboseFlag) cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
         int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);

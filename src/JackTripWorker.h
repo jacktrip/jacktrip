@@ -106,7 +106,8 @@ public:
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
     void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
-    
+    void setAudioSampleFormat(AudioInterface::SampleFormatT sf) {gJackAudioSampleFormat = sf;}
+
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
     
@@ -149,7 +150,7 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
-    
+    AudioInterface::SampleFormatT mAudioSampleFormat;
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
 #ifdef WAIR // wair

@@ -688,11 +688,14 @@ UdpHubListener *Settings::getConfiguredHubServer()
         mSimulatedJitterRate, mSimulatedDelayRel);
     udpHub->setBroadcast(mBroadcastQueue);
     udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
-    
+
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
         udpHub->setIOStatStream(mIOStatStream);
     }
+
+    udpHub->setAudioSampleFormat(mAudioSampleFormat);
+
     return udpHub;
 }
 

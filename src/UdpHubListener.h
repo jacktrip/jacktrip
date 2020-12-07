@@ -167,7 +167,8 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
-    
+    AudioInterface::SampleFormatT mAudioSampleFormat;
+
 #ifdef WAIR // wair
     bool mWAIR;
     void connectMesh(bool spawn);
@@ -197,6 +198,8 @@ public :
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
     void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
+
+    void setAudioSampleFormat(AudioInterface::SampleFormatT sf) {mAudioSampleFormat = sf;}
 
 };
 

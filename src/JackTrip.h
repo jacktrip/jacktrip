@@ -365,7 +365,7 @@ public:
     uint8_t getAudioSampleFormat() const
     { return (mAudioSampleFormat); }
     uint8_t getAudioSampleSizeBytes() const
-    { return (mAudioSampleFormat == AudioInterface::BIT8M ? 1 : (uint8_t) (mAudioSampleFormat>>3)); }
+    { return (AudioInterface::GetAudioSampleSizeBytes(mAudioSampleFormat)); }
     unsigned int getNumInputChannels() const
     { return mNumChans; /*return mAudioInterface->getNumInputChannels();*/ }
     unsigned int getNumOutputChannels() const
@@ -405,6 +405,7 @@ public:
 
     size_t getSizeInBytesPerChannel() const
     { return mAudioInterface->getSizeInBytesPerChannel(); }
+
     int getHeaderSizeInBytes() const
     { return mPacketHeader->getHeaderSizeInBytes(); }
     virtual int getTotalAudioPacketSizeInBytes() const
@@ -430,6 +431,7 @@ public:
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueueLength = broadcast_queue;}
     void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
+    void setAudioSampleFormat(AudioInterface::SampleFormatT sf) { mAudioSampleFormat = sf; }
 
 public slots:
     /// \brief Slot to stop all the processes and threads

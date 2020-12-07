@@ -111,6 +111,8 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     mSimulatedDelayRel = 0.0;
 
     mUseRtUdpPriority = false;
+
+    mAudioSampleFormat = AudioInterface::BIT16;
 }
 
 
@@ -238,6 +240,7 @@ void UdpHubListener::receivedClientInfo(QTcpSocket *clientConnection)
     mSimulatedJitterRate, mSimulatedDelayRel);
     mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
     mJTWorkers->at(id)->setUseRtUdpPriority(mUseRtUdpPriority);
+    mJTWorkers->at(id)->setAudioSampleFormat(mAudioSampleFormat);
     // redirect port and spawn listener
     cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
     {
