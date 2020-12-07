@@ -214,8 +214,8 @@ public:
     virtual void setBufferStrategy(int BufferStrategy)
     { mBufferStrategy = BufferStrategy; }
     /// \brief Sets (override) Audio Bit Resolution after construction
-    virtual void setAudioAudioSampleFormat(AudioInterface::SampleFormatT AudioAudioSampleFormat)
-    { mAudioSampleFormat = AudioAudioSampleFormat; }
+    // virtual void setAudioAudioSampleFormat(AudioInterface::SampleFormatT AudioAudioSampleFormat)
+    // { mAudioSampleFormat = AudioAudioSampleFormat; }
     /// \brief Sets (override) Underrun Mode
     virtual void setUnderRunMode(underrunModeT UnderRunMode)
     { mUnderRunMode = UnderRunMode; }

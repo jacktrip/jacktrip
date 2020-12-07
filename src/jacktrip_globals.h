@@ -122,7 +122,7 @@ extern int gVerboseFlag; ///< Verbose mode flag declaration
 //*******************************************************************************
 /// \name JackAudio
 //@{
-static AudioInterface::SampleFormatT gJackAudioSampleFormat = AudioInterface::BIT32; ///< Audio Bit Resolution of the Jack Server
+const AudioInterface::SampleFormatT gJackAudioSampleFormat = AudioInterface::BIT32; ///< Audio Bit Resolution of the Jack Server
 const QString gJackDefaultClientName = "JackTrip";
 const int gMaxRemoteNameLength = 64;
 //@}

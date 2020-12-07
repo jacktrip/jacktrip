@@ -171,7 +171,6 @@ private:
     int mNumNetRevChans; ///<  Number of Network Audio Channels (network comb filters
 #endif // endwhere
     int mNumFrames; ///< Buffer block size, in samples
-    AudioInterface::SampleFormatT mAudioSampleFormat; ///< Bit resolution (audioAudioSampleFormatT) mode
 
     jack_client_t* mClient; ///< Jack Client
     QString mClientName; ///< Jack Client Name

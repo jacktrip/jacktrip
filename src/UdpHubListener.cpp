@@ -130,9 +130,9 @@ UdpHubListener::~UdpHubListener()
 
 
 //*******************************************************************************
-// Now that the first handshake is with TCP server, if the addreess/peer port of
+// Now that the first handshake is with TCP server, if the address/peer port of
 // the client is already on the thread pool, it means that a new connection is
-// requested (the old was desconnected). So we have to remove that thread from
+// requested (the old was disconnected). So we have to remove that thread from
 // the pool and then connect again.
 void UdpHubListener::start()
 {

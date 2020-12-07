@@ -77,7 +77,6 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
     #ifdef WAIR // WAIR
     mNumNetRevChans(NumNetRevChans),
     #endif // endwhere
-    mAudioSampleFormat(audioSampleFormat),
     mClient(NULL),
     mClientName(ClientName),
     mBroadcast(false),

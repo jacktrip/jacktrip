@@ -50,14 +50,14 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
                                #ifdef WAIR // wair
                                int NumNetRevChans,
                                #endif // endwhere
-                               SampleFormatT sampleFormat) :
+                               SampleFormatT audioSampleFormat) :
     mJackTrip(jacktrip),
     mNumInChans(NumInChans), mNumOutChans(NumOutChans),
     #ifdef WAIR // WAIR
     mNumNetRevChans(NumNetRevChans),
     #endif // endwhere
-    mAudioSampleFormat(sampleFormat),
-    mAudioSampleSizeBytes(AudioInterface::GetAudioSampleSizeBytes(sampleFormat)),
+    mAudioSampleFormat(audioSampleFormat),
+    mAudioSampleSizeBytes(AudioInterface::GetAudioSampleSizeBytes(audioSampleFormat)),
     mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
     mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false), mProcessingAudio(false)
 {

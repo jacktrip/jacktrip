@@ -106,7 +106,10 @@ public:
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
     void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
-    void setAudioSampleFormat(AudioInterface::SampleFormatT sf) {gJackAudioSampleFormat = sf;}
+    void setAudioSampleFormat(AudioInterface::SampleFormatT sf) {mAudioSampleFormat = sf;}
+    // JOS understanding at the moment:
+    // jacktrip_globals.h::gJackAudioSampleFormat is for JACK processing on the server
+    // mAudioSampleFormat (new) is for outgoing audio packets over the network
 
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
