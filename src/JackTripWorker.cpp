@@ -219,6 +219,7 @@ void JackTripWorker::start()
     }
     mTimeoutTimer.setInterval(mSleepTime);
     connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTripWorker::udpTimerTick);
+    mElapsedTime = 0;
     mTimeoutTimer.start();
 }  
     
@@ -340,7 +341,9 @@ void JackTripWorker::udpTimerTick()
     if (gVerboseFlag) cout << "---------> ELAPSED TIME: " << mElapsedTime << endl;
     //Check if we've timed out.
     if (gTimeOutMultiThreadedServer > 0 && mElapsedTime >= gTimeOutMultiThreadedServer) {
+        std::cerr << "--->JackTripWorker: is not receiving Datagrams (timeout)" << endl;
         mTimeoutTimer.stop();
+        mUdpSockTemp.close();
         mSpawning = false;
         mUdpHubListener->releaseThread(mID);
     }
