@@ -100,6 +100,9 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
 
+    std::cerr << "The JOS branch of JackTrip is presently down.  Please use the beta 1.3 version instead.\n";
+    exit(0);
+
     try {
         Settings settings;
         settings.parseInput(argc, argv);
