@@ -84,7 +84,7 @@ public:
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
-   * \param AudioAudioSampleFormat Audio Sample Size in bits
+   * \param AudioAudioSampleFormat Audio Sample Format code
    */
     AudioInterface(JackTrip* jacktrip,
                    int NumInChans, int NumOutChans,
@@ -201,12 +201,14 @@ public:
     /// \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
     /// \return  AudioInterface::samplingRateT enum type
     virtual samplingRateT getSampleRateType() const;
-    /** \brief Get the Audio Sample Size in bits
+    /** \brief Get the Audio Sample Format
      *
-     * This is one of the audioAudioSampleFormatT set in construction
+     * Get the current Audio Sample Format, such as BIT8, BIT8M, BIT16, BIT24, or BIT32.
      */
     virtual SampleFormatT getAudioSampleFormat() const { return mAudioSampleFormat; }
+    /// \brief Get the audio sample size in bytes given an audio format
     static int GetAudioSampleSizeBytes(SampleFormatT fmt) { return  (fmt == BIT8M ? 1 : int(fmt)>>3); }
+    /// \brief Get current audio sample size in bytes
     virtual int getAudioSampleSizeBytes() const { return  (mAudioSampleSizeBytes); }
     /** \brief Helper function to get the sample rate (in Hz) for a
    * JackAudioInterface::samplingRateT
