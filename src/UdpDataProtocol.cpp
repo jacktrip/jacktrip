@@ -450,7 +450,7 @@ void UdpDataProtocol::run()
     std::memset(mAudioPacket, 0, audio_packet_size); // set buffer to 0
     mBuffer.resize(audio_packet_size, 0);
     mChans = mJackTrip->getNumChannels();
-    mSmplSize = mJackTrip->getAudioSampleSizeBytes();
+    mSampleSizeBytes = mJackTrip->getAudioSampleSizeBytes();
 
     // Setup Full Packet buffer
     int full_packet_size = mJackTrip->getPacketSizeInBytes();
@@ -564,7 +564,7 @@ void UdpDataProtocol::run()
 
         int peer_chans = mJackTrip->getPeerNumChannels(full_redundant_packet);
         full_packet_size = mJackTrip->getHeaderSizeInBytes()
-                           + mJackTrip->getPeerBufferSize(full_redundant_packet) * peer_chans * mSmplSize;
+                           + mJackTrip->getPeerBufferSize(full_redundant_packet) * peer_chans * mSampleSizeBytes;
         /*
         cout << "peer sizes: " << mJackTrip->getHeaderSizeInBytes()
              << " + " << mJackTrip->getPeerBufferSize(full_redundant_packet)
@@ -776,7 +776,7 @@ void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
 
     int peer_chans = mJackTrip->getPeerNumChannels(full_redundant_packet);
     int N = mJackTrip->getPeerBufferSize(full_redundant_packet);
-    int host_buf_size = N * mChans * mSmplSize;
+    int host_buf_size = N * mChans * mSampleSizeBytes;
     int hdr_size = mJackTrip->getHeaderSizeInBytes();
     int gap_size = mInitialState ? 0 : (lost - redun_last_index) * host_buf_size;
 
@@ -794,7 +794,7 @@ void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
             int C = qMin(mChans, peer_chans);
             for (int n=0; n<N; ++n) {
                 for (int c=0; c<C; ++c) {
-                    memcpy(dst + (n*mChans + c)*mSmplSize, src + (n + c*N)*mSmplSize, mSmplSize);
+                    memcpy(dst + (n*mChans + c)*mSampleSizeBytes, src + (n + c*N)*mSampleSizeBytes, mSampleSizeBytes);
                 }
             }
             src = dst;
@@ -849,11 +849,11 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
     int8_t* src = mAudioPacket;
     if (1 != mChans) {
         // Convert internal interleaved layout to non-interleaved
-        int N = getAudioPacketSizeInBytes() / mChans / mSmplSize;
+        int N = getAudioPacketSizeInBytes() / mChans / mSampleSizeBytes;
         int8_t* dst = mBuffer.data();
         for (int n=0; n<N; ++n) {
             for (int c=0; c<mChans; ++c) {
-                memcpy(dst + (n + c*N)*mSmplSize, src + (n*mChans + c)*mSmplSize, mSmplSize);
+                memcpy(dst + (n + c*N)*mSampleSizeBytes, src + (n*mChans + c)*mSampleSizeBytes, mSampleSizeBytes);
             }
         }
         src = dst;

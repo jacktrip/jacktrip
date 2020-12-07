@@ -69,7 +69,7 @@ public:
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
-   * \param AudioAudioSampleFormat Audio Sample Resolutions in bits
+   * \param AudioAudioSampleFormat Audio Sample Format
    * \param ClientName Client name in Jack
    */
     JackAudioInterface(JackTrip* jacktrip,

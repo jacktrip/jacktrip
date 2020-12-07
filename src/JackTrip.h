@@ -126,7 +126,7 @@ public:
    * \param DataProtocolType JackTrip::dataProtocolT
    * \param NumChans Number of Audio Channels (same for inputs and outputs)
    * \param BufferQueueLength Audio Buffer for receiving packets
-   * \param AudioAudioSampleFormat Audio Sample Resolutions in bits
+   * \param AudioAudioSampleFormat Audio Sample Format
    * \param redundancy redundancy factor for network data
    */
     JackTrip(jacktripModeT JacktripMode = CLIENT,

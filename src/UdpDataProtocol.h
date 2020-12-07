@@ -214,7 +214,7 @@ private:
     int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
     std::vector<int8_t> mBuffer;
     int mChans;
-    int mSmplSize;
+    int mSampleSizeBytes;
     int mLastOutOfOrderCount;
     bool mInitialState;
 
