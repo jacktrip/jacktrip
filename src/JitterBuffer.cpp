@@ -49,11 +49,11 @@ using std::cout; using std::endl;
 
 //*******************************************************************************
 JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strategy,
-                                          int bcast_qlen, int channels, int bit_res) :
+                                          int bcast_qlen, int channels, int sample_size_bytes) :
     RingBuffer(0, 0)
 {
-    int total_size = sample_rate * channels * bit_res * 2; // 2 secs of audio
-    int slot_size = buf_samples * channels * bit_res;
+    int total_size = sample_rate * channels * sample_size_bytes * 2; // 2 secs of audio
+    int slot_size = buf_samples * channels * sample_size_bytes;
     mSlotSize = slot_size;
     mInSlotSize = slot_size;
     if (0 < qlen) {
@@ -68,8 +68,8 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
     mTotalSize = total_size;
     mBroadcastLatency = bcast_qlen * mSlotSize;
     mNumChannels = channels;
-    mAudioSampleFormat = bit_res;
-    mMinStepSize = channels * bit_res;
+    mAudioSampleSizeBytes = sample_size_bytes;
+    mMinStepSize = channels * sample_size_bytes;
     mFPP = buf_samples;
     mSampleRate = sample_rate;
     mActive = false;
@@ -265,7 +265,7 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
         int delta = mBroadcastPositionCorr / mMinStepSize;
         if (0 != delta) {
             mBroadcastPositionCorr -= delta * mMinStepSize;
-            if (2 == mAudioSampleFormat && (int32_t)(mWritePosition - mBroadcastPosition) > len) {
+            if (mAudioSampleSizeBytes && (int32_t)(mWritePosition - mBroadcastPosition) > len) {
                 // interpolate
                 len += delta * mMinStepSize;
             }

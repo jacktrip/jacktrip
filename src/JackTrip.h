@@ -150,7 +150,7 @@ public:
 
     /// \brief The class destructor
     virtual ~JackTrip();
-    
+
     static void sigIntHandler(__attribute__((unused)) int unused)
     { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
     static bool sSigInt;
@@ -251,7 +251,7 @@ public:
     /// \brief Set the number of audio channels
     virtual void setNumChannels(int num_chans)
     { mNumChans = num_chans; }
-    
+
     virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
 
@@ -364,8 +364,8 @@ public:
 
     uint8_t getAudioSampleFormat() const
     { return (mAudioSampleFormat); }
-    uint8_t getAudioSampleSize() const
-    { return (mAudioSampleFormat == AudioInterface::BIT8M ? 8 : mAudioSampleFormat*8); }
+    uint8_t getAudioSampleSizeBytes() const
+    { return (mAudioSampleFormat == AudioInterface::BIT8M ? 1 : (uint8_t) mAudioSampleFormat); }
     unsigned int getNumInputChannels() const
     { return mNumChans; /*return mAudioInterface->getNumInputChannels();*/ }
     unsigned int getNumOutputChannels() const
@@ -461,7 +461,7 @@ public slots:
     void slotReceivedConnectionFromPeer()
     { mReceivedConnection = true; emit signalReceivedConnectionFromPeer(); }
     void onStatTimer();
-    
+
 private slots:
     void receivedConnectionTCP();
     void receivedDataTCP();
@@ -559,7 +559,7 @@ private:
 
     QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
-    
+
     QTimer mTimeoutTimer;
     int mSleepTime;
     int mElapsedTime;

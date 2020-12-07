@@ -161,7 +161,7 @@ void JackTrip::setupAudio(
 {
     // Check if mAudioInterface has already been created or not
     if (mAudioInterface != NULL)  { // if it has been created, disconnet it from JACK and delete it
-        cout << "WARINING: JackAudio interface was setup already:" << endl;
+        cout << "WARNING: JackAudio interface was setup already:" << endl;
         cout << "It will be erased and setup again." << endl;
         cout << gPrintSeparator << endl;
         closeAudio();
@@ -346,7 +346,8 @@ void JackTrip::setupRingBuffers()
             }
             mReceiveRingBuffer = new JitterBuffer(mAudioBufferSize, mBufferQueueLength,
                                         mSampleRate, mBufferStrategy,
-                                        mBroadcastQueueLength, mNumChans, mAudioSampleFormat);
+                                        mBroadcastQueueLength, mNumChans,
+                                        AudioInterface::GetAudioSampleSizeBytes(mAudioSampleFormat));
         }
         /*
     mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,

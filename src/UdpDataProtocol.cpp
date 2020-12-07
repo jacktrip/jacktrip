@@ -444,13 +444,13 @@ void UdpDataProtocol::run()
 
     if (gVerboseFlag) std::cout << "    UdpDataProtocol:run" << mRunMode << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy Variables" << std::endl;
     // Setup Audio Packet buffer
-    size_t audio_packet_size = getAudioPacketSizeInBites();
+    size_t audio_packet_size = getAudioPacketSizeInBytes();
     //cout << "audio_packet_size: " << audio_packet_size << endl;
     mAudioPacket = new int8_t[audio_packet_size];
     std::memset(mAudioPacket, 0, audio_packet_size); // set buffer to 0
     mBuffer.resize(audio_packet_size, 0);
     mChans = mJackTrip->getNumChannels();
-    mSmplSize = mJackTrip->getAudioSampleSize();
+    mSmplSize = mJackTrip->getAudioSampleSizeBytes();
 
     // Setup Full Packet buffer
     int full_packet_size = mJackTrip->getPacketSizeInBytes();
@@ -849,7 +849,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
     int8_t* src = mAudioPacket;
     if (1 != mChans) {
         // Convert internal interleaved layout to non-interleaved
-        int N = getAudioPacketSizeInBites() / mChans / mSmplSize;
+        int N = getAudioPacketSizeInBytes() / mChans / mSmplSize;
         int8_t* dst = mBuffer.data();
         for (int n=0; n<N; ++n) {
             for (int c=0; c<mChans; ++c) {

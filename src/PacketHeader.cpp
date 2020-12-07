@@ -155,17 +155,17 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
     }
 
     // Check Audio Sample Format
-    int sampleFormatPeer  = static_cast<int>(peer_header->AudioSampleFormat);
-    int sampleFormatLocal = static_cast<int>(mHeader.AudioSampleFormat);
-    int sampleSizePeer = (sampleFormatPeer == AudioInterface::BIT8M ? 8 : sampleFormatPeer * 8); // sample size in bits
-    int sampleSizeLocal = (sampleFormatLocal == AudioInterface::BIT8M ? 8 : sampleFormatLocal * 8);
+    AudioInterface::SampleFormatT sampleFormatPeer  = static_cast<AudioInterface::SampleFormatT>(peer_header->AudioSampleFormat);
+    AudioInterface::SampleFormatT sampleFormatLocal = static_cast<AudioInterface::SampleFormatT>(mHeader.AudioSampleFormat);
+    int sampleSizePeer = AudioInterface::GetAudioSampleSizeBytes(sampleFormatPeer);
+    int sampleSizeLocal =  AudioInterface::GetAudioSampleSizeBytes(sampleFormatLocal);
     if ( sampleSizePeer != sampleSizeLocal ) // no warning if peer and local are both 8 bits but different formats
     {
-        std::cerr << "ERROR: Peer Audio Sample Size is  : " << sampleSizePeer << endl;
-        std::cerr << "       Local Audio Sample Size is : " << sampleSizeLocal << endl;
-        std::cerr << "Make sure both machines use the same Sample Size" << endl;
-        std::cerr << gPrintSeparator << endl;
-        error = true;
+      std::cerr << "ERROR: Peer Audio Sample Size is  : " << sampleSizePeer << " bytes\n";
+      std::cerr << "       Local Audio Sample Size is : " << sampleSizeLocal << " bytes\n";
+      std::cerr << "Make sure both machines use the same Sample Size" << endl;
+      std::cerr << gPrintSeparator << endl;
+      error = true;
     }
 
     // Exit program if error

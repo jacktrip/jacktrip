@@ -44,7 +44,7 @@ class JitterBuffer : public RingBuffer
 {
 public:
     JitterBuffer(int buf_samples, int qlen, int sample_rate, int strategy,
-                                int bcast_qlen, int channels, int bit_res);
+                                int bcast_qlen, int channels, int sample_size_bytes);
     virtual ~JitterBuffer() {}
 
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen);
@@ -59,7 +59,7 @@ protected:
 protected:
     int mMaxLatency;
     int mNumChannels;
-    int mAudioSampleFormat;
+    int mAudioSampleSizeBytes;
     int mMinStepSize;
     int mFPP;
     int mSampleRate;

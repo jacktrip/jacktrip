@@ -59,12 +59,13 @@ class AudioInterface
 public:
 
     /// \brief Enum for Audio Resolution in bits
+    // For backward compatibility, the first four formats must be their bit-lengths:
     enum SampleFormatT {
-        BIT8  = 1, ///< 8 bits
-        BIT16 = 2, ///< 16 bits (default)
-        BIT24 = 3, ///< 24 bits
-        BIT32 = 4, ///< 32 bits
-        BIT8M = 5  ///< 8 bits mu-law
+        BIT8  = 8, ///< 8 bits
+        BIT16 = 16, ///< 16 bits (default)
+        BIT24 = 24, ///< 24 bits
+        BIT32 = 32, ///< 32 bits
+        BIT8M = 40  ///< 8 bits mu-law
     };
 
     /// \brief Sampling Rates supported by JACK
@@ -201,11 +202,12 @@ public:
     /// \return  AudioInterface::samplingRateT enum type
     virtual samplingRateT getSampleRateType() const;
     /** \brief Get the Audio Sample Size in bits
-   *
+     *
      * This is one of the audioAudioSampleFormatT set in construction
      */
     virtual SampleFormatT getAudioSampleFormat() const { return mAudioSampleFormat; }
-    virtual int getAudioSampleSize() const { return  (mAudioSampleSize); }
+    static int GetAudioSampleSizeBytes(SampleFormatT fmt) { return  (fmt == BIT8M ? 1 : int(fmt)>>3); }
+    virtual int getAudioSampleSizeBytes() const { return  (mAudioSampleSizeBytes); }
     /** \brief Helper function to get the sample rate (in Hz) for a
    * JackAudioInterface::samplingRateT
    * \param rate_type  JackAudioInterface::samplingRateT enum type
@@ -234,7 +236,7 @@ private:
 #endif // endwhere
     QVarLengthArray<sample_t*> mInBufCopy; ///< needed in callback() to modify JACK audio input
     AudioInterface::SampleFormatT mAudioSampleFormat; ///< Bit resolution (audioAudioSampleFormatT) mode
-    int mAudioSampleSize; ///< Audio Sample Size in bits
+    int mAudioSampleSizeBytes; ///< Audio Sample Size in bits
     uint32_t mSampleRate; ///< Sampling Rate
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mBufferSizeInSamples; ///< Buffer size in samples

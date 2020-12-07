@@ -225,7 +225,7 @@ uint32_t JackAudioInterface::getBufferSizeInSamples() const
 //*******************************************************************************
 size_t JackAudioInterface::getSizeInBytesPerChannel() const
 {
-    return (getBufferSizeInSamples() * getAudioSampleSize());
+    return (getBufferSizeInSamples() * getAudioSampleSizeBytes());
 }
 
 //*******************************************************************************

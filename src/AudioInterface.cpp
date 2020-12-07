@@ -57,7 +57,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
     mNumNetRevChans(NumNetRevChans),
     #endif // endwhere
     mAudioSampleFormat(sampleFormat),
-    mAudioSampleSize(sampleFormat==BIT8M ? 8 : sampleFormat*8),
+    mAudioSampleSizeBytes(AudioInterface::GetAudioSampleSizeBytes(sampleFormat)),
     mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
     mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false), mProcessingAudio(false)
 {
@@ -210,7 +210,7 @@ void AudioInterface::setup()
 //*******************************************************************************
 size_t AudioInterface::getSizeInBytesPerChannel() const
 {
-  return (getBufferSizeInSamples() * getAudioSampleSize());
+  return (getBufferSizeInSamples() * getAudioSampleSizeBytes());
 }
 
 
@@ -406,7 +406,7 @@ void AudioInterface::broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
                 fromBitToSampleConversion(
                             // use interleaved channel layout
                             //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
-                            &mOutputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                                          &mOutputPacket[(j*mAudioSampleSizeBytes*mNumOutChans) + (i*mAudioSampleSizeBytes)],
                         &tmp_sample[j], mAudioSampleFormat );
             }
         }
@@ -455,7 +455,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
                 fromBitToSampleConversion(
                             // use interleaved channel layout
                             //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
-                            &mOutputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                                          &mOutputPacket[(j*mAudioSampleSizeBytes*mNumOutChans) + (i*mAudioSampleSizeBytes)],
                         &tmp_sample[j], mAudioSampleFormat );
             }
         }
@@ -510,7 +510,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
                             &tmp_result,
                             // use interleaved channel layout
                             //&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
-                            &mInputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                                          &mInputPacket[(j*mAudioSampleSizeBytes*mNumOutChans) + (i*mAudioSampleSizeBytes)],
                         mAudioSampleFormat );
             }
         }
