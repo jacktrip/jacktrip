@@ -243,24 +243,29 @@ void Settings::parseInput(int argc, char** argv)
             if (gVerboseFlag) std::cout << "SETTINGS: argument parsed for TCP Peer Port: " << mPeerPortNum << std::endl;
             break;
         case 'b':
-            //-------------------------------------------------------
-            if (strlen(optarg) > 1 && tolower(optarg[1]) == 'm') {
-              mAudioBitResolution = AudioInterface::BIT8M;
-            } else if (atoi(optarg) == 8) {
-              mAudioBitResolution = AudioInterface::BIT8;
-            } else if (atoi(optarg) == 16) {
-                mAudioBitResolution = AudioInterface::BIT16;
-            } else if (atoi(optarg) == 24) {
-                mAudioBitResolution = AudioInterface::BIT24;
-            } else if (atoi(optarg) == 32) {
-                mAudioBitResolution = AudioInterface::BIT32;
-            } else {
-                printUsage();
-                std::cerr << "--bitres ERROR: Bit resolution: "
-                          << atoi(optarg) << " is not supported." << endl;
-                std::exit(1);
-            }
-            break;
+          //-------------------------------------------------------
+          if (strlen(optarg) > 1 && tolower(optarg[1]) == 'm') {
+            mAudioBitResolution = AudioInterface::BIT8M;
+            if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 8-BIT MU-LAW\n";
+          } else if (atoi(optarg) == 8) {
+            mAudioBitResolution = AudioInterface::BIT8;
+            if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 8-BIT LINEAR FIXED-POINT\n";
+          } else if (atoi(optarg) == 16) {
+            mAudioBitResolution = AudioInterface::BIT16;
+            if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 16-BIT LINEAR FIXED-POINT\n";
+          } else if (atoi(optarg) == 24) {
+            mAudioBitResolution = AudioInterface::BIT24;
+            if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 24-BIT LINEAR FIXED-POINT\n";
+          } else if (atoi(optarg) == 32) {
+            mAudioBitResolution = AudioInterface::BIT32;
+            if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 32-BIT FLOATING-POINT\n";
+          } else {
+            printUsage();
+            std::cerr << "--bitres ERROR: Bit resolution: "
+                      << atoi(optarg) << " is not supported." << endl;
+            std::exit(1);
+          }
+          break;
         case 'q':
             //-------------------------------------------------------
             if (0 == strncmp(optarg, "auto", 4)) {
