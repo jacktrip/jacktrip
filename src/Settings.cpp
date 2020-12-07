@@ -74,7 +74,7 @@ Settings::Settings() :
     mDataProtocol(JackTrip::UDP),
     mNumChans(2),
     mBufferQueueLength(gDefaultQueueLength),
-    mAudioBitResolution(AudioInterface::BIT16),
+    mAudioSampleFormat(AudioInterface::BIT16),
     mBindPortNum(gDefaultPort), mPeerPortNum(gDefaultPort),
     mServerUdpPortNum(0),
     mUnderrunMode(JackTrip::WAVETABLE),
@@ -245,19 +245,19 @@ void Settings::parseInput(int argc, char** argv)
         case 'b':
           //-------------------------------------------------------
           if (strlen(optarg) > 1 && tolower(optarg[1]) == 'm') {
-            mAudioBitResolution = AudioInterface::BIT8M;
+            mAudioSampleFormat = AudioInterface::BIT8M;
             if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 8-BIT MU-LAW\n";
           } else if (atoi(optarg) == 8) {
-            mAudioBitResolution = AudioInterface::BIT8;
+            mAudioSampleFormat = AudioInterface::BIT8;
             if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 8-BIT LINEAR FIXED-POINT\n";
           } else if (atoi(optarg) == 16) {
-            mAudioBitResolution = AudioInterface::BIT16;
+            mAudioSampleFormat = AudioInterface::BIT16;
             if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 16-BIT LINEAR FIXED-POINT\n";
           } else if (atoi(optarg) == 24) {
-            mAudioBitResolution = AudioInterface::BIT24;
+            mAudioSampleFormat = AudioInterface::BIT24;
             if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 24-BIT LINEAR FIXED-POINT\n";
           } else if (atoi(optarg) == 32) {
-            mAudioBitResolution = AudioInterface::BIT32;
+            mAudioSampleFormat = AudioInterface::BIT32;
             if (gVerboseFlag) std::cout << "SETTINGS: bit resolution = 32-BIT FLOATING-POINT\n";
           } else {
             printUsage();
@@ -571,8 +571,8 @@ void Settings::parseInput(int argc, char** argv)
       std::exit(1);
     }
     if (mAudioTester.getEnabled()
-        && (mAudioBitResolution != AudioInterface::BIT16)
-        && (mAudioBitResolution != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
+        && (mAudioSampleFormat != AudioInterface::BIT16)
+        && (mAudioSampleFormat != AudioInterface::BIT32) ) { // BIT32 not tested but should be ok
       // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
       std::cerr << "*** --examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 presently supported for audio latency measurement.\n\n";
       std::exit(1);
@@ -616,7 +616,7 @@ void Settings::printUsage()
     cout << " -B, --bindport        #                  Set only the bind port number (default: " << gDefaultPort << ")" << endl;
     cout << " -P, --peerport        #                  Set only the peer port number (default: " << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
-    cout << " -b, --bitres      # (8, 8m, 16, 24, 32)  Audio Bit Rate Resolutions (default: 16, 32 uses floating-point, 8m uses mu-law)" << endl;
+    cout << " -b, --bitres      # (8, 8m, 16, 24, 32)  Audio Bit Resolutions (default: 16, 32 uses floating-point, 8m uses mu-law)" << endl;
     cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -t, --timeout                            Quit after 10 seconds of no network activity" << endl;
@@ -706,7 +706,7 @@ JackTrip *Settings::getConfiguredJackTrip()
 #ifdef WAIR // wair
                                       mNumNetRevChans,
 #endif // endwhere
-                                      mBufferQueueLength, mRedundancy, mAudioBitResolution,
+                                      mBufferQueueLength, mRedundancy, mAudioSampleFormat,
                                       /*DataProtocol::packetHeaderTypeT PacketHeaderType = */DataProtocol::DEFAULT,
                                       /*underrunModeT UnderRunMode = */ mUnderrunMode,
                                       /* int receiver_bind_port = */ mBindPortNum,

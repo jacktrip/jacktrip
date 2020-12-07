@@ -65,20 +65,19 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
                                        #ifdef WAIR // wair
                                        int NumNetRevChans,
                                        #endif // endwhere
-                                       AudioInterface::audioBitResolutionT AudioBitResolution,
+                                       AudioInterface::SampleFormatT audioSampleFormat,
                                        QString ClientName) :
     AudioInterface(jacktrip,
                    NumInChans, NumOutChans,
                    #ifdef WAIR // wair
                    NumNetRevChans,
                    #endif // endwhere
-                   AudioBitResolution),
+                   audioSampleFormat),
     mNumInChans(NumInChans), mNumOutChans(NumOutChans),
     #ifdef WAIR // WAIR
     mNumNetRevChans(NumNetRevChans),
     #endif // endwhere
-    //mAudioBitResolution(AudioBitResolution*8),
-    mBitResolutionMode(AudioBitResolution),
+    mAudioSampleFormat(audioSampleFormat),
     mClient(NULL),
     mClientName(ClientName),
     mBroadcast(false),
@@ -226,7 +225,7 @@ uint32_t JackAudioInterface::getBufferSizeInSamples() const
 //*******************************************************************************
 size_t JackAudioInterface::getSizeInBytesPerChannel() const
 {
-    return (getBufferSizeInSamples() * getAudioBitResolution()/8);
+    return (getBufferSizeInSamples() * getAudioSampleSize());
 }
 
 //*******************************************************************************
@@ -489,7 +488,7 @@ void JackAudioInterface::setRingBuffers
 
 //*******************************************************************************
 // Before sending and reading to Jack, we have to round to the sample resolution
-// that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
+// that the program is using. Jack uses 32 bits (gJackAudioSampleFormat in globals.h)
 // by default
 /*
 void JackAudioInterface::computeNetworkProcessFromNetwork()
@@ -515,9 +514,9 @@ void JackAudioInterface::computeNetworkProcessFromNetwork()
       // Change the bit resolution on each sample
       //cout << tmp_sample[j] << endl;
       fromBitToSampleConversion(&mOutputPacket[(i*mSizeInBytesPerChannel)
-                 + (j*mBitResolutionMode)],
+                 + (j*mAudioSampleSize)],
         &tmp_sample[j],
-        mBitResolutionMode);
+        mAudioSampleFormat);
     }
   }
 }
@@ -547,8 +546,8 @@ void JackAudioInterface::computeNetworkProcessToNetwork()
       tmp_result = tmp_sample[j] + tmp_process_sample[j];
       fromSampleToBitConversion(&tmp_result,
         &mInputPacket[(i*mSizeInBytesPerChannel)
-                + (j*mBitResolutionMode)],
-        mBitResolutionMode);
+                + (j*mAudioSampleSize)],
+        mAudioSampleFormat);
     }
   }
   // Send Audio buffer to RingBuffer (these goes out as outgoing packets)

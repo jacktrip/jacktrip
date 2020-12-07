@@ -327,13 +327,13 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
 
     int PeerBufferSize = jacktrip.getPeerBufferSize(full_packet);
     int PeerSamplingRate = jacktrip.getPeerSamplingRate(full_packet);
-    int PeerBitResolution = jacktrip.getPeerBitResolution(full_packet);
+    int PeerAudioSampleFormat = jacktrip.getPeerAudioSampleFormat(full_packet);
     int PeerNumChannels = jacktrip.getPeerNumChannels(full_packet);
     int PeerConnectionMode = jacktrip.getPeerConnectionMode(full_packet);
 
     if (gVerboseFlag) cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;
     if (gVerboseFlag) cout << "--->JackTripWorker: getPeerSamplingRate = " << PeerSamplingRate << endl;
-    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerBitResolution = " << PeerBitResolution << endl;
+    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerAudioSampleFormat = " << PeerAudioSampleFormat << endl;
     cout << "--->JackTripWorker: PeerNumChannels = " << PeerNumChannels << endl;
     if (gVerboseFlag) cout << "--->JackTripWorker: getPeerConnectionMode = " << PeerConnectionMode << endl;
 

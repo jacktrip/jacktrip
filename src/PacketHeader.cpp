@@ -101,7 +101,7 @@ DefaultHeader::DefaultHeader(JackTrip* jacktrip) :
     mHeader.SeqNumber = 0;
     mHeader.BufferSize = 0;
     mHeader.SamplingRate = 0;
-    mHeader.BitResolution = 0;
+    mHeader.AudioSampleFormat = 0;
     //mHeader.NumInChannels = 0;
     //mHeader.NumOutChannels = 0;
     mHeader.NumChannels = 0;
@@ -115,7 +115,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
     mHeader.TimeStamp = PacketHeader::usecTime();
     mHeader.BufferSize = mJackTrip->getBufferSizeInSamples();
     mHeader.SamplingRate = mJackTrip->getSampleRateType ();
-    mHeader.BitResolution = mJackTrip->getAudioBitResolution();
+    mHeader.AudioSampleFormat = mJackTrip->getAudioSampleFormat();
     mHeader.NumChannels = mJackTrip->getNumChannels();
     mHeader.ConnectionMode = static_cast<int>(mJackTrip->getConnectionMode());
     //printHeader();
@@ -154,16 +154,16 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
         error = true;
     }
 
-    // Check Audio Bit Resolution
-    int bitResPeer  = static_cast<int>(peer_header->BitResolution);
-    int bitResLocal = static_cast<int>(mHeader.BitResolution);
-    if (bitResPeer == 40) { bitResPeer = 8; } // mu-law remote
-    if (bitResLocal == 40) { bitResLocal = 8; } // mu-law local
-    if ( bitResPeer != bitResLocal ) // for now we don't warn of mu-law mismatch, to allow server to be unaware
+    // Check Audio Sample Format
+    int sampleFormatPeer  = static_cast<int>(peer_header->AudioSampleFormat);
+    int sampleFormatLocal = static_cast<int>(mHeader.AudioSampleFormat);
+    int sampleSizePeer = (sampleFormatPeer == AudioInterface::BIT8M ? 8 : sampleFormatPeer * 8); // sample size in bits
+    int sampleSizeLocal = (sampleFormatLocal == AudioInterface::BIT8M ? 8 : sampleFormatLocal * 8);
+    if ( sampleSizePeer != sampleSizeLocal ) // no warning if peer and local are both 8 bits but different formats
     {
-        std::cerr << "ERROR: Peer Audio Bit Resolution is  : " << bitResPeer << endl;
-        std::cerr << "       Local Audio Bit Resolution is : " << bitResLocal << endl;
-        std::cerr << "Make sure both machines use the same Bit Resolution" << endl;
+        std::cerr << "ERROR: Peer Audio Sample Size is  : " << sampleSizePeer << endl;
+        std::cerr << "       Local Audio Sample Size is : " << sampleSizeLocal << endl;
+        std::cerr << "Make sure both machines use the same Sample Size" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
     }
@@ -190,7 +190,7 @@ void DefaultHeader::printHeader() const
             AudioInterface::getSampleRateFromType
             ( static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate) );
     cout << "Sampling Rate             = " << sample_rate << endl;
-    cout << "Audio Bit Resolutions     = " << static_cast<int>(mHeader.BitResolution) << endl;
+    cout << "Audio Sample Format       = " << static_cast<int>(mHeader.AudioSampleFormat) << endl;
     //cout << "Number of Input Channels  = " << static_cast<int>(mHeader.NumInChannels) << endl;
     //cout << "Number of Output Channels = " << static_cast<int>(mHeader.NumOutChannels) << endl;
     cout << "Number of Channels        = " << static_cast<int>(mHeader.NumChannels) << endl;
@@ -240,11 +240,11 @@ uint8_t  DefaultHeader::getPeerSamplingRate(int8_t* full_packet) const
 
 
 //***********************************************************************
-uint8_t DefaultHeader::getPeerBitResolution(int8_t* full_packet) const
+uint8_t DefaultHeader::getPeerSampleFormat(int8_t* full_packet) const
 {
     DefaultHeaderStruct* peer_header;
     peer_header =  reinterpret_cast<DefaultHeaderStruct*>(full_packet);
-    return peer_header->BitResolution;
+    return peer_header->AudioSampleFormat;
 }
 
 

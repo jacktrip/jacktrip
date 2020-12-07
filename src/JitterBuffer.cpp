@@ -68,7 +68,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
     mTotalSize = total_size;
     mBroadcastLatency = bcast_qlen * mSlotSize;
     mNumChannels = channels;
-    mAudioBitRes = bit_res;
+    mAudioSampleFormat = bit_res;
     mMinStepSize = channels * bit_res;
     mFPP = buf_samples;
     mSampleRate = sample_rate;
@@ -265,7 +265,7 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
         int delta = mBroadcastPositionCorr / mMinStepSize;
         if (0 != delta) {
             mBroadcastPositionCorr -= delta * mMinStepSize;
-            if (2 == mAudioBitRes && (int32_t)(mWritePosition - mBroadcastPosition) > len) {
+            if (2 == mAudioSampleFormat && (int32_t)(mWritePosition - mBroadcastPosition) > len) {
                 // interpolate
                 len += delta * mMinStepSize;
             }

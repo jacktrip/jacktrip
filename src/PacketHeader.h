@@ -62,7 +62,7 @@ public:
     uint16_t SeqNumber; ///< Sequence Number
     uint16_t BufferSize; ///< Buffer Size in Samples
     uint8_t  SamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
-    uint8_t BitResolution; ///< Audio Bit Resolution
+    uint8_t AudioSampleFormat; ///< Audio Bit Resolution
     //uint8_t  NumInChannels; ///< Number of Input Channels
     //uint8_t  NumOutChannels; ///<  Number of Output Channels
     uint8_t  NumChannels; ///< Number of Channels, we assume input and outputs are the same
@@ -139,7 +139,7 @@ public:
     virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
     virtual uint16_t getPeerBufferSize(int8_t* full_packet) const = 0;
     virtual uint8_t  getPeerSamplingRate(int8_t* full_packet) const = 0;
-    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const = 0;
+    virtual uint8_t getPeerSampleFormat(int8_t* full_packet) const = 0;
     virtual uint8_t  getPeerNumChannels(int8_t* full_packet) const = 0;
     virtual uint8_t  getPeerConnectionMode(int8_t* full_packet) const = 0;
 
@@ -209,7 +209,7 @@ public:
     virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
     virtual uint16_t getPeerBufferSize(int8_t* full_packet) const;
     virtual uint8_t  getPeerSamplingRate(int8_t* full_packet) const;
-    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const;
+    virtual uint8_t getPeerSampleFormat(int8_t* full_packet) const;
     virtual uint8_t  getPeerNumChannels(int8_t* full_packet) const;
     virtual uint8_t  getPeerConnectionMode(int8_t* full_packet) const;
 
@@ -243,7 +243,7 @@ public:
     virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
     virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t  getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerSampleFormat(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t  getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t  getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
 
@@ -282,7 +282,7 @@ public:
     virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
     virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t  getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerSampleFormat(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t  getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t  getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
 

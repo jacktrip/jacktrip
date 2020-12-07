@@ -59,7 +59,7 @@ protected:
 protected:
     int mMaxLatency;
     int mNumChannels;
-    int mAudioBitRes;
+    int mAudioSampleFormat;
     int mMinStepSize;
     int mFPP;
     int mSampleRate;

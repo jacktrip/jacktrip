@@ -59,7 +59,7 @@ class AudioInterface
 public:
 
     /// \brief Enum for Audio Resolution in bits
-    enum audioBitResolutionT {
+    enum SampleFormatT {
         BIT8  = 1, ///< 8 bits
         BIT16 = 2, ///< 16 bits (default)
         BIT24 = 3, ///< 24 bits
@@ -83,14 +83,14 @@ public:
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
-   * \param AudioBitResolution Audio Sample Resolutions in bits
+   * \param AudioAudioSampleFormat Audio Sample Size in bits
    */
     AudioInterface(JackTrip* jacktrip,
                    int NumInChans, int NumOutChans,
                #ifdef WAIR // wair
                    int NumNetRevChans,
                #endif // endwhere
-                   AudioInterface::audioBitResolutionT AudioBitResolution =
+                   AudioInterface::SampleFormatT AudioAudioSampleFormat =
             AudioInterface::BIT16);
     /// \brief The class destructor
     virtual ~AudioInterface();
@@ -146,7 +146,7 @@ public:
     void initPlugins();
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
-   * supported (audioBitResolutionT).
+   * supported (audioAudioSampleFormatT).
    *
    * The result is stored in an int_8 array of the
    * appropriate size to hold the value. The caller is responsible to allocate
@@ -154,8 +154,8 @@ public:
    */
     static void fromSampleToBitConversion(const sample_t* const input,
                                           int8_t* output,
-                                          const AudioInterface::audioBitResolutionT targetBitResolution);
-    /** \brief Convert a audioBitResolutionT bit resolution number into a
+                                          const AudioInterface::SampleFormatT targetAudioSampleFormat);
+    /** \brief Convert a audioAudioSampleFormatT bit resolution number into a
    * 32bit number (sample_t)
    *
    * The result is stored in an sample_t array of the
@@ -164,7 +164,7 @@ public:
    */
     static void fromBitToSampleConversion(const int8_t* const input,
                                           sample_t* output,
-                                          const AudioInterface::audioBitResolutionT sourceBitResolution);
+                                          const AudioInterface::SampleFormatT sourceAudioFormat);
 
     //--------------SETTERS---------------------------------------------
     virtual void setNumInputChannels(int nchannels)
@@ -200,11 +200,12 @@ public:
     /// \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
     /// \return  AudioInterface::samplingRateT enum type
     virtual samplingRateT getSampleRateType() const;
-    /** \brief Get the Audio Bit Resolution, in bits
+    /** \brief Get the Audio Sample Size in bits
    *
-   * This is one of the audioBitResolutionT set in construction
-   */
-    virtual int getAudioBitResolution() const { return mAudioBitResolution; }
+     * This is one of the audioAudioSampleFormatT set in construction
+     */
+    virtual SampleFormatT getAudioSampleFormat() const { return mAudioSampleFormat; }
+    virtual int getAudioSampleSize() const { return  (mAudioSampleSize); }
     /** \brief Helper function to get the sample rate (in Hz) for a
    * JackAudioInterface::samplingRateT
    * \param rate_type  JackAudioInterface::samplingRateT enum type
@@ -232,8 +233,8 @@ private:
     QVarLengthArray<sample_t*> mAPInBuffer; ///< Vector of Input buffers/channel for AllPass input
 #endif // endwhere
     QVarLengthArray<sample_t*> mInBufCopy; ///< needed in callback() to modify JACK audio input
-    int mAudioBitResolution; ///< Bit resolution in audio samples
-    AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
+    AudioInterface::SampleFormatT mAudioSampleFormat; ///< Bit resolution (audioAudioSampleFormatT) mode
+    int mAudioSampleSize; ///< Audio Sample Size in bits
     uint32_t mSampleRate; ///< Sampling Rate
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mBufferSizeInSamples; ///< Buffer size in samples

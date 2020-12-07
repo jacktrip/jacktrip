@@ -82,7 +82,7 @@ private:
     JackTrip::dataProtocolT mDataProtocol; ///< Data Protocol
     int mNumChans; ///< Number of Channels (inputs = outputs)
     int mBufferQueueLength; ///< Audio Buffer from network queue length
-    AudioInterface::audioBitResolutionT mAudioBitResolution;
+    AudioInterface::SampleFormatT mAudioSampleFormat;
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
     int mBindPortNum; ///< Bind Port Number
     int mPeerPortNum; ///< Peer Port Number

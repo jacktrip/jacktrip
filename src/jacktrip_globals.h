@@ -79,9 +79,9 @@ const int gMAX_WAIRS = 128; // FIXME, should agree with maxThreadCount
   const int gDefaultCombFilterFeedback = 0;
 #endif // endwhere
 
-//const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
+//const JackAudioInterface::audioAudioSampleFormatT gDefaultAudioSampleFormatMode =
 //    JackAudioInterface::BIT16;
-const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
+const AudioInterface::SampleFormatT gDefaultAudioSampleFormatMode =
         AudioInterface::BIT16;
 const int gDefaultQueueLength = 4;
 const int gDefaultOutputQueueLength = 4;
@@ -122,7 +122,7 @@ extern int gVerboseFlag; ///< Verbose mode flag declaration
 //*******************************************************************************
 /// \name JackAudio
 //@{
-const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
+const int gJackAudioSampleFormat = 32; ///< Audio Bit Resolution of the Jack Server
 const QString gJackDefaultClientName = "JackTrip";
 const int gMaxRemoteNameLength = 64;
 //@}

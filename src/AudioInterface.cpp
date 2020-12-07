@@ -50,14 +50,14 @@ AudioInterface::AudioInterface(JackTrip* jacktrip,
                                #ifdef WAIR // wair
                                int NumNetRevChans,
                                #endif // endwhere
-                               audioBitResolutionT AudioBitResolution) :
+                               SampleFormatT sampleFormat) :
     mJackTrip(jacktrip),
     mNumInChans(NumInChans), mNumOutChans(NumOutChans),
     #ifdef WAIR // WAIR
     mNumNetRevChans(NumNetRevChans),
     #endif // endwhere
-    mAudioBitResolution(AudioBitResolution*8),
-    mBitResolutionMode(AudioBitResolution),
+    mAudioSampleFormat(sampleFormat),
+    mAudioSampleSize(sampleFormat==BIT8M ? 8 : sampleFormat*8),
     mSampleRate(gDefaultSampleRate), mBufferSizeInSamples(gDefaultBufferSizeInSamples),
     mInputPacket(NULL), mOutputPacket(NULL), mLoopBack(false), mProcessingAudio(false)
 {
@@ -210,7 +210,7 @@ void AudioInterface::setup()
 //*******************************************************************************
 size_t AudioInterface::getSizeInBytesPerChannel() const
 {
-    return (getBufferSizeInSamples() * getAudioBitResolution()/8);
+  return (getBufferSizeInSamples() * getAudioSampleSize());
 }
 
 
@@ -405,16 +405,16 @@ void AudioInterface::broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
                 // Change the bit resolution on each sample
                 fromBitToSampleConversion(
                             // use interleaved channel layout
-                            //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                            &mOutputPacket[(j*mBitResolutionMode*mNumOutChans) + (i*mBitResolutionMode)],
-                        &tmp_sample[j], mBitResolutionMode );
+                            //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
+                            &mOutputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                        &tmp_sample[j], mAudioSampleFormat );
             }
         }
 }
 
 //*******************************************************************************
 // Before sending and reading to Jack, we have to round to the sample resolution
-// that the program is using. Jack uses 32 bits (gJackBitResolution in globals.h)
+// that the program is using. Jack uses 32 bits (gJackAudioSampleFormat in globals.h)
 // by default
 void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_buffer,
                                                unsigned int n_frames)
@@ -434,15 +434,15 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
                 // Change the bit resolution on each sample
                 fromBitToSampleConversion(
                             // use interleaved channel layout
-                            //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                            &mOutputPacket[(j*mBitResolutionMode*mNumOutChans) + (i*mBitResolutionMode)],
-                        &tmp_sample[j], mBitResolutionMode );
+                            //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
+                            &mOutputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                        &tmp_sample[j], mAudioSampleFormat );
             }
         }
     else // not wair
 #endif // endwhere
 
-        // Extract separate channels to send to Jack
+        // Extract separate channels to send to JACK
         for (int i = 0; i < mNumOutChans; i++) {
             //--------
             // This should be faster for 32 bits
@@ -454,9 +454,9 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
                 // Change the bit resolution on each sample
                 fromBitToSampleConversion(
                             // use interleaved channel layout
-                            //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                            &mOutputPacket[(j*mBitResolutionMode*mNumOutChans) + (i*mBitResolutionMode)],
-                        &tmp_sample[j], mBitResolutionMode );
+                            //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
+                            &mOutputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                        &tmp_sample[j], mAudioSampleFormat );
             }
         }
 }
@@ -485,9 +485,9 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
                 fromSampleToBitConversion(
                             &tmp_result,
                             // use interleaved channel layout
-                            //&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                            &mInputPacket[(j*mBitResolutionMode*mNumOutChans) + (i*mBitResolutionMode)],
-                        mBitResolutionMode );
+                            //&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
+                            &mInputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                        mAudioSampleFormat );
             }
         }
     else // not wair
@@ -509,9 +509,9 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
                 fromSampleToBitConversion(
                             &tmp_result,
                             // use interleaved channel layout
-                            //&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                            &mInputPacket[(j*mBitResolutionMode*mNumOutChans) + (i*mBitResolutionMode)],
-                        mBitResolutionMode );
+                            //&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mAudioSampleSize)],
+                            &mInputPacket[(j*mAudioSampleSize*mNumOutChans) + (i*mAudioSampleSize)],
+                        mAudioSampleFormat );
             }
         }
     // Send Audio buffer to Network
@@ -524,7 +524,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
 void AudioInterface::fromSampleToBitConversion
 (const sample_t* const input,
  int8_t* output,
- const AudioInterface::audioBitResolutionT targetBitResolution)
+ const AudioInterface::SampleFormatT targetAudioSampleFormat)
 {
 
   /*********************************************************************
@@ -546,7 +546,7 @@ void AudioInterface::fromSampleToBitConversion
     double tmp_sample;
     sample_t tmp_sample16;
     sample_t tmp_sample8;
-    switch (targetBitResolution)
+    switch (targetAudioSampleFormat)
       {
       case BIT8 : {
         // 8bit integer between -128 to 127
@@ -629,7 +629,7 @@ void AudioInterface::fromSampleToBitConversion
 void AudioInterface::fromBitToSampleConversion
 (const int8_t* const input,
  sample_t* output,
- const AudioInterface::audioBitResolutionT sourceBitResolution)
+ const AudioInterface::SampleFormatT sourceAudioSampleFormat)
 {
     int8_t tmp_8;
     uint8_t tmp_u8;
@@ -637,7 +637,7 @@ void AudioInterface::fromBitToSampleConversion
     sample_t tmp_sample;
     sample_t tmp_sample16;
     sample_t tmp_sample8;
-    switch (sourceBitResolution)
+    switch (sourceAudioSampleFormat)
     {
     case BIT8 : {
         tmp_8 = *input;

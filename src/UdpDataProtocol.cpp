@@ -450,7 +450,7 @@ void UdpDataProtocol::run()
     std::memset(mAudioPacket, 0, audio_packet_size); // set buffer to 0
     mBuffer.resize(audio_packet_size, 0);
     mChans = mJackTrip->getNumChannels();
-    mSmplSize = mJackTrip->getAudioBitResolution() / 8;
+    mSmplSize = mJackTrip->getAudioSampleSize();
 
     // Setup Full Packet buffer
     int full_packet_size = mJackTrip->getPacketSizeInBytes();
@@ -568,7 +568,7 @@ void UdpDataProtocol::run()
         /*
         cout << "peer sizes: " << mJackTrip->getHeaderSizeInBytes()
              << " + " << mJackTrip->getPeerBufferSize(full_redundant_packet)
-             << " * " << mJackTrip->getNumChannels() << " * " << (int)mJackTrip->getAudioBitResolution()/8 << endl;
+             << " * " << mJackTrip->getNumChannels() << " * " << (int)mJackTrip->getAudioSampleFormat()/8 << endl;
         cout << "full_packet_size: " << full_packet_size << " / " << mJackTrip->getPacketSizeInBytes() << endl;
         cout << "full_redundant_packet_size: " << full_redundant_packet_size << endl;
         // */

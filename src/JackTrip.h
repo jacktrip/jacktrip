@@ -126,7 +126,7 @@ public:
    * \param DataProtocolType JackTrip::dataProtocolT
    * \param NumChans Number of Audio Channels (same for inputs and outputs)
    * \param BufferQueueLength Audio Buffer for receiving packets
-   * \param AudioBitResolution Audio Sample Resolutions in bits
+   * \param AudioAudioSampleFormat Audio Sample Resolutions in bits
    * \param redundancy redundancy factor for network data
    */
     JackTrip(jacktripModeT JacktripMode = CLIENT,
@@ -137,7 +137,7 @@ public:
          #endif // endwhere
              int BufferQueueLength = gDefaultQueueLength,
              unsigned int redundancy = gDefaultRedundancy,
-             AudioInterface::audioBitResolutionT AudioBitResolution =
+             AudioInterface::SampleFormatT AudioAudioSampleFormat =
              AudioInterface::BIT16,
              DataProtocol::packetHeaderTypeT PacketHeaderType =
              DataProtocol::DEFAULT,
@@ -214,8 +214,8 @@ public:
     virtual void setBufferStrategy(int BufferStrategy)
     { mBufferStrategy = BufferStrategy; }
     /// \brief Sets (override) Audio Bit Resolution after construction
-    virtual void setAudioBitResolution(AudioInterface::audioBitResolutionT AudioBitResolution)
-    { mAudioBitResolution = AudioBitResolution; }
+    virtual void setAudioAudioSampleFormat(AudioInterface::SampleFormatT AudioAudioSampleFormat)
+    { mAudioSampleFormat = AudioAudioSampleFormat; }
     /// \brief Sets (override) Underrun Mode
     virtual void setUnderRunMode(underrunModeT UnderRunMode)
     { mUnderRunMode = UnderRunMode; }
@@ -362,8 +362,10 @@ public:
     int getSampleRate() const
     { return mSampleRate; /*return mAudioInterface->getSampleRate();*/ }
 
-    uint8_t getAudioBitResolution() const
-    { return mAudioBitResolution*8; /*return mAudioInterface->getAudioBitResolution();*/ }
+    uint8_t getAudioSampleFormat() const
+    { return (mAudioSampleFormat); }
+    uint8_t getAudioSampleSize() const
+    { return (mAudioSampleFormat == AudioInterface::BIT8M ? 8 : mAudioSampleFormat*8); }
     unsigned int getNumInputChannels() const
     { return mNumChans; /*return mAudioInterface->getNumInputChannels();*/ }
     unsigned int getNumOutputChannels() const
@@ -392,8 +394,8 @@ public:
     uint8_t getPeerSamplingRate(int8_t* full_packet) const
     { return mPacketHeader->getPeerSamplingRate(full_packet); }
 
-    uint8_t getPeerBitResolution(int8_t* full_packet) const
-    { return mPacketHeader->getPeerBitResolution(full_packet); }
+    uint8_t getPeerAudioSampleFormat(int8_t* full_packet) const
+    { return mPacketHeader->getPeerSampleFormat(full_packet); }
 
     uint8_t  getPeerNumChannels(int8_t* full_packet) const
     { return mPacketHeader->getPeerNumChannels(full_packet); }
@@ -524,7 +526,7 @@ private:
     uint32_t mSampleRate; ///< Sample Rate
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
-    AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
+    AudioInterface::SampleFormatT mAudioSampleFormat; ///< Audio Bit Resolutions
     bool mLoopBack;
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 

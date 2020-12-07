@@ -78,7 +78,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
                    #endif // endwhere
                    int BufferQueueLength,
                    unsigned int redundancy,
-                   AudioInterface::audioBitResolutionT AudioBitResolution,
+                   AudioInterface::SampleFormatT audioSampleFormat,
                    DataProtocol::packetHeaderTypeT PacketHeaderType,
                    underrunModeT UnderRunMode,
                    int receiver_bind_port, int sender_bind_port,
@@ -97,7 +97,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mSampleRate(gDefaultSampleRate),
     mDeviceID(gDefaultDeviceID),
     mAudioBufferSize(gDefaultBufferSizeInSamples),
-    mAudioBitResolution(AudioBitResolution),
+    mAudioSampleFormat(audioSampleFormat),
     mLoopBack(false),
     mDataProtocolSender(NULL),
     mDataProtocolReceiver(NULL),
@@ -175,7 +175,7 @@ void JackTrip::setupAudio(
                                          #ifdef WAIR // wair
                                                  mNumNetRevChans,
                                          #endif // endwhere
-                                                 mAudioBitResolution);
+                                                 mAudioSampleFormat);
 
 #ifdef WAIRTOHUB // WAIR
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
@@ -204,7 +204,7 @@ void JackTrip::setupAudio(
 #ifdef __NO_JACK__ /// \todo FIX THIS REPETITION OF CODE
 #ifdef __RT_AUDIO__
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioSampleFormat);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -214,7 +214,7 @@ void JackTrip::setupAudio(
     }
     else if ( mAudiointerfaceMode == JackTrip::RTAUDIO ) {
 #ifdef __RT_AUDIO__
-        mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumChans, mNumChans, mAudioSampleFormat);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -230,7 +230,7 @@ void JackTrip::setupAudio(
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
-    int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
+    // int AudioBufferSizeInBytes = mAudioBufferSize*sizeof(sample_t);
     std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples (frames)" << std::endl;
     // CONFUSING: std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes" << std::endl;
     if (0 < mBroadcastQueueLength) {
@@ -346,7 +346,7 @@ void JackTrip::setupRingBuffers()
             }
             mReceiveRingBuffer = new JitterBuffer(mAudioBufferSize, mBufferQueueLength,
                                         mSampleRate, mBufferStrategy,
-                                        mBroadcastQueueLength, mNumChans, mAudioBitResolution);
+                                        mBroadcastQueueLength, mNumChans, mAudioSampleFormat);
         }
         /*
     mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,

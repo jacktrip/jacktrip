@@ -69,7 +69,7 @@ public:
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param NumInChans Number of Input Channels
    * \param NumOutChans Number of Output Channels
-   * \param AudioBitResolution Audio Sample Resolutions in bits
+   * \param AudioAudioSampleFormat Audio Sample Resolutions in bits
    * \param ClientName Client name in Jack
    */
     JackAudioInterface(JackTrip* jacktrip,
@@ -77,7 +77,7 @@ public:
                    #ifdef WAIR // wair
                        int NumNetRevChans,
                    #endif // endwhere
-                       AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+                       AudioInterface::SampleFormatT AudioAudioSampleFormat = AudioInterface::BIT16,
                        QString ClientName = "JackTrip");
     /// \brief The class destructor
     virtual ~JackAudioInterface();
@@ -114,7 +114,7 @@ public:
     virtual uint32_t getBufferSizeInSamples() const;
     /// \brief Get the Jack Server Buffer Size, in bytes
     virtual uint32_t getBufferSizeInBytes() const
-    { return (getBufferSizeInSamples() * getAudioBitResolution() / 8); }
+    { return (getBufferSizeInSamples() * getAudioSampleSize()); }
     /// \brief Get size of each audio per channel, in bytes
     virtual size_t getSizeInBytesPerChannel() const;
     //------------------------------------------------------------------
@@ -171,8 +171,7 @@ private:
     int mNumNetRevChans; ///<  Number of Network Audio Channels (network comb filters
 #endif // endwhere
     int mNumFrames; ///< Buffer block size, in samples
-    //int mAudioBitResolution; ///< Bit resolution in audio samples
-    AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
+    AudioInterface::SampleFormatT mAudioSampleFormat; ///< Bit resolution (audioAudioSampleFormatT) mode
 
     jack_client_t* mClient; ///< Jack Client
     QString mClientName; ///< Jack Client Name
