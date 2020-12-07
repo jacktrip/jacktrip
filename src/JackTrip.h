@@ -365,7 +365,7 @@ public:
     uint8_t getAudioSampleFormat() const
     { return (mAudioSampleFormat); }
     uint8_t getAudioSampleSizeBytes() const
-    { return (mAudioSampleFormat == AudioInterface::BIT8M ? 1 : (uint8_t) mAudioSampleFormat); }
+    { return (mAudioSampleFormat == AudioInterface::BIT8M ? 1 : (uint8_t) (mAudioSampleFormat>>3)); }
     unsigned int getNumInputChannels() const
     { return mNumChans; /*return mAudioInterface->getNumInputChannels();*/ }
     unsigned int getNumOutputChannels() const
