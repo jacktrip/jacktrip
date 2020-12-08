@@ -111,6 +111,7 @@ private:
     bool mChanfeDefaultID; ///< Change Default device ID
     bool mChanfeDefaultBS; ///< Change Default Buffer Size
     unsigned int mSampleRate;
+    uint8_t mSampleRateType;
     unsigned int mDeviceID;
     unsigned int mAudioBufferSize;
     unsigned int mHubConnectionMode;

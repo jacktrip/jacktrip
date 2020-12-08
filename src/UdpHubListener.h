@@ -167,7 +167,8 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
-    
+    uint8_t mSampleRateType;
+
 #ifdef WAIR // wair
     bool mWAIR;
     void connectMesh(bool spawn);
@@ -197,6 +198,7 @@ public :
     }
     void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
     void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
+    void setSampleRateType(uint8_t srt) {mSampleRateType = srt;}
 
 };
 

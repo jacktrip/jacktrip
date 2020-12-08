@@ -95,6 +95,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mBufferStrategy(1),
     mBroadcastQueueLength(0),
     mSampleRate(gDefaultSampleRate),
+    mSampleRateType(AudioInterface::getSampleRateTypeForSampleRate(mSampleRate)),
     mDeviceID(gDefaultDeviceID),
     mAudioBufferSize(gDefaultBufferSizeInSamples),
     mAudioBitResolution(AudioBitResolution),
@@ -271,10 +272,10 @@ void JackTrip::setupDataProtocol()
         mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER,
                                                   //mSenderPeerPort, mSenderBindPort,
                                                   mSenderBindPort, mSenderPeerPort,
-                                                  mRedundancy);
+                                                  mRedundancy, mSampleRateType);
         mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER,
                                                      mReceiverBindPort, mReceiverPeerPort,
-                                                     mRedundancy);
+                                                     mRedundancy, mSampleRateType);
         if (0.0 < mSimulatedLossRate || 0.0 < mSimulatedJitterRate || 0.0 < simulated_max_delay) {
             mDataProtocolReceiver->setIssueSimulation(mSimulatedLossRate, mSimulatedJitterRate, simulated_max_delay);
         }

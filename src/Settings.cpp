@@ -320,6 +320,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mChanfeDefaultSR = true;
             mSampleRate = atoi(optarg);
+            mSampleRateType = AudioInterface::getSampleRateTypeForSampleRate(mSampleRate);
             break;
         case 'd': // RTAudio device id
             //-------------------------------------------------------
@@ -655,7 +656,9 @@ UdpHubListener *Settings::getConfiguredHubServer()
         mSimulatedJitterRate, mSimulatedDelayRel);
     udpHub->setBroadcast(mBroadcastQueue);
     udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
-    
+
+    udpHub->setSampleRateType(mSampleRateType);
+
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
         udpHub->setIOStatStream(mIOStatStream);
@@ -742,6 +745,7 @@ JackTrip *Settings::getConfiguredJackTrip()
     // Chanfe default Sampling Rate
     if (mChanfeDefaultSR) {
         jackTrip->setSampleRate(mSampleRate);
+        jackTrip->setSampleRateType(mSampleRateType);
     }
 
     // Chanfe defualt device ID

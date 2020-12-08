@@ -79,7 +79,7 @@ public:
    */
     UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
                     int bind_port, int peer_port,
-                    unsigned int udp_redundancy_factor = 1);
+                    unsigned int udp_redundancy_factor, uint8_t sample_rate_type);
 
     /** \brief The class destructor
    */
@@ -236,6 +236,8 @@ private:
     double mSimulatedJitterMaxDelay;
     std::default_random_engine mRndEngine;
     std::uniform_real_distribution<double> mUniformDist;
+
+    uint8_t mSampleRateType;
 };
 
 #endif // __UDPDATAPROTOCOL_H__

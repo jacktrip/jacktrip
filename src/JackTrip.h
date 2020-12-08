@@ -302,6 +302,8 @@ public:
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
+    void setSampleRateType(uint8_t sample_rate_type)
+    { mSampleRateType = sample_rate_type; }
     void setDeviceID(uint32_t device_id)
     { mDeviceID = device_id; }
     void setAudioBufferSizeInSamples(uint32_t buf_size)
@@ -522,6 +524,7 @@ private:
     int mBufferStrategy;
     int mBroadcastQueueLength;
     uint32_t mSampleRate; ///< Sample Rate
+    uint8_t mSampleRateType; ///< Sample Rate Type
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions

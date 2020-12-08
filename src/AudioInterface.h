@@ -198,6 +198,7 @@ public:
     { return mSampleRate; }
     /// \brief Get the Jack Server Sampling Rate Enum Type samplingRateT
     /// \return  AudioInterface::samplingRateT enum type
+    static samplingRateT getSampleRateTypeForSampleRate(int32_t rate);
     virtual samplingRateT getSampleRateType() const;
     /** \brief Get the Audio Bit Resolution, in bits
    *

@@ -664,10 +664,8 @@ void AudioInterface::initPlugins()
 }
 
 //*******************************************************************************
-AudioInterface::samplingRateT AudioInterface::getSampleRateType() const
+AudioInterface::samplingRateT AudioInterface::getSampleRateTypeForSampleRate(int32_t rate)
 {
-    int32_t rate = getSampleRate();
-
     if      ( 100 > qAbs(rate - 22050) ) {
         return AudioInterface::SR22; }
     else if ( 100 > qAbs(rate - 32000) ) {
@@ -684,6 +682,12 @@ AudioInterface::samplingRateT AudioInterface::getSampleRateType() const
         return AudioInterface::SR192; }
 
     return AudioInterface::UNDEF;
+}
+
+AudioInterface::samplingRateT AudioInterface::getSampleRateType() const
+{
+    int32_t rate = getSampleRate();
+    return AudioInterface::getSampleRateTypeForSampleRate(rate);
 }
 
 //*******************************************************************************

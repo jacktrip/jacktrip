@@ -69,12 +69,13 @@ QMutex UdpDataProtocol::sUdpMutex;
 //*******************************************************************************
 UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
                                  int bind_port, int peer_port,
-                                 unsigned int udp_redundancy_factor) :
+                                 unsigned int udp_redundancy_factor, uint8_t sample_rate_type) :
     DataProtocol(jacktrip, runmode, bind_port, peer_port),
     mBindPort(bind_port), mPeerPort(peer_port),
     mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL),
     mUdpRedundancyFactor(udp_redundancy_factor),
+    mSampleRateType(sample_rate_type),
     mControlPacketSize(63),
     mStopSignalSent(false)
 {
@@ -92,6 +93,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mSimulatedLossRate = 0.0;
     mSimulatedJitterRate = 0.0;
     mSimulatedJitterMaxDelay = 0.0;
+
+    mSampleRateType = 0;
 }
 
 
@@ -735,6 +738,14 @@ void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
     newer_seq_num =
             mJackTrip->getPeerSequenceNumber(full_redundant_packet);
     current_seq_num = newer_seq_num;
+  
+    // Check sampling rate
+    uint8_t packetSampleRateType = mJackTrip->getPeerSamplingRate(full_redundant_packet);
+    if (mSampleRateType != packetSampleRateType) {
+      std::cerr << "*** UdpDataProtocolcpp: UDP audio packet contains sampling rate type " << int(packetSampleRateType)
+        << " when we are expecting type " << int(mSampleRateType) << " PACKET PROBABLY CORRUPTED ***\n";
+      // FIXME: skip this packet somehow, keep a count of bad packets, and switch UDP ports if it's too much
+    }
 
     int16_t lost = 0;
     if (!mInitialState) {
