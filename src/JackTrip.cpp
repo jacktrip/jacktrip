@@ -124,6 +124,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mEndTime(0),
     mTcpClient(this),
     mUdpSockTemp(this),
+    mAwaitingUdp(false),
+    mAwaitingTcp(false),
     mReceivedConnection(false),
     mTcpConnectionError(false),
     mStopped(false),
@@ -594,7 +596,11 @@ void JackTrip::onStatTimer()
 
 void JackTrip::receivedConnectionTCP()
 {
-    mTimeoutTimer.stop();
+    {
+        QMutexLocker lock(&mTimerMutex);
+        mAwaitingTcp = false;
+        mTimeoutTimer.stop();
+    }
     if (gVerboseFlag) cout << "TCP Socket Connected to Server!" << endl;
     emit signalTcpClientConnected();
 
@@ -789,7 +795,11 @@ void JackTrip::connectionSecured()
 void JackTrip::receivedDataUDP()
 {
     //Stop our timer.
-    mTimeoutTimer.stop();
+    {
+        QMutexLocker lock(&mTimerMutex);
+        mAwaitingUdp = false;
+        mTimeoutTimer.stop();
+    }
     
     QHostAddress peerHostAddress;
     uint16_t peer_port;
@@ -813,8 +823,7 @@ void JackTrip::receivedDataUDP()
         } else {
             mPeerAddress = peerHostAddress.toString();
         }
-    }
-    else {
+    } else {
         mPeerAddress = peerHostAddress.toString();
     }
 
@@ -839,6 +848,11 @@ void JackTrip::receivedDataUDP()
 
 void JackTrip::udpTimerTick()
 {
+    QMutexLocker lock(&mTimerMutex);
+    if (!mAwaitingUdp) {
+        return;
+    }
+    
     if (mStopped || sSigInt || sJackStopped) {
         //Stop everything.
         mUdpSockTemp.close();
@@ -858,6 +872,11 @@ void JackTrip::udpTimerTick()
 
 void JackTrip::tcpTimerTick()
 {
+    QMutexLocker lock(&mTimerMutex);
+    if (!mAwaitingTcp) {
+        return;
+    }
+    
     if (mStopped || sSigInt || sJackStopped) {
         //Stop everything.
         mTcpClient.close();
@@ -960,13 +979,17 @@ int JackTrip::serverStart(bool timeout, int udpTimeout) // udpTimeout unused
     connect(&mUdpSockTemp, &QUdpSocket::readyRead, this, &JackTrip::receivedDataUDP);
     
     // Start timer and then wait for a signal to read datagrams.
-    mElapsedTime = 0;
-    if (timeout) {
-        mEndTime = udpTimeout;
+    {
+        QMutexLocker lock(&mTimerMutex);
+        mElapsedTime = 0;
+        if (timeout) {
+            mEndTime = udpTimeout;
+        }
+        mAwaitingUdp = true;
+        mTimeoutTimer.setInterval(mSleepTime);
+        connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::udpTimerTick);
+        mTimeoutTimer.start();
     }
-    mTimeoutTimer.setInterval(mSleepTime);
-    connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::udpTimerTick);
-    mTimeoutTimer.start();
     
     if (gVerboseFlag) std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()" << std::endl;
     cout << "Waiting for Connection From a Client..." << endl;
@@ -1028,11 +1051,15 @@ int JackTrip::clientPingToServerStart()
     // ----------------------------------------------
     connect(&mTcpClient, &QTcpSocket::readyRead, this, &JackTrip::receivedDataTCP);
     connect(&mTcpClient, &QTcpSocket::connected, this, &JackTrip::receivedConnectionTCP);
-    mElapsedTime = 0;
-    mEndTime = 5000; //Timeout after 5 seconds.
-    mTimeoutTimer.setInterval(mSleepTime);
-    connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
-    mTimeoutTimer.start();
+    {
+        QMutexLocker lock(&mTimerMutex);
+        mAwaitingTcp = true;
+        mElapsedTime = 0;
+        mEndTime = 5000; //Timeout after 5 seconds.
+        mTimeoutTimer.setInterval(mSleepTime);
+        connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
+        mTimeoutTimer.start();
+    }
     mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
     
     if (gVerboseFlag) cout << "Connecting to TCP Server at " <<  serverHostAddress.toString().toLatin1().constData() << " port " << mTcpServerPort << "..." << endl;

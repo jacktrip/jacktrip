@@ -590,6 +590,9 @@ private:
     int mEndTime;
     QSslSocket mTcpClient;
     QUdpSocket mUdpSockTemp;
+    QMutex mTimerMutex;
+    bool mAwaitingUdp;
+    bool mAwaitingTcp;
 
     volatile bool mReceivedConnection; ///< Bool of received connection from peer
     volatile bool mTcpConnectionError;
