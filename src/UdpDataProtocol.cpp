@@ -75,8 +75,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mRunMode(runmode),
     mAudioPacket(NULL), mFullPacket(NULL),
     mUdpRedundancyFactor(udp_redundancy_factor),
-    mSampleRateType(sample_rate_type),
     mControlPacketSize(63),
+    mSampleRateType(sample_rate_type),
     mStopSignalSent(false)
 {
     mStopped = false;
@@ -93,8 +93,6 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mSimulatedLossRate = 0.0;
     mSimulatedJitterRate = 0.0;
     mSimulatedJitterMaxDelay = 0.0;
-
-    mSampleRateType = 0;
 }
 
 

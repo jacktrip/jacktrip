@@ -95,7 +95,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode,
     mBufferStrategy(1),
     mBroadcastQueueLength(0),
     mSampleRate(gDefaultSampleRate),
-    mSampleRateType(AudioInterface::getSampleRateTypeForSampleRate(mSampleRate)),
     mDeviceID(gDefaultDeviceID),
     mAudioBufferSize(gDefaultBufferSizeInSamples),
     mAudioBitResolution(AudioBitResolution),
@@ -266,16 +265,17 @@ void JackTrip::setupDataProtocol()
     double simulated_max_delay = mSimulatedDelayRel * getBufferSizeInSamples() / getSampleRate();
     // Create DataProtocol Objects
     switch (mDataProtocol) {
-    case UDP:
+    case UDP: {
         std::cout << "Using UDP Protocol" << std::endl;
         QThread::usleep(100);
+        uint8_t sampleRateType = AudioInterface::getSampleRateTypeForSampleRate(getSampleRate());
         mDataProtocolSender = new UdpDataProtocol(this, DataProtocol::SENDER,
                                                   //mSenderPeerPort, mSenderBindPort,
                                                   mSenderBindPort, mSenderPeerPort,
-                                                  mRedundancy, mSampleRateType);
+                                                  mRedundancy, sampleRateType);
         mDataProtocolReceiver =  new UdpDataProtocol(this, DataProtocol::RECEIVER,
                                                      mReceiverBindPort, mReceiverPeerPort,
-                                                     mRedundancy, mSampleRateType);
+                                                     mRedundancy, sampleRateType);
         if (0.0 < mSimulatedLossRate || 0.0 < mSimulatedJitterRate || 0.0 < simulated_max_delay) {
             mDataProtocolReceiver->setIssueSimulation(mSimulatedLossRate, mSimulatedJitterRate, simulated_max_delay);
         }
@@ -285,16 +285,16 @@ void JackTrip::setupDataProtocol()
             cout << "Using RT thread priority for UDP data" << endl;
         }
         std::cout << gPrintSeparator << std::endl;
-        break;
-    case TCP:
+        break; }
+    case TCP: {
         throw std::invalid_argument("TCP Protocol is not implemented");
-        break;
-    case SCTP:
+        break; }
+    case SCTP: {
         throw std::invalid_argument("SCTP Protocol is not implemented");
-        break;
-    default:
+        break; }
+    default: {
         throw std::invalid_argument("Protocol not defined or unimplemented");
-        break;
+        break; }
     }
 
     // Set Audio Packet Size

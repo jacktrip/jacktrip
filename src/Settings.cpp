@@ -745,7 +745,6 @@ JackTrip *Settings::getConfiguredJackTrip()
     // Chanfe default Sampling Rate
     if (mChanfeDefaultSR) {
         jackTrip->setSampleRate(mSampleRate);
-        jackTrip->setSampleRateType(mSampleRateType);
     }
 
     // Chanfe defualt device ID
