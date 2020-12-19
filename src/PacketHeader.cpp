@@ -151,16 +151,14 @@ bool DefaultHeader::checkPeerSettings(int8_t* full_packet)
     // Check Sampling Rate
     if ( peer_header->SamplingRate != mHeader.SamplingRate )
     {
-        std::cerr << "ERROR: Peer Sampling Rate is   : " <<
-                     AudioInterface::getSampleRateFromType
-                     ( static_cast<AudioInterface::samplingRateT>(peer_header->SamplingRate) ) << endl;
-        std::cerr << "       Local Sampling Rate is  : " <<
-                     AudioInterface::getSampleRateFromType
-                     ( static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate) ) << endl;
+        int peerRate = AudioInterface::getSampleRateFromType( static_cast<AudioInterface::samplingRateT>(peer_header->SamplingRate) );
+        int localRate = AudioInterface::getSampleRateFromType( static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate) );
+        std::cerr << "ERROR: Peer Sampling Rate is   : " << peerRate << endl;
+        std::cerr << "       Local Sampling Rate is  : " << localRate << endl;
         std::cerr << "Make sure both machines use the same Sampling Rate" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
-        report.append(QString("\n\nPeer Sampling Rate is %1\nLocal Sampling Rate is %2\nMake sure both machines use the same Sampling Rate").arg(peer_header->SamplingRate).arg(mHeader.SamplingRate));
+        report.append(QString("\n\nPeer Sampling Rate is %1\nLocal Sampling Rate is %2\nMake sure both machines use the same Sampling Rate").arg(peerRate).arg(localRate));
     }
 
     // Check Audio Bit Resolution
