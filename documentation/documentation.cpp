@@ -67,7 +67,7 @@ Please read the documentation inside the packet to install.
 
 \subsection install_subsec_osx Mac OS X Requirements
 
-You'll need: <a href="http://www.jackosx.com/">Jack OS X</a>.
+You'll need: <a href="https://jackaudio.org/downloads/">Jack OS X</a>.
 The documentation explains how to install it and set it up, and it's highly recommended.
 
 Jack OS X comes with JackPilot to do the audio routing.
