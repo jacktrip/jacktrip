@@ -157,7 +157,7 @@ void JackTrip::setupAudio(
                                                  mAudioBitResolution);
 
 #ifdef WAIRTOHUB // WAIR
-        qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
+//        qDebug() << "mPeerAddress" << mPeerAddress << mPeerAddress.contains(gDOMAIN_TRIPLE);
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME; // legacy for WAIR
         QByteArray tmp = QString(mPeerAddress).replace(":", ".").toLatin1();
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
