@@ -99,6 +99,8 @@ const int gWaitCounter = 60;
 /// \name Network related ports
 //@{
 const int gDefaultPort = 4464; ///< Default JackTrip Port
+const int gBindPortLow = 3464; ///< lowest Bindport
+const int gBindPortHigh = 5464; ///< highest Bindport
 //const int gInputPort_0 = 4464; ///< Input base port
 //const int gOutputPort_0 = 4465; ///< Output base port
 //const int gDefaultSendPort = 4464; ///< Default for to use to send packet
