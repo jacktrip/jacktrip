@@ -172,12 +172,12 @@ void UdpHubListener::run()
                 cout << "JackTrip HUB SERVER: Exiting " << endl;
                 break;
             }
-            if ( peer_udp_port < 3464 ) {
+            if ( peer_udp_port < gBindPortLow ) {
                 cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
                 cout << "JackTrip HUB SERVER: Exiting " << endl;
                 break;
             }
-            if ( peer_udp_port > 5464 ) {
+            if ( peer_udp_port > gBindPortHigh ) {
                 cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
                 cout << "JackTrip HUB SERVER: Exiting " << endl;
                 break;
