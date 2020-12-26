@@ -98,7 +98,7 @@ public:
 
     //--------------SETTERS---------------------------------------------
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(const char* ClientName)
+    virtual void setClientName(QString ClientName)
     { mClientName = ClientName; }
     virtual void setSampleRate(uint32_t /*sample_rate*/)
     { std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
@@ -174,7 +174,7 @@ private:
     AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
 
     jack_client_t* mClient; ///< Jack Client
-    const char* mClientName; ///< Jack Client Name
+    QString mClientName; ///< Jack Client Name
     QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
     QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
     QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK

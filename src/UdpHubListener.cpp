@@ -124,7 +124,7 @@ void UdpHubListener::run()
     mStopped = false;
 
     QHostAddress PeerAddress; // Object to store peer address
-    int peer_udp_port; // Peer listening port
+    uint16_t peer_udp_port; // Peer listening port
     int server_udp_port; // Server assigned udp port
 
     // Create and bind the TCP server
@@ -167,7 +167,21 @@ void UdpHubListener::run()
             // Get UDP port from client
             // ------------------------
             peer_udp_port = readClientUdpPort(clientConnection);
-            if ( peer_udp_port == 0 ) { break; }
+            if ( peer_udp_port == 0 ) {
+                cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
+                cout << "JackTrip HUB SERVER: Exiting " << endl;
+                break;
+            }
+            if ( peer_udp_port < gBindPortLow ) {
+                cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
+                cout << "JackTrip HUB SERVER: Exiting " << endl;
+                break;
+            }
+            if ( peer_udp_port > gBindPortHigh ) {
+                cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
+                cout << "JackTrip HUB SERVER: Exiting " << endl;
+                break;
+            }
             cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
 
             // Check is client is new or not
@@ -301,13 +315,13 @@ void UdpHubListener::run()
 
 //*******************************************************************************
 // Returns 0 on error
-int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
+uint16_t UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
 {
     // Read the size of the package
     // ----------------------------
     //tcpClient.waitForReadyRead();
     cout << "JackTrip HUB SERVER: Reading UDP port from Client..." << endl;
-    while (clientConnection->bytesAvailable() < (int)sizeof(uint16_t)) {
+    while (clientConnection->bytesAvailable() < (qint64)sizeof(uint16_t)) {
         if (!clientConnection->waitForReadyRead()) {
             std::cerr << "TCP Socket ERROR: " << clientConnection->errorString().toStdString() <<  endl;
             return 0;
@@ -317,8 +331,8 @@ int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection)
     if (gVerboseFlag) cout << "Ready To Read From Client!" << endl;
     // Read UDP Port Number from Server
     // --------------------------------
-    int udp_port;
-    int size = sizeof(udp_port);
+    uint16_t udp_port = 0;
+    qint64 size = sizeof(udp_port);
     char port_buf[size];
     clientConnection->read(port_buf, size);
     std::memcpy(&udp_port, port_buf, size);

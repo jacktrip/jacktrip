@@ -442,6 +442,9 @@ void Settings::printUsage()
 void Settings::startJackTrip()
 {
 
+    if ((mBindPortNum < gBindPortLow) || (mBindPortNum > gBindPortHigh))
+        std::cout << "BindPort: "<< mBindPortNum << " outside range"  << std::endl;
+
     /// \todo Change this, just here to test
     if ( mJackTripServer ) {
         if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
