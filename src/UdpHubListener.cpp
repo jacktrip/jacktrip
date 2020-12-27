@@ -176,13 +176,31 @@ void UdpHubListener::receivedClientInfo(QTcpSocket *clientConnection)
     // ------------------------
     QString clientName = QString();
     cout << "JackTrip HUB SERVER: Reading UDP port from Client..." << endl;
-    if (clientConnection->bytesAvailable() < (int)sizeof(uint16_t)) {
+    if (clientConnection->bytesAvailable() < (qint64)sizeof(uint16_t)) {
         // We don't have enough data. Wait for the next readyRead notification.
         return;
     }
-    int peer_udp_port = readClientUdpPort(clientConnection, clientName);
+    uint16_t peer_udp_port= readClientUdpPort(clientConnection, clientName);
+
     //TODO: Check if this is the best way to handle this now that we've refactored this code.
-    if ( peer_udp_port == 0 ) { return; }
+    if ( peer_udp_port == 0 ) {
+        cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
+        cout << "JackTrip HUB SERVER: Exiting " << endl;
+        return;
+    }
+
+    if ( peer_udp_port < gBindPortLow ) {
+        cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
+        cout << "JackTrip HUB SERVER: Exiting " << endl;
+        return;
+    }
+
+    if ( peer_udp_port > gBindPortHigh ) {
+        cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
+        cout << "JackTrip HUB SERVER: Exiting " << endl;
+        return;
+    }
+
     cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
     
     // Check is client is new or not
@@ -333,13 +351,13 @@ void UdpHubListener::stopCheck()
 
 //*******************************************************************************
 // Returns 0 on error
-int UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection, QString &clientName)
+uint16_t UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection, QString &clientName)
 {
     if (gVerboseFlag) cout << "Ready To Read From Client!" << endl;
     // Read UDP Port Number from Server
     // --------------------------------
-    int udp_port;
-    int size = sizeof(udp_port);
+    uint16_t udp_port;
+    qint64 size = sizeof(udp_port);
     char port_buf[size];
     clientConnection->read(port_buf, size);
     std::memcpy(&udp_port, port_buf, size);

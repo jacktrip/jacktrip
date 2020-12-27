@@ -27,6 +27,11 @@
 - (update) build instructions
 
 ---
+1.2.2 (main)
+- (added) bindPort range to reject oddball connections
+- (fixed) jack client name strings
+
+---
 1.2.1 (master) (branch name will be deprecated)
 (main and dev) (new branches, respectively for stable and development)
 - (added) src/build script builds in ../builddir

@@ -109,7 +109,7 @@ private:
 
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
-    int readClientUdpPort(QTcpSocket* clientConnection, QString &clientName);
+    uint16_t readClientUdpPort(QTcpSocket* clientConnection);
     int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
 
 
