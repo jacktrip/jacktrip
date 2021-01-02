@@ -288,9 +288,11 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
     // If we haven't received our port, wait for more data to arrive.
     if (peer_udp_port == 0) { return; }
     
+    // At this stage, we should definitely only be dealing with a 16 bit integer. (Ignore the upper bytes.)
+    peer_udp_port &= 0xffff;
     cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
     
-    // Check is client is new or not
+    // Check if client is new or not
     // -----------------------------
     // Check if Address is not already in the thread pool
     // check by comparing address strings (To handle IPv4 and IPv6.)
