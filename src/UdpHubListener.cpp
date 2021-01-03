@@ -182,26 +182,13 @@ void UdpHubListener::receivedClientInfo(QTcpSocket *clientConnection)
     }
     uint16_t peer_udp_port= readClientUdpPort(clientConnection, clientName);
 
-    //TODO: Check if this is the best way to handle this now that we've refactored this code.
-    if ( peer_udp_port == 0 ) {
-        cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
-        cout << "JackTrip HUB SERVER: Exiting " << endl;
-        return;
-    }
-
-    if ( peer_udp_port < gBindPortLow ) {
-        cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
-        cout << "JackTrip HUB SERVER: Exiting " << endl;
-        return;
-    }
-
-    if ( peer_udp_port > gBindPortHigh ) {
-        cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
-        cout << "JackTrip HUB SERVER: Exiting " << endl;
-        return;
-    }
-
     cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
+    if ( peer_udp_port == 0 || peer_udp_port < gBindPortLow || peer_udp_port > gBindPortHigh ) {
+        cout << "JackTrip HUB SERVER: Exiting " << endl;
+        clientConnection->close();
+        clientConnection->deleteLater();
+        return;
+    }
     
     // Check is client is new or not
     // -----------------------------
