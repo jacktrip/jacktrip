@@ -612,7 +612,7 @@ void QJackTrip::start()
             QObject::connect(m_jackTrip.data(), &JackTrip::signalReceivedConnectionFromPeer, this,
                              &QJackTrip::receivedConnectionFromPeer, Qt::QueuedConnection);
             QObject::connect(m_jackTrip.data(), &JackTrip::signalUdpWaitingTooLong, this,
-                             &QJackTrip::udpWaitingTooLong);
+                             &QJackTrip::udpWaitingTooLong, Qt::QueuedConnection);
             QObject::connect(m_jackTrip.data(), &JackTrip::signalQueueLengthChanged, this, &QJackTrip::queueLengthChanged,
                              Qt::QueuedConnection);
             m_ui->statusBar->showMessage("Waiting for Peer...");

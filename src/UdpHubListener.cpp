@@ -292,11 +292,9 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
     peer_udp_port &= 0xffff;
     cout << "JackTrip HUB SERVER: Client UDP Port is = " << peer_udp_port << endl;
     
-    // Check if client is new or not
+    // Create a new JackTripWorker, but don't check if this is coming from an existing ip or port yet.
+    // We need to wait until we receive the port value from the UDP header to accomodate NAT.
     // -----------------------------
-    // Check if Address is not already in the thread pool
-    // check by comparing address strings (To handle IPv4 and IPv6.)
-    // If it is, a new JackTripWorker will be created, otherwise the existing one will be reused.
     int id = getJackTripWorker(PeerAddress.toString(), peer_udp_port, clientName);
     
     // Assign server port and send it to Client
@@ -538,52 +536,33 @@ void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 
 
 //*******************************************************************************
-// check by comparing 32-bit addresses
-int UdpHubListener::getJackTripWorker(QString address, uint16_t port, QString &clientName)
+int UdpHubListener::getJackTripWorker(QString address, __attribute__((unused)) uint16_t port, QString &clientName)
 {
+    //Find our first empty slot in our vector of worker object pointers.
+    //Return -1 if we have no space left for additional threads, or the index of the new JackTripWorker.
     QMutexLocker lock(&mMutex);
-    bool busyAddress = false;
-    int id = 0;
-
-    for (int i = 0; i<gMaxThreads; i++) {
-        if ( mJTWorkers->at(id) != nullptr && address == mJTWorkers->at(id)->getClientAddress() &&
-            port == mJTWorkers->at(id)->getServerPort() )
-        {
+    int id = -1;
+    for (int i = 0; i < gMaxThreads; i++) {
+        if (mJTWorkers->at(i) == nullptr) {
             id = i;
-            busyAddress = true;
+            i = gMaxThreads;
         }
-    }
-    if ( !busyAddress ) {
-        id = 0;
-        bool foundEmptyAddress = false;
-        while ( !foundEmptyAddress && (id<gMaxThreads) ) {
-            if ( mJTWorkers->at(id) == nullptr ) {
-                foundEmptyAddress = true;
-            } else {
-                id++;
-            }
-        }
-        if (!foundEmptyAddress) {
-            //Out of available threads.
-            return -1;
-        }
-    }
-    if (!busyAddress) {
-        mTotalRunningThreads++;
-        mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
     }
     
-    cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
-    mJTWorkers->at(id)->setJackTrip(id,
-                                    address,
-                                    mBasePort + id,
-                                    port,
-                                    1,
-                                    m_connectDefaultAudioPorts
-                                    ); /// \todo temp default to 1 channel
+    if (id >= 0) {
+        mTotalRunningThreads++;
+        mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
+        mJTWorkers->at(id)->setJackTrip(id,
+                                        address,
+                                        mBasePort + id,
+                                        0, //Set client port to 0 initially until we receive a UDP packet.
+                                        1,
+                                        m_connectDefaultAudioPorts
+                                        ); //
+    }
+    
     return id;
 }
-
 
 //*******************************************************************************
 int UdpHubListener::getPoolID(QString address, uint16_t port)
@@ -633,6 +612,23 @@ int UdpHubListener::releaseThread(int id, QString clientName)
     mJTWorkers->at(id)->deleteLater();
     mJTWorkers->replace(id, nullptr);
     return 0; /// \todo Check if we really need to return an argument here
+}
+
+void UdpHubListener::releaseDuplicateThreads(JackTripWorker* worker, uint16_t actual_peer_port)
+{
+    QMutexLocker lock(&mMutex);
+    //Now that we have our actual port, remove any duplicate workers.
+    for (int i = 0; i < gMaxThreads; i++) {
+        if ( mJTWorkers->at(i) != nullptr && worker->getClientAddress() == mJTWorkers->at(i)->getClientAddress() &&
+            actual_peer_port == mJTWorkers->at(i)->getClientPort() )
+        {
+            mJTWorkers->at(i)->stopThread();
+            mJTWorkers->at(i)->deleteLater();
+            mJTWorkers->replace(i, nullptr);
+            mTotalRunningThreads--;
+        }
+    }
+    worker->setClientPort(actual_peer_port);
 }
 
 #ifdef WAIR // wair

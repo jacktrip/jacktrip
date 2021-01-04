@@ -114,6 +114,7 @@ public:
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
     
+    void setClientPort(uint16_t port) { mClientPort = port; }
     QString getAssignedClientName() { return mAssignedClientName; }
     uint16_t getServerPort() { return mServerPort; }
     uint16_t getClientPort() { return mClientPort; }

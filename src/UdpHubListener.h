@@ -86,6 +86,7 @@ public:
     void registerClientWithPatcher(QString &clientName);
     void unregisterClientWithPatcher(QString &clientName);
     int releaseThread(int id, QString clientName = "");
+    void releaseDuplicateThreads(JackTripWorker *worker, uint16_t actual_peer_port);
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
     {
