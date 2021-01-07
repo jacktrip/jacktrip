@@ -630,6 +630,9 @@ void Settings::printUsage()
 //*******************************************************************************
 UdpHubListener *Settings::getConfiguredHubServer()
 {
+    if ((mBindPortNum < gBindPortLow) || (mBindPortNum > gBindPortHigh))
+        std::cout << "BindPort: "<< mBindPortNum << " outside range"  << std::endl;
+
     if (gVerboseFlag) std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
     UdpHubListener *udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum);
     //udpHub->setSettings(this);
