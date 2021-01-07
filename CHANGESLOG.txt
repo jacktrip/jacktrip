@@ -1,5 +1,5 @@
 ---
-1.3.0 (beta.rc.1.3.0)
+1.3.0
 - (added) async networking in hub listener
 - (added) limiter, compressor, reverb
 - (added) examine audio delay
@@ -25,6 +25,11 @@
 - (update) RT thread priority for network I/O
 - (update) clipping to saturation
 - (update) build instructions
+
+---
+1.2.2 (main)
+- (added) bindPort range to reject oddball connections
+- (fixed) jack client name strings
 
 ---
 1.2.1 (master) (branch name will be deprecated)
