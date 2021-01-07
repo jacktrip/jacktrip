@@ -121,6 +121,7 @@ void JackTripWorker::setJackTrip(int id,
     mClientPort = client_port;
     mNumChans = num_channels;
     m_connectDefaultAudioPorts = connectDefaultAudioPorts;
+    mAssignedClientName = "";
     
     // Create and setup JackTrip Object
     //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
@@ -210,6 +211,10 @@ void JackTripWorker::start()
     mJackTrip->setBroadcast(mBroadcastQueue);
     mJackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
 
+    mTimeoutTimer.setInterval(mSleepTime);
+    connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTripWorker::udpTimerTick);
+    mElapsedTime = 0;
+    mTimeoutTimer.start();
     if (gVerboseFlag) cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
     if ( !mUdpSockTemp.bind(QHostAddress::Any, mServerPort,
                             QUdpSocket::DefaultForPlatform) )
@@ -217,10 +222,6 @@ void JackTripWorker::start()
         std::cerr << "in JackTripWorker: Could not bind UDP socket. It may already be bound." << endl;
         throw std::runtime_error("Could not bind UDP socket. It may already be bound.");
     }
-    mTimeoutTimer.setInterval(mSleepTime);
-    connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTripWorker::udpTimerTick);
-    mElapsedTime = 0;
-    mTimeoutTimer.start();
 }  
     
     
@@ -257,16 +258,13 @@ void JackTripWorker::stopThread()
         mRunning = false;
         mJackTrip->slotStopProcesses();
         if (mPatched) {
-            mUdpHubListener->releaseThread(mID, mAssignedClientName);
+            mUdpHubListener->unregisterClientWithPatcher(mAssignedClientName);
             mPatched = false;
-        } else {
-            mUdpHubListener->releaseThread(mID);
         }
     } else if (mSpawning) {
         mSpawning = false;
         mUdpSockTemp.close();
         mTimeoutTimer.stop();
-        mUdpHubListener->releaseThread(mID);
     }
 }
 
@@ -363,11 +361,10 @@ void JackTripWorker::jacktripStopped()
     }
     mRunning = false;
     if (mPatched) {
-        mUdpHubListener->releaseThread(mID, mAssignedClientName);
+        mUdpHubListener->unregisterClientWithPatcher(mAssignedClientName);
         mPatched = false;
-    } else {
-        mUdpHubListener->releaseThread(mID);
     }
+    mUdpHubListener->releaseThread(mID);
 }
 
 void JackTripWorker::alertPatcher()

@@ -598,17 +598,13 @@ void UdpHubListener::unregisterClientWithPatcher(QString& clientName)
 }
 
 //*******************************************************************************
-int UdpHubListener::releaseThread(int id, QString clientName)
+int UdpHubListener::releaseThread(int id)
 {
     QMutexLocker lock(&mMutex);
     mTotalRunningThreads--;
 #ifdef WAIR // wair
     if (isWAIR()) connectMesh(false); // invoked with -Sw
 #endif // endwhere
-    //Don't bother notifying our patcher if we're shutting down.
-    if (!sSigInt && !mStopped && !clientName.isEmpty()) {
-        connectPatch(false, clientName); // invoked with -p > 0
-    }
     mJTWorkers->at(id)->deleteLater();
     mJTWorkers->replace(id, nullptr);
     return 0; /// \todo Check if we really need to return an argument here

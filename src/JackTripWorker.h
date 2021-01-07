@@ -94,7 +94,7 @@ public:
                      int num_channels,
                      bool connectDefaultAudioPorts
                      );
-    /// Stop and remove thread from pool
+    /// Stop thread
     void stopThread();
     int getID()
     {
