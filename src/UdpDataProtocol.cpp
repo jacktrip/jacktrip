@@ -656,7 +656,7 @@ void UdpDataProtocol::run()
     }
 
     if (NULL != full_redundant_packet) {
-        delete full_redundant_packet;
+        delete[] full_redundant_packet;
         full_redundant_packet = NULL;
     }
 }
