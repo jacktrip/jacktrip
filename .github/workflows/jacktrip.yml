@@ -8,6 +8,8 @@ jobs:
       fail-fast: false # don't abort if one of the build failse
       matrix:
         include:
+          - name: Linux
+            runs-on: ubuntu-18.04
           - name: macOS
             runs-on: macos-10.15
 
@@ -16,7 +18,11 @@ jobs:
       BUILD_PATH: ${{ github.workspace }}/builddir
     steps:
       - uses: actions/checkout@v2
-      - name: install dependencies on macOS
+      - name: install dependencies for Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install --yes libjack-dev qt5-default qt5-qmake qttools5-dev
+      - name: install dependencies for macOS
         if: runner.os == 'macOS'
         env:
           HOMEBREW_NO_ANALYTICS: 1
