@@ -1,4 +1,32 @@
 ---
+1.3.0 (beta.rc.1.3.0)
+- (added) async networking in hub listener
+- (added) limiter, compressor, reverb
+- (added) examine audio delay
+- (added) jitter buffer alternatives
+- (added) broadcast output ports
+- (added) PREFIX variable for installation path
+- (added) disconnect on timeout
+- (added) SIGTERM
+- (added) simulate packet loss, jitter
+- (added) hubpatch 5, no auto patching
+- (added) jack client name length check
+- (added) scripts/hubMode/test_hub_mode_server_and_client.sh
+- (fixed) misc. typos, indentation
+- (fixed) short form IO stat options
+- (fixed) nullptr jack server name when creating jack client
+- (fixed) stop ring buffer blocking when jack has been stopped
+- (fixed) JMess handling of non-western characters
+- (fixed) closing curly brace on mJackTrip client creation
+- (fixed) Warnings
+- (fixed) remove rtaudio device and mpeeraddress msgs.
+- (fixed) signal and slot connections
+- (fixed) incorrect dependency from jacktrip_main
+- (update) RT thread priority for network I/O
+- (update) clipping to saturation
+- (update) build instructions
+
+---
 1.2.2 (main)
 - (added) bindPort range to reject oddball connections
 - (fixed) jack client name strings

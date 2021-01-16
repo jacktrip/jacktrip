@@ -44,6 +44,9 @@
 #include <QObject>
 #include <QString>
 #include <QUdpSocket>
+#include <QTcpSocket>
+#include <QTimer>
+#include <QSharedPointer>
 
 #include "DataProtocol.h"
 #include "AudioInterface.h"
@@ -54,8 +57,9 @@
 
 #include "PacketHeader.h"
 #include "RingBuffer.h"
+#include "AudioTester.h"
 
-#include <signal.h>
+//#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
  * to a listening server) to send audio streams in the network.
  *
@@ -64,7 +68,7 @@
  * Classes that uses JackTrip methods need to register with it.
  */
 
-class JackTrip : public QThread
+class JackTrip : public QObject
 {
     Q_OBJECT;
 
@@ -80,8 +84,8 @@ public:
 
     /// \brief Enum for the JackTrip mode
     enum jacktripModeT {
-        SERVER, ///< Run in Server Mode
-        CLIENT,  ///< Run in Client Mode
+        SERVER, ///< Run in P2P Server Mode
+        CLIENT,  ///< Run in P2P Client Mode
         CLIENTTOPINGSERVER, ///< Client of the Ping Server Mode
         SERVERPINGSERVER ///< Server of the MultiThreaded JackTrip
     };
@@ -111,7 +115,8 @@ public:
         CLIENTECHO,  ///< Client Echo (client self-to-self)
         CLIENTFOFI,  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
         RESERVEDMATRIX,  ///< Reserved for custom patch matrix (for TUB ensemble)
-        FULLMIX  ///< Client Fan Out to Clients and Fan In from Clients (including self-to-self)
+        FULLMIX,  ///< Client Fan Out to Clients and Fan In from Clients (including self-to-self)
+        NOAUTO  ///< No automatic patching
     };
     //---------------------------------------------------------
 
@@ -133,9 +138,9 @@ public:
              int BufferQueueLength = gDefaultQueueLength,
              unsigned int redundancy = gDefaultRedundancy,
              AudioInterface::audioBitResolutionT AudioBitResolution =
-            AudioInterface::BIT16,
+             AudioInterface::BIT16,
              DataProtocol::packetHeaderTypeT PacketHeaderType =
-            DataProtocol::DEFAULT,
+             DataProtocol::DEFAULT,
              underrunModeT UnderRunMode = WAVETABLE,
              int receiver_bind_port = gDefaultPort,
              int sender_bind_port = gDefaultPort,
@@ -145,20 +150,26 @@ public:
 
     /// \brief The class destructor
     virtual ~JackTrip();
+    
+    static void sigIntHandler(__attribute__((unused)) int unused)
+    { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
+    static bool sSigInt;
+    static bool sJackStopped;
 
     /// \brief Starting point for the thread
-    virtual void run() {
+    /*virtual void run() {
         if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->run" << std::endl;
-    }
+    }*/
 
     /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
-    virtual void setPeerAddress(const char* PeerHostOrIP);
+    virtual void setPeerAddress(QString PeerHostOrIP);
 
     /** \brief Append a process plugin. Processes will be appended in order
    * \param plugin Pointer to ProcessPlugin Class
    */
     //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
-    virtual void appendProcessPlugin(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
+    virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
 
     /// \brief Start the processing threads
     virtual void startProcess(
@@ -166,9 +177,10 @@ public:
             int ID
         #endif // endwhere
             );
+    virtual void completeConnection();
 
     /// \brief Stop the processing threads
-    virtual void stop();
+    virtual void stop(QString errorMessage = "");
 
     /// \brief Wait for all the threads to finish. This functions is used when JackTrip is
     /// run as a thread
@@ -199,12 +211,17 @@ public:
     /// \brief Sets (override) Buffer Queue Length Mode after construction
     virtual void setBufferQueueLength(int BufferQueueLength)
     { mBufferQueueLength = BufferQueueLength; }
+    virtual void setBufferStrategy(int BufferStrategy)
+    { mBufferStrategy = BufferStrategy; }
     /// \brief Sets (override) Audio Bit Resolution after construction
     virtual void setAudioBitResolution(AudioInterface::audioBitResolutionT AudioBitResolution)
     { mAudioBitResolution = AudioBitResolution; }
     /// \brief Sets (override) Underrun Mode
     virtual void setUnderRunMode(underrunModeT UnderRunMode)
     { mUnderRunMode = UnderRunMode; }
+    /// \brief Sets whether to quit on timeout.
+    virtual void setStopOnTimeout(bool stopOnTimeout)
+    { mStopOnTimeout = stopOnTimeout; }
     /// \brief Sets port numbers for the local and peer machine.
     /// Receive port is <tt>port</tt>
     virtual void setAllPorts(int port)
@@ -229,9 +246,14 @@ public:
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString clientName)
     { mJackClientName = clientName; }
+    virtual void setRemoteClientName(QString remoteClientName)
+    { mRemoteClientName = remoteClientName; }
     /// \brief Set the number of audio channels
     virtual void setNumChannels(int num_chans)
     { mNumChans = num_chans; }
+    
+    virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
+    virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
 
     /// Set to connect or not default audio ports (only implemented in Jack)
     virtual void setConnectDefaultAudioPorts(bool connect)
@@ -274,7 +296,9 @@ public:
     { mAudiointerfaceMode = audiointerface_mode; }
     virtual void setAudioInterface(AudioInterface* const AudioInterface)
     { mAudioInterface = AudioInterface; }
-
+    virtual void setLoopBack(bool b)
+    { mLoopBack = b; }
+    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
 
     void setSampleRate(uint32_t sample_rate)
     { mSampleRate = sample_rate; }
@@ -305,6 +329,7 @@ public:
 
     bool tcpConnectionError()
     { return mTcpConnectionError; }
+
     //@}
     //------------------------------------------------------------------------------------
 
@@ -318,13 +343,15 @@ public:
     virtual int getPacketSizeInBytes();
     void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
-    { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot); }
+    { mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0); }
+    virtual void receiveBroadcastPacket(int8_t* ptrToReadSlot)
+    { mReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot); }
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
     { mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot); }
     virtual void readAudioBuffer(int8_t* ptrToReadSlot)
     { mSendRingBuffer->readSlotBlocking(ptrToReadSlot); }
-    virtual void writeAudioBuffer(const int8_t* ptrToSlot)
-    { mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot); }
+    virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, int lostLen)
+    { return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen); }
     uint32_t getBufferSizeInSamples() const
     { return mAudioBufferSize; /*return mAudioInterface->getBufferSizeInSamples();*/ }
     uint32_t getDeviceID() const
@@ -393,16 +420,21 @@ public:
     void printTextTest() {std::cout << "=== JackTrip PRINT ===" << std::endl;}
     void printTextTest2() {std::cout << "=== JackTrip PRINT2 ===" << std::endl;}
 
-    void startIOStatTimer(int timeout_sec, const std::ostream& log_stream);
+    void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
+    {
+        mSimulatedLossRate = loss;
+        mSimulatedJitterRate = jitter;
+        mSimulatedDelayRel = delay_rel;
+    }
+    void setBroadcast(int broadcast_queue) {mBroadcastQueueLength = broadcast_queue;}
+    void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
 
 public slots:
     /// \brief Slot to stop all the processes and threads
     virtual void slotStopProcesses()
-    {
-        std::cout << "Stopping JackTrip..." << std::endl;
-        mStopped = true;
-        this->stop();
-    }
+    { this->stop(); }
+    virtual void slotStopProcessesDueToError(const QString &errorMessage)
+    { this->stop(errorMessage); }
 
     /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds
    * when UDP has waited for more than 30 seconds.
@@ -414,25 +446,37 @@ public slots:
         int wait_time = 10000; // msec
         if ( !(wait_msec%wait_time) ) {
             std::cerr << "UDP WAITED MORE THAN 10 seconds." << std::endl;
+            if (mStopOnTimeout) {
+                stop("No network data received for 10 seconds");
+            }
             emit signalNoUdpPacketsForSeconds();
         }
     }
+    void slotUdpWaitingTooLong()
+    { emit signalUdpWaitingTooLong(); }
     void slotPrintTest()
     { std::cout << "=== TESTING ===" << std::endl; }
     void slotReceivedConnectionFromPeer()
-    { mReceivedConnection = true; }
+    { mReceivedConnection = true; emit signalReceivedConnectionFromPeer(); }
     void onStatTimer();
-
+    
+private slots:
+    void receivedConnectionTCP();
+    void receivedDataTCP();
+    void receivedDataUDP();
+    void udpTimerTick();
+    void tcpTimerTick();
 
 signals:
-
-    void signalUdpTimeOut();
+    //void signalUdpTimeOut();
     /// \brief Signal emitted when all the processes and threads are stopped
     void signalProcessesStopped();
     /// \brief Signal emitted when no UDP Packets have been received for a while
     void signalNoUdpPacketsForSeconds();
     void signalTcpClientConnected();
-
+    void signalError(const QString &errorMessage);
+    void signalReceivedConnectionFromPeer();
+    void signalUdpWaitingTooLong();
 
 public:
 
@@ -475,10 +519,13 @@ private:
     int mNumNetRevChans; ///< Number of Network Audio Channels (net comb filters)
 #endif // endwhere
     int mBufferQueueLength; ///< Audio Buffer from network queue length
+    int mBufferStrategy;
+    int mBroadcastQueueLength;
     uint32_t mSampleRate; ///< Sample Rate
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mAudioBufferSize; ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution; ///< Audio Bit Resolutions
+    bool mLoopBack;
     QString mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
 
     /// Pointer to Abstract Type DataProtocol that sends packets
@@ -488,6 +535,7 @@ private:
     AudioInterface* mAudioInterface; ///< Interface to Jack Client
     PacketHeader* mPacketHeader; ///< Pointer to Packet Header
     underrunModeT mUnderRunMode; ///< underrunModeT Mode
+    bool mStopOnTimeout; ///< Stop on 10 second timeout
 
     /// Pointer for the Send RingBuffer
     RingBuffer* mSendRingBuffer;
@@ -502,18 +550,36 @@ private:
 
     unsigned int mRedundancy; ///< Redundancy factor in network data
     QString mJackClientName; ///< JackAudio Client Name
+    QString mRemoteClientName; ///< Remote JackAudio Client Name for hub client mode
 
     JackTrip::connectionModeT mConnectionMode; ///< Connection Mode
     JackTrip::hubConnectionModeT mHubConnectionModeT; ///< Hub Server Jack Audio Patch Connection Mode
 
-    QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
+    
+    QTimer mTimeoutTimer;
+    int mSleepTime;
+    int mElapsedTime;
+    int mEndTime;
+    QTcpSocket mTcpClient;
+    QUdpSocket mUdpSockTemp;
 
     volatile bool mReceivedConnection; ///< Bool of received connection from peer
     volatile bool mTcpConnectionError;
     volatile bool mStopped;
+    volatile bool mHasShutdown;
 
     bool mConnectDefaultAudioPorts; ///< Connect or not default audio ports
+    QSharedPointer<std::ofstream> mIOStatStream;
+    int mIOStatTimeout;
     std::ostream mIOStatLogStream;
+    double mSimulatedLossRate;
+    double mSimulatedJitterRate;
+    double mSimulatedDelayRel;
+    bool mUseRtUdpPriority;
+
+    AudioTester* mAudioTesterP;
 };
 
 #endif

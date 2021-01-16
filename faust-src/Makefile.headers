@@ -1,0 +1,27 @@
+dspsrc  := $(wildcard *.dsp)
+headers  := $(addprefix $(DEST), $(dspsrc:.dsp=.h))
+
+all :  $(headers)
+
+FAUST = faust --inline-architecture-files --in-place
+# --in-place (-inpl) means the input signal array can be used
+#           as the output signal array in the compute() function.
+# --inline-architecture-files (-i) means that all Faust headers
+#           and include files get included in the output C++ file
+#           so that it can be compiled without a Faust installation
+#           on the compiling machine.
+
+$(DEST)%.h : %.dsp
+	$(FAUST) $(VEC) -cn $(<:.dsp=) -a $(ARCH) $< -o $(DEST)$(<:.dsp=).h
+	#(cat $(@:.h=).cpp | sed -e s/mydsp/$(<:.dsp=)/g) > $@
+	#/bin/rm $(@:.h=).cpp
+
+# Probably needed for headers after the first: (cat $(@:.h=).cpp | sed -e /template/d | sed -e s/mydsp/$(<:.dsp=)/g) > $@
+
+clean :
+	rm -f $(DEST)
+
+# Working example:
+# lh limiterdsp.h: limiterdsp.dsp
+#	faust -inpl -cn limiterdsp -a faust2header.cpp limiterdsp.dsp -o limiterdsp.cpp
+#	(cat limiterdsp.cpp | sed -e /template/d | sed -e s/mydsp/limiterdsp/g) > limiterdsp.h

@@ -165,7 +165,7 @@ public:
 
 
 signals:
-    void signalError(const char* error_message);
+    void signalError(const QString &error_message);
 
 
 private:

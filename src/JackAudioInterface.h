@@ -78,7 +78,7 @@ public:
                        int NumNetRevChans,
                    #endif // endwhere
                        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-                       const char* ClientName = "JackTrip");
+                       QString ClientName = "JackTrip");
     /// \brief The class destructor
     virtual ~JackAudioInterface();
 
@@ -104,6 +104,7 @@ public:
     { std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
     virtual void setBufferSizeInSamples(uint32_t /*buf_size*/)
     { std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect." << std::endl; }
+    virtual void enableBroadcastOutput() {mBroadcast = true;}
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -113,7 +114,7 @@ public:
     virtual uint32_t getBufferSizeInSamples() const;
     /// \brief Get the Jack Server Buffer Size, in bytes
     virtual uint32_t getBufferSizeInBytes() const
-    { return (getBufferSizeInSamples() * getAudioBitResolution()/8); }
+    { return (getBufferSizeInSamples() * getAudioBitResolution() / 8); }
     /// \brief Get size of each audio per channel, in bytes
     virtual size_t getSizeInBytesPerChannel() const;
     //------------------------------------------------------------------
@@ -177,8 +178,11 @@ private:
     QString mClientName; ///< Jack Client Name
     QVarLengthArray<jack_port_t*> mInPorts; ///< Vector of Input Ports (Channels)
     QVarLengthArray<jack_port_t*> mOutPorts; ///< Vector of Output Ports (Channels)
+    QVarLengthArray<jack_port_t*> mBroadcastPorts; ///< Vector of Output Ports (Channels)
     QVarLengthArray<sample_t*> mInBuffer; ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<sample_t*> mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
+    QVarLengthArray<sample_t*> mBroadcastBuffer; ///< Vector of Output buffer/channel to write to JACK
+    bool mBroadcast;
     size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
     QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
     JackTrip* mJackTrip; ///< JackTrip mediator class

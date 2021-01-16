@@ -126,6 +126,7 @@ extern int gVerboseFlag; ///< Verbose mode flag declaration
 //@{
 const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
 const QString gJackDefaultClientName = "JackTrip";
+const int gMaxRemoteNameLength = 64;
 //@}
 
 

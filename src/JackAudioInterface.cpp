@@ -66,7 +66,7 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
                                        int NumNetRevChans,
                                        #endif // endwhere
                                        AudioInterface::audioBitResolutionT AudioBitResolution,
-                                       const char* ClientName) :
+                                       QString ClientName) :
     AudioInterface(jacktrip,
                    NumInChans, NumOutChans,
                    #ifdef WAIR // wair
@@ -81,6 +81,7 @@ JackAudioInterface::JackAudioInterface(JackTrip* jacktrip,
     mBitResolutionMode(AudioBitResolution),
     mClient(NULL),
     mClientName(ClientName),
+    mBroadcast(false),
     mJackTrip(jacktrip)
 {}
 
@@ -171,6 +172,7 @@ void JackAudioInterface::setupClient()
     // Initialize Buffer array to read and write audio
     mInBuffer.resize(mNumInChans);
     mOutBuffer.resize(mNumOutChans);
+    mBroadcastBuffer.resize(mNumOutChans);
 }
 
 
@@ -197,6 +199,18 @@ void JackAudioInterface::createChannels()
         mOutPorts[i] = jack_port_register (mClient, outName.toLatin1(),
                                            JACK_DEFAULT_AUDIO_TYPE,
                                            JackPortIsOutput, 0);
+    }
+    //Create Broadcast Ports
+    if (mBroadcast) {
+        mBroadcastPorts.resize(mNumOutChans);
+        for (int i = 0; i < mNumInChans; i++)
+        {
+            QString outName;
+            QTextStream (&outName) << "broadcast_" << i+1;
+            mBroadcastPorts[i] = jack_port_register (mClient, outName.toLatin1(),
+                                               JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsOutput, 0);
+        }
     }
 }
 
@@ -273,7 +287,9 @@ int JackAudioInterface::stopProcess() const
 void JackAudioInterface::jackShutdown (void*)
 {
     //std::cout << "The Jack Server was shut down!" << std::endl;
-    throw std::runtime_error("The Jack Server was shut down!");
+    JackTrip::sJackStopped = true;
+    std::cout << "The Jack Server was shut down!" << std::endl;
+    //throw std::runtime_error("The Jack Server was shut down!");
     //std::cout << "Exiting program..." << std::endl;
     //std::exit(1);
 }
@@ -283,10 +299,15 @@ void JackAudioInterface::jackShutdown (void*)
 //*******************************************************************************
 int JackAudioInterface::processCallback(jack_nframes_t nframes)
 {
+  if(mProcessingAudio) {
+    std::cerr << "*** JackAudioInterface.cpp: DROPPED A BUFFER because AudioInterface::callback() not finished\n";
+    return 1;
+  }
+
     // Get input and output buffers from JACK
     //-------------------------------------------------------------------
     for (int i = 0; i < mNumInChans; i++) {
-        // Input Ports are READ ONLY
+        // Input Ports are READ ONLY and change as needed (no locks) - make a copy for debugging
         mInBuffer[i] = (sample_t*) jack_port_get_buffer(mInPorts[i], nframes);
     }
     for (int i = 0; i < mNumOutChans; i++) {
@@ -302,6 +323,14 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
     //-------------------------------------------------------------------
 
     AudioInterface::callback(mInBuffer, mOutBuffer, nframes);
+
+    if (mBroadcast) {
+        for (int i = 0; i < mNumOutChans; i++) {
+            // Broadcast Ports are WRITABLE
+            mBroadcastBuffer[i] = (sample_t*) jack_port_get_buffer(mBroadcastPorts[i], nframes);
+        }
+        AudioInterface::broadcastCallback(mBroadcastBuffer, nframes);
+    }
     return 0;
 }
 
@@ -377,7 +406,7 @@ void JackAudioInterface::connectDefaultPorts()
 
 
 
-// OLD CODE
+// OLD CODE (some moved to parent class AudioInterface.cpp)
 // ==============================================================================
 
 //*******************************************************************************
