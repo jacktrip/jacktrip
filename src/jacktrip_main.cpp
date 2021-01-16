@@ -38,75 +38,115 @@
 #include <iostream>
 
 #include <QCoreApplication>
-#include <QDebug>
+#include <QScopedPointer>
+#include <iostream>
+#include <signal.h>
+#include "jacktrip_globals.h"
+#include "Settings.h"
+#include "UdpHubListener.h"
 #include <QLoggingCategory>
 
-#include "JackAudioInterface.h"
-#include "UdpDataProtocol.h"
-#include "RingBuffer.h"
-#include "JackTrip.h"
-#include "Settings.h"
-//#include "TestRingBuffer.h"
-#include "LoopBack.h"
-#include "PacketHeader.h"
-//#include "JackTripThread.h"
-#ifdef __RT_AUDIO__
-#include "RtAudioInterface.h"
-#endif
-#include "jacktrip_tests.cpp"
-#include "jacktrip_globals.h"
-
-
-void qtMessageHandler(QtMsgType /*type*/, const QMessageLogContext& /*context*/, const QString& msg)
+void qtMessageHandler(__attribute__((unused)) QtMsgType type, __attribute__((unused)) const QMessageLogContext &context, const QString &msg)
 {
     std::cerr << msg.toStdString() << std::endl;
 }
 
-int main(int argc, char** argv)
+#if defined (__LINUX__) || (__MAC_OSX__)
+static int setupUnixSignalHandler(void (*handler)(int))
+{
+    //Setup our SIGINT handler.
+    struct sigaction sigInt;
+    sigInt.sa_handler = handler;
+    sigemptyset(&sigInt.sa_mask);
+    sigInt.sa_flags = 0;
+    sigInt.sa_flags |= SA_RESTART;
+
+    int result = 0;
+    if (sigaction(SIGINT, &sigInt, 0)) {
+        std::cout << "Unable to register SIGINT handler" << std::endl;
+        result |= 1;
+    }
+    if (sigaction(SIGTERM, &sigInt, 0)) {
+        std::cout << "Unable to register SIGTERM handler" << std::endl;
+        result |= 2;
+    }
+    return result;
+}
+#else
+bool isHubServer = false;
+
+BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
+{
+    switch (fdwCtrlType) {
+        case CTRL_C_EVENT:
+            if (isHubServer) {
+                UdpHubListener::sigIntHandler(0);
+            } else {
+                JackTrip::sigIntHandler(0);
+            }
+            return true;
+        default:
+            return false;
+    }
+}
+#endif
+
+int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+    QScopedPointer<JackTrip> jackTrip;
+    QScopedPointer<UdpHubListener> udpHub;
+    
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
 
-    bool testing = false;
-    if ( argc > 1 ) {
-        if ( !strcmp(argv[1], "test") ) {
-            testing = true;
+    try {
+        Settings settings;
+        settings.parseInput(argc, argv);
+        
+        //Either start our hub server or our jacktrip process as appropriate.
+        if (settings.isHubServer()) {
+            udpHub.reset(settings.getConfiguredHubServer());
+            if (gVerboseFlag) std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
+            QObject::connect(udpHub.data(), &UdpHubListener::signalStopped, &app,
+                             &QCoreApplication::quit, Qt::QueuedConnection);
+            QObject::connect(udpHub.data(), &UdpHubListener::signalError, &app,
+                             &QCoreApplication::quit, Qt::QueuedConnection);
+#if defined (__LINUX__) || (__MAC_OSX__)
+            setupUnixSignalHandler(UdpHubListener::sigIntHandler);
+#else
+            isHubServer = true;
+            SetConsoleCtrlHandler(windowsCtrlHandler, true);
+#endif
+            udpHub->start();
+        } else {
+            jackTrip.reset(settings.getConfiguredJackTrip());
+            if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
+            QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app,
+                             &QCoreApplication::quit, Qt::QueuedConnection);
+            QObject::connect(jackTrip.data(), &JackTrip::signalError, &app,
+                             &QCoreApplication::quit, Qt::QueuedConnection);
+#if defined (__LINUX__) || (__MAC_OSX__)
+            setupUnixSignalHandler(JackTrip::sigIntHandler);
+#else
+            std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
+#endif
+#ifdef WAIRTOHUB // WAIR
+            jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
+#else
+            jackTrip->startProcess();
+#endif // endwhere
         }
+        
+        if (gVerboseFlag) std::cout << "step 6" << std::endl;
+        if (gVerboseFlag) std::cout << "jmain before app->exec()" << std::endl;
+    } catch (const std::exception &e) {
+        std::cerr << "ERROR:" << std::endl;
+        std::cerr << e.what() << std::endl;
+        std::cerr << "Exiting JackTrip..." << std::endl;
+        std::cerr << gPrintSeparator << std::endl;
+        return -1;
     }
-
-    if ( testing ) {
-        std::cout << "=========TESTING=========" << std::endl;
-        //main_tests(argc, argv); // test functions
-        JackTrip jacktrip;
-        //RtAudioInterface rtaudio(&jacktrip);
-        //rtaudio.setup();
-        //rtaudio.listAllInterfaces();
-        //rtaudio.printDeviceInfo(0);
-
-        //while (true) sleep(9999);
-    }
-    else {
-        // catch all potential exeptions
-        try
-        {
-            // Get Settings from user
-            // ----------------------
-            Settings* settings = new Settings;
-            settings->parseInput(argc, argv);
-            settings->startJackTrip();
-        }
-        catch ( const std::exception & e )
-        {
-            std::cerr << "ERROR:" << std::endl;
-            std::cerr << e.what() << std::endl;
-            std::cerr << "Exiting JackTrip..." << std::endl;
-            std::cerr << gPrintSeparator << std::endl;
-            return -1;
-        }
-    }
-    if (gVerboseFlag) std::cout << "step 6" << std::endl;
-    if (gVerboseFlag) std::cout << "jacktrip_main before app.exec()" << std::endl;
-
+    
     return app.exec();
 }

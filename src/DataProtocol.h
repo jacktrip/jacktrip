@@ -180,11 +180,14 @@ public:
     };
     virtual bool getStats(PktStat*) {return false;}
 
+    virtual void setIssueSimulation(double /*loss*/, double /*jitter*/, double /*max_delay*/) {}
+    void setUseRtPriority(bool use) {mUseRtPriority = use;}
+
 signals:
 
     void signalError(const char* error_message);
     void signalReceivedConnectionFromPeer();
-
+    void signalCeaseTransmission(const QString &reason = "");
 
 protected:
 
@@ -222,6 +225,7 @@ private:
 protected:
     //PacketHeader* mHeader; ///< Packet Header
     JackTrip* mJackTrip; ///< JackTrip mediator class
+    bool mUseRtPriority;
 
 };
 

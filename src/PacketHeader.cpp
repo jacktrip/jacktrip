@@ -133,11 +133,11 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
     // Check Buffer Size
     if ( peer_header->BufferSize != mHeader.BufferSize )
     {
-        std::cerr << "ERROR: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
-        std::cerr << "       Local Buffer Size is : " << mHeader.BufferSize << endl;
-        std::cerr << "Make sure both machines use same buffer size" << endl;
-        std::cerr << gPrintSeparator << endl;
-        error = true;
+        std::cerr << "WARNING: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
+        std::cerr << "         Local Buffer Size is : " << mHeader.BufferSize << endl;
+        //std::cerr << "Make sure both machines use same buffer size" << endl;
+        //std::cerr << gPrintSeparator << endl;
+        //error = true;
     }
 
     // Check Sampling Rate

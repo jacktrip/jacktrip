@@ -40,6 +40,7 @@
 
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
+#include "AudioTester.h"
 
 #include <QVarLengthArray>
 #include <QVector>
@@ -115,16 +116,33 @@ public:
     * \param in_buffer Array of output audio samplers for each channel. The user
     * is reponsible to check that each channel has n_frames samplers
     */
+    virtual void broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
+                          unsigned int n_frames);
     virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
                           QVarLengthArray<sample_t*>& out_buffer,
                           unsigned int n_frames);
-    /** \brief Append a ProcessPlugin. The order of processing is determined by
-   * the order by which appending is done.
-   * \param plugin a ProcesPlugin smart pointer. Create the object instance
+   /** \brief appendProcessPluginToNetwork(): Append a ProcessPlugin for outgoing audio. 
+   * The processing order equals order they were appended.
+   * This processing is in the JackTrip client before sending to the network.
+   * \param plugin a ProcessPlugin smart pointer. Create the object instance
    * using something like:\n
    * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
    */
-    virtual void appendProcessPlugin(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
+   /** \brief appendProcessPluginFromNetwork():
+   * Same as appendProcessPluginToNetwork() except that these plugins operate
+   * on the audio received from the network (typically from a JackTrip server).
+   * The complete processing chain then looks like this:
+   * audio -> JACK -> JackTrip client -> processPlugin to network
+   *               -> remote JackTrip server
+   *               -> JackTrip client -> processPlugin from network -> JACK -> audio
+   */
+    virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
+   /** \brief initPlugins():
+   * Initialize all ProcessPlugin modules.
+   * The audio sampling rate (mSampleRate) must be set at this time.
+   */
+    void initPlugins();
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
    * supported (audioBitResolutionT).
@@ -160,6 +178,9 @@ public:
     { mBufferSizeInSamples = buf_size; }
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString ClientName) = 0;
+    virtual void setLoopBack(bool b) { mLoopBack = b; }
+    virtual void enableBroadcastOutput() {}
+    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -209,17 +230,24 @@ private:
     QVarLengthArray<sample_t*> mNetInBuffer; ///< Vector of Input buffers/channel read from net
     QVarLengthArray<sample_t*> mAPInBuffer; ///< Vector of Input buffers/channel for AllPass input
 #endif // endwhere
+    QVarLengthArray<sample_t*> mInBufCopy; ///< needed in callback() to modify JACK audio input
     int mAudioBitResolution; ///< Bit resolution in audio samples
     AudioInterface::audioBitResolutionT mBitResolutionMode; ///< Bit resolution (audioBitResolutionT) mode
     uint32_t mSampleRate; ///< Sampling Rate
     uint32_t mDeviceID; ///< RTAudio DeviceID
     uint32_t mBufferSizeInSamples; ///< Buffer size in samples
     size_t mSizeInBytesPerChannel; ///< Size in bytes per audio channel
-    QVector<ProcessPlugin*> mProcessPlugins; ///< Vector of ProcesPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsFromNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
+    QVector<ProcessPlugin*> mProcessPluginsToNetwork; ///< Vector of ProcessPlugin<EM>s</EM>
     QVarLengthArray<sample_t*> mInProcessBuffer;///< Vector of Input buffers/channel for ProcessPlugin
     QVarLengthArray<sample_t*> mOutProcessBuffer;///< Vector of Output buffers/channel for ProcessPlugin
     int8_t* mInputPacket; ///< Packet containing all the channels to read from the RingBuffer
     int8_t* mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+    bool mLoopBack;
+    AudioTester* mAudioTesterP { nullptr };
+protected:
+    bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
+    const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
 };
 
 #endif // __AUDIOINTERFACE_H__

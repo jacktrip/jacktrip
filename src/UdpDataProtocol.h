@@ -41,9 +41,10 @@
 #include <stdexcept>
 
 #include <QThread>
-#include <QUdpSocket>
 #include <QHostAddress>
 #include <QMutex>
+#include <vector>
+#include <random>
 
 #include "DataProtocol.h"
 #include "jacktrip_types.h"
@@ -104,7 +105,7 @@ public:
    * \return number of bytes read, -1 on error
    */
     //virtual int receivePacket(char* buf, const size_t n);
-    virtual int receivePacket(QUdpSocket& UdpSocket, char* buf, const size_t n);
+    virtual int receivePacket(char* buf, const size_t n);
 
     /** \brief Sends a packet
    *
@@ -121,8 +122,7 @@ public:
    * \param peerHostAddress QHostAddress to store the peer address
    * \param port Receiving port
    */
-    virtual void getPeerAddressFromFirstPacket(QUdpSocket& UdpSocket,
-                                               QHostAddress& peerHostAddress,
+    virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
                                                uint16_t& port);
 
     /** \brief Sets the bind port number
@@ -143,17 +143,18 @@ public:
     virtual void run();
 
     virtual bool getStats(PktStat* stat);
+    virtual void setIssueSimulation(double loss, double jitter, double max_delay);
 
 private slots:
     void printUdpWaitedTooLong(int wait_msec);
-
+    
 
 signals:
 
     /// \brief Signals when waiting every 10 milliseconds, with the total wait on wait_msec
     /// \param wait_msec Total wait in milliseconds
     void signalWaitingTooLong(int wait_msec);
-
+    void signalUdpWaitingTooLong();
 
     //private:
 protected:
@@ -167,7 +168,7 @@ protected:
 #endif
 
     /** \brief This function blocks until data is available for reading in the
-   * QUdpSocket. The function will timeout after timeout_msec microseconds.
+   * socket. The function will timeout after timeout_msec microseconds.
    *
    * This function is intended to replace QAbstractSocket::waitForReadyRead which has
    * some problems with multithreading.
@@ -175,12 +176,11 @@ protected:
    * \return returns true if there is data available for reading;
    * otherwise it returns false (if an error occurred or the operation timed out)
    */
-    void waitForReady(QUdpSocket& UdpSocket, int timeout_msec);
+    void waitForReady(int timeout_msec);
 
     /** \brief Redundancy algorythm at the receiving end
     */
-    virtual void receivePacketRedundancy(QUdpSocket& UdpSocket,
-                                         int8_t* full_redundant_packet,
+    virtual void receivePacketRedundancy(int8_t* full_redundant_packet,
                                          int full_redundant_packet_size,
                                          int full_packet_size,
                                          uint16_t& current_seq_num,
@@ -193,9 +193,9 @@ protected:
                                       int full_redundant_packet_size,
                                       int full_packet_size);
 
-
 private:
-
+    bool datagramAvailable();
+    
     int mBindPort; ///< Local Port number to Bind
     int mPeerPort; ///< Peer Port number
     const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
@@ -212,6 +212,11 @@ private:
 
     int8_t* mAudioPacket; ///< Buffer to store Audio Packets
     int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
+    std::vector<int8_t> mBuffer;
+    int mChans;
+    int mSmplSize;
+    int mLastOutOfOrderCount;
+    bool mInitialState;
 
     unsigned int mUdpRedundancyFactor; ///< Factor of redundancy
     static QMutex sUdpMutex; ///< Mutex to make thread safe the binding process
@@ -221,6 +226,16 @@ private:
     std::atomic<uint32_t>  mOutOfOrderCount;
     std::atomic<uint32_t>  mRevivedCount;
     uint32_t  mStatCount;
+
+    uint8_t mControlPacketSize;
+    bool mStopSignalSent;
+
+    // packet loss/jitter simulation
+    double mSimulatedLossRate;
+    double mSimulatedJitterRate;
+    double mSimulatedJitterMaxDelay;
+    std::default_random_engine mRndEngine;
+    std::uniform_real_distribution<double> mUniformDist;
 };
 
 #endif // __UDPDATAPROTOCOL_H__

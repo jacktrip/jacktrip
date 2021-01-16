@@ -70,7 +70,7 @@ class JackTripWorker : public QObject, public QRunnable
 
 public:
     /// \brief The class constructor
-    JackTripWorker(UdpHubListener* udpmasterlistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE);
+    JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE, QString clientName = "");
     /// \brief The class destructor
     virtual ~JackTripWorker();
 
@@ -97,7 +97,19 @@ public:
         return mID;
     }
 
-
+    void setBufferStrategy(int BufferStrategy) { mBufferStrategy = BufferStrategy; }
+    void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
+    {
+        mSimulatedLossRate = loss;
+        mSimulatedJitterRate = jitter;
+        mSimulatedDelayRel = delay_rel;
+    }
+    void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
+    void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
+    
+    void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
+    void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
+    
 private slots:
     void slotTest()
     { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
@@ -105,7 +117,6 @@ private slots:
 
 signals:
     void signalRemoveThread();
-
 
 private:
     int setJackTripFromClientHeader(JackTrip& jacktrip);
@@ -119,16 +130,28 @@ private:
 
     /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt>
     uint16_t mClientPort;
+    
+    int mBufferQueueLength;
+    JackTrip::underrunModeT mUnderRunMode;
+    QString mClientName;
 
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning;
     QMutex mMutex; ///< Mutex to protect mSpawning
-    JackTrip::underrunModeT mUnderRunMode;
-    int mBufferQueueLength;
 
     int mID; ///< ID thread number
     int mNumChans; ///< Number of Channels
+
+    int mBufferStrategy;
+    int mBroadcastQueue;
+    double mSimulatedLossRate;
+    double mSimulatedJitterRate;
+    double mSimulatedDelayRel;
+    bool mUseRtUdpPriority;
+    
+    int mIOStatTimeout;
+    QSharedPointer<std::ofstream> mIOStatStream;
 #ifdef WAIR // wair
     int mNumNetRevChans; ///< Number of Net Channels = net combs
     bool mWAIR;
