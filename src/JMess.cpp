@@ -34,6 +34,7 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 #include <QDebug>
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND "ecasound"
 
 // sJackMutex definition
 QMutex JMess::sJMessMutex;
@@ -170,6 +171,15 @@ void JMess::setConnectedPorts()
 //*******************************************************************************
 void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // called from UdpHubListener::connectMesh
+// this gets run on the ensemble's hub server with
+// CLIENTECHO
+// ./jacktrip -S -p1
+// CLIENTFOFI
+// ./jacktrip -S -p2
+// FULLMIX
+// ./jacktrip -S -p4
+
+// FULLMIX might include ecasound for example in server with looping clap track
 {
     QMutexLocker locker(&sJMessMutex);
     
@@ -250,6 +260,9 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
                             ":receive_" + QString::number(l);
                     QString right = IPS[k] +
                             ":send_" + QString::number(l);
+                    if (IPS[i] == HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND)
+                        left = IPS[i] +
+                                ":out_" + QString::number(l);
 
                     if (0 !=
                             jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
