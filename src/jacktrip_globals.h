@@ -44,7 +44,7 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.3.0"; ///< JackTrip version
+const char* const gVersion = "1.3.0 dev-CCRMA-ecasound"; ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
