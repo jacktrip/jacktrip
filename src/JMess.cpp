@@ -388,10 +388,13 @@ void JMess::connectTUB(int /*nChans*/)
 // distribution across the slots is a function of how many clients
 // stereo field pipes through a stereo (input) version of freeverb
 
-// two faust-generated audio processes need to be running
+// two faust-generated audio processes need to be running, .dsp code in
 // panpot9toStereo
 // freeverbStereo
 // (optional) ecasound playback feeds to stereo left if it's running
+// generate the faust applications with faust2jackconsole
+// faust2jackconsole panpot9toStereo.dsp
+// faust2jackconsole freeverbStereo.dsp
 
 void JMess::connectPAN(int /*nChans*/)
 // called from UdpHubListener::connectPatch
