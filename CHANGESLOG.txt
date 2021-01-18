@@ -1,4 +1,7 @@
 ---
+1.3.0 dev-CCRMA-ecasound
+- (added) -p6 (for jack<room> servers with 9-way pan and reverb)
+- (added) ecasound playback connection (as needed for jackloop<n> servers)
 1.3.0
 - (added) async networking in hub listener
 - (added) limiter, compressor, reverb
