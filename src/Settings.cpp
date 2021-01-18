@@ -363,6 +363,8 @@ void Settings::parseInput(int argc, char** argv)
                 mHubConnectionMode = JackTrip::FULLMIX;
             } else if ( atoi(optarg) == 5 ) {
                 mHubConnectionMode = JackTrip::NOAUTO;
+            } else if ( atoi(optarg) == 6 ) {
+                mHubConnectionMode = JackTrip::PANSTEREO;
             } else {
                 printUsage();
                 std::cerr << "-p ERROR: Wrong HubConnectionMode: "
@@ -584,7 +586,7 @@ void Settings::printUsage()
     cout << " -P, --peerport        #                  Set only the peer port number (default: " << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port number (default: 61002)" << endl;
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions (default: 16, 32 uses floating-point)" << endl;
-    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching (default: 0)" << endl;
+    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5, 6)   Hub auto audio patch, only has effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, 2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no auto patching, 6=stereo room w/pan9+reverb (default: 0)" << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun occurs (default: wavetable)" << endl;
     cout << " -t, --timeout                            Quit after 10 seconds of no network activity" << endl;
     cout << " -l, --loopback                           Run in Loop-Back Mode" << endl;

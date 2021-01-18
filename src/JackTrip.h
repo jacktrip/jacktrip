@@ -116,7 +116,8 @@ public:
         CLIENTFOFI,  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
         RESERVEDMATRIX,  ///< Reserved for custom patch matrix (for TUB ensemble)
         FULLMIX,  ///< Client Fan Out to Clients and Fan In from Clients (including self-to-self)
-        NOAUTO  ///< No automatic patching
+        NOAUTO,  ///< No automatic patching
+        PANSTEREO  ///< Based off of RESERVEDMATRIX (for Stanford ensembles, pan with freeverb)
     };
     //---------------------------------------------------------
 
