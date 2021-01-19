@@ -65,7 +65,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port) :
     #endif // endwhere
     mTotalRunningThreads(0),
     mHubPatchDescriptions({"server-to-clients", "client loopback", "client fan out/in but not loopback",
-                           "reserved for TUB", "full mix", "no auto patching"}),
+                           "reserved for TUB", "full mix", "no auto patching", "stereo room w/pan9+reverb"}),
     m_connectDefaultAudioPorts(false),
     mIOStatTimeout(0)
 {
@@ -519,6 +519,8 @@ void UdpHubListener::connectPatch(bool spawn)
     // these are the other cases:
     if (getHubPatch() == JackTrip::RESERVEDMATRIX) // special patch for TU Berlin ensemble
         tmp.connectTUB(gDefaultNumInChannels);
+    else if (getHubPatch() == JackTrip::PANSTEREO) // special patch for Stanford ensembles
+        tmp.connectPAN(gDefaultNumInChannels);
     else if ((getHubPatch() == JackTrip::CLIENTECHO) || // client loopback for testing
              (getHubPatch() == JackTrip::CLIENTFOFI) || // all clients to all clients except self
              (getHubPatch() == JackTrip::FULLMIX)) // all clients to all clients including self
