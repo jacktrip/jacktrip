@@ -439,11 +439,12 @@ void JMess::connectPAN(int /*nChans*/)
         disconnectAll();
         //ctr = 1;
         int zones = NPANINCHANS;
-        if (ctr>NPANINCHANS) ctr = NPANINCHANS;
-        if (ctr) zones /= ctr;
+        int pctr = ctr;
+        if (pctr>NPANINCHANS) pctr = NPANINCHANS;
+        if (pctr) zones /= pctr;
         int halfZone = zones / 2;
         if (!halfZone) halfZone++;
-        qDebug() << "ctr " << ctr << "halfZone " << halfZone;
+        qDebug() << "ctr " << ctr  << "pctr " << pctr << "halfZone " << halfZone;
         for (int i = 0; i<ctr; i++) {
             int slot = (halfZone + ((i%NPANINCHANS)*zones));
             //  needed % otherwise clients > NPANINCHANS results in all connected to slot 1
