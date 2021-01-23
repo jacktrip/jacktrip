@@ -38,22 +38,21 @@
 #ifndef __UDPHUBLISTENER_H__
 #define __UDPHUBLISTENER_H__
 
-#include <iostream>
-#include <stdexcept>
-#include <fstream>
-
+#include <QHostAddress>
+#include <QMutex>
+#include <QTcpServer>
+#include <QTcpSocket>
 #include <QThread>
 #include <QThreadPool>
 #include <QUdpSocket>
-#include <QHostAddress>
-#include <QTcpSocket>
-#include <QTcpServer>
-#include <QMutex>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 
 #include "JackTrip.h"
-#include "jacktrip_types.h"
 #include "jacktrip_globals.h"
-class JackTripWorker; // forward declaration
+#include "jacktrip_types.h"
+class JackTripWorker;  // forward declaration
 class Settings;
 
 typedef struct {
@@ -70,7 +69,7 @@ class UdpHubListener : public QObject
 {
     Q_OBJECT;
 
-public:
+   public:
     UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0);
     virtual ~UdpHubListener();
 
@@ -82,36 +81,43 @@ public:
 
     int releaseThread(int id);
 
-    void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts) { m_connectDefaultAudioPorts = connectDefaultAudioPorts; }
-    
-    static void sigIntHandler(__attribute__((unused)) int unused)
-    { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
+    void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
+    {
+        m_connectDefaultAudioPorts = connectDefaultAudioPorts;
+    }
 
-private slots:
+    static void sigIntHandler(__attribute__((unused)) int unused)
+    {
+        std::cout << std::endl << "Shutting Down..." << std::endl;
+        sSigInt = true;
+    }
+
+   private slots:
     void testReceive()
-    { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
+    {
+        std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl;
+    }
     void receivedNewConnection();
     void stopCheck();
 
-signals:
+   signals:
     void Listening();
     void ClientAddressSet();
     void signalRemoveThread(int id);
     void signalStopped();
-    void signalError(const QString &errorMessage);
+    void signalError(const QString& errorMessage);
 
-private:
+   private:
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
-    void receivedClientInfo(QTcpSocket *clientConnection);
+    void receivedClientInfo(QTcpSocket* clientConnection);
 
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
-    uint16_t readClientUdpPort(QTcpSocket* clientConnection, QString &clientName);
+    uint16_t readClientUdpPort(QTcpSocket* clientConnection, QString& clientName);
     int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
-
 
     /** \brief Send the JackTripWorker to the thread pool. This will run
    * until it's done. We still have control over the prototype class.
@@ -129,32 +135,32 @@ private:
     * is not in the pool yet, returns -1.
     */
     int getPoolID(QString address, uint16_t port);
-    
+
     void stopAllThreads();
 
     //QUdpSocket mUdpHubSocket; ///< The UDP socket
     //QHostAddress mPeerAddress; ///< The Peer Address
 
     //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
-    QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorker s
-    QThreadPool mThreadPool; ///< The Thread Pool
+    QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorker s
+    QThreadPool mThreadPool;               ///< The Thread Pool
 
     QTcpServer mTcpServer;
-    int mServerPort; //< Server known port number
-    int mServerUdpPort; //< Server udp base port number
+    int mServerPort;     //< Server known port number
+    int mServerUdpPort;  //< Server udp base port number
     int mBasePort;
-    addressPortPair mActiveAddress[gMaxThreads]; ///< Active address pool addresses
+    addressPortPair mActiveAddress[gMaxThreads];  ///< Active address pool addresses
     QHash<QString, uint16_t> mActiveAddressPortPair;
 
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
     static bool sSigInt;
     QTimer mStopCheckTimer;
-    int mTotalRunningThreads; ///< Number of Threads running in the pool
+    int mTotalRunningThreads;  ///< Number of Threads running in the pool
     QMutex mMutex;
     JackTrip::underrunModeT mUnderRunMode;
     int mBufferQueueLength;
-    
+
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
 
@@ -167,38 +173,47 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
-    
-#ifdef WAIR // wair
+
+#ifdef WAIR  // wair
     bool mWAIR;
     void connectMesh(bool spawn);
     void enumerateRunningThreadIDs();
-public :
-    void setWAIR(int b) {mWAIR = b;}
-    bool isWAIR() {return mWAIR;}
-#endif // endwhere
-    void connectPatch(bool spawn);
-public :
-    unsigned int mHubPatch;
-    void setHubPatch(unsigned int p) {mHubPatch = p;}
-    unsigned int getHubPatch() {return mHubPatch;}
 
-    void setUnderRunMode(JackTrip::underrunModeT UnderRunMode) { mUnderRunMode = UnderRunMode; }
-    void setBufferQueueLength(int BufferQueueLength) { mBufferQueueLength = BufferQueueLength; }
-    
+   public:
+    void setWAIR(int b) { mWAIR = b; }
+    bool isWAIR() { return mWAIR; }
+#endif  // endwhere
+    void connectPatch(bool spawn);
+
+   public:
+    unsigned int mHubPatch;
+    void setHubPatch(unsigned int p) { mHubPatch = p; }
+    unsigned int getHubPatch() { return mHubPatch; }
+
+    void setUnderRunMode(JackTrip::underrunModeT UnderRunMode)
+    {
+        mUnderRunMode = UnderRunMode;
+    }
+    void setBufferQueueLength(int BufferQueueLength)
+    {
+        mBufferQueueLength = BufferQueueLength;
+    }
+
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
-    void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
+    void setIOStatStream(QSharedPointer<std::ofstream> statStream)
+    {
+        mIOStatStream = statStream;
+    }
 
     void setBufferStrategy(int BufferStrategy) { mBufferStrategy = BufferStrategy; }
     void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
     {
-        mSimulatedLossRate = loss;
+        mSimulatedLossRate   = loss;
         mSimulatedJitterRate = jitter;
-        mSimulatedDelayRel = delay_rel;
+        mSimulatedDelayRel   = delay_rel;
     }
-    void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
-    void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
-
+    void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
+    void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 };
 
-
-#endif //__UDPHUBLISTENER_H__
+#endif  //__UDPHUBLISTENER_H__

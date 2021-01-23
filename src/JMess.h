@@ -25,7 +25,6 @@
   OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 /*
  * JMess.h
  */
@@ -33,20 +32,20 @@
 #ifndef __JMESS_H
 #define __JMESS_H
 
-#include <iostream>
-#include <string>
 #include <errno.h>
 
 #include <QIODevice>
 #include <QString>
 #include <QVector>
+#include <iostream>
+#include <string>
 //#include <QtXml>
 //#include <QXmlSimpleReader>
 //#include <QXmlInputSource>
 //#include <QXmlContentHandler>
-#include <QMutexLocker>
-
 #include <jack/jack.h>
+
+#include <QMutexLocker>
 
 using namespace std;
 
@@ -61,33 +60,33 @@ const int Indent = 2;
  * Has also an option to disconnect all the clients.
  */
 //-------------------------------------------------------------------------------
-class JMess {
+class JMess
+{
+   public:
+    JMess();
+    virtual ~JMess();
 
-public:
-  JMess();
-  virtual ~JMess();
+    void disconnectAll();
+    void writeOutput(QString xmlOutFile);
+    void connectPorts(QString xmlInFile);
+    void setConnectedPorts();
+    /// \brief Cross connect ports between net combs, -l LAIR mode
+    void connectSpawnedPorts(int nChans, int hubPatch);
+    void connectTUB(int nChans);
 
-  void disconnectAll();
-  void writeOutput(QString xmlOutFile);
-  void connectPorts(QString xmlInFile);
-  void setConnectedPorts();
-  /// \brief Cross connect ports between net combs, -l LAIR mode
-  void connectSpawnedPorts(int nChans, int hubPatch);
-  void connectTUB(int nChans);
+   private:
+    int parseXML(QString xmlInFile);
 
-private:
-  int parseXML(QString xmlInFile);
+    jack_client_t* mClient;  //Class client
+    jack_status_t mStatus;   //Class client status
 
-  jack_client_t *mClient; //Class client
-  jack_status_t mStatus; //Class client status
-
-  //Vectors of Connected Ports and Ports to connects
-  //This are a matrix (Nx2) of string like this:
-  //OuputPort1 InputPort1
-  // ...
-  //OuputPortN InputPortN
-  QVector<QVector<QString> > mConnectedPorts;
-  QVector<QVector<QString> > mPortsToConnect;
-  static QMutex sJMessMutex; ///< Mutex to make thread safe jack functions that are not
+    //Vectors of Connected Ports and Ports to connects
+    //This are a matrix (Nx2) of string like this:
+    //OuputPort1 InputPort1
+    // ...
+    //OuputPortN InputPortN
+    QVector<QVector<QString> > mConnectedPorts;
+    QVector<QVector<QString> > mPortsToConnect;
+    static QMutex sJMessMutex;  ///< Mutex to make thread safe jack functions that are not
 };
 #endif

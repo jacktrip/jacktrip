@@ -40,33 +40,32 @@
 
 #include <iostream>
 //#include <tr1/memory> // for shared_ptr
-#include <cstring>
-
 #include <QObject>
 #include <QString>
+#include <cstring>
 
-#include "jacktrip_types.h"
 #include "jacktrip_globals.h"
-class JackTrip; // Forward Declaration
-
+#include "jacktrip_types.h"
+class JackTrip;  // Forward Declaration
 
 /// \brief Abstract Header Struct, Header Stucts should subclass it
-struct HeaderStruct{};
+struct HeaderStruct {
+};
 
 /// \brief Default Header Struct
-struct DefaultHeaderStruct : public HeaderStruct
-{
-public:
+struct DefaultHeaderStruct : public HeaderStruct {
+   public:
     // watch out for alignment...
-    uint64_t TimeStamp; ///< Time Stamp
-    uint16_t SeqNumber; ///< Sequence Number
-    uint16_t BufferSize; ///< Buffer Size in Samples
-    uint8_t  SamplingRate; ///< Sampling Rate in JackAudioInterface::samplingRateT
-    uint8_t BitResolution; ///< Audio Bit Resolution
+    uint64_t TimeStamp;     ///< Time Stamp
+    uint16_t SeqNumber;     ///< Sequence Number
+    uint16_t BufferSize;    ///< Buffer Size in Samples
+    uint8_t SamplingRate;   ///< Sampling Rate in JackAudioInterface::samplingRateT
+    uint8_t BitResolution;  ///< Audio Bit Resolution
     //uint8_t  NumInChannels; ///< Number of Input Channels
     //uint8_t  NumOutChannels; ///<  Number of Output Channels
-    uint8_t  NumChannels; ///< Number of Channels, we assume input and outputs are the same
-    uint8_t  ConnectionMode;
+    uint8_t
+        NumChannels;  ///< Number of Channels, we assume input and outputs are the same
+    uint8_t ConnectionMode;
 };
 
 //---------------------------------------------------------
@@ -80,33 +79,30 @@ public:
 /*         4-22 Khz, 5-16 Khz, 6-11 Khz, 7-8 Khz                        */
 /* B8-0: Samples in packet                                              */
 /************************************************************************/
-const unsigned short ETX_RSVD = (0<<15);
-const unsigned short ETX_XTND = (1<<14);
-const unsigned short ETX_STEREO = (1<<13);
-const unsigned short ETX_MONO = (0<<13);
-const unsigned short ETX_16BIT = (0<<12);
+const unsigned short ETX_RSVD   = (0 << 15);
+const unsigned short ETX_XTND   = (1 << 14);
+const unsigned short ETX_STEREO = (1 << 13);
+const unsigned short ETX_MONO   = (0 << 13);
+const unsigned short ETX_16BIT  = (0 << 12);
 //inline unsigned short ETX_RATE_MASK(const unsigned short a) { a&(0x7<<9); }
-const unsigned short ETX_48KHZ = (0<<9);
-const unsigned short ETX_44KHZ = (1<<9);
-const unsigned short ETX_32KHZ = (2<<9);
-const unsigned short ETX_24KHZ = (3<<9);
-const unsigned short ETX_22KHZ = (4<<9);
-const unsigned short ETX_16KHZ = (5<<9);
-const unsigned short ETX_11KHZ = (6<<9);
-const unsigned short ETX_8KHZ  = (7<<9);
+const unsigned short ETX_48KHZ = (0 << 9);
+const unsigned short ETX_44KHZ = (1 << 9);
+const unsigned short ETX_32KHZ = (2 << 9);
+const unsigned short ETX_24KHZ = (3 << 9);
+const unsigned short ETX_22KHZ = (4 << 9);
+const unsigned short ETX_16KHZ = (5 << 9);
+const unsigned short ETX_11KHZ = (6 << 9);
+const unsigned short ETX_8KHZ  = (7 << 9);
 // able to express up to 512 SPP
 //inline unsigned short  ETX_SPP(const unsigned short a) { (a&0x01FF); }
 
 /// \brief JamLink Header Struct
-struct JamLinkHeaderStuct : public HeaderStruct
-{
+struct JamLinkHeaderStuct : public HeaderStruct {
     // watch out for alignment -- need to be on 4 byte chunks
-    uint16_t Common; ///< Common part of the header, 16 bit
-    uint16_t SeqNumber; ///< Sequence Number
-    uint32_t TimeStamp; ///< Time Stamp
+    uint16_t Common;     ///< Common part of the header, 16 bit
+    uint16_t SeqNumber;  ///< Sequence Number
+    uint32_t TimeStamp;  ///< Time Stamp
 };
-
-
 
 //#######################################################################
 //####################### PacketHeader ##################################
@@ -118,7 +114,7 @@ class PacketHeader : public QObject
 {
     Q_OBJECT;
 
-public:
+   public:
     /// \brief The class Constructor
     PacketHeader(JackTrip* jacktrip);
     /// \brief The class Destructor
@@ -132,49 +128,42 @@ public:
     virtual void fillHeaderCommonFromAudio() = 0;
     /// \brief Parse the packet header and take appropriate measures (like change settings, or
     /// quit the program if peer settings don't match)
-    virtual void parseHeader() = 0;
+    virtual void parseHeader()                          = 0;
     virtual void checkPeerSettings(int8_t* full_packet) = 0;
 
-    virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const = 0;
+    virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const      = 0;
     virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
-    virtual uint16_t getPeerBufferSize(int8_t* full_packet) const = 0;
-    virtual uint8_t  getPeerSamplingRate(int8_t* full_packet) const = 0;
-    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const = 0;
-    virtual uint8_t  getPeerNumChannels(int8_t* full_packet) const = 0;
-    virtual uint8_t  getPeerConnectionMode(int8_t* full_packet) const = 0;
+    virtual uint16_t getPeerBufferSize(int8_t* full_packet) const     = 0;
+    virtual uint8_t getPeerSamplingRate(int8_t* full_packet) const    = 0;
+    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const   = 0;
+    virtual uint8_t getPeerNumChannels(int8_t* full_packet) const     = 0;
+    virtual uint8_t getPeerConnectionMode(int8_t* full_packet) const  = 0;
 
     /// \brief Increase sequence number for counter, a 16bit number
-    virtual void increaseSequenceNumber()
-    { mSeqNumber++; }
+    virtual void increaseSequenceNumber() { mSeqNumber++; }
     /// \brief Returns the current sequence number
     /// \return 16bit Sequence number
-    virtual uint16_t getSequenceNumber() const
-    { return mSeqNumber; }
+    virtual uint16_t getSequenceNumber() const { return mSeqNumber; }
     /// \brief Get the header size in bytes
     virtual int getHeaderSizeInBytes() const = 0;
     virtual void putHeaderInPacketBaseClass(int8_t* full_packet,
                                             const HeaderStruct& header_struct)
     {
         std::memcpy(full_packet, reinterpret_cast<const void*>(&header_struct),
-                    getHeaderSizeInBytes() );
+                    getHeaderSizeInBytes());
     }
     /// \brief Put the header in buffer pointed by full_packet
     /// \param full_packet Pointer to full packet (audio+header). Size must be
     /// sizeof(header part) + sizeof(audio part)
     virtual void putHeaderInPacket(int8_t* full_packet) = 0;
 
+   signals:
+    void signalError(const QString& error_message);
 
-signals:
-    void signalError(const QString &error_message);
-
-
-private:
+   private:
     uint16_t mSeqNumber;
-    JackTrip* mJackTrip; ///< JackTrip mediator class
+    JackTrip* mJackTrip;  ///< JackTrip mediator class
 };
-
-
-
 
 //#######################################################################
 //####################### DefaultHeader #################################
@@ -183,44 +172,36 @@ private:
  */
 class DefaultHeader : public PacketHeader
 {
-public:
-
+   public:
     DefaultHeader(JackTrip* jacktrip);
     virtual ~DefaultHeader() {}
 
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
     virtual void checkPeerSettings(int8_t* full_packet);
-    virtual void increaseSequenceNumber()
-    { mHeader.SeqNumber++; }
-    virtual uint16_t getSequenceNumber() const
-    { return mHeader.SeqNumber; }
+    virtual void increaseSequenceNumber() { mHeader.SeqNumber++; }
+    virtual uint16_t getSequenceNumber() const { return mHeader.SeqNumber; }
     virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); }
     virtual void putHeaderInPacket(int8_t* full_packet)
-    { putHeaderInPacketBaseClass(full_packet, mHeader); }
+    {
+        putHeaderInPacketBaseClass(full_packet, mHeader);
+    }
     void printHeader() const;
-    uint8_t getConnectionMode() const
-    { return mHeader.ConnectionMode; }
-    uint8_t getNumChannels() const
-    { return mHeader.NumChannels; }
-
+    uint8_t getConnectionMode() const { return mHeader.ConnectionMode; }
+    uint8_t getNumChannels() const { return mHeader.NumChannels; }
 
     virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const;
     virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
     virtual uint16_t getPeerBufferSize(int8_t* full_packet) const;
-    virtual uint8_t  getPeerSamplingRate(int8_t* full_packet) const;
+    virtual uint8_t getPeerSamplingRate(int8_t* full_packet) const;
     virtual uint8_t getPeerBitResolution(int8_t* full_packet) const;
-    virtual uint8_t  getPeerNumChannels(int8_t* full_packet) const;
-    virtual uint8_t  getPeerConnectionMode(int8_t* full_packet) const;
+    virtual uint8_t getPeerNumChannels(int8_t* full_packet) const;
+    virtual uint8_t getPeerConnectionMode(int8_t* full_packet) const;
 
-
-private:
-    DefaultHeaderStruct mHeader;///< Default Header Struct
-    JackTrip* mJackTrip; ///< JackTrip mediator class
+   private:
+    DefaultHeaderStruct mHeader;  ///< Default Header Struct
+    JackTrip* mJackTrip;          ///< JackTrip mediator class
 };
-
-
-
 
 //#######################################################################
 //####################### JamLinkHeader #################################
@@ -230,8 +211,7 @@ private:
  */
 class JamLinkHeader : public PacketHeader
 {
-public:
-
+   public:
     JamLinkHeader(JackTrip* jacktrip);
     virtual ~JamLinkHeader() {}
 
@@ -242,22 +222,22 @@ public:
     virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
     virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
     virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t  getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t  getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t  getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
 
     virtual void increaseSequenceNumber() {}
     virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); }
     virtual void putHeaderInPacket(int8_t* full_packet)
-    { putHeaderInPacketBaseClass(full_packet, mHeader); }
+    {
+        putHeaderInPacketBaseClass(full_packet, mHeader);
+    }
 
-private:
-    JamLinkHeaderStuct mHeader; ///< JamLink Header Struct
-    JackTrip* mJackTrip; ///< JackTrip mediator class
+   private:
+    JamLinkHeaderStuct mHeader;  ///< JamLink Header Struct
+    JackTrip* mJackTrip;         ///< JackTrip mediator class
 };
-
-
 
 //#######################################################################
 //####################### EmptyHeader #################################
@@ -267,8 +247,7 @@ private:
  */
 class EmptyHeader : public PacketHeader
 {
-public:
-
+   public:
     EmptyHeader(JackTrip* jacktrip);
     virtual ~EmptyHeader() {}
 
@@ -281,16 +260,15 @@ public:
     virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
     virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
     virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t  getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
     virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t  getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t  getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerNumChannels(int8_t* /*full_packet*/) const { return 0; }
+    virtual uint8_t getPeerConnectionMode(int8_t* /*full_packet*/) const { return 0; }
 
     virtual void putHeaderInPacket(int8_t* /*full_packet*/) {}
 
-private:
-    JackTrip* mJackTrip; ///< JackTrip mediator class
+   private:
+    JackTrip* mJackTrip;  ///< JackTrip mediator class
 };
 
-
-#endif //__PACKETHEADER_H__
+#endif  //__PACKETHEADER_H__

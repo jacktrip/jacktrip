@@ -37,35 +37,38 @@
  */
 
 #include "Limiter.h"
-#include "jacktrip_types.h"
 
 #include <iostream>
+
+#include "jacktrip_types.h"
 
 //*******************************************************************************
 void Limiter::compute(int nframes, float** inputs, float** outputs)
 {
-  if (not inited) {
-    std::cerr << "*** Limiter " << this << ": init never called! Doing it now.\n";
-    if (fSamplingFreq <= 0) {
-      fSamplingFreq = 48000;
-      std::cout << "Limiter " << this << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
+    if (not inited) {
+        std::cerr << "*** Limiter " << this << ": init never called! Doing it now.\n";
+        if (fSamplingFreq <= 0) {
+            fSamplingFreq = 48000;
+            std::cout << "Limiter " << this
+                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
+        }
+        init(fSamplingFreq);
     }
-    init(fSamplingFreq);
-  }
 #ifdef SINE_TEST
-  float sineTestOut[nframes];
-  float* faustSigs[1] { sineTestOut };
+    float sineTestOut[nframes];
+    float* faustSigs[1]{sineTestOut};
 #endif
-  for ( int i = 0; i < mNumChannels; i++ ) {
-    if (warningAmp > 0.0) {
-      checkAmplitudes(nframes, inputs[i]); // we presently do one check across all channels
-    }
-    limiterP[i]->compute(nframes, &inputs[i], &outputs[i]);
+    for (int i = 0; i < mNumChannels; i++) {
+        if (warningAmp > 0.0) {
+            checkAmplitudes(nframes,
+                            inputs[i]);  // we presently do one check across all channels
+        }
+        limiterP[i]->compute(nframes, &inputs[i], &outputs[i]);
 #ifdef SINE_TEST
-    limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
-    for ( int n = 0; n < nframes; n++ ) {
-      outputs[i][n] = outputs[i][n] + sineTestOut[n];
-    }
+        limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
+        for (int n = 0; n < nframes; n++) {
+            outputs[i][n] = outputs[i][n] + sineTestOut[n];
+        }
 #endif
-  }
+    }
 }

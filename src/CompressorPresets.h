@@ -3,33 +3,30 @@
 #include <array>
 
 struct CompressorPreset {
-  float ratio;
-  float thresholdDB;
-  float attackMS;
-  float releaseMS;
-  float makeUpGainDB;
-  CompressorPreset(float r, float t, float a, float rel, float m)
-    : ratio(r)
-    , thresholdDB(t)
-    , attackMS(a)
-    , releaseMS(rel)
-    , makeUpGainDB(m)
-  {}
-  ~CompressorPreset() = default;
+    float ratio;
+    float thresholdDB;
+    float attackMS;
+    float releaseMS;
+    float makeUpGainDB;
+    CompressorPreset(float r, float t, float a, float rel, float m)
+        : ratio(r), thresholdDB(t), attackMS(a), releaseMS(rel), makeUpGainDB(m)
+    {
+    }
+    ~CompressorPreset() = default;
 };
 
 namespace CompressorPresets
 {
-  //                     name   ratio  thresh  attack  rel  mugain
-  const CompressorPreset voice { 2.0f, -24.0f, 15.0f, 40.0f, 2.0f };
-  const CompressorPreset horns { 3.0f, -10.0f, 100.0f, 250.0f, 2.0f };
-  const CompressorPreset snare { 5.0f, -4.0f, 5.0f, 150.0f, 3.0f };
-  const uint numPresets { 3 };
-  const std::array<CompressorPreset,numPresets> standardPresets { voice, horns, snare };
-  enum CompressorPresetNames { CPN_VOICE, CPN_BRASS, CPN_SNARE, CPN_NUMPRESETS };
-}
+//                     name   ratio  thresh  attack  rel  mugain
+const CompressorPreset voice{2.0f, -24.0f, 15.0f, 40.0f, 2.0f};
+const CompressorPreset horns{3.0f, -10.0f, 100.0f, 250.0f, 2.0f};
+const CompressorPreset snare{5.0f, -4.0f, 5.0f, 150.0f, 3.0f};
+const uint numPresets{3};
+const std::array<CompressorPreset, numPresets> standardPresets{voice, horns, snare};
+enum CompressorPresetNames { CPN_VOICE, CPN_BRASS, CPN_SNARE, CPN_NUMPRESETS };
+}  // namespace CompressorPresets
 
-#if 0 // not yet using this
+#if 0  // not yet using this
 // Dynamic extension of CompressorPresets:
 struct CompressorPresetList {
   std::vector<CompressorPreset*> presets;

@@ -37,22 +37,21 @@
 
 #include <iostream>
 
-#if defined ( __LINUX__ )
-    #include <sched.h>
-    #include <unistd.h>
-    #include <sys/types.h>
-#endif //__LINUX__
+#if defined(__LINUX__)
+#include <sched.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif  //__LINUX__
 
-#if defined ( __MAC_OSX__ )
-    #include <mach/mach.h>
-    #include <mach/mach_time.h>
-    #include <mach/thread_policy.h>
-#endif //__MAC_OSX__
+#if defined(__MAC_OSX__)
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <mach/thread_policy.h>
+#endif  //__MAC_OSX__
 
 #include "jacktrip_globals.h"
 
-
-#if defined ( __MAC_OSX__ )
+#if defined(__MAC_OSX__)
 
 // The following function is taken from the chromium source code
 // https://github.com/chromium/chromium/blob/master/base/threading/platform_thread_mac.mm
@@ -60,7 +59,8 @@
 
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
-void setRealtimeProcessPriority() {
+void setRealtimeProcessPriority()
+{
     // Increase thread priority to real-time.
 
     // Please note that the thread_policy_set() calls may fail in
@@ -72,12 +72,10 @@ void setRealtimeProcessPriority() {
 
     // Make thread fixed priority.
     thread_extended_policy_data_t policy;
-    policy.timeshare = 0;  // Set to 1 for a non-fixed thread.
-    kern_return_t result =
-            thread_policy_set(mach_thread_id,
-                              THREAD_EXTENDED_POLICY,
-                              reinterpret_cast<thread_policy_t>(&policy),
-                              THREAD_EXTENDED_POLICY_COUNT);
+    policy.timeshare     = 0;  // Set to 1 for a non-fixed thread.
+    kern_return_t result = thread_policy_set(mach_thread_id, THREAD_EXTENDED_POLICY,
+                                             reinterpret_cast<thread_policy_t>(&policy),
+                                             THREAD_EXTENDED_POLICY_COUNT);
     if (result != KERN_SUCCESS) {
         std::cerr << "Failed to make thread fixed priority. " << result << std::endl;
         return;
@@ -86,8 +84,7 @@ void setRealtimeProcessPriority() {
     // Set to relatively high priority.
     thread_precedence_policy_data_t precedence;
     precedence.importance = 63;
-    result = thread_policy_set(mach_thread_id,
-                               THREAD_PRECEDENCE_POLICY,
+    result                = thread_policy_set(mach_thread_id, THREAD_PRECEDENCE_POLICY,
                                reinterpret_cast<thread_policy_t>(&precedence),
                                THREAD_PRECEDENCE_POLICY_COUNT);
     if (result != KERN_SUCCESS) {
@@ -103,7 +100,7 @@ void setRealtimeProcessPriority() {
     // These values have empirically been found to yield good behavior.
     // Good means that audio performance is high and other threads won't starve.
     const double kGuaranteedAudioDutyCycle = 0.75;
-    const double kMaxAudioDutyCycle = 0.85;
+    const double kMaxAudioDutyCycle        = 0.85;
 
     // Define constants determining how much time the audio thread can
     // use in a given time quantum.  All times are in milliseconds.
@@ -122,16 +119,15 @@ void setRealtimeProcessPriority() {
     mach_timebase_info_data_t tb_info;
     mach_timebase_info(&tb_info);
     double ms_to_abs_time =
-            (static_cast<double>(tb_info.denom) / tb_info.numer) * 1000000;
+        (static_cast<double>(tb_info.denom) / tb_info.numer) * 1000000;
 
     thread_time_constraint_policy_data_t time_constraints;
-    time_constraints.period = kTimeQuantum * ms_to_abs_time;
+    time_constraints.period      = kTimeQuantum * ms_to_abs_time;
     time_constraints.computation = kAudioTimeNeeded * ms_to_abs_time;
-    time_constraints.constraint = kMaxTimeAllowed * ms_to_abs_time;
+    time_constraints.constraint  = kMaxTimeAllowed * ms_to_abs_time;
     time_constraints.preemptible = 0;
 
-    result = thread_policy_set(mach_thread_id,
-                               THREAD_TIME_CONSTRAINT_POLICY,
+    result = thread_policy_set(mach_thread_id, THREAD_TIME_CONSTRAINT_POLICY,
                                reinterpret_cast<thread_policy_t>(&time_constraints),
                                THREAD_TIME_CONSTRAINT_POLICY_COUNT);
     if (result != KERN_SUCCESS)
@@ -140,38 +136,35 @@ void setRealtimeProcessPriority() {
     return;
 }
 
-#endif //__MAC_OSX__
+#endif  //__MAC_OSX__
 
-
-#if defined ( __LINUX__ )
+#if defined(__LINUX__)
 //*******************************************************************************
 void setRealtimeProcessPriority()
 {
-    int priority = sched_get_priority_max(SCHED_FIFO); // 99 is the highest possible
+    int priority = sched_get_priority_max(SCHED_FIFO);  // 99 is the highest possible
 #ifdef __UBUNTU__
-    priority = 95; // anything higher is silently ignored by Ubuntu 18.04
+    priority = 95;  // anything higher is silently ignored by Ubuntu 18.04
 #endif
     priority = 3;
 
-    struct sched_param sp = { .sched_priority = priority };
+    struct sched_param sp = {.sched_priority = priority};
 
     if (sched_setscheduler(0, SCHED_FIFO, &sp) == -1) {
-        std::cerr << "Failed to set the scheduler policy and priority." << std::endl;;
+        std::cerr << "Failed to set the scheduler policy and priority." << std::endl;
+        ;
     }
 }
-#endif //__LINUX__
+#endif  //__LINUX__
 
-
-#if defined ( __WIN_32__ )
+#if defined(__WIN_32__)
 void setRealtimeProcessPriority()
 {
-    if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0)
-    {
+    if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0) {
         std::cerr << "Failed to set process priority class." << std::endl;
     }
-    if (SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0)
-    {
+    if (SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0) {
         std::cerr << "Failed to set thread priority." << std::endl;
     }
 }
-#endif //__WIN_32__
+#endif  //__WIN_32__

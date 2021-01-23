@@ -46,19 +46,18 @@
  */
 class JackTripThread : public QThread
 {
-public:
+   public:
     JackTripThread(JackTrip::jacktripModeT JacktripMode) : mJackTripMode(JacktripMode) {}
-    virtual ~JackTripThread(){}
+    virtual ~JackTripThread() {}
     void run();
 
     void setPort(int port_num) { mPortNum = port_num; }
     void setPeerAddress(const char* PeerHostOrIP) { mPeerAddress = PeerHostOrIP; }
 
-private:
-    JackTrip::jacktripModeT mJackTripMode; ///< JackTrip::jacktripModeT
+   private:
+    JackTrip::jacktripModeT mJackTripMode;  ///< JackTrip::jacktripModeT
     int mPortNum;
-    const char* mPeerAddress; ///< Peer Address to use in jacktripModeT::CLIENT Mode
+    const char* mPeerAddress;  ///< Peer Address to use in jacktripModeT::CLIENT Mode
 };
 
-
-#endif //__JACKTRIPTHREAD_H__
+#endif  //__JACKTRIPTHREAD_H__
