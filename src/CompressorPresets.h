@@ -21,7 +21,7 @@ namespace CompressorPresets
 const CompressorPreset voice{2.0f, -24.0f, 15.0f, 40.0f, 2.0f};
 const CompressorPreset horns{3.0f, -10.0f, 100.0f, 250.0f, 2.0f};
 const CompressorPreset snare{5.0f, -4.0f, 5.0f, 150.0f, 3.0f};
-const uint numPresets{3};
+const unsigned int numPresets{3};
 const std::array<CompressorPreset, numPresets> standardPresets{voice, horns, snare};
 enum CompressorPresetNames { CPN_VOICE, CPN_BRASS, CPN_SNARE, CPN_NUMPRESETS };
 }  // namespace CompressorPresets
