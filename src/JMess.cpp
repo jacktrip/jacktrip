@@ -451,10 +451,11 @@ void JMess::connectPAN(int /*nChans*/)
             for (int ch = 1; ch<=2; ch++) { // chans are 1-based
 //                int slot = (halfZone + ((i%NPANINCHANS)*zones) );
 //                int slot = (halfZone + ( ( (i+((ch-1)*halfZone)) %NPANINCHANS)*zones) );
-                int slot = (halfZone + ( ( ((i+(ch-1))*quarterZone) %NPANINCHANS)*zones) );
+                int slot = (halfZone + ((ch-1)*quarterZone) + ( ( i %NPANINCHANS)*zones) );
 
                 //  needed % otherwise clients > NPANINCHANS results in all connected to slot 1
-                qDebug() << "i " << i << "ctr " << ctr  << "pctr " << pctr  << "ch " << ch << "slot " << slot
+                qDebug() << "i " << i << "ctr " << ctr  << "pctr " << pctr  << "ch " << ch
+                         << "slot " << slot << "slot%NPANINCHANS " << ( slot % NPANINCHANS )
                          << "halfZone " << halfZone << "quarterZone " << quarterZone;
                 QString left = IPS[i] +
                         ":receive_" + QString::number(ch);
