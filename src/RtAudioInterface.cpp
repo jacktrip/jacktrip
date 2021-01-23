@@ -36,39 +36,32 @@
  */
 
 #include "RtAudioInterface.h"
-#include "JackTrip.h"
-#include "jacktrip_globals.h"
 
 #include <cstdlib>
 
+#include "JackTrip.h"
+#include "jacktrip_globals.h"
 
-using std::cout; using std::endl;
-
-
-//*******************************************************************************
-RtAudioInterface::RtAudioInterface(JackTrip* jacktrip,
-                                   int NumInChans, int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution) :
-    AudioInterface(jacktrip,
-                   NumInChans, NumOutChans,
-                   AudioBitResolution),
-    mJackTrip(jacktrip),
-    mRtAudio(NULL)
-{}
-
+using std::cout;
+using std::endl;
 
 //*******************************************************************************
-RtAudioInterface::~RtAudioInterface()
+RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutChans,
+                                   audioBitResolutionT AudioBitResolution)
+    : AudioInterface(jacktrip, NumInChans, NumOutChans, AudioBitResolution)
+    , mJackTrip(jacktrip)
+    , mRtAudio(NULL)
 {
-    delete mRtAudio;
 }
 
+//*******************************************************************************
+RtAudioInterface::~RtAudioInterface() { delete mRtAudio; }
 
 //*******************************************************************************
 void RtAudioInterface::setup()
 {
     // Initialize Buffer array to read and write audio and members
-    mNumInChans = getNumInputChannels();
+    mNumInChans  = getNumInputChannels();
     mNumOutChans = getNumOutputChannels();
     mInBuffer.resize(getNumInputChannels());
     mOutBuffer.resize(getNumOutputChannels());
@@ -76,7 +69,7 @@ void RtAudioInterface::setup()
     cout << "Settin Up Default RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
     mRtAudio = new RtAudio;
-    if ( mRtAudio->getDeviceCount() < 1 ) {
+    if (mRtAudio->getDeviceCount() < 1) {
         cout << "No audio devices found!" << endl;
         std::exit(0);
     }
@@ -85,9 +78,10 @@ void RtAudioInterface::setup()
     RtAudio::DeviceInfo info_input;
     RtAudio::DeviceInfo info_output;
 
-    uint32_t deviceId_input; uint32_t deviceId_output;
+    uint32_t deviceId_input;
+    uint32_t deviceId_output;
     // use default devices
-    deviceId_input = mJackTrip->getDeviceID();
+    deviceId_input  = mJackTrip->getDeviceID();
     deviceId_output = mJackTrip->getDeviceID();
 
     cout << "DEFAULT INPUT DEVICE  : " << endl;
@@ -98,9 +92,9 @@ void RtAudioInterface::setup()
     cout << gPrintSeparator << endl;
 
     RtAudio::StreamParameters in_params, out_params;
-    in_params.deviceId = deviceId_input;
-    out_params.deviceId = deviceId_output;
-    in_params.nChannels = getNumInputChannels();
+    in_params.deviceId   = deviceId_input;
+    out_params.deviceId  = deviceId_output;
+    in_params.nChannels  = getNumInputChannels();
     out_params.nChannels = getNumOutputChannels();
 
     RtAudio::StreamOptions options;
@@ -112,34 +106,32 @@ void RtAudioInterface::setup()
     //linux only
     options.priority = 99;
 
-    unsigned int sampleRate = getSampleRate();//mSamplingRate;
-    unsigned int bufferFrames = getBufferSizeInSamples();//mBufferSize;
+    unsigned int sampleRate   = getSampleRate();           //mSamplingRate;
+    unsigned int bufferFrames = getBufferSizeInSamples();  //mBufferSize;
 
     try {
         // IMPORTANT NOTE: It's VERY important to remember to pass this
         // as the user data in the process callback, otherwise memeber won't
         // be accessible
-        mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32,
-                             sampleRate, &bufferFrames,
-                             &RtAudioInterface::wrapperRtAudioCallback, this, &options);
-    }
-    catch ( RtAudioError & e ) {
+        mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
+                             &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
+                             this, &options);
+    } catch (RtAudioError& e) {
         std::cout << '\n' << e.getMessage() << '\n' << std::endl;
-        exit( 0 );
+        exit(0);
     }
 
     // Setup parent class
     AudioInterface::setup();
 }
 
-
 //*******************************************************************************
 void RtAudioInterface::listAllInterfaces()
 {
     RtAudio rtaudio;
-    if ( rtaudio.getDeviceCount() < 1 ) {
-        cout << "No audio devices found!" << endl; }
-    else {
+    if (rtaudio.getDeviceCount() < 1) {
+        cout << "No audio devices found!" << endl;
+    } else {
         for (unsigned int i = 0; i < rtaudio.getDeviceCount(); i++) {
             printDeviceInfo(i);
             cout << gPrintSeparator << endl;
@@ -147,111 +139,83 @@ void RtAudioInterface::listAllInterfaces()
     }
 }
 
-
 //*******************************************************************************
 void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
 {
     RtAudio rtaudio;
     RtAudio::DeviceInfo info;
     int i = deviceId;
-    info = rtaudio.getDeviceInfo(i);
+    info  = rtaudio.getDeviceInfo(i);
     std::vector<unsigned int> sampleRates;
-    cout << "Audio Device  [" << i << "] : "  << info.name << endl;
+    cout << "Audio Device  [" << i << "] : " << info.name << endl;
     cout << "  Output Channels : " << info.outputChannels << endl;
     cout << "  Input Channels  : " << info.inputChannels << endl;
     sampleRates = info.sampleRates;
     cout << "  Supported Sampling Rates: ";
-    for (unsigned int ii = 0; ii<sampleRates.size();ii++) {
+    for (unsigned int ii = 0; ii < sampleRates.size(); ii++) {
         cout << sampleRates[ii] << " ";
     }
     cout << endl;
-    if (info.isDefaultOutput) {
-        cout << "  --Default Output Device--" << endl; }
-    if (info.isDefaultInput) {
-        cout << "  --Default Intput Device--" << endl; }
-    if (info.probed) {
-        cout << "  --Probed Successful--" << endl; }
+    if (info.isDefaultOutput) { cout << "  --Default Output Device--" << endl; }
+    if (info.isDefaultInput) { cout << "  --Default Intput Device--" << endl; }
+    if (info.probed) { cout << "  --Probed Successful--" << endl; }
 }
 
-
 //*******************************************************************************
-int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
-                                      unsigned int nFrames,
-                                      double /*streamTime*/, RtAudioStreamStatus /*status*/)
+int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
+                                      unsigned int nFrames, double /*streamTime*/,
+                                      RtAudioStreamStatus /*status*/)
 {
-    sample_t* inputBuffer_sample = (sample_t*) inputBuffer;
-    sample_t* outputBuffer_sample = (sample_t*) outputBuffer;
+    sample_t* inputBuffer_sample  = (sample_t*)inputBuffer;
+    sample_t* outputBuffer_sample = (sample_t*)outputBuffer;
 
     // Get input and output buffers
     //-------------------------------------------------------------------
     for (int i = 0; i < mNumInChans; i++) {
         // Input Ports are READ ONLY
-        mInBuffer[i] = inputBuffer_sample+(nFrames*i);
+        mInBuffer[i] = inputBuffer_sample + (nFrames * i);
     }
     for (int i = 0; i < mNumOutChans; i++) {
         // Output Ports are WRITABLE
-        mOutBuffer[i] = outputBuffer_sample+(nFrames*i);
+        mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
     }
 
     AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     return 0;
 }
 
-
 //*******************************************************************************
-int RtAudioInterface::wrapperRtAudioCallback(void *outputBuffer, void *inputBuffer,
+int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuffer,
                                              unsigned int nFrames, double streamTime,
-                                             RtAudioStreamStatus status, void *userData)
+                                             RtAudioStreamStatus status, void* userData)
 {
-    return static_cast<RtAudioInterface*>(userData)->RtAudioCallback(outputBuffer,inputBuffer,
-                                                                     nFrames,
-                                                                     streamTime, status);
+    return static_cast<RtAudioInterface*>(userData)->RtAudioCallback(
+        outputBuffer, inputBuffer, nFrames, streamTime, status);
 }
-
 
 //*******************************************************************************
 int RtAudioInterface::startProcess() const
 {
-    try { mRtAudio->startStream(); }
-    catch ( RtAudioError& e ) {
+    try {
+        mRtAudio->startStream();
+    } catch (RtAudioError& e) {
         std::cout << '\n' << e.getMessage() << '\n' << std::endl;
-        return(-1);
+        return (-1);
     }
-    return(0);
+    return (0);
 }
-
 
 //*******************************************************************************
 int RtAudioInterface::stopProcess() const
 {
-    try { mRtAudio->closeStream(); }
-    catch ( RtAudioError& e ) {
+    try {
+        mRtAudio->closeStream();
+    } catch (RtAudioError& e) {
         std::cout << '\n' << e.getMessage() << '\n' << std::endl;
-        return(-1);
+        return (-1);
     }
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // OLD CODE
 // =============================================================================
@@ -263,7 +227,6 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
   return JackAudioInterface::processCallback(nframes);
 }
 */
-
 
 //*******************************************************************************
 //int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
@@ -331,37 +294,10 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
 
 */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //mTestJackTrip->printTextTest();
 
 //if (mJackTrip != NULL)
 //  cout << "(mJackTrip != NULL)" << endl;
-
 
 //if (mJackTrip == NULL) { cout << " === JACKTRIPNULL === " << endl; }
 
@@ -376,7 +312,6 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
 //float* in_buffer = static_cast<float*>(inputBuffer);
 //float* out_buffer = static_cast<float*>(outputBuffer);
 
-
 //cout << "nFrames = ==================== = = = = = = = ======== " << this->getBufferSizeInSamples() << endl;
 //int8_t* input_packet = new int8_t[nFrames*2];
 
@@ -389,7 +324,6 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
 //mJackTrip->sendNetworkPacket(input_packet);
 //cout << mJackTrip->getRingBuffersSlotSize() << endl;
 //delete[] input_packet;
-
 
 //mOutputPacket = static_cast<int8_t*>(inputBuffer);
 //mInputPacket = static_cast<int8_t*>(outputBuffer);
@@ -410,7 +344,6 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
     }
   }
   */
-
 
 // 3) Finally, send packets to peer
 // --------------------------------
@@ -449,4 +382,3 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
   */
 //return 0;
 //}
-

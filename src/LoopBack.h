@@ -35,7 +35,6 @@
  * \date July 2008
  */
 
-
 /** \brief Connect Inputs to Outputs
  *
  */
@@ -43,7 +42,6 @@
 #define __LOOPBACK_H__
 
 #include "ProcessPlugin.h"
-
 
 /** \brief This Class just copy audio from its inputs to its outputs.
  *
@@ -53,17 +51,17 @@
  */
 class LoopBack : public ProcessPlugin
 {
-public:
+   public:
     /// \brief The class constructor sets the number of channels to connect as loopback
     LoopBack(int numchans) { mNumChannels = numchans; };
     /// \brief The class destructor
-    virtual ~LoopBack() {};
+    virtual ~LoopBack(){};
 
-    virtual int getNumInputs() { return(mNumChannels); };
-    virtual int getNumOutputs() { return(mNumChannels); };
+    virtual int getNumInputs() { return (mNumChannels); };
+    virtual int getNumOutputs() { return (mNumChannels); };
     virtual void compute(int nframes, float** inputs, float** outputs);
 
-private:
+   private:
     int mNumChannels;
 };
 

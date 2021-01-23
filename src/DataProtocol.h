@@ -44,21 +44,19 @@
 #endif
 
 #ifndef __WIN_32__
-#include <netinet/in.h> //sockaddr_in{} and other Internet defns
-#include <arpa/inet.h> //inet(3) functions
+#include <arpa/inet.h>  //inet(3) functions
 #include <netdb.h>
+#include <netinet/in.h>  //sockaddr_in{} and other Internet defns
 //#include <tr1/memory> //for shared_ptr
 #endif
 
-#include <iostream>
-
-#include <QThread>
 #include <QHostAddress>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QThread>
+#include <iostream>
 
-class JackTrip; // forward declaration
-
+class JackTrip;  // forward declaration
 
 /** \brief Base class that defines the transmission protocol.
  *
@@ -94,23 +92,21 @@ class DataProtocol : public QThread
 {
     Q_OBJECT;
 
-public:
-
+   public:
     //----------ENUMS------------------------------------------
     /// \brief Enum to define packet header types
     enum packetHeaderTypeT {
-        DEFAULT, ///< Default application header
-        JAMLINK, ///< Header to use with Jamlinks
-        EMPTY    ///< Empty Header
+        DEFAULT,  ///< Default application header
+        JAMLINK,  ///< Header to use with Jamlinks
+        EMPTY     ///< Empty Header
     };
 
     /// \brief Enum to define class modes, SENDER or RECEIVER
     enum runModeT {
-        SENDER, ///< Set class as a Sender (send packets)
-        RECEIVER ///< Set class as a Receiver (receives packets)
+        SENDER,   ///< Set class as a Sender (send packets)
+        RECEIVER  ///< Set class as a Receiver (receives packets)
     };
     //---------------------------------------------------------
-
 
     /** \brief The class constructor
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
@@ -120,9 +116,8 @@ public:
    * \param bind_port Port number to bind for this socket (this is the receive or send port depending on the runmode)
    * \param peer_port Peer port number (this is the receive or send port depending on the runmode)
    */
-    DataProtocol(JackTrip* jacktrip,
-                 const runModeT runmode,
-                 int bind_port, int peer_port);
+    DataProtocol(JackTrip* jacktrip, const runModeT runmode, int bind_port,
+                 int peer_port);
 
     /// \brief The class destructor
     virtual ~DataProtocol();
@@ -135,7 +130,8 @@ public:
     virtual void run() = 0;
 
     /// \brief Stops the execution of the Thread
-    virtual void stop() {
+    virtual void stop()
+    {
         QMutexLocker lock(&mMutex);
         mStopped = true;
     }
@@ -143,12 +139,12 @@ public:
     /** \brief Sets the size of the audio part of the packets
    * \param size_bytes Size in bytes
    */
-    void setAudioPacketSize(const size_t size_bytes){ mAudioPacketSize = size_bytes; }
+    void setAudioPacketSize(const size_t size_bytes) { mAudioPacketSize = size_bytes; }
 
     /** \brief Get the size of the audio part of the packets
    * \return size_bytes Size in bytes
    */
-    size_t getAudioPacketSizeInBites() { return(mAudioPacketSize); }
+    size_t getAudioPacketSizeInBites() { return (mAudioPacketSize); }
 
     /** \brief Set the peer address
    * \param peerHostOrIP IPv4 number or host name
@@ -165,10 +161,10 @@ public:
     //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
     //				     uint16_t& port) = 0;
 
-#if defined (__WIN_32__)
-    virtual void setSocket(SOCKET &socket) = 0;
+#if defined(__WIN_32__)
+    virtual void setSocket(SOCKET& socket) = 0;
 #else
-    virtual void setSocket(int &socket) = 0;
+    virtual void setSocket(int& socket) = 0;
 #endif
 
     struct PktStat {
@@ -178,19 +174,21 @@ public:
         uint32_t revived;
         uint32_t statCount;
     };
-    virtual bool getStats(PktStat*) {return false;}
+    virtual bool getStats(PktStat*) { return false; }
 
-    virtual void setIssueSimulation(double /*loss*/, double /*jitter*/, double /*max_delay*/) {}
-    void setUseRtPriority(bool use) {mUseRtPriority = use;}
+    virtual void setIssueSimulation(double /*loss*/, double /*jitter*/,
+                                    double /*max_delay*/)
+    {
+    }
+    void setUseRtPriority(bool use) { mUseRtPriority = use; }
 
-signals:
+   signals:
 
     void signalError(const char* error_message);
     void signalReceivedConnectionFromPeer();
-    void signalCeaseTransmission(const QString &reason = "");
+    void signalCeaseTransmission(const QString& reason = "");
 
-protected:
-
+   protected:
     /** \brief Get the Run Mode of the object
    * \return SENDER or RECEIVER
    */
@@ -204,29 +202,25 @@ protected:
     volatile bool mHasPacketsToReceive;
     QMutex mMutex;
 
+   private:
+    int mLocalPort;           ///< Local Port number to Bind
+    int mPeerPort;            ///< Peer Port number to Bind
+    const runModeT mRunMode;  ///< Run mode, either SENDER or RECEIVER
 
-private:
-
-    int mLocalPort; ///< Local Port number to Bind
-    int mPeerPort; ///< Peer Port number to Bind
-    const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
-
-    struct sockaddr_in mLocalIPv4Addr; ///< Local IPv4 Address struct
-    struct sockaddr_in mPeerIPv4Addr; ///< Peer IPv4 Address struct
+    struct sockaddr_in mLocalIPv4Addr;  ///< Local IPv4 Address struct
+    struct sockaddr_in mPeerIPv4Addr;   ///< Peer IPv4 Address struct
 
     /// Number of clients running to check for ports already used
     /// \note Unimplemented, try to find another way to check for used ports
     static int sClientsRunning;
 
-    size_t mAudioPacketSize; ///< Packet audio part size
-
+    size_t mAudioPacketSize;  ///< Packet audio part size
 
     /// \todo check a better way to access the header from the subclasses
-protected:
+   protected:
     //PacketHeader* mHeader; ///< Packet Header
-    JackTrip* mJackTrip; ///< JackTrip mediator class
+    JackTrip* mJackTrip;  ///< JackTrip mediator class
     bool mUseRtPriority;
-
 };
 
 #endif

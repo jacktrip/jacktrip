@@ -1,20 +1,20 @@
 #ifndef __TESTRINGBUFFER__
 #define __TESTRINGBUFFER__
 
-#include "RingBuffer.h"
 #include <QThread>
 #include <iostream>
 
-static RingBuffer rb(2,100);
+#include "RingBuffer.h"
+
+static RingBuffer rb(2, 100);
 
 class TestRingBufferWrite : public QThread
 {
-public:
-
+   public:
     void run()
     {
         int8_t* writeSlot;
-        writeSlot = new int8_t[2];
+        writeSlot    = new int8_t[2];
         writeSlot[0] = *"a";
         writeSlot[1] = *"b";
         while (true) {
@@ -23,14 +23,11 @@ public:
             //std::cout << "writing AFTER" << std::endl;
         }
     }
-
 };
-
 
 class TestRingBufferRead : public QThread
 {
-public:
-
+   public:
     void run()
     {
         int8_t* readSlot;

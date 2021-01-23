@@ -53,8 +53,7 @@ class NetKS : public ProcessPlugin
 {
     Q_OBJECT;
 
-
-public:
+   public:
     /*
   void play()
   {
@@ -65,7 +64,7 @@ public:
   }
   */
 
-private slots:
+   private slots:
 
     /// \brief Stlot to excite (play) the string
     void exciteString()
@@ -73,31 +72,35 @@ private slots:
         std::cout << "========= EXTICING STRING ===========" << std::endl;
         fbutton0 = 1.0;
         //std::cout << fbutton0 << std::endl;
-        QThread::usleep(280000); /// \todo Define this number based on the sampling rate and buffer size
+        QThread::usleep(
+            280000);  /// \todo Define this number based on the sampling rate and buffer size
         fbutton0 = 0.0;
         //std::cout << fbutton0 << std::endl;
     }
 
     //=========== FROM FAUST ===================================================
-private:
+   private:
     float fbutton0;
     float fVec0[2];
     float fRec0[2];
-    int   iRec1[2];
+    int iRec1[2];
     float fVec1[2];
-public:
+
+   public:
     virtual int getNumInputs() { return 1; }
     virtual int getNumOutputs() { return 1; }
     static void classInit(int /*samplingFreq*/) {}
-    virtual void instanceInit(int samplingFreq) {
+    virtual void instanceInit(int samplingFreq)
+    {
         fSamplingFreq = samplingFreq;
-        fbutton0 = 0.0;
-        for (int i=0; i<2; i++) fVec0[i] = 0;
-        for (int i=0; i<2; i++) fRec0[i] = 0;
-        for (int i=0; i<2; i++) iRec1[i] = 0;
-        for (int i=0; i<2; i++) fVec1[i] = 0;
+        fbutton0      = 0.0;
+        for (int i = 0; i < 2; i++) fVec0[i] = 0;
+        for (int i = 0; i < 2; i++) fRec0[i] = 0;
+        for (int i = 0; i < 2; i++) iRec1[i] = 0;
+        for (int i = 0; i < 2; i++) fVec1[i] = 0;
     }
-    virtual void init(int samplingFreq) {
+    virtual void init(int samplingFreq)
+    {
         classInit(samplingFreq);
         instanceInit(samplingFreq);
     }
@@ -108,18 +111,20 @@ public:
                 interface->closeBox();
         }
   */
-    virtual void compute (int count, float** input, float** output) {
-        float* input0 = input[0];
+    virtual void compute(int count, float** input, float** output)
+    {
+        float* input0  = input[0];
         float* output0 = output[0];
-        float fSlow0 = fbutton0;
-        for (int i=0; i<count; i++) {
-            fVec0[0] = fSlow0;
-            fRec0[0] = ((((fSlow0 - fVec0[1]) > 0.000000f) + fRec0[1]) - (3.333333e-03f * (fRec0[1] > 0.000000f)));
-            iRec1[0] = (12345 + (1103515245 * iRec1[1]));
+        float fSlow0   = fbutton0;
+        for (int i = 0; i < count; i++) {
+            fVec0[0]     = fSlow0;
+            fRec0[0]     = ((((fSlow0 - fVec0[1]) > 0.000000f) + fRec0[1])
+                        - (3.333333e-03f * (fRec0[1] > 0.000000f)));
+            iRec1[0]     = (12345 + (1103515245 * iRec1[1]));
             float fTemp0 = ((4.190951e-10f * iRec1[0]) * (fRec0[0] > 0.000000f));
             float fTemp1 = input0[i];
-            fVec1[0] = (fTemp1 + fTemp0);
-            output0[i] = (0.500000f * ((fTemp0 + fTemp1) + fVec1[1]));
+            fVec1[0]     = (fTemp1 + fTemp0);
+            output0[i]   = (0.500000f * ((fTemp0 + fTemp1) + fVec1[1]));
             // post processing
             fVec1[1] = fVec1[0];
             iRec1[1] = iRec1[0];
@@ -129,8 +134,6 @@ public:
     }
 
     //============================================================================
-
 };
 
-
-#endif // __NETKS_H__
+#endif  // __NETKS_H__

@@ -40,36 +40,36 @@
 
 #include <QObject>
 #include <QTimer>
-
 #include <iostream>
 
 class JackTripWorkerMessages : public QObject
 {
     Q_OBJECT;
 
-public:
-    JackTripWorkerMessages() {};
-    virtual ~JackTripWorkerMessages() {};
+   public:
+    JackTripWorkerMessages(){};
+    virtual ~JackTripWorkerMessages(){};
 
     void play()
     {
-        std::cout << "********** PALYING ***********************************" << std::endl;
-        QTimer *timer = new QTimer(this);
-        QObject::connect(timer, SIGNAL(timeout()), this, SLOT(slotTest()), Qt::QueuedConnection);
+        std::cout << "********** PALYING ***********************************"
+                  << std::endl;
+        QTimer* timer = new QTimer(this);
+        QObject::connect(timer, SIGNAL(timeout()), this, SLOT(slotTest()),
+                         Qt::QueuedConnection);
         timer->start(300);
     }
 
-public slots:
+   public slots:
     void slotTest()
     {
         std::cout << "---JackTripWorkerMessages slotTest()---" << std::endl;
     }
 
-signals:
+   signals:
     void signalTest();
     /// Signal to stop the event loop inside the JackTripWorker Thread
     void signalStopEventLoop();
-
 };
 
-#endif //__JACKTRIPWORKERMESSAGES_H__
+#endif  //__JACKTRIPWORKERMESSAGES_H__

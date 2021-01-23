@@ -35,35 +35,29 @@
  * \date September 2008
  */
 
-#include <iostream>
-
 #include <QVector>
+#include <iostream>
 
 #include "JackTripThread.h"
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 
 const int num_jacktrips = 5;
-const int base_port = 4464;
-
+const int base_port     = 4464;
 
 void main_tests(int argc, char** argv);
 void test_threads_server();
 void test_threads_client(const char* peer_address);
 
-
 void main_tests(int /*argc*/, char** argv)
 {
-    if (argv[1][0] == 's' )
-    {
+    if (argv[1][0] == 's') {
         test_threads_server();
-    }
-    else if (argv[1][0] == 'c' )
-    {
+    } else if (argv[1][0] == 'c') {
         test_threads_client("171.64.197.209");
     }
 }
-
 
 // Test many servers running at the same time
 void test_threads_server()
@@ -71,9 +65,8 @@ void test_threads_server()
     QVector<JackTripThread*> jacktrips;
     jacktrips.resize(num_jacktrips);
     int port_num;
-    for (int i = 0; i < num_jacktrips; i++)
-    {
-        port_num = base_port + i*10;
+    for (int i = 0; i < num_jacktrips; i++) {
+        port_num = base_port + i * 10;
         cout << "Port Number: " << port_num << endl;
         jacktrips[i] = new JackTripThread(JackTrip::SERVER);
         jacktrips[i]->setPort(port_num);
@@ -82,16 +75,14 @@ void test_threads_server()
     }
 }
 
-
 // Test many servers running at the same time
 void test_threads_client(const char* peer_address)
 {
     QVector<JackTripThread*> jacktrips;
     jacktrips.resize(num_jacktrips);
     int port_num;
-    for (int i = 0; i < num_jacktrips; i++)
-    {
-        port_num = base_port + i*10;
+    for (int i = 0; i < num_jacktrips; i++) {
+        port_num = base_port + i * 10;
         cout << "Port Number: " << port_num << endl;
         jacktrips[i] = new JackTripThread(JackTrip::CLIENT);
         jacktrips[i]->setPort(port_num);

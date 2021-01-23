@@ -35,21 +35,21 @@
  * \date July 2008
  */
 
-
 #include "LoopBack.h"
-#include "jacktrip_types.h"
 
-#include <cstring> // for memcpy
+#include <cstring>  // for memcpy
 #include <iostream>
 
-using std::cout; using std::endl;
-//using namespace JackTripNamespace;
+#include "jacktrip_types.h"
 
+using std::cout;
+using std::endl;
+//using namespace JackTripNamespace;
 
 //*******************************************************************************
 void LoopBack::compute(int nframes, float** inputs, float** outputs)
 {
-    for ( int i = 0; i < getNumInputs(); i++ ) {
+    for (int i = 0; i < getNumInputs(); i++) {
         // Everything that comes out, copy back to inputs
         //memcpy(inputs[i], outputs[i], sizeof(sample_t) * nframes);
         memcpy(outputs[i], inputs[i], sizeof(sample_t) * nframes);
