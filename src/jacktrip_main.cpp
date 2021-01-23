@@ -35,7 +35,7 @@
  * \date June 2008
  */
 
-#include <signal.h>
+#include <csignal>
 
 #include <QCoreApplication>
 #include <QLoggingCategory>

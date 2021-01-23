@@ -539,8 +539,8 @@ ZoneReader(zone, valueConverter) : a zone with a data converter
 
 ****************************************************************************************/
 
-#include <assert.h>
-#include <float.h>
+#include <cassert>
+#include <cfloat>
 
 #include <algorithm>  // std::max
 #include <cmath>
@@ -1572,7 +1572,7 @@ class APIUI
 #define FAUSTFLOAT float
 #endif
 
-#include <math.h>
+#include <cmath>
 
 #include <algorithm>
 #include <cmath>
