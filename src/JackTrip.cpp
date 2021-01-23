@@ -396,7 +396,7 @@ void JackTrip::startProcess(
     int ID
 #endif  // endwhere
 )
-{   //signal that catches ctrl c in rtaudio-asio mode
+{  //signal that catches ctrl c in rtaudio-asio mode
     /*#if defined (__WIN_32__)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
         perror("signal");

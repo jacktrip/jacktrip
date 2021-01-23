@@ -24,9 +24,9 @@ inline void* aligned_calloc(size_t nmemb, size_t size)
 
 // clang-format off
 <<includeIntrinsic>>
-// clang-format on
+    // clang-format on
 
-/******************************************************************************
+    /******************************************************************************
 *******************************************************************************
 
 			ABSTRACT USER INTERFACE
@@ -97,4 +97,4 @@ class dsp
 //----------------------------------------------------------------------------
 // clang-format off
 <<includeclass>>
-// clang-format on
+    // clang-format on
