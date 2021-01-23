@@ -314,7 +314,6 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 #ifdef WAIR  // WAIR
     if (mNumNetRevChans)  // else not wair, so skip all this
     {
-        ///////////////////////////////////////////////////////////////////////////////
 #define AP
 #ifndef AP
         // straight to audio out
@@ -326,12 +325,11 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
             sample_t* tmp_sample = mNetInBuffer[i];  //mNetInBuffer
             for (int j = 0; j < (int)n_frames; j++) { mix_sample[j] += tmp_sample[j]; }
         }  // nib6 to aob2
-           ///////////////////////////////////////////////////////////////////////////////
-#else  // AP                                                                            \
-       ///////////////////////////////////////////////////////////////////////////////  \
-       // output through all-pass cascade                                               \
-       // AP2 is 2 channel, mixes inputs to mono, then splits to two parallel AP chains \
-       // AP8 is 2 channel, two parallel AP chains
+#else  // AP
+
+        // output through all-pass cascade
+        // AP2 is 2 channel, mixes inputs to mono, then splits to two parallel AP chains
+        // AP8 is 2 channel, two parallel AP chains
         for (int i = 0; i < mNumInChans; i++) {
             std::memset(mAPInBuffer[i], 0, sizeof(sample_t) * n_frames);
         }
@@ -356,8 +354,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         }
         // add aib2 to aob2
 #endif  // ADD_DIRECT
-#endif  // AP \
-    ///////////////////////////////////////////////////////////////////////////////
+#endif  // AP
     }
 #endif  // endwhere
 
