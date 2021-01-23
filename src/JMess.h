@@ -32,7 +32,7 @@
 #ifndef __JMESS_H
 #define __JMESS_H
 
-#include <errno.h>
+#include <cerrno>
 
 #include <QIODevice>
 #include <QString>
