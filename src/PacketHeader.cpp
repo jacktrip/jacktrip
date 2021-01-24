@@ -266,7 +266,7 @@ JamLinkHeader::JamLinkHeader(JackTrip* jacktrip)
 void JamLinkHeader::fillHeaderCommonFromAudio()
 {
     // Check number of channels
-    int num_inchannels = mJackTrip->getNumInputChannels();
+    unsigned int num_inchannels = mJackTrip->getNumInputChannels();
     if (num_inchannels != 1) {
         //std::cerr << "ERROR: JamLink only support ONE channel. Run JackTrip using only one channel"
         //	      << endl;

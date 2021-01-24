@@ -248,7 +248,7 @@ void JackTrip::setupAudio(
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
-    int AudioBufferSizeInBytes = mAudioBufferSize * sizeof(sample_t);
+    size_t AudioBufferSizeInBytes = mAudioBufferSize * sizeof(sample_t);
     std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples"
               << std::endl;
     std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"

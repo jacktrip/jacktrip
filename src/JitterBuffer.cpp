@@ -207,9 +207,10 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         if (2 * PPS == mAutoQueue++ % (4 * PPS)) {
             double k = 1.0 + 1e-5 / mAutoQFactor;
             if (12 * PPS > mAutoQueue
-                || std::abs(mAutoQueueCorr * k - mMaxLatency + mSlotSize / 2)
+                || std::abs(mAutoQueueCorr * k - mMaxLatency + mSlotSize / 2.0)
                        > 0.6 * mSlotSize) {
-                mMaxLatency = mSlotSize * std::ceil(mAutoQueueCorr * k / mSlotSize);
+                mMaxLatency = static_cast<int>(
+                    mSlotSize * std::ceil(mAutoQueueCorr * k / mSlotSize));
                 cout << "AutoQueue: " << mMaxLatency / mSlotSize << endl;
             }
         }
@@ -247,7 +248,7 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
         mBroadcastSkew += d / mMinStepSize;
     } else {
         mBroadcastPositionCorr += 0.0003 * d;
-        int delta = mBroadcastPositionCorr / mMinStepSize;
+        int delta = static_cast<int>(mBroadcastPositionCorr / mMinStepSize);
         if (0 != delta) {
             mBroadcastPositionCorr -= delta * mMinStepSize;
             if (2 == mAudioBitRes

@@ -214,7 +214,7 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
     }
 }
 
-void AudioTester::printHelp(char* command, [[maybe_unused]] char helpCase)
+void AudioTester::printHelp(char* command, [[maybe_unused]] int helpCase)
 {
     std::cout << "HELP for \"" << command
               << " printIntervalSec\" // (end-of-line comments start with `//'):\n";

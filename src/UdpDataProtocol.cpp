@@ -479,8 +479,8 @@ void UdpDataProtocol::run()
     // Redundancy Variables
     // (Algorithm explained at the end of this file)
     // ---------------------------------------------
-    int full_redundant_packet_size = full_packet_size * mUdpRedundancyFactor;
-    int8_t* full_redundant_packet  = NULL;
+    size_t full_redundant_packet_size = full_packet_size * mUdpRedundancyFactor;
+    int8_t* full_redundant_packet     = NULL;
 
     // Set realtime priority (function in jacktrip_globals.h)
     if (gVerboseFlag) {
@@ -672,7 +672,7 @@ void UdpDataProtocol::run()
 
         // Send exit packet (with 1 redundant packet).
         cout << "sending exit packet" << endl;
-        QByteArray exitPacket = QByteArray(mControlPacketSize, 0xff);
+        QByteArray exitPacket = QByteArray(mControlPacketSize, '\255');
         sendPacket(exitPacket.constData(), mControlPacketSize);
         sendPacket(exitPacket.constData(), mControlPacketSize);
         emit signalCeaseTransmission();
@@ -743,7 +743,10 @@ void UdpDataProtocol::receivePacketRedundancy(
         if (0 > x) { return; }
         // Delay packets
         x -= mSimulatedJitterRate;
-        if (0 > x) { usleep(mUniformDist(mRndEngine) * mSimulatedJitterMaxDelay * 1e6); }
+        if (0 > x) {
+            usleep(static_cast<int>(mUniformDist(mRndEngine) * mSimulatedJitterMaxDelay
+                                    * 1e6));
+        }
     }
 
     // Get Packet Sequence Number
@@ -771,7 +774,7 @@ void UdpDataProtocol::receivePacketRedundancy(
     mInitialState        = false;
 
     //cout << current_seq_num << " ";
-    int redun_last_index = 0;
+    unsigned int redun_last_index = 0;
     for (unsigned int i = 1; i < mUdpRedundancyFactor; i++) {
         // Check if the package we receive is the next one expected, i.e.,
         // current_seq_num == (last_seq_num+1)
@@ -787,17 +790,17 @@ void UdpDataProtocol::receivePacketRedundancy(
     mRevivedCount += redun_last_index;
     //cout << endl;
 
-    int peer_chans    = mJackTrip->getPeerNumChannels(full_redundant_packet);
-    int N             = mJackTrip->getPeerBufferSize(full_redundant_packet);
-    int host_buf_size = N * mChans * mSmplSize;
-    int hdr_size      = mJackTrip->getHeaderSizeInBytes();
-    int gap_size      = mInitialState ? 0 : (lost - redun_last_index) * host_buf_size;
+    unsigned int peer_chans = mJackTrip->getPeerNumChannels(full_redundant_packet);
+    int N                   = mJackTrip->getPeerBufferSize(full_redundant_packet);
+    size_t host_buf_size    = N * mChans * mSmplSize;
+    int hdr_size            = mJackTrip->getHeaderSizeInBytes();
+    unsigned int gap_size = mInitialState ? 0 : (lost - redun_last_index) * host_buf_size;
 
     last_seq_num = newer_seq_num;  // Save last read packet
 
-    if ((int)mBuffer.size() < host_buf_size) { mBuffer.resize(host_buf_size, 0); }
+    if (mBuffer.size() < host_buf_size) { mBuffer.resize(host_buf_size, 0); }
     // Send to audio all available audio packets, in order
-    for (int i = redun_last_index; i >= 0; i--) {
+    for (unsigned int i = redun_last_index; i >= 0; i--) {
         int8_t* src = full_redundant_packet + (i * full_packet_size) + hdr_size;
         if (1 != mChans) {
             // Convert packet's non-interleaved layout to interleaved one used internally
@@ -863,10 +866,10 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
     int8_t* src = mAudioPacket;
     if (1 != mChans) {
         // Convert internal interleaved layout to non-interleaved
-        int N       = getAudioPacketSizeInBites() / mChans / mSmplSize;
+        size_t N    = getAudioPacketSizeInBites() / mChans / mSmplSize;
         int8_t* dst = mBuffer.data();
-        for (int n = 0; n < N; ++n) {
-            for (int c = 0; c < mChans; ++c) {
+        for (unsigned int n = 0; n < N; ++n) {
+            for (unsigned int c = 0; c < mChans; ++c) {
                 memcpy(dst + (n + c * N) * mSmplSize, src + (n * mChans + c) * mSmplSize,
                        mSmplSize);
             }

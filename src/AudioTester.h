@@ -52,7 +52,7 @@
 class AudioTester
 {
     bool enabled{false};
-    float printIntervalSec{1.0f};
+    double printIntervalSec{1.0};
     int sendChannel{0};
 
     bool impulsePending{false};
@@ -90,14 +90,14 @@ class AudioTester
 
     bool getEnabled() { return enabled; }
     void setEnabled(bool e) { enabled = e; }
-    void setPrintIntervalSec(float s) { printIntervalSec = s; }
+    void setPrintIntervalSec(double s) { printIntervalSec = s; }
     void setSendChannel(int c) { sendChannel = c; }
     int getSendChannel() { return sendChannel; }
     int getPendingCell() { return pendingCell; }
     void setPendingCell(int pc) { pendingCell = pc; }
     void setSampleRate(float fs) { sampleRate = fs; }
     int getBufferSkip() { return bufferSkip; }  // used for debugging breakpoints
-    void printHelp(char* command, char helpCase);
+    void printHelp(char* command, int helpCase);
 
    private:
     float getImpulseAmp()

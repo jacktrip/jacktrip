@@ -248,7 +248,7 @@ class Effects
         return outgoingEffects;
     }
 
-    void printHelp(char* command, char helpCase)
+    void printHelp(char* command, int helpCase)
     {
         std::cout << "HELP for `" << command
                   << "' (end-of-line comments start with `//')\n";

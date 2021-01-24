@@ -378,7 +378,7 @@ class JackTrip : public QObject
     {
         mSendRingBuffer->readSlotBlocking(ptrToReadSlot);
     }
-    virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, int lostLen)
+    virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, unsigned int lostLen)
     {
         return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
     }

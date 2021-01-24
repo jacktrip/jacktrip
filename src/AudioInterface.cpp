@@ -122,8 +122,8 @@ void AudioInterface::setup()
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
 
-    int size_input  = mSizeInBytesPerChannel * getNumInputChannels();
-    int size_output = mSizeInBytesPerChannel * getNumOutputChannels();
+    size_t size_input  = mSizeInBytesPerChannel * getNumInputChannels();
+    size_t size_output = mSizeInBytesPerChannel * getNumOutputChannels();
 #ifdef WAIR  // WAIR
     if (mNumNetRevChans)  // else don't change sizes
     {
@@ -237,7 +237,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 #ifndef WAIR  // NOT WAIR:
     for (auto p : mProcessPluginsFromNetwork) {
         if (p->getInited()) {
-            p->compute(n_frames, out_buffer.data(), out_buffer.data());
+            p->compute(static_cast<int>(n_frames), out_buffer.data(), out_buffer.data());
         }
     }
 #else  // WAIR:
@@ -287,7 +287,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
             // process all outgoing channels with ProcessPlugins:
             ProcessPlugin* p = mProcessPluginsToNetwork[i];
             if (p->getInited()) {
-                p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
+                p->compute(static_cast<int>(n_frames), mInBufCopy.data(),
+                           mInBufCopy.data());
             }
         }
         if (audioTesting) {

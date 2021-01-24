@@ -154,7 +154,8 @@ void UdpHubListener::start()
 
     cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
     cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << " ("
-         << mHubPatchDescriptions.at(mHubPatch).toStdString() << ")" << endl;
+         << mHubPatchDescriptions.at(static_cast<int>(mHubPatch)).toStdString() << ")"
+         << endl;
     cout << "=======================================================" << endl;
 
     // Start our monitoring timer

@@ -209,7 +209,7 @@ class UdpDataProtocol : public DataProtocol
     int8_t* mAudioPacket;  ///< Buffer to store Audio Packets
     int8_t* mFullPacket;   ///< Buffer to store Full Packet (audio+header)
     std::vector<int8_t> mBuffer;
-    int mChans;
+    unsigned int mChans;
     int mSmplSize;
     int mLastOutOfOrderCount;
     bool mInitialState;

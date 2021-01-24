@@ -169,7 +169,7 @@ void JMess::setConnectedPorts()
     free(ports);
 }
 //*******************************************************************************
-void JMess::connectSpawnedPorts(int nChans, int hubPatch)
+void JMess::connectSpawnedPorts(int nChans, unsigned int hubPatch)
 // called from UdpHubListener::connectMesh
 {
     QMutexLocker locker(&sJMessMutex);

@@ -144,8 +144,8 @@ class RingBuffer
     /*const*/ int mSlotSize;   ///< The size of one slot in byes
     /*const*/ int mNumSlots;   ///< Number of Slots
     /*const*/ int mTotalSize;  ///< Total size of the mRingBuffer = mSlotSize*mNumSlotss
-    uint32_t mReadPosition;    ///< Read Positions in the RingBuffer (Tail)
-    uint32_t mWritePosition;   ///< Write Position in the RingBuffer (Head)
+    int32_t mReadPosition;     ///< Read Positions in the RingBuffer (Tail)
+    int32_t mWritePosition;    ///< Write Position in the RingBuffer (Head)
     int mFullSlots;            ///< Number of used (full) slots, in slot-size
     int8_t* mRingBuffer;       ///< 8-bit array of data (1-byte)
     int8_t* mLastReadSlot;     ///< Last slot read
