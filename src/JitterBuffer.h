@@ -65,7 +65,7 @@ class JitterBuffer : public RingBuffer
     int mSampleRate;
     int mInSlotSize;
     bool mActive;
-    uint32_t mBroadcastLatency;
+    int32_t mBroadcastLatency;
     int32_t mBroadcastPosition;
     double mBroadcastPositionCorr;
 
