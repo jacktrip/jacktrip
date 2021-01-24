@@ -1,1 +1,1 @@
-Checks: '-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default'
+Checks: '-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default,modernize-use-noexcept'
