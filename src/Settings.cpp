@@ -61,7 +61,7 @@
 using std::cout;
 using std::endl;
 
-int gVerboseFlag = 0;
+bool gVerboseFlag = false;
 
 enum JTLongOptIDS {
     OPT_BUFSTRATEGY = 1001,

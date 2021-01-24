@@ -115,7 +115,7 @@ const char* const gPrintSeparator =
 //*******************************************************************************
 /// \name Global flags
 //@{
-extern int gVerboseFlag;  ///< Verbose mode flag declaration
+extern bool gVerboseFlag;  ///< Verbose mode flag declaration
 //@}
 
 //*******************************************************************************
