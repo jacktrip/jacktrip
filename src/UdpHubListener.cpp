@@ -90,9 +90,9 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
     // mJTWorkers = new JackTripWorker(this);
     mThreadPool.setExpiryTimeout(3000);  // msec (-1) = forever
     // Inizialize IP addresses
-    for (int i = 0; i < gMaxThreads; i++) {
-        mActiveAddress[i].address = "";  // Address strings
-        mActiveAddress[i].port    = 0;
+    for (auto & mActiveAddress : mActiveAddresses) {
+        mActiveAddress.address = "";  // Address strings
+        mActiveAddress.port    = 0;
     }
     // Set the base dynamic port
     // The Dynamic and/or Private Ports are those from 49152 through 65535
@@ -259,7 +259,7 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     {
         QMutexLocker lock(&mMutex);
         mJTWorkers->at(id)->setJackTrip(
-            id, mActiveAddress[id].address, server_udp_port, mActiveAddress[id].port, 1,
+            id, mActiveAddresses[id].address, server_udp_port, mActiveAddresses[id].port, 1,
             m_connectDefaultAudioPorts);  /// \todo temp default to 1 channel
 
         // qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address <<
@@ -435,7 +435,7 @@ int UdpHubListener::isNewAddress(QString address, uint16_t port)
   }
   */
     for (int i = 0; i < gMaxThreads; i++) {
-        if (address == mActiveAddress[i].address && port == mActiveAddress[i].port) {
+        if (address == mActiveAddresses[i].address && port == mActiveAddresses[i].port) {
             id          = i;
             busyAddress = true;
         }
@@ -449,10 +449,10 @@ int UdpHubListener::isNewAddress(QString address, uint16_t port)
         id                     = 0;
         bool foundEmptyAddress = false;
         while (!foundEmptyAddress && (id < gMaxThreads)) {
-            if (mActiveAddress[id].address.isEmpty() && (mActiveAddress[id].port == 0)) {
+            if (mActiveAddresses[id].address.isEmpty() && (mActiveAddresses[id].port == 0)) {
                 foundEmptyAddress          = true;
-                mActiveAddress[id].address = address;
-                mActiveAddress[id].port    = port;
+                mActiveAddresses[id].address = address;
+                mActiveAddresses[id].port    = port;
             } else {
                 id++;
             }
@@ -468,7 +468,7 @@ int UdpHubListener::getPoolID(QString address, uint16_t port)
     QMutexLocker lock(&mMutex);
     // for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
     for (int id = 0; id < gMaxThreads; id++) {
-        if (address == mActiveAddress[id].address && port == mActiveAddress[id].port) {
+        if (address == mActiveAddresses[id].address && port == mActiveAddresses[id].port) {
             return id;
         }
     }
@@ -479,8 +479,8 @@ int UdpHubListener::getPoolID(QString address, uint16_t port)
 int UdpHubListener::releaseThread(int id)
 {
     QMutexLocker lock(&mMutex);
-    mActiveAddress[id].address = "";
-    mActiveAddress[id].port    = 0;
+    mActiveAddresses[id].address = "";
+    mActiveAddresses[id].port    = 0;
     mTotalRunningThreads--;
 #ifdef WAIR  // wair
     if (isWAIR()) connectMesh(false);  // invoked with -Sw

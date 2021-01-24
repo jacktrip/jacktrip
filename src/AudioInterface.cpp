@@ -112,11 +112,11 @@ AudioInterface::~AudioInterface()
     for (int i = 0; i < aCnt; i++) { delete[] mAPInBuffer[i]; }
 #endif  // endwhere
 
-    for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-        delete mProcessPluginsFromNetwork[i];
+    for (auto & i : mProcessPluginsFromNetwork) {
+        delete i;
     }
-    for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
-        delete mProcessPluginsToNetwork[i];
+    for (auto & i : mProcessPluginsToNetwork) {
+        delete i;
     }
     for (int i = 0; i < mNumInChans; i++) { delete mInBufCopy[i]; }
 }
@@ -240,8 +240,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     /// do it chaining outputs to inputs in the buffers. May need a tempo buffer
 
 #ifndef WAIR  // NOT WAIR:
-    for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-        ProcessPlugin* p = mProcessPluginsFromNetwork[i];
+    for (auto p : mProcessPluginsFromNetwork) {
         if (p->getInited()) {
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
         }

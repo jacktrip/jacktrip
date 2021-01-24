@@ -363,9 +363,8 @@ void JMess::disconnectAll()
 
     this->setConnectedPorts();
 
-    for (QVector<QVector<QString> >::iterator it = mConnectedPorts.begin();
-         it != mConnectedPorts.end(); ++it) {
-        OutputInput = *it;
+    for (auto & mConnectedPort : mConnectedPorts) {
+        OutputInput = mConnectedPort;
 
         if (jack_disconnect(mClient, OutputInput[0].toUtf8(), OutputInput[1].toUtf8())) {
             cerr << "WARNING: port: " << qPrintable(OutputInput[0])
