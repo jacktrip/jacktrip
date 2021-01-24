@@ -353,7 +353,7 @@ void UdpHubListener::stopCheck()
 uint16_t UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection,
                                            QString& clientName)
 {
-    if (gVerboseFlag) cout << "Ready To Read From Client!" << endl;
+    if (gVerboseFlag) { cout << "Ready To Read From Client!\n"; }
     // Read UDP Port Number from Server
     // --------------------------------
     uint16_t udp_port;
@@ -486,10 +486,14 @@ int UdpHubListener::releaseThread(int id)
     mActiveAddresses[id].port    = 0;
     mTotalRunningThreads--;
 #ifdef WAIR  // wair
-    if (isWAIR()) connectMesh(false);  // invoked with -Sw
-#endif                                 // endwhere
+    if (isWAIR()) {
+        connectMesh(false);  // invoked with -Sw
+    }
+#endif  // endwhere
 #ifndef __NO_JACK__
-    if (getHubPatch()) connectPatch(false);  // invoked with -p > 0
+    if (getHubPatch()) {
+        connectPatch(false);  // invoked with -p > 0
+    }
 #endif
     return 0;  /// \todo Check if we really need to return an argument here
 }
@@ -533,16 +537,17 @@ void UdpHubListener::connectPatch(bool spawn)
     JMess tmp;
     // default is patch 0, which connects server audio to all clients
     // these are the other cases:
-    if (getHubPatch()
-        == JackTrip::RESERVEDMATRIX)  // special patch for TU Berlin ensemble
+    if (getHubPatch() == JackTrip::RESERVEDMATRIX) {
+        // special patch for TU Berlin ensemble
         tmp.connectTUB(gDefaultNumInChannels);
-    else if ((getHubPatch() == JackTrip::CLIENTECHO) ||  // client loopback for testing
-             (getHubPatch() == JackTrip::CLIENTFOFI)
-             ||  // all clients to all clients except self
-             (getHubPatch()
-              == JackTrip::FULLMIX))  // all clients to all clients including self
+    } else if ((getHubPatch() == JackTrip::CLIENTECHO) ||  // client loopback for testing
+               (getHubPatch() == JackTrip::CLIENTFOFI)
+               ||  // all clients to all clients except self
+               (getHubPatch() == JackTrip::FULLMIX)) {
+        // all clients to all clients including self
         tmp.connectSpawnedPorts(gDefaultNumInChannels, getHubPatch());
-    // FIXME: need change to gDefaultNumInChannels if more than stereo
+        // FIXME: need change to gDefaultNumInChannels if more than stereo}
+    }
 }
 #endif
 

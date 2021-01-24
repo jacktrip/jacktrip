@@ -69,8 +69,9 @@ JMess::JMess()
 //-------------------------------------------------------------------------------
 JMess::~JMess()
 {
-    if (jack_client_close(mClient))
+    if (jack_client_close(mClient)) {
         cerr << "ERROR: Could not close the hidden jmess jack client." << endl;
+    }
 }
 
 //-------------------------------------------------------------------------------
@@ -193,8 +194,9 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
         //  for example              "171.64.197.121"
 
         bool newOne = !systemPort;
-        for (int i = 0; i < ctr; i++)
-            if (newOne && (IPS[i] == s)) newOne = false;
+        for (int i = 0; i < ctr; i++) {
+            if (newOne && (IPS[i] == s)) { newOne = false; }
+        }
         if (newOne) {
             IPS[ctr] = s;
             ctr++;
@@ -211,12 +213,13 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 
     // implements CLIENTFOFI, CLIENTECHO -- also FULLMIX part which is CLIENTECHO
     for (int i = 0; i < ctr; i++) {
-        if (hubPatch == JackTrip::CLIENTFOFI) jLimit = (ctr - 1);
+        if (hubPatch == JackTrip::CLIENTFOFI) { jLimit = (ctr - 1); }
         for (int j = 0; j < jLimit; j++) {
-            if ((hubPatch == JackTrip::CLIENTECHO) || (hubPatch == JackTrip::FULLMIX))
+            if ((hubPatch == JackTrip::CLIENTECHO) || (hubPatch == JackTrip::FULLMIX)) {
                 k = i;
-            else if (hubPatch == JackTrip::CLIENTFOFI)
+            } else if (hubPatch == JackTrip::CLIENTFOFI) {
                 k = (j + (i + 1)) % ctr;
+            }
             for (int l = 1; l <= nChans; l++) {  // chans are 1-based
                 //qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
                 //<<"with " << IPS[k]+":send_"+QString::number(l);
@@ -311,7 +314,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 void JMess::connectTUB(int /*nChans*/)
 // called from UdpHubListener::connectPatch
 {
-    for (int i = 0; i <= gMAX_TUB - gMIN_TUB; i++)  // last IP decimal octet
+    for (int i = 0; i <= gMAX_TUB - gMIN_TUB; i++) {  // last IP decimal octet
         for (int l = 1; l <= 1; l++)  // mono for now // chans are 1-based, 1...2
         {
             // jacktrip to SC
@@ -350,6 +353,7 @@ void JMess::connectTUB(int /*nChans*/)
                          << " could not be connected.";
             }
         }
+    }
 }
 
 //-------------------------------------------------------------------------------

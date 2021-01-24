@@ -108,8 +108,9 @@ int main(int argc, char* argv[])
         //Either start our hub server or our jacktrip process as appropriate.
         if (settings.isHubServer()) {
             udpHub.reset(settings.getConfiguredHubServer());
-            if (gVerboseFlag)
-                std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
+            if (gVerboseFlag) {
+                std::cout << "Settings:startJackTrip before udphub->start\n"
+            }
             QObject::connect(udpHub.data(), &UdpHubListener::signalStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
             QObject::connect(udpHub.data(), &UdpHubListener::signalError, &app,
@@ -123,9 +124,9 @@ int main(int argc, char* argv[])
             udpHub->start();
         } else {
             jackTrip.reset(settings.getConfiguredJackTrip());
-            if (gVerboseFlag)
-                std::cout << "Settings:startJackTrip before mJackTrip->startProcess"
-                          << std::endl;
+            if (gVerboseFlag) {
+                std::cout << "Settings:startJackTrip before mJackTrip->startProcess\n";
+            }
             QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
             QObject::connect(jackTrip.data(), &JackTrip::signalError, &app,
@@ -142,8 +143,8 @@ int main(int argc, char* argv[])
 #endif  // endwhere
         }
 
-        if (gVerboseFlag) std::cout << "step 6" << std::endl;
-        if (gVerboseFlag) std::cout << "jmain before app->exec()" << std::endl;
+        if (gVerboseFlag) { std::cout << "step 6\n"; }
+        if (gVerboseFlag) { std::cout << "jmain before app->exec()\n"; }
     } catch (const std::exception& e) {
         std::cerr << "ERROR:" << std::endl;
         std::cerr << e.what() << std::endl;

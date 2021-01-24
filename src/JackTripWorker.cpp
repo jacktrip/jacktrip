@@ -128,13 +128,14 @@ void JackTripWorker::run()
 
         // Create and setup JackTrip Object
         // JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
-        if (gVerboseFlag)
+        if (gVerboseFlag) {
             cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
+        }
 
 #ifdef WAIR  // WAIR
-            // forces    BufferQueueLength to 2
-            // need to parse numNetChans from incoming header
-            // but force to 16 for now
+        // forces    BufferQueueLength to 2
+        // need to parse numNetChans from incoming header
+        // but force to 16 for now
 #define FORCEBUFFERQ 2
         if (mUdpHubListener->isWAIR()) {  // invoked with -Sw
             mWAIR           = true;
@@ -199,8 +200,9 @@ void JackTripWorker::run()
 
         // Connect signals and slots
         // -------------------------
-        if (gVerboseFlag)
+        if (gVerboseFlag) {
             cout << "---> JackTripWorker: Connecting signals and slots..." << endl;
+        }
         // Connection to terminate JackTrip when packets haven't arrive for
         // a certain amount of time
         QObject::connect(&jacktrip, SIGNAL(signalNoUdpPacketsForSeconds()), &jacktrip,
@@ -228,8 +230,9 @@ void JackTripWorker::run()
         jacktrip.setBroadcast(mBroadcastQueue);
         jacktrip.setUseRtUdpPriority(mUseRtUdpPriority);
 
-        if (gVerboseFlag)
+        if (gVerboseFlag) {
             cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
+        }
         int PeerConnectionMode = setJackTripFromClientHeader(jacktrip);
         if (PeerConnectionMode == -1) {
             mUdpHubListener->releaseThread(mID);
@@ -241,7 +244,7 @@ void JackTripWorker::run()
         }
 
         // Start Threads and event loop
-        if (gVerboseFlag) cout << "---> JackTripWorker: startProcess..." << endl;
+        if (gVerboseFlag) { cout << "---> JackTripWorker: startProcess..." << endl; }
         jacktrip.startProcess(
 #ifdef WAIRTOHUB  // wair
             mID
@@ -321,7 +324,9 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
         while ((!UdpSockTemp.hasPendingDatagrams()) && (elapsedTime <= udpTimeout)) {
             sleep.wait(&mutex, sleepTime);
             elapsedTime += sleepTime;
-            if (gVerboseFlag) cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
+            if (gVerboseFlag) {
+                cout << "---------> ELAPSED TIME: " << elapsedTime << endl;
+            }
         }
     }
     // Check if we time out or not
@@ -343,17 +348,21 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     delete[] full_packet;
     full_packet = nullptr;
 
-    if (gVerboseFlag)
+    if (gVerboseFlag) {
         cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;
-    if (gVerboseFlag)
+    }
+    if (gVerboseFlag) {
         cout << "--->JackTripWorker: getPeerSamplingRate = " << PeerSamplingRate << endl;
-    if (gVerboseFlag)
+    }
+    if (gVerboseFlag) {
         cout << "--->JackTripWorker: getPeerBitResolution = " << PeerBitResolution
              << endl;
+    }
     cout << "--->JackTripWorker: PeerNumChannels = " << PeerNumChannels << endl;
-    if (gVerboseFlag)
+    if (gVerboseFlag) {
         cout << "--->JackTripWorker: getPeerConnectionMode = " << PeerConnectionMode
              << endl;
+    }
 
     jacktrip.setNumChannels(PeerNumChannels);
     return PeerConnectionMode;

@@ -178,9 +178,10 @@ void UdpDataProtocol::setSocket(int& socket)
     if (socket == -1) {
 #endif
         try {
-            if (gVerboseFlag)
+            if (gVerboseFlag) {
                 std::cout << "    UdpDataProtocol:run" << mRunMode << " before bindSocket"
                           << std::endl;
+            }
             socket = bindSocket();  // Bind Socket
         } catch (const std::exception& e) {
             emit signalError(e.what());
@@ -418,7 +419,8 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
-    if (gVerboseFlag) switch (mRunMode) {
+    if (gVerboseFlag) {
+        switch (mRunMode) {
         case RECEIVER: {
             std::cout << "step 3" << std::endl;
             break;
@@ -429,6 +431,7 @@ void UdpDataProtocol::run()
             break;
         }
         }
+    }
 
     //QObject::connect(this, SIGNAL(signalError(const char*)),
     //                 mJackTrip, SLOT(slotStopProcesses()),
@@ -447,11 +450,12 @@ void UdpDataProtocol::run()
 #endif
     }
 
-    if (gVerboseFlag)
+    if (gVerboseFlag) {
         std::cout << "    UdpDataProtocol:run" << mRunMode
                   << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy "
                      "Variables"
                   << std::endl;
+    }
     // Setup Audio Packet buffer
     size_t audio_packet_size = getAudioPacketSizeInBites();
     //cout << "audio_packet_size: " << audio_packet_size << endl;
@@ -479,9 +483,10 @@ void UdpDataProtocol::run()
     int8_t* full_redundant_packet  = NULL;
 
     // Set realtime priority (function in jacktrip_globals.h)
-    if (gVerboseFlag)
+    if (gVerboseFlag) {
         std::cout << "    UdpDataProtocol:run" << mRunMode
                   << " before setRealtimeProcessPriority()" << std::endl;
+    }
     //std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
     // Anton Runov: making setRealtimeProcessPriority optional
     if (mUseRtPriority) { setRealtimeProcessPriority(); }
@@ -558,25 +563,27 @@ void UdpDataProtocol::run()
         //-----------------------------------------------------------------------------------
         // Wait for the first packet to be ready and obtain address
         // from that packet
-        if (gVerboseFlag)
+        if (gVerboseFlag) {
             std::cout << "    UdpDataProtocol:run" << mRunMode
                       << " before !UdpSocket.hasPendingDatagrams()" << std::endl;
+        }
         std::cout << "Waiting for Peer..." << std::endl;
         // This blocks waiting for the first packet
         while (!datagramAvailable()) {
             if (mStopped) { return; }
             QThread::msleep(100);
-            if (gVerboseFlag) std::cout << "100ms  " << std::flush;
+            if (gVerboseFlag) { std::cout << "100ms  " << std::flush; }
         }
         full_redundant_packet_size = 0x10000;  // max UDP datagram size
         full_redundant_packet      = new int8_t[full_redundant_packet_size];
         full_redundant_packet_size = receivePacket(
             reinterpret_cast<char*>(full_redundant_packet), full_redundant_packet_size);
         // Check that peer has the same audio settings
-        if (gVerboseFlag)
+        if (gVerboseFlag) {
             std::cout << std::endl
                       << "    UdpDataProtocol:run" << mRunMode
                       << " before mJackTrip->checkPeerSettings()" << std::endl;
+        }
         mJackTrip->checkPeerSettings(full_redundant_packet);
 
         int peer_chans   = mJackTrip->getPeerNumChannels(full_redundant_packet);
@@ -591,10 +598,11 @@ void UdpDataProtocol::run()
         cout << "full_redundant_packet_size: " << full_redundant_packet_size << endl;
         // */
 
-        if (gVerboseFlag) std::cout << "step 7" << std::endl;
-        if (gVerboseFlag)
+        if (gVerboseFlag) { std::cout << "step 7" << std::endl; }
+        if (gVerboseFlag) {
             std::cout << "    UdpDataProtocol:run" << mRunMode
                       << " before mJackTrip->parseAudioPacket()" << std::endl;
+        }
         std::cout << "Received Connection from Peer!" << std::endl;
         emit signalReceivedConnectionFromPeer();
 
@@ -613,7 +621,7 @@ void UdpDataProtocol::run()
         mRevivedCount            = 0;
         mStatCount               = 0;
 
-        if (gVerboseFlag) std::cout << "step 8" << std::endl;
+        if (gVerboseFlag) { std::cout << "step 8" << std::endl; }
         while (!mStopped) {
             // Timer to report packets arriving too late
             // This QT method gave me a lot of trouble, so I replaced it with my own 'waitForReady'
