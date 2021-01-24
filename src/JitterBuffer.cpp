@@ -281,10 +281,10 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
                 int j1     = std::floor(j * K);
                 double a   = j * K - j1;
                 int rpos   = (mBroadcastPosition + j1 * mMinStepSize + c) % mTotalSize;
-                int16_t v1 = *(int16_t*)(mRingBuffer + rpos);
+                int16_t v1 = *reinterpret_cast<int16_t*>(mRingBuffer + rpos);
                 rpos       = (rpos + mMinStepSize) % mTotalSize;
-                int16_t v2 = *(int16_t*)(mRingBuffer + rpos);
-                *(int16_t*)(ptrToReadSlot + j * mMinStepSize + c) =
+                int16_t v2 = *reinterpret_cast<int16_t*>(mRingBuffer + rpos);
+                *reinterpret_cast<int16_t*>(ptrToReadSlot + j * mMinStepSize + c) =
                     std::round((1 - a) * v1 + a * v2);
             }
         }
