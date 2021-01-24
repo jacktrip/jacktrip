@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
         if (settings.isHubServer()) {
             udpHub.reset(settings.getConfiguredHubServer());
             if (gVerboseFlag) {
-                std::cout << "Settings:startJackTrip before udphub->start\n"
+                std::cout << "Settings:startJackTrip before udphub->start\n";
             }
             QObject::connect(udpHub.data(), &UdpHubListener::signalStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
