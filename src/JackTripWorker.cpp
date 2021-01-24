@@ -85,13 +85,8 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
     mUseRtUdpPriority    = false;
 }
 
-//*******************************************************************************
-JackTripWorker::~JackTripWorker()
-{
-    // delete mUdpHubListener;
-}
+JackTripWorker::~JackTripWorker() = default;
 
-//*******************************************************************************
 void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server_port,
                                  uint16_t client_port, int num_channels,
                                  bool connectDefaultAudioPorts)

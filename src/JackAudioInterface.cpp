@@ -88,10 +88,8 @@ JackAudioInterface::JackAudioInterface(
 {
 }
 
-//*******************************************************************************
-JackAudioInterface::~JackAudioInterface() {}
+JackAudioInterface::~JackAudioInterface() = default;
 
-//*******************************************************************************
 void JackAudioInterface::setup()
 {
     setupClient();

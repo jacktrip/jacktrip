@@ -60,4 +60,4 @@ DataProtocol::DataProtocol(JackTrip* jacktrip, const runModeT runmode, int /*bin
 }
 
 //*******************************************************************************
-DataProtocol::~DataProtocol() {}
+DataProtocol::~DataProtocol() = default;
