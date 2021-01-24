@@ -443,7 +443,7 @@ void JackTrip::startProcess(
                      this, SLOT(slotReceivedConnectionFromPeer()), Qt::QueuedConnection);
     //QObject::connect(this, SIGNAL(signalUdpTimeOut()),
     //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
-    QObject::connect((UdpDataProtocol*)mDataProtocolReceiver,
+    QObject::connect(dynamic_cast<UdpDataProtocol*>(mDataProtocolReceiver),
                      &UdpDataProtocol::signalUdpWaitingTooLong, this,
                      &JackTrip::slotUdpWaitingTooLong, Qt::QueuedConnection);
     QObject::connect(mDataProtocolSender, &DataProtocol::signalCeaseTransmission, this,
