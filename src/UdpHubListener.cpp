@@ -90,7 +90,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
     // mJTWorkers = new JackTripWorker(this);
     mThreadPool.setExpiryTimeout(3000);  // msec (-1) = forever
     // Inizialize IP addresses
-    for (auto & mActiveAddress : mActiveAddresses) {
+    for (auto& mActiveAddress : mActiveAddresses) {
         mActiveAddress.address = "";  // Address strings
         mActiveAddress.port    = 0;
     }
@@ -259,7 +259,8 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     {
         QMutexLocker lock(&mMutex);
         mJTWorkers->at(id)->setJackTrip(
-            id, mActiveAddresses[id].address, server_udp_port, mActiveAddresses[id].port, 1,
+            id, mActiveAddresses[id].address, server_udp_port, mActiveAddresses[id].port,
+            1,
             m_connectDefaultAudioPorts);  /// \todo temp default to 1 channel
 
         // qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address <<
@@ -449,8 +450,9 @@ int UdpHubListener::isNewAddress(QString address, uint16_t port)
         id                     = 0;
         bool foundEmptyAddress = false;
         while (!foundEmptyAddress && (id < gMaxThreads)) {
-            if (mActiveAddresses[id].address.isEmpty() && (mActiveAddresses[id].port == 0)) {
-                foundEmptyAddress          = true;
+            if (mActiveAddresses[id].address.isEmpty()
+                && (mActiveAddresses[id].port == 0)) {
+                foundEmptyAddress            = true;
                 mActiveAddresses[id].address = address;
                 mActiveAddresses[id].port    = port;
             } else {
@@ -468,7 +470,8 @@ int UdpHubListener::getPoolID(QString address, uint16_t port)
     QMutexLocker lock(&mMutex);
     // for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )
     for (int id = 0; id < gMaxThreads; id++) {
-        if (address == mActiveAddresses[id].address && port == mActiveAddresses[id].port) {
+        if (address == mActiveAddresses[id].address
+            && port == mActiveAddresses[id].port) {
             return id;
         }
     }

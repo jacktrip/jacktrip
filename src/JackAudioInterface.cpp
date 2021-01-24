@@ -284,11 +284,13 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
     //-------------------------------------------------------------------
     for (int i = 0; i < mNumInChans; i++) {
         // Input Ports are READ ONLY and change as needed (no locks) - make a copy for debugging
-        mInBuffer[i] = reinterpret_cast<sample_t*>(jack_port_get_buffer(mInPorts[i], nframes));
+        mInBuffer[i] =
+            reinterpret_cast<sample_t*>(jack_port_get_buffer(mInPorts[i], nframes));
     }
     for (int i = 0; i < mNumOutChans; i++) {
         // Output Ports are WRITABLE
-        mOutBuffer[i] = reinterpret_cast<sample_t*>(jack_port_get_buffer(mOutPorts[i], nframes));
+        mOutBuffer[i] =
+            reinterpret_cast<sample_t*>(jack_port_get_buffer(mOutPorts[i], nframes));
     }
     //-------------------------------------------------------------------
     // TEST: Loopback
@@ -303,8 +305,8 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
     if (mBroadcast) {
         for (int i = 0; i < mNumOutChans; i++) {
             // Broadcast Ports are WRITABLE
-            mBroadcastBuffer[i] =
-                reinterpret_cast<sample_t*>(jack_port_get_buffer(mBroadcastPorts[i], nframes));
+            mBroadcastBuffer[i] = reinterpret_cast<sample_t*>(
+                jack_port_get_buffer(mBroadcastPorts[i], nframes));
         }
         AudioInterface::broadcastCallback(mBroadcastBuffer, nframes);
     }

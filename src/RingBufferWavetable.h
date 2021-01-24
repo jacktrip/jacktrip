@@ -39,6 +39,7 @@
 #define __RINGBUFFERWAVETABLE_H__
 
 #include <cstdint>
+
 #include "RingBuffer.h"
 
 /** \brief Same as RingBuffer, except that it uses the Wavetable mode for

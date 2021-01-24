@@ -47,10 +47,10 @@
 #endif  // endwhere
 
 //#include "JackTripWorker.h"
-#include <cassert>
-#include <cctype>
 #include <getopt.h>  // for command line parsing
 
+#include <cassert>
+#include <cctype>
 #include <cstdlib>
 #include <iostream>
 

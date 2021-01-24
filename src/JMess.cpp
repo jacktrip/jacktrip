@@ -363,7 +363,7 @@ void JMess::disconnectAll()
 
     this->setConnectedPorts();
 
-    for (auto & mConnectedPort : mConnectedPorts) {
+    for (auto& mConnectedPort : mConnectedPorts) {
         OutputInput = mConnectedPort;
 
         if (jack_disconnect(mClient, OutputInput[0].toUtf8(), OutputInput[1].toUtf8())) {

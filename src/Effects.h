@@ -38,7 +38,6 @@
 #pragma once
 
 #include <cassert>
-
 #include <vector>
 
 #include "Compressor.h"

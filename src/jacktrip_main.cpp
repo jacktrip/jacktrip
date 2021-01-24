@@ -35,11 +35,10 @@
  * \date June 2008
  */
 
-#include <csignal>
-
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QScopedPointer>
+#include <csignal>
 #include <iostream>
 
 #include "Settings.h"

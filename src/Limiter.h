@@ -48,10 +48,10 @@
 #include "limitertest.h"
 #endif
 
+#include <cassert>
 #include <vector>
 
 #include "ProcessPlugin.h"
-#include <cassert>
 #include "limiterdsp.h"
 
 /** \brief The Limiter class confines the output dynamic range to a

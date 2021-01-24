@@ -32,11 +32,10 @@
 #ifndef __JMESS_H
 #define __JMESS_H
 
-#include <cerrno>
-
 #include <QIODevice>
 #include <QString>
 #include <QVector>
+#include <cerrno>
 #include <iostream>
 #include <string>
 //#include <QtXml>

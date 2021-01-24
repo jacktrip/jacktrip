@@ -97,6 +97,6 @@ class dsp
 //----------------------------------------------------------------------------
 // clang-format off
 <<includeclass>>
-    // clang-format on
+// clang-format on
 
 #endif

@@ -269,11 +269,15 @@ int UdpDataProtocol::bindSocket()
 
     // Bind the Socket
     if (mIPv6) {
-        if ((::bind(sock_fd, reinterpret_cast<sockaddr*>(&local_addr6), sizeof(local_addr6))) < 0) {
+        if ((::bind(sock_fd, reinterpret_cast<sockaddr*>(&local_addr6),
+                    sizeof(local_addr6)))
+            < 0) {
             throw std::runtime_error("ERROR: UDP Socket Bind Error");
         }
     } else {
-        if ((::bind(sock_fd, reinterpret_cast<sockaddr*>(&local_addr), sizeof(local_addr))) < 0) {
+        if ((::bind(sock_fd, reinterpret_cast<sockaddr*>(&local_addr),
+                    sizeof(local_addr)))
+            < 0) {
             throw std::runtime_error("ERROR: UDP Socket Bind Error");
         }
     }
@@ -291,7 +295,9 @@ int UdpDataProtocol::bindSocket()
         // Connect only if we're using IPv4.
         // (Connecting presents an issue when a host has multiple IP addresses and the peer decides to send from
         // a different address. While this generally won't be a problem for IPv4, it will for IPv6.)
-        if ((::connect(sock_fd, reinterpret_cast<sockaddr*>(&mPeerAddr), sizeof(mPeerAddr))) < 0) {
+        if ((::connect(sock_fd, reinterpret_cast<sockaddr*>(&mPeerAddr),
+                       sizeof(mPeerAddr)))
+            < 0) {
             throw std::runtime_error("ERROR: Could not connect UDP socket");
         }
 #if defined(__LINUX__) || (__MAC_OSX__)
