@@ -269,11 +269,11 @@ int UdpDataProtocol::bindSocket()
 
     // Bind the Socket
     if (mIPv6) {
-        if ((::bind(sock_fd, (struct sockaddr*)&local_addr6, sizeof(local_addr6))) < 0) {
+        if ((::bind(sock_fd, reinterpret_cast<sockaddr*>(&local_addr6), sizeof(local_addr6))) < 0) {
             throw std::runtime_error("ERROR: UDP Socket Bind Error");
         }
     } else {
-        if ((::bind(sock_fd, (struct sockaddr*)&local_addr, sizeof(local_addr))) < 0) {
+        if ((::bind(sock_fd, reinterpret_cast<sockaddr*>(&local_addr), sizeof(local_addr))) < 0) {
             throw std::runtime_error("ERROR: UDP Socket Bind Error");
         }
     }
@@ -291,7 +291,7 @@ int UdpDataProtocol::bindSocket()
         // Connect only if we're using IPv4.
         // (Connecting presents an issue when a host has multiple IP addresses and the peer decides to send from
         // a different address. While this generally won't be a problem for IPv4, it will for IPv6.)
-        if ((::connect(sock_fd, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr))) < 0) {
+        if ((::connect(sock_fd, reinterpret_cast<sockaddr*>(&mPeerAddr), sizeof(mPeerAddr))) < 0) {
             throw std::runtime_error("ERROR: Could not connect UDP socket");
         }
 #if defined(__LINUX__) || (__MAC_OSX__)
@@ -381,7 +381,7 @@ int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 #else*/
     int n_bytes;
     if (mIPv6) {
-        n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr6,
+        n_bytes = ::sendto(mSocket, buf, n, 0, reinterpret_cast<sockaddr*>(&mPeerAddr6),
                            sizeof(mPeerAddr6));
     } else {
         n_bytes = ::send(mSocket, buf, n, 0);
@@ -400,12 +400,12 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
     struct sockaddr_storage addr;
     std::memset(&addr, 0, sizeof(addr));
     socklen_t sa_len = sizeof(addr);
-    ::recvfrom(mSocket, buf, 1, 0, (struct sockaddr*)&addr, &sa_len);
-    peerHostAddress.setAddress((struct sockaddr*)&addr);
+    ::recvfrom(mSocket, buf, 1, 0, reinterpret_cast<sockaddr*>(&addr), &sa_len);
+    peerHostAddress.setAddress(reinterpret_cast<sockaddr*>(&addr));
     if (mIPv6) {
-        port = ((struct sockaddr_in6*)&addr)->sin6_port;
+        port = reinterpret_cast<sockaddr_in6*>(&addr)->sin6_port;
     } else {
-        port = ((struct sockaddr_in*)&addr)->sin_port;
+        port = reinterpret_cast<sockaddr_in*>(&addr)->sin_port;
     }
 }
 

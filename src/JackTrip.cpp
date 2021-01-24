@@ -551,7 +551,7 @@ void JackTrip::completeConnection()
     if (mIOStatTimeout > 0) {
         cout << "STATS" << mIOStatTimeout << endl;
         if (!mIOStatStream.isNull()) {
-            mIOStatLogStream.rdbuf(((std::ostream*)mIOStatStream.data())->rdbuf());
+            mIOStatLogStream.rdbuf((reinterpret_cast<std::ostream*>(mIOStatStream.data()))->rdbuf());
         }
         QTimer* timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
