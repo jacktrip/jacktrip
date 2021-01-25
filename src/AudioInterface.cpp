@@ -42,6 +42,7 @@
 #include <iostream>
 
 #include "JackTrip.h"
+#include "math.h"
 
 using std::cout;
 using std::endl;
@@ -488,7 +489,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             sample_t* tmp_sample = in_buffer[i];  //sample buffer for channel i
             sample_t* tmp_process_sample =
                 mOutProcessBuffer[i];  //sample buffer from the output process
-            sample_t tmp_result;
+            sample_t tmp_result = NAN;
             for (unsigned int j = 0; j < n_frames; j++) {
                 // Change the bit resolution on each sample
                 // Add the input jack buffer to the buffer resulting from the output process
@@ -513,12 +514,12 @@ void AudioInterface::fromSampleToBitConversion(
     const sample_t* const input, int8_t* output,
     const AudioInterface::audioBitResolutionT targetBitResolution)
 {
-    int8_t tmp_8;
-    uint8_t tmp_u8;  // unsigned to quantize the remainder in 24bits
-    int16_t tmp_16;
-    double tmp_sample;
-    sample_t tmp_sample16;
-    sample_t tmp_sample8;
+    int8_t tmp_8          = 0;
+    uint8_t tmp_u8        = 0;  // unsigned to quantize the remainder in 24bits
+    int16_t tmp_16        = 0;
+    double tmp_sample     = NAN;
+    sample_t tmp_sample16 = NAN;
+    sample_t tmp_sample8  = NAN;
     switch (targetBitResolution) {
     case BIT8:
         // 8bit integer between -128 to 127
@@ -569,12 +570,12 @@ void AudioInterface::fromBitToSampleConversion(
     const int8_t* const input, sample_t* output,
     const AudioInterface::audioBitResolutionT sourceBitResolution)
 {
-    int8_t tmp_8;
-    uint8_t tmp_u8;
-    int16_t tmp_16;
-    sample_t tmp_sample;
-    sample_t tmp_sample16;
-    sample_t tmp_sample8;
+    int8_t tmp_8          = 0;
+    uint8_t tmp_u8        = 0;
+    int16_t tmp_16        = 0;
+    sample_t tmp_sample   = NAN;
+    sample_t tmp_sample16 = NAN;
+    sample_t tmp_sample8  = NAN;
     switch (sourceBitResolution) {
     case BIT8:
         tmp_8      = *input;

@@ -654,8 +654,8 @@ void JackTrip::receivedDataTCP()
 
     // Read UDP Port Number from Server
     // --------------------------------
-    uint32_t udp_port;
-    int size = sizeof(udp_port);
+    uint32_t udp_port = 0;
+    int size          = sizeof(udp_port);
     char port_buf[sizeof(mReceiverBindPort)];
     //char port_buf[size];
     mTcpClient.read(port_buf, size);
@@ -689,7 +689,7 @@ void JackTrip::receivedDataUDP()
     mTimeoutTimer.stop();
 
     QHostAddress peerHostAddress;
-    uint16_t peer_port;
+    uint16_t peer_port = 0;
 
     // IPv6 addition from fyfe
     // Get the datagram size to avoid problems with IPv6
@@ -701,7 +701,7 @@ void JackTrip::receivedDataUDP()
     delete[] buf;
     // Check for mapped IPv4->IPv6 addresses that look like ::ffff:x.x.x.x
     if (peerHostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
-        bool mappedIPv4;
+        bool mappedIPv4  = 0;
         uint32_t address = peerHostAddress.toIPv4Address(&mappedIPv4);
         // If the IPv4 address is mapped to IPv6, convert it to IPv4
         if (mappedIPv4) {
@@ -1060,8 +1060,8 @@ void JackTrip::putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet)
     mPacketHeader->fillHeaderCommonFromAudio();
     mPacketHeader->putHeaderInPacket(full_packet);
 
-    int8_t* audio_part;
-    audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
+    int8_t* audio_part = nullptr;
+    audio_part         = full_packet + mPacketHeader->getHeaderSizeInBytes();
     //std::memcpy(audio_part, audio_packet, mAudioInterface->getBufferSizeInBytes());
     //std::memcpy(audio_part, audio_packet, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
     std::memcpy(audio_part, audio_packet, getTotalAudioPacketSizeInBytes());
@@ -1079,8 +1079,8 @@ int JackTrip::getPacketSizeInBytes()
 //*******************************************************************************
 void JackTrip::parseAudioPacket(int8_t* full_packet, int8_t* audio_packet)
 {
-    int8_t* audio_part;
-    audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
+    int8_t* audio_part = nullptr;
+    audio_part         = full_packet + mPacketHeader->getHeaderSizeInBytes();
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getBufferSizeInBytes());
     //std::memcpy(audio_packet, audio_part, mAudioInterface->getSizeInBytesPerChannel() * mNumChans);
     std::memcpy(audio_packet, audio_part, getTotalAudioPacketSizeInBytes());

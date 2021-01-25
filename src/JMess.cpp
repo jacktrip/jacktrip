@@ -146,8 +146,9 @@ void JMess::setConnectedPorts()
 {
     mConnectedPorts.clear();
 
-    const char **ports, **connections;  //vector of ports and connections
-    QVector<QString> OutputInput(2);    //helper variable
+    const char **ports       = nullptr,
+               **connections = nullptr;  //vector of ports and connections
+    QVector<QString> OutputInput(2);     //helper variable
 
     //Get active output ports.
     ports = jack_get_ports(mClient, NULL, NULL, JackPortIsOutput);
@@ -177,7 +178,7 @@ void JMess::connectSpawnedPorts(int nChans, unsigned int hubPatch)
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
 
-    const char** ports;               //, **connections; //vector of ports and connections
+    const char** ports = nullptr;     //, **connections; //vector of ports and connections
     QVector<QString> OutputInput(2);  //helper variable
 
     //Get active output ports.

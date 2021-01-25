@@ -228,7 +228,7 @@ int UdpDataProtocol::bindSocket()
 #endif
 
 #if defined(__LINUX__) || (__MAC_OSX__)
-    int sock_fd;
+    int sock_fd = 0;
 #endif
 
     //Set local IPv4 or IPv6 Address
@@ -386,7 +386,7 @@ int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
     }
     return (int)n_bytes;
 #else*/
-    int n_bytes;
+    int n_bytes = 0;
     if (mIPv6) {
         n_bytes = ::sendto(mSocket, buf, n, 0, reinterpret_cast<sockaddr*>(&mPeerAddr6),
                            sizeof(mPeerAddr6));
@@ -941,7 +941,7 @@ bool UdpDataProtocol::datagramAvailable()
 {
     //Currently using a simplified version of the way QUdpSocket checks for datagrams.
     //TODO: Consider changing to use poll() or select().
-    char c;
+    char c = 0;
 #if defined(__WIN_32__)
     //Need to use the winsock version of the function for MSG_PEEK
     WSABUF buffer;
@@ -959,7 +959,7 @@ bool UdpDataProtocol::datagramAvailable()
         return (err == WSAEMSGSIZE);
     }
 #else
-    ssize_t n;
+    ssize_t n = 0;
     n = ::recv(mSocket, &c, sizeof(c), MSG_PEEK);
     //We have a datagram if our buffer is too small or if no error.
     return (n != -1 || errno == EMSGSIZE);

@@ -118,7 +118,10 @@ void JackAudioInterface::setupClient()
     // was  jack_options_t options = JackNoStartServer;
     // and then jack_options_t options = JackLoadName;
     jack_options_t options = JackNullOption;  // from jackSimpleClient example
-    jack_status_t status;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+    [[clang::uninitialized]] jack_status_t status;
+#pragma GCC diagnostic pop
 
     // Try to connect to the server
     /// \todo Write better warning messages. This following line displays very
@@ -322,7 +325,7 @@ int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void* arg
 //*******************************************************************************
 void JackAudioInterface::connectDefaultPorts()
 {
-    const char** ports;
+    const char** ports = nullptr;
 
     // Get physical output (capture) ports
     if ((ports =

@@ -198,7 +198,7 @@ void Settings::parseInput(int argc, char** argv)
     // Parse Command Line Arguments
     //----------------------------------------------------------------------------
     /// \todo Specify mandatory arguments
-    int ch;
+    int ch = 0;
     while ((ch = getopt_long(
                 argc, argv,
                 "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:", longopts,
@@ -441,8 +441,8 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_SIMLOSS:  // Simulate packet loss
             mSimulatedLossRate = atof(optarg);
             break;
-        case OPT_SIMJITTER:  // Simulate jitter
-            char* endp;
+        case OPT_SIMJITTER: {  // Simulate jitter
+            char* endp           = nullptr;
             mSimulatedJitterRate = strtod(optarg, &endp);
             if (0 == *endp) {
                 mSimulatedDelayRel = 1.0;
@@ -450,6 +450,7 @@ void Settings::parseInput(int argc, char** argv)
                 mSimulatedDelayRel = atof(endp + 1);
             }
             break;
+        }
         case OPT_BROADCAST:  // Broadcast output
             mBroadcastQueue = atoi(optarg);
             break;

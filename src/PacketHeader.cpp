@@ -120,7 +120,7 @@ void DefaultHeader::checkPeerSettings(int8_t* full_packet)
 {
     bool error = false;
 
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
 
     // Check Buffer Size
@@ -197,7 +197,7 @@ void DefaultHeader::printHeader() const
 //***********************************************************************
 uint64_t DefaultHeader::getPeerTimeStamp(int8_t* full_packet) const
 {
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
     return peer_header->TimeStamp;
 }
@@ -205,7 +205,7 @@ uint64_t DefaultHeader::getPeerTimeStamp(int8_t* full_packet) const
 //***********************************************************************
 uint16_t DefaultHeader::getPeerSequenceNumber(int8_t* full_packet) const
 {
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
     return peer_header->SeqNumber;
 }
@@ -213,7 +213,7 @@ uint16_t DefaultHeader::getPeerSequenceNumber(int8_t* full_packet) const
 //***********************************************************************
 uint16_t DefaultHeader::getPeerBufferSize(int8_t* full_packet) const
 {
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
     return peer_header->BufferSize;
 }
@@ -221,7 +221,7 @@ uint16_t DefaultHeader::getPeerBufferSize(int8_t* full_packet) const
 //***********************************************************************
 uint8_t DefaultHeader::getPeerSamplingRate(int8_t* full_packet) const
 {
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
     return peer_header->SamplingRate;
 }
@@ -229,7 +229,7 @@ uint8_t DefaultHeader::getPeerSamplingRate(int8_t* full_packet) const
 //***********************************************************************
 uint8_t DefaultHeader::getPeerBitResolution(int8_t* full_packet) const
 {
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
     return peer_header->BitResolution;
 }
@@ -237,7 +237,7 @@ uint8_t DefaultHeader::getPeerBitResolution(int8_t* full_packet) const
 //***********************************************************************
 uint8_t DefaultHeader::getPeerNumChannels(int8_t* full_packet) const
 {
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
     return peer_header->NumChannels;
 }
@@ -245,7 +245,7 @@ uint8_t DefaultHeader::getPeerNumChannels(int8_t* full_packet) const
 //***********************************************************************
 uint8_t DefaultHeader::getPeerConnectionMode(int8_t* full_packet) const
 {
-    DefaultHeaderStruct* peer_header;
+    DefaultHeaderStruct* peer_header = nullptr;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
     return static_cast<uint8_t>(peer_header->ConnectionMode);
 }
