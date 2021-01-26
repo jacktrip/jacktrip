@@ -701,7 +701,7 @@ void JackTrip::receivedDataUDP()
     delete[] buf;
     // Check for mapped IPv4->IPv6 addresses that look like ::ffff:x.x.x.x
     if (peerHostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
-        bool mappedIPv4  = 0;
+        bool mappedIPv4  = false;
         uint32_t address = peerHostAddress.toIPv4Address(&mappedIPv4);
         // If the IPv4 address is mapped to IPv6, convert it to IPv4
         if (mappedIPv4) {

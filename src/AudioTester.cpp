@@ -175,7 +175,7 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
         return;
     }
     if (bufferSkip <= 0) {  // send test signals (-x option)
-        bool sendImpulse = 0;
+        bool sendImpulse = false;
         if (impulsePending) {
             sendImpulse            = false;  // unless:
             const uint64_t timeOut = 500e3;  // time out after waiting 500 ms
