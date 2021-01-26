@@ -42,7 +42,6 @@
 #include <iostream>
 
 #include "JackTrip.h"
-#include "math.h"
 
 using std::cout;
 using std::endl;
