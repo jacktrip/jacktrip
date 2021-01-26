@@ -358,7 +358,7 @@ class JackTrip : public QObject
     /// \name Mediator Functions
     //@{
     /// \todo Document all these functions
-    virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
+    void createHeader(const DataProtocol::packetHeaderTypeT headertype);
     void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
     virtual int getPacketSizeInBytes();
     void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
