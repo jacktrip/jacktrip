@@ -161,8 +161,8 @@ void JackTrip::setupAudio(
 )
 {
     // Check if mAudioInterface has already been created or not
-    if (mAudioInterface
-        != nullptr) {  // if it has been created, disconnet it from JACK and delete it
+    // if it has been created, disconnet it from JACK and delete it
+    if (mAudioInterface != nullptr) {
         cout << "WARINING: JackAudio interface was setup already:" << endl;
         cout << "It will be erased and setup again." << endl;
         cout << gPrintSeparator << endl;
@@ -240,30 +240,34 @@ void JackTrip::setupAudio(
 #endif
     }
 
-    mAudioInterface->setLoopBack(mLoopBack);
-    if (mAudioTesterP) {  // if we're a hub server, this will be a nullptr - MAJOR REFACTOR NEEDED, in my opinion
-        mAudioTesterP->setSampleRate(mSampleRate);
-    }
-    mAudioInterface->setAudioTesterP(mAudioTesterP);
+    // TODO: rearrange this function to remove this nullptr check
+    if (mAudioInterface) {
+        mAudioInterface->setLoopBack(mLoopBack);
+        if (mAudioTesterP) {  // if we're a hub server, this will be a nullptr - MAJOR REFACTOR NEEDED, in my opinion
+            mAudioTesterP->setSampleRate(mSampleRate);
+        }
+        mAudioInterface->setAudioTesterP(mAudioTesterP);
 
-    std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
-    std::cout << gPrintSeparator << std::endl;
-    size_t AudioBufferSizeInBytes = mAudioBufferSize * sizeof(sample_t);
-    std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples"
-              << std::endl;
-    std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
-              << std::endl;
-    if (0 < mBroadcastQueueLength) {
+        std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
         std::cout << gPrintSeparator << std::endl;
-        cout << "Broadcast Output is enabled, delay = "
-             << mBroadcastQueueLength * mAudioBufferSize * 1000 / mSampleRate << " ms"
-             << " (" << mBroadcastQueueLength * mAudioBufferSize << " samples)" << endl;
+        size_t AudioBufferSizeInBytes = mAudioBufferSize * sizeof(sample_t);
+        std::cout << "The Audio Buffer Size is: " << mAudioBufferSize << " samples"
+                  << std::endl;
+        std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
+                  << std::endl;
+        if (0 < mBroadcastQueueLength) {
+            std::cout << gPrintSeparator << std::endl;
+            cout << "Broadcast Output is enabled, delay = "
+                 << mBroadcastQueueLength * mAudioBufferSize * 1000 / mSampleRate << " ms"
+                 << " (" << mBroadcastQueueLength * mAudioBufferSize << " samples)"
+                 << endl;
+        }
+        std::cout << gPrintSeparator << std::endl;
+        cout << "The Number of Channels is: " << mAudioInterface->getNumInputChannels()
+             << endl;
+        std::cout << gPrintSeparator << std::endl;
+        QThread::usleep(100);
     }
-    std::cout << gPrintSeparator << std::endl;
-    cout << "The Number of Channels is: " << mAudioInterface->getNumInputChannels()
-         << endl;
-    std::cout << gPrintSeparator << std::endl;
-    QThread::usleep(100);
 }
 
 //*******************************************************************************
