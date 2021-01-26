@@ -51,7 +51,7 @@
  */
 class NetKS : public ProcessPlugin
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     /*

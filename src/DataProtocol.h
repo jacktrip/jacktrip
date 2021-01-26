@@ -90,7 +90,7 @@ class JackTrip;  // forward declaration
  */
 class DataProtocol : public QThread
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     //----------ENUMS------------------------------------------

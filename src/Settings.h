@@ -57,7 +57,7 @@
  */
 class Settings : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     Settings();

@@ -69,7 +69,7 @@
 
 class JackTrip : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     //----------ENUMS------------------------------------------

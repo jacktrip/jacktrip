@@ -67,7 +67,7 @@ typedef struct {
  */
 class UdpHubListener : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0);

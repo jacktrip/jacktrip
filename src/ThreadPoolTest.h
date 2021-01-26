@@ -21,7 +21,7 @@ class ThreadPoolTest
     , public QRunnable
 //class ThreadPoolTest : public QThread
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     ThreadPoolTest() { setAutoDelete(false); }

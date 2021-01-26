@@ -65,7 +65,7 @@
  */
 class UdpDataProtocol : public DataProtocol
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     /** \brief The class constructor

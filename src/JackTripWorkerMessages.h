@@ -44,7 +44,7 @@
 
 class JackTripWorkerMessages : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     JackTripWorkerMessages() = default;

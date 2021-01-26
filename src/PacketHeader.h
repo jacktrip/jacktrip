@@ -112,7 +112,7 @@ struct JamLinkHeaderStuct : public HeaderStruct {
  */
 class PacketHeader : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     /// \brief The class Constructor
