@@ -389,7 +389,7 @@ struct UIReal {
 
     // -- metadata declarations
 
-    virtual void declare(REAL* zone, const char* key, const char* val) {}
+    virtual void declare(REAL* /*zone*/, const char* /*key*/, const char* /*val*/) {}
 };
 
 struct UI : public UIReal<FAUSTFLOAT> {
@@ -911,17 +911,18 @@ class ZoneControl
     ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
     virtual ~ZoneControl() = default;
 
-    virtual void update(double v) const {}
+    virtual void update(double /*v*/) const {}
 
-    virtual void setMappingValues(int curve, double amin, double amid, double amax,
-                                  double min, double init, double max)
+    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/,
+                                  double /*amax*/, double /*min*/, double /*init*/,
+                                  double /*max*/)
     {
     }
-    virtual void getMappingValues(double& amin, double& amid, double& amax) {}
+    virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
 
     FAUSTFLOAT* getZone() { return fZone; }
 
-    virtual void setActive(bool on_off) {}
+    virtual void setActive(bool /*on_off*/) {}
     virtual bool getActive() { return false; }
 
     virtual int getCurve() { return -1; }
@@ -1316,8 +1317,8 @@ class APIUI
 
     // -- soundfiles
 
-    virtual void addSoundfile(const char* label, const char* filename,
-                              Soundfile** sf_zone)
+    virtual void addSoundfile(const char* /*label*/, const char* /*filename*/,
+                              Soundfile** /*sf_zone*/)
     {
     }
 
@@ -1349,7 +1350,7 @@ class APIUI
         }
     }
 
-    virtual void declare(const char* key, const char* val) {}
+    virtual void declare(const char* /*key*/, const char* /*val*/) {}
 
     //-------------------------------------------------------------------------------
     // Simple API part
@@ -1733,7 +1734,7 @@ class freeverbmonodsp : public dsp
         return rate;
     }
 
-    static void classInit(int sample_rate) {}
+    static void classInit(int /*sample_rate*/) {}
 
     virtual void instanceConstants(int sample_rate)
     {

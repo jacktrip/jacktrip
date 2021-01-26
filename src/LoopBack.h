@@ -56,7 +56,6 @@ class LoopBack : public ProcessPlugin
     LoopBack(int numchans) { mNumChannels = numchans; };
     /// \brief The class destructor
     virtual ~LoopBack() = default;
-    ;
 
     virtual int getNumInputs() { return (mNumChannels); };
     virtual int getNumOutputs() { return (mNumChannels); };

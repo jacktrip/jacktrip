@@ -66,7 +66,7 @@ class JackTripWorker
     : public QObject
     , public QRunnable
 {
-    Q_OBJECT // QRunnable is not a QObject, so I have to inherit from QObject as well
+    Q_OBJECT  // QRunnable is not a QObject, so I have to inherit from QObject as well
 
    public:
     /// \brief The class constructor
