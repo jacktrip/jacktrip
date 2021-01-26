@@ -800,7 +800,7 @@ void UdpDataProtocol::receivePacketRedundancy(
 
     if (mBuffer.size() < host_buf_size) { mBuffer.resize(host_buf_size, 0); }
     // Send to audio all available audio packets, in order
-    for (unsigned int i = redun_last_index; i >= 0; i--) {
+    for (int i = static_cast<int>(redun_last_index); i >= 0; i--) {
         int8_t* src = full_redundant_packet + (i * full_packet_size) + hdr_size;
         if (1 != mChans) {
             // Convert packet's non-interleaved layout to interleaved one used internally
