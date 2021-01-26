@@ -838,8 +838,8 @@ class AccUpDownConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin, double fmid,
-                       double fmax)
+    AccUpDownConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -850,7 +850,7 @@ class AccUpDownConverter : public UpdatableValueConverter
     virtual double faust2ui(double x) { return fF2A(x); }
 
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
-                                  double fmid, double fmax)
+                                  double /*fmid*/, double fmax)
     {
         //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
         fA2F = Interpolator3pt(amin, amid, amax, fmin, fmax, fmin);
@@ -874,8 +874,8 @@ class AccDownUpConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin, double fmid,
-                       double fmax)
+    AccDownUpConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -886,7 +886,7 @@ class AccDownUpConverter : public UpdatableValueConverter
     virtual double faust2ui(double x) { return fF2A(x); }
 
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
-                                  double fmid, double fmax)
+                                  double /*fmid*/, double fmax)
     {
         //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
         fA2F = Interpolator3pt(amin, amid, amax, fmax, fmin, fmax);
@@ -1323,7 +1323,7 @@ class APIUI
 
     // -- metadata declarations
 
-    virtual void declare(FAUSTFLOAT* zone, const char* key, const char* val)
+    virtual void declare(FAUSTFLOAT* /*zone*/, const char* key, const char* val)
     {
         // Keep metadata
         fCurrentMetadata[key] = val;
