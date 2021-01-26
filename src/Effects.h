@@ -48,8 +48,8 @@
 
 class Effects
 {
-    int mNumIncomingChans;
-    int mNumOutgoingChans;
+    int mNumIncomingChans{2};
+    int mNumOutgoingChans{2};
     int gVerboseFlag = 0;
 
    public:
@@ -61,9 +61,9 @@ class Effects
     };
 
    private:
-    LIMITER_MODE mLimit;              ///< audio limiter controls
-    unsigned int mNumClientsAssumed;  ///< assumed number of clients (audio sources)
-    double limiterWarningAmplitude;
+    LIMITER_MODE mLimit;                 ///< audio limiter controls
+    unsigned int mNumClientsAssumed{2};  ///< assumed number of clients (audio sources)
+    double limiterWarningAmplitude{0.0};
 
     enum InOrOut { IO_NEITHER, IO_IN, IO_OUT } io;
     bool inCompressor             = false;
@@ -95,11 +95,8 @@ class Effects
 
    public:
     Effects(bool outGoingLimiterOn = true)
-        : mNumIncomingChans(2)
-        , mNumOutgoingChans(2)
-        , mLimit(outGoingLimiterOn ? LIMITER_OUTGOING : LIMITER_NONE)
-        , mNumClientsAssumed(2)
-        , limiterWarningAmplitude(0.0)
+        : mLimit(outGoingLimiterOn ? LIMITER_OUTGOING : LIMITER_NONE)
+
     {
     }
 

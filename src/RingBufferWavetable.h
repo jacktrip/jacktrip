@@ -56,7 +56,7 @@ class RingBufferWavetable : public RingBuffer
 
     /** \brief The class destructor
    */
-    virtual ~RingBufferWavetable() {}
+    virtual ~RingBufferWavetable() = default;
 
    protected:
     /** \brief Sets the memory in the Read Slot when uderrun occurs. This loops as a

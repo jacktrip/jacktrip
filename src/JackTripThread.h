@@ -48,7 +48,7 @@ class JackTripThread : public QThread
 {
    public:
     JackTripThread(JackTrip::jacktripModeT JacktripMode) : mJackTripMode(JacktripMode) {}
-    virtual ~JackTripThread() {}
+    virtual ~JackTripThread() = default;
     void run();
 
     void setPort(int port_num) { mPortNum = port_num; }

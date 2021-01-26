@@ -41,6 +41,7 @@ Compilation options: -lang cpp -inpl -scal -ftz 0
 #ifndef __dsp__
 #define __dsp__
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -56,7 +57,7 @@ struct Meta;
  */
 
 struct dsp_memory_manager {
-    virtual ~dsp_memory_manager() {}
+    virtual ~dsp_memory_manager() = default;
 
     virtual void* allocate(size_t size) = 0;
     virtual void destroy(void* ptr)     = 0;
@@ -69,8 +70,8 @@ struct dsp_memory_manager {
 class dsp
 {
    public:
-    dsp() {}
-    virtual ~dsp() {}
+    dsp()          = default;
+    virtual ~dsp() = default;
 
     /* Return instance number of audio inputs */
     virtual int getNumInputs() = 0;
@@ -208,7 +209,7 @@ class dsp_factory
 {
    protected:
     // So that to force sub-classes to use deleteDSPFactory(dsp_factory* factory);
-    virtual ~dsp_factory() {}
+    virtual ~dsp_factory() = default;
 
    public:
     virtual std::string getName()                          = 0;
@@ -304,7 +305,8 @@ class dsp_factory
 #define __meta__
 
 struct Meta {
-    virtual ~Meta(){};
+    virtual ~Meta() = default;
+    ;
     virtual void declare(const char* key, const char* value) = 0;
 };
 
@@ -352,8 +354,8 @@ struct Soundfile;
 
 template<typename REAL>
 struct UIReal {
-    UIReal() {}
-    virtual ~UIReal() {}
+    UIReal()          = default;
+    virtual ~UIReal() = default;
 
     // -- widget's layouts
 
@@ -391,8 +393,8 @@ struct UIReal {
 };
 
 struct UI : public UIReal<FAUSTFLOAT> {
-    UI() {}
-    virtual ~UI() {}
+    UI()          = default;
+    virtual ~UI() = default;
 };
 
 #endif
@@ -439,14 +441,14 @@ class PathBuilder
     std::vector<std::string> fControlsLevel;
 
    public:
-    PathBuilder() {}
-    virtual ~PathBuilder() {}
+    PathBuilder()          = default;
+    virtual ~PathBuilder() = default;
 
     std::string buildPath(const std::string& label)
     {
         std::string res = "/";
-        for (size_t i = 0; i < fControlsLevel.size(); i++) {
-            res += fControlsLevel[i];
+        for (auto& i : fControlsLevel) {
+            res += i;
             res += "/";
         }
         res += label;
@@ -629,7 +631,7 @@ class Interpolator3pt
 class ValueConverter
 {
    public:
-    virtual ~ValueConverter() {}
+    virtual ~ValueConverter()         = default;
     virtual double ui2faust(double x) = 0;
     virtual double faust2ui(double x) = 0;
 };
@@ -641,11 +643,11 @@ class ValueConverter
 class UpdatableValueConverter : public ValueConverter
 {
    protected:
-    bool fActive;
+    bool fActive{true};
 
    public:
-    UpdatableValueConverter() : fActive(true) {}
-    virtual ~UpdatableValueConverter() {}
+    UpdatableValueConverter()          = default;
+    virtual ~UpdatableValueConverter() = default;
 
     virtual void setMappingValues(double amin, double amid, double amax, double min,
                                   double init, double max)                  = 0;
@@ -907,7 +909,7 @@ class ZoneControl
 
    public:
     ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
-    virtual ~ZoneControl() {}
+    virtual ~ZoneControl() = default;
 
     virtual void update(double v) const {}
 
@@ -1021,7 +1023,7 @@ class ZoneReader
     {
     }
 
-    virtual ~ZoneReader() {}
+    virtual ~ZoneReader() = default;
 
     int getValue() { return (fZone != nullptr) ? int(fInterpolator(*fZone)) : 127; }
 };
@@ -1048,7 +1050,7 @@ class APIUI
    protected:
     enum { kLin = 0, kLog = 1, kExp = 2 };
 
-    int fNumParameters;
+    int fNumParameters{0};
     std::vector<std::string> fPaths;
     std::vector<std::string> fLabels;
     std::map<std::string, int> fPathMap;
@@ -1066,14 +1068,14 @@ class APIUI
 
     // Screen color control
     // "...[screencolor:red]..." etc.
-    bool fHasScreenControl;  // true if control screen color metadata
-    ZoneReader* fRedReader;
-    ZoneReader* fGreenReader;
-    ZoneReader* fBlueReader;
+    bool fHasScreenControl{false};  // true if control screen color metadata
+    ZoneReader* fRedReader{nullptr};
+    ZoneReader* fGreenReader{nullptr};
+    ZoneReader* fBlueReader{nullptr};
 
     // Current values controlled by metadata
     std::string fCurrentUnit;
-    int fCurrentScale;
+    int fCurrentScale{kLin};
     std::string fCurrentAcc;
     std::string fCurrentGyr;
     std::string fCurrentColor;
@@ -1151,17 +1153,17 @@ class APIUI
 
         // handle screencolor metadata "...[screencolor:red|green|blue|white]..."
         if (fCurrentColor.size() > 0) {
-            if ((fCurrentColor == "red") && (fRedReader == 0)) {
+            if ((fCurrentColor == "red") && (fRedReader == nullptr)) {
                 fRedReader        = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "green") && (fGreenReader == 0)) {
+            } else if ((fCurrentColor == "green") && (fGreenReader == nullptr)) {
                 fGreenReader      = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "blue") && (fBlueReader == 0)) {
+            } else if ((fCurrentColor == "blue") && (fBlueReader == nullptr)) {
                 fBlueReader       = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "white") && (fRedReader == 0)
-                       && (fGreenReader == 0) && (fBlueReader == 0)) {
+            } else if ((fCurrentColor == "white") && (fRedReader == nullptr)
+                       && (fGreenReader == nullptr) && (fBlueReader == nullptr)) {
                 fRedReader        = new ZoneReader(zone, min, max);
                 fGreenReader      = new ZoneReader(zone, min, max);
                 fBlueReader       = new ZoneReader(zone, min, max);
@@ -1247,15 +1249,7 @@ class APIUI
    public:
     enum Type { kAcc = 0, kGyr = 1, kNoType };
 
-    APIUI()
-        : fNumParameters(0)
-        , fHasScreenControl(false)
-        , fRedReader(0)
-        , fGreenReader(0)
-        , fBlueReader(0)
-        , fCurrentScale(kLin)
-    {
-    }
+    APIUI() = default;
 
     virtual ~APIUI()
     {
@@ -1440,7 +1434,7 @@ class APIUI
          */
     void propagateAcc(int acc, double value)
     {
-        for (size_t i = 0; i < fAcc[acc].size(); i++) { fAcc[acc][i]->update(value); }
+        for (auto& i : fAcc[acc]) { i->update(value); }
     }
 
     /**
@@ -1518,7 +1512,7 @@ class APIUI
          */
     void propagateGyr(int gyr, double value)
     {
-        for (size_t i = 0; i < fGyr[gyr].size(); i++) { fGyr[gyr][i]->update(value); }
+        for (auto& i : fGyr[gyr]) { i->update(value); }
     }
 
     /**
@@ -1967,13 +1961,13 @@ class zitarevdsp : public dsp
 
     virtual void buildUserInterface(UI* ui_interface)
     {
-        ui_interface->declare(0, "0", "");
-        ui_interface->declare(0, "tooltip",
+        ui_interface->declare(nullptr, "0", "");
+        ui_interface->declare(nullptr, "tooltip",
                               "~ ZITA REV1 FEEDBACK DELAY NETWORK (FDN) & SCHROEDER  "
                               "ALLPASS-COMB REVERBERATOR (8x8). See Faust's reverbs.lib "
                               "for documentation and  references");
         ui_interface->openHorizontalBox("Zita_Rev1");
-        ui_interface->declare(0, "1", "");
+        ui_interface->declare(nullptr, "1", "");
         ui_interface->openHorizontalBox("Input");
         ui_interface->declare(&fVslider10, "1", "");
         ui_interface->declare(&fVslider10, "style", "knob");
@@ -1983,7 +1977,7 @@ class zitarevdsp : public dsp
         ui_interface->addVerticalSlider("In Delay", &fVslider10, 60.0f, 20.0f, 100.0f,
                                         1.0f);
         ui_interface->closeBox();
-        ui_interface->declare(0, "2", "");
+        ui_interface->declare(nullptr, "2", "");
         ui_interface->openHorizontalBox("Decay Times in Bands (see tooltips)");
         ui_interface->declare(&fVslider9, "1", "");
         ui_interface->declare(&fVslider9, "scale", "log");
@@ -2020,7 +2014,7 @@ class zitarevdsp : public dsp
         ui_interface->addVerticalSlider("HF Damping", &fVslider7, 6000.0f, 1500.0f,
                                         23520.0f, 1.0f);
         ui_interface->closeBox();
-        ui_interface->declare(0, "3", "");
+        ui_interface->declare(nullptr, "3", "");
         ui_interface->openHorizontalBox("RM Peaking Equalizer 1");
         ui_interface->declare(&fVslider4, "1", "");
         ui_interface->declare(&fVslider4, "scale", "log");
@@ -2040,7 +2034,7 @@ class zitarevdsp : public dsp
         ui_interface->addVerticalSlider("Eq1 Level", &fVslider5, 0.0f, -15.0f, 15.0f,
                                         0.100000001f);
         ui_interface->closeBox();
-        ui_interface->declare(0, "4", "");
+        ui_interface->declare(nullptr, "4", "");
         ui_interface->openHorizontalBox("RM Peaking Equalizer 2");
         ui_interface->declare(&fVslider2, "1", "");
         ui_interface->declare(&fVslider2, "scale", "log");
@@ -2060,7 +2054,7 @@ class zitarevdsp : public dsp
         ui_interface->addVerticalSlider("Eq2 Level", &fVslider3, 0.0f, -15.0f, 15.0f,
                                         0.100000001f);
         ui_interface->closeBox();
-        ui_interface->declare(0, "5", "");
+        ui_interface->declare(nullptr, "5", "");
         ui_interface->openHorizontalBox("Output");
         ui_interface->declare(&fVslider1, "1", "");
         ui_interface->declare(&fVslider1, "style", "knob");

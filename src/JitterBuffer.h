@@ -45,7 +45,7 @@ class JitterBuffer : public RingBuffer
    public:
     JitterBuffer(int buf_samples, int qlen, int sample_rate, int strategy, int bcast_qlen,
                  int channels, int bit_res);
-    virtual ~JitterBuffer() {}
+    virtual ~JitterBuffer() = default;
 
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen);
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);

@@ -118,7 +118,7 @@ class PacketHeader : public QObject
     /// \brief The class Constructor
     PacketHeader(JackTrip* jacktrip);
     /// \brief The class Destructor
-    virtual ~PacketHeader() {}
+    virtual ~PacketHeader() = default;
 
     /// \brief Return a time stamp in microseconds
     /// \return Time stamp: microseconds since midnight (0 hour), January 1, 1970
@@ -174,7 +174,7 @@ class DefaultHeader : public PacketHeader
 {
    public:
     DefaultHeader(JackTrip* jacktrip);
-    virtual ~DefaultHeader() {}
+    virtual ~DefaultHeader() = default;
 
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
@@ -213,7 +213,7 @@ class JamLinkHeader : public PacketHeader
 {
    public:
     JamLinkHeader(JackTrip* jacktrip);
-    virtual ~JamLinkHeader() {}
+    virtual ~JamLinkHeader() = default;
 
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
@@ -249,7 +249,7 @@ class EmptyHeader : public PacketHeader
 {
    public:
     EmptyHeader(JackTrip* jacktrip);
-    virtual ~EmptyHeader() {}
+    virtual ~EmptyHeader() = default;
 
     virtual void fillHeaderCommonFromAudio() {}
     virtual void parseHeader() {}

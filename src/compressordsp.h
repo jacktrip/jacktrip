@@ -44,6 +44,7 @@ Compilation options: -lang cpp -inpl -scal -ftz 0
 #ifndef __dsp__
 #define __dsp__
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -59,7 +60,7 @@ struct Meta;
  */
 
 struct dsp_memory_manager {
-    virtual ~dsp_memory_manager() {}
+    virtual ~dsp_memory_manager() = default;
 
     virtual void* allocate(size_t size) = 0;
     virtual void destroy(void* ptr)     = 0;
@@ -72,8 +73,8 @@ struct dsp_memory_manager {
 class dsp
 {
    public:
-    dsp() {}
-    virtual ~dsp() {}
+    dsp()          = default;
+    virtual ~dsp() = default;
 
     /* Return instance number of audio inputs */
     virtual int getNumInputs() = 0;
@@ -211,7 +212,7 @@ class dsp_factory
 {
    protected:
     // So that to force sub-classes to use deleteDSPFactory(dsp_factory* factory);
-    virtual ~dsp_factory() {}
+    virtual ~dsp_factory() = default;
 
    public:
     virtual std::string getName()                          = 0;
@@ -307,7 +308,8 @@ class dsp_factory
 #define __meta__
 
 struct Meta {
-    virtual ~Meta(){};
+    virtual ~Meta() = default;
+    ;
     virtual void declare(const char* key, const char* value) = 0;
 };
 
@@ -355,8 +357,8 @@ struct Soundfile;
 
 template<typename REAL>
 struct UIReal {
-    UIReal() {}
-    virtual ~UIReal() {}
+    UIReal()          = default;
+    virtual ~UIReal() = default;
 
     // -- widget's layouts
 
@@ -394,8 +396,8 @@ struct UIReal {
 };
 
 struct UI : public UIReal<FAUSTFLOAT> {
-    UI() {}
-    virtual ~UI() {}
+    UI()          = default;
+    virtual ~UI() = default;
 };
 
 #endif
@@ -442,14 +444,14 @@ class PathBuilder
     std::vector<std::string> fControlsLevel;
 
    public:
-    PathBuilder() {}
-    virtual ~PathBuilder() {}
+    PathBuilder()          = default;
+    virtual ~PathBuilder() = default;
 
     std::string buildPath(const std::string& label)
     {
         std::string res = "/";
-        for (size_t i = 0; i < fControlsLevel.size(); i++) {
-            res += fControlsLevel[i];
+        for (auto& i : fControlsLevel) {
+            res += i;
             res += "/";
         }
         res += label;
@@ -632,7 +634,7 @@ class Interpolator3pt
 class ValueConverter
 {
    public:
-    virtual ~ValueConverter() {}
+    virtual ~ValueConverter()         = default;
     virtual double ui2faust(double x) = 0;
     virtual double faust2ui(double x) = 0;
 };
@@ -644,11 +646,11 @@ class ValueConverter
 class UpdatableValueConverter : public ValueConverter
 {
    protected:
-    bool fActive;
+    bool fActive{true};
 
    public:
-    UpdatableValueConverter() : fActive(true) {}
-    virtual ~UpdatableValueConverter() {}
+    UpdatableValueConverter()          = default;
+    virtual ~UpdatableValueConverter() = default;
 
     virtual void setMappingValues(double amin, double amid, double amax, double min,
                                   double init, double max)                  = 0;
@@ -910,7 +912,7 @@ class ZoneControl
 
    public:
     ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
-    virtual ~ZoneControl() {}
+    virtual ~ZoneControl() = default;
 
     virtual void update(double v) const {}
 
@@ -1024,7 +1026,7 @@ class ZoneReader
     {
     }
 
-    virtual ~ZoneReader() {}
+    virtual ~ZoneReader() = default;
 
     int getValue() { return (fZone != nullptr) ? int(fInterpolator(*fZone)) : 127; }
 };
@@ -1051,7 +1053,7 @@ class APIUI
    protected:
     enum { kLin = 0, kLog = 1, kExp = 2 };
 
-    int fNumParameters;
+    int fNumParameters{0};
     std::vector<std::string> fPaths;
     std::vector<std::string> fLabels;
     std::map<std::string, int> fPathMap;
@@ -1069,14 +1071,14 @@ class APIUI
 
     // Screen color control
     // "...[screencolor:red]..." etc.
-    bool fHasScreenControl;  // true if control screen color metadata
-    ZoneReader* fRedReader;
-    ZoneReader* fGreenReader;
-    ZoneReader* fBlueReader;
+    bool fHasScreenControl{false};  // true if control screen color metadata
+    ZoneReader* fRedReader{nullptr};
+    ZoneReader* fGreenReader{nullptr};
+    ZoneReader* fBlueReader{nullptr};
 
     // Current values controlled by metadata
     std::string fCurrentUnit;
-    int fCurrentScale;
+    int fCurrentScale{kLin};
     std::string fCurrentAcc;
     std::string fCurrentGyr;
     std::string fCurrentColor;
@@ -1154,17 +1156,17 @@ class APIUI
 
         // handle screencolor metadata "...[screencolor:red|green|blue|white]..."
         if (fCurrentColor.size() > 0) {
-            if ((fCurrentColor == "red") && (fRedReader == 0)) {
+            if ((fCurrentColor == "red") && (fRedReader == nullptr)) {
                 fRedReader        = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "green") && (fGreenReader == 0)) {
+            } else if ((fCurrentColor == "green") && (fGreenReader == nullptr)) {
                 fGreenReader      = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "blue") && (fBlueReader == 0)) {
+            } else if ((fCurrentColor == "blue") && (fBlueReader == nullptr)) {
                 fBlueReader       = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "white") && (fRedReader == 0)
-                       && (fGreenReader == 0) && (fBlueReader == 0)) {
+            } else if ((fCurrentColor == "white") && (fRedReader == nullptr)
+                       && (fGreenReader == nullptr) && (fBlueReader == nullptr)) {
                 fRedReader        = new ZoneReader(zone, min, max);
                 fGreenReader      = new ZoneReader(zone, min, max);
                 fBlueReader       = new ZoneReader(zone, min, max);
@@ -1250,15 +1252,7 @@ class APIUI
    public:
     enum Type { kAcc = 0, kGyr = 1, kNoType };
 
-    APIUI()
-        : fNumParameters(0)
-        , fHasScreenControl(false)
-        , fRedReader(0)
-        , fGreenReader(0)
-        , fBlueReader(0)
-        , fCurrentScale(kLin)
-    {
-    }
+    APIUI() = default;
 
     virtual ~APIUI()
     {
@@ -1443,7 +1437,7 @@ class APIUI
          */
     void propagateAcc(int acc, double value)
     {
-        for (size_t i = 0; i < fAcc[acc].size(); i++) { fAcc[acc][i]->update(value); }
+        for (auto& i : fAcc[acc]) { i->update(value); }
     }
 
     /**
@@ -1521,7 +1515,7 @@ class APIUI
          */
     void propagateGyr(int gyr, double value)
     {
-        for (size_t i = 0; i < fGyr[gyr].size(); i++) { fGyr[gyr][i]->update(value); }
+        for (auto& i : fGyr[gyr]) { i->update(value); }
     }
 
     /**
@@ -1732,12 +1726,12 @@ class compressordsp : public dsp
     virtual void buildUserInterface(UI* ui_interface)
     {
         ui_interface->declare(
-            0, "tooltip",
+            nullptr, "tooltip",
             "References:                 "
             "https://faustlibraries.grame.fr/libs/compressors/                 "
             "http://en.wikipedia.org/wiki/Dynamic_range_compression");
         ui_interface->openVerticalBox("COMPRESSOR");
-        ui_interface->declare(0, "0", "");
+        ui_interface->declare(nullptr, "0", "");
         ui_interface->openHorizontalBox("0x00");
         ui_interface->declare(&fCheckbox0, "0", "");
         ui_interface->declare(
@@ -1750,9 +1744,9 @@ class compressordsp : public dsp
         ui_interface->addHorizontalBargraph("Compressor Gain", &fHbargraph0, -50.0f,
                                             10.0f);
         ui_interface->closeBox();
-        ui_interface->declare(0, "1", "");
+        ui_interface->declare(nullptr, "1", "");
         ui_interface->openHorizontalBox("0x00");
-        ui_interface->declare(0, "3", "");
+        ui_interface->declare(nullptr, "3", "");
         ui_interface->openHorizontalBox("Compression Control");
         ui_interface->declare(&fHslider2, "0", "");
         ui_interface->declare(&fHslider2, "style", "knob");
@@ -1771,7 +1765,7 @@ class compressordsp : public dsp
         ui_interface->addHorizontalSlider("Threshold", &fHslider4, -24.0f, -100.0f, 10.0f,
                                           0.100000001f);
         ui_interface->closeBox();
-        ui_interface->declare(0, "4", "");
+        ui_interface->declare(nullptr, "4", "");
         ui_interface->openHorizontalBox("Compression Response");
         ui_interface->declare(&fHslider1, "1", "");
         ui_interface->declare(&fHslider1, "scale", "log");

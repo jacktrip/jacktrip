@@ -80,7 +80,7 @@ class AudioTester
     float sampleRate{48000.0f};
 
    public:
-    AudioTester() {}
+    AudioTester()  = default;
     ~AudioTester() = default;
 
     void lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
