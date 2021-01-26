@@ -47,7 +47,7 @@ class JackTripWorkerMessages : public QObject
     Q_OBJECT
 
    public:
-    JackTripWorkerMessages() = default;
+    JackTripWorkerMessages()          = default;
     virtual ~JackTripWorkerMessages() = default;
 
     void play()
