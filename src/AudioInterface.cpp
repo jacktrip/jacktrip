@@ -64,8 +64,8 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutCha
     , mBitResolutionMode(AudioBitResolution)
     , mSampleRate(gDefaultSampleRate)
     , mBufferSizeInSamples(gDefaultBufferSizeInSamples)
-    , mInputPacket(NULL)
-    , mOutputPacket(NULL)
+    , mInputPacket(nullptr)
+    , mOutputPacket(nullptr)
     , mLoopBack(false)
     , mProcessingAudio(false)
 {

@@ -63,11 +63,11 @@ static int setupUnixSignalHandler(void (*handler)(int))
     sigInt.sa_flags |= SA_RESTART;
 
     int result = 0;
-    if (sigaction(SIGINT, &sigInt, 0)) {
+    if (sigaction(SIGINT, &sigInt, nullptr)) {
         std::cout << "Unable to register SIGINT handler" << std::endl;
         result |= 1;
     }
-    if (sigaction(SIGTERM, &sigInt, 0)) {
+    if (sigaction(SIGTERM, &sigInt, nullptr)) {
         std::cout << "Unable to register SIGTERM handler" << std::endl;
         result |= 2;
     }

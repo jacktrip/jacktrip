@@ -79,7 +79,7 @@ PacketHeader::PacketHeader(JackTrip* jacktrip) : mSeqNumber(0), mJackTrip(jacktr
 uint64_t PacketHeader::usecTime()
 {
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     return (
         (tv.tv_sec * 1000000) +  // seconds
         (tv.tv_usec));  // plus the microseconds. Type suseconds_t, range [-1, 1000000]

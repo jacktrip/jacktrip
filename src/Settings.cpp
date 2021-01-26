@@ -134,7 +134,7 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     static struct option longopts[] = {
         // These options don't set a flag.
-        {"numchannels", required_argument, NULL,
+        {"numchannels", required_argument, nullptr,
          'n'},  // Number of input and output channels
 #ifdef WAIR     // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
@@ -142,58 +142,58 @@ void Settings::parseInput(int argc, char** argv)
          'N'},                                                 // added comb filter length
         {"combfilterfeedback", required_argument, NULL, 'H'},  // comb filter feedback
 #endif  // endwhere
-        {"server", no_argument, NULL, 's'},  // Run in P2P server mode
-        {"client", required_argument, NULL,
+        {"server", no_argument, nullptr, 's'},  // Run in P2P server mode
+        {"client", required_argument, nullptr,
          'c'},  // Run in P2P client mode, set server IP address
-        {"localaddress", required_argument, NULL,
+        {"localaddress", required_argument, nullptr,
          'L'},  // set local address e.g., 127.0.0.2 for second instance on same host
-        {"jacktripserver", no_argument, NULL, 'S'},  // Run in JamLink mode
-        {"pingtoserver", required_argument, NULL,
+        {"jacktripserver", no_argument, nullptr, 'S'},  // Run in JamLink mode
+        {"pingtoserver", required_argument, nullptr,
          'C'},  // Run in ping to server mode, set server IP address
-        {"portoffset", required_argument, NULL, 'o'},  // Port Offset from 4464
-        {"bindport", required_argument, NULL, 'B'},    // Port Offset from 4464
-        {"peerport", required_argument, NULL, 'P'},    // Port Offset from 4464
-        {"udpbaseport", required_argument, NULL,
+        {"portoffset", required_argument, nullptr, 'o'},  // Port Offset from 4464
+        {"bindport", required_argument, nullptr, 'B'},    // Port Offset from 4464
+        {"peerport", required_argument, nullptr, 'P'},    // Port Offset from 4464
+        {"udpbaseport", required_argument, nullptr,
          'U'},  // Server udp base port (defaults to 61002)
-        {"queue", required_argument, NULL, 'q'},       // Queue Length
-        {"redundancy", required_argument, NULL, 'r'},  // Redundancy
-        {"bitres", required_argument, NULL, 'b'},      // Audio Bit Resolution
-        {"zerounderrun", no_argument, NULL, 'z'},      // Use Underrun to Zeros Mode
-        {"timeout", no_argument, NULL, 't'},      // Quit after 10 second network timeout
-        {"loopback", no_argument, NULL, 'l'},     // Run in loopback mode
-        {"jamlink", no_argument, NULL, 'j'},      // Run in JamLink mode
-        {"emptyheader", no_argument, NULL, 'e'},  // Run in JamLink mode
-        {"clientname", required_argument, NULL, 'J'},  // Run in JamLink mode
-        {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
-        {"appendthreadid", no_argument, NULL,
+        {"queue", required_argument, nullptr, 'q'},       // Queue Length
+        {"redundancy", required_argument, nullptr, 'r'},  // Redundancy
+        {"bitres", required_argument, nullptr, 'b'},      // Audio Bit Resolution
+        {"zerounderrun", no_argument, nullptr, 'z'},      // Use Underrun to Zeros Mode
+        {"timeout", no_argument, nullptr, 't'},   // Quit after 10 second network timeout
+        {"loopback", no_argument, nullptr, 'l'},  // Run in loopback mode
+        {"jamlink", no_argument, nullptr, 'j'},   // Run in JamLink mode
+        {"emptyheader", no_argument, nullptr, 'e'},       // Run in JamLink mode
+        {"clientname", required_argument, nullptr, 'J'},  // Run in JamLink mode
+        {"remotename", required_argument, nullptr, 'K'},  // Client name on hub server
+        {"appendthreadid", no_argument, nullptr,
          OPT_APPENDTHREADID},                        // Append thread id to client names
-        {"rtaudio", no_argument, NULL, 'R'},         // Run in JamLink mode
-        {"srate", required_argument, NULL, 'T'},     // Set Sample Rate
-        {"deviceid", required_argument, NULL, 'd'},  // Set RTAudio device id to use
-        {"bufsize", required_argument, NULL, 'F'},   // Set buffer Size
-        {"nojackportsconnect", no_argument, NULL,
-         'D'},                                // Don't connect default Audio Ports
-        {"version", no_argument, NULL, 'v'},  // Version Number
-        {"verbose", no_argument, NULL, 'V'},  // Verbose mode
-        {"hubpatch", required_argument, NULL,
+        {"rtaudio", no_argument, nullptr, 'R'},           // Run in JamLink mode
+        {"srate", required_argument, nullptr, 'T'},       // Set Sample Rate
+        {"deviceid", required_argument, nullptr, 'd'},    // Set RTAudio device id to use
+        {"bufsize", required_argument, nullptr, 'F'},     // Set buffer Size
+        {"nojackportsconnect", no_argument, nullptr,
+         'D'},                                   // Don't connect default Audio Ports
+        {"version", no_argument, nullptr, 'v'},  // Version Number
+        {"verbose", no_argument, nullptr, 'V'},  // Verbose mode
+        {"hubpatch", required_argument, nullptr,
          'p'},  // Set hubConnectionMode for auto patch in Jack
-        {"iostat", required_argument, NULL, 'I'},     // Set IO stat timeout
-        {"iostatlog", required_argument, NULL, 'G'},  // Set IO stat log file
-        {"effects", required_argument, NULL,
+        {"iostat", required_argument, nullptr, 'I'},     // Set IO stat timeout
+        {"iostatlog", required_argument, nullptr, 'G'},  // Set IO stat log file
+        {"effects", required_argument, nullptr,
          'f'},  // Turn on outgoing compressor and incoming reverb, reverbLevel arg
-        {"overflowlimiting", required_argument, NULL,
+        {"overflowlimiting", required_argument, nullptr,
          'O'},  // Turn On limiter, cases 'i', 'o', 'io'
-        {"assumednumclients", required_argument, NULL,
+        {"assumednumclients", required_argument, nullptr,
          'a'},  // assumed number of clients (sound sources) (otherwise 2)
-        {"bufstrategy", required_argument, NULL, OPT_BUFSTRATEGY},  // Set bufstrategy
-        {"simloss", required_argument, NULL, OPT_SIMLOSS},
-        {"simjitter", required_argument, NULL, OPT_SIMJITTER},
-        {"broadcast", required_argument, NULL, OPT_BROADCAST},
-        {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
-        {"help", no_argument, NULL, 'h'},  // Print Help
-        {"examine-audio-delay", required_argument, NULL,
+        {"bufstrategy", required_argument, nullptr, OPT_BUFSTRATEGY},  // Set bufstrategy
+        {"simloss", required_argument, nullptr, OPT_SIMLOSS},
+        {"simjitter", required_argument, nullptr, OPT_SIMJITTER},
+        {"broadcast", required_argument, nullptr, OPT_BROADCAST},
+        {"udprt", no_argument, nullptr, OPT_RTUDPPRIORITY},
+        {"help", no_argument, nullptr, 'h'},  // Print Help
+        {"examine-audio-delay", required_argument, nullptr,
          'x'},  // test mode - measure audio round-trip latency statistics
-        {NULL, 0, NULL, 0}};
+        {nullptr, 0, nullptr, 0}};
 
     // Parse Command Line Arguments
     //----------------------------------------------------------------------------
@@ -202,7 +202,7 @@ void Settings::parseInput(int argc, char** argv)
     while ((ch = getopt_long(
                 argc, argv,
                 "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:", longopts,
-                NULL))
+                nullptr))
            != -1) {
         switch (ch) {
         case 'n':  // Number of input and output channels
@@ -514,7 +514,7 @@ void Settings::parseInput(int argc, char** argv)
                 std::exit(0);
             }
             mAudioTester.setEnabled(true);
-            if (optarg == 0 || optarg[0] == '-'
+            if (optarg == nullptr || optarg[0] == '-'
                 || optarg[0] == 0) {  // happens when no -f argument specified
                 printUsage();
                 std::cerr << cmd

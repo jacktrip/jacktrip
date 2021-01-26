@@ -50,7 +50,7 @@ JMess::JMess()
     //new server only to list its ports seems pointless, so we
     //specify JackNoStartServer.
     mClient = jack_client_open("lsp", JackNoStartServer, &mStatus);
-    if (mClient == NULL) {
+    if (mClient == nullptr) {
         if (mStatus & JackServerFailed) {
             cerr << "JACK server not running" << endl;
         } else {
@@ -151,12 +151,12 @@ void JMess::setConnectedPorts()
     QVector<QString> OutputInput(2);     //helper variable
 
     //Get active output ports.
-    ports = jack_get_ports(mClient, NULL, NULL, JackPortIsOutput);
+    ports = jack_get_ports(mClient, nullptr, nullptr, JackPortIsOutput);
 
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
         if ((connections = jack_port_get_all_connections(
                  mClient, jack_port_by_name(mClient, ports[out_i])))
-            != 0) {
+            != nullptr) {
             for (unsigned int in_i = 0; connections[in_i]; ++in_i) {
                 OutputInput[0] = ports[out_i];
                 //    cout << "Output ===> " <<qPrintable(OutputInput[0]) << endl;
@@ -182,7 +182,7 @@ void JMess::connectSpawnedPorts(int nChans, unsigned int hubPatch)
     QVector<QString> OutputInput(2);  //helper variable
 
     //Get active output ports.
-    ports = jack_get_ports(mClient, NULL, NULL, JackPortIsOutput);
+    ports = jack_get_ports(mClient, nullptr, nullptr, JackPortIsOutput);
 
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
         //        qDebug() << QString(ports[out_i]);

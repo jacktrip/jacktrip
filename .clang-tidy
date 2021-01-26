@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default,modernize-use-noexcept,cppcoreguidelines-pro-type-cstyle-cast,bugprone*'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default,modernize-use-noexcept,cppcoreguidelines-pro-type-cstyle-cast,bugprone*,modernize-use-nullptr'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

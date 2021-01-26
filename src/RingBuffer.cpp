@@ -56,8 +56,8 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots)
     , mReadPosition(0)
     , mWritePosition(0)
     , mFullSlots(0)
-    , mRingBuffer(NULL)
-    , mLastReadSlot(NULL)
+    , mRingBuffer(nullptr)
+    , mLastReadSlot(nullptr)
 {
     if (0 < mTotalSize) {
         mRingBuffer   = new int8_t[mTotalSize];
@@ -65,7 +65,7 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots)
         //QMutexLocker locker(&mMutex); // lock the mutex
 
         // Verify if there's enough space to for the buffers
-        if ((mRingBuffer == NULL) || (mLastReadSlot == NULL)) {
+        if ((mRingBuffer == nullptr) || (mLastReadSlot == nullptr)) {
             //std::cerr << "ERROR: RingBuffer out of memory!" << endl;
             //std::cerr << "Exiting program..." << endl;
             //std::exit(1);
@@ -110,10 +110,10 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots)
 //*******************************************************************************
 RingBuffer::~RingBuffer()
 {
-    delete[] mRingBuffer;  // Free memory
-    mRingBuffer = NULL;    // Clear to prevent using invalid memory reference
+    delete[] mRingBuffer;   // Free memory
+    mRingBuffer = nullptr;  // Clear to prevent using invalid memory reference
     delete[] mLastReadSlot;
-    mLastReadSlot = NULL;
+    mLastReadSlot = nullptr;
 }
 
 //*******************************************************************************

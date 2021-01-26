@@ -81,7 +81,7 @@ JackAudioInterface::JackAudioInterface(
 #endif  // endwhere
     //mAudioBitResolution(AudioBitResolution*8),
     mBitResolutionMode(AudioBitResolution)
-    , mClient(NULL)
+    , mClient(nullptr)
     , mClientName(ClientName)
     , mBroadcast(false)
     , mJackTrip(jacktrip)
@@ -137,7 +137,7 @@ void JackAudioInterface::setupClient()
 #endif  // endwhere
     }
 
-    if (mClient == NULL) {
+    if (mClient == nullptr) {
         //fprintf (stderr, "jack_client_open() failed, "
         //	     "status = 0x%2.0x\n", status);
         if (status & JackServerFailed) {
@@ -154,7 +154,7 @@ void JackAudioInterface::setupClient()
     }
 
     // Set function to call if Jack shuts down
-    jack_on_shutdown(mClient, this->jackShutdown, 0);
+    jack_on_shutdown(mClient, this->jackShutdown, nullptr);
 
     // Create input and output channels
     createChannels();
@@ -325,15 +325,15 @@ void JackAudioInterface::connectDefaultPorts()
     const char** ports = nullptr;
 
     // Get physical output (capture) ports
-    if ((ports =
-             jack_get_ports(mClient, NULL, NULL, JackPortIsPhysical | JackPortIsOutput))
-        == NULL) {
+    if ((ports = jack_get_ports(mClient, nullptr, nullptr,
+                                JackPortIsPhysical | JackPortIsOutput))
+        == nullptr) {
         cout << "WARNING: Cannot find any physical capture ports" << endl;
     } else {
         // Connect capure ports to jacktrip send
         for (int i = 0; i < mNumInChans; i++) {
             // Check that we don't run out of capture ports
-            if (ports[i] != NULL) {
+            if (ports[i] != nullptr) {
                 jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
             }
         }
@@ -341,15 +341,15 @@ void JackAudioInterface::connectDefaultPorts()
     }
 
     // Get physical input (playback) ports
-    if ((ports =
-             jack_get_ports(mClient, NULL, NULL, JackPortIsPhysical | JackPortIsInput))
-        == NULL) {
+    if ((ports = jack_get_ports(mClient, nullptr, nullptr,
+                                JackPortIsPhysical | JackPortIsInput))
+        == nullptr) {
         cout << "WARNING: Cannot find any physical playback ports" << endl;
     } else {
         // Connect playback ports to jacktrip receive
         for (int i = 0; i < mNumOutChans; i++) {
             // Check that we don't run out of capture ports
-            if (ports[i] != NULL) {
+            if (ports[i] != nullptr) {
                 jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
             }
         }
