@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default,modernize-use-noexcept,cppcoreguidelines-pro-type-cstyle-cast,bugprone*,cppcoreguidelines-init-variables'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default,modernize-use-noexcept,cppcoreguidelines-pro-type-cstyle-cast,bugprone*'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -96,10 +96,6 @@ CheckOptions:
     value:           '0'
   - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
     value:           '1'
-  - key:             cppcoreguidelines-init-variables.IncludeStyle
-    value:           llvm
-  - key:             cppcoreguidelines-init-variables.MathHeader
-    value:           math.h
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
   - key:             google-readability-braces-around-statements.ShortStatementLines
