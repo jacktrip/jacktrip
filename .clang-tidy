@@ -1,8 +1,10 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default,modernize-use-noexcept,cppcoreguidelines-pro-type-cstyle-cast,bugprone*,-bugprone-reserved-identifier,modernize-use-nullptr,misc-unused-parameters'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,clang-diagnostic-*,clang-analyzer-*,modernize-deprecated-headers,modernize-loop-convert,modernize-use-bool-literals,modernize-raw-string-literal,modernize-use-default-member-init,modernize-use-equals-default,modernize-use-noexcept,cppcoreguidelines-pro-type-cstyle-cast,bugprone*,-bugprone-reserved-identifier,modernize-use-nullptr,misc-unused-parameters'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
+FormatStyle:     none
+User:            nils
 CheckOptions:
   - key:             bugprone-argument-comment.CommentBoolLiterals
     value:           '0'
@@ -42,12 +44,6 @@ CheckOptions:
     value:           'true'
   - key:             bugprone-not-null-terminated-result.WantToUseSafeFunctions
     value:           'true'
-  - key:             bugprone-reserved-identifier.AggressiveDependentMemberLookup
-    value:           'false'
-  - key:             bugprone-reserved-identifier.AllowedIdentifiers
-    value:           ''
-  - key:             bugprone-reserved-identifier.Invert
-    value:           'false'
   - key:             bugprone-signed-char-misuse.CharTypdefsToIgnore
     value:           ''
   - key:             bugprone-signed-char-misuse.DiagnoseSignedUnsignedCharComparisons
@@ -112,6 +108,8 @@ CheckOptions:
     value:           '0'
   - key:             llvm-qualified-auto.AddConstToQualified
     value:           '0'
+  - key:             misc-unused-parameters.StrictMode
+    value:           'true'
   - key:             modernize-loop-convert.MaxCopySize
     value:           '16'
   - key:             modernize-loop-convert.MinConfidence
