@@ -496,7 +496,7 @@ void UdpDataProtocol::run()
 #if defined (__MAC_OSX__)
         setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(), mJackTrip->getSampleRate());
 #else
-        setRealtimeProcessPriority();
+        setRealtimeProcessPriority(mRtPriority);
 #endif
     }
 

@@ -55,7 +55,7 @@ DataProtocol::DataProtocol(JackTrip* jacktrip, const runModeT runmode, int /*bin
     , mHasPacketsToReceive(false)
     , mRunMode(runmode)
     , mJackTrip(jacktrip)
-    , mUseRtPriority(false)
+    , mRtPriority(0)
 {
 }
 

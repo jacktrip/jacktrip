@@ -180,7 +180,7 @@ class DataProtocol : public QThread
                                     double /*max_delay*/)
     {
     }
-    void setUseRtPriority(bool use) { mUseRtPriority = use; }
+    void setRtPriority(int priority) { mRtPriority = priority; }
 
    signals:
 
@@ -220,7 +220,7 @@ class DataProtocol : public QThread
    protected:
     //PacketHeader* mHeader; ///< Packet Header
     JackTrip* mJackTrip;  ///< JackTrip mediator class
-    bool mUseRtPriority;
+    int mRtPriority;
 };
 
 #endif

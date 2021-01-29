@@ -197,6 +197,8 @@ class JackAudioInterface : public AudioInterface
     QVector<ProcessPlugin*> mProcessPlugins;  ///< Vector of ProcesPlugin<EM>s</EM>
     JackTrip* mJackTrip;                      ///< JackTrip mediator class
     static QMutex sJackMutex;  ///< Mutex to make thread safe jack functions that are not
+
+    friend JackTrip;
 };
 
 #endif
