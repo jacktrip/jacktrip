@@ -309,8 +309,8 @@ void JackTrip::setupDataProtocol()
                 mSimulatedLossRate, mSimulatedJitterRate, simulated_max_delay);
         }
         if (mUseRtUdpPriority) {
-            mDataProtocolSender->setRtPriority(mRtAudioPriority - 10);
-            mDataProtocolReceiver->setRtPriority(mRtAudioPriority - 10);
+            mDataProtocolSender->setRtPriority(mRtAudioPriority - 1);
+            mDataProtocolReceiver->setRtPriority(mRtAudioPriority - 1);
             cout << "Using RT thread priority for UDP data" << endl;
         }
         std::cout << gPrintSeparator << std::endl;
