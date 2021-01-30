@@ -55,7 +55,7 @@ BreakConstructorInitializers: BeforeComma
 BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 ColumnLimit:     90
-CommentPragmas:  '^ IWYU pragma:'
+CommentPragmas: '( \| |\*--|<li>|@ref | @p | @param  |@returns |@warning |@ingroup |@author |@date |@related |@relates |@relatesalso |@deprecated |@image |@return |@brief |@attention |@copydoc |@addtogroup |@todo |@tparam |@see |@note |@skip |@skipline |@until |@line |@dontinclude |@include)'
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 4
@@ -145,7 +145,7 @@ RawStringFormats:
       - ParsePartialTestProto
     CanonicalDelimiter: ''
     BasedOnStyle:    google
-ReflowComments:  false
+ReflowComments:  true
 SortIncludes:    true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
