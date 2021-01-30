@@ -201,7 +201,7 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
                     -float(impulseTimeSamples)
                     / 32768.0f;  // survives if there is no digital processing at the server
             } else {
-                std::cerr << "\n*** AudioTester.h: Timestamp cannot fit into a lenth "
+                std::cerr << "\n*** AudioTester.h: Timestamp cannot fit into a length "
                           << n_frames << " buffer ***\n";
             }
         } else {
