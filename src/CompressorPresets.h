@@ -39,6 +39,8 @@ struct CompressorPresetList {
 };
 #endif
 
+// clang-format off
+
 /* Settings from http://www.anythingpeaceful.org/sonar/settings/comp.html
 
    Name     Thresh(dB) Att(ms) Rel(ms) Ratio:1 Gain(dB)    Comments
@@ -76,3 +78,5 @@ struct CompressorPresetList {
    Perc.       -10     10-20   50      3-6     3       Transient overdrive protection in mix
 
 */
+
+// clang-format on
