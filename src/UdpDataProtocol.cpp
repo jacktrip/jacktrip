@@ -481,6 +481,8 @@ void UdpDataProtocol::run()
     // Anton Runov: making setRealtimeProcessPriority optional
     if (mUseRtPriority) { setRealtimeProcessPriority(); }
 
+
+    // clang-format off
     /////////////////////
     // to see thread priorities
     // sudo ps -eLo pri,rtprio,cls,pid,nice,cmd | grep -E 'jackd|jacktrip|rtc|RTPRI' | sort -r
@@ -540,6 +542,8 @@ void UdpDataProtocol::run()
     //         19      -  TS  4348   0 /usr/bin/jackd -dalsa -dhw:CODEC -r48000 -p128 -n2 -Xseq
 
     // jack puts its clients in FF at 5 points below itself
+    //
+    // clang-format off
 
     switch (mRunMode) {
     case RECEIVER: {
