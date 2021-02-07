@@ -35,7 +35,6 @@
  * \date July 2008
  */
 
-
 // Main Page Documentation
 //-----------------------------------------------------------------
 /**
@@ -120,5 +119,3 @@ will be transmitted to your peer. You'll receive what your peer sends you on the
 \image html jack_routing.png
 
 */
-
-

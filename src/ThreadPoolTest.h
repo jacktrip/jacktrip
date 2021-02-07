@@ -7,27 +7,24 @@
 #ifndef __THREADPOOLTEST_H__
 #define __THREADPOOLTEST_H__
 
-#include <QThreadPool>
 #include <QEventLoop>
-#include <QThread>
 #include <QObject>
-
+#include <QThread>
+#include <QThreadPool>
 #include <iostream>
 
-#include "NetKS.h"
 #include "JackTripWorkerMessages.h"
+#include "NetKS.h"
 
-
-class ThreadPoolTest : public QObject, public QRunnable
-        //class ThreadPoolTest : public QThread
+class ThreadPoolTest
+    : public QObject
+    , public QRunnable
+//class ThreadPoolTest : public QThread
 {
     Q_OBJECT;
 
-public:
-    ThreadPoolTest()
-    {
-        setAutoDelete(false);
-    }
+   public:
+    ThreadPoolTest() { setAutoDelete(false); }
 
     void run()
     {
@@ -63,15 +60,14 @@ public:
         emit stopELoop();
     }
 
-signals:
+   signals:
     void stopELoop();
 
-private slots:
+   private slots:
     void fromServer()
     {
         std::cout << "--------------- SIGNAL RECEIVED ---------------" << std::endl;
     }
-
 };
 
-#endif //__THREADPOOLTEST_H__
+#endif  //__THREADPOOLTEST_H__

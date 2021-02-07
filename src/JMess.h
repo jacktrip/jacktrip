@@ -25,7 +25,6 @@
   OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 /*
  * JMess.h
  */
@@ -33,20 +32,20 @@
 #ifndef __JMESS_H
 #define __JMESS_H
 
-#include <iostream>
-#include <string>
 #include <errno.h>
 
 #include <QIODevice>
 #include <QString>
 #include <QVector>
+#include <iostream>
+#include <string>
 //#include <QtXml>
 //#include <QXmlSimpleReader>
 //#include <QXmlInputSource>
 //#include <QXmlContentHandler>
-#include <QMutexLocker>
-
 #include <jack/jack.h>
+
+#include <QMutexLocker>
 
 using namespace std;
 

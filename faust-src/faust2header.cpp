@@ -6,7 +6,6 @@
 // See the Makefile for how to use it.
 
 #include <faust/dsp/dsp.h>
-
 #include <faust/gui/APIUI.h>
 
 // NOTE: "faust -scn name" changes the last line above to
@@ -15,7 +14,9 @@
 //----------------------------------------------------------------------------
 //  FAUST Generated Code
 //----------------------------------------------------------------------------
-
+// clang-format off
 <<includeIntrinsic>>
 
-<<includeclass>>
+    <<includeclass>>
+
+    // clang-format on

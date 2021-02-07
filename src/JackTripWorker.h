@@ -38,20 +38,18 @@
 #ifndef __JACKTRIPWORKER_H__
 #define __JACKTRIPWORKER_H__
 
-#include <iostream>
-
-#include <QThreadPool>
-#include <QObject>
 #include <QEventLoop>
 #include <QHostAddress>
 #include <QMutex>
+#include <QObject>
+#include <QThreadPool>
+#include <iostream>
 
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 
 //class JackTrip; // forward declaration
-class UdpHubListener; // forward declaration
-
+class UdpHubListener;  // forward declaration
 
 /** \brief Prototype of the worker class that will be cloned through sending threads to the
  * Thread Pool
@@ -64,13 +62,18 @@ class UdpHubListener; // forward declaration
  */
 // Note that it is not possible to start run() as an event loop. That has to be implemented
 // inside a QThread
-class JackTripWorker : public QObject, public QRunnable
+class JackTripWorker
+    : public QObject
+    , public QRunnable
 {
-    Q_OBJECT; // QRunnable is not a QObject, so I have to inherit from QObject as well
+    Q_OBJECT;  // QRunnable is not a QObject, so I have to inherit from QObject as well
 
-public:
+   public:
     /// \brief The class constructor
-    JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength = gDefaultQueueLength, JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE, QString clientName = "");
+    JackTripWorker(UdpHubListener* udphublistener,
+                   int BufferQueueLength                = gDefaultQueueLength,
+                   JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE,
+                   QString clientName                   = "");
     /// \brief The class destructor
     virtual ~JackTripWorker();
 
@@ -83,54 +86,48 @@ public:
     /// \brief Sets the JackTripWorker properties
     /// \param id ID number
     /// \param address
-    void setJackTrip(int id,
-                     QString client_address,
-                     uint16_t server_port,
-                     uint16_t client_port,
-                     int num_channels,
-                     bool connectDefaultAudioPorts
-                     );
+    void setJackTrip(int id, QString client_address, uint16_t server_port,
+                     uint16_t client_port, int num_channels,
+                     bool connectDefaultAudioPorts);
     /// Stop and remove thread from pool
     void stopThread();
-    int getID()
-    {
-        return mID;
-    }
+    int getID() { return mID; }
 
     void setBufferStrategy(int BufferStrategy) { mBufferStrategy = BufferStrategy; }
     void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
     {
-        mSimulatedLossRate = loss;
+        mSimulatedLossRate   = loss;
         mSimulatedJitterRate = jitter;
-        mSimulatedDelayRel = delay_rel;
+        mSimulatedDelayRel   = delay_rel;
     }
-    void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
-    void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
-    
+    void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
+    void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
+
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
-    void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
-    
-private slots:
-    void slotTest()
-    { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
+    void setIOStatStream(QSharedPointer<std::ofstream> statStream)
+    {
+        mIOStatStream = statStream;
+    }
 
+   private slots:
+    void slotTest() { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
 
-signals:
+   signals:
     void signalRemoveThread();
 
-private:
+   private:
     int setJackTripFromClientHeader(JackTrip& jacktrip);
     JackTrip::connectionModeT getConnectionModeFromHeader();
 
-    UdpHubListener* mUdpHubListener; ///< Hub Listener Socket
+    UdpHubListener* mUdpHubListener;  ///< Hub Listener Socket
     //QHostAddress mClientAddress; ///< Client Address
     QString mClientAddress;
-    uint16_t mServerPort; ///< Server Ephemeral Incomming Port to use with Client
+    uint16_t mServerPort;  ///< Server Ephemeral Incomming Port to use with Client
     bool m_connectDefaultAudioPorts;
 
     /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt>
     uint16_t mClientPort;
-    
+
     int mBufferQueueLength;
     JackTrip::underrunModeT mUnderRunMode;
     QString mClientName;
@@ -138,10 +135,10 @@ private:
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning;
-    QMutex mMutex; ///< Mutex to protect mSpawning
+    QMutex mMutex;  ///< Mutex to protect mSpawning
 
-    int mID; ///< ID thread number
-    int mNumChans; ///< Number of Channels
+    int mID;        ///< ID thread number
+    int mNumChans;  ///< Number of Channels
 
     int mBufferStrategy;
     int mBroadcastQueue;
@@ -149,14 +146,13 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
-    
+
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
-#ifdef WAIR // wair
-    int mNumNetRevChans; ///< Number of Net Channels = net combs
+#ifdef WAIR  // wair
+    int mNumNetRevChans;  ///< Number of Net Channels = net combs
     bool mWAIR;
-#endif // endwhere
+#endif  // endwhere
 };
 
-
-#endif //__JACKTRIPWORKER_H__
+#endif  //__JACKTRIPWORKER_H__

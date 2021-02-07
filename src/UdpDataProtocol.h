@@ -38,17 +38,16 @@
 #ifndef __UDPDATAPROTOCOL_H__
 #define __UDPDATAPROTOCOL_H__
 
-#include <stdexcept>
-
-#include <QThread>
 #include <QHostAddress>
 #include <QMutex>
-#include <vector>
+#include <QThread>
 #include <random>
+#include <stdexcept>
+#include <vector>
 
 #include "DataProtocol.h"
-#include "jacktrip_types.h"
 #include "jacktrip_globals.h"
+#include "jacktrip_types.h"
 
 /** \brief UDP implementation of DataProtocol class
  *
@@ -68,8 +67,7 @@ class UdpDataProtocol : public DataProtocol
 {
     Q_OBJECT;
 
-public:
-
+   public:
     /** \brief The class constructor
    * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
    * \param runmode Sets the run mode, use either SENDER or RECEIVER
@@ -77,9 +75,8 @@ public:
    * \param peer_port Peer port number (this is the receive or send port depending on the runmode)
    * \param udp_redundancy_factor Number of redundant packets
    */
-    UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
-                    int bind_port, int peer_port,
-                    unsigned int udp_redundancy_factor = 1);
+    UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode, int bind_port,
+                    int peer_port, unsigned int udp_redundancy_factor = 1);
 
     /** \brief The class destructor
    */
@@ -90,10 +87,10 @@ public:
    */
     void setPeerAddress(const char* peerHostOrIP);
 
-#if defined (__WIN_32__)
-    void setSocket(SOCKET &socket);
+#if defined(__WIN_32__)
+    void setSocket(SOCKET& socket);
 #else
-    void setSocket(int &socket);
+    void setSocket(int& socket);
 #endif
 
     /** \brief Receives a packet. It blocks until a packet is received
@@ -127,13 +124,16 @@ public:
 
     /** \brief Sets the bind port number
     */
-    void setBindPort(int port)
-    { mBindPort = port; }
+    void setBindPort(int port) { mBindPort = port; }
 
     /** \brief Sets the peer port number
     */
     void setPeerPort(int port)
-    { mPeerPort = port; mPeerAddr.sin_port = htons(mPeerPort); mPeerAddr6.sin6_port = htons(mPeerPort); }
+    {
+        mPeerPort            = port;
+        mPeerAddr.sin_port   = htons(mPeerPort);
+        mPeerAddr6.sin6_port = htons(mPeerPort);
+    }
 
     /** \brief Implements the Thread Loop. To start the thread, call start()
    * ( DO NOT CALL run() )
@@ -145,11 +145,10 @@ public:
     virtual bool getStats(PktStat* stat);
     virtual void setIssueSimulation(double loss, double jitter, double max_delay);
 
-private slots:
+   private slots:
     void printUdpWaitedTooLong(int wait_msec);
-    
 
-signals:
+   signals:
 
     /// \brief Signals when waiting every 10 milliseconds, with the total wait on wait_msec
     /// \param wait_msec Total wait in milliseconds
@@ -157,11 +156,10 @@ signals:
     void signalUdpWaitingTooLong();
 
     //private:
-protected:
-
+   protected:
     /** \brief Binds the UDP socket to the available address and specified port
    */
-#if defined (__WIN_32__)
+#if defined(__WIN_32__)
     SOCKET bindSocket();
 #else
     int bindSocket();
@@ -182,10 +180,8 @@ protected:
     */
     virtual void receivePacketRedundancy(int8_t* full_redundant_packet,
                                          int full_redundant_packet_size,
-                                         int full_packet_size,
-                                         uint16_t& current_seq_num,
-                                         uint16_t& last_seq_num,
-                                         uint16_t& newer_seq_num);
+                                         int full_packet_size, uint16_t& current_seq_num,
+                                         uint16_t& last_seq_num, uint16_t& newer_seq_num);
 
     /** \brief Redundancy algorythm at the sender's end
     */
@@ -193,39 +189,39 @@ protected:
                                       int full_redundant_packet_size,
                                       int full_packet_size);
 
-private:
+   private:
     bool datagramAvailable();
-    
-    int mBindPort; ///< Local Port number to Bind
-    int mPeerPort; ///< Peer Port number
-    const runModeT mRunMode; ///< Run mode, either SENDER or RECEIVER
-    bool mIPv6; /// Use IPv6
 
-    QHostAddress mPeerAddress; ///< The Peer Address
+    int mBindPort;            ///< Local Port number to Bind
+    int mPeerPort;            ///< Peer Port number
+    const runModeT mRunMode;  ///< Run mode, either SENDER or RECEIVER
+    bool mIPv6;               /// Use IPv6
+
+    QHostAddress mPeerAddress;  ///< The Peer Address
     struct sockaddr_in mPeerAddr;
     struct sockaddr_in6 mPeerAddr6;
-#if defined (__WIN_32__)
+#if defined(__WIN_32__)
     SOCKET mSocket;
 #else
     int mSocket;
 #endif
 
-    int8_t* mAudioPacket; ///< Buffer to store Audio Packets
-    int8_t* mFullPacket; ///< Buffer to store Full Packet (audio+header)
+    int8_t* mAudioPacket;  ///< Buffer to store Audio Packets
+    int8_t* mFullPacket;   ///< Buffer to store Full Packet (audio+header)
     std::vector<int8_t> mBuffer;
     int mChans;
     int mSmplSize;
     int mLastOutOfOrderCount;
     bool mInitialState;
 
-    unsigned int mUdpRedundancyFactor; ///< Factor of redundancy
-    static QMutex sUdpMutex; ///< Mutex to make thread safe the binding process
+    unsigned int mUdpRedundancyFactor;  ///< Factor of redundancy
+    static QMutex sUdpMutex;            ///< Mutex to make thread safe the binding process
 
-    std::atomic<uint32_t>  mTotCount;
-    std::atomic<uint32_t>  mLostCount;
-    std::atomic<uint32_t>  mOutOfOrderCount;
-    std::atomic<uint32_t>  mRevivedCount;
-    uint32_t  mStatCount;
+    std::atomic<uint32_t> mTotCount;
+    std::atomic<uint32_t> mLostCount;
+    std::atomic<uint32_t> mOutOfOrderCount;
+    std::atomic<uint32_t> mRevivedCount;
+    uint32_t mStatCount;
 
     uint8_t mControlPacketSize;
     bool mStopSignalSent;
@@ -238,4 +234,4 @@ private:
     std::uniform_real_distribution<double> mUniformDist;
 };
 
-#endif // __UDPDATAPROTOCOL_H__
+#endif  // __UDPDATAPROTOCOL_H__

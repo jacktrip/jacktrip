@@ -35,23 +35,25 @@
  * \date June 2008
  */
 
-#include <iostream>
+#include <signal.h>
 
 #include <QCoreApplication>
+#include <QLoggingCategory>
 #include <QScopedPointer>
 #include <iostream>
-#include <signal.h>
-#include "jacktrip_globals.h"
+
 #include "Settings.h"
 #include "UdpHubListener.h"
-#include <QLoggingCategory>
+#include "jacktrip_globals.h"
 
-void qtMessageHandler(__attribute__((unused)) QtMsgType type, __attribute__((unused)) const QMessageLogContext &context, const QString &msg)
+void qtMessageHandler(__attribute__((unused)) QtMsgType type,
+                      __attribute__((unused)) const QMessageLogContext& context,
+                      const QString& msg)
 {
     std::cerr << msg.toStdString() << std::endl;
 }
 
-#if defined (__LINUX__) || (__MAC_OSX__)
+#if defined(__LINUX__) || (__MAC_OSX__)
 static int setupUnixSignalHandler(void (*handler)(int))
 {
     //Setup our SIGINT handler.
@@ -78,41 +80,42 @@ bool isHubServer = false;
 BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
 {
     switch (fdwCtrlType) {
-        case CTRL_C_EVENT:
-            if (isHubServer) {
-                UdpHubListener::sigIntHandler(0);
-            } else {
-                JackTrip::sigIntHandler(0);
-            }
-            return true;
-        default:
-            return false;
+    case CTRL_C_EVENT:
+        if (isHubServer) {
+            UdpHubListener::sigIntHandler(0);
+        } else {
+            JackTrip::sigIntHandler(0);
+        }
+        return true;
+    default:
+        return false;
     }
 }
 #endif
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
-    
+
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
 
     try {
         Settings settings;
         settings.parseInput(argc, argv);
-        
+
         //Either start our hub server or our jacktrip process as appropriate.
         if (settings.isHubServer()) {
             udpHub.reset(settings.getConfiguredHubServer());
-            if (gVerboseFlag) std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
+            if (gVerboseFlag)
+                std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
             QObject::connect(udpHub.data(), &UdpHubListener::signalStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
             QObject::connect(udpHub.data(), &UdpHubListener::signalError, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined (__LINUX__) || (__MAC_OSX__)
+#if defined(__LINUX__) || (__MAC_OSX__)
             setupUnixSignalHandler(UdpHubListener::sigIntHandler);
 #else
             isHubServer = true;
@@ -121,32 +124,34 @@ int main(int argc, char *argv[])
             udpHub->start();
         } else {
             jackTrip.reset(settings.getConfiguredJackTrip());
-            if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->startProcess" << std::endl;
+            if (gVerboseFlag)
+                std::cout << "Settings:startJackTrip before mJackTrip->startProcess"
+                          << std::endl;
             QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
             QObject::connect(jackTrip.data(), &JackTrip::signalError, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined (__LINUX__) || (__MAC_OSX__)
+#if defined(__LINUX__) || (__MAC_OSX__)
             setupUnixSignalHandler(JackTrip::sigIntHandler);
 #else
             std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
 #endif
-#ifdef WAIRTOHUB // WAIR
-            jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
+#ifdef WAIRTOHUB  // WAIR
+            jackTrip->startProcess(0);  // for WAIR compatibility, ID in jack client name
 #else
             jackTrip->startProcess();
-#endif // endwhere
+#endif  // endwhere
         }
-        
+
         if (gVerboseFlag) std::cout << "step 6" << std::endl;
         if (gVerboseFlag) std::cout << "jmain before app->exec()" << std::endl;
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         std::cerr << "ERROR:" << std::endl;
         std::cerr << e.what() << std::endl;
         std::cerr << "Exiting JackTrip..." << std::endl;
         std::cerr << gPrintSeparator << std::endl;
         return -1;
     }
-    
+
     return app.exec();
 }
