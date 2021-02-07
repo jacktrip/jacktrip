@@ -457,7 +457,7 @@ void JMess::connectPAN(int requestedSlot /*nChans*/)
 //                int slot = (halfZone + ((i%NPANINCHANS)*zones) );
 //                int slot = (halfZone + ( ( (i+((ch-1)*halfZone)) %NPANINCHANS)*zones) );
                 int slot = (halfZone + ((ch-1)*quarterZone) + ( ( i %NPANINCHANS)*zones) );
-slot = requestedSlot;
+// nope -- rewrites everyone... slot = requestedSlot;
                 //  needed % otherwise clients > NPANINCHANS results in all connected to slot 1
                 qDebug() << "i " << i << "ctr " << ctr  << "pctr " << pctr  << "ch " << ch
                          << "slot " << slot << "slot%NPANINCHANS " << ( slot % NPANINCHANS )
