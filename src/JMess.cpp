@@ -398,7 +398,9 @@ void JMess::connectTUB(int /*nChans*/)
 void JMess::connectPAN(int requestedSlot /*nChans*/)
 // called from UdpHubListener::connectPatch
 // requestedSlot is (peer_udp_port-gDefaultPort)
+// but doesn't work this way
 // to have client specify pan slot
+// when it rewrites the whole patch
 {
     requestedSlot = requestedSlot % NPANINCHANS; // test
     qDebug() << "client requested slot" << requestedSlot;

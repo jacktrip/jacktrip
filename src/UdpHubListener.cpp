@@ -271,9 +271,12 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     if (isWAIR()) connectMesh(true);  // invoked with -Sw
 #endif                                // endwhere
 
-    qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
+    //    qDebug() << "mPeerAddress" << mActiveAddress[id].address <<
+    //    mActiveAddress[id].port;
 
-    connectPatch(true, (peer_udp_port-gDefaultPort)); // the panning slot that this new client requests
+    connectPatch(
+        true, (peer_udp_port -
+               gDefaultPort)); // the panning slot that this new client requests
 }
 
 void UdpHubListener::stopCheck()
