@@ -184,7 +184,7 @@ void JackTrip::setupAudio(
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
         if (!mPeerAddress.isEmpty()
             && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
-            mJackClientName = QString(mPeerAddress).replace(":", "_") + QString("hi");
+            mJackClientName = QString(mPeerAddress).replace(":", "_") + QString("srcUDP") + QString::number(mReceiverPeerPort);
         }
         //std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
         //              mJackClientName.toStdString() << std::endl;
