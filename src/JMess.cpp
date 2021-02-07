@@ -400,7 +400,7 @@ void JMess::connectPAN(int requestedSlot /*nChans*/)
 // requestedSlot is (peer_udp_port-gDefaultPort)
 // to have client specify pan slot
 {
-    requestedSlot = 0; // test
+    requestedSlot = requestedSlot % NPANINCHANS; // test
     qDebug() << "client requested slot" << requestedSlot;
     int hubPatch = JackTrip::PANSTEREO;
     { // variant of FOFI
