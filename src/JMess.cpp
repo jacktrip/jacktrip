@@ -397,8 +397,10 @@ void JMess::connectTUB(int /*nChans*/)
 
 void JMess::connectPAN(int requestedSlot /*nChans*/)
 // called from UdpHubListener::connectPatch
-// need to pass peer_udp_port to have client specify pan slot
+// requestedSlot is (peer_udp_port-gDefaultPort)
+// to have client specify pan slot
 {
+    requestedSlot = 0; // test
     qDebug() << "client requested slot" << requestedSlot;
     int hubPatch = JackTrip::PANSTEREO;
     { // variant of FOFI
@@ -453,7 +455,7 @@ void JMess::connectPAN(int requestedSlot /*nChans*/)
 //                int slot = (halfZone + ((i%NPANINCHANS)*zones) );
 //                int slot = (halfZone + ( ( (i+((ch-1)*halfZone)) %NPANINCHANS)*zones) );
                 int slot = (halfZone + ((ch-1)*quarterZone) + ( ( i %NPANINCHANS)*zones) );
-
+slot = requestedSlot;
                 //  needed % otherwise clients > NPANINCHANS results in all connected to slot 1
                 qDebug() << "i " << i << "ctr " << ctr  << "pctr " << pctr  << "ch " << ch
                          << "slot " << slot << "slot%NPANINCHANS " << ( slot % NPANINCHANS )

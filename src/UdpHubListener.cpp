@@ -273,7 +273,7 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
 
     //qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
 
-    connectPatch(true, 999);
+    connectPatch(true, (peer_udp_port-gDefaultPort)); // the panning slot that this new client requests
 }
 
 void UdpHubListener::stopCheck()
@@ -497,7 +497,7 @@ void UdpHubListener::enumerateRunningThreadIDs()
 #endif  // endwhere
 
 #include "JMess.h"
-void UdpHubListener::connectPatch(bool spawn, int requestedSlot)
+void UdpHubListener::connectPatch(bool spawn, int requestedSlot) // requestedSlot used only for -p6
 {
     if ((getHubPatch() == JackTrip::NOAUTO)
         || (getHubPatch() == JackTrip::SERVERTOCLIENT && !m_connectDefaultAudioPorts)) {
@@ -513,7 +513,7 @@ void UdpHubListener::connectPatch(bool spawn, int requestedSlot)
     if (getHubPatch()
         == JackTrip::RESERVEDMATRIX)  // special patch for TU Berlin ensemble
         tmp.connectTUB(gDefaultNumInChannels);
-    else if (getHubPatch() == JackTrip::PANSTEREO) // special patch for Stanford ensembles
+    else if (getHubPatch() == JackTrip::PANSTEREO) // special patch for Stanford ensembles -p6
         tmp.connectPAN(requestedSlot); // gDefaultNumInChannels);
     else if ((getHubPatch() == JackTrip::CLIENTECHO) || // client loopback for testing
              (getHubPatch() == JackTrip::CLIENTFOFI) || // all clients to all clients except self
