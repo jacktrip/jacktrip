@@ -183,7 +183,7 @@ class UdpHubListener : public QObject
     void setWAIR(int b) { mWAIR = b; }
     bool isWAIR() { return mWAIR; }
 #endif  // endwhere
-    void connectPatch(bool spawn);
+    void connectPatch(bool spawn, int requestedSlot = 0);
 
    public:
     unsigned int mHubPatch;

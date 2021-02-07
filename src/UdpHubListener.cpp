@@ -273,7 +273,7 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
 
     //qDebug() << "mPeerAddress" << mActiveAddress[id].address << mActiveAddress[id].port;
 
-    connectPatch(true);
+    connectPatch(true, 999);
 }
 
 void UdpHubListener::stopCheck()
@@ -497,7 +497,7 @@ void UdpHubListener::enumerateRunningThreadIDs()
 #endif  // endwhere
 
 #include "JMess.h"
-void UdpHubListener::connectPatch(bool spawn)
+void UdpHubListener::connectPatch(bool spawn, int requestedSlot)
 {
     if ((getHubPatch() == JackTrip::NOAUTO)
         || (getHubPatch() == JackTrip::SERVERTOCLIENT && !m_connectDefaultAudioPorts)) {
@@ -514,7 +514,7 @@ void UdpHubListener::connectPatch(bool spawn)
         == JackTrip::RESERVEDMATRIX)  // special patch for TU Berlin ensemble
         tmp.connectTUB(gDefaultNumInChannels);
     else if (getHubPatch() == JackTrip::PANSTEREO) // special patch for Stanford ensembles
-        tmp.connectPAN(gDefaultNumInChannels);
+        tmp.connectPAN(requestedSlot); // gDefaultNumInChannels);
     else if ((getHubPatch() == JackTrip::CLIENTECHO) || // client loopback for testing
              (getHubPatch() == JackTrip::CLIENTFOFI) || // all clients to all clients except self
              (getHubPatch() == JackTrip::FULLMIX)) // all clients to all clients including self

@@ -395,9 +395,11 @@ void JMess::connectTUB(int /*nChans*/)
 // faust2jackconsole panpot9toStereo.dsp
 // faust2jackconsole freeverbStereo.dsp
 
-void JMess::connectPAN(int /*nChans*/)
+void JMess::connectPAN(int requestedSlot /*nChans*/)
 // called from UdpHubListener::connectPatch
+// need to pass peer_udp_port to have client specify pan slot
 {
+    qDebug() << "client requested slot" << requestedSlot;
     int hubPatch = JackTrip::PANSTEREO;
     { // variant of FOFI
         QMutexLocker locker(&sJMessMutex);

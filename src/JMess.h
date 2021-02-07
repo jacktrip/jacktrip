@@ -73,7 +73,7 @@ public:
   /// \brief Cross connect ports between net combs, -l LAIR mode
   void connectSpawnedPorts(int nChans, int hubPatch);
   void connectTUB(int nChans);
-  void connectPAN(int nChans);
+  void connectPAN(int requestedSlot);
 
 private:
   int parseXML(QString xmlInFile);
