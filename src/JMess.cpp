@@ -405,7 +405,7 @@ void JMess::connectPAN(int requestedSlot /*nChans*/)
 
     requestedSlot = requestedSlot % NPANINCHANS; // test
     qDebug() << "client requested slot" << requestedSlot;
-    int hubPatch = JackTrip::PANSTEREO;
+
     { // variant of FOFI
         QMutexLocker locker(&sJMessMutex);
 
