@@ -274,6 +274,11 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     //    qDebug() << "mPeerAddress" << mActiveAddress[id].address <<
     //    mActiveAddress[id].port;
 
+    qDebug() << "xxxxxxxxxxxxxxxxxx " << readClientUdpPort(clientConnection, clientName);
+
+                ;
+//             << mReceiverBindPort << mSenderPeerPort << mSenderBindPort << mReceiverPeerPort ;
+
     connectPatch(
         true, (peer_udp_port -
                gDefaultPort)); // the panning slot that this new client requests
