@@ -859,6 +859,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)  // udpTimeout unused
     //    // set client address
     //    UdpSockTemp.readDatagram(buf, 1, &peerHostAddress, &peer_port);
     //    UdpSockTemp.close(); // close the socket
+    qDebug() << "yyyyyyyyyyyyyyyyyyy " << mReceiverBindPort;
 }
 
 //*******************************************************************************
