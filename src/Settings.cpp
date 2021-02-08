@@ -69,6 +69,7 @@ enum JTLongOptIDS {
     OPT_SIMJITTER,
     OPT_BROADCAST,
     OPT_RTUDPPRIORITY,
+    OPT_PANSLOT,
 };
 
 //*******************************************************************************
@@ -84,6 +85,7 @@ Settings::Settings()
     , mUnderrunMode(JackTrip::WAVETABLE)
     , mStopOnTimeout(false)
     , mBufferStrategy(1)
+    , mPanSlot(0)
     , mLoopBack(false)
     ,
 #ifdef WAIR  // WAIR
@@ -447,6 +449,9 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_RTUDPPRIORITY:  // Use RT priority for UDPDataProtocol thread
             mUseRtUdpPriority = true;
             break;
+        case OPT_PANSLOT:  // pan slot
+            mPanSlot = atoi(optarg);
+            break;
         case 'h':
             //-------------------------------------------------------
             printUsage();
@@ -677,6 +682,8 @@ void Settings::printUsage()
          << endl;
     cout << " --broadcast <broadcast_queue>            Turn on broadcast output ports "
             "with extra queue (requires new jitter buffer)"
+         << endl;
+    cout << " --panSlot <slot_number>                  Select panning slot"
          << endl;
     cout << " --udprt                                  Use RT thread priority for "
             "network I/O"
