@@ -186,7 +186,7 @@ void JackTrip::setupAudio(
             && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
 //            mJackClientName = QString(mPeerAddress).replace(":", "_");
             mJackClientName = QString(mPeerAddress).replace(":", "_") + QString("srcUDP") + QString::number(mReceiverPeerPort);
-qDebug() << " " << mReceiverBindPort << mSenderPeerPort
+qDebug() << "xxxxxxxxxxxxxxxxxx " << mReceiverBindPort << mSenderPeerPort
         << mSenderBindPort
         << mReceiverPeerPort ;
 
