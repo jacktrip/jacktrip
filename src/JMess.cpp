@@ -402,6 +402,7 @@ void JMess::connectPAN(int requestedSlot /*nChans*/)
 // to have client specify pan slot
 // when it rewrites the whole patch
 {
+
     requestedSlot = requestedSlot % NPANINCHANS; // test
     qDebug() << "client requested slot" << requestedSlot;
     int hubPatch = JackTrip::PANSTEREO;
@@ -411,8 +412,7 @@ void JMess::connectPAN(int requestedSlot /*nChans*/)
         QString IPS[gMAX_WAIRS];
         int ctr = 0;
 
-        const char **ports, **connections; //vector of ports and connections
-        QVector<QString> OutputInput(2); //helper variable
+        const char **ports; //vector of ports
 
         //Get active output ports.
         ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
