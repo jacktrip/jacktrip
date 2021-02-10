@@ -132,7 +132,7 @@ class JackTrip : public QObject
      */
     JackTrip(
         jacktripModeT JacktripMode = CLIENT, dataProtocolT DataProtocolType = UDP,
-        int NumChans = gDefaultNumInChannels,
+        int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumInChannels,
 #ifdef WAIR  // wair
         int NumNetRevChans = 0,
 #endif  // endwhere
@@ -261,8 +261,10 @@ class JackTrip : public QObject
     {
         mRemoteClientName = remoteClientName;
     }
-    /// \brief Set the number of audio channels
-    virtual void setNumChannels(int num_chans) { mNumChans = num_chans; }
+    /// \brief Set the number of audio input channels
+    virtual void setNumInputChannels(int num_chans) { mNumChansIn = num_chans; }
+    /// \brief Set the number of audio output channels
+    virtual void setNumOutputChannels(int num_chans) { mNumChansOut = num_chans; }
 
     virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream)
@@ -407,13 +409,14 @@ class JackTrip : public QObject
     }
     unsigned int getNumInputChannels() const
     {
-        return mNumChans; /*return mAudioInterface->getNumInputChannels();*/
+        return mNumChansIn; /*return mAudioInterface->getNumInputChannels();*/
     }
     unsigned int getNumOutputChannels() const
     {
-        return mNumChans; /*return mAudioInterface->getNumOutputChannels();*/
+        return mNumChansOut; /*return mAudioInterface->getNumOutputChannels();*/
     }
-    unsigned int getNumChannels() const
+
+    [[deprecated]] unsigned int getNumChannels() const
     {
         if (getNumInputChannels() == getNumOutputChannels()) {
             return getNumInputChannels();
@@ -575,8 +578,9 @@ class JackTrip : public QObject
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
-    int mNumChans;  ///< Number of Channels (inputs = outputs)
-#ifdef WAIR         // WAIR
+    int mNumChansIn;   ///< Number of Input Channels
+    int mNumChansOut;  ///< Number of Output Channels
+#ifdef WAIR            // WAIR
     int mNumNetRevChans;  ///< Number of Network Audio Channels (net comb filters)
 #endif                    // endwhere
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
