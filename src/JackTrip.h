@@ -313,7 +313,8 @@ class JackTrip : public QObject
         mPacketHeader = PacketHeader;
     }
 
-    virtual int getRingBuffersSlotSize() { return getTotalAudioPacketSizeInBytes(); }
+    virtual int getInputRingBuffersSlotSize() { return getTotalAudioInputPacketSizeInBytes(); }
+    virtual int getOutputRingBuffersSlotSize() { return getTotalAudioOutputPacketSizeInBytes(); }
 
     virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
     {
@@ -362,8 +363,8 @@ class JackTrip : public QObject
     /// \todo Document all these functions
     virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
     void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
-    virtual int getPacketSizeInBytes();
-    void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
+    int getSendPacketSizeInBytes() const;
+    int getReceivePacketSizeInBytes() const;
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
     {
         mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0);
@@ -468,14 +469,24 @@ class JackTrip : public QObject
         return mAudioInterface->getSizeInBytesPerChannel();
     }
     int getHeaderSizeInBytes() const { return mPacketHeader->getHeaderSizeInBytes(); }
-    virtual int getTotalAudioPacketSizeInBytes() const
+    int getTotalAudioInputPacketSizeInBytes() const
     {
 #ifdef WAIR  // WAIR
         if (mNumNetRevChans)
             return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
         else  // not wair
 #endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumChans;
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumChansIn;
+    }
+
+    int getTotalAudioOutputPacketSizeInBytes() const
+    {
+#ifdef WAIR  // WAIR
+        if (mNumNetRevChans)
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
+        else  // not wair
+#endif        // endwhere
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumChansOut;
     }
     //@}
     //------------------------------------------------------------------------------------

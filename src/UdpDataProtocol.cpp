@@ -446,18 +446,25 @@ void UdpDataProtocol::run()
                   << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy "
                      "Variables"
                   << std::endl;
+    
+
     // Setup Audio Packet buffer
     size_t audio_packet_size = getAudioPacketSizeInBites();
     //cout << "audio_packet_size: " << audio_packet_size << endl;
     mAudioPacket = new int8_t[audio_packet_size];
     std::memset(mAudioPacket, 0, audio_packet_size);  // set buffer to 0
     mBuffer.resize(audio_packet_size, 0);
-    mChans    = mJackTrip->getNumChannels();
-    mSmplSize = mJackTrip->getAudioBitResolution() / 8;
+    
+    int full_packet_size;
+    if(mRunMode == RECEIVER) {
+        mChans    = mJackTrip->getNumOutputChannels();
+        full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
+    } else {
+        mChans    = mJackTrip->getNumInputChannels();
+        full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
+    }
+    mSmplSize = mJackTrip->getAudioBitResolution() / 8;    
 
-    // Setup Full Packet buffer
-    int full_packet_size = mJackTrip->getPacketSizeInBytes();
-    //cout << "full_packet_size: " << full_packet_size << endl;
     mFullPacket = new int8_t[full_packet_size];
     std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
 

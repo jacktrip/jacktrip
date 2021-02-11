@@ -76,7 +76,6 @@ enum JTLongOptIDS {
 Settings::Settings()
     : mJackTripMode(JackTrip::SERVER)
     , mDataProtocol(JackTrip::UDP)
-    , mNumChans(2)
     , mBufferQueueLength(gDefaultQueueLength)
     , mAudioBitResolution(AudioInterface::BIT16)
     , mBindPortNum(gDefaultPort)
@@ -207,7 +206,8 @@ void Settings::parseInput(int argc, char** argv)
         switch (ch) {
         case 'n':  // Number of input and output channels
             //-------------------------------------------------------
-            mNumChans = atoi(optarg);
+            mNumChansIn = atoi(optarg);
+            mNumChansOut = atoi(optarg);
             break;
         case 'U':  // UDP Bind Port
             mServerUdpPortNum = atoi(optarg);
@@ -555,8 +555,8 @@ void Settings::parseInput(int argc, char** argv)
         std::exit(1);
     }
 
-    assert(mNumChans > 0);
-    mAudioTester.setSendChannel(mNumChans - 1);  // use last channel for latency testing
+    assert(mNumChansIn > 0);
+    mAudioTester.setSendChannel(mNumChansIn - 1);  // use last channel for latency testing
     // Originally, testing only in the last channel was adopted
     // because channel 0 ("left") was a clap track on CCRMA loopback
     // servers.  Now, however, we also do it in order to easily keep
@@ -796,7 +796,7 @@ JackTrip* Settings::getConfiguredJackTrip()
     if (gVerboseFlag)
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
-        mJackTripMode, mDataProtocol, mNumChans,
+        mJackTripMode, mDataProtocol, mNumChansIn, mNumChansOut,
 #ifdef WAIR  // wair
         mNumNetRevChans,
 #endif  // endwhere
@@ -910,11 +910,13 @@ JackTrip* Settings::getConfiguredJackTrip()
     // Allocate audio effects in client, if any:
     int nReservedChans =
         mAudioTester.getEnabled() ? 1 : 0;  // no fx allowed on tester channel
+    // FIXME: Does outgoing mean send to the network?
     std::vector<ProcessPlugin*> outgoingEffects =
-        mEffects.allocateOutgoingEffects(mNumChans - nReservedChans);
+        mEffects.allocateOutgoingEffects(mNumChansIn - nReservedChans);
     for (auto p : outgoingEffects) { jackTrip->appendProcessPluginToNetwork(p); }
+    // FIXME: Does incoming mean receive from the network?
     std::vector<ProcessPlugin*> incomingEffects =
-        mEffects.allocateIncomingEffects(mNumChans - nReservedChans);
+        mEffects.allocateIncomingEffects(mNumChansOut - nReservedChans);
     for (auto p : incomingEffects) { jackTrip->appendProcessPluginFromNetwork(p); }
 
 #ifdef WAIR  // WAIR
