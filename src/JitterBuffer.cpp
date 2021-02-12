@@ -42,7 +42,7 @@
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
-
+#include <QDebug> // cc
 using std::cout;
 using std::endl;
 
@@ -156,6 +156,7 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
         delta = -mSlotSize;
         mUnderruns += -delta;
         mBufIncCompensate += -delta;
+        qDebug() << "underrun"; // cc
     }
 
     if (0 != delta) {
