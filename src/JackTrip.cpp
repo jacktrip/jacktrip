@@ -117,7 +117,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mTcpServerPort(tcp_peer_port)
     , mRedundancy(redundancy)
     , mJackClientName(gJackDefaultClientName)
-    , mConnectionMode(JackTrip::NORMAL)
     , mTimeoutTimer(this)
     , mSleepTime(100)
     , mElapsedTime(0)

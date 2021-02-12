@@ -101,11 +101,11 @@ class JackTrip : public QObject
     };
 
     /// \brief Enum for Connection Mode (in packet header)
-    enum connectionModeT {
+/*    enum connectionModeT {
         NORMAL,   ///< Normal Mode
         KSTRONG,  ///< Karplus Strong
         JAMTEST   ///< Karplus Strong
-    };
+    }; */
 
     /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are
     /// automatically patched in Jack)
@@ -331,11 +331,13 @@ class JackTrip : public QObject
     void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
     void setAudioBufferSizeInSamples(uint32_t buf_size) { mAudioBufferSize = buf_size; }
 
+         /*
     JackTrip::connectionModeT getConnectionMode() const { return mConnectionMode; }
     void setConnectionMode(JackTrip::connectionModeT connection_mode)
     {
         mConnectionMode = connection_mode;
     }
+          */
 
     JackTrip::hubConnectionModeT getHubConnectionModeT() const
     {
@@ -417,14 +419,6 @@ class JackTrip : public QObject
         return mNumChansOut; /*return mAudioInterface->getNumOutputChannels();*/
     }
 
-    [[deprecated]] unsigned int getNumChannels() const
-    {
-        if (getNumInputChannels() == getNumOutputChannels()) {
-            return getNumInputChannels();
-        } else {
-            return 0;
-        }
-    }
     virtual void checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber() { mPacketHeader->increaseSequenceNumber(); }
     int getSequenceNumber() const { return mPacketHeader->getSequenceNumber(); }
@@ -454,14 +448,14 @@ class JackTrip : public QObject
         return mPacketHeader->getPeerBitResolution(full_packet);
     }
 
-    uint8_t getPeerNumChannels(int8_t* full_packet) const
+    uint8_t getPeerNumIncomingChannels(int8_t* full_packet) const
     {
-        return mPacketHeader->getPeerNumChannels(full_packet);
+        return mPacketHeader->getPeerNumIncomingChannels(full_packet);
     }
 
-    uint8_t getPeerConnectionMode(int8_t* full_packet) const
+    uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const
     {
-        return mPacketHeader->getPeerConnectionMode(full_packet);
+        return mPacketHeader->getPeerNumOutgoingChannels(full_packet);
     }
 
     size_t getSizeInBytesPerChannel() const
@@ -628,7 +622,7 @@ class JackTrip : public QObject
     QString mJackClientName;    ///< JackAudio Client Name
     QString mRemoteClientName;  ///< Remote JackAudio Client Name for hub client mode
 
-    JackTrip::connectionModeT mConnectionMode;  ///< Connection Mode
+    // JackTrip::connectionModeT mConnectionMode;  ///< Connection Mode
     JackTrip::hubConnectionModeT
         mHubConnectionModeT;  ///< Hub Server Jack Audio Patch Connection Mode
 

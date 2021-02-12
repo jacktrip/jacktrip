@@ -119,7 +119,7 @@ class JackTripWorker
 
    private:
     int setJackTripFromClientHeader(JackTrip& jacktrip);
-    JackTrip::connectionModeT getConnectionModeFromHeader();
+    // JackTrip::connectionModeT getConnectionModeFromHeader();
 
     UdpHubListener* mUdpHubListener;  ///< Hub Listener Socket
     // QHostAddress mClientAddress; ///< Client Address

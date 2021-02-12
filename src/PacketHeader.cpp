@@ -97,10 +97,8 @@ DefaultHeader::DefaultHeader(JackTrip* jacktrip)
     mHeader.BufferSize    = 0;
     mHeader.SamplingRate  = 0;
     mHeader.BitResolution = 0;
-    //mHeader.NumInChannels = 0;
-    //mHeader.NumOutChannels = 0;
-    mHeader.NumChannels    = 0;
-    mHeader.ConnectionMode = 0;
+    mHeader.NumIncomingChannelsFromNet    = 0;
+    mHeader.NumOutgoingChannelsToNet = 0;
 }
 
 //***********************************************************************
@@ -110,9 +108,8 @@ void DefaultHeader::fillHeaderCommonFromAudio()
     mHeader.BufferSize     = mJackTrip->getBufferSizeInSamples();
     mHeader.SamplingRate   = mJackTrip->getSampleRateType();
     mHeader.BitResolution  = mJackTrip->getAudioBitResolution();
-    mHeader.NumChannels    = mJackTrip->getNumChannels();
-    mHeader.ConnectionMode = static_cast<int>(mJackTrip->getConnectionMode());
-    //printHeader();
+    mHeader.NumIncomingChannelsFromNet    = mJackTrip->getNumOutputChannels();
+    mHeader.NumOutgoingChannelsToNet = mJackTrip->getNumInputChannels();
 }
 
 //***********************************************************************
@@ -179,17 +176,12 @@ void DefaultHeader::printHeader() const
     // Get the sample rate in Hz form the AudioInterface::samplingRateT
     int sample_rate = AudioInterface::getSampleRateFromType(
         static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate));
-    cout << "Sampling Rate             = " << sample_rate << endl;
-    cout << "Audio Bit Resolutions     = " << static_cast<int>(mHeader.BitResolution)
-         << endl;
-    //cout << "Number of Input Channels  = " << static_cast<int>(mHeader.NumInChannels) << endl;
-    //cout << "Number of Output Channels = " << static_cast<int>(mHeader.NumOutChannels) << endl;
-    cout << "Number of Channels        = " << static_cast<int>(mHeader.NumChannels)
-         << endl;
-    cout << "Sequence Number           = " << static_cast<int>(mHeader.SeqNumber) << endl;
-    cout << "Time Stamp                = " << mHeader.TimeStamp << endl;
-    cout << "Connection Mode           = " << static_cast<int>(mHeader.ConnectionMode)
-         << endl;
+    cout << "Sampling Rate               = " << sample_rate << "\n"
+            "Audio Bit Resolutions       = " << static_cast<int>(mHeader.BitResolution) << "\n"
+            "Number of Incoming Channels = " << static_cast<int>(mHeader.NumIncomingChannelsFromNet ) << "\n"
+            "Number of Incoming Channels = " << static_cast<int>(mHeader.NumIncomingChannelsFromNet ) << "\n"
+            "Sequence Number             = " << static_cast<int>(mHeader.SeqNumber) << "\n"
+            "Time Stamp                  = " << mHeader.TimeStamp << "\n";
     cout << gPrintSeparator << endl;
     //cout << sizeof(mHeader) << endl;
 }
@@ -235,19 +227,18 @@ uint8_t DefaultHeader::getPeerBitResolution(int8_t* full_packet) const
 }
 
 //***********************************************************************
-uint8_t DefaultHeader::getPeerNumChannels(int8_t* full_packet) const
+uint8_t DefaultHeader::getPeerNumIncomingChannels(int8_t* full_packet) const
 {
     DefaultHeaderStruct* peer_header;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
-    return peer_header->NumChannels;
+    return peer_header->NumIncomingChannelsFromNet;
 }
 
-//***********************************************************************
-uint8_t DefaultHeader::getPeerConnectionMode(int8_t* full_packet) const
+uint8_t DefaultHeader::getPeerNumOutgoingChannels(int8_t* full_packet) const
 {
     DefaultHeaderStruct* peer_header;
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
-    return static_cast<uint8_t>(peer_header->ConnectionMode);
+    return peer_header->NumOutgoingChannelsToNet;
 }
 
 //#######################################################################

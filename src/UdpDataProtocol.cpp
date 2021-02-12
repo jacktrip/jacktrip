@@ -580,7 +580,7 @@ void UdpDataProtocol::run()
                       << " before mJackTrip->checkPeerSettings()" << std::endl;
         mJackTrip->checkPeerSettings(full_redundant_packet);
 
-        int peer_chans   = mJackTrip->getPeerNumChannels(full_redundant_packet);
+        int peer_chans   = mJackTrip->getPeerNumOutgoingChannels(full_redundant_packet);
         full_packet_size = mJackTrip->getHeaderSizeInBytes()
                            + mJackTrip->getPeerBufferSize(full_redundant_packet)
                                  * peer_chans * mSmplSize;
@@ -780,7 +780,7 @@ void UdpDataProtocol::receivePacketRedundancy(
     mRevivedCount += redun_last_index;
     //cout << endl;
 
-    int peer_chans    = mJackTrip->getPeerNumChannels(full_redundant_packet);
+    int peer_chans    = mJackTrip->getPeerNumOutgoingChannels(full_redundant_packet);
     int N             = mJackTrip->getPeerBufferSize(full_redundant_packet);
     int host_buf_size = N * mChans * mSmplSize;
     int hdr_size      = mJackTrip->getHeaderSizeInBytes();
