@@ -73,50 +73,6 @@ enum JTLongOptIDS {
 };
 
 //*******************************************************************************
-Settings::Settings()
-    : mJackTripMode(JackTrip::SERVER)
-    , mDataProtocol(JackTrip::UDP)
-    , mBufferQueueLength(gDefaultQueueLength)
-    , mAudioBitResolution(AudioInterface::BIT16)
-    , mBindPortNum(gDefaultPort)
-    , mPeerPortNum(gDefaultPort)
-    , mServerUdpPortNum(0)
-    , mUnderrunMode(JackTrip::WAVETABLE)
-    , mStopOnTimeout(false)
-    , mBufferStrategy(1)
-    , mLoopBack(false)
-    ,
-#ifdef WAIR  // WAIR
-    mNumNetRevChans(0)
-    , mWAIR(false)
-    ,
-#endif  // endwhere
-    mJamLink(false)
-    , mEmptyHeader(false)
-    , mJackTripServer(false)
-    , mLocalAddress(gDefaultLocalAddress)
-    , mRedundancy(1)
-    , mUseJack(true)
-    , mChanfeDefaultSR(false)
-    , mChanfeDefaultID(0)
-    , mChanfeDefaultBS(false)
-    , mHubConnectionMode(JackTrip::SERVERTOCLIENT)
-    , mConnectDefaultAudioPorts(true)
-    , mIOStatTimeout(0)
-    , mEffects(false)
-    ,  // outgoing limiter OFF by default
-    mSimulatedLossRate(0.0)
-    , mSimulatedJitterRate(0.0)
-    , mSimulatedDelayRel(0.0)
-    , mBroadcastQueue(0)
-    , mUseRtUdpPriority(false)
-{
-}
-
-//*******************************************************************************
-Settings::~Settings() = default;
-
-//*******************************************************************************
 void Settings::parseInput(int argc, char** argv)
 {
     // Always use decimal point for floating point numbers
