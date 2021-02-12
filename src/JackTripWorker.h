@@ -75,7 +75,7 @@ class JackTripWorker
                    JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE,
                    QString clientName                   = "");
     /// \brief The class destructor
-    virtual ~JackTripWorker();
+    ~JackTripWorker() = default;
 
     /// \brief Implements the Thread Loop.
     /// To start the thread, call start() ( DO NOT CALL run() ).
@@ -119,13 +119,12 @@ class JackTripWorker
 
    private:
     int setJackTripFromClientHeader(JackTrip& jacktrip);
-    // JackTrip::connectionModeT getConnectionModeFromHeader();
 
     UdpHubListener* mUdpHubListener;  ///< Hub Listener Socket
     // QHostAddress mClientAddress; ///< Client Address
     QString mClientAddress;
     uint16_t mServerPort;  ///< Server Ephemeral Incomming Port to use with Client
-    bool m_connectDefaultAudioPorts;
+    bool m_connectDefaultAudioPorts = false;
 
     /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort
     /// -1</tt>
@@ -137,24 +136,23 @@ class JackTripWorker
 
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
-    volatile bool mSpawning;
+    volatile bool mSpawning = false;
     QMutex mMutex;  ///< Mutex to protect mSpawning
 
-    int mID;        ///< ID thread number
-    int mNumChans;  ///< Number of Channels
+    int mID = 0;        ///< ID thread number
 
-    int mBufferStrategy;
-    int mBroadcastQueue;
-    double mSimulatedLossRate;
-    double mSimulatedJitterRate;
-    double mSimulatedDelayRel;
-    bool mUseRtUdpPriority;
+    int mBufferStrategy = 1;
+    int mBroadcastQueue = 0;
+    double mSimulatedLossRate = 0.0;
+    double mSimulatedJitterRate = 0.0;
+    double mSimulatedDelayRel = 0.0;
+    bool mUseRtUdpPriority = false;
 
-    int mIOStatTimeout;
+    int mIOStatTimeout = 0;
     QSharedPointer<std::ofstream> mIOStatStream;
 #ifdef WAIR  // wair
-    int mNumNetRevChans;  ///< Number of Net Channels = net combs
-    bool mWAIR;
+    int mNumNetRevChans = 0;  ///< Number of Net Channels = net combs
+    bool mWAIR = false;
 #endif  // endwhere
 };
 

@@ -61,34 +61,11 @@ using std::endl;
 JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength,
                                JackTrip::underrunModeT UnderRunMode, QString clientName)
     : mUdpHubListener(udphublistener)
-    , m_connectDefaultAudioPorts(false)
     , mBufferQueueLength(BufferQueueLength)
     , mUnderRunMode(UnderRunMode)
     , mClientName(clientName)
-    , mSpawning(false)
-    , mID(0)
-    , mNumChans(1)
-    , mIOStatTimeout(0)
-#ifdef WAIR  // wair
-    , mNumNetRevChans(0)
-    , mWAIR(false)
-#endif  // endwhere
 {
     setAutoDelete(false);  // stick around after calling run()
-    // mNetks = new NetKS;
-    // mNetks->play();
-    mBufferStrategy      = 1;
-    mBroadcastQueue      = 0;
-    mSimulatedLossRate   = 0.0;
-    mSimulatedJitterRate = 0.0;
-    mSimulatedDelayRel   = 0.0;
-    mUseRtUdpPriority    = false;
-}
-
-//*******************************************************************************
-JackTripWorker::~JackTripWorker()
-{
-    // delete mUdpHubListener;
 }
 
 //*******************************************************************************
