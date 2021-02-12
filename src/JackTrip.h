@@ -101,11 +101,11 @@ class JackTrip : public QObject
     };
 
     /// \brief Enum for Connection Mode (in packet header)
-/*    enum connectionModeT {
+    enum connectionModeT {
         NORMAL,   ///< Normal Mode
         KSTRONG,  ///< Karplus Strong
         JAMTEST   ///< Karplus Strong
-    }; */
+    };
 
     /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are
     /// automatically patched in Jack)
@@ -336,14 +336,6 @@ class JackTrip : public QObject
     void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
     void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
     void setAudioBufferSizeInSamples(uint32_t buf_size) { mAudioBufferSize = buf_size; }
-
-         /*
-    JackTrip::connectionModeT getConnectionMode() const { return mConnectionMode; }
-    void setConnectionMode(JackTrip::connectionModeT connection_mode)
-    {
-        mConnectionMode = connection_mode;
-    }
-          */
 
     JackTrip::hubConnectionModeT getHubConnectionModeT() const
     {
