@@ -113,12 +113,12 @@ AudioInterface::~AudioInterface()
 #endif  // endwhere
 
     for (int i = 0; i < mProcessPluginsFromNetwork.size(); i++) {
-        delete mProcessPluginsFromNetwork[i];
+        delete[] mProcessPluginsFromNetwork[i];
     }
     for (int i = 0; i < mProcessPluginsToNetwork.size(); i++) {
-        delete mProcessPluginsToNetwork[i];
+        delete[] mProcessPluginsToNetwork[i];
     }
-    for (int i = 0; i < mNumInChans; i++) { delete mInBufCopy[i]; }
+    for (int i = 0; i < mNumInChans; i++) { delete[] mInBufCopy[i]; }
 }
 
 //*******************************************************************************
