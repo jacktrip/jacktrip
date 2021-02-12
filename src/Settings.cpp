@@ -866,11 +866,11 @@ JackTrip* Settings::getConfiguredJackTrip()
     // Allocate audio effects in client, if any:
     int nReservedChans =
         mAudioTester.getEnabled() ? 1 : 0;  // no fx allowed on tester channel
-    // FIXME: Does outgoing mean send to the network?
+
     std::vector<ProcessPlugin*> outgoingEffects =
         mEffects.allocateOutgoingEffects(mNumChansIn - nReservedChans);
     for (auto p : outgoingEffects) { jackTrip->appendProcessPluginToNetwork(p); }
-    // FIXME: Does incoming mean receive from the network?
+
     std::vector<ProcessPlugin*> incomingEffects =
         mEffects.allocateIncomingEffects(mNumChansOut - nReservedChans);
     for (auto p : incomingEffects) { jackTrip->appendProcessPluginFromNetwork(p); }
@@ -882,7 +882,7 @@ JackTrip* Settings::getConfiguredJackTrip()
         switch (mNumNetRevChans) {
         case 16: {
             jackTrip->appendProcessPluginFromNetwork(
-                new ap8x2(mNumChans));  // plugin slot 0
+                new ap8x2(mNumChansOut));  // plugin slot 0
             /////////////////////////////////////////////////////////
             Stk16* plugin = new Stk16(mNumNetRevChans);
             plugin->Stk16::initCombClient(mClientAddCombLen, mClientRoomSize);
