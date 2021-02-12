@@ -62,11 +62,11 @@ struct DefaultHeaderStruct : public HeaderStruct {
     uint8_t SamplingRate;   ///< Sampling Rate in JackAudioInterface::samplingRateT
     uint8_t BitResolution;  ///< Audio Bit Resolution
     uint8_t NumIncomingChannelsFromNet;  ///< Number of incoming Channels from the network
-    uint8_t NumOutgoingChannelsToNet; ///< Number of outgoing Channels to the network
+    uint8_t NumOutgoingChannelsToNet;    ///< Number of outgoing Channels to the network
 };
 
 //---------------------------------------------------------
-//JamLink UDP Header:
+// JamLink UDP Header:
 /************************************************************************/
 /* values for the UDP stream type                                       */
 /* streamType is a 16-bit value at the head of each UDP stream          */
@@ -81,7 +81,7 @@ const unsigned short ETX_XTND   = (1 << 14);
 const unsigned short ETX_STEREO = (1 << 13);
 const unsigned short ETX_MONO   = (0 << 13);
 const unsigned short ETX_16BIT  = (0 << 12);
-//inline unsigned short ETX_RATE_MASK(const unsigned short a) { a&(0x7<<9); }
+// inline unsigned short ETX_RATE_MASK(const unsigned short a) { a&(0x7<<9); }
 const unsigned short ETX_48KHZ = (0 << 9);
 const unsigned short ETX_44KHZ = (1 << 9);
 const unsigned short ETX_32KHZ = (2 << 9);
@@ -91,7 +91,7 @@ const unsigned short ETX_16KHZ = (5 << 9);
 const unsigned short ETX_11KHZ = (6 << 9);
 const unsigned short ETX_8KHZ  = (7 << 9);
 // able to express up to 512 SPP
-//inline unsigned short  ETX_SPP(const unsigned short a) { (a&0x01FF); }
+// inline unsigned short  ETX_SPP(const unsigned short a) { (a&0x01FF); }
 
 /// \brief JamLink Header Struct
 struct JamLinkHeaderStuct : public HeaderStruct {
@@ -128,13 +128,13 @@ class PacketHeader : public QObject
 //    virtual void parseHeader()                          = 0;
     virtual void checkPeerSettings(int8_t* full_packet) = 0;
 
-    virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const      = 0;
-    virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
-    virtual uint16_t getPeerBufferSize(int8_t* full_packet) const     = 0;
-    virtual uint8_t getPeerSamplingRate(int8_t* full_packet) const    = 0;
-    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const   = 0;
-    virtual uint8_t getPeerNumIncomingChannels(int8_t* full_packet) const     = 0;
-    virtual uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const     = 0;
+    virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const          = 0;
+    virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const     = 0;
+    virtual uint16_t getPeerBufferSize(int8_t* full_packet) const         = 0;
+    virtual uint8_t getPeerSamplingRate(int8_t* full_packet) const        = 0;
+    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const       = 0;
+    virtual uint8_t getPeerNumIncomingChannels(int8_t* full_packet) const = 0;
+    virtual uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const = 0;
 
     /// \brief Increase sequence number for counter, a 16bit number
     virtual void increaseSequenceNumber() { mSeqNumber++; }
@@ -184,8 +184,14 @@ class DefaultHeader : public PacketHeader
         putHeaderInPacketBaseClass(full_packet, mHeader);
     }
     void printHeader() const;
-    uint8_t getNumIncomingChannelsFromNet() const { return mHeader.NumIncomingChannelsFromNet; }
-    uint8_t getNumOutgoingChannelsToNet() const { return mHeader.NumOutgoingChannelsToNet; }
+    uint8_t getNumIncomingChannelsFromNet() const
+    {
+        return mHeader.NumIncomingChannelsFromNet;
+    }
+    uint8_t getNumOutgoingChannelsToNet() const
+    {
+        return mHeader.NumOutgoingChannelsToNet;
+    }
     virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const;
     virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
     virtual uint16_t getPeerBufferSize(int8_t* full_packet) const;

@@ -313,8 +313,14 @@ class JackTrip : public QObject
         mPacketHeader = PacketHeader;
     }
 
-    virtual int getInputRingBuffersSlotSize() { return getTotalAudioInputPacketSizeInBytes(); }
-    virtual int getOutputRingBuffersSlotSize() { return getTotalAudioOutputPacketSizeInBytes(); }
+    virtual int getInputRingBuffersSlotSize()
+    {
+        return getTotalAudioInputPacketSizeInBytes();
+    }
+    virtual int getOutputRingBuffersSlotSize()
+    {
+        return getTotalAudioOutputPacketSizeInBytes();
+    }
 
     virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
     {
