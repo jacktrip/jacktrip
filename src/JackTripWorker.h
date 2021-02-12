@@ -87,7 +87,7 @@ class JackTripWorker
     /// \param id ID number
     /// \param address
     void setJackTrip(int id, QString client_address, uint16_t server_port,
-                     uint16_t client_port, int num_channels,
+                     uint16_t client_port,
                      bool connectDefaultAudioPorts);
     /// Stop and remove thread from pool
     void stopThread();

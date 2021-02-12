@@ -259,7 +259,7 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     {
         QMutexLocker lock(&mMutex);
         mJTWorkers->at(id)->setJackTrip(
-            id, mActiveAddress[id].address, server_udp_port, mActiveAddress[id].port, 1,
+            id, mActiveAddress[id].address, server_udp_port, mActiveAddress[id].port,
             m_connectDefaultAudioPorts);  /// \todo temp default to 1 channel
 
         // qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address <<
