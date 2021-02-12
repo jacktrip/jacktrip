@@ -165,15 +165,15 @@ void Settings::parseInput(int argc, char** argv)
            != -1)
         switch (ch) {
         case OPT_NUMINCOMING:
-            mNumChansOut = atoi(optarg);
+            mNumAudioOutputChans = atoi(optarg);
             break;
         case OPT_NUMOUTGOING:
-            mNumChansIn = atoi(optarg);
+            mNumAudioInputChans = atoi(optarg);
             break;
         case 'n':  // Number of input and output channels
             //-------------------------------------------------------
-            mNumChansIn = atoi(optarg);
-            mNumChansOut = atoi(optarg);
+            mNumAudioInputChans = atoi(optarg);
+            mNumAudioOutputChans = atoi(optarg);
             break;
         case 'U':  // UDP Bind Port
             mServerUdpPortNum = atoi(optarg);
@@ -521,8 +521,8 @@ void Settings::parseInput(int argc, char** argv)
         std::exit(1);
     }
 
-    assert(mNumChansIn > 0);
-    mAudioTester.setSendChannel(mNumChansIn - 1);  // use last channel for latency testing
+    assert(mNumAudioInputChans > 0);
+    mAudioTester.setSendChannel(mNumAudioInputChans - 1);  // use last channel for latency testing
     // Originally, testing only in the last channel was adopted
     // because channel 0 ("left") was a clap track on CCRMA loopback
     // servers.  Now, however, we also do it in order to easily keep
@@ -764,7 +764,7 @@ JackTrip* Settings::getConfiguredJackTrip()
     if (gVerboseFlag)
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
-        mJackTripMode, mDataProtocol, mNumChansIn, mNumChansOut,
+        mJackTripMode, mDataProtocol, mNumAudioInputChans, mNumAudioOutputChans,
 #ifdef WAIR  // wair
         mNumNetRevChans,
 #endif  // endwhere
@@ -880,11 +880,11 @@ JackTrip* Settings::getConfiguredJackTrip()
         mAudioTester.getEnabled() ? 1 : 0;  // no fx allowed on tester channel
 
     std::vector<ProcessPlugin*> outgoingEffects =
-        mEffects.allocateOutgoingEffects(mNumChansIn - nReservedChans);
+        mEffects.allocateOutgoingEffects(mNumAudioInputChans - nReservedChans);
     for (auto p : outgoingEffects) { jackTrip->appendProcessPluginToNetwork(p); }
 
     std::vector<ProcessPlugin*> incomingEffects =
-        mEffects.allocateIncomingEffects(mNumChansOut - nReservedChans);
+        mEffects.allocateIncomingEffects(mNumAudioOutputChans - nReservedChans);
     for (auto p : incomingEffects) { jackTrip->appendProcessPluginFromNetwork(p); }
 
 #ifdef WAIR  // WAIR

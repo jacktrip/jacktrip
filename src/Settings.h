@@ -76,8 +76,8 @@ class Settings : public QObject
    private:
     JackTrip::jacktripModeT mJackTripMode = JackTrip::SERVER;  ///< JackTrip::jacktripModeT
     JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data Protocol
-    int mNumChansIn = 2;                          ///< Number of Input Channels
-    int mNumChansOut = 2;                          ///< Number of Output Channels
+    int mNumAudioInputChans = 2;                          ///< Number of Input Channels
+    int mNumAudioOutputChans = 2;                          ///< Number of Output Channels
     int mBufferQueueLength = gDefaultQueueLength;                 ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution = AudioInterface::BIT16;
     QString mPeerAddress;  ///< Peer Address to use in jacktripModeT::CLIENT Mode

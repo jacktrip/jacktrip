@@ -239,9 +239,9 @@ class AudioInterface
     QVarLengthArray<sample_t*>
         mOutProcessBuffer;  ///< Vector of Output buffers/channel for ProcessPlugin
     int8_t*
-        mInputPacket;  ///< Packet containing all the channels to read from the RingBuffer
+        mAudioInputPacket;  ///< Packet containing all the channels to read from the RingBuffer
     int8_t*
-        mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+        mAudioOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
     bool mLoopBack;
     AudioTester* mAudioTesterP{nullptr};
 

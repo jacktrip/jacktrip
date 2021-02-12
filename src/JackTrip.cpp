@@ -89,8 +89,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mDataProtocol(DataProtocolType)
     , mPacketHeaderType(PacketHeaderType)
     , mAudiointerfaceMode(JackTrip::JACK)
-    , mNumChansIn(NumChansIn)
-    , mNumChansOut(NumChansOut)
+    , mNumAudioChansIn(NumChansIn)
+    , mNumAudioChansOut(NumChansOut)
 #ifdef WAIR  // WAIR
     , mNumNetRevChans(NumNetRevChans)
 #endif  // endwhere
@@ -174,7 +174,7 @@ void JackTrip::setupAudio(
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
-        mAudioInterface = new JackAudioInterface(this, mNumChansIn, mNumChansOut,
+        mAudioInterface = new JackAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
 #ifdef WAIR  // wair
                                                  mNumNetRevChans,
 #endif  // endwhere
@@ -216,7 +216,7 @@ void JackTrip::setupAudio(
 #ifdef __RT_AUDIO__
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
         mAudioInterface =
-            new RtAudioInterface(this, mNumChansIn, mNumChansOut, mAudioBitResolution);
+            new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -226,7 +226,7 @@ void JackTrip::setupAudio(
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef __RT_AUDIO__
         mAudioInterface =
-            new RtAudioInterface(this, mNumChansIn, mNumChansOut, mAudioBitResolution);
+            new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -325,8 +325,8 @@ void JackTrip::setupRingBuffers()
     // Create RingBuffers with the apprioprate size
     /// \todo Make all this operations cleaner
     // int total_audio_packet_size = getTotalAudioPacketSizeInBytes();
-    int input_slot_size  = getInputRingBuffersSlotSize();
-    int output_slot_size = getOutputRingBuffersSlotSize();
+    int audio_input_slot_size  = getInputRingBuffersSlotSize();
+    int audio_output_slot_size = getOutputRingBuffersSlotSize();
     if (0 <= mBufferStrategy) {
         mUnderRunMode = ZEROS;
     } else if (0 > mBufferQueueLength) {
@@ -336,20 +336,14 @@ void JackTrip::setupRingBuffers()
     switch (mUnderRunMode) {
     case WAVETABLE:
         mSendRingBuffer =
-            new RingBufferWavetable(input_slot_size, gDefaultOutputQueueLength);
+            new RingBufferWavetable(audio_input_slot_size, gDefaultOutputQueueLength);
         mReceiveRingBuffer =
-            new RingBufferWavetable(output_slot_size, mBufferQueueLength);
-        /*
-    mSendRingBuffer = new RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel()
-    * mNumChans, gDefaultOutputQueueLength); mReceiveRingBuffer = new
-    RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
-             mBufferQueueLength);
-             */
+            new RingBufferWavetable(audio_output_slot_size, mBufferQueueLength);
         break;
     case ZEROS:
-        mSendRingBuffer = new RingBuffer(input_slot_size, gDefaultOutputQueueLength);
+        mSendRingBuffer = new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
         if (0 > mBufferStrategy) {
-            mReceiveRingBuffer = new RingBuffer(output_slot_size, mBufferQueueLength);
+            mReceiveRingBuffer = new RingBuffer(audio_output_slot_size, mBufferQueueLength);
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {
@@ -357,14 +351,8 @@ void JackTrip::setupRingBuffers()
             }
             mReceiveRingBuffer = new JitterBuffer(
                 mAudioBufferSize, mBufferQueueLength, mSampleRate, mBufferStrategy,
-                mBroadcastQueueLength, mNumChansOut, mAudioBitResolution);
+                mBroadcastQueueLength, mNumAudioChansOut, mAudioBitResolution);
         }
-        /*
-    mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() *
-    mNumChans, gDefaultOutputQueueLength); mReceiveRingBuffer = new
-    RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
-          mBufferQueueLength);
-          */
         break;
     default:
         throw std::invalid_argument("Underrun Mode undefined");
