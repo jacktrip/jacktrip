@@ -122,10 +122,7 @@ class PacketHeader : public QObject
     static uint64_t usecTime();
     /// \todo Implement this using a JackTrip Method (Mediator) member instead of the
     /// reference to JackAudio
-    virtual void fillHeaderCommonFromAudio() = 0;
-    /// \brief Parse the packet header and take appropriate measures (like change settings, or
-    /// quit the program if peer settings don't match)
-//    virtual void parseHeader()                          = 0;
+    virtual void fillHeaderCommonFromAudio()            = 0;
     virtual void checkPeerSettings(int8_t* full_packet) = 0;
 
     virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const          = 0;
@@ -174,7 +171,6 @@ class DefaultHeader : public PacketHeader
     virtual ~DefaultHeader() {}
 
     virtual void fillHeaderCommonFromAudio();
-//    virtual void parseHeader() {}
     virtual void checkPeerSettings(int8_t* full_packet);
     virtual void increaseSequenceNumber() { mHeader.SeqNumber++; }
     virtual uint16_t getSequenceNumber() const { return mHeader.SeqNumber; }
@@ -218,7 +214,6 @@ class JamLinkHeader : public PacketHeader
     virtual ~JamLinkHeader() {}
 
     virtual void fillHeaderCommonFromAudio();
-    virtual void parseHeader() {}
     virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
 
     virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
@@ -254,7 +249,6 @@ class EmptyHeader : public PacketHeader
     virtual ~EmptyHeader() {}
 
     virtual void fillHeaderCommonFromAudio() {}
-    virtual void parseHeader() {}
     virtual void checkPeerSettings(int8_t* /*full_packet*/) {}
     virtual void increaseSequenceNumber() {}
     virtual int getHeaderSizeInBytes() const { return 0; }
