@@ -502,7 +502,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
                     &tmp_result,
                     // use interleaved channel layout
                     //&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                    &mInputPacket[(j * mBitResolutionMode * mNumOutChans)
+                    &mAudioInputPacket[(j * mBitResolutionMode * mNumInChans)
                                   + (i * mBitResolutionMode)],
                     mBitResolutionMode);
             }
