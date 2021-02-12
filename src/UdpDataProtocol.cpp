@@ -574,7 +574,7 @@ void UdpDataProtocol::run()
         if (!mJackTrip->checkPeerSettings(full_redundant_packet)) {
             // If our peer settings aren't compatible, don't continue.
             // (The checkPeerSettings function needs to signal the JackTrip instance with the exact error message.)
-            delete full_redundant_packet;
+            delete[] full_redundant_packet;
             full_redundant_packet = NULL;
             return;
         }
@@ -691,7 +691,7 @@ void UdpDataProtocol::run()
         break; }
 
     case SENDER : {
-        delete full_redundant_packet;
+        delete[] full_redundant_packet;
         full_redundant_packet = new int8_t[full_redundant_packet_size];
         std::memset(full_redundant_packet, 0, full_redundant_packet_size); // Initialize to 0
         while ( !mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped )
@@ -721,7 +721,7 @@ void UdpDataProtocol::run()
     }
 
     if (NULL != full_redundant_packet) {
-        delete full_redundant_packet;
+        delete[] full_redundant_packet;
         full_redundant_packet = NULL;
     }
 }

@@ -104,12 +104,12 @@ void JackAudioInterface::setup()
 void JackAudioInterface::setupClient()
 {
     QByteArray clientName = mClientName.toUtf8();
-#ifdef __MAC_OSX__
+/*#ifdef __MAC_OSX__
     //Jack seems to have an issue with client names over 27 bytes in OS X
     int maxSize = 27;
-#else
+#else*/
     int maxSize = jack_client_name_size();
-#endif
+//#endif
     if (clientName.length() > maxSize) {
         int length = maxSize;
         //Make sure we don't cut mid multi-byte character.
