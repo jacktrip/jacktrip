@@ -179,7 +179,7 @@ void JackAudioInterface::createChannels()
         QString inName;
         QTextStream(&inName) << "send_" << i + 1;
         mInPorts[i] = jack_port_register(mClient, inName.toLatin1(),
-                                         JACK_DEFAULT_AUDIO_TYPE, JackPortIsTerminal, 0);
+                                         JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
     }
 
     //Create Output Ports
@@ -188,7 +188,7 @@ void JackAudioInterface::createChannels()
         QString outName;
         QTextStream(&outName) << "receive_" << i + 1;
         mOutPorts[i] = jack_port_register(mClient, outName.toLatin1(),
-                                          JACK_DEFAULT_AUDIO_TYPE, JackPortIsTerminal, 0);
+                                          JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
     }
     //Create Broadcast Ports
     if (mBroadcast) {
