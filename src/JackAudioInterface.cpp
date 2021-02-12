@@ -184,7 +184,7 @@ void JackAudioInterface::createChannels()
 
     //Create Output Ports
     mOutPorts.resize(mNumOutChans);
-    for (int i = 0; i < mNumInChans; i++) {
+    for (int i = 0; i < mNumOutChans; i++) {
         QString outName;
         QTextStream(&outName) << "receive_" << i + 1;
         mOutPorts[i] = jack_port_register(mClient, outName.toLatin1(),
@@ -212,6 +212,7 @@ uint32_t JackAudioInterface::getSampleRate() const
 //*******************************************************************************
 uint32_t JackAudioInterface::getBufferSizeInSamples() const
 {
+    // This is the maximum buffer size… Should only be used before the client gets activated
     return jack_get_buffer_size(mClient);
 }
 
