@@ -212,7 +212,6 @@ uint32_t JackAudioInterface::getSampleRate() const
 //*******************************************************************************
 uint32_t JackAudioInterface::getBufferSizeInSamples() const
 {
-    // This is the maximum buffer size… Should only be used before the client gets activated
     return jack_get_buffer_size(mClient);
 }
 
