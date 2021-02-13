@@ -523,6 +523,7 @@ void Settings::parseInput(int argc, char** argv)
         std::exit(1);
     }
 
+    if(true == mAudioTester.getEnabled()) {
     assert(mNumAudioInputChans > 0);
     mAudioTester.setSendChannel(mNumAudioInputChans
                                 - 1);  // use last channel for latency testing
@@ -531,7 +532,7 @@ void Settings::parseInput(int argc, char** argv)
     // servers.  Now, however, we also do it in order to easily keep
     // effects in all but the last channel, enabling silent testing
     // in the last channel in parallel with normal operation of the others.
-
+    }
     // Exit if options are incompatible
     //----------------------------------------------------------------------------
     bool haveSomeServerMode = not((mJackTripMode == JackTrip::CLIENT)
