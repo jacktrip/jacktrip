@@ -463,7 +463,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             sample_t* tmp_sample =
                 in_buffer[i % mNumInChans];  //sample buffer for channel i
             sample_t* tmp_process_sample =
-                mOutProcessBuffer[i];  //sample buffer from the output process
+                mInProcessBuffer[i];  //sample buffer from the output process
             sample_t tmp_result;
             for (unsigned int j = 0; j < n_frames; j++) {
                 // Change the bit resolution on each sample
@@ -492,7 +492,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             //--------
             sample_t* tmp_sample = in_buffer[i];  //sample buffer for channel i
             sample_t* tmp_process_sample =
-                mOutProcessBuffer[i];  //sample buffer from the output process
+                mInProcessBuffer[i];  //sample buffer from the output process
             sample_t tmp_result;
             for (unsigned int j = 0; j < n_frames; j++) {
                 // Change the bit resolution on each sample
