@@ -454,11 +454,11 @@ void UdpDataProtocol::run()
 
     int full_packet_size;
     mSmplSize = mJackTrip->getAudioBitResolution() / 8;
-    
+
     if (mRunMode == RECEIVER) {
         mChans           = mJackTrip->getNumOutputChannels();
         full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
-        mFullPacket = new int8_t[full_packet_size];
+        mFullPacket      = new int8_t[full_packet_size];
         std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
         // Put header in first packet
         mJackTrip->putHeaderInIncomingPacket(mFullPacket, mAudioPacket);
@@ -466,7 +466,7 @@ void UdpDataProtocol::run()
     } else {
         mChans           = mJackTrip->getNumInputChannels();
         full_packet_size = mJackTrip->getSendPacketSizeInBytes();
-        mFullPacket = new int8_t[full_packet_size];
+        mFullPacket      = new int8_t[full_packet_size];
         std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
         // Put header in first packet
         mJackTrip->putHeaderInOutgoingPacket(mFullPacket, mAudioPacket);

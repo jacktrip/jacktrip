@@ -584,7 +584,7 @@ class JackTrip : public QObject
 
     int mNumAudioChansIn;   ///< Number of Audio Input Channels
     int mNumAudioChansOut;  ///< Number of Audio Output Channels
-#ifdef WAIR            // WAIR
+#ifdef WAIR                 // WAIR
     int mNumNetRevChans;  ///< Number of Network Audio Channels (net comb filters)
 #endif                    // endwhere
     int mBufferQueueLength;  ///< Audio Buffer from network queue length

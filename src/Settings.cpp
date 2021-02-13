@@ -93,9 +93,11 @@ void Settings::parseInput(int argc, char** argv)
         // These options don't set a flag.
         {"numchannels", required_argument, NULL,
          'n'},  // Number of input and output channels
-        {"numincoming", required_argument, NULL, OPT_NUMINCOMING}, // Number of incoming channels
-        {"numoutgoing", required_argument, NULL, OPT_NUMOUTGOING}, // Number of outgoing channels
-#ifdef WAIR     // WAIR
+        {"numincoming", required_argument, NULL,
+         OPT_NUMINCOMING},  // Number of incoming channels
+        {"numoutgoing", required_argument, NULL,
+         OPT_NUMOUTGOING},  // Number of outgoing channels
+#ifdef WAIR                 // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
         {"addcombfilterlength", required_argument, NULL,
          'N'},                                                 // added comb filter length
@@ -172,7 +174,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'n':  // Number of input and output channels
             //-------------------------------------------------------
-            mNumAudioInputChans = atoi(optarg);
+            mNumAudioInputChans  = atoi(optarg);
             mNumAudioOutputChans = atoi(optarg);
             break;
         case 'U':  // UDP Bind Port
@@ -522,7 +524,8 @@ void Settings::parseInput(int argc, char** argv)
     }
 
     assert(mNumAudioInputChans > 0);
-    mAudioTester.setSendChannel(mNumAudioInputChans - 1);  // use last channel for latency testing
+    mAudioTester.setSendChannel(mNumAudioInputChans
+                                - 1);  // use last channel for latency testing
     // Originally, testing only in the last channel was adopted
     // because channel 0 ("left") was a clap track on CCRMA loopback
     // servers.  Now, however, we also do it in order to easily keep
@@ -587,8 +590,10 @@ void Settings::printUsage()
     cout << " -n, --numchannels #                      Number of Input and Output "
             "Channels (default: "
          << 2 << ")" << endl;
-    cout << "     --numincoming #                      Number of incoming Channels from the network\n";
-    cout << "     --numoutgoing #                      Number of incoming Channels from the network\n";
+    cout << "     --numincoming #                      Number of incoming Channels from "
+            "the network\n";
+    cout << "     --numoutgoing #                      Number of incoming Channels from "
+            "the network\n";
 #ifdef WAIR  // WAIR
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
     cout << " -N, --addcombfilterlength #              comb length adjustment for WAIR "

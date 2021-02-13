@@ -62,12 +62,12 @@ bool UdpHubListener::sSigInt = false;
 UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
     : mTcpServer(this)
     , mServerPort(server_port)
-    , mServerUdpPort(server_udp_port)  //final udp base port number
+    , mServerUdpPort(server_udp_port)  // final udp base port number
     , mStopped(false)
 #ifdef WAIR  // wair
     , mWAIR(false)
 #endif  // endwhere
-    ,mTotalRunningThreads(0)
+    , mTotalRunningThreads(0)
     , mHubPatchDescriptions({"server-to-clients", "client loopback",
                              "client fan out/in but not loopback", "reserved for TUB",
                              "full mix", "no auto patching"})
@@ -254,9 +254,9 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
     {
         QMutexLocker lock(&mMutex);
-        mJTWorkers->at(id)->setJackTrip(
-            id, mActiveAddress[id].address, server_udp_port, mActiveAddress[id].port,
-            m_connectDefaultAudioPorts);
+        mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id].address, server_udp_port,
+                                        mActiveAddress[id].port,
+                                        m_connectDefaultAudioPorts);
 
         // qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address <<
         // mActiveAddress[id].port;
@@ -277,6 +277,7 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
 
     // qDebug() << "mPeerAddress" << mActiveAddress[id].address <<
     // mActiveAddress[id].port;
+
 #ifndef __NO_JACK__
     connectPatch(true);
 #endif

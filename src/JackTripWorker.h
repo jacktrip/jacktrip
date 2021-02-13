@@ -87,8 +87,7 @@ class JackTripWorker
     /// \param id ID number
     /// \param address
     void setJackTrip(int id, QString client_address, uint16_t server_port,
-                     uint16_t client_port,
-                     bool connectDefaultAudioPorts);
+                     uint16_t client_port, bool connectDefaultAudioPorts);
     /// Stop and remove thread from pool
     void stopThread();
     int getID() { return mID; }
@@ -139,20 +138,20 @@ class JackTripWorker
     volatile bool mSpawning = false;
     QMutex mMutex;  ///< Mutex to protect mSpawning
 
-    int mID = 0;        ///< ID thread number
+    int mID = 0;  ///< ID thread number
 
-    int mBufferStrategy = 1;
-    int mBroadcastQueue = 0;
-    double mSimulatedLossRate = 0.0;
+    int mBufferStrategy         = 1;
+    int mBroadcastQueue         = 0;
+    double mSimulatedLossRate   = 0.0;
     double mSimulatedJitterRate = 0.0;
-    double mSimulatedDelayRel = 0.0;
-    bool mUseRtUdpPriority = false;
+    double mSimulatedDelayRel   = 0.0;
+    bool mUseRtUdpPriority      = false;
 
     int mIOStatTimeout = 0;
     QSharedPointer<std::ofstream> mIOStatStream;
 #ifdef WAIR  // wair
     int mNumNetRevChans = 0;  ///< Number of Net Channels = net combs
-    bool mWAIR = false;
+    bool mWAIR          = false;
 #endif  // endwhere
 };
 

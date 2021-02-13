@@ -70,14 +70,13 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
 
 //*******************************************************************************
 void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server_port,
-                                 uint16_t client_port,
-                                 bool connectDefaultAudioPorts)
+                                 uint16_t client_port, bool connectDefaultAudioPorts)
 {
     {  // Start Spawning, so lock mSpawning
         QMutexLocker locker(&mMutex);
         mSpawning = true;
     }
-    mID = id;
+    mID                        = id;
     mClientAddress             = client_address;
     mServerPort                = server_port;
     mClientPort                = client_port;

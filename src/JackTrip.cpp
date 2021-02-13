@@ -174,11 +174,12 @@ void JackTrip::setupAudio(
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
-        mAudioInterface = new JackAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+        mAudioInterface =
+            new JackAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
 #ifdef WAIR  // wair
-                                                 mNumNetRevChans,
+                                   mNumNetRevChans,
 #endif  // endwhere
-                                                 mAudioBitResolution);
+                                   mAudioBitResolution);
 
 #ifdef WAIRTOHUB  // WAIR
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME;  // legacy for WAIR
@@ -215,8 +216,8 @@ void JackTrip::setupAudio(
 #ifdef __NO_JACK__  /// \todo FIX THIS REPETITION OF CODE
 #ifdef __RT_AUDIO__
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        mAudioInterface =
-            new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+                                               mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -225,8 +226,8 @@ void JackTrip::setupAudio(
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef __RT_AUDIO__
-        mAudioInterface =
-            new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+                                               mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -341,9 +342,11 @@ void JackTrip::setupRingBuffers()
             new RingBufferWavetable(audio_output_slot_size, mBufferQueueLength);
         break;
     case ZEROS:
-        mSendRingBuffer = new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
+        mSendRingBuffer =
+            new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
         if (0 > mBufferStrategy) {
-            mReceiveRingBuffer = new RingBuffer(audio_output_slot_size, mBufferQueueLength);
+            mReceiveRingBuffer =
+                new RingBuffer(audio_output_slot_size, mBufferQueueLength);
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {

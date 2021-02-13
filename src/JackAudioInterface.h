@@ -51,23 +51,24 @@
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
 
-//class JackTrip; //forward declaration
+// class JackTrip; //forward declaration
 
 /** \brief Class that provides an interface with the Jack Audio Server
  *
  * \todo implement srate_callback
- * \todo automatically starts jack with buffer and sample rate settings specified by the user
+ * \todo automatically starts jack with buffer and sample rate settings specified by the
+ * user
  */
 class JackAudioInterface : public AudioInterface
 {
    public:
     /** \brief The class constructor
-   * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
-   * \param NumInChans Number of Input Channels
-   * \param NumOutChans Number of Output Channels
-   * \param AudioBitResolution Audio Sample Resolutions in bits
-   * \param ClientName Client name in Jack
-   */
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
+     * \param NumInChans Number of Input Channels
+     * \param NumOutChans Number of Output Channels
+     * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param ClientName Client name in Jack
+     */
     JackAudioInterface(
         JackTrip* jacktrip, int NumInChans, int NumOutChans,
 #ifdef WAIR  // wair
@@ -81,13 +82,13 @@ class JackAudioInterface : public AudioInterface
     /// \brief Setup the client
     virtual void setup();
     /** \brief Tell the JACK server that we are ready to roll. The
-   * process-callback will start running. This runs on its own thread.
-   * \return 0 on success, otherwise a non-zero error code
-   */
+     * process-callback will start running. This runs on its own thread.
+     * \return 0 on success, otherwise a non-zero error code
+     */
     virtual int startProcess() const;
     /** \brief Stops the process-callback thread
-   * \return 0 on success, otherwise a non-zero error code
-   */
+     * \return 0 on success, otherwise a non-zero error code
+     */
     virtual int stopProcess() const;
     /// \brief Connect the default ports, capture to sends, and receives to playback
     void connectDefaultPorts();
@@ -124,46 +125,45 @@ class JackAudioInterface : public AudioInterface
 
    private:
     /** \brief Private method to setup a client of the Jack server.
-   * \exception std::runtime_error Can't start Jack
-   *
-   * This method is called by the class constructors. It does the following:\n
-   *  - Connects to the JACK server
-   *  - Sets the shutdown process callback
-   *  - Creates the appropriate number of input and output channels
-   */
+     * \exception std::runtime_error Can't start Jack
+     *
+     * This method is called by the class constructors. It does the following:\n
+     *  - Connects to the JACK server
+     *  - Sets the shutdown process callback
+     *  - Creates the appropriate number of input and output channels
+     */
     void setupClient();
     /// \brief Creates input and output channels in the Jack client
     void createChannels();
     /** \brief JACK calls this shutdown_callback if the server ever shuts down or
-   * decides to disconnect the client.
-   */
+     * decides to disconnect the client.
+     */
     static void jackShutdown(void*);
     /** \brief Set the process callback of the member function processCallback.
-   * This process will be called by the JACK server whenever there is work to be done.
-   */
+     * This process will be called by the JACK server whenever there is work to be done.
+     */
     void setProcessCallback();
     /** \brief JACK process callback
-   *
-   * This is the function to be called to process audio. This function is
-   * of the type JackProcessCallback, which is defined as:\n
-   * <tt>typedef int(* JackProcessCallback)(jack_nframes_t nframes, void *arg)</tt>
-   * \n
-   * See
-   * http://jackaudio.org/files/docs/html/types_8h.html#4923142208a8e7dacf00ca7a10681d2b
-   * for more details
-   */
+     *
+     * This is the function to be called to process audio. This function is
+     * of the type JackProcessCallback, which is defined as:\n
+     * <tt>typedef int(* JackProcessCallback)(jack_nframes_t nframes, void *arg)</tt>
+     * \n
+     * See
+     * http://jackaudio.org/files/docs/html/types_8h.html#4923142208a8e7dacf00ca7a10681d2b
+     * for more details
+     */
     int processCallback(jack_nframes_t nframes);
     /** \brief Wrapper to cast the member processCallback to a static function pointer
-   * that can be used with <tt>jack_set_process_callback</tt>
-   *
-   * <tt>jack_set_process_callback</tt> needs a static member function pointer. A normal
-   * member function won't work because a <b><i>this</i></b> pointer is passed under the scenes.
-   * That's why we
-   * need to cast the member funcion processCallback to the static function
-   * wrapperProcessCallback. The callback is then set as:\n
-   * <tt>jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback,
-   *                              this)</tt>
-   */
+     * that can be used with <tt>jack_set_process_callback</tt>
+     *
+     * <tt>jack_set_process_callback</tt> needs a static member function pointer. A normal
+     * member function won't work because a <b><i>this</i></b> pointer is passed under the
+     * scenes. That's why we need to cast the member funcion processCallback to the static
+     * function wrapperProcessCallback. The callback is then set as:\n
+     * <tt>jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback,
+     *                              this)</tt>
+     */
     // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
     static int wrapperProcessCallback(jack_nframes_t nframes, void* arg);
 
@@ -173,7 +173,7 @@ class JackAudioInterface : public AudioInterface
     int mNumNetRevChans;  ///<  Number of Network Audio Channels (network comb filters
 #endif                    // endwhere
     int mNumFrames;  ///< Buffer block size, in samples
-    //int mAudioBitResolution; ///< Bit resolution in audio samples
+    // int mAudioBitResolution; ///< Bit resolution in audio samples
     AudioInterface::audioBitResolutionT
         mBitResolutionMode;  ///< Bit resolution (audioBitResolutionT) mode
 

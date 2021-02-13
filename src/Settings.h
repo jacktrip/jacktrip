@@ -60,7 +60,6 @@ class Settings : public QObject
     Q_OBJECT;
 
    public:
-
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
 
@@ -74,15 +73,17 @@ class Settings : public QObject
     bool isHubServer() { return mJackTripServer; }
 
    private:
-    JackTrip::jacktripModeT mJackTripMode = JackTrip::SERVER;  ///< JackTrip::jacktripModeT
+    JackTrip::jacktripModeT mJackTripMode =
+        JackTrip::SERVER;                                   ///< JackTrip::jacktripModeT
     JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data Protocol
-    int mNumAudioInputChans = 2;                          ///< Number of Input Channels
-    int mNumAudioOutputChans = 2;                          ///< Number of Output Channels
-    int mBufferQueueLength = gDefaultQueueLength;                 ///< Audio Buffer from network queue length
+    int mNumAudioInputChans               = 2;              ///< Number of Input Channels
+    int mNumAudioOutputChans              = 2;              ///< Number of Output Channels
+    int mBufferQueueLength =
+        gDefaultQueueLength;  ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution = AudioInterface::BIT16;
     QString mPeerAddress;  ///< Peer Address to use in jacktripModeT::CLIENT Mode
-    int mBindPortNum = gDefaultPort;      ///< Bind Port Number
-    int mPeerPortNum = gDefaultPort;      ///< Peer Port Number
+    int mBindPortNum      = gDefaultPort;  ///< Bind Port Number
+    int mPeerPortNum      = gDefaultPort;  ///< Peer Port Number
     int mServerUdpPortNum = 0;
     QString mClientName;  ///< JackClient Name
     QString mRemoteClientName;
@@ -92,35 +93,35 @@ class Settings : public QObject
     int mBufferStrategy{1};
 
 #ifdef WAIR  // wair
-    int mNumNetRevChans = 0;     ///< Number of Network Audio Channels (net comb filters)
-    int mClientAddCombLen;   ///< cmd line adjustment of net comb
-    double mClientRoomSize;  ///< freeverb room size
-    bool mWAIR = false;              ///< WAIR mode
-#endif                       // endwhere
+    int mNumNetRevChans = 0;  ///< Number of Network Audio Channels (net comb filters)
+    int mClientAddCombLen;    ///< cmd line adjustment of net comb
+    double mClientRoomSize;   ///< freeverb room size
+    bool mWAIR = false;       ///< WAIR mode
+#endif                        // endwhere
 
-    bool mLoopBack = false;            ///< Loop-back mode
-    bool mJamLink = false;             ///< JamLink mode
-    bool mEmptyHeader = false;         ///< EmptyHeader mode
-    bool mJackTripServer = false;      ///< JackTrip Server mode
-    QString mLocalAddress = gDefaultLocalAddress;     ///< Local Address
-    unsigned int mRedundancy = 1;  ///< Redundancy factor for data in the network
-    bool mUseJack = true;             ///< Use or not JackAduio
-    bool mChanfeDefaultSR = false;     ///< Change Default Sampling Rate
-    bool mChanfeDefaultID = 0;     ///< Change Default device ID
-    bool mChanfeDefaultBS = false;     ///< Change Default Buffer Size
+    bool mLoopBack           = false;                 ///< Loop-back mode
+    bool mJamLink            = false;                 ///< JamLink mode
+    bool mEmptyHeader        = false;                 ///< EmptyHeader mode
+    bool mJackTripServer     = false;                 ///< JackTrip Server mode
+    QString mLocalAddress    = gDefaultLocalAddress;  ///< Local Address
+    unsigned int mRedundancy = 1;      ///< Redundancy factor for data in the network
+    bool mUseJack            = true;   ///< Use or not JackAduio
+    bool mChanfeDefaultSR    = false;  ///< Change Default Sampling Rate
+    bool mChanfeDefaultID    = 0;      ///< Change Default device ID
+    bool mChanfeDefaultBS    = false;  ///< Change Default Buffer Size
     unsigned int mSampleRate;
     unsigned int mDeviceID;
     unsigned int mAudioBufferSize;
     unsigned int mHubConnectionMode = JackTrip::SERVERTOCLIENT;
-    bool mConnectDefaultAudioPorts = true;  ///< Connect or not jack audio ports
-    int mIOStatTimeout = 0;
+    bool mConnectDefaultAudioPorts  = true;  ///< Connect or not jack audio ports
+    int mIOStatTimeout              = 0;
     QSharedPointer<std::ofstream> mIOStatStream;
-    Effects mEffects = false; // outgoing limiter OFF by default
-    double mSimulatedLossRate = 0.0;
+    Effects mEffects            = false;  // outgoing limiter OFF by default
+    double mSimulatedLossRate   = 0.0;
     double mSimulatedJitterRate = 0.0;
-    double mSimulatedDelayRel = 0.0;
-    int mBroadcastQueue = 0;
-    bool mUseRtUdpPriority = false;
+    double mSimulatedDelayRel   = 0.0;
+    int mBroadcastQueue         = 0;
+    bool mUseRtUdpPriority      = false;
     AudioTester mAudioTester;
 };
 
