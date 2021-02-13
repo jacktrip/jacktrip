@@ -362,7 +362,8 @@ class JackTrip : public QObject
     //@{
     /// \todo Document all these functions
     virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
-    void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
+    void putHeaderInIncomingPacket(int8_t* full_packet, int8_t* audio_packet);
+    void putHeaderInOutgoingPacket(int8_t* full_packet, int8_t* audio_packet);
     int getSendPacketSizeInBytes() const;
     int getReceivePacketSizeInBytes() const;
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)

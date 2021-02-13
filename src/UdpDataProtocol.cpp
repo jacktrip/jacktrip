@@ -453,22 +453,24 @@ void UdpDataProtocol::run()
     mBuffer.resize(audio_packet_size, 0);
 
     int full_packet_size;
+    mSmplSize = mJackTrip->getAudioBitResolution() / 8;
+    
     if (mRunMode == RECEIVER) {
         mChans           = mJackTrip->getNumOutputChannels();
         full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
+        mFullPacket = new int8_t[full_packet_size];
+        std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
+        // Put header in first packet
+        mJackTrip->putHeaderInIncomingPacket(mFullPacket, mAudioPacket);
+
     } else {
         mChans           = mJackTrip->getNumInputChannels();
         full_packet_size = mJackTrip->getSendPacketSizeInBytes();
+        mFullPacket = new int8_t[full_packet_size];
+        std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
+        // Put header in first packet
+        mJackTrip->putHeaderInOutgoingPacket(mFullPacket, mAudioPacket);
     }
-    mSmplSize = mJackTrip->getAudioBitResolution() / 8;
-
-    mFullPacket = new int8_t[full_packet_size];
-    std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
-
-    //  bool timeout = false; // Time out flag for packets that arrive too late
-
-    // Put header in first packet
-    mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
 
     // Redundancy Variables
     // (Algorithm explained at the end of this file)
@@ -863,7 +865,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
         }
         src = dst;
     }
-    mJackTrip->putHeaderInPacket(mFullPacket, src);
+    mJackTrip->putHeaderInOutgoingPacket(mFullPacket, src);
 
     // Move older packets to end of array of redundant packets
     std::memmove(full_redundant_packet + full_packet_size, full_redundant_packet,
