@@ -39,7 +39,7 @@
 
 #include <QCoreApplication>
 #include <QLoggingCategory>
-#include <QScopedPointer>
+#include <memory>
 #include <iostream>
 
 #include "Settings.h"
@@ -96,8 +96,8 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-    QScopedPointer<JackTrip> jackTrip;
-    QScopedPointer<UdpHubListener> udpHub;
+    std::unique_ptr<JackTrip> jackTrip;
+    std::unique_ptr<UdpHubListener> udpHub;
 
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
@@ -111,9 +111,9 @@ int main(int argc, char* argv[])
             udpHub.reset(settings.getConfiguredHubServer());
             if (gVerboseFlag)
                 std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
-            QObject::connect(udpHub.data(), &UdpHubListener::signalStopped, &app,
+            QObject::connect(udpHub.get(), &UdpHubListener::signalStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
-            QObject::connect(udpHub.data(), &UdpHubListener::signalError, &app,
+            QObject::connect(udpHub.get(), &UdpHubListener::signalError, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
 #if defined(__LINUX__) || (__MAC_OSX__)
             setupUnixSignalHandler(UdpHubListener::sigIntHandler);
@@ -127,9 +127,9 @@ int main(int argc, char* argv[])
             if (gVerboseFlag)
                 std::cout << "Settings:startJackTrip before mJackTrip->startProcess"
                           << std::endl;
-            QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app,
+            QObject::connect(jackTrip.get(), &JackTrip::signalProcessesStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
-            QObject::connect(jackTrip.data(), &JackTrip::signalError, &app,
+            QObject::connect(jackTrip.get(), &JackTrip::signalError, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
 #if defined(__LINUX__) || (__MAC_OSX__)
             setupUnixSignalHandler(JackTrip::sigIntHandler);
