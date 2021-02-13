@@ -458,7 +458,7 @@ void UdpDataProtocol::run()
         full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
     } else {
         mChans           = mJackTrip->getNumInputChannels();
-        full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
+        full_packet_size = mJackTrip->getSendPacketSizeInBytes();
     }
     mSmplSize = mJackTrip->getAudioBitResolution() / 8;
 
