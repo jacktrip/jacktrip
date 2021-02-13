@@ -843,7 +843,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
 {
     mJackTrip->readAudioBuffer(mAudioPacket);
     int8_t* src = mAudioPacket;
-    if (1 != mChans) {
+    if (1 < mChans) {
         // Convert internal interleaved layout to non-interleaved
         int N       = getAudioPacketSizeInBites() / mChans / mSmplSize;
         int8_t* dst = mBuffer.data();
