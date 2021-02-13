@@ -241,14 +241,6 @@ void RingBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
 }
 
 //*******************************************************************************
-// Not supported in RingBuffer
-void RingBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
-{
-    std::memset(ptrToReadSlot, 0, mSlotSize);
-}
-
-
-//*******************************************************************************
 void RingBuffer::setUnderrunReadSlot(int8_t* ptrToReadSlot)
 {
     std::memset(ptrToReadSlot, 0, mSlotSize);

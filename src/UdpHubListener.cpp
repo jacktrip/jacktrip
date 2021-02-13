@@ -284,9 +284,6 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
             clientConnection->deleteLater();
             return;
         }
-        // Get a new ID for this client
-        //id = isNewAddress(PeerAddress.toIPv4Address(), peer_udp_port);
-        id = getPoolID(PeerAddress.toString(), peer_udp_port);
     }
     // If we haven't received our port, wait for more data to arrive.
     if (peer_udp_port == 0) { return; }

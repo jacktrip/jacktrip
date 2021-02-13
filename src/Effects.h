@@ -618,7 +618,7 @@ class Effects
             bool haveIncoming = false;
             bool haveOutgoing = false;
             bool haveWarnings = false;
-            for (int i = 0; i < strlen(optarg); i++) {
+            for (uint i = 0; i < strlen(optarg); i++) {
                 ch = tolower(optarg[i]);
                 switch (ch) {
                 case ' ':

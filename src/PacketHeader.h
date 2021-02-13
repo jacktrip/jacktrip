@@ -129,7 +129,7 @@ class PacketHeader : public QObject
     /// \brief Parse the packet header and take appropriate measures (like change settings, or
     /// quit the program if peer settings don't match)
     virtual void parseHeader()                          = 0;
-    virtual void checkPeerSettings(int8_t* full_packet) = 0;
+    virtual bool checkPeerSettings(int8_t* full_packet) = 0;
 
     virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const      = 0;
     virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const = 0;
@@ -185,7 +185,7 @@ class DefaultHeader : public PacketHeader
 
     virtual void fillHeaderCommonFromAudio();
     virtual void parseHeader() {}
-    virtual void checkPeerSettings(int8_t* full_packet);
+    virtual bool checkPeerSettings(int8_t* full_packet);
     virtual void increaseSequenceNumber() { mHeader.SeqNumber++; }
     virtual uint16_t getSequenceNumber() const { return mHeader.SeqNumber; }
     virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); }
