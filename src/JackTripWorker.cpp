@@ -41,6 +41,7 @@
 #include <QTimer>
 #include <QWaitCondition>
 #include <iostream>
+#include <limits>
 
 #include "JackTrip.h"
 #include "UdpHubListener.h"
@@ -340,9 +341,13 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     // Only the first Mode was used (NORMAL == 0). If this field is set to 0, we
     // can assume the peer is using an old version, and the last field doesn't reflect the
     // number of Outgoing Channels.
+    // The maximum of this field will be used as 0.
     if (JackTrip::NORMAL == PeerNumOutgoingChannels) {
         jacktrip.setNumInputChannels(PeerNumIncomingChannels);
         jacktrip.setNumOutputChannels(PeerNumIncomingChannels);
+    } else if (std::numeric_limits<uint8_t>::max() == PeerNumOutgoingChannels) {
+        jacktrip.setNumInputChannels(PeerNumIncomingChannels);
+        jacktrip.setNumOutputChannels(0);
     } else {
         jacktrip.setNumInputChannels(PeerNumIncomingChannels);
         jacktrip.setNumOutputChannels(PeerNumOutgoingChannels);

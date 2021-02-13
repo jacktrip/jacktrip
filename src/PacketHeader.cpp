@@ -43,6 +43,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 
 #include "JackTrip.h"
@@ -110,7 +111,13 @@ void DefaultHeader::fillHeaderCommonFromAudio()
     mHeader.SamplingRate               = mJackTrip->getSampleRateType();
     mHeader.BitResolution              = mJackTrip->getAudioBitResolution();
     mHeader.NumIncomingChannelsFromNet = mJackTrip->getNumOutputChannels();
-    mHeader.NumOutgoingChannelsToNet   = mJackTrip->getNumInputChannels();
+
+    if(0 == mJackTrip->getNumInputChannels()) {
+        mHeader.NumOutgoingChannelsToNet   = std::numeric_limits<uint8_t>::max();
+    } else {
+        mHeader.NumOutgoingChannelsToNet   = mJackTrip->getNumInputChannels();
+    }
+
 }
 
 //***********************************************************************
