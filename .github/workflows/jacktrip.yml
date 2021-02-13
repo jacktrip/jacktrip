@@ -15,7 +15,7 @@ jobs:
 
     env:
       SRC_PATH: ${{ github.workspace }}/src
-      BUILD_PATH: ${{ github.workspace }}/builddir
+      BUILD_PATH: ${{ github.workspace }}/build
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies for Linux
@@ -36,8 +36,7 @@ jobs:
         env:
           DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
         run: |
-          cd $SRC_PATH
-          ./build
+          ./build-script
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
