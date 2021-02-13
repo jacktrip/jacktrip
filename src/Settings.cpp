@@ -799,18 +799,6 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setPeerAddress(mPeerAddress);
     }
 
-    //        if(mLocalAddress!=QString()) // default
-    //            mJackTrip->setLocalAddress(QHostAddress(mLocalAddress.toLatin1().data()));
-    //        else
-    //            mJackTrip->setLocalAddress(QHostAddress::Any);
-
-    // Set Ports - Done in constructor now.
-    // cout << "SETTING ALL PORTS" << endl;
-    /*if (gVerboseFlag) std::cout << "Settings:startJackTrip before
-    mJackTrip->setBindPorts" << std::endl; jackTrip->setBindPorts(mBindPortNum); if
-    (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setPeerPorts" <<
-    std::endl; jackTrip->setPeerPorts(mPeerPortNum);*/
-
     // Set in JamLink Mode
     if (mJamLink) {
         cout << "Running in JamLink Mode..." << endl;
