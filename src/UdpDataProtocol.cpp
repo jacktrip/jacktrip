@@ -648,16 +648,6 @@ void UdpDataProtocol::run()
         std::memset(full_redundant_packet, 0,
                     full_redundant_packet_size);  // Initialize to 0
         while (!mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped) {
-            // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
-            /*
-        // We block until there's stuff available to read
-        mJackTrip->readAudioBuffer( mAudioPacket );
-        mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
-        // This will send the packet immediately
-        //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
-        sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
-        */
-            //----------------------------------------------------------------------------------
             sendPacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                  full_packet_size);
         }
