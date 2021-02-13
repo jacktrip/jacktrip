@@ -1,0 +1,46 @@
+name: build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ${{ matrix.runs-on }}
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false # don't abort if one of the build failse
+      matrix:
+        include:
+          - name: Linux
+            runs-on: ubuntu-18.04
+          - name: macOS
+            runs-on: macos-10.15
+
+    env:
+      SRC_PATH: ${{ github.workspace }}/src
+      BUILD_PATH: ${{ github.workspace }}/builddir
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies for Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libjack-dev qt5-default qt5-qmake qttools5-dev
+      - name: install dependencies for macOS
+        if: runner.os == 'macOS'
+        env:
+          HOMEBREW_NO_ANALYTICS: 1
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+        run: |
+          brew install qt5 jack
+          brew link qt5 --force
+      - name: build
+        env:
+          DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
+        run: |
+          cd $SRC_PATH
+          ./build
+      - name: upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: JackTrip-${{ matrix.name }} # version number could be added here
+          path: ${{ env.BUILD_PATH }}
+          retention-days: 30 # remove artifacts after 30 days

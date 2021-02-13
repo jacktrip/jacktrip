@@ -38,22 +38,21 @@
 #ifndef __UDPHUBLISTENER_H__
 #define __UDPHUBLISTENER_H__
 
-#include <iostream>
-#include <stdexcept>
-#include <fstream>
-
+#include <QHostAddress>
+#include <QMutex>
 #include <QThread>
 #include <QThreadPool>
 #include <QUdpSocket>
-#include <QHostAddress>
-#include "SslServer.h"
-#include <QMutex>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 
 #include "JackTrip.h"
-#include "jacktrip_types.h"
 #include "jacktrip_globals.h"
+#include "jacktrip_types.h"
 #include "Patcher.h"
 #include "Auth.h"
+#include "SslServer.h"
 
 class JackTripWorker; // forward declaration
 class Settings;
@@ -73,7 +72,7 @@ class UdpHubListener : public QObject
 {
     Q_OBJECT;
 
-public:
+   public:
     UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0);
     virtual ~UdpHubListener();
 
@@ -98,34 +97,38 @@ public:
     }
     
     static void sigIntHandler(__attribute__((unused)) int unused)
-    { std::cout << std::endl << "Shutting Down..." << std::endl; sSigInt = true; }
+    {
+        std::cout << std::endl << "Shutting Down..." << std::endl;
+        sSigInt = true;
+    }
 
-private slots:
+   private slots:
     void testReceive()
-    { std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl; }
+    {
+        std::cout << "========= TEST RECEIVE SLOT ===========" << std::endl;
+    }
     void receivedNewConnection();
     void stopCheck();
 
-signals:
+   signals:
     void Listening();
     void ClientAddressSet();
     void signalRemoveThread(int id);
     void signalStopped();
-    void signalError(const QString &errorMessage);
+    void signalError(const QString& errorMessage);
 
-private:
+   private:
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
    * \param udpsocket a QUdpSocket
    * \param port Port number
    */
     void receivedClientInfo(QSslSocket *clientConnection);
-    
+
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
     int readClientUdpPort(QSslSocket* clientConnection, QString &clientName);
     int checkAuthAndReadPort(QSslSocket* clientConnection, QString &clientName);
     int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
-
 
     /** \brief Send the JackTripWorker to the thread pool. This will run
    * until it's done. We still have control over the prototype class.
@@ -143,22 +146,22 @@ private:
     * is not in the pool yet, returns -1.
     */
     int getPoolID(QString address, uint16_t port);
-    
+
     void stopAllThreads();
 
     //QUdpSocket mUdpHubSocket; ///< The UDP socket
     //QHostAddress mPeerAddress; ///< The Peer Address
 
     //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
-    QVector<JackTripWorker*>* mJTWorkers; ///< Vector of JackTripWorkers
+    QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorkers
 
     SslServer mTcpServer;
-    int mServerPort; //< Server known port number
-    int mServerUdpPort; //< Server udp base port number
+    int mServerPort;     //< Server known port number
+    int mServerUdpPort;  //< Server udp base port number
     int mBasePort;
     //addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool addresses
     //QHash<QString, uint16_t> mActiveAddressPortPair;
-    
+
     bool mRequireAuth;
     QString mCertFile;
     QString mKeyFile;
@@ -169,11 +172,11 @@ private:
     volatile bool mStopped;
     static bool sSigInt;
     QTimer mStopCheckTimer;
-    int mTotalRunningThreads; ///< Number of Threads running in the pool
+    int mTotalRunningThreads;  ///< Number of Threads running in the pool
     QMutex mMutex;
     JackTrip::underrunModeT mUnderRunMode;
     int mBufferQueueLength;
-    
+
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
     Patcher mPatcher;
@@ -187,22 +190,24 @@ private:
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
-    
-#ifdef WAIR // wair
+
+#ifdef WAIR  // wair
     bool mWAIR;
     void connectMesh(bool spawn);
     void enumerateRunningThreadIDs();
-public :
-    void setWAIR(int b) {mWAIR = b;}
-    bool isWAIR() {return mWAIR;}
-#endif // endwhere
+
+   public:
+    void setWAIR(int b) { mWAIR = b; }
+    bool isWAIR() { return mWAIR; }
+#endif  // endwhere
     void connectPatch(bool spawn, const QString &clientName);
-public :
+
+   public:
     void setRequireAuth(bool requireAuth) { mRequireAuth = requireAuth; }
     void setCertFile(QString certFile) { mCertFile = certFile; }
     void setKeyFile(QString keyFile) { mKeyFile = keyFile; }
     void setCredsFile(QString credsFile) { mCredsFile = credsFile; }
-    
+
     unsigned int mHubPatch;
     void setHubPatch(unsigned int p)
     {
@@ -215,25 +220,32 @@ public :
             m_connectDefaultAudioPorts = false;
         }
     }
-    unsigned int getHubPatch() {return mHubPatch;}
+    unsigned int getHubPatch() { return mHubPatch; }
 
-    void setUnderRunMode(JackTrip::underrunModeT UnderRunMode) { mUnderRunMode = UnderRunMode; }
-    void setBufferQueueLength(int BufferQueueLength) { mBufferQueueLength = BufferQueueLength; }
-    
+    void setUnderRunMode(JackTrip::underrunModeT UnderRunMode)
+    {
+        mUnderRunMode = UnderRunMode;
+    }
+    void setBufferQueueLength(int BufferQueueLength)
+    {
+        mBufferQueueLength = BufferQueueLength;
+    }
+
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
-    void setIOStatStream(QSharedPointer<std::ofstream> statStream) { mIOStatStream = statStream; }
+    void setIOStatStream(QSharedPointer<std::ofstream> statStream)
+    {
+        mIOStatStream = statStream;
+    }
 
     void setBufferStrategy(int BufferStrategy) { mBufferStrategy = BufferStrategy; }
     void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
     {
-        mSimulatedLossRate = loss;
+        mSimulatedLossRate   = loss;
         mSimulatedJitterRate = jitter;
-        mSimulatedDelayRel = delay_rel;
+        mSimulatedDelayRel   = delay_rel;
     }
-    void setBroadcast(int broadcast_queue) {mBroadcastQueue = broadcast_queue;}
-    void setUseRtUdpPriority(bool use) {mUseRtUdpPriority = use;}
-
+    void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
+    void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 };
 
-
-#endif //__UDPHUBLISTENER_H__
+#endif  //__UDPHUBLISTENER_H__

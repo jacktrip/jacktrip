@@ -36,26 +36,28 @@
  */
 
 #include "DataProtocol.h"
-#include "jacktrip_globals.h"
-#include "JackTrip.h"
 
-#include <iostream>
-#include <cstdlib>
-
-#include <QHostInfo>
 #include <QHostAddress>
+#include <QHostInfo>
+#include <cstdlib>
+#include <iostream>
 
-using std::cout; using std::endl;
+#include "JackTrip.h"
+#include "jacktrip_globals.h"
 
-
-//*******************************************************************************
-DataProtocol::DataProtocol(JackTrip* jacktrip,
-                           const runModeT runmode,
-                           int /*bind_port*/, int /*peer_port*/) :
-    mStopped(false), mHasPacketsToReceive(false), mRunMode(runmode), mJackTrip(jacktrip), mUseRtPriority(false)
-{}
-
+using std::cout;
+using std::endl;
 
 //*******************************************************************************
-DataProtocol::~DataProtocol()
-{}
+DataProtocol::DataProtocol(JackTrip* jacktrip, const runModeT runmode, int /*bind_port*/,
+                           int /*peer_port*/)
+    : mStopped(false)
+    , mHasPacketsToReceive(false)
+    , mRunMode(runmode)
+    , mJackTrip(jacktrip)
+    , mUseRtPriority(false)
+{
+}
+
+//*******************************************************************************
+DataProtocol::~DataProtocol() {}

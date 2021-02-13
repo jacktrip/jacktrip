@@ -35,55 +35,57 @@
  * \date September 2008
  */
 
-#include <iostream>
+#include "JackTripWorker.h"
+
 #include <unistd.h>
 
-#include <QTimer>
 #include <QMutexLocker>
+#include <QTimer>
 #include <QWaitCondition>
+#include <iostream>
 
-#include "JackTripWorker.h"
 #include "JackTrip.h"
 #include "UdpHubListener.h"
 //#include "NetKS.h"
 #include "LoopBack.h"
 #include "Settings.h"
-#ifdef WAIR // wair
+#ifdef WAIR  // wair
 #include "dcblock2gain.dsp.h"
 #endif // endwhere
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 
 //*******************************************************************************
-JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength, JackTrip::underrunModeT UnderRunMode, QString clientName) :
-    mSleepTime(100),
-    mUdpHubListener(udphublistener),
-    m_connectDefaultAudioPorts(false),
-    mBufferQueueLength(BufferQueueLength),
-    mUnderRunMode(UnderRunMode),
-    mClientName(clientName),
-    mSpawning(false),
-    mRunning(false),
-    mPatched(false),
-    mID(0),
-    mNumChans(1),
-    mIOStatTimeout(0)
-  #ifdef WAIR // wair
-  ,mNumNetRevChans(0),
-    mWAIR(false)
-  #endif // endwhere
+JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength,
+                               JackTrip::underrunModeT UnderRunMode, QString clientName)
+    : mSleepTime(100)
+    , mUdpHubListener(udphublistener)
+    , m_connectDefaultAudioPorts(false)
+    , mBufferQueueLength(BufferQueueLength)
+    , mUnderRunMode(UnderRunMode)
+    , mClientName(clientName)
+    , mSpawning(false)
+    , mRunning(false)
+    , mPatched(false)
+    , mID(0)
+    , mNumChans(1)
+    , mIOStatTimeout(0)
+#ifdef WAIR  // wair
+    , mNumNetRevChans(0)
+    , mWAIR(false)
+#endif  // endwhere
 {
     //mNetks = new NetKS;
     //mNetks->play();
-    mBufferStrategy = 1;
-    mBroadcastQueue = 0;
-    mSimulatedLossRate = 0.0;
+    mBufferStrategy      = 1;
+    mBroadcastQueue      = 0;
+    mSimulatedLossRate   = 0.0;
     mSimulatedJitterRate = 0.0;
-    mSimulatedDelayRel = 0.0;
-    mUseRtUdpPriority = false;
+    mSimulatedDelayRel   = 0.0;
+    mUseRtUdpPriority    = false;
     connect(&mUdpSockTemp, &QUdpSocket::readyRead, this, &JackTripWorker::receivedDataUDP);
 }
-
 
 //*******************************************************************************
 JackTripWorker::~JackTripWorker()
@@ -91,13 +93,9 @@ JackTripWorker::~JackTripWorker()
     //delete mUdpHubListener;
 }
 
-
 //*******************************************************************************
-void JackTripWorker::setJackTrip(int id,
-                                 QString client_address,
-                                 uint16_t server_port,
-                                 uint16_t client_port,
-                                 int num_channels,
+void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server_port,
+                                 uint16_t client_port, int num_channels,
                                  bool connectDefaultAudioPorts)
 {
     QMutexLocker locker(&mMutex);
@@ -116,12 +114,12 @@ void JackTripWorker::setJackTrip(int id,
     mID = id;
     //Set the jacktrip address and ports
     //mClientAddress.setAddress(client_address);
-    mClientAddress = client_address;
-    mServerPort = server_port;
-    mClientPort = client_port;
-    mNumChans = num_channels;
+    mClientAddress             = client_address;
+    mServerPort                = server_port;
+    mClientPort                = client_port;
+    mNumChans                  = num_channels;
     m_connectDefaultAudioPorts = connectDefaultAudioPorts;
-    mAssignedClientName = "";
+    mAssignedClientName        = "";
     
     // Create and setup JackTrip Object
     //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
@@ -193,9 +191,7 @@ void JackTripWorker::start()
         mJackTrip->setIOStatStream(mIOStatStream);
     }
     
-    if (!mClientName.isEmpty()) {
-        mJackTrip->setClientName(mClientName);
-    }
+    if (!mClientName.isEmpty()) { mJackTrip->setClientName(mClientName); }
 
     //ClientAddress.setAddress(mClientAddress);
     // If I don't type this line, I get a bus error in the next line.
@@ -206,8 +202,8 @@ void JackTripWorker::start()
     mJackTrip->setBindPorts(mServerPort);
     //jacktrip.setPeerPorts(mClientPort);
     mJackTrip->setBufferStrategy(mBufferStrategy);
-    mJackTrip->setNetIssuesSimulation(mSimulatedLossRate,
-        mSimulatedJitterRate, mSimulatedDelayRel);
+    mJackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
+                                      mSimulatedDelayRel);
     mJackTrip->setBroadcast(mBroadcastQueue);
     mJackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
 
@@ -216,39 +212,13 @@ void JackTripWorker::start()
     mElapsedTime = 0;
     mTimeoutTimer.start();
     if (gVerboseFlag) cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
-    if ( !mUdpSockTemp.bind(QHostAddress::Any, mServerPort,
-                            QUdpSocket::DefaultForPlatform) )
+    if (!mUdpSockTemp.bind(QHostAddress::Any, mServerPort,
+                           QUdpSocket::DefaultForPlatform))
     {
         std::cerr << "in JackTripWorker: Could not bind UDP socket. It may already be bound." << endl;
         throw std::runtime_error("Could not bind UDP socket. It may already be bound.");
     }
-}  
-    
-    
-/*    
-    event_loop.exec(); // Excecution will block here until exit() the QEventLoop
-    //--------------------------------------------------------------------------
-    
-    { QMutexLocker locker(&mMutex); mSpawning = true; }
-
-    // wait for jacktrip to be done before exiting the Worker Thread
-    //jacktrip.wait();
-
-
-    {
-        QMutexLocker locker(&mMutex);
-        mUdpHubListener->releaseThread(mID);
-    }
-
-    cout << "JackTrip ID = " << mID << " released from the THREAD POOL" << endl;
-    cout << gPrintSeparator << endl;
-    {
-        // Thread is already spawning, so release the lock
-        QMutexLocker locker(&mMutex);
-        mSpawning = false;
-    }
-    */
-
+}
 
 //*******************************************************************************
 void JackTripWorker::stopThread()
@@ -290,17 +260,23 @@ void JackTripWorker::receivedDataUDP()
     //This will remove any old worker objects, and will set the client port member variable on this object.
     mUdpHubListener->releaseDuplicateThreads(this, port);
 
-    int PeerBufferSize = mJackTrip->getPeerBufferSize(full_packet);
-    int PeerSamplingRate = mJackTrip->getPeerSamplingRate(full_packet);
-    int PeerBitResolution = mJackTrip->getPeerBitResolution(full_packet);
-    int PeerNumChannels = mJackTrip->getPeerNumChannels(full_packet);
+    int PeerBufferSize     = mJackTrip->getPeerBufferSize(full_packet);
+    int PeerSamplingRate   = mJackTrip->getPeerSamplingRate(full_packet);
+    int PeerBitResolution  = mJackTrip->getPeerBitResolution(full_packet);
+    int PeerNumChannels    = mJackTrip->getPeerNumChannels(full_packet);
     int PeerConnectionMode = mJackTrip->getPeerConnectionMode(full_packet);
 
-    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;
-    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerSamplingRate = " << PeerSamplingRate << endl;
-    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerBitResolution = " << PeerBitResolution << endl;
+    if (gVerboseFlag)
+        cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;
+    if (gVerboseFlag)
+        cout << "--->JackTripWorker: getPeerSamplingRate = " << PeerSamplingRate << endl;
+    if (gVerboseFlag)
+        cout << "--->JackTripWorker: getPeerBitResolution = " << PeerBitResolution
+             << endl;
     cout << "--->JackTripWorker: PeerNumChannels = " << PeerNumChannels << endl;
-    if (gVerboseFlag) cout << "--->JackTripWorker: getPeerConnectionMode = " << PeerConnectionMode << endl;
+    if (gVerboseFlag)
+        cout << "--->JackTripWorker: getPeerConnectionMode = " << PeerConnectionMode
+             << endl;
 
     mJackTrip->setNumChannels(PeerNumChannels);
     if (PeerConnectionMode == -1) {

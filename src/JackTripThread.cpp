@@ -35,15 +35,15 @@
  * \date September 2008
  */
 
-
 #include "JackTripThread.h"
+
+#include <cstdlib>
+#include <iostream>
+
 #include "NetKS.h"
 
-#include <iostream>
-#include <cstdlib>
-
-using std::cout; using std::endl;
-
+using std::cout;
+using std::endl;
 
 //*******************************************************************************
 void JackTripThread::run()
@@ -51,26 +51,19 @@ void JackTripThread::run()
     JackTrip jacktrip(mJackTripMode);
     jacktrip.setAllPorts(mPortNum);
 
-    if ( mJackTripMode == JackTrip::CLIENT )
-    {
-        jacktrip.setPeerAddress(mPeerAddress);
-    }
+    if (mJackTripMode == JackTrip::CLIENT) { jacktrip.setPeerAddress(mPeerAddress); }
 
     NetKS netks;
     jacktrip.appendProcessPluginFromNetwork(&netks);
     //netks.play();
-
 
     //QThread::sleep(1);
     jacktrip.start();
     //netks.play();
     jacktrip.wait();
 
-
     cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
     //QThread::sleep(9999999);
-
-
 
     /*
   jack_client_t* mClient;
@@ -97,6 +90,4 @@ void JackTripThread::run()
     fprintf (stderr, "unique name `%s' assigned\n", client_name);
   }
   */
-
-
 }

@@ -38,13 +38,12 @@
 #ifndef __RINGBUFFERWAVETABLE_H__
 #define __RINGBUFFERWAVETABLE_H__
 
-
 /** \brief Same as RingBuffer, except that it uses the Wavetable mode for
  * lost or late packets.
  */
 class RingBufferWavetable : public RingBuffer
 {
-public:
+   public:
     /** \brief The class constructor
    * \param SlotSize Size of one slot in bytes
    * \param NumSlots Number of slots
@@ -55,7 +54,7 @@ public:
    */
     virtual ~RingBufferWavetable() {}
 
-protected:
+   protected:
     /** \brief Sets the memory in the Read Slot when uderrun occurs. This loops as a
    * wavetable in the last received packet.
    * \param ptrToReadSlot Pointer to read slot from the RingBuffer
@@ -64,8 +63,6 @@ protected:
     {
         setMemoryInReadSlotWithLastReadSlot(ptrToReadSlot);
     }
-
 };
 
-
-#endif //__RINGBUFFERWAVETABLE_H__
+#endif  //__RINGBUFFERWAVETABLE_H__

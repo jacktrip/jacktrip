@@ -25,15 +25,16 @@
   OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 /*
  * JMess.cpp
  */
 
 #include "JMess.h"
+
+#include <QDebug>
+
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
-#include <QDebug>
 
 // sJackMutex definition
 QMutex JMess::sJMessMutex;
@@ -48,18 +49,18 @@ JMess::JMess()
     //Open a client connection to the JACK server.  Starting a
     //new server only to list its ports seems pointless, so we
     //specify JackNoStartServer.
-    mClient = jack_client_open ("lsp", JackNoStartServer, &mStatus);
+    mClient = jack_client_open("lsp", JackNoStartServer, &mStatus);
     if (mClient == NULL) {
         if (mStatus & JackServerFailed) {
             cerr << "JACK server not running" << endl;
         } else {
             cerr << "jack_client_open() failed, "
-                 << "status = 0x%2.0x\n" << mStatus << endl;
+                 << "status = 0x%2.0x\n"
+                 << mStatus << endl;
         }
         exit(1);
     }
 }
-
 
 //-------------------------------------------------------------------------------
 /*! \brief Distructor closes the jmess jack audio client.
@@ -71,7 +72,6 @@ JMess::~JMess()
     if (jack_client_close(mClient))
         cerr << "ERROR: Could not close the hidden jmess jack client." << endl;
 }
-
 
 //-------------------------------------------------------------------------------
 /*! \brief Write an XML file with the name specified at xmlOutFile.
@@ -136,7 +136,6 @@ void JMess::writeOutput(__attribute__((unused)) QString xmlOutFile)
     //  }
 }
 
-
 //-------------------------------------------------------------------------------
 /*! \brief Set list of ouput ports that have connections.
  *
@@ -146,15 +145,16 @@ void JMess::setConnectedPorts()
 {
     mConnectedPorts.clear();
 
-    const char **ports, **connections; //vector of ports and connections
-    QVector<QString> OutputInput(2); //helper variable
+    const char **ports, **connections;  //vector of ports and connections
+    QVector<QString> OutputInput(2);    //helper variable
 
     //Get active output ports.
-    ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
+    ports = jack_get_ports(mClient, NULL, NULL, JackPortIsOutput);
 
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
-        if ((connections = jack_port_get_all_connections
-             (mClient, jack_port_by_name(mClient, ports[out_i]))) != 0) {
+        if ((connections = jack_port_get_all_connections(
+                 mClient, jack_port_by_name(mClient, ports[out_i])))
+            != 0) {
             for (unsigned int in_i = 0; connections[in_i]; ++in_i) {
                 OutputInput[0] = ports[out_i];
                 //    cout << "Output ===> " <<qPrintable(OutputInput[0]) << endl;
@@ -172,15 +172,15 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // called from UdpHubListener::connectMesh
 {
     QMutexLocker locker(&sJMessMutex);
-    
+
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
 
-    const char **ports; //, **connections; //vector of ports and connections
-    QVector<QString> OutputInput(2); //helper variable
+    const char** ports;               //, **connections; //vector of ports and connections
+    QVector<QString> OutputInput(2);  //helper variable
 
     //Get active output ports.
-    ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
+    ports = jack_get_ports(mClient, NULL, NULL, JackPortIsOutput);
 
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
         //        qDebug() << QString(ports[out_i]);
@@ -193,9 +193,9 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
         //  for example              "171.64.197.121"
 
         bool newOne = !systemPort;
-        for (int i = 0; i<ctr; i++) if (newOne && (IPS[i]==s)) newOne = false;
-        if (newOne)
-        {
+        for (int i = 0; i < ctr; i++)
+            if (newOne && (IPS[i] == s)) newOne = false;
+        if (newOne) {
             IPS[ctr] = s;
             ctr++;
             //                        qDebug() << ports[out_i] << systemPort << s;
@@ -204,30 +204,30 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
     //for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
     disconnectAll();
 
-    int k = 0;
+    int k      = 0;
     int jLimit = 1;
 
     // FULLMIX is the union of CLIENTFOFI, CLIENTECHO
 
     // implements CLIENTFOFI, CLIENTECHO -- also FULLMIX part which is CLIENTECHO
-    for (int i = 0; i<ctr; i++) {
-        if (hubPatch == JackTrip::CLIENTFOFI) jLimit = (ctr-1);
-        for (int j = 0; j<jLimit; j++) {
-            if ((hubPatch == JackTrip::CLIENTECHO)||(hubPatch == JackTrip::FULLMIX)) k = i;
-            else if (hubPatch == JackTrip::CLIENTFOFI) k = (j+(i+1))%ctr;
-            for (int l = 1; l<=nChans; l++) { // chans are 1-based
+    for (int i = 0; i < ctr; i++) {
+        if (hubPatch == JackTrip::CLIENTFOFI) jLimit = (ctr - 1);
+        for (int j = 0; j < jLimit; j++) {
+            if ((hubPatch == JackTrip::CLIENTECHO) || (hubPatch == JackTrip::FULLMIX))
+                k = i;
+            else if (hubPatch == JackTrip::CLIENTFOFI)
+                k = (j + (i + 1)) % ctr;
+            for (int l = 1; l <= nChans; l++) {  // chans are 1-based
                 //qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
-                         //<<"with " << IPS[k]+":send_"+QString::number(l);
+                //<<"with " << IPS[k]+":send_"+QString::number(l);
 
-                QString left = IPS[i] +
-                        ":receive_" + QString::number(l);
-                QString right = IPS[k] +
-                        ":send_" + QString::number(l);
+                QString left  = IPS[i] + ":receive_" + QString::number(l);
+                QString right = IPS[k] + ":send_" + QString::number(l);
 
-                if (0 !=
-                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
-                    qDebug() << "WARNING: port: " << left
-                             << "and port: " << right
+                if (0
+                    != jack_connect(mClient, left.toStdString().c_str(),
+                                    right.toStdString().c_str())) {
+                    qDebug() << "WARNING: port: " << left << "and port: " << right
                              << " could not be connected.";
                 }
             }
@@ -236,25 +236,23 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 
     // do it again to implement the FULLMIX part which is CLIENTFOFI
     if (hubPatch == JackTrip::FULLMIX) {
-        jLimit = (ctr-1); // same as CLIENTFOFI
+        jLimit = (ctr - 1);  // same as CLIENTFOFI
         /*************/
         // todo: the next block should be in a method, it's a repeat of the above
-        for (int i = 0; i<ctr; i++) {
-            for (int j = 0; j<jLimit; j++) {
-                k = (j+(i+1))%ctr;
-                for (int l = 1; l<=nChans; l++) { // chans are 1-based
+        for (int i = 0; i < ctr; i++) {
+            for (int j = 0; j < jLimit; j++) {
+                k = (j + (i + 1)) % ctr;
+                for (int l = 1; l <= nChans; l++) {  // chans are 1-based
                     //qDebug() << "connect " << IPS[i]+":receive_"+QString::number(l)
-                             //<<"with " << IPS[k]+":send_"+QString::number(l);
+                    //<<"with " << IPS[k]+":send_"+QString::number(l);
 
-                    QString left = IPS[i] +
-                            ":receive_" + QString::number(l);
-                    QString right = IPS[k] +
-                            ":send_" + QString::number(l);
+                    QString left  = IPS[i] + ":receive_" + QString::number(l);
+                    QString right = IPS[k] + ":send_" + QString::number(l);
 
-                    if (0 !=
-                            jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
-                        qDebug() << "WARNING: port: " << left
-                                 << "and port: " << right
+                    if (0
+                        != jack_connect(mClient, left.toStdString().c_str(),
+                                        right.toStdString().c_str())) {
+                        qDebug() << "WARNING: port: " << left << "and port: " << right
                                  << " could not be connected.";
                     }
                 }
@@ -298,8 +296,8 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // const int gMAX_TUB = 20; // highest client address
 // and give the proper audio process and connection names
 
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "SuperCollider"
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER     "SuperCollider"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN  ":in_"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 // On server side it is SC jack-clients with indivisual names:
 // POE_0...POE_16
@@ -313,45 +311,44 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 void JMess::connectTUB(int /*nChans*/)
 // called from UdpHubListener::connectPatch
 {
-    for (int i = 0; i<=gMAX_TUB-gMIN_TUB; i++) // last IP decimal octet
-        for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
+    for (int i = 0; i <= gMAX_TUB - gMIN_TUB; i++)  // last IP decimal octet
+        for (int l = 1; l <= 1; l++)  // mono for now // chans are 1-based, 1...2
         {
             // jacktrip to SC
-            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
+            QString client =
+                gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB + i);
             QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER);
-            int tmp = i + l; // only works for mono... completely wrong for 2 or more chans
-            qDebug() << "connect " << client << ":receive_ " << l
-                     <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
+            int tmp =
+                i + l;  // only works for mono... completely wrong for 2 or more chans
+            qDebug() << "connect " << client << ":receive_ " << l << "with "
+                     << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
 
-            QString left = QString(client + ":receive_" + QString::number(l));
-            QString right = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN +
-                                    QString::number(tmp));
+            QString left  = QString(client + ":receive_" + QString::number(l));
+            QString right = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN
+                                    + QString::number(tmp));
 
-            if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(),
-                                 right.toStdString().c_str())) {
-                qDebug() << "WARNING: port: " << left
-                         << "and port: " << right
+            if (0
+                != jack_connect(mClient, left.toStdString().c_str(),
+                                right.toStdString().c_str())) {
+                qDebug() << "WARNING: port: " << left << "and port: " << right
                          << " could not be connected.";
             }
 
             // SC to jacktrip
-            tmp += 4; // increase tmp for port offest
+            tmp += 4;  // increase tmp for port offest
             qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
-                     << tmp <<"with " << client << ":send_" << l;
+                     << tmp << "with " << client << ":send_" << l;
 
-            left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
-                           QString::number(tmp));
+            left  = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
+                           + QString::number(tmp));
             right = QString(client + ":send_" + QString::number(l));
 
-            if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(),
-                                 right.toStdString().c_str())) {
-                qDebug() << "WARNING: port: " << left
-                         << "and port: " << right
+            if (0
+                != jack_connect(mClient, left.toStdString().c_str(),
+                                right.toStdString().c_str())) {
+                qDebug() << "WARNING: port: " << left << "and port: " << right
                          << " could not be connected.";
             }
-
         }
 }
 
@@ -372,13 +369,11 @@ void JMess::disconnectAll()
 
         if (jack_disconnect(mClient, OutputInput[0].toUtf8(), OutputInput[1].toUtf8())) {
             cerr << "WARNING: port: " << qPrintable(OutputInput[0])
-                    << "and port: " << qPrintable(OutputInput[1])
-                    << " could not be disconnected.\n";
+                 << "and port: " << qPrintable(OutputInput[1])
+                 << " could not be disconnected.\n";
         }
     }
-
 }
-
 
 //-------------------------------------------------------------------------------
 /*! \brief Parse the XML input file.
@@ -420,7 +415,6 @@ int JMess::parseXML(__attribute__((unused)) QString xmlInFile)
     //    return 1;
     //  }
 
-
     //  QVector<QString> OutputInput(2);
     //  //First check for <connection> tag
     //  for(QDomNode n_cntn = jmess.firstChild();
@@ -445,9 +439,7 @@ int JMess::parseXML(__attribute__((unused)) QString xmlInFile)
     //  }
 
     return 0;
-
 }
-
 
 //-------------------------------------------------------------------------------
 /*! \brief Connect ports specified in input XML file xmlInFile
@@ -475,6 +467,4 @@ void JMess::connectPorts(__attribute__((unused)) QString xmlInFile)
     //      }
     //    }
     //  }
-
 }
-

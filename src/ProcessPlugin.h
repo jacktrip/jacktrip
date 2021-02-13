@@ -39,6 +39,7 @@
 #define __PROCESSPLUGIN_H__
 
 #include <jack/jack.h>
+
 #include <QThread>
 
 /** \brief Interface for the process plugins to add to the JACK callback process in
@@ -51,12 +52,11 @@
  */
 class ProcessPlugin : public QObject
 {
-public:
-
+   public:
     /// \brief The Class Constructor
-    ProcessPlugin() {};
+    ProcessPlugin(){};
     /// \brief The Class Destructor
-    virtual ~ProcessPlugin() {};
+    virtual ~ProcessPlugin(){};
 
     /// \brief Return Number of Input Channels
     virtual int getNumInputs() = 0;
@@ -65,22 +65,25 @@ public:
 
     //virtual void buildUserInterface(UI* interface) = 0;
 
-    virtual char* getName() {
-      char* pluginName { const_cast<char*>(typeid(*this).name()) }; // get name of DERIVED class
-      while (isdigit(*pluginName)) { pluginName++; }
-      return pluginName;
+    virtual char* getName()
+    {
+        char* pluginName{
+            const_cast<char*>(typeid(*this).name())};  // get name of DERIVED class
+        while (isdigit(*pluginName)) { pluginName++; }
+        return pluginName;
     }
 
     /** \brief Do proper Initialization of members and class instances. By default this
    * initializes the Sampling Frequency. If a class instance depends on the
    * sampling frequency, it should be initialize here.
    */
-    virtual void init(int samplingRate) {
-      fSamplingFreq = samplingRate;
-      if (verbose) {
-        char* derivedClassName = getName();
-        printf("%s: init(%d)\n",derivedClassName,samplingRate);
-      }
+    virtual void init(int samplingRate)
+    {
+        fSamplingFreq = samplingRate;
+        if (verbose) {
+            char* derivedClassName = getName();
+            printf("%s: init(%d)\n", derivedClassName, samplingRate);
+        }
     }
     virtual bool getInited() { return inited; }
     virtual void setVerbose(bool v) { verbose = v; }
@@ -88,9 +91,9 @@ public:
     /// \brief Compute process
     virtual void compute(int nframes, float** inputs, float** outputs) = 0;
 
-protected:
-    int fSamplingFreq; ///< Faust Data member, Sampling Rate
-    bool inited = false;
+   protected:
+    int fSamplingFreq;  ///< Faust Data member, Sampling Rate
+    bool inited  = false;
     bool verbose = false;
 };
 

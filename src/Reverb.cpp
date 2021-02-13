@@ -35,36 +35,37 @@
  * \date August 2020
  */
 
-
 #include "Reverb.h"
-#include "jacktrip_types.h"
 
 #include <iostream>
+
+#include "jacktrip_types.h"
 
 //*******************************************************************************
 void Reverb::compute(int nframes, float** inputs, float** outputs)
 {
-  if (not inited) {
-    std::cerr << "*** Reverb " << this << ": init never called! Doing it now.\n";
-    if (fSamplingFreq <= 0) {
-      fSamplingFreq = 48000;
-      std::cout << "Reverb " << this << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
+    if (not inited) {
+        std::cerr << "*** Reverb " << this << ": init never called! Doing it now.\n";
+        if (fSamplingFreq <= 0) {
+            fSamplingFreq = 48000;
+            std::cout << "Reverb " << this
+                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
+        }
+        init(fSamplingFreq);
     }
-    init(fSamplingFreq);
-  }
-  if (mReverbLevel <= 1.0) {
-    if (mNumInChannels == 1) {
-      freeverbMonoP->compute(nframes, inputs, outputs);
+    if (mReverbLevel <= 1.0) {
+        if (mNumInChannels == 1) {
+            freeverbMonoP->compute(nframes, inputs, outputs);
+        } else {
+            assert(mNumInChannels == 2);
+            freeverbStereoP->compute(nframes, inputs, outputs);
+        }
     } else {
-      assert(mNumInChannels == 2);
-      freeverbStereoP->compute(nframes, inputs, outputs);
+        if (mNumInChannels == 1) {
+            zitarevMonoP->compute(nframes, inputs, outputs);
+        } else {
+            assert(mNumInChannels == 2);
+            zitarevStereoP->compute(nframes, inputs, outputs);
+        }
     }
-  } else {
-    if (mNumInChannels == 1) {
-      zitarevMonoP->compute(nframes, inputs, outputs);
-    } else {
-      assert(mNumInChannels == 2);
-      zitarevStereoP->compute(nframes, inputs, outputs);
-    }
-  }
 }

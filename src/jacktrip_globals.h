@@ -44,18 +44,18 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.2.1"; ///< JackTrip version
+const char* const gVersion = "1.3.0";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
 //@{
-const int gDefaultNumInChannels = 2;
+const int gDefaultNumInChannels  = 2;
 const int gDefaultNumOutChannels = 2;
 
-#define PROTOCOL_STACK QHostAddress::AnyIPv4 // as opposed to Any
+#define PROTOCOL_STACK QHostAddress::AnyIPv4  // as opposed to Any
 // #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
-const QString WAIR_AUDIO_NAME = QString("JackTrip"); // keep legacy for WAIR
-const int gMAX_WAIRS = 128; // FIXME, should agree with maxThreadCount
+const QString WAIR_AUDIO_NAME = QString("JackTrip");  // keep legacy for WAIR
+const int gMAX_WAIRS          = 128;  // FIXME, should agree with maxThreadCount
 // jmess revision needed for string parse if > 1 digit
 
 // hubpatch = 3 for TUB ensemble patching
@@ -66,67 +66,65 @@ const int gMAX_WAIRS = 128; // FIXME, should agree with maxThreadCount
 //const int gMAX_TUB = 245; // highest client address
 ///////////////////////////////
 // test Riviera as server
- const QString gDOMAIN_TRIPLE = QString("192.168.0"); // for TUB multiclient hub
- const int gMIN_TUB = 11; // lowest client address
- const int gMAX_TUB = 20; // highest client address
+const QString gDOMAIN_TRIPLE = QString("192.168.0");  // for TUB multiclient hub
+const int gMIN_TUB           = 11;                    // lowest client address
+const int gMAX_TUB           = 20;                    // highest client address
 
-#ifdef WAIR // wair
+#ifdef WAIR  // wair
 // uses hub mode
 // hard wire the number of netrev (comb filter) channels
-  #define NUMNETREVCHANSbecauseNOTINRECEIVEDheader 16 // for jacktripworker, jmess
-  const int gDefaultNumNetRevChannels = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
-  const int gDefaultAddCombFilterLength = 0;
-  const int gDefaultCombFilterFeedback = 0;
-#endif // endwhere
+#define NUMNETREVCHANSbecauseNOTINRECEIVEDheader 16  // for jacktripworker, jmess
+const int gDefaultNumNetRevChannels   = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
+const int gDefaultAddCombFilterLength = 0;
+const int gDefaultCombFilterFeedback  = 0;
+#endif  // endwhere
 
 //const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
 //    JackAudioInterface::BIT16;
 const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
-        AudioInterface::BIT16;
-const int gDefaultQueueLength = 4;
-const int gDefaultOutputQueueLength = 4;
-const uint32_t gDefaultSampleRate = 48000;
-const uint32_t gDefaultDeviceID = 0;
+    AudioInterface::BIT16;
+const int gDefaultQueueLength              = 4;
+const int gDefaultOutputQueueLength        = 4;
+const uint32_t gDefaultSampleRate          = 48000;
+const uint32_t gDefaultDeviceID            = 0;
 const uint32_t gDefaultBufferSizeInSamples = 128;
-const QString gDefaultLocalAddress = QString();
-const int gDefaultRedundancy = 1;
-const int gTimeOutMultiThreadedServer = 10000; // seconds
-const int gWaitCounter = 60;
+const QString gDefaultLocalAddress         = QString();
+const int gDefaultRedundancy               = 1;
+const int gTimeOutMultiThreadedServer      = 10000;  // seconds
+const int gWaitCounter                     = 60;
 //@}
-
 
 //*******************************************************************************
 /// \name Network related ports
 //@{
-const int gDefaultPort = 4464; ///< Default JackTrip Port
+const int gDefaultPort  = 4464;  ///< Default JackTrip Port
+const int gBindPortLow  = 3464;  ///< lowest Bindport
+const int gBindPortHigh = 5464;  ///< highest Bindport
 //const int gInputPort_0 = 4464; ///< Input base port
 //const int gOutputPort_0 = 4465; ///< Output base port
 //const int gDefaultSendPort = 4464; ///< Default for to use to send packet
 //@}
 
-
 //*******************************************************************************
 /// \name Separator for terminal printing
 //@{
-const char* const gPrintSeparator = "---------------------------------------------------------";
+const char* const gPrintSeparator =
+    "---------------------------------------------------------";
 //@}
-
 
 //*******************************************************************************
 /// \name Global flags
 //@{
-extern int gVerboseFlag; ///< Verbose mode flag declaration
+extern int gVerboseFlag;  ///< Verbose mode flag declaration
 //@}
-
 
 //*******************************************************************************
 /// \name JackAudio
 //@{
-const int gJackBitResolution = 32; ///< Audio Bit Resolution of the Jack Server
+const int gJackBitResolution         = 32;  ///< Audio Bit Resolution of the Jack Server
 const QString gJackDefaultClientName = "JackTrip";
-const int gMaxRemoteNameLength = 64;
+const int gMaxRemoteNameLength       = 64;
 //@}
-
 
 //*******************************************************************************
 /// \name Global Functions
@@ -146,6 +144,5 @@ const int gMaxThreads = 1024;
 /// Public well-known UDP port to where the clients will connect
 const int gServerUdpPort = 4464;
 //@}
-
 
 #endif
