@@ -62,7 +62,7 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots)
     if (0 < mTotalSize) {
         mRingBuffer   = new int8_t[mTotalSize];
         mLastReadSlot = new int8_t[mSlotSize];
-        std::memset(mRingBuffer, 0, mTotalSize);  // set buffer to 0
+        std::memset(mRingBuffer, 0, mTotalSize);   // set buffer to 0
         std::memset(mLastReadSlot, 0, mSlotSize);  // set buffer to 0
 
         mWritePosition = ((NumSlots / 2) * SlotSize) % mTotalSize;

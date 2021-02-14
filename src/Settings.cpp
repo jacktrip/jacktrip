@@ -167,28 +167,31 @@ void Settings::parseInput(int argc, char** argv)
            != -1)
         switch (ch) {
         case OPT_NUMINCOMING:
-            if(0 < atoi(optarg)){
+            if (0 < atoi(optarg)) {
                 mNumAudioOutputChans = atoi(optarg);
             } else {
-                std::cerr << "--numincoming ERROR: Number of channels must be greater than 0\n";
+                std::cerr
+                    << "--numincoming ERROR: Number of channels must be greater than 0\n";
                 std::exit(1);
             }
             break;
         case OPT_NUMOUTGOING:
-            if(0 < atoi(optarg)){
-            mNumAudioInputChans = atoi(optarg);
+            if (0 < atoi(optarg)) {
+                mNumAudioInputChans = atoi(optarg);
             } else {
-                std::cerr << "--numoutgoing ERROR: Number of channels must be greater than 0\n";
+                std::cerr
+                    << "--numoutgoing ERROR: Number of channels must be greater than 0\n";
                 std::exit(1);
             }
             break;
         case 'n':  // Number of input and output channels
             //-------------------------------------------------------
-            if(0 < atoi(optarg)) {
-            mNumAudioInputChans  = atoi(optarg);
-            mNumAudioOutputChans = atoi(optarg);
+            if (0 < atoi(optarg)) {
+                mNumAudioInputChans  = atoi(optarg);
+                mNumAudioOutputChans = atoi(optarg);
             } else {
-                std::cerr << "-n --numchannels ERROR: Number of channels must be greater than 0\n";
+                std::cerr << "-n --numchannels ERROR: Number of channels must be greater "
+                             "than 0\n";
                 std::exit(1);
             }
             break;
@@ -538,15 +541,15 @@ void Settings::parseInput(int argc, char** argv)
         std::exit(1);
     }
 
-    if(true == mAudioTester.getEnabled()) {
-    assert(mNumAudioInputChans > 0);
-    mAudioTester.setSendChannel(mNumAudioInputChans
-                                - 1);  // use last channel for latency testing
-    // Originally, testing only in the last channel was adopted
-    // because channel 0 ("left") was a clap track on CCRMA loopback
-    // servers.  Now, however, we also do it in order to easily keep
-    // effects in all but the last channel, enabling silent testing
-    // in the last channel in parallel with normal operation of the others.
+    if (true == mAudioTester.getEnabled()) {
+        assert(mNumAudioInputChans > 0);
+        mAudioTester.setSendChannel(mNumAudioInputChans
+                                    - 1);  // use last channel for latency testing
+        // Originally, testing only in the last channel was adopted
+        // because channel 0 ("left") was a clap track on CCRMA loopback
+        // servers.  Now, however, we also do it in order to easily keep
+        // effects in all but the last channel, enabling silent testing
+        // in the last channel in parallel with normal operation of the others.
     }
     // Exit if options are incompatible
     //----------------------------------------------------------------------------

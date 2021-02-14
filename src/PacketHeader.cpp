@@ -112,12 +112,11 @@ void DefaultHeader::fillHeaderCommonFromAudio()
     mHeader.BitResolution              = mJackTrip->getAudioBitResolution();
     mHeader.NumIncomingChannelsFromNet = mJackTrip->getNumOutputChannels();
 
-    if(0 == mJackTrip->getNumInputChannels()) {
-        mHeader.NumOutgoingChannelsToNet   = std::numeric_limits<uint8_t>::max();
+    if (0 == mJackTrip->getNumInputChannels()) {
+        mHeader.NumOutgoingChannelsToNet = std::numeric_limits<uint8_t>::max();
     } else {
-        mHeader.NumOutgoingChannelsToNet   = mJackTrip->getNumInputChannels();
+        mHeader.NumOutgoingChannelsToNet = mJackTrip->getNumInputChannels();
     }
-
 }
 
 //***********************************************************************
