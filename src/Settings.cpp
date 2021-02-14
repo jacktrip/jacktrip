@@ -593,7 +593,7 @@ void Settings::printUsage()
          << 2 << ")" << endl;
     cout << "     --numincoming #                      Number of incoming Channels from "
             "the network\n";
-    cout << "     --numoutgoing #                      Number of incoming Channels from "
+    cout << "     --numoutgoing #                      Number of outgoing Channels to "
             "the network\n";
 #ifdef WAIR  // WAIR
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
