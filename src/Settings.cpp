@@ -167,15 +167,30 @@ void Settings::parseInput(int argc, char** argv)
            != -1)
         switch (ch) {
         case OPT_NUMINCOMING:
-            mNumAudioOutputChans = atoi(optarg);
+            if(0 < atoi(optarg)){
+                mNumAudioOutputChans = atoi(optarg);
+            } else {
+                std::cerr << "--numincoming ERROR: Number of channels must be greater than 0\n";
+                std::exit(1);
+            }
             break;
         case OPT_NUMOUTGOING:
+            if(0 < atoi(optarg)){
             mNumAudioInputChans = atoi(optarg);
+            } else {
+                std::cerr << "--numoutgoing ERROR: Number of channels must be greater than 0\n";
+                std::exit(1);
+            }
             break;
         case 'n':  // Number of input and output channels
             //-------------------------------------------------------
+            if(0 < atoi(optarg)) {
             mNumAudioInputChans  = atoi(optarg);
             mNumAudioOutputChans = atoi(optarg);
+            } else {
+                std::cerr << "-n --numchannels ERROR: Number of channels must be greater than 0\n";
+                std::exit(1);
+            }
             break;
         case 'U':  // UDP Bind Port
             mServerUdpPortNum = atoi(optarg);
@@ -589,12 +604,12 @@ void Settings::printUsage()
     cout << endl;
     cout << "OPTIONAL ARGUMENTS: " << endl;
     cout << " -n, --numchannels #                      Number of Input and Output "
-            "Channels (default: "
+            "Channels (# greater than 0, default: "
          << 2 << ")" << endl;
     cout << "     --numincoming #                      Number of incoming Channels from "
-            "the network\n";
+            "the network (# greater than 0)\n";
     cout << "     --numoutgoing #                      Number of outgoing Channels to "
-            "the network\n";
+            "the network (# greater than 0)\n";
 #ifdef WAIR  // WAIR
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
     cout << " -N, --addcombfilterlength #              comb length adjustment for WAIR "
