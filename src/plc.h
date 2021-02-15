@@ -65,7 +65,8 @@ protected:
     int8_t* mLastReadSlot;     ///< Last slot read
 public:
     int8_t* mRingBuffer;       ///< 8-bit array of data (1-byte)
-    void print();
+    void printOneSample();
+    void setAllSamplesTo(sample_t val);
     int mNumChannels;
     int mFPP;
 };

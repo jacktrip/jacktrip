@@ -254,45 +254,48 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 #elif ZEROS // rewrite
         std::memset(DST + DONE, 0, REM);
 #elif WVTBL // wavetable
-        transferToAudioInterface(1,rpos,REM,DST,DONE);
+        transferToAudioInterface(1,rpos,REM,DST,DONE, mRingBuffer);
 #elif DELAY // read from history
 #define HIST 17
         for (int hist=0; hist<HIST; hist++) {
-            transferToAudioInterface(hist,rpos,REM,DST,DONE);
+            transferToAudioInterface(hist,rpos,REM,DST,DONE, mRingBuffer);
         }
 #elif PLC //
         transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
-        plc->print();
-        transferToAudioInterface(1,rpos,REM,DST,DONE);
+        plc->setSamplesTo(0.5);
+        plc->printOneSample();
+        transferToAudioInterface(0,0,0,DST,0, plc->mRingBuffer);
+//        transferToAudioInterface(1,rpos,REM,DST,DONE, mRingBuffer);
 #endif
         mUnderrunsNew += len - read_len;
     }
     mReadPosition += len;
 }
 
-void JitterBuffer::transferToPLC(int hist, int curpos, int rem, int8_t* destPtr, int done)
+void JitterBuffer::transferToPLC(int hist, int curpos, int rem, int8_t* dstPtr, int done)
 {
     int ptr = (curpos - (hist*rem)) + mTotalSize;
     ptr     = ptr % mTotalSize;
     qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
     int n        = std::min(mTotalSize - ptr, rem);
-    std::memcpy(destPtr + done, mRingBuffer + ptr, n);
+    std::memcpy(dstPtr + done, mRingBuffer + ptr, n);
     if (n < rem) {
         qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
-        std::memcpy(destPtr + n, mRingBuffer, rem - n);
+        std::memcpy(dstPtr + n, mRingBuffer, rem - n);
     }
 }
 
-void JitterBuffer::transferToAudioInterface(int hist, int curpos, int rem, int8_t* destPtr, int done)
+void JitterBuffer::transferToAudioInterface(int hist, int curpos, int rem,
+                                            int8_t* dstPtr, int done, int8_t* srcPtr)
 {
     int ptr = (curpos - (hist*rem)) + mTotalSize;
     ptr     = ptr % mTotalSize;
     qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
     int n        = std::min(mTotalSize - ptr, rem);
-    std::memcpy(destPtr + done, mRingBuffer + ptr, n);
+    std::memcpy(dstPtr + done, srcPtr + ptr, n);
     if (n < rem) {
         qDebug() << "n" << n << "rem - n" << (rem - n);
-        std::memcpy(destPtr + n, mRingBuffer, rem - n);
+        std::memcpy(dstPtr + n, srcPtr, rem - n);
     }
 }
 

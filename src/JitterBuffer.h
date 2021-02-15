@@ -56,8 +56,9 @@ class JitterBuffer : public RingBuffer
 
    protected:
     void processPacketLoss(int lostLen);
-    void transferToAudioInterface(int hist, int curpos, int rem, int8_t* destPtr, int done);
-    void transferToPLC(int hist, int curpos, int rem, int8_t* destPtr, int done);
+    void transferToAudioInterface(int hist, int curpos, int rem,
+                                  int8_t* dstPtr, int done, int8_t *srcPtr);
+    void transferToPLC(int hist, int curpos, int rem, int8_t* dstPtr, int done);
    protected:
     PLC* plc;
     int mMaxLatency;

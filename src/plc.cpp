@@ -11,21 +11,32 @@ PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
 
 }
 
-void PLC::print()
+void PLC::printOneSample()
 {
-
-// copped from AudioInterface.cpp
-// Extract separate channels to send to Jack
-for (int i = 0; i < mNumChannels; i++) {
-    sample_t tmp_sample = 0.0;
-    for (unsigned int j = 0; j < mFPP; j++) {
-        // Change the bit resolution on each sample
-        AudioInterface::fromBitToSampleConversion(
-            &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
-                           + (i * AudioInterface::BIT16)],
-            &tmp_sample, AudioInterface::BIT16);
-        if (!i && !j) qDebug() << tmp_sample;
+    // copped from AudioInterface.cpp
+    for (int i = 0; i < mNumChannels; i++) {
+        sample_t tmp_sample = 0.0;
+        for (unsigned int j = 0; j < mFPP; j++) {
+            AudioInterface::fromBitToSampleConversion(
+                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
+                    + (i * AudioInterface::BIT16)],
+                    &tmp_sample, AudioInterface::BIT16);
+            if (!i && !j) qDebug() << tmp_sample;
+        }
     }
 }
 
+void PLC::setAllSamplesTo(sample_t val)
+{
+    sample_t tmp = val;
+    for (int i = 0; i < mNumChannels; i++) {
+        for (unsigned int j = 0; j < mFPP; j++) {
+            AudioInterface::fromSampleToBitConversion(
+                        &tmp,
+                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
+                    + (i * AudioInterface::BIT16)],
+                    AudioInterface::BIT16);
+        }
+    }
 }
+
