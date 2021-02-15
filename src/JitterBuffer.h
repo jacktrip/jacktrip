@@ -55,7 +55,7 @@ class JitterBuffer : public RingBuffer
 
    protected:
     void processPacketLoss(int lostLen);
-
+    void transferToAudioInterface(int hist, int curpos, int rem, int8_t* ptrToReadSlot, int done);
    protected:
     int mMaxLatency;
     int mNumChannels;
