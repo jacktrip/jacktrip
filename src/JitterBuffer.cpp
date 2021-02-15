@@ -43,7 +43,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <QDebug> // cc
-#include "plc.h"
 
 using std::cout;
 using std::endl;
@@ -55,6 +54,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 {
     int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
 //    total_size = channels * bit_res * 255;  // test oddball
+    plc = new PLC(sample_rate, channels, bit_res, buf_samples);
     int slot_size  = buf_samples * channels * bit_res;
     mSlotSize      = slot_size;
     mInSlotSize    = slot_size;
@@ -261,26 +261,38 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
             transferToAudioInterface(hist,rpos,REM,DST,DONE);
         }
 #elif PLC //
-#define HIST 1
-        for (int hist=0; hist<HIST; hist++) {
-            transferToAudioInterface(hist,rpos,REM,DST,DONE);
-        }
+        transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
+        plc->print();
+        transferToAudioInterface(1,rpos,REM,DST,DONE);
 #endif
         mUnderrunsNew += len - read_len;
     }
     mReadPosition += len;
 }
 
-void JitterBuffer::transferToAudioInterface(int hist, int curpos, int rem, int8_t* ptrToReadSlot, int done)
+void JitterBuffer::transferToPLC(int hist, int curpos, int rem, int8_t* destPtr, int done)
 {
     int ptr = (curpos - (hist*rem)) + mTotalSize;
     ptr     = ptr % mTotalSize;
-    qDebug() << "hptr" << ptr << "mTotalSize" << mTotalSize << "hist" << hist;
-    int hn        = std::min(mTotalSize - ptr, rem);
-    std::memcpy(DST + done, mRingBuffer + ptr, hn);
-    if (hn < rem) {
-        qDebug() << "hn" << hn << "HIST - hn" << (rem - hn);
-        std::memcpy(DST + hn, mRingBuffer, rem - hn);
+    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
+    int n        = std::min(mTotalSize - ptr, rem);
+    std::memcpy(destPtr + done, mRingBuffer + ptr, n);
+    if (n < rem) {
+        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
+        std::memcpy(destPtr + n, mRingBuffer, rem - n);
+    }
+}
+
+void JitterBuffer::transferToAudioInterface(int hist, int curpos, int rem, int8_t* destPtr, int done)
+{
+    int ptr = (curpos - (hist*rem)) + mTotalSize;
+    ptr     = ptr % mTotalSize;
+    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
+    int n        = std::min(mTotalSize - ptr, rem);
+    std::memcpy(destPtr + done, mRingBuffer + ptr, n);
+    if (n < rem) {
+        qDebug() << "n" << n << "rem - n" << (rem - n);
+        std::memcpy(destPtr + n, mRingBuffer, rem - n);
     }
 }
 

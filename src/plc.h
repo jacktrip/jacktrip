@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file RingBuffer.h
+ * \file plc.h
  * \author Chris Chafe
  * \date Feb 2021
  */
@@ -54,7 +54,7 @@
 class PLC
 {
 public:
-    PLC();
+    PLC(int sample_rate, int channels, int bit_res, int FPP);
 protected:
     /*const*/ int mSlotSize;   ///< The size of one slot in byes
     /*const*/ int mNumSlots;   ///< Number of Slots
@@ -62,8 +62,12 @@ protected:
     uint32_t mReadPosition;    ///< Read Positions in the RingBuffer (Tail)
     uint32_t mWritePosition;   ///< Write Position in the RingBuffer (Head)
     int mFullSlots;            ///< Number of used (full) slots, in slot-size
-    int8_t* mRingBuffer;       ///< 8-bit array of data (1-byte)
     int8_t* mLastReadSlot;     ///< Last slot read
+public:
+    int8_t* mRingBuffer;       ///< 8-bit array of data (1-byte)
+    void print();
+    int mNumChannels;
+    int mFPP;
 };
 
 #endif // PLC_H
