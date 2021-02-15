@@ -52,7 +52,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
     : RingBuffer(0, 0)
 {
     int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
-    total_size = channels * bit_res * 255;  // test oddball
+//    total_size = channels * bit_res * 255;  // test oddball
     int slot_size  = buf_samples * channels * bit_res;
     mSlotSize      = slot_size;
     mInSlotSize    = slot_size;
@@ -227,7 +227,13 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         //cout << "split read: " << read_len << "-" << n << endl;
         std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
     }
-    if (read_len < len) {
+#define UNDERRUN
+#ifdef UNDERRUN // only
+    if (read_len < len)
+#else // continuously
+    read_len=0;
+#endif
+    {
 #define DST ptrToReadSlot
 #define SRC mRingBuffer
 #define SIZE len
@@ -258,11 +264,11 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         for (int hist=0; hist<HIST; hist++) {
             int hptr = (rpos - (hist*REM)) + mTotalSize;
             hptr     = hptr % mTotalSize;
-            qDebug() << "hptr" << hptr << "mTotalSize" << mTotalSize << "hist" << hist;
+//            qDebug() << "hptr" << hptr << "mTotalSize" << mTotalSize << "hist" << hist;
             std::memcpy(DST + DONE, SRC + hptr, REM);
             int hn        = std::min(mTotalSize - hptr, REM);
             if (hn < REM) {
-                qDebug() << "hn" << hn << "HIST - hn" << (REM - hn);
+//                qDebug() << "hn" << hn << "HIST - hn" << (REM - hn);
                 std::memcpy(DST + hn, SRC, REM - hn);
             }
         }
