@@ -43,6 +43,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <QDebug> // cc
+#include "plc.h"
+
 using std::cout;
 using std::endl;
 
@@ -227,7 +229,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         //cout << "split read: " << read_len << "-" << n << endl;
         std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
     }
-#define UNDERRUN
+//#define UNDERRUN
 #ifdef UNDERRUN // only
     if (read_len < len)
 #else // continuously
@@ -264,11 +266,11 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         for (int hist=0; hist<HIST; hist++) {
             int hptr = (rpos - (hist*REM)) + mTotalSize;
             hptr     = hptr % mTotalSize;
-//            qDebug() << "hptr" << hptr << "mTotalSize" << mTotalSize << "hist" << hist;
-            std::memcpy(DST + DONE, SRC + hptr, REM);
+            qDebug() << "hptr" << hptr << "mTotalSize" << mTotalSize << "hist" << hist;
             int hn        = std::min(mTotalSize - hptr, REM);
+            std::memcpy(DST + DONE, SRC + hptr, hn);
             if (hn < REM) {
-//                qDebug() << "hn" << hn << "HIST - hn" << (REM - hn);
+                qDebug() << "hn" << hn << "HIST - hn" << (REM - hn);
                 std::memcpy(DST + hn, SRC, REM - hn);
             }
         }
