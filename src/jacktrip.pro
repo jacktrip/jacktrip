@@ -152,7 +152,8 @@ HEADERS += DataProtocol.h \
            AudioInterface.h \
            compressordsp.h \
            limiterdsp.h \
-           freeverbdsp.h
+           freeverbdsp.h \
+           plc.h
 
 !nojack {
 HEADERS += JackAudioInterface.h
@@ -177,7 +178,8 @@ SOURCES += DataProtocol.cpp \
            Settings.cpp \
            UdpDataProtocol.cpp \
            UdpHubListener.cpp \
-           AudioInterface.cpp
+           AudioInterface.cpp \
+           plc.cpp
 
 !nojack {
 SOURCES += JackAudioInterface.cpp
