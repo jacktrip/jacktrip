@@ -244,14 +244,16 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // underrun condition when DONE < SIZE, fill the remainder
         qDebug() << "UNDERRUN" << REM;  // mTotalSize changed to oddball
         // ......................................................
-        //#define ORIG
-        //#define ZEROS
-        //#define WVTBL
-#ifdef ORIG
+#define ORIG 0
+#define ZEROS 0
+#define WVTBL 0
+#define DELAY 0
+#define PLC 1
+#if ORIG // was equivalent to -z
         std::memset(ptrToReadSlot + read_len, 0, len - read_len);
-#elseif ZEROS
+#elif ZEROS // rewrite
         std::memset(DST + DONE, 0, REM);
-#elseif WVTBL
+#elif WVTBL // wavetable
         int wvptr = (rpos - REM) + mTotalSize;
         wvptr     = wvptr % mTotalSize;
         qDebug() << "wavetablePtr" << wvptr << "mTotalSize" << mTotalSize;
@@ -261,7 +263,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
             qDebug() << "wn" << wn << "REM - wn" << (REM - wn);
             std::memcpy(DST + wn, SRC, REM - wn);
         }
-#else
+#elif DELAY // read from history
 #define HIST 7
         for (int hist=0; hist<HIST; hist++) {
             int hptr = (rpos - (hist*REM)) + mTotalSize;
@@ -274,10 +276,36 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
                 std::memcpy(DST + hn, SRC, REM - hn);
             }
         }
+#elif PLC //
+#define HIST 7
+        for (int hist=0; hist<HIST; hist++) {
+            transferToAudioInterface(hist,rpos,REM,DST,DONE,SRC);
+//            int hptr = (rpos - (hist*REM)) + mTotalSize;
+//            hptr     = hptr % mTotalSize;
+//            qDebug() << "hptr" << hptr << "mTotalSize" << mTotalSize << "hist" << hist;
+//            int hn        = std::min(mTotalSize - hptr, REM);
+//            std::memcpy(DST + DONE, SRC + hptr, hn);
+//            if (hn < REM) {
+//                qDebug() << "hn" << hn << "HIST - hn" << (REM - hn);
+//                std::memcpy(DST + hn, SRC, REM - hn);
+//            }
+        }
 #endif
         mUnderrunsNew += len - read_len;
     }
     mReadPosition += len;
+}
+void JitterBuffer::transferToAudioInterface(int hist, int rpos, int rem, int8_t* ptrToReadSlot, int done)
+{
+    int hptr = (rpos - (hist*rem)) + mTotalSize;
+    hptr     = hptr % mTotalSize;
+    qDebug() << "hptr" << hptr << "mTotalSize" << mTotalSize << "hist" << hist;
+    int hn        = std::min(mTotalSize - hptr, rem);
+    std::memcpy(DST + done, mRingBuffer + hptr, hn);
+    if (hn < rem) {
+        qDebug() << "hn" << hn << "HIST - hn" << (rem - hn);
+        std::memcpy(DST + hn, mRingBuffer, rem - hn);
+    }
 }
 
 //*******************************************************************************
