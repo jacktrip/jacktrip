@@ -256,7 +256,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         wvptr     = wvptr % mTotalSize;
         qDebug() << "wavetablePtr" << wvptr << "mTotalSize" << mTotalSize;
         int wn        = std::min(mTotalSize - wvptr, REM);
-        std::memcpy(DST + DONE, SRC + wvptr, REM);
+        std::memcpy(DST + DONE, SRC + wvptr, wn);
         if (wn < REM) {
             qDebug() << "wn" << wn << "REM - wn" << (REM - wn);
             std::memcpy(DST + wn, SRC, REM - wn);
