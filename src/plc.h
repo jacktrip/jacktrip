@@ -73,10 +73,11 @@ public:
     int mNumChannels;
     int mFPP;
     BurgAlgorithm ba;
+    QString qStringFromLongDouble(const long double myLongDouble);
 private:
-    vector<double>* mTrain;
-    vector<double>* mPrediction;
-    vector<vector<long double>>* mCoeffs;
+    vector<double> mTrain;
+    vector<double> mPrediction;
+    vector<vector<long double>> mCoeffs;
     int mOrder;
 };
 
