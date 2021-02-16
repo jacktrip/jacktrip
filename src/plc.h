@@ -39,6 +39,7 @@
 #define PLC_H
 
 #include "jacktrip_types.h"
+#include "burgalgorithm.h"
 
 /** \brief Provides ring-buffer for interfacing to JitterBuffer
  * and an auto-regressive algorithm (Burg's) for packet loss correction.
@@ -67,8 +68,16 @@ public:
     int8_t* mRingBuffer;       ///< 8-bit array of data (1-byte)
     void printOneSample();
     void setAllSamplesTo(sample_t val);
+    void straightWire();
+    void trainBurg();
     int mNumChannels;
     int mFPP;
+    BurgAlgorithm ba;
+private:
+    vector<double>* mTrain;
+    vector<double>* mPrediction;
+    vector<vector<long double>>* mCoeffs;
+    int mOrder;
 };
 
 #endif // PLC_H

@@ -262,8 +262,10 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         }
 #elif PLC //
         transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
-        plc->setSamplesTo(0.5);
-        plc->printOneSample();
+//        plc->setAllSamplesTo(0.5);
+//        plc->printOneSample();
+//        plc->straightWire();
+        plc->trainBurg();
         transferToAudioInterface(0,0,0,DST,0, plc->mRingBuffer);
 //        transferToAudioInterface(1,rpos,REM,DST,DONE, mRingBuffer);
 #endif
