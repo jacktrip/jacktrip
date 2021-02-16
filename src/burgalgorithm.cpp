@@ -71,7 +71,7 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<double> &x )
         }
 
             mu *= -2.0 / Dk;
-            if ( isnan(Dk) )  { qDebug() << "k" << k; }
+//    assert        if ( isnan(Dk) )  { qDebug() << "k" << k; }
 
 //            if (Dk!=0.0) {}
 //        else qDebug() << "k" << k << "Dk==0" << qStringFromLongDouble1(Dk);

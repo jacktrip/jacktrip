@@ -14,8 +14,10 @@ PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
 #define TRAINSAMPS (hist*fpp)
     mTrain = new vector<double> ( TRAINSAMPS, 0.0 );
     mPrediction = new vector<double> ( TRAINSAMPS-1, 0.0 );
-    mCoeffs = new vector<vector<long double>>;
-    mCoeffs->resize(2, std::vector<long double>(TRAINSAMPS-2, 0.0));
+    vector<vector<long double>> tmp;
+    tmp.resize(mNumChannels);
+    for (int i = 0; i < mNumChannels; i++) tmp[i].resize(TRAINSAMPS-2, 0.05);
+    mCoeffs = &tmp;
     mOrder = TRAINSAMPS-1;
     vector<vector<long double>> xxx;
 
@@ -80,6 +82,7 @@ void PLC::trainBurg()
             mTrain->at(j) = tmp_sample;
         }
 
+    qDebug() << "++++++++++++++++" << &mCoeffs->at(0).at(1);
     // GET LINEAR PREDICTION COEFFICIENTS
     ba.train( mCoeffs->at(i), *mTrain );
 
