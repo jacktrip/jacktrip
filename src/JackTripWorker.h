@@ -48,11 +48,11 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 
-//class JackTrip; // forward declaration
+// class JackTrip; // forward declaration
 class UdpHubListener;  // forward declaration
 
-/** \brief Prototype of the worker class that will be cloned through sending threads to the
- * Thread Pool
+/** \brief Prototype of the worker class that will be cloned through sending threads to
+ * the Thread Pool
  *
  * This class can be send to the ThreadPool using the start() method. Each time
  * it is sent, it'll became "independent" of the prototype, which means
@@ -60,8 +60,8 @@ class UdpHubListener;  // forward declaration
  * another thread into the pool. setAutoDelete must be set to false
  * in order for this to work.
  */
-// Note that it is not possible to start run() as an event loop. That has to be implemented
-// inside a QThread
+// Note that it is not possible to start run() as an event loop. That has to be
+// implemented inside a QThread
 class JackTripWorker
     : public QObject
     , public QRunnable
@@ -120,12 +120,13 @@ class JackTripWorker
     JackTrip::connectionModeT getConnectionModeFromHeader();
 
     UdpHubListener* mUdpHubListener;  ///< Hub Listener Socket
-    //QHostAddress mClientAddress; ///< Client Address
+    // QHostAddress mClientAddress; ///< Client Address
     QString mClientAddress;
     uint16_t mServerPort;  ///< Server Ephemeral Incomming Port to use with Client
     bool m_connectDefaultAudioPorts;
 
-    /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort -1</tt>
+    /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort
+    /// -1</tt>
     uint16_t mClientPort;
 
     int mBufferQueueLength;

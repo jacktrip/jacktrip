@@ -107,25 +107,29 @@ class JackTrip : public QObject
         JAMTEST   ///< Karplus Strong
     };
 
-    /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are automatically patched in Jack)
+    /// \brief Enum for Hub Server Audio Connection Mode (connections to hub server are
+    /// automatically patched in Jack)
     enum hubConnectionModeT {
-        SERVERTOCLIENT,  ///< Normal Mode, Sever to All Clients (but not client to any client)
+        SERVERTOCLIENT,  ///< Normal Mode, Sever to All Clients (but not client to any
+                         ///< client)
         CLIENTECHO,      ///< Client Echo (client self-to-self)
-        CLIENTFOFI,  ///< Client Fan Out to Clients and Fan In from Clients (but not self-to-self)
+        CLIENTFOFI,      ///< Client Fan Out to Clients and Fan In from Clients (but not
+                         ///< self-to-self)
         RESERVEDMATRIX,  ///< Reserved for custom patch matrix (for TUB ensemble)
-        FULLMIX,  ///< Client Fan Out to Clients and Fan In from Clients (including self-to-self)
-        NOAUTO  ///< No automatic patching
+        FULLMIX,         ///< Client Fan Out to Clients and Fan In from Clients (including
+                         ///< self-to-self)
+        NOAUTO           ///< No automatic patching
     };
     //---------------------------------------------------------
 
     /** \brief The class Constructor with Default Parameters
-   * \param JacktripMode JackTrip::CLIENT or JackTrip::SERVER
-   * \param DataProtocolType JackTrip::dataProtocolT
-   * \param NumChans Number of Audio Channels (same for inputs and outputs)
-   * \param BufferQueueLength Audio Buffer for receiving packets
-   * \param AudioBitResolution Audio Sample Resolutions in bits
-   * \param redundancy redundancy factor for network data
-   */
+     * \param JacktripMode JackTrip::CLIENT or JackTrip::SERVER
+     * \param DataProtocolType JackTrip::dataProtocolT
+     * \param NumChans Number of Audio Channels (same for inputs and outputs)
+     * \param BufferQueueLength Audio Buffer for receiving packets
+     * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param redundancy redundancy factor for network data
+     */
     JackTrip(
         jacktripModeT JacktripMode = CLIENT, dataProtocolT DataProtocolType = UDP,
         int NumChans = gDefaultNumInChannels,
@@ -153,16 +157,17 @@ class JackTrip : public QObject
 
     /// \brief Starting point for the thread
     /*virtual void run() {
-        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->run" << std::endl;
+        if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->run" <<
+    std::endl;
     }*/
 
     /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
     virtual void setPeerAddress(QString PeerHostOrIP);
 
     /** \brief Append a process plugin. Processes will be appended in order
-   * \param plugin Pointer to ProcessPlugin Class
-   */
-    //void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
+     * \param plugin Pointer to ProcessPlugin Class
+     */
+    // void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
     virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
 
@@ -493,10 +498,10 @@ class JackTrip : public QObject
     }
 
     /** \brief This slot emits in turn the signal signalNoUdpPacketsForSeconds
-   * when UDP has waited for more than 30 seconds.
-   *
-   * It is used to remove the thread from the server.
-   */
+     * when UDP has waited for more than 30 seconds.
+     *
+     * It is used to remove the thread from the server.
+     */
     void slotUdpWaitingTooLongClientGoneProbably(int wait_msec)
     {
         int wait_time = 10000;  // msec
@@ -523,7 +528,7 @@ class JackTrip : public QObject
     void tcpTimerTick();
 
    signals:
-    //void signalUdpTimeOut();
+    // void signalUdpTimeOut();
     /// \brief Signal emitted when all the processes and threads are stopped
     void signalProcessesStopped();
     /// \brief Signal emitted when no UDP Packets have been received for a while
@@ -549,19 +554,20 @@ class JackTrip : public QObject
     /// \brief Starts for the CLIENT mode
     void clientStart();
     /// \brief Starts for the SERVER mode
-    /// \param timout Set the server to timeout after 2 seconds if no client connections are received.
-    /// Usefull for the multithreaded server
-    /// \return 0 on success, -1 on error
+    /// \param timout Set the server to timeout after 2 seconds if no client connections
+    /// are received. Usefull for the multithreaded server \return 0 on success, -1 on
+    /// error
     int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer);
     /// \brief Stats for the Client to Ping Server
     /// \return -1 on error, 0 on success
     virtual int clientPingToServerStart();
     /// \brief Sets the client ID
     ///
-    void setID(int ID) {mID = ID;}
+    void setID(int ID) { mID = ID; }
     /// \brief Gets the client ID
     ///
-    int getID() {returrn mID;}
+    int getID() { return mID; }
+
    private:
     int mID = 0;
     jacktripModeT mJackTripMode;                        ///< JackTrip::jacktripModeT

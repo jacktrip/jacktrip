@@ -109,9 +109,9 @@ class UdpHubListener : public QObject
 
    private:
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
-   * \param udpsocket a QUdpSocket
-   * \param port Port number
-   */
+     * \param udpsocket a QUdpSocket
+     * \param port Port number
+     */
     void receivedClientInfo(QTcpSocket* clientConnection);
 
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
@@ -120,28 +120,28 @@ class UdpHubListener : public QObject
     int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
 
     /** \brief Send the JackTripWorker to the thread pool. This will run
-   * until it's done. We still have control over the prototype class.
-   * \param id Identification Number
-   */
-    //void sendToPoolPrototype(int id);
+     * until it's done. We still have control over the prototype class.
+     * \param id Identification Number
+     */
+    // void sendToPoolPrototype(int id);
 
     /** \brief Check if address is already handled, if not add to array
-   * \param address as string (IPv4 or IPv6)
-   * \return -1 if address is busy, id number if not
-   */
+     * \param address as string (IPv4 or IPv6)
+     * \return -1 if address is busy, id number if not
+     */
     int isNewAddress(QString address, uint16_t port);
 
     /** \brief Returns the ID of the client in the pool. If the client
-    * is not in the pool yet, returns -1.
-    */
+     * is not in the pool yet, returns -1.
+     */
     int getPoolID(QString address, uint16_t port);
 
     void stopAllThreads();
 
-    //QUdpSocket mUdpHubSocket; ///< The UDP socket
-    //QHostAddress mPeerAddress; ///< The Peer Address
+    // QUdpSocket mUdpHubSocket; ///< The UDP socket
+    // QHostAddress mPeerAddress; ///< The Peer Address
 
-    //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
+    // JackTripWorker* mJTWorker; ///< Class that will be used as prototype
     QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorker s
     QThreadPool mThreadPool;               ///< The Thread Pool
 
