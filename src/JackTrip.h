@@ -556,12 +556,14 @@ class JackTrip : public QObject
     /// \brief Stats for the Client to Ping Server
     /// \return -1 on error, 0 on success
     virtual int clientPingToServerStart();
-
+    /// \brief Sets the client ID
+    ///
+    void setID(int ID) {mID = ID;}
+    /// \brief Gets the client ID
+    ///
+    int getID() {returrn mID;}
    private:
-    //void bindReceiveSocket(QUdpSocket& UdpSocket, int bind_port,
-    //                       QHostAddress PeerHostAddress, int peer_port)
-    //throw(std::runtime_error);
-
+    int mID = 0;
     jacktripModeT mJackTripMode;                        ///< JackTrip::jacktripModeT
     dataProtocolT mDataProtocol;                        ///< Data Protocol Tipe
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
