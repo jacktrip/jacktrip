@@ -236,6 +236,9 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     // --------------------
     // Register JackTripWorker with the hub listener
     delete mJTWorkers->at(id);  // just in case the Worker was previously created
+
+    if (true == mAppendThreadID) { clientName = clientName + QString("_%1").arg(id + 1); }
+
     mJTWorkers->replace(
         id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
     if (mIOStatTimeout > 0) {

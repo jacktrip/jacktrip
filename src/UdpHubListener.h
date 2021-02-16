@@ -214,6 +214,7 @@ class UdpHubListener : public QObject
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
+    bool mAppendThreadID = false;
 };
 
 #endif  //__UDPHUBLISTENER_H__

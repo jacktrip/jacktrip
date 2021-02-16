@@ -223,8 +223,9 @@ void JackTripWorker::run()
         // ClientAddress.setAddress(mClientAddress);
         // If I don't type this line, I get a bus error in the next line.
         // I still haven't figure out why
-        //ClientAddress.toString().toLatin1().constData();
-        //jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
+        // ClientAddress.toString().toLatin1().constData();
+        // jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
+        if (true == mAppendThreadID) { jacktrip.setID(mID + 1); }
         jacktrip.setPeerAddress(mClientAddress);
         jacktrip.setBindPorts(mServerPort);
         // jacktrip.setPeerPorts(mClientPort);
