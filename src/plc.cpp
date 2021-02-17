@@ -1,15 +1,26 @@
 #include "plc.h"
 #include <QDebug>
-#include "AudioInterface.h"
 #include <stk/Stk.h>
 using namespace std; // both needed for stringstream
 using namespace stk;
 
 PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
     mNumChannels (channels),
-    mFPP (FPP)
+    mFPP (FPP),
+    mAudioBitRes (bit_res)
 {
-    mTotalSize = sample_rate * channels * bit_res * 2;  // 2 secs of audio
+    switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
+    case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
+        break;
+    case 2: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT16;
+        break;
+    case 3: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT24;
+        break;
+    case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
+        break;
+    }
+//    qDebug() << "mAudioBitRes"  << mAudioBitRes << "mBitResolutionMode"  << mBitResolutionMode;
+    mTotalSize = sample_rate * channels * mAudioBitRes * 2;  // 2 secs of audio
     mRingBuffer   = new int8_t[mTotalSize];
     int fpp = mFPP;
 #define HIST 1
@@ -28,18 +39,13 @@ PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
 
 void PLC::trainBurg()
 {
-    sample_t tmp_sample = 0.0;
     for (int i = 0; i < mNumChannels; i++) {
         for (int j = 0; j < mFPP; j++) {
-            AudioInterface::fromBitToSampleConversion(
-                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
-                    + (i * AudioInterface::BIT16)],
-                    &tmp_sample, AudioInterface::BIT16);
-            mTrain[i][j] = tmp_sample;
-//            if (i) mTrain[i][j] = 0.05;
+            mTrain[i][j] = bitsToSample(i, j);
+            //            if (i) mTrain[i][j] = 0.05;
         }
 
-//        qDebug() << "++++++++++++++++" << "ch" << i;
+        //        qDebug() << "++++++++++++++++" << "ch" << i;
         // GET LINEAR PREDICTION COEFFICIENTS
         ba.train( mCoeffs.at(i), mTrain[i] );
 
@@ -52,26 +58,17 @@ void PLC::trainBurg()
             mPrediction[i][j] = tail[j+mOrder+1];
 
         for (int j = 0; j < mFPP; j++) {
-            tmp_sample = mPrediction[i][j];
-            AudioInterface::fromSampleToBitConversion(
-                        &tmp_sample,
-                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
-                    + (i * AudioInterface::BIT16)],
-                    AudioInterface::BIT16);
+            sampleToBits(mPrediction[i][j], i, j);
         }
     }
 }
 
 void PLC::printOneFrane()
 {
-    // copped from AudioInterface.cpp
     for (int i = 0; i < mNumChannels; i++) {
         sample_t tmp_sample = 0.0;
         for (int j = 0; j < mFPP; j++) {
-            AudioInterface::fromBitToSampleConversion(
-                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
-                    + (i * AudioInterface::BIT16)],
-                    &tmp_sample, AudioInterface::BIT16);
+            tmp_sample = bitsToSample(i, j);
             if (!j) qDebug() << tmp_sample;
         }
     }
@@ -82,33 +79,40 @@ void PLC::setAllSamplesTo(sample_t val)
     sample_t tmp = val;
     for (int i = 0; i < mNumChannels; i++) {
         for (int j = 0; j < mFPP; j++) {
-            AudioInterface::fromSampleToBitConversion(
-                        &tmp,
-                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
-                    + (i * AudioInterface::BIT16)],
-                    AudioInterface::BIT16);
+            sampleToBits(tmp, i, j);
         }
     }
 }
 
 void PLC::straightWire()
 {
-    sample_t tmp_sample = 0.0;
+    sample_t tmp = 0.0;
     for (int i = 0; i < mNumChannels; i++) {
         for (int j = 0; j < mFPP; j++) {
-            AudioInterface::fromBitToSampleConversion(
-                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
-                    + (i * AudioInterface::BIT16)],
-                    &tmp_sample, AudioInterface::BIT16);
-            AudioInterface::fromSampleToBitConversion(
-                        &tmp_sample,
-                        &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
-                    + (i * AudioInterface::BIT16)],
-                    AudioInterface::BIT16);
+            tmp = bitsToSample(i, j);
+            sampleToBits(tmp, i, j);
         }
     }
 }
 
+// copped from AudioInterface.cpp
+
+sample_t PLC::bitsToSample(int ch, int frame) {
+    sample_t sample = 0.0;
+    AudioInterface::fromBitToSampleConversion(
+                &mRingBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            &sample, mBitResolutionMode);
+    return sample;
+}
+
+void PLC::sampleToBits(sample_t sample, int ch, int frame) {
+    AudioInterface::fromSampleToBitConversion(
+                &sample,
+                &mRingBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            mBitResolutionMode);
+}
 
 QString PLC::qStringFromLongDouble(const long double myLongDouble)
 {

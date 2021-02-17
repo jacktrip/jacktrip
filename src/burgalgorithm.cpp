@@ -22,7 +22,7 @@ BurgAlgorithm::BurgAlgorithm()
 // from .pl
 void BurgAlgorithm::train(vector<long double> &coeffs, const vector<double> &x )
 {
-    qDebug() << "++" << qStringFromLongDouble1(coeffs[1]) << "....." << x[1];
+//    qDebug() << "++" << qStringFromLongDouble1(coeffs[1]) << "....." << x[1];
 
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;

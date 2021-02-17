@@ -40,6 +40,7 @@
 
 #include "jacktrip_types.h"
 #include "burgalgorithm.h"
+#include "AudioInterface.h"
 
 /** \brief Provides ring-buffer for interfacing to JitterBuffer
  * and an auto-regressive algorithm (Burg's) for packet loss correction.
@@ -72,6 +73,8 @@ public:
     void trainBurg();
     int mNumChannels;
     int mFPP;
+    int mAudioBitRes;
+    AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
     QString qStringFromLongDouble(const long double myLongDouble);
 private:
@@ -79,6 +82,8 @@ private:
     vector<vector<double>> mPrediction;
     vector<vector<long double>> mCoeffs;
     int mOrder;
+    sample_t bitsToSample(int ch, int frame);
+    void sampleToBits(sample_t sample, int ch, int frame);
 };
 
 #endif // PLC_H

@@ -223,13 +223,13 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 
     int read_len = qBound(0, available, len);
     int rpos     = mReadPosition % mTotalSize;
-//    int n        = std::min(mTotalSize - rpos, read_len);
-//    std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
-//    if (n < read_len) {
-//        //cout << "split read: " << read_len << "-" << n << endl;
-//        std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
-//    }
-//#define UNDERRUN
+    int n        = std::min(mTotalSize - rpos, read_len);
+    std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
+    if (n < read_len) {
+        //cout << "split read: " << read_len << "-" << n << endl;
+        std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
+    }
+#define UNDERRUN
 #ifdef UNDERRUN
     if (read_len < len) // only
 #else
@@ -242,7 +242,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 #define DONE read_len
 #define REM (SIZE - DONE)
         // underrun condition when DONE < SIZE, fill the remainder
-//        qDebug() << "UNDERRUN" << REM;  // mTotalSize changed to oddball
+        qDebug() << "UNDERRUN" << REM;  // mTotalSize changed to oddball
         // ......................................................
 #define ORIG 0
 #define ZEROS 0
@@ -263,10 +263,10 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 #elif PLC //
         transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
 //        plc->setAllSamplesTo(0.5);
-        plc->printOneFrane();
 //        plc->straightWire();
         plc->trainBurg();
-//        transferToAudioInterface(0,0,0,DST,0, plc->mRingBuffer);
+        transferToAudioInterface(0,0,REM,DST,0, plc->mRingBuffer);
+//        plc->printOneFrane();
 //        transferToAudioInterface(1,rpos,REM,DST,DONE, mRingBuffer);
 #endif
         mUnderrunsNew += len - read_len;
@@ -292,11 +292,11 @@ void JitterBuffer::transferToAudioInterface(int hist, int curpos, int rem,
 {
     int ptr = (curpos - (hist*rem)) + mTotalSize;
     ptr     = ptr % mTotalSize;
-    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
     int n        = std::min(mTotalSize - ptr, rem);
+//    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
     std::memcpy(dstPtr + done, srcPtr + ptr, n);
     if (n < rem) {
-        qDebug() << "n" << n << "rem - n" << (rem - n);
+//        qDebug() << "n" << n << "rem - n" << (rem - n);
         std::memcpy(dstPtr + n, srcPtr, rem - n);
     }
 }
