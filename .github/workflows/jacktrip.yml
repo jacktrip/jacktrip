@@ -42,7 +42,7 @@ jobs:
         run: |
           choco install jack
       - name: build on Linux and macOS
-        if: runner.os == 'Linux' || 'macOS'
+        if: (runner.os == 'Linux') || (runner.os == 'macOS')
         env:
           DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
         run: |
