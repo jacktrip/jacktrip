@@ -41,15 +41,16 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           choco install jack
-      - name: build
+      - name: build on Linux and macOS
         if: runner.os == 'Linux' || 'macOS'
         env:
           DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
         run: |
           cd $SRC_PATH
           ./build
-      - name: build
+      - name: build on Windows
         if: runner.os == 'Windows'
+        run: |
           mkdir ${{ github.workspace }}\builddir
           cd builddir
           qmake -spec win32-g++ ../src/jacktrip.pro
