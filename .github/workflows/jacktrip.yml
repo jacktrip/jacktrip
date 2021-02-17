@@ -37,8 +37,8 @@ jobs:
       - name: install Qt for Windows
         if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v2
-          with:
-            modules: qtnetwork
+        with:
+          modules: qtnetwork
       - name: install other dependencies for Windows
         if: runner.os == 'Windows'
         run: |
