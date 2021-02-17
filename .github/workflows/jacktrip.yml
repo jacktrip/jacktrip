@@ -50,11 +50,10 @@ jobs:
           ./build
       - name: build
         if: runner.os == 'Windows'
-        env:
-          DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
-        run: |
-          cd ${{ github.workspace }}\src
-          ./build
+          mkdir ${{ github.workspace }}\builddir
+          cd builddir
+          qmake -spec win32-g++ ../src/jacktrip.pro
+          make release
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
