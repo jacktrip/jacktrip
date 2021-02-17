@@ -151,11 +151,10 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
 //*******************************************************************************
 void setRealtimeProcessPriority(int priority)
 {
-    const struct sched_param sp = {.sched_priority = priority};
+    const struct sched_param sp = {.sched_priority = (0 > priority) ? 0 : priority};
 
     if (sched_setscheduler(0, SCHED_FIFO, &sp) == -1) {
         std::cerr << "Failed to set the scheduler policy and priority." << std::endl;
-        ;
     }
 }
 #endif  //__LINUX__
