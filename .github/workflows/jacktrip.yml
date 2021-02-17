@@ -16,13 +16,8 @@ jobs:
             runs-on: windows-latest
 
     env:
-      if: runner.os == 'Linux' or 'macOS'
-        SRC_PATH: ${{ github.workspace }}/src
-        BUILD_PATH: ${{ github.workspace }}/builddir
-    env:
-      if: runner.os == 'Windows'
-        SRC_PATH: ${{ github.workspace }}\src
-        BUILD_PATH: ${{ github.workspace }}\builddir
+      SRC_PATH: ${{ github.workspace }}/src
+      BUILD_PATH: ${{ github.workspace }}/builddir
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies for Linux
@@ -47,10 +42,19 @@ jobs:
         run: |
           choco install jack
       - name: build
+        if: runner.os == 'Linux'
+        if: runner.os == 'macOS'
         env:
           DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
         run: |
           cd $SRC_PATH
+          ./build
+      - name: build
+        if: runner.os == 'Windows'
+        env:
+          DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
+        run: |
+          cd ${{ github.workspace }}\src
           ./build
       - name: upload artifacts
         uses: actions/upload-artifact@v2
