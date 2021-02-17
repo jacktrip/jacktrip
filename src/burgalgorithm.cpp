@@ -22,7 +22,7 @@ BurgAlgorithm::BurgAlgorithm()
 // from .pl
 void BurgAlgorithm::train(vector<long double> &coeffs, const vector<double> &x )
 {
-//    qDebug() << "++++++++++++++++" << qStringFromLongDouble1(coeffs[1]);
+    qDebug() << "++" << qStringFromLongDouble1(coeffs[1]) << "....." << x[1];
 
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;
@@ -72,7 +72,7 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<double> &x )
         }
 
             mu *= -2.0 / Dk;
-            if ( isnan(Dk) )  { qDebug() << "k" << k; }
+//            if ( isnan(Dk) )  { qDebug() << "k" << k; } assert
 
 //            if (Dk!=0.0) {}
 //        else qDebug() << "k" << k << "Dk==0" << qStringFromLongDouble1(Dk);

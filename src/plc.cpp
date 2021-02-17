@@ -36,8 +36,10 @@ void PLC::trainBurg()
                     + (i * AudioInterface::BIT16)],
                     &tmp_sample, AudioInterface::BIT16);
             mTrain[i][j] = tmp_sample;
+//            if (i) mTrain[i][j] = 0.05;
         }
 
+//        qDebug() << "++++++++++++++++" << "ch" << i;
         // GET LINEAR PREDICTION COEFFICIENTS
         ba.train( mCoeffs.at(i), mTrain[i] );
 
@@ -60,7 +62,7 @@ void PLC::trainBurg()
     }
 }
 
-void PLC::printOneSample()
+void PLC::printOneFrane()
 {
     // copped from AudioInterface.cpp
     for (int i = 0; i < mNumChannels; i++) {
@@ -70,7 +72,7 @@ void PLC::printOneSample()
                         &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
                     + (i * AudioInterface::BIT16)],
                     &tmp_sample, AudioInterface::BIT16);
-            if (!i && !j) qDebug() << tmp_sample;
+            if (!j) qDebug() << tmp_sample;
         }
     }
 }
