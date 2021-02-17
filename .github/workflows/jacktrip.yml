@@ -16,8 +16,13 @@ jobs:
             runs-on: windows-latest
 
     env:
-      SRC_PATH: ${{ github.workspace }}/src
-      BUILD_PATH: ${{ github.workspace }}/builddir
+      if: runner.os == 'Linux' or 'macOS'
+        SRC_PATH: ${{ github.workspace }}/src
+        BUILD_PATH: ${{ github.workspace }}/builddir
+    env:
+      if: runner.os == 'Windows'
+        SRC_PATH: ${{ github.workspace }}\src
+        BUILD_PATH: ${{ github.workspace }}\builddir
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies for Linux
