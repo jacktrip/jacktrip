@@ -6,7 +6,7 @@ using namespace std; // both needed for stringstream
 using namespace stk;
 
 PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
-    mNumChannels (1),
+    mNumChannels (channels),
     mFPP (FPP)
 {
     mTotalSize = sample_rate * channels * bit_res * 2;  // 2 secs of audio
@@ -15,10 +15,14 @@ PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
 #define HIST 1
     int hist = HIST;
 #define TRAINSAMPS (hist*fpp)
-    mTrain.resize( TRAINSAMPS, 0.0 );
-    mPrediction.resize( TRAINSAMPS-1, 0.0 );
+    mTrain.resize(mNumChannels);
+    mPrediction.resize(mNumChannels);
     mCoeffs.resize(mNumChannels);
-    for (int i = 0; i < mNumChannels; i++) mCoeffs[i].resize(TRAINSAMPS-2, 0.05);
+    for (int i = 0; i < mNumChannels; i++) {
+        mTrain[i].resize( TRAINSAMPS, 0.0 );
+        mPrediction[i].resize( TRAINSAMPS-1, 0.0 );
+        mCoeffs[i].resize(TRAINSAMPS-2, 0.0);
+    }
     mOrder = TRAINSAMPS-1;
 }
 
@@ -31,22 +35,22 @@ void PLC::trainBurg()
                         &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)
                     + (i * AudioInterface::BIT16)],
                     &tmp_sample, AudioInterface::BIT16);
-            mTrain[j] = tmp_sample;
+            mTrain[i][j] = tmp_sample;
         }
 
         // GET LINEAR PREDICTION COEFFICIENTS
-        ba.train( mCoeffs.at(0), mTrain );
+        ba.train( mCoeffs.at(i), mTrain[i] );
 
         // LINEAR PREDICT DATA
-        vector<double> tail( mTrain );
+        vector<double> tail( mTrain[i] );
 
-        ba.predict( mCoeffs.at(0), tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
+        ba.predict( mCoeffs.at(i), tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
-        for ( int i = 0; i < mOrder; i++ )
-            mPrediction[i] = tail[i+mOrder+1];
+        for ( int j = 0; j < mOrder; j++ )
+            mPrediction[i][j] = tail[j+mOrder+1];
 
         for (int j = 0; j < mFPP; j++) {
-            tmp_sample = mPrediction[j];
+            tmp_sample = mPrediction[i][j];
             AudioInterface::fromSampleToBitConversion(
                         &tmp_sample,
                         &mRingBuffer[(j * AudioInterface::BIT16 * mNumChannels)

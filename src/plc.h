@@ -75,8 +75,8 @@ public:
     BurgAlgorithm ba;
     QString qStringFromLongDouble(const long double myLongDouble);
 private:
-    vector<double> mTrain;
-    vector<double> mPrediction;
+    vector<vector<double>> mTrain;
+    vector<vector<double>> mPrediction;
     vector<vector<long double>> mCoeffs;
     int mOrder;
 };
