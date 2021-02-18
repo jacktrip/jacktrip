@@ -69,6 +69,7 @@ enum JTLongOptIDS {
     OPT_SIMJITTER,
     OPT_BROADCAST,
     OPT_RTUDPPRIORITY,
+    OPT_APPENDTHREADID
 };
 
 //*******************************************************************************
@@ -164,10 +165,12 @@ void Settings::parseInput(int argc, char** argv)
         {"emptyheader", no_argument, NULL, 'e'},  // Run in JamLink mode
         {"clientname", required_argument, NULL, 'J'},  // Run in JamLink mode
         {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
-        {"rtaudio", no_argument, NULL, 'R'},           // Run in JamLink mode
-        {"srate", required_argument, NULL, 'T'},       // Set Sample Rate
-        {"deviceid", required_argument, NULL, 'd'},    // Set RTAudio device id to use
-        {"bufsize", required_argument, NULL, 'F'},     // Set buffer Size
+        {"appendthreadid", no_argument, NULL,
+         OPT_APPENDTHREADID},                        // Append thread id to client names
+        {"rtaudio", no_argument, NULL, 'R'},         // Run in JamLink mode
+        {"srate", required_argument, NULL, 'T'},     // Set Sample Rate
+        {"deviceid", required_argument, NULL, 'd'},  // Set RTAudio device id to use
+        {"bufsize", required_argument, NULL, 'F'},   // Set buffer Size
         {"nojackportsconnect", no_argument, NULL,
          'D'},                                // Don't connect default Audio Ports
         {"version", no_argument, NULL, 'v'},  // Version Number
@@ -214,7 +217,8 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mWAIR = true;
             mNumNetRevChans =
-                gDefaultNumNetRevChannels;  // fixed amount sets number of network channels and comb filters for WAIR
+                gDefaultNumNetRevChannels;  // fixed amount sets number of network
+                                            // channels and comb filters for WAIR
             break;
         case 'N':
             //-------------------------------------------------------
@@ -341,6 +345,9 @@ void Settings::parseInput(int argc, char** argv)
         case 'K':  // Set Remote client Name
             //-------------------------------------------------------
             mRemoteClientName = optarg;
+            break;
+        case OPT_APPENDTHREADID:
+            mAppendThreadID = true;
             break;
         case 'R':  // RtAudio
             //-------------------------------------------------------
@@ -572,8 +579,8 @@ void Settings::parseInput(int argc, char** argv)
                          "server modes (-S and -s).\n\n";
         }
         mEffects.setNoLimiters();
-        // don't exit since an outgoing limiter should be the default (could exit for incoming case):
-        // std::exit(1);
+        // don't exit since an outgoing limiter should be the default (could exit for
+        // incoming case): std::exit(1);
     }
     if (mAudioTester.getEnabled() && haveSomeServerMode) {
         std::cerr << "*** --examine-audio-delay (-x) ERROR: Audio latency measurement "
@@ -583,7 +590,8 @@ void Settings::parseInput(int argc, char** argv)
     if (mAudioTester.getEnabled() && (mAudioBitResolution != AudioInterface::BIT16)
         && (mAudioBitResolution
             != AudioInterface::BIT32)) {  // BIT32 not tested but should be ok
-        // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
+        // BIT24 should work also, but there's a comment saying it's broken right now, so
+        // exclude it
         std::cerr << "*** --examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 "
                      "presently supported for audio latency measurement.\n\n";
         std::exit(1);
@@ -665,6 +673,8 @@ void Settings::printUsage()
             "when connecting to a hub server (the default is derived from this "
             "computer's external facing IP address)"
          << endl;
+    cout
+        << "     --appendthreadid                     Append thread ID to client names\n";
     cout << " -L, --localaddress                       Change default local host IP "
             "address (default: 127.0.0.1)"
          << endl;
@@ -743,7 +753,7 @@ UdpHubListener* Settings::getConfiguredHubServer()
     if (gVerboseFlag)
         std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
     UdpHubListener* udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum);
-    //udpHub->setSettings(this);
+    // udpHub->setSettings(this);
 #ifdef WAIR  // WAIR
     udpHub->setWAIR(mWAIR);
 #endif  // endwhere
@@ -766,6 +776,8 @@ UdpHubListener* Settings::getConfiguredHubServer()
                                    mSimulatedDelayRel);
     udpHub->setBroadcast(mBroadcastQueue);
     udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
+
+    if (true == mAppendThreadID) { udpHub->mAppendThreadID = true; }
 
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
@@ -825,11 +837,11 @@ JackTrip* Settings::getConfiguredJackTrip()
     //            mJackTrip->setLocalAddress(QHostAddress::Any);
 
     // Set Ports - Done in constructor now.
-    //cout << "SETTING ALL PORTS" << endl;
-    /*if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setBindPorts" << std::endl;
-    jackTrip->setBindPorts(mBindPortNum);
-    if (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setPeerPorts" << std::endl;
-    jackTrip->setPeerPorts(mPeerPortNum);*/
+    // cout << "SETTING ALL PORTS" << endl;
+    /*if (gVerboseFlag) std::cout << "Settings:startJackTrip before
+    mJackTrip->setBindPorts" << std::endl; jackTrip->setBindPorts(mBindPortNum); if
+    (gVerboseFlag) std::cout << "Settings:startJackTrip before mJackTrip->setPeerPorts" <<
+    std::endl; jackTrip->setPeerPorts(mPeerPortNum);*/
 
     // Set in JamLink Mode
     if (mJamLink) {
@@ -868,8 +880,8 @@ JackTrip* Settings::getConfiguredJackTrip()
     if (mLoopBack) {
         cout << "Running in Loop-Back Mode..." << endl;
         cout << gPrintSeparator << std::endl;
-        //std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
-        //mJackTrip->appendProcessPlugin(loopback.get());
+        // std::tr1::shared_ptr<LoopBack> loopback(new LoopBack(mNumChans));
+        // mJackTrip->appendProcessPlugin(loopback.get());
 
 #if 0  // previous technique:
         LoopBack* loopback = new LoopBack(mNumChans);
@@ -879,12 +891,12 @@ JackTrip* Settings::getConfiguredJackTrip()
 #endif
 
         // ----- Test Karplus Strong -----------------------------------
-        //std::tr1::shared_ptr<NetKS> loopback(new NetKS());
-        //mJackTrip->appendProcessPlugin(loopback);
-        //loopback->play();
-        //NetKS* netks = new NetKS;
-        //mJackTrip->appendProcessPlugin(netks);
-        //netks->play();
+        // std::tr1::shared_ptr<NetKS> loopback(new NetKS());
+        // mJackTrip->appendProcessPlugin(loopback);
+        // loopback->play();
+        // NetKS* netks = new NetKS;
+        // mJackTrip->appendProcessPlugin(netks);
+        // netks->play();
         // -------------------------------------------------------------
     }
 
