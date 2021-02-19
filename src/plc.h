@@ -56,7 +56,7 @@
 class PLC
 {
 public:
-    PLC(int sample_rate, int channels, int bit_res, int FPP);
+    PLC(int sample_rate, int channels, int bit_res, int FPP, int hist);
 protected:
     /*const*/ int mSlotSize;   ///< The size of one slot in byes
     /*const*/ int mNumSlots;   ///< Number of Slots
@@ -87,6 +87,10 @@ private:
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
     vector<sample_t> lastPredicted;
+    vector<sample_t> fadeUp;
+    vector<sample_t> fadeDown;
+    vector<vector<sample_t>> lastPackets;
+    int mHist;
 };
 
 #endif // PLC_H

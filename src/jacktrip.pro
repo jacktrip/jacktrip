@@ -133,6 +133,7 @@ HEADERS += DataProtocol.h \
            Reverb.h \
            AudioTester.h \
            burgalgorithm.h \
+           burgplc.h \
            jacktrip_globals.h \
            jacktrip_types.h \
            JackTripThread.h \
@@ -167,6 +168,7 @@ SOURCES += DataProtocol.cpp \
            Reverb.cpp \
            AudioTester.cpp \
            burgalgorithm.cpp \
+           burgplc.cpp \
            jacktrip_globals.cpp \
            jacktrip_main.cpp \
            jacktrip_tests.cpp \

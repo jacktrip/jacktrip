@@ -54,7 +54,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 {
     int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
 //    total_size = channels * bit_res * 255;  // test oddball
-    plc = new PLC(sample_rate, channels, bit_res, buf_samples);
+    plc = new BurgPLC(sample_rate, channels, bit_res, buf_samples);
     int slot_size  = buf_samples * channels * bit_res;
     mSlotSize      = slot_size;
     mInSlotSize    = slot_size;
@@ -252,11 +252,11 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // underrun condition when DONE < SIZE, fill the remainder
         qDebug() << "UNDERRUN" << REM;  // mTotalSize changed to oddball
         // ......................................................
-#define ORIG 1
+#define ORIG 0
 #define ZEROS 0
 #define WVTBL 0
 #define DELAY 0
-#define PLC 0
+#define PLC 1
 #if ORIG // was equivalent to -z
         std::memset(ptrToReadSlot + read_len, 0, len - read_len);
 #elif ZEROS // rewrite
@@ -272,13 +272,11 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 //        transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
         transferToPLC(6,rpos,6*REM,plc->mRingBuffer,DONE);
 //        plc->setAllSamplesTo(0.5);
-//        plc->trainBurg();
         plc->trainBurg();
 //        plc->straightWire();
         transferToAudioInterface(0,0,REM,DST,0, plc->mRingBuffer);
 
         //        std::memcpy(lastPredictedPtr, plc->mRingBuffer + REM, n);
-        //        lastPredicted = true;
 
 //        plc->printOneFrame();
         plc->lastWasGlitch = true;
