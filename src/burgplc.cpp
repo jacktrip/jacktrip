@@ -87,7 +87,7 @@ void BurgPLC::processPacket (bool glitch)
             case 0  : OUT(mTruth[s], 0, s);
                 break;
             case 1  : OUT((glitch) ?
-                            mLastGoodPacket[s] : mTruth[s], 0, s) ;
+                            mLastGoodPacket[s] : mTruth[s], 0, s);
                 break;
             case 2  : OUT((glitch) ? 0.0 : mTruth[s], 0, s);
                 break;
@@ -118,7 +118,8 @@ void BurgPLC::processPacket (bool glitch)
     for PACKETSAMP mLastPackets[0][s] =
             (!glitch) ? mTruth[s] : mPrediction[s];
 
-    if (!glitch) for PACKETSAMP mLastGoodPacket[s] = mTruth[s];
+    if (!glitch)
+        for PACKETSAMP mLastGoodPacket[s] = mTruth[s];
     mPacketCnt++;
 
 }

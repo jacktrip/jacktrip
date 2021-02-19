@@ -58,8 +58,7 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<double> &x )
     //    $Dk -= $f[0] ** 2 + $B[$#x] ** 2;
 
 //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-    if ( isnan(Dk) )
-    { qDebug() << "NAN at init"; }
+//    if ( isnan(Dk) ) { qDebug() << "NAN at init"; } // assert
 
     // BURG RECURSION
     for ( size_t k = 0; k < m; k++ )

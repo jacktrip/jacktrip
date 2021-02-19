@@ -54,7 +54,8 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 {
     int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
 //    total_size = channels * bit_res * 255;  // test oddball
-    mPLC = new BurgPLC(sample_rate, channels, bit_res, buf_samples, 6); // hist
+#define HIST 6
+    mPLC = new BurgPLC(sample_rate, channels, bit_res, buf_samples, HIST);
     mPLCbuffer = mPLC->getBufferPtr();
     int slot_size  = buf_samples * channels * bit_res;
     mSlotSize      = slot_size;
@@ -270,7 +271,6 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 #elif WVTBL // wavetable
         transferToAudioInterface(1,rpos,REM,DST,DONE, mRingBuffer);
 #elif DELAY // read from history
-#define HIST 17
         for (int hist=0; hist<HIST; hist++) {
             transferToAudioInterface(hist,rpos,REM,DST,DONE, mRingBuffer);
         }
@@ -288,7 +288,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         plc->lastWasGlitch = true;
 #elif BURGPLC
     transferToPLC(1,rpos,REM,mPLCbuffer,DONE);
-    mPLC->processPacket (false);
+    mPLC->processPacket (true);
     transferToAudioInterface(0,0,REM,DST,0, mPLCbuffer);
 #endif
         mUnderrunsNew += len - read_len;
