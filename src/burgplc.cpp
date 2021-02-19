@@ -60,11 +60,8 @@ void BurgPLC::processPacket (bool glitch)
                         mLastPackets[i][s];
             }
 
-            for ( int i = 0; i < mTrain.size(); i++ )
-            {
-                if ( isnan(mTrain[i]) ) { qDebug() << "NAN before call"; }
-                qDebug() << i <<  "mTrain" << mTrain[i];
-            }
+//            if ( isnan(mCoeffs[0]) ) { qDebug() << "mPrediction nan" << mPacketCnt << qStringFromLongDouble(mCoeffs[0]); } else
+//                { qDebug() << "-------" << mPacketCnt << qStringFromLongDouble(mCoeffs[0]); }
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain );
 
@@ -75,7 +72,6 @@ void BurgPLC::processPacket (bool glitch)
 
             for ( int i = 0; i < ORDER; i++ )
                 mPrediction[i] = tail[i+TRAINSAMPS];
-
             /////////////////////////////////////////////
 
             // CALCULATE AND DISPLAY ERROR
