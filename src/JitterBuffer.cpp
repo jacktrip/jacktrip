@@ -54,7 +54,8 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 {
     int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
 //    total_size = channels * bit_res * 255;  // test oddball
-    plc = new BurgPLC(sample_rate, channels, bit_res, buf_samples);
+    mPLC = new BurgPLC(sample_rate, channels, bit_res, buf_samples, 6); // hist
+    mPLCbuffer = mPLC->getBufferPtr();
     int slot_size  = buf_samples * channels * bit_res;
     mSlotSize      = slot_size;
     mInSlotSize    = slot_size;
@@ -231,10 +232,14 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 //    }
 // =    transferToAudioInterface(0,rpos,read_len,ptrToReadSlot,0, mRingBuffer);
 
-    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);
-    if(plc->lastWasGlitch) plc->crossFade();
-    plc->lastWasGlitch = false;
-    transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, plc->mRingBuffer);
+    transferToPLC(0,rpos,read_len,mPLCbuffer,0);
+    mPLC->processPacket (false);
+    transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, mPLCbuffer);
+
+//    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);
+//    if(plc->lastWasGlitch) plc->crossFade();
+//    plc->lastWasGlitch = false;
+//    transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, plc->mRingBuffer);
 
 
 #define UNDERRUN
@@ -256,7 +261,8 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 #define ZEROS 0
 #define WVTBL 0
 #define DELAY 0
-#define PLC 1
+#define PLC 0
+#define BURGPLC 1
 #if ORIG // was equivalent to -z
         std::memset(ptrToReadSlot + read_len, 0, len - read_len);
 #elif ZEROS // rewrite
@@ -280,6 +286,10 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 
 //        plc->printOneFrame();
         plc->lastWasGlitch = true;
+#elif BURGPLC
+    transferToPLC(1,rpos,REM,mPLCbuffer,DONE);
+    mPLC->processPacket (false);
+    transferToAudioInterface(0,0,REM,DST,0, mPLCbuffer);
 #endif
         mUnderrunsNew += len - read_len;
     }
