@@ -54,7 +54,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 {
     int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
 //    total_size = channels * bit_res * 255;  // test oddball
-#define HIST 6
+#define HIST 3
     mPLC = new BurgPLC(sample_rate, channels, bit_res, buf_samples, HIST);
     mPLCbuffer = mPLC->getBufferPtr();
     int slot_size  = buf_samples * channels * bit_res;

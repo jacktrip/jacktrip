@@ -23,16 +23,16 @@ private:
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
     QString qStringFromLongDouble(const long double myLongDouble);
-    vector<double> mTrain;
-    vector<double> mPrediction; // ORDER
+    vector<sample_t> mTrain;
+    vector<sample_t> mPrediction; // ORDER
     vector<long double> mCoeffs;
-    vector<double> mTruth;
-    vector<double> mXfadedPred;
-    vector<double> mNextPred;
-    vector<double> mLastGoodPacket;
-    vector<vector<double>> mLastPackets;
-    vector<double> mFadeUp;
-    vector<double> mFadeDown;
+    vector<sample_t> mTruth;
+    vector<sample_t> mXfadedPred;
+    vector<sample_t> mNextPred;
+    vector<sample_t> mLastGoodPacket;
+    vector<vector<sample_t>> mLastPackets;
+    vector<sample_t> mFadeUp;
+    vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
 };
 

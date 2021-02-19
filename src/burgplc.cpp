@@ -33,7 +33,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) 
     mNextPred.resize( mFPP, 0.0 );
     mLastGoodPacket.resize( mFPP, 0.0 );
     for ( int i = 0; i < mHist; i++ ) {
-        vector<double> tmp( mFPP, 0.0 );
+        vector<sample_t> tmp( mFPP, 0.0 );
         mLastPackets.push_back(tmp);
     }
     mFadeUp.resize( mFPP, 0.0 );
@@ -60,11 +60,16 @@ void BurgPLC::processPacket (bool glitch)
                         mLastPackets[i][s];
             }
 
+            for ( int i = 0; i < mTrain.size(); i++ )
+            {
+                if ( isnan(mTrain[i]) ) { qDebug() << "NAN before call"; }
+                qDebug() << i <<  "mTrain" << mTrain[i];
+            }
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain );
 
             // LINEAR PREDICT DATA
-            vector<double> tail( mTrain );
+            vector<sample_t> tail( mTrain );
 
             ba.predict( mCoeffs, tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
