@@ -84,6 +84,7 @@ private:
     int mOrder;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
+    vector<sample_t> lastPredicted;
 };
 
 #endif // PLC_H

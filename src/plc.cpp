@@ -22,10 +22,8 @@ PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
 //    qDebug() << "mAudioBitRes"  << mAudioBitRes << "mBitResolutionMode"  << mBitResolutionMode;
     mTotalSize = sample_rate * channels * mAudioBitRes * 2;  // 2 secs of audio
     mRingBuffer   = new int8_t[mTotalSize];
-    int fpp = mFPP;
-#define HIST 1
-    int hist = HIST;
-#define TRAINSAMPS (hist*fpp)
+#define HIST 6
+#define TRAINSAMPS (HIST*mFPP)
     mTrain.resize(mNumChannels);
     mPrediction.resize(mNumChannels);
     mCoeffs.resize(mNumChannels);
@@ -35,31 +33,33 @@ PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
         mCoeffs[i].resize(TRAINSAMPS-2, 0.0);
     }
     mOrder = TRAINSAMPS-1;
+    lastPredicted.resize(mFPP);
 }
 
 void PLC::trainBurg()
 {
     for (int i = 0; i < mNumChannels; i++) {
-        for (int j = 0; j < mFPP; j++) {
-            mTrain[i][j] = bitsToSample(i, j);
-            //            if (i) mTrain[i][j] = 0.05;
+        for (int j = 0; j < HIST*mFPP; j++) {
+            sample_t tmp = bitsToSample(i, j);
+            mTrain[i][j] = tmp;
         }
 
-        //        qDebug() << "++++++++++++++++" << "ch" << i;
         // GET LINEAR PREDICTION COEFFICIENTS
         ba.train( mCoeffs.at(i), mTrain[i] );
 
-        // LINEAR PREDICT DATA
         vector<double> tail( mTrain[i] );
 
+        // LINEAR PREDICT DATA
         ba.predict( mCoeffs.at(i), tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
-        for ( int j = 0; j < mOrder; j++ )
-            mPrediction[i][j] = tail[j+mOrder+1];
+        for ( int j = 0; j < mOrder; j++ ) mPrediction[i][j] = tail[j+mOrder+1];
 
-        for (int j = 0; j < mFPP; j++) {
-            sampleToBits(mPrediction[i][j], i, j);
+        for (int j = 0; j < mFPP; j++)  {
+            sample_t tmp = mPrediction[i][j];
+            sampleToBits(tmp, i, j);
+            lastPredicted[j] = mPrediction[i][j+mFPP];
         }
+
     }
 }
 
