@@ -67,7 +67,7 @@ protected:
     int8_t* mLastReadSlot;     ///< Last slot read
 public:
     int8_t* mRingBuffer;       ///< 8-bit array of data (1-byte)
-    void printOneFrane();
+    void printOneFrame();
     void setAllSamplesTo(sample_t val);
     void straightWire();
     void trainBurg();
@@ -77,6 +77,8 @@ public:
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
     QString qStringFromLongDouble(const long double myLongDouble);
+    bool lastWasGlitch;
+    void crossFade();
 private:
     vector<vector<double>> mTrain;
     vector<vector<double>> mPrediction;

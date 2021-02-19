@@ -34,6 +34,7 @@ PLC::PLC(int sample_rate, int channels, int bit_res, int FPP) :
     }
     mOrder = TRAINSAMPS-1;
     lastPredicted.resize(mFPP);
+    lastWasGlitch = false;
 }
 
 void PLC::trainBurg()
@@ -63,7 +64,34 @@ void PLC::trainBurg()
     }
 }
 
-void PLC::printOneFrane()
+void PLC::crossFade()
+{
+    for (int i = 0; i < mNumChannels; i++) {
+        for (int j = 0; j < HIST*mFPP; j++) {
+            sample_t tmp = bitsToSample(i, j);
+            mTrain[i][j] = tmp;
+        }
+
+        // GET LINEAR PREDICTION COEFFICIENTS
+        ba.train( mCoeffs.at(i), mTrain[i] );
+
+        vector<double> tail( mTrain[i] );
+
+        // LINEAR PREDICT DATA
+        ba.predict( mCoeffs.at(i), tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
+
+        for ( int j = 0; j < mOrder; j++ ) mPrediction[i][j] = tail[j+mOrder+1];
+
+        for (int j = 0; j < mFPP; j++)  {
+            sample_t tmp = mPrediction[i][j];
+            sampleToBits(tmp, i, j);
+            lastPredicted[j] = mPrediction[i][j+mFPP];
+        }
+
+    }
+}
+
+void PLC::printOneFrame()
 {
     for (int i = 0; i < mNumChannels; i++) {
         sample_t tmp_sample = 0.0;

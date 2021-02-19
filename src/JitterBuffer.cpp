@@ -280,7 +280,8 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         //        std::memcpy(lastPredictedPtr, plc->mRingBuffer + REM, n);
         //        lastPredicted = true;
 
-//        plc->printOneFrane();
+//        plc->printOneFrame();
+        plc->lastWasGlitch = true;
 #endif
         mUnderrunsNew += len - read_len;
     }
