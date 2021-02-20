@@ -1,0 +1,6 @@
+[wrap-git]
+url=https://github.com/alex85k/wingetopt.git
+revision=head
+
+[provide]
+dependency_names = wingetopt
