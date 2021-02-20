@@ -70,7 +70,7 @@ class RtAudioInterface : public AudioInterface
 
     //--------------SETTERS---------------------------------------------
     /// \brief This has no effect in RtAudio
-    virtual void setClientName(const char* /*ClientName*/) {}
+    virtual void setClientName(QString /*ClientName*/) {}
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------

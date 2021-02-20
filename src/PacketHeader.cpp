@@ -54,7 +54,7 @@ using std::endl;
 // for more info check: http://www.halcode.com/archives/2008/08/26/retrieving-system-time-gettimeofday/
 #if defined __WIN_32__
 #ifdef __cplusplus
-void GetSystemTimeAsFileTime(FILETIME*);
+// void GetSystemTimeAsFileTime(FILETIME*);
 inline int gettimeofday(struct timeval* p, void* tz /* IGNORED */)
 {
     union {
@@ -66,9 +66,6 @@ inline int gettimeofday(struct timeval* p, void* tz /* IGNORED */)
     p->tv_sec  = (long)((now.ns100 - (116444736000000000LL)) / 10000000LL);
     return 0;
 }
-#else
-/* Must be defined somewhere else */
-int gettimeofday(struct timeval* p, void* tz /* IGNORED */);
 #endif
 #endif
 
