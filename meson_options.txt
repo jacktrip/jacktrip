@@ -1,0 +1,4 @@
+option('wair', type : 'feature', value : 'disabled', description: 'WAIR')
+option('rtaudio', type : 'feature', value : 'auto', description: 'Build with RtAudio Backend')
+option('jack', type : 'feature', value : 'auto', description: 'Build with Jack Backend')
+
