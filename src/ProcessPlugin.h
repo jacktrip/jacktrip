@@ -38,8 +38,6 @@
 #ifndef __PROCESSPLUGIN_H__
 #define __PROCESSPLUGIN_H__
 
-#include <jack/jack.h>
-
 #include <QThread>
 
 /** \brief Interface for the process plugins to add to the JACK callback process in

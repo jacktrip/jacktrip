@@ -37,7 +37,9 @@
 
 #include "JackTrip.h"
 
+#ifndef __NO_JACK__
 #include "JackAudioInterface.h"
+#endif
 #include "JitterBuffer.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
