@@ -357,7 +357,7 @@ uint16_t UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection,
     // --------------------------------
     uint16_t udp_port;
     qint64 size = sizeof(udp_port);
-    char port_buf[size];
+    char* port_buf = new char[size];
     clientConnection->read(port_buf, size);
     std::memcpy(&udp_port, port_buf, size);
 
@@ -367,6 +367,7 @@ uint16_t UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection,
         clientName = QString::fromUtf8((const char*)name_buf);
     }
 
+    delete[] port_buf;
     return udp_port;
 }
 
