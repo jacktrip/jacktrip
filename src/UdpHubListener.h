@@ -86,7 +86,7 @@ class UdpHubListener : public QObject
         m_connectDefaultAudioPorts = connectDefaultAudioPorts;
     }
 
-    static void sigIntHandler(__attribute__((unused)) int unused)
+    static void sigIntHandler([[maybe_unused]] int unused)
     {
         std::cout << std::endl << "Shutting Down..." << std::endl;
         sSigInt = true;
