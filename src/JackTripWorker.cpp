@@ -37,8 +37,6 @@
 
 #include "JackTripWorker.h"
 
-#include <unistd.h>
-
 #include <QMutexLocker>
 #include <QTimer>
 #include <QWaitCondition>
