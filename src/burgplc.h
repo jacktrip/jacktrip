@@ -34,6 +34,7 @@ private:
     vector<sample_t> mFadeUp;
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
+    vector<double> mPhasor;
 };
 
 #endif // BURGPLC_H

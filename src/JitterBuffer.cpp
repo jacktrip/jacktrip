@@ -53,7 +53,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
     : RingBuffer(0, 0)
 {
     int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
-//    total_size = channels * bit_res * 255;  // test oddball
+    //    total_size = channels * bit_res * 255;  // test oddball
 #define HIST 6
     mPLC = new BurgPLC(sample_rate, channels, bit_res, buf_samples, HIST);
     mPLCbuffer = mPLC->getBufferPtr();
@@ -225,22 +225,22 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 
     int read_len = qBound(0, available, len);
     int rpos     = mReadPosition % mTotalSize;
-//    int n        = std::min(mTotalSize - rpos, read_len);
-//    std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
-//    if (n < read_len) {
-//        //cout << "split read: " << read_len << "-" << n << endl;
-//        std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
-//    }
-// =    transferToAudioInterface(0,rpos,read_len,ptrToReadSlot,0, mRingBuffer);
+    //    int n        = std::min(mTotalSize - rpos, read_len);
+    //    std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
+    //    if (n < read_len) {
+    //        //cout << "split read: " << read_len << "-" << n << endl;
+    //        std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
+    //    }
+    // =    transferToAudioInterface(0,rpos,read_len,ptrToReadSlot,0, mRingBuffer);
 
     transferToPLC(0,rpos,read_len,mPLCbuffer,0);
-    mPLC->processPacket (false);
+    mPLC->processPacket (read_len < len);
     transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, mPLCbuffer);
 
-//    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);
-//    if(plc->lastWasGlitch) plc->crossFade();
-//    plc->lastWasGlitch = false;
-//    transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, plc->mRingBuffer);
+    //    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);
+    //    if(plc->lastWasGlitch) plc->crossFade();
+    //    plc->lastWasGlitch = false;
+    //    transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, plc->mRingBuffer);
 
 
 #define UNDERRUN
@@ -256,14 +256,14 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 #define DONE read_len
 #define REM (SIZE - DONE)
         // underrun condition when DONE < SIZE, fill the remainder
-        qDebug() << "UNDERRUN" << REM;  // mTotalSize changed to oddball
+        //        qDebug() << "UNDERRUN" << REM;  // mTotalSize changed to oddball
         // ......................................................
 #define ORIG 0
 #define ZEROS 0
 #define WVTBL 0
 #define DELAY 0
 #define PLC 0
-#define BURGPLC 1
+#define BURGPLC 0
 #if ORIG // was equivalent to -z
         std::memset(ptrToReadSlot + read_len, 0, len - read_len);
 #elif ZEROS // rewrite
@@ -275,21 +275,21 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
             transferToAudioInterface(hist,rpos,REM,DST,DONE, mRingBuffer);
         }
 #elif PLC //
-//        transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
+        //        transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
         transferToPLC(6,rpos,6*REM,plc->mRingBuffer,DONE);
-//        plc->setAllSamplesTo(0.5);
+        //        plc->setAllSamplesTo(0.5);
         plc->trainBurg();
-//        plc->straightWire();
+        //        plc->straightWire();
         transferToAudioInterface(0,0,REM,DST,0, plc->mRingBuffer);
 
         //        std::memcpy(lastPredictedPtr, plc->mRingBuffer + REM, n);
 
-//        plc->printOneFrame();
+        //        plc->printOneFrame();
         plc->lastWasGlitch = true;
 #elif BURGPLC
-    transferToPLC(1,rpos,REM,mPLCbuffer,DONE);
-    mPLC->processPacket (true);
-    transferToAudioInterface(0,0,REM,DST,0, mPLCbuffer);
+        transferToPLC(1,rpos,REM,mPLCbuffer,DONE);
+        mPLC->processPacket (true);
+        transferToAudioInterface(0,0,REM,DST,0, mPLCbuffer);
 #endif
         mUnderrunsNew += len - read_len;
     }
@@ -300,11 +300,11 @@ void JitterBuffer::transferToPLC(int hist, int curpos, int rem, int8_t* dstPtr, 
 {
     int ptr = (curpos - (hist*rem)) + mTotalSize;
     ptr     = ptr % mTotalSize;
-//    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
+    //    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
     int n        = std::min(mTotalSize - ptr, rem);
     std::memcpy(dstPtr + done, mRingBuffer + ptr, n);
     if (n < rem) {
-//        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
+        //        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
         std::memcpy(dstPtr + n, mRingBuffer, rem - n);
     }
 }
@@ -315,10 +315,10 @@ void JitterBuffer::transferToAudioInterface(int hist, int curpos, int rem,
     int ptr = (curpos - (hist*rem)) + mTotalSize;
     ptr     = ptr % mTotalSize;
     int n        = std::min(mTotalSize - ptr, rem);
-//    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
+    //    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
     std::memcpy(dstPtr + done, srcPtr + ptr, n);
     if (n < rem) {
-//        qDebug() << "n" << n << "rem - n" << (rem - n);
+        //        qDebug() << "n" << n << "rem - n" << (rem - n);
         std::memcpy(dstPtr + n, srcPtr, rem - n);
     }
 }

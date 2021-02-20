@@ -38,6 +38,12 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) 
     }
     mFadeUp.resize( mFPP, 0.0 );
     mFadeDown.resize( mFPP, 0.0 );
+    for ( int i = 0; i < mFPP; i++ ) {
+        mFadeUp[i] = (double)i/(double)mFPP;
+        mFadeDown[i] = 1.0 - mFadeUp[i];
+    }
+    mLastWasGlitch = false;
+    mPhasor.resize( mNumChannels, 0.0 );
 }
 
 // for ( int pCnt = 0; pCnt < plen; pCnt++)
@@ -47,12 +53,18 @@ void BurgPLC::processPacket (bool glitch)
     //        qDebug() << "mPacketCnt" << mPacketCnt;
     //    iwv.readFramesFromFor(THISPACKET, fpp, 1.0); -- void JitterBuffer::transferToPLC
 
-    mLastWasGlitch = glitch;
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
-    for PACKETSAMP mTruth[s] = // iwv.iframes.at(s);
-            bitsToSample(ch, s);
+#define IN(x,s) mTruth[s] = x
+    for PACKETSAMP IN(bitsToSample(ch, s), s);
+    for PACKETSAMP {
+        IN(0.3*sinf(mPhasor[0]), s);
+        mPhasor[0] += 0.1;
+        mPhasor[1] += 0.11;
+    }
+
+    glitch = !(mPacketCnt%100);
     if(mPacketCnt) {
-#define RUN 3
+#define RUN 0
         if(RUN > 2) {
 
             for ( int i = 0; i < mHist; i++ ) {
@@ -60,8 +72,6 @@ void BurgPLC::processPacket (bool glitch)
                         mLastPackets[i][s];
             }
 
-//            if ( isnan(mCoeffs[0]) ) { qDebug() << "mPrediction nan" << mPacketCnt << qStringFromLongDouble(mCoeffs[0]); } else
-//                { qDebug() << "-------" << mPacketCnt << qStringFromLongDouble(mCoeffs[0]); }
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain );
 
@@ -72,36 +82,40 @@ void BurgPLC::processPacket (bool glitch)
 
             for ( int i = 0; i < ORDER; i++ )
                 mPrediction[i] = tail[i+TRAINSAMPS];
-            /////////////////////////////////////////////
+            ///////////////////////////////////////////// // CALCULATE AND DISPLAY ERROR
 
-            // CALCULATE AND DISPLAY ERROR
-
-            for PACKETSAMP mXfadedPred[s] =
-                    mTruth[s] * mFadeUp[s] +
-                    mNextPred[s] * mFadeDown[s];
+            for PACKETSAMP mXfadedPred[s] = mTruth[s] * mFadeUp[s] + mNextPred[s] * mFadeDown[s];
         }
-//#define OUT(ch,x) (output[ch][THISPACKET+x])
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
         for PACKETSAMP {
             switch(RUN)
             {
+            case -1  : OUT(0.3*sinf(mPhasor[0]), 0, s);
+                OUT(0.3*sinf(mPhasor[1]), 1, s);
+                mPhasor[0] += 0.1;
+                mPhasor[1] += 0.11;
+                break;
             case 0  : OUT(mTruth[s], 0, s);
                 break;
             case 1  : OUT((glitch) ?
-                            mLastGoodPacket[s] : mTruth[s], 0, s);
+                              mLastGoodPacket[s] : mTruth[s], 0, s);
                 break;
             case 2  : OUT((glitch) ? 0.0 : mTruth[s], 0, s);
                 break;
             case 3  :
-                OUT((glitch) ? mPrediction[s]
-                                   : ( (mLastWasGlitch) ?
-                                           mXfadedPred[ s ]
-                                           : mTruth[s] ), 0, s);
+                OUT((glitch) ? mPrediction[s] : ( (mLastWasGlitch) ?
+                                                      mXfadedPred[ s ] : mTruth[s] ), 0, s);
+                OUT((glitch) ? mLastGoodPacket[s] : mTruth[s], 1, s);
                 break;
             case 4  :
                 OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);
                 break;
             case 5  : OUT(mPrediction[s], 0, s);
+                break;
+            case 6  : OUT(0.3*sinf(mPhasor[0]), 0, s);
+                OUT(0.3*sinf(mPhasor[1]), 1, s);
+                mPhasor[0] += 0.1;
+                mPhasor[1] += 0.11;
                 break;
             }
         }
