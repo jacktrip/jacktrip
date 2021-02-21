@@ -20,20 +20,12 @@ BurgAlgorithm::BurgAlgorithm()
 }
 
 // from .pl
-void BurgAlgorithm::train(vector<long double> &coeffs, const vector<sample_t> &x )
+void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x )
 {
-//    for ( int i = 0; i < x.size(); i++ )
-//    {
-////        qDebug() << i << "f" << qStringFromLongDouble1(f[i]) << "x" << x[i];
-//        if ( isnan(x[i]) ) { qDebug() << "NAN at call"; }
-//        qDebug() << i <<  "x" << x[i];
-//    }
-//    qDebug() << "++" << qStringFromLongDouble1(coeffs[1]) << "....." << x[1];
 
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;
     size_t m = coeffs.size();
-
 
     ////
     if (x.size() < m)
@@ -65,7 +57,8 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<sample_t> &x
     //    $Dk -= $f[0] ** 2 + $B[$#x] ** 2;
 
 //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-//    if ( isnan(Dk) ) { qDebug() << "NAN at init"; } // assert
+    if ( isnan(Dk) )
+    { qDebug() << "NAN at init"; }
 
     // BURG RECURSION
     for ( size_t k = 0; k < m; k++ )
@@ -76,10 +69,10 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<sample_t> &x
         {
             mu += f[ n + k + 1 ] * b[ n ];
         }
-//qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-if ( Dk == 0.0 ) Dk = 0.0000001;
+
+        if ( Dk == 0.0 ) Dk = 0.0000001; // from online testing
             mu *= -2.0 / Dk;
-//            if ( isnan(Dk) )  { qDebug() << "k" << k; } // assert
+// assert            if ( isnan(Dk) )  { qDebug() << "k" << k; }
 
 //            if (Dk!=0.0) {}
 //        else qDebug() << "k" << k << "Dk==0" << qStringFromLongDouble1(Dk);
@@ -123,7 +116,7 @@ if ( Dk == 0.0 ) Dk = 0.0000001;
 
 }
 
-void BurgAlgorithm::predict(vector<long double> &coeffs, vector<sample_t> &tail )
+void BurgAlgorithm::predict( vector<long double> &coeffs, vector<float> &tail )
 {
     size_t m = coeffs.size();
 //    qDebug() << "tail.at(0)" << tail[0]*32768;

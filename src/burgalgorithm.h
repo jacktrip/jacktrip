@@ -4,15 +4,14 @@
 #include <math.h>
 #include <vector>
 using namespace std;
-#include "AudioInterface.h"
 
 class BurgAlgorithm
 {
 public:
     BurgAlgorithm();
     void compute( vector<long double> &coeffs, const vector<double> &x );
-    void train( vector<long double> &coeffs, const vector<sample_t> &x );
-    void predict( vector<long double> &coeffs, vector<sample_t> &predicted );
+    void train( vector<long double> &coeffs, const vector<float> &x );
+    void predict( vector<long double> &coeffs, vector<float> &predicted );
 };
 
 #endif // BURGALGORITHM_H

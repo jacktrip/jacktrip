@@ -26,7 +26,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) 
 #define TRAINSAMPS (mHist*mFPP)
 #define ORDER (TRAINSAMPS-1)
     mTrain.resize( TRAINSAMPS, 0.0 );
-    mPrediction.resize( TRAINSAMPS-1 ); // ORDER
+    mPrediction.resize( TRAINSAMPS-1, 0.0 ); // ORDER
     mCoeffs.resize( TRAINSAMPS-2, 0.0 );
     mTruth.resize( mFPP, 0.0 );
     mXfadedPred.resize( mFPP, 0.0 );
@@ -56,21 +56,27 @@ void BurgPLC::processPacket (bool glitch)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 #define IN(x,s) mTruth[s] = x
     for PACKETSAMP IN(bitsToSample(ch, s), s);
-    for PACKETSAMP {
-        IN(0.3*sinf(mPhasor[0]), s);
-        mPhasor[0] += 0.1;
-        mPhasor[1] += 0.11;
-    }
+//    for PACKETSAMP { screw case here but not for sim
+//        IN(0.3*sinf(mPhasor[0]), s);
+//        mPhasor[0] += 0.1;
+//        mPhasor[1] += 0.11;
+//    }
 
     glitch = !(mPacketCnt%100);
     if(mPacketCnt) {
-#define RUN 0
+#define RUN 3
         if(RUN > 2) {
+ qDebug() << mPacketCnt;
+ if ( isnan(mTruth[0]) )
+             { qDebug() << mPacketCnt  << "NAN mTruth"; }
 
-            for ( int i = 0; i < mHist; i++ ) {
+ for ( int i = 0; i < mHist; i++ ) {
                 for PACKETSAMP mTrain[s+((mHist-(i+1))*mFPP)] =
                         mLastPackets[i][s];
+                if ( isnan(mLastPackets[i][0]) )
+                            { qDebug() << mPacketCnt << i << "NAN mLastPackets"; }
             }
+//            for ( int i = 0; i < mTrain.size(); i++ )
 
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain );
@@ -105,7 +111,7 @@ void BurgPLC::processPacket (bool glitch)
             case 3  :
                 OUT((glitch) ? mPrediction[s] : ( (mLastWasGlitch) ?
                                                       mXfadedPred[ s ] : mTruth[s] ), 0, s);
-                OUT((glitch) ? mLastGoodPacket[s] : mTruth[s], 1, s);
+//                OUT((glitch) ? mLastGoodPacket[s] : mTruth[s], 1, s);
                 break;
             case 4  :
                 OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);

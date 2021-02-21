@@ -12,8 +12,8 @@ public:
     void processPacket (bool glitch);
 private:
     int mNumChannels;
-    int mFPP;
     int mAudioBitRes;
+    int mFPP;
     int mHist;
     int mTotalSize;  ///< Total size of mXfrBuffer
     AudioInterface::audioBitResolutionT mBitResolutionMode;
