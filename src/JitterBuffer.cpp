@@ -234,7 +234,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     // =    transferToAudioInterface(0,rpos,read_len,ptrToReadSlot,0, mRingBuffer);
 
     transferToPLC(0,rpos,read_len,mPLCbuffer,0);
-    mPLC->processPacket (read_len < len);
+    mPLC->processPacket (false); // read_len < len);
     transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, mPLCbuffer);
 
     //    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);

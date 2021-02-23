@@ -10,7 +10,7 @@ class BurgAlgorithm
 public:
     BurgAlgorithm();
     void compute( vector<long double> &coeffs, const vector<double> &x );
-    void train( vector<long double> &coeffs, const vector<float> &x );
+    void train(vector<long double> &coeffs, const vector<float> &x, int pCnt);
     void predict( vector<long double> &coeffs, vector<float> &predicted );
 };
 

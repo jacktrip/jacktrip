@@ -14,13 +14,27 @@ QString qStringFromLongDouble1(const long double myLongDouble)
     return QString::fromStdString(ss.str());
 }
 
+bool classify(double d)
+{
+    bool tmp = false;
+  switch (fpclassify(d)) {
+    case FP_INFINITE:  qDebug() <<  ("infinite");  tmp = true; break;
+    case FP_NAN:       qDebug() <<  ("NaN");  tmp = true;        break;
+    case FP_ZERO:      qDebug() <<  ("zero");  tmp = true;       break;
+    case FP_SUBNORMAL: qDebug() <<  ("subnormal");  tmp = true;  break;
+//    case FP_NORMAL:    qDebug() <<  ("normal");    break;
+  }
+//  if (signbit(d)) qDebug() <<  (" negative\n"); else qDebug() <<  (" positive or unsigned\n");
+  return tmp;
+}
+
 BurgAlgorithm::BurgAlgorithm()
 {
 
 }
 
 // from .pl
-void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x )
+void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x, int pCnt )
 {
 
     // GET SIZE FROM INPUT VECTORS
@@ -46,7 +60,7 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x )
     long double Dk = 0.0; // was double
     for ( size_t j = 0; j <= N; j++ )
     {
-        Dk += 2.0 * f[ j ] * f[ j ];
+        Dk += 3.0 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
     }
     Dk -= f[ 0 ] * f[ 0 ] + b[ N ] * b[ N ];
 
@@ -57,8 +71,9 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x )
     //    $Dk -= $f[0] ** 2 + $B[$#x] ** 2;
 
 //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-    if ( isnan(Dk) )
-    { qDebug() << "NAN at init"; }
+    if ( classify(Dk) )
+    { qDebug() << pCnt << "init";
+    }
 
     // BURG RECURSION
     for ( size_t k = 0; k < m; k++ )
@@ -70,9 +85,12 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x )
             mu += f[ n + k + 1 ] * b[ n ];
         }
 
-        if ( Dk == 0.0 ) Dk = 0.0000001; // from online testing
+//        if ( Dk == 0.0 ) Dk = 0.0000001; // from online testing
+        if ( classify(Dk) )
+        { qDebug() << pCnt << "run";
+        }
             mu *= -2.0 / Dk;
-// assert            if ( isnan(Dk) )  { qDebug() << "k" << k; }
+//            if ( isnan(Dk) )  { qDebug() << "k" << k; }
 
 //            if (Dk!=0.0) {}
 //        else qDebug() << "k" << k << "Dk==0" << qStringFromLongDouble1(Dk);

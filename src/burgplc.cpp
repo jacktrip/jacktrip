@@ -50,36 +50,37 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) 
 void BurgPLC::processPacket (bool glitch)
 {
     int ch = 0;
-    //        qDebug() << "mPacketCnt" << mPacketCnt;
-    //    iwv.readFramesFromFor(THISPACKET, fpp, 1.0); -- void JitterBuffer::transferToPLC
 
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 #define IN(x,s) mTruth[s] = x
-    for PACKETSAMP IN(bitsToSample(ch, s), s);
-//    for PACKETSAMP { screw case here but not for sim
-//        IN(0.3*sinf(mPhasor[0]), s);
-//        mPhasor[0] += 0.1;
-//        mPhasor[1] += 0.11;
-//    }
+    //    for PACKETSAMP IN(bitsToSample(ch, s), s);
+    for PACKETSAMP { // screw case here but not for sim
+        IN(0.3*sinf(mPhasor[0]), s);
+        mPhasor[0] += 0.1;
+        mPhasor[1] += 0.11;
+    }
 
     glitch = !(mPacketCnt%100);
+    sample_t xxx = 0.0;
     if(mPacketCnt) {
 #define RUN 3
         if(RUN > 2) {
- qDebug() << mPacketCnt;
- if ( isnan(mTruth[0]) )
-             { qDebug() << mPacketCnt  << "NAN mTruth"; }
+            // qDebug() << mPacketCnt;
 
- for ( int i = 0; i < mHist; i++ ) {
+//            if ( isnan(mTruth[0]) ) { qDebug() << mPacketCnt  << "input"; }
+//            for ( int i = 0; i < mHist; i++ )
+//                if ( isnan(mLastPackets[i][0]) )
+//                { qDebug() << mPacketCnt  << "lastPackets" << i; }
+
+            for ( int i = 0; i < mHist; i++ ) {
                 for PACKETSAMP mTrain[s+((mHist-(i+1))*mFPP)] =
                         mLastPackets[i][s];
-                if ( isnan(mLastPackets[i][0]) )
-                            { qDebug() << mPacketCnt << i << "NAN mLastPackets"; }
+//                if ( isnan(mTrain[0]) ) { qDebug() << mPacketCnt  << "train"; }
             }
-//            for ( int i = 0; i < mTrain.size(); i++ )
+            //            for ( int i = 0; i < mTrain.size(); i++ )
 
             // GET LINEAR PREDICTION COEFFICIENTS
-            ba.train( mCoeffs, mTrain );
+            ba.train( mCoeffs, mTrain, mPacketCnt );
 
             // LINEAR PREDICT DATA
             vector<sample_t> tail( mTrain );
@@ -88,6 +89,7 @@ void BurgPLC::processPacket (bool glitch)
 
             for ( int i = 0; i < ORDER; i++ )
                 mPrediction[i] = tail[i+TRAINSAMPS];
+            xxx = tail[0];
             ///////////////////////////////////////////// // CALCULATE AND DISPLAY ERROR
 
             for PACKETSAMP mXfadedPred[s] = mTruth[s] * mFadeUp[s] + mNextPred[s] * mFadeDown[s];
@@ -111,7 +113,7 @@ void BurgPLC::processPacket (bool glitch)
             case 3  :
                 OUT((glitch) ? mPrediction[s] : ( (mLastWasGlitch) ?
                                                       mXfadedPred[ s ] : mTruth[s] ), 0, s);
-//                OUT((glitch) ? mLastGoodPacket[s] : mTruth[s], 1, s);
+                //                OUT((glitch) ? mLastGoodPacket[s] : mTruth[s], 1, s);
                 break;
             case 4  :
                 OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);
@@ -138,6 +140,7 @@ void BurgPLC::processPacket (bool glitch)
     // will only be able to glitch if mPacketCnt>0
     for PACKETSAMP mLastPackets[0][s] =
             (!glitch) ? mTruth[s] : mPrediction[s];
+    if ( isnan(mLastPackets[0][0]) ) { qDebug() << glitch  << mPacketCnt  << "lastPackets" << isnan(mPrediction[0]) << xxx; }
 
     if (!glitch)
         for PACKETSAMP mLastGoodPacket[s] = mTruth[s];
