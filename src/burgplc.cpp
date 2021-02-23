@@ -53,18 +53,18 @@ void BurgPLC::processPacket (bool glitch)
 
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 #define IN(x,s) mTruth[s] = x
-    //    for PACKETSAMP IN(bitsToSample(ch, s), s);
-    for PACKETSAMP { // screw case here but not for sim
-        IN(0.3*sinf(mPhasor[0]), s);
-        mPhasor[0] += 0.1;
-        mPhasor[1] += 0.11;
-    }
+        for PACKETSAMP IN(bitsToSample(ch, s), s);
+//    for PACKETSAMP { // screw case here but not for sim
+//        IN(0.3*sinf(mPhasor[0]), s);
+//        mPhasor[0] += 0.1;
+//        mPhasor[1] += 0.11;
+//    }
 
-    glitch = !(mPacketCnt%100);
+//    glitch = !(mPacketCnt%100);
     if(mPacketCnt) {
 #define RUN 3
         if(RUN > 2) {
-            // qDebug() << mPacketCnt;
+            if (glitch) qDebug() << "glitch";
 
             for ( int i = 0; i < mHist; i++ ) {
                 for PACKETSAMP mTrain[s+((mHist-(i+1))*mFPP)] =
@@ -104,7 +104,6 @@ void BurgPLC::processPacket (bool glitch)
             case 3  :
                 OUT((glitch) ? mPrediction[s] : ( (mLastWasGlitch) ?
                                                       mXfadedPred[ s ] : mTruth[s] ), 0, s);
-                //                OUT((glitch) ? mLastGoodPacket[s] : mTruth[s], 1, s);
                 break;
             case 4  :
                 OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);
@@ -117,6 +116,9 @@ void BurgPLC::processPacket (bool glitch)
                 mPhasor[1] += 0.11;
                 break;
             }
+OUT((glitch) ? ((s==0) ? 0.5 : 0.0) : mTruth[s], 1, s);
+//                        OUT( 0.0, 1, s);
+            //            OUT( bitsToSample(1, s), 1, s);
         }
         mLastWasGlitch = glitch;
         for PACKETSAMP

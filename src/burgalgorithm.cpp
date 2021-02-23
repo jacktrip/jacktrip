@@ -60,7 +60,7 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x, i
     long double Dk = 0.0; // was double
     for ( size_t j = 0; j <= N; j++ )
     {
-        Dk += 3.0 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+        Dk += 2.00001 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
     }
     Dk -= f[ 0 ] * f[ 0 ] + b[ N ] * b[ N ];
 
@@ -85,7 +85,7 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x, i
             mu += f[ n + k + 1 ] * b[ n ];
         }
 
-//        if ( Dk == 0.0 ) Dk = 0.0000001; // from online testing
+        if ( Dk == 0.0 ) Dk = 0.0000001; // from online testing
         if ( classify(Dk) )
         { qDebug() << pCnt << "run";
         }
