@@ -1,8 +1,8 @@
 #include "burgplc.h"
 #include <QDebug>
-#include <stk/Stk.h>
-using namespace std; // both needed for stringstream
-using namespace stk;
+#include <sstream>
+
+using namespace std;
 
 BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) :
     mNumChannels (channels),
@@ -116,7 +116,7 @@ void BurgPLC::processPacket (bool glitch)
                 mPhasor[1] += 0.11;
                 break;
             }
-OUT((glitch) ? ((s==0) ? 0.5 : 0.0) : mTruth[s], 1, s);
+OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
 //                        OUT( 0.0, 1, s);
             //            OUT( bitsToSample(1, s), 1, s);
         }

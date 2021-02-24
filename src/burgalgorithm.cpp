@@ -1,9 +1,8 @@
 #include "burgalgorithm.h"
 #include <QDebug>
-#include <stk/Stk.h>
+#include <sstream>
 
 using namespace std;
-using namespace stk;
 
 
 QString qStringFromLongDouble1(const long double myLongDouble)

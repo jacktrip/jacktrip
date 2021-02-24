@@ -138,6 +138,7 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
 
     // Update positions if necessary
     int32_t available = mWritePosition - mReadPosition;
+    if(available<1) fprintf(stderr,"%s",". ");
 
     int delta = 0;
     if (available < -10 * mMaxLatency) {
@@ -165,7 +166,7 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
         mUnderruns += -delta;
         mBufIncCompensate += -delta;
     }
-
+delta = 0;
     if (0 != delta) {
         mReadPosition += delta;
         mLastCorrCounter   = 0;
@@ -232,7 +233,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     //        std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
     //    }
     // =    transferToAudioInterface(0,rpos,read_len,ptrToReadSlot,0, mRingBuffer);
-
+//if(available<1) qDebug() << "available" << available;
     if (read_len == len) transferToPLC(0,rpos,len,mPLCbuffer,0);
     if ((read_len != 0) && (read_len != len)) qDebug() << "read_len = partial!!" << read_len;
     mPLC->processPacket (read_len < len);
