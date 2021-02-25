@@ -356,6 +356,10 @@ uint16_t UdpHubListener::readClientUdpPort(QTcpSocket* clientConnection,
     clientConnection->read(port_buf, size);
     std::memcpy(&udp_port, port_buf, size);
 
+    // Read and discard the next two bytes so that we're properly aligned
+    // to read any jack client name request.
+    clientConnection->read(port_buf, size);
+
     if (clientConnection->bytesAvailable() == gMaxRemoteNameLength) {
         char name_buf[gMaxRemoteNameLength];
         clientConnection->read(name_buf, gMaxRemoteNameLength);
