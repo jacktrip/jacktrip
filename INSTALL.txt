@@ -50,7 +50,6 @@ If you don't have Homebrew, install it:
 /bin/bash -c "$(curl -fsSLhttps://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 To install git if you don't have it:
 brew install git
-brew install qjackctl
 Install and link qt5:
 brew install qt5
 brew link qt5 --force
