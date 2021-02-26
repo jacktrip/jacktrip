@@ -38,7 +38,7 @@ jobs:
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
         run: |
-          choco install jack
+          choco install jack --version=1.9.17
       - name: Cache Qt
         id: cache-qt
         if: runner.os == 'Windows'
