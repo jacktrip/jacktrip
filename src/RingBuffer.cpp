@@ -223,8 +223,8 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // Returns a buffer of zeros if there's nothing to read
         //std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
         //std::memset(ptrToReadSlot, 0, mSlotSize);
-        setUnderrunReadSlot(ptrToReadSlot);
-        underrunReset();
+//        setUnderrunReadSlot(ptrToReadSlot);
+//        underrunReset();
         return;
     }
 
