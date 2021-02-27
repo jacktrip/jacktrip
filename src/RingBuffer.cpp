@@ -229,11 +229,12 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     }
 
     // Copy mSlotSize bytes to ReadSlot
-    std::memcpy(ptrToReadSlot, mRingBuffer + mReadPosition, mSlotSize);
+//    std::memcpy(ptrToReadSlot, mRingBuffer + mReadPosition, mSlotSize);
     transferToPLC(mReadPosition,mSlotSize,mPLCbuffer);
+    mPLC->processPacket (mFullSlots <= 0);
     transferToAudioInterface(0,mSlotSize,ptrToReadSlot, mPLCbuffer);
     // Always save memory of the last read slot
-    std::memcpy(mLastReadSlot, mRingBuffer + mReadPosition, mSlotSize);
+//    std::memcpy(mLastReadSlot, mRingBuffer + mReadPosition, mSlotSize);
     // Update write position
     mReadPosition = (mReadPosition + mSlotSize) % mTotalSize;
     mFullSlots--;  //update full slots
