@@ -337,6 +337,8 @@ void JackTrip::setupRingBuffers()
     case WAVETABLE:
         mSendRingBuffer = new RingBufferWavetable(slot_size, gDefaultOutputQueueLength);
         mReceiveRingBuffer = new RingBufferWavetable(slot_size, mBufferQueueLength);
+        mReceiveRingBuffer->setPLC(mSampleRate, mNumChans,
+                                         mAudioBitResolution, mBufferQueueLength);
         /*
     mSendRingBuffer = new RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
                 gDefaultOutputQueueLength);

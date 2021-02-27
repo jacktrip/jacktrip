@@ -44,6 +44,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) 
     }
     mLastWasGlitch = false;
     mPhasor.resize( mNumChannels, 0.0 );
+    qDebug() << sample_rate << channels << bit_res << FPP << hist;
 }
 
 // for ( int pCnt = 0; pCnt < plen; pCnt++)

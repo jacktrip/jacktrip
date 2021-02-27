@@ -106,6 +106,12 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots)
     mBroadcastSkew    = 0;
     mBroadcastDelta   = 0;
 }
+void RingBuffer::setPLC(int sampleRate, int numChans,
+                              int audioBitResolution, int queueLength) {
+#define HIST 6
+    mPLC = new BurgPLC(sampleRate, numChans, audioBitResolution, queueLength, HIST);
+    mPLCbuffer = mPLC->getBufferPtr();
+   };
 
 //*******************************************************************************
 RingBuffer::~RingBuffer()
@@ -218,12 +224,14 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         //std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
         //std::memset(ptrToReadSlot, 0, mSlotSize);
         setUnderrunReadSlot(ptrToReadSlot);
-        underrunReset();
+//        underrunReset();
         return;
     }
 
     // Copy mSlotSize bytes to ReadSlot
     std::memcpy(ptrToReadSlot, mRingBuffer + mReadPosition, mSlotSize);
+    transferToPLC(mReadPosition,mSlotSize,mPLCbuffer);
+    transferToAudioInterface(0,mSlotSize,ptrToReadSlot, mPLCbuffer);
     // Always save memory of the last read slot
     std::memcpy(mLastReadSlot, mRingBuffer + mReadPosition, mSlotSize);
     // Update write position
@@ -233,6 +241,32 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     mBufferIsNotFull.wakeAll();
 }
 
+void RingBuffer::transferToPLC(int curpos, int len, int8_t* dstPtr)
+{
+    int ptr = curpos  + mTotalSize;
+    ptr     = ptr % mTotalSize;
+    //    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
+    int n        = std::min(mTotalSize - ptr, len);
+    std::memcpy(dstPtr, mRingBuffer + ptr, n);
+    if (n < len) {
+        //        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
+        std::memcpy(dstPtr + n, mRingBuffer, len - n);
+    }
+}
+
+void RingBuffer::transferToAudioInterface(int curpos, int len,
+                                            int8_t* dstPtr, int8_t* srcPtr)
+{
+    int ptr = curpos + mTotalSize;
+    ptr     = ptr % mTotalSize;
+    int n        = std::min(mTotalSize - ptr, len);
+    //    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
+    std::memcpy(dstPtr, srcPtr + ptr, n);
+    if (n < len) {
+        //        qDebug() << "n" << n << "rem - n" << (rem - n);
+        std::memcpy(dstPtr + n, srcPtr, len - n);
+    }
+}
 //*******************************************************************************
 // Not supported in RingBuffer
 void RingBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)

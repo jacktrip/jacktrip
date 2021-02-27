@@ -39,7 +39,7 @@
 #define __JITTERBUFFER_H__
 
 #include "RingBuffer.h"
-#include "burgplc.h"
+//#include "burgplc.h"
 
 class JitterBuffer : public RingBuffer
 {
@@ -60,8 +60,8 @@ class JitterBuffer : public RingBuffer
                                   int8_t* dstPtr, int done, int8_t *srcPtr);
     void transferToPLC(int hist, int curpos, int rem, int8_t* dstPtr, int done);
    protected:
-    BurgPLC* mPLC;
-    int8_t* mPLCbuffer;       ///< 8-bit array of data (1-byte)
+//    BurgPLC* mPLC;
+//    int8_t* mPLCbuffer;       ///< 8-bit array of data (1-byte)
 
     int mMaxLatency;
     int mNumChannels;
