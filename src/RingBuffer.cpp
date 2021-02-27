@@ -106,12 +106,6 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots)
     mBroadcastSkew    = 0;
     mBroadcastDelta   = 0;
 }
-void RingBuffer::setPLC(int sampleRate, int numChans,
-                              int audioBitResolution, int queueLength) {
-#define HIST 6
-    mPLC = new BurgPLC(sampleRate, numChans, audioBitResolution, queueLength, HIST);
-    mPLCbuffer = mPLC->getBufferPtr();
-   };
 
 //*******************************************************************************
 RingBuffer::~RingBuffer()
@@ -169,6 +163,12 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
     mBufferIsNotFull.wakeAll();
 }
 
+void RingBuffer::setPLC(int sampleRate, int numChans,
+                              int audioBitResolution, int queueLength) {
+#define HIST 6
+    mPLC = new BurgPLC(sampleRate, numChans, audioBitResolution, queueLength, HIST);
+    mPLCbuffer = mPLC->getBufferPtr();
+   };
 //*******************************************************************************
 bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen)
 {
@@ -192,7 +192,7 @@ bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int los
     /// instead of not writing anything
     if (mFullSlots == mNumSlots) {
         //std::cout << "OUPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
-        overflowReset();
+//        overflowReset();
         return true;
     }
 
@@ -229,45 +229,45 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     }
 
     // Copy mSlotSize bytes to ReadSlot
-//    std::memcpy(ptrToReadSlot, mRingBuffer + mReadPosition, mSlotSize);
-    transferToPLC(mReadPosition,mSlotSize,mPLCbuffer);
-    mPLC->processPacket (mFullSlots <= 0);
-    transferToAudioInterface(0,mSlotSize,ptrToReadSlot, mPLCbuffer);
-    // Always save memory of the last read slot
-//    std::memcpy(mLastReadSlot, mRingBuffer + mReadPosition, mSlotSize);
-    // Update write position
-    mReadPosition = (mReadPosition + mSlotSize) % mTotalSize;
-    mFullSlots--;  //update full slots
-    // Wake threads waitng for bufferIsNotFull condition
-    mBufferIsNotFull.wakeAll();
-}
+ //    std::memcpy(ptrToReadSlot, mRingBuffer + mReadPosition, mSlotSize);
+     transferToPLC(mReadPosition,mSlotSize,mPLCbuffer);
+     mPLC->processPacket (mFullSlots <= 0);
+     transferToAudioInterface(0,mSlotSize,ptrToReadSlot, mPLCbuffer);
+     // Always save memory of the last read slot
+ //    std::memcpy(mLastReadSlot, mRingBuffer + mReadPosition, mSlotSize);
+     // Update write position
+     mReadPosition = (mReadPosition + mSlotSize) % mTotalSize;
+     mFullSlots--;  //update full slots
+     // Wake threads waitng for bufferIsNotFull condition
+     mBufferIsNotFull.wakeAll();
+ }
 
-void RingBuffer::transferToPLC(int curpos, int len, int8_t* dstPtr)
-{
-    int ptr = curpos  + mTotalSize;
-    ptr     = ptr % mTotalSize;
-    //    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
-    int n        = std::min(mTotalSize - ptr, len);
-    std::memcpy(dstPtr, mRingBuffer + ptr, n);
-    if (n < len) {
-        //        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
-        std::memcpy(dstPtr + n, mRingBuffer, len - n);
-    }
-}
+ void RingBuffer::transferToPLC(int curpos, int len, int8_t* dstPtr)
+ {
+     int ptr = curpos  + mTotalSize;
+     ptr     = ptr % mTotalSize;
+     //    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
+     int n        = std::min(mTotalSize - ptr, len);
+     std::memcpy(dstPtr, mRingBuffer + ptr, n);
+     if (n < len) {
+         //        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
+         std::memcpy(dstPtr + n, mRingBuffer, len - n);
+     }
+ }
 
-void RingBuffer::transferToAudioInterface(int curpos, int len,
-                                            int8_t* dstPtr, int8_t* srcPtr)
-{
-    int ptr = curpos + mTotalSize;
-    ptr     = ptr % mTotalSize;
-    int n        = std::min(mTotalSize - ptr, len);
-    //    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
-    std::memcpy(dstPtr, srcPtr + ptr, n);
-    if (n < len) {
-        //        qDebug() << "n" << n << "rem - n" << (rem - n);
-        std::memcpy(dstPtr + n, srcPtr, len - n);
-    }
-}
+ void RingBuffer::transferToAudioInterface(int curpos, int len,
+                                             int8_t* dstPtr, int8_t* srcPtr)
+ {
+     int ptr = curpos + mTotalSize;
+     ptr     = ptr % mTotalSize;
+     int n        = std::min(mTotalSize - ptr, len);
+     //    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
+     std::memcpy(dstPtr, srcPtr + ptr, n);
+     if (n < len) {
+         //        qDebug() << "n" << n << "rem - n" << (rem - n);
+         std::memcpy(dstPtr + n, srcPtr, len - n);
+     }
+ }
 //*******************************************************************************
 // Not supported in RingBuffer
 void RingBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
