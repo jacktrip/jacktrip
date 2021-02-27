@@ -52,8 +52,8 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
                            int bcast_qlen, int channels, int bit_res)
     : RingBuffer(0, 0)
 {
-    int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
-    //    total_size = channels * bit_res * 255;  // test oddball
+//    int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
+int        total_size = channels * bit_res * 128;  // test oddball
 #define HIST 6
     mPLC = new BurgPLC(sample_rate, channels, bit_res, buf_samples, HIST);
     mPLCbuffer = mPLC->getBufferPtr();
@@ -129,7 +129,7 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
     mInSlotSize = len;
     if (!mActive) { mActive = true; }
     if (mMaxLatency < len + mSlotSize) { mMaxLatency = len + mSlotSize; }
-    if (0 < lostLen) { processPacketLoss(lostLen); }
+    if (0 < lostLen) { qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" ;processPacketLoss(lostLen); }
     mSkewRaw += mReadsNew - len;
     mReadsNew = 0;
     mUnderruns += mUnderrunsNew;
