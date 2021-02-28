@@ -236,7 +236,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 //if(available<1) qDebug() << "available" << available;
     if (read_len == len) transferToPLC(0,rpos,len,mPLCbuffer,0);
     if ((read_len != 0) && (read_len != len)) qDebug() << "read_len = partial!!" << read_len;
-    mPLC->processPacket (read_len < len);
+    mPLC->processPacket ((read_len < len), false);
     transferToAudioInterface(0,0,len,ptrToReadSlot,0, mPLCbuffer);
 
     //    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);

@@ -177,12 +177,12 @@ bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int los
         return false;
     }
     QMutexLocker locker(&mMutex);  // lock the mutex
-    if (0 < lostLen) {
-        int lostCount = lostLen / mSlotSize;
-        mBufDecPktLoss += lostCount;
-        mSkewRaw -= lostCount;
-        mLevelCur -= lostCount;
-    }
+//    if (0 < lostLen) {
+//        int lostCount = lostLen / mSlotSize;
+//        mBufDecPktLoss += lostCount;
+//        mSkewRaw -= lostCount;
+//        mLevelCur -= lostCount;
+//    }
     updateReadStats();
 
     // Check if there is space available to write a slot
@@ -192,12 +192,24 @@ bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int los
     /// instead of not writing anything
     if (mFullSlots == mNumSlots) {
         //std::cout << "OUPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
+        qDebug()  << "\t\t\t\t" << "overflow" << lostLen;
 //        overflowReset();
+
+        std::memcpy(mRingBuffer + mWritePosition, ptrToSlot, mSlotSize);
+        memcpy(mRingBuffer + mWritePosition, &lostLen , sizeof(int));
+        transferToPLC(mWritePosition,mSlotSize,mPLCbuffer);
+        qDebug()  << "over";
+        mPLC->processPacket (false, true);
+
         return true;
     }
 
     // Copy mSlotSize bytes to mRingBuffer
     std::memcpy(mRingBuffer + mWritePosition, ptrToSlot, mSlotSize);
+
+//    int tmp = mFullSlots; test
+    memcpy(mRingBuffer + mWritePosition, &lostLen , sizeof(int));
+
     // Update write position
     mWritePosition = (mWritePosition + mSlotSize) % mTotalSize;
     mFullSlots++;  //update full slots
@@ -223,6 +235,7 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // Returns a buffer of zeros if there's nothing to read
         //std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
         //std::memset(ptrToReadSlot, 0, mSlotSize);
+        qDebug() << "\t\t" << "underflow" << mPLC->bytesToInt(mRingBuffer + mReadPosition);
 //        setUnderrunReadSlot(ptrToReadSlot);
 //        underrunReset();
         return;
@@ -231,7 +244,7 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     // Copy mSlotSize bytes to ReadSlot
  //    std::memcpy(ptrToReadSlot, mRingBuffer + mReadPosition, mSlotSize);
      transferToPLC(mReadPosition,mSlotSize,mPLCbuffer);
-     mPLC->processPacket (mFullSlots <= 0);
+     mPLC->processPacket ((mFullSlots <= 0), false);
      transferToAudioInterface(0,mSlotSize,ptrToReadSlot, mPLCbuffer);
      // Always save memory of the last read slot
  //    std::memcpy(mLastReadSlot, mRingBuffer + mReadPosition, mSlotSize);

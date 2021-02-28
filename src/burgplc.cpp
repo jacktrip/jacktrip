@@ -45,12 +45,23 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) 
     mLastWasGlitch = false;
     mPhasor.resize( mNumChannels, 0.0 );
     qDebug() << sample_rate << channels << bit_res << FPP << hist;
+    debugSequenceNumber = 0;
+    debugSequenceDelta = 0;
 }
 
 // for ( int pCnt = 0; pCnt < plen; pCnt++)
-void BurgPLC::processPacket (bool glitch)
+void BurgPLC::processPacket (bool glitch, bool overrun)
 {
+    QMutexLocker locker(&mMutex);  // lock the mutex
     int ch = 0;
+// debugSequenceDelta = bytesToInt(mXfrBuffer) - debugSequenceNumber;
+
+    if (debugSequenceNumber != bytesToInt(mXfrBuffer))
+        qDebug() << "expected" << debugSequenceNumber << "got " << bytesToInt(mXfrBuffer);
+
+//if(!overrun)
+    debugSequenceNumber = bytesToInt(mXfrBuffer)+1;
+//    if (debugSequenceDelta != 1) qDebug() << debugSequenceNumber << "\t" << debugSequenceDelta;
 
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 #define IN(x,s) mTruth[s] = x
@@ -140,6 +151,14 @@ OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
     mPacketCnt++;
 
 }
+
+int BurgPLC::bytesToInt(int8_t *buf)
+{
+    int output = 0;
+    memcpy(&output, buf, sizeof(int));  // 4 bytes
+    return output;
+}
+
 // copped from AudioInterface.cpp
 
 sample_t BurgPLC::bitsToSample(int ch, int frame) {

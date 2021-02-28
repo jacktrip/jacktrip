@@ -60,7 +60,7 @@ class JitterBuffer : public RingBuffer
                                   int8_t* dstPtr, int done, int8_t *srcPtr);
     void transferToPLC(int hist, int curpos, int rem, int8_t* dstPtr, int done);
    protected:
-//    BurgPLC* mPLC;
+//    BurgPLC* mPLC; // now in super class
 //    int8_t* mPLCbuffer;       ///< 8-bit array of data (1-byte)
 
     int mMaxLatency;
