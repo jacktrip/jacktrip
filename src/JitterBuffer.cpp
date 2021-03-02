@@ -55,8 +55,8 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 //    int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
 int        total_size = channels * bit_res * 1024;  // test oddball
 #define HIST 6
-    mPLC = new BurgPLC(sample_rate, channels, bit_res, buf_samples, HIST);
-    mPLCbuffer = mPLC->getBufferPtr();
+//    mPLC = new BurgPLC(sample_rate, channels, bit_res, 32, buf_samples, HIST);
+//    mPLCbuffer = mPLC->getBufferPtr();
     int slot_size  = buf_samples * channels * bit_res;
     mSlotSize      = slot_size;
     mInSlotSize    = slot_size;
@@ -234,10 +234,10 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     //    }
     // =    transferToAudioInterface(0,rpos,read_len,ptrToReadSlot,0, mRingBuffer);
 //if(available<1) qDebug() << "available" << available;
-    if (read_len == len) transferToPLC(0,rpos,len,mPLCbuffer,0);
-    if ((read_len != 0) && (read_len != len)) qDebug() << "read_len = partial!!" << read_len;
-    mPLC->processPacket ((read_len < len), false);
-    transferToAudioInterface(0,0,len,ptrToReadSlot,0, mPLCbuffer);
+//    if (read_len == len) transferToPLC(0,rpos,len,mPLCbuffer,0);
+//    if ((read_len != 0) && (read_len != len)) qDebug() << "read_len = partial!!" << read_len;
+//    mPLC->processPacket ((read_len < len), false);
+//    transferToAudioInterface(0,0,len,ptrToReadSlot,0, mPLCbuffer);
 
     //    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);
     //    if(plc->lastWasGlitch) plc->crossFade();

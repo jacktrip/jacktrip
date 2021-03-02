@@ -40,6 +40,7 @@
 #include "JackAudioInterface.h"
 #include "JitterBuffer.h"
 #include "RingBufferWavetable.h"
+#include "RingBufferPLC.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
 #ifdef __RT_AUDIO__
@@ -73,9 +74,9 @@ bool JackTrip::sJackStopped = false;
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
                    int NumChans,
-#ifdef WAIR  // WAIR
+                   #ifdef WAIR  // WAIR
                    int NumNetRevChans,
-#endif  // endwhere
+                   #endif  // endwhere
                    int BufferQueueLength, unsigned int redundancy,
                    AudioInterface::audioBitResolutionT AudioBitResolution,
                    DataProtocol::packetHeaderTypeT PacketHeaderType,
@@ -88,11 +89,11 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mAudiointerfaceMode(JackTrip::JACK)
     , mNumChans(NumChans)
     ,
-#ifdef WAIR  // WAIR
-    mNumNetRevChans(NumNetRevChans)
+      #ifdef WAIR  // WAIR
+      mNumNetRevChans(NumNetRevChans)
     ,
-#endif  // endwhere
-    mBufferQueueLength(BufferQueueLength)
+      #endif  // endwhere
+      mBufferQueueLength(BufferQueueLength)
     , mBufferStrategy(1)
     , mBroadcastQueueLength(0)
     , mSampleRate(gDefaultSampleRate)
@@ -153,14 +154,14 @@ JackTrip::~JackTrip()
 
 //*******************************************************************************
 void JackTrip::setupAudio(
-#ifdef WAIRTOHUB  // WAIR
-    __attribute__((unused)) int ID
-#endif  // endwhere
-)
+        #ifdef WAIRTOHUB  // WAIR
+        __attribute__((unused)) int ID
+        #endif  // endwhere
+        )
 {
     // Check if mAudioInterface has already been created or not
     if (mAudioInterface
-        != NULL) {  // if it has been created, disconnet it from JACK and delete it
+            != NULL) {  // if it has been created, disconnet it from JACK and delete it
         cout << "WARINING: JackAudio interface was setup already:" << endl;
         cout << "It will be erased and setup again." << endl;
         cout << gPrintSeparator << endl;
@@ -174,17 +175,17 @@ void JackTrip::setupAudio(
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
         mAudioInterface = new JackAudioInterface(this, mNumChans, mNumChans,
-#ifdef WAIR  // wair
+                                         #ifdef WAIR  // wair
                                                  mNumNetRevChans,
-#endif  // endwhere
+                                         #endif  // endwhere
                                                  mAudioBitResolution);
 
 #ifdef WAIRTOHUB  // WAIR
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME;  // legacy for WAIR
         //Set our Jack client name if we're a hub server or a custom name hasn't been set
         if (!mPeerAddress.isEmpty()
-            && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
-//            mJackClientName = QString(mPeerAddress).replace(":", "_");
+                && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
+            //            mJackClientName = QString(mPeerAddress).replace(":", "_");
             mJackClientName = QString(mPeerAddress).replace(":", "_") + QString(".") + QString("pan=2");
         }
         //std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
@@ -208,15 +209,15 @@ void JackTrip::setupAudio(
         mDeviceID = mAudioInterface->getDeviceID();
         if (gVerboseFlag)
             std::cout
-                << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples"
-                << std::endl;
+                    << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples"
+                    << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif  //__NON_JACK__
 #ifdef __NO_JACK__  /// \todo FIX THIS REPETITION OF CODE
 #ifdef __RT_AUDIO__
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
         mAudioInterface =
-            new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+                new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -226,7 +227,7 @@ void JackTrip::setupAudio(
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef __RT_AUDIO__
         mAudioInterface =
-            new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
+                new RtAudioInterface(this, mNumChans, mNumChans, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
@@ -275,23 +276,23 @@ void JackTrip::closeAudio()
 void JackTrip::setupDataProtocol()
 {
     double simulated_max_delay =
-        mSimulatedDelayRel * getBufferSizeInSamples() / getSampleRate();
+            mSimulatedDelayRel * getBufferSizeInSamples() / getSampleRate();
     // Create DataProtocol Objects
     switch (mDataProtocol) {
     case UDP:
         std::cout << "Using UDP Protocol" << std::endl;
         QThread::usleep(100);
         mDataProtocolSender =
-            new UdpDataProtocol(this, DataProtocol::SENDER,
-                                //mSenderPeerPort, mSenderBindPort,
-                                mSenderBindPort, mSenderPeerPort, mRedundancy);
+                new UdpDataProtocol(this, DataProtocol::SENDER,
+                                    //mSenderPeerPort, mSenderBindPort,
+                                    mSenderBindPort, mSenderPeerPort, mRedundancy);
         mDataProtocolReceiver =
-            new UdpDataProtocol(this, DataProtocol::RECEIVER, mReceiverBindPort,
-                                mReceiverPeerPort, mRedundancy);
+                new UdpDataProtocol(this, DataProtocol::RECEIVER, mReceiverBindPort,
+                                    mReceiverPeerPort, mRedundancy);
         if (0.0 < mSimulatedLossRate || 0.0 < mSimulatedJitterRate
-            || 0.0 < simulated_max_delay) {
+                || 0.0 < simulated_max_delay) {
             mDataProtocolReceiver->setIssueSimulation(
-                mSimulatedLossRate, mSimulatedJitterRate, simulated_max_delay);
+                        mSimulatedLossRate, mSimulatedJitterRate, simulated_max_delay);
         }
         mDataProtocolSender->setUseRtPriority(mUseRtUdpPriority);
         mDataProtocolReceiver->setUseRtPriority(mUseRtUdpPriority);
@@ -337,8 +338,6 @@ void JackTrip::setupRingBuffers()
     case WAVETABLE:
         mSendRingBuffer = new RingBufferWavetable(slot_size, gDefaultOutputQueueLength);
         mReceiveRingBuffer = new RingBufferWavetable(slot_size, mBufferQueueLength);
-        mReceiveRingBuffer->setPLC(mSampleRate, mNumChans,
-                                         mAudioBitResolution, mBufferQueueLength);
         /*
     mSendRingBuffer = new RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
                 gDefaultOutputQueueLength);
@@ -350,14 +349,19 @@ void JackTrip::setupRingBuffers()
         mSendRingBuffer = new RingBuffer(slot_size, gDefaultOutputQueueLength);
         if (0 > mBufferStrategy) {
             mReceiveRingBuffer = new RingBuffer(slot_size, mBufferQueueLength);
+        } else if (mBufferStrategy == 3) {
+            mSendRingBuffer = new RingBuffer(slot_size, gDefaultOutputQueueLength);
+            mReceiveRingBuffer = new RingBufferPLC(mSampleRate, mNumChans,
+                                                   mAudioBitResolution, mAudioBufferSize,
+                                                   mBufferQueueLength);
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {
                 cout << "Using AutoQueue 1/" << -mBufferQueueLength << endl;
             }
             mReceiveRingBuffer = new JitterBuffer(
-                mAudioBufferSize, mBufferQueueLength, mSampleRate, mBufferStrategy,
-                mBroadcastQueueLength, mNumChans, mAudioBitResolution);
+                        mAudioBufferSize, mBufferQueueLength, mSampleRate, mBufferStrategy,
+                        mBroadcastQueueLength, mNumChans, mAudioBitResolution);
         }
         /*
     mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
@@ -395,10 +399,10 @@ void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 
 //*******************************************************************************
 void JackTrip::startProcess(
-#ifdef WAIRTOHUB  // WAIR
-    int ID
-#endif  // endwhere
-)
+        #ifdef WAIRTOHUB  // WAIR
+        int ID
+        #endif  // endwhere
+        )
 {  //signal that catches ctrl c in rtaudio-asio mode
     /*#if defined (__WIN_32__)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
@@ -412,11 +416,11 @@ void JackTrip::startProcess(
 
     if (gVerboseFlag)
         std::cout
-            << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)"
-            << std::endl;
+                << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)"
+                << std::endl;
 #if defined __WIN_32__
-        //cc fixed windows crash with this print statement!
-        //qDebug() << "before mJackTrip->startProcess" << mReceiverBindPort<< mSenderBindPort;
+    //cc fixed windows crash with this print statement!
+    //qDebug() << "before mJackTrip->startProcess" << mReceiverBindPort<< mSenderBindPort;
 #endif
     checkIfPortIsBinded(mReceiverBindPort);
     if (gVerboseFlag)
@@ -428,10 +432,10 @@ void JackTrip::startProcess(
     if (gVerboseFlag)
         std::cout << "  JackTrip:startProcess before setupAudio" << std::endl;
     setupAudio(
-#ifdef WAIRTOHUB  // wair
-        ID
-#endif  // endwhere
-    );
+            #ifdef WAIRTOHUB  // wair
+                ID
+            #endif  // endwhere
+                );
     //cc redundant with instance creator  createHeader(mPacketHeaderType); next line fixme
     createHeader(mPacketHeaderType);
     setupDataProtocol();
@@ -481,7 +485,7 @@ void JackTrip::startProcess(
                          "clientPingToServerStart"
                       << std::endl;
         if (clientPingToServerStart()
-            == -1) {  // if error on server start (-1) we return inmediatly
+                == -1) {  // if error on server start (-1) we return inmediatly
             stop("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
             return;
         }
@@ -490,10 +494,10 @@ void JackTrip::startProcess(
         if (gVerboseFlag) std::cout << "step 2S server only (same as 2s)" << std::endl;
         if (gVerboseFlag)
             std::cout
-                << "  JackTrip:startProcess case SERVERPINGSERVER before serverStart"
-                << std::endl;
+                    << "  JackTrip:startProcess case SERVERPINGSERVER before serverStart"
+                    << std::endl;
         if (serverStart(true)
-            == -1) {  // if error on server start (-1) we return inmediatly
+                == -1) {  // if error on server start (-1) we return inmediatly
             stop();
             return;
         }
@@ -808,7 +812,7 @@ void JackTrip::clientStart()
     // For the Client mode, the peer (or server) address has to be specified by the user
     if (mPeerAddress.isEmpty()) {
         throw std::invalid_argument(
-            "Peer Address has to be set if you run in CLIENT mode");
+                    "Peer Address has to be set if you run in CLIENT mode");
     } else {
         mDataProtocolSender->setPeerAddress(mPeerAddress.toLatin1().data());
         mDataProtocolReceiver->setPeerAddress(mPeerAddress.toLatin1().data());
@@ -875,7 +879,7 @@ int JackTrip::clientPingToServerStart()
     // For the Client mode, the peer (or server) address has to be specified by the user
     if (mPeerAddress.isEmpty()) {
         throw std::invalid_argument(
-            "Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
+                    "Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
         return -1;
     }
 
@@ -1083,8 +1087,8 @@ void JackTrip::checkIfPortIsBinded(int port)
     if (!UdpSockTemp.bind(QHostAddress::Any, port, QUdpSocket::DontShareAddress)) {
         UdpSockTemp.close();  // close the socket
         throw std::runtime_error(
-            "Could not bind UDP socket. It may already be binded by another process on "
-            "your machine. Try using a different port number");
+                    "Could not bind UDP socket. It may already be binded by another process on "
+                    "your machine. Try using a different port number");
     }
     UdpSockTemp.close();  // close the socket
 }

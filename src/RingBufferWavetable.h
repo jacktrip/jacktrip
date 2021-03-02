@@ -34,6 +34,7 @@
  * \author Juan-Pablo Caceres
  * \date September 2008
  */
+#include <RingBuffer.h>
 
 #ifndef __RINGBUFFERWAVETABLE_H__
 #define __RINGBUFFERWAVETABLE_H__

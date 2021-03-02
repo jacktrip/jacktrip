@@ -91,7 +91,7 @@ class JackTrip : public QObject
     /// \brief Enum for the JackTrip Underrun Mode, when packets
     enum underrunModeT {
         WAVETABLE,  ///< Loops on the last received packet
-        ZEROS       ///< Set new buffers to zero if there are no new ones
+        ZEROS
     };
 
     /// \brief Enum for Audio Interface Mode

@@ -146,6 +146,7 @@ HEADERS += DataProtocol.h \
            ProcessPlugin.h \
            RingBuffer.h \
            RingBufferWavetable.h \
+           RingBufferPLC.h \
            Settings.h \
            TestRingBuffer.h \
            ThreadPoolTest.h \

@@ -4,10 +4,11 @@
 
 using namespace std;
 
-BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) :
+BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist) :
     mNumChannels (channels),
     mAudioBitRes (bit_res),
     mFPP (FPP),
+    mQLen (qLen),
     mHist (hist)
 {
     switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
@@ -44,15 +45,30 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist) 
     }
     mLastWasGlitch = false;
     mPhasor.resize( mNumChannels, 0.0 );
-    qDebug() << sample_rate << channels << bit_res << FPP << hist;
     debugSequenceNumber = 0;
     debugSequenceDelta = 0;
 }
 
+void BurgPLC::pushPacket (int8_t* buf) {
+    qDebug() << "pushPacket" << mFPP;
+    qDebug() << "..." << bytesToInt(buf);
+//    int bytes = mFPP*mNumChannels*mBitResolutionMode;
+//    vector<int8_t> tmp( bytes, 0);
+//    memcpy(&tmp, buf, bytes);
+//    lifo.push(tmp);
+};
+
+void BurgPLC::pullPacket (int8_t* buf) {
+    int bytes = mFPP*mNumChannels*mBitResolutionMode;
+    vector<int8_t> tmp( bytes, 0);
+    tmp = lifo.pop();
+    memcpy(buf, &tmp, bytes);
+};
+
 // for ( int pCnt = 0; pCnt < plen; pCnt++)
 void BurgPLC::processPacket (bool glitch, bool overrun)
 {
-    QMutexLocker locker(&mMutex);  // lock the mutex
+//    QMutexLocker locker(&mMutex);  // lock the mutex
     int ch = 0;
 // debugSequenceDelta = bytesToInt(mXfrBuffer) - debugSequenceNumber;
 
@@ -152,6 +168,7 @@ OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
 
 }
 
+// returns the first stereo frame of a buffer as an int32
 int BurgPLC::bytesToInt(int8_t *buf)
 {
     int output = 0;

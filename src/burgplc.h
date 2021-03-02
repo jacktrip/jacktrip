@@ -3,21 +3,25 @@
 
 #include "burgalgorithm.h"
 #include "AudioInterface.h"
-#include <QMutex>
+#include <QStack>
 #include <QMutexLocker>
 
 class BurgPLC
 {
 public:
-    BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int hist);
+    BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist);
     int8_t* getBufferPtr() { return mXfrBuffer; };
     void processPacket (bool glitch, bool overrun);
     int bytesToInt(int8_t* buf);
+    void pushPacket (int8_t* buf);
+    void pullPacket (int8_t* buf);
 private:
-    QMutex mMutex;                     ///< Mutex to protect read and write operations
+    QStack<vector<int8_t>> lifo;
+//    QMutex mMutex;                     ///< Mutex to protect read and write operations
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
+    int mQLen;
     int mHist;
     int mTotalSize;  ///< Total size of mXfrBuffer
     AudioInterface::audioBitResolutionT mBitResolutionMode;

@@ -38,15 +38,16 @@
 #ifndef __RINGBUFFER_H__
 #define __RINGBUFFER_H__
 
+#include <QWaitCondition>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QWaitCondition>
-#include <atomic>
 
 #include "jacktrip_types.h"
-#include "burgplc.h"
+
+#include <atomic>
 
 //using namespace JackTripNamespace;
+
 
 /** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read from
  * asynchronously (blocking) or synchronously (non-blocking).
@@ -57,7 +58,8 @@
  */
 class RingBuffer
 {
-   public:
+public:
+
     /** \brief The class constructor
    * \param SlotSize Size of one slot in bytes
    * \param NumSlots Number of slots
@@ -118,9 +120,9 @@ class RingBuffer
         int32_t autoq_rate;
     };
     virtual bool getStats(IOStat* stat, bool reset);
-    void setPLC(int sampleRate, int numChans, int audioBitResolution, int queueLength);
 
-   protected:
+protected:
+
     /** \brief Sets the memory in the Read Slot when uderrun occurs. By default,
    * this sets it to 0. Override this method in a subclass for a different behavior.
    * \param ptrToReadSlot Pointer to read slot from the RingBuffer
@@ -142,31 +144,29 @@ class RingBuffer
     /// \brief Helper method to debug, prints member variables to terminal
     void debugDump() const;
     void updateReadStats();
-    void transferToPLC(int curpos, int len, int8_t* dstPtr);
-    void transferToAudioInterface(int curpos, int len, int8_t* dstPtr, int8_t *srcPtr);
 
-    /*const*/ int mSlotSize;   ///< The size of one slot in byes
-    /*const*/ int mNumSlots;   ///< Number of Slots
-    /*const*/ int mTotalSize;  ///< Total size of the mRingBuffer = mSlotSize*mNumSlotss
-    uint32_t mReadPosition;    ///< Read Positions in the RingBuffer (Tail)
-    uint32_t mWritePosition;   ///< Write Position in the RingBuffer (Head)
-    int mFullSlots;            ///< Number of used (full) slots, in slot-size
-    int8_t* mRingBuffer;       ///< 8-bit array of data (1-byte)
-    int8_t* mLastReadSlot;     ///< Last slot read
+    /*const*/ int mSlotSize; ///< The size of one slot in byes
+    /*const*/ int mNumSlots; ///< Number of Slots
+    /*const*/ int mTotalSize; ///< Total size of the mRingBuffer = mSlotSize*mNumSlotss
+    uint32_t mReadPosition; ///< Read Positions in the RingBuffer (Tail)
+    uint32_t mWritePosition; ///< Write Position in the RingBuffer (Head)
+    int mFullSlots; ///< Number of used (full) slots, in slot-size
+    int8_t* mRingBuffer; ///< 8-bit array of data (1-byte)
+    int8_t* mLastReadSlot; ///< Last slot read
 
     // Thread Synchronization Private Members
-    QMutex mMutex;                     ///< Mutex to protect read and write operations
-    QWaitCondition mBufferIsNotFull;   ///< Buffer not full condition to monitor threads
-    QWaitCondition mBufferIsNotEmpty;  ///< Buffer not empty condition to monitor threads
+    QMutex mMutex; ///< Mutex to protect read and write operations
+    QWaitCondition mBufferIsNotFull; ///< Buffer not full condition to monitor threads
+    QWaitCondition mBufferIsNotEmpty; ///< Buffer not empty condition to monitor threads
 
     // IO stat
     int mStatUnit;
     uint32_t mUnderruns;
     uint32_t mOverflows;
-    int32_t mSkewRaw;
-    double mLevelCur;
-    double mLevelDownRate;
-    int32_t mLevel;
+    int32_t  mSkewRaw;
+    double   mLevelCur;
+    double   mLevelDownRate;
+    int32_t  mLevel;
 
     uint32_t mBufDecOverflow;
     uint32_t mBufDecPktLoss;
@@ -176,16 +176,11 @@ class RingBuffer
     // temp counters for reads
     uint32_t mReadsNew;
     uint32_t mUnderrunsNew;
-    int32_t mSkew0;
+    int32_t  mSkew0;
 
     // broadcast counters
     int32_t mBroadcastSkew;
     int32_t mBroadcastDelta;
-
-    // packet loss concealment
-    BurgPLC* mPLC;
-    int8_t* mPLCbuffer;       ///< 8-bit array of data (1-byte)
-
 };
 
 #endif
