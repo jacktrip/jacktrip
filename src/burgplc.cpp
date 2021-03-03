@@ -47,36 +47,75 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mPhasor.resize( mNumChannels, 0.0 );
     debugSequenceNumber = 0;
     debugSequenceDelta = 0;
+    for ( int i = 0; i < 64; i++ ) {
+        int bytes = mFPP*mNumChannels*mBitResolutionMode;
+        QByteArray tmp( bytes, 0);
+        mPackets.push_back(&tmp);
+    }
 }
 
-void BurgPLC::pushPacket (int8_t* buf) {
-    qDebug() << "pushPacket" << mFPP;
-    qDebug() << "..." << bytesToInt(buf);
-//    int bytes = mFPP*mNumChannels*mBitResolutionMode;
-//    vector<int8_t> tmp( bytes, 0);
-//    memcpy(&tmp, buf, bytes);
-//    lifo.push(tmp);
+void BurgPLC::pushPacket (const int8_t *buf, int seq) {
+    int bytes = mFPP*mNumChannels*mBitResolutionMode;
+//    qDebug() << "..." << seq << "..." << mLifo.size();
+    qDebug() << ">..>" << (1+mLifo.size());
+    seq %= 64;
+    memcpy(mPackets[seq], buf, bytes);
+    qDebug() << ">>" << seq;
+
+//    memcpy(&mPackets[seq], &seq , sizeof(int));
+//    int output = 0;
+//    memcpy(&output, &mPackets[seq], sizeof(int));  // 4 bytes
+////    qDebug() << "-----------" << output;
+
+    mLifo.push(mPackets[seq]);
+//    qDebug() << "pushPacket" << bytesToInt(buf) << mFPP << "bytes" << bytes;
 };
 
 void BurgPLC::pullPacket (int8_t* buf) {
     int bytes = mFPP*mNumChannels*mBitResolutionMode;
-    vector<int8_t> tmp( bytes, 0);
-    tmp = lifo.pop();
-    memcpy(buf, &tmp, bytes);
+    QByteArray *tmp;
+    qDebug() << "<..<" << mLifo.size() << "\n";
+    if (mLifo.size()) { while (mLifo.size()) {
+//        tmp = mLifo.pop();
+
+////        int input = 999;
+////        memcpy(&tmp, &input , sizeof(int));
+//        int output = 0;
+//        memcpy(&output, &tmp, sizeof(int));  // 4 bytes
+//        qDebug() << "<<" << output;
+
+//        memcpy(buf, mLifo.pop(), bytes);
+        memcpy(mXfrBuffer, mLifo.pop(), bytes);
+        processPacket(false);
+    }}  else {
+        processPacket(true);
+        qDebug() << "<<";
+    }
+    memcpy(buf, mXfrBuffer, bytes);
+//    vector<int8_t> tmp2( bytes, 0);
+//    memcpy(buf, &tmp2, bytes);
 };
 
+// returns the first stereo frame of a buffer as an int32
+int BurgPLC::bytesToInt(const int8_t *buf)
+{
+    int output = 0;
+    memcpy(&output, buf, sizeof(int));  // 4 bytes
+    return output;
+}
+
 // for ( int pCnt = 0; pCnt < plen; pCnt++)
-void BurgPLC::processPacket (bool glitch, bool overrun)
+void BurgPLC::processPacket (bool glitch)
 {
 //    QMutexLocker locker(&mMutex);  // lock the mutex
     int ch = 0;
 // debugSequenceDelta = bytesToInt(mXfrBuffer) - debugSequenceNumber;
 
-    if (debugSequenceNumber != bytesToInt(mXfrBuffer))
-        qDebug() << "expected" << debugSequenceNumber << "got " << bytesToInt(mXfrBuffer);
+//    if (debugSequenceNumber != bytesToInt(mXfrBuffer))
+//        qDebug() << "expected" << debugSequenceNumber << "got " << bytesToInt(mXfrBuffer);
 
 //if(!overrun)
-    debugSequenceNumber = bytesToInt(mXfrBuffer)+1;
+//    debugSequenceNumber = bytesToInt(mXfrBuffer)+1;
 //    if (debugSequenceDelta != 1) qDebug() << debugSequenceNumber << "\t" << debugSequenceDelta;
 
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
@@ -168,13 +207,6 @@ OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
 
 }
 
-// returns the first stereo frame of a buffer as an int32
-int BurgPLC::bytesToInt(int8_t *buf)
-{
-    int output = 0;
-    memcpy(&output, buf, sizeof(int));  // 4 bytes
-    return output;
-}
 
 // copped from AudioInterface.cpp
 

@@ -11,12 +11,13 @@ class BurgPLC
 public:
     BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist);
     int8_t* getBufferPtr() { return mXfrBuffer; };
-    void processPacket (bool glitch, bool overrun);
-    int bytesToInt(int8_t* buf);
-    void pushPacket (int8_t* buf);
+    void processPacket (bool glitch);
+    int bytesToInt(const int8_t *buf);
+    void pushPacket (const int8_t* buf, int seq);
     void pullPacket (int8_t* buf);
 private:
-    QStack<vector<int8_t>> lifo;
+    QStack<QByteArray*> mLifo;
+    vector<QByteArray*> mPackets;
 //    QMutex mMutex;                     ///< Mutex to protect read and write operations
     int mNumChannels;
     int mAudioBitRes;

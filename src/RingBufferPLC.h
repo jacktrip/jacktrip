@@ -41,6 +41,7 @@
 #include <RingBuffer.h>
 #include "burgplc.h"
 #define HIST 6
+#include <QDebug>
 
 /** \brief Same as RingBuffer, except that it uses the Wavetable mode for
  * lost or late packets.
@@ -53,8 +54,8 @@ class RingBufferPLC : public RingBuffer
    * \param NumSlots Number of slots
    */
     RingBufferPLC(int sampleRate, int numChans, int audioBitResolution, int audioBufferSize,
-            int bufferQueueLength) :
-        RingBuffer(audioBufferSize, bufferQueueLength) {
+            int ringBuffer_slot_size, int bufferQueueLength) :
+        RingBuffer(ringBuffer_slot_size, bufferQueueLength) {
             mPLC = new BurgPLC(sampleRate, numChans, audioBitResolution, audioBufferSize,
                                bufferQueueLength, HIST);
             mPLCbuffer = mPLC->getBufferPtr();
@@ -66,40 +67,10 @@ class RingBufferPLC : public RingBuffer
 
 //    void transferToPLC(int curpos, int len, int8_t* dstPtr);
 //    void transferToAudioInterface(int curpos, int len, int8_t* dstPtr, int8_t *srcPtr);
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen) {
-        memcpy(mRingBuffer, ptrToSlot, mSlotSize);
-        memcpy(mRingBuffer, &lostLen , sizeof(int));
-        mPLC->pushPacket (mRingBuffer);
-        mPLC->pullPacket (mRingBuffer);
-
-    }
-    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) {};
-    void transferToPLC(int curpos, int len, int8_t* dstPtr)
-    {
-        int ptr = curpos  + mTotalSize;
-        ptr     = ptr % mTotalSize;
-        //    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
-        int n        = std::min(mTotalSize - ptr, len);
-        memcpy(dstPtr, mRingBuffer + ptr, n);
-        if (n < len) {
-            //        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
-            memcpy(dstPtr + n, mRingBuffer, len - n);
-        }
-    }
-
-    void transferToAudioInterface(int curpos, int len,
-                                                int8_t* dstPtr, int8_t* srcPtr)
-    {
-        int ptr = curpos + mTotalSize;
-        ptr     = ptr % mTotalSize;
-        int n        = std::min(mTotalSize - ptr, len);
-        //    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
-        memcpy(dstPtr, srcPtr + ptr, n);
-        if (n < len) {
-            //        qDebug() << "n" << n << "rem - n" << (rem - n);
-            memcpy(dstPtr + n, srcPtr, len - n);
-        }
-    }
+    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen);
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
+    void transferToPLC(int curpos, int len, int8_t* dstPtr);
+    void transferToAudioInterface(int curpos, int len, int8_t* dstPtr, int8_t* srcPtr);
 protected:
     // packet loss concealment
     BurgPLC* mPLC;

@@ -353,7 +353,7 @@ void JackTrip::setupRingBuffers()
             mSendRingBuffer = new RingBuffer(slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer = new RingBufferPLC(mSampleRate, mNumChans,
                                                    mAudioBitResolution, mAudioBufferSize,
-                                                   mBufferQueueLength);
+                                                   slot_size, mBufferQueueLength);
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {
