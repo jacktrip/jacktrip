@@ -130,7 +130,7 @@ void BurgPLC::pullPacket (int8_t* buf) {
 
         processPacket(false);
     } else if (mUnderrunCounter) {
-        //            qDebug() << "under" << mUnderrunCounter;
+                    qDebug() << "under" << mUnderrunCounter;
                     processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
                 }
     mUnderrunCounter++;
