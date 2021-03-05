@@ -31,6 +31,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mPrediction.resize( TRAINSAMPS-1, 0.0 ); // ORDER
     mCoeffs.resize( TRAINSAMPS-2, 0.0 );
     mTruth.resize( mFPP, 0.0 );
+    mTruthCh1.resize( mFPP, 0.0 );
     mXfadedPred.resize( mFPP, 0.0 );
     mNextPred.resize( mFPP, 0.0 );
     mLastGoodPacket.resize( mFPP, 0.0 );
@@ -55,8 +56,8 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mLastPull.resize(mIdealOneSecondsWorthOfPackets);
     for ( int i = 0; i < mIdealOneSecondsWorthOfPackets; i++ ) {
         int bytes = mFPP*mNumChannels*mBitResolutionMode;
-        QByteArray tmp( bytes, 0);
-        mIncomingPacket.push_back(&tmp);
+        int8_t* tmp = new int8_t[bytes];
+        mIncomingPacket.push_back(tmp);
         mLastPush[i] = 0;
         mLastPull[i] = 0;
     }
@@ -68,12 +69,37 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
 
 void BurgPLC::pushPacket (const int8_t *buf, int seq) {
     QMutexLocker locker(&mMutex); // lock the mutex
+
     int approxSecond = mOneSecondPacketCounter / mIdealOneSecondsWorthOfPackets;
     mLastFrame = mOneSecondPacketCounter % mIdealOneSecondsWorthOfPackets;
     mOverrunCounter++;
-//    qDebug() << ">..>" << mLastFrame << mOverrunCounter;
+    //    qDebug() << ">..>" << mLastFrame << mOverrunCounter;
     int bytes = mFPP*mNumChannels*mBitResolutionMode;
     memcpy(mIncomingPacket[mLastFrame], buf, bytes);
+
+//    for ( int s = 0; s < mFPP; s++ ) {
+//        sample_t tmp = 0.3*sinf(mPhasor[0]);
+//        mPhasor[0] += 0.1;
+//        int c = 0;
+//        AudioInterface::fromSampleToBitConversion(
+//                    &tmp,
+//                    &mIncomingPacket[mLastFrame][(s * mBitResolutionMode * mNumChannels)
+//                + (c * mBitResolutionMode)],
+//                mBitResolutionMode);
+//        tmp = 0.3*sinf(mPhasor[1]);
+//        mPhasor[1] += 0.11;
+//        c = 1;
+//        AudioInterface::fromSampleToBitConversion(
+//                    &tmp,
+//                    &mIncomingPacket[mLastFrame][(s * mBitResolutionMode * mNumChannels)
+//                + (c * mBitResolutionMode)],
+//                mBitResolutionMode);
+//    }
+
+    //    int input = seq;
+    //    memcpy(&mIncomingPacket[mLastFrame], &input , sizeof(int));
+    //    qDebug() << "----------------------" << input;
+
     mLastPush[mLastFrame] = approxSecond;
     mOneSecondPacketCounter++;
     mUnderrunCounter = 0;
@@ -83,37 +109,37 @@ void BurgPLC::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex); // lock the mutex
     int bytes = mFPP*mNumChannels*mBitResolutionMode;
 
-    if (mUnderrunCounter) {
-        qDebug() << "under" << mUnderrunCounter;
-        processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
-    }
-    while (mOverrunCounter) {
+//        if (mUnderrunCounter) {
+////            qDebug() << "under" << mUnderrunCounter;
+//            processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
+//        }
+    if (mOverrunCounter)
+    {
         mOverrunCounter--;
-        int pullFrame = mLastFrame-mOverrunCounter;
-//        pullFrame -= 5;
+        int pullFrame = mLastFrame - mOverrunCounter;
+//        pullFrame -= 800;
         if (pullFrame<0) pullFrame += mIdealOneSecondsWorthOfPackets;
-//        qDebug() << "<<" << mLastPull[mLastFrame] << mLastPush[mLastFrame] << pullFrame << mOverrunCounter;
+        //        qDebug() << "<<" << mLastPull[mLastFrame] << mLastPush[mLastFrame] << mLastFrame << pullFrame << mOverrunCounter;
+
+        //        int output = 0;
+        //        memcpy(&output, &mIncomingPacket[pullFrame], sizeof(int));  // 4 bytes
+        //        qDebug() << "-----------" << output;
         memcpy(mXfrBuffer, mIncomingPacket[pullFrame], bytes);
+
         processPacket(false);
-    }
+    } else if (mUnderrunCounter) {
+        //            qDebug() << "under" << mUnderrunCounter;
+                    processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
+                }
     mUnderrunCounter++;
 
     memcpy(buf, mXfrBuffer, bytes);
 };
 
-// returns the first stereo frame of a buffer as an int32
-int BurgPLC::bytesToInt(const int8_t *buf)
-{
-    int output = 0;
-    memcpy(&output, buf, sizeof(int));  // 4 bytes
-    return output;
-}
-
 // for ( int pCnt = 0; pCnt < plen; pCnt++)
 void BurgPLC::processPacket (bool glitch)
 {
     //    QMutexLocker locker(&mMutex);  // lock the mutex
-    int ch = 0;
     // debugSequenceDelta = bytesToInt(mXfrBuffer) - debugSequenceNumber;
 
     //    if (debugSequenceNumber != bytesToInt(mXfrBuffer))
@@ -124,8 +150,12 @@ void BurgPLC::processPacket (bool glitch)
     //    if (debugSequenceDelta != 1) qDebug() << debugSequenceNumber << "\t" << debugSequenceDelta;
 
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
-#define IN(x,s) mTruth[s] = x
-    for PACKETSAMP IN(bitsToSample(ch, s), s);
+#define INCh0(x,s) mTruth[s] = x
+#define INCh1(x,s) mTruthCh1[s] = x
+    for PACKETSAMP {
+        INCh0(bitsToSample(0, s), s);
+        INCh1(bitsToSample(1, s), s);
+    }
     //    for PACKETSAMP { // screw case here but not for sim
     //        IN(0.3*sinf(mPhasor[0]), s);
     //        mPhasor[0] += 0.1;
@@ -166,7 +196,9 @@ void BurgPLC::processPacket (bool glitch)
                 mPhasor[0] += 0.1;
                 mPhasor[1] += 0.11;
                 break;
-            case 0  : OUT(mTruth[s], 0, s);
+            case 0  :
+                OUT(mTruth[s], 0, s);
+                OUT(mTruthCh1[s], 1, s);
                 break;
             case 1  : OUT((glitch) ?
                               mLastGoodPacket[s] : mTruth[s], 0, s);
@@ -188,7 +220,7 @@ void BurgPLC::processPacket (bool glitch)
                 mPhasor[1] += 0.11;
                 break;
             }
-            OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
+//            OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
             //                        OUT( 0.0, 1, s);
             //            OUT( bitsToSample(1, s), 1, s);
         }
@@ -237,4 +269,12 @@ QString BurgPLC::qStringFromLongDouble(const long double myLongDouble)
     stringstream ss;
     ss << myLongDouble;
     return QString::fromStdString(ss.str());
+}
+
+// returns the first stereo frame of a buffer as an int32
+int BurgPLC::bytesToInt(const int8_t *buf)
+{
+    int output = 0;
+    memcpy(&output, buf, sizeof(int));  // 4 bytes
+    return output;
 }

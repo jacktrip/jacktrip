@@ -46,7 +46,7 @@ bool RingBufferPLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int 
         return false;
     }
 
-    QMutexLocker locker(&mMutex); // lock the mutex
+//    QMutexLocker locker(&mMutex); // lock the mutex
 //    //        memcpy(mRingBuffer+mWritePosition, ptrToSlot, mSlotSize);
     mPLC->pushPacket (ptrToSlot, lostLen);
 //    //        mPLC->pullPacket (mRingBuffer+mWritePosition);
@@ -82,7 +82,7 @@ bool RingBufferPLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int 
 }
 
 void RingBufferPLC::readSlotNonBlocking(int8_t* ptrToReadSlot) {
-    QMutexLocker locker(&mMutex); // lock the mutex
+//    QMutexLocker locker(&mMutex); // lock the mutex
 //    QByteArray tmp2( mSlotSize, 220);
 //memcpy(ptrToReadSlot, tmp2.data(), mSlotSize);
 mPLC->pullPacket (ptrToReadSlot);

@@ -16,7 +16,6 @@ public:
     void pushPacket (const int8_t* buf, int seq);
     void pullPacket (int8_t* buf);
 private:
-    QStack<QByteArray*> mLifo;
     QMutex mMutex;                     ///< Mutex to protect read and write operations
     int mSampleRate;
     int mNumChannels;
@@ -36,6 +35,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<sample_t> mPrediction; // ORDER
     vector<long double> mCoeffs;
     vector<sample_t> mTruth;
+    vector<sample_t> mTruthCh1;
     vector<sample_t> mXfadedPred;
     vector<sample_t> mNextPred;
     vector<sample_t> mLastGoodPacket;
@@ -44,7 +44,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
     vector<double> mPhasor;
-    vector<QByteArray*> mIncomingPacket;
+    vector<int8_t*> mIncomingPacket;
     int mIdealOneSecondsWorthOfPackets;
     int mOneSecondPacketCounter;
     vector<int> mLastPush;
