@@ -74,7 +74,8 @@ void BurgPLC::pushPacket (const int8_t *buf, int seq) {
     mLastFrame = mOneSecondPacketCounter % mIdealOneSecondsWorthOfPackets;
     mOverrunCounter++;
     if(seq<1500) mOverrunCounter = 0;
-//    if(!mLastFrame) qDebug() << ">..>" << mLastFrame << mOverrunCounter;
+    if(!mLastFrame) qDebug() << ">..>" << mLastFrame << mOverrunCounter;
+    if(mOverrunCounter>10) mOverrunCounter = 0;
     int bytes = mFPP*mNumChannels*mBitResolutionMode;
     memcpy(mIncomingPacket[mLastFrame], buf, bytes);
 
