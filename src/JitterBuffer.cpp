@@ -35,152 +35,154 @@
  * \date June 2020
  */
 
+
 #include "JitterBuffer.h"
 
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 #include <stdexcept>
-#include <QDebug> // cc
+#include <cmath>
 
-using std::cout;
-using std::endl;
+using std::cout; using std::endl;
+
 
 //*******************************************************************************
 JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strategy,
-                           int bcast_qlen, int channels, int bit_res)
-    : RingBuffer(0, 0)
+                                          int bcast_qlen, int channels, int bit_res) :
+    RingBuffer(0, 0)
 {
-//    int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
-int        total_size = channels * bit_res * 1024;  // test oddball
-#define HIST 6
-//    mPLC = new BurgPLC(sample_rate, channels, bit_res, 32, buf_samples, HIST);
-//    mPLCbuffer = mPLC->getBufferPtr();
-    int slot_size  = buf_samples * channels * bit_res;
-    mSlotSize      = slot_size;
-    mInSlotSize    = slot_size;
+    int total_size = sample_rate * channels * bit_res * 2; // 2 secs of audio
+    int slot_size = buf_samples * channels * bit_res;
+    mSlotSize = slot_size;
+    mInSlotSize = slot_size;
     if (0 < qlen) {
         mMaxLatency = qlen * slot_size;
-        mAutoQueue  = 0;
-    } else {
-        // AutoQueue
-        mMaxLatency = 3 * slot_size;
-        mAutoQueue  = 1;
+        mAutoQueue = 0;
     }
-    mTotalSize        = total_size;
+    else {
+        // AutoQueue
+        mMaxLatency = 3*slot_size;
+        mAutoQueue = 1;
+    }
+    mTotalSize = total_size;
     mBroadcastLatency = bcast_qlen * mSlotSize;
-    mNumChannels      = channels;
-    mAudioBitRes      = bit_res;
-    mMinStepSize      = channels * bit_res;
-    mFPP              = buf_samples;
-    mSampleRate       = sample_rate;
-    mActive           = false;
+    mNumChannels = channels;
+    mAudioBitRes = bit_res;
+    mMinStepSize = channels * bit_res;
+    mFPP = buf_samples;
+    mSampleRate = sample_rate;
+    mActive = false;
 
     // Defaults for zero strategy
     mUnderrunIncTolerance = -10 * mSlotSize;
-    mCorrIncTolerance =
-            100 * mMaxLatency;  // should be greater than mUnderrunIncTolerance
-    mOverflowDecTolerance  = 100 * mMaxLatency;
-    mWritePosition         = mMaxLatency;
-    mStatUnit              = mSlotSize;
-    mLevelDownRate         = std::min(256, mFPP) / (5.0 * sample_rate) * mSlotSize;
-    mOverflowDropStep      = mMaxLatency / 2;
-    mLevelCur              = mMaxLatency;
-    mLevel                 = mLevelCur;
-    mMinLevelThreshold     = 1.9 * mSlotSize;
-    mBroadcastPosition     = 0;
+    mCorrIncTolerance = 100*mMaxLatency;     // should be greater than mUnderrunIncTolerance
+    mOverflowDecTolerance = 100*mMaxLatency;
+    mWritePosition = mMaxLatency;
+    mStatUnit = mSlotSize;
+    mLevelDownRate = std::min(256, mFPP) / (5.0*sample_rate) * mSlotSize;
+    mOverflowDropStep = mMaxLatency / 2;
+    mLevelCur = mMaxLatency;
+    mLevel = mLevelCur;
+    mMinLevelThreshold = 1.9 * mSlotSize;
+    mBroadcastPosition = 0;
     mBroadcastPositionCorr = 0.0;
-    mLastCorrCounter       = 0;
-    mLastCorrDirection     = 0;
+    mLastCorrCounter = 0;
+    mLastCorrDirection = 0;
 
     switch (strategy) {
-    case 1:
+      case 1:
         mOverflowDropStep = mSlotSize;
         break;
-    case 2:
+      case 2:
         mUnderrunIncTolerance = 1.1 * mSlotSize;
-        mCorrIncTolerance =
-                1.9 * mSlotSize;  // should be greater than mUnderrunIncTolerance
-        mOverflowDecTolerance = 0.1 * mSlotSize;
-        mOverflowDropStep     = mSlotSize;
+        mCorrIncTolerance = 1.9 * mSlotSize;     // should be greater than mUnderrunIncTolerance
+        mOverflowDecTolerance = 0.1*mSlotSize;
+        mOverflowDropStep = mSlotSize;
         break;
     }
 
     mRingBuffer = new int8_t[mTotalSize];
     std::memset(mRingBuffer, 0, mTotalSize);
 
-    mAutoQueueCorr = 2 * mSlotSize;
+    mAutoQueueCorr = 2*mSlotSize;
     if (0 > qlen) {
-        mAutoQFactor = 1.0 / -qlen;
-    } else {
-        mAutoQFactor = 1.0 / 500;
+        mAutoQFactor = 1.0/-qlen;
     }
-    mAutoQRate      = mSlotSize * 0.5;
-    mAutoQRateMin   = mSlotSize * 0.0005;
-    mAutoQRateDecay = 1.0 - std::min(mFPP * 1.2e-6, 0.0005);
+    else {
+        mAutoQFactor = 1.0/500;
+    }
+    mAutoQRate = mSlotSize * 0.5;
+    mAutoQRateMin = mSlotSize * 0.0005;
+    mAutoQRateDecay = 1.0 - std::min(mFPP*1.2e-6, 0.0005);
 }
 
 //*******************************************************************************
 bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen)
 {
-    if (0 == len) { len = mSlotSize; }
+    if (0 == len) {
+        len = mSlotSize;
+    }
     QMutexLocker locker(&mMutex);
     mInSlotSize = len;
-    if (!mActive) { mActive = true; }
-    if (mMaxLatency < len + mSlotSize) { mMaxLatency = len + mSlotSize; }
-    if (0 < lostLen) { qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" ;processPacketLoss(lostLen); }
+    if (!mActive) {
+        mActive = true;
+    }
+    if (mMaxLatency < len + mSlotSize) {
+        mMaxLatency = len + mSlotSize;
+    }
+    if (0 < lostLen) {
+        processPacketLoss(lostLen);
+    }
     mSkewRaw += mReadsNew - len;
     mReadsNew = 0;
     mUnderruns += mUnderrunsNew;
     mUnderrunsNew = 0;
-    mLevel        = mSlotSize * std::ceil(mLevelCur / mSlotSize);
+    mLevel = mSlotSize*std::ceil(mLevelCur/mSlotSize);
 
     // Update positions if necessary
     int32_t available = mWritePosition - mReadPosition;
-    if(available<1) fprintf(stderr,"%s",". ");
 
     int delta = 0;
-    if (available < -10 * mMaxLatency) {
+    if (available < -10*mMaxLatency) {
         delta = available;
         mBufIncUnderrun += -delta;
         mLevelCur = len;
         //cout << "reset" << endl;
-    } else if (available + len > mMaxLatency) {
+    }
+    else if (available + len > mMaxLatency) {
         delta = mOverflowDropStep;
         mOverflows += delta;
         mBufDecOverflow += delta;
         mLevelCur = mMaxLatency;
-    } else if (0 > available
-               && mLevelCur < std::max(mInSlotSize + mMinLevelThreshold,
-                                       mMaxLatency - mUnderrunIncTolerance
-                                       - 2 * mSlotSize * lastCorrFactor())) {
+    }
+    else if (0 > available &&
+          mLevelCur < std::max(mInSlotSize + mMinLevelThreshold,
+              mMaxLatency - mUnderrunIncTolerance - 2*mSlotSize*lastCorrFactor())) {
         delta = -std::min(-available, mSlotSize);
         mBufIncUnderrun += -delta;
-        //        qDebug() << "insertSlotNonBlocking:" << "0 > available" << available  << "delta" << delta << "lostLen" << lostLen; // cc
-        //        qDebug() << "ptrToSlot:" << "wpos" << mWritePosition % mTotalSize  << "mMaxLatency" << mMaxLatency; // cc
-
-    } else if (mLevelCur
-               < mMaxLatency - mCorrIncTolerance - 6 * mSlotSize * lastCorrFactor()) {
+    }
+    else if (mLevelCur < mMaxLatency - mCorrIncTolerance - 6*mSlotSize*lastCorrFactor()) {
         delta = -mSlotSize;
         mUnderruns += -delta;
         mBufIncCompensate += -delta;
     }
-delta = 0;
+
     if (0 != delta) {
-        mReadPosition += delta;
-        mLastCorrCounter   = 0;
-        mLastCorrDirection = 0 < delta ? 1 : -1;
-    } else {
-        ++mLastCorrCounter;
+      mReadPosition += delta;
+      mLastCorrCounter = 0;
+      mLastCorrDirection = 0 < delta ? 1 : -1;
+    }
+    else {
+      ++mLastCorrCounter;
     }
 
     int wpos = mWritePosition % mTotalSize;
-    int n    = std::min(mTotalSize - wpos, len);
-    std::memcpy(mRingBuffer + wpos, ptrToSlot, n);
+    int n = std::min(mTotalSize - wpos, len);
+    std::memcpy(mRingBuffer+wpos, ptrToSlot, n);
     if (n < len) {
-        //        cout << "split write: " << len << "-" << n << endl;
-        std::memcpy(mRingBuffer, ptrToSlot + n, len - n);
+        //cout << "split write: " << len << "-" << n << endl;
+        std::memcpy(mRingBuffer, ptrToSlot+n, len-n);
     }
     mWritePosition += len;
 
@@ -199,130 +201,47 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     mReadsNew += len;
     int32_t available = mWritePosition - mReadPosition;
     if (available < mLevelCur) {
-        mLevelCur = std::max((double)available, mLevelCur - mLevelDownRate);
-    } else {
+        mLevelCur = std::max((double)available, mLevelCur-mLevelDownRate);
+    }
+    else {
         mLevelCur = available;
     }
 
     // auto queue correction
     if (0 > available + mAutoQueueCorr - mLevelCur) {
         mAutoQueueCorr += mAutoQRate;
-    } else if (mInSlotSize + mSlotSize < mAutoQueueCorr) {
+    }
+    else if (mInSlotSize + mSlotSize < mAutoQueueCorr) {
         mAutoQueueCorr -= mAutoQRate * mAutoQFactor;
     }
-    if (mAutoQRate > mAutoQRateMin) { mAutoQRate *= mAutoQRateDecay; }
+    if (mAutoQRate > mAutoQRateMin) {
+        mAutoQRate *= mAutoQRateDecay;
+    }
     if (0 != mAutoQueue) {
         int PPS = mSampleRate / mFPP;
-        if (2 * PPS == mAutoQueue++ % (4 * PPS)) {
-            double k = 1.0 + 1e-5 / mAutoQFactor;
-            if (12 * PPS > mAutoQueue
-                    || std::abs(mAutoQueueCorr * k - mMaxLatency + mSlotSize / 2)
-                    > 0.6 * mSlotSize) {
-                mMaxLatency = mSlotSize * std::ceil(mAutoQueueCorr * k / mSlotSize);
+        if (2*PPS == mAutoQueue++ % (4*PPS)) {
+            double k = 1.0 + 1e-5/mAutoQFactor;
+            if (12*PPS > mAutoQueue ||
+                    std::abs(mAutoQueueCorr*k - mMaxLatency + mSlotSize/2) > 0.6*mSlotSize) {
+                mMaxLatency = mSlotSize * std::ceil(mAutoQueueCorr*k/mSlotSize);
                 cout << "AutoQueue: " << mMaxLatency / mSlotSize << endl;
             }
         }
     }
 
     int read_len = qBound(0, available, len);
-    int rpos     = mReadPosition % mTotalSize;
-    //    int n        = std::min(mTotalSize - rpos, read_len);
-    //    std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
-    //    if (n < read_len) {
-    //        //cout << "split read: " << read_len << "-" << n << endl;
-    //        std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
-    //    }
-    // =    transferToAudioInterface(0,rpos,read_len,ptrToReadSlot,0, mRingBuffer);
-//if(available<1) qDebug() << "available" << available;
-//    if (read_len == len) transferToPLC(0,rpos,len,mPLCbuffer,0);
-//    if ((read_len != 0) && (read_len != len)) qDebug() << "read_len = partial!!" << read_len;
-//    mPLC->processPacket ((read_len < len), false);
-//    transferToAudioInterface(0,0,len,ptrToReadSlot,0, mPLCbuffer);
-
-    //    transferToPLC(0,rpos,read_len,plc->mRingBuffer,0);
-    //    if(plc->lastWasGlitch) plc->crossFade();
-    //    plc->lastWasGlitch = false;
-    //    transferToAudioInterface(0,0,read_len,ptrToReadSlot,0, plc->mRingBuffer);
-
-
-#define UNDERRUN
-#ifdef UNDERRUN
-    if (read_len < len) // only
-#else
-    read_len=0; // continuously
-#endif
-    {
-#define DST ptrToReadSlot
-#define SRC mRingBuffer
-#define SIZE len
-#define DONE read_len
-#define REM (SIZE - DONE)
-        // underrun condition when DONE < SIZE, fill the remainder
-        //        qDebug() << "UNDERRUN" << REM;  // mTotalSize changed to oddball
-        // ......................................................
-#define ORIG 0
-#define ZEROS 0
-#define WVTBL 0
-#define DELAY 0
-#define PLC 0
-#define BURGPLC 0
-#if ORIG // was equivalent to -z
-        std::memset(ptrToReadSlot + read_len, 0, len - read_len);
-#elif ZEROS // rewrite
-        std::memset(DST + DONE, 0, REM);
-#elif WVTBL // wavetable
-        transferToAudioInterface(1,rpos,REM,DST,DONE, mRingBuffer);
-#elif DELAY // read from history
-        for (int hist=0; hist<HIST; hist++) {
-            transferToAudioInterface(hist,rpos,REM,DST,DONE, mRingBuffer);
-        }
-#elif PLC //
-        //        transferToPLC(1,rpos,REM,plc->mRingBuffer,DONE);
-        transferToPLC(6,rpos,6*REM,plc->mRingBuffer,DONE);
-        //        plc->setAllSamplesTo(0.5);
-        plc->trainBurg();
-        //        plc->straightWire();
-        transferToAudioInterface(0,0,REM,DST,0, plc->mRingBuffer);
-
-        //        std::memcpy(lastPredictedPtr, plc->mRingBuffer + REM, n);
-
-        //        plc->printOneFrame();
-        plc->lastWasGlitch = true;
-#elif BURGPLC
-        transferToPLC(1,rpos,REM,mPLCbuffer,DONE);
-        mPLC->processPacket (true);
-        transferToAudioInterface(0,0,REM,DST,0, mPLCbuffer);
-#endif
-        mUnderrunsNew += len - read_len;
+    int rpos = mReadPosition % mTotalSize;
+    int n = std::min(mTotalSize - rpos, read_len);
+    std::memcpy(ptrToReadSlot, mRingBuffer+rpos, n);
+    if (n < read_len) {
+        //cout << "split read: " << read_len << "-" << n << endl;
+        std::memcpy(ptrToReadSlot+n, mRingBuffer, read_len-n);
+    }
+    if (read_len < len) {
+        std::memset(ptrToReadSlot+read_len, 0, len-read_len);
+        mUnderrunsNew += len-read_len;
     }
     mReadPosition += len;
-}
-
-void JitterBuffer::transferToPLC(int hist, int curpos, int rem, int8_t* dstPtr, int done)
-{
-    int ptr = (curpos - (hist*rem)) + mTotalSize;
-    ptr     = ptr % mTotalSize;
-    //    qDebug() << "PLC" << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist;
-    int n        = std::min(mTotalSize - ptr, rem);
-    std::memcpy(dstPtr + done, mRingBuffer + ptr, n);
-    if (n < rem) {
-        //        qDebug() << "PLC" << "n" << n << "rem - n" << (rem - n);
-        std::memcpy(dstPtr + n, mRingBuffer, rem - n);
-    }
-}
-
-void JitterBuffer::transferToAudioInterface(int hist, int curpos, int rem,
-                                            int8_t* dstPtr, int done, int8_t* srcPtr)
-{
-    int ptr = (curpos - (hist*rem)) + mTotalSize;
-    ptr     = ptr % mTotalSize;
-    int n        = std::min(mTotalSize - ptr, rem);
-    //    qDebug() << "read from" << ptr << "of mTotalSize" << mTotalSize << "hist" << hist << "for" << rem;
-    std::memcpy(dstPtr + done, srcPtr + ptr, n);
-    if (n < rem) {
-        //        qDebug() << "n" << n << "rem - n" << (rem - n);
-        std::memcpy(dstPtr + n, srcPtr, rem - n);
-    }
 }
 
 //*******************************************************************************
@@ -337,55 +256,59 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
     // latency correction
     int32_t d = mReadPosition - mBroadcastLatency - mBroadcastPosition - len;
     if (std::abs(d) > mBroadcastLatency / 2) {
-        mBroadcastPosition     = mReadPosition - mBroadcastLatency - len;
+        mBroadcastPosition = mReadPosition - mBroadcastLatency - len;
         mBroadcastPositionCorr = 0.0;
         mBroadcastSkew += d / mMinStepSize;
-    } else {
+    }
+    else {
         mBroadcastPositionCorr += 0.0003 * d;
         int delta = mBroadcastPositionCorr / mMinStepSize;
         if (0 != delta) {
             mBroadcastPositionCorr -= delta * mMinStepSize;
-            if (2 == mAudioBitRes
-                    && (int32_t)(mWritePosition - mBroadcastPosition) > len) {
+            if (2 == mAudioBitRes && (int32_t)(mWritePosition - mBroadcastPosition) > len) {
                 // interpolate
                 len += delta * mMinStepSize;
-            } else {
+            }
+            else {
                 // skip
                 mBroadcastPosition += delta * mMinStepSize;
             }
             mBroadcastSkew += delta;
         }
     }
-    mBroadcastDelta   = d / mMinStepSize;
+    mBroadcastDelta = d / mMinStepSize;
     int32_t available = mWritePosition - mBroadcastPosition;
-    int read_len      = qBound(0, available, len);
+    int read_len = qBound(0, available, len);
     if (len == mSlotSize) {
         int rpos = mBroadcastPosition % mTotalSize;
-        int n    = std::min(mTotalSize - rpos, read_len);
-        std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
+        int n = std::min(mTotalSize - rpos, read_len);
+        std::memcpy(ptrToReadSlot, mRingBuffer+rpos, n);
         if (n < read_len) {
             //cout << "split read: " << read_len << "-" << n << endl;
-            std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
+            std::memcpy(ptrToReadSlot+n, mRingBuffer, read_len-n);
         }
-        if (read_len < len) { std::memset(ptrToReadSlot + read_len, 0, len - read_len); }
-    } else {
+        if (read_len < len) {
+            std::memset(ptrToReadSlot+read_len, 0, len-read_len);
+        }
+    }
+    else {
         // interpolation len => mSlotSize
         double K = 1.0 * len / mSlotSize;
-        for (int c = 0; c < mMinStepSize; c += sizeof(int16_t)) {
-            for (int j = 0; j < mSlotSize / mMinStepSize; ++j) {
-                int j1     = std::floor(j * K);
-                double a   = j * K - j1;
-                int rpos   = (mBroadcastPosition + j1 * mMinStepSize + c) % mTotalSize;
+        for (int c=0; c < mMinStepSize; c+=sizeof(int16_t)) {
+            for (int j=0; j < mSlotSize/mMinStepSize; ++j) {
+                int j1 = std::floor(j*K);
+                double a = j*K - j1;
+                int rpos = (mBroadcastPosition + j1*mMinStepSize + c) % mTotalSize;
                 int16_t v1 = *(int16_t*)(mRingBuffer + rpos);
-                rpos       = (rpos + mMinStepSize) % mTotalSize;
+                rpos = (rpos + mMinStepSize) % mTotalSize;
                 int16_t v2 = *(int16_t*)(mRingBuffer + rpos);
-                *(int16_t*)(ptrToReadSlot + j * mMinStepSize + c) =
-                        std::round((1 - a) * v1 + a * v2);
+                *(int16_t*)(ptrToReadSlot + j*mMinStepSize + c) = std::round((1-a)*v1 + a*v2);
             }
         }
     }
     mBroadcastPosition += len;
 }
+
 
 //*******************************************************************************
 void JitterBuffer::processPacketLoss(int lostLen)
@@ -397,32 +320,33 @@ void JitterBuffer::processPacketLoss(int lostLen)
     if (0 < delta) {
         lostLen -= delta;
         mBufDecPktLoss += delta;
-        mLevelCur          = mMaxLatency;
-        mLastCorrCounter   = 0;
+        mLevelCur = mMaxLatency;
+        mLastCorrCounter = 0;
         mLastCorrDirection = 1;
-    } else if (mSlotSize < available + lostLen
-               && (mOverflowDecTolerance > mMaxLatency  // for strategies 0,1
-                   || (0 < mLastCorrDirection
-                       && mLevelCur > mMaxLatency
-                       - mOverflowDecTolerance
-                       * (1.1 - lastCorrFactor())))) {
+    }
+    else if (mSlotSize < available + lostLen && (
+            mOverflowDecTolerance > mMaxLatency   // for strategies 0,1
+            || (0 < mLastCorrDirection && mLevelCur >
+                    mMaxLatency - mOverflowDecTolerance*(1.1 - lastCorrFactor()))
+            )) {
         delta = std::min(lostLen, mSlotSize);
         lostLen -= delta;
         mBufDecPktLoss += delta;
         mLevelCur -= delta;
-        mLastCorrCounter   = 0;
+        mLastCorrCounter = 0;
         mLastCorrDirection = 1;
     }
     if (lostLen >= mTotalSize) {
         std::memset(mRingBuffer, 0, mTotalSize);
         mUnderruns += std::max(0, lostLen - std::max(0, -available));
-    } else if (0 < lostLen) {
+    }
+    else if (0 < lostLen) {
         int wpos = mWritePosition % mTotalSize;
-        int n    = std::min(mTotalSize - wpos, lostLen);
-        std::memset(mRingBuffer + wpos, 0, n);
+        int n = std::min(mTotalSize - wpos, lostLen);
+        std::memset(mRingBuffer+wpos, 0, n);
         if (n < lostLen) {
             //cout << "split write: " << lostLen << "-" << n << endl;
-            std::memset(mRingBuffer, 0, lostLen - n);
+            std::memset(mRingBuffer, 0, lostLen-n);
         }
         mUnderruns += std::max(0, lostLen - std::max(0, -available));
     }
@@ -434,32 +358,32 @@ bool JitterBuffer::getStats(RingBuffer::IOStat* stat, bool reset)
 {
     QMutexLocker locker(&mMutex);
     if (reset) {
-        mUnderruns        = 0;
-        mOverflows        = 0;
-        mSkew0            = mLevel;
-        mSkewRaw          = 0;
-        mBufDecOverflow   = 0;
-        mBufDecPktLoss    = 0;
-        mBufIncUnderrun   = 0;
+        mUnderruns = 0;
+        mOverflows = 0;
+        mSkew0 = mLevel;
+        mSkewRaw = 0;
+        mBufDecOverflow = 0;
+        mBufDecPktLoss = 0;
+        mBufIncUnderrun = 0;
         mBufIncCompensate = 0;
-        mBroadcastSkew    = 0;
+        mBroadcastSkew = 0;
     }
     stat->underruns = mUnderruns / mStatUnit;
     stat->overflows = mOverflows / mStatUnit;
-    stat->skew      = (int32_t)((mSkew0 - mLevel + mBufIncUnderrun + mBufIncCompensate
-                                 - mBufDecOverflow - mBufDecPktLoss))
-            / mStatUnit;
+    stat->skew = (int32_t)((mSkew0 - mLevel + mBufIncUnderrun + mBufIncCompensate
+                        - mBufDecOverflow - mBufDecPktLoss)) / mStatUnit;
     stat->skew_raw = mSkewRaw / mStatUnit;
-    stat->level    = mLevel / mStatUnit;
+    stat->level = mLevel / mStatUnit;
 
-    stat->buf_dec_overflows  = mBufDecOverflow / mStatUnit;
-    stat->buf_dec_pktloss    = mBufDecPktLoss / mStatUnit;
-    stat->buf_inc_underrun   = mBufIncUnderrun / mStatUnit;
+    stat->buf_dec_overflows = mBufDecOverflow / mStatUnit;
+    stat->buf_dec_pktloss = mBufDecPktLoss / mStatUnit;
+    stat->buf_inc_underrun = mBufIncUnderrun / mStatUnit;
     stat->buf_inc_compensate = mBufIncCompensate / mStatUnit;
-    stat->broadcast_skew     = mBroadcastSkew;
-    stat->broadcast_delta    = mBroadcastDelta;
+    stat->broadcast_skew = mBroadcastSkew;
+    stat->broadcast_delta = mBroadcastDelta;
 
     stat->autoq_corr = mAutoQueueCorr / mStatUnit * 10;
     stat->autoq_rate = mAutoQRate / mStatUnit * 1000;
     return true;
 }
+
