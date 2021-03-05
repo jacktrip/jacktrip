@@ -17,8 +17,8 @@ public:
     void pullPacket (int8_t* buf);
 private:
     QStack<QByteArray*> mLifo;
-    vector<QByteArray*> mPackets;
-//    QMutex mMutex;                     ///< Mutex to protect read and write operations
+    QMutex mMutex;                     ///< Mutex to protect read and write operations
+    int mSampleRate;
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
@@ -44,8 +44,14 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
     vector<double> mPhasor;
-    int debugSequenceNumber;
-    int debugSequenceDelta;
+    vector<QByteArray*> mIncomingPacket;
+    int mIdealOneSecondsWorthOfPackets;
+    int mOneSecondPacketCounter;
+    vector<int> mLastPush;
+    vector<int> mLastPull; // for debug
+    int mLastFrame;
+    int mOverrunCounter;
+    int mUnderrunCounter;
 };
 
 #endif // BURGPLC_H

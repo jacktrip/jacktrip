@@ -5,6 +5,7 @@
 using namespace std;
 
 BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist) :
+    mSampleRate (sample_rate),
     mNumChannels (channels),
     mAudioBitRes (bit_res),
     mFPP (FPP),
@@ -21,9 +22,9 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mTotalSize = sample_rate * channels * mAudioBitRes * 2;  // 2 secs of audio
+    mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
     mXfrBuffer   = new int8_t[mTotalSize];
-    mPacketCnt = 0;
+    mPacketCnt = 0; // burg
 #define TRAINSAMPS (mHist*mFPP)
 #define ORDER (TRAINSAMPS-1)
     mTrain.resize( TRAINSAMPS, 0.0 );
@@ -45,55 +46,59 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     }
     mLastWasGlitch = false;
     mPhasor.resize( mNumChannels, 0.0 );
-    debugSequenceNumber = 0;
-    debugSequenceDelta = 0;
-    for ( int i = 0; i < 64; i++ ) {
+    mIdealOneSecondsWorthOfPackets = mSampleRate / mFPP;
+    double oneSecondsWorthOfPacketsExact = (double)mSampleRate / (double)mFPP;
+    //    if ((double)mIdealOneSecondsWorthOfPackets != oneSecondsWorthOfPacketsExact)
+    qDebug() << "oneSecondsWorthOfPackets != oneSecondsWorthOfPacketsExact !!!!!!!!!!"
+             << mIdealOneSecondsWorthOfPackets << "!=" << oneSecondsWorthOfPacketsExact;
+    mLastPush.resize(mIdealOneSecondsWorthOfPackets);
+    mLastPull.resize(mIdealOneSecondsWorthOfPackets);
+    for ( int i = 0; i < mIdealOneSecondsWorthOfPackets; i++ ) {
         int bytes = mFPP*mNumChannels*mBitResolutionMode;
         QByteArray tmp( bytes, 0);
-        mPackets.push_back(&tmp);
+        mIncomingPacket.push_back(&tmp);
+        mLastPush[i] = 0;
+        mLastPull[i] = 0;
     }
+    mOneSecondPacketCounter = 0;
+    mLastFrame = 0;
+    mOverrunCounter = 0;
+    mUnderrunCounter = 0;
 }
 
 void BurgPLC::pushPacket (const int8_t *buf, int seq) {
+    QMutexLocker locker(&mMutex); // lock the mutex
+    int approxSecond = mOneSecondPacketCounter / mIdealOneSecondsWorthOfPackets;
+    mLastFrame = mOneSecondPacketCounter % mIdealOneSecondsWorthOfPackets;
+    mOverrunCounter++;
+//    qDebug() << ">..>" << mLastFrame << mOverrunCounter;
     int bytes = mFPP*mNumChannels*mBitResolutionMode;
-//    qDebug() << "..." << seq << "..." << mLifo.size();
-    qDebug() << ">..>" << (1+mLifo.size());
-    seq %= 64;
-    memcpy(mPackets[seq], buf, bytes);
-    qDebug() << ">>" << seq;
-
-//    memcpy(&mPackets[seq], &seq , sizeof(int));
-//    int output = 0;
-//    memcpy(&output, &mPackets[seq], sizeof(int));  // 4 bytes
-////    qDebug() << "-----------" << output;
-
-    mLifo.push(mPackets[seq]);
-//    qDebug() << "pushPacket" << bytesToInt(buf) << mFPP << "bytes" << bytes;
+    memcpy(mIncomingPacket[mLastFrame], buf, bytes);
+    mLastPush[mLastFrame] = approxSecond;
+    mOneSecondPacketCounter++;
+    mUnderrunCounter = 0;
 };
 
 void BurgPLC::pullPacket (int8_t* buf) {
+    QMutexLocker locker(&mMutex); // lock the mutex
     int bytes = mFPP*mNumChannels*mBitResolutionMode;
-    QByteArray *tmp;
-    qDebug() << "<..<" << mLifo.size() << "\n";
-    if (mLifo.size()) { while (mLifo.size()) {
-//        tmp = mLifo.pop();
 
-////        int input = 999;
-////        memcpy(&tmp, &input , sizeof(int));
-//        int output = 0;
-//        memcpy(&output, &tmp, sizeof(int));  // 4 bytes
-//        qDebug() << "<<" << output;
-
-//        memcpy(buf, mLifo.pop(), bytes);
-        memcpy(mXfrBuffer, mLifo.pop(), bytes);
-        processPacket(false);
-    }}  else {
-        processPacket(true);
-        qDebug() << "<<";
+    if (mUnderrunCounter) {
+        qDebug() << "under" << mUnderrunCounter;
+        processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
     }
+    while (mOverrunCounter) {
+        mOverrunCounter--;
+        int pullFrame = mLastFrame-mOverrunCounter;
+//        pullFrame -= 5;
+        if (pullFrame<0) pullFrame += mIdealOneSecondsWorthOfPackets;
+//        qDebug() << "<<" << mLastPull[mLastFrame] << mLastPush[mLastFrame] << pullFrame << mOverrunCounter;
+        memcpy(mXfrBuffer, mIncomingPacket[pullFrame], bytes);
+        processPacket(false);
+    }
+    mUnderrunCounter++;
+
     memcpy(buf, mXfrBuffer, bytes);
-//    vector<int8_t> tmp2( bytes, 0);
-//    memcpy(buf, &tmp2, bytes);
 };
 
 // returns the first stereo frame of a buffer as an int32
@@ -107,27 +112,27 @@ int BurgPLC::bytesToInt(const int8_t *buf)
 // for ( int pCnt = 0; pCnt < plen; pCnt++)
 void BurgPLC::processPacket (bool glitch)
 {
-//    QMutexLocker locker(&mMutex);  // lock the mutex
+    //    QMutexLocker locker(&mMutex);  // lock the mutex
     int ch = 0;
-// debugSequenceDelta = bytesToInt(mXfrBuffer) - debugSequenceNumber;
+    // debugSequenceDelta = bytesToInt(mXfrBuffer) - debugSequenceNumber;
 
-//    if (debugSequenceNumber != bytesToInt(mXfrBuffer))
-//        qDebug() << "expected" << debugSequenceNumber << "got " << bytesToInt(mXfrBuffer);
+    //    if (debugSequenceNumber != bytesToInt(mXfrBuffer))
+    //        qDebug() << "expected" << debugSequenceNumber << "got " << bytesToInt(mXfrBuffer);
 
-//if(!overrun)
-//    debugSequenceNumber = bytesToInt(mXfrBuffer)+1;
-//    if (debugSequenceDelta != 1) qDebug() << debugSequenceNumber << "\t" << debugSequenceDelta;
+    //if(!overrun)
+    //    debugSequenceNumber = bytesToInt(mXfrBuffer)+1;
+    //    if (debugSequenceDelta != 1) qDebug() << debugSequenceNumber << "\t" << debugSequenceDelta;
 
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 #define IN(x,s) mTruth[s] = x
-        for PACKETSAMP IN(bitsToSample(ch, s), s);
-//    for PACKETSAMP { // screw case here but not for sim
-//        IN(0.3*sinf(mPhasor[0]), s);
-//        mPhasor[0] += 0.1;
-//        mPhasor[1] += 0.11;
-//    }
+    for PACKETSAMP IN(bitsToSample(ch, s), s);
+    //    for PACKETSAMP { // screw case here but not for sim
+    //        IN(0.3*sinf(mPhasor[0]), s);
+    //        mPhasor[0] += 0.1;
+    //        mPhasor[1] += 0.11;
+    //    }
 
-//    glitch = !(mPacketCnt%100);
+    //    glitch = !(mPacketCnt%100);
     if(mPacketCnt) {
 #define RUN 3
         if(RUN > 2) {
@@ -183,8 +188,8 @@ void BurgPLC::processPacket (bool glitch)
                 mPhasor[1] += 0.11;
                 break;
             }
-OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
-//                        OUT( 0.0, 1, s);
+            OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
+            //                        OUT( 0.0, 1, s);
             //            OUT( bitsToSample(1, s), 1, s);
         }
         mLastWasGlitch = glitch;
