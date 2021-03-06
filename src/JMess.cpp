@@ -41,6 +41,8 @@
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO "panpot9toStereo"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO "freeverbStereo"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBast "ppBast"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_fvBcast "fvBcast"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND "ecasound"
 
 // sJackMutex definition
@@ -570,6 +572,204 @@ void JMess::connectPAN(int /*nChans*/)
 
         }
 } // end connectPAN
+
+
+//*******************************************************************************
+// connectPANbroadcast is called when in hubpatch mode = PANSTEREOBROADCAST
+// same as -p6 above but adds client outputs tapped from "broadcast_1" and "broadcast_2"
+// to ppBcast panner and send from fvBcast to one special client presumably running OBS
+// used by Stanford ensembles, Winter 2021
+// this gets run on the ensemble's hub server with
+// ./jacktrip -S -p7
+// 7=stereo room w/pan9+reverb which uses broadcast outputs
+// client outputs are tapped from "broadcast_1" and "broadcast_2"
+#define NPANINCHANS 9
+
+// four faust-generated audio processes need to be running, .dsp code in
+// panpot9toStereo + ppBcast (which are the same)
+// freeverbStereo + fvBcast (which are the same)
+// (optional) ecasound playback feeds to stereo left if it's running
+// generate the faust applications with faust2jackconsole
+// faust2jackconsole panpot9toStereo.dsp
+// faust2jackconsole freeverbStereo.dsp
+// cp -p panpot9toStereo ppBcast
+// cp -p freeverbStereo fvBcast
+
+void JMess::connectPANbroadcast(int /*nChans*/)
+// called from UdpHubListener::connectPatch
+{
+    int hubPatch = JackTrip::PANSTEREO;
+    { // variant of FOFI
+        QMutexLocker locker(&sJMessMutex);
+
+        QString IPS[gMAX_WAIRS];
+        int ctr = 0;
+
+        const char **ports, **connections; //vector of ports and connections
+        QVector<QString> OutputInput(2); //helper variable
+
+        //Get active output ports.
+        ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
+
+        for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
+            //        qDebug() << QString(ports[out_i]);
+            bool systemPort =
+                    QString(ports[out_i]).contains(QString("system")) ||
+                    QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO)) ||
+                    QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO)) ||
+                    QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND))                    ;
+
+            QString str = QString(ports[out_i]);
+            //  for example              "171.64.197.121:receive_1"
+            QString s = str.section(':', 0, 0);
+            //        qDebug() << s << systemPort;
+            //  for example              "171.64.197.121"
+
+            bool newOne = !systemPort;
+            for (int i = 0; i<ctr; i++) if (newOne && (IPS[i]==s)) newOne = false;
+            if (newOne)
+            {
+                IPS[ctr] = s;
+                ctr++;
+                //                        qDebug() << ports[out_i] << systemPort << s;
+            }
+        }
+        //    for (int i = 0; i<ctr; i++) qDebug() << IPS[i];
+        disconnectAll();
+        //ctr = 1;
+        int zones = NPANINCHANS;
+        int pctr = ctr;
+        if (pctr>NPANINCHANS) pctr = NPANINCHANS;
+        if (pctr) zones /= pctr;
+        int halfZone = zones / 2;
+        if (!halfZone) halfZone++;
+        int quarterZone = halfZone / 2;
+        if (!quarterZone) quarterZone++;
+        for (int i = 0; i<ctr; i++) {
+            // network in to panner
+            for (int ch = 1; ch<=2; ch++) { // chans are 1-based
+//                int slot = (halfZone + ((i%NPANINCHANS)*zones) );
+//                int slot = (halfZone + ( ( (i+((ch-1)*halfZone)) %NPANINCHANS)*zones) );
+                int slot = (halfZone + ((ch-1)*quarterZone) + ( ( i %NPANINCHANS)*zones) );
+
+                //  needed % otherwise clients > NPANINCHANS results in all connected to slot 1
+                qDebug() << "i " << i << "ctr " << ctr  << "pctr " << pctr  << "ch " << ch
+                         << "slot " << slot << "slot%NPANINCHANS " << ( slot % NPANINCHANS )
+                         << "halfZone " << halfZone << "quarterZone " << quarterZone;
+                QString left = IPS[i] +
+                        ":receive_" + QString::number(ch);
+
+                QString right = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN + QString::number(
+                            ( slot % NPANINCHANS ) );
+                qDebug() << "connect " << left <<"with " << right;
+                if (0 !=
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING FROM JACK: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
+            }
+
+            // panner to reverb
+            for (int ch = 1; ch<=2; ch++) { // chans are 1-based
+                QString left = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch-1);
+
+                QString right = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN + QString::number(
+                            ( (ch-1) % NPANINCHANS ) );
+
+                qDebug() << "connect " << left <<"with " << right;
+                if (0 !=
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING FROM JACK: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
+            }
+
+            // reverb to network out
+            for (int ch = 1; ch<=2; ch++) { // chans are 1-based
+                QString left = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch-1);
+
+                QString right = IPS[i] +
+                        ":send_" + QString::number(ch);
+
+                qDebug() << "connect " << left <<"with " << right;
+                if (0 !=
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING FROM JACK: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
+            }
+
+            // ecasound to panner left
+            for (int ch = 1; ch<=1; ch++) { // chans are 1-based
+                QString left = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch);
+
+                QString right = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN + QString::number(
+                            ( 0 % NPANINCHANS ) );
+
+                qDebug() << "connect " << left <<"with " << right;
+                if (0 !=
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING FROM JACK: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
+            }
+
+        }
+
+        free(ports);
+    }
+
+    for (int i = 0; i<0; i++) // last IP decimal octet
+        for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
+        {
+            // jacktrip to SC
+            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
+            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO);
+            int tmp = i + l; // only works for mono... completely wrong for 2 or more chans
+            qDebug() << "connect " << client << ":receive_ " << l
+                     <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
+
+            QString left = QString(client + ":receive_" + QString::number(l));
+            QString right = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN +
+                                    QString::number(tmp));
+
+            if (0 !=
+                    jack_connect(mClient, left.toStdString().c_str(),
+                                 right.toStdString().c_str())) {
+                qDebug() << "WARNING: port: " << left
+                         << "and port: " << right
+                         << " could not be connected.";
+            }
+
+            // SC to jacktrip
+            tmp += 4; // increase tmp for port offest
+            qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
+                     << tmp <<"with " << client << ":send_" << l;
+
+            left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
+                           QString::number(tmp));
+            right = QString(client + ":send_" + QString::number(l));
+
+            if (0 !=
+                    jack_connect(mClient, left.toStdString().c_str(),
+                                 right.toStdString().c_str())) {
+                qDebug() << "WARNING: port: " << left
+                         << "and port: " << right
+                         << " could not be connected.";
+            }
+
+        }
+} // end connectPANbroadcast
 
 //-------------------------------------------------------------------------------
 /*! \brief Disconnect all the clients.
