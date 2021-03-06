@@ -677,7 +677,7 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                             ( slot % NPANINCHANS ) );
                 qDebug() << "connect " << left <<"with " << right;
                 if (0 !=
-                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                        jack_connect(mClient, left.toStdString().c_str(), bcastRight.toStdString().c_str())) {
                     qDebug() << "WARNING FROM JACK: port: " << left
                              << "and port: " << right
                              << " could not be connected.";
