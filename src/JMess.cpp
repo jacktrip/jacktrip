@@ -531,48 +531,7 @@ void JMess::connectPAN(int /*nChans*/)
         free(ports);
     }
 
-    for (int i = 0; i<0; i++) // last IP decimal octet
-        for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
-        {
-            // jacktrip to SC
-            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
-            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO);
-            int tmp = i + l; // only works for mono... completely wrong for 2 or more chans
-            qDebug() << "connect " << client << ":receive_ " << l
-                     <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
-
-            QString left = QString(client + ":receive_" + QString::number(l));
-            QString right = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN +
-                                    QString::number(tmp));
-
-            if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(),
-                                 right.toStdString().c_str())) {
-                qDebug() << "WARNING: port: " << left
-                         << "and port: " << right
-                         << " could not be connected.";
-            }
-
-            // SC to jacktrip
-            tmp += 4; // increase tmp for port offest
-            qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
-                     << tmp <<"with " << client << ":send_" << l;
-
-            left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
-                           QString::number(tmp));
-            right = QString(client + ":send_" + QString::number(l));
-
-            if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(),
-                                 right.toStdString().c_str())) {
-                qDebug() << "WARNING: port: " << left
-                         << "and port: " << right
-                         << " could not be connected.";
-            }
-
-        }
 } // end connectPAN
-
 
 //*******************************************************************************
 // connectPANbroadcast is called when in hubpatch mode = PANBCAST
@@ -765,46 +724,6 @@ void JMess::connectPANbroadcast(int /*nChans*/)
         free(ports);
     }
 
-    for (int i = 0; i<0; i++) // last IP decimal octet
-        for (int l = 1; l<=1; l++) // mono for now // chans are 1-based, 1...2
-        {
-            // jacktrip to SC
-            QString client = gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB+i);
-            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO);
-            int tmp = i + l; // only works for mono... completely wrong for 2 or more chans
-            qDebug() << "connect " << client << ":receive_ " << l
-                     <<"with " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN << tmp;
-
-            QString left = QString(client + ":receive_" + QString::number(l));
-            QString right = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN +
-                                    QString::number(tmp));
-
-            if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(),
-                                 right.toStdString().c_str())) {
-                qDebug() << "WARNING: port: " << left
-                         << "and port: " << right
-                         << " could not be connected.";
-            }
-
-            // SC to jacktrip
-            tmp += 4; // increase tmp for port offest
-            qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
-                     << tmp <<"with " << client << ":send_" << l;
-
-            left = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT +
-                           QString::number(tmp));
-            right = QString(client + ":send_" + QString::number(l));
-
-            if (0 !=
-                    jack_connect(mClient, left.toStdString().c_str(),
-                                 right.toStdString().c_str())) {
-                qDebug() << "WARNING: port: " << left
-                         << "and port: " << right
-                         << " could not be connected.";
-            }
-
-        }
 } // end connectPANbroadcast
 
 //-------------------------------------------------------------------------------
