@@ -672,12 +672,15 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                              << " could not be connected.";
                 }
                 // bcast
+                QString bcastLeft = IPS[i] +
+                        ":broadcast_" + QString::number(ch);
+
                 QString bcastRight = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBast) +
                         HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN + QString::number(
                             ( slot % NPANINCHANS ) );
                 qDebug() << "connect " << left <<"with " << right;
                 if (0 !=
-                        jack_connect(mClient, left.toStdString().c_str(), bcastRight.toStdString().c_str())) {
+                        jack_connect(mClient, bcastLeft.toStdString().c_str(), bcastRight.toStdString().c_str())) {
                     qDebug() << "WARNING FROM JACK: port: " << left
                              << "and port: " << right
                              << " could not be connected.";
