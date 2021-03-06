@@ -70,7 +70,8 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
     mTotalRunningThreads(0)
     , mHubPatchDescriptions({"server-to-clients", "client loopback",
                              "client fan out/in but not loopback", "reserved for TUB",
-                             "full mix", "no auto patching", "stereo room w/pan9+reverb"})
+                             "full mix", "no auto patching", "stereo room w/pan9+reverb",
+                             "stereo room w/pan9+reverb and broadcast hookup"})
     , m_connectDefaultAudioPorts(false)
     , mIOStatTimeout(0)
 {

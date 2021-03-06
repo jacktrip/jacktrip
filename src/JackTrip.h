@@ -115,7 +115,8 @@ class JackTrip : public QObject
         RESERVEDMATRIX,  ///< Reserved for custom patch matrix (for TUB ensemble)
         FULLMIX,  ///< Client Fan Out to Clients and Fan In from Clients (including self-to-self)
         NOAUTO,  ///< No automatic patching
-        PANSTEREO  ///< Based off of RESERVEDMATRIX (for Stanford ensembles, pan with freeverb)
+        PANSTEREO,  ///< Based off of RESERVEDMATRIX (for Stanford ensembles, pan with freeverb)
+        PANBCAST  ///< Based off of PANSTEREO (for Stanford ensembles, hookup to broadcast)
     };
     //---------------------------------------------------------
 

@@ -617,6 +617,8 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                     QString(ports[out_i]).contains(QString("system")) ||
                     QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO)) ||
                     QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO)) ||
+                    QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBast)) ||
+                    QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_fvBcast)) ||
                     QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND))                    ;
 
             QString str = QString(ports[out_i]);

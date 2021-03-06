@@ -645,10 +645,10 @@ void Settings::printUsage()
     cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions "
             "(default: 16, 32 uses floating-point)"
          << endl;
-    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has "
+    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5, 6, 7)   Hub auto audio patch, only has "
             "effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, "
             "2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no "
-            "auto patching (default: 0)"
+            "auto patching (default: 0), stereo w/pan9+reverb, stereo w/pan9+reverb + broadcast"
          << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun "
             "occurs (default: wavetable)"
