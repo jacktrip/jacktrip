@@ -671,6 +671,17 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                              << "and port: " << right
                              << " could not be connected.";
                 }
+                // bcast
+                QString bcastRight = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBast) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN + QString::number(
+                            ( slot % NPANINCHANS ) );
+                qDebug() << "connect " << left <<"with " << right;
+                if (0 !=
+                        jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING FROM JACK: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
             }
 
             // panner to reverb
