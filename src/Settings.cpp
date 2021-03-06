@@ -395,6 +395,8 @@ void Settings::parseInput(int argc, char** argv)
                 mHubConnectionMode = JackTrip::NOAUTO;
             } else if ( atoi(optarg) == 6 ) {
                 mHubConnectionMode = JackTrip::PANSTEREO;
+            } else if ( atoi(optarg) == 7 ) {
+                mHubConnectionMode = JackTrip::PANBCAST;
             } else {
                 printUsage();
                 std::cerr << "-p ERROR: Wrong HubConnectionMode: " << atoi(optarg)
