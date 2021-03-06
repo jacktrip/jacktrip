@@ -575,7 +575,7 @@ void JMess::connectPAN(int /*nChans*/)
 
 
 //*******************************************************************************
-// connectPANbroadcast is called when in hubpatch mode = PANSTEREOBROADCAST
+// connectPANbroadcast is called when in hubpatch mode = PANBCAST
 // same as -p6 above but adds client outputs tapped from "broadcast_1" and "broadcast_2"
 // to ppBcast panner and send from fvBcast to one special client presumably running OBS
 // used by Stanford ensembles, Winter 2021
@@ -598,7 +598,7 @@ void JMess::connectPAN(int /*nChans*/)
 void JMess::connectPANbroadcast(int /*nChans*/)
 // called from UdpHubListener::connectPatch
 {
-    int hubPatch = JackTrip::PANSTEREO;
+    int hubPatch = JackTrip::PANBCAST;
     { // variant of FOFI
         QMutexLocker locker(&sJMessMutex);
 

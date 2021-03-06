@@ -516,6 +516,8 @@ void UdpHubListener::connectPatch(bool spawn)
         tmp.connectTUB(gDefaultNumInChannels);
     else if (getHubPatch() == JackTrip::PANSTEREO) // special patch for Stanford ensembles
         tmp.connectPAN(gDefaultNumInChannels);
+    else if (getHubPatch() == JackTrip::PANBCAST) // special patch for Stanford ensemble broadcasts
+        tmp.connectPANbroadcast(gDefaultNumInChannels);
     else if ((getHubPatch() == JackTrip::CLIENTECHO) || // client loopback for testing
              (getHubPatch() == JackTrip::CLIENTFOFI) || // all clients to all clients except self
              (getHubPatch() == JackTrip::FULLMIX)) // all clients to all clients including self
