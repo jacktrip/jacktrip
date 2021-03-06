@@ -41,7 +41,7 @@
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO "panpot9toStereo"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO "freeverbStereo"
-#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBast "ppBcast"
+#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBcast "ppBcast"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_fvBcast "fvBcast"
 #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND "ecasound"
 
@@ -617,7 +617,7 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                     QString(ports[out_i]).contains(QString("system")) ||
                     QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_PANSTEREO)) ||
                     QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO)) ||
-                    QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBast)) ||
+                    QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBcast)) ||
                     QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_fvBcast)) ||
                     QString(ports[out_i]).contains(QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ECASOUND))                    ;
 
@@ -675,7 +675,7 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                 QString bcastLeft = IPS[i] +
                         ":broadcast_" + QString::number(ch);
 
-                QString bcastRight = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBast) +
+                QString bcastRight = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBcast) +
                         HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN + QString::number(
                             ( slot % NPANINCHANS ) );
                 qDebug() << "connect " << left <<"with " << right;
@@ -699,6 +699,21 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                 qDebug() << "connect " << left <<"with " << right;
                 if (0 !=
                         jack_connect(mClient, left.toStdString().c_str(), right.toStdString().c_str())) {
+                    qDebug() << "WARNING FROM JACK: port: " << left
+                             << "and port: " << right
+                             << " could not be connected.";
+                }
+                // bcast
+                QString bcastLeft = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_ppBcast) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch-1);
+
+                QString bcastRight = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_fvBcast) +
+                        HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN + QString::number(
+                            ( (ch-1) % NPANINCHANS ) );
+
+                qDebug() << "connect " << left <<"with " << right;
+                if (0 !=
+                        jack_connect(mClient, bcastLeft.toStdString().c_str(), bcastRight.toStdString().c_str())) {
                     qDebug() << "WARNING FROM JACK: port: " << left
                              << "and port: " << right
                              << " could not be connected.";
