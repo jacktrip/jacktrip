@@ -720,10 +720,15 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                 }
             }
 
+
             // reverb to network out
             for (int ch = 1; ch<=2; ch++) { // chans are 1-based
                 QString left = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO) +
                         HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch-1);
+
+                if ( QString(IPS[i]).contains(QString("98.42.59")) )
+         left = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_fvBcast) +
+                                 HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch-1);
 
                 QString right = IPS[i] +
                         ":send_" + QString::number(ch);
