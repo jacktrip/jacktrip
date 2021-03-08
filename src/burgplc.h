@@ -13,7 +13,7 @@ public:
     int8_t* getBufferPtr() { return mXfrBuffer; };
     void processPacket (bool glitch);
     int bytesToInt(const int8_t *buf);
-    void pushPacket (const int8_t* buf, int seq);
+    bool pushPacket (const int8_t* buf, int seq);
     void pullPacket (int8_t* buf);
 private:
     QMutex mMutex;                     ///< Mutex to protect read and write operations

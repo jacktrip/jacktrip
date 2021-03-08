@@ -67,7 +67,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mUnderrunCounter = 0;
 }
 
-void BurgPLC::pushPacket (const int8_t *buf, int seq) {
+bool BurgPLC::pushPacket (const int8_t *buf, int seq) {
     QMutexLocker locker(&mMutex); // lock the mutex
 
     int approxSecond = mOneSecondPacketCounter / mIdealOneSecondsWorthOfPackets;
@@ -105,6 +105,7 @@ void BurgPLC::pushPacket (const int8_t *buf, int seq) {
     mLastPush[mLastFrame] = approxSecond;
     mOneSecondPacketCounter++;
     mUnderrunCounter = 0;
+    return true;
 };
 
 void BurgPLC::pullPacket (int8_t* buf) {
@@ -243,7 +244,6 @@ void BurgPLC::processPacket (bool glitch)
     if (!glitch)
         for PACKETSAMP mLastGoodPacket[s] = mTruth[s];
     mPacketCnt++;
-
 }
 
 
