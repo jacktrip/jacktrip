@@ -5,6 +5,7 @@
 using namespace std;
 
 BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist) :
+    RingBuffer(0, 0),
     mSampleRate (sample_rate),
     mNumChannels (channels),
     mAudioBitRes (bit_res),
@@ -67,7 +68,13 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mUnderrunCounter = 0;
 }
 
-bool BurgPLC::pushPacket (const int8_t *buf, int seq) {
+bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
+// TODO:
+//    if (len != mSlotSize && 0 != len) {
+//        // RingBuffer does not suppport mixed buf sizes
+//        return false;
+//    }
+
     QMutexLocker locker(&mMutex); // lock the mutex
 
     int approxSecond = mOneSecondPacketCounter / mIdealOneSecondsWorthOfPackets;
@@ -116,6 +123,8 @@ void BurgPLC::pullPacket (int8_t* buf) {
 ////            qDebug() << "under" << mUnderrunCounter;
 //            processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
 //        }
+    qDebug() << "hi" << mUnderrunCounter;
+
     if (mOverrunCounter)
     {
         mOverrunCounter--;

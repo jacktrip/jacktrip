@@ -369,9 +369,7 @@ class JackTrip : public QObject
     }
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
     {
-//        mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
-
-        mPLC->pullPacket (ptrToReadSlot);
+        mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
     }
     virtual void readAudioBuffer(int8_t* ptrToReadSlot)
     {
@@ -379,11 +377,7 @@ class JackTrip : public QObject
     }
     virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, int lostLen)
     {
-//        return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
-
-         // TODO: does not check len for FPP mismatch
-         // TODO: hijacked lostlen to propagate incoming seq num
-        return mPLC->pushPacket (ptrToSlot, lostLen);
+        return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
     }
     uint32_t getBufferSizeInSamples() const
     {
@@ -644,8 +638,6 @@ class JackTrip : public QObject
     bool mUseRtUdpPriority;
 
     AudioTester* mAudioTesterP;
-
-    BurgPLC* mPLC;
 };
 
 #endif

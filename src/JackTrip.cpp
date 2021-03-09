@@ -40,7 +40,6 @@
 #include "JackAudioInterface.h"
 #include "JitterBuffer.h"
 #include "RingBufferWavetable.h"
-#include "RingBufferPLC.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
 #ifdef __RT_AUDIO__
@@ -355,7 +354,7 @@ void JackTrip::setupRingBuffers()
 //                                                   mAudioBitResolution, mAudioBufferSize,
 //                                                   slot_size, mBufferQueueLength);
 #define HIST 6
-            mPLC = new BurgPLC(mSampleRate, mNumChans, mAudioBitResolution, mAudioBufferSize,
+            mReceiveRingBuffer = new BurgPLC(mSampleRate, mNumChans, mAudioBitResolution, mAudioBufferSize,
                                mBufferQueueLength, HIST);
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;

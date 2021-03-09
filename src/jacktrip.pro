@@ -146,7 +146,6 @@ HEADERS += DataProtocol.h \
            ProcessPlugin.h \
            RingBuffer.h \
            RingBufferWavetable.h \
-           RingBufferPLC.h \
            Settings.h \
            TestRingBuffer.h \
            ThreadPoolTest.h \
@@ -167,7 +166,6 @@ SOURCES += DataProtocol.cpp \
            Limiter.cpp \
            Reverb.cpp \
            AudioTester.cpp \
-           RingBufferPLC.cpp \
            burgalgorithm.cpp \
            burgplc.cpp \
            jacktrip_globals.cpp \
