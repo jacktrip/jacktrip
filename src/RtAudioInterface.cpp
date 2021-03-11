@@ -74,10 +74,6 @@ void RtAudioInterface::setup()
         std::exit(0);
     }
 
-    // Get and print default devices
-    RtAudio::DeviceInfo info_input;
-    RtAudio::DeviceInfo info_output;
-
     uint32_t deviceId_input;
     uint32_t deviceId_output;
     // use default devices
