@@ -101,6 +101,7 @@ void RtAudioInterface::setup()
 #endif
     //linux only
     options.priority = 30;
+    options.streamName = gJackDefaultClientName.toStdString();
 
     unsigned int sampleRate   = getSampleRate();           //mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  //mBufferSize;
