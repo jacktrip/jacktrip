@@ -100,7 +100,7 @@ void RtAudioInterface::setup()
     options.flags = options.flags | RTAUDIO_MINIMIZE_LATENCY;
 #endif
     //linux only
-    options.priority = 99;
+    options.priority = 30;
 
     unsigned int sampleRate   = getSampleRate();           //mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  //mBufferSize;
