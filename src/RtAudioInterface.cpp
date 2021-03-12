@@ -78,7 +78,7 @@ void RtAudioInterface::setup()
         std::exit(0);
     } else {
         RtAudio::DeviceInfo info;
-        for (unsigned int i = 1; i < n_devices; ++i) {
+        for (unsigned int i = 0; i < n_devices; ++i) {
             info = mRtAudio->getDeviceInfo(i);
             if (info.isDefaultInput == true) { deviceId_input = i; }
             if (info.isDefaultOutput == true) { deviceId_output = i; }
