@@ -69,16 +69,25 @@ void RtAudioInterface::setup()
     cout << "Settin Up Default RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
     mRtAudio = new RtAudio;
-    if (mRtAudio->getDeviceCount() < 1) {
-        cout << "No audio devices found!" << endl;
-        std::exit(0);
-    }
 
     uint32_t deviceId_input;
     uint32_t deviceId_output;
+
+    if (unsigned int n_devices = mRtAudio->getDeviceCount(); n_devices < 1) {
+        cout << "No audio devices found!" << endl;
+        std::exit(0);
+    } else {
+        RtAudio::DeviceInfo info;
+        for (unsigned int i = 1; i < n_devices; ++i) {
+            info = audio.getDeviceInfo(i);
+            if (info.isDefaultInput == true) { deviceId_input = i; }
+            if (info.isDefaultOutput == true) { deviceId_output = i; }
+        }
+    }
+
     // use default devices
-    deviceId_input  = mJackTrip->getDeviceID();
-    deviceId_output = mJackTrip->getDeviceID();
+    // deviceId_input  = mJackTrip->getDeviceID();
+    // deviceId_output = mJackTrip->getDeviceID();
 
     cout << "DEFAULT INPUT DEVICE  : " << endl;
     printDeviceInfo(deviceId_input);
@@ -94,17 +103,17 @@ void RtAudioInterface::setup()
     out_params.nChannels = getNumOutputChannels();
 
     RtAudio::StreamOptions options;
-    //The second flag affects linux and mac only
+    // The second flag affects linux and mac only
     options.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_SCHEDULE_REALTIME;
 #ifdef __WIN_32__
     options.flags = options.flags | RTAUDIO_MINIMIZE_LATENCY;
 #endif
-    //linux only
-    options.priority = 30;
+    // linux only
+    options.priority   = 30;
     options.streamName = gJackDefaultClientName.toStdString();
 
-    unsigned int sampleRate   = getSampleRate();           //mSamplingRate;
-    unsigned int bufferFrames = getBufferSizeInSamples();  //mBufferSize;
+    unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
+    unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
 
     try {
         // IMPORTANT NOTE: It's VERY important to remember to pass this
@@ -226,9 +235,10 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
 */
 
 //*******************************************************************************
-//int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
+// int RtAudioInterface::RtAudioCallback(void *outputBuffer, void *inputBuffer,
 //                                      unsigned int nFrames,
-//                                      double /*streamTime*/, RtAudioStreamStatus /*status*/)
+//                                      double /*streamTime*/, RtAudioStreamStatus
+//                                      /*status*/)
 //{
 /*
   mInBuffer[0] = (sample_t*) inputBuffer;
@@ -253,7 +263,8 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
     //--------
     sample_t* tmp_sample = mOutBuffer[i]; //sample buffer for channel i
     for (unsigned int j = 0; j < nFrames; j++) {
-      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
+      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)],
+  4);
       // Change the bit resolution on each sample
       //cout << tmp_sample[j] << endl;
       AudioInterface::fromBitToSampleConversion(&mOutputPacket[(i*getSizeInBytesPerChannel())
@@ -291,39 +302,39 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
 
 */
 
-//mTestJackTrip->printTextTest();
+// mTestJackTrip->printTextTest();
 
-//if (mJackTrip != NULL)
+// if (mJackTrip != NULL)
 //  cout << "(mJackTrip != NULL)" << endl;
 
-//if (mJackTrip == NULL) { cout << " === JACKTRIPNULL === " << endl; }
+// if (mJackTrip == NULL) { cout << " === JACKTRIPNULL === " << endl; }
 
-//const int8_t* caca;
-//mJackTrip->sendNetworkPacket( mInputPacket );
+// const int8_t* caca;
+// mJackTrip->sendNetworkPacket( mInputPacket );
 
-//in_buffer = mInBuffer.data();
-//mInBuffer.data() = (float*) inputBuffer;
+// in_buffer = mInBuffer.data();
+// mInBuffer.data() = (float*) inputBuffer;
 
-//mInBuffer[0] = static_cast<float*>(outputBuffer);
-//mOutBuffer[0] = static_cast<sample_t*>(inputBuffer);
-//float* in_buffer = static_cast<float*>(inputBuffer);
-//float* out_buffer = static_cast<float*>(outputBuffer);
+// mInBuffer[0] = static_cast<float*>(outputBuffer);
+// mOutBuffer[0] = static_cast<sample_t*>(inputBuffer);
+// float* in_buffer = static_cast<float*>(inputBuffer);
+// float* out_buffer = static_cast<float*>(outputBuffer);
 
-//cout << "nFrames = ==================== = = = = = = = ======== " << this->getBufferSizeInSamples() << endl;
-//int8_t* input_packet = new int8_t[nFrames*2];
+// cout << "nFrames = ==================== = = = = = = = ======== " <<
+// this->getBufferSizeInSamples() << endl; int8_t* input_packet = new int8_t[nFrames*2];
 
-//tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
+// tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
 
-//JackAudioInterface::fromSampleToBitConversion(in_buffer, input_packet, BIT16);
-//for (int i = 0; i<nFrames; i++) {
+// JackAudioInterface::fromSampleToBitConversion(in_buffer, input_packet, BIT16);
+// for (int i = 0; i<nFrames; i++) {
 //  cout << in_buffer[i] << endl;
 //}
-//mJackTrip->sendNetworkPacket(input_packet);
-//cout << mJackTrip->getRingBuffersSlotSize() << endl;
-//delete[] input_packet;
+// mJackTrip->sendNetworkPacket(input_packet);
+// cout << mJackTrip->getRingBuffersSlotSize() << endl;
+// delete[] input_packet;
 
-//mOutputPacket = static_cast<int8_t*>(inputBuffer);
-//mInputPacket = static_cast<int8_t*>(outputBuffer);
+// mOutputPacket = static_cast<int8_t*>(inputBuffer);
+// mInputPacket = static_cast<int8_t*>(outputBuffer);
 
 // Allocate the Process Callback
 //-------------------------------------------------------------------
@@ -335,9 +346,8 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
   for (int i = 0; i < getNumInputChannels(); i++) {
     sample_t* tmp_sample = mOutBuffer[i]; //sample buffer for channel i
     for (int j = 0; j < mBufferSize; j++) {
-      fromBitToSampleConversion(&mOutputPacket[(i*getSizeInBytesPerChannel()) + (j*BIT16)],
-                                &tmp_sample[j],
-                                BIT16);
+      fromBitToSampleConversion(&mOutputPacket[(i*getSizeInBytesPerChannel()) +
+  (j*BIT16)], &tmp_sample[j], BIT16);
     }
   }
   */
@@ -355,10 +365,10 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
     //		mSizeInBytesPerChannel);
     //--------
     float* tmp_sample = in_buffer; //sample buffer for channel i
-    //sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output process
-    sample_t tmp_result;
-    for (int j = 0; j < mBufferSize; j++) {
-      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)], 4);
+    //sample_t* tmp_process_sample = mOutProcessBuffer[i]; //sample buffer from the output
+  process sample_t tmp_result; for (int j = 0; j < mBufferSize; j++) {
+      //std::memcpy(&tmp_sample[j], &mOutputPacket[(i*mSizeInBytesPerChannel) + (j*4)],
+  4);
       // Change the bit resolution on each sample
 
       // Add the input jack buffer to the buffer resulting from the output process
@@ -377,5 +387,5 @@ int RtAudioInterface::processCallback(jack_nframes_t nframes)
   //mInRingBuffer->insertSlotNonBlocking( mInputPacket );
   mJackTrip->sendNetworkPacket( mInputPacket );
   */
-//return 0;
+// return 0;
 //}
