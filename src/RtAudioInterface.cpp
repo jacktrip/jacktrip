@@ -79,7 +79,7 @@ void RtAudioInterface::setup()
     } else {
         RtAudio::DeviceInfo info;
         for (unsigned int i = 1; i < n_devices; ++i) {
-            info = audio.getDeviceInfo(i);
+            info = mRtAudio->getDeviceInfo(i);
             if (info.isDefaultInput == true) { deviceId_input = i; }
             if (info.isDefaultOutput == true) { deviceId_output = i; }
         }
