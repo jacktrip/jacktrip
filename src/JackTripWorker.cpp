@@ -316,9 +316,6 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
     UdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet), packet_size);
     UdpSockTemp.close();  // close the socket
 
-    // TODO Why is this a pointer to int8_t?
-    int8_t* full_packet = reinterpret_cast<int8_t*>(packet);
-
     int PeerBufferSize          = jacktrip.getPeerBufferSize(full_packet);
     int PeerSamplingRate        = jacktrip.getPeerSamplingRate(full_packet);
     int PeerBitResolution       = jacktrip.getPeerBitResolution(full_packet);
