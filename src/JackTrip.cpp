@@ -37,7 +37,9 @@
 
 #include "JackTrip.h"
 
+#ifndef __NO_JACK__
 #include "JackAudioInterface.h"
+#endif
 #include "JitterBuffer.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
@@ -154,7 +156,7 @@ JackTrip::~JackTrip()
 //*******************************************************************************
 void JackTrip::setupAudio(
 #ifdef WAIRTOHUB  // WAIR
-    __attribute__((unused)) int ID
+    [[maybe_unused]] int ID
 #endif  // endwhere
 )
 {
@@ -676,11 +678,11 @@ void JackTrip::receivedDataUDP()
     // IPv6 addition from fyfe
     // Get the datagram size to avoid problems with IPv6
     qint64 datagramSize = mUdpSockTemp.pendingDatagramSize();
-    char buf[datagramSize];
+    char *buf = new char[datagramSize];
     // set client address
     mUdpSockTemp.readDatagram(buf, datagramSize, &peerHostAddress, &peer_port);
     mUdpSockTemp.close();  // close the socket
-
+    delete[] buf;
     // Check for mapped IPv4->IPv6 addresses that look like ::ffff:x.x.x.x
     if (peerHostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
         bool mappedIPv4;

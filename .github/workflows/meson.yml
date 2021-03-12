@@ -1,4 +1,4 @@
-name: build
+name: meson-build
 on: [push, pull_request]
 jobs:
   skip-duplicates:
@@ -24,7 +24,7 @@ jobs:
       matrix:
         include:
           - name: Linux
-            runs-on: ubuntu-18.04
+            runs-on: ubuntu-20.04
           - name: macOS
             runs-on: macos-10.15
           - name: Windows
@@ -36,11 +36,15 @@ jobs:
       QT_VERSION: '5.15.2'
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes libjack-dev qt5-default qt5-qmake qttools5-dev
+          sudo apt-get install --yes libpulse-dev libasound2-dev libjack-dev qt5-default qt5-qmake qttools5-dev
+          python -m pip install --upgrade pip
+          pip install meson ninja
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
         env:
@@ -48,41 +52,49 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
         run: |
-          brew install qt5 jack
+          brew install qt5 jack meson
           brew link qt5 --force
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
         run: |
-          choco install jack --version=1.9.17
+          choco install jack
+          python -m pip install --upgrade pip
+          pip install meson ninja
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
       - name: Cache Qt
         id: cache-qt
         if: runner.os == 'Windows'
         uses: actions/cache@v1
         with:
           path: ../Qt
-          key: ${{ runner.os }}-QtCache-${{ env.QT_VERSION }}
+          key: ${{ runner.os }}-QtCacheMSVC-${{ env.QT_VERSION }}
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         if: runner.os == 'Windows'
         with:
-          version: ${{ env.QT_VERSION }}
-          arch: 'win64_mingw81'
+          version: '5.15.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       - name: build on Linux / macOS
         if: runner.os != 'Windows'
         env:
           DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
         run: |
-          cd $SRC_PATH
-          ./build
+          meson --buildtype release $BUILD_PATH
+          cd $BUILD_PATH
+          meson configure -Ddefault_library=static
+          meson compile
       - name: build on Windows
         if: runner.os == 'Windows'
-        shell: bash
         run: |
-          mkdir $BUILD_PATH 
-          cd $BUILD_PATH
-          qmake -spec win32-g++ ../src/jacktrip.pro
-          mingw32-make release
+          meson --buildtype release builddir
+          cd builddir
+          meson configure -Ddefault_library=static
+          meson compile
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:

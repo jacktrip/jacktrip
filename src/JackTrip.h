@@ -147,7 +147,7 @@ class JackTrip : public QObject
     /// \brief The class destructor
     virtual ~JackTrip();
 
-    static void sigIntHandler(__attribute__((unused)) int unused)
+    static void sigIntHandler(int /*unused*/)
     {
         std::cout << std::endl << "Shutting Down..." << std::endl;
         sSigInt = true;

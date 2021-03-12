@@ -49,7 +49,6 @@
 #ifdef __WIN_32__
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
-#include <ws2tcpip.h>  // for IPv6
 #endif
 #if defined(__LINUX__) || (__MAC_OSX__)
 #include <sys/fcntl.h>

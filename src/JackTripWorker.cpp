@@ -37,8 +37,6 @@
 
 #include "JackTripWorker.h"
 
-#include <unistd.h>
-
 #include <QMutexLocker>
 #include <QTimer>
 #include <QWaitCondition>
@@ -338,16 +336,17 @@ int JackTripWorker::setJackTripFromClientHeader(JackTrip& jacktrip)
         return -1;
     }
     int packet_size = UdpSockTemp.pendingDatagramSize();
-    char packet[packet_size];
-    UdpSockTemp.readDatagram(packet, packet_size);
+    int8_t* full_packet = new int8_t[packet_size];
+    UdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet), packet_size);
     UdpSockTemp.close();  // close the socket
-    int8_t* full_packet = reinterpret_cast<int8_t*>(packet);
 
     int PeerBufferSize     = jacktrip.getPeerBufferSize(full_packet);
     int PeerSamplingRate   = jacktrip.getPeerSamplingRate(full_packet);
     int PeerBitResolution  = jacktrip.getPeerBitResolution(full_packet);
     int PeerNumChannels    = jacktrip.getPeerNumChannels(full_packet);
     int PeerConnectionMode = jacktrip.getPeerConnectionMode(full_packet);
+    delete[] full_packet;
+    full_packet = nullptr;
 
     if (gVerboseFlag)
         cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;

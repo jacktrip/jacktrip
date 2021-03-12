@@ -86,7 +86,7 @@ class UdpHubListener : public QObject
         m_connectDefaultAudioPorts = connectDefaultAudioPorts;
     }
 
-    static void sigIntHandler(__attribute__((unused)) int unused)
+    static void sigIntHandler([[maybe_unused]] int unused)
     {
         std::cout << std::endl << "Shutting Down..." << std::endl;
         sSigInt = true;
@@ -183,8 +183,9 @@ class UdpHubListener : public QObject
     void setWAIR(int b) { mWAIR = b; }
     bool isWAIR() { return mWAIR; }
 #endif  // endwhere
+#ifndef __NO_JACK__
     void connectPatch(bool spawn);
-
+#endif
    public:
     unsigned int mHubPatch;
     void setHubPatch(unsigned int p) { mHubPatch = p; }
