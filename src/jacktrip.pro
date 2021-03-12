@@ -19,8 +19,10 @@ QT += network
 # DEFINES += WAIR
 DEFINES += WAIRTOHUB
 
-# http://wiki.qtcentre.org/index.php?title=Undocumented_qmake#Custom_tools
-#cc DEFINES += __RT_AUDIO__
+# configuration with RtAudio
+rtaudio {
+  DEFINES += __RT_AUDIO__
+}
 # Configuration without Jack
 nojack {
   DEFINES += __NO_JACK__
@@ -41,6 +43,12 @@ INCLUDEPATH += ../faust-src-lair/stk
   }
 }
 
+# pkg-config is required for building with rtaudio
+rtaudio {
+  CONFIG += link_pkgconfig
+  PKGCONFIG += rtaudio
+}
+
 macx {
   message(Building on MAC OS X)
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
@@ -51,7 +59,7 @@ macx {
   # can change between 32bits (x86) or 64bits(x86_64) Change this to go back to 32 bits (x86)
   LIBS += -framework CoreAudio -framework CoreFoundation
   DEFINES += __MAC_OSX__
-  }
+}
 
 linux-g++ | linux-g++-64 {
 #   LIBS += -lasound -lrtaudio
@@ -112,12 +120,15 @@ win32 {
       message("Jack library not found")
     }
   }
-#cc  QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ #-D__UNIX_JACK__ #RtAudio Flags
-  #QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++ -lpthread
-  LIBS += -lWs2_32 #cc -lOle32 #needed by rtaudio/asio
+  LIBS += -lWs2_32
   DEFINES += __WIN_32__
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
-#cc    DEFINES -= UNICODE #RtAudio for Qt
+
+  rtaudio {
+    # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
+    CONFIG += no_lflags_merge    
+    LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
+  }
 }
 
 DESTDIR = .
@@ -169,6 +180,11 @@ HEADERS += DataProtocol.h \
 !nojack {
 HEADERS += JackAudioInterface.h
 }
+
+rtaudio {
+    HEADERS += RtAudioInterface.h
+}
+
 SOURCES += DataProtocol.cpp \
            JMess.cpp \
            JackTrip.cpp \
@@ -195,14 +211,6 @@ SOURCES += DataProtocol.cpp \
 SOURCES += JackAudioInterface.cpp
 }
 
-# RtAudio Input
-win32 {
-  INCLUDEPATH += ../externals/rtaudio-4.1.1/include
-  DEPENDPATH += ../externals/rtaudio-4.1.1/include
-}
-macx | win32 {
-INCLUDEPATH += ../externals/rtaudio-4.1.1/
-DEPENDPATH += ../externals/rtaudio-4.1.1/
-HEADERS +=
-SOURCES +=
+rtaudio {
+    SOURCES += RtAudioInterface.cpp
 }
