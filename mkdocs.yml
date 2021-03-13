@@ -1,6 +1,7 @@
 site_name: JackTrip
 nav:
    - Home: index.md
-   - Installation: INSTALL.md
+   - Installation: Install.md
+   - Build: Build.md
    - Changelog: CHANGELOG.md
 theme: readthedocs
