@@ -4,3 +4,6 @@
 
 # build directory
 builddir/
+
+# Ignore mkdocs build
+site/
