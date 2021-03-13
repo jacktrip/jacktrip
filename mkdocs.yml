@@ -2,6 +2,9 @@ site_name: JackTrip
 nav:
    - Home: index.md
    - Installation: Install.md
-   - Build: Build.md
-   - Changelog: CHANGELOG.md
+   - Build:
+       - QMake: Build/QMake_build.md
+       - Meson: Build/Meson_build.md
+   - About:
+       - Changelog: CHANGELOG.md
 theme: readthedocs
