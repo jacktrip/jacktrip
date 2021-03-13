@@ -17,5 +17,5 @@ Windows installer or executable at [CCRMA](https://ccrma.stanford.edu/software/j
 
 
 # Build from Source
-To keep up with the latest changes, both experimental and stable, follow instructions to compile corresponding to your operating system at build instruction for [Linux](Build/Linux.md), [MacOS](Build/Mac.md) 
+To keep up with the latest changes, both experimental and stable, follow instructions to compile for [Linux](Build/Linux.md), [MacOS](Build/Mac.md) 
 or [Windows](Build/Windows.md).
