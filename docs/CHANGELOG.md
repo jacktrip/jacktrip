@@ -1,5 +1,9 @@
----
+Changelog
+=========
+
+
 1.3.0
+---
 - (added) async networking in hub listener
 - (added) limiter, compressor, reverb
 - (added) examine audio delay
@@ -26,20 +30,19 @@
 - (update) clipping to saturation
 - (update) build instructions
 
+1.2.2
 ---
-1.2.2 (main)
 - (added) bindPort range to reject oddball connections
 - (fixed) jack client name strings
 
+1.2.1
 ---
-1.2.1 (master) (branch name will be deprecated)
-(main and dev) (new branches, respectively for stable and development)
 - (added) src/build script builds in ../builddir
 - (fixed) refactor "Master" to be "Hub"
 - (fixed) 1.2.1 correctly versioned and tagged
 
+1.2
 ---
-1.2 (release candidate, not yet tagged)
 - (added) jack patching modes (-p) for Hub Mode server (-S)
 - (fixed) Compilation under ubuntu
 - (removed) setRealtimeProcessPriority()
@@ -49,15 +52,15 @@
 - (fixed) Fixed compilation for  MacOSX10.11.sdk.
 - (update) Updated to RtAudio 4.1.1, and using shared lib in linux.
 
----
 1.1
+---
 - (added) Support for RtAudio. Jacktrip can now be used without Jack
 - (added) DNS Look-up support, now one machine can have a private IP (but still needs to have UDP ports open)
 - (added) New port to Windows XP and Windows Vista (experimental and not tested for a long time, only when using jacktrip as a library)
 - (added) Multiclient Server (experimental and not exposed in the executable)
 
----
 1.0.5
+---
 - (added) Compatibility with JamLink boxes (restricted at the moment to 48KHz, 64 buffer size and 1 channel)
 - (added) New port structure that allows the communication between a public server and a local client
 - (added) Option for packets without header
@@ -65,27 +68,26 @@
 - (fixed) General optimizations and code cleanup
 - (added) Improved, now cross-platform build script
 
----
 1.0.4
+---
 - (fixed) Buss error caused when no physical inputs or outputs ports are available
 
----
 1.0.3
+---
 - (added) Redundancy Algorithm for UDP Packets to avoid glitches with packet losses
 - (fixed) Now compiles on 64bits machines
 - (fixed) Improved exceptions handling
 - (added) Basic Karplus-Strong model added as Plug-in
-- (added) Some functionality reimplemented using signals and slots for
-          more flexibility
+- (added) Some functionality reimplemented using signals and slots for more flexibility
 - (added) Multiple-Client-Server in alpha testing, expect it working in the next release
 
----
 1.0.2 Alpha
+---
 - (added) Port offset mode, to use a different UDP port than the default one.
 - (fixed) Improved thread behavior
 
----
 1.0.1 Alpha
+---
 - (added) jamlink mode to connect with jamlink boxes
 - (fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X version)
 - (fixed) Bug that was causing plug-ins not to behave correctly
@@ -94,5 +96,5 @@
 - (added) Check for peer audio settings, program exists if they don't match
 - (added) Automatically connect ports to available physical audio interface.
 
----
 1.0 Alpha  - initial release
+---
