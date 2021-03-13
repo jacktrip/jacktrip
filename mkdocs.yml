@@ -1,0 +1,5 @@
+site_name: JackTrip
+nav:
+   - Home: index.md
+   - Installation: INSTALL.md
+theme: readthedocs
