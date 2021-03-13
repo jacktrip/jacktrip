@@ -1,17 +1,6 @@
 # Welcome to JackTrip
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+JackTrip is a Linux, Mac OSX, or Windows multi-machine audio system used for network music performance over the Internet.
+It supports any number of channels (as many as the computer/network can handle) of bidirectional, high quality, uncompressed audio signal streaming.
 
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+You can use it between any combination of machines e.g., one end using Linux can connect to another using Mac OSX.

@@ -1,15 +1,16 @@
 site_name: JackTrip
 nav:
-   - Home: index.md
-   - User Guide:
-       - Installation: Install.md
-   - Developer Guide:
-       - Linux: Build/Linux.md
-       - Mac OS: Build/Mac.md
-       - Windows: Build/Windows.md
-       - Meson Build: Build/Meson_build.md
-   - About:
-       - Changelog: CHANGELOG.md
+  - Home: index.md
+  - User Guide:
+    - Installation: Install.md
+  - Developer Guide:
+    - Linux: Build/Linux.md
+    - Mac OS: Build/Mac.md
+    - Windows: Build/Windows.md
+    - Meson Build: Build/Meson_build.md
+  - About:
+    - Resources: About/Resources.md
+    - Changelog: About/CHANGELOG.md
 theme:
   name: material
   features:
