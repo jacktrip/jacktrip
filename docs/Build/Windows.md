@@ -82,4 +82,3 @@ If you see something like this, you have successfully installed Jacktrip:
 >     Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe.
 >     SoundWIRE group at CCRMA, Stanford University
 
-Follow the link below for instructions on how to use Jacktrip.

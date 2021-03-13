@@ -113,10 +113,3 @@ If you see something like this, you have successfully installed Jacktrip:
 >     Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe.
 >     SoundWIRE group at CCRMA, Stanford University
 
-Follow the link at the bottom of the page to use Jacktrip.
-
-
-
-# Post Configuration & Using Jacktrip:
-Detailed instructions at
-https://ccrma.stanford.edu/docs/common/IETF.html
