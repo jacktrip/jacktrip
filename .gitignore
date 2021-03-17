@@ -4,3 +4,6 @@
 
 # build directory
 builddir/
+
+# macOS files
+.DS_Store
