@@ -69,9 +69,9 @@ enum JTLongOptIDS {
     OPT_SIMJITTER,
     OPT_BROADCAST,
     OPT_RTUDPPRIORITY,
-    OPT_APPENDTHREADID,
-    OPT_NUMINCOMING,
-    OPT_NUMOUTGOING
+    OPT_NUMRECEIVE,
+    OPT_NUMSEND,
+    OPT_APPENDTHREADID
 };
 
 //*******************************************************************************
@@ -93,10 +93,10 @@ void Settings::parseInput(int argc, char** argv)
         // These options don't set a flag.
         {"numchannels", required_argument, NULL,
          'n'},  // Number of input and output channels
-        {"numincoming", required_argument, NULL,
-         OPT_NUMINCOMING},  // Number of incoming channels
-        {"numoutgoing", required_argument, NULL,
-         OPT_NUMOUTGOING},  // Number of outgoing channels
+        {"numreceive", required_argument, NULL,
+         OPT_NUMRECEIVE},  // Number of incoming channels
+        {"numsend", required_argument, NULL,
+         OPT_NUMSEND},  // Number of outgoing channels
 #ifdef WAIR                 // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
         {"addcombfilterlength", required_argument, NULL,
@@ -166,21 +166,21 @@ void Settings::parseInput(int argc, char** argv)
                 NULL))
            != -1)
         switch (ch) {
-        case OPT_NUMINCOMING:
+        case OPT_NUMRECEIVE:
             if (0 < atoi(optarg)) {
                 mNumAudioOutputChans = atoi(optarg);
             } else {
                 std::cerr
-                    << "--numincoming ERROR: Number of channels must be greater than 0\n";
+                    << "--numreceive ERROR: Number of channels must be greater than 0\n";
                 std::exit(1);
             }
             break;
-        case OPT_NUMOUTGOING:
+        case OPT_NUMSEND:
             if (0 < atoi(optarg)) {
                 mNumAudioInputChans = atoi(optarg);
             } else {
                 std::cerr
-                    << "--numoutgoing ERROR: Number of channels must be greater than 0\n";
+                    << "--numsend ERROR: Number of channels must be greater than 0\n";
                 std::exit(1);
             }
             break;
@@ -609,9 +609,9 @@ void Settings::printUsage()
     cout << " -n, --numchannels #                      Number of Input and Output "
             "Channels (# greater than 0, default: "
          << 2 << ")" << endl;
-    cout << "     --numincoming #                      Number of incoming Channels from "
+    cout << "     --numreceive #                       Number of receive Channels from "
             "the network (# greater than 0)\n";
-    cout << "     --numoutgoing #                      Number of outgoing Channels to "
+    cout << "     --numsend #                          Number of send Channels to "
             "the network (# greater than 0)\n";
 #ifdef WAIR  // WAIR
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
