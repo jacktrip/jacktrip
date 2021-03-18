@@ -5,5 +5,8 @@
 # build directory
 builddir/
 
+# Ignore mkdocs build
+site/
+
 # macOS files
 .DS_Store
