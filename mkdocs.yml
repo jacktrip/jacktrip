@@ -8,11 +8,14 @@ nav:
     - Mac OS: Build/Mac.md
     - Windows: Build/Windows.md
     - Meson Build: Build/Meson_build.md
+    - API: API/api.md
   - About:
     - Resources: About/Resources.md
     - Changelog: About/CHANGELOG.md
     - Todo: About/Todo.md
     - License: About/License.md
+markdown_extensions:
+  - extra
 theme:
   name: material
   features:
