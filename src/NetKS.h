@@ -133,6 +133,8 @@ class NetKS : public ProcessPlugin
         }
     }
 
+    const char* getName() const override { return "NetKS"; }
+
     //============================================================================
 };
 

@@ -132,6 +132,7 @@ class Compressor : public ProcessPlugin
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
+    const char* getName() const override { return "Compressor"; }
 
    private:
     float fs;
