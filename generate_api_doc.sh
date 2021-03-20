@@ -2,4 +2,5 @@
 
 mkdir -p docs/API/
 doxygen
-moxygen --anchors -n --output docs/API/api.md doxygen/xml/
+cd docs/API/
+moxygen --anchors --groups --output %s.md ../../doxygen/xml/
