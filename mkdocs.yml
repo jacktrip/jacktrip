@@ -1,4 +1,6 @@
 site_name: JackTrip
+repo_url: https://github.com/jacktrip/jacktrip/
+repo_name: JackTrip/JackTrip
 nav:
   - Home: index.md
   - User Guide:
@@ -8,7 +10,13 @@ nav:
     - Mac OS: Build/Mac.md
     - Windows: Build/Windows.md
     - Meson Build: Build/Meson_build.md
-    - API: API/api.md
+    - API:
+      - Main Classes: API/main.md
+      - Buffer Classes: API/buffer.md
+      - Audio Interface Classes: API/audio_interface.md
+      - Effects Classes: API/effects.md
+      - Network Classes: API/network.md
+      - Threading Classes: API/threading.md
   - About:
     - Resources: About/Resources.md
     - Changelog: About/CHANGELOG.md
@@ -16,7 +24,13 @@ nav:
     - License: About/License.md
 markdown_extensions:
   - extra
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - toc:
+       toc_depth: 2
 theme:
   name: material
   features:
     - navigation.tabs
+    - toc.integrate
