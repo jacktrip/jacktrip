@@ -42,6 +42,9 @@
 #include <QTimer>
 #include <iostream>
 
+/** @ingroup threading
+ *
+ */
 class JackTripWorkerMessages : public QObject
 {
     Q_OBJECT;

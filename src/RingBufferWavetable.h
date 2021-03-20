@@ -38,7 +38,8 @@
 #ifndef __RINGBUFFERWAVETABLE_H__
 #define __RINGBUFFERWAVETABLE_H__
 
-/** \brief Same as RingBuffer, except that it uses the Wavetable mode for
+/** @ingroup buffer
+ * @brief Same as RingBuffer, except that it uses the Wavetable mode for
  * lost or late packets.
  */
 class RingBufferWavetable : public RingBuffer

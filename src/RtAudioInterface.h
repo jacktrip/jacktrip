@@ -44,7 +44,10 @@
 #include "jacktrip_globals.h"
 class JackTrip;  // Forward declaration
 
-/// \brief Base Class that provides an interface with RtAudio
+/** @ingroup audio_interface
+ * @brief Base Class that provides an interface with RtAudio
+ *
+ */
 class RtAudioInterface : public AudioInterface
 {
    public:

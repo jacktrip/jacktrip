@@ -53,10 +53,11 @@
 
 //class JackTrip; //forward declaration
 
-/** \brief Class that provides an interface with the Jack Audio Server
+/** @ingroup audio_interface
+ * @brief Class that provides an interface with the Jack Audio Server
  *
- * \todo implement srate_callback
- * \todo automatically starts jack with buffer and sample rate settings specified by the user
+ * @todo implement srate_callback
+ * @todo automatically starts jack with buffer and sample rate settings specified by the user
  */
 class JackAudioInterface : public AudioInterface
 {

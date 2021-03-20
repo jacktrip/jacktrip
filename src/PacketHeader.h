@@ -48,11 +48,15 @@
 #include "jacktrip_types.h"
 class JackTrip;  // Forward Declaration
 
-/// \brief Abstract Header Struct, Header Stucts should subclass it
+/** @ingroup network
+ * @brief Abstract Header Struct, Header Stucts should subclass it
+ */
 struct HeaderStruct {
 };
 
-/// \brief Default Header Struct
+/** @ingroup network
+ * @brief Default Header Struct
+ */
 struct DefaultHeaderStruct : public HeaderStruct {
    public:
     // watch out for alignment...
@@ -96,7 +100,9 @@ const unsigned short ETX_8KHZ  = (7 << 9);
 // able to express up to 512 SPP
 //inline unsigned short  ETX_SPP(const unsigned short a) { (a&0x01FF); }
 
-/// \brief JamLink Header Struct
+/** @ingroup network
+ * @brief JamLink Header Struct
+ */
 struct JamLinkHeaderStuct : public HeaderStruct {
     // watch out for alignment -- need to be on 4 byte chunks
     uint16_t Common;     ///< Common part of the header, 16 bit
@@ -107,7 +113,8 @@ struct JamLinkHeaderStuct : public HeaderStruct {
 //#######################################################################
 //####################### PacketHeader ##################################
 //#######################################################################
-/** \brief Base class for header type. Subclass this struct to
+/** @ingroup network
+ * @brief Base class for header type. Subclass this struct to
  * create a new header.
  */
 class PacketHeader : public QObject
@@ -168,7 +175,8 @@ class PacketHeader : public QObject
 //#######################################################################
 //####################### DefaultHeader #################################
 //#######################################################################
-/** \brief Default Header
+/** @ingroup network
+ * @brief Default Header
  */
 class DefaultHeader : public PacketHeader
 {
@@ -207,7 +215,8 @@ class DefaultHeader : public PacketHeader
 //####################### JamLinkHeader #################################
 //#######################################################################
 
-/** \brief JamLink Header
+/** @ingroup network
+ * @brief JamLink Header
  */
 class JamLinkHeader : public PacketHeader
 {
@@ -243,7 +252,8 @@ class JamLinkHeader : public PacketHeader
 //####################### EmptyHeader #################################
 //#######################################################################
 
-/** \brief Empty Header to use with systems that don't include a header.
+/** @ingroup network
+ * @brief Empty Header to use with systems that don't include a header.
  */
 class EmptyHeader : public PacketHeader
 {

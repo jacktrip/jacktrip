@@ -40,6 +40,10 @@
 
 #include "RingBuffer.h"
 
+/** @ingroup buffer
+ * @brief JitterBuffer class
+ *
+ */
 class JitterBuffer : public RingBuffer
 {
    public:

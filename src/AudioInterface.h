@@ -50,8 +50,12 @@
 class JackTrip;
 
 //using namespace JackTripNamespace;
+/** @defgroup audio_interface
+ *
+ */
 
-/** \brief Base Class that provides an interface with audio
+/**  @ingroup audio_interface
+ * @brief Base Class that provides an interface with audio
  */
 class AudioInterface
 {

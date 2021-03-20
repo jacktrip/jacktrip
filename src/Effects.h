@@ -47,6 +47,9 @@
 #include "ProcessPlugin.h"
 #include "Reverb.h"
 
+/** @ingroup effects
+ * @brief Effects Class
+ */
 class Effects
 {
     int mNumIncomingChans;

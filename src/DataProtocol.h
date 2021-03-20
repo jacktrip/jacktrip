@@ -58,7 +58,12 @@
 
 class JackTrip;  // forward declaration
 
-/** \brief Base class that defines the transmission protocol.
+/** @defgroup network Network Classes
+ *
+ */
+
+/** @ingroup network
+ * @brief Base class that defines the transmission protocol.
  *
  * This base class defines most of the common method to setup and connect
  * sockets using the individual protocols (UDP, TCP, SCTP, etc).

@@ -42,7 +42,12 @@
 
 #include "JackTrip.h"
 
-/** \brief Test class that runs JackTrip inside a thread
+/** @defgroup threading Threading Classes
+ *
+ */
+
+/** @ingroup threading
+ * @brief Test class that runs JackTrip inside a thread
  */
 class JackTripThread : public QThread
 {

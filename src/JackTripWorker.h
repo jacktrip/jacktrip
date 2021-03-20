@@ -51,7 +51,8 @@
 // class JackTrip; // forward declaration
 class UdpHubListener;  // forward declaration
 
-/** \brief Prototype of the worker class that will be cloned through sending threads to
+/** @ingroup threading
+ * @brief Prototype of the worker class that will be cloned through sending threads to
  * the Thread Pool
  *
  * This class can be send to the ThreadPool using the start() method. Each time

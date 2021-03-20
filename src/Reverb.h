@@ -49,7 +49,8 @@
 #include "zitarevdsp.h"      // stereo in and out
 #include "zitarevmonodsp.h"  // mono in and out
 
-/** \brief A Reverb is an echo-based delay effect,
+/** @ingroup effects
+ * @brief A Reverb is an echo-based delay effect,
  *  providing a virtual acoustic listening space.
  */
 class Reverb : public ProcessPlugin

@@ -45,7 +45,8 @@
 
 #include "ProcessPlugin.h"
 
-/** \brief A simple (basic) network Karplus Strong.
+/** @ingroup effects
+ * @brief A simple (basic) network Karplus Strong.
  *
  * This plugin creates a one channel network karplus strong.
  */

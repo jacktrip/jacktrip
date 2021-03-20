@@ -51,15 +51,14 @@ using namespace std;
 
 const int Indent = 2;
 
-//-------------------------------------------------------------------------------
-/*! \brief Class to save and load all jack client connections.
+/** @ingroup audio_interface
+ * @brief Class to save and load all jack client connections.
  *
  * Saves an XML file with all the current jack connections. This same file can
  * be loaded to connect evrything again. The XML file can also be edited.
  *
  * Has also an option to disconnect all the clients.
  */
-//-------------------------------------------------------------------------------
 class JMess
 {
    public:

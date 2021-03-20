@@ -47,7 +47,8 @@
 #include "ProcessPlugin.h"
 #include "compressordsp.h"
 
-/** \brief A Compressor reduces the output dynamic range when the
+/** @ingroup effects
+ * @brief A Compressor reduces the output dynamic range when the
  *         signal level exceeds the threshold.
  */
 class Compressor : public ProcessPlugin

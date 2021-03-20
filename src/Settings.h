@@ -53,7 +53,8 @@
 #include "JackTrip.h"
 #include "UdpHubListener.h"
 
-/** \brief Class to set usage options and parse settings from input
+/** @ingroup main
+ * @brief Class to set usage options and parse settings from input
  */
 class Settings : public QObject
 {

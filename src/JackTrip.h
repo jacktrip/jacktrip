@@ -59,14 +59,20 @@
 #include "RingBuffer.h"
 
 //#include <signal.h>
-/** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
+
+
+/** @defgroup main Main Classes
+ *
+ */
+
+/** @ingroup main
+ * @brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
  * to a listening server) to send audio streams in the network.
  *
  * All audio and network settings can be set in this class.
  * This class also acts as a Mediator between all the other class.
  * Classes that uses JackTrip methods need to register with it.
  */
-
 class JackTrip : public QObject
 {
     Q_OBJECT;

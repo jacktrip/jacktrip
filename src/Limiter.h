@@ -54,7 +54,8 @@
 #include "assert.h"
 #include "limiterdsp.h"
 
-/** \brief The Limiter class confines the output dynamic range to a
+/** @ingroup effects
+ * @brief The Limiter class confines the output dynamic range to a
  *  "dynamic range lane" determined by the assumed number of clients.
  */
 class Limiter : public ProcessPlugin

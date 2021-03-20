@@ -60,7 +60,8 @@ typedef struct {
     int16_t port;
 } addressPortPair;
 
-/** \brief Hub UDP listener on the Server.
+/** @ingroup main
+ * @brief Hub UDP listener on the Server.
  *
  * This creates a server that will listen on the well know port (the server port) and will
  * spawn JackTrip threads into the Thread pool. Clients request a connection.

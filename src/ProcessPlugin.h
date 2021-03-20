@@ -40,7 +40,12 @@
 
 #include <QThread>
 
-/** \brief Interface for the process plugins to add to the JACK callback process in
+/** @defgroup effects
+ *
+ */
+
+/** @ingroup effects
+ * @brief Interface for the process plugins to add to the JACK callback process in
  * JackAudioInterface
  *
  * This class contains the same methods of the FAUST dsp class. A mydsp class can inherit from
