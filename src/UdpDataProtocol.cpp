@@ -881,45 +881,6 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
     mJackTrip->increaseSequenceNumber();
 }
 
-/*
-  The Redundancy Algorythmn works as follows. We send a packet that contains
-  a mUdpRedundancyFactor number of packets (header+audio). This big packet looks
-  as follows
-
-  ----------  ------------       -----------------------------------
-  | UDP[n] |  | UDP[n-1] |  ...  | UDP[n-(mUdpRedundancyFactor-1)] |
-  ----------  ------------       -----------------------------------
-
-  Then, for the new audio buffer, we shift everything to the right and send:
-
-  ----------  ------------       -------------------------------------
-  | UDP[n+1] |  | UDP[n] |  ...  | UDP[n-(mUdpRedundancyFactor-1)+1] |
-  ----------  ------------       -------------------------------------
-
-  etc...
-
-  For a redundancy factor of 4, this will look as follows:
-  ----------  ----------  ----------  ----------
-  | UDP[4] |  | UDP[3] |  | UDP[2] |  | UDP[1] |
-  ----------  ----------  ----------  ----------
-
-  ----------  ----------  ----------  ----------
-  | UDP[5] |  | UDP[4] |  | UDP[3] |  | UDP[2] |
-  ----------  ----------  ----------  ----------
-
-  ----------  ----------  ----------  ----------
-  | UDP[6] |  | UDP[5] |  | UDP[4] |  | UDP[3] |
-  ----------  ----------  ----------  ----------
-
-  etc...
-
-  Then, the receiving end checks if the firs packet in the list is the one it should use,
-  otherwise it continure reding the mUdpRedundancyFactor packets until it finds the one that
-  should come next (this can better perfected by just jumping until the correct packet).
-  If it has more than one packet that it hasn't yet received, it sends it to the soundcard
-  one by one.
-*/
-
 bool UdpDataProtocol::datagramAvailable()
 {
     //Currently using a simplified version of the way QUdpSocket checks for datagrams.
