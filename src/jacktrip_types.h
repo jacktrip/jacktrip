@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file jacktrip_types_jacktrip.h
+ * \file jacktrip_types.h
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
@@ -39,49 +39,20 @@
 #define __JACKTRIP_TYPES_H__
 
 //#include <jack/types.h>
-#include <QtGlobal>  //For QT4 types
-
-//namespace JackTripNamespace
-//{
 
 //-------------------------------------------------------------------------------
-/** \name Audio typedefs
+/** @defgroup types
  *
+ * @addtogroup types
+ * @{
+ * @typedef sample_t
+ * Audio sample type
  */
-//-------------------------------------------------------------------------------
-//@{
-/// Audio sample type
-//typedef jack_default_audio_sample_t sample_t;
 typedef float sample_t;
-//@}
+//typedef jack_default_audio_sample_t sample_t;
+/** @} */
 
-//-------------------------------------------------------------------------------
-/** \name Typedefs that guaranty some specific bit length
- *
- * It uses the QT4 types. This can be changed in the future, keeping
- * compatibility for the rest of the code.
- */
-//-------------------------------------------------------------------------------
-//@{
-/// Typedef for <tt>unsigned char</tt>. This type is guaranteed to be 8-bit.
-typedef quint8 uint8_t;
-/// Typedef for <tt>unsigned short</tt>. This type is guaranteed to be 16-bit.
-typedef quint16 uint16_t;
-/// Typedef for <tt>unsigned int</tt>. This type is guaranteed to be 32-bit.
-typedef quint32 uint32_t;
-/// \brief Typedef for <tt>unsigned long long int</tt>. This type is guaranteed to
-/// be 64-bit.
-//typedef quint64 uint64_t;
-/// Typedef for <tt>signed char</tt>. This type is guaranteed to be 8-bit.
-typedef qint8 int8_t;
-/// Typedef for <tt>signed short</tt>. This type is guaranteed to be 16-bit.
-typedef qint16 int16_t;
-/// Typedef for <tt>signed int</tt>. This type is guaranteed to be 32-bit.
-typedef qint32 int32_t;
-/// \brief Typedef for <tt>long long int</tt>. This type is guaranteed to
-/// be 64-bit.
-//typedef qint64 int64_t;
-//@}
-//} // end of namespace JackTripNamespace
+
+
 
 #endif
