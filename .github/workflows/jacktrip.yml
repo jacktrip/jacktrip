@@ -25,16 +25,30 @@ jobs:
         include:
           - name: Linux
             runs-on: ubuntu-18.04
+            qmake-spec: linux-g++
+            make-cmd: make
+
           - name: macOS
             runs-on: macos-10.15
+            qmake-spec: macx-clang
+            make-cmd: make
+
           - name: macOS-static
             runs-on: macos-10.15
+            qmake-spec: macx-clang
+            make-cmd: make
             static: true
+
           - name: Windows
             runs-on: windows-2019
+            qmake-spec: win32-g++
+            make-cmd: mingw32-make
+
           - name: Windows-static
-            static: true
             runs-on: windows-2019
+            qmake-spec: win32-g++
+            make-cmd: mingw32-make
+            static: true
 
     env:
       SRC_PATH: ${{ github.workspace }}/src
@@ -122,29 +136,18 @@ jobs:
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
-      - name: build JackTrip on Linux / macOS
-        if: runner.os != 'Windows'
-        run: |
-          cd $SRC_PATH
-          if [[ "${{ matrix.static }}" == true ]]; then 
-            export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
-            ./build static
-          else
-            ./build
-          fi
-      - name: build JackTrip on Windows
-        if: runner.os == 'Windows'
+      - name: build JackTrip
         shell: bash
         run: |
           mkdir $BUILD_PATH 
           cd $BUILD_PATH
+          CONFIG_STRING=
           if [[ "${{ matrix.static }}" == true ]]; then 
             export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
-            qmake -spec win32-g++ -config static ../src/jacktrip.pro
-          else
-            qmake -spec win32-g++ ../src/jacktrip.pro
+            CONFIG_STRING="-config static" $CONFIG_STRING
           fi
-          mingw32-make release
+          qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../src/jacktrip.pro
+          ${{ matrix.make-cmd }} release
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
