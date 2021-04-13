@@ -349,6 +349,7 @@ void JackTrip::setupRingBuffers()
         if (0 > mBufferStrategy) {
             mReceiveRingBuffer = new RingBuffer(slot_size, mBufferQueueLength);
         } else if (mBufferStrategy == 3) {
+            qDebug() << "hi mBufferStrategy == 3";
             mSendRingBuffer = new RingBuffer(slot_size, gDefaultOutputQueueLength);
 //            mReceiveRingBuffer = new RingBufferPLC(mSampleRate, mNumChans,
 //                                                   mAudioBitResolution, mAudioBufferSize,

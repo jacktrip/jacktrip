@@ -172,6 +172,7 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
 //*******************************************************************************
 bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen)
 {
+//    qDebug() << "hi RingBuffer" << len;
     if (len != mSlotSize && 0 != len) {
         // RingBuffer does not suppport mixed buf sizes
         return false;

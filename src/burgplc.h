@@ -21,11 +21,15 @@ public:
     // instread of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen) {
-        pushPacket (ptrToSlot, len, lostLen); }
+        pushPacket (ptrToSlot, len, lostLen);
+        return(true);
+    }
 
     void pullPacket (int8_t* buf);
     // works the same as RingBuffer and JitterBuffer
-    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket (ptrToReadSlot); }
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) {
+        pullPacket (ptrToReadSlot);
+    }
 
 private:
     QMutex mMutex;                     ///< Mutex to protect read and write operations
@@ -57,13 +61,19 @@ void sampleToBits(sample_t sample, int ch, int frame);
     bool mLastWasGlitch;
     vector<double> mPhasor;
     vector<int8_t*> mIncomingPacket;
-    int mIdealOneSecondsWorthOfPackets;
+    int mOneSecondsWorthOfPacketsRounded;
     int mOneSecondPacketCounter;
     vector<int> mLastPush;
     vector<int> mLastPull; // for debug
     int mLastFrame;
     int mOverrunCounter;
     int mUnderrunCounter;
+    int mIncomingSeq;
+    int mOutgoingCnt;
+    int mLastDelta;
+    int mLastIncomingSeq;
+    int mOutgoingCntWraps;
+    vector<int> mIncomingSeqWrap;
 };
 
 #endif // BURGPLC_H
