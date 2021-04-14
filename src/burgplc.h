@@ -74,6 +74,8 @@ void sampleToBits(sample_t sample, int ch, int frame);
     int mLastIncomingSeq;
     int mOutgoingCntWraps;
     vector<int> mIncomingSeqWrap;
+    int mBytes;
+    vector<int8_t*> mIncomingDat;
 };
 
 #endif // BURGPLC_H
