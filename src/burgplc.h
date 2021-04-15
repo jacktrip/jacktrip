@@ -60,14 +60,6 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
     vector<double> mPhasor;
-    vector<int8_t*> mIncomingPacket;
-    int mOneSecondsWorthOfPacketsRounded;
-    int mOneSecondPacketCounter;
-    vector<int> mLastPush;
-    vector<int> mLastPull; // for debug
-    int mLastFrame;
-    int mOverrunCounter;
-    int mUnderrunCounter;
     int mIncomingSeq;
     int mOutgoingCnt;
     int mLastDelta;

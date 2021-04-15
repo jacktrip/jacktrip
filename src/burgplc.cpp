@@ -50,23 +50,6 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     }
     mLastWasGlitch = false;
     mPhasor.resize( mNumChannels, 0.0 );
-    mOneSecondsWorthOfPacketsRounded = (int)std::round((double)mSampleRate / (double)mFPP);
-    //    double oneSecondsWorthOfPacketsExact = (double)mSampleRate / (double)mFPP;
-    //    if ((double)mOneSecondsWorthOfPacketsRounded != oneSecondsWorthOfPacketsExact)
-    //    qDebug() << "oneSecondsWorthOfPackets != oneSecondsWorthOfPacketsExact (but just to know)"
-    //             << mOneSecondsWorthOfPacketsRounded << "!=" << oneSecondsWorthOfPacketsExact;
-    mLastPush.resize(mOneSecondsWorthOfPacketsRounded);
-    mLastPull.resize(mOneSecondsWorthOfPacketsRounded);
-    for ( int i = 0; i < mOneSecondsWorthOfPacketsRounded; i++ ) {
-        int bytes = mFPP*mNumChannels*mBitResolutionMode;
-        int8_t* tmp = new int8_t[bytes];
-        mIncomingPacket.push_back(tmp);
-        mLastPush[i] = 0;
-        mLastPull[i] = 0;
-    }
-    mOneSecondPacketCounter = 0;
-    mLastFrame = 0;
-    mOverrunCounter = 0;
     mIncomingSeq = -1;
     mOutgoingCnt = 0;
     mLastIncomingSeq = 0;
@@ -83,60 +66,16 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     QMutexLocker locker(&mMutex); // lock the mutex
     seq %= TWOTOTHESIXTEENTH;
-    if(mOutgoingCnt<0) qDebug() << "hi pushPacket < 0" << mOutgoingCnt;
     mIncomingSeq = seq;
     int nextSeq = mLastIncomingSeq+1;
     nextSeq %= TWOTOTHESIXTEENTH;
-    //    if(!nextSeq) qDebug() << "wrap nextSeq";
     if (mIncomingSeq != nextSeq) {
         qDebug() << "hi pushPacket LOST PACKET" << mIncomingSeq << nextSeq;
     }
     mLastIncomingSeq = mIncomingSeq;
     mIncomingSeqWrap[mIncomingSeq] = mOutgoingCntWraps;
     memcpy(mIncomingDat[mIncomingSeq], buf, mBytes);
-
-    // TODO:
-    //    if (len != mSlotSize && 0 != len) {
-    //        // RingBuffer does not suppport mixed buf sizes
-    //        return false;
-    //    }
-
-
-    //    int approxSecond = mOneSecondPacketCounter / mOneSecondsWorthOfPacketsRounded;
-    //    mLastFrame = mOneSecondPacketCounter % mOneSecondsWorthOfPacketsRounded;
-    //    mOverrunCounter++;
-    //    if(mIncomingSeq<1500) mOverrunCounter = 0;
-    ////    if(!mLastFrame) qDebug() << ">..>" << mLastFrame << mOverrunCounter;
-    //    if(mOverrunCounter>10) mOverrunCounter = 0;
-    //    int bytes = mFPP*mNumChannels*mBitResolutionMode;
-    //    memcpy(mIncomingPacket[mLastFrame], buf, bytes);
-
-    //    for ( int s = 0; s < mFPP; s++ ) {
-    //        sample_t tmp = 0.3*sinf(mPhasor[0]);
-    //        mPhasor[0] += 0.1;
-    //        int c = 0;
-    //        AudioInterface::fromSampleToBitConversion(
-    //                    &tmp,
-    //                    &mIncomingPacket[mLastFrame][(s * mBitResolutionMode * mNumChannels)
-    //                + (c * mBitResolutionMode)],
-    //                mBitResolutionMode);
-    //        tmp = 0.3*sinf(mPhasor[1]);
-    //        mPhasor[1] += 0.11;
-    //        c = 1;
-    //        AudioInterface::fromSampleToBitConversion(
-    //                    &tmp,
-    //                    &mIncomingPacket[mLastFrame][(s * mBitResolutionMode * mNumChannels)
-    //                + (c * mBitResolutionMode)],
-    //                mBitResolutionMode);
-    //    }
-
-    //    int input = seq;
-    //    memcpy(&mIncomingPacket[mLastFrame], &input , sizeof(int));
-    //    qDebug() << "----------------------" << input;
-
-    //    mLastPush[mLastFrame] = approxSecond;
-    //    mOneSecondPacketCounter++;
-    //    mUnderrunCounter = 0;
+    // TODO: does not suppport mixed buf sizes
     return true;
 };
 
@@ -151,15 +90,6 @@ void BurgPLC::pullPacket (int8_t* buf) {
     int deltaOffset = mOutgoingCnt+mLastDelta;
     deltaOffset-=1;
     if (deltaOffset < 0) deltaOffset+= TWOTOTHESIXTEENTH;
-//    qDebug() << "hi pullpacket" << deltaOffset << mIncomingSeqWrap[deltaOffset];
-    //    int bytes = mFPP*mNumChannels*mBitResolutionMode;
-
-    ////        if (mUnderrunCounter) {
-    //////            qDebug() << "under" << mUnderrunCounter;
-    ////            processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
-    ////        }
-    //    qDebug() << "hi" << mUnderrunCounter;
-
     //    if (mOverrunCounter)
     //    {
     //        mOverrunCounter--;
@@ -180,19 +110,15 @@ void BurgPLC::pullPacket (int8_t* buf) {
     //                }
     //    mUnderrunCounter++;
 
-    //    memcpy(buf, mXfrBuffer, bytes);
     if ((mIncomingSeq!=-1)&&(mIncomingSeqWrap[deltaOffset]!=-1))
-//        if (deltaOffset!=-1)
         memcpy(mXfrBuffer, mIncomingDat[deltaOffset], mBytes);
     processPacket( mIncomingSeqWrap[deltaOffset]==mOutgoingCntWraps );
     memcpy(buf, mXfrBuffer, mBytes);
     mOutgoingCnt++;
     mOutgoingCnt %= TWOTOTHESIXTEENTH;
     if (!mOutgoingCnt) mOutgoingCntWraps++;
-    //    if (!mOutgoingCnt) qDebug() << "hi pullpacket" << mIncomingSeqWrap[mOutgoingCnt];
 };
 
-// for ( int pCnt = 0; pCnt < plen; pCnt++)
 void BurgPLC::processPacket (bool glitch)
 {
     //    QMutexLocker locker(&mMutex);  // lock the mutex
