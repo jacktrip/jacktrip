@@ -3,7 +3,8 @@
 #include <sstream>
 
 using namespace std;
-#define TWOTOTHESIXTEENTH 65536
+#define TWOTOTHESIXTEENTH 1024
+//65536
 
 BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist) :
     RingBuffer(0, 0),
@@ -66,7 +67,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mOneSecondPacketCounter = 0;
     mLastFrame = 0;
     mOverrunCounter = 0;
-    mIncomingSeq = 0;
+    mIncomingSeq = -1;
     mOutgoingCnt = 0;
     mLastIncomingSeq = 0;
     mOutgoingCntWraps = 0;
@@ -81,8 +82,9 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
 
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     QMutexLocker locker(&mMutex); // lock the mutex
+    seq %= TWOTOTHESIXTEENTH;
+    if(mOutgoingCnt<0) qDebug() << "hi pushPacket < 0" << mOutgoingCnt;
     mIncomingSeq = seq;
-    if(!mIncomingSeq) ;
     int nextSeq = mLastIncomingSeq+1;
     nextSeq %= TWOTOTHESIXTEENTH;
     //    if(!nextSeq) qDebug() << "wrap nextSeq";
@@ -91,12 +93,6 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     }
     mLastIncomingSeq = mIncomingSeq;
     mIncomingSeqWrap[mIncomingSeq] = mOutgoingCntWraps;
-    int delta =  mIncomingSeq - mOutgoingCnt;
-    if (delta != mLastDelta) {
-        //        qDebug() << "hi pushPacket" << mIncomingSeq << mOutgoingCnt
-        //                 << delta;
-        mLastDelta = delta;
-    }
     memcpy(mIncomingDat[mIncomingSeq], buf, mBytes);
 
     // TODO:
@@ -146,9 +142,16 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
 
 void BurgPLC::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex); // lock the mutex
+    int delta =  mIncomingSeq - mOutgoingCnt;
+    if (delta != mLastDelta) {
+        qDebug() << "hi pullpacket" << mIncomingSeq << mOutgoingCnt
+                 << delta;
+        mLastDelta = delta;
+    }
     int deltaOffset = mOutgoingCnt+mLastDelta;
     deltaOffset-=1;
-    qDebug() << "hi pullpacket" << deltaOffset << mIncomingSeqWrap[deltaOffset];
+    if (deltaOffset < 0) deltaOffset+= TWOTOTHESIXTEENTH;
+//    qDebug() << "hi pullpacket" << deltaOffset << mIncomingSeqWrap[deltaOffset];
     //    int bytes = mFPP*mNumChannels*mBitResolutionMode;
 
     ////        if (mUnderrunCounter) {
@@ -178,9 +181,10 @@ void BurgPLC::pullPacket (int8_t* buf) {
     //    mUnderrunCounter++;
 
     //    memcpy(buf, mXfrBuffer, bytes);
-    if (deltaOffset!=-1)
+    if ((mIncomingSeq!=-1)&&(mIncomingSeqWrap[deltaOffset]!=-1))
+//        if (deltaOffset!=-1)
         memcpy(mXfrBuffer, mIncomingDat[deltaOffset], mBytes);
-    processPacket(false);
+    processPacket( mIncomingSeqWrap[deltaOffset]==mOutgoingCntWraps );
     memcpy(buf, mXfrBuffer, mBytes);
     mOutgoingCnt++;
     mOutgoingCnt %= TWOTOTHESIXTEENTH;
