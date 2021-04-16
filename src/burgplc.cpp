@@ -9,7 +9,7 @@ using namespace std;
 // 65536
 
 BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist) :
-    RingBuffer(0, 0),
+    RingBuffer(bit_res*channels*FPP, gDefaultOutputQueueLength),
     mSampleRate (sample_rate),
     mNumChannels (channels),
     mAudioBitRes (bit_res),
@@ -27,7 +27,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
+    mTotalSize = TWOTOTHESIXTEENTH * mNumChannels * mAudioBitRes;
     mXfrBuffer   = new int8_t[mTotalSize];
     mPacketCnt = 0; // burg
 #define TRAINSAMPS (mHist*mFPP)
