@@ -66,7 +66,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mTestBuffer   = new int8_t[mTotalSize];
 }
 
-bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
+bool BurgPLC::pushPacket (const int8_t *buf, int seq) {
     QMutexLocker locker(&mMutex); // lock the mutex
     seq %= TWOTOTHESIXTEENTH;
     mIncomingSeq = seq;

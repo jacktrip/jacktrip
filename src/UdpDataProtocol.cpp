@@ -800,7 +800,7 @@ void UdpDataProtocol::receivePacketRedundancy(int8_t* full_redundant_packet,
             }
             src = dst;
         }
-        if (!mJackTrip->writeAudioBuffer(src, host_buf_size, newer_seq_num)) {
+        if (!mJackTrip->writeAudioBuffer(src, host_buf_size, newer_seq_num)) { // CC pass along seq
 //            if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size)) {
             emit signalError("Local and Peer buffer settings are incompatible");
             cout << "ERROR: Local and Peer buffer settings are incompatible" << endl;

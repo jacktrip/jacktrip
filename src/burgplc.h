@@ -10,18 +10,21 @@ class BurgPLC : public RingBuffer
 {
 public:
     BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist);
-    int8_t* getBufferPtr() { return mXfrBuffer; };
     void processPacket (bool glitch);
     int bytesToInt(const int8_t *buf);
 
-    bool pushPacket (const int8_t* buf, int len, int seq);
+    bool pushPacket (const int8_t* buf, int seq);
     // can hijack lostlen to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instread of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen) {
-        pushPacket (ptrToSlot, len, lostLen);
+//    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen) {
+//        pushPacket (ptrToSlot, len, lostLen);
+//        return(true);
+//    }
+    bool insertSlotNonBlocking(const int8_t* ptrToSlot, int lostLen) {
+        pushPacket (ptrToSlot, lostLen);
         return(true);
     }
 //    void readSlotBlocking(int8_t* ptrToReadSlot) {

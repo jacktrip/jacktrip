@@ -56,7 +56,7 @@
 
 #include "AudioTester.h"
 #include "PacketHeader.h"
-#include "RingBuffer.h"
+//#include "RingBuffer.h"
 #include "burgplc.h"
 
 //#include <signal.h>
@@ -293,12 +293,12 @@ class JackTrip : public QObject
     }
 
     virtual RingBuffer* getSendRingBuffer() const { return mSendRingBuffer; }
-    virtual RingBuffer* getReceiveRingBuffer() const { return mReceiveRingBuffer; }
+    virtual BurgPLC* getReceiveRingBuffer() const { return mReceiveRingBuffer; }
     virtual void setSendRingBuffer(RingBuffer* const SendRingBuffer)
     {
         mSendRingBuffer = SendRingBuffer;
     }
-    virtual void setReceiveRingBuffer(RingBuffer* const ReceiveRingBuffer)
+    virtual void setReceiveRingBuffer(BurgPLC* const ReceiveRingBuffer)
     {
         mReceiveRingBuffer = ReceiveRingBuffer;
     }
@@ -377,7 +377,8 @@ class JackTrip : public QObject
     }
     virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, int lostLen)
     {
-        return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
+//        return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
+        return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, lostLen); // CC not virtual
     }
     uint32_t getBufferSizeInSamples() const
     {
@@ -595,7 +596,7 @@ class JackTrip : public QObject
     /// Pointer for the Send RingBuffer
     RingBuffer* mSendRingBuffer;
     /// Pointer for the Receive RingBuffer
-    RingBuffer* mReceiveRingBuffer;
+    BurgPLC* mReceiveRingBuffer;
 
     int mReceiverBindPort;  ///< Incoming (receiving) port for local machine
     int mSenderPeerPort;    ///< Incoming (receiving) port for peer machine

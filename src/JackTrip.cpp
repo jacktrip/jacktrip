@@ -335,8 +335,8 @@ void JackTrip::setupRingBuffers()
 
     switch (mUnderRunMode) {
     case WAVETABLE:
-        mSendRingBuffer = new RingBufferWavetable(slot_size, gDefaultOutputQueueLength);
-        mReceiveRingBuffer = new RingBufferWavetable(slot_size, mBufferQueueLength);
+//        mSendRingBuffer = new RingBufferWavetable(slot_size, gDefaultOutputQueueLength);
+//        mReceiveRingBuffer = new RingBufferWavetable(slot_size, mBufferQueueLength);
         /*
     mSendRingBuffer = new RingBufferWavetable(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
                 gDefaultOutputQueueLength);
@@ -347,7 +347,7 @@ void JackTrip::setupRingBuffers()
     case ZEROS:
         mSendRingBuffer = new RingBuffer(slot_size, gDefaultOutputQueueLength);
         if (0 > mBufferStrategy) {
-            mReceiveRingBuffer = new RingBuffer(slot_size, mBufferQueueLength);
+//            mReceiveRingBuffer = new RingBuffer(slot_size, mBufferQueueLength);
         } else if (mBufferStrategy == 3) {
             qDebug() << "hi mBufferStrategy == 3";
 //            mSendRingBuffer = new RingBuffer(slot_size, gDefaultOutputQueueLength);
@@ -364,9 +364,9 @@ void JackTrip::setupRingBuffers()
             if (0 > mBufferQueueLength) {
                 cout << "Using AutoQueue 1/" << -mBufferQueueLength << endl;
             }
-            mReceiveRingBuffer = new JitterBuffer(
-                        mAudioBufferSize, mBufferQueueLength, mSampleRate, mBufferStrategy,
-                        mBroadcastQueueLength, mNumChans, mAudioBitResolution);
+//            mReceiveRingBuffer = new JitterBuffer(
+//                        mAudioBufferSize, mBufferQueueLength, mSampleRate, mBufferStrategy,
+//                        mBroadcastQueueLength, mNumChans, mAudioBitResolution);
         }
         /*
     mSendRingBuffer = new RingBuffer(mAudioInterface->getSizeInBytesPerChannel() * mNumChans,
