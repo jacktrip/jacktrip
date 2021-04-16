@@ -32,7 +32,7 @@ public:
     }
 
 private:
-    QMutex mMutex;                     ///< Mutex to protect read and write operations
+//    QMutex mMutex;                     ///< Mutex to protect read and write operations
     int mSampleRate;
     int mNumChannels;
     int mAudioBitRes;
@@ -68,6 +68,8 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int> mIncomingSeqWrap;
     int mBytes;
     vector<int8_t*> mIncomingDat;
+    int8_t* mTestBuffer;
+    void sampleToBitsTest(sample_t sample, int ch, int frame);
 };
 
 #endif // BURGPLC_H
