@@ -24,6 +24,9 @@ public:
         pushPacket (ptrToSlot, len, lostLen);
         return(true);
     }
+    void readSlotBlocking(int8_t* ptrToReadSlot) {
+        sinTones();
+    };
 
     void pullPacket (int8_t* buf);
     // works the same as RingBuffer and JitterBuffer
@@ -70,6 +73,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int8_t*> mIncomingDat;
     int8_t* mTestBuffer;
     void sampleToBitsTest(sample_t sample, int ch, int frame);
+    void sinTones();
 };
 
 #endif // BURGPLC_H

@@ -143,6 +143,9 @@ void BurgPLC::pullPacket (int8_t* buf) {
         }
     }
 };
+void BurgPLC::sinTones() {
+    qDebug() << "hi sinTones";
+}
 
 void BurgPLC::sampleToBitsTest(sample_t sample, int ch, int frame) {
     AudioInterface::fromSampleToBitConversion(
