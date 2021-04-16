@@ -25,7 +25,7 @@ public:
         return(true);
     }
     void readSlotBlocking(int8_t* ptrToReadSlot) {
-        sinTones();
+        sinTones(ptrToReadSlot);
     };
 
     void pullPacket (int8_t* buf);
@@ -73,7 +73,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int8_t*> mIncomingDat;
     int8_t* mTestBuffer;
     void sampleToBitsTest(sample_t sample, int ch, int frame);
-    void sinTones();
+    void sinTones(int8_t* ptrToReadSlot);
 };
 
 #endif // BURGPLC_H

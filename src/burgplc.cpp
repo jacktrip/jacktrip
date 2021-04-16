@@ -1,6 +1,8 @@
 #include "burgplc.h"
 #include <QDebug>
 #include <sstream>
+#include "JackTrip.h" // for sinTones
+
 
 using namespace std;
 #define TWOTOTHESIXTEENTH 1024
@@ -143,8 +145,30 @@ void BurgPLC::pullPacket (int8_t* buf) {
         }
     }
 };
-void BurgPLC::sinTones() {
+void BurgPLC::sinTones(int8_t *ptrToReadSlot) {
     qDebug() << "hi sinTones";
+    QMutexLocker locker(&mMutex); // lock the mutex
+    ++mReadsNew;
+
+    // Check if there are slots available to read
+    // If the Ringbuffer is empty, it waits for the bufferIsNotEmpty condition
+    while (mFullSlots == 0) {
+        //std::cerr << "READ UNDER-RUN BLOCKING before" << endl;
+        mBufferIsNotEmpty.wait(&mMutex, 200);
+        if (JackTrip::sJackStopped) {
+            return;
+        }
+    }
+
+    // Copy mSlotSize bytes to ReadSlot
+    std::memcpy(ptrToReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+    // Always save memory of the last read slot
+    std::memcpy(mLastReadSlot, mRingBuffer+mReadPosition, mSlotSize);
+    // Update write position
+    mReadPosition = (mReadPosition+mSlotSize) % mTotalSize;
+    mFullSlots--; //update full slots
+    // Wake threads waitng for bufferIsNotFull condition
+    mBufferIsNotFull.wakeAll();
 }
 
 void BurgPLC::sampleToBitsTest(sample_t sample, int ch, int frame) {
