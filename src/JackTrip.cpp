@@ -863,7 +863,6 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)  // udpTimeout unused
         std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()"
                   << std::endl;
     cout << "Waiting for Connection From a Client..." << endl;
-    qDebug() << "yyyyyyyyyyyyyyyyyyy " << mReceiverBindPort;
     return 0;
     // Continued in the receivedDataUDP slot.
 
