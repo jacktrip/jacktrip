@@ -27,9 +27,9 @@ public:
         pushPacket (ptrToSlot, lostLen);
         return(true);
     }
-//    void readSlotBlocking(int8_t* ptrToReadSlot) {
-//        sinTones(ptrToReadSlot);
-//    };
+    void readSlotBlocking(int8_t* ptrToReadSlot) {
+        sinTones(ptrToReadSlot);
+    };
 
     void pullPacket (int8_t* buf);
     // works the same as RingBuffer and JitterBuffer
