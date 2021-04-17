@@ -139,7 +139,7 @@ void BurgPLC::processPacket (bool glitch)
         INCh1(bitsToSample(1, s), s);
     }
     //    for PACKETSAMP { // screw case here but not for sim
-    //        IN(0.3*sinf(mPhasor[0]), s);
+    //        IN(0.3*sin(mPhasor[0]), s);
     //        mPhasor[0] += 0.1;
     //        mPhasor[1] += 0.11;
     //    }
@@ -173,8 +173,8 @@ void BurgPLC::processPacket (bool glitch)
         for PACKETSAMP {
             switch(RUN)
             {
-            case -1  : OUT(0.3*sinf(mPhasor[0]), 0, s);
-                OUT(0.3*sinf(mPhasor[1]), 1, s);
+            case -1  : OUT(0.3*sin(mPhasor[0]), 0, s);
+                OUT(0.3*sin(mPhasor[1]), 1, s);
                 mPhasor[0] += 0.1;
                 mPhasor[1] += 0.11;
                 break;
@@ -196,8 +196,8 @@ void BurgPLC::processPacket (bool glitch)
                 break;
             case 5  : OUT(mPrediction[s], 0, s);
                 break;
-            case 6  : OUT(0.3*sinf(mPhasor[0]), 0, s);
-                OUT(0.3*sinf(mPhasor[1]), 1, s);
+            case 6  : OUT(0.3*sin(mPhasor[0]), 0, s);
+                OUT(0.3*sin(mPhasor[1]), 1, s);
                 mPhasor[0] += 0.1;
                 mPhasor[1] += 0.11;
                 break;
