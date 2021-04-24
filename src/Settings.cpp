@@ -62,6 +62,8 @@ using std::cout;
 using std::endl;
 
 int gVerboseFlag = 0;
+int gCallbackAcctr = 0; // CC count audio callback calls
+int gCallbackAdctr = 0; // CC count audio callback dispatch responses
 
 enum JTLongOptIDS {
     OPT_BUFSTRATEGY = 1001,

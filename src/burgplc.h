@@ -11,6 +11,7 @@ class BurgPLC : public RingBuffer
 public:
     BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist);
     int8_t* getBufferPtr() { return mXfrBuffer; };
+    void inputPacket ();
     void processPacket (bool glitch);
     int bytesToInt(const int8_t *buf);
 
@@ -32,7 +33,7 @@ public:
     }
 
 private:
-    QMutex mMutex;                     ///< Mutex to protect read and write operations
+//    QMutex mMutex;                     ///< Mutex to protect read and write operations
     int mSampleRate;
     int mNumChannels;
     int mAudioBitRes;
@@ -68,6 +69,14 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int> mIncomingSeqWrap;
     int mBytes;
     vector<int8_t*> mIncomingDat;
+    int mLastOutgoingSeq;
+    int mUnderrunCtr;
+    int8_t*  mZeros;
+    int8_t*  mUnderSig;
+    int8_t*  mOverSig;
+    int mBalance;
+    bool lastWasOK;
+    QElapsedTimer mTimer;
 };
 
 #endif // BURGPLC_H

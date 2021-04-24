@@ -1,10 +1,13 @@
 #include "burgplc.h"
 #include <QDebug>
 #include <sstream>
+#include "jacktrip_globals.h"
 
 using namespace std;
 #define TWOTOTHESIXTEENTH 1024
 //65536
+#define OUT(x,ch,s) sampleToBits(x,ch,s)
+#define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
 BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist) :
     RingBuffer(0, 0),
@@ -61,11 +64,35 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
     }
+    mLastOutgoingSeq = 0;
+    mUnderrunCtr = 0;
+    mZeros = new int8_t[mTotalSize];
+    for PACKETSAMP OUT(0.0, 0, s);
+    for PACKETSAMP OUT(0.0, 1, s);
+    memcpy(mZeros, mXfrBuffer, mBytes);
+    mUnderSig = new int8_t[mTotalSize];
+    for PACKETSAMP OUT(((s==0)||(s==mFPP-1))?-0.5:-0.3, 0, s);
+    for PACKETSAMP OUT(-0.3, 1, s);
+    memcpy(mUnderSig, mXfrBuffer, mBytes);
+    mOverSig = new int8_t[mTotalSize];
+    for PACKETSAMP OUT(((s==0)||(s==mFPP-1))?0.5:0.3, 0, s);
+    for PACKETSAMP OUT(0.3, 1, s);
+    memcpy(mOverSig, mXfrBuffer, mBytes);
+    mBalance = 0;
+    mTimer.start();
 }
 
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     QMutexLocker locker(&mMutex); // lock the mutex
+
+    double elapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
+//    qDebug() << (double)mTimer.nsecsElapsed() / 1000000.0;
+    if (!mOutgoingCntWraps) elapsed = 0.0;
+    else fprintf(stdout,"%f\n",elapsed); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
+    mTimer.start();
+
     seq %= TWOTOTHESIXTEENTH;
+    //qDebug() << "hi pushPacket ..........";
     mIncomingSeq = seq;
     int nextSeq = mLastIncomingSeq+1;
     nextSeq %= TWOTOTHESIXTEENTH;
@@ -75,49 +102,87 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     mLastIncomingSeq = mIncomingSeq;
     mIncomingSeqWrap[mIncomingSeq] = mOutgoingCntWraps;
     memcpy(mIncomingDat[mIncomingSeq], buf, mBytes);
+    //    qDebug() << "hi pushPacket .........." << mLastIncomingSeq;
     // TODO: does not suppport mixed buf sizes
     return true;
 };
 
 void BurgPLC::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex); // lock the mutex
-    int delta =  mIncomingSeq - mOutgoingCnt;
-    if (delta != mLastDelta) {
-        qDebug() << "hi pullpacket" << mIncomingSeq << mOutgoingCnt
-                 << delta;
-        mLastDelta = delta;
+
+//    double elapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
+////    qDebug() << (double)mTimer.nsecsElapsed() / 1000000.0;
+//    if (!mOutgoingCntWraps) elapsed = 0.0;
+//    else fprintf(stdout,"%f\n",elapsed); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
+//    mTimer.start();
+
+    int delta = mLastIncomingSeq - mLastOutgoingSeq;
+    if (lastWasOK) delta--;
+    mLastOutgoingSeq = mLastIncomingSeq;
+    if (delta < 0) delta+=TWOTOTHESIXTEENTH;
+    //    if ((delta)&&(mUnderrunCtr)) qDebug() << "hi pullPacket under" <<  mUnderrunCtr;
+    mUnderrunCtr++;
+    if (delta) mUnderrunCtr = 0;
+    lastWasOK = false;
+    switch (delta) {
+    case 0: // under
+        memcpy(mXfrBuffer, mZeros, mBytes);
+        inputPacket();
+        processPacket( false ); // assume earlier have arrived
+        //        qDebug() << "hi pullPacket under" << mUnderrunCtr;
+        mBalance--;
+        break;
+    case 1: {
+        int tmp = mLastOutgoingSeq-1;
+        if (tmp < 0) tmp+=TWOTOTHESIXTEENTH;
+        memcpy(mXfrBuffer, mIncomingDat[tmp], mBytes);
+        inputPacket();
+        processPacket( false );
+        lastWasOK = true;
     }
-    int deltaOffset = mOutgoingCnt+mLastDelta;
-    deltaOffset-=1;
-    if (deltaOffset < 0) deltaOffset+= TWOTOTHESIXTEENTH;
-    //    if (mOverrunCounter)
-    //    {
-    //        mOverrunCounter--;
-    //        int pullFrame = mLastFrame - mOverrunCounter;
-    ////        pullFrame -= 800;
-    //        if (pullFrame<0) pullFrame += mOneSecondsWorthOfPacketsRounded;
-    //        //        qDebug() << "<<" << mLastPull[mLastFrame] << mLastPush[mLastFrame] << mLastFrame << pullFrame << mOverrunCounter;
+        break;
+    default: // over
+        memcpy(mXfrBuffer, mZeros, mBytes);
+        inputPacket();
+        processPacket( false ); // assume earlier have arrived
+        //        qDebug() << "hi pullPacket over" << delta-1;
+        mBalance += (delta-1);
+    }
+memcpy(buf, mXfrBuffer, mBytes);
+//    if (!mOutgoingCntWraps) mBalance = 0;
+//    else fprintf(stdout,"%d\n",mBalance); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
 
-    //        //        int output = 0;
-    //        //        memcpy(&output, &mIncomingPacket[pullFrame], sizeof(int));  // 4 bytes
-    //        //        qDebug() << "-----------" << output;
-    //        memcpy(mXfrBuffer, mIncomingPacket[pullFrame], bytes);
-
-    //        processPacket(false);
-    //    } else if (mUnderrunCounter) {
-    //                    qDebug() << "under" << mUnderrunCounter;
-    //                    processPacket(true); //        mXfrBuffer will have last good packet but ignore it?
-    //                }
-    //    mUnderrunCounter++;
-
-    if ((mIncomingSeq!=-1)&&(mIncomingSeqWrap[deltaOffset]!=-1))
-        memcpy(mXfrBuffer, mIncomingDat[deltaOffset], mBytes);
-    processPacket( mIncomingSeqWrap[deltaOffset]==mOutgoingCntWraps );
-    memcpy(buf, mXfrBuffer, mBytes);
     mOutgoingCnt++;
     mOutgoingCnt %= TWOTOTHESIXTEENTH;
     if (!mOutgoingCnt) mOutgoingCntWraps++;
 };
+
+#define RUN 0
+
+void BurgPLC::inputPacket ()
+{
+#define INCh0(x,s) mTruth[s] = x
+#define INCh1(x,s) mTruthCh1[s] = x
+    for PACKETSAMP {
+        INCh0(bitsToSample(0, s), s);
+        INCh1(bitsToSample(1, s), s);
+    }
+//        for PACKETSAMP { // screw case here but not for sim
+//            INCh0(0.3*sin(mPhasor[0]), s);
+//            INCh1(0.3*sin(mPhasor[1]), s);
+//            mPhasor[0] += 0.1;
+//            mPhasor[1] += 0.11;
+//        }
+    if(mPacketCnt) {
+        if(RUN > 2) {
+
+            for ( int i = 0; i < mHist; i++ ) {
+                for PACKETSAMP mTrain[s+((mHist-(i+1))*mFPP)] =
+                        mLastPackets[i][s];
+            }
+        }
+    }
+}
 
 void BurgPLC::processPacket (bool glitch)
 {
@@ -131,29 +196,11 @@ void BurgPLC::processPacket (bool glitch)
     //    debugSequenceNumber = bytesToInt(mXfrBuffer)+1;
     //    if (debugSequenceDelta != 1) qDebug() << debugSequenceNumber << "\t" << debugSequenceDelta;
 
-#define PACKETSAMP ( int s = 0; s < mFPP; s++ )
-#define INCh0(x,s) mTruth[s] = x
-#define INCh1(x,s) mTruthCh1[s] = x
-    for PACKETSAMP {
-        INCh0(bitsToSample(0, s), s);
-        INCh1(bitsToSample(1, s), s);
-    }
-    //    for PACKETSAMP { // screw case here but not for sim
-    //        IN(0.3*sin(mPhasor[0]), s);
-    //        mPhasor[0] += 0.1;
-    //        mPhasor[1] += 0.11;
-    //    }
 
     //    glitch = !(mPacketCnt%100);
     if(mPacketCnt) {
-#define RUN 0
         if(RUN > 2) {
-            if (glitch) qDebug() << "glitch";
-
-            for ( int i = 0; i < mHist; i++ ) {
-                for PACKETSAMP mTrain[s+((mHist-(i+1))*mFPP)] =
-                        mLastPackets[i][s];
-            }
+//            if (glitch) qDebug() << "glitch";
 
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain, mPacketCnt );
@@ -169,11 +216,11 @@ void BurgPLC::processPacket (bool glitch)
 
             for PACKETSAMP mXfadedPred[s] = mTruth[s] * mFadeUp[s] + mNextPred[s] * mFadeDown[s];
         }
-#define OUT(x,ch,s) sampleToBits(x,ch,s)
         for PACKETSAMP {
             switch(RUN)
             {
-            case -1  : OUT(0.3*sin(mPhasor[0]), 0, s);
+            case -1  :
+                OUT(0.3*sin(mPhasor[0]), 0, s);
                 OUT(0.3*sin(mPhasor[1]), 1, s);
                 mPhasor[0] += 0.1;
                 mPhasor[1] += 0.11;
@@ -184,27 +231,31 @@ void BurgPLC::processPacket (bool glitch)
                 break;
             case 1  : OUT((glitch) ?
                               mLastGoodPacket[s] : mTruth[s], 0, s);
+                OUT(mTruthCh1[s], 1, s);
                 break;
-            case 2  : OUT((glitch) ? 0.0 : mTruth[s], 0, s);
+            case 2  : {
+                double tmp = (glitch) ? 0.0 : mTruth[s];
+                OUT(tmp, 0, s);
+                OUT(mTruthCh1[s], 1, s);
+            }
                 break;
             case 3  :
                 OUT((glitch) ? mPrediction[s] : ( (mLastWasGlitch) ?
                                                       mXfadedPred[ s ] : mTruth[s] ), 0, s);
+                OUT(mTruthCh1[s], 1, s);
                 break;
             case 4  :
                 OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);
                 break;
             case 5  : OUT(mPrediction[s], 0, s);
                 break;
-            case 6  : OUT(0.3*sin(mPhasor[0]), 0, s);
+            case 6  :
+                OUT(0.3*sin(mPhasor[0]), 0, s);
                 OUT(0.3*sin(mPhasor[1]), 1, s);
                 mPhasor[0] += 0.1;
                 mPhasor[1] += 0.11;
                 break;
             }
-            //            OUT((glitch) ? ((s==0) ? 0.0 : 0.0) : mTruth[s], 1, s);
-            //                        OUT( 0.0, 1, s);
-            //            OUT( bitsToSample(1, s), 1, s);
         }
         mLastWasGlitch = glitch;
         for PACKETSAMP
