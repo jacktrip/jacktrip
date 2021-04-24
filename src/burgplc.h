@@ -76,7 +76,9 @@ void sampleToBits(sample_t sample, int ch, int frame);
     int8_t*  mOverSig;
     int mBalance;
     bool lastWasOK;
-    QElapsedTimer mTimer;
+    QElapsedTimer mTimer1;
+    QElapsedTimer mTimer2;
+    double mElapsedAcc;
 };
 
 #endif // BURGPLC_H

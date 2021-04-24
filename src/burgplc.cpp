@@ -79,17 +79,19 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     for PACKETSAMP OUT(0.3, 1, s);
     memcpy(mOverSig, mXfrBuffer, mBytes);
     mBalance = 0;
-    mTimer.start();
+    mTimer1.start();
+    mTimer2.start();
+    mElapsedAcc = 0.0;
 }
 
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     QMutexLocker locker(&mMutex); // lock the mutex
 
-    double elapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
+    double elapsed = (double)mTimer2.nsecsElapsed() / 1000000000.0;
 //    qDebug() << (double)mTimer.nsecsElapsed() / 1000000.0;
     if (!mOutgoingCntWraps) elapsed = 0.0;
-    else fprintf(stdout,"%f\n",elapsed); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
-    mTimer.start();
+    else fprintf(stdout,"%f\t1.2\n",elapsed); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
+//    mTimer2.start();
 
     seq %= TWOTOTHESIXTEENTH;
     //qDebug() << "hi pushPacket ..........";
@@ -110,47 +112,53 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
 void BurgPLC::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex); // lock the mutex
 
-//    double elapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
-////    qDebug() << (double)mTimer.nsecsElapsed() / 1000000.0;
-//    if (!mOutgoingCntWraps) elapsed = 0.0;
-//    else fprintf(stdout,"%f\n",elapsed); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
-//    mTimer.start();
+    double elapsed = (double)mTimer1.nsecsElapsed() / 1000000000.0;
+//    qDebug() << (double)mTimer.nsecsElapsed() / 1000000.0;
+    if (!mOutgoingCntWraps) elapsed = 0.0;
+    else fprintf(stdout,"%f\t1\n",elapsed); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
+//    mTimer1.start();
 
-    int delta = mLastIncomingSeq - mLastOutgoingSeq;
-    if (lastWasOK) delta--;
-    mLastOutgoingSeq = mLastIncomingSeq;
-    if (delta < 0) delta+=TWOTOTHESIXTEENTH;
-    //    if ((delta)&&(mUnderrunCtr)) qDebug() << "hi pullPacket under" <<  mUnderrunCtr;
-    mUnderrunCtr++;
-    if (delta) mUnderrunCtr = 0;
-    lastWasOK = false;
-    switch (delta) {
-    case 0: // under
-        memcpy(mXfrBuffer, mZeros, mBytes);
-        inputPacket();
-        processPacket( false ); // assume earlier have arrived
-        //        qDebug() << "hi pullPacket under" << mUnderrunCtr;
-        mBalance--;
-        break;
-    case 1: {
-        int tmp = mLastOutgoingSeq-1;
-        if (tmp < 0) tmp+=TWOTOTHESIXTEENTH;
-        memcpy(mXfrBuffer, mIncomingDat[tmp], mBytes);
-        inputPacket();
-        processPacket( false );
-        lastWasOK = true;
-    }
-        break;
-    default: // over
-        memcpy(mXfrBuffer, mZeros, mBytes);
-        inputPacket();
-        processPacket( false ); // assume earlier have arrived
-        //        qDebug() << "hi pullPacket over" << delta-1;
-        mBalance += (delta-1);
-    }
-memcpy(buf, mXfrBuffer, mBytes);
-//    if (!mOutgoingCntWraps) mBalance = 0;
-//    else fprintf(stdout,"%d\n",mBalance); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
+    //    mElapsedAcc += elapsed;
+//    if (mOutgoingCntWraps && (!mOutgoingCnt)) {
+//        fprintf(stderr,"%f\n",  mElapsedAcc / (double)TWOTOTHESIXTEENTH);
+//        mElapsedAcc = 0.0;
+//    }
+
+//    int delta = mLastIncomingSeq - mLastOutgoingSeq;
+//    if (lastWasOK) delta--;
+//    mLastOutgoingSeq = mLastIncomingSeq;
+//    if (delta < 0) delta+=TWOTOTHESIXTEENTH;
+//    //    if ((delta)&&(mUnderrunCtr)) qDebug() << "hi pullPacket under" <<  mUnderrunCtr;
+//    mUnderrunCtr++;
+//    if (delta) mUnderrunCtr = 0;
+//    lastWasOK = false;
+//    switch (delta) {
+//    case 0: // under
+//        memcpy(mXfrBuffer, mZeros, mBytes);
+//        inputPacket();
+//        processPacket( false ); // assume earlier have arrived
+//        //        qDebug() << "hi pullPacket under" << mUnderrunCtr;
+//        mBalance--;
+//        break;
+//    case 1: {
+//        int tmp = mLastOutgoingSeq-1;
+//        if (tmp < 0) tmp+=TWOTOTHESIXTEENTH;
+//        memcpy(mXfrBuffer, mIncomingDat[tmp], mBytes);
+//        inputPacket();
+//        processPacket( false );
+//        lastWasOK = true;
+//    }
+//        break;
+//    default: // over
+//        memcpy(mXfrBuffer, mZeros, mBytes);
+//        inputPacket();
+//        processPacket( false ); // assume earlier have arrived
+//        //        qDebug() << "hi pullPacket over" << delta-1;
+//        mBalance += (delta-1);
+//    }
+//memcpy(buf, mXfrBuffer, mBytes);
+////    if (!mOutgoingCntWraps) mBalance = 0;
+////    else fprintf(stdout,"%d\n",mBalance); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
 
     mOutgoingCnt++;
     mOutgoingCnt %= TWOTOTHESIXTEENTH;
