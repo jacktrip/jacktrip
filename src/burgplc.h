@@ -6,7 +6,7 @@
 #include <QMutexLocker>
 #include <RingBuffer.h>
 
-class BurgPLC : public RingBuffer
+class BurgPLC : public RingBuffer, public QThread
 {
 public:
     BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist);
@@ -76,9 +76,16 @@ void sampleToBits(sample_t sample, int ch, int frame);
     int8_t*  mOverSig;
     int mBalance;
     bool lastWasOK;
+    QElapsedTimer mTimer0;
     QElapsedTimer mTimer1;
     QElapsedTimer mTimer2;
     double mElapsedAcc;
+    int mExpectedOutgoingSeq;
+    virtual void run();
+    void plot();
+    const int8_t*  mUDPbuf;
+    int mLastOutgoingCnt;
+    int8_t*  mJACKbuf;
 };
 
 #endif // BURGPLC_H
