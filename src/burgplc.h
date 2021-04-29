@@ -86,6 +86,10 @@ void sampleToBits(sample_t sample, int ch, int frame);
     const int8_t*  mUDPbuf;
     int mLastOutgoingCnt;
     int8_t*  mJACKbuf;
+    int mLastIncomingSeq2;
+    int mIncomingCnt;
+    int mIncomingCntWraps;
+    vector<int> mIncomingCntWrap;
 };
 
 #endif // BURGPLC_H

@@ -155,6 +155,21 @@ void setRealtimeProcessPriority()
         ;
     }
 }
+void setRealtimeProcessPriority2()
+{
+    int priority = sched_get_priority_max(SCHED_FIFO);  // 99 is the highest possible
+#ifdef __UBUNTU__
+    priority = 95;  // anything higher is silently ignored by Ubuntu 18.04
+#endif
+    priority = 21; // = 22 -- one higher than jackd
+
+    struct sched_param sp = {.sched_priority = priority};
+
+    if (sched_setscheduler(0, SCHED_FIFO, &sp) == -1) {
+        std::cerr << "Failed to set the scheduler policy and priority." << std::endl;
+        ;
+    }
+}
 #endif  //__LINUX__
 
 #if defined(__WIN_32__)

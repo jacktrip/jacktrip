@@ -57,8 +57,8 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mOutgoingCnt = 0;
     mLastIncomingSeq = 0;
     mOutgoingCntWraps = 0;
-    mIncomingSeqWrap.resize(TWOTOTHESIXTEENTH);
-    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingSeqWrap[i] = -1;
+//    mIncomingSeqWrap.resize(TWOTOTHESIXTEENTH);
+//    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingSeqWrap[i] = -1;
     mBytes = mFPP*mNumChannels*mBitResolutionMode;
     for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) {
         int8_t* tmp = new int8_t[mBytes];
@@ -85,12 +85,17 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mElapsedAcc = 0.0;
     mExpectedOutgoingSeq = 0;
     mLastOutgoingCnt = 0;
+    mLastIncomingSeq2 = 0;
+    mIncomingCnt = 0;
+    mIncomingCntWraps = 0;
+    mIncomingCntWrap.resize(TWOTOTHESIXTEENTH);
+    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingCntWrap[i] = -1;
     start();
 }
 
 void BurgPLC::run()
 {
-    setRealtimeProcessPriority();
+    setRealtimeProcessPriority2();
     while (true) {
         usleep(15); // = 17 usec
         plot();
@@ -99,7 +104,7 @@ void BurgPLC::run()
 
 void BurgPLC::plot()
 {
-    QMutexLocker locker(&mMutex); // lock the mutex here and pullPacket but not pushPacket
+//    QMutexLocker locker(&mMutex); // lock the mutex here and pullPacket but not pushPacket
     double elapsed0 = (double)mTimer0.nsecsElapsed() / 1000000.0;
     //            mTimer0.start(); // histogram
     if (mLastOutgoingCnt != mOutgoingCnt) {
@@ -108,52 +113,60 @@ void BurgPLC::plot()
         double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
 //        if(pull < push) qDebug() << "hi governator--under" << push << pull;
         //        if (mOutgoingCntWraps) fprintf(stdout,"%f\t%f\t%f\n",elapsed0,elapsed1,elapsed2); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
-        if(pull < push) processPacket( true );
-        else processPacket( false );
+
+        int lag = mLastOutgoingCnt-1;
+        int test = mIncomingCntWraps;
+        if (lag<0) test--;
+        if (lag<0) lag+=TWOTOTHESIXTEENTH;
+//        qDebug() << (mIncomingCntWrap[lag]==test)
+//                 << (mLastOutgoingCnt-2) << mIncomingCntWrap[lag] << test << mIncomingCntWraps;
+        memcpy(mXfrBuffer, mIncomingDat[lag], mBytes);
+        inputPacket();
+        processPacket(mIncomingCntWrap[lag]!=test);
         memcpy(mJACKbuf, mXfrBuffer, mBytes);
         mTimer2.start();
     }
     if (mLastIncomingSeq != mIncomingSeq) {
-        //        fprintf(stdout,"%f\ttimer\t%d\t%d\n",elapsed,mLastIncomingSeq%10,mIncomingSeq%10); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
-        int nextSeq = mLastIncomingSeq+1;
-        nextSeq %= TWOTOTHESIXTEENTH;
-        if (mIncomingSeq != nextSeq) {
-            qDebug() << "hi pushPacket LOST PACKET" << mIncomingSeq << nextSeq;
-        }
         mLastIncomingSeq = mIncomingSeq;
-        if (mOutgoingCntWraps) {
-            memcpy(mIncomingDat[mIncomingSeq], mUDPbuf, mBytes);
-            int lag = mIncomingSeq-0;
-            if (lag<0) lag+=TWOTOTHESIXTEENTH;
-            memcpy(mXfrBuffer, mIncomingDat[lag], mBytes);
-            inputPacket();
-        }
         double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
         double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
+        //        fprintf(stdout,"%f\ttimer\t%d\t%d\n",elapsed,mLastIncomingSeq%10,mIncomingSeq%10); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
 //        if(push < pull) qDebug() << "hi governator--over" << push << pull;
         mTimer1.start();
     }
 }
 
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
+//    qDebug() << "hi governator--push";
     //    QMutexLocker locker(&mMutex); // don't lock the mutex
     seq %= TWOTOTHESIXTEENTH;
     mIncomingSeq = seq;
-    if (!mOutgoingCntWraps)mUDPbuf=buf;
+    int nextSeq = mLastIncomingSeq2+1;
+    nextSeq %= TWOTOTHESIXTEENTH;
+    if (mIncomingSeq != nextSeq) {
+        qDebug() << "hi pushPacket LOST PACKET" << mIncomingSeq << nextSeq;
+    }
+    mLastIncomingSeq2 = mIncomingSeq;
+    if (!mOutgoingCntWraps) mIncomingCnt=mIncomingSeq; else mIncomingCnt++;
+    mIncomingCnt %= TWOTOTHESIXTEENTH;
+    if (mIncomingCnt==0) mIncomingCntWraps++;
+    mIncomingCntWrap[mIncomingSeq] = mIncomingCntWraps;
+    memcpy(mIncomingDat[mIncomingSeq], buf, mBytes);
     usleep(25); // 25 usec @ 32FPP // 100 usec @ 128FPP
     return true;
 };
 
 void BurgPLC::pullPacket (int8_t* buf) {
+//    qDebug() << "hi governator--pull";
     //    QMutexLocker locker(&mMutex); // lock the mutex
     if (!mOutgoingCntWraps)mJACKbuf=buf;
-    mOutgoingCnt++;
+    if (!mOutgoingCntWraps)mOutgoingCnt=mIncomingSeq; else mOutgoingCnt++;
     mOutgoingCnt %= TWOTOTHESIXTEENTH;
-    if (!mOutgoingCnt) mOutgoingCntWraps++;
+    if (!mOutgoingCnt) mOutgoingCntWraps++;  // mIncomingSeq = -1 for initial pulls
     usleep(75); // 75 usec @ 32FPP // 300 usec @ 128FPP
 };
 
-#define RUN 6
+#define RUN 3
 
 void BurgPLC::inputPacket ()
 {
@@ -163,12 +176,12 @@ void BurgPLC::inputPacket ()
         INCh0(bitsToSample(0, s), s);
         INCh1(bitsToSample(1, s), s);
     }
-    //        for PACKETSAMP { // screw case here but not for sim
-    //            INCh0(0.3*sin(mPhasor[0]), s);
-    //            INCh1(0.3*sin(mPhasor[1]), s);
-    //            mPhasor[0] += 0.1;
-    //            mPhasor[1] += 0.11;
-    //        }
+//            for PACKETSAMP {
+//                INCh0(0.3*sin(mPhasor[0]), s);
+//                INCh1(0.3*sin(mPhasor[1]), s);
+//                mPhasor[0] += 0.1;
+//                mPhasor[1] += 0.11;
+//            }
     if(mPacketCnt) {
         if(RUN > 2) {
 
@@ -195,8 +208,8 @@ void BurgPLC::processPacket (bool glitch)
 
     //    glitch = !(mPacketCnt%100);
     if(mPacketCnt) {
-        if(RUN != 6) {
-            //            if (glitch) qDebug() << "glitch";
+        if(RUN > 2) {
+                        if (glitch) qDebug() << "glitch";
 
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain, mPacketCnt );
