@@ -37,8 +37,6 @@
 
 #include "JackTripWorker.h"
 
-#include <unistd.h>
-
 #include <QMutexLocker>
 #include <QTimer>
 #include <QWaitCondition>
@@ -90,7 +88,7 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
 //*******************************************************************************
 JackTripWorker::~JackTripWorker()
 {
-    //delete mUdpHubListener;
+    // delete mUdpHubListener;
 }
 
 //*******************************************************************************
@@ -112,8 +110,8 @@ void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server
     mSpawning = true;
     
     mID = id;
-    //Set the jacktrip address and ports
-    //mClientAddress.setAddress(client_address);
+    // Set the jacktrip address and ports
+    // mClientAddress.setAddress(client_address);
     mClientAddress             = client_address;
     mServerPort                = server_port;
     mClientPort                = client_port;

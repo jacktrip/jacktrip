@@ -89,6 +89,7 @@ class Settings : public QObject
     int mServerUdpPortNum;
     QString mClientName;  ///< JackClient Name
     QString mRemoteClientName;
+    bool mAppendThreadID{false};
     JackTrip::underrunModeT mUnderrunMode;  ///< Underrun mode
     bool mStopOnTimeout;  /// < Stop jacktrip after 10 second network timeout
     int mBufferStrategy;

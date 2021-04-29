@@ -3,21 +3,34 @@
 ## Install Dependencies
 
 Fedora:
+```bash
 dnf install meson qt5-qtbase-devel rtaudio-devel jack-audio-connection-kit-devel
+```
 
 Debian/Ubuntu:
+```bash
 apt install meson build-essential qtbase5-dev librtaudio-dev libjack-jackd2-dev
+```
 
 MacOS with brew (not tested):
+```bash
 brew install meson qt rt-audio jack
+```
 
 ## Build
 
-Prepare your build directory (by default debug and nonoptimized):
-meson builddir
+Prepare your build directory:
+```bash
+meson --buildtype release builddir
+```
 
 Now build with:
-ninja -C builddir
+```bash
+cd builddir
+meson compile
+```
 
 Install with:
-ninja -C builddir install
+```bash
+sudo meson install
+```

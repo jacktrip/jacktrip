@@ -95,8 +95,8 @@ class UdpHubListener : public QObject
             m_connectDefaultAudioPorts = connectDefaultAudioPorts;
         }
     }
-    
-    static void sigIntHandler(__attribute__((unused)) int unused)
+
+    static void sigIntHandler([[maybe_unused]] int unused)
     {
         std::cout << std::endl << "Shutting Down..." << std::endl;
         sSigInt = true;
@@ -119,9 +119,9 @@ class UdpHubListener : public QObject
 
    private:
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
-   * \param udpsocket a QUdpSocket
-   * \param port Port number
-   */
+     * \param udpsocket a QUdpSocket
+     * \param port Port number
+     */
     void receivedClientInfo(QSslSocket *clientConnection);
 
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
@@ -131,26 +131,26 @@ class UdpHubListener : public QObject
     int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
 
     /** \brief Send the JackTripWorker to the thread pool. This will run
-   * until it's done. We still have control over the prototype class.
-   * \param id Identification Number
-   */
-    //void sendToPoolPrototype(int id);
+     * until it's done. We still have control over the prototype class.
+     * \param id Identification Number
+     */
+    // void sendToPoolPrototype(int id);
 
     /** \brief Check if address is already handled and reuse or create a JackTripWorker as appropriate
-   * \param address as string (IPv4 or IPv6)
-   * \return id number of JackTripWorker
-   */
+     * \param address as string (IPv4 or IPv6)
+     * \return id number of JackTripWorker
+     */
     int getJackTripWorker(QString address, uint16_t port, QString &clientName);
 
     /** \brief Returns the ID of the client in the pool. If the client
-    * is not in the pool yet, returns -1.
-    */
+     * is not in the pool yet, returns -1.
+     */
     int getPoolID(QString address, uint16_t port);
 
     void stopAllThreads();
 
-    //QUdpSocket mUdpHubSocket; ///< The UDP socket
-    //QHostAddress mPeerAddress; ///< The Peer Address
+    // QUdpSocket mUdpHubSocket; ///< The UDP socket
+    // QHostAddress mPeerAddress; ///< The Peer Address
 
     //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
     QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorkers
@@ -246,6 +246,7 @@ class UdpHubListener : public QObject
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
+    bool mAppendThreadID = false;
 };
 
 #endif  //__UDPHUBLISTENER_H__

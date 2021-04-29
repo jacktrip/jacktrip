@@ -50,6 +50,10 @@
 #include <sys/qos.h>
 #endif  //__MAC_OSX__
 
+#if defined(__WIN_32__)
+#include <windows.h>
+#include <processthreadsapi.h>
+#endif
 #include "jacktrip_globals.h"
 
 #if defined(__MAC_OSX__)

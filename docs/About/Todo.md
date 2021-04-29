@@ -1,19 +1,18 @@
-High Priority TODOS:
---------------------
+## High Priority
 
 - Add redundancy to UDP (DONE)
 - Finish header implementation, add run-time check
 
 
-Plug-ins:
----------
+## Plug-ins
+
 - Extend Plugin structure to include more than 1 plug-in and add the mode for local effect (not loopback)
 - add the offset option to process starting from a different channel
 - Set the faust compiler to automatically generate plugins
 - Add low latency compression www.celt-codec.org
 
-Protocol:
----------
+## Protocol
+
 - Add TCP clacc
 - Add SCTP class
 - Maybe add a layer of OSC communication for control messages

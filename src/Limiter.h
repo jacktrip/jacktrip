@@ -125,6 +125,7 @@ class Limiter : public ProcessPlugin
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
+    const char* getName() const override { return "Limiter"; }
 
     void setWarningAmplitude(double wa)
     {  // setting to 0 turns off warnings

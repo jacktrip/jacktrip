@@ -38,8 +38,6 @@
 #ifndef __PROCESSPLUGIN_H__
 #define __PROCESSPLUGIN_H__
 
-#include <jack/jack.h>
-
 #include <QThread>
 
 /** \brief Interface for the process plugins to add to the JACK callback process in
@@ -65,13 +63,7 @@ class ProcessPlugin : public QObject
 
     //virtual void buildUserInterface(UI* interface) = 0;
 
-    virtual char* getName()
-    {
-        char* pluginName{
-            const_cast<char*>(typeid(*this).name())};  // get name of DERIVED class
-        while (isdigit(*pluginName)) { pluginName++; }
-        return pluginName;
-    }
+    virtual const char* getName() const = 0; // get name of DERIVED class
 
     /** \brief Do proper Initialization of members and class instances. By default this
    * initializes the Sampling Frequency. If a class instance depends on the
@@ -81,8 +73,7 @@ class ProcessPlugin : public QObject
     {
         fSamplingFreq = samplingRate;
         if (verbose) {
-            char* derivedClassName = getName();
-            printf("%s: init(%d)\n", derivedClassName, samplingRate);
+            printf("%s: init(%d)\n", getName(), samplingRate);
         }
     }
     virtual bool getInited() { return inited; }
