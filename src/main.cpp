@@ -49,12 +49,13 @@ QCoreApplication *createApplication(int &argc, char *argv[])
             command = token;
         }
     }
-    free(argv0);
     
     //If we have command line arguments or have been called as jacktrip, run on the command line.
     if (argc == 1 && (strcmp(command, "jacktrip") != 0)) {
+        free(argv0);
         return new QApplication(argc, argv);
     } else {
+        free(argv0);
         return new QCoreApplication(argc, argv);
     }
 }

@@ -68,7 +68,7 @@ private slots:
     void receivedConnectionFromPeer();
     void udpWaitingTooLong();
     void queueLengthChanged(int queueLength);
-    void chooseRunType(const QString &type);
+    void chooseRunType(int index);
     void addressChanged(const QString &address);
     void authFilesChanged();
     void credentialsChanged();
@@ -80,6 +80,13 @@ private slots:
     void exit();
     
 private:
+    enum runTypeT {
+        P2P_CLIENT,
+        P2P_SERVER,
+        HUB_CLIENT,
+        HUB_SERVER
+    };
+    
     void enableUi(bool enabled);
     void advancedOptionsForHubServer(bool isHubServer);
     void loadSettings();

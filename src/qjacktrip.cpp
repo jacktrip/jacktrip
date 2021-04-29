@@ -51,7 +51,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui->setupUi(this);
     
     //Create all our UI connections.
-    connect(m_ui->typeComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::chooseRunType);
+    connect(m_ui->typeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QJackTrip::chooseRunType);
     connect(m_ui->addressComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::addressChanged);
     connect(m_ui->connectButton, &QPushButton::released, this, &QJackTrip::start);
     connect(m_ui->disconnectButton, &QPushButton::released, this, &QJackTrip::stop);
@@ -232,7 +232,7 @@ void QJackTrip::processFinished()
         m_messageDialog->stopMonitoring();
     }
     m_ui->disconnectButton->setEnabled(false);
-    if (m_ui->typeComboBox->currentText() == "Hub Server") {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         m_udpHub.reset();
     } else {
         m_jackTrip.reset();
@@ -276,13 +276,13 @@ void QJackTrip::udpWaitingTooLong()
     m_ui->statusBar->showMessage("UDP waiting too long (more than 30ms)", 1000);
 }
 
-void QJackTrip::chooseRunType(const QString &type)
+void QJackTrip::chooseRunType(int index)
 {
     //Update ui to reflect choice of run mode.
-    if (type.endsWith("Client")) {
+    if (index == HUB_CLIENT || index == P2P_CLIENT) {
         m_ui->addressComboBox->setEnabled(true);
         m_ui->addressLabel->setEnabled(true);
-        if (type == "Hub Client") {
+        if (index == HUB_CLIENT) {
             credentialsChanged();
         } else {
             m_ui->connectButton->setEnabled(!m_ui->addressComboBox->currentText().isEmpty());
@@ -301,7 +301,7 @@ void QJackTrip::chooseRunType(const QString &type)
         m_ui->connectButton->setEnabled(true);
     }
     
-    if (type == "Hub Server") {
+    if (index == HUB_SERVER) {
         m_ui->channelSpinBox->setVisible(false);
         m_ui->channelLabel->setVisible(false);
         m_ui->timeoutCheckBox->setVisible(false);
@@ -324,7 +324,7 @@ void QJackTrip::chooseRunType(const QString &type)
         }
     }
 
-    if (type == "Hub Client") {
+    if (index == HUB_CLIENT) {
         m_ui->remoteNameEdit->setVisible(true);
         m_ui->remoteNameLabel->setVisible(true);
         m_ui->authGroupBox->setVisible(true);
@@ -342,16 +342,16 @@ void QJackTrip::addressChanged(const QString &address)
     if (m_jackTripRunning) {
         return;
     }
-    if (m_ui->typeComboBox->currentText() == "P2P Client") {
+    if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         m_ui->connectButton->setEnabled(!address.isEmpty());
-    } else if (m_ui->typeComboBox->currentText() == "Hub Client") {
+    } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
         credentialsChanged();
     }
 }
 
 void QJackTrip::authFilesChanged()
 {
-    if (m_ui->typeComboBox->currentText() != "Hub Server") {
+    if (m_ui->typeComboBox->currentIndex() != HUB_SERVER) {
         return;
     }
     
@@ -365,7 +365,7 @@ void QJackTrip::authFilesChanged()
 
 void QJackTrip::credentialsChanged()
 {
-    if (m_ui->typeComboBox->currentText() != "Hub Client") {
+    if (m_ui->typeComboBox->currentIndex() != HUB_CLIENT) {
         return;
     }
     
@@ -467,7 +467,7 @@ void QJackTrip::start()
     
     //Start the appropriate JackTrip process.
     try {
-        if (m_ui->typeComboBox->currentText() == "Hub Server") {
+        if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
             m_udpHub.reset(new UdpHubListener(m_ui->localPortSpinBox->value(), m_ui->basePortSpinBox->value()));
             int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
             if (hubConnectionMode > 2) {
@@ -523,9 +523,9 @@ void QJackTrip::start()
             m_ui->statusBar->showMessage("Hub Server Started");
         } else {
             JackTrip::jacktripModeT jackTripMode;
-            if (m_ui->typeComboBox->currentText() == "P2P Client") {
+            if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
                 jackTripMode = JackTrip::CLIENT;
-            } else if (m_ui->typeComboBox->currentText() == "P2P Server") {
+            } else if (m_ui->typeComboBox->currentIndex() == P2P_SERVER) {
                 jackTripMode = JackTrip::SERVER;
             } else {
                 jackTripMode = JackTrip::CLIENTTOPINGSERVER;
@@ -656,7 +656,7 @@ void QJackTrip::start()
 void QJackTrip::stop()
 {
     m_ui->disconnectButton->setEnabled(false);
-    if (m_ui->typeComboBox->currentText() == "Hub Server") {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         m_udpHub->stop();
     } else {
         m_jackTrip->stop();
@@ -684,8 +684,10 @@ void QJackTrip::enableUi(bool enabled)
     m_ui->optionsTabWidget->setEnabled(enabled);
     m_ui->typeLabel->setEnabled(enabled);
     m_ui->typeComboBox->setEnabled(enabled);
-    m_ui->addressLabel->setEnabled(enabled && m_ui->typeComboBox->currentText().endsWith("Client"));
-    m_ui->addressComboBox->setEnabled(enabled && m_ui->typeComboBox->currentText().endsWith("Client"));
+    m_ui->addressLabel->setEnabled(enabled && 
+        (m_ui->typeComboBox->currentIndex() == P2P_CLIENT || m_ui->typeComboBox->currentIndex() == HUB_CLIENT));
+    m_ui->addressComboBox->setEnabled(enabled && 
+        (m_ui->typeComboBox->currentIndex() == P2P_CLIENT || m_ui->typeComboBox->currentIndex() == HUB_CLIENT));
 }
 
 void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
@@ -930,11 +932,11 @@ QString QJackTrip::commandLineFromCurrentOptions()
 {
     QString commandLine = "qjacktrip";
     
-    if (m_ui->typeComboBox->currentText() == "P2P Client") {
+    if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         commandLine.append(" -c ").append(m_ui->addressComboBox->currentText());
-    } else if (m_ui->typeComboBox->currentText() == "P2P Server") {
+    } else if (m_ui->typeComboBox->currentIndex() == P2P_SERVER) {
         commandLine.append(" -s");
-    } else if (m_ui->typeComboBox->currentText() == "Hub Client") {
+    } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
         commandLine.append(" -C ").append(m_ui->addressComboBox->currentText());
     } else {
         commandLine.append(" -S");
@@ -944,7 +946,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
         commandLine.append(" -z");
     }
     
-    if (m_ui->typeComboBox->currentText() == "Hub Server") {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
         if (hubConnectionMode > 2) {
             //Adjust for the RESERVEDMATRIX gap.
@@ -988,41 +990,39 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->localPortSpinBox->value() != gDefaultPort) {
         commandLine.append(QString(" -B %1").arg(m_ui->localPortSpinBox->value()));
     }
-    if (m_ui->typeComboBox->currentText().endsWith("Client")) {
+    if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT || m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         if (m_ui->remotePortSpinBox->value() != gDefaultPort) {
             commandLine.append(QString(" -P %1").arg(m_ui->remotePortSpinBox->value()));
         }
     }
     
     //Auth settings
-    if (m_ui->typeComboBox->currentText().startsWith("Hub")) {
-        if (m_ui->typeComboBox->currentText() == "Hub Server") {
-            if (m_ui->requireAuthCheckBox->isChecked()) {
-                commandLine.append(QString(" -A"));
-                if (!m_ui->certEdit->text().isEmpty()) {
-                    commandLine.append(" --certfile ").append(m_ui->certEdit->text());
-                }
-                if (!m_ui->keyEdit->text().isEmpty()) {
-                    commandLine.append(" --keyfile ").append(m_ui->keyEdit->text());
-                }
-                if (!m_ui->credsEdit->text().isEmpty()) {
-                    commandLine.append(" --credsfile ").append(m_ui->credsEdit->text());
-                }
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+        if (m_ui->requireAuthCheckBox->isChecked()) {
+            commandLine.append(QString(" -A"));
+            if (!m_ui->certEdit->text().isEmpty()) {
+                commandLine.append(" --certfile ").append(m_ui->certEdit->text());
             }
-        } else {
-            if (m_ui->authCheckBox->isChecked()) {
-                commandLine.append(QString(" -A"));
-                if (!m_ui->usernameEdit->text().isEmpty()) {
-                    commandLine.append(" --username ").append(m_ui->usernameEdit->text());
-                }
-                /*if (!m_ui->passwordEdit->text().isEmpty()) {
-                    commandLine.append(" --password <password>");
-                }*/
+            if (!m_ui->keyEdit->text().isEmpty()) {
+                commandLine.append(" --keyfile ").append(m_ui->keyEdit->text());
             }
+            if (!m_ui->credsEdit->text().isEmpty()) {
+                commandLine.append(" --credsfile ").append(m_ui->credsEdit->text());
+            }
+        }
+    } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
+        if (m_ui->authCheckBox->isChecked()) {
+            commandLine.append(QString(" -A"));
+            if (!m_ui->usernameEdit->text().isEmpty()) {
+                commandLine.append(" --username ").append(m_ui->usernameEdit->text());
+            }
+            /*if (!m_ui->passwordEdit->text().isEmpty()) {
+                commandLine.append(" --password <password>");
+            }*/
         }
     }
     
-    if (m_ui->typeComboBox->currentText() == "Hub Server") {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         int offset = m_ui->localPortSpinBox->value() - gDefaultPort;
         if (m_ui->basePortSpinBox->value() != 61002 + offset) {
             commandLine.append(QString(" -U %1").arg(m_ui->basePortSpinBox->value()));
@@ -1031,7 +1031,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
         if (!m_ui->clientNameEdit->text().isEmpty()) {
             commandLine.append(QString(" -J \"%1\"").arg(m_ui->clientNameEdit->text()));
         }
-        if (m_ui->typeComboBox->currentText() == "Hub Client" && !m_ui->remoteNameEdit->text().isEmpty()) {
+        if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT && !m_ui->remoteNameEdit->text().isEmpty()) {
             commandLine.append(QString(" -K \"%1\"").arg(m_ui->remoteNameEdit->text()));
         }
         if (m_ui->redundancySpinBox->value() > 1) {
