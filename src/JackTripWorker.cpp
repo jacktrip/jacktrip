@@ -57,7 +57,8 @@ using std::endl;
 //*******************************************************************************
 JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength,
                                JackTrip::underrunModeT UnderRunMode, QString clientName)
-    : mSleepTime(100)
+    : mAppendThreadID(false)
+    , mSleepTime(100)
     , mUdpHubListener(udphublistener)
     , m_connectDefaultAudioPorts(false)
     , mBufferQueueLength(BufferQueueLength)
@@ -196,6 +197,7 @@ void JackTripWorker::start()
     // I still haven't figure out why
     //ClientAddress.toString().toLatin1().constData();
     //jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
+    if (mAppendThreadID) { mJackTrip->setID(mID + 1); }
     mJackTrip->setPeerAddress(mClientAddress);
     mJackTrip->setBindPorts(mServerPort);
     //jacktrip.setPeerPorts(mClientPort);

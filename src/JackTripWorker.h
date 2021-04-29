@@ -111,6 +111,8 @@ class JackTripWorker : public QObject
         mIOStatStream = statStream;
     }
 
+    bool mAppendThreadID;
+
     void setClientPort(uint16_t port) { mClientPort = port; }
     QString getAssignedClientName() { return mAssignedClientName; }
     uint16_t getServerPort() { return mServerPort; }

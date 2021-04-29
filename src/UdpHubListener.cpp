@@ -299,7 +299,6 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
     // Create a new JackTripWorker, but don't check if this is coming from an existing ip or port yet.
     // We need to wait until we receive the port value from the UDP header to accomodate NAT.
     // -----------------------------
-    if (true == mAppendThreadID) { clientName = clientName + QString("_%1").arg(id + 1); }
     int id = getJackTripWorker(PeerAddress.toString(), peer_udp_port, clientName);
     
     // Assign server port and send it to Client
@@ -415,7 +414,6 @@ int UdpHubListener::readClientUdpPort(QSslSocket* clientConnection, QString &cli
         clientName = QString::fromUtf8((const char*)name_buf);
     }
 
-    delete[] port_buf;
     return udp_port;
 }
 
@@ -551,6 +549,7 @@ int UdpHubListener::getJackTripWorker(QString address, __attribute__((unused)) u
     
     if (id >= 0) {
         mTotalRunningThreads++;
+    	if (mAppendThreadID) { clientName = clientName + QString("_%1").arg(id + 1); }
         mJTWorkers->replace(id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
         mJTWorkers->at(id)->setJackTrip(id,
                                         address,
@@ -647,7 +646,6 @@ void UdpHubListener::enumerateRunningThreadIDs()
         if (mJTWorkers->at(id) != nullptr) { qDebug() << id; }
     }
 }
-#endif
 #endif  // endwhere
 
 void UdpHubListener::connectPatch(bool spawn, const QString &clientName)
@@ -673,7 +671,6 @@ void UdpHubListener::connectPatch(bool spawn, const QString &clientName)
         }
     }
 }
-#endif
 
 void UdpHubListener::stopAllThreads()
 {
