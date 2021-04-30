@@ -32,22 +32,26 @@ jobs:
             runs-on: macos-10.15
             qmake-spec: macx-clang
             make-cmd: make
+            rtaudio: true
 
           - name: macOS-static
             runs-on: macos-10.15
             qmake-spec: macx-clang
             make-cmd: make
+            rtaudio: true
             static: true
 
           - name: Windows
             runs-on: windows-2019
             qmake-spec: win32-g++
             make-cmd: mingw32-make
+            rtaudio: true
 
           - name: Windows-static
             runs-on: windows-2019
             qmake-spec: win32-g++
             make-cmd: mingw32-make
+            rtaudio: true
             static: true
 
     env:
@@ -79,10 +83,20 @@ jobs:
             brew install qt5
             brew link qt5 --force
           fi
+          if [[ "${{ matrix.rtaudio }}" == true ]]; then 
+            brew install rt-audio
+            rm -f `brew --prefix rt-audio`/lib/*.dylib # remove the dynamic library, we want static only
+          fi
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
+        shell: bash
         run: |
           choco install jack --version=1.9.17
+          if [[ "${{ matrix.rtaudio }}" == true ]]; then 
+            choco install pkgconfiglite
+            vcpkg install rtaudio --triplet=x64-mingw-static
+            echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\x64-mingw-static\lib\pkgconfig" >> $GITHUB_ENV
+          fi
       - name: cache Qt
         id: cache-qt
         if: runner.os == 'Windows' && matrix.static != true
@@ -144,7 +158,10 @@ jobs:
           CONFIG_STRING=
           if [[ "${{ matrix.static }}" == true ]]; then 
             export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
-            CONFIG_STRING="-config static" $CONFIG_STRING
+            CONFIG_STRING="-config static $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.rtaudio }}" == true ]]; then 
+            CONFIG_STRING="-config rtaudio $CONFIG_STRING"
           fi
           qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../src/jacktrip.pro
           ${{ matrix.make-cmd }} release
