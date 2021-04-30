@@ -84,8 +84,7 @@ jobs:
             brew link qt5 --force
           fi
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
-            brew install rt-audio
-            rm -f `brew --prefix rt-audio`/lib/*.dylib # remove the dynamic library, we want static only
+            brew install rt-audio && rm -f `brew --prefix rt-audio`/lib/*.dylib # remove the dynamic library, we want static only
           fi
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
