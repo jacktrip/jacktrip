@@ -74,7 +74,11 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
         run: |
-          brew install jack
+          # brew install jack
+          # instead of using homebrew, install jack 1.9.16 from the installer, which should provide compatibility with both jackosx and the newer jack2
+          curl -L https://github.com/jackaudio/jack2-releases/releases/download/v1.9.16/jack2-macOS-v1.9.16.tar.gz -o jack2.tar.gz
+          tar -xf jack2.tar.gz
+          sudo installer -pkg jack2-osx-1.9.16.pkg -target /
           if [[ "${{ matrix.static }}" != true ]]; then 
             brew install qt5
             brew link qt5 --force
