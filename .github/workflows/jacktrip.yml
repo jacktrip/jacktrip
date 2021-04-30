@@ -146,7 +146,7 @@ jobs:
             export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
             CONFIG_STRING="-config static" $CONFIG_STRING
           fi
-          qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../src/jacktrip.pro
+          qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../jacktrip.pro
           ${{ matrix.make-cmd }} release
       - name: upload artifacts
         uses: actions/upload-artifact@v2
