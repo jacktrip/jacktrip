@@ -5,6 +5,7 @@
 #include "AudioInterface.h"
 #include <QMutexLocker>
 #include <RingBuffer.h>
+#include <QElapsedTimer>
 
 class BurgPLC : public RingBuffer, public QThread
 {
