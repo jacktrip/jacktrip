@@ -91,6 +91,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     int mIncomingCnt;
     int mIncomingCntWraps;
     vector<int> mIncomingCntWrap;
+    double mLastPush;
 };
 
 #endif // BURGPLC_H
