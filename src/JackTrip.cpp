@@ -781,6 +781,10 @@ void JackTrip::stop(QString errorMessage)
     mDataProtocolSender->stop();
     mDataProtocolSender->wait();
 
+    // Stop The Burg
+    mReceiveRingBuffer->stop();
+    mReceiveRingBuffer->wait();
+
     // Stop The Receiver
     mDataProtocolReceiver->stop();
     mDataProtocolReceiver->wait();

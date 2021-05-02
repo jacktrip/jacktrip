@@ -1,5 +1,4 @@
 #include "burgplc.h"
-#include <QDebug>
 #include <sstream>
 #include "jacktrip_globals.h"
 
@@ -91,13 +90,14 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mIncomingCntWrap.resize(TWOTOTHESIXTEENTH);
     for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingCntWrap[i] = -1;
     mLastPush = 0.0;
+    mStopped = false;
     start();
 }
 
 void BurgPLC::run()
 {
     setRealtimeProcessPriority2();
-    while (true) {
+    while (!mStopped) {
         usleep(15); // = 17 usec
         plot();
     }

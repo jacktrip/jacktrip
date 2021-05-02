@@ -47,7 +47,7 @@
 #include <atomic>
 
 //using namespace JackTripNamespace;
-
+#include <QThread>
 
 /** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read from
  * asynchronously (blocking) or synchronously (non-blocking).
@@ -56,7 +56,7 @@
  * each of which is of size \b SlotSize bytes (8-bits). Slots can be read and
  * written asynchronously/synchronously by multiple threads.
  */
-class RingBuffer
+class RingBuffer : public QThread
 {
 public:
 
@@ -120,7 +120,7 @@ public:
         int32_t autoq_rate;
     };
     virtual bool getStats(IOStat* stat, bool reset);
-
+    virtual void stop () {};
 protected:
 
     /** \brief Sets the memory in the Read Slot when uderrun occurs. By default,

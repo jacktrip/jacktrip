@@ -6,8 +6,9 @@
 #include <QMutexLocker>
 #include <RingBuffer.h>
 #include <QElapsedTimer>
+#include <QDebug>
 
-class BurgPLC : public RingBuffer, public QThread
+class BurgPLC : public RingBuffer
 {
 public:
     BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist);
@@ -32,6 +33,13 @@ public:
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) {
         pullPacket (ptrToReadSlot);
     }
+
+    virtual void stop () {
+        qDebug() << "hi governator--stopping" ;
+                    mStopped = true;
+                    qDebug() << "hi governator--stopped" ;
+
+                         };
 
 private:
 //    QMutex mMutex;                     ///< Mutex to protect read and write operations
@@ -92,6 +100,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     int mIncomingCntWraps;
     vector<int> mIncomingCntWrap;
     double mLastPush;
+    bool mStopped;
 };
 
 #endif // BURGPLC_H
