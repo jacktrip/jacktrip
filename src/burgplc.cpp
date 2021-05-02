@@ -176,7 +176,7 @@ void BurgPLC::pullPacket (int8_t* buf) {
     usleep(75); // 75 usec @ 32FPP // 300 usec @ 128FPP
 };
 
-#define RUN -1
+#define RUN 3
 
 void BurgPLC::inputPacket ()
 {
