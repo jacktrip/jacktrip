@@ -83,7 +83,7 @@ const int gDefaultCombFilterFeedback  = 0;
 //    JackAudioInterface::BIT16;
 const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
     AudioInterface::BIT16;
-const int gDefaultQueueLength              = 4;
+const int gDefaultQueueLength              = 1;
 const int gDefaultOutputQueueLength        = 4;
 const uint32_t gDefaultSampleRate          = 48000;
 const uint32_t gDefaultDeviceID            = 0;

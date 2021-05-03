@@ -115,7 +115,7 @@ void BurgPLC::plot()
         //        if(pull < push) qDebug() << "hi governator--under" << push << pull;
         //        if (mOutgoingCntWraps) fprintf(stdout,"%f\t%f\t%f\n",elapsed0,elapsed1,elapsed2); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
 
-        int lag = mLastOutgoingCnt-2;
+        int lag = mLastOutgoingCnt-mQLen;
         int test = mIncomingCntWraps;
         if (lag<0) test--;
         if (lag<0) lag+=TWOTOTHESIXTEENTH;
