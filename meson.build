@@ -87,6 +87,12 @@ if host_machine.system() == 'windows'
 	deps += compiler.find_library('ws2_32', required: true)
 endif
 
+if host_machine.system() == 'darwin'
+	src += ['NoNap.mm']
+	apple_dep = dependency('appleframeworks', modules : 'foundation')
+	deps += apple_dep
+endif
+
 deps += dependency('threads')
 if jack_dep.found()
 src += 	['src/JackAudioInterface.cpp',
