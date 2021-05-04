@@ -42,10 +42,14 @@ src = [	'src/DataProtocol.cpp',
 	'src/AudioInterface.cpp',
 	'src/Compressor.cpp',
 	'src/Limiter.cpp',
-	'src/Reverb.cpp'
+	'src/Reverb.cpp',
 	'src/about.cpp',
 	'src/main.cpp',
-	'src/qjacktrip.cpp']
+	'src/qjacktrip.cpp',
+	'src/messageDialog.cpp',
+	'src/SSLServer.cpp',
+	'src/Auth.cpp',
+	'src/Patcher.cpp']
 
 qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
 jack_dep = dependency('jack', required: get_option('jack'))
