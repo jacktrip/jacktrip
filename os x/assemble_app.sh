@@ -4,7 +4,7 @@
 rm -rf QJackTrip.app
 [ ! -d "QJackTrip.app_template/Contents/MacOS" ] && mkdir QJackTrip.app_template/Contents/MacOS
 cp -a QJackTrip.app_template QJackTrip.app
-cp -f ../build/qjacktrip QJackTrip.app/Contents/MacOS/
+cp -f ../builddir/qjacktrip QJackTrip.app/Contents/MacOS/
 
 # If you want to create a signed package, uncomment and modify the codesign parameter below as appropriate.
 macdeployqt QJackTrip.app #-codesign="Developer ID Application: Aaron Wyatt"
