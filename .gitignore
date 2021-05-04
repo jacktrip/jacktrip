@@ -3,7 +3,7 @@
 *.pro.user.*
 
 # build directory
-build/
+builddir/
 
 # kdevelop directory
 .kdev4
