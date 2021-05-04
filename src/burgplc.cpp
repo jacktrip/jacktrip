@@ -122,7 +122,7 @@ void BurgPLC::plot()
         //        qDebug() << (mIncomingCntWrap[lag]==test)
         //                 << (mLastOutgoingCnt-2) << mIncomingCntWrap[lag] << test << mIncomingCntWraps;
         memcpy(mXfrBuffer, mIncomingDat[lag], mBytes);
-        inputPacket();
+        if(mIncomingCntWrap[lag]==test) inputPacket();
         processPacket(mIncomingCntWrap[lag]!=test);
         memcpy(mJACKbuf, mXfrBuffer, mBytes);
         mTimer2.start();
