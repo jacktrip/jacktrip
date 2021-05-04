@@ -161,7 +161,7 @@ void setRealtimeProcessPriority2()
 #ifdef __UBUNTU__
     priority = 95;  // anything higher is silently ignored by Ubuntu 18.04
 #endif
-    priority = 19; // = 22 -- one higher than jackd
+    priority = 21; // = 22 -- one higher than jackd
 
     struct sched_param sp = {.sched_priority = priority};
 
