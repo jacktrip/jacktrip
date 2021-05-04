@@ -24,7 +24,11 @@ moc_h = ['src/DataProtocol.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/about.h',
-	'src/qjacktrip.h']
+	'src/qjacktrip.h',
+	'src/messageDialog.h',
+	'src/Auth.h',
+	'src/Patcher.h',
+	'src/SslServer.h']
 	
 ui_h = ['src/qjacktrip.ui',
 	'src/messageDialog.ui',
@@ -53,8 +57,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/qjacktrip.cpp',
 	'src/messageDialog.cpp',
 	'src/SslServer.cpp',
-	'src/Auth.cpp',
-	'src/Patcher.cpp']
+	'src/Auth.cpp']
 
 qt5_dep = dependency('qt5', modules: ['Core', 'Network', 'Widgets'])
 jack_dep = dependency('jack', required: get_option('jack'))
@@ -87,7 +90,8 @@ endif
 deps += dependency('threads')
 if jack_dep.found()
 src += 	['src/JackAudioInterface.cpp',
-	'src/JMess.cpp']
+	'src/JMess.cpp',
+	'src/Patcher.cpp']
 endif
 
 
