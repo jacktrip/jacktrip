@@ -56,7 +56,7 @@ jobs:
 
     env:
       SRC_PATH: ${{ github.workspace }}/src
-      BUILD_PATH: ${{ github.workspace }}/build
+      BUILD_PATH: ${{ github.workspace }}/builddir
       QT_VERSION: '5.15.2'
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_URL: 'https://download.qt.io/official_releases/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz'
@@ -167,7 +167,7 @@ jobs:
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
             CONFIG_STRING="-config rtaudio $CONFIG_STRING"
           fi
-          qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../qjacktrip.pro
+          qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../jacktrip.pro
           ${{ matrix.make-cmd }} release
       - name: upload artifacts
         uses: actions/upload-artifact@v2
