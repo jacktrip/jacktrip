@@ -88,7 +88,7 @@ if host_machine.system() == 'windows'
 endif
 
 if host_machine.system() == 'darwin'
-	src += ['NoNap.mm']
+	src += ['src/NoNap.mm']
 	apple_dep = dependency('appleframeworks', modules : 'foundation')
 	deps += apple_dep
 endif
