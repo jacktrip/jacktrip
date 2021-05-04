@@ -187,7 +187,7 @@ HEADERS += src/JackAudioInterface.h
 }
 
 rtaudio {
-    HEADERS += RtAudioInterface.h
+    HEADERS += src/RtAudioInterface.h
 }
 
 SOURCES += src/DataProtocol.cpp \
@@ -229,5 +229,5 @@ FORMS += src/qjacktrip.ui src/about.ui src/messageDialog.ui
 RESOURCES += src/qjacktrip.qrc
 
 rtaudio {
-    SOURCES += RtAudioInterface.cpp
+    SOURCES += src/RtAudioInterface.cpp
 }
