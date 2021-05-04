@@ -28,7 +28,7 @@ moc_h = ['src/DataProtocol.h',
 	
 ui_h = ['src/qjacktrip.ui',
 	'src/messageDialog.ui',
-	'src/qjacktrip.ui']
+	'src/about.ui']
 
 moc_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h)
 
