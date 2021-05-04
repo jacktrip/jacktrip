@@ -47,7 +47,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/main.cpp',
 	'src/qjacktrip.cpp',
 	'src/messageDialog.cpp',
-	'src/SSLServer.cpp',
+	'src/SslServer.cpp',
 	'src/Auth.cpp',
 	'src/Patcher.cpp']
 
