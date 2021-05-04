@@ -51,7 +51,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/Auth.cpp',
 	'src/Patcher.cpp']
 
-qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
+qt5_dep = dependency('qt5', modules: ['Core', 'Network', 'Widgets'])
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
 	defines += '-D__NO_JACK__'
@@ -86,4 +86,4 @@ src += 	['src/JackAudioInterface.cpp',
 endif
 
 
-executable('jacktrip', src, moc_files, dependencies: deps, cpp_args: defines, install: true )
+executable('qjacktrip', src, moc_files, dependencies: deps, cpp_args: defines, install: true )
