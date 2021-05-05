@@ -13,7 +13,7 @@ elif host_machine.system() == 'darwin'
 elif host_machine.system() == 'windows'
 	defines += '-D__WIN_32__'
 	defines += '-D_WIN32_WINNT=0x0600'
-	defines +- '-DWIN32_LEAN_AND_MEAN'
+	defines += '-DWIN32_LEAN_AND_MEAN'
 	defines += '-DNOMINMAX'
 endif
 
@@ -60,7 +60,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/SslServer.cpp',
 	'src/Auth.cpp']
 
-qt5_dep = dependency('qt5', modules: ['Core', 'Network', 'Widgets'])
+qt5_dep = dependency('qt5', modules: ['Core', 'Network', 'Gui', 'Widgets'])
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
 	defines += '-D__NO_JACK__'
