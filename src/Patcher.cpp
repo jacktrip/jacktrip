@@ -81,14 +81,16 @@ void Patcher::registerClient(const QString &clientName)
                 //First check if this is one of our other clients. (Fan out/in and full mix.)
                 if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
                     if (m_clients.contains(QString(inPorts[j]).section(":", 0, 0)) 
-                        && QString(inPorts[j]).section("_", -1, -1) == channel) {
+                        && QString(inPorts[j]).section("_", -1, -1) == channel 
+                        && !QString(outPorts[i]).contains("broadcast")) {
                         jack_connect(m_jackClient, outPorts[i], inPorts[j]);
                     }
                 }
                 //Then check if it's our registering client. (Client Echo and full mix.)
                 if (m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::FULLMIX) {
                     if (QString(inPorts[j]).section(":", 0, 0) == clientName 
-                        && QString(inPorts[j]).section("_", -1, -1) == channel) {
+                        && QString(inPorts[j]).section("_", -1, -1) == channel
+                        && !QString(outPorts[i]).contains("broadcast")) {
                         jack_connect(m_jackClient, outPorts[i], inPorts[j]);
                     }
                 }
@@ -105,7 +107,8 @@ void Patcher::registerClient(const QString &clientName)
                 QString channel = QString(inPorts[i]).section("_", -1, -1);
                 for (int j = 0; outPorts[j]; j++) {
                     if (m_clients.contains(QString(outPorts[j]).section(":", 0, 0)) 
-                        && QString(outPorts[j]).section("_", -1, -1) == channel) {
+                        && QString(outPorts[j]).section("_", -1, -1) == channel
+                        && !QString(outPorts[j]).contains("broadcast")) {
                         jack_connect(m_jackClient, outPorts[j], inPorts[i]);
                     }
                 }

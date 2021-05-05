@@ -9,7 +9,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories(/usr/local/include)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   add_compile_definitions(__WIN_32__  _WIN32_WINNT=0x0600 WIN32_LEAN_AND_MEAN)
-  include_directories("C:/Program Files (x86)/Jack/includes")
+  include_directories("C:/Program Files/JACK2/include")
   set (CMAKE_PREFIX_PATH "C:/Qt/5.15.0/mingw81_64/lib/cmake")
 endif ()
 
@@ -65,7 +65,7 @@ endif ()
 
 add_compile_definitions(WAIRTOHUB)
 
-# Tell CMake to create the helloworld executable
+# Tell CMake to create the executable
 add_executable(qjacktrip ${qjacktrip_SRC})
 
 # Use the Widgets module from Qt 5.
@@ -74,8 +74,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   target_link_libraries(qjacktrip Qt5::Widgets Qt5::Network /usr/local/lib/libjack.dylib)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  target_link_libraries(qjacktrip Qt5::Widgets Qt5::Network "C:/Program Files (x86)/Jack/lib/libjack64.lib" ws2_32)
+  target_link_libraries(qjacktrip Qt5::Widgets Qt5::Network "C:/Program Files/JACK2/lib/libjack64.lib" ws2_32)
 endif ()
+
+add_custom_target(create_symlink ALL COMMAND ${CMAKE_COMMAND} -E create_symlink qjacktrip jacktrip)
 
 # Install the executable
 install(TARGETS qjacktrip DESTINATION bin)
