@@ -432,6 +432,7 @@ class JackTrip : public QObject
             return 0;
         }
     }
+#ifndef __NO_JACK__
     QString getAssignedClientName()
     {
         if (mAudioInterface && mAudiointerfaceMode == JackTrip::JACK) {
@@ -440,6 +441,7 @@ class JackTrip : public QObject
             return "";
         }
     }
+#endif
     virtual bool checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber() { mPacketHeader->increaseSequenceNumber(); }
     int getSequenceNumber() const { return mPacketHeader->getSequenceNumber(); }

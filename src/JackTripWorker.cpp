@@ -298,7 +298,9 @@ void JackTripWorker::receivedDataUDP()
             &JackTrip::slotStopProcesses, Qt::QueuedConnection);
     connect(mJackTrip.data(), &JackTrip::signalProcessesStopped, this, &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
     connect(mJackTrip.data(), &JackTrip::signalError, this, &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
+#ifndef __NO_JACK__
     connect(mJackTrip.data(), &JackTrip::signalAudioStarted, this, &JackTripWorker::alertPatcher, Qt::QueuedConnection);
+#endif
     connect(this, &JackTripWorker::signalRemoveThread, mJackTrip.data(), &JackTrip::slotStopProcesses, Qt::QueuedConnection);
     
     if (gVerboseFlag) cout << "---> JackTripWorker: startProcess..." << endl;
@@ -349,14 +351,14 @@ void JackTripWorker::jacktripStopped()
     mUdpHubListener->releaseThread(mID);
 }
 
+#ifndef __NO_JACK__
 void JackTripWorker::alertPatcher()
 {
     QMutexLocker lock(&mMutex);
     if (mRunning) {
         mAssignedClientName = mJackTrip->getAssignedClientName();
-#ifndef __NO_JACK__
         mUdpHubListener->registerClientWithPatcher(mAssignedClientName);
         mPatched = true;
-#endif
     }
 }
+#endif

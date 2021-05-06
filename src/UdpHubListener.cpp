@@ -650,7 +650,6 @@ void UdpHubListener::enumerateRunningThreadIDs()
     }
 }
 #endif  // endwhere
-#endif // __NO_JACK__
 
 void UdpHubListener::connectPatch(bool spawn, const QString &clientName)
 {
@@ -675,6 +674,7 @@ void UdpHubListener::connectPatch(bool spawn, const QString &clientName)
         }
     }
 }
+#endif // __NO_JACK__
 
 void UdpHubListener::stopAllThreads()
 {
