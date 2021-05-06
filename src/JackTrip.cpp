@@ -662,9 +662,10 @@ void JackTrip::receivedDataTCP()
         // check that our server supports it.
         qint32 authResponse;
         int size = sizeof(authResponse);
-        char auth_buf[size];
+        char *auth_buf = new char[size];
         mTcpClient.read(auth_buf, size);
         authResponse = qFromLittleEndian<qint32>(auth_buf);
+        delete[] auth_buf;
         if (authResponse == Auth::OK) {
             mTcpClient.startClientEncryption();
         } else {
@@ -705,9 +706,10 @@ void JackTrip::receivedDataTCP()
     // --------------------------------
     uint32_t udp_port;
     int size = sizeof(udp_port);
-    char port_buf[size];
+    char *port_buf = new char[size];
     mTcpClient.read(port_buf, size);
     udp_port = qFromLittleEndian<qint32>(port_buf);
+    delete[] port_buf;
     //std::memcpy(&udp_port, port_buf, size);
     //cout << "Received UDP Port Number: " << udp_port << endl;
 
