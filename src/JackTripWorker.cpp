@@ -255,10 +255,9 @@ void JackTripWorker::receivedDataUDP()
     //Set our jacktrip parameters from the received header data.
     quint16 port;
     int packet_size = mUdpSockTemp.pendingDatagramSize();
-    char packet[packet_size];
-    mUdpSockTemp.readDatagram(packet, packet_size, nullptr, &port);
+    int8_t *full_packet = new int8_t[packet_size];
+    mUdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet), packet_size, nullptr, &port);
     mUdpSockTemp.close(); // close the socket
-    int8_t* full_packet = reinterpret_cast<int8_t*>(packet);
     
     //Alert the hub listener of the actual client port for incoming packets.
     //This will remove any old worker objects, and will set the client port member variable on this object.
@@ -269,6 +268,7 @@ void JackTripWorker::receivedDataUDP()
     int PeerBitResolution  = mJackTrip->getPeerBitResolution(full_packet);
     int PeerNumChannels    = mJackTrip->getPeerNumChannels(full_packet);
     int PeerConnectionMode = mJackTrip->getPeerConnectionMode(full_packet);
+    delete[] full_packet;
 
     if (gVerboseFlag)
         cout << "--->JackTripWorker: getPeerBufferSize = " << PeerBufferSize << endl;
