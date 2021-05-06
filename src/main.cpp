@@ -60,7 +60,7 @@ QCoreApplication *createApplication(int &argc, char *argv[])
     }
 }
 
-void qtMessageHandler(__attribute__((unused)) QtMsgType type, __attribute__((unused)) const QMessageLogContext &context, const QString &msg)
+void qtMessageHandler([[maybe_unused]] QtMsgType type, [[maybe_unused]] const QMessageLogContext &context, const QString &msg)
 {
     std::cerr << msg.toStdString() << std::endl;
 }

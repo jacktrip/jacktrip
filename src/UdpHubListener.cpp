@@ -400,9 +400,10 @@ int UdpHubListener::readClientUdpPort(QSslSocket* clientConnection, QString &cli
     // --------------------------------
     qint32 udp_port;
     int size = sizeof(udp_port);
-    char port_buf[size];
+    char *port_buf = new char[size];
     clientConnection->read(port_buf, size);
     udp_port = qFromLittleEndian<qint32>(port_buf);
+    delete[] port_buf;
     //std::memcpy(&udp_port, port_buf, size);
     
     // Check if we have enough data available to set our remote client name
@@ -435,10 +436,11 @@ int UdpHubListener::checkAuthAndReadPort (QSslSocket *clientConnection, QString 
     }
     
     qint32 usernameLength, passwordLength;
-    char buf[size];
+    char *buf = new char[size];
     clientConnection->peek(buf, size);
     usernameLength = qFromLittleEndian<qint32>(buf + gMaxRemoteNameLength + sizeof(qint32));
     passwordLength = qFromLittleEndian<qint32>(buf + gMaxRemoteNameLength + (2 * sizeof(qint32)));
+    delete[] buf;
     
     // Check if we have enough data.
     if (clientConnection->bytesAvailable() < size + usernameLength + passwordLength + 2) {
@@ -448,9 +450,10 @@ int UdpHubListener::checkAuthAndReadPort (QSslSocket *clientConnection, QString 
     // Get our port.
     qint32 udp_port;
     size = sizeof(udp_port);
-    char port_buf[size];
+    char *port_buf = new char[size];
     clientConnection->read(port_buf, size);
     udp_port = qFromLittleEndian<qint32>(port_buf);
+    delete[] port_buf;
     
     // Then our jack client name.
     char name_buf[gMaxRemoteNameLength];
@@ -533,7 +536,7 @@ void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 }
 
 //*******************************************************************************
-int UdpHubListener::getJackTripWorker(QString address, __attribute__((unused)) uint16_t port, QString &clientName)
+int UdpHubListener::getJackTripWorker(QString address, [[maybe_unused]] uint16_t port, QString &clientName)
 {
     //Find our first empty slot in our vector of worker object pointers.
     //Return -1 if we have no space left for additional threads, or the index of the new JackTripWorker.

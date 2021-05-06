@@ -78,7 +78,7 @@ JMess::~JMess()
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::writeOutput(__attribute__((unused)) QString xmlOutFile)
+void JMess::writeOutput(QString /*xmlOutFile*/)
 {
     //  QDomDocument jmess_xml;   QDomElement root;
     //  QDomElement connection;   QDomElement output;
@@ -382,7 +382,7 @@ void JMess::disconnectAll()
  * read the file.
  */
 //-------------------------------------------------------------------------------
-int JMess::parseXML(__attribute__((unused)) QString xmlInFile)
+int JMess::parseXML(QString /*xmlInFile*/)
 {
     //  mPortsToConnect.clear();
     //  QString errorStr;
@@ -446,7 +446,7 @@ int JMess::parseXML(__attribute__((unused)) QString xmlInFile)
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::connectPorts(__attribute__((unused)) QString xmlInFile)
+void JMess::connectPorts(QString /*xmlInFile*/)
 {
     QVector<QString> OutputInput(2);
 
