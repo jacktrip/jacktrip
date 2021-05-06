@@ -351,14 +351,14 @@ void JackTripWorker::jacktripStopped()
     mUdpHubListener->releaseThread(mID);
 }
 
-#ifndef __NO_JACK__
 void JackTripWorker::alertPatcher()
 {
+    #ifndef __NO_JACK__
     QMutexLocker lock(&mMutex);
     if (mRunning) {
         mAssignedClientName = mJackTrip->getAssignedClientName();
         mUdpHubListener->registerClientWithPatcher(mAssignedClientName);
         mPatched = true;
     }
+    #endif
 }
-#endif

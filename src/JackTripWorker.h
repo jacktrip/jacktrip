@@ -124,9 +124,7 @@ class JackTripWorker : public QObject
     void receivedDataUDP();
     void udpTimerTick();
     void jacktripStopped();
-#ifndef __NO_JACK__
     void alertPatcher();
-#endif
 
    signals:
     void signalRemoveThread();
