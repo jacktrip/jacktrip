@@ -56,7 +56,6 @@
 #include "JackTripWorker.h"
 #include "jacktrip_globals.h"
 
-#include "JMess.h"
 using std::cout;
 using std::endl;
 
