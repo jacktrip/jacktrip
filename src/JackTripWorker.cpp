@@ -101,10 +101,12 @@ void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server
     mUdpSockTemp.close();
     if (mRunning) {
         mJackTrip->slotStopProcesses();
+#ifndef __NO_JACK__
         if (mPatched) {
             mUdpHubListener->unregisterClientWithPatcher(mAssignedClientName);
             mPatched = false;
         }
+#endif
         mRunning = false;
     }
     //Set as spawning from this point on.
@@ -227,10 +229,12 @@ void JackTripWorker::stopThread()
     if (mRunning) {
         mRunning = false;
         mJackTrip->slotStopProcesses();
+#ifndef __NO_JACK__
         if (mPatched) {
             mUdpHubListener->unregisterClientWithPatcher(mAssignedClientName);
             mPatched = false;
         }
+#endif
     } else if (mSpawning) {
         mSpawning = false;
         mUdpSockTemp.close();
@@ -336,10 +340,12 @@ void JackTripWorker::jacktripStopped()
         return;
     }
     mRunning = false;
+#ifndef __NO_JACK__
     if (mPatched) {
         mUdpHubListener->unregisterClientWithPatcher(mAssignedClientName);
         mPatched = false;
     }
+#endif
     mUdpHubListener->releaseThread(mID);
 }
 
@@ -348,7 +354,9 @@ void JackTripWorker::alertPatcher()
     QMutexLocker lock(&mMutex);
     if (mRunning) {
         mAssignedClientName = mJackTrip->getAssignedClientName();
+#ifndef __NO_JACK__
         mUdpHubListener->registerClientWithPatcher(mAssignedClientName);
         mPatched = true;
+#endif
     }
 }

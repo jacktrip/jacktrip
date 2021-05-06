@@ -17,6 +17,13 @@ elif host_machine.system() == 'windows'
 	defines += '-DNOMINMAX'
 endif
 
+qt5_dep = dependency('qt5', modules: ['Core', 'Network', 'Widgets'])
+jack_dep = dependency('jack', required: get_option('jack'))
+if not jack_dep.found()
+	defines += '-D__NO_JACK__'
+endif
+deps = [qt5_dep, jack_dep]
+
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/JackTripWorker.h',
@@ -28,8 +35,11 @@ moc_h = ['src/DataProtocol.h',
 	'src/qjacktrip.h',
 	'src/messageDialog.h',
 	'src/Auth.h',
-	'src/Patcher.h',
 	'src/SslServer.h']
+	
+if jack_dep.found()
+	moc_h += ['src/Patcher.h']
+endif
 	
 ui_h = ['src/qjacktrip.ui',
 	'src/messageDialog.ui',
@@ -59,14 +69,6 @@ src = [	'src/DataProtocol.cpp',
 	'src/messageDialog.cpp',
 	'src/SslServer.cpp',
 	'src/Auth.cpp']
-
-qt5_dep = dependency('qt5', modules: ['Core', 'Network', 'Gui', 'Widgets'])
-jack_dep = dependency('jack', required: get_option('jack'))
-if not jack_dep.found()
-	defines += '-D__NO_JACK__'
-endif
-
-deps = [qt5_dep, jack_dep]
 
 if not get_option('rtaudio').disabled()
 	defines += '-D__RT_AUDIO__'

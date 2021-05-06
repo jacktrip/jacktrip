@@ -577,6 +577,7 @@ int UdpHubListener::getPoolID(QString address, uint16_t port)
     return -1;
 }
 
+#ifndef __NO_JACK__
 void UdpHubListener::registerClientWithPatcher(QString& clientName)
 {
     cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads << endl;
@@ -595,6 +596,7 @@ void UdpHubListener::unregisterClientWithPatcher(QString& clientName)
 #endif // endwhere
     connectPatch(false, clientName);
 }
+#endif // __NO_JACK__
 
 //*******************************************************************************
 int UdpHubListener::releaseThread(int id)
@@ -625,6 +627,7 @@ void UdpHubListener::releaseDuplicateThreads(JackTripWorker* worker, uint16_t ac
     worker->setClientPort(actual_peer_port);
 }
 
+#ifndef __NO_JACK__
 #ifdef WAIR // wair
 //*******************************************************************************
 void UdpHubListener::connectMesh(bool spawn)
@@ -647,6 +650,7 @@ void UdpHubListener::enumerateRunningThreadIDs()
     }
 }
 #endif  // endwhere
+#endif // __NO_JACK__
 
 void UdpHubListener::connectPatch(bool spawn, const QString &clientName)
 {

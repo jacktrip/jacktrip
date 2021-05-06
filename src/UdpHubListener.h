@@ -50,7 +50,9 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
+#ifndef __NO_JACK__
 #include "Patcher.h"
+#endif
 #include "Auth.h"
 #include "SslServer.h"
 
@@ -82,8 +84,10 @@ class UdpHubListener : public QObject
     /// \brief Stops the execution of the Thread
     void stop() { mStopped = true; }
 
+#ifndef __NO_JACK__
     void registerClientWithPatcher(QString &clientName);
     void unregisterClientWithPatcher(QString &clientName);
+#endif
     int releaseThread(int id);
     void releaseDuplicateThreads(JackTripWorker *worker, uint16_t actual_peer_port);
 
@@ -179,7 +183,9 @@ class UdpHubListener : public QObject
 
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
+#ifndef __NO_JACK__
     Patcher mPatcher;
+#endif
 
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
@@ -200,7 +206,9 @@ class UdpHubListener : public QObject
     void setWAIR(int b) { mWAIR = b; }
     bool isWAIR() { return mWAIR; }
 #endif  // endwhere
+#ifndef __NO_JACK__
     void connectPatch(bool spawn, const QString &clientName);
+#endif
 
    public:
     void setRequireAuth(bool requireAuth) { mRequireAuth = requireAuth; }
