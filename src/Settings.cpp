@@ -203,7 +203,7 @@ void Settings::parseInput(int argc, char** argv)
         {"simjitter", required_argument, NULL, OPT_SIMJITTER},
         {"broadcast", required_argument, NULL, OPT_BROADCAST},
         {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
-        { "auth", no_argument, NULL, 'A'},  // Enable authentication between hub client and hub server
+        {"auth", no_argument, NULL, 'A'},  // Enable authentication between hub client and hub server
         {"certfile", required_argument, NULL, OPT_AUTHCERT},  // Certificate for server authentication
         {"keyfile", required_argument, NULL, OPT_AUTHKEY},  // Private key for server authentication
         {"credsfile", required_argument, NULL, OPT_AUTHCREDS},  // Username and password store for server authentication
@@ -771,10 +771,6 @@ void Settings::printUsage()
     cout << " --simjitter <rate>,<d>                   Simulate jitter, d is max delay "
             "in packets"
          << endl;
-    cout << endl;
-    cout << "ARGUMENTS TO SIMULATE NETWORK ISSUES:" << endl;
-    cout << " --simloss <rate>                         Simulate packet loss" << endl;
-    cout << " --simjitter <rate>,<d>                   Simulate jitter, d is max delay in packets" << endl;
     cout << endl;
     cout << "ARGUMENTS FOR HUB CLIENT/SERVER AUTHENTICATION:" << endl;
     cout << " -A, --auth                               Use authentication on the client side, or require it on the server side" << endl;

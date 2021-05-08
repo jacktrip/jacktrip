@@ -344,7 +344,6 @@ int UdpDataProtocol::bindSocket()
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
     // Block until There's something to read
-    //while (!datagramAvailable() && !mStopped) { QThread::usleep(100); }
     int n_bytes = ::recv(mSocket, buf, n, 0);
     if (n_bytes == mControlPacketSize) {
         //Control signal (currently just check for exit packet);
@@ -588,7 +587,7 @@ void UdpDataProtocol::run()
             // If our peer settings aren't compatible, don't continue.
             // (The checkPeerSettings function needs to signal the JackTrip instance with the exact error message.)
             delete[] full_redundant_packet;
-            full_redundant_packet = NULL;
+            full_redundant_packet = nullptr;
             return;
         }
 

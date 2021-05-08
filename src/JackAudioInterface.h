@@ -110,7 +110,7 @@ class JackAudioInterface : public AudioInterface
 
     //--------------GETTERS---------------------------------------------
     /// \brief Get the actual client name assigned by the Jack server
-    virtual QString getAssignedClientName()
+    virtual QString getAssignedClientName() final
     { return mAssignedClientName; }
     /// \brief Get the Jack Server Sampling Rate, in samples/second
     virtual uint32_t getSampleRate() const;

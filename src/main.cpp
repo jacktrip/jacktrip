@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
 #ifndef __NO_GUI__    
-    QScopedPointer<QJackTrip> w;
+    QScopedPointer<QJackTrip> window;
     if (qobject_cast<QApplication *>(app.data())) {
         //Start the GUI if there are no command line options.
 #ifdef __WIN_32__
@@ -139,9 +139,9 @@ int main(int argc, char *argv[])
         FreeConsole();
 #endif // __WIN_32__
         app->setApplicationName("QJackTrip");
-        w.reset(new QJackTrip);
-        QObject::connect(w.data(), &QJackTrip::signalExit, app.data(), &QCoreApplication::quit, Qt::QueuedConnection);
-        w->show();
+        window.reset(new QJackTrip);
+        QObject::connect(window.data(), &QJackTrip::signalExit, app.data(), &QCoreApplication::quit, Qt::QueuedConnection);
+        window->show();
 
     } else {
 #endif // __NO_GUI__
