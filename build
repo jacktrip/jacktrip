@@ -45,4 +45,6 @@ else
     make release
 fi
 
-ln -s qjacktrip jacktrip
+if [[ ! -e 'jacktrip' ]]; then
+    ln -s qjacktrip jacktrip
+fi

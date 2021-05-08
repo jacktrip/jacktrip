@@ -135,7 +135,7 @@ win32 {
 }
 
 DESTDIR = .
-QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
+QMAKE_CLEAN += -r ./qjacktrip ./qjacktrip_debug ./release ./debug
 
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr
