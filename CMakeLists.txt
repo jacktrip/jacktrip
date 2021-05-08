@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 project(QJackTrip)
 
+set(nogui FALSE)
+
+if (nogui)
+  add_compile_definitions(__NO_GUI__)
+endif ()
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   add_compile_definitions(__LINUX__)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -28,12 +34,13 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Find the QtWidgets library
-find_package(Qt5Widgets CONFIG REQUIRED)
+if (NOT nogui)
+  find_package(Qt5Widgets CONFIG REQUIRED)
+endif ()
 find_package(Qt5Network CONFIG REQUIRED)
 
 set(qjacktrip_SRC
   src/main.cpp
-  src/gui/qjacktrip.cpp
   src/Settings.cpp
   src/jacktrip_globals.cpp
   src/JackTrip.cpp
@@ -48,9 +55,6 @@ set(qjacktrip_SRC
   src/PacketHeader.cpp
   src/RingBuffer.cpp
   src/JitterBuffer.cpp
-  src/gui/about.cpp
-  src/gui/messageDialog.cpp
-  src/gui/qjacktrip.qrc
   src/Compressor.cpp
   src/Limiter.cpp
   src/Reverb.cpp
@@ -60,28 +64,53 @@ set(qjacktrip_SRC
   src/Auth.cpp
 )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set (qjacktrip_SRC ${qjacktrip_SRC} src/NoNap.mm)
-  set (CMAKE_C_FLAGS "-x objective-c")
-  set (CMAKE_EXE_LINKER_FLAGS "-framework Foundation")
+if (NOT nogui)
+  set (qjacktrip_SRC ${qjacktrip_SRC}
+    src/gui/qjacktrip.cpp
+    src/gui/about.cpp
+    src/gui/messageDialog.cpp
+    src/gui/qjacktrip.qrc
+  )
+
+  if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
+  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set (qjacktrip_SRC ${qjacktrip_SRC} src/NoNap.mm)
+    set (CMAKE_C_FLAGS "-x objective-c")
+    set (CMAKE_EXE_LINKER_FLAGS "-framework Foundation")
+  endif ()
 endif ()
 
 add_compile_definitions(WAIRTOHUB)
 
 # Tell CMake to create the executable
-add_executable(qjacktrip ${qjacktrip_SRC})
+if (nogui)
+  add_executable(jacktrip ${qjacktrip_SRC})
+else ()
+  add_executable(qjacktrip ${qjacktrip_SRC})
+endif ()
 
 # Use the Widgets module from Qt 5.
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  target_link_libraries(qjacktrip Qt5::Widgets Qt5::Network PkgConfig::JACK)
-  if (NOT EXISTS "jacktrip")
-    add_custom_target(create_symlink ALL COMMAND ${CMAKE_COMMAND} -E create_symlink qjacktrip jacktrip)
+  if (nogui)
+    target_link_libraries(jacktrip Qt5::Network PkgConfig::JACK)
+  else ()
+    target_link_libraries(qjacktrip Qt5::Widgets Qt5::Network PkgConfig::JACK)
+    if (NOT EXISTS "${CMAKE_BINARY_DIR}/jacktrip")
+      add_custom_target(create_symlink ALL COMMAND ${CMAKE_COMMAND} -E create_symlink qjacktrip jacktrip)
+    endif ()
   endif ()
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  target_link_libraries(qjacktrip Qt5::Widgets Qt5::Network "C:/Program Files/JACK2/lib/libjack64.lib" ws2_32)
+  if (nogui)
+    target_link_libraries(jacktrip Qt5::Network "C:/Program Files/JACK2/lib/libjack64.lib" ws2_32)
+  else ()
+    target_link_libraries(qjacktrip Qt5::Widgets Qt5::Network "C:/Program Files/JACK2/lib/libjack64.lib" ws2_32)
+  endif ()
 endif ()
 
 # Install the executable
-install(TARGETS qjacktrip DESTINATION bin)
+if (nogui)
+  install(TARGETS jacktrip DESTINATION bin)
+else ()
+  install(TARGETS qjacktrip DESTINATION bin)
+endif ()

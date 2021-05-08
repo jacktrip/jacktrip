@@ -6,15 +6,25 @@ CONFIG += c++11 console
 CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release build_all
-CONFIG(debug, debug|release) {
-  TARGET = qjacktrip_debug
-  } else {
-  TARGET = qjacktrip
-  }
 
-QT += gui
+nogui {
+  DEFINES += __NO_GUI__
+  CONFIG(debug, debug|release) {
+    TARGET = jacktrip_debug
+    } else {
+    TARGET = jacktrip
+    }
+} else {
+  CONFIG(debug, debug|release) {
+    TARGET = qjacktrip_debug
+    } else {
+    TARGET = qjacktrip
+    }
+  QT += gui
+  QT += widgets
+}
+
 QT += network
-QT += widgets
 
 # rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOHUB
 # DEFINES += WAIR
@@ -58,9 +68,12 @@ macx {
   CONFIG -= app_bundle
   #CONFIG += x86 #ppc #### If you have both libraries installed, you
   # can change between 32bits (x86) or 64bits(x86_64) Change this to go back to 32 bits (x86)
-  LIBS += -framework CoreAudio -framework CoreFoundation -framework Foundation
+  LIBS += -framework CoreAudio -framework CoreFoundation
   DEFINES += __MAC_OSX__
-  CONFIG += objective_c
+  !nogui {
+    LIBS += -framework Foundation
+    CONFIG += objective_c
+  }
 }
 
 linux-g++ | linux-g++-64 {
@@ -135,7 +148,7 @@ win32 {
 }
 
 DESTDIR = .
-QMAKE_CLEAN += -r ./qjacktrip ./qjacktrip_debug ./release ./debug
+QMAKE_CLEAN += -r ./qjacktrip ./qjacktrip_debug ./jacktrip ./jacktrip_debug ./release ./debug
 
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr
@@ -174,9 +187,6 @@ HEADERS += src/DataProtocol.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
-           src/gui/about.h \
-           src/gui/messageDialog.h \
-           src/gui/qjacktrip.h \
            src/Patcher.h \
            src/SslServer.h \
            src/Auth.h
@@ -184,6 +194,12 @@ HEADERS += src/DataProtocol.h \
 
 !nojack {
 HEADERS += src/JackAudioInterface.h
+}
+
+!nogui {
+HEADERS += src/gui/about.h \
+           src/gui/messageDialog.h \
+           src/gui/qjacktrip.h
 }
 
 rtaudio {
@@ -207,10 +223,7 @@ SOURCES += src/DataProtocol.cpp \
            src/UdpDataProtocol.cpp \
            src/UdpHubListener.cpp \
            src/AudioInterface.cpp \
-           src/gui/about.cpp \
            src/main.cpp \
-           src/gui/messageDialog.cpp \
-           src/gui/qjacktrip.cpp \
            src/Patcher.cpp \
            src/SslServer.cpp \
            src/Auth.cpp
@@ -220,13 +233,21 @@ SOURCES += src/DataProtocol.cpp \
 SOURCES += src/JackAudioInterface.cpp
 }
 
-macx {
-  HEADERS += src/gui/NoNap.h
-  OBJECTIVE_SOURCES += src/gui/NoNap.mm
+!nogui {
+SOURCES += src/gui/messageDialog.cpp \
+           src/gui/qjacktrip.cpp \
+           src/gui/about.cpp
 }
 
-FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
-RESOURCES += src/gui/qjacktrip.qrc
+!nogui {
+  macx {
+    HEADERS += src/gui/NoNap.h
+    OBJECTIVE_SOURCES += src/gui/NoNap.mm
+  }
+
+  FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
+  RESOURCES += src/gui/qjacktrip.qrc
+}
 
 rtaudio {
     SOURCES += src/RtAudioInterface.cpp

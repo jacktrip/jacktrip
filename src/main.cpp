@@ -35,8 +35,12 @@
  * \date July 2020
  */
 
+#ifndef __NO_GUI__
 #include "gui/qjacktrip.h"
 #include <QApplication>
+#else
+#include <QCoreApplication>
+#endif
 #include <QScopedPointer>
 #include <iostream>
 #include <signal.h>
@@ -47,6 +51,7 @@
 
 QCoreApplication *createApplication(int &argc, char *argv[])
 {
+#ifndef __NO_GUI__
     //Find the name that the app was called with.
     //(Don't use QString because we should create our QApplication first.)
     char* argv0 = strdup(argv[0]);
@@ -70,6 +75,9 @@ QCoreApplication *createApplication(int &argc, char *argv[])
         free(argv0);
         return new QCoreApplication(argc, argv);
     }
+#else
+    return new QCoreApplication(argc, argv);
+#endif
 }
 
 void qtMessageHandler([[maybe_unused]] QtMsgType type, [[maybe_unused]] const QMessageLogContext &context, const QString &msg)
@@ -120,21 +128,23 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
 int main(int argc, char *argv[])
 {
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
-    QScopedPointer<QJackTrip> w;
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
-    
+#ifndef __NO_GUI__    
+    QScopedPointer<QJackTrip> w;
     if (qobject_cast<QApplication *>(app.data())) {
         //Start the GUI if there are no command line options.
 #ifdef __WIN_32__
         //Remove the console that appears if we're in windows.
         FreeConsole();
-#endif
+#endif // __WIN_32__
         app->setApplicationName("QJackTrip");
         w.reset(new QJackTrip);
         QObject::connect(w.data(), &QJackTrip::signalExit, app.data(), &QCoreApplication::quit, Qt::QueuedConnection);
         w->show();
+
     } else {
+#endif // __NO_GUI__
         //Otherwise use the non-GUI version, and parse our command line.
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
         qInstallMessageHandler(qtMessageHandler);
@@ -185,7 +195,9 @@ int main(int argc, char *argv[])
             std::cerr << gPrintSeparator << std::endl;
             return -1;
         }
+#ifndef __NO_GUI__
     }
+#endif // __NO_GUI__
     
     return app->exec();
 }
