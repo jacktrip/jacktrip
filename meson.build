@@ -45,7 +45,9 @@ ui_h = ['src/gui/qjacktrip.ui',
 	'src/gui/messageDialog.ui',
 	'src/gui/about.ui']
 
-moc_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : src/gui/qjacktrip.qrc)
+qres = ['src/gui/qjacktrip.qrc']
+
+moc_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
