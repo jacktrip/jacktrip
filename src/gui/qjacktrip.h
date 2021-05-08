@@ -36,8 +36,8 @@
 #include <QString>
 #include <QTemporaryFile>
 #include <QLabel>
-#include "UdpHubListener.h"
-#include "JackTrip.h"
+#include "../UdpHubListener.h"
+#include "../JackTrip.h"
 #include "messageDialog.h"
 
 #ifdef __MAC_OSX__

@@ -33,7 +33,7 @@ find_package(Qt5Network CONFIG REQUIRED)
 
 set(qjacktrip_SRC
   src/main.cpp
-  src/qjacktrip.cpp
+  src/gui/qjacktrip.cpp
   src/Settings.cpp
   src/jacktrip_globals.cpp
   src/JackTrip.cpp
@@ -48,9 +48,9 @@ set(qjacktrip_SRC
   src/PacketHeader.cpp
   src/RingBuffer.cpp
   src/JitterBuffer.cpp
-  src/about.cpp
-  src/messageDialog.cpp
-  src/qjacktrip.qrc
+  src/gui/about.cpp
+  src/gui/messageDialog.cpp
+  src/gui/qjacktrip.qrc
   src/Compressor.cpp
   src/Limiter.cpp
   src/Reverb.cpp

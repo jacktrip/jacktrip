@@ -37,7 +37,7 @@ Changelog
 
 1.2.1
 ---
-- (added) build-script builds in build
+- (added) build script builds in builddir
 - (fixed) refactor "Master" to be "Hub"
 - (fixed) 1.2.1 correctly versioned and tagged
 

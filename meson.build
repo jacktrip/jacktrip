@@ -31,9 +31,9 @@ moc_h = ['src/DataProtocol.h',
 	'src/Settings.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
-	'src/about.h',
-	'src/qjacktrip.h',
-	'src/messageDialog.h',
+	'src/gui/about.h',
+	'src/gui/qjacktrip.h',
+	'src/gui/messageDialog.h',
 	'src/Auth.h',
 	'src/SslServer.h']
 	
@@ -41,11 +41,11 @@ if jack_dep.found()
 	moc_h += ['src/Patcher.h']
 endif
 	
-ui_h = ['src/qjacktrip.ui',
-	'src/messageDialog.ui',
-	'src/about.ui']
+ui_h = ['src/gui/qjacktrip.ui',
+	'src/gui/messageDialog.ui',
+	'src/gui/about.ui']
 
-moc_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h)
+moc_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : src/gui/qjacktrip.qrc)
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
@@ -63,10 +63,10 @@ src = [	'src/DataProtocol.cpp',
 	'src/Compressor.cpp',
 	'src/Limiter.cpp',
 	'src/Reverb.cpp',
-	'src/about.cpp',
+	'src/gui/about.cpp',
 	'src/main.cpp',
-	'src/qjacktrip.cpp',
-	'src/messageDialog.cpp',
+	'src/gui/qjacktrip.cpp',
+	'src/gui/messageDialog.cpp',
 	'src/SslServer.cpp',
 	'src/Auth.cpp']
 
@@ -91,7 +91,7 @@ if host_machine.system() == 'windows'
 endif
 
 if host_machine.system() == 'darwin'
-	src += ['src/NoNap.mm']
+	src += ['src/gui/NoNap.mm']
 	apple_dep = dependency('appleframeworks', modules : 'foundation')
 	deps += apple_dep
 	add_languages('objcpp')

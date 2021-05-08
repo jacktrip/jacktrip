@@ -34,10 +34,10 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "Limiter.h"
-#include "Compressor.h"
-#include "CompressorPresets.h"
-#include "Reverb.h"
+#include "../Limiter.h"
+#include "../Compressor.h"
+#include "../CompressorPresets.h"
+#include "../Reverb.h"
 
 QJackTrip::QJackTrip(QWidget *parent) :
     QMainWindow(parent),

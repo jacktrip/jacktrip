@@ -25,7 +25,7 @@
 
 #include "about.h"
 #include "ui_about.h"
-#include "jacktrip_globals.h"
+#include "../jacktrip_globals.h"
 
 const QString About::sBuildID = "2021050500";
 

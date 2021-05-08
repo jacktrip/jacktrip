@@ -174,9 +174,9 @@ HEADERS += src/DataProtocol.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
-           src/about.h \
-           src/messageDialog.h \
-           src/qjacktrip.h \
+           src/gui/about.h \
+           src/gui/messageDialog.h \
+           src/gui/qjacktrip.h \
            src/Patcher.h \
            src/SslServer.h \
            src/Auth.h
@@ -207,10 +207,10 @@ SOURCES += src/DataProtocol.cpp \
            src/UdpDataProtocol.cpp \
            src/UdpHubListener.cpp \
            src/AudioInterface.cpp \
-           src/about.cpp \
+           src/gui/about.cpp \
            src/main.cpp \
-           src/messageDialog.cpp \
-           src/qjacktrip.cpp \
+           src/gui/messageDialog.cpp \
+           src/gui/qjacktrip.cpp \
            src/Patcher.cpp \
            src/SslServer.cpp \
            src/Auth.cpp
@@ -221,12 +221,12 @@ SOURCES += src/JackAudioInterface.cpp
 }
 
 macx {
-  HEADERS += src/NoNap.h
-  OBJECTIVE_SOURCES += src/NoNap.mm
+  HEADERS += src/gui/NoNap.h
+  OBJECTIVE_SOURCES += src/gui/NoNap.mm
 }
 
-FORMS += src/qjacktrip.ui src/about.ui src/messageDialog.ui
-RESOURCES += src/qjacktrip.qrc
+FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
+RESOURCES += src/gui/qjacktrip.qrc
 
 rtaudio {
     SOURCES += src/RtAudioInterface.cpp
