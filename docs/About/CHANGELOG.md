@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.4.0
+---
+- (added) optional GUI from QJackTrip
+- (added) authentication in hub server mode
+- (added) new patcher mechanism that doesn't delete existing connections
+- (update) build script moved to root directory
 
 1.3.0
 ---
@@ -37,7 +43,7 @@ Changelog
 
 1.2.1
 ---
-- (added) build script builds in builddir
+- (added) src/build script builds in ../builddir
 - (fixed) refactor "Master" to be "Hub"
 - (fixed) 1.2.1 correctly versioned and tagged
 
