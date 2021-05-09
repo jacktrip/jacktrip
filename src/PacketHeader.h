@@ -129,6 +129,8 @@ class PacketHeader : public QObject
     /// \brief Parse the packet header and take appropriate measures (like change settings, or
     /// quit the program if peer settings don't match)
     virtual void parseHeader()                          = 0;
+    /// \brief Check that the settings in the supplied packet header match the server's settings 
+    /// \return True if settings match, false otherwise 
     virtual bool checkPeerSettings(int8_t* full_packet) = 0;
 
     virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const      = 0;

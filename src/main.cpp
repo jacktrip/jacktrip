@@ -53,7 +53,7 @@ QCoreApplication *createApplication(int &argc, char *argv[])
 {
 #ifndef __NO_GUI__
     //Find the name that the app was called with.
-    //(Don't use QString because we should create our QApplication first.)
+    //TODO: Consider replacing the C implementation below with one that uses QString or std::string.
     char* argv0 = strdup(argv[0]);
     char* command;
     char* token;

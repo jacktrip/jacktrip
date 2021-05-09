@@ -343,7 +343,6 @@ int UdpDataProtocol::bindSocket()
 //*******************************************************************************
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
-    // Block until There's something to read
     int n_bytes = ::recv(mSocket, buf, n, 0);
     if (n_bytes == mControlPacketSize) {
         //Control signal (currently just check for exit packet);

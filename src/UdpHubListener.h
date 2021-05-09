@@ -59,12 +59,6 @@
 class JackTripWorker; // forward declaration
 class Settings;
 
-/*typedef struct {
-    QString address;
-    int16_t port;
-    QString clientName;
-} addressPortNameTriple;*/
-
 /** \brief Hub UDP listener on the Server.
  *
  * This creates a server that will listen on the well know port (the server port) and will
