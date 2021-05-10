@@ -9,17 +9,21 @@ cp -f ../builddir/qjacktrip QJackTrip.app/Contents/MacOS/
 # If you want to create a signed package, uncomment and modify the codesign parameter below as appropriate.
 macdeployqt QJackTrip.app #-codesign="Developer ID Application: Aaron Wyatt"
 exit 0
-# Needed for notarization:
-# Remove the exit line above and edit the signing identity below as appropriate.
-mkdir -p QJackTrip.app/Contents/Frameworks/Jackmp.framework/Versions/A/Resources
-cd QJackTrip.app/Contents/Frameworks/Jackmp.framework/Versions
-cp /Library/Frameworks/Jackmp.framework/Versions/A/Jackmp A/
-cp /Library/Frameworks/Jackmp.framework/Versions/A/Resources/Info.plist A/Resources/
-ln -s A Current
-cd ..
-ln -s Versions/Current/Jackmp Jackmp
-ln -s Versions/Current/Resources Resources
-cd ../../../..
-codesign -s "Developer ID Application: Aaron Wyatt" QJackTrip.app/Contents/Frameworks/Jackmp.framework/Versions/A/Jackmp 
-codesign -s "Developer ID Application: Aaron Wyatt" QJackTrip.app/Contents/Frameworks/Jackmp.framework/Versions/A 
-codesign -f -s "Developer ID Application: Aaron Wyatt" --entitlements entitlements.plist --options "runtime" QJackTrip.app
+
+# If you have Packages installed, you can build an installer for the newly created app bundle.
+# Remove the exit line above to do this.
+
+# Needed for notarization. Uncomment the line and update the developer ID as required.
+#codesign -f -s "Developer ID Application: Aaron Wyatt" --entitlements entitlements.plist --options "runtime" QJackTrip.app
+
+packagesbuild package/QJackTrip.pkgproj
+exit 0
+
+# Remove or comment out the exit line above to submit a notarization request to apple.
+# Make sure you adjust the parameters to match your developer account.
+read -n1 -rsp "Press any key to submit a notarization request to apple..."
+echo
+xcrun altool --notarize-app --primary-bundle-id "org.psi-borg.qjacktrip" --username USERNAME --password PASSWORD --asc-provider ASCPROVIDER --file package/build/QJackTrip.pkg
+read -n1 -rsp "Press any key to staple the notarization once it's been approved..."
+echo
+xcrun stapler staple package/build/QJackTrip.pkg
