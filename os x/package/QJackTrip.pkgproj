@@ -37,9 +37,9 @@
 								<key>BUNDLE_POSTINSTALL_PATH</key>
 								<dict>
 									<key>PATH</key>
-									<string>/Users/psiborg/packages/QJackTrip/link.sh</string>
+									<string>link.sh</string>
 									<key>PATH_TYPE</key>
-									<integer>0</integer>
+									<integer>1</integer>
 								</dict>
 								<key>BUNDLE_PREINSTALL_PATH</key>
 								<dict>
@@ -51,9 +51,9 @@
 								<key>GID</key>
 								<integer>80</integer>
 								<key>PATH</key>
-								<string>/Users/psiborg/src/QJackTrip/os x/QJackTrip.app</string>
+								<string>../QJackTrip.app</string>
 								<key>PATH_TYPE</key>
-								<integer>0</integer>
+								<integer>1</integer>
 								<key>PERMISSIONS</key>
 								<integer>493</integer>
 								<key>TYPE</key>
@@ -837,7 +837,7 @@
 			<key>USE_HFS+_COMPRESSION</key>
 			<false/>
 			<key>VERSION</key>
-			<string>1.2.1</string>
+			<string>1.3.0</string>
 		</dict>
 		<key>PROJECT_COMMENTS</key>
 		<dict>
