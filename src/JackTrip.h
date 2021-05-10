@@ -45,7 +45,6 @@
 #include <QUdpSocket>
 #include <QSslSocket>
 #include <QTimer>
-#include <QUdpSocket>
 #include <stdexcept>
 
 #include "AudioInterface.h"
