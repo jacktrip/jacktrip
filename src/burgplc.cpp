@@ -149,8 +149,8 @@ void BurgPLC::plot()
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     //    qDebug() << "hi governator--push";
     //    QMutexLocker locker(&mMutex); // don't lock the mutex
-    seq %= TWOTOTHESIXTEENTH;
-    mIncomingSeq = seq;
+    mIncomingSeq = seq % TWOTOTHESIXTEENTH;
+    mIncomingCntWraps = seq / TWOTOTHESIXTEENTH;
     int nextSeq = mLastIncomingSeq2+1;
     nextSeq %= TWOTOTHESIXTEENTH;
     if (mIncomingSeq != nextSeq) {
@@ -159,7 +159,6 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     mLastIncomingSeq2 = mIncomingSeq;
     if (!mOutgoingCntWraps) mIncomingCnt=mIncomingSeq; else mIncomingCnt++;
     mIncomingCnt %= TWOTOTHESIXTEENTH;
-    if (mIncomingCnt==0) mIncomingCntWraps++;
     mIncomingCntWrap[mIncomingSeq] = mIncomingCntWraps;
     memcpy(mIncomingDat[mIncomingSeq], buf, mBytes);
     usleep(25); // 25 usec @ 32FPP // 100 usec @ 128FPP
