@@ -34,7 +34,7 @@ About::About(QWidget *parent) :
     m_ui(new Ui::About)
 {
     m_ui->setupUi(this);
-    connect(m_ui->closeButton, &QPushButton::released, this, [=](){ this->done(0); });
+    connect(m_ui->closeButton, &QPushButton::clicked, this, [=](){ this->done(0); });
     
     m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%VERSION%", gVersion));
     m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%BUILD%", sBuildID));

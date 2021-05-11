@@ -53,20 +53,20 @@ QJackTrip::QJackTrip(QWidget *parent) :
     //Create all our UI connections.
     connect(m_ui->typeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QJackTrip::chooseRunType);
     connect(m_ui->addressComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::addressChanged);
-    connect(m_ui->connectButton, &QPushButton::released, this, &QJackTrip::start);
-    connect(m_ui->disconnectButton, &QPushButton::released, this, &QJackTrip::stop);
-    connect(m_ui->exitButton, &QPushButton::released, this, &QJackTrip::exit);
-    connect(m_ui->certBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
-    connect(m_ui->keyBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
-    connect(m_ui->credsBrowse, &QPushButton::released, this, &QJackTrip::browseForFile);
-    connect(m_ui->commandLineButton, &QPushButton::released, this, &QJackTrip::showCommandLineMessageBox);
-    connect(m_ui->useDefaultsButton, &QPushButton::released, this, &QJackTrip::resetOptions);
+    connect(m_ui->connectButton, &QPushButton::clicked, this, &QJackTrip::start);
+    connect(m_ui->disconnectButton, &QPushButton::clicked, this, &QJackTrip::stop);
+    connect(m_ui->exitButton, &QPushButton::clicked, this, &QJackTrip::exit);
+    connect(m_ui->certBrowse, &QPushButton::clicked, this, &QJackTrip::browseForFile);
+    connect(m_ui->keyBrowse, &QPushButton::clicked, this, &QJackTrip::browseForFile);
+    connect(m_ui->credsBrowse, &QPushButton::clicked, this, &QJackTrip::browseForFile);
+    connect(m_ui->commandLineButton, &QPushButton::clicked, this, &QJackTrip::showCommandLineMessageBox);
+    connect(m_ui->useDefaultsButton, &QPushButton::clicked, this, &QJackTrip::resetOptions);
     connect(m_ui->usernameEdit, &QLineEdit::textChanged, this, &QJackTrip::credentialsChanged);
     connect(m_ui->passwordEdit, &QLineEdit::textChanged, this, &QJackTrip::credentialsChanged);
     connect(m_ui->certEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
     connect(m_ui->keyEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
     connect(m_ui->credsEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
-    connect(m_ui->aboutButton, &QPushButton::released, this, [=](){
+    connect(m_ui->aboutButton, &QPushButton::clicked, this, [=](){
             About about(this);
             about.exec();
         } );
