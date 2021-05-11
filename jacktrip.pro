@@ -163,7 +163,6 @@ INCLUDEPATH += faust-src-lair
 
 # Input
 HEADERS += src/DataProtocol.h \
-           src/JMess.h \
            src/JackTrip.h \
            src/Effects.h \
            src/Compressor.h \
@@ -187,13 +186,14 @@ HEADERS += src/DataProtocol.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
-           src/Patcher.h \
            src/SslServer.h \
            src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
-HEADERS += src/JackAudioInterface.h
+HEADERS += src/JackAudioInterface.h \
+           src/JMess.h \
+           src/Patcher.h
 }
 
 !nogui {
@@ -207,7 +207,6 @@ rtaudio {
 }
 
 SOURCES += src/DataProtocol.cpp \
-           src/JMess.cpp \
            src/JackTrip.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
@@ -224,13 +223,14 @@ SOURCES += src/DataProtocol.cpp \
            src/UdpHubListener.cpp \
            src/AudioInterface.cpp \
            src/main.cpp \
-           src/Patcher.cpp \
            src/SslServer.cpp \
            src/Auth.cpp
 #(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {
-SOURCES += src/JackAudioInterface.cpp
+SOURCES += src/JackAudioInterface.cpp \
+           src/JMess.cpp \
+           src/Patcher.cpp
 }
 
 !nogui {
