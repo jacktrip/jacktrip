@@ -115,10 +115,12 @@ void BurgPLC::plot()
         //        if(pull < push) qDebug() << "hi governator--under" << push << pull;
         //        if (mOutgoingCntWraps) fprintf(stdout,"%f\t%f\t%f\n",elapsed0,elapsed1,elapsed2); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
 
-        int lag = mLastOutgoingCnt-mQLen;
+        int lag = mIncomingSeq-mQLen;
+        if (lag<0) lag = 0;
+        lag %= TWOTOTHESIXTEENTH;
         int test = mIncomingCntWraps;
-        if (lag<0) test--;
-        if (lag<0) lag+=TWOTOTHESIXTEENTH;
+//        if (lag<0) test--;
+//        if (lag<0) lag+=TWOTOTHESIXTEENTH;
         //        qDebug() << (mIncomingCntWrap[lag]==test)
         //                 << (mLastOutgoingCnt-2) << mIncomingCntWrap[lag] << test << mIncomingCntWraps;
         memcpy(mXfrBuffer, mIncomingDat[lag], mBytes);
@@ -149,18 +151,17 @@ void BurgPLC::plot()
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     //    qDebug() << "hi governator--push";
     //    QMutexLocker locker(&mMutex); // don't lock the mutex
-    mIncomingSeq = seq % TWOTOTHESIXTEENTH;
     mIncomingCntWraps = seq / TWOTOTHESIXTEENTH;
+    mIncomingSeq = seq;
     int nextSeq = mLastIncomingSeq2+1;
-    nextSeq %= TWOTOTHESIXTEENTH;
     if (mIncomingSeq != nextSeq) {
         qDebug() << "hi pushPacket LOST PACKET" << mIncomingSeq << nextSeq;
     }
     mLastIncomingSeq2 = mIncomingSeq;
     if (!mOutgoingCntWraps) mIncomingCnt=mIncomingSeq; else mIncomingCnt++;
-    mIncomingCnt %= TWOTOTHESIXTEENTH;
-    mIncomingCntWrap[mIncomingSeq] = mIncomingCntWraps;
-    memcpy(mIncomingDat[mIncomingSeq], buf, mBytes);
+    int cur = mIncomingSeq % TWOTOTHESIXTEENTH;
+    mIncomingCntWrap[cur] = mIncomingCntWraps;
+    memcpy(mIncomingDat[cur], buf, mBytes);
     usleep(25); // 25 usec @ 32FPP // 100 usec @ 128FPP
     return true;
 };
@@ -170,8 +171,7 @@ void BurgPLC::pullPacket (int8_t* buf) {
     //    QMutexLocker locker(&mMutex); // lock the mutex
     if (!mOutgoingCntWraps)mJACKbuf=buf;
     if (!mOutgoingCntWraps)mOutgoingCnt=mIncomingSeq; else mOutgoingCnt++;
-    mOutgoingCnt %= TWOTOTHESIXTEENTH;
-    if (!mOutgoingCnt) mOutgoingCntWraps++;  // mIncomingSeq = -1 for initial pulls
+    mIncomingCntWraps = mOutgoingCnt / TWOTOTHESIXTEENTH;
     usleep(75); // 75 usec @ 32FPP // 300 usec @ 128FPP
 };
 
@@ -260,7 +260,8 @@ void BurgPLC::processPacket (bool glitch)
             case 3  :
                 OUT((glitch) ? mPrediction[s] : ( (mLastWasGlitch) ?
                                                       mXfadedPred[ s ] : mTruth[s] ), 0, s);
-                OUT(mTruthCh1[s], 1, s);
+//                OUT(mTruthCh1[s], 1, s);
+                OUT(0.0, 1, s);
                 break;
             case 4  :
                 OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);
