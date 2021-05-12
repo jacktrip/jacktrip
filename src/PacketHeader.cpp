@@ -187,7 +187,7 @@ void DefaultHeader::printHeader() const
     cout << "Sampling Rate               = " << sample_rate << "\n"
             "Audio Bit Resolutions       = " << static_cast<int>(mHeader.BitResolution) << "\n"
             "Number of Incoming Channels = " << static_cast<int>(mHeader.NumIncomingChannelsFromNet) << "\n"
-            "Number of Incoming Channels = " << static_cast<int>(mHeader.NumIncomingChannelsFromNet) << "\n"
+            "Number of Outgoing Channels = " << static_cast<int>(mHeader.NumOutgoingChannelsToNet) << "\n"
             "Sequence Number             = " << static_cast<int>(mHeader.SeqNumber) << "\n"
             "Time Stamp                  = " << mHeader.TimeStamp << "\n"
             << gPrintSeparator << "\n";
