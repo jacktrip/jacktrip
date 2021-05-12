@@ -93,9 +93,9 @@ void Settings::parseInput(int argc, char** argv)
         // These options don't set a flag.
         {"numchannels", required_argument, NULL,
          'n'},  // Number of input and output channels
-        {"numreceive", required_argument, NULL,
+        {"receivechannels", required_argument, NULL,
          OPT_NUMRECEIVE},  // Number of incoming channels
-        {"numsend", required_argument, NULL,
+        {"sendchannels", required_argument, NULL,
          OPT_NUMSEND},  // Number of outgoing channels
 #ifdef WAIR                 // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
@@ -171,7 +171,7 @@ void Settings::parseInput(int argc, char** argv)
                 mNumAudioOutputChans = atoi(optarg);
             } else {
                 std::cerr
-                    << "--numreceive ERROR: Number of channels must be greater than 0\n";
+                    << "--receivechannels ERROR: Number of channels must be greater than 0\n";
                 std::exit(1);
             }
             break;
@@ -180,7 +180,7 @@ void Settings::parseInput(int argc, char** argv)
                 mNumAudioInputChans = atoi(optarg);
             } else {
                 std::cerr
-                    << "--numsend ERROR: Number of channels must be greater than 0\n";
+                    << "--sendchannels ERROR: Number of channels must be greater than 0\n";
                 std::exit(1);
             }
             break;
@@ -609,9 +609,9 @@ void Settings::printUsage()
     cout << " -n, --numchannels #                      Number of Input and Output "
             "Channels (# greater than 0, default: "
          << 2 << ")" << endl;
-    cout << "     --numreceive #                       Number of receive Channels from "
+    cout << "     --receivechannels #                       Number of receive Channels from "
             "the network (# greater than 0)\n";
-    cout << "     --numsend #                          Number of send Channels to "
+    cout << "     --sendchannels #                          Number of send Channels to "
             "the network (# greater than 0)\n";
 #ifdef WAIR  // WAIR
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
