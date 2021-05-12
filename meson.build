@@ -82,5 +82,5 @@ src += 	['src/JackAudioInterface.cpp',
 	'src/JMess.cpp']
 endif
 
-
+install_man('jacktrip.1')
 executable('jacktrip', src, moc_files, dependencies: deps, cpp_args: defines, install: true )
