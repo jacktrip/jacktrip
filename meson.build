@@ -62,7 +62,8 @@ if not get_option('rtaudio').disabled()
 	deps += rtaudio_dep
 	if not rtaudio_dep.found()
 		opt_var = cmake.subproject_options()
-		opt_var.add_cmake_defines({'RTAUDIO_API_JACK': 'OFF'})
+		opt_var.add_cmake_defines({'RTAUDIO_API_JACK': 'OFF',
+					'RTAUDIO_BUILD_SHARED_LIBS': 'OFF'})
 		rtaudio = cmake.subproject('rtaudio', options: opt_var)
 		rtaudio_dep = rtaudio.dependency('rtaudio')
 		deps += rtaudio_dep
