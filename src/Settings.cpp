@@ -630,28 +630,28 @@ void Settings::printUsage()
             "(default "
          << gDefaultCombFilterFeedback << ")" << endl;
 #endif  // endwhere
-    cout << " -q, --queue       # (2 or more)          Queue Buffer Length, in Packet "
+    cout << " -q, --queue # (2 or more)                Queue Buffer Length, in Packet "
             "Size (default: "
          << gDefaultQueueLength << ")" << endl;
-    cout << " -r, --redundancy  # (1 or more)          Packet Redundancy to avoid "
+    cout << " -r, --redundancy # (1 or more)           Packet Redundancy to avoid "
             "glitches with packet losses (default: 1)"
          << endl;
-    cout << " -o, --portoffset  #                      Receiving bind port and peer port "
+    cout << " -o, --portoffset #                       Receiving bind port and peer port "
             "offset from default "
          << gDefaultPort << endl;
-    cout << " -B, --bindport        #                  Set only the bind port number "
+    cout << " -B, --bindport #                         Set only the bind port number "
             "(default: "
          << gDefaultPort << ")" << endl;
-    cout << " -P, --peerport        #                  Set only the peer port number "
+    cout << " -P, --peerport #                         Set only the peer port number "
             "(default: "
          << gDefaultPort << ")" << endl;
     cout << " -U, --udpbaseport                        Set only the server udp base port "
             "number (default: 61002)"
          << endl;
-    cout << " -b, --bitres      # (8, 16, 24, 32)      Audio Bit Rate Resolutions "
+    cout << " -b, --bitres # (8, 16, 24, 32)           Audio Bit Rate Resolutions "
             "(default: 16, 32 uses floating-point)"
          << endl;
-    cout << " -p, --hubpatch    # (0, 1, 2, 3, 4, 5)   Hub auto audio patch, only has "
+    cout << " -p, --hubpatch # (0, 1, 2, 3, 4, 5)      Hub auto audio patch, only has "
             "effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, "
             "2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no "
             "auto patching (default: 0)"
@@ -673,15 +673,14 @@ void Settings::printUsage()
             "when connecting to a hub server (the default is derived from this "
             "computer's external facing IP address)"
          << endl;
-    cout
-        << "     --appendthreadid                     Append thread ID to client names\n";
+    cout << " --appendthreadid                         Append thread ID to client names\n";
     cout << " -L, --localaddress                       Change default local host IP "
             "address (default: 127.0.0.1)"
          << endl;
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports "
             "in jack"
          << endl;
-    cout << " --bufstrategy     # (0, 1, 2)            Use alternative jitter buffer"
+    cout << " --bufstrategy # (0, 1, 2)                Use alternative jitter buffer"
          << endl;
     cout << " --broadcast <broadcast_queue>            Turn on broadcast output ports "
             "with extra queue (requires new jitter buffer)"
@@ -699,7 +698,7 @@ void Settings::printUsage()
             "i=incoming from network, o=outgoing to network, io=both, n=no limiters, "
             "w=warn if limiting (default=n). Say -O help for more."
          << endl;
-    cout << " -a, --assumednumclients help|# (1,2,...) Assumed number of Clients "
+    cout << " -a, --assumednumclients help|# (1,2,..)  Assumed number of Clients "
             "(sources) mixing at Hub Server (otherwise 2 assumed by -O)"
          << endl;
     cout << endl;
@@ -707,13 +706,13 @@ void Settings::printUsage()
     cout << " -R, --rtaudio                            Use system's default sound system "
             "instead of Jack"
          << endl;
-    cout << " -T, --srate         #                    Set the sampling rate, works on "
+    cout << " -T, --srate #                            Set the sampling rate, works on "
             "--rtaudio mode only (default: 48000)"
          << endl;
-    cout << " -F, --bufsize       #                    Set the buffer size, works on "
+    cout << " -F, --bufsize #                          Set the buffer size, works on "
             "--rtaudio mode only (default: 128)"
          << endl;
-    cout << " -d, --deviceid      #                    The rtaudio device id --rtaudio "
+    cout << " -d, --deviceid #                         The rtaudio device id --rtaudio "
             "mode only (default: 0)"
          << endl;
     cout << endl;
@@ -737,9 +736,8 @@ void Settings::printUsage()
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
-    cout
-        << " -V, --verbose                            Verbose mode, prints debug messages"
-        << endl;
+    cout << " -V, --verbose                            Verbose mode, prints debug messages"
+         << endl;
     cout << " -h, --help                               Prints this Help" << endl;
     cout << "" << endl;
 }
