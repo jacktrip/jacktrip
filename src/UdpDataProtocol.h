@@ -44,6 +44,7 @@
 #include <random>
 #include <stdexcept>
 #include <vector>
+#include <atomic>
 
 #include "DataProtocol.h"
 #include "jacktrip_globals.h"
