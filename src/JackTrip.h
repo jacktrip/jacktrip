@@ -454,7 +454,12 @@ class JackTrip : public QObject
 
     uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const
     {
-        return mPacketHeader->getPeerNumOutgoingChannels(full_packet);
+        if (0 == mPacketHeader->getPeerNumOutgoingChannels(full_packet)) {
+          return mPacketHeader->getPeerNumIncomingChannels(full_packet);
+        } else {
+          return mPacketHeader->getPeerNumOutgoingChannels(full_packet);
+        }
+
     }
 
     size_t getSizeInBytesPerChannel() const
