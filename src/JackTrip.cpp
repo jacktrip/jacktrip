@@ -489,6 +489,9 @@ void JackTrip::startProcess(
             std::cout << "  JackTrip:startProcess case CLIENTTOPINGSERVER before "
                          "clientPingToServerStart"
                       << std::endl;
+        if (!mIOStatStream.isNull()) {
+            mIOStatLogStream.rdbuf(((std::ostream*)mIOStatStream.data())->rdbuf());
+        }
         if (clientPingToServerStart()
                 == -1) {  // if error on server start (-1) we return inmediatly
             stop("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
@@ -560,9 +563,9 @@ void JackTrip::completeConnection()
     //Start our IO stat timer
 //    if (mIOStatTimeout > 0) {
 //        cout << "STATS" << mIOStatTimeout << endl;
-        if (!mIOStatStream.isNull()) {
-            mIOStatLogStream.rdbuf(((std::ostream*)mIOStatStream.data())->rdbuf());
-        }
+//        if (!mIOStatStream.isNull()) {
+//            mIOStatLogStream.rdbuf(((std::ostream*)mIOStatStream.data())->rdbuf());
+//        }
 //        QTimer* timer = new QTimer(this);
 //        connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
 //        timer->start(mIOStatTimeout * 1000);
