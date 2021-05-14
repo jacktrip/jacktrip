@@ -19,7 +19,9 @@ bool classify(double d)
   switch (fpclassify(d)) {
     case FP_INFINITE:  qDebug() <<  ("infinite");  tmp = true; break;
     case FP_NAN:       qDebug() <<  ("NaN");  tmp = true;        break;
-    case FP_ZERO:      qDebug() <<  ("zero");  tmp = true;       break;
+    case FP_ZERO:
+//      qDebug() <<  ("zero");
+      tmp = true;       break;
     case FP_SUBNORMAL: qDebug() <<  ("subnormal");  tmp = true;  break;
 //    case FP_NORMAL:    qDebug() <<  ("normal");    break;
   }
@@ -70,9 +72,9 @@ void BurgAlgorithm::train(vector<long double> &coeffs, const vector<float> &x, i
     //    $Dk -= $f[0] ** 2 + $B[$#x] ** 2;
 
 //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-    if ( classify(Dk) )
-    { qDebug() << pCnt << "init";
-    }
+//    if ( classify(Dk) )
+//    { qDebug() << pCnt << "init";
+//    }
 
     // BURG RECURSION
     for ( size_t k = 0; k < m; k++ )

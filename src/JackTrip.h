@@ -515,7 +515,7 @@ class JackTrip : public QObject
         mReceivedConnection = true;
         emit signalReceivedConnectionFromPeer();
     }
-    void onStatTimer();
+    void onStatTimer(QString xxx);
 
    private slots:
     void receivedConnectionTCP();

@@ -357,6 +357,8 @@ void JackTrip::setupRingBuffers()
 #define HIST 6
             mReceiveRingBuffer = new BurgPLC(mSampleRate, mNumChans, mAudioBitResolution, mAudioBufferSize,
                                mBufferQueueLength, HIST);
+            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
+
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {
@@ -556,48 +558,50 @@ void JackTrip::completeConnection()
     if (mConnectDefaultAudioPorts) { mAudioInterface->connectDefaultPorts(); }
 
     //Start our IO stat timer
-    if (mIOStatTimeout > 0) {
-        cout << "STATS" << mIOStatTimeout << endl;
+//    if (mIOStatTimeout > 0) {
+//        cout << "STATS" << mIOStatTimeout << endl;
         if (!mIOStatStream.isNull()) {
             mIOStatLogStream.rdbuf(((std::ostream*)mIOStatStream.data())->rdbuf());
         }
-        QTimer* timer = new QTimer(this);
-        connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
-        timer->start(mIOStatTimeout * 1000);
-    }
+//        QTimer* timer = new QTimer(this);
+//        connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
+//        timer->start(mIOStatTimeout * 1000);
+//    }
 }
 
 //*******************************************************************************
-void JackTrip::onStatTimer()
+void JackTrip::onStatTimer(QString xxx)
 {
-    DataProtocol::PktStat pkt_stat;
-    if (!mDataProtocolReceiver->getStats(&pkt_stat)) { return; }
-    bool reset = (0 == pkt_stat.statCount);
-    RingBuffer::IOStat recv_io_stat;
-    if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) { return; }
-    RingBuffer::IOStat send_io_stat;
-    if (!mSendRingBuffer->getStats(&send_io_stat, reset)) { return; }
-    QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
+//    DataProtocol::PktStat pkt_stat;
+//    if (!mDataProtocolReceiver->getStats(&pkt_stat)) { return; }
+//    bool reset = (0 == pkt_stat.statCount);
+//    RingBuffer::IOStat recv_io_stat;
+//    if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) { return; }
+//    RingBuffer::IOStat send_io_stat;
+//    if (!mSendRingBuffer->getStats(&send_io_stat, reset)) { return; }
+//    QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
 
-    static QMutex mutex;
-    QMutexLocker locker(&mutex);
-    if (mAudioTesterP && mAudioTesterP->getEnabled()) { mIOStatLogStream << "\n"; }
-    mIOStatLogStream << now.toLocal8Bit().constData() << " "
-                     << getPeerAddress().toLocal8Bit().constData()
-                     << " send: " << send_io_stat.underruns << "/"
-                     << send_io_stat.overflows << " recv: " << recv_io_stat.underruns
-                     << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost << "/"
-                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
-                     << " tot: " << pkt_stat.tot << " sync: " << recv_io_stat.level << "/"
-                     << recv_io_stat.buf_inc_underrun << "/"
-                     << recv_io_stat.buf_inc_compensate << "/"
-                     << recv_io_stat.buf_dec_overflows << "/"
-                     << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
-                     << "/" << recv_io_stat.skew_raw
-                     << " bcast: " << recv_io_stat.broadcast_skew << "/"
-                     << recv_io_stat.broadcast_delta
-                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
-                     << 0.1 * recv_io_stat.autoq_rate << endl;
+//    static QMutex mutex;
+//    QMutexLocker locker(&mutex);
+//    if (mAudioTesterP && mAudioTesterP->getEnabled()) { mIOStatLogStream << "\n"; }
+//    mIOStatLogStream << now.toLocal8Bit().constData() << " "
+//                     << getPeerAddress().toLocal8Bit().constData()
+//                     << " send: " << send_io_stat.underruns << "/"
+//                     << send_io_stat.overflows << " recv: " << recv_io_stat.underruns
+//                     << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost << "/"
+//                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
+//                     << " tot: " << pkt_stat.tot << " sync: " << recv_io_stat.level << "/"
+//                     << recv_io_stat.buf_inc_underrun << "/"
+//                     << recv_io_stat.buf_inc_compensate << "/"
+//                     << recv_io_stat.buf_dec_overflows << "/"
+//                     << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
+//                     << "/" << recv_io_stat.skew_raw
+//                     << " bcast: " << recv_io_stat.broadcast_skew << "/"
+//                     << recv_io_stat.broadcast_delta
+//                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
+//                     << 0.1 * recv_io_stat.autoq_rate << endl;
+
+    mIOStatLogStream << xxx.toStdString() << endl;
 }
 
 void JackTrip::receivedConnectionTCP()
