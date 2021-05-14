@@ -103,6 +103,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int> mIncomingCntWrap;
     double mLastPush;
     bool mStopped;
+    int mCur;
 signals:
     void print(QString);
 };

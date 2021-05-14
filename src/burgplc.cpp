@@ -92,6 +92,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingCntWrap[i] = -1;
     mLastPush = 0.0;
     mStopped = false;
+    mCur = 0;
     start();
 }
 
@@ -132,10 +133,10 @@ void BurgPLC::plot()
         //                fprintf(stdout,"%f\tipi\t%f\n",elapsed0,ipi);
         mLastPush = push;
         if (mIncomingCnt) {
-            int cur = mIncomingSeq % TWOTOTHESIXTEENTH;
-            mIncomingCntWrap[cur] = mIncomingCntWraps;
-            memcpy(mIncomingDat[cur], mUDPbuf, mBytes);
-            memcpy(mXfrBuffer, mIncomingDat[cur], mBytes);
+            mCur = mIncomingSeq % TWOTOTHESIXTEENTH;
+            mIncomingCntWrap[mCur] = mIncomingCntWraps;
+            memcpy(mIncomingDat[mCur], mUDPbuf, mBytes);
+            memcpy(mXfrBuffer, mIncomingDat[mCur], mBytes);
             inputPacket();
         }
         mTimer1.start();
@@ -152,19 +153,15 @@ void BurgPLC::plot()
         //        if(pull < push) qDebug() << "hi governator--under" << push << pull;
         //        if (mOutgoingCntWraps) fprintf(stdout,"%f\t%f\t%f\n",elapsed0,elapsed1,elapsed2); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
 
-        //        int lag = mIncomingSeq-mQLen;
-        //        if (lag<0) lag = 0;
-        //        lag %= TWOTOTHESIXTEENTH;
-        //        int test = mIncomingCntWraps;
-        ////        if (lag<0) test--;
-        ////        if (lag<0) lag+=TWOTOTHESIXTEENTH;
-        //        //        qDebug() << (mIncomingCntWrap[lag]==test)
-        //        //                 << (mLastOutgoingCnt-2) << mIncomingCntWrap[lag] << test << mIncomingCntWraps;
-        //        memcpy(mXfrBuffer, mIncomingDat[lag], mBytes);
-        //        if(mIncomingCntWrap[lag]==test) inputPacket();
-        //        processPacket(mIncomingCntWrap[lag]!=test);
-        processPacket(mIncomingCntWrap[mIncomingSeq]!=mIncomingCntWraps);
+        int lag = mCur-mQLen;
+        if (lag<0) lag+=TWOTOTHESIXTEENTH;
+        //                lag %= TWOTOTHESIXTEENTH;
+        int test = mIncomingCntWraps;
+                if (lag<0) test--;
+        processPacket(mIncomingCntWrap[lag]!=test);
+        //        processPacket(mIncomingCntWrap[mCur]!=mIncomingCntWraps);
         memcpy(mJACKbuf, mXfrBuffer, mBytes);
+        mCur++;
         mTimer2.start();
         QString out;
         out += (QString::number(elapsed0) + QString("\t"));
@@ -244,7 +241,7 @@ void BurgPLC::processPacket (bool glitch)
     //    glitch = !(mPacketCnt%100);
     if(mPacketCnt) {
         if(RUN > 2) {
-//            if (glitch) qDebug() << "glitch";
+            //            if (glitch) qDebug() << "glitch";
 
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain, mPacketCnt );
