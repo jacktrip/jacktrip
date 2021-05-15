@@ -98,12 +98,16 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mLastIncomingCnt = 0;
     mStat = new Stat;
     mStat->window = 1000; // fast ticks
+    mStat->acc = 0;
+    mStat->var = 0;
+    mStat->min = 999999999;
+    mStat->max = -mStat->max;
+    mStat->ctr = 0;
     start();
 }
 void BurgPLC::stats(Stat *stat, double msNow)
 { // stdDev based on mean of last windowful
-    QMutexLocker locker(&mMutex);
-    if (stat->ctr%stat->window) {
+    if (stat->ctr!=stat->window) {
         if (mDelta<stat->min) stat->min = mDelta;
         else if (mDelta>stat->max) stat->max = mDelta;
         stat->acc += mDelta;
@@ -121,6 +125,7 @@ void BurgPLC::stats(Stat *stat, double msNow)
             out += (QString::number(stat->mean) + QString("\t"));
             out += (QString::number(stat->min) + QString("\t"));
             out += (QString::number(stat->max) + QString("\t"));
+            out += (QString::number(stat->stdDev) + QString("\t"));
             emit printStats(out);
         }
 
@@ -156,7 +161,7 @@ void BurgPLC::plot()
     out += (QString::number(0) + QString("\t"));
     out += (QString::number(mDelta) + QString("\t"));
     mTimer3.start();
-//    emit print(out);
+    //    emit print(out);
     stats(mStat, elapsed0);
     if (mLastIncomingCnt != mIncomingCnt) {
         //        if(false) {
