@@ -97,7 +97,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mDelta = 0;
     mLastIncomingCnt = 0;
     mStat = new Stat;
-    mStat->window = 1000; // fast ticks
+    mStat->window = 2000; // fast ticks
     mStat->acc = 0;
     mStat->var = 0;
     mStat->min = 999999999;
@@ -127,6 +127,7 @@ void BurgPLC::stats(Stat *stat, double msNow)
             out += (QString::number(stat->max) + QString("\t"));
             out += (QString::number(stat->stdDev) + QString("\t"));
             emit printStats(out);
+// plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
         }
 
         stat->acc = 0;
@@ -154,7 +155,6 @@ void BurgPLC::plot()
     QString out;
     double elapsed0 = (double)mTimer0.nsecsElapsed() / 1000000.0;
     if (mOutgoingCnt==-1) return;
-    //    else if (elapsed0<1000.0) return;
     double elapsed3 = (double)mTimer3.nsecsElapsed() / 1000000.0;
     out += (QString::number(elapsed0) + QString("\t"));
     out += (QString::number(elapsed3) + QString("\t"));
@@ -175,6 +175,7 @@ void BurgPLC::plot()
         //        }
         mLastPush = push;
         mCur = mIncomingCnt % TWOTOTHETENTH;
+        mIncomingCntWraps = mIncomingCnt / TWOTOTHETENTH;
         mIncomingCntWrap[mCur] = mIncomingCntWraps;
         memcpy(mIncomingDat[mCur], mUDPbuf, mBytes);
         memcpy(mXfrBuffer, mIncomingDat[mCur], mBytes);
