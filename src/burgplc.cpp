@@ -3,8 +3,8 @@
 #include "jacktrip_globals.h"
 
 using namespace std;
-#define TWOTOTHESIXTEENTH 1024
-//65536
+#define TWOTOTHETENTH 1024
+#define TWOTOTHESIXTEENTH 65536
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
@@ -53,13 +53,13 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mLastWasGlitch = false;
     mPhasor.resize( mNumChannels, 0.0 );
     mIncomingSeq = -1;
-    mOutgoingCnt = 0;
+    mOutgoingCnt = -1;
     mLastIncomingSeq = 0;
     mOutgoingCntWraps = 0;
     //    mIncomingSeqWrap.resize(TWOTOTHESIXTEENTH);
     //    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingSeqWrap[i] = -1;
     mBytes = mFPP*mNumChannels*mBitResolutionMode;
-    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) {
+    for ( int i = 0; i < TWOTOTHETENTH; i++ ) {
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
     }
@@ -88,11 +88,14 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mLastIncomingSeq2 = 0;
     mIncomingCnt = 0;
     mIncomingCntWraps = 0;
-    mIncomingCntWrap.resize(TWOTOTHESIXTEENTH);
-    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingCntWrap[i] = -1;
+    mIncomingCntWrap.resize(TWOTOTHETENTH);
+    for ( int i = 0; i < TWOTOTHETENTH; i++ ) mIncomingCntWrap[i] = -1;
     mLastPush = 0.0;
     mStopped = false;
     mCur = 0;
+    mPushed = false;
+    mDelta = 0;
+    mLastIncomingCnt = 0;
     start();
 }
 
@@ -108,94 +111,100 @@ void BurgPLC::run()
 void BurgPLC::plot()
 {
     QMutexLocker locker(&mMutex); // lock the mutex here and pullPacket but not pushPacket
+    mDelta = mIncomingCnt - mOutgoingCnt;
+    if ((!(mIncomingCnt%TWOTOTHESIXTEENTH))&&(mOutgoingCnt!=-1)) mIncomingCnt = mOutgoingCnt;
+//    mCur++;
     QString out;
     double elapsed0 = (double)mTimer0.nsecsElapsed() / 1000000.0;
+    if (mOutgoingCnt==-1) return;
+//    else if (elapsed0<1000.0) return;
     double elapsed3 = (double)mTimer3.nsecsElapsed() / 1000000.0;
     out += (QString::number(elapsed0) + QString("\t"));
     out += (QString::number(elapsed3) + QString("\t"));
     out += (QString::number(0) + QString("\t"));
+    out += (QString::number(mDelta) + QString("\t"));
     mTimer3.start();
     emit print(out);
-    if (mLastIncomingSeq != mIncomingSeq) {
-        //        if (false) {
-        mLastIncomingSeq = mIncomingSeq;
+    if (mLastIncomingCnt != mIncomingCnt) {
+//        if(false) {
+        mLastIncomingCnt = mIncomingCnt;
         double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
-        double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
-        //        fprintf(stdout,"%f\ttimer\t%d\t%d\n",elapsed,mLastIncomingSeq%10,mIncomingSeq%10);
-        // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
-        //        if(push < pull) qDebug() << "hi governator--over" << push << pull;
-        double ipi = push - mLastPush;
-        //        if(mIncomingCnt %= TWOTOTHESIXTEENTH)
+//        double ipi = push - mLastPush;
+        //        if(mIncomingCnt %= TWOTOTHETENTH)
         //            mElapsedAcc += abs(ipi); else {
-        ////            qDebug() << elapsed0 << (mElapsedAcc / (double)TWOTOTHESIXTEENTH);
+        ////            qDebug() << elapsed0 << (mElapsedAcc / (double)TWOTOTHETENTH);
         //            mElapsedAcc = 0.0;
         //        }
-        //                fprintf(stdout,"%f\tipi\t%f\n",elapsed0,ipi);
         mLastPush = push;
-        if (mIncomingCnt) {
-            mCur = mIncomingSeq % TWOTOTHESIXTEENTH;
-            mIncomingCntWrap[mCur] = mIncomingCntWraps;
-            memcpy(mIncomingDat[mCur], mUDPbuf, mBytes);
-            memcpy(mXfrBuffer, mIncomingDat[mCur], mBytes);
-            inputPacket();
-        }
+        mCur = mIncomingCnt % TWOTOTHETENTH;
+        mIncomingCntWrap[mCur] = mIncomingCntWraps;
+        memcpy(mIncomingDat[mCur], mUDPbuf, mBytes);
+        memcpy(mXfrBuffer, mIncomingDat[mCur], mBytes);
+        inputPacket();
         mTimer1.start();
         QString out;
         out += (QString::number(elapsed0) + QString("\t"));
         out += (QString::number(push) + QString("\t"));
         out += (QString::number(1) + QString("\t")); // blk
-        emit print(out);
+        out += (QString::number(mDelta) + QString("\t"));
+//        emit print(out);
+        mPushed = true;
+        return;
     }
-    if (mLastOutgoingCnt != mOutgoingCnt) {
+//    if (mLastOutgoingCnt != mOutgoingCnt) {
+        if(false) {
         mLastOutgoingCnt = mOutgoingCnt;
-        double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
         double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
-        //        if(pull < push) qDebug() << "hi governator--under" << push << pull;
-        //        if (mOutgoingCntWraps) fprintf(stdout,"%f\t%f\t%f\n",elapsed0,elapsed1,elapsed2); // > /tmp/xxx.dat // tail -n +18 xxx.dat | head -n -11 > xx.dat
 
         int lag = mCur-mQLen;
-        if (lag<0) lag+=TWOTOTHESIXTEENTH;
-        //                lag %= TWOTOTHESIXTEENTH;
+        if (lag<0) lag+=TWOTOTHETENTH;
         int test = mIncomingCntWraps;
-                if (lag<0) test--;
-        processPacket(mIncomingCntWrap[lag]!=test);
+        if (lag<0) test--;
+        //        processPacket(mIncomingCntWrap[lag]!=test);
         //        processPacket(mIncomingCntWrap[mCur]!=mIncomingCntWraps);
+        if (!mPushed) {
+            processPacket(true);
+        }
+//        else processPacket(false);
         memcpy(mJACKbuf, mXfrBuffer, mBytes);
-        mCur++;
         mTimer2.start();
         QString out;
         out += (QString::number(elapsed0) + QString("\t"));
         out += (QString::number(pull) + QString("\t"));
         out += (QString::number(2) + QString("\t")); // grn
+        out += (QString::number(mDelta) + QString("\t"));
         emit print(out);
+        mPushed = false;
+        return;
     }
 }
 
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
-    //    qDebug() << "hi governator--push";
-    QMutexLocker locker(&mMutex); // don't lock the mutex
-    mIncomingCntWraps = seq / TWOTOTHESIXTEENTH;
-    mIncomingSeq = seq;
+    QMutexLocker locker(&mMutex);
+    mIncomingSeq = seq % TWOTOTHETENTH;
+    mIncomingCntWraps = seq / TWOTOTHETENTH;
     int nextSeq = mLastIncomingSeq2+1;
-    if (mIncomingSeq != nextSeq) {
-        qDebug() << "hi pushPacket LOST PACKET" << mIncomingSeq << nextSeq;
-    }
+    nextSeq %= TWOTOTHETENTH;
+    if (mIncomingSeq != nextSeq) qDebug() << "LOST PACKET" << mIncomingSeq << nextSeq;
     mLastIncomingSeq2 = mIncomingSeq;
-    if (!mOutgoingCntWraps) mIncomingCnt=mIncomingSeq; else
-        mIncomingCnt++;
-    if (!mOutgoingCntWraps)mUDPbuf=buf;
-    //    usleep(25); // 25 usec @ 32FPP // 100 usec @ 128FPP
+    if (!mIncomingCnt) qDebug() << "twice";
+    if (!mIncomingCnt) mUDPbuf=buf;
+    if (mIncomingSeq!=-1) mIncomingCnt++;
     return true;
 };
 
 void BurgPLC::pullPacket (int8_t* buf) {
-    //    qDebug() << "hi governator--pull";
-    QMutexLocker locker(&mMutex); // lock the mutex
-    if (!mOutgoingCntWraps)mJACKbuf=buf;
-    //    if (!mOutgoingCntWraps)mOutgoingCnt=mIncomingSeq; else
-    mOutgoingCnt++;
-    mIncomingCntWraps = mOutgoingCnt / TWOTOTHESIXTEENTH;
-    //    usleep(75); // 75 usec @ 32FPP // 300 usec @ 128FPP
+    QMutexLocker locker(&mMutex);
+    mOutgoingCntWraps = mOutgoingCnt / TWOTOTHETENTH;
+//    if (!mOutgoingCntWraps)
+        mJACKbuf=buf;
+    if (mIncomingSeq!=-1)  {
+        if (mOutgoingCnt==-1) {
+            qDebug() << "once";
+            mOutgoingCnt = mIncomingCnt;
+        }
+        else mOutgoingCnt++; // will saturate
+    }
 };
 
 #define RUN 3
@@ -208,12 +217,12 @@ void BurgPLC::inputPacket ()
         INCh0(bitsToSample(0, s), s);
         INCh1(bitsToSample(1, s), s);
     }
-    //            for PACKETSAMP {
-    //                INCh0(0.3*sin(mPhasor[0]), s);
-    //                INCh1(0.3*sin(mPhasor[1]), s);
-    //                mPhasor[0] += 0.1;
-    //                mPhasor[1] += 0.11;
-    //            }
+    //                for PACKETSAMP {
+    //                    INCh0(0.3*sin(mPhasor[0]), s);
+    //                    INCh1(0.3*sin(mPhasor[1]), s);
+    //                    mPhasor[0] += 0.1;
+    //                    mPhasor[1] += 0.11;
+    //                }
     if(mPacketCnt) {
         if(RUN > 2) {
 

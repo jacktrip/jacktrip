@@ -104,6 +104,9 @@ void sampleToBits(sample_t sample, int ch, int frame);
     double mLastPush;
     bool mStopped;
     int mCur;
+    bool mPushed;
+    int mDelta;
+    int mLastIncomingCnt;
 signals:
     void print(QString);
 };
