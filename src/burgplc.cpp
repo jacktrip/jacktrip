@@ -53,7 +53,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mLastWasGlitch = false;
     mPhasor.resize( mNumChannels, 0.0 );
     mIncomingSeq = -1;
-    mOutgoingCnt = -1;
+    mOutgoingCnt = 0;
     mLastIncomingSeq = 0;
     mOutgoingCntWraps = 0;
     //    mIncomingSeqWrap.resize(TWOTOTHESIXTEENTH);
@@ -103,6 +103,10 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mStat->min = 999999999;
     mStat->max = -mStat->max;
     mStat->ctr = 0;
+    mJACKstarted = false;
+    mUDPstarted = false;
+    mPlotStarted = false;
+    mWarnedHighStdDev = false;
     start();
 }
 void BurgPLC::stats(Stat *stat, double msNow)
@@ -127,7 +131,8 @@ void BurgPLC::stats(Stat *stat, double msNow)
             out += (QString::number(stat->max) + QString("\t"));
             out += (QString::number(stat->stdDev) + QString("\t"));
             emit printStats(out);
-// plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
+            // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
+            // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
         }
 
         stat->acc = 0;
@@ -149,12 +154,20 @@ void BurgPLC::run()
 void BurgPLC::plot()
 {
     QMutexLocker locker(&mMutex); // lock the mutex here and pullPacket but not pushPacket
+    if (!mPlotStarted && (mIncomingCnt > 400)) {
+        mIncomingCnt = mOutgoingCnt;
+        mPlotStarted = true;
+    }
     mDelta = mIncomingCnt - mOutgoingCnt;
-    if ((!(mIncomingCnt%TWOTOTHESIXTEENTH))&&(mOutgoingCnt!=-1)) mIncomingCnt = mOutgoingCnt;
-    //    mCur++;
-    QString out;
+    if (!mPlotStarted) return;
     double elapsed0 = (double)mTimer0.nsecsElapsed() / 1000000.0;
-    if (mOutgoingCnt==-1) return;
+    stats(mStat, elapsed0);
+    if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
+        qDebug() << "STANDARD DEVIATION ALERT";
+        mWarnedHighStdDev = true;
+    }
+    if (mWarnedHighStdDev && (!(mIncomingCnt%TWOTOTHETENTH))) mWarnedHighStdDev = false;
+    QString out;
     double elapsed3 = (double)mTimer3.nsecsElapsed() / 1000000.0;
     out += (QString::number(elapsed0) + QString("\t"));
     out += (QString::number(elapsed3) + QString("\t"));
@@ -162,18 +175,10 @@ void BurgPLC::plot()
     out += (QString::number(mDelta) + QString("\t"));
     mTimer3.start();
     //    emit print(out);
-    stats(mStat, elapsed0);
-    if (mLastIncomingCnt != mIncomingCnt) {
-        //        if(false) {
+    //    if (mLastIncomingCnt != mIncomingCnt) {
+    if(false) {
         mLastIncomingCnt = mIncomingCnt;
         double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
-        //        double ipi = push - mLastPush;
-        //        if(mIncomingCnt %= TWOTOTHETENTH)
-        //            mElapsedAcc += abs(ipi); else {
-        ////            qDebug() << elapsed0 << (mElapsedAcc / (double)TWOTOTHETENTH);
-        //            mElapsedAcc = 0.0;
-        //        }
-        mLastPush = push;
         mCur = mIncomingCnt % TWOTOTHETENTH;
         mIncomingCntWraps = mIncomingCnt / TWOTOTHETENTH;
         mIncomingCntWrap[mCur] = mIncomingCntWraps;
@@ -187,7 +192,6 @@ void BurgPLC::plot()
         out += (QString::number(1) + QString("\t")); // blk
         out += (QString::number(mDelta) + QString("\t"));
         //        emit print(out);
-        mPushed = true;
         return;
     }
     //    if (mLastOutgoingCnt != mOutgoingCnt) {
@@ -220,30 +224,29 @@ void BurgPLC::plot()
 
 bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     QMutexLocker locker(&mMutex);
+    if (!mUDPstarted) {
+        mUDPbuf=buf;
+        mUDPstarted = true;
+    }
     mIncomingSeq = seq % TWOTOTHETENTH;
     mIncomingCntWraps = seq / TWOTOTHETENTH;
     int nextSeq = mLastIncomingSeq2+1;
     nextSeq %= TWOTOTHETENTH;
     if (mIncomingSeq != nextSeq) qDebug() << "LOST PACKET" << mIncomingSeq << nextSeq;
     mLastIncomingSeq2 = mIncomingSeq;
-    if (!mIncomingCnt) qDebug() << "twice";
-    if (!mIncomingCnt) mUDPbuf=buf;
-    if (mIncomingSeq!=-1) mIncomingCnt++;
+    if (!mIncomingCnt) qDebug() << "push";
+    mIncomingCnt++;
     return true;
 };
 
 void BurgPLC::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex);
+    mJACKstarted = true;
     mOutgoingCntWraps = mOutgoingCnt / TWOTOTHETENTH;
     //    if (!mOutgoingCntWraps)
     mJACKbuf=buf;
-    if (mIncomingSeq!=-1)  {
-        if (mOutgoingCnt==-1) {
-            qDebug() << "once";
-            mOutgoingCnt = mIncomingCnt;
-        }
-        else mOutgoingCnt++; // will saturate
-    }
+    if (!mOutgoingCnt) qDebug() << "pull";
+    mOutgoingCnt++; // will saturate
 };
 
 #define RUN 3

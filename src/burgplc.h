@@ -119,6 +119,11 @@ void sampleToBits(sample_t sample, int ch, int frame);
     };
     void stats(Stat* stat, double msNow);
     Stat *mStat;
+    bool mJACKstarted;
+    bool mUDPstarted;
+    bool mPlotStarted;
+    bool mWarnedHighStdDev;
+
 signals:
     void print(QString);
     void printStats(QString);
