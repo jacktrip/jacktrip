@@ -96,9 +96,41 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mPushed = false;
     mDelta = 0;
     mLastIncomingCnt = 0;
+    mStat = new Stat;
+    mStat->window = 1000; // fast ticks
     start();
 }
+void BurgPLC::stats(Stat *stat, double msNow)
+{ // stdDev based on mean of last windowful
+    QMutexLocker locker(&mMutex);
+    if (stat->ctr%stat->window) {
+        if (mDelta<stat->min) stat->min = mDelta;
+        else if (mDelta>stat->max) stat->max = mDelta;
+        stat->acc += mDelta;
+        double tmp = mDelta - stat->mean; // last window
+        stat->var += (tmp*tmp);
+        stat->ctr++;
+    } else {
+        stat->mean = (double)stat->acc / (double) stat->window;
+        stat->var /= stat->window;
+        stat->stdDev = sqrt(stat->var);
 
+        if (stat->acc) {
+            QString out;
+            out += (QString::number(msNow) + QString("\t"));
+            out += (QString::number(stat->mean) + QString("\t"));
+            out += (QString::number(stat->min) + QString("\t"));
+            out += (QString::number(stat->max) + QString("\t"));
+            emit printStats(out);
+        }
+
+        stat->acc = 0;
+        stat->var = 0;
+        stat->min = 999999999;
+        stat->max = -stat->max;
+        stat->ctr = 0;
+    }
+}
 void BurgPLC::run()
 {
     setRealtimeProcessPriority2();
@@ -113,23 +145,24 @@ void BurgPLC::plot()
     QMutexLocker locker(&mMutex); // lock the mutex here and pullPacket but not pushPacket
     mDelta = mIncomingCnt - mOutgoingCnt;
     if ((!(mIncomingCnt%TWOTOTHESIXTEENTH))&&(mOutgoingCnt!=-1)) mIncomingCnt = mOutgoingCnt;
-//    mCur++;
+    //    mCur++;
     QString out;
     double elapsed0 = (double)mTimer0.nsecsElapsed() / 1000000.0;
     if (mOutgoingCnt==-1) return;
-//    else if (elapsed0<1000.0) return;
+    //    else if (elapsed0<1000.0) return;
     double elapsed3 = (double)mTimer3.nsecsElapsed() / 1000000.0;
     out += (QString::number(elapsed0) + QString("\t"));
     out += (QString::number(elapsed3) + QString("\t"));
     out += (QString::number(0) + QString("\t"));
     out += (QString::number(mDelta) + QString("\t"));
     mTimer3.start();
-    emit print(out);
+//    emit print(out);
+    stats(mStat, elapsed0);
     if (mLastIncomingCnt != mIncomingCnt) {
-//        if(false) {
+        //        if(false) {
         mLastIncomingCnt = mIncomingCnt;
         double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
-//        double ipi = push - mLastPush;
+        //        double ipi = push - mLastPush;
         //        if(mIncomingCnt %= TWOTOTHETENTH)
         //            mElapsedAcc += abs(ipi); else {
         ////            qDebug() << elapsed0 << (mElapsedAcc / (double)TWOTOTHETENTH);
@@ -147,12 +180,12 @@ void BurgPLC::plot()
         out += (QString::number(push) + QString("\t"));
         out += (QString::number(1) + QString("\t")); // blk
         out += (QString::number(mDelta) + QString("\t"));
-//        emit print(out);
+        //        emit print(out);
         mPushed = true;
         return;
     }
-//    if (mLastOutgoingCnt != mOutgoingCnt) {
-        if(false) {
+    //    if (mLastOutgoingCnt != mOutgoingCnt) {
+    if(false) {
         mLastOutgoingCnt = mOutgoingCnt;
         double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
 
@@ -165,7 +198,7 @@ void BurgPLC::plot()
         if (!mPushed) {
             processPacket(true);
         }
-//        else processPacket(false);
+        //        else processPacket(false);
         memcpy(mJACKbuf, mXfrBuffer, mBytes);
         mTimer2.start();
         QString out;
@@ -196,8 +229,8 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
 void BurgPLC::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex);
     mOutgoingCntWraps = mOutgoingCnt / TWOTOTHETENTH;
-//    if (!mOutgoingCntWraps)
-        mJACKbuf=buf;
+    //    if (!mOutgoingCntWraps)
+    mJACKbuf=buf;
     if (mIncomingSeq!=-1)  {
         if (mOutgoingCnt==-1) {
             qDebug() << "once";

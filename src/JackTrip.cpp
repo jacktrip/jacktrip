@@ -358,6 +358,7 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer = new BurgPLC(mSampleRate, mNumChans, mAudioBitResolution, mAudioBufferSize,
                                mBufferQueueLength, HIST);
             connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
+            connect(mReceiveRingBuffer, SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
 
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;

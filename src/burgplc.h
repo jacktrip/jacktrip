@@ -107,8 +107,21 @@ void sampleToBits(sample_t sample, int ch, int frame);
     bool mPushed;
     int mDelta;
     int mLastIncomingCnt;
+    struct Stat {
+        double mean;
+        double var;
+        double stdDev;
+        int window;
+        int acc;
+        int min;
+        int max;
+        int ctr;
+    };
+    void stats(Stat* stat, double msNow);
+    Stat *mStat;
 signals:
     void print(QString);
+    void printStats(QString);
 };
 
 #endif // BURGPLC_H
