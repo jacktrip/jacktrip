@@ -116,14 +116,17 @@ void sampleToBits(sample_t sample, int ch, int frame);
         int min;
         int max;
         int ctr;
+        double lastMean;
+        int lastMin;
+        int lastMax;
     };
+    void init(Stat* stat, int w);
     void stats(Stat* stat, double msNow);
     Stat *mStat;
     bool mJACKstarted;
     bool mUDPstarted;
+    int mWarnedHighStdDev;
     bool mPlotStarted;
-    bool mWarnedHighStdDev;
-
 signals:
     void print(QString);
     void printStats(QString);
