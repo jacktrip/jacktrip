@@ -7,6 +7,7 @@ using namespace std;
 #define STATWINDOW 2000
 #define ALERTRESET 5000
 #define TWOTOTHESIXTEENTH 65536
+#define POOLSIZE 7
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
@@ -109,6 +110,8 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mUDPstarted = false;
     mWarnedHighStdDev = 0;
     mPlotStarted = false;
+    mIndexPool.resize(POOLSIZE);
+    for ( int i = 0; i < POOLSIZE; i++ ) mIndexPool[i] = -1;
     start();
 }
 void BurgPLC::init(Stat *stat, int w)
@@ -140,13 +143,13 @@ void BurgPLC::stats(Stat *stat, double msNow)
         stat->var /= stat->window;
         stat->stdDev = sqrt(stat->var);
         if (stat->acc) {
-//                        QString out;
-//                        out += (QString::number(msNow) + QString("\t"));
-//                        out += (QString::number(stat->mean) + QString("\t"));
-//                        out += (QString::number(stat->min) + QString("\t"));
-//                        out += (QString::number(stat->max) + QString("\t"));
-//                        out += (QString::number(stat->stdDev) + QString("\t"));
-//                        emit printStats(out);
+            //                        QString out;
+            //                        out += (QString::number(msNow) + QString("\t"));
+            //                        out += (QString::number(stat->mean) + QString("\t"));
+            //                        out += (QString::number(stat->min) + QString("\t"));
+            //                        out += (QString::number(stat->max) + QString("\t"));
+            //                        out += (QString::number(stat->stdDev) + QString("\t"));
+            //                        emit printStats(out);
             // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
             // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
         }
@@ -172,24 +175,23 @@ void BurgPLC::run()
 void BurgPLC::plot()
 {
     QMutexLocker locker(&mMutex); // lock the mutex here and pullPacket but not pushPacket
-    bool incomingChange = false;
-    bool outgoingChange = false;
-    if (mLastIncomingCnt != mIncomingCnt) {
-        mLastIncomingCnt = mIncomingCnt;
-        incomingChange = true;
-    }
-    if (mLastOutgoingCnt != mOutgoingCnt) {
-        mLastOutgoingCnt = mOutgoingCnt;
-        outgoingChange = true;
-    }
-    if (!mPlotStarted && (mIncomingCnt > ALERTRESET)) {
+    if (!mPlotStarted && (mIncomingCnt > 1000)) {
         mIncomingCnt = mOutgoingCnt;
         mPlotStarted = true;
     }
     if (!mPlotStarted) return;
+    bool incomingChange = false;
+    bool outgoingChange = false;
+    if (mLastOutgoingCnt != mOutgoingCnt) {
+        mLastOutgoingCnt = mOutgoingCnt;
+        outgoingChange = true;
+    }
+    if (mLastIncomingCnt != mIncomingCnt) {
+        mLastIncomingCnt = mIncomingCnt;
+        incomingChange = true;
+    }
     double elapsed0 = (double)mTimer0.nsecsElapsed() / 1000000.0;
-    bool stateChange = outgoingChange;
-    if (stateChange) mDelta = mIncomingCnt - mOutgoingCnt;
+    mDelta = mIncomingCnt - mOutgoingCnt;
     stats(mStat, elapsed0);
     if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
         qDebug() << "STANDARD DEVIATION ALERT";
@@ -204,50 +206,97 @@ void BurgPLC::plot()
     mTimer3.start();
     //    emit print(out);
     // plot 'iostat.log' u  1:2:3 with p ps 0.75 pt 5 palette, 'iostat.log' u  1:($4/1.0) w l
-        if(false) {
-            double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
-            mCur = mIncomingCnt % TWOTOTHETENTH;
-            mIncomingCntWraps = mIncomingCnt / TWOTOTHETENTH;
-            mIncomingCntWrap[mCur] = mIncomingCntWraps;
-            memcpy(mIncomingDat[mCur], mUDPbuf, mBytes);
-            memcpy(mXfrBuffer, mIncomingDat[mCur], mBytes);
-            inputPacket();
-            mTimer1.start();
-            QString out;
-            out += (QString::number(elapsed0) + QString("\t"));
-            out += (QString::number(push) + QString("\t"));
-            out += (QString::number(1) + QString("\t")); // blk
-            out += (QString::number(mDelta) + QString("\t"));
-            //        emit print(out);
-            return;
+
+    if(false) {
+        double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
+        mCur = mIncomingCnt % TWOTOTHETENTH;
+        mIncomingCntWraps = mIncomingCnt / TWOTOTHETENTH;
+        mIncomingCntWrap[mCur] = mIncomingCntWraps;
+        memcpy(mIncomingDat[mCur], mUDPbuf, mBytes);
+        memcpy(mXfrBuffer, mIncomingDat[mCur], mBytes);
+        inputPacket();
+        mTimer1.start();
+        QString out;
+        out += (QString::number(elapsed0) + QString("\t"));
+        out += (QString::number(push) + QString("\t"));
+        out += (QString::number(1) + QString("\t")); // blk
+        out += (QString::number(mDelta) + QString("\t"));
+        //        emit print(out);
+        return;
+    }
+
+    if(false) {
+        double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
+
+        int lag = mCur-mQLen;
+        if (lag<0) lag+=TWOTOTHETENTH;
+        int test = mIncomingCntWraps;
+        if (lag<0) test--;
+        //        processPacket(mIncomingCntWrap[lag]!=test);
+        //        processPacket(mIncomingCntWrap[mCur]!=mIncomingCntWraps);
+        if (!mPushed) {
+            processPacket(true);
         }
+        //        else processPacket(false);
+        memcpy(mJACKbuf, mXfrBuffer, mBytes);
+        mTimer2.start();
+        QString out;
+        out += (QString::number(elapsed0) + QString("\t"));
+        out += (QString::number(pull) + QString("\t"));
+        out += (QString::number(2) + QString("\t")); // grn
+        out += (QString::number(mDelta) + QString("\t"));
+        emit print(out);
+        mPushed = false;
+        return;
+    }
 
-        if(false) {
-            double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
-
-            int lag = mCur-mQLen;
-            if (lag<0) lag+=TWOTOTHETENTH;
-            int test = mIncomingCntWraps;
-            if (lag<0) test--;
-            //        processPacket(mIncomingCntWrap[lag]!=test);
-            //        processPacket(mIncomingCntWrap[mCur]!=mIncomingCntWraps);
-            if (!mPushed) {
-                processPacket(true);
+    if (incomingChange){
+//        int targetIndex = POOLSIZE;
+        int oldest = 99999999;
+        int oldestIndex = 0;
+        for ( int i = 0; i < POOLSIZE; i++ ) {
+            if (mIndexPool[i] < oldest) {
+                oldest = mIndexPool[i];
+                oldestIndex = i;
             }
-            //        else processPacket(false);
-            memcpy(mJACKbuf, mXfrBuffer, mBytes);
-            mTimer2.start();
-            QString out;
-            out += (QString::number(elapsed0) + QString("\t"));
-            out += (QString::number(pull) + QString("\t"));
-            out += (QString::number(2) + QString("\t")); // grn
-            out += (QString::number(mDelta) + QString("\t"));
-            emit print(out);
-            mPushed = false;
-            return;
         }
+//        if (targetIndex == POOLSIZE) {
+//            qDebug() << "full" << mIncomingCnt;
+//            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
+//            qDebug() << " ";
+//            targetIndex = oldestIndex;
+//        }
+        mIndexPool[oldestIndex] = mIncomingCnt;
+//        qDebug() << oldestIndex << mIndexPool[oldestIndex];
+    }
 
-    if (stateChange){
+    if (outgoingChange){
+        int target = mOutgoingCnt - 2;
+        int targetIndex = POOLSIZE;
+        int oldest = 99999999;
+        int oldestIndex = 0;
+        for ( int i = 0; i < POOLSIZE; i++ ) {
+            if (mIndexPool[i] == target) {
+                targetIndex = i;
+//                break;
+            }
+            if (mIndexPool[i] < oldest) {
+                oldest = mIndexPool[i];
+                oldestIndex = i;
+            }
+        }
+        if (targetIndex == POOLSIZE) {
+            qDebug() << " ";
+            qDebug() << "!available" << target;
+            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
+            qDebug() << " ";
+            targetIndex = oldestIndex;
+            mIndexPool[targetIndex] = -1;
+        } else
+            mIndexPool[targetIndex] = 0;
+    }
+
+    {
         out += (QString::number(elapsed0) + QString("\t"));
         out += (QString::number(mStat->lastMean) + QString("\t"));
         out += (QString::number(mStat->lastMin) + QString("\t"));
@@ -271,6 +320,8 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     mLastIncomingSeq2 = mIncomingSeq;
     if (!mIncomingCnt) qDebug() << "push";
     mIncomingCnt++;
+//    qDebug() << mIncomingCnt;
+    usleep(30); // = 17 usec
     return true;
 };
 

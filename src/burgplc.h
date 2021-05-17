@@ -127,6 +127,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     bool mUDPstarted;
     int mWarnedHighStdDev;
     bool mPlotStarted;
+    vector<int> mIndexPool;
 signals:
     void print(QString);
     void printStats(QString);
