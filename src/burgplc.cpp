@@ -62,7 +62,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     //    mIncomingSeqWrap.resize(TWOTOTHESIXTEENTH);
     //    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingSeqWrap[i] = -1;
     mBytes = mFPP*mNumChannels*mBitResolutionMode;
-    for ( int i = 0; i < TWOTOTHETENTH; i++ ) {
+    for ( int i = 0; i < POOLSIZE; i++ ) {
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
     }
@@ -250,51 +250,48 @@ void BurgPLC::plot()
         return;
     }
 
-    if (incomingChange){
+//    if (incomingChange){
+//        int oldest = 99999999;
+//        int oldestIndex = 0;
+//        for ( int i = 0; i < POOLSIZE; i++ ) {
+//            if (mIndexPool[i] < oldest) {
+//                oldest = mIndexPool[i];
+//                oldestIndex = i;
+//            }
+//        }
+//        mIndexPool[oldestIndex] = mIncomingCnt;
+//        memcpy(mIncomingDat[oldestIndex], mUDPbuf, mBytes);
+////        qDebug() << oldestIndex << mIndexPool[oldestIndex];
+//    }
+
+//    if (outgoingChange){
+//        int target = mOutgoingCnt - 2;
 //        int targetIndex = POOLSIZE;
-        int oldest = 99999999;
-        int oldestIndex = 0;
-        for ( int i = 0; i < POOLSIZE; i++ ) {
-            if (mIndexPool[i] < oldest) {
-                oldest = mIndexPool[i];
-                oldestIndex = i;
-            }
-        }
+//        int oldest = 99999999;
+//        int oldestIndex = 0;
+//        for ( int i = 0; i < POOLSIZE; i++ ) {
+//            if (mIndexPool[i] == target) {
+//                targetIndex = i;
+////                break;
+//            }
+//            if (mIndexPool[i] < oldest) {
+//                oldest = mIndexPool[i];
+//                oldestIndex = i;
+//            }
+//        }
 //        if (targetIndex == POOLSIZE) {
-//            qDebug() << "full" << mIncomingCnt;
+//            qDebug() << " ";
+//            qDebug() << "!available" << target;
 //            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
 //            qDebug() << " ";
 //            targetIndex = oldestIndex;
+//            mIndexPool[targetIndex] = -1;
+//        } else {
+//            mIndexPool[targetIndex] = 0;
+//            memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
+//            memcpy(mJACKbuf, mXfrBuffer, mBytes);
 //        }
-        mIndexPool[oldestIndex] = mIncomingCnt;
-//        qDebug() << oldestIndex << mIndexPool[oldestIndex];
-    }
-
-    if (outgoingChange){
-        int target = mOutgoingCnt - 2;
-        int targetIndex = POOLSIZE;
-        int oldest = 99999999;
-        int oldestIndex = 0;
-        for ( int i = 0; i < POOLSIZE; i++ ) {
-            if (mIndexPool[i] == target) {
-                targetIndex = i;
-//                break;
-            }
-            if (mIndexPool[i] < oldest) {
-                oldest = mIndexPool[i];
-                oldestIndex = i;
-            }
-        }
-        if (targetIndex == POOLSIZE) {
-            qDebug() << " ";
-            qDebug() << "!available" << target;
-            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
-            qDebug() << " ";
-            targetIndex = oldestIndex;
-            mIndexPool[targetIndex] = -1;
-        } else
-            mIndexPool[targetIndex] = 0;
-    }
+//    }
 
     {
         out += (QString::number(elapsed0) + QString("\t"));
@@ -320,6 +317,19 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
     mLastIncomingSeq2 = mIncomingSeq;
     if (!mIncomingCnt) qDebug() << "push";
     mIncomingCnt++;
+    if (true){
+        int oldest = 99999999;
+        int oldestIndex = 0;
+        for ( int i = 0; i < POOLSIZE; i++ ) {
+            if (mIndexPool[i] < oldest) {
+                oldest = mIndexPool[i];
+                oldestIndex = i;
+            }
+        }
+        mIndexPool[oldestIndex] = mIncomingCnt;
+        memcpy(mIncomingDat[oldestIndex], mUDPbuf, mBytes);
+//        qDebug() << oldestIndex << mIndexPool[oldestIndex];
+    }
 //    qDebug() << mIncomingCnt;
     usleep(30); // = 17 usec
     return true;
@@ -333,6 +343,34 @@ void BurgPLC::pullPacket (int8_t* buf) {
     mJACKbuf=buf;
     if (!mOutgoingCnt) qDebug() << "pull";
     mOutgoingCnt++; // will saturate
+    if (true){
+        int target = mOutgoingCnt - 4;
+        int targetIndex = POOLSIZE;
+        int oldest = 99999999;
+        int oldestIndex = 0;
+        for ( int i = 0; i < POOLSIZE; i++ ) {
+            if (mIndexPool[i] == target) {
+                targetIndex = i;
+//                break;
+            }
+            if (mIndexPool[i] < oldest) {
+                oldest = mIndexPool[i];
+                oldestIndex = i;
+            }
+        }
+        if (targetIndex == POOLSIZE) {
+            qDebug() << " ";
+            qDebug() << "!available" << target;
+            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
+            qDebug() << " ";
+            targetIndex = oldestIndex;
+            mIndexPool[targetIndex] = -1;
+        } else {
+            mIndexPool[targetIndex] = 0;
+            memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
+            memcpy(mJACKbuf, mXfrBuffer, mBytes);
+        }
+    }
 };
 
 #define RUN 3
