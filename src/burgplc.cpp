@@ -8,7 +8,7 @@ using namespace std;
 #define STATWINDOW 2000
 #define ALERTRESET 5000
 #define TWOTOTHESIXTEENTH 65536
-#define POOLSIZE 12
+#define POOLSIZE mQLen
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
