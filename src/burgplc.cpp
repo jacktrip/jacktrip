@@ -7,7 +7,7 @@ using namespace std;
 #define STATWINDOW 2000
 #define ALERTRESET 5000
 #define TWOTOTHESIXTEENTH 65536
-#define POOLSIZE 70
+#define POOLSIZE 12
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
@@ -266,7 +266,6 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
         }
         mIndexPool[oldestIndex] = mIncomingCnt;
         memcpy(mIncomingDat[oldestIndex], mUDPbuf, mBytes);
-        //        inputPacket();
         //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
     }
     //    qDebug() << mIncomingCnt;
@@ -277,13 +276,11 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
 void BurgPLC::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex);
     mJACKstarted = true;
-    mOutgoingCntWraps = mOutgoingCnt / TWOTOTHETENTH;
-    //    if (!mOutgoingCntWraps)
     mJACKbuf=buf;
-    if (!mOutgoingCnt) qDebug() << "pull";
     mOutgoingCnt++; // will saturate
+    bool glitch = false;
     if (true){
-        int target = mOutgoingCnt - 64;
+        int target = mOutgoingCnt - 0;
         int targetIndex = POOLSIZE;
         int oldest = 99999999;
         int oldestIndex = 0;
@@ -303,11 +300,14 @@ void BurgPLC::pullPacket (int8_t* buf) {
             qDebug() << " ";
             targetIndex = oldestIndex;
             mIndexPool[targetIndex] = -1;
+            glitch = true;
         } else {
             mIndexPool[targetIndex] = 0;
             memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
-            memcpy(mJACKbuf, mXfrBuffer, mBytes);
         }
+        inputPacket();
+        processPacket(glitch);
+        memcpy(mJACKbuf, mXfrBuffer, mBytes);
     }
 };
 
