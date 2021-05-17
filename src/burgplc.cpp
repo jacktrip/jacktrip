@@ -7,7 +7,7 @@ using namespace std;
 #define STATWINDOW 2000
 #define ALERTRESET 5000
 #define TWOTOTHESIXTEENTH 65536
-#define POOLSIZE 7
+#define POOLSIZE 70
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
@@ -81,10 +81,6 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     for PACKETSAMP OUT(0.3, 1, s);
     memcpy(mOverSig, mXfrBuffer, mBytes);
     mBalance = 0;
-    mTimer0.start();
-    mTimer1.start();
-    mTimer2.start();
-    mTimer3.start();
     mElapsedAcc = 0.0;
     mExpectedOutgoingSeq = 0;
     mLastOutgoingCnt = 0;
@@ -112,6 +108,14 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     mPlotStarted = false;
     mIndexPool.resize(POOLSIZE);
     for ( int i = 0; i < POOLSIZE; i++ ) mIndexPool[i] = -1;
+    mTimer0 = new QElapsedTimer();
+    mTimer1 = new QElapsedTimer();
+    mTimer2 = new QElapsedTimer();
+    mTimer3 = new QElapsedTimer();
+    mTimer0->start();
+    mTimer1->start();
+    mTimer2->start();
+    mTimer3->start();
     start();
 }
 void BurgPLC::init(Stat *stat, int w)
@@ -172,134 +176,68 @@ void BurgPLC::run()
     }
 }
 
+void BurgPLC::plotRow(double now, QElapsedTimer *timer, int id)
+{
+    double elapsed = (double)timer->nsecsElapsed() / 1000000.0;
+    timer->start();
+    QString out;
+    out += (QString::number(now) + QString("\t"));
+    out += (QString::number(elapsed) + QString("\t"));
+    out += (QString::number(id) + QString("\t")); // blk
+    //    out += (QString::number(mDelta) + QString("\t"));
+    emit print(out);
+    // set cbrange [0:3]
+    //    plot 'iostat.log' u  1:2:3 with p ps 0.75 pt 5 palette, 'iostat.log' u  1:($4/1.0) w l
+}
+
 void BurgPLC::plot()
 {
-    QMutexLocker locker(&mMutex); // lock the mutex here and pullPacket but not pushPacket
+    QMutexLocker locker(&mMutex);
     if (!mPlotStarted && (mIncomingCnt > 1000)) {
         mIncomingCnt = mOutgoingCnt;
         mPlotStarted = true;
     }
     if (!mPlotStarted) return;
+
+    double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
+    mDelta = mIncomingCnt - mOutgoingCnt;
+
     bool incomingChange = false;
     bool outgoingChange = false;
-    if (mLastOutgoingCnt != mOutgoingCnt) {
-        mLastOutgoingCnt = mOutgoingCnt;
-        outgoingChange = true;
-    }
     if (mLastIncomingCnt != mIncomingCnt) {
         mLastIncomingCnt = mIncomingCnt;
         incomingChange = true;
     }
-    double elapsed0 = (double)mTimer0.nsecsElapsed() / 1000000.0;
-    mDelta = mIncomingCnt - mOutgoingCnt;
-    stats(mStat, elapsed0);
-    if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
-        qDebug() << "STANDARD DEVIATION ALERT";
-        mWarnedHighStdDev = ALERTRESET;
-    } else if (mWarnedHighStdDev) mWarnedHighStdDev--;
-    QString out;
-    double elapsed3 = (double)mTimer3.nsecsElapsed() / 1000000.0;
-    //    out += (QString::number(elapsed0) + QString("\t"));
-    //    out += (QString::number(elapsed3) + QString("\t"));
-    //    out += (QString::number(0) + QString("\t"));
-    //    out += (QString::number(mDelta) + QString("\t"));
-    mTimer3.start();
-    //    emit print(out);
-    // plot 'iostat.log' u  1:2:3 with p ps 0.75 pt 5 palette, 'iostat.log' u  1:($4/1.0) w l
-
-    if(false) {
-        double push = (double)mTimer1.nsecsElapsed() / 1000000.0;
-        mCur = mIncomingCnt % TWOTOTHETENTH;
-        mIncomingCntWraps = mIncomingCnt / TWOTOTHETENTH;
-        mIncomingCntWrap[mCur] = mIncomingCntWraps;
-        memcpy(mIncomingDat[mCur], mUDPbuf, mBytes);
-        memcpy(mXfrBuffer, mIncomingDat[mCur], mBytes);
-        inputPacket();
-        mTimer1.start();
-        QString out;
-        out += (QString::number(elapsed0) + QString("\t"));
-        out += (QString::number(push) + QString("\t"));
-        out += (QString::number(1) + QString("\t")); // blk
-        out += (QString::number(mDelta) + QString("\t"));
-        //        emit print(out);
-        return;
+    if (mLastOutgoingCnt != mOutgoingCnt) {
+        mLastOutgoingCnt = mOutgoingCnt;
+        outgoingChange = true;
     }
 
-    if(false) {
-        double pull = (double)mTimer2.nsecsElapsed() / 1000000.0;
-
-        int lag = mCur-mQLen;
-        if (lag<0) lag+=TWOTOTHETENTH;
-        int test = mIncomingCntWraps;
-        if (lag<0) test--;
-        //        processPacket(mIncomingCntWrap[lag]!=test);
-        //        processPacket(mIncomingCntWrap[mCur]!=mIncomingCntWraps);
-        if (!mPushed) {
-            processPacket(true);
+    if(false) { // plot state
+        plotRow(elapsed0, mTimer3, 0);
+        if(incomingChange) {
+            plotRow(elapsed0, mTimer1, 1);
         }
-        //        else processPacket(false);
-        memcpy(mJACKbuf, mXfrBuffer, mBytes);
-        mTimer2.start();
-        QString out;
-        out += (QString::number(elapsed0) + QString("\t"));
-        out += (QString::number(pull) + QString("\t"));
-        out += (QString::number(2) + QString("\t")); // grn
-        out += (QString::number(mDelta) + QString("\t"));
-        emit print(out);
-        mPushed = false;
-        return;
+        if(outgoingChange) {
+            plotRow(elapsed0, mTimer2, 2);
+        }
     }
 
-//    if (incomingChange){
-//        int oldest = 99999999;
-//        int oldestIndex = 0;
-//        for ( int i = 0; i < POOLSIZE; i++ ) {
-//            if (mIndexPool[i] < oldest) {
-//                oldest = mIndexPool[i];
-//                oldestIndex = i;
-//            }
-//        }
-//        mIndexPool[oldestIndex] = mIncomingCnt;
-//        memcpy(mIncomingDat[oldestIndex], mUDPbuf, mBytes);
-////        qDebug() << oldestIndex << mIndexPool[oldestIndex];
-//    }
-
-//    if (outgoingChange){
-//        int target = mOutgoingCnt - 2;
-//        int targetIndex = POOLSIZE;
-//        int oldest = 99999999;
-//        int oldestIndex = 0;
-//        for ( int i = 0; i < POOLSIZE; i++ ) {
-//            if (mIndexPool[i] == target) {
-//                targetIndex = i;
-////                break;
-//            }
-//            if (mIndexPool[i] < oldest) {
-//                oldest = mIndexPool[i];
-//                oldestIndex = i;
-//            }
-//        }
-//        if (targetIndex == POOLSIZE) {
-//            qDebug() << " ";
-//            qDebug() << "!available" << target;
-//            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
-//            qDebug() << " ";
-//            targetIndex = oldestIndex;
-//            mIndexPool[targetIndex] = -1;
-//        } else {
-//            mIndexPool[targetIndex] = 0;
-//            memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
-//            memcpy(mJACKbuf, mXfrBuffer, mBytes);
-//        }
-//    }
-
-    {
-        out += (QString::number(elapsed0) + QString("\t"));
-        out += (QString::number(mStat->lastMean) + QString("\t"));
-        out += (QString::number(mStat->lastMin) + QString("\t"));
-        out += (QString::number(mStat->lastMax) + QString("\t"));
-        out += (QString::number(mStat->stdDev) + QString("\t"));
-        emit printStats(out);
+    if(false) { // std dev warning
+        stats(mStat, elapsed0);
+        if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
+            qDebug() << "STANDARD DEVIATION ALERT";
+            mWarnedHighStdDev = ALERTRESET;
+        } else if (mWarnedHighStdDev) mWarnedHighStdDev--;
+        if(false) { // plot stats
+            QString out;
+            out += (QString::number(elapsed0) + QString("\t"));
+            out += (QString::number(mStat->lastMean) + QString("\t"));
+            out += (QString::number(mStat->lastMin) + QString("\t"));
+            out += (QString::number(mStat->lastMax) + QString("\t"));
+            out += (QString::number(mStat->stdDev) + QString("\t"));
+            emit printStats(out);
+        }
     }
 }
 
@@ -328,10 +266,11 @@ bool BurgPLC::pushPacket (const int8_t *buf, int len, int seq) {
         }
         mIndexPool[oldestIndex] = mIncomingCnt;
         memcpy(mIncomingDat[oldestIndex], mUDPbuf, mBytes);
-//        qDebug() << oldestIndex << mIndexPool[oldestIndex];
+        //        inputPacket();
+        //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
     }
-//    qDebug() << mIncomingCnt;
-    usleep(30); // = 17 usec
+    //    qDebug() << mIncomingCnt;
+    //    usleep(30); // only if in pool thread
     return true;
 };
 
@@ -344,14 +283,13 @@ void BurgPLC::pullPacket (int8_t* buf) {
     if (!mOutgoingCnt) qDebug() << "pull";
     mOutgoingCnt++; // will saturate
     if (true){
-        int target = mOutgoingCnt - 4;
+        int target = mOutgoingCnt - 64;
         int targetIndex = POOLSIZE;
         int oldest = 99999999;
         int oldestIndex = 0;
         for ( int i = 0; i < POOLSIZE; i++ ) {
             if (mIndexPool[i] == target) {
                 targetIndex = i;
-//                break;
             }
             if (mIndexPool[i] < oldest) {
                 oldest = mIndexPool[i];
