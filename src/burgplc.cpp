@@ -3,6 +3,7 @@
 #include "jacktrip_globals.h"
 
 using namespace std;
+#define HIST 6
 #define TWOTOTHETENTH 1024
 #define STATWINDOW 2000
 #define ALERTRESET 5000
@@ -11,14 +12,13 @@ using namespace std;
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
-BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist) :
+BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen) :
     RingBuffer(0, 0),
     mSampleRate (sample_rate),
     mNumChannels (channels),
     mAudioBitRes (bit_res),
     mFPP (FPP),
-    mQLen (qLen),
-    mHist (hist)
+    mQLen (qLen)
 {
     switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
     case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -30,6 +30,7 @@ BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, 
     case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
+    mHist = HIST;
     mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
     mXfrBuffer   = new int8_t[mTotalSize];
     mPacketCnt = 0; // burg
@@ -193,7 +194,7 @@ void BurgPLC::plotRow(double now, QElapsedTimer *timer, int id)
 void BurgPLC::plot()
 {
     QMutexLocker locker(&mMutex);
-    if (!mPlotStarted && (mIncomingCnt > 1000)) {
+    if (!mPlotStarted && (mIncomingCnt > 2000)) {
         mIncomingCnt = mOutgoingCnt;
         mPlotStarted = true;
     }
@@ -280,7 +281,7 @@ void BurgPLC::pullPacket (int8_t* buf) {
     mOutgoingCnt++; // will saturate
     bool glitch = false;
     if (true){
-        int target = mOutgoingCnt - 0;
+        int target = mOutgoingCnt - 1;
         int targetIndex = POOLSIZE;
         int oldest = 99999999;
         int oldestIndex = 0;
@@ -305,8 +306,10 @@ void BurgPLC::pullPacket (int8_t* buf) {
             mIndexPool[targetIndex] = 0;
             memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
         }
-        inputPacket();
-        processPacket(glitch);
+        if (mPlotStarted) {
+            inputPacket();
+            processPacket(glitch);
+        }
         memcpy(mJACKbuf, mXfrBuffer, mBytes);
     }
 };

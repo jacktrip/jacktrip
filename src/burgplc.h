@@ -13,7 +13,7 @@ class BurgPLC : public RingBuffer
     Q_OBJECT;
 
 public:
-    BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int hist);
+    BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     int8_t* getBufferPtr() { return mXfrBuffer; };
     void inputPacket ();
     void processPacket (bool glitch);

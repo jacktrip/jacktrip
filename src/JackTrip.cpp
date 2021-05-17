@@ -354,9 +354,8 @@ void JackTrip::setupRingBuffers()
 //            mReceiveRingBuffer = new RingBufferPLC(mSampleRate, mNumChans,
 //                                                   mAudioBitResolution, mAudioBufferSize,
 //                                                   slot_size, mBufferQueueLength);
-#define HIST 6
             mReceiveRingBuffer = new BurgPLC(mSampleRate, mNumChans, mAudioBitResolution, mAudioBufferSize,
-                               mBufferQueueLength, HIST);
+                               mBufferQueueLength);
             connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
             connect(mReceiveRingBuffer, SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
 
