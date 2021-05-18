@@ -12,13 +12,14 @@ using namespace std;
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
-BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen) :
+BurgPLC::BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int rcvLag) :
     RingBuffer(0, 0),
     mSampleRate (sample_rate),
     mNumChannels (channels),
     mAudioBitRes (bit_res),
     mFPP (FPP),
-    mQLen (qLen)
+    mQLen (qLen),
+    mRcvLag (rcvLag)
 {
     switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
     case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -281,7 +282,7 @@ void BurgPLC::pullPacket (int8_t* buf) {
     mOutgoingCnt++; // will saturate
     bool glitch = false;
     if (true){
-        int target = mOutgoingCnt - 1;
+        int target = mOutgoingCnt - mRcvLag;
         int targetIndex = POOLSIZE;
         int oldest = 99999999;
         int oldestIndex = 0;

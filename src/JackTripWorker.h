@@ -101,6 +101,7 @@ class JackTripWorker
         mSimulatedDelayRel   = delay_rel;
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
+    void setRcvLag(int rcvLag) { mRcvLag = rcvLag; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
@@ -142,6 +143,7 @@ class JackTripWorker
 
     int mBufferStrategy;
     int mBroadcastQueue;
+    int mRcvLag;
     double mSimulatedLossRate;
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;

@@ -169,6 +169,7 @@ class UdpHubListener : public QObject
 
     int mBufferStrategy;
     int mBroadcastQueue;
+    int mRcvLag;
     double mSimulatedLossRate;
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
@@ -213,6 +214,7 @@ class UdpHubListener : public QObject
         mSimulatedDelayRel   = delay_rel;
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
+    void setRcvLag(int rcvLag) { mRcvLag = rcvLag; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 };
 

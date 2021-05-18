@@ -81,6 +81,7 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
     //mNetks->play();
     mBufferStrategy      = 1;
     mBroadcastQueue      = 0;
+    mRcvLag      = 0;
     mSimulatedLossRate   = 0.0;
     mSimulatedJitterRate = 0.0;
     mSimulatedDelayRel   = 0.0;
@@ -230,6 +231,7 @@ void JackTripWorker::run()
         jacktrip.setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                         mSimulatedDelayRel);
         jacktrip.setBroadcast(mBroadcastQueue);
+        jacktrip.setRcvLag(mRcvLag);
         jacktrip.setUseRtUdpPriority(mUseRtUdpPriority);
 
         if (gVerboseFlag)

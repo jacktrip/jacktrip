@@ -71,7 +71,7 @@ enum JTLongOptIDS {
     OPT_SIMJITTER,
     OPT_BROADCAST,
     OPT_RTUDPPRIORITY,
-    OPT_PANSLOT,
+    OPT_RCVLAG,
 };
 
 //*******************************************************************************
@@ -87,15 +87,15 @@ Settings::Settings()
     , mUnderrunMode(JackTrip::WAVETABLE)
     , mStopOnTimeout(false)
     , mBufferStrategy(1)
-    , mPanSlot(0)
+    , mRcvLag(1)
     , mLoopBack(false)
     ,
-#ifdef WAIR  // WAIR
-    mNumNetRevChans(0)
+      #ifdef WAIR  // WAIR
+      mNumNetRevChans(0)
     , mWAIR(false)
     ,
-#endif  // endwhere
-    mJamLink(false)
+      #endif  // endwhere
+      mJamLink(false)
     , mEmptyHeader(false)
     , mJackTripServer(false)
     , mLocalAddress(gDefaultLocalAddress)
@@ -109,7 +109,7 @@ Settings::Settings()
     , mIOStatTimeout(0)
     , mEffects(false)
     ,  // outgoing limiter OFF by default
-    mSimulatedLossRate(0.0)
+      mSimulatedLossRate(0.0)
     , mSimulatedJitterRate(0.0)
     , mSimulatedDelayRel(0.0)
     , mBroadcastQueue(0)
@@ -137,64 +137,65 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     static struct option longopts[] = {
         // These options don't set a flag.
-        {"numchannels", required_argument, NULL,
-         'n'},  // Number of input and output channels
+    {"numchannels", required_argument, NULL,
+                'n'},  // Number of input and output channels
 #ifdef WAIR     // WAIR
-        {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
-        {"addcombfilterlength", required_argument, NULL,
-         'N'},                                                 // added comb filter length
-        {"combfilterfeedback", required_argument, NULL, 'H'},  // comb filter feedback
+    {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
+    {"addcombfilterlength", required_argument, NULL,
+                'N'},                                                 // added comb filter length
+    {"combfilterfeedback", required_argument, NULL, 'H'},  // comb filter feedback
 #endif  // endwhere
-        {"server", no_argument, NULL, 's'},  // Run in P2P server mode
-        {"client", required_argument, NULL,
-         'c'},  // Run in P2P client mode, set server IP address
-        {"localaddress", required_argument, NULL,
-         'L'},  // set local address e.g., 127.0.0.2 for second instance on same host
-        {"jacktripserver", no_argument, NULL, 'S'},  // Run in JamLink mode
-        {"pingtoserver", required_argument, NULL,
-         'C'},  // Run in ping to server mode, set server IP address
-        {"portoffset", required_argument, NULL, 'o'},  // Port Offset from 4464
-        {"bindport", required_argument, NULL, 'B'},    // Port Offset from 4464
-        {"peerport", required_argument, NULL, 'P'},    // Port Offset from 4464
-        {"udpbaseport", required_argument, NULL,
-         'U'},  // Server udp base port (defaults to 61002)
-        {"queue", required_argument, NULL, 'q'},       // Queue Length
-        {"redundancy", required_argument, NULL, 'r'},  // Redundancy
-        {"bitres", required_argument, NULL, 'b'},      // Audio Bit Resolution
-        {"zerounderrun", no_argument, NULL, 'z'},      // Use Underrun to Zeros Mode
-        {"timeout", no_argument, NULL, 't'},      // Quit after 10 second network timeout
-        {"loopback", no_argument, NULL, 'l'},     // Run in loopback mode
-        {"jamlink", no_argument, NULL, 'j'},      // Run in JamLink mode
-        {"emptyheader", no_argument, NULL, 'e'},  // Run in JamLink mode
-        {"clientname", required_argument, NULL, 'J'},  // Run in JamLink mode
-        {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
-        {"rtaudio", no_argument, NULL, 'R'},           // Run in JamLink mode
-        {"srate", required_argument, NULL, 'T'},       // Set Sample Rate
-        {"deviceid", required_argument, NULL, 'd'},    // Set RTAudio device id to use
-        {"bufsize", required_argument, NULL, 'F'},     // Set buffer Size
-        {"nojackportsconnect", no_argument, NULL,
-         'D'},                                // Don't connect default Audio Ports
-        {"version", no_argument, NULL, 'v'},  // Version Number
-        {"verbose", no_argument, NULL, 'V'},  // Verbose mode
-        {"hubpatch", required_argument, NULL,
-         'p'},  // Set hubConnectionMode for auto patch in Jack
-        {"iostat", required_argument, NULL, 'I'},     // Set IO stat timeout
-        {"iostatlog", required_argument, NULL, 'G'},  // Set IO stat log file
-        {"effects", required_argument, NULL,
-         'f'},  // Turn on outgoing compressor and incoming reverb, reverbLevel arg
-        {"overflowlimiting", required_argument, NULL,
-         'O'},  // Turn On limiter, cases 'i', 'o', 'io'
-        {"assumednumclients", required_argument, NULL,
-         'a'},  // assumed number of clients (sound sources) (otherwise 2)
-        {"bufstrategy", required_argument, NULL, OPT_BUFSTRATEGY},  // Set bufstrategy
-        {"simloss", required_argument, NULL, OPT_SIMLOSS},
-        {"simjitter", required_argument, NULL, OPT_SIMJITTER},
-        {"broadcast", required_argument, NULL, OPT_BROADCAST},
-        {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
-        {"help", no_argument, NULL, 'h'},  // Print Help
-        {"examine-audio-delay", required_argument, NULL,
-         'x'},  // test mode - measure audio round-trip latency statistics
-        {NULL, 0, NULL, 0}};
+    {"server", no_argument, NULL, 's'},  // Run in P2P server mode
+    {"client", required_argument, NULL,
+                'c'},  // Run in P2P client mode, set server IP address
+    {"localaddress", required_argument, NULL,
+                'L'},  // set local address e.g., 127.0.0.2 for second instance on same host
+    {"jacktripserver", no_argument, NULL, 'S'},  // Run in JamLink mode
+    {"pingtoserver", required_argument, NULL,
+                'C'},  // Run in ping to server mode, set server IP address
+    {"portoffset", required_argument, NULL, 'o'},  // Port Offset from 4464
+    {"bindport", required_argument, NULL, 'B'},    // Port Offset from 4464
+    {"peerport", required_argument, NULL, 'P'},    // Port Offset from 4464
+    {"udpbaseport", required_argument, NULL,
+                'U'},  // Server udp base port (defaults to 61002)
+    {"queue", required_argument, NULL, 'q'},       // Queue Length
+    {"redundancy", required_argument, NULL, 'r'},  // Redundancy
+    {"bitres", required_argument, NULL, 'b'},      // Audio Bit Resolution
+    {"zerounderrun", no_argument, NULL, 'z'},      // Use Underrun to Zeros Mode
+    {"timeout", no_argument, NULL, 't'},      // Quit after 10 second network timeout
+    {"loopback", no_argument, NULL, 'l'},     // Run in loopback mode
+    {"jamlink", no_argument, NULL, 'j'},      // Run in JamLink mode
+    {"emptyheader", no_argument, NULL, 'e'},  // Run in JamLink mode
+    {"clientname", required_argument, NULL, 'J'},  // Run in JamLink mode
+    {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
+    {"rtaudio", no_argument, NULL, 'R'},           // Run in JamLink mode
+    {"srate", required_argument, NULL, 'T'},       // Set Sample Rate
+    {"deviceid", required_argument, NULL, 'd'},    // Set RTAudio device id to use
+    {"bufsize", required_argument, NULL, 'F'},     // Set buffer Size
+    {"nojackportsconnect", no_argument, NULL,
+                'D'},                                // Don't connect default Audio Ports
+    {"version", no_argument, NULL, 'v'},  // Version Number
+    {"verbose", no_argument, NULL, 'V'},  // Verbose mode
+    {"hubpatch", required_argument, NULL,
+                'p'},  // Set hubConnectionMode for auto patch in Jack
+    {"iostat", required_argument, NULL, 'I'},     // Set IO stat timeout
+    {"iostatlog", required_argument, NULL, 'G'},  // Set IO stat log file
+    {"effects", required_argument, NULL,
+                'f'},  // Turn on outgoing compressor and incoming reverb, reverbLevel arg
+    {"overflowlimiting", required_argument, NULL,
+                'O'},  // Turn On limiter, cases 'i', 'o', 'io'
+    {"assumednumclients", required_argument, NULL,
+                'a'},  // assumed number of clients (sound sources) (otherwise 2)
+    {"bufstrategy", required_argument, NULL, OPT_BUFSTRATEGY},  // Set bufstrategy
+    {"simloss", required_argument, NULL, OPT_SIMLOSS},
+    {"simjitter", required_argument, NULL, OPT_SIMJITTER},
+    {"broadcast", required_argument, NULL, OPT_BROADCAST},
+    {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
+    {"rcvlag", required_argument, NULL, OPT_RCVLAG},
+    {"help", no_argument, NULL, 'h'},  // Print Help
+    {"examine-audio-delay", required_argument, NULL,
+                'x'},  // test mode - measure audio round-trip latency statistics
+    {NULL, 0, NULL, 0}};
 
     // Parse Command Line Arguments
     //----------------------------------------------------------------------------
@@ -218,7 +219,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mWAIR = true;
             mNumNetRevChans =
-                gDefaultNumNetRevChannels;  // fixed amount sets number of network channels and comb filters for WAIR
+                    gDefaultNumNetRevChannels;  // fixed amount sets number of network channels and comb filters for WAIR
             break;
         case 'N':
             //-------------------------------------------------------
@@ -312,7 +313,7 @@ void Settings::parseInput(int argc, char** argv)
             if (atoi(optarg) <= 0) {
                 printUsage();
                 std::cerr
-                    << "--redundancy ERROR: The redundancy has to be a positive integer"
+                        << "--redundancy ERROR: The redundancy has to be a positive integer"
                     << endl;
                 std::exit(1);
             } else {
@@ -451,8 +452,8 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_RTUDPPRIORITY:  // Use RT priority for UDPDataProtocol thread
             mUseRtUdpPriority = true;
             break;
-        case OPT_PANSLOT:  // pan slot
-            mPanSlot = atoi(optarg);
+        case OPT_RCVLAG:  // pan slot
+            mRcvLag = atoi(optarg);
             break;
         case 'h':
             //-------------------------------------------------------
@@ -512,7 +513,7 @@ void Settings::parseInput(int argc, char** argv)
             }
             mAudioTester.setEnabled(true);
             if (optarg == 0 || optarg[0] == '-'
-                || optarg[0] == 0) {  // happens when no -f argument specified
+                    || optarg[0] == 0) {  // happens when no -f argument specified
                 printUsage();
                 std::cerr << cmd
                           << " ERROR: Print-interval argument REQUIRED (set to 0.0 to "
@@ -530,7 +531,7 @@ void Settings::parseInput(int argc, char** argv)
         case '?': {
             printUsage();
             printf(
-                "*** Unknown, missing, or ambiguous option argument *** see above for "
+                        "*** Unknown, missing, or ambiguous option argument *** see above for "
                 "usage\n\n");
             std::exit(1);
             break;
@@ -576,7 +577,7 @@ void Settings::parseInput(int argc, char** argv)
     }
     if (mEffects.getHaveLimiter() && haveSomeServerMode) {
         if (mEffects.getLimit()
-            != Effects::LIMITER_MODE::LIMITER_OUTGOING) {  // default case
+                != Effects::LIMITER_MODE::LIMITER_OUTGOING) {  // default case
             std::cerr << "*** --overflowlimiting (-O) ERROR: Limiters not yet supported "
                          "server modes (-S and -s).\n\n";
         }
@@ -590,8 +591,8 @@ void Settings::parseInput(int argc, char** argv)
         std::exit(1);
     }
     if (mAudioTester.getEnabled() && (mAudioBitResolution != AudioInterface::BIT16)
-        && (mAudioBitResolution
-            != AudioInterface::BIT32)) {  // BIT32 not tested but should be ok
+            && (mAudioBitResolution
+                != AudioInterface::BIT32)) {  // BIT32 not tested but should be ok
         // BIT24 should work also, but there's a comment saying it's broken right now, so exclude it
         std::cerr << "*** --examine-audio-delay (-x) ERROR: Only --bitres (-b) 16 and 32 "
                      "presently supported for audio latency measurement.\n\n";
@@ -739,7 +740,7 @@ void Settings::printUsage()
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
     cout
-        << " -V, --verbose                            Verbose mode, prints debug messages"
+            << " -V, --verbose                            Verbose mode, prints debug messages"
         << endl;
     cout << " -h, --help                               Prints this Help" << endl;
     cout << "" << endl;
@@ -776,6 +777,7 @@ UdpHubListener* Settings::getConfiguredHubServer()
     udpHub->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                    mSimulatedDelayRel);
     udpHub->setBroadcast(mBroadcastQueue);
+    udpHub->setRcvLag(mRcvLag);
     udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
 
     if (mIOStatTimeout > 0) {
@@ -795,17 +797,17 @@ JackTrip* Settings::getConfiguredJackTrip()
     if (gVerboseFlag)
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
-        mJackTripMode, mDataProtocol, mNumChans,
-#ifdef WAIR  // wair
-        mNumNetRevChans,
-#endif  // endwhere
-        mBufferQueueLength, mRedundancy, mAudioBitResolution,
-        /*DataProtocol::packetHeaderTypeT PacketHeaderType = */ DataProtocol::DEFAULT,
-        /*underrunModeT UnderRunMode = */ mUnderrunMode,
-        /* int receiver_bind_port = */ mBindPortNum,
-        /*int sender_bind_port = */ mBindPortNum,
-        /*int receiver_peer_port = */ mPeerPortNum,
-        /* int sender_peer_port = */ mPeerPortNum, mPeerPortNum);
+                mJackTripMode, mDataProtocol, mNumChans,
+            #ifdef WAIR  // wair
+                mNumNetRevChans,
+            #endif  // endwhere
+                mBufferQueueLength, mRedundancy, mAudioBitResolution,
+                /*DataProtocol::packetHeaderTypeT PacketHeaderType = */ DataProtocol::DEFAULT,
+                /*underrunModeT UnderRunMode = */ mUnderrunMode,
+                /* int receiver_bind_port = */ mBindPortNum,
+                /*int sender_bind_port = */ mBindPortNum,
+                /*int receiver_peer_port = */ mPeerPortNum,
+                /* int sender_peer_port = */ mPeerPortNum, mPeerPortNum);
     // Set connect or not default audio ports. Only work for jack
     jackTrip->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
 
@@ -826,7 +828,7 @@ JackTrip* Settings::getConfiguredJackTrip()
 
     // Set peer address in server mode
     if (mJackTripMode == JackTrip::CLIENT
-        || mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
+            || mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
         jackTrip->setPeerAddress(mPeerAddress);
     }
 
@@ -873,6 +875,7 @@ JackTrip* Settings::getConfiguredJackTrip()
     jackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                      mSimulatedDelayRel);
     jackTrip->setBroadcast(mBroadcastQueue);
+    jackTrip->setRcvLag(mRcvLag);
     jackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
 
     // Add Plugins
@@ -908,12 +911,12 @@ JackTrip* Settings::getConfiguredJackTrip()
 
     // Allocate audio effects in client, if any:
     int nReservedChans =
-        mAudioTester.getEnabled() ? 1 : 0;  // no fx allowed on tester channel
+            mAudioTester.getEnabled() ? 1 : 0;  // no fx allowed on tester channel
     std::vector<ProcessPlugin*> outgoingEffects =
-        mEffects.allocateOutgoingEffects(mNumChans - nReservedChans);
+            mEffects.allocateOutgoingEffects(mNumChans - nReservedChans);
     for (auto p : outgoingEffects) { jackTrip->appendProcessPluginToNetwork(p); }
     std::vector<ProcessPlugin*> incomingEffects =
-        mEffects.allocateIncomingEffects(mNumChans - nReservedChans);
+            mEffects.allocateIncomingEffects(mNumChans - nReservedChans);
     for (auto p : incomingEffects) { jackTrip->appendProcessPluginFromNetwork(p); }
 
 #ifdef WAIR  // WAIR
@@ -923,7 +926,7 @@ JackTrip* Settings::getConfiguredJackTrip()
         switch (mNumNetRevChans) {
         case 16: {
             jackTrip->appendProcessPluginFromNetwork(
-                new ap8x2(mNumChans));  // plugin slot 0
+                        new ap8x2(mNumChans));  // plugin slot 0
             /////////////////////////////////////////////////////////
             Stk16* plugin = new Stk16(mNumNetRevChans);
             plugin->Stk16::initCombClient(mClientAddCombLen, mClientRoomSize);
@@ -931,14 +934,14 @@ JackTrip* Settings::getConfiguredJackTrip()
         } break;
         default:
             throw std::invalid_argument(
-                "Settings: mNumNetRevChans doesn't correspond to Faust plugin");
+                        "Settings: mNumNetRevChans doesn't correspond to Faust plugin");
             break;
         }
         break;
-    default:
-        throw std::invalid_argument(
-            "Settings: mNumNetRevChans doesn't correspond to Faust plugin");
-        break;
+        default:
+            throw std::invalid_argument(
+                        "Settings: mNumNetRevChans doesn't correspond to Faust plugin");
+            break;
     }
 }
 #endif  // endwhere

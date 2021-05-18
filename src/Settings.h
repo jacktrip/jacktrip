@@ -90,7 +90,6 @@ class Settings : public QObject
     JackTrip::underrunModeT mUnderrunMode;  ///< Underrun mode
     bool mStopOnTimeout;  /// < Stop jacktrip after 10 second network timeout
     int mBufferStrategy;
-    int mPanSlot;
 
 #ifdef WAIR  // wair
     int mNumNetRevChans;     ///< Number of Network Audio Channels (net comb filters)
@@ -121,6 +120,7 @@ class Settings : public QObject
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     int mBroadcastQueue;
+    int mRcvLag;
     bool mUseRtUdpPriority;
     AudioTester mAudioTester;
 };

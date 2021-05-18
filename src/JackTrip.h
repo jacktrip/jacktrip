@@ -484,6 +484,7 @@ class JackTrip : public QObject
         mSimulatedDelayRel   = delay_rel;
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueueLength = broadcast_queue; }
+    void setRcvLag(int rcvLag) { mRcvLag = rcvLag; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 
    public slots:
@@ -576,6 +577,7 @@ class JackTrip : public QObject
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
     int mBufferStrategy;
     int mBroadcastQueueLength;
+    int mRcvLag;
     uint32_t mSampleRate;       ///< Sample Rate
     uint32_t mDeviceID;         ///< RTAudio DeviceID
     uint32_t mAudioBufferSize;  ///< Audio buffer size to process on each callback

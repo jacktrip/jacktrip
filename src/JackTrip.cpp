@@ -95,6 +95,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
       mBufferQueueLength(BufferQueueLength)
     , mBufferStrategy(1)
     , mBroadcastQueueLength(0)
+    , mRcvLag(0)
     , mSampleRate(gDefaultSampleRate)
     , mDeviceID(gDefaultDeviceID)
     , mAudioBufferSize(gDefaultBufferSizeInSamples)
@@ -355,7 +356,7 @@ void JackTrip::setupRingBuffers()
 //                                                   mAudioBitResolution, mAudioBufferSize,
 //                                                   slot_size, mBufferQueueLength);
             mReceiveRingBuffer = new BurgPLC(mSampleRate, mNumChans, mAudioBitResolution, mAudioBufferSize,
-                               mBufferQueueLength);
+                               mBufferQueueLength, mRcvLag);
             connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
             connect(mReceiveRingBuffer, SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
 

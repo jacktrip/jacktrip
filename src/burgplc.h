@@ -13,7 +13,7 @@ class BurgPLC : public RingBuffer
     Q_OBJECT;
 
 public:
-    BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen);
+    BurgPLC(int sample_rate, int channels, int bit_res, int FPP, int qLen, int rcvLag);
     int8_t* getBufferPtr() { return mXfrBuffer; };
     void inputPacket ();
     void processPacket (bool glitch);
@@ -129,6 +129,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     bool mPlotStarted;
     vector<int> mIndexPool;
     void plotRow(double now, QElapsedTimer *timer, int id);
+    int mRcvLag;
 signals:
     void print(QString);
     void printStats(QString);
