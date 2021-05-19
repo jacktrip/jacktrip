@@ -182,13 +182,13 @@ class DefaultHeader : public PacketHeader
     DefaultHeader(JackTrip* jacktrip);
     virtual ~DefaultHeader() {}
 
-    virtual void fillHeaderCommonFromAudio();
-    virtual void parseHeader() {}
-    virtual bool checkPeerSettings(int8_t* full_packet);
-    virtual void increaseSequenceNumber() { mHeader.SeqNumber++; }
-    virtual uint16_t getSequenceNumber() const { return mHeader.SeqNumber; }
-    virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); }
-    virtual void putHeaderInPacket(int8_t* full_packet)
+    virtual void fillHeaderCommonFromAudio() override;
+    virtual void parseHeader() override {}
+    virtual bool checkPeerSettings(int8_t* full_packet) override;
+    virtual void increaseSequenceNumber() override { mHeader.SeqNumber++; }
+    virtual uint16_t getSequenceNumber() const override { return mHeader.SeqNumber; }
+    virtual int getHeaderSizeInBytes() const override { return sizeof(mHeader); }
+    virtual void putHeaderInPacket(int8_t* full_packet) override
     {
         putHeaderInPacketBaseClass(full_packet, mHeader);
     }
@@ -201,11 +201,11 @@ class DefaultHeader : public PacketHeader
     {
         return mHeader.NumOutgoingChannelsToNet;
     }
-    virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const;
-    virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const;
-    virtual uint16_t getPeerBufferSize(int8_t* full_packet) const;
-    virtual uint8_t getPeerSamplingRate(int8_t* full_packet) const;
-    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const;
+    virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const override;
+    virtual uint16_t getPeerSequenceNumber(int8_t* full_packet) const override;
+    virtual uint16_t getPeerBufferSize(int8_t* full_packet) const override;
+    virtual uint8_t getPeerSamplingRate(int8_t* full_packet) const override;
+    virtual uint8_t getPeerBitResolution(int8_t* full_packet) const override;
     uint8_t getPeerNumIncomingChannels(int8_t* full_packet) const override;
     uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const override;
 
@@ -226,21 +226,21 @@ class JamLinkHeader : public PacketHeader
     JamLinkHeader(JackTrip* jacktrip);
     virtual ~JamLinkHeader() {}
 
-    virtual void fillHeaderCommonFromAudio();
-    virtual void parseHeader() {}
-    virtual bool checkPeerSettings(int8_t* /*full_packet*/) { return true; }
+    virtual void fillHeaderCommonFromAudio() override;
+    virtual void parseHeader() override {}
+    virtual bool checkPeerSettings(int8_t* /*full_packet*/) override { return true; }
 
-    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
-    uint8_t getPeerNumIncomingChannels(int8_t* full_packet) const override { return 0; }
-    uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const override { return 0; }
+    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const override { return 0; }
+    uint8_t getPeerNumIncomingChannels(int8_t* /*full_packet*/) const override { return 0; }
+    uint8_t getPeerNumOutgoingChannels(int8_t* /*full_packet*/) const override { return 0; }
 
-    virtual void increaseSequenceNumber() {}
-    virtual int getHeaderSizeInBytes() const { return sizeof(mHeader); }
-    virtual void putHeaderInPacket(int8_t* full_packet)
+    virtual void increaseSequenceNumber() override {}
+    virtual int getHeaderSizeInBytes() const override { return sizeof(mHeader); }
+    virtual void putHeaderInPacket(int8_t* full_packet) override
     {
         putHeaderInPacketBaseClass(full_packet, mHeader);
     }
@@ -262,21 +262,21 @@ class EmptyHeader : public PacketHeader
     EmptyHeader(JackTrip* jacktrip);
     virtual ~EmptyHeader() {}
 
-    virtual void fillHeaderCommonFromAudio() {}
-    virtual void parseHeader() {}
-    virtual bool checkPeerSettings(int8_t* /*full_packet*/) { return true; }
-    virtual void increaseSequenceNumber() {}
-    virtual int getHeaderSizeInBytes() const { return 0; }
+    virtual void fillHeaderCommonFromAudio() override {}
+    virtual void parseHeader() override {}
+    virtual bool checkPeerSettings(int8_t* /*full_packet*/) override { return true; }
+    virtual void increaseSequenceNumber() override {}
+    virtual int getHeaderSizeInBytes() const override { return 0; }
 
-    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const { return 0; }
-    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const { return 0; }
-    uint8_t getPeerNumIncomingChannels(int8_t* full_packet) const override { return 0; }
-    uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const override { return 0; }
+    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const override { return 0; }
+    uint8_t getPeerNumIncomingChannels(int8_t* /*full_packet*/) const override { return 0; }
+    uint8_t getPeerNumOutgoingChannels(int8_t* /*full_packet*/) const override { return 0; }
 
-    virtual void putHeaderInPacket(int8_t* /*full_packet*/) {}
+    virtual void putHeaderInPacket(int8_t* /*full_packet*/) override {}
 
    private:
     JackTrip* mJackTrip;  ///< JackTrip mediator class
