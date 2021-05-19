@@ -275,6 +275,12 @@ void JackTripWorker::receivedDataUDP()
         mJackTrip->setNumInputChannels(PeerNumIncomingChannels);
         mJackTrip->setNumOutputChannels(PeerNumOutgoingChannels);
     }
+
+    if (PeerNumOutgoingChannels == -1) {
+        //Shut it down
+        mSpawning = false;
+        mUdpHubListener->releaseThread(mID);
+    }
     
     // Connect signals and slots
     // -------------------------
