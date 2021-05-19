@@ -105,7 +105,7 @@ void RingBuffer::insertSlotBlocking(const int8_t* ptrToSlot)
     // Check if there is space available to write a slot
     // If the Ringbuffer is full, it waits for the bufferIsNotFull condition
     while (mFullSlots == mNumSlots) {
-        // std::cout << "OUPUT OVERFLOW BLOCKING" << std::endl;
+        // std::cout << "OUTPUT OVERFLOW BLOCKING" << std::endl;
         mBufferIsNotFull.wait(&mMutex);
     }
 
