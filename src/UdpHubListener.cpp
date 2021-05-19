@@ -492,7 +492,6 @@ int UdpHubListener::getJackTripWorker(QString address, [[maybe_unused]] uint16_t
                                         address,
                                         mBasePort + id,
                                         0, //Set client port to 0 initially until we receive a UDP packet.
-                                        1,
                                         m_connectDefaultAudioPorts
                                         ); //
     }
