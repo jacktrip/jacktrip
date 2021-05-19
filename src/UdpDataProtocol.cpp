@@ -133,7 +133,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
             // use the first IP address
             mPeerAddress = info.addresses().first();
         }
-        //cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
+        // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
 #if defined (__LINUX__) || defined (__MAC_OSX__)
     }
@@ -146,9 +146,9 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         QString error_message = "Incorrect presentation format address\n'";
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");
-        //std::cerr << "ERROR: Incorrect presentation format address" << endl;
-        //std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address" << endl;
-        //throw std::invalid_argument("Incorrect presentation format address");
+        // std::cerr << "ERROR: Incorrect presentation format address" << endl;
+        // std::cerr << "'" << peerHostOrIP <<"' does not seem to be a valid IP address"
+        // << endl; throw std::invalid_argument("Incorrect presentation format address");
         throw std::invalid_argument(error_message.toStdString());
     }
     /*
@@ -178,7 +178,7 @@ void UdpDataProtocol::setSocket(SOCKET& socket)
 void UdpDataProtocol::setSocket(int& socket)
 #endif
 {
-    //If we haven't been passed a valid socket, then we should bind one.
+    // If we haven't been passed a valid socket, then we should bind one.
 #if defined(__WIN_32__)
     if (socket == INVALID_SOCKET) {
 #else
@@ -237,7 +237,7 @@ int UdpDataProtocol::bindSocket()
     int sock_fd;
 #endif
 
-    //Set local IPv4 or IPv6 Address
+    // Set local IPv4 or IPv6 Address
     struct sockaddr_in local_addr;
     struct sockaddr_in6 local_addr6;
 
@@ -253,10 +253,10 @@ int UdpDataProtocol::bindSocket()
 
         //::bzero(&local_addr, sizeof(local_addr));
         std::memset(&local_addr, 0, sizeof(local_addr));  // set buffer to 0
-        local_addr.sin_family = AF_INET;                  //AF_INET: IPv4 Protocol
+        local_addr.sin_family = AF_INET;                  // AF_INET: IPv4 Protocol
         local_addr.sin_addr.s_addr =
-            htonl(INADDR_ANY);  //INADDR_ANY: let the kernel decide the active address
-        local_addr.sin_port = htons(mBindPort);  //set local port
+            htonl(INADDR_ANY);  // INADDR_ANY: let the kernel decide the active address
+        local_addr.sin_port = htons(mBindPort);  // set local port
     }
 
     // Set socket to be reusable, this is platform dependent
@@ -270,7 +270,7 @@ int UdpDataProtocol::bindSocket()
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
 #if defined(__WIN_32__)
-    //make address/port reusable
+    // make address/port reusable
     setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
 #endif
 
@@ -296,8 +296,9 @@ int UdpDataProtocol::bindSocket()
     }*/
     if (!mIPv6) {
         // Connect only if we're using IPv4.
-        // (Connecting presents an issue when a host has multiple IP addresses and the peer decides to send from
-        // a different address. While this generally won't be a problem for IPv4, it will for IPv6.)
+        // (Connecting presents an issue when a host has multiple IP addresses and the
+        // peer decides to send from a different address. While this generally won't be a
+        // problem for IPv4, it will for IPv6.)
         if ((::connect(sock_fd, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr))) < 0) {
             throw std::runtime_error("ERROR: Could not connect UDP socket");
         }
@@ -345,7 +346,7 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
     int n_bytes = ::recv(mSocket, buf, n, 0);
     if (n_bytes == mControlPacketSize) {
-        //Control signal (currently just check for exit packet);
+        // Control signal (currently just check for exit packet);
         bool exit = true;
         for (int i = 0; i < mControlPacketSize; i++) {
             if (buf[i] != char(0xff)) {
@@ -367,17 +368,14 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
     /*#if defined (__WIN_32__)
-    //Alternative windows specific code that uses winsock equivalents of the bsd socket functions.
-    DWORD n_bytes;
-    WSABUF buffer;
-    int error;
-    buffer.len = n;
-    buffer.buf = (char *)buf;
+    //Alternative windows specific code that uses winsock equivalents of the bsd socket
+functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf = (char
+*)buf;
 
     if (mIPv6) {
-        error = WSASendTo(mSocket, &buffer, 1, &n_bytes, 0, (struct sockaddr *) &mPeerAddr6, sizeof(mPeerAddr6), 0, 0);
-    } else {
-        error = WSASend(mSocket, &buffer, 1, &n_bytes, 0, 0, 0);
+        error = WSASendTo(mSocket, &buffer, 1, &n_bytes, 0, (struct sockaddr *)
+&mPeerAddr6, sizeof(mPeerAddr6), 0, 0); } else { error = WSASend(mSocket, &buffer, 1,
+&n_bytes, 0, 0, 0);
     }
     if (error == SOCKET_ERROR) {
         cout << "Socket Error: " << WSAGetLastError() << endl;
@@ -429,14 +427,14 @@ void UdpDataProtocol::run()
         }
         }
 
-    //QObject::connect(this, SIGNAL(signalError(const char*)),
+    // QObject::connect(this, SIGNAL(signalError(const char*)),
     //                 mJackTrip, SLOT(slotStopProcesses()),
     //                 Qt::QueuedConnection);
 
     if (mRunMode == RECEIVER) {
         cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
         cout << gPrintSeparator << endl;
-        //Make sure our socket is in non-blocking mode.
+        // Make sure our socket is in non-blocking mode.
 #ifdef __WIN_32__
         u_long nonblock = 1;
         ioctlsocket(mSocket, FIONBIO, &nonblock);
@@ -451,25 +449,35 @@ void UdpDataProtocol::run()
                   << " before Setup Audio Packet buffer, Full Packet buffer, Redundancy "
                      "Variables"
                   << std::endl;
+
     // Setup Audio Packet buffer
     size_t audio_packet_size = getAudioPacketSizeInBites();
-    //cout << "audio_packet_size: " << audio_packet_size << endl;
+    // cout << "audio_packet_size: " << audio_packet_size << endl;
     mAudioPacket = new int8_t[audio_packet_size];
     std::memset(mAudioPacket, 0, audio_packet_size);  // set buffer to 0
     mBuffer.resize(audio_packet_size, 0);
-    mChans    = mJackTrip->getNumChannels();
+
+    int full_packet_size;
     mSmplSize = mJackTrip->getAudioBitResolution() / 8;
 
-    // Setup Full Packet buffer
-    int full_packet_size = mJackTrip->getPacketSizeInBytes();
-    //cout << "full_packet_size: " << full_packet_size << endl;
-    mFullPacket = new int8_t[full_packet_size];
-    std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
+    if (mRunMode == RECEIVER) {
+        mChans = mJackTrip->getNumOutputChannels();
+        if (0 == mChans) return;
+        full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
+        mFullPacket      = new int8_t[full_packet_size];
+        std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
+        // Put header in first packet
+        mJackTrip->putHeaderInIncomingPacket(mFullPacket, mAudioPacket);
 
-    //  bool timeout = false; // Time out flag for packets that arrive too late
-
-    // Put header in first packet
-    mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
+    } else {
+        mChans = mJackTrip->getNumInputChannels();
+        if (0 == mChans) return;
+        full_packet_size = mJackTrip->getSendPacketSizeInBytes();
+        mFullPacket      = new int8_t[full_packet_size];
+        std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
+        // Put header in first packet
+        mJackTrip->putHeaderInOutgoingPacket(mFullPacket, mAudioPacket);
+    }
 
     // Redundancy Variables
     // (Algorithm explained at the end of this file)
@@ -481,7 +489,8 @@ void UdpDataProtocol::run()
     if (gVerboseFlag)
         std::cout << "    UdpDataProtocol:run" << mRunMode
                   << " before setRealtimeProcessPriority()" << std::endl;
-    //std::cout << "Experimental version -- not using setRealtimeProcessPriority()" << std::endl;
+    // std::cout << "Experimental version -- not using setRealtimeProcessPriority()" <<
+    // std::endl;
     // Anton Runov: making setRealtimeProcessPriority optional
     if (mUseRtPriority) {
 #if defined (__MAC_OSX__)
@@ -490,7 +499,6 @@ void UdpDataProtocol::run()
         setRealtimeProcessPriority();
 #endif
     }
-
 
     // clang-format off
     /////////////////////
@@ -590,7 +598,7 @@ void UdpDataProtocol::run()
             return;
         }
 
-        int peer_chans   = mJackTrip->getPeerNumChannels(full_redundant_packet);
+        int peer_chans   = mJackTrip->getPeerNumOutgoingChannels(full_redundant_packet);
         full_packet_size = mJackTrip->getHeaderSizeInBytes()
                            + mJackTrip->getPeerBufferSize(full_redundant_packet)
                                  * peer_chans * mSmplSize;
@@ -703,16 +711,6 @@ void UdpDataProtocol::run()
         std::memset(full_redundant_packet, 0,
                     full_redundant_packet_size); // Initialize to 0
         while (!mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped) {
-            // OLD CODE WITHOUT REDUNDANCY -----------------------------------------------------
-            /*
-        // We block until there's stuff available to read
-        mJackTrip->readAudioBuffer( mAudioPacket );
-        mJackTrip->putHeaderInPacket(mFullPacket, mAudioPacket);
-        // This will send the packet immediately
-        //int bytes_sent = sendPacket( reinterpret_cast<char*>(mFullPacket), full_packet_size);
-        sendPacket( UdpSocket, PeerAddress, reinterpret_cast<char*>(mFullPacket), full_packet_size);
-        */
-            //----------------------------------------------------------------------------------
             sendPacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                  full_packet_size);
         }
@@ -833,7 +831,7 @@ void UdpDataProtocol::receivePacketRedundancy(
     mRevivedCount += redun_last_index;
     //cout << endl;
 
-    int peer_chans    = mJackTrip->getPeerNumChannels(full_redundant_packet);
+    int peer_chans    = mJackTrip->getPeerNumOutgoingChannels(full_redundant_packet);
     int N             = mJackTrip->getPeerBufferSize(full_redundant_packet);
     int host_buf_size = N * mChans * mSmplSize;
     int hdr_size      = mJackTrip->getHeaderSizeInBytes();
@@ -907,7 +905,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
 {
     mJackTrip->readAudioBuffer(mAudioPacket);
     int8_t* src = mAudioPacket;
-    if (1 != mChans) {
+    if (1 < mChans) {
         // Convert internal interleaved layout to non-interleaved
         int N       = getAudioPacketSizeInBites() / mChans / mSmplSize;
         int8_t* dst = mBuffer.data();
@@ -919,7 +917,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
         }
         src = dst;
     }
-    mJackTrip->putHeaderInPacket(mFullPacket, src);
+    mJackTrip->putHeaderInOutgoingPacket(mFullPacket, src);
 
     // Move older packets to end of array of redundant packets
     std::memmove(full_redundant_packet + full_packet_size, full_redundant_packet,

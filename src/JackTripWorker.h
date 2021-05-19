@@ -75,7 +75,7 @@ class JackTripWorker : public QObject
                    JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE,
                    QString clientName                   = "");
     /// \brief The class destructor
-    virtual ~JackTripWorker();
+    ~JackTripWorker() = default;
 
     /// \brief Starts the jacktrip process
     void start();
@@ -89,8 +89,7 @@ class JackTripWorker : public QObject
     /// \param id ID number
     /// \param address
     void setJackTrip(int id, QString client_address, uint16_t server_port,
-                     uint16_t client_port, int num_channels,
-                     bool connectDefaultAudioPorts);
+                     uint16_t client_port, bool connectDefaultAudioPorts);
     /// Stop thread
     void stopThread();
     int getID() { return mID; }
@@ -146,7 +145,7 @@ class JackTripWorker : public QObject
     // QHostAddress mClientAddress; ///< Client Address
     QString mClientAddress;
     uint16_t mServerPort;  ///< Server Ephemeral Incomming Port to use with Client
-    bool m_connectDefaultAudioPorts;
+    bool m_connectDefaultAudioPorts = false;
 
     /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort
     /// -1</tt>
@@ -159,26 +158,25 @@ class JackTripWorker : public QObject
 
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
-    volatile bool mSpawning;
-    volatile bool mRunning;
-    volatile bool mPatched;
+    volatile bool mSpawning = false;
+    volatile bool mRunning = false;
+    volatile bool mPatched = false;
     QMutex mMutex;  ///< Mutex to protect mSpawning
 
-    int mID;        ///< ID thread number
-    int mNumChans;  ///< Number of Channels
+    int mID = 0;  ///< ID thread number
 
-    int mBufferStrategy;
-    int mBroadcastQueue;
-    double mSimulatedLossRate;
-    double mSimulatedJitterRate;
-    double mSimulatedDelayRel;
-    bool mUseRtUdpPriority;
+    int mBufferStrategy         = 1;
+    int mBroadcastQueue         = 0;
+    double mSimulatedLossRate   = 0.0;
+    double mSimulatedJitterRate = 0.0;
+    double mSimulatedDelayRel   = 0.0;
+    bool mUseRtUdpPriority      = false;
 
-    int mIOStatTimeout;
+    int mIOStatTimeout = 0;
     QSharedPointer<std::ofstream> mIOStatStream;
 #ifdef WAIR  // wair
-    int mNumNetRevChans;  ///< Number of Net Channels = net combs
-    bool mWAIR;
+    int mNumNetRevChans = 0;  ///< Number of Net Channels = net combs
+    bool mWAIR          = false;
 #endif  // endwhere
 };
 
