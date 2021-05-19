@@ -60,18 +60,14 @@ bool UdpHubListener::sSigInt = false;
 
 //*******************************************************************************
 UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
-    :  // mJTWorker(NULL),
-    mTcpServer(this)
+    : mTcpServer(this)
     , mServerPort(server_port)
-    , mServerUdpPort(server_udp_port)
-    ,  // final udp base port number
-    mStopped(false)
-    ,
+    , mServerUdpPort(server_udp_port)  // final udp base port number
+    , mStopped(false)
 #ifdef WAIR  // wair
-    mWAIR(false)
-    ,
+    , mWAIR(false)
 #endif  // endwhere
-    mTotalRunningThreads(0)
+    , mTotalRunningThreads(0)
     , mHubPatchDescriptions({"server-to-clients", "client loopback",
                              "client fan out/in but not loopback", "reserved for TUB",
                              "full mix", "no auto patching"})
@@ -258,9 +254,9 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
     cout << "JackTrip HUB SERVER: Spawning JackTripWorker..." << endl;
     {
         QMutexLocker lock(&mMutex);
-        mJTWorkers->at(id)->setJackTrip(
-            id, mActiveAddress[id].address, server_udp_port, mActiveAddress[id].port, 1,
-            m_connectDefaultAudioPorts);  /// \todo temp default to 1 channel
+        mJTWorkers->at(id)->setJackTrip(id, mActiveAddress[id].address, server_udp_port,
+                                        mActiveAddress[id].port,
+                                        m_connectDefaultAudioPorts);
 
         // qDebug() << "mPeerAddress" << id <<  mActiveAddress[id].address <<
         // mActiveAddress[id].port;
@@ -281,6 +277,7 @@ void UdpHubListener::receivedClientInfo(QTcpSocket* clientConnection)
 
     // qDebug() << "mPeerAddress" << mActiveAddress[id].address <<
     // mActiveAddress[id].port;
+
 #ifndef __NO_JACK__
     connectPatch(true);
 #endif
@@ -296,56 +293,6 @@ void UdpHubListener::stopCheck()
         emit signalStopped();
     }
 }
-
-/* From Old Runloop code
-  // Create objects on the stack
-  QUdpSocket HubUdpSocket;
-  QHostAddress PeerAddress;
-  uint16_t peer_port; // Ougoing Peer port, in case they're not using the default
-
-  // Bind the socket to the well known port
-  bindUdpSocket(HubUdpSocket, mServerPort);
-
-  char buf[1];
-  cout << "Server Listening in UDP Port: " << mServerPort << endl;
-  cout << "Waiting for client..." << endl;
-  cout << "=======================================================" << endl;
-  while ( !mStopped )
-  {
-    //cout << "WAITING........................." << endl;
-    while ( HubUdpSocket.hasPendingDatagrams() )
-    {
-      cout << "Received request from Client!" << endl;
-      // Get Client IP Address and outgoing port from packet
-      int rv = HubUdpSocket.readDatagram(buf, 1, &PeerAddress, &peer_port);
-      cout << "Peer Port in Server ==== " << peer_port << endl;
-      if (rv < 0) { std::cerr << "ERROR: Bad UDP packet read..." << endl; }
-
-      /// \todo Get number of channels in the client from header
-
-      // check by comparing 32-bit addresses
-      /// \todo Add the port number in the comparison
-      cout << "peer_portpeer_portpeer_port === " << peer_port << endl;
-      int id = isNewAddress(PeerAddress.toIPv4Address(), peer_port);
-
-      //cout << "IDIDIDIDIDDID === " << id << endl;
-
-      // If the address is new, create a new thread in the pool
-      if (id >= 0) // old address is -1
-      {
-        // redirect port and spawn listener
-        sendToPoolPrototype(id);
-        // wait until one is complete before another spawns
-        while (mJTWorker->isSpawning()) { QThread::msleep(10); }
-        mTotalRunningThreads++;
-        cout << "Total Running Threads:  " << mTotalRunningThreads << endl;
-        cout << "=======================================================" << endl;
-      }
-      //cout << "ENDDDDDDDDDDDDDDDDDd === " << id << endl;
-    }
-    QThread::msleep(100);
-  }
-  */
 
 //*******************************************************************************
 // Returns 0 on error
@@ -393,18 +340,6 @@ int UdpHubListener::sendUdpPort(QTcpSocket* clientConnection, int udp_port)
     return 1;
     // cout << "Port sent to Client" << endl;
 }
-
-//*******************************************************************************
-/*
-void UdpHubListener::sendToPoolPrototype(int id)
-{
-  mJTWorker->setJackTrip(id, mActiveAddress[id][0],
-                         mBasePort+(2*id), mActiveAddress[id][1],
-                         1); /// \todo temp default to 1 channel
-  mThreadPool.start(mJTWorker, QThread::TimeCriticalPriority); //send one thread to the
-pool
-}
-*/
 
 //*******************************************************************************
 void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)

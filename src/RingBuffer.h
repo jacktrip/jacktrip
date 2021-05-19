@@ -45,10 +45,10 @@
 
 #include "jacktrip_types.h"
 
-//using namespace JackTripNamespace;
+// using namespace JackTripNamespace;
 
-/** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read from
- * asynchronously (blocking) or synchronously (non-blocking).
+/** \brief Provides a ring-buffer (or circular-buffer) that can be written to and read
+ * from asynchronously (blocking) or synchronously (non-blocking).
  *
  * The RingBuffer is an array of \b NumSlots slots of memory
  * each of which is of size \b SlotSize bytes (8-bits). Slots can be read and
@@ -58,45 +58,45 @@ class RingBuffer
 {
    public:
     /** \brief The class constructor
-   * \param SlotSize Size of one slot in bytes
-   * \param NumSlots Number of slots
-   */
+     * \param SlotSize Size of one slot in bytes
+     * \param NumSlots Number of slots
+     */
     RingBuffer(int SlotSize, int NumSlots);
 
     /** \brief The class destructor
-   */
+     */
     virtual ~RingBuffer();
 
-    /** \brief Insert a slot into the RingBuffer from ptrToSlot. This method will block until
-   * there's space in the buffer.
-   *
-   * The caller is responsible to make sure sizeof(WriteSlot) = SlotSize. This
-   * method should be use when the caller can block against its output, like
-   * sending/receiving UDP packets. It shouldn't be used by audio. For that, use the
-   * insertSlotNonBlocking.
-   * \param ptrToSlot Pointer to slot to insert into the RingBuffer
-   */
+    /** \brief Insert a slot into the RingBuffer from ptrToSlot. This method will block
+     * until there's space in the buffer.
+     *
+     * The caller is responsible to make sure sizeof(WriteSlot) = SlotSize. This
+     * method should be use when the caller can block against its output, like
+     * sending/receiving UDP packets. It shouldn't be used by audio. For that, use the
+     * insertSlotNonBlocking.
+     * \param ptrToSlot Pointer to slot to insert into the RingBuffer
+     */
     void insertSlotBlocking(const int8_t* ptrToSlot);
 
-    /** \brief Read a slot from the RingBuffer into ptrToReadSlot. This method will block until
-   * there's space in the buffer.
-   *
-   * The caller is responsible to make sure sizeof(ptrToReadSlot) = SlotSize. This
-   * method should be use when the caller can block against its input, like
-   * sending/receiving UDP packets. It shouldn't be used by audio. For that, use the
-   * readSlotNonBlocking.
-   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
-   */
+    /** \brief Read a slot from the RingBuffer into ptrToReadSlot. This method will block
+     * until there's space in the buffer.
+     *
+     * The caller is responsible to make sure sizeof(ptrToReadSlot) = SlotSize. This
+     * method should be use when the caller can block against its input, like
+     * sending/receiving UDP packets. It shouldn't be used by audio. For that, use the
+     * readSlotNonBlocking.
+     * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+     */
     void readSlotBlocking(int8_t* ptrToReadSlot);
 
     /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
-   * \param ptrToSlot Pointer to slot to insert into the RingBuffer
-   */
+     * \param ptrToSlot Pointer to slot to insert into the RingBuffer
+     */
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen);
 
     /** \brief Same as readSlotBlocking but non-blocking (asynchronous)
-   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
-   */
+     * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+     */
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot);
 
@@ -120,17 +120,17 @@ class RingBuffer
 
    protected:
     /** \brief Sets the memory in the Read Slot when uderrun occurs. By default,
-   * this sets it to 0. Override this method in a subclass for a different behavior.
-   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
-   */
+     * this sets it to 0. Override this method in a subclass for a different behavior.
+     * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+     */
     virtual void setUnderrunReadSlot(int8_t* ptrToReadSlot);
 
     /** \brief Uses the last read slot to set the memory in the Read Slot.
-   *
-   * The last read slot is the last packet that arrived, so if no new packets are received,
-   * it keeps looping the same packet.
-   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
-   */
+     *
+     * The last read slot is the last packet that arrived, so if no new packets are
+     * received, it keeps looping the same packet. \param ptrToReadSlot Pointer to read
+     * slot from the RingBuffer
+     */
     virtual void setMemoryInReadSlotWithLastReadSlot(int8_t* ptrToReadSlot);
 
     /// \brief Resets the ring buffer for reads under-runs non-blocking

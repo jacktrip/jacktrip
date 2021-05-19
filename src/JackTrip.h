@@ -132,7 +132,7 @@ class JackTrip : public QObject
      */
     JackTrip(
         jacktripModeT JacktripMode = CLIENT, dataProtocolT DataProtocolType = UDP,
-        int NumChans = gDefaultNumInChannels,
+        int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumInChannels,
 #ifdef WAIR  // wair
         int NumNetRevChans = 0,
 #endif  // endwhere
@@ -261,8 +261,10 @@ class JackTrip : public QObject
     {
         mRemoteClientName = remoteClientName;
     }
-    /// \brief Set the number of audio channels
-    virtual void setNumChannels(int num_chans) { mNumChans = num_chans; }
+    /// \brief Set the number of audio input channels
+    virtual void setNumInputChannels(int num_chans) { mNumAudioChansIn = num_chans; }
+    /// \brief Set the number of audio output channels
+    virtual void setNumOutputChannels(int num_chans) { mNumAudioChansOut = num_chans; }
 
     virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream)
@@ -311,7 +313,14 @@ class JackTrip : public QObject
         mPacketHeader = PacketHeader;
     }
 
-    virtual int getRingBuffersSlotSize() { return getTotalAudioPacketSizeInBytes(); }
+    virtual int getInputRingBuffersSlotSize()
+    {
+        return getTotalAudioInputPacketSizeInBytes();
+    }
+    virtual int getOutputRingBuffersSlotSize()
+    {
+        return getTotalAudioOutputPacketSizeInBytes();
+    }
 
     virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
     {
@@ -327,12 +336,6 @@ class JackTrip : public QObject
     void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
     void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
     void setAudioBufferSizeInSamples(uint32_t buf_size) { mAudioBufferSize = buf_size; }
-
-    JackTrip::connectionModeT getConnectionMode() const { return mConnectionMode; }
-    void setConnectionMode(JackTrip::connectionModeT connection_mode)
-    {
-        mConnectionMode = connection_mode;
-    }
 
     JackTrip::hubConnectionModeT getHubConnectionModeT() const
     {
@@ -359,9 +362,10 @@ class JackTrip : public QObject
     //@{
     /// \todo Document all these functions
     virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
-    void putHeaderInPacket(int8_t* full_packet, int8_t* audio_packet);
-    virtual int getPacketSizeInBytes();
-    void parseAudioPacket(int8_t* full_packet, int8_t* audio_packet);
+    void putHeaderInIncomingPacket(int8_t* full_packet, int8_t* audio_packet);
+    void putHeaderInOutgoingPacket(int8_t* full_packet, int8_t* audio_packet);
+    int getSendPacketSizeInBytes() const;
+    int getReceivePacketSizeInBytes() const;
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
     {
         mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0);
@@ -407,20 +411,13 @@ class JackTrip : public QObject
     }
     unsigned int getNumInputChannels() const
     {
-        return mNumChans; /*return mAudioInterface->getNumInputChannels();*/
+        return mNumAudioChansIn; /*return mAudioInterface->getNumInputChannels();*/
     }
     unsigned int getNumOutputChannels() const
     {
-        return mNumChans; /*return mAudioInterface->getNumOutputChannels();*/
+        return mNumAudioChansOut; /*return mAudioInterface->getNumOutputChannels();*/
     }
-    unsigned int getNumChannels() const
-    {
-        if (getNumInputChannels() == getNumOutputChannels()) {
-            return getNumInputChannels();
-        } else {
-            return 0;
-        }
-    }
+
     virtual void checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber() { mPacketHeader->increaseSequenceNumber(); }
     int getSequenceNumber() const { return mPacketHeader->getSequenceNumber(); }
@@ -450,14 +447,19 @@ class JackTrip : public QObject
         return mPacketHeader->getPeerBitResolution(full_packet);
     }
 
-    uint8_t getPeerNumChannels(int8_t* full_packet) const
+    uint8_t getPeerNumIncomingChannels(int8_t* full_packet) const
     {
-        return mPacketHeader->getPeerNumChannels(full_packet);
+        return mPacketHeader->getPeerNumIncomingChannels(full_packet);
     }
 
-    uint8_t getPeerConnectionMode(int8_t* full_packet) const
+    uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const
     {
-        return mPacketHeader->getPeerConnectionMode(full_packet);
+        if (0 == mPacketHeader->getPeerNumOutgoingChannels(full_packet)) {
+          return mPacketHeader->getPeerNumIncomingChannels(full_packet);
+        } else {
+          return mPacketHeader->getPeerNumOutgoingChannels(full_packet);
+        }
+
     }
 
     size_t getSizeInBytesPerChannel() const
@@ -465,14 +467,24 @@ class JackTrip : public QObject
         return mAudioInterface->getSizeInBytesPerChannel();
     }
     int getHeaderSizeInBytes() const { return mPacketHeader->getHeaderSizeInBytes(); }
-    virtual int getTotalAudioPacketSizeInBytes() const
+    int getTotalAudioInputPacketSizeInBytes() const
     {
 #ifdef WAIR  // WAIR
         if (mNumNetRevChans)
             return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
         else  // not wair
 #endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumChans;
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansIn;
+    }
+
+    int getTotalAudioOutputPacketSizeInBytes() const
+    {
+#ifdef WAIR  // WAIR
+        if (mNumNetRevChans)
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
+        else  // not wair
+#endif        // endwhere
+            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansOut;
     }
     //@}
     //------------------------------------------------------------------------------------
@@ -575,8 +587,9 @@ class JackTrip : public QObject
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
-    int mNumChans;  ///< Number of Channels (inputs = outputs)
-#ifdef WAIR         // WAIR
+    int mNumAudioChansIn;   ///< Number of Audio Input Channels
+    int mNumAudioChansOut;  ///< Number of Audio Output Channels
+#ifdef WAIR                 // WAIR
     int mNumNetRevChans;  ///< Number of Network Audio Channels (net comb filters)
 #endif                    // endwhere
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
@@ -613,7 +626,7 @@ class JackTrip : public QObject
     QString mJackClientName;    ///< JackAudio Client Name
     QString mRemoteClientName;  ///< Remote JackAudio Client Name for hub client mode
 
-    JackTrip::connectionModeT mConnectionMode;  ///< Connection Mode
+    // JackTrip::connectionModeT mConnectionMode;  ///< Connection Mode
     JackTrip::hubConnectionModeT
         mHubConnectionModeT;  ///< Hub Server Jack Audio Patch Connection Mode
 

@@ -39,8 +39,8 @@
 
 #include <QCoreApplication>
 #include <QLoggingCategory>
-#include <QScopedPointer>
 #include <iostream>
+#include <memory>
 
 #include "Settings.h"
 #include "UdpHubListener.h"
@@ -56,7 +56,7 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 #if defined(__LINUX__) || (__MAC_OSX__)
 static int setupUnixSignalHandler(void (*handler)(int))
 {
-    //Setup our SIGINT handler.
+    // Setup our SIGINT handler.
     struct sigaction sigInt;
     sigInt.sa_handler = handler;
     sigemptyset(&sigInt.sa_mask);
@@ -96,8 +96,8 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-    QScopedPointer<JackTrip> jackTrip;
-    QScopedPointer<UdpHubListener> udpHub;
+    std::unique_ptr<JackTrip> jackTrip;
+    std::unique_ptr<UdpHubListener> udpHub;
 
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
     qInstallMessageHandler(qtMessageHandler);
@@ -106,14 +106,14 @@ int main(int argc, char* argv[])
         Settings settings;
         settings.parseInput(argc, argv);
 
-        //Either start our hub server or our jacktrip process as appropriate.
+        // Either start our hub server or our jacktrip process as appropriate.
         if (settings.isHubServer()) {
             udpHub.reset(settings.getConfiguredHubServer());
             if (gVerboseFlag)
                 std::cout << "Settings:startJackTrip before udphub->start" << std::endl;
-            QObject::connect(udpHub.data(), &UdpHubListener::signalStopped, &app,
+            QObject::connect(udpHub.get(), &UdpHubListener::signalStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
-            QObject::connect(udpHub.data(), &UdpHubListener::signalError, &app,
+            QObject::connect(udpHub.get(), &UdpHubListener::signalError, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
 #if defined(__LINUX__) || (__MAC_OSX__)
             setupUnixSignalHandler(UdpHubListener::sigIntHandler);
@@ -127,9 +127,9 @@ int main(int argc, char* argv[])
             if (gVerboseFlag)
                 std::cout << "Settings:startJackTrip before mJackTrip->startProcess"
                           << std::endl;
-            QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped, &app,
+            QObject::connect(jackTrip.get(), &JackTrip::signalProcessesStopped, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
-            QObject::connect(jackTrip.data(), &JackTrip::signalError, &app,
+            QObject::connect(jackTrip.get(), &JackTrip::signalError, &app,
                              &QCoreApplication::quit, Qt::QueuedConnection);
 #if defined(__LINUX__) || (__MAC_OSX__)
             setupUnixSignalHandler(JackTrip::sigIntHandler);

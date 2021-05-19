@@ -49,7 +49,7 @@
 // Forward declarations
 class JackTrip;
 
-//using namespace JackTripNamespace;
+// using namespace JackTripNamespace;
 
 /** \brief Base Class that provides an interface with audio
  */
@@ -77,11 +77,11 @@ class AudioInterface
     };
 
     /** \brief The class constructor
-   * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
-   * \param NumInChans Number of Input Channels
-   * \param NumOutChans Number of Output Channels
-   * \param AudioBitResolution Audio Sample Resolutions in bits
-   */
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
+     * \param NumInChans Number of Input Channels
+     * \param NumOutChans Number of Output Channels
+     * \param AudioBitResolution Audio Sample Resolutions in bits
+     */
     AudioInterface(
         JackTrip* jacktrip, int NumInChans, int NumOutChans,
 #ifdef WAIR  // wair
@@ -92,12 +92,12 @@ class AudioInterface
     virtual ~AudioInterface();
 
     /** \brief Setup the client. This function should be called just before
-    *
-    * starting the audio processes, it will setup the audio client with
-    * the class parameters, like Sampling Rate,
-    * Packet Size, Bit Resolution, etc... Sub-classes should also call the parent
-    * method to ensure correct inizialization.
-    */
+     *
+     * starting the audio processes, it will setup the audio client with
+     * the class parameters, like Sampling Rate,
+     * Packet Size, Bit Resolution, etc... Sub-classes should also call the parent
+     * method to ensure correct inizialization.
+     */
     virtual void setup();
     /// \brief Tell the audio server that we are ready to roll. The
     /// process-callback will start running. This runs on its own thread.
@@ -117,46 +117,46 @@ class AudioInterface
                                    unsigned int n_frames);
     virtual void callback(QVarLengthArray<sample_t*>& in_buffer,
                           QVarLengthArray<sample_t*>& out_buffer, unsigned int n_frames);
-    /** \brief appendProcessPluginToNetwork(): Append a ProcessPlugin for outgoing audio. 
-   * The processing order equals order they were appended.
-   * This processing is in the JackTrip client before sending to the network.
-   * \param plugin a ProcessPlugin smart pointer. Create the object instance
-   * using something like:\n
-   * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
-   */
+    /** \brief appendProcessPluginToNetwork(): Append a ProcessPlugin for outgoing audio.
+     * The processing order equals order they were appended.
+     * This processing is in the JackTrip client before sending to the network.
+     * \param plugin a ProcessPlugin smart pointer. Create the object instance
+     * using something like:\n
+     * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
+     */
     virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
     /** \brief appendProcessPluginFromNetwork():
-   * Same as appendProcessPluginToNetwork() except that these plugins operate
-   * on the audio received from the network (typically from a JackTrip server).
-   * The complete processing chain then looks like this:
-   * audio -> JACK -> JackTrip client -> processPlugin to network
-   *               -> remote JackTrip server
-   *               -> JackTrip client -> processPlugin from network -> JACK -> audio
-   */
+     * Same as appendProcessPluginToNetwork() except that these plugins operate
+     * on the audio received from the network (typically from a JackTrip server).
+     * The complete processing chain then looks like this:
+     * audio -> JACK -> JackTrip client -> processPlugin to network
+     *               -> remote JackTrip server
+     *               -> JackTrip client -> processPlugin from network -> JACK -> audio
+     */
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
     /** \brief initPlugins():
-   * Initialize all ProcessPlugin modules.
-   * The audio sampling rate (mSampleRate) must be set at this time.
-   */
+     * Initialize all ProcessPlugin modules.
+     * The audio sampling rate (mSampleRate) must be set at this time.
+     */
     void initPlugins();
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
-   * supported (audioBitResolutionT).
-   *
-   * The result is stored in an int_8 array of the
-   * appropriate size to hold the value. The caller is responsible to allocate
-   * enough space to store the result.
-   */
+     * supported (audioBitResolutionT).
+     *
+     * The result is stored in an int_8 array of the
+     * appropriate size to hold the value. The caller is responsible to allocate
+     * enough space to store the result.
+     */
     static void fromSampleToBitConversion(
         const sample_t* const input, int8_t* output,
         const AudioInterface::audioBitResolutionT targetBitResolution);
     /** \brief Convert a audioBitResolutionT bit resolution number into a
-   * 32bit number (sample_t)
-   *
-   * The result is stored in an sample_t array of the
-   * appropriate size to hold the value. The caller is responsible to allocate
-   * enough space to store the result.
-   */
+     * 32bit number (sample_t)
+     *
+     * The result is stored in an sample_t array of the
+     * appropriate size to hold the value. The caller is responsible to allocate
+     * enough space to store the result.
+     */
     static void fromBitToSampleConversion(
         const int8_t* const input, sample_t* output,
         const AudioInterface::audioBitResolutionT sourceBitResolution);
@@ -191,15 +191,15 @@ class AudioInterface
     /// \return  AudioInterface::samplingRateT enum type
     virtual samplingRateT getSampleRateType() const;
     /** \brief Get the Audio Bit Resolution, in bits
-   *
-   * This is one of the audioBitResolutionT set in construction
-   */
+     *
+     * This is one of the audioBitResolutionT set in construction
+     */
     virtual int getAudioBitResolution() const { return mAudioBitResolution; }
     /** \brief Helper function to get the sample rate (in Hz) for a
-   * JackAudioInterface::samplingRateT
-   * \param rate_type  JackAudioInterface::samplingRateT enum type
-   * \return Sample Rate in Hz
-   */
+     * JackAudioInterface::samplingRateT
+     * \param rate_type  JackAudioInterface::samplingRateT enum type
+     * \return Sample Rate in Hz
+     */
     static int getSampleRateFromType(samplingRateT rate_type);
     //------------------------------------------------------------------
 
@@ -237,11 +237,11 @@ class AudioInterface
     QVarLengthArray<sample_t*>
         mInProcessBuffer;  ///< Vector of Input buffers/channel for ProcessPlugin
     QVarLengthArray<sample_t*>
-        mOutProcessBuffer;  ///< Vector of Output buffers/channel for ProcessPlugin
-    int8_t*
-        mInputPacket;  ///< Packet containing all the channels to read from the RingBuffer
-    int8_t*
-        mOutputPacket;  ///< Packet containing all the channels to send to the RingBuffer
+        mOutProcessBuffer;       ///< Vector of Output buffers/channel for ProcessPlugin
+    int8_t* mAudioInputPacket;   ///< Packet containing all the channels to read from the
+                                 ///< RingBuffer
+    int8_t* mAudioOutputPacket;  ///< Packet containing all the channels to send to the
+                                 ///< RingBuffer
     bool mLoopBack;
     AudioTester* mAudioTesterP{nullptr};
 
