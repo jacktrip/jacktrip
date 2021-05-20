@@ -37,7 +37,7 @@ SERVER=localhost
 
 echo starting hub client of a server running on $SERVER
 
-$(PIPEWIRE_LATENCY="$FPP/48000" $JACKTRIP -C $SERVER -J HUBCLIENT --udprt > /dev/null 2>&1 & )
+$(PIPEWIRE_LATENCY="$FPP/48000" $JACKTRIP -C $SERVER -J HUBCLIENT --udprt --bufstrategy 3 -q8 --rcvlag 1 > /dev/null 2>&1 & )
 
 
 
