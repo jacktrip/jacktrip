@@ -118,7 +118,7 @@ jobs:
           choco install openssl
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
             choco install pkgconfiglite
-            vcpkg install rtaudio --triplet=x64-mingw-static
+            vcpkg install rtaudio[asio] --triplet=x64-mingw-static
             echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\x64-mingw-static\lib\pkgconfig" >> $GITHUB_ENV
           fi
       - name: cache Qt
