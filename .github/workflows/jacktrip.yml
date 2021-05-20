@@ -25,32 +25,22 @@ jobs:
         include:
           - name: Linux
             runs-on: ubuntu-18.04
-            qmake-spec: linux-g++
-            make-cmd: make
 
           - name: macOS
             runs-on: macos-10.15
-            qmake-spec: macx-clang
-            make-cmd: make
             rtaudio: true
 
           - name: macOS-static
             runs-on: macos-10.15
-            qmake-spec: macx-clang
-            make-cmd: make
             rtaudio: true
             static: true
 
           - name: Windows
             runs-on: windows-2019
-            qmake-spec: win32-g++
-            make-cmd: mingw32-make
             rtaudio: true
 
           - name: Windows-static
             runs-on: windows-2019
-            qmake-spec: win32-g++
-            make-cmd: mingw32-make
             rtaudio: true
             static: true
 
@@ -159,18 +149,21 @@ jobs:
       - name: build JackTrip
         shell: bash
         run: |
-          mkdir $BUILD_PATH 
-          cd $BUILD_PATH
-          CONFIG_STRING=
+          CONFIG_STRING="noclean"
           if [[ "${{ matrix.static }}" == true ]]; then 
             export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
-            CONFIG_STRING="-config static $CONFIG_STRING"
+            CONFIG_STRING="static $CONFIG_STRING"
           fi
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
-            CONFIG_STRING="-config rtaudio $CONFIG_STRING"
+            CONFIG_STRING="rtaudio $CONFIG_STRING"
           fi
-          qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../jacktrip.pro
-          ${{ matrix.make-cmd }} release
+          if [[ "${{ matrix.nojack }}" == true ]]; then 
+            CONFIG_STRING="nojack $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.nogui }}" == true ]]; then 
+            CONFIG_STRING="nogui $CONFIG_STRING"
+          fi
+          ./build $CONFIG_STRING
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
