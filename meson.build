@@ -107,7 +107,6 @@ if host_machine.system() == 'darwin'
 	apple_dep = dependency('appleframeworks', modules : 'foundation')
 	deps += apple_dep
 	add_languages('objcpp')
-	compiler = meson.get_compiler('objcpp')
 endif
 
 deps += dependency('threads')
