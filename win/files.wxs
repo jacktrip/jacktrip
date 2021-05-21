@@ -30,9 +30,9 @@
                 <File Id="filFC8C908E3AD35E8090AFF39C9B0FB744" KeyPath="yes" Source="SourceDir\opengl32sw.dll" />
             </Component>
             <Component Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" Guid="27BFCC7D-F4A8-4F71-8A2B-00A8BC74B106">
-                <File Id="fil5E6E1243EAE085FE802B6D64690357B0" KeyPath="yes" Source="SourceDir\qjacktrip.exe" />
+                <File Id="fil5E6E1243EAE085FE802B6D64690357B0" KeyPath="yes" Source="SourceDir\jacktrip.exe" />
                 <Shortcut Id="startmenuQJackTrip" Directory="ProgramMenuDir" Name="QJackTrip"
-                    WorkingDirectory="INSTALLDIR" Icon="qjacktrip.exe" IconIndex="0" Advertise="yes" />
+                    WorkingDirectory="INSTALLDIR" Icon="jacktrip.exe" IconIndex="0" Advertise="yes" />
             </Component>
             <Component Id="cmp01229088A6F1DEA1BE391E6E7CC3D3EE" Guid="9A610B9C-6322-4045-9C4B-910FFBA38502">
                 <File Id="filAD80F4724AAE3D8B0682F5982CC2548D" KeyPath="yes" Source="SourceDir\Qt5Core.dll" />
