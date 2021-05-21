@@ -1,5 +1,5 @@
-project('jacktrip', 'cpp', version: '1.3.0',
-		default_options: ['cpp_std=c++17'])
+project('jacktrip', 'cpp', version: '1.4.0',
+		default_options: ['cpp_std=c++17','warning_level=2'])
 qt5 = import('qt5')
 cmake = import('cmake')
 
@@ -17,7 +17,13 @@ elif host_machine.system() == 'windows'
 	defines += '-DNOMINMAX'
 endif
 
-qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])
+if get_option('nogui') == true
+	defines += '-D__NO_GUI__'
+	qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
+else
+	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])
+endif
+
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
 	defines += '-D__NO_JACK__'
@@ -101,7 +107,6 @@ if host_machine.system() == 'darwin'
 	apple_dep = dependency('appleframeworks', modules : 'foundation')
 	deps += apple_dep
 	add_languages('objcpp')
-	compiler = meson.get_compiler('objcpp')
 endif
 
 deps += dependency('threads')
