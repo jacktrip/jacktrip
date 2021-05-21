@@ -83,7 +83,8 @@ enum JTLongOptIDS {
     OPT_AUTHPASS,
     OPT_NUMRECEIVE,
     OPT_NUMSEND,
-    OPT_APPENDTHREADID
+    OPT_APPENDTHREADID,
+    OPT_PACKETPOOLSIZE
 };
 
 //*******************************************************************************
