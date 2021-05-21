@@ -17,7 +17,13 @@ elif host_machine.system() == 'windows'
 	defines += '-DNOMINMAX'
 endif
 
-qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])
+if get_option('nogui') == true
+	defines += '-D__NO_GUI__'
+	qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
+else
+	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])
+endif
+
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
 	defines += '-D__NO_JACK__'
