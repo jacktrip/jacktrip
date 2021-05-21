@@ -12,7 +12,13 @@ CONFIG(debug, debug|release) {
   TARGET = jacktrip
   }
 
-QT -= gui
+nogui {
+  DEFINES += __NO_GUI__
+} else {
+  QT += gui
+  QT += widgets
+}
+
 QT += network
 
 # rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOHUB
@@ -29,7 +35,7 @@ nojack {
 }
 
 # for plugins
-INCLUDEPATH += ../faust-src-lair/stk
+INCLUDEPATH += faust-src-lair/stk
 
 !win32 {
   INCLUDEPATH+=/usr/local/include
@@ -59,6 +65,10 @@ macx {
   # can change between 32bits (x86) or 64bits(x86_64) Change this to go back to 32 bits (x86)
   LIBS += -framework CoreAudio -framework CoreFoundation
   DEFINES += __MAC_OSX__
+  !nogui {
+    LIBS += -framework Foundation
+    CONFIG += objective_c
+  }
 }
 
 linux-g++ | linux-g++-64 {
@@ -123,6 +133,7 @@ win32 {
   LIBS += -lWs2_32
   DEFINES += __WIN_32__
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
+  DEFINES += WIN32_LEAN_AND_MEAN
 
   rtaudio {
     # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
@@ -143,74 +154,96 @@ target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # for plugins
-INCLUDEPATH += ../faust-src-lair
+INCLUDEPATH += faust-src-lair
 
 # Input
-HEADERS += DataProtocol.h \
-           JMess.h \
-           JackTrip.h \
-           Effects.h \
-           Compressor.h \
-           CompressorPresets.h \
-           Limiter.h \
-           Reverb.h \
-           AudioTester.h \
-           jacktrip_globals.h \
-           jacktrip_types.h \
-           JackTripThread.h \
-           JackTripWorker.h \
-           JackTripWorkerMessages.h \
-           JitterBuffer.h \
-           LoopBack.h \
-           NetKS.h \
-           PacketHeader.h \
-           ProcessPlugin.h \
-           RingBuffer.h \
-           RingBufferWavetable.h \
-           Settings.h \
-           TestRingBuffer.h \
-           ThreadPoolTest.h \
-           UdpDataProtocol.h \
-           UdpHubListener.h \
-           AudioInterface.h \
-           compressordsp.h \
-           limiterdsp.h \
-           freeverbdsp.h
+HEADERS += src/DataProtocol.h \
+           src/JackTrip.h \
+           src/Effects.h \
+           src/Compressor.h \
+           src/CompressorPresets.h \
+           src/Limiter.h \
+           src/Reverb.h \
+           src/AudioTester.h \
+           src/jacktrip_globals.h \
+           src/jacktrip_types.h \
+           src/JackTripWorker.h \
+           src/JitterBuffer.h \
+           src/LoopBack.h \
+           src/PacketHeader.h \
+           src/ProcessPlugin.h \
+           src/RingBuffer.h \
+           src/RingBufferWavetable.h \
+           src/Settings.h \
+           src/UdpDataProtocol.h \
+           src/UdpHubListener.h \
+           src/AudioInterface.h \
+           src/compressordsp.h \
+           src/limiterdsp.h \
+           src/freeverbdsp.h \
+           src/SslServer.h \
+           src/Auth.h
+#(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
-HEADERS += JackAudioInterface.h
+HEADERS += src/JackAudioInterface.h \
+           src/JMess.h \
+           src/Patcher.h
+}
+
+!nogui {
+HEADERS += src/gui/about.h \
+           src/gui/messageDialog.h \
+           src/gui/qjacktrip.h
 }
 
 rtaudio {
-    HEADERS += RtAudioInterface.h
+    HEADERS += src/RtAudioInterface.h
 }
 
-SOURCES += DataProtocol.cpp \
-           JMess.cpp \
-           JackTrip.cpp \
-           Compressor.cpp \
-           Limiter.cpp \
-           Reverb.cpp \
-           AudioTester.cpp \
-           jacktrip_globals.cpp \
-           jacktrip_main.cpp \
-           jacktrip_tests.cpp \
-           JackTripThread.cpp \
-           JackTripWorker.cpp \
-           JitterBuffer.cpp \
-           LoopBack.cpp \
-           PacketHeader.cpp \
-           ProcessPlugin.cpp \
-           RingBuffer.cpp \
-           Settings.cpp \
-           UdpDataProtocol.cpp \
-           UdpHubListener.cpp \
-           AudioInterface.cpp
+SOURCES += src/DataProtocol.cpp \
+           src/JackTrip.cpp \
+           src/Compressor.cpp \
+           src/Limiter.cpp \
+           src/Reverb.cpp \
+           src/AudioTester.cpp \
+           src/jacktrip_globals.cpp \
+           src/JackTripWorker.cpp \
+           src/JitterBuffer.cpp \
+           src/LoopBack.cpp \
+           src/PacketHeader.cpp \
+           src/RingBuffer.cpp \
+           src/Settings.cpp \
+           src/UdpDataProtocol.cpp \
+           src/UdpHubListener.cpp \
+           src/AudioInterface.cpp \
+           src/main.cpp \
+           src/SslServer.cpp \
+           src/Auth.cpp
+#(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {
-SOURCES += JackAudioInterface.cpp
+SOURCES += src/JackAudioInterface.cpp \
+           src/JMess.cpp \
+           src/Patcher.cpp
+}
+
+!nogui {
+SOURCES += src/gui/messageDialog.cpp \
+           src/gui/qjacktrip.cpp \
+           src/gui/about.cpp
+}
+
+!nogui {
+  macx {
+    HEADERS += src/gui/NoNap.h
+    OBJECTIVE_SOURCES += src/gui/NoNap.mm
+  }
+
+  FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
+  RESOURCES += src/gui/qjacktrip.qrc
 }
 
 rtaudio {
-    SOURCES += RtAudioInterface.cpp
+    SOURCES += src/RtAudioInterface.cpp
 }

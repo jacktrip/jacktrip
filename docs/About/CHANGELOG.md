@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.4.0
+---
+- (added) optional GUI from QJackTrip
+- (added) authentication in hub server mode
+- (added) new patcher mechanism that doesn't delete existing connections
+- (update) build script moved to root directory
 
 1.3.0
 ---

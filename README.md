@@ -3,6 +3,8 @@ It supports any number of channels (as many as the computer/network can handle) 
 
 You can use it between any combination of machines e.g., one end using Linux can connect to another using Mac OSX.
 
+QJackTrip has now been merged with the original code to provide an optional graphical user interface for the program. If run with no arguments, the program will default to GUI mode. If arguments are supplied or the program is run as "jacktrip" (either by using a symlink or by renaming the binary) then it will run on the terminal.
+
 # Installation
 ## Linux ##
 Linux installation instructions can be found in INSTALL.txt in the src directory of the project.
@@ -16,6 +18,9 @@ OSX installer or executable: https://ccrma.stanford.edu/software/jacktrip/osx/in
 Windows installer or executable: https://ccrma.stanford.edu/software/jacktrip/windows/index.html
 
 To keep up with the latest changes, both experimental and stable, follow instructions to compile from source in INSTALL.txt in the src directory of the project.
+
+# License
+**IMPORTANT:** The code for the graphical user interface portion is released under version 3.0 of the GPL. (The full text of this can be found in LICENSE\_gui.) Only files that were part of the original JackTrip project are covered by the more permissive license in LICENSE\_nogui.
 
 # Raspberry Pi
 

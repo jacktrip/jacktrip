@@ -35,6 +35,8 @@
  * \date June 2008
  */
 
+//#define __MANUAL_POLL__
+
 #include "UdpDataProtocol.h"
 
 #include <QHostInfo>
@@ -50,10 +52,15 @@
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
 #endif
-#if defined(__LINUX__) || (__MAC_OSX__)
-#include <sys/fcntl.h>
-#include <sys/socket.h>  // for POSIX Sockets
+#if defined (__LINUX__) || defined (__MAC_OSX__)
+#include <sys/socket.h> // for POSIX Sockets
 #include <unistd.h>
+#include <sys/fcntl.h>
+#endif
+#if defined (__MAC_OSX__) && !defined (__MANUAL_POLL__)
+#include <sys/event.h>
+#elif defined (__LINUX__) && !defined (__MANUAL_POLL__)
+#include <sys/epoll.h>
 #endif
 
 using std::cout;
@@ -116,8 +123,8 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
-#if defined(__LINUX__) || (__MAC_OSX__)
-    // Don't make the following code conditional on windows
+#if defined (__LINUX__) || defined (__MAC_OSX__)
+    //Don't make the following code conditional on windows
     //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
 #endif
@@ -128,7 +135,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         }
         // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
-#if defined(__LINUX__) || (__MAC_OSX__)
+#if defined (__LINUX__) || defined (__MAC_OSX__)
     }
 #endif
 
@@ -226,7 +233,7 @@ int UdpDataProtocol::bindSocket()
     SOCKET sock_fd;
 #endif
 
-#if defined(__LINUX__) || (__MAC_OSX__)
+#if defined ( __LINUX__ ) || defined (__MAC_OSX__)
     int sock_fd;
 #endif
 
@@ -295,8 +302,8 @@ int UdpDataProtocol::bindSocket()
         if ((::connect(sock_fd, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr))) < 0) {
             throw std::runtime_error("ERROR: Could not connect UDP socket");
         }
-#if defined(__LINUX__) || (__MAC_OSX__)
-        // if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
+#if defined (__LINUX__) || defined (__MAC_OSX__)
+        //if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
         //{ throw std::runtime_error("ERROR: Could shutdown SHUT_WR UDP socket"); }
 #endif
 #if defined __WIN_32__
@@ -337,8 +344,6 @@ int UdpDataProtocol::bindSocket()
 //*******************************************************************************
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
-    // Block until There's something to read
-    while (!datagramAvailable() && !mStopped) { QThread::usleep(100); }
     int n_bytes = ::recv(mSocket, buf, n, 0);
     if (n_bytes == mControlPacketSize) {
         // Control signal (currently just check for exit packet);
@@ -487,7 +492,13 @@ void UdpDataProtocol::run()
     // std::cout << "Experimental version -- not using setRealtimeProcessPriority()" <<
     // std::endl;
     // Anton Runov: making setRealtimeProcessPriority optional
-    if (mUseRtPriority) { setRealtimeProcessPriority(); }
+    if (mUseRtPriority) {
+#if defined (__MAC_OSX__)
+        setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(), mJackTrip->getSampleRate());
+#else
+        setRealtimeProcessPriority();
+#endif
+    }
 
     // clang-format off
     /////////////////////
@@ -579,7 +590,13 @@ void UdpDataProtocol::run()
             std::cout << std::endl
                       << "    UdpDataProtocol:run" << mRunMode
                       << " before mJackTrip->checkPeerSettings()" << std::endl;
-        mJackTrip->checkPeerSettings(full_redundant_packet);
+        if (!mJackTrip->checkPeerSettings(full_redundant_packet)) {
+            // If our peer settings aren't compatible, don't continue.
+            // (The checkPeerSettings function needs to signal the JackTrip instance with the exact error message.)
+            delete[] full_redundant_packet;
+            full_redundant_packet = nullptr;
+            return;
+        }
 
         int peer_chans   = mJackTrip->getPeerNumOutgoingChannels(full_redundant_packet);
         full_packet_size = mJackTrip->getHeaderSizeInBytes()
@@ -615,6 +632,26 @@ void UdpDataProtocol::run()
         mRevivedCount            = 0;
         mStatCount               = 0;
 
+        //Set up our platform specific polling mechanism. (kqueue, epoll)
+#if !defined (__MANUAL_POLL__) && !defined (__WIN_32__)
+#if defined (__MAC_OSX__)
+        int kq = kqueue();
+        struct kevent change;
+        struct kevent event;
+        EV_SET(&change, mSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+        struct timespec timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_nsec = 10000000;
+#else
+        int epollfd = epoll_create1(0);
+        struct epoll_event change, event;
+        change.events = EPOLLIN;
+        change.data.fd = mSocket;
+        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
+#endif
+        int waitTime = 0;
+#endif // __MANUAL_POLL__
+
         if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while (!mStopped) {
             // Timer to report packets arriving too late
@@ -623,8 +660,14 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-            waitForReady(60000);  //60 seconds
-
+#if defined (__WIN_32__) || defined (__MANUAL_POLL__)
+            waitForReady(60000); //60 seconds
+            receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
+                                    full_packet_size, current_seq_num, last_seq_num,
+                                    newer_seq_num);
+	}
+#else
+            
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
             /*
         // This is blocking until we get a packet...
@@ -638,17 +681,35 @@ void UdpDataProtocol::run()
         mJackTrip->writeAudioBuffer(mAudioPacket);
         */
             //----------------------------------------------------------------------------------
-            receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
-                                    full_packet_size, current_seq_num, last_seq_num,
-                                    newer_seq_num);
-        }
-        break;
-    }
 
-    case SENDER: {
+#ifdef __MAC_OSX__
+            int n = kevent(kq, &change, 1, &event, 1, &timeout);
+#else
+            int n = epoll_wait(epollfd, &event, 1, 10);
+#endif
+            if (n > 0) {
+                waitTime = 0;
+                receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
+                                        full_packet_size, current_seq_num, last_seq_num,
+                                        newer_seq_num);
+            } else {
+                waitTime += 10;
+                emit signalWaitingTooLong(waitTime);
+            }
+        }
+#ifdef __MAC_OSX__
+        close(kq);
+#else
+        close(epollfd);
+#endif
+#endif // __WIN_32__ || __MANUAL_POLL__
+        break; }
+
+    case SENDER : {
+        delete[] full_redundant_packet;
         full_redundant_packet = new int8_t[full_redundant_packet_size];
         std::memset(full_redundant_packet, 0,
-                    full_redundant_packet_size);  // Initialize to 0
+                    full_redundant_packet_size); // Initialize to 0
         while (!mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped) {
             sendPacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                  full_packet_size);
@@ -660,8 +721,7 @@ void UdpDataProtocol::run()
         sendPacket(exitPacket.constData(), mControlPacketSize);
         sendPacket(exitPacket.constData(), mControlPacketSize);
         emit signalCeaseTransmission();
-        break;
-    }
+        break; }
     }
 
     if (NULL != full_redundant_packet) {
@@ -716,7 +776,7 @@ void UdpDataProtocol::receivePacketRedundancy(
     // This is blocking until we get a packet...
     if (receivePacket(reinterpret_cast<char*>(full_redundant_packet),
                       full_redundant_packet_size)
-        == 0) {
+        <= 0) {
         return;
     }
 

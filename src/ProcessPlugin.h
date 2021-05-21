@@ -48,7 +48,7 @@
  * except init, which is optional for processing that are sampling rate dependent or
  * that need specific initialization.
  */
-class ProcessPlugin : public QThread
+class ProcessPlugin : public QObject
 {
    public:
     /// \brief The Class Constructor

@@ -58,9 +58,9 @@ void JackTripThread::run()
     //netks.play();
 
     //QThread::sleep(1);
-    //jacktrip.start();
+    jacktrip.start();
     //netks.play();
-    //jacktrip.wait();
+    jacktrip.wait();
 
     cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
     //QThread::sleep(9999999);

@@ -13,31 +13,49 @@ elif host_machine.system() == 'darwin'
 elif host_machine.system() == 'windows'
 	defines += '-D__WIN_32__'
 	defines += '-D_WIN32_WINNT=0x0600'
+	defines += '-DWIN32_LEAN_AND_MEAN'
 	defines += '-DNOMINMAX'
 endif
+
+qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])
+jack_dep = dependency('jack', required: get_option('jack'))
+if not jack_dep.found()
+	defines += '-D__NO_JACK__'
+endif
+deps = [qt5_dep, jack_dep]
 
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/JackTripWorker.h',
-	'src/JackTripWorkerMessages.h',
-	'src/NetKS.h',
 	'src/PacketHeader.h',
 	'src/Settings.h',
 	'src/UdpDataProtocol.h',
-	'src/UdpHubListener.h']
-moc_files = qt5.preprocess(moc_headers : moc_h)
+	'src/UdpHubListener.h',
+	'src/gui/about.h',
+	'src/gui/qjacktrip.h',
+	'src/gui/messageDialog.h',
+	'src/Auth.h',
+	'src/SslServer.h']
+	
+if jack_dep.found()
+	moc_h += ['src/Patcher.h']
+endif
+	
+ui_h = ['src/gui/qjacktrip.ui',
+	'src/gui/messageDialog.ui',
+	'src/gui/about.ui']
+
+qres = ['src/gui/qjacktrip.qrc']
+
+moc_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
-	'src/jacktrip_globals.cpp',
-	'src/jacktrip_main.cpp',
-	'src/JackTripThread.cpp',
 	'src/JackTripWorker.cpp',
 	'src/LoopBack.cpp',
 	'src/PacketHeader.cpp',
-	'src/ProcessPlugin.cpp',
 	'src/RingBuffer.cpp',
 	'src/JitterBuffer.cpp',
 	'src/Settings.cpp',
@@ -46,15 +64,13 @@ src = [	'src/DataProtocol.cpp',
 	'src/AudioInterface.cpp',
 	'src/Compressor.cpp',
 	'src/Limiter.cpp',
-	'src/Reverb.cpp']
-
-qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
-jack_dep = dependency('jack', required: get_option('jack'))
-if not jack_dep.found()
-	defines += '-D__NO_JACK__'
-endif
-
-deps = [qt5_dep, jack_dep]
+	'src/Reverb.cpp',
+	'src/gui/about.cpp',
+	'src/main.cpp',
+	'src/gui/qjacktrip.cpp',
+	'src/gui/messageDialog.cpp',
+	'src/SslServer.cpp',
+	'src/Auth.cpp']
 
 if not get_option('rtaudio').disabled()
 	defines += '-D__RT_AUDIO__'
@@ -80,10 +96,19 @@ if host_machine.system() == 'windows'
 	deps += compiler.find_library('ws2_32', required: true)
 endif
 
+if host_machine.system() == 'darwin'
+	src += ['src/gui/NoNap.mm']
+	apple_dep = dependency('appleframeworks', modules : 'foundation')
+	deps += apple_dep
+	add_languages('objcpp')
+	compiler = meson.get_compiler('objcpp')
+endif
+
 deps += dependency('threads')
 if jack_dep.found()
 src += 	['src/JackAudioInterface.cpp',
-	'src/JMess.cpp']
+	'src/JMess.cpp',
+	'src/Patcher.cpp']
 endif
 
 

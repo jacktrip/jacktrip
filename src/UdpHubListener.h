@@ -40,8 +40,6 @@
 
 #include <QHostAddress>
 #include <QMutex>
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <QThread>
 #include <QThreadPool>
 #include <QUdpSocket>
@@ -52,13 +50,14 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
-class JackTripWorker;  // forward declaration
-class Settings;
+#ifndef __NO_JACK__
+#include "Patcher.h"
+#endif
+#include "Auth.h"
+#include "SslServer.h"
 
-typedef struct {
-    QString address;
-    int16_t port;
-} addressPortPair;
+class JackTripWorker; // forward declaration
+class Settings;
 
 /** \brief Hub UDP listener on the Server.
  *
@@ -79,11 +78,20 @@ class UdpHubListener : public QObject
     /// \brief Stops the execution of the Thread
     void stop() { mStopped = true; }
 
+#ifndef __NO_JACK__
+    void registerClientWithPatcher(QString &clientName);
+    void unregisterClientWithPatcher(QString &clientName);
+#endif
     int releaseThread(int id);
+    void releaseDuplicateThreads(JackTripWorker *worker, uint16_t actual_peer_port);
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
     {
-        m_connectDefaultAudioPorts = connectDefaultAudioPorts;
+        //Only allow us to override this in the default patching mode. (Or TUB mode.)
+        //(Allows -D to continue to function as a synonym for -p5.)
+        if (mHubPatch == JackTrip::SERVERTOCLIENT || mHubPatch == JackTrip::RESERVEDMATRIX) {
+            m_connectDefaultAudioPorts = connectDefaultAudioPorts;
+        }
     }
 
     static void sigIntHandler([[maybe_unused]] int unused)
@@ -112,12 +120,13 @@ class UdpHubListener : public QObject
      * \param udpsocket a QUdpSocket
      * \param port Port number
      */
-    void receivedClientInfo(QTcpSocket* clientConnection);
+    void receivedClientInfo(QSslSocket *clientConnection);
 
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
-    uint16_t readClientUdpPort(QTcpSocket* clientConnection, QString& clientName);
-    int sendUdpPort(QTcpSocket* clientConnection, int udp_port);
+    int readClientUdpPort(QSslSocket* clientConnection, QString &clientName);
+    int checkAuthAndReadPort(QSslSocket* clientConnection, QString &clientName);
+    int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
 
     /** \brief Send the JackTripWorker to the thread pool. This will run
      * until it's done. We still have control over the prototype class.
@@ -125,11 +134,11 @@ class UdpHubListener : public QObject
      */
     // void sendToPoolPrototype(int id);
 
-    /** \brief Check if address is already handled, if not add to array
+    /** \brief Check if address is already handled and reuse or create a JackTripWorker as appropriate
      * \param address as string (IPv4 or IPv6)
-     * \return -1 if address is busy, id number if not
+     * \return id number of JackTripWorker
      */
-    int isNewAddress(QString address, uint16_t port);
+    int getJackTripWorker(QString address, uint16_t port, QString &clientName);
 
     /** \brief Returns the ID of the client in the pool. If the client
      * is not in the pool yet, returns -1.
@@ -141,16 +150,21 @@ class UdpHubListener : public QObject
     // QUdpSocket mUdpHubSocket; ///< The UDP socket
     // QHostAddress mPeerAddress; ///< The Peer Address
 
-    // JackTripWorker* mJTWorker; ///< Class that will be used as prototype
-    QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorker s
-    QThreadPool mThreadPool;               ///< The Thread Pool
+    //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
+    QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorkers
 
-    QTcpServer mTcpServer;
+    SslServer mTcpServer;
     int mServerPort;     //< Server known port number
     int mServerUdpPort;  //< Server udp base port number
     int mBasePort;
-    addressPortPair mActiveAddress[gMaxThreads];  ///< Active address pool addresses
-    QHash<QString, uint16_t> mActiveAddressPortPair;
+    //addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool addresses
+    //QHash<QString, uint16_t> mActiveAddressPortPair;
+
+    bool mRequireAuth;
+    QString mCertFile;
+    QString mKeyFile;
+    QString mCredsFile;
+    QScopedPointer<Auth> mAuth;
 
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
@@ -163,6 +177,9 @@ class UdpHubListener : public QObject
 
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
+#ifndef __NO_JACK__
+    Patcher mPatcher;
+#endif
 
     int mIOStatTimeout;
     QSharedPointer<std::ofstream> mIOStatStream;
@@ -184,11 +201,29 @@ class UdpHubListener : public QObject
     bool isWAIR() { return mWAIR; }
 #endif  // endwhere
 #ifndef __NO_JACK__
-    void connectPatch(bool spawn);
+    void connectPatch(bool spawn, const QString &clientName);
 #endif
+
    public:
+    void setRequireAuth(bool requireAuth) { mRequireAuth = requireAuth; }
+    void setCertFile(QString certFile) { mCertFile = certFile; }
+    void setKeyFile(QString keyFile) { mKeyFile = keyFile; }
+    void setCredsFile(QString credsFile) { mCredsFile = credsFile; }
+
     unsigned int mHubPatch;
-    void setHubPatch(unsigned int p) { mHubPatch = p; }
+    void setHubPatch(unsigned int p)
+    {
+        mHubPatch = p;
+#ifndef __NO_JACK__
+        mPatcher.setPatchMode(static_cast<JackTrip::hubConnectionModeT>(p));
+#endif
+        //Set the correct audio port connection setting for our chosen patch mode.
+        if (mHubPatch == JackTrip::SERVERTOCLIENT) {
+            m_connectDefaultAudioPorts = true;
+        } else {
+            m_connectDefaultAudioPorts = false;
+        }
+    }
     unsigned int getHubPatch() { return mHubPatch; }
 
     void setUnderRunMode(JackTrip::underrunModeT UnderRunMode)

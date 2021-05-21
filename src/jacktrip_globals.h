@@ -129,7 +129,11 @@ const int gMaxRemoteNameLength       = 64;
 //*******************************************************************************
 /// \name Global Functions
 
+#ifdef __MAC_OSX__
+void setRealtimeProcessPriority(int bufferSize, int sampleRate);
+#else
 void setRealtimeProcessPriority();
+#endif
 
 //*******************************************************************************
 /// \name JackTrip Server parameters

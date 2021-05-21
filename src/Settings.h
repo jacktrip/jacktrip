@@ -73,6 +73,8 @@ class Settings : public QObject
     bool isHubServer() { return mJackTripServer; }
 
    private:
+    void disableEcho(bool disabled);
+    
     JackTrip::jacktripModeT mJackTripMode =
         JackTrip::SERVER;                                   ///< JackTrip::jacktripModeT
     JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data Protocol
@@ -122,6 +124,14 @@ class Settings : public QObject
     double mSimulatedDelayRel   = 0.0;
     int mBroadcastQueue         = 0;
     bool mUseRtUdpPriority      = false;
+
+    bool mAuth = false;
+    QString mCertFile;
+    QString mKeyFile;
+    QString mCredsFile;
+    QString mUsername;
+    QString mPassword;
+    
     AudioTester mAudioTester;
 };
 

@@ -47,6 +47,7 @@
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
+#include <sys/qos.h>
 #endif  //__MAC_OSX__
 
 #if defined(__WIN_32__)
@@ -63,8 +64,10 @@
 
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
-void setRealtimeProcessPriority()
-{
+void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
+    // Set thread QoS to allow maximum performance.
+    pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+
     // Increase thread priority to real-time.
 
     // Please note that the thread_policy_set() calls may fail in
@@ -85,10 +88,11 @@ void setRealtimeProcessPriority()
         return;
     }
 
-    // Set to relatively high priority.
+    // Set to relatively high priority. (BASEPRI_FOREGROUND = 47)
     thread_precedence_policy_data_t precedence;
-    precedence.importance = 63;
-    result                = thread_policy_set(mach_thread_id, THREAD_PRECEDENCE_POLICY,
+    precedence.importance = 52;
+    result = thread_policy_set(mach_thread_id,
+                               THREAD_PRECEDENCE_POLICY,
                                reinterpret_cast<thread_policy_t>(&precedence),
                                THREAD_PRECEDENCE_POLICY_COUNT);
     if (result != KERN_SUCCESS) {
@@ -103,14 +107,15 @@ void setRealtimeProcessPriority()
     // means the scheduler would give half the time to the thread.
     // These values have empirically been found to yield good behavior.
     // Good means that audio performance is high and other threads won't starve.
-    const double kGuaranteedAudioDutyCycle = 0.75;
-    const double kMaxAudioDutyCycle        = 0.85;
+    //const double kGuaranteedAudioDutyCycle = 0.75;
+    const double kGuaranteedAudioDutyCycle = 0.5;
+    const double kMaxAudioDutyCycle = 0.85;
 
     // Define constants determining how much time the audio thread can
     // use in a given time quantum.  All times are in milliseconds.
 
-    // About 128 frames @44.1KHz
-    const double kTimeQuantum = 2.9;
+    // Work out how many milliseconds we have in each buffer cycle
+    const double kTimeQuantum = 1000 * (double)bufferSize / (double)sampleRate;
 
     // Time guaranteed each quantum.
     const double kAudioTimeNeeded = kGuaranteedAudioDutyCycle * kTimeQuantum;

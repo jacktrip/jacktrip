@@ -56,6 +56,13 @@
 
 #include "jacktrip_globals.h"
 
+#ifdef __WIN_32__
+#include <windows.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
+
 //#include "ThreadPoolTest.h"
 
 using std::cout;
@@ -69,6 +76,11 @@ enum JTLongOptIDS {
     OPT_SIMJITTER,
     OPT_BROADCAST,
     OPT_RTUDPPRIORITY,
+    OPT_AUTHCERT,
+    OPT_AUTHKEY,
+    OPT_AUTHCREDS,
+    OPT_AUTHUSER,
+    OPT_AUTHPASS,
     OPT_NUMRECEIVE,
     OPT_NUMSEND,
     OPT_APPENDTHREADID
@@ -151,6 +163,12 @@ void Settings::parseInput(int argc, char** argv)
         {"simjitter", required_argument, NULL, OPT_SIMJITTER},
         {"broadcast", required_argument, NULL, OPT_BROADCAST},
         {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
+        {"auth", no_argument, NULL, 'A'},  // Enable authentication between hub client and hub server
+        {"certfile", required_argument, NULL, OPT_AUTHCERT},  // Certificate for server authentication
+        {"keyfile", required_argument, NULL, OPT_AUTHKEY},  // Private key for server authentication
+        {"credsfile", required_argument, NULL, OPT_AUTHCREDS},  // Username and password store for server authentication
+        {"username", required_argument, NULL, OPT_AUTHUSER},  // Username when using authentication as a hub client
+        {"password", required_argument, NULL, OPT_AUTHPASS},  // Password when using authentication as a hub client
         {"help", no_argument, NULL, 'h'},  // Print Help
         {"examine-audio-delay", required_argument, NULL,
          'x'},  // test mode - measure audio round-trip latency statistics
@@ -162,7 +180,7 @@ void Settings::parseInput(int argc, char** argv)
     int ch;
     while ((ch = getopt_long(
                 argc, argv,
-                "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:", longopts,
+                "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:A", longopts,
                 NULL))
            != -1)
         switch (ch) {
@@ -487,6 +505,24 @@ void Settings::parseInput(int argc, char** argv)
             }
             break;
         }
+        case 'A':
+            mAuth = true;
+            break;
+        case OPT_AUTHCERT:
+            mCertFile = optarg;
+            break;
+        case OPT_AUTHKEY:
+            mKeyFile = optarg;
+            break;
+        case OPT_AUTHCREDS:
+            mCredsFile = optarg;
+            break;
+        case OPT_AUTHUSER:
+            mUsername = optarg;
+            break;
+        case OPT_AUTHPASS:
+            mPassword = optarg;
+            break;
         case 'x': {  // examine connection (test mode)
             //-------------------------------------------------------
             char cmd[]{"--examine-audio-delay (-x)"};
@@ -727,6 +763,14 @@ void Settings::printUsage()
             "in packets"
          << endl;
     cout << endl;
+    cout << "ARGUMENTS FOR HUB CLIENT/SERVER AUTHENTICATION:" << endl;
+    cout << " -A, --auth                               Use authentication on the client side, or require it on the server side" << endl;
+    cout << " --certfile                               The certificate file to use on the hub server" << endl;
+    cout << " --keyfile                                The private key file to use on the hub server" << endl;
+    cout << " --credsfile                              The file containing the stored usernames and passwords" << endl;
+    cout << " --username                               The username to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
+    cout << " --password                               The password to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
+    cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
     cout
@@ -750,11 +794,8 @@ UdpHubListener* Settings::getConfiguredHubServer()
     udpHub->setWAIR(mWAIR);
 #endif  // endwhere
     udpHub->setHubPatch(mHubConnectionMode);
-    if (mHubConnectionMode == JackTrip::NOAUTO) {
-        udpHub->setConnectDefaultAudioPorts(false);
-    } else {
-        udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
-    }
+    // Connect default audio ports must be set after the connection mode.
+    udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
     // Set buffers to zero when underrun
     if (mUnderrunMode == JackTrip::ZEROS) {
         cout << "Setting buffers to zero when underrun..." << endl;
@@ -774,6 +815,14 @@ UdpHubListener* Settings::getConfiguredHubServer()
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
         udpHub->setIOStatStream(mIOStatStream);
+    }
+    
+    if (mAuth) {
+        //(We don't need to check the validity of these files because it's done by the UdpHubListener.)
+        udpHub->setRequireAuth(mAuth);
+        udpHub->setCertFile(mCertFile);
+        udpHub->setKeyFile(mKeyFile);
+        udpHub->setCredsFile(mCredsFile);
     }
     return udpHub;
 }
@@ -856,6 +905,27 @@ JackTrip* Settings::getConfiguredJackTrip()
     jackTrip->setBroadcast(mBroadcastQueue);
     jackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
 
+    // Set auth details if we're in hub client mode
+    if (mAuth && mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
+        jackTrip->setUseAuth(true);
+        if (mUsername.isEmpty()) {
+            std::cout << "Username: ";
+            std::string username;
+            std::cin >> username;
+            mUsername = QString(username.c_str());
+        }
+        if (mPassword.isEmpty()) {
+            std::cout << "Password: ";
+            disableEcho(true);
+            std::string password;
+            std::cin >> password;
+            mPassword = QString(password.c_str());
+            disableEcho(false);
+        }
+        jackTrip->setUsername(mUsername);
+        jackTrip->setPassword(mPassword);
+    }
+
     // Add Plugins
     if (mLoopBack) {
         cout << "Running in Loop-Back Mode..." << endl;
@@ -927,4 +997,29 @@ JackTrip* Settings::getConfiguredJackTrip()
 #endif  // endwhere
 
 return jackTrip;
+}
+
+void Settings::disableEcho(bool disabled)
+{
+#ifdef __WIN_32__
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode;
+    GetConsoleMode(hStdin, &mode);
+    
+    if (disabled) {
+        mode &= ~ENABLE_ECHO_INPUT;
+    } else {
+        mode |= ENABLE_ECHO_INPUT;
+    }
+    SetConsoleMode(hStdin, mode);
+#else
+    struct termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
+    if (disabled) {
+        tty.c_lflag &= ~ECHO;
+    } else {
+        tty.c_lflag |= ECHO;
+    }
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+#endif
 }

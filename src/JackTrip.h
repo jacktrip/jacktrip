@@ -42,9 +42,9 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
-#include <QTcpSocket>
-#include <QTimer>
 #include <QUdpSocket>
+#include <QSslSocket>
+#include <QTimer>
 #include <stdexcept>
 
 #include "AudioInterface.h"
@@ -255,6 +255,16 @@ class JackTrip : public QObject
         mSenderPeerPort   = port;
         mReceiverPeerPort = port;
     }
+    void setPeerHandshakePort(int port)
+    {
+        mTcpServerPort = port;
+    }
+    void setUseAuth(bool auth)
+    { mUseAuth = auth; }
+    void setUsername(QString username)
+    { mUsername = username; }
+    void setPassword(QString password)
+    { mPassword = password; }
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString clientName) { mJackClientName = clientName; }
     virtual void setRemoteClientName(QString remoteClientName)
@@ -417,8 +427,17 @@ class JackTrip : public QObject
     {
         return mNumAudioChansOut; /*return mAudioInterface->getNumOutputChannels();*/
     }
-
-    virtual void checkPeerSettings(int8_t* full_packet);
+#ifndef __NO_JACK__
+    QString getAssignedClientName()
+    {
+        if (mAudioInterface && mAudiointerfaceMode == JackTrip::JACK) {
+            return static_cast<JackAudioInterface *>(mAudioInterface)->getAssignedClientName();
+        } else {
+            return "";
+        }
+    }
+#endif
+    virtual bool checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber() { mPacketHeader->increaseSequenceNumber(); }
     int getSequenceNumber() const { return mPacketHeader->getSequenceNumber(); }
 
@@ -499,6 +518,7 @@ class JackTrip : public QObject
         mSimulatedDelayRel   = delay_rel;
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueueLength = broadcast_queue; }
+    void queueLengthChanged(int queueLength) { emit signalQueueLengthChanged(queueLength); }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 
    public slots:
@@ -535,6 +555,7 @@ class JackTrip : public QObject
    private slots:
     void receivedConnectionTCP();
     void receivedDataTCP();
+    void connectionSecured();
     void receivedDataUDP();
     void udpTimerTick();
     void tcpTimerTick();
@@ -549,6 +570,8 @@ class JackTrip : public QObject
     void signalError(const QString& errorMessage);
     void signalReceivedConnectionFromPeer();
     void signalUdpWaitingTooLong();
+    void signalQueueLengthChanged(int queueLength);
+    void signalAudioStarted();
 
    public:
     /// \brief Set the AudioInteface object
@@ -621,6 +644,10 @@ class JackTrip : public QObject
     int mSenderBindPort;    ///< Outgoing (sending) port for local machine
     int mReceiverPeerPort;  ///< Outgoing (sending) port for peer machine
     int mTcpServerPort;
+    
+    bool mUseAuth;
+    QString mUsername;
+    QString mPassword;
 
     unsigned int mRedundancy;   ///< Redundancy factor in network data
     QString mJackClientName;    ///< JackAudio Client Name
@@ -639,8 +666,11 @@ class JackTrip : public QObject
     int mSleepTime;
     int mElapsedTime;
     int mEndTime;
-    QTcpSocket mTcpClient;
+    QSslSocket mTcpClient;
     QUdpSocket mUdpSockTemp;
+    QMutex mTimerMutex;
+    bool mAwaitingUdp;
+    bool mAwaitingTcp;
 
     volatile bool mReceivedConnection;  ///< Bool of received connection from peer
     volatile bool mTcpConnectionError;

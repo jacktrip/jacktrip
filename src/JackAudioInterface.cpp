@@ -103,13 +103,7 @@ void JackAudioInterface::setup()
 void JackAudioInterface::setupClient()
 {
     QByteArray clientName = mClientName.toUtf8();
-//    const char* server_name = NULL;
-#ifdef __MAC_OSX__
-    // Jack seems to have an issue with client names over 27 bytes in OS X
-    int maxSize = 27;
-#else
     int maxSize = jack_client_name_size();
-#endif
     if (clientName.length() > maxSize) {
         int length = maxSize;
         // Make sure we don't cut mid multi-byte character.
@@ -151,9 +145,11 @@ void JackAudioInterface::setupClient()
         // std::exit(1);
         throw std::runtime_error("Maybe the JACK server is not running?");
     }
+
+    mAssignedClientName = jack_get_client_name(mClient);
     if (status & JackServerStarted) { fprintf(stderr, "JACK server started\n"); }
     if (status & JackNameNotUnique) {
-        fprintf(stderr, "unique name `%s' assigned\n", jack_get_client_name(mClient));
+        fprintf(stderr, "unique name `%s' assigned\n", mAssignedClientName.toUtf8().constData());
     }
 
     // Set function to call if Jack shuts down

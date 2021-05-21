@@ -1,0 +1,46 @@
+#!/bin/bash
+## Created by Juan-Pablo Caceres
+
+# Check for Platform
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    echo "Building on Linux"
+    platform='linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    echo "Building on Mac OS X"
+    platform='macosx'
+fi
+
+# Set qmake command name
+if [[ $platform == 'linux' ]]; then
+    if hash qmake-qt5 2>/dev/null; then
+	echo "Using qmake-qt5"
+	QCMD=qmake-qt5
+    elif hash qmake 2>/dev/null; then #in case qt was compiled by user
+	echo "Using qmake"
+	QCMD=qmake
+    fi
+    QSPEC=linux-g++
+elif [[ $platform == 'macosx' ]]; then
+    QCMD=qmake
+    QSPEC=macx-clang
+fi
+
+# Create our build directory
+mkdir -p builddir
+cd builddir
+
+# Build
+if [[ $1 == 'nojack' ]]; then
+    echo "Building without Jack"
+    $QCMD -spec $QSPEC -config nojack ../jacktrip.pro
+    make clean
+    $QCMD -spec $QSPEC -config nojack ../jacktrip.pro
+    make release
+else
+    $QCMD -spec $QSPEC ../jacktrip.pro $@
+    make clean
+    $QCMD -spec $QSPEC ../jacktrip.pro $@
+    make release
+fi

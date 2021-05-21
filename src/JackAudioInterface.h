@@ -110,6 +110,9 @@ class JackAudioInterface : public AudioInterface
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
+    /// \brief Get the actual client name assigned by the Jack server
+    virtual QString getAssignedClientName() final
+    { return mAssignedClientName; }
     /// \brief Get the Jack Server Sampling Rate, in samples/second
     virtual uint32_t getSampleRate() const;
     /// \brief Get the Jack Server Buffer Size, in samples
@@ -179,6 +182,7 @@ class JackAudioInterface : public AudioInterface
 
     jack_client_t* mClient;                         ///< Jack Client
     QString mClientName;                            ///< Jack Client Name
+    QString mAssignedClientName;
     QVarLengthArray<jack_port_t*> mInPorts;         ///< Vector of Input Ports (Channels)
     QVarLengthArray<jack_port_t*> mOutPorts;        ///< Vector of Output Ports (Channels)
     QVarLengthArray<jack_port_t*> mBroadcastPorts;  ///< Vector of Output Ports (Channels)

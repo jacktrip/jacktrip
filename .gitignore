@@ -5,6 +5,9 @@
 # build directory
 builddir/
 
+# kdevelop directory
+.kdev4
+
 # Ignore mkdocs build
 site/
 

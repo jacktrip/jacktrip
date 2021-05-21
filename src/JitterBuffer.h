@@ -39,6 +39,7 @@
 #define __JITTERBUFFER_H__
 
 #include "RingBuffer.h"
+#include "JackTrip.h"
 
 class JitterBuffer : public RingBuffer
 {
@@ -52,6 +53,8 @@ class JitterBuffer : public RingBuffer
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot);
 
     virtual bool getStats(IOStat* stat, bool reset);
+
+    void setJackTrip(JackTrip *jackTrip) { mJackTrip = jackTrip; }
 
    protected:
     void processPacketLoss(int lostLen);
@@ -84,6 +87,8 @@ class JitterBuffer : public RingBuffer
     double mAutoQRate;
     double mAutoQRateMin;
     double mAutoQRateDecay;
+
+    JackTrip *mJackTrip;
 };
 
 #endif  //__JITTERBUFFER_H__

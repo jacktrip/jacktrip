@@ -211,6 +211,9 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
                        > 0.6 * mSlotSize) {
                 mMaxLatency = mSlotSize * std::ceil(mAutoQueueCorr * k / mSlotSize);
                 cout << "AutoQueue: " << mMaxLatency / mSlotSize << endl;
+                if (mJackTrip != nullptr) {
+                    mJackTrip->queueLengthChanged(mMaxLatency / mSlotSize);
+                }
             }
         }
     }
