@@ -6,20 +6,15 @@ CONFIG += c++11 console
 CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release build_all
+CONFIG(debug, debug|release) {
+  TARGET = jacktrip_debug
+  } else {
+  TARGET = jacktrip
+  }
 
 nogui {
   DEFINES += __NO_GUI__
-  CONFIG(debug, debug|release) {
-    TARGET = jacktrip_debug
-    } else {
-    TARGET = jacktrip
-    }
 } else {
-  CONFIG(debug, debug|release) {
-    TARGET = qjacktrip_debug
-    } else {
-    TARGET = qjacktrip
-    }
   QT += gui
   QT += widgets
 }
@@ -148,7 +143,7 @@ win32 {
 }
 
 DESTDIR = .
-QMAKE_CLEAN += -r ./qjacktrip ./qjacktrip_debug ./jacktrip ./jacktrip_debug ./release ./debug
+QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
 
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr

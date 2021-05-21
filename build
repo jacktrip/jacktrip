@@ -44,7 +44,3 @@ else
     $QCMD -spec $QSPEC ../jacktrip.pro $@
     make release
 fi
-
-if [[ ! -e 'jacktrip' ]]; then
-    ln -s qjacktrip jacktrip
-fi

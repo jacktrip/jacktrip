@@ -51,7 +51,6 @@
 
 QCoreApplication *createApplication(int &argc, char *argv[])
 {
-#ifndef __NO_GUI__
     //Find the name that the app was called with.
     //TODO: Consider replacing the C implementation below with one that uses QString or std::string.
     char* argv0 = strdup(argv[0]);
@@ -66,18 +65,40 @@ QCoreApplication *createApplication(int &argc, char *argv[])
             command = token;
         }
     }
-    
-    //If we have command line arguments or have been called as jacktrip, run on the command line.
-    if (argc == 1 && (strcmp(command, "jacktrip") != 0)) {
+
+    //Check for some specific, GUI related command line options.
+    bool forceGui = false;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--gui") == 0) {
+            forceGui = true;
+        } else if (strcmp(argv[i], "--test-gui") == 0) {
+            //Command line option to test if the binary has been built with GUI support.
+            //Exits immediately. Exits with an error if GUI support has not been built in.
+#ifdef __NO_GUI__
+            std::exit(1);
+#else
+            std::exit(0);
+#endif
+        }
+    }
+
+    //If we have command line arguments and aren't forcing the GUI run on the command line.
+    if (argc == 1 || forceGui) {
         free(argv0);
+#ifdef __NO_GUI__
+        if (forceGui) {
+            std::cout << "This version of jacktrip has not been built with GUI support." << std::endl;
+            std::exit(1);
+        } else {
+            return new QCoreApplication(argc, argv);
+        }
+#else
         return new QApplication(argc, argv);
+#endif
     } else {
         free(argv0);
         return new QCoreApplication(argc, argv);
     }
-#else
-    return new QCoreApplication(argc, argv);
-#endif
 }
 
 void qtMessageHandler([[maybe_unused]] QtMsgType type, [[maybe_unused]] const QMessageLogContext &context, const QString &msg)

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>qjacktrip</string>
+	<string>jacktrip</string>
 	<key>CFBundleIconFile</key>
 	<string>jacktrip</string>
 	<key>CFBundleIdentifier</key>

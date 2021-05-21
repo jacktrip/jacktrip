@@ -108,4 +108,4 @@ src += 	['src/JackAudioInterface.cpp',
 endif
 
 
-executable('qjacktrip', src, moc_files, dependencies: deps, cpp_args: defines, install: true )
+executable('jacktrip', src, moc_files, dependencies: deps, cpp_args: defines, install: true )
