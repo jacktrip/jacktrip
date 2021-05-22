@@ -164,6 +164,7 @@ void Settings::parseInput(int argc, char** argv)
         {"simjitter", required_argument, NULL, OPT_SIMJITTER},
         {"broadcast", required_argument, NULL, OPT_BROADCAST},
         {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
+        {"pktpool", required_argument, NULL, OPT_PACKETPOOLSIZE}, // only bufstrategy 3
         {"auth", no_argument, NULL, 'A'},  // Enable authentication between hub client and hub server
         {"certfile", required_argument, NULL, OPT_AUTHCERT},  // Certificate for server authentication
         {"keyfile", required_argument, NULL, OPT_AUTHKEY},  // Private key for server authentication
