@@ -350,9 +350,9 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int> mIndexPool;
     void plotRow(double now, QElapsedTimer *timer, int id);
     int mRcvLag;
-//signals:
-//    void print(QString);
-//    void printStats(QString);
+signals:
+    void print(QString);
+    void printStats(QString);
 };
 
 #endif  //__POOLUFFER_H__

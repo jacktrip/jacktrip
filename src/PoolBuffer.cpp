@@ -307,7 +307,7 @@ void PoolBuffer::plotRow(double now, QElapsedTimer *timer, int id)
     out += (QString::number(elapsed) + QString("\t"));
     out += (QString::number(id) + QString("\t")); // blk
     //    out += (QString::number(mDelta) + QString("\t"));
-//    emit print(out); <<<<<<<<<<<<<<<
+    emit print(out);
     // set cbrange [0:3]
     //    plot 'iostat.log' u  1:2:3 with p ps 0.75 pt 5 palette, 'iostat.log' u  1:($4/1.0) w l
 }
@@ -359,7 +359,7 @@ void PoolBuffer::plot()
             out += (QString::number(mStat->lastMin) + QString("\t"));
             out += (QString::number(mStat->lastMax) + QString("\t"));
             out += (QString::number(mStat->stdDev) + QString("\t"));
-//            emit printStats(out); <<<<<<<<<<<<<
+            emit printStats(out);
         }
     }
 }
