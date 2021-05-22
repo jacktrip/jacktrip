@@ -1,6 +1,6 @@
 #!/bin/bash
 # bash script for jacktrip automation, Chris Chafe
-# startJacktripHubClient.sh <FPP>
+# startJacktripHubClient.sh <JACKTRIP> <FPP>
 # 
 # /home/cc/Desktop/sh/startJacktripHubClient.sh /home/cc/jacktrip/builddir/jacktrip %p
 
@@ -32,19 +32,12 @@ JACKTRIP=$1
 # /home/cc/startJacktrip.sh %p
 
 
-if [ -z "$2" ]
-  then
-    SERVER=localhost
-  else
-    FPP=$2
-    SERVER=jackloop$FPP.stanford.edu
-fi
+FPP=$2
+SERVER=localhost
 
+echo starting hub client of a server running on $SERVER
 
-echo starting hub client of server running on $SERVER
-
-$( $JACKTRIP -C $SERVER > /dev/null 2>&1 & )
-
+$(PIPEWIRE_LATENCY="$FPP/48000" $JACKTRIP -C $SERVER -J HUBCLIENT --udprt > /dev/null 2>&1 & )
 
 
 
