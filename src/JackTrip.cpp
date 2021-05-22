@@ -139,6 +139,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mSimulatedJitterRate(0.0)
     , mSimulatedDelayRel(0.0)
     , mUseRtUdpPriority(false)
+    , mPacketPoolSize(1) // experimental bufstrategy 3 pool size
     , mAudioTesterP(nullptr)
 {
     createHeader(mPacketHeaderType);
@@ -354,6 +355,14 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer =
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
+        } else if (mBufferStrategy == 3) {
+            qDebug() << "experimental mBufferStrategy == 3";
+//            mSendRingBuffer = new RingBuffer(slot_size, gDefaultOutputQueueLength);
+//            mReceiveRingBuffer = new BurgPLC(mSampleRate, mNumChans, mAudioBitResolution, mAudioBufferSize,
+//                               mBufferQueueLength, mRcvLag); mPacketPoolSize
+//            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
+//            connect(mReceiveRingBuffer, SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
+
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {
