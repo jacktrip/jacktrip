@@ -21,7 +21,7 @@ nogui {
 
 QT += network
 
-# rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOHUB
+# switch added in rc.1.2 enables wair build, some of it merged as WAIRTOHUB
 # DEFINES += WAIR
 DEFINES += WAIRTOHUB
 

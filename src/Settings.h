@@ -124,6 +124,7 @@ class Settings : public QObject
     double mSimulatedDelayRel   = 0.0;
     int mBroadcastQueue         = 0;
     bool mUseRtUdpPriority      = false;
+    unsigned int mPacketPoolSize = 1;      ///< Experimental bufstrategy 3 pool size
 
     bool mAuth = false;
     QString mCertFile;

@@ -489,7 +489,6 @@ void UdpDataProtocol::run()
     if (gVerboseFlag)
         std::cout << "    UdpDataProtocol:run" << mRunMode
                   << " before setRealtimeProcessPriority()" << std::endl;
-    // std::cout << "Experimental version -- not using setRealtimeProcessPriority()" <<
     // std::endl;
     // Anton Runov: making setRealtimeProcessPriority optional
     if (mUseRtPriority) {
