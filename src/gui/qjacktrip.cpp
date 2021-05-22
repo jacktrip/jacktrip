@@ -930,7 +930,7 @@ void QJackTrip::appendPlugins(JackTrip *jackTrip, int numChannels)
 
 QString QJackTrip::commandLineFromCurrentOptions()
 {
-    QString commandLine = "qjacktrip";
+    QString commandLine = "jacktrip";
     
     if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         commandLine.append(" -c ").append(m_ui->addressComboBox->currentText());
