@@ -47,28 +47,25 @@
 using std::vector;
 #include <math.h>
 
-bool classify(double d)
-{
-    bool tmp = false;
-  switch (fpclassify(d)) {
-    case FP_INFINITE:  qDebug() <<  ("infinite");  tmp = true; break;
-    case FP_NAN:       qDebug() <<  ("NaN");  tmp = true;        break;
-    case FP_ZERO:
-//      qDebug() <<  ("zero");
-      tmp = true;       break;
-    case FP_SUBNORMAL: qDebug() <<  ("subnormal");  tmp = true;  break;
-//    case FP_NORMAL:    qDebug() <<  ("normal");    break;
-  }
-//  if (signbit(d)) qDebug() <<  (" negative\n"); else qDebug() <<  (" positive or unsigned\n");
-  return tmp;
-}
-
 class BurgAlgorithm
 {
 public:
-    BurgAlgorithm()
-    {
+    BurgAlgorithm() {}
 
+    bool classify(double d)
+    {
+        bool tmp = false;
+      switch (fpclassify(d)) {
+        case FP_INFINITE:  qDebug() <<  ("infinite");  tmp = true; break;
+        case FP_NAN:       qDebug() <<  ("NaN");  tmp = true;        break;
+        case FP_ZERO:
+    //      qDebug() <<  ("zero");
+          tmp = true;       break;
+        case FP_SUBNORMAL: qDebug() <<  ("subnormal");  tmp = true;  break;
+    //    case FP_NORMAL:    qDebug() <<  ("normal");    break;
+      }
+    //  if (signbit(d)) qDebug() <<  (" negative\n"); else qDebug() <<  (" positive or unsigned\n");
+      return tmp;
     }
 
     // from .pl
@@ -192,9 +189,9 @@ public:
     }
 };
 
-class PoolBuffer : public RingBuffer, public QThread
+class PoolBuffer : public QThread, public RingBuffer
 {
-//    Q_OBJECT;
+    Q_OBJECT;
 
 public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen);
