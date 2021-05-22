@@ -40,6 +40,7 @@
 
 #include "RingBuffer.h"
 //#include "JackTrip.h"
+#include <QObject>
 #include "AudioInterface.h"
 #include <QElapsedTimer>
 #include <QDebug>
@@ -193,7 +194,7 @@ public:
 
 class PoolBuffer : public RingBuffer, public QThread
 {
-    Q_OBJECT;
+//    Q_OBJECT;
 
 public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen);
@@ -352,9 +353,9 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int> mIndexPool;
     void plotRow(double now, QElapsedTimer *timer, int id);
     int mRcvLag;
-signals:
-    void print(QString);
-    void printStats(QString);
+//signals:
+//    void print(QString);
+//    void printStats(QString);
 };
 
 #endif  //__POOLUFFER_H__
