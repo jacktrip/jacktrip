@@ -1,6 +1,6 @@
 #!/bin/bash
 # bash script for jacktrip automation, Chris Chafe
-# artPipeWire.sh <FPP>
+# art.sh <FPP>
 
 FPP=$1
 

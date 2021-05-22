@@ -1,6 +1,6 @@
 #!/bin/bash
 # bash script for jacktrip automation, Chris Chafe
-# startJacktripHubServerPipeWire.sh <JACKTRIP> <FPP>
+# startJacktripHubServer.sh <JACKTRIP> <FPP>
 
 JACKTRIP=$1
 FPP=$2

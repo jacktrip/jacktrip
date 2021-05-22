@@ -1,5 +1,5 @@
 #!/bin/bash
-# test_hub_mode_server_and_clientPipeWire.sh <JACKTRIP> <FPP> <JACKD>
+# test_hub_mode_server_and_client.sh <JACKTRIP> <FPP> <JACKD>
 
 # bash script for automatic testing of jacktrip in hub mode, Chris Chafe
 # connects a hub client to a hub server (started with with -p1) on the same host
@@ -9,19 +9,19 @@
 # prints avg audio RTT after about 20 sec, or -1 if fail 
 
 # to not run jackd automatically, leave off the 3rd argument
-#     for example, if starting jackd manually with qjackctl or using PipeWire
+#     for example, if starting jackd manually with qjackctl or using 
 # prints avg audio RTT after 8 sec, or -1 if fail 
 
 # requires jack_iodelay be installed and available from system
 
 # # requires 3 helper scripts in the same directory
-# -- startJacktripHubServerPipeWire.sh
-# -- startJacktripHubClientPipeWire.sh
-# -- artPipeWire.sh
+# -- startJacktripHubServer.sh
+# -- startJacktripHubClient.sh
+# -- art.sh
 
 # example session:
 
-# [cc@localhost sh]$ ./test_hub_mode_server_and_clientPipeWire.sh /home/cc/jacktrip/builddir/jacktrip 32
+# [cc@localhost sh]$ ./test_hub_mode_server_and_client.sh /home/cc/jacktrip/builddir/jacktrip 32
 # starting /home/cc/jacktrip/builddir/jacktrip hub mode test at 32 FPP
 # starting hub client for server localhost
 # calculate audio round trip
@@ -60,12 +60,12 @@ if [ $JACKD != 0 ]
     sleep 1
 fi
 
-$PWD/startJacktripHubServerPipeWire.sh $JACKTRIP $FPP
+$PWD/startJacktripHubServer.sh $JACKTRIP $FPP
 sleep 1
-$PWD/startJacktripHubClientPipeWire.sh $JACKTRIP $FPP
+$PWD/startJacktripHubClient.sh $JACKTRIP $FPP
 
 sleep 1
 
 # start measuring audio RTT
-$PWD/artPipeWire.sh
+$PWD/art.sh
 
