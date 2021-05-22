@@ -520,6 +520,7 @@ class JackTrip : public QObject
     void setBroadcast(int broadcast_queue) { mBroadcastQueueLength = broadcast_queue; }
     void queueLengthChanged(int queueLength) { emit signalQueueLengthChanged(queueLength); }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
+    void setPacketPoolSize(int packetPoolSize) { mPacketPoolSize = packetPoolSize; } // experimental bufstrategy 3 pool size
 
    public slots:
     /// \brief Slot to stop all the processes and threads
@@ -685,6 +686,7 @@ class JackTrip : public QObject
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
+    unsigned int mPacketPoolSize; // experimental bufstrategy 3 pool size
 
     AudioTester* mAudioTesterP;
 };

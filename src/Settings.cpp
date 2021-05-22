@@ -814,6 +814,7 @@ UdpHubListener* Settings::getConfiguredHubServer()
                                    mSimulatedDelayRel);
     udpHub->setBroadcast(mBroadcastQueue);
     udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
+    udpHub->setPacketPoolSize(mPacketPoolSize); // experimental bufstrategy 3
 
     if (true == mAppendThreadID) { udpHub->mAppendThreadID = true; }
 
@@ -909,6 +910,7 @@ JackTrip* Settings::getConfiguredJackTrip()
                                      mSimulatedDelayRel);
     jackTrip->setBroadcast(mBroadcastQueue);
     jackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
+    jackTrip->setPacketPoolSize(mPacketPoolSize); // experimental bufstrategy 3
 
     // Set auth details if we're in hub client mode
     if (mAuth && mJackTripMode == JackTrip::CLIENTTOPINGSERVER) {
