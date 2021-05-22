@@ -163,12 +163,14 @@ HEADERS += src/DataProtocol.h \
            src/Compressor.h \
            src/CompressorPresets.h \
            src/Limiter.h \
+           src/PoolBuffer.h \
            src/Reverb.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
            src/JackTripWorker.h \
            src/JitterBuffer.h \
+           src/PoolBuffer.h \
            src/LoopBack.h \
            src/PacketHeader.h \
            src/ProcessPlugin.h \
@@ -205,11 +207,13 @@ SOURCES += src/DataProtocol.cpp \
            src/JackTrip.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
+           src/PoolBuffer.cpp \
            src/Reverb.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
            src/JitterBuffer.cpp \
+           src/PoolBuffer.cpp \
            src/LoopBack.cpp \
            src/PacketHeader.cpp \
            src/RingBuffer.cpp \
