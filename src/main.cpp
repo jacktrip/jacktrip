@@ -51,21 +51,6 @@
 
 QCoreApplication *createApplication(int &argc, char *argv[])
 {
-    //Find the name that the app was called with.
-    //TODO: Consider replacing the C implementation below with one that uses QString or std::string.
-    char* argv0 = strdup(argv[0]);
-    char* command;
-    char* token;
-    
-    token = strtok(argv0, "/");
-    command = token;
-    while (token != NULL) {
-        token = strtok (NULL, "/");
-        if (token != NULL) {
-            command = token;
-        }
-    }
-
     //Check for some specific, GUI related command line options.
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
@@ -84,7 +69,6 @@ QCoreApplication *createApplication(int &argc, char *argv[])
 
     //If we have command line arguments and aren't forcing the GUI run on the command line.
     if (argc == 1 || forceGui) {
-        free(argv0);
 #ifdef __NO_GUI__
         if (forceGui) {
             std::cout << "This version of jacktrip has not been built with GUI support." << std::endl;
@@ -96,7 +80,6 @@ QCoreApplication *createApplication(int &argc, char *argv[])
         return new QApplication(argc, argv);
 #endif
     } else {
-        free(argv0);
         return new QCoreApplication(argc, argv);
     }
 }
