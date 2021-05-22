@@ -132,7 +132,7 @@ const int gMaxRemoteNameLength       = 64;
 #ifdef __MAC_OSX__
 void setRealtimeProcessPriority(int bufferSize, int sampleRate);
 #else
-void setRealtimeProcessPriority();
+void setRealtimeProcessPriority(int priority);
 #endif
 
 //*******************************************************************************

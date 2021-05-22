@@ -492,11 +492,11 @@ void UdpDataProtocol::run()
     // std::cout << "Experimental version -- not using setRealtimeProcessPriority()" <<
     // std::endl;
     // Anton Runov: making setRealtimeProcessPriority optional
-    if (mUseRtPriority) {
+    if (0 != mRtPriority) {
 #if defined (__MAC_OSX__)
         setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(), mJackTrip->getSampleRate());
 #else
-        setRealtimeProcessPriority();
+        setRealtimeProcessPriority(mRtPriority);
 #endif
     }
 

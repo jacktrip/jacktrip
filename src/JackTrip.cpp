@@ -49,6 +49,7 @@
 #include "RtAudioInterface.h"
 #endif
 
+
 #include <QDateTime>
 #include <QtEndian>
 #include <QHostAddress>
@@ -217,6 +218,13 @@ void JackTrip::setupAudio(
                 << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples"
                 << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
+
+        // Set the rt priority jack clients usually get
+        if (mUseRtUdpPriority) {
+            mRtAudioPriority =
+                static_cast<JackAudioInterface*>(mAudioInterface)->getRtAudioPriority();
+        }
+
 #endif  //__NON_JACK__
 #ifdef __NO_JACK__  /// \todo FIX THIS REPETITION OF CODE
 #ifdef __RT_AUDIO__
@@ -300,9 +308,9 @@ void JackTrip::setupDataProtocol()
             mDataProtocolReceiver->setIssueSimulation(
                 mSimulatedLossRate, mSimulatedJitterRate, simulated_max_delay);
         }
-        mDataProtocolSender->setUseRtPriority(mUseRtUdpPriority);
-        mDataProtocolReceiver->setUseRtPriority(mUseRtUdpPriority);
         if (mUseRtUdpPriority) {
+            mDataProtocolSender->setRtPriority(mRtAudioPriority - 1);
+            mDataProtocolReceiver->setRtPriority(mRtAudioPriority - 1);
             cout << "Using RT thread priority for UDP data" << endl;
         }
         std::cout << gPrintSeparator << std::endl;
