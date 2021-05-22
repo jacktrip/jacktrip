@@ -116,5 +116,16 @@ src += 	['src/JackAudioInterface.cpp',
 	'src/Patcher.cpp']
 endif
 
+jacktrip = executable('jacktrip', src, moc_files, dependencies: deps, cpp_args: defines, install: true )
 
-executable('jacktrip', src, moc_files, dependencies: deps, cpp_args: defines, install: true )
+help2man = find_program('help2man', required: false)
+if help2man.found()
+	help2man_opts = [
+		'--no-info',
+		'--section=1']
+	custom_target('jacktrip.1',
+		output: 'jacktrip.1',
+		command: [help2man, help2man_opts, '--output=@OUTPUT@', jacktrip],
+		install: true,
+		install_dir: get_option('mandir') / 'man1')
+endif
