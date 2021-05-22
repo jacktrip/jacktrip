@@ -111,6 +111,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
     mSimulatedDelayRel   = 0.0;
 
     mUseRtUdpPriority = false;
+    mPacketPoolSize = 1;      // experimental bufstrategy 3 pool size
 }
 
 //*******************************************************************************
@@ -323,6 +324,7 @@ void UdpHubListener::receivedClientInfo(QSslSocket *clientConnection)
     mJTWorkers->at(id)->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate, mSimulatedDelayRel);
     mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
     mJTWorkers->at(id)->setUseRtUdpPriority(mUseRtUdpPriority);
+    mJTWorkers->at(id)->setPacketPoolSize(mPacketPoolSize); // experimental bufstrategy 3 pool size
     cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
     mJTWorkers->at(id)->start();
 }
