@@ -1,13 +1,13 @@
 #!/bin/bash
 # bash script for jacktrip automation, Chris Chafe
-# startJacktripHubServer.sh <FPP>
+# startJacktripHubServer.sh <JACKTRIP> <FPP>
 
 JACKTRIP=$1
-
+FPP=$2
 
 echo starting $JACKTRIP server
 
-$( $JACKTRIP -S -p1 > /dev/null 2>&1 & )
+$(PIPEWIRE_LATENCY="$FPP/48000" $JACKTRIP -S -p1 --udprt  > /dev/null 2>&1 & )
 
 
 
