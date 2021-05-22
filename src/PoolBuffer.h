@@ -87,7 +87,7 @@ public:
         // INITIALIZE f and b
         vector<long double> f; // was double
         f.resize(x.size());
-        for ( int i = 0; i < x.size(); i++ ) f[i] = x[i];
+        for ( unsigned int i = 0; i < x.size(); i++ ) f[i] = x[i];
     //    vector<long double> f( ldx );
         vector<long double> b( f ); // was double
 
@@ -195,30 +195,20 @@ class PoolBuffer : public QThread, public RingBuffer
 
 public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen);
-//    JitterBuffer(int buf_samples, int qlen, int sample_rate, int strategy, int bcast_qlen,
-//                 int channels, int bit_res);
     virtual ~PoolBuffer() {}
-
-//    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen);
-//    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
-//    virtual void readBroadcastSlot(int8_t* ptrToReadSlot);
-
-//    virtual bool getStats(IOStat* stat, bool reset);
-
-//    void setJackTrip(JackTrip *jackTrip) { mJackTrip = jackTrip; }
     int8_t* getBufferPtr() { return mXfrBuffer; };
     void inputPacket ();
     void processPacket (bool glitch);
     int bytesToInt(const int8_t *buf);
 
-    bool pushPacket (const int8_t* buf, int len, int seq);
+    bool pushPacket (const int8_t* buf);
     // can hijack lostlen to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instread of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen) {
-        pushPacket (ptrToSlot, len, lostLen);
+        pushPacket (ptrToSlot);
         return(true);
     }
 
@@ -341,7 +331,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
         int lastMax;
     };
     void init(Stat* stat, int w);
-    void stats(Stat* stat, double msNow);
+    void stats(Stat* stat);
     Stat *mStat;
     bool mJACKstarted;
     bool mUDPstarted;

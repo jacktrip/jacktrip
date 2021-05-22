@@ -70,70 +70,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
       mQLen (packetPoolSize), // switched these two
       mRcvLag (qLen) // up from burgplc
 {
-//    int total_size = sample_rate * channels * bit_res * 2;  // 2 secs of audio
-//    int slot_size  = buf_samples * channels * bit_res;
-//    mSlotSize      = slot_size;
-//    mInSlotSize    = slot_size;
-//    if (0 < qlen) {
-//        mMaxLatency = qlen * slot_size;
-//        mAutoQueue  = 0;
-//    } else {
-//        // AutoQueue
-//        mMaxLatency = 3 * slot_size;
-//        mAutoQueue  = 1;
-//    }
-//    mTotalSize        = total_size;
-//    mBroadcastLatency = bcast_qlen * mSlotSize;
-//    mNumChannels      = channels;
-//    mAudioBitRes      = bit_res;
-//    mMinStepSize      = channels * bit_res;
-//    mFPP              = buf_samples;
-//    mSampleRate       = sample_rate;
-//    mActive           = false;
-
-//    // Defaults for zero strategy
-//    mUnderrunIncTolerance = -10 * mSlotSize;
-//    mCorrIncTolerance =
-//        100 * mMaxLatency;  // should be greater than mUnderrunIncTolerance
-//    mOverflowDecTolerance  = 100 * mMaxLatency;
-//    mWritePosition         = mMaxLatency;
-//    mStatUnit              = mSlotSize;
-//    mLevelDownRate         = std::min(256, mFPP) / (5.0 * sample_rate) * mSlotSize;
-//    mOverflowDropStep      = mMaxLatency / 2;
-//    mLevelCur              = mMaxLatency;
-//    mLevel                 = mLevelCur;
-//    mMinLevelThreshold     = 1.9 * mSlotSize;
-//    mBroadcastPosition     = 0;
-//    mBroadcastPositionCorr = 0.0;
-//    mLastCorrCounter       = 0;
-//    mLastCorrDirection     = 0;
-
-//    switch (strategy) {
-//    case 1:
-//        mOverflowDropStep = mSlotSize;
-//        break;
-//    case 2:
-//        mUnderrunIncTolerance = 1.1 * mSlotSize;
-//        mCorrIncTolerance =
-//            1.9 * mSlotSize;  // should be greater than mUnderrunIncTolerance
-//        mOverflowDecTolerance = 0.1 * mSlotSize;
-//        mOverflowDropStep     = mSlotSize;
-//        break;
-//    }
-
-//    mRingBuffer = new int8_t[mTotalSize];
-//    std::memset(mRingBuffer, 0, mTotalSize);
-
-//    mAutoQueueCorr = 2 * mSlotSize;
-//    if (0 > qlen) {
-//        mAutoQFactor = 1.0 / -qlen;
-//    } else {
-//        mAutoQFactor = 1.0 / 500;
-//    }
-//    mAutoQRate      = mSlotSize * 0.5;
-//    mAutoQRateMin   = mSlotSize * 0.0005;
-//    mAutoQRateDecay = 1.0 - std::min(mFPP * 1.2e-6, 0.0005);
-    {
         switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
         case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
             break;
@@ -232,7 +168,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mTimer2->start();
         mTimer3->start();
         start();
-    }
 }
 
 //*******************************************************************************
@@ -252,7 +187,7 @@ void PoolBuffer::init(Stat *stat, int w)
 }
 
 //*******************************************************************************
-void PoolBuffer::stats(Stat *stat, double msNow)
+void PoolBuffer::stats(Stat *stat)
 { // stdDev based on mean of last windowful
     if (stat->ctr!=stat->window) {
         if (mDelta<stat->min) stat->min = mDelta;
@@ -347,7 +282,7 @@ void PoolBuffer::plot()
     }
 
     if(false) { // std dev warning
-        stats(mStat, elapsed0);
+        stats(mStat);
         if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
             qDebug() << "STANDARD DEVIATION ALERT";
             mWarnedHighStdDev = ALERTRESET;
@@ -365,18 +300,18 @@ void PoolBuffer::plot()
 }
 
 //*******************************************************************************
-bool PoolBuffer::pushPacket (const int8_t *buf, int len, int seq) {
+bool PoolBuffer::pushPacket (const int8_t *buf) {
     QMutexLocker locker(&mMutex);
     if (!mUDPstarted) {
         mUDPbuf=buf;
         mUDPstarted = true;
     }
-    mIncomingSeq = seq % TWOTOTHETENTH;
-    mIncomingCntWraps = seq / TWOTOTHETENTH;
-    int nextSeq = mLastIncomingSeq2+1;
-    nextSeq %= TWOTOTHETENTH;
-    if (mIncomingSeq != nextSeq) qDebug() << "LOST PACKET" << mIncomingSeq << nextSeq;
-    mLastIncomingSeq2 = mIncomingSeq;
+//    mIncomingSeq = seq % TWOTOTHETENTH;
+//    mIncomingCntWraps = seq / TWOTOTHETENTH;
+//    int nextSeq = mLastIncomingSeq2+1;
+//    nextSeq %= TWOTOTHETENTH;
+////    if (mIncomingSeq != nextSeq) qDebug() << "LOST PACKET" << mIncomingSeq << nextSeq;
+//    mLastIncomingSeq2 = mIncomingSeq;
     if (!mIncomingCnt) qDebug() << "push";
     mIncomingCnt++;
     if (true){
@@ -447,12 +382,12 @@ void PoolBuffer::inputPacket ()
         INCh0(bitsToSample(0, s), s);
         INCh1(bitsToSample(1, s), s);
     }
-    //                for PACKETSAMP {
-    //                    INCh0(0.3*sin(mPhasor[0]), s);
-    //                    INCh1(0.3*sin(mPhasor[1]), s);
-    //                    mPhasor[0] += 0.1;
-    //                    mPhasor[1] += 0.11;
-    //                }
+//                    for PACKETSAMP {
+//                        INCh0(0.3*sin(mPhasor[0]), s);
+//                        INCh1(0.3*sin(mPhasor[1]), s);
+//                        mPhasor[0] += 0.1;
+//                        mPhasor[1] += 0.11;
+//                    }
     if(mPacketCnt) {
         if(RUN > 2) {
 
