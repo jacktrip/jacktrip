@@ -147,7 +147,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mDelta = 0;
         mLastIncomingCnt = 0;
         mStat = new Stat;
-        init(mStat, STATWINDOW); // fast ticks
+//        init(mStat, STATWINDOW); // fast ticks
         mStat->acc = 0;
         mStat->var = 0;
         mStat->min = 999999999;
@@ -171,133 +171,133 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
 }
 
 //*******************************************************************************
-void PoolBuffer::init(Stat *stat, int w)
-{
-    stat->mean = 0.0;
-    stat->var = 0.0;
-    stat->stdDev = 0.0;
-    stat->window = w;
-    stat->acc = 0;
-    stat->min = 0;
-    stat->max = 0;
-    stat->ctr = 0;
-    stat->lastMean = 0.0;
-    stat->lastMin = 0;
-    stat->lastMax = 0;
-}
+//void PoolBuffer::init(Stat *stat, int w)
+//{
+//    stat->mean = 0.0;
+//    stat->var = 0.0;
+//    stat->stdDev = 0.0;
+//    stat->window = w;
+//    stat->acc = 0;
+//    stat->min = 0;
+//    stat->max = 0;
+//    stat->ctr = 0;
+//    stat->lastMean = 0.0;
+//    stat->lastMin = 0;
+//    stat->lastMax = 0;
+//}
 
 //*******************************************************************************
-void PoolBuffer::stats(Stat *stat)
-{ // stdDev based on mean of last windowful
-    if (stat->ctr!=stat->window) {
-        if (mDelta<stat->min) stat->min = mDelta;
-        else if (mDelta>stat->max) stat->max = mDelta;
-        stat->acc += mDelta;
-        double tmp = mDelta - stat->mean; // last window
-        stat->var += (tmp*tmp);
-        stat->ctr++;
-    } else {
-        stat->mean = (double)stat->acc / (double) stat->window;
-        stat->var /= stat->window;
-        stat->stdDev = sqrt(stat->var);
-        if (stat->acc) {
-            //                        QString out;
-            //                        out += (QString::number(msNow) + QString("\t"));
-            //                        out += (QString::number(stat->mean) + QString("\t"));
-            //                        out += (QString::number(stat->min) + QString("\t"));
-            //                        out += (QString::number(stat->max) + QString("\t"));
-            //                        out += (QString::number(stat->stdDev) + QString("\t"));
-            //                        emit printStats(out);
-            // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
-            // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
-        }
-        stat->lastMean = stat->mean;
-        stat->lastMin = stat->min;
-        stat->lastMax = stat->max;
-        stat->acc = 0;
-        stat->var = 0;
-        stat->min = 999999999;
-        stat->max = -stat->max;
-        stat->ctr = 0;
-    }
-}
+//void PoolBuffer::stats(Stat *stat)
+//{ // stdDev based on mean of last windowful
+//    if (stat->ctr!=stat->window) {
+//        if (mDelta<stat->min) stat->min = mDelta;
+//        else if (mDelta>stat->max) stat->max = mDelta;
+//        stat->acc += mDelta;
+//        double tmp = mDelta - stat->mean; // last window
+//        stat->var += (tmp*tmp);
+//        stat->ctr++;
+//    } else {
+//        stat->mean = (double)stat->acc / (double) stat->window;
+//        stat->var /= stat->window;
+//        stat->stdDev = sqrt(stat->var);
+//        if (stat->acc) {
+//            //                        QString out;
+//            //                        out += (QString::number(msNow) + QString("\t"));
+//            //                        out += (QString::number(stat->mean) + QString("\t"));
+//            //                        out += (QString::number(stat->min) + QString("\t"));
+//            //                        out += (QString::number(stat->max) + QString("\t"));
+//            //                        out += (QString::number(stat->stdDev) + QString("\t"));
+//            //                        emit printStats(out);
+//            // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
+//            // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
+//        }
+//        stat->lastMean = stat->mean;
+//        stat->lastMin = stat->min;
+//        stat->lastMax = stat->max;
+//        stat->acc = 0;
+//        stat->var = 0;
+//        stat->min = 999999999;
+//        stat->max = -stat->max;
+//        stat->ctr = 0;
+//    }
+//}
 
 //*******************************************************************************
-void PoolBuffer::run()
-{
-    setRealtimeProcessPriority(); // experimental, but setRealtimeProcessPriority2 and Nils' changes
-    while (!mStopped) {
-        plot();
-        usleep(15); // = 17 usec
-    }
-}
+//void PoolBuffer::run()
+//{
+//    setRealtimeProcessPriority(); // experimental, but setRealtimeProcessPriority2 and Nils' changes
+//    while (!mStopped) {
+//        plot();
+//        usleep(15); // = 17 usec
+//    }
+//}
 
 //*******************************************************************************
-void PoolBuffer::plotRow(double now, QElapsedTimer *timer, int id)
-{
-    double elapsed = (double)timer->nsecsElapsed() / 1000000.0;
-    timer->start();
-    QString out;
-    out += (QString::number(now) + QString("\t"));
-    out += (QString::number(elapsed) + QString("\t"));
-    out += (QString::number(id) + QString("\t")); // blk
-    //    out += (QString::number(mDelta) + QString("\t"));
-    emit print(out);
-    // set cbrange [0:3]
-    //    plot 'iostat.log' u  1:2:3 with p ps 0.75 pt 5 palette, 'iostat.log' u  1:($4/1.0) w l
-}
+//void PoolBuffer::plotRow(double now, QElapsedTimer *timer, int id)
+//{
+//    double elapsed = (double)timer->nsecsElapsed() / 1000000.0;
+//    timer->start();
+//    QString out;
+//    out += (QString::number(now) + QString("\t"));
+//    out += (QString::number(elapsed) + QString("\t"));
+//    out += (QString::number(id) + QString("\t")); // blk
+//    //    out += (QString::number(mDelta) + QString("\t"));
+////    emit print(out);
+//    // set cbrange [0:3]
+//    //    plot 'iostat.log' u  1:2:3 with p ps 0.75 pt 5 palette, 'iostat.log' u  1:($4/1.0) w l
+//}
 
 //*******************************************************************************
-void PoolBuffer::plot()
-{
-    QMutexLocker locker(&mMutex);
-    if (!mPlotStarted && (mIncomingCnt > 2000)) {
-        mIncomingCnt = mOutgoingCnt;
-        mPlotStarted = true;
-    }
-    if (!mPlotStarted) return;
+//void PoolBuffer::plot()
+//{
+//    QMutexLocker locker(&mMutex);
+//    if (!mPlotStarted && (mIncomingCnt > 2000)) {
+//        mIncomingCnt = mOutgoingCnt;
+//        mPlotStarted = true;
+//    }
+//    if (!mPlotStarted) return;
 
-    double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
-    mDelta = mIncomingCnt - mOutgoingCnt;
+//    double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
+//    mDelta = mIncomingCnt - mOutgoingCnt;
 
-    bool incomingChange = false;
-    bool outgoingChange = false;
-    if (mLastIncomingCnt != mIncomingCnt) {
-        mLastIncomingCnt = mIncomingCnt;
-        incomingChange = true;
-    }
-    if (mLastOutgoingCnt != mOutgoingCnt) {
-        mLastOutgoingCnt = mOutgoingCnt;
-        outgoingChange = true;
-    }
+//    bool incomingChange = false;
+//    bool outgoingChange = false;
+//    if (mLastIncomingCnt != mIncomingCnt) {
+//        mLastIncomingCnt = mIncomingCnt;
+//        incomingChange = true;
+//    }
+//    if (mLastOutgoingCnt != mOutgoingCnt) {
+//        mLastOutgoingCnt = mOutgoingCnt;
+//        outgoingChange = true;
+//    }
 
-    if(false) { // plot state
-        plotRow(elapsed0, mTimer3, 0);
-        if(incomingChange) {
-            plotRow(elapsed0, mTimer1, 1);
-        }
-        if(outgoingChange) {
-            plotRow(elapsed0, mTimer2, 2);
-        }
-    }
+//    if(false) { // plot state
+//        plotRow(elapsed0, mTimer3, 0);
+//        if(incomingChange) {
+//            plotRow(elapsed0, mTimer1, 1);
+//        }
+//        if(outgoingChange) {
+//            plotRow(elapsed0, mTimer2, 2);
+//        }
+//    }
 
-    if(false) { // std dev warning
-        stats(mStat);
-        if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
-            qDebug() << "STANDARD DEVIATION ALERT";
-            mWarnedHighStdDev = ALERTRESET;
-        } else if (mWarnedHighStdDev) mWarnedHighStdDev--;
-        if(false) { // plot stats
-            QString out;
-            out += (QString::number(elapsed0) + QString("\t"));
-            out += (QString::number(mStat->lastMean) + QString("\t"));
-            out += (QString::number(mStat->lastMin) + QString("\t"));
-            out += (QString::number(mStat->lastMax) + QString("\t"));
-            out += (QString::number(mStat->stdDev) + QString("\t"));
-            emit printStats(out);
-        }
-    }
-}
+//    if(false) { // std dev warning
+//        stats(mStat);
+//        if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
+//            qDebug() << "STANDARD DEVIATION ALERT";
+//            mWarnedHighStdDev = ALERTRESET;
+//        } else if (mWarnedHighStdDev) mWarnedHighStdDev--;
+//        if(false) { // plot stats
+//            QString out;
+//            out += (QString::number(elapsed0) + QString("\t"));
+//            out += (QString::number(mStat->lastMean) + QString("\t"));
+//            out += (QString::number(mStat->lastMin) + QString("\t"));
+//            out += (QString::number(mStat->lastMax) + QString("\t"));
+//            out += (QString::number(mStat->stdDev) + QString("\t"));
+////            emit printStats(out);
+//        }
+//    }
+//}
 
 //*******************************************************************************
 bool PoolBuffer::pushPacket (const int8_t *buf) {

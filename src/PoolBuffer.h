@@ -40,7 +40,7 @@
 
 #include "RingBuffer.h"
 //#include "JackTrip.h"
-#include <QObject>
+//#include <QObject>
 #include "AudioInterface.h"
 #include <QElapsedTimer>
 #include <QDebug>
@@ -189,9 +189,9 @@ public:
     }
 };
 
-class PoolBuffer : public QThread, public RingBuffer
+class PoolBuffer : public RingBuffer
 {
-    Q_OBJECT;
+//    Q_OBJECT;
 
 public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen);
@@ -213,20 +213,16 @@ public:
     }
 
     void pullPacket (int8_t* buf);
-    // works the same as RingBuffer and JitterBuffer
+
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) {
         pullPacket (ptrToReadSlot);
     }
 
-    virtual void stop () {
-        qDebug() << "hi governator--stopping" ;
-                    mStopped = true;
-                    qDebug() << "hi governator--stopped" ;
-
-                         };
-
-   protected:
-//    void processPacketLoss(int lostLen);
+//    virtual void stop () {
+//        qDebug() << "hi governator--stopping" ;
+//                    mStopped = true;
+//                    qDebug() << "hi governator--stopped" ;
+//                         };
 
    protected:
 //    int mMaxLatency;
@@ -235,29 +231,7 @@ public:
     int mMinStepSize;
     int mFPP;
     int mSampleRate;
-//    int mInSlotSize;
-//    bool mActive;
-//    uint32_t mBroadcastLatency;
-//    uint32_t mBroadcastPosition;
-//    double mBroadcastPositionCorr;
 
-//    double mUnderrunIncTolerance;
-//    double mCorrIncTolerance;
-//    double mOverflowDecTolerance;
-//    int mOverflowDropStep;
-//    uint32_t mLastCorrCounter;
-//    int mLastCorrDirection;
-//    double mMinLevelThreshold;
-//    double lastCorrFactor() const { return 500.0 / std::max(500U, mLastCorrCounter); }
-
-//    int mAutoQueue;
-//    double mAutoQueueCorr;
-//    double mAutoQFactor;
-//    double mAutoQRate;
-//    double mAutoQRateMin;
-//    double mAutoQRateDecay;
-
-//    JackTrip *mJackTrip;
     int mQLen;
     int mHist;
     int mTotalSize;  ///< Total size of mXfrBuffer
@@ -302,8 +276,8 @@ void sampleToBits(sample_t sample, int ch, int frame);
     QElapsedTimer *mTimer3;
     double mElapsedAcc;
     int mExpectedOutgoingSeq;
-    virtual void run();
-    void plot();
+//    virtual void run();
+//    void plot();
     const int8_t*  mUDPbuf;
     int mLastOutgoingCnt;
     int8_t*  mJACKbuf;
@@ -330,19 +304,19 @@ void sampleToBits(sample_t sample, int ch, int frame);
         int lastMin;
         int lastMax;
     };
-    void init(Stat* stat, int w);
-    void stats(Stat* stat);
+//    void init(Stat* stat, int w);
+//    void stats(Stat* stat);
     Stat *mStat;
     bool mJACKstarted;
     bool mUDPstarted;
     int mWarnedHighStdDev;
     bool mPlotStarted;
     vector<int> mIndexPool;
-    void plotRow(double now, QElapsedTimer *timer, int id);
+//    void plotRow(double now, QElapsedTimer *timer, int id);
     int mRcvLag;
-signals:
-    void print(QString);
-    void printStats(QString);
+//signals:
+//    void print(QString);
+//    void printStats(QString);
 };
 
 #endif  //__POOLUFFER_H__
