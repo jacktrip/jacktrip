@@ -400,7 +400,6 @@ int UdpHubListener::checkAuthAndReadPort (QSslSocket *clientConnection, QString 
     char *port_buf = new char[size];
     clientConnection->read(port_buf, size);
     udp_port = qFromLittleEndian<qint32>(port_buf);
-    delete[] port_buf;
     
     // Then our jack client name.
     char name_buf[gMaxRemoteNameLength];
@@ -410,6 +409,7 @@ int UdpHubListener::checkAuthAndReadPort (QSslSocket *clientConnection, QString 
     // We can discard our username and password length since we already have them.
     clientConnection->read(port_buf, size);
     clientConnection->read(port_buf, size);
+    delete[] port_buf;
     
     // And then get our username and password.
     QString username, password;
