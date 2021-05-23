@@ -42,10 +42,12 @@ INCLUDEPATH += faust-src-lair/stk
 # wair needs stk, can be had from linux this way
 # INCLUDEPATH+=/usr/include/stk
 # LIBS += -L/usr/local/lib -ljack -lstk -lm
-  LIBS += -L/usr/local/lib -ljack -lm
+  LIBS += -L/usr/local/lib -lm
   nojack {
     message(Building NONJACK)
-    LIBS -= -ljack
+  } else {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += jack
   }
 }
 

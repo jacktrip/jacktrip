@@ -1381,7 +1381,7 @@ class APIUI
     {
         std::map<const char*, const char*> res;
         std::map<std::string, std::string> metadata = fMetaData[p];
-        for (auto it : metadata) { res[it.first.c_str()] = it.second.c_str(); }
+        for (const auto& it : metadata) { res[it.first.c_str()] = it.second.c_str(); }
         return res;
     }
 

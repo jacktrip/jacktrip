@@ -8,41 +8,33 @@ directory of the project.
 ## Dependencies
 - g++
 - Qt 5.14.2
-- Jack
 
-Note: rtaudio is no longer a dependency
+Optional:
+- Jack (preferred) or RtAudio (not fully functional)
+- help2man for generating the manpage
 
 ### Fedora
 ```sh
 dnf install qt5-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
-dnf install jack-audio-connection-kit-devel alsa-lib-devel git
-dnf install iperf qjackctl audacity
+dnf install "pkgconfig(jack)" alsa-lib-devel git help2man
+dnf install qjackctl
 ```
 
 Clone the git repo and run `./build` in the src directory or use QtCreator to compile
 
 ### Ubuntu and Debian/Raspbian
 ```sh
-apt install --no-install-recommends build-essential librtaudio-dev qt5-default autoconf automake libtool make libjack-jackd2-dev git
-apt install qjackctl audacity iperf
+apt install --no-install-recommends build-essential librtaudio-dev qt5-default autoconf automake libtool make libjack-jackd2-dev git help2man
+apt install qjackctl
 ```
 
 Clone the git repo and run `./build` in the src directory or use QtCreator to compile
 
 ### Other Linux distributions
 
-- the latest Qt
-- jack-audio-connection-kit-devel
-
-Clone the git repo and run `./build` in the src directory or use QtCreator to compile
-
-If you are using yum you can just install them (as root) with:
-```sh
-yum install jack-audio-connection-kit-devel
-```
-and install qt from the qt site.
+Install the dependencies listed above. Clone the git repo and run `./build` in the src directory or use QtCreator to compile.
 
 ## Build
 You can compile using the build script or QtCreator.
