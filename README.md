@@ -3,7 +3,7 @@ It supports any number of channels (as many as the computer/network can handle) 
 
 You can use it between any combination of machines e.g., one end using Linux can connect to another using Mac OSX.
 
-QJackTrip has now been merged with the original code to provide an optional graphical user interface for the program. If run with no arguments, the program will default to GUI mode. If arguments are supplied or the program is run as "jacktrip" (either by using a symlink or by renaming the binary) then it will run on the terminal.
+QJackTrip has now been merged with the original code to provide an optional graphical user interface for the program. If run with no arguments, the program will default to GUI mode. If arguments are supplied then it will run on the terminal.
 
 # Installation
 ## Linux ##
