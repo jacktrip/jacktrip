@@ -542,7 +542,7 @@ void QJackTrip::start()
                 resolution = AudioInterface::BIT32;
             }
             
-            m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP, m_ui->channelSpinBox->value(),
+            m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP, m_ui->channelSpinBox->value(), m_ui->channelSpinBox->value(),
 #ifdef WAIR // wair
                                           0,
 #endif // endwhere
