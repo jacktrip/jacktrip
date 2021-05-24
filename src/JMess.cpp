@@ -685,7 +685,7 @@ void JMess::connectPANbroadcast(int /*nChans*/)
                 QString left = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_FREEVERBSTEREO) +
                         HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch-1);
 
-                if ( QString(IPS[i]).contains(QString("98.42.59")) )
+                if ( QString(IPS[i]).contains(QString("98.42.62")) )
          left = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER_fvBcast) +
                                  HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT + QString::number(ch-1);
 
