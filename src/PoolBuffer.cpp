@@ -358,10 +358,10 @@ void PoolBuffer::pullPacket (int8_t* buf) {
             }
         }
         if (targetIndex == POOLSIZE) {
-            qDebug() << " ";
-            qDebug() << "!available" << target;
-            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
-            qDebug() << " ";
+//            qDebug() << " ";
+//            qDebug() << "!available" << target;
+//            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
+//            qDebug() << " ";
             targetIndex = oldestIndex;
             mIndexPool[targetIndex] = -1;
             glitch = true;
