@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=JackTrip
+Comment=Network Music Performance over the Internet
+Exec=jacktrip
+Icon=jacktrip
+Terminal=false

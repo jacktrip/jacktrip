@@ -109,6 +109,10 @@ if host_machine.system() == 'darwin'
 	add_languages('objcpp')
 endif
 
+if host_machine.system() == 'linux'
+	install_data('linux/jacktrip.desktop', install_dir: get_option('datadir') / 'applications')
+endif
+
 deps += dependency('threads')
 if jack_dep.found()
 src += 	['src/JackAudioInterface.cpp',
