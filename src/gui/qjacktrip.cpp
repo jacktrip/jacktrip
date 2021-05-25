@@ -302,8 +302,7 @@ void QJackTrip::chooseRunType(int index)
     }
     
     if (index == HUB_SERVER) {
-        m_ui->channelSpinBox->setVisible(false);
-        m_ui->channelLabel->setVisible(false);
+        m_ui->channelGroupBox->setVisible(false);
         m_ui->timeoutCheckBox->setVisible(false);
         m_ui->autoPatchComboBox->setVisible(true);
         m_ui->autoPatchLabel->setVisible(true);
@@ -315,8 +314,7 @@ void QJackTrip::chooseRunType(int index)
         m_ui->autoPatchComboBox->setVisible(false);
         m_ui->autoPatchLabel->setVisible(false);
         m_ui->requireAuthGroupBox->setVisible(false);
-        m_ui->channelSpinBox->setVisible(true);
-        m_ui->channelLabel->setVisible(true);
+        m_ui->channelGroupBox->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
         advancedOptionsForHubServer(false);
         if (m_ui->optionsTabWidget->count() < 4) {
@@ -542,7 +540,7 @@ void QJackTrip::start()
                 resolution = AudioInterface::BIT32;
             }
             
-            m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP, m_ui->channelSpinBox->value(),
+            m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP, m_ui->channelSendSpinBox->value(), m_ui->channelRecvSpinBox->value(),
 #ifdef WAIR // wair
                                           0,
 #endif // endwhere
@@ -603,7 +601,7 @@ void QJackTrip::start()
             }
             
             // Append any plugins
-            appendPlugins(m_jackTrip.data(), m_ui->channelSpinBox->value());
+            appendPlugins(m_jackTrip.data(), m_ui->channelSendSpinBox->value(), m_ui->channelRecvSpinBox->value());
             
             QObject::connect(m_jackTrip.data(), &JackTrip::signalProcessesStopped, this, &QJackTrip::processFinished, 
                              Qt::QueuedConnection);
@@ -716,7 +714,18 @@ void QJackTrip::loadSettings()
     QSettings settings("psi-borg", "QJackTrip");
 #endif
     m_ui->typeComboBox->setCurrentIndex(settings.value("RunMode", 0).toInt());
-    m_ui->channelSpinBox->setValue(settings.value("Channels", gDefaultNumInChannels).toInt());
+    
+    //Migrate to separate send and receive channel numbers.
+    int oldChannelSetting = settings.value("Channels", -1).toInt();
+    if (oldChannelSetting != -1) {
+        m_ui->channelSendSpinBox->setValue(oldChannelSetting);
+        m_ui->channelRecvSpinBox->setValue(oldChannelSetting);
+        settings.remove("Channels");
+    } else {
+        m_ui->channelSendSpinBox->setValue(settings.value("ChannelsSend", gDefaultNumInChannels).toInt());
+        m_ui->channelRecvSpinBox->setValue(settings.value("ChannelsRecv", gDefaultNumOutChannels).toInt());
+    }
+    
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
@@ -808,7 +817,8 @@ void QJackTrip::saveSettings()
 #endif
     settings.setValue("RunMode", m_ui->typeComboBox->currentIndex());
     settings.setValue("LastAddress", m_ui->addressComboBox->currentText());
-    settings.setValue("Channels", m_ui->channelSpinBox->value());
+    settings.setValue("ChannelsSend", m_ui->channelSendSpinBox->value());
+    settings.setValue("ChannelsRecv", m_ui->channelRecvSpinBox->value());
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
     settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
@@ -886,7 +896,7 @@ void QJackTrip::setupStatsWindow()
     m_messageDialog->startMonitoring();
 }
 
-void QJackTrip::appendPlugins(JackTrip *jackTrip, int numChannels)
+void QJackTrip::appendPlugins(JackTrip *jackTrip, int numSendChannels, int numRecvChannels)
 {
     if (!jackTrip) {
         return;
@@ -895,36 +905,36 @@ void QJackTrip::appendPlugins(JackTrip *jackTrip, int numChannels)
     //These effects are currently deleted by the AudioInterface of jacktrip.
     //May need to change this code if we move to smart pointers.
     if (m_ui->outCompressorCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginToNetwork(new Compressor(numChannels, false, CompressorPresets::voice));
+        jackTrip->appendProcessPluginToNetwork(new Compressor(numSendChannels, false, CompressorPresets::voice));
     }
     if (m_ui->inCompressorCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginFromNetwork(new Compressor(numChannels, false, CompressorPresets::voice));
+        jackTrip->appendProcessPluginFromNetwork(new Compressor(numRecvChannels, false, CompressorPresets::voice));
     }
     
     if (m_ui->outZitarevCheckBox->isChecked()) {
         qreal wetness = m_ui->outZitarevWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginToNetwork(new Reverb(numChannels, numChannels, 1.0 + wetness));
+        jackTrip->appendProcessPluginToNetwork(new Reverb(numSendChannels, numSendChannels, 1.0 + wetness));
     }
     if (m_ui->inZitarevCheckBox->isChecked()) {
         qreal wetness = m_ui->inZitarevWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginFromNetwork(new Reverb(numChannels, numChannels, 1.0 + wetness));
+        jackTrip->appendProcessPluginFromNetwork(new Reverb(numRecvChannels, numRecvChannels, 1.0 + wetness));
     }
     
     if (m_ui->outFreeverbCheckBox->isChecked()) {
         qreal wetness = m_ui->outFreeverbWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginToNetwork(new Reverb(numChannels, numChannels, wetness));
+        jackTrip->appendProcessPluginToNetwork(new Reverb(numSendChannels, numSendChannels, wetness));
     }
     if (m_ui->inFreeverbCheckBox->isChecked()) {
         qreal wetness = m_ui->inFreeverbWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginFromNetwork(new Reverb(numChannels, numChannels, wetness));
+        jackTrip->appendProcessPluginFromNetwork(new Reverb(numRecvChannels, numRecvChannels, wetness));
     }
     
     //Limiters go last in the plugin sequence.
     if (m_ui->inLimiterCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginFromNetwork(new Limiter(numChannels, 1));
+        jackTrip->appendProcessPluginFromNetwork(new Limiter(numSendChannels, 1));
     }
     if (m_ui->outLimiterCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginToNetwork(new Limiter(numChannels, m_ui->outClientsSpinBox->value()));
+        jackTrip->appendProcessPluginToNetwork(new Limiter(numRecvChannels, m_ui->outClientsSpinBox->value()));
     }
 }
 
@@ -956,8 +966,12 @@ QString QJackTrip::commandLineFromCurrentOptions()
             commandLine.append(QString(" -p %1").arg(hubConnectionMode));
         }
     } else {
-        if (m_ui->channelSpinBox->value() != gDefaultNumInChannels) {
-            commandLine.append(QString(" -n %1").arg(m_ui->channelSpinBox->value()));
+        if (m_ui->channelSendSpinBox->value() != gDefaultNumInChannels || m_ui->channelRecvSpinBox->value() != gDefaultNumOutChannels) {
+            if (m_ui->channelSendSpinBox->value() == m_ui->channelRecvSpinBox->value()) {
+                commandLine.append(QString(" -n %1").arg(m_ui->channelRecvSpinBox->value()));
+            } else {
+                commandLine.append(QString(" --receivechannels %1 --sendchannels %2").arg(m_ui->channelRecvSpinBox->value()).arg(m_ui->channelSendSpinBox->value()));
+            }
         }
         if (m_ui->timeoutCheckBox->isChecked()) {
             commandLine.append(" -t");
