@@ -85,10 +85,6 @@ void RtAudioInterface::setup()
         }
     }
 
-    // use default devices
-    // deviceId_input  = mJackTrip->getDeviceID();
-    // deviceId_output = mJackTrip->getDeviceID();
-
     cout << "DEFAULT INPUT DEVICE  : " << endl;
     printDeviceInfo(deviceId_input);
     cout << gPrintSeparator << endl;
