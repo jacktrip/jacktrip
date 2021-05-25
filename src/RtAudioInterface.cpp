@@ -72,7 +72,8 @@ void RtAudioInterface::setup()
 
     uint32_t deviceId_input{0};
     uint32_t deviceId_output{0};
-
+    RtAudio::DeviceInfo dev_info_input;
+    RtAudio::DeviceInfo dev_info_output;
     if (unsigned int n_devices = mRtAudio->getDeviceCount(); n_devices < 1) {
         cout << "No audio devices found!" << endl;
         std::exit(0);
@@ -83,6 +84,13 @@ void RtAudioInterface::setup()
             if (info.isDefaultInput == true) { deviceId_input = i; }
             if (info.isDefaultOutput == true) { deviceId_output = i; }
         }
+    }
+
+    if (getNumInputChannels() > dev_info_input.inputChannels) {
+        setNumInputChannels(dev_info_input.inputChannels);
+    }
+    if (getNumOutputChannels() > dev_info_output.outputChannels) {
+        setNumOutputChannels(dev_info_output.outputChannels);
     }
 
     cout << "DEFAULT INPUT DEVICE  : " << endl;
