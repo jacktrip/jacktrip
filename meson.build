@@ -111,6 +111,7 @@ endif
 
 if host_machine.system() == 'linux'
 	install_data('linux/jacktrip.desktop', install_dir: get_option('datadir') / 'applications')
+	install_data('linux/jacktrip.svg', install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps')
 endif
 
 deps += dependency('threads')
