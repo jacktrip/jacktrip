@@ -70,8 +70,8 @@ void RtAudioInterface::setup()
     cout << gPrintSeparator << endl;
     mRtAudio = new RtAudio;
 
-    uint32_t deviceId_input;
-    uint32_t deviceId_output;
+    uint32_t deviceId_input{0};
+    uint32_t deviceId_output{0};
 
     if (unsigned int n_devices = mRtAudio->getDeviceCount(); n_devices < 1) {
         cout << "No audio devices found!" << endl;
