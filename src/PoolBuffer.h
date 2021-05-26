@@ -106,9 +106,9 @@ public:
         //    $Dk -= $f[0] ** 2 + $B[$#x] ** 2;
 
     //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-    //    if ( classify(Dk) )
-    //    { qDebug() << pCnt << "init";
-    //    }
+//        if ( classify(Dk) )
+//        { qDebug() << pCnt << "init";
+//        }
 
         // BURG RECURSION
         for ( size_t k = 0; k < m; k++ )
@@ -256,7 +256,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     bool mLastWasGlitch;
     vector<double> mPhasor;
     int mIncomingSeq;
-    int mOutgoingCnt;
+    unsigned int mOutgoingCnt;
     int mLastDelta;
     int mLastIncomingSeq;
     int mOutgoingCntWraps;
@@ -282,7 +282,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     int mLastOutgoingCnt;
     int8_t*  mJACKbuf;
     int mLastIncomingSeq2;
-    int mIncomingCnt;
+    unsigned int mIncomingCnt;
     int mIncomingCntWraps;
     vector<int> mIncomingCntWrap;
     double mLastPush;
@@ -314,6 +314,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<int> mIndexPool;
 //    void plotRow(double now, QElapsedTimer *timer, int id);
     int mRcvLag;
+    int mGlitchCnt;
 //signals:
 //    void print(QString);
 //    void printStats(QString);

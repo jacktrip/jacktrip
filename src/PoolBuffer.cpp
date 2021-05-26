@@ -168,6 +168,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mTimer2->start();
         mTimer3->start();
 //        start();
+        mGlitchCnt = 0;
 }
 
 //*******************************************************************************
@@ -312,11 +313,17 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
 //    nextSeq %= TWOTOTHETENTH;
 ////    if (mIncomingSeq != nextSeq) qDebug() << "LOST PACKET" << mIncomingSeq << nextSeq;
 //    mLastIncomingSeq2 = mIncomingSeq;
-    if (!mIncomingCnt) qDebug() << "push";
+
+//    if (!mIncomingCnt) qDebug() << "push";
+
     mIncomingCnt++;
-    if (!mPlotStarted && (mIncomingCnt > 2000)) {
-        mIncomingCnt = mOutgoingCnt;
+    if (!mPlotStarted && (mIncomingCnt > 400)) {
+//        mIncomingCnt = mOutgoingCnt;
         mPlotStarted = true;
+    }
+    if (mGlitchCnt > 400) {
+        mIncomingCnt = mOutgoingCnt;
+        mGlitchCnt = 0;
     }
     if (true){
         int oldest = 99999999;
@@ -341,7 +348,8 @@ void PoolBuffer::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex);
     mJACKstarted = true;
     mJACKbuf=buf;
-    mOutgoingCnt++; // will saturate
+    mOutgoingCnt++; // will saturate in 33 days at FPP 32
+//    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     bool glitch = false;
     if (true){
         int target = mOutgoingCnt - mRcvLag;
@@ -365,6 +373,8 @@ void PoolBuffer::pullPacket (int8_t* buf) {
             targetIndex = oldestIndex;
             mIndexPool[targetIndex] = -1;
             glitch = true;
+            mGlitchCnt++;
+//            QThread::usleep(450); force lateness for debugging
         } else {
             mIndexPool[targetIndex] = 0;
             memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
@@ -372,6 +382,8 @@ void PoolBuffer::pullPacket (int8_t* buf) {
         if (mPlotStarted) {
             inputPacket();
             processPacket(glitch);
+        } else {
+            memcpy(mXfrBuffer, mZeros, mBytes);
         }
         memcpy(mJACKbuf, mXfrBuffer, mBytes);
     }
@@ -406,6 +418,7 @@ void PoolBuffer::inputPacket ()
 //*******************************************************************************
 void PoolBuffer::processPacket (bool glitch)
 {
+//    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
     if(mPacketCnt) {
         if(RUN > 2) {
             //            if (glitch) qDebug() << "glitch";
