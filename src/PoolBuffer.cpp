@@ -36,6 +36,18 @@
  */
 
 // EXPERIMENTAL for testing in JackTrip v1.4.0
+// tested against server running main -p1
+// 128 server  --udprt
+// this client --udprt --bufstrategy 3 --pktpool 2 -q2
+
+// 32 server --udprt -q20
+// --udprt --bufstrategy 3 --pktpool 3 -q2
+// --udprt --bufstrategy 3 --pktpool 4000 -q3000
+
+// 16 server --udprt -q40
+//  --pktpool 4 -q3
+
+
 
 #include "PoolBuffer.h"
 #include "jacktrip_globals.h"
@@ -74,6 +86,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         double histFloat = (mHist/(double)mFPP); // packets
         mHist = (int) histFloat;
         if (!mHist) mHist++;
+         else if (mHist > 6) mHist = 6;
         qDebug() << "mHist =" << mHist << "@" << mFPP;
         mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
         mXfrBuffer   = new int8_t[mTotalSize];
@@ -323,7 +336,7 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
         qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt
                  << elapsed0/1000.0 << "\n";
     }
-    if (mGlitchCnt > 400) {
+    if (mGlitchCnt > mGlitchMax) {
         mIncomingCnt = mOutgoingCnt;
         mGlitchCnt = 0;
     }
