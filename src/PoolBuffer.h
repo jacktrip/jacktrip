@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2020 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -35,12 +35,15 @@
  * \date May 2021
  */
 
+// EXPERIMENTAL for testing in JackTrip v1.4.0
+// Initial references and starter code
+// http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
+// https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
+
 #ifndef __POOLUFFER_H__
 #define __POOLUFFER_H__
 
 #include "RingBuffer.h"
-//#include "JackTrip.h"
-//#include <QObject>
 #include "AudioInterface.h"
 #include <QElapsedTimer>
 #include <QDebug>
@@ -232,7 +235,7 @@ public:
     int mFPP;
     int mSampleRate;
 
-    int mQLen;
+    int mPoolSize;
     int mHist;
     int mTotalSize;  ///< Total size of mXfrBuffer
     AudioInterface::audioBitResolutionT mBitResolutionMode;
@@ -315,6 +318,7 @@ void sampleToBits(sample_t sample, int ch, int frame);
 //    void plotRow(double now, QElapsedTimer *timer, int id);
     int mRcvLag;
     int mGlitchCnt;
+    int mGlitchMax;
 //signals:
 //    void print(QString);
 //    void printStats(QString);

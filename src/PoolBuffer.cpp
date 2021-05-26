@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2020 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -35,28 +35,18 @@
  * \date May 2021
  */
 
+// EXPERIMENTAL for testing in JackTrip v1.4.0
 
 #include "PoolBuffer.h"
-
-//#include <cmath>
-//#include <cstdlib>
-//#include <cstring>
-//#include <iostream>
-//#include <stdexcept>
-
 #include "jacktrip_globals.h"
-
-//using std::cout;
-//using std::endl;
 
 #define RUN 3
 
-#define HIST 6
+#define HIST 6 // at FPP32
 #define TWOTOTHETENTH 1024
 #define STATWINDOW 2000
 #define ALERTRESET 5000
 #define TWOTOTHESIXTEENTH 65536
-#define POOLSIZE mQLen
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
@@ -67,8 +57,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
       mAudioBitRes (bit_res),
       mFPP (FPP),
       mSampleRate (sample_rate),
-      mQLen (packetPoolSize), // switched these two
-      mRcvLag (qLen) // up from burgplc
+      mPoolSize (packetPoolSize),
+      mRcvLag (qLen)
 {
         switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
         case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -80,7 +70,11 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
             break;
         }
-        mHist = HIST;
+        mHist = HIST * 32; // samples
+        double histFloat = (mHist/(double)mFPP); // packets
+        mHist = (int) histFloat;
+        if (!mHist) mHist++;
+        qDebug() << "mHist =" << mHist << "@" << mFPP;
         mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
         mXfrBuffer   = new int8_t[mTotalSize];
         mPacketCnt = 0; // burg
@@ -113,7 +107,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         //    mIncomingSeqWrap.resize(TWOTOTHESIXTEENTH);
         //    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingSeqWrap[i] = -1;
         mBytes = mFPP*mNumChannels*mBitResolutionMode;
-        for ( int i = 0; i < POOLSIZE; i++ ) {
+        for ( int i = 0; i < mPoolSize; i++ ) {
             int8_t* tmp = new int8_t[mBytes];
             mIncomingDat.push_back(tmp);
         }
@@ -157,8 +151,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mUDPstarted = false;
         mWarnedHighStdDev = 0;
         mPlotStarted = false;
-        mIndexPool.resize(POOLSIZE);
-        for ( int i = 0; i < POOLSIZE; i++ ) mIndexPool[i] = -1;
+        mIndexPool.resize(mPoolSize);
+        for ( int i = 0; i < mPoolSize; i++ ) mIndexPool[i] = -1;
         mTimer0 = new QElapsedTimer();
         mTimer1 = new QElapsedTimer();
         mTimer2 = new QElapsedTimer();
@@ -169,6 +163,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mTimer3->start();
 //        start();
         mGlitchCnt = 0;
+        mGlitchMax = mHist*2*mFPP;  // tested with 400 @ FPP32
 }
 
 //*******************************************************************************
@@ -307,7 +302,9 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
         mUDPbuf=buf;
         mUDPstarted = true;
     }
-//    mIncomingSeq = seq % TWOTOTHETENTH;
+
+    // pass seq from
+    //    mIncomingSeq = seq % TWOTOTHETENTH;
 //    mIncomingCntWraps = seq / TWOTOTHETENTH;
 //    int nextSeq = mLastIncomingSeq2+1;
 //    nextSeq %= TWOTOTHETENTH;
@@ -321,6 +318,11 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
 //        mIncomingCnt = mOutgoingCnt;
         mPlotStarted = true;
     }
+    if (mGlitchCnt > mGlitchMax) {
+        double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
+        qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt
+                 << elapsed0/1000.0 << "\n";
+    }
     if (mGlitchCnt > 400) {
         mIncomingCnt = mOutgoingCnt;
         mGlitchCnt = 0;
@@ -328,7 +330,7 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
     if (true){
         int oldest = 99999999;
         int oldestIndex = 0;
-        for ( int i = 0; i < POOLSIZE; i++ ) {
+        for ( int i = 0; i < mPoolSize; i++ ) {
             if (mIndexPool[i] < oldest) {
                 oldest = mIndexPool[i];
                 oldestIndex = i;
@@ -338,8 +340,6 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
         memcpy(mIncomingDat[oldestIndex], mUDPbuf, mBytes);
         //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
     }
-    //    qDebug() << mIncomingCnt;
-    //    usleep(30); // only if in pool thread
     return true;
 };
 
@@ -353,10 +353,10 @@ void PoolBuffer::pullPacket (int8_t* buf) {
     bool glitch = false;
     if (true){
         int target = mOutgoingCnt - mRcvLag;
-        int targetIndex = POOLSIZE;
-        int oldest = 99999999;
+        int targetIndex = mPoolSize;
+        int oldest = 999999;
         int oldestIndex = 0;
-        for ( int i = 0; i < POOLSIZE; i++ ) {
+        for ( int i = 0; i < mPoolSize; i++ ) {
             if (mIndexPool[i] == target) {
                 targetIndex = i;
             }
@@ -365,7 +365,7 @@ void PoolBuffer::pullPacket (int8_t* buf) {
                 oldestIndex = i;
             }
         }
-        if (targetIndex == POOLSIZE) {
+        if (targetIndex == mPoolSize) {
 //            qDebug() << " ";
 //            qDebug() << "!available" << target;
 //            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
