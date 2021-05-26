@@ -93,7 +93,7 @@ private:
     void saveSettings();
     
     void setupStatsWindow();
-    void appendPlugins(JackTrip *jackTrip, int numChannels);
+    void appendPlugins(JackTrip *jackTrip, int numSendChannels, int numRecvChannels);
     
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
