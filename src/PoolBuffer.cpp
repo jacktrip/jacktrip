@@ -82,11 +82,11 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
             break;
         }
-        mHist = HIST * 32; // samples
-        double histFloat = (mHist/(double)mFPP); // packets
+        mHist = 6 * 32; // samples, from original settings
+        double histFloat = mHist/(double)mFPP; // packets for other FPP
         mHist = (int) histFloat;
-        if (!mHist) mHist++;
-         else if (mHist > 6) mHist = 6;
+        if (!mHist) mHist++; // min packets
+         else if (mHist > 6) mHist = 6; // max packets
         qDebug() << "mHist =" << mHist << "@" << mFPP;
         mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
         mXfrBuffer   = new int8_t[mTotalSize];
@@ -117,8 +117,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mOutgoingCnt = 0;
         mLastIncomingSeq = 0;
         mOutgoingCntWraps = 0;
-        //    mIncomingSeqWrap.resize(TWOTOTHESIXTEENTH);
-        //    for ( int i = 0; i < TWOTOTHESIXTEENTH; i++ ) mIncomingSeqWrap[i] = -1;
         mBytes = mFPP*mNumChannels*mBitResolutionMode;
         for ( int i = 0; i < mPoolSize; i++ ) {
             int8_t* tmp = new int8_t[mBytes];
