@@ -25,24 +25,29 @@ jobs:
         include:
           - name: Linux
             runs-on: ubuntu-18.04
+            binary-path: jacktrip
 
           - name: macOS
             runs-on: macos-10.15
             rtaudio: true
+            binary-path: jacktrip
 
           - name: macOS-static
             runs-on: macos-10.15
             rtaudio: true
             static: true
+            binary-path: jacktrip
 
           - name: Windows
             runs-on: windows-2019
             rtaudio: true
+            binary-path: release/jacktrip.exe
 
           - name: Windows-static
             runs-on: windows-2019
             rtaudio: true
             static: true
+            binary-path: release/jacktrip.exe
 
     env:
       SRC_PATH: ${{ github.workspace }}/src
@@ -168,5 +173,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: JackTrip-${{ matrix.name }} # version number could be added here
-          path: ${{ env.BUILD_PATH }}
+          path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
           retention-days: 30 # remove artifacts after 30 days
