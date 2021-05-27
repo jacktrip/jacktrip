@@ -43,9 +43,9 @@ jobs:
             runs-on: macos-10.15
             rtaudio: true
             static: true
-            binary-path: jacktrip
+            binary-path: jacktrip # relative to builddir
             app-bundle: true
-            bundle-installer-path: ../macos/JackTrip.app # also relative to builddir
+            bundle-installer-path: macos/JackTrip.app # relative to base (repo) directory
 
           # - name: Windows-dynamic
           #   runs-on: windows-2019
@@ -201,4 +201,4 @@ jobs:
         if: matrix.app-bundle == true || matrix.installer == true
         with:
           name: JackTrip-${{ matrix.name }}-${{ matrix.suffix }} # version number could be added here
-          path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-installer-path }}
+          path: ${{ github.workspace }}/${{ matrix.bundle-installer-path }}
