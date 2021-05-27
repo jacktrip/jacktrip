@@ -61,7 +61,6 @@ jobs:
             binary-path: release/jacktrip.exe
 
     env:
-      SRC_PATH: ${{ github.workspace }}/src
       BUILD_PATH: ${{ github.workspace }}/builddir
       QT_VERSION: '5.15.2'
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
