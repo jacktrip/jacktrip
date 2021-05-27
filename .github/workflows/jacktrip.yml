@@ -27,6 +27,11 @@ jobs:
             runs-on: ubuntu-18.04
             binary-path: jacktrip
 
+          - name: Linux-nogui
+            runs-on: ubuntu-18.04
+            binary-path: jacktrip
+            nogui: true
+
           - name: macOS
             runs-on: macos-10.15
             rtaudio: true
@@ -191,6 +196,7 @@ jobs:
           ./assemble_app.sh
       - name: upload artifacts
         uses: actions/upload-artifact@v2
+        if: matrix.binary-path
         with:
           name: JackTrip-${{ matrix.name }} # version number could be added here
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
