@@ -45,7 +45,7 @@ jobs:
             static: true
             binary-path: jacktrip # relative to builddir
             app-bundle: true
-            bundle-installer-path: macos/JackTrip.app # relative to base (repo) directory
+            bundle-installer-path: bundle # relative to builddir
 
           # - name: Windows-dynamic
           #   runs-on: windows-2019
@@ -189,6 +189,8 @@ jobs:
           fi
           cd macos
           ./assemble_app.sh
+          mkdir -p $BUILD_PATH/${{ matrix.bundle-installer-path }}
+          cp -R JackTrip.app $BUILD_PATH/${{ matrix.bundle-installer-path }}
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         if: matrix.binary-path
@@ -200,4 +202,4 @@ jobs:
         if: matrix.app-bundle == true || matrix.installer == true
         with:
           name: JackTrip-${{ matrix.name }}-${{ matrix.suffix }} # version number could be added here
-          path: ${{ github.workspace }}/${{ matrix.bundle-installer-path }}
+          path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-installer-path }}
