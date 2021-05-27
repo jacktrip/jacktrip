@@ -80,38 +80,33 @@ public:
         size_t m = coeffs.size();
 
         ////
-        if (x.size() < m)
-            qDebug() << "time_series should have more elements than the AR order is";
+//        if (x.size() < m)
+//            qDebug() << "time_series should have more elements than the AR order is";
 
         // INITIALIZE Ak
         vector<long double> Ak( m + 1, 0.0 );
         Ak[ 0 ] = 1.0;
 
         // INITIALIZE f and b
-        vector<long double> f; // was double
+        vector<long double> f;
         f.resize(x.size());
         for ( unsigned int i = 0; i < x.size(); i++ ) f[i] = x[i];
-    //    vector<long double> f( ldx );
-        vector<long double> b( f ); // was double
+        vector<long double> b( f );
 
         // INITIALIZE Dk
-        long double Dk = 0.0; // was double
+        long double Dk = 0.0;
         for ( size_t j = 0; j <= N; j++ )
         {
             Dk += 2.00001 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
         }
         Dk -= f[ 0 ] * f[ 0 ] + b[ N ] * b[ N ];
 
-        //// N is $#x-1 in C++ but $#x in perl
-        //    my $Dk = sum map {
-        //        2.0 * $f[$_] ** 2
-        //    } 0 .. $#f;
-        //    $Dk -= $f[0] ** 2 + $B[$#x] ** 2;
+        // N is $#x-1 in C++ but $#x in perl
 
-    //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-//        if ( classify(Dk) )
-//        { qDebug() << pCnt << "init";
-//        }
+        //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
+        //        if ( classify(Dk) )
+        //        { qDebug() << pCnt << "init";
+        //        }
 
         // BURG RECURSION
         for ( size_t k = 0; k < m; k++ )
@@ -124,22 +119,13 @@ public:
             }
 
             if ( Dk == 0.0 ) Dk = 0.0000001; // from online testing
-            if ( classify(Dk) )
-            { qDebug() << pCnt << "run";
-            }
-                mu *= -2.0 / Dk;
-    //            if ( isnan(Dk) )  { qDebug() << "k" << k; }
+            //            if ( classify(Dk) ) qDebug() << pCnt << "run";
 
-    //            if (Dk!=0.0) {}
-    //        else qDebug() << "k" << k << "Dk==0" << qStringFromLongDouble1(Dk);
+            mu *= -2.0 / Dk;
+            //            if ( isnan(Dk) )  { qDebug() << "k" << k; }
 
-            //// N is $#x-1
-            //# compute mu
-            //my $mu = sum map {
-            //    $f[$_ + $k + 1] * $B[$_]
-            //} 0 .. $#x - $k - 1;
-            //$mu *= -2.0 / $Dk;
-
+            //            if (Dk!=0.0) {}
+            //        else qDebug() << "k" << k << "Dk==0" << qStringFromLongDouble1(Dk);
 
             // UPDATE Ak
             for ( size_t n = 0; n <= ( k + 1 ) / 2; n++ )
@@ -167,9 +153,6 @@ public:
         }
         // ASSIGN COEFFICIENTS
         coeffs.assign( ++Ak.begin(), Ak.end() );
-
-        //    return $self->_set_coefficients([ @Ak[1 .. $#Ak] ]);
-
     }
 
     void predict( vector<long double> &coeffs, vector<float> &tail )
@@ -221,14 +204,7 @@ public:
         pullPacket (ptrToReadSlot);
     }
 
-//    virtual void stop () {
-//        qDebug() << "hi governator--stopping" ;
-//                    mStopped = true;
-//                    qDebug() << "hi governator--stopped" ;
-//                         };
-
    protected:
-//    int mMaxLatency;
     int mNumChannels;
     int mAudioBitRes;
     int mMinStepSize;
@@ -243,8 +219,7 @@ public:
     int8_t* mXfrBuffer;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
-void sampleToBits(sample_t sample, int ch, int frame);
-    QString qStringFromLongDouble(const long double myLongDouble);
+    void sampleToBits(sample_t sample, int ch, int frame);
     vector<sample_t> mTrain;
     vector<sample_t> mPrediction; // ORDER
     vector<long double> mCoeffs;
@@ -257,71 +232,18 @@ void sampleToBits(sample_t sample, int ch, int frame);
     vector<sample_t> mFadeUp;
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
-    vector<double> mPhasor;
-    int mIncomingSeq;
     unsigned int mOutgoingCnt;
     int mLastDelta;
-    int mLastIncomingSeq;
-    int mOutgoingCntWraps;
-    vector<int> mIncomingSeqWrap;
     int mBytes;
     vector<int8_t*> mIncomingDat;
-    int mLastOutgoingSeq;
-    int mUnderrunCtr;
     int8_t*  mZeros;
-    int8_t*  mUnderSig;
-    int8_t*  mOverSig;
-    int mBalance;
-    bool lastWasOK;
     QElapsedTimer *mTimer0;
-    QElapsedTimer *mTimer1;
-    QElapsedTimer *mTimer2;
-    QElapsedTimer *mTimer3;
-    double mElapsedAcc;
-    int mExpectedOutgoingSeq;
-//    virtual void run();
-//    void plot();
-    const int8_t*  mUDPbuf;
-    int mLastOutgoingCnt;
-    int8_t*  mJACKbuf;
-    int mLastIncomingSeq2;
     unsigned int mIncomingCnt;
-    int mIncomingCntWraps;
-    vector<int> mIncomingCntWrap;
-    double mLastPush;
-    bool mStopped;
-    int mCur;
-    bool mPushed;
-    int mDelta;
-    int mLastIncomingCnt;
-    struct Stat {
-        double mean;
-        double var;
-        double stdDev;
-        int window;
-        int acc;
-        int min;
-        int max;
-        int ctr;
-        double lastMean;
-        int lastMin;
-        int lastMax;
-    };
-//    void init(Stat* stat, int w);
-//    void stats(Stat* stat);
-    Stat *mStat;
-    bool mJACKstarted;
-    bool mUDPstarted;
-    int mWarnedHighStdDev;
-    bool mPlotStarted;
+    bool mStarted;
     vector<int> mIndexPool;
-//    void plotRow(double now, QElapsedTimer *timer, int id);
     int mRcvLag;
     int mGlitchCnt;
     int mGlitchMax;
-//signals:
-//    void print(QString);
-//    void printStats(QString);
 };
 
 #endif  //__POOLUFFER_H__

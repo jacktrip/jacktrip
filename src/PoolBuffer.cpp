@@ -37,7 +37,7 @@
 
 // EXPERIMENTAL for testing in JackTrip v1.4.0
 // tested against server running main -p1
-// 128 server  --udprt
+// 128 server  --udprt (+ defaults)
 // this client --udprt --bufstrategy 3 --pktpool 2 -q2
 
 // 32 server --udprt -q20
@@ -112,292 +112,111 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
             mFadeDown[i] = 1.0 - mFadeUp[i];
         }
         mLastWasGlitch = false;
-        mPhasor.resize( mNumChannels, 0.0 );
-        mIncomingSeq = -1;
         mOutgoingCnt = 0;
-        mLastIncomingSeq = 0;
-        mOutgoingCntWraps = 0;
         mBytes = mFPP*mNumChannels*mBitResolutionMode;
         for ( int i = 0; i < mPoolSize; i++ ) {
             int8_t* tmp = new int8_t[mBytes];
             mIncomingDat.push_back(tmp);
         }
-        mLastOutgoingSeq = 0;
-        mUnderrunCtr = 0;
         mZeros = new int8_t[mTotalSize];
         for PACKETSAMP OUT(0.0, 0, s);
         for PACKETSAMP OUT(0.0, 1, s);
         memcpy(mZeros, mXfrBuffer, mBytes);
-        mUnderSig = new int8_t[mTotalSize];
-        for PACKETSAMP OUT(((s==0)||(s==mFPP-1))?-0.5:-0.3, 0, s);
-        for PACKETSAMP OUT(-0.3, 1, s);
-        memcpy(mUnderSig, mXfrBuffer, mBytes);
-        mOverSig = new int8_t[mTotalSize];
-        for PACKETSAMP OUT(((s==0)||(s==mFPP-1))?0.5:0.3, 0, s);
-        for PACKETSAMP OUT(0.3, 1, s);
-        memcpy(mOverSig, mXfrBuffer, mBytes);
-        mBalance = 0;
-        mElapsedAcc = 0.0;
-        mExpectedOutgoingSeq = 0;
-        mLastOutgoingCnt = 0;
-        mLastIncomingSeq2 = 0;
         mIncomingCnt = 0;
-        mIncomingCntWraps = 0;
-        mIncomingCntWrap.resize(TWOTOTHETENTH);
-        for ( int i = 0; i < TWOTOTHETENTH; i++ ) mIncomingCntWrap[i] = -1;
-        mLastPush = 0.0;
-        mStopped = false;
-        mCur = 0;
-        mPushed = false;
-        mDelta = 0;
-        mLastIncomingCnt = 0;
-        mStat = new Stat;
-//        init(mStat, STATWINDOW); // fast ticks
-        mStat->acc = 0;
-        mStat->var = 0;
-        mStat->min = 999999999;
-        mStat->max = -mStat->max;
-        mStat->ctr = 0;
-        mJACKstarted = false;
-        mUDPstarted = false;
-        mWarnedHighStdDev = 0;
-        mPlotStarted = false;
+
+        mStarted = false;
         mIndexPool.resize(mPoolSize);
         for ( int i = 0; i < mPoolSize; i++ ) mIndexPool[i] = -1;
         mTimer0 = new QElapsedTimer();
-        mTimer1 = new QElapsedTimer();
-        mTimer2 = new QElapsedTimer();
-        mTimer3 = new QElapsedTimer();
         mTimer0->start();
-        mTimer1->start();
-        mTimer2->start();
-        mTimer3->start();
-//        start();
         mGlitchCnt = 0;
         mGlitchMax = mHist*2*mFPP;  // tested with 400 @ FPP32
 }
+// stubs for adding plotting back in
 
 //*******************************************************************************
 //void PoolBuffer::init(Stat *stat, int w)
-//{
-//    stat->mean = 0.0;
-//    stat->var = 0.0;
-//    stat->stdDev = 0.0;
-//    stat->window = w;
-//    stat->acc = 0;
-//    stat->min = 0;
-//    stat->max = 0;
-//    stat->ctr = 0;
-//    stat->lastMean = 0.0;
-//    stat->lastMin = 0;
-//    stat->lastMax = 0;
-//}
 
 //*******************************************************************************
 //void PoolBuffer::stats(Stat *stat)
-//{ // stdDev based on mean of last windowful
-//    if (stat->ctr!=stat->window) {
-//        if (mDelta<stat->min) stat->min = mDelta;
-//        else if (mDelta>stat->max) stat->max = mDelta;
-//        stat->acc += mDelta;
-//        double tmp = mDelta - stat->mean; // last window
-//        stat->var += (tmp*tmp);
-//        stat->ctr++;
-//    } else {
-//        stat->mean = (double)stat->acc / (double) stat->window;
-//        stat->var /= stat->window;
-//        stat->stdDev = sqrt(stat->var);
-//        if (stat->acc) {
-//            //                        QString out;
-//            //                        out += (QString::number(msNow) + QString("\t"));
-//            //                        out += (QString::number(stat->mean) + QString("\t"));
-//            //                        out += (QString::number(stat->min) + QString("\t"));
-//            //                        out += (QString::number(stat->max) + QString("\t"));
-//            //                        out += (QString::number(stat->stdDev) + QString("\t"));
-//            //                        emit printStats(out);
-//            // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
-//            // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
-//        }
-//        stat->lastMean = stat->mean;
-//        stat->lastMin = stat->min;
-//        stat->lastMax = stat->max;
-//        stat->acc = 0;
-//        stat->var = 0;
-//        stat->min = 999999999;
-//        stat->max = -stat->max;
-//        stat->ctr = 0;
-//    }
-//}
 
 //*******************************************************************************
 //void PoolBuffer::run()
-//{
-//    setRealtimeProcessPriority(); // experimental, but setRealtimeProcessPriority2 and Nils' changes
-//    while (!mStopped) {
-//        plot();
-//        usleep(15); // = 17 usec
-//    }
-//}
 
 //*******************************************************************************
 //void PoolBuffer::plotRow(double now, QElapsedTimer *timer, int id)
-//{
-//    double elapsed = (double)timer->nsecsElapsed() / 1000000.0;
-//    timer->start();
-//    QString out;
-//    out += (QString::number(now) + QString("\t"));
-//    out += (QString::number(elapsed) + QString("\t"));
-//    out += (QString::number(id) + QString("\t")); // blk
-//    //    out += (QString::number(mDelta) + QString("\t"));
-////    emit print(out);
-//    // set cbrange [0:3]
-//    //    plot 'iostat.log' u  1:2:3 with p ps 0.75 pt 5 palette, 'iostat.log' u  1:($4/1.0) w l
-//}
 
 //*******************************************************************************
 //void PoolBuffer::plot()
-//{
-//    QMutexLocker locker(&mMutex);
-//    if (!mPlotStarted && (mIncomingCnt > 2000)) {
-//        mIncomingCnt = mOutgoingCnt;
-//        mPlotStarted = true;
-//    }
-//    if (!mPlotStarted) return;
-
-//    double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
-//    mDelta = mIncomingCnt - mOutgoingCnt;
-
-//    bool incomingChange = false;
-//    bool outgoingChange = false;
-//    if (mLastIncomingCnt != mIncomingCnt) {
-//        mLastIncomingCnt = mIncomingCnt;
-//        incomingChange = true;
-//    }
-//    if (mLastOutgoingCnt != mOutgoingCnt) {
-//        mLastOutgoingCnt = mOutgoingCnt;
-//        outgoingChange = true;
-//    }
-
-//    if(false) { // plot state
-//        plotRow(elapsed0, mTimer3, 0);
-//        if(incomingChange) {
-//            plotRow(elapsed0, mTimer1, 1);
-//        }
-//        if(outgoingChange) {
-//            plotRow(elapsed0, mTimer2, 2);
-//        }
-//    }
-
-//    if(false) { // std dev warning
-//        stats(mStat);
-//        if ((!mWarnedHighStdDev) && (mStat->stdDev > 2.0)) {
-//            qDebug() << "STANDARD DEVIATION ALERT";
-//            mWarnedHighStdDev = ALERTRESET;
-//        } else if (mWarnedHighStdDev) mWarnedHighStdDev--;
-//        if(false) { // plot stats
-//            QString out;
-//            out += (QString::number(elapsed0) + QString("\t"));
-//            out += (QString::number(mStat->lastMean) + QString("\t"));
-//            out += (QString::number(mStat->lastMin) + QString("\t"));
-//            out += (QString::number(mStat->lastMax) + QString("\t"));
-//            out += (QString::number(mStat->stdDev) + QString("\t"));
-////            emit printStats(out);
-//        }
-//    }
-//}
 
 //*******************************************************************************
 bool PoolBuffer::pushPacket (const int8_t *buf) {
     QMutexLocker locker(&mMutex);
-    if (!mUDPstarted) {
-        mUDPbuf=buf;
-        mUDPstarted = true;
-    }
-
-    // pass seq from
-    //    mIncomingSeq = seq % TWOTOTHETENTH;
-//    mIncomingCntWraps = seq / TWOTOTHETENTH;
-//    int nextSeq = mLastIncomingSeq2+1;
-//    nextSeq %= TWOTOTHETENTH;
-////    if (mIncomingSeq != nextSeq) qDebug() << "LOST PACKET" << mIncomingSeq << nextSeq;
-//    mLastIncomingSeq2 = mIncomingSeq;
-
-//    if (!mIncomingCnt) qDebug() << "push";
 
     mIncomingCnt++;
-    if (!mPlotStarted && (mIncomingCnt > 400)) {
-//        mIncomingCnt = mOutgoingCnt;
-        mPlotStarted = true;
-    }
+
     if (mGlitchCnt > mGlitchMax) {
-        double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
-        qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt
-                 << elapsed0/1000.0 << "\n";
-    }
-    if (mGlitchCnt > mGlitchMax) {
+        if (!mStarted) mStarted = true;
+        //        double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
+        //        qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt
+        //                 << elapsed0/1000.0 << "\n";
         mIncomingCnt = mOutgoingCnt;
         mGlitchCnt = 0;
     }
-    if (true){
-        int oldest = 99999999;
-        int oldestIndex = 0;
-        for ( int i = 0; i < mPoolSize; i++ ) {
-            if (mIndexPool[i] < oldest) {
-                oldest = mIndexPool[i];
-                oldestIndex = i;
-            }
+    int oldest = 214748364; // not so BIGNUM, approx. 2^31-1 / 10
+    int oldestIndex = 0;
+    for ( int i = 0; i < mPoolSize; i++ ) {
+        if (mIndexPool[i] < oldest) {
+            oldest = mIndexPool[i];
+            oldestIndex = i;
         }
-        mIndexPool[oldestIndex] = mIncomingCnt;
-        memcpy(mIncomingDat[oldestIndex], mUDPbuf, mBytes);
-        //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
     }
+    mIndexPool[oldestIndex] = mIncomingCnt;
+    memcpy(mIncomingDat[oldestIndex], buf, mBytes);
+    //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
     return true;
 };
 
 //*******************************************************************************
 void PoolBuffer::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex);
-    mJACKstarted = true;
-    mJACKbuf=buf;
     mOutgoingCnt++; // will saturate in 33 days at FPP 32
 //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     bool glitch = false;
-    if (true){
-        int target = mOutgoingCnt - mRcvLag;
-        int targetIndex = mPoolSize;
-        int oldest = 999999;
-        int oldestIndex = 0;
-        for ( int i = 0; i < mPoolSize; i++ ) {
-            if (mIndexPool[i] == target) {
-                targetIndex = i;
-            }
-            if (mIndexPool[i] < oldest) {
-                oldest = mIndexPool[i];
-                oldestIndex = i;
-            }
+    int target = mOutgoingCnt - mRcvLag;
+    int targetIndex = mPoolSize;
+    int oldest = 999999;
+    int oldestIndex = 0;
+    for ( int i = 0; i < mPoolSize; i++ ) {
+        if (mIndexPool[i] == target) {
+            targetIndex = i;
         }
-        if (targetIndex == mPoolSize) {
+        if (mIndexPool[i] < oldest) {
+            oldest = mIndexPool[i];
+            oldestIndex = i;
+        }
+    }
+    if (targetIndex == mPoolSize) {
 //            qDebug() << " ";
 //            qDebug() << "!available" << target;
 //            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
 //            qDebug() << " ";
-            targetIndex = oldestIndex;
-            mIndexPool[targetIndex] = -1;
-            glitch = true;
-            mGlitchCnt++;
+        targetIndex = oldestIndex;
+        mIndexPool[targetIndex] = -1;
+        glitch = true;
+        mGlitchCnt++;
 //            QThread::usleep(450); force lateness for debugging
-        } else {
-            mIndexPool[targetIndex] = 0;
-            memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
-        }
-        if (mPlotStarted) {
-            inputPacket();
-            processPacket(glitch);
-        } else {
-            memcpy(mXfrBuffer, mZeros, mBytes);
-        }
-        memcpy(mJACKbuf, mXfrBuffer, mBytes);
+    } else {
+        mIndexPool[targetIndex] = 0;
+        memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
     }
+    if (mStarted) {
+        inputPacket();
+        processPacket(glitch);
+    } else {
+        memcpy(mXfrBuffer, mZeros, mBytes);
+    }
+    memcpy(buf, mXfrBuffer, mBytes);
 };
 
 //*******************************************************************************
@@ -409,12 +228,6 @@ void PoolBuffer::inputPacket ()
         INCh0(bitsToSample(0, s), s);
         INCh1(bitsToSample(1, s), s);
     }
-//                    for PACKETSAMP {
-//                        INCh0(0.3*sin(mPhasor[0]), s);
-//                        INCh1(0.3*sin(mPhasor[1]), s);
-//                        mPhasor[0] += 0.1;
-//                        mPhasor[1] += 0.11;
-//                    }
     if(mPacketCnt) {
         if(RUN > 2) {
 
@@ -432,7 +245,6 @@ void PoolBuffer::processPacket (bool glitch)
 //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
     if(mPacketCnt) {
         if(RUN > 2) {
-            //            if (glitch) qDebug() << "glitch";
 
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train( mCoeffs, mTrain, mPacketCnt );
@@ -451,12 +263,6 @@ void PoolBuffer::processPacket (bool glitch)
         for PACKETSAMP {
             switch(RUN)
             {
-            case -1  :
-                OUT(0.3*sin(mPhasor[0]), 0, s);
-                OUT(0.3*sin(mPhasor[1]), 1, s);
-                mPhasor[0] += 0.1;
-                mPhasor[1] += 0.11;
-                break;
             case 0  :
                 OUT(mTruth[s], 0, s);
                 OUT(mTruthCh1[s], 1, s);
@@ -481,12 +287,6 @@ void PoolBuffer::processPacket (bool glitch)
                 OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);
                 break;
             case 5  : OUT(mPrediction[s], 0, s);
-                break;
-            case 6  :
-                OUT(0.3*sin(mPhasor[0]), 0, s);
-                OUT(0.3*sin(mPhasor[1]), 1, s);
-                mPhasor[0] += 0.1;
-                mPhasor[1] += 0.11;
                 break;
             }
         }
