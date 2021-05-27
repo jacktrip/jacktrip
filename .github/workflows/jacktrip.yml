@@ -32,21 +32,31 @@ jobs:
             rtaudio: true
             binary-path: jacktrip
 
-          - name: macOS-static
+          # - name: macOS-dynamic
+          #   runs-on: macos-10.15
+          #   rtaudio: true
+          #   binary-path: jacktrip
+
+          - name: macOS-x64
+            suffix: app
             runs-on: macos-10.15
             rtaudio: true
             static: true
             binary-path: jacktrip
+            app-bundle: true
+            bundle-installer-path: ../macos/JackTrip.app # also relative to builddir
 
           - name: Windows
             runs-on: windows-2019
             rtaudio: true
             binary-path: release/jacktrip.exe
 
-          - name: Windows-static
+          - name: Windows-x64
+            # suffix: installer
             runs-on: windows-2019
             rtaudio: true
             static: true
+            # installer: true
             binary-path: release/jacktrip.exe
 
     env:
@@ -169,9 +179,24 @@ jobs:
             CONFIG_STRING="nogui $CONFIG_STRING"
           fi
           ./build $CONFIG_STRING
+      - name: create app bundle
+        if: runner.os == 'macOS' && matrix.app-bundle == true
+        run: |
+          if [[ "${{ matrix.static }}" == true ]]; then 
+            export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
+          else
+            export PATH=`brew --prefix qt5`/bin:$PATH
+          fi
+          cd macos
+          ./assemble_app.sh
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: JackTrip-${{ matrix.name }} # version number could be added here
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
-          retention-days: 30 # remove artifacts after 30 days
+      - name: upload app bundle / installer
+        uses: actions/upload-artifact@v2
+        if: matrix.app-bundle == true || matrix.installer == true
+        with:
+          name: JackTrip-${{ matrix.name }}-${{ matrix.suffix }} # version number could be added here
+          path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-installer-path }}
