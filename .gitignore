@@ -13,3 +13,6 @@ site/
 
 # macOS files
 .DS_Store
+
+# app bundle
+macos/*.app
