@@ -23,19 +23,15 @@ jobs:
       fail-fast: false # don't abort if one of the build failse
       matrix:
         include:
-          - name: Linux
+          - name: Linux-x64
             runs-on: ubuntu-18.04
+            static: true
             binary-path: jacktrip
 
-          - name: Linux-nogui
+          - name: Linux-x64-dynamic-nogui
             runs-on: ubuntu-18.04
             binary-path: jacktrip
             nogui: true
-
-          - name: macOS
-            runs-on: macos-10.15
-            rtaudio: true
-            binary-path: jacktrip
 
           # - name: macOS-dynamic
           #   runs-on: macos-10.15
@@ -51,10 +47,10 @@ jobs:
             app-bundle: true
             bundle-installer-path: ../macos/JackTrip.app # also relative to builddir
 
-          - name: Windows
-            runs-on: windows-2019
-            rtaudio: true
-            binary-path: release/jacktrip.exe
+          # - name: Windows-dynamic
+          #   runs-on: windows-2019
+          #   rtaudio: true
+          #   binary-path: release/jacktrip.exe
 
           - name: Windows-x64
             # suffix: installer
