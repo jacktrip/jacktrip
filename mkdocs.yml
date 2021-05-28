@@ -1,4 +1,5 @@
 site_name: JackTrip
+repo_url: https://github.com/jacktrip/jacktrip
 nav:
   - Home: index.md
   - User Guide:
