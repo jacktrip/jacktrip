@@ -189,11 +189,7 @@ jobs:
           else
             export PATH=`brew --prefix qt5`/bin:$PATH
           fi
-          cd macos
-          ./assemble_app.sh
-          mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
-          cp -R JackTrip.app $BUILD_PATH/${{ matrix.bundle-path }}
-      - name: upload artifacts
+      - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
         if: matrix.jacktrip-path
         with:
