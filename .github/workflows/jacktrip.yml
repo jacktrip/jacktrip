@@ -163,12 +163,21 @@ jobs:
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
+      - name: set Qt environment variables
+        shell: bash
+        run: |
+          if [[ "${{ matrix.static }}" == true ]]; then 
+            echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "`brew --prefix qt5`/bin" >> $GITHUB_PATH
+          else
+            echo "$Qt5_DIR/bin" >> $GITHUB_PATH
+          fi
       - name: build JackTrip
         shell: bash
         run: |
           CONFIG_STRING="noclean"
           if [[ "${{ matrix.static }}" == true ]]; then 
-            export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
             CONFIG_STRING="static $CONFIG_STRING"
           fi
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
