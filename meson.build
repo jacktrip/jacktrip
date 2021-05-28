@@ -86,9 +86,12 @@ if rtaudio_dep.found() == true
 endif
 
 if host_machine.system() == 'windows'
+	deps += compiler.find_library('ws2_32', required: true)
+endif
+
+if compiler.get_id() == 'msvc'
 	wingetopt = cmake.subproject('wingetopt')
 	deps += wingetopt.dependency('wingetopt')
-	deps += compiler.find_library('ws2_32', required: true)
 endif
 
 if host_machine.system() == 'darwin'
