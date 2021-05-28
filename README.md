@@ -19,9 +19,6 @@ Windows installer or executable: https://ccrma.stanford.edu/software/jacktrip/wi
 
 To keep up with the latest changes, both experimental and stable, follow instructions to compile from source in INSTALL.txt in the src directory of the project.
 
-# License
-**IMPORTANT:** The code for the graphical user interface portion is released under version 3.0 of the GPL. (The full text of this can be found in LICENSE\_gui.) Only files that were part of the original JackTrip project are covered by the more permissive license in LICENSE\_nogui.
-
 # Raspberry Pi
 
 [paper](https://lac.linuxaudio.org/2019/doc/chafe2.pdf) accompanying jacktrip demo at [Linux Audio Conference 2019](https://lac.linuxaudio.org/2019/)

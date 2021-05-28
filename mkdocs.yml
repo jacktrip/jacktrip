@@ -17,3 +17,5 @@ theme:
   name: material
   features:
     - navigation.tabs
+markdown_extensions:
+  - pymdownx.snippets
