@@ -41,6 +41,14 @@ jobs:
             rtaudio: true
             static: true
 
+          - name: macOS-static-nojack
+            runs-on: macos-10.15
+            qmake-spec: macx-clang
+            make-cmd: make
+            rtaudio: true
+            static: true
+            nojack: true
+
           - name: Windows
             runs-on: windows-2019
             qmake-spec: win32-g++
@@ -53,6 +61,14 @@ jobs:
             make-cmd: mingw32-make
             rtaudio: true
             static: true
+          
+          # - name: Windows-static-nojack
+          #   runs-on: windows-2019
+          #   qmake-spec: win32-g++
+          #   make-cmd: mingw32-make
+          #   rtaudio: true
+          #   static: true
+          #   nojack: true
 
     env:
       SRC_PATH: ${{ github.workspace }}/src
@@ -79,11 +95,13 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
         run: |
-          # brew install jack
-          # instead of using homebrew, install jack 1.9.16 from the installer, which should provide compatibility with both jackosx and the newer jack2
-          curl -L https://github.com/jackaudio/jack2-releases/releases/download/v1.9.16/jack2-macOS-v1.9.16.tar.gz -o jack2.tar.gz
-          tar -xf jack2.tar.gz
-          sudo installer -pkg jack2-osx-1.9.16.pkg -target /
+          if [[ "${{ matrix.nojack }}" != true ]]; then 
+            # brew install jack
+            # instead of using homebrew, install jack 1.9.16 from the installer, which should provide compatibility with both jackosx and the newer jack2
+            curl -L https://github.com/jackaudio/jack2-releases/releases/download/v1.9.16/jack2-macOS-v1.9.16.tar.gz -o jack2.tar.gz
+            tar -xf jack2.tar.gz
+            sudo installer -pkg jack2-osx-1.9.16.pkg -target /
+          fi
           if [[ "${{ matrix.static }}" != true ]]; then 
             brew install qt5
             brew link qt5 --force
@@ -165,6 +183,9 @@ jobs:
           if [[ "${{ matrix.static }}" == true ]]; then 
             export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
             CONFIG_STRING="-config static $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.nojack }}" == true ]]; then 
+            CONFIG_STRING="-config nojack $CONFIG_STRING"
           fi
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
             CONFIG_STRING="-config rtaudio $CONFIG_STRING"
