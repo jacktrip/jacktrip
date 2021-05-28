@@ -62,13 +62,13 @@ jobs:
             rtaudio: true
             static: true
           
-          # - name: Windows-static-nojack
-          #   runs-on: windows-2019
-          #   qmake-spec: win32-g++
-          #   make-cmd: mingw32-make
-          #   rtaudio: true
-          #   static: true
-          #   nojack: true
+          - name: Windows-static-nojack
+            runs-on: windows-2019
+            qmake-spec: win32-g++
+            make-cmd: mingw32-make
+            rtaudio: true
+            static: true
+            nojack: true
 
     env:
       SRC_PATH: ${{ github.workspace }}/src
@@ -114,7 +114,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          choco install jack --version=1.9.17
+          if [[ "${{ matrix.nojack }}" != true ]]; then 
+            choco install jack --version=1.9.17
+          fi
           choco install openssl
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
             choco install pkgconfiglite
