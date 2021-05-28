@@ -26,31 +26,30 @@ jobs:
           - name: Linux-x64
             runs-on: ubuntu-18.04
             static: true
-            binary-path: jacktrip
+            jacktrip-path: jacktrip
 
           - name: Linux-x64-dynamic-nogui
             runs-on: ubuntu-18.04
-            binary-path: jacktrip
+            jacktrip-path: jacktrip
             nogui: true
 
           # - name: macOS-dynamic
           #   runs-on: macos-10.15
           #   rtaudio: true
-          #   binary-path: jacktrip
+          #   jacktrip-path: jacktrip
 
           - name: macOS-x64
-            suffix: app
             runs-on: macos-10.15
             rtaudio: true
             static: true
-            binary-path: jacktrip # relative to builddir
-            app-bundle: true
-            bundle-installer-path: bundle # relative to builddir
+            jacktrip-path: jacktrip # relative to build path; triggers artifact upload for jacktrip binary
+            bundle-path: bundle # relative to build path; triggers application bundle creation and upload (macOS)
+            installer-path: installer # relative to build path; triggers installer creation and upload
 
           # - name: Windows-dynamic
           #   runs-on: windows-2019
           #   rtaudio: true
-          #   binary-path: release/jacktrip.exe
+          #   jacktrip-path: release/jacktrip.exe
 
           - name: Windows-x64
             # suffix: installer
@@ -58,7 +57,7 @@ jobs:
             rtaudio: true
             static: true
             # installer: true
-            binary-path: release/jacktrip.exe
+            jacktrip-path: release/jacktrip.exe
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
@@ -180,7 +179,7 @@ jobs:
           fi
           ./build $CONFIG_STRING
       - name: create app bundle
-        if: runner.os == 'macOS' && matrix.app-bundle == true
+        if: runner.os == 'macOS' && matrix.bundle-path
         run: |
           if [[ "${{ matrix.static }}" == true ]]; then 
             export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
@@ -189,17 +188,23 @@ jobs:
           fi
           cd macos
           ./assemble_app.sh
-          mkdir -p $BUILD_PATH/${{ matrix.bundle-installer-path }}
-          cp -R JackTrip.app $BUILD_PATH/${{ matrix.bundle-installer-path }}
+          mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
+          cp -R JackTrip.app $BUILD_PATH/${{ matrix.bundle-path }}
       - name: upload artifacts
         uses: actions/upload-artifact@v2
-        if: matrix.binary-path
+        if: matrix.jacktrip-path
         with:
           name: JackTrip-${{ matrix.name }} # version number could be added here
-          path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
-      - name: upload app bundle / installer
+          path: ${{ env.BUILD_PATH }}/${{ matrix.jacktrip-path }}
+      - name: upload application bundle
         uses: actions/upload-artifact@v2
-        if: matrix.app-bundle == true || matrix.installer == true
+        if: matrix.bundle-path
         with:
-          name: JackTrip-${{ matrix.name }}-${{ matrix.suffix }} # version number could be added here
-          path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-installer-path }}
+          name: JackTrip-${{ matrix.name }}-application # version number could be added here
+          path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
+      - name: upload installer
+        uses: actions/upload-artifact@v2
+        if: matrix.installer-path
+        with:
+          name: JackTrip-${{ matrix.name }}-installer # version number could be added here
+          path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
