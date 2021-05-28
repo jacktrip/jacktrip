@@ -9,6 +9,7 @@ nav:
     - Mac OS: Build/Mac.md
     - Windows: Build/Windows.md
     - Meson Build: Build/Meson_build.md
+    - Write Documentation: Documentation/MkDocs.md
   - About:
     - Resources: About/Resources.md
     - Changelog: About/CHANGELOG.md
