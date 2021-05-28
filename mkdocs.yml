@@ -21,3 +21,5 @@ theme:
     - navigation.tabs
 markdown_extensions:
   - pymdownx.snippets
+  - pymdownx.tabbed
+  - pymdownx.superfences

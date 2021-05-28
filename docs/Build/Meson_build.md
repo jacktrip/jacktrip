@@ -5,28 +5,31 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
 
 ## Install Dependencies
 
-### Fedora
-```bash
-dnf install meson qt5-qtbase-devel rtaudio-devel "pkgconfig(jack)" help2man
-```
+=== "Fedora"
 
-### Debian/Ubuntu:
-```bash
-apt install meson build-essential qtbase5-dev librtaudio-dev libjack-jackd2-dev help2man
-```
+    ```bash
+    dnf install meson qt5-qtbase-devel rtaudio-devel "pkgconfig(jack)" help2man
+    ```
 
-### MacOS
-```bash
-brew install meson qt rt-audio jack help2man
-```
+=== "Debian/Ubuntu"
 
-Meson might not find qt when installed with brew. But brew tells you to set
-PKG_CONFIG_PATH to a directory where it finds qt's pkgconfig file.
-This directory has to be set as additional pkgconfig path in meson:
+    ```bash
+    apt install meson build-essential qtbase5-dev librtaudio-dev libjack-jackd2-dev help2man
+    ```
 
-```bash
-meson --buildtype release --pkg-config-path PATH_GIVEN_BY_BREW build_release
-``` 
+=== "MacOS"
+
+    ```bash
+    brew install meson qt rt-audio jack help2man
+    ```
+
+    Meson might not find qt when installed with brew. But brew tells you to set
+    PKG_CONFIG_PATH to a directory where it finds qt's pkgconfig file.
+    This directory has to be set as additional pkgconfig path in meson:
+
+    ```bash
+    meson --buildtype release --pkg-config-path PATH_GIVEN_BY_BREW build_release
+    ``` 
 
 ## Build
 
