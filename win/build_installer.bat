@@ -5,6 +5,8 @@ rmdir deploy /s /q
 mkdir deploy
 copy files.wxs deploy\
 copy qjacktrip.wxs deploy\
+copy dialog.bmp deploy\
+copy license.rtf deploy\
 copy ..\builddir\jacktrip.exe deploy\
 cd deploy
 set PATH=%PATH%;C:\Program Files (x86)\WiX Toolset v3.11\bin;C:\Qt\5.15.2\mingw81_64\bin
@@ -20,5 +22,5 @@ if %ERRORLEVEL% NEQ 0 (
 	exit /b 1
 )
 candle.exe qjacktrip.wxs files.wxs
-light.exe -o QJackTrip.msi qjacktrip.wixobj files.wixobj
+light.exe -ext WixUIExtension -o QJackTrip.msi qjacktrip.wixobj files.wixobj
 endlocal
