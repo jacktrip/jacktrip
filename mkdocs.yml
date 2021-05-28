@@ -11,6 +11,7 @@ nav:
     - Meson Build: Build/Meson_build.md
     - Write Documentation: Documentation/MkDocs.md
   - About:
+    - Authors: About/Authors.md
     - Resources: About/Resources.md
     - Changelog: About/CHANGELOG.md
     - Todo: About/Todo.md
