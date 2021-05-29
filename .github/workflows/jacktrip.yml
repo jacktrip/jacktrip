@@ -71,6 +71,16 @@ jobs:
       
     steps:
       - uses: actions/checkout@v2
+      - name: set version string for artifacts
+        shell: bash
+        id: set-version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=$GITHUB_SHA
+          fi
+          echo "::set-output name=version::$VERSION"
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
@@ -202,17 +212,17 @@ jobs:
         uses: actions/upload-artifact@v2
         if: matrix.jacktrip-path
         with:
-          name: JackTrip-${{ matrix.name }} # version number could be added here
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}
           path: ${{ env.BUILD_PATH }}/${{ matrix.jacktrip-path }}
       - name: upload application bundle
         uses: actions/upload-artifact@v2
         if: matrix.bundle-path
         with:
-          name: JackTrip-${{ matrix.name }}-application # version number could be added here
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload installer
         uses: actions/upload-artifact@v2
         if: matrix.installer-path
         with:
-          name: JackTrip-${{ matrix.name }}-installer # version number could be added here
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
