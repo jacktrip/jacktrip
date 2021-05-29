@@ -368,9 +368,6 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer = new PoolBuffer(
                         mSampleRate, mNumAudioChansIn, mAudioBitResolution,
                         mAudioBufferSize, mPacketPoolSize, mBufferQueueLength);
-            //            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
-            //            connect(mReceiveRingBuffer, SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
-
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;

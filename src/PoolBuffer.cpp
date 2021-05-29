@@ -59,7 +59,7 @@
 #define STATWINDOW 2000
 #define ALERTRESET 5000
 #define TWOTOTHESIXTEENTH 65536
-#define OUT(x,ch,s) sampleToBits(x,ch,s)
+#define OUT(x,c,s) sampleToBits(x,c,s)
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
 //*******************************************************************************
@@ -72,66 +72,58 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
       mPoolSize (packetPoolSize),
       mRcvLag (qLen)
 {
-        switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
-        case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
-            break;
-        case 2: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT16;
-            break;
-        case 3: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT24;
-            break;
-        case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
-            break;
-        }
-        mHist = 6 * 32; // samples, from original settings
-        double histFloat = mHist/(double)mFPP; // packets for other FPP
-        mHist = (int) histFloat;
-        if (!mHist) mHist++; // min packets
-         else if (mHist > 6) mHist = 6; // max packets
-        qDebug() << "mHist =" << mHist << "@" << mFPP;
-        mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
-        mXfrBuffer   = new int8_t[mTotalSize];
-        mPacketCnt = 0; // burg
-    #define TRAINSAMPS (mHist*mFPP)
-    #define ORDER (TRAINSAMPS-1)
-        mTrain.resize( TRAINSAMPS, 0.0 );
-        mPrediction.resize( TRAINSAMPS-1, 0.0 ); // ORDER
-        mCoeffs.resize( TRAINSAMPS-2, 0.0 );
-        mTruth.resize( mFPP, 0.0 );
-        mTruthCh1.resize( mFPP, 0.0 );
-        mXfadedPred.resize( mFPP, 0.0 );
-        mNextPred.resize( mFPP, 0.0 );
-        mLastGoodPacket.resize( mFPP, 0.0 );
-        for ( int i = 0; i < mHist; i++ ) {
-            vector<sample_t> tmp( mFPP, 0.0 );
-            mLastPackets.push_back(tmp);
-        }
-        mFadeUp.resize( mFPP, 0.0 );
-        mFadeDown.resize( mFPP, 0.0 );
-        for ( int i = 0; i < mFPP; i++ ) {
-            mFadeUp[i] = (double)i/(double)mFPP;
-            mFadeDown[i] = 1.0 - mFadeUp[i];
-        }
-        mLastWasGlitch = false;
-        mOutgoingCnt = 0;
-        mBytes = mFPP*mNumChannels*mBitResolutionMode;
-        for ( int i = 0; i < mPoolSize; i++ ) {
-            int8_t* tmp = new int8_t[mBytes];
-            mIncomingDat.push_back(tmp);
-        }
-        mZeros = new int8_t[mTotalSize];
-        for PACKETSAMP OUT(0.0, 0, s);
-        for PACKETSAMP OUT(0.0, 1, s);
-        memcpy(mZeros, mXfrBuffer, mBytes);
-        mIncomingCnt = 0;
+    switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
+    case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
+        break;
+    case 2: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT16;
+        break;
+    case 3: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT24;
+        break;
+    case 4: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
+        break;
+    }
+    mHist = 6 * 32; // samples, from original settings
+    double histFloat = mHist/(double)mFPP; // packets for other FPP
+    mHist = (int) histFloat;
+    if (!mHist) mHist++; // min packets
+    else if (mHist > 6) mHist = 6; // max packets
+    //        qDebug() << "mHist =" << mHist << "@" << mFPP;
+    mBytes = mFPP*mNumChannels*mBitResolutionMode;
+    mXfrBuffer   = new int8_t[mBytes];
+    mPacketCnt = 0; // burg
+#define TRAINSAMPS (mHist*mFPP)
+#define ORDER (TRAINSAMPS-1)
+    for ( int i = 0; i < mNumChannels; i++ ) {
+        ChanData tmp = ChanData(i, mFPP, mHist);
+        mChanData.push_back(tmp);
+    }
+    mFadeUp.resize( mFPP, 0.0 );
+    mFadeDown.resize( mFPP, 0.0 );
+    for ( int i = 0; i < mFPP; i++ ) {
+        mFadeUp[i] = (double)i/(double)mFPP;
+        mFadeDown[i] = 1.0 - mFadeUp[i];
+    }
+    mLastWasGlitch = false;
+    mOutgoingCnt = 0;
+    for ( int i = 0; i < mPoolSize; i++ ) {
+        int8_t* tmp = new int8_t[mBytes];
+        mIncomingDat.push_back(tmp);
+    }
+    mZeros = new int8_t[mBytes];
+    for PACKETSAMP OUT(0.0, 0, s);
+    for PACKETSAMP OUT(0.0, 1, s);
+    memcpy(mZeros, mXfrBuffer, mBytes);
+    mIncomingCnt = 0;
 
-        mStarted = false;
-        mIndexPool.resize(mPoolSize);
-        for ( int i = 0; i < mPoolSize; i++ ) mIndexPool[i] = -1;
-        mTimer0 = new QElapsedTimer();
-        mTimer0->start();
-        mGlitchCnt = 0;
-        mGlitchMax = mHist*2*mFPP;  // tested with 400 @ FPP32
+    mStarted = false;
+    mIndexPool.resize(mPoolSize);
+    for ( int i = 0; i < mPoolSize; i++ ) mIndexPool[i] = -1;
+    mTimer0 = new QElapsedTimer();
+    mTimer0->start();
+    mGlitchCnt = 0;
+    mGlitchMax = mHist*2*mFPP;  // tested with 400 @ FPP32
 }
+
 // stubs for adding plotting back in
 
 //*******************************************************************************
@@ -181,7 +173,7 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
 void PoolBuffer::pullPacket (int8_t* buf) {
     QMutexLocker locker(&mMutex);
     mOutgoingCnt++; // will saturate in 33 days at FPP 32
-//    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
+    //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     bool glitch = false;
     int target = mOutgoingCnt - mRcvLag;
     int targetIndex = mPoolSize;
@@ -197,21 +189,20 @@ void PoolBuffer::pullPacket (int8_t* buf) {
         }
     }
     if (targetIndex == mPoolSize) {
-//            qDebug() << " ";
-//            qDebug() << "!available" << target;
-//            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
-//            qDebug() << " ";
+        //            qDebug() << " ";
+        //            qDebug() << "!available" << target;
+        //            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
+        //            qDebug() << " ";
         targetIndex = oldestIndex;
         mIndexPool[targetIndex] = -1;
         glitch = true;
         mGlitchCnt++;
-//            QThread::usleep(450); force lateness for debugging
+        //            QThread::usleep(450); force lateness for debugging
     } else {
         mIndexPool[targetIndex] = 0;
         memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
     }
     if (mStarted) {
-        inputPacket();
         processPacket(glitch);
     } else {
         memcpy(mXfrBuffer, mZeros, mBytes);
@@ -220,93 +211,82 @@ void PoolBuffer::pullPacket (int8_t* buf) {
 };
 
 //*******************************************************************************
-void PoolBuffer::inputPacket ()
+void PoolBuffer::processPacket (bool glitch)
 {
-#define INCh0(x,s) mTruth[s] = x
-#define INCh1(x,s) mTruthCh1[s] = x
-    for PACKETSAMP {
-        INCh0(bitsToSample(0, s), s);
-        INCh1(bitsToSample(1, s), s);
-    }
-    if(mPacketCnt) {
-        if(RUN > 2) {
-
-            for ( int i = 0; i < mHist; i++ ) {
-                for PACKETSAMP mTrain[s+((mHist-(i+1))*mFPP)] =
-                        mLastPackets[i][s];
-            }
-        }
-    }
+    for (int ch = 0; ch < mNumChannels; ch++) processChannel(ch, glitch, mLastWasGlitch);
+    mLastWasGlitch = glitch;
+    mPacketCnt++;
 }
 
 //*******************************************************************************
-void PoolBuffer::processPacket (bool glitch)
+void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
 {
-//    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
+        if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
+
+    ChanData cd = mChanData[ch];
+    for PACKETSAMP  cd.mTruth[s] = bitsToSample(ch, s);
+
     if(mPacketCnt) {
         if(RUN > 2) {
+            for ( int i = 0; i < mHist; i++ ) {
+                for PACKETSAMP cd.mTrain[s+((mHist-(i+1))*mFPP)] =
+                        cd.mLastPackets[i][s];
+            }
 
             // GET LINEAR PREDICTION COEFFICIENTS
-            ba.train( mCoeffs, mTrain, mPacketCnt );
+            ba.train( cd.mCoeffs, cd.mTrain, mPacketCnt );
 
             // LINEAR PREDICT DATA
-            vector<sample_t> tail( mTrain );
+            vector<sample_t> tail( cd.mTrain );
 
-            ba.predict( mCoeffs, tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
+            ba.predict( cd.mCoeffs, tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
             for ( int i = 0; i < ORDER; i++ )
-                mPrediction[i] = tail[i+TRAINSAMPS];
+                cd.mPrediction[i] = tail[i+TRAINSAMPS];
             ///////////////////////////////////////////// // CALCULATE AND DISPLAY ERROR
 
-            for PACKETSAMP mXfadedPred[s] = mTruth[s] * mFadeUp[s] + mNextPred[s] * mFadeDown[s];
+            for PACKETSAMP cd.mXfadedPred[s] = cd.mTruth[s] * mFadeUp[s] + cd.mNextPred[s] * mFadeDown[s];
         }
         for PACKETSAMP {
             switch(RUN)
             {
             case 0  :
-                OUT(mTruth[s], 0, s);
-                OUT(mTruthCh1[s], 1, s);
+                OUT(cd.mTruth[s], ch, s);
                 break;
             case 1  : OUT((glitch) ?
-                              mLastGoodPacket[s] : mTruth[s], 0, s);
-                OUT(mTruthCh1[s], 1, s);
+                              cd.mLastGoodPacket[s] : cd.mTruth[s], ch, s);
                 break;
             case 2  : {
-                double tmp = (glitch) ? 0.0 : mTruth[s];
-                OUT(tmp, 0, s);
-                OUT(mTruthCh1[s], 1, s);
+                double tmp = (glitch) ? 0.0 : cd.mTruth[s];
+                OUT(tmp, ch, s);
             }
                 break;
             case 3  :
-                OUT((glitch) ? mPrediction[s] : ( (mLastWasGlitch) ?
-                                                      mXfadedPred[ s ] : mTruth[s] ), 0, s);
-                //                OUT(mTruthCh1[s], 1, s);
-                OUT(0.0, 1, s);
+                OUT((glitch) ? cd.mPrediction[s] : ( (lastWasGlitch) ?
+                                                      cd.mXfadedPred[ s ] : cd.mTruth[s] ), ch, s);
                 break;
             case 4  :
-                OUT((glitch) ? mPrediction[s] : mTruth[s], 0, s);
+                OUT((glitch) ? cd.mPrediction[s] : cd.mTruth[s], ch, s);
                 break;
-            case 5  : OUT(mPrediction[s], 0, s);
+            case 5  : OUT(cd.mPrediction[s], ch, s);
                 break;
             }
         }
-        mLastWasGlitch = glitch;
         for PACKETSAMP
-                mNextPred[s] = mPrediction[ s + mFPP];
+                cd.mNextPred[s] = cd.mPrediction[ s + mFPP];
     }
 
     // if mPacketCnt==0 initialization follows
     for ( int i = mHist-1; i>0; i-- ) {
-        for PACKETSAMP mLastPackets[i][s] = mLastPackets[i-1][s];
+        for PACKETSAMP cd.mLastPackets[i][s] = cd.mLastPackets[i-1][s];
     }
 
     // will only be able to glitch if mPacketCnt>0
-    for PACKETSAMP mLastPackets[0][s] =
-            ((!glitch)||(mPacketCnt<mHist)) ? mTruth[s] : mPrediction[s];
+    for PACKETSAMP cd.mLastPackets[0][s] =
+            ((!glitch)||(mPacketCnt<mHist)) ? cd.mTruth[s] : cd.mPrediction[s];
 
     if (!glitch)
-        for PACKETSAMP mLastGoodPacket[s] = mTruth[s];
-    mPacketCnt++;
+        for PACKETSAMP cd.mLastGoodPacket[s] = cd.mTruth[s];
 }
 
 //*******************************************************************************

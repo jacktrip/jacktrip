@@ -58,17 +58,17 @@ public:
     bool classify(double d)
     {
         bool tmp = false;
-      switch (fpclassify(d)) {
+        switch (fpclassify(d)) {
         case FP_INFINITE:  qDebug() <<  ("infinite");  tmp = true; break;
         case FP_NAN:       qDebug() <<  ("NaN");  tmp = true;        break;
         case FP_ZERO:
-    //      qDebug() <<  ("zero");
-          tmp = true;       break;
+            //      qDebug() <<  ("zero");
+            tmp = true;       break;
         case FP_SUBNORMAL: qDebug() <<  ("subnormal");  tmp = true;  break;
-    //    case FP_NORMAL:    qDebug() <<  ("normal");    break;
-      }
-    //  if (signbit(d)) qDebug() <<  (" negative\n"); else qDebug() <<  (" positive or unsigned\n");
-      return tmp;
+            //    case FP_NORMAL:    qDebug() <<  ("normal");    break;
+        }
+        //  if (signbit(d)) qDebug() <<  (" negative\n"); else qDebug() <<  (" positive or unsigned\n");
+        return tmp;
     }
 
     // from .pl
@@ -80,8 +80,8 @@ public:
         size_t m = coeffs.size();
 
         ////
-//        if (x.size() < m)
-//            qDebug() << "time_series should have more elements than the AR order is";
+        //        if (x.size() < m)
+        //            qDebug() << "time_series should have more elements than the AR order is";
 
         // INITIALIZE Ak
         vector<long double> Ak( m + 1, 0.0 );
@@ -158,12 +158,12 @@ public:
     void predict( vector<long double> &coeffs, vector<float> &tail )
     {
         size_t m = coeffs.size();
-    //    qDebug() << "tail.at(0)" << tail[0]*32768;
-    //    qDebug() << "tail.at(1)" << tail[1]*32768;
+        //    qDebug() << "tail.at(0)" << tail[0]*32768;
+        //    qDebug() << "tail.at(1)" << tail[1]*32768;
         tail.resize(m+tail.size());
-    //    qDebug() << "tail.at(m)" << tail[m]*32768;
-    //    qDebug() << "tail.at(...end...)" << tail[tail.size()-1]*32768;
-    //    qDebug() << "m" << m << "tail.size()" << tail.size();
+        //    qDebug() << "tail.at(m)" << tail[m]*32768;
+        //    qDebug() << "tail.at(...end...)" << tail[tail.size()-1]*32768;
+        //    qDebug() << "m" << m << "tail.size()" << tail.size();
         for ( size_t i = m; i < tail.size(); i++ )
         {
             tail[ i ] = 0.0;
@@ -175,17 +175,43 @@ public:
     }
 };
 
+class ChanData {
+public:
+    ChanData(int i, int FPP, int hist) :
+        ch(i)
+    {
+        mTruth.resize( FPP, 0.0 );
+int TRAINSAMPS = (hist*FPP);
+int ORDER = (TRAINSAMPS-1);
+        mTrain.resize( TRAINSAMPS, 0.0 );
+        mPrediction.resize( TRAINSAMPS-1, 0.0 ); // ORDER
+        mCoeffs.resize( TRAINSAMPS-2, 0.0 );
+        mXfadedPred.resize( FPP, 0.0 );
+        mNextPred.resize( FPP, 0.0 );
+        mLastGoodPacket.resize( FPP, 0.0 );
+        for ( int i = 0; i < hist; i++ ) {
+            vector<sample_t> tmp( FPP, 0.0 );
+            mLastPackets.push_back(tmp);
+        }
+    }
+    int ch;
+    vector<sample_t> mTruth;
+    vector<sample_t> mTrain;
+    vector<sample_t> mPrediction; // ORDER
+    vector<long double> mCoeffs;
+    vector<sample_t> mXfadedPred;
+    vector<sample_t> mNextPred;
+    vector<sample_t> mLastGoodPacket;
+    vector<vector<sample_t>> mLastPackets;
+};
+
 class PoolBuffer : public RingBuffer
 {
-//    Q_OBJECT;
+    //    Q_OBJECT;
 
 public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen);
     virtual ~PoolBuffer() {}
-    int8_t* getBufferPtr() { return mXfrBuffer; };
-    void inputPacket ();
-    void processPacket (bool glitch);
-    int bytesToInt(const int8_t *buf);
 
     bool pushPacket (const int8_t* buf);
     // can hijack lostlen to propagate incoming seq num if needed
@@ -204,7 +230,10 @@ public:
         pullPacket (ptrToReadSlot);
     }
 
-   protected:
+protected:
+    void processPacket (bool glitch);
+    void processChannel (int ch, bool glitch, bool lastWasGlitch);
+
     int mNumChannels;
     int mAudioBitRes;
     int mMinStepSize;
@@ -213,22 +242,12 @@ public:
 
     int mPoolSize;
     int mHist;
-    int mTotalSize;  ///< Total size of mXfrBuffer
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
     int8_t* mXfrBuffer;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
-    vector<sample_t> mTrain;
-    vector<sample_t> mPrediction; // ORDER
-    vector<long double> mCoeffs;
-    vector<sample_t> mTruth;
-    vector<sample_t> mTruthCh1;
-    vector<sample_t> mXfadedPred;
-    vector<sample_t> mNextPred;
-    vector<sample_t> mLastGoodPacket;
-    vector<vector<sample_t>> mLastPackets;
     vector<sample_t> mFadeUp;
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
@@ -244,6 +263,7 @@ public:
     int mRcvLag;
     int mGlitchCnt;
     int mGlitchMax;
+    vector<ChanData> mChanData;
 };
 
 #endif  //__POOLUFFER_H__
