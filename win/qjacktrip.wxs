@@ -26,11 +26,16 @@
             </Directory>
         </Directory>
 
-        <Feature Id='NormalInstall' Level='1'>
+        <Feature Id='NormalInstall' Title='QJackTrip' Description='Standard Install'
+            Level='1' ConfigurableDirectory='INSTALLDIR'>
             <ComponentGroupRef Id='qjacktrip' />
             <ComponentRef Id='ProgramMenuDir' />
         </Feature>
 
+        <WixVariable Id='WixUIDialogBmp' Value='dialog.bmp' />
+        <WixVariable Id='WixUILicenseRtf' Value='license.rtf' />
+        <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
+        <UIRef Id='WixUI_InstallDir' />
         <Icon Id='jacktrip.exe' SourceFile='jacktrip.exe' />
     </Product>
 </Wix>

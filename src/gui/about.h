@@ -44,7 +44,8 @@ public:
     
     void resizeEvent(QResizeEvent *event) override;
     
-    static const QString sBuildID;
+    static const QString s_buildType;
+    static const QString s_buildID;
     
 private:
     QScopedPointer<Ui::About> m_ui;
