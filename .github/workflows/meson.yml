@@ -93,7 +93,7 @@ jobs:
         run: |
           meson --buildtype release builddir
           cd builddir
-          meson configure -Ddefault_library=static
+          meson configure -Ddefault_library=static -Drtaudio=enabled
           meson compile
       - name: upload artifacts
         uses: actions/upload-artifact@v2
