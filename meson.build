@@ -78,22 +78,11 @@ src = [	'src/DataProtocol.cpp',
 	'src/SslServer.cpp',
 	'src/Auth.cpp']
 
-if not get_option('rtaudio').disabled()
+rtaudio_dep = dependency('rtaudio', required: get_option('rtaudio'))
+if rtaudio_dep.found() == true
 	defines += '-D__RT_AUDIO__'
-	rtaudio_dep = dependency('rtaudio', required: false)
-	deps += rtaudio_dep
-	if not rtaudio_dep.found()
-		opt_var = cmake.subproject_options()
-		opt_var.add_cmake_defines({'RTAUDIO_API_JACK': 'OFF'})
-		if not (host_machine.system() == 'windows')
-			opt_var.add_cmake_defines({'RTAUDIO_BUILD_SHARED_LIBS': 'OFF'})
-		endif
-		opt_var.set_install(false)
-		rtaudio = cmake.subproject('rtaudio', options: opt_var)
-		rtaudio_dep = rtaudio.dependency('rtaudio')
-		deps += rtaudio_dep
-	endif
 	src += 'src/RtAudioInterface.cpp'
+	deps += rtaudio_dep
 endif
 
 if host_machine.system() == 'windows'
