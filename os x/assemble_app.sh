@@ -45,7 +45,7 @@ sed -i '' "s/%BUNDLENAME%/$APPNAME/" package/QJackTrip.pkgproj
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" package/QJackTrip.pkgproj
 
 packagesbuild package/QJackTrip.pkgproj
-#exit 0
+exit 0
 
 # Remove or comment out the exit line above to submit a notarization request to apple.
 # Make sure you adjust the parameters to match your developer account.
