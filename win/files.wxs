@@ -31,7 +31,7 @@
             </Component>
             <Component Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" Guid="27BFCC7D-F4A8-4F71-8A2B-00A8BC74B106">
                 <File Id="fil5E6E1243EAE085FE802B6D64690357B0" KeyPath="yes" Source="SourceDir\jacktrip.exe" />
-                <Shortcut Id="startmenuQJackTrip" Directory="ProgramMenuDir" Name="QJackTrip"
+                <Shortcut Id="startmenuJackTrip" Directory="ProgramMenuDir" Name="JackTrip"
                     WorkingDirectory="INSTALLDIR" Icon="jacktrip.exe" IconIndex="0" Advertise="yes" />
             </Component>
             <Component Id="cmp01229088A6F1DEA1BE391E6E7CC3D3EE" Guid="9A610B9C-6322-4045-9C4B-910FFBA38502">
@@ -169,7 +169,7 @@
         </DirectoryRef>
     </Fragment>
     <Fragment>
-        <ComponentGroup Id="qjacktrip">
+        <ComponentGroup Id="jacktrip">
             <ComponentRef Id="cmpF83098612A5B11C5398DBA3894ED590A" />
             <ComponentRef Id="cmpB60B52D038613C3F20F84A0E1C83D4D4" />
             <ComponentRef Id="cmp5DDCF0CE56D406D1B8B1F93E988AED6B" />

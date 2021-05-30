@@ -4,7 +4,7 @@ del deploy /s /q
 rmdir deploy /s /q
 mkdir deploy
 copy files.wxs deploy\
-copy qjacktrip.wxs deploy\
+copy jacktrip.wxs deploy\
 copy dialog.bmp deploy\
 copy license.rtf deploy\
 copy ..\builddir\jacktrip.exe deploy\
@@ -21,6 +21,6 @@ if %ERRORLEVEL% NEQ 0 (
 	echo "You need to build jacktrip with gui support to build the installer."
 	exit /b 1
 )
-candle.exe qjacktrip.wxs files.wxs
-light.exe -ext WixUIExtension -o QJackTrip.msi qjacktrip.wixobj files.wixobj
+candle.exe jacktrip.wxs files.wxs
+light.exe -ext WixUIExtension -o JackTrip.msi jacktrip.wixobj files.wixobj
 endlocal
