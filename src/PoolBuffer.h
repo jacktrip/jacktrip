@@ -72,7 +72,7 @@ public:
     }
 
     // from .pl
-    void train(vector<long double> &coeffs, const vector<float> &x, int pCnt )
+    void train(vector<long double> &coeffs, const vector<float> &x )
     {
 
         // GET SIZE FROM INPUT VECTORS

@@ -221,7 +221,7 @@ void PoolBuffer::processPacket (bool glitch)
 //*******************************************************************************
 void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
 {
-        if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
+//        if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
 
     ChanData cd = mChanData[ch];
     for PACKETSAMP  cd.mTruth[s] = bitsToSample(ch, s);
@@ -234,7 +234,7 @@ void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
             }
 
             // GET LINEAR PREDICTION COEFFICIENTS
-            ba.train( cd.mCoeffs, cd.mTrain, mPacketCnt );
+            ba.train( cd.mCoeffs, cd.mTrain );
 
             // LINEAR PREDICT DATA
             vector<sample_t> tail( cd.mTrain );
