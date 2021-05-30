@@ -72,7 +72,7 @@ public:
     }
 
     // from .pl
-    void train(vector<long double> &coeffs, const vector<float> &x, int pCnt )
+    void train(vector<long double> &coeffs, const vector<float> &x )
     {
 
         // GET SIZE FROM INPUT VECTORS
@@ -234,7 +234,8 @@ public:
 
 private:
     void processPacket (bool glitch);
-    void processChannel (int ch, bool glitch, bool lastWasGlitch);
+    void processChannel (int ch, bool glitch,
+                         int packetCnt, bool lastWasGlitch);
     int mNumChannels;
     int mAudioBitRes;
     int mMinStepSize;

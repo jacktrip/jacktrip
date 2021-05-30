@@ -55,11 +55,8 @@
 #define RUN 3
 
 #define HIST 6 // at FPP32
-#define TWOTOTHETENTH 1024
-#define STATWINDOW 2000
-#define ALERTRESET 5000
-#define TWOTOTHESIXTEENTH 65536
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
+// from listening tests iteration performs better than '=' operator
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
 //*******************************************************************************
@@ -215,55 +212,45 @@ void PoolBuffer::pullPacket (int8_t* buf) {
 //*******************************************************************************
 void PoolBuffer::processPacket (bool glitch)
 {
-    for (int ch = 0; ch < mNumChannels; ch++) processChannel(ch, glitch, mLastWasGlitch);
+    for (int ch = 0; ch < mNumChannels; ch++) processChannel(ch, glitch,
+                                                             mPacketCnt, mLastWasGlitch);
     mLastWasGlitch = glitch;
     mPacketCnt++;
 }
 
 //*******************************************************************************
-void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
+void PoolBuffer::processChannel (int ch, bool glitch, int packetCnt, bool lastWasGlitch)
 {
-    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
+    //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
 
     ChanData* cd = mChanData[ch];
     for PACKETSAMP  cd->mTruth[s] = bitsToSample(ch, s);
-    if(mPacketCnt) {
-        if(RUN > 2) {
-
-            for ( int i = 0; i < mHist; i++ ) {
-                for PACKETSAMP cd->mTrain[s+((mHist-(i+1))*mFPP)] =
-                        cd->mLastPackets[i][s];
-            }
+    if(packetCnt) {
+        for ( int i = 0; i < mHist; i++ ) {
+            for PACKETSAMP cd->mTrain[s+((mHist-(i+1))*mFPP)] =
+                    cd->mLastPackets[i][s];
         }
-        if(RUN > 2) {
 
-            // GET LINEAR PREDICTION COEFFICIENTS
-            ba.train( cd->mCoeffs, cd->mTrain, mPacketCnt );
+        // GET LINEAR PREDICTION COEFFICIENTS
+        ba.train( cd->mCoeffs, cd->mTrain );
 
-            // LINEAR PREDICT DATA
-            vector<sample_t> tail( cd->mTrain );
+        // LINEAR PREDICT DATA
+        vector<sample_t> tail( cd->mTrain );
 
-            ba.predict( cd->mCoeffs, tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
+        ba.predict( cd->mCoeffs, tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
-            for ( int i = 0; i < ORDER; i++ )
-                cd->mPrediction[i] = tail[i+TRAINSAMPS];
-            ///////////////////////////////////////////// // CALCULATE AND DISPLAY ERROR
+        for ( int i = 0; i < ORDER; i++ )
+            cd->mPrediction[i] = tail[i+TRAINSAMPS];
 
-            for PACKETSAMP cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
-        }
-        for PACKETSAMP {
-            switch(RUN)
-            {
-            case 3  :
+        for PACKETSAMP cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+
+        for PACKETSAMP
                 OUT((glitch) ? cd->mPrediction[s] :
                                ( (lastWasGlitch) ?
                                      cd->mXfadedPred[ s ] :
                                      cd->mTruth[s] ), ch, s);
-                break;
-            }
-        }
-        for PACKETSAMP  cd->mNextPred[s] = cd->mPrediction[ s + mFPP];
 
+        for PACKETSAMP  cd->mNextPred[s] = cd->mPrediction[ s + mFPP];
     }
 
     // if mPacketCnt==0 initialization follows
@@ -273,10 +260,8 @@ void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
 
     // will only be able to glitch if mPacketCnt>0
     for PACKETSAMP cd->mLastPackets[0][s] =
-            ((!glitch)||(mPacketCnt<mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+            ((!glitch)||(packetCnt<mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
 
-    if (!glitch)
-        for PACKETSAMP cd->mLastGoodPacket[s] = cd->mTruth[s];
 }
 
 //*******************************************************************************
