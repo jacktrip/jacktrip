@@ -37,7 +37,7 @@ exit 0
 # Remove the exit line above to do this.
 
 # Needed for notarization. Uncomment the line and update the developer ID as required.
-codesign -f -s "Developer ID Application: Aaron Wyatt" --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
+#codesign -f -s "Developer ID Application: Aaron Wyatt" --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
 
 cp package/JackTrip.pkgproj_template package/JackTrip.pkgproj
 sed -i '' "s/%VERSION%/$VERSION/" package/JackTrip.pkgproj
