@@ -14,3 +14,9 @@ objcopy = 'x86_64-w64-mingw32-objcopy'
 strip = 'x86_64-w64-mingw32-strip'
 pkgconfig = 'x86_64-w64-mingw32-pkg-config'
 windres = 'x86_64-w64-mingw32-windres'
+
+[built-in options]
+cpp_link_args = ['-static-libgcc', '-static-libstdc++']
+
+[project options]
+default_library = 'static'
