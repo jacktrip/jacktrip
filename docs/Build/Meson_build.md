@@ -28,7 +28,7 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
     This directory has to be set as additional pkgconfig path in meson:
 
     ```bash
-    meson --buildtype release --pkg-config-path PATH_GIVEN_BY_BREW build_release
+    meson --buildtype release --pkg-config-path `brew --prefix qt5`/lib/pkgconfig build_release
     ``` 
 
 ## Build
