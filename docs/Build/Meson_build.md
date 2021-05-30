@@ -38,12 +38,22 @@ This way you can have seperate debug and release build directories for example.
 
 Prepare your build directory:
 ```bash
-meson --buildtype release build_release
-meson --buildtype debugoptimized build_debug
+meson builddir                                  # defaults to debug build
+
+## Additional build directories
+meson --buildtype release build_release         # release build
+meson --buildtype debugoptimized build_debug    # optimized debug build
 ```
 
-Meson automatically downloads RtAudio and compiles it
-as a subproject, if RtAudio is not found on your system.
+Meson can download and build RtAudio as a subproject, if RtAudio is not available
+on your system. By default it only checks the dependency on your system. If you
+want to use the subproject you have to explicitly enable rtaudio.
+
+```bash
+cd builddir
+meson configure -Drtaudio=enabled
+```
+
 If `help2man` is found, Meson will create a manpage from `jacktrip --help`.
 
 Now build with:
