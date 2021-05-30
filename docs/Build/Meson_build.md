@@ -58,7 +58,7 @@ If `help2man` is found, Meson will create a manpage from `jacktrip --help`.
 
 Now build with:
 ```bash
-cd build_release
+cd builddir
 meson compile
 ```
 
