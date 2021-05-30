@@ -250,15 +250,6 @@ private:
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
-    vector<sample_t> mTrain;
-    vector<sample_t> mPrediction; // ORDER
-    vector<long double> mCoeffs;
-    vector<sample_t> mTruth;
-    vector<sample_t> mTruthCh1;
-    vector<sample_t> mXfadedPred;
-    QVector<sample_t> mNextPred;
-    vector<sample_t> mLastGoodPacket;
-    vector<vector<sample_t>> mLastPackets;
     vector<sample_t> mFadeUp;
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;

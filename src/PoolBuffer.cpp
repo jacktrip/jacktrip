@@ -93,19 +93,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mPacketCnt = 0; // burg
 #define TRAINSAMPS (mHist*mFPP)
 #define ORDER (TRAINSAMPS-1)
-    mTrain.resize( TRAINSAMPS, 0.0 );
-    mPrediction.resize( TRAINSAMPS-1, 0.0 ); // ORDER
-    mCoeffs.resize( TRAINSAMPS-2, 0.0 );
-    mTruth.resize( mFPP, 0.0 );
-    mTruthCh1.resize( mFPP, 0.0 );
-    mXfadedPred.resize( mFPP, 0.0 );
-    mNextPred.resize( mFPP );
-    //        mNextPred.resize( mFPP, 0.0 );
-    mLastGoodPacket.resize( mFPP, 0.0 );
-    for ( int i = 0; i < mHist; i++ ) {
-        vector<sample_t> tmp( mFPP, 0.0 );
-        mLastPackets.push_back(tmp);
-    }
     mFadeUp.resize( mFPP, 0.0 );
     mFadeDown.resize( mFPP, 0.0 );
     for ( int i = 0; i < mFPP; i++ ) {
@@ -236,7 +223,7 @@ void PoolBuffer::processPacket (bool glitch)
 //*******************************************************************************
 void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
 {
-//        if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
+    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
 
     ChanData* cd = mChanData[ch];
     for PACKETSAMP  cd->mTruth[s] = bitsToSample(ch, s);
@@ -269,17 +256,14 @@ void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
             {
             case 3  :
                 OUT((glitch) ? cd->mPrediction[s] :
-                               ( (mLastWasGlitch) ?
+                               ( (lastWasGlitch) ?
                                      cd->mXfadedPred[ s ] :
                                      cd->mTruth[s] ), ch, s);
                 break;
             }
         }
-//                    for PACKETSAMP qDebug() << "bug = " << cd->mNextPred.size() << cd->mNextPred[s] << mNextPred[s];
-        for PACKETSAMP {
-            mNextPred[s] = cd->mPrediction[ s + mFPP];
-            cd->mNextPred[s] = cd->mPrediction[ s + mFPP];
-        }
+        for PACKETSAMP  cd->mNextPred[s] = cd->mPrediction[ s + mFPP];
+
     }
 
     // if mPacketCnt==0 initialization follows
@@ -292,8 +276,7 @@ void PoolBuffer::processChannel (int ch, bool glitch, bool lastWasGlitch)
             ((!glitch)||(mPacketCnt<mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
 
     if (!glitch)
-        for PACKETSAMP mLastGoodPacket[s] = cd->mTruth[s];
-    mPacketCnt++;
+        for PACKETSAMP cd->mLastGoodPacket[s] = cd->mTruth[s];
 }
 
 //*******************************************************************************
