@@ -20,3 +20,5 @@ cpp_link_args = ['-static-libgcc', '-static-libstdc++']
 
 [project options]
 default_library = 'static'
+rtaudio = 'enabled'
+rtaudio:wasapi = 'true'
