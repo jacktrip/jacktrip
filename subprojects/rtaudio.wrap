@@ -1,6 +1,7 @@
 [wrap-git]
-url=https://github.com/ntonnaett/rtaudio.git
+url=https://github.com/thestk/rtaudio.git
 revision=head
+patch_directory=rtaudio
 
 [provide]
 dependency_names = rtaudio
