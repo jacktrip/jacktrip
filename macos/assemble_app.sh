@@ -14,8 +14,6 @@ VERSION="$(../builddir/jacktrip -v | awk '/VERSION/{print $NF}')"
 
 echo "Building bundle $APPNAME (id: $BUNDLE_ID)"
 echo "for binary version $VERSION"
-APPNAME="JackTrip"
-BUNDLE_ID="org.jacktrip.jacktrip"
 
 # The qt bin folder needs to be in your PATH for this script to work.
 rm -rf "$APPNAME.app"
