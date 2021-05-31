@@ -1,10 +1,9 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 del deploy /s /q
 rmdir deploy /s /q
 mkdir deploy
 copy files.wxs deploy\
-copy jacktrip.wxs deploy\
 copy dialog.bmp deploy\
 copy license.rtf deploy\
 copy ..\builddir\jacktrip.exe deploy\
@@ -20,6 +19,14 @@ copy "C:\Qt\Tools\OpenSSL\Win_x64\bin\libssl-1_1-x64.dll" .\
 if %ERRORLEVEL% NEQ 0 (
 	echo "You need to build jacktrip with gui support to build the installer."
 	exit /b 1
+)
+rem Get our version number
+for /f "tokens=*" %%a in ('.\jacktrip -v ^| findstr VERSION') do for %%b in (%%~a) do set VERSION=%%b
+echo Version=%VERSION%
+for /f "tokens=* delims=" %%a in (..\jacktrip.wxs.template) do (
+	set line=%%a
+	set line=!line:$VERSION=%VERSION%!
+	echo !line! >> jacktrip.wxs
 )
 candle.exe jacktrip.wxs files.wxs
 light.exe -ext WixUIExtension -o JackTrip.msi jacktrip.wixobj files.wixobj
