@@ -3,22 +3,19 @@
 APPNAME="JackTrip"
 BUNDLE_ID="org.jacktrip.jacktrip"
 
-if [ "$#" -lt 1 ]; then
-    echo "You need to supply a version number for this script to work."
-    exit 1
-fi
-VERSION="$1"
+VERSION="$(../builddir/jacktrip -v | awk '/VERSION/{print $NF}')"
+[ -z "$VERSION" ] && { echo "Unable to determine binary version. Quitting."; exit 1; }
 
-if [ "$#" -gt 1 ]; then
-    APPNAME="$2"
-fi
-
-if [ "$#" -gt 1 ]; then
-    BUNDLE_ID="$3"
-fi
+[ "$#" -gt 0 ] && APPNAME="$1"
+[ "$#" -gt 1 ] && BUNDLE_ID="$2"
 
 # Make sure that jacktrip has been built with GUI support.
 ../builddir/jacktrip --test-gui || { echo "You need to build jacktrip with GUI support to build an app bundle."; exit 1; }
+
+echo "Building bundle $APPNAME (id: $BUNDLE_ID)"
+echo "for binary version $VERSION"
+APPNAME="JackTrip"
+BUNDLE_ID="org.jacktrip.jacktrip"
 
 # The qt bin folder needs to be in your PATH for this script to work.
 rm -rf "$APPNAME.app"
