@@ -1,4 +1,10 @@
 @echo off
+
+set QTBINPATH=C:\Qt\5.15.2\mingw81_64\bin
+set QTLIBPATH=C:\Qt\Tools\mingw810_64\bin
+set WIXPATH=C:\Program Files (x86)\WiX Toolset v3.11\bin
+set SSLPATH=C:\Qt\Tools\OpenSSL\Win_x64\bin
+
 setlocal EnableDelayedExpansion
 del deploy /s /q
 rmdir deploy /s /q
@@ -8,13 +14,13 @@ copy dialog.bmp deploy\
 copy license.rtf deploy\
 copy ..\builddir\jacktrip.exe deploy\
 cd deploy
-set PATH=%PATH%;C:\Program Files (x86)\WiX Toolset v3.11\bin;C:\Qt\5.15.2\mingw81_64\bin
+set PATH=%PATH%;%WIXPATH%;%QTBINPATH%
 windeployqt jacktrip.exe
-copy "C:\Qt\Tools\mingw810_64\bin\libgcc_s_seh-1.dll" .\
-copy "C:\Qt\Tools\mingw810_64\bin\libstdc++-6.dll" .\
-copy "C:\Qt\Tools\mingw810_64\bin\libwinpthread-1.dll" .\
-copy "C:\Qt\Tools\OpenSSL\Win_x64\bin\libcrypto-1_1-x64.dll" .\
-copy "C:\Qt\Tools\OpenSSL\Win_x64\bin\libssl-1_1-x64.dll" .\
+copy "%QTLIBPATH%\libgcc_s_seh-1.dll" .\
+copy "%QTLIBPATH%\libstdc++-6.dll" .\
+copy "%QTLIBPATH%\libwinpthread-1.dll" .\
+copy "%SSLPATH%\libcrypto-1_1-x64.dll" .\
+copy "%SSLPATH%\libssl-1_1-x64.dll" .\
 .\jacktrip --test-gui
 if %ERRORLEVEL% NEQ 0 (
 	echo "You need to build jacktrip with gui support to build the installer."
