@@ -47,10 +47,7 @@
 // 16 server --udprt -q40
 //  --pktpool 4 -q3
 
-
-
 #include "PoolBuffer.h"
-#include "jacktrip_globals.h"
 
 #define RUN 3
 
@@ -84,12 +81,10 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mHist = (int) histFloat;
     if (!mHist) mHist++; // min packets
     else if (mHist > 6) mHist = 6; // max packets
-    qDebug() << "mHist =" << mHist << "@" << mFPP;
-    mTotalSize = mSampleRate * mNumChannels * mAudioBitRes * 2;  // 2 secs of audio
-    mXfrBuffer   = new int8_t[mTotalSize];
+//    qDebug() << "mHist =" << mHist << "@" << mFPP;
+    mBytes = mFPP*mNumChannels*mBitResolutionMode;
+    mXfrBuffer   = new int8_t[mBytes];
     mPacketCnt = 0; // burg
-#define TRAINSAMPS (mHist*mFPP)
-#define ORDER (TRAINSAMPS-1)
     mFadeUp.resize( mFPP, 0.0 );
     mFadeDown.resize( mFPP, 0.0 );
     for ( int i = 0; i < mFPP; i++ ) {
@@ -98,12 +93,11 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     }
     mLastWasGlitch = false;
     mOutgoingCnt = 0;
-    mBytes = mFPP*mNumChannels*mBitResolutionMode;
     for ( int i = 0; i < mPoolSize; i++ ) {
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
     }
-    mZeros = new int8_t[mTotalSize];
+    mZeros = new int8_t[mBytes];
     for PACKETSAMP OUT(0.0, 0, s);
     for PACKETSAMP OUT(0.0, 1, s);
     memcpy(mZeros, mXfrBuffer, mBytes);
@@ -209,7 +203,6 @@ void PoolBuffer::pullPacket (int8_t* buf) {
 };
 
 //*******************************************************************************
-//*******************************************************************************
 void PoolBuffer::processPacket (bool glitch)
 {
     for (int ch = 0; ch < mNumChannels; ch++) processChannel(ch, glitch,
@@ -239,8 +232,8 @@ void PoolBuffer::processChannel (int ch, bool glitch, int packetCnt, bool lastWa
 
         ba.predict( cd->mCoeffs, tail ); // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
-        for ( int i = 0; i < ORDER; i++ )
-            cd->mPrediction[i] = tail[i+TRAINSAMPS];
+        for ( int i = 0; i < (cd->trainSamps-1); i++ )
+            cd->mPrediction[i] = tail[i+cd->trainSamps];
 
         for PACKETSAMP cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 

@@ -79,9 +79,7 @@ public:
         size_t N = x.size() - 1;
         size_t m = coeffs.size();
 
-        ////
-        //        if (x.size() < m)
-        //            qDebug() << "time_series should have more elements than the AR order is";
+        //        if (x.size() < m) qDebug() << "time_series should have more elements than the AR order is";
 
         // INITIALIZE Ak
         vector<long double> Ak( m + 1, 0.0 );
@@ -95,13 +93,11 @@ public:
 
         // INITIALIZE Dk
         long double Dk = 0.0;
-        for ( size_t j = 0; j <= N; j++ )
+        for ( size_t j = 0; j <= N; j++ ) // CC: N is $#x-1 in C++ but $#x in perl
         {
-            Dk += 2.00001 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+            Dk += 2.00001 * f[ j ] * f[ j ]; // CC: needs more damping than orig 2.0
         }
         Dk -= f[ 0 ] * f[ 0 ] + b[ N ] * b[ N ];
-
-        // N is $#x-1 in C++ but $#x in perl
 
         //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
         //        if ( classify(Dk) )
@@ -118,14 +114,12 @@ public:
                 mu += f[ n + k + 1 ] * b[ n ];
             }
 
-            if ( Dk == 0.0 ) Dk = 0.0000001; // from online testing
+            if ( Dk == 0.0 ) Dk = 0.0000001; // CC: from testing, needs eps
             //            if ( classify(Dk) ) qDebug() << pCnt << "run";
 
             mu *= -2.0 / Dk;
             //            if ( isnan(Dk) )  { qDebug() << "k" << k; }
-
-            //            if (Dk!=0.0) {}
-            //        else qDebug() << "k" << k << "Dk==0" << qStringFromLongDouble1(Dk);
+            //            if (Dk==0.0) qDebug() << "k" << k << "Dk==0";
 
             // UPDATE Ak
             for ( size_t n = 0; n <= ( k + 1 ) / 2; n++ )
@@ -180,7 +174,7 @@ public:
     ChanData(int i, int FPP, int hist) :
         ch(i)
     {
-        TRAINSAMPS = (hist*FPP);
+        trainSamps = (hist*FPP);
         mTruth.resize( FPP, 0.0 );
         mXfadedPred.resize( FPP, 0.0 );
         mNextPred.resize( FPP, 0.0 );
@@ -189,12 +183,12 @@ public:
             vector<sample_t> tmp( FPP, 0.0 );
             mLastPackets.push_back(tmp);
         }
-        mTrain.resize( TRAINSAMPS, 0.0 );
-        mPrediction.resize( TRAINSAMPS-1, 0.0 ); // ORDER
-        mCoeffs.resize( TRAINSAMPS-2, 0.0 );
+        mTrain.resize( trainSamps, 0.0 );
+        mPrediction.resize( trainSamps-1, 0.0 ); // ORDER
+        mCoeffs.resize( trainSamps-2, 0.0 );
     }
     int ch;
-    int TRAINSAMPS;
+    int trainSamps;
     vector<sample_t> mTruth;
     vector<sample_t> mTrain;
     vector<sample_t> mPrediction; // ORDER
@@ -212,16 +206,14 @@ class PoolBuffer : public RingBuffer
 public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen);
     virtual ~PoolBuffer() {}
-    int8_t* getBufferPtr() { return mXfrBuffer; };
-    int bytesToInt(const int8_t *buf);
 
     bool pushPacket (const int8_t* buf);
-    // can hijack lostlen to propagate incoming seq num if needed
+    // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instread of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen) {
+    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, [[maybe_unused]] int unused, [[maybe_unused]] int unused2) {
         pushPacket (ptrToSlot);
         return(true);
     }
@@ -244,7 +236,6 @@ private:
 
     int mPoolSize;
     int mHist;
-    int mTotalSize;  ///< Total size of mXfrBuffer
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
     int8_t* mXfrBuffer;
