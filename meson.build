@@ -1,4 +1,4 @@
-project('jacktrip', 'cpp', version: '1.4.0',
+project('jacktrip', 'cpp',
 		default_options: ['cpp_std=c++17','warning_level=2'])
 qt5 = import('qt5')
 cmake = import('cmake')
