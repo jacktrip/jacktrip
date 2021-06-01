@@ -20,7 +20,7 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
 === "MacOS"
 
     ```bash
-    brew install meson qt rt-audio jack help2man
+    brew install meson qt5 rt-audio jack help2man
     ```
 
     Meson might not find qt when installed with brew. But brew tells you to set
