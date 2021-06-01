@@ -37,15 +37,18 @@
 
 // EXPERIMENTAL for testing in JackTrip v1.4.0
 // tested against server running main -p1
-// 128 server  --udprt (+ defaults)
+// 128 server  --udprt --bufstrategy 1 (+ defaults)
 // this client --udprt --bufstrategy 3 --pktpool 2 -q2
 
-// 32 server --udprt -q20
+// 32 server --udprt  --bufstrategy 1 -q20
+// jacktrip -S -p1 --udprt --bufstrategy 3 --pktpool 30 -q2 -n1
 // --udprt --bufstrategy 3 --pktpool 3 -q2
 // --udprt --bufstrategy 3 --pktpool 4000 -q3000
 
-// 16 server --udprt -q40
+// 16 server --udprt --bufstrategy 1 -q40
 //  --pktpool 4 -q3
+
+// should size pktpool from StdDev
 
 #include "PoolBuffer.h"
 
@@ -114,7 +117,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
     }
-
+    mStartAt = 100; // provisional, needs testing
 }
 // stubs for adding plotting back in
 
@@ -139,8 +142,12 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
 
     mIncomingCnt++;
 
-    if (mGlitchCnt > mGlitchMax) {
+    if ((!mStarted) && (mGlitchCnt > mStartAt)) {
         if (!mStarted) mStarted = true;
+                qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt;
+    }
+
+    if (mGlitchCnt > mGlitchMax) {
         //        double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
         //        qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt
         //                 << elapsed0/1000.0 << "\n";
