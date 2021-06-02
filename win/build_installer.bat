@@ -13,7 +13,8 @@ mkdir deploy
 copy files.wxs deploy\
 copy dialog.bmp deploy\
 copy license.rtf deploy\
-copy ..\builddir\jacktrip.exe deploy\
+if exist ..\builddir\release\jacktrip.exe (set JACKTRIP=..\builddir\release\jacktrip.exe) else (set JACKTRIP=..\builddir\jacktrip.exe)
+copy %JACKTRIP% deploy\
 cd deploy
 for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Core.dll') do set DYNAMIC_QT=%%a
 if defined DYNAMIC_QT (
