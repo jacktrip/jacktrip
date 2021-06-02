@@ -51,6 +51,11 @@
 // should size pktpool from StdDev
 
 #include "PoolBuffer.h"
+#include "jacktrip_globals.h"
+#include <iomanip>
+using std::cout;
+using std::endl;
+using std::setw;
 
 #define RUN 3
 #define STDDEVINDOW 200 // packets
@@ -124,7 +129,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
 //void PoolBuffer::init(Stat *stat, int w)
 
 //*******************************************************************************
-//void PoolBuffer::stats(Stat *stat)
+// was void PoolBuffer::stats(Stat *stat)
 void StdDev::tick()
 { // stdDev based on mean of last windowful
     double msElapsed = (double)mTimer->nsecsElapsed() / 1000000.0;
@@ -153,9 +158,12 @@ void StdDev::tick()
             longTermStdDevAcc += stdDev;
             longTermStdDev = longTermStdDevAcc/(double)longTermCnt;
 //            qDebug() << mean << min << max << stdDev << longTermStdDev;
-        }
+            if (gVerboseFlag) cout << setw(10) <<
+            mean <<setw(10) << min <<setw(10) << max <<setw(10) << stdDev <<setw(10) << longTermStdDev << endl;
+        } else
+            if (gVerboseFlag) cout << "printing from PoolBuffer->stdDev->tick:\n (mean / min / max / stdDev / longTermStdDev) \n";
+
         longTermCnt++;
-        if (true) {
             //            QString out;
             //            out += (QString::number(msNow) + QString("\t"));
             //            out += (QString::number(mean) + QString("\t"));
@@ -165,7 +173,6 @@ void StdDev::tick()
             //                        emit printStats(out);
             // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
             // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
-        }
         lastMean = mean;
         lastMin = min;
         lastMax = max;
@@ -215,11 +222,11 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
                 int8_t* tmp = new int8_t[mBytes];
                 mIncomingDat.push_back(tmp);
             }
-            qDebug() << "growing";
+            if (gVerboseFlag) cout << "growing to " << newPoolSize << " from " << mPoolSize << "\n";
             mPoolSize = newPoolSize;
         }
         if (newPoolSize != mPoolSize) {
-            qDebug() << "shrinking" << newPoolSize<< mPoolSize;
+            if (gVerboseFlag) cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
             mPoolSize = newPoolSize;
         }
         //            qDebug() << (int) (stdDev->longTermStdDev*30.0);
