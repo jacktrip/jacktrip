@@ -63,8 +63,8 @@ sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
 # The qt bin folder needs to be in your PATH for this script to work.
-STATIC_CHECK=$(otool -L ../builddir/jacktrip | grep QtCore)
-if [ ! -z "$STATIC_CHECK" ]; then
+DYNAMIC_QT=$(otool -L ../builddir/jacktrip | grep QtCore)
+if [ ! -z "$DYNAMIC_QT" ]; then
     [ -z $(which macdeployqt) ] && { echo "The Qt bin folder needs to be in your PATH for this script to work."; exit 1; }
     if [ ! -z "$CERTIFICATE" ]; then
         macdeployqt "$APPNAME.app" -codesign="$CERTIFICATE"
