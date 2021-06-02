@@ -294,7 +294,7 @@ private:
     QElapsedTimer *mTimer0;
     unsigned int mIncomingCnt;
     vector<int> mIndexPool;
-    int mRcvLag;
+    int mQlen;
     int mGlitchCnt;
     int mGlitchMax;
     vector<ChanData *> mChanData;

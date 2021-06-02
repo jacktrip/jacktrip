@@ -60,6 +60,7 @@ using std::setw;
 #define RUN 3
 #define STDDEVINDOW 200 // packets
 #define STDDEV2POOLSIZE 30.0
+#define MAXPOOLSIZE 6000 // insanely large pool, 2 sec FPP16
 #define HIST 6 // at FPP32
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 // from listening tests iteration performs better than '=' operator
@@ -73,7 +74,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
       mFPP (FPP),
       mSampleRate (sample_rate),
       mPoolSize (qLen),
-      mRcvLag (qLen)
+      mQlen (qLen)
 {
     switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
     case 1: mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -216,7 +217,8 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
     stdDev->tick();
     if (stdDev->longTermStdDevAcc>0.0) {
         int newPoolSize = (int) (stdDev->longTermStdDev*STDDEV2POOLSIZE);
-        if (newPoolSize>mPoolSize)  {
+        if (newPoolSize > mPoolSize)  {
+            if (newPoolSize > MAXPOOLSIZE) newPoolSize = MAXPOOLSIZE; // avoid insanely large pool
             mIndexPool.resize(newPoolSize);
             for ( int i = mPoolSize; i < newPoolSize; i++ ) {
                 int8_t* tmp = new int8_t[mBytes];
@@ -226,6 +228,7 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
             mPoolSize = newPoolSize;
         }
         if (newPoolSize != mPoolSize) {
+            if (newPoolSize < mQlen) newPoolSize = mQlen; // avoid insanely small pool
             if (gVerboseFlag) cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
             mPoolSize = newPoolSize;
         }
@@ -240,7 +243,7 @@ void PoolBuffer::pullPacket (int8_t* buf) {
     mOutgoingCnt++; // will saturate in 33 days at FPP 32
     //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     bool glitch = false;
-    int target = mOutgoingCnt - mRcvLag;
+    int target = mOutgoingCnt - mQlen;
     int targetIndex = mPoolSize;
     int oldest = 999999;
     int oldestIndex = 0;
