@@ -54,6 +54,7 @@
 
 #define RUN 3
 #define STDDEVINDOW 200 // packets
+#define STDDEV2POOLSIZE 30.0
 #define HIST 6 // at FPP32
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 // from listening tests iteration performs better than '=' operator
@@ -151,7 +152,7 @@ void StdDev::tick()
         if (longTermCnt) {
             longTermStdDevAcc += stdDev;
             longTermStdDev = longTermStdDevAcc/(double)longTermCnt;
-            qDebug() << mean << min << max << stdDev << longTermStdDev;
+//            qDebug() << mean << min << max << stdDev << longTermStdDev;
         }
         longTermCnt++;
         if (true) {
@@ -207,7 +208,7 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
 
     stdDev->tick();
     if (stdDev->longTermStdDevAcc>0.0) {
-        int newPoolSize = (int) (stdDev->longTermStdDev*30.0);
+        int newPoolSize = (int) (stdDev->longTermStdDev*STDDEV2POOLSIZE);
         if (newPoolSize>mPoolSize)  {
             mIndexPool.resize(newPoolSize);
             for ( int i = mPoolSize; i < newPoolSize; i++ ) {
@@ -215,6 +216,10 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
                 mIncomingDat.push_back(tmp);
             }
             qDebug() << "growing";
+            mPoolSize = newPoolSize;
+        }
+        if (newPoolSize != mPoolSize) {
+            qDebug() << "shrinking" << newPoolSize<< mPoolSize;
             mPoolSize = newPoolSize;
         }
         //            qDebug() << (int) (stdDev->longTermStdDev*30.0);
