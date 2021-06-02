@@ -15,8 +15,8 @@ copy dialog.bmp deploy\
 copy license.rtf deploy\
 copy ..\builddir\jacktrip.exe deploy\
 cd deploy
-for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Core.dll') do set STATIC_CHECK=%%a
-if defined STATIC_CHECK (
+for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Core.dll') do set DYNAMIC_QT=%%a
+if defined DYNAMIC_QT (
 	%QTBINPATH%\windeployqt jacktrip.exe
 	copy "%QTLIBPATH%\libgcc_s_seh-1.dll" .\
 	copy "%QTLIBPATH%\libstdc++-6.dll" .\
