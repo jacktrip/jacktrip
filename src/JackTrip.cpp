@@ -140,7 +140,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mSimulatedJitterRate(0.0)
     , mSimulatedDelayRel(0.0)
     , mUseRtUdpPriority(false)
-    , mPacketPoolSize(1) // experimental bufstrategy 3 pool size
     , mAudioTesterP(nullptr)
 {
     createHeader(mPacketHeaderType);
@@ -363,7 +362,7 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
-            qDebug() << "experimental mBufferStrategy == 3";
+            qDebug() << "experimental buffer strategy 3 (pool buffer rather than ring buffer)";
             mSendRingBuffer = new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer = new PoolBuffer(
                         mSampleRate, mNumAudioChansIn, mAudioBitResolution,
