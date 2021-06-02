@@ -28,9 +28,11 @@ if get_option('oss') == true
 endif
 
 pulse_dep = dependency('libpulse', required: get_option('pulse'))
-if pulse_dep.found()
+pulsesimple_dep = dependency('libpulse-simple', required: get_option('pulse'))
+if pulse_dep.found() and pulsesimple_dep.found()
 	defines += '-D__LINUX_PULSE__'
 	deps += pulse_dep
+	deps += pulsesimple_dep
 endif
 
 core_dep = dependency('appleframeworks', modules: ['CoreAudio', 'CoreFoundation'], required: get_option('core'))
@@ -67,7 +69,7 @@ if host_machine.system() == 'windows'
 	deps += compiler.find_library('winmm', required: true)
 endif
 
-rtaudio = library('rtaudio', src, include_directories: incdir, dependencies: deps)
+rtaudio = library('rtaudio', src, include_directories: incdir, cpp_args: defines, dependencies: deps)
 rtaudio_dep = declare_dependency(include_directories : '.',
   link_with : rtaudio)
 meson.override_dependency('rtaudio', rtaudio_dep)

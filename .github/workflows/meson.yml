@@ -91,9 +91,9 @@ jobs:
       - name: build on Windows
         if: runner.os == 'Windows'
         run: |
-          meson --buildtype release builddir
+          meson --buildtype release -Drtaudio=enabled builddir
           cd builddir
-          meson configure -Ddefault_library=static -Drtaudio=enabled
+          meson configure -Ddefault_library=both -Drtaudio:default_library=static -Drtaudio:wasapi=true -Dwingetopt:default_library=static
           meson compile
       - name: upload artifacts
         uses: actions/upload-artifact@v2

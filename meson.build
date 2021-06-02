@@ -90,7 +90,13 @@ if host_machine.system() == 'windows'
 endif
 
 if compiler.get_id() == 'msvc'
-	wingetopt = cmake.subproject('wingetopt')
+	opt_var = cmake.subproject_options()
+	if get_option('buildtype') == 'release'
+		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+	else
+		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+	endif
+	wingetopt = cmake.subproject('wingetopt', options: opt_var)
 	deps += wingetopt.dependency('wingetopt')
 endif
 
