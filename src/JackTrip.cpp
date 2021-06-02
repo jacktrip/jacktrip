@@ -367,7 +367,7 @@ void JackTrip::setupRingBuffers()
             mSendRingBuffer = new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer = new PoolBuffer(
                         mSampleRate, mNumAudioChansIn, mAudioBitResolution,
-                        mAudioBufferSize, mPacketPoolSize, mBufferQueueLength);
+                        mAudioBufferSize, mBufferQueueLength);
             //            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
             //            connect(mReceiveRingBuffer, SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
 

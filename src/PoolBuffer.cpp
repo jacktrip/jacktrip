@@ -53,20 +53,20 @@
 #include "PoolBuffer.h"
 
 #define RUN 3
-#define STDDEVINDOW 2000 // packets
+#define STDDEVINDOW 200 // packets
 #define HIST 6 // at FPP32
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 // from listening tests iteration performs better than '=' operator
 #define PACKETSAMP ( int s = 0; s < mFPP; s++ )
 
 //*******************************************************************************
-PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen)
+PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0),
       mNumChannels (channels),
       mAudioBitRes (bit_res),
       mFPP (FPP),
       mSampleRate (sample_rate),
-      mPoolSize (packetPoolSize),
+      mPoolSize (qLen),
       mRcvLag (qLen)
 {
     switch (mAudioBitRes) { // int from JitterBuffer to AudioInterface enum
@@ -129,26 +129,38 @@ void StdDev::tick()
     double msElapsed = (double)mTimer->nsecsElapsed() / 1000000.0;
     mTimer->start();
     if (ctr!=window) {
-        if (ctr) {
-            if (msElapsed<min) min = msElapsed;
-            else if (msElapsed>max) max = msElapsed;
-            acc += msElapsed;
-            double tmp = msElapsed - mean; // last window
-            var += (tmp*tmp);
-        }
+        data[ctr] = msElapsed;
+        if (msElapsed<min) min = msElapsed;
+        else if (msElapsed>max) max = msElapsed;
+        acc += msElapsed;
+        //        double tmp = msElapsed - mean; // last window
+        //        varRunning += (tmp*tmp);
         ctr++;
     } else {
         mean = (double)acc / (double) window;
-        var /= window;
-        stdDev = sqrt(var);
+        double var = 0.0;
+        for ( int i = 0; i < window; i++ ) {
+            double tmp = data[i] - mean;
+            var += (tmp*tmp);
+        }
+        //        varRunning /= (double) window;
+        //        stdDev = sqrt(varRunning);
+        //        qDebug() << mean << min << max << stdDev;
+        var /= (double) window;
+        double stdDev = sqrt(var);
+        if (longTermCnt) {
+            longTermStdDevAcc += stdDev;
+            longTermStdDev = longTermStdDevAcc/(double)longTermCnt;
+            qDebug() << mean << min << max << stdDev << longTermStdDev;
+        }
+        longTermCnt++;
         if (true) {
-            qDebug() << msElapsed << mean << min << max << stdDev;
-//            QString out;
-//            out += (QString::number(msNow) + QString("\t"));
-//            out += (QString::number(mean) + QString("\t"));
-//            out += (QString::number(min) + QString("\t"));
-//            out += (QString::number(max) + QString("\t"));
-//            out += (QString::number(stdDev) + QString("\t"));
+            //            QString out;
+            //            out += (QString::number(msNow) + QString("\t"));
+            //            out += (QString::number(mean) + QString("\t"));
+            //            out += (QString::number(min) + QString("\t"));
+            //            out += (QString::number(max) + QString("\t"));
+            //            out += (QString::number(stdDev) + QString("\t"));
             //                        emit printStats(out);
             // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
             // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
@@ -194,7 +206,19 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
     //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
 
     stdDev->tick();
-
+    if (stdDev->longTermStdDevAcc>0.0) {
+        int newPoolSize = (int) (stdDev->longTermStdDev*30.0);
+        if (newPoolSize>mPoolSize)  {
+            mIndexPool.resize(newPoolSize);
+            for ( int i = mPoolSize; i < newPoolSize; i++ ) {
+                int8_t* tmp = new int8_t[mBytes];
+                mIncomingDat.push_back(tmp);
+            }
+            qDebug() << "growing";
+            mPoolSize = newPoolSize;
+        }
+        //            qDebug() << (int) (stdDev->longTermStdDev*30.0);
+    }
     return true;
 };
 

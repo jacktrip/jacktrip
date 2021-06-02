@@ -83,8 +83,7 @@ enum JTLongOptIDS {
     OPT_AUTHPASS,
     OPT_NUMRECEIVE,
     OPT_NUMSEND,
-    OPT_APPENDTHREADID,
-    OPT_PACKETPOOLSIZE
+    OPT_APPENDTHREADID
 };
 
 //*******************************************************************************
@@ -164,7 +163,6 @@ void Settings::parseInput(int argc, char** argv)
         {"simjitter", required_argument, NULL, OPT_SIMJITTER},
         {"broadcast", required_argument, NULL, OPT_BROADCAST},
         {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
-        {"pktpool", required_argument, NULL, OPT_PACKETPOOLSIZE}, // only for experimental bufstrategy 3
         {"auth", no_argument, NULL, 'A'},  // Enable authentication between hub client and hub server
         {"certfile", required_argument, NULL, OPT_AUTHCERT},  // Certificate for server authentication
         {"keyfile", required_argument, NULL, OPT_AUTHKEY},  // Private key for server authentication
@@ -457,9 +455,6 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case OPT_RTUDPPRIORITY:  // Use RT priority for UDPDataProtocol thread
             mUseRtUdpPriority = true;
-            break;
-        case OPT_PACKETPOOLSIZE:  // Experimental bufstrategy 3 sets pool size
-            mPacketPoolSize = atoi(optarg);
             break;
         case 'h':
             //-------------------------------------------------------

@@ -178,7 +178,6 @@ public:
         mTruth.resize( FPP, 0.0 );
         mXfadedPred.resize( FPP, 0.0 );
         mNextPred.resize( FPP, 0.0 );
-        mLastGoodPacket.resize( FPP, 0.0 );
         for ( int i = 0; i < hist; i++ ) {
             vector<sample_t> tmp( FPP, 0.0 );
             mLastPackets.push_back(tmp);
@@ -195,7 +194,6 @@ public:
     vector<long double> mCoeffs;
     vector<sample_t> mXfadedPred;
     vector<sample_t> mNextPred;
-    vector<sample_t> mLastGoodPacket;
     vector<vector<sample_t>> mLastPackets;
 };
 
@@ -205,26 +203,30 @@ public:
         window(w)
     {
         reset();
+        longTermStdDev = 0.0;
+        longTermStdDevAcc = 0.0;
+        longTermCnt = 0;
         lastMean = 0.0;
         lastMin = 0;
         lastMax = 0;
         mTimer = new QElapsedTimer();
         mTimer->start();
+        data.resize( w, 0.0 );
     }
     void reset()    {
         mean = 0.0;
-        var = 0.0;
-        stdDev = 0.0;
+//        varRunning = 0.0;
         acc = 0.0;
-        min = 0.0;
+        min = 999999.0;
         max = 0.0;
         ctr = 0;
     };
     void tick();
     QElapsedTimer *mTimer;
+    vector<double> data;
     double mean;
     double var;
-    double stdDev;
+//    double varRunning;
     int window;
     double acc;
     double min;
@@ -233,6 +235,9 @@ public:
     double lastMean;
     double lastMin;
     double lastMax;
+    double longTermStdDev;
+    double longTermStdDevAcc;
+    int longTermCnt;
 };
 
 class PoolBuffer : public RingBuffer
@@ -240,7 +245,7 @@ class PoolBuffer : public RingBuffer
     //    Q_OBJECT;
 
 public:
-    PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int packetPoolSize, int qLen);
+    PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~PoolBuffer() {}
 
     bool pushPacket (const int8_t* buf);
