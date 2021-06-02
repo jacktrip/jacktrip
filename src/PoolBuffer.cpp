@@ -105,8 +105,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     for PACKETSAMP OUT(0.0, 1, s);
     memcpy(mZeros, mXfrBuffer, mBytes);
     mIncomingCnt = 0;
-
-    mStarted = false;
     mIndexPool.resize(mPoolSize);
     for ( int i = 0; i < mPoolSize; i++ ) mIndexPool[i] = -1;
     mTimer0 = new QElapsedTimer();
@@ -117,7 +115,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
     }
-    mStartAt = 100; // provisional, needs testing
 }
 // stubs for adding plotting back in
 
@@ -141,12 +138,6 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
     QMutexLocker locker(&mMutex);
 
     mIncomingCnt++;
-
-    if ((!mStarted) && (mGlitchCnt > mStartAt)) {
-        if (!mStarted) mStarted = true;
-                qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt;
-    }
-
     if (mGlitchCnt > mGlitchMax) {
         //        double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
         //        qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt
@@ -201,7 +192,7 @@ void PoolBuffer::pullPacket (int8_t* buf) {
         mIndexPool[targetIndex] = 0;
         memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
     }
-    if (mStarted) {
+    if (mIncomingCnt) {
         processPacket(glitch);
     } else {
         memcpy(mXfrBuffer, mZeros, mBytes);

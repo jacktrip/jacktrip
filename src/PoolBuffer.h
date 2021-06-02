@@ -252,7 +252,6 @@ private:
     int8_t*  mZeros;
     QElapsedTimer *mTimer0;
     unsigned int mIncomingCnt;
-    bool mStarted;
     vector<int> mIndexPool;
     int mRcvLag;
     int mGlitchCnt;
