@@ -103,7 +103,6 @@ class JackTripWorker : public QObject
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
-    void setPacketPoolSize(int packetPoolSize) { mPacketPoolSize = packetPoolSize; } // experimental bufstrategy 3 pool size
 
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     void setIOStatStream(QSharedPointer<std::ofstream> statStream)
@@ -172,7 +171,6 @@ class JackTripWorker : public QObject
     double mSimulatedJitterRate = 0.0;
     double mSimulatedDelayRel   = 0.0;
     bool mUseRtUdpPriority      = false;
-    unsigned int mPacketPoolSize = 1; // experimental bufstrategy 3 pool size
 
     int mIOStatTimeout = 0;
     QSharedPointer<std::ofstream> mIOStatStream;

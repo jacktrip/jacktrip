@@ -182,7 +182,6 @@ void JackTripWorker::start()
                                       mSimulatedDelayRel);
     mJackTrip->setBroadcast(mBroadcastQueue);
     mJackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
-    mJackTrip->setPacketPoolSize(mPacketPoolSize); // experimental bufstrategy 3 pool size
 
     mTimeoutTimer.setInterval(mSleepTime);
     connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTripWorker::udpTimerTick);

@@ -190,7 +190,6 @@ class UdpHubListener : public QObject
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
-    unsigned int mPacketPoolSize; // experimental bufstrategy 3 pool size
 
 #ifdef WAIR  // wair
     bool mWAIR;
@@ -251,7 +250,6 @@ class UdpHubListener : public QObject
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
-    void setPacketPoolSize(int packetPoolSize) { mPacketPoolSize = packetPoolSize; } // experimental bufstrategy 3 pool size
     bool mAppendThreadID = false;
 };
 
