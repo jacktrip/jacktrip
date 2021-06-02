@@ -89,6 +89,7 @@ private:
     
     void enableUi(bool enabled);
     void advancedOptionsForHubServer(bool isHubServer);
+    void migrateSettings();
     void loadSettings();
     void saveSettings();
     

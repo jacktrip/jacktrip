@@ -50,6 +50,10 @@ QJackTrip::QJackTrip(QWidget *parent) :
 {
     m_ui->setupUi(this);
     
+    QCoreApplication::setOrganizationName("jacktrip");
+    QCoreApplication::setOrganizationDomain("jacktrip.org");
+    QCoreApplication::setApplicationName("JackTrip");
+    
     //Create all our UI connections.
     connect(m_ui->typeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QJackTrip::chooseRunType);
     connect(m_ui->addressComboBox, &QComboBox::currentTextChanged, this, &QJackTrip::addressChanged);
@@ -156,7 +160,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     //Use the ipify API to find our external IP address.
     m_netManager->get(QNetworkRequest(QUrl("https://api.ipify.org")));
     m_netManager->get(QNetworkRequest(QUrl("https://api6.ipify.org")));
-    m_ui->statusBar->showMessage(QString("QJackTrip version ").append(gVersion));
+    m_ui->statusBar->showMessage(QString("JackTrip version ").append(gVersion));
     
     //Set up our interface for the default Client run mode.
     //(loadSettings will take care of the UI in all other cases.)
@@ -167,6 +171,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui->requireAuthGroupBox->setVisible(false);
     m_ui->authGroupBox->setVisible(false);
     
+    migrateSettings();
     loadSettings();
 
     QVector<QLabel *> labels;
@@ -706,13 +711,29 @@ void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
     }
 }
 
+void QJackTrip::migrateSettings()
+{
+    //Function to migrate settings for users who previously had QJackTrip installed.
+    QSettings settings;
+    if (settings.value("Migrated", false).toBool()) {
+        return;
+    }
+#ifdef __MAC_OSX__
+    QSettings oldSettings("psi-borg.org", "QJackTrip");
+#else
+    QSettings oldSettings("psi-borg", "QJackTrip");
+#endif
+    QStringList keys = oldSettings.allKeys();
+    for (int i = 0; i < keys.size(); i++) {
+        settings.setValue(keys.at(i), oldSettings.value(keys.at(i), QVariant()));
+    }
+    settings.setValue("Migrated", true);
+}
+
+
 void QJackTrip::loadSettings()
 {
-#ifdef __MAC_OSX__
-    QSettings settings("psi-borg.org", "QJackTrip");
-#else
-    QSettings settings("psi-borg", "QJackTrip");
-#endif
+    QSettings settings;
     m_ui->typeComboBox->setCurrentIndex(settings.value("RunMode", 0).toInt());
     
     //Migrate to separate send and receive channel numbers.
@@ -810,11 +831,7 @@ void QJackTrip::loadSettings()
 
 void QJackTrip::saveSettings()
 {
-#ifdef __MAC_OSX__
-    QSettings settings("psi-borg.org", "QJackTrip");
-#else
-    QSettings settings("psi-borg", "QJackTrip");
-#endif
+    QSettings settings;
     settings.setValue("RunMode", m_ui->typeComboBox->currentIndex());
     settings.setValue("LastAddress", m_ui->addressComboBox->currentText());
     settings.setValue("ChannelsSend", m_ui->channelSendSpinBox->value());
