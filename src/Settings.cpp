@@ -710,7 +710,8 @@ void Settings::printUsage()
          << endl;
     cout << " --bufstrategy # (0, 1, 2)                Use alternative jitter buffer"
          << endl;
-    cout << " --broadcast <broadcast_queue>            Duplicates receive ports for each connected client with the specified broadcast_queue length. Broadcast outputs have higher latency but less packet loss." << endl;
+    cout << " --broadcast <broadcast_queue>            Duplicate receive ports with the specified broadcast_queue length. "
+                                                       "Broadcast outputs have higher latency but less packet loss.\n";
     cout << " --udprt                                  Use RT thread priority for "
             "network I/O"
          << endl;
