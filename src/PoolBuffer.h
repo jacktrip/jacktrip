@@ -199,6 +199,42 @@ public:
     vector<vector<sample_t>> mLastPackets;
 };
 
+class StdDev {
+public:
+    StdDev(int w) :
+        window(w)
+    {
+        reset();
+        lastMean = 0.0;
+        lastMin = 0;
+        lastMax = 0;
+        mTimer = new QElapsedTimer();
+        mTimer->start();
+    }
+    void reset()    {
+        mean = 0.0;
+        var = 0.0;
+        stdDev = 0.0;
+        acc = 0.0;
+        min = 0.0;
+        max = 0.0;
+        ctr = 0;
+    };
+    void tick();
+    QElapsedTimer *mTimer;
+    double mean;
+    double var;
+    double stdDev;
+    int window;
+    double acc;
+    double min;
+    double max;
+    int ctr;
+    double lastMean;
+    double lastMin;
+    double lastMax;
+};
+
 class PoolBuffer : public RingBuffer
 {
     //    Q_OBJECT;
@@ -257,6 +293,7 @@ private:
     int mGlitchCnt;
     int mGlitchMax;
     vector<ChanData *> mChanData;
+    StdDev* stdDev;
 };
 
 #endif  //__POOLUFFER_H__

@@ -53,7 +53,7 @@
 #include "PoolBuffer.h"
 
 #define RUN 3
-
+#define STDDEVINDOW 2000 // packets
 #define HIST 6 // at FPP32
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 // from listening tests iteration performs better than '=' operator
@@ -84,7 +84,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mHist = (int) histFloat;
     if (!mHist) mHist++; // min packets
     else if (mHist > 6) mHist = 6; // max packets
-//    qDebug() << "mHist =" << mHist << "@" << mFPP;
+    //    qDebug() << "mHist =" << mHist << "@" << mFPP;
     mBytes = mFPP*mNumChannels*mBitResolutionMode;
     mXfrBuffer   = new int8_t[mBytes];
     mPacketCnt = 0; // burg
@@ -115,6 +115,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
     }
+    stdDev = new StdDev(STDDEVINDOW);
 }
 // stubs for adding plotting back in
 
@@ -123,6 +124,41 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
 
 //*******************************************************************************
 //void PoolBuffer::stats(Stat *stat)
+void StdDev::tick()
+{ // stdDev based on mean of last windowful
+    double msElapsed = (double)mTimer->nsecsElapsed() / 1000000.0;
+    mTimer->start();
+    if (ctr!=window) {
+        if (ctr) {
+            if (msElapsed<min) min = msElapsed;
+            else if (msElapsed>max) max = msElapsed;
+            acc += msElapsed;
+            double tmp = msElapsed - mean; // last window
+            var += (tmp*tmp);
+        }
+        ctr++;
+    } else {
+        mean = (double)acc / (double) window;
+        var /= window;
+        stdDev = sqrt(var);
+        if (true) {
+            qDebug() << msElapsed << mean << min << max << stdDev;
+//            QString out;
+//            out += (QString::number(msNow) + QString("\t"));
+//            out += (QString::number(mean) + QString("\t"));
+//            out += (QString::number(min) + QString("\t"));
+//            out += (QString::number(max) + QString("\t"));
+//            out += (QString::number(stdDev) + QString("\t"));
+            //                        emit printStats(out);
+            // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I 1 -G /tmp/iostat.log
+            // plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l, 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
+        }
+        lastMean = mean;
+        lastMin = min;
+        lastMax = max;
+        reset();
+    }
+}
 
 //*******************************************************************************
 //void PoolBuffer::run()
@@ -156,6 +192,9 @@ bool PoolBuffer::pushPacket (const int8_t *buf) {
     mIndexPool[oldestIndex] = mIncomingCnt;
     memcpy(mIncomingDat[oldestIndex], buf, mBytes);
     //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
+
+    stdDev->tick();
+
     return true;
 };
 
