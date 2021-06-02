@@ -25,7 +25,8 @@ sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
 # If you want to create a signed package, uncomment and modify the codesign parameter below as appropriate.
-macdeployqt "$APPNAME.app" #-codesign="Developer ID Application: Aaron Wyatt"
+STATIC_CHECK=$(otool -L ../builddir/jacktrip | grep QtCore)
+[ ! -z "$STATIC_CHECK" ] && macdeployqt "$APPNAME.app" #-codesign="Developer ID Application: Aaron Wyatt"
 exit 0
 
 # If you have Packages installed, you can build an installer for the newly created app bundle.
