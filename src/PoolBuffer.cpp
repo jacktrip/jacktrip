@@ -59,7 +59,7 @@ using std::setw;
 
 #define RUN 3
 #define STDDEVINDOW 200 // packets
-#define STDDEV2POOLSIZE 20.0
+#define STDDEV2POOLSIZE 30.0
 #define HIST 6 // at FPP32
 #define OUT(x,ch,s) sampleToBits(x,ch,s)
 // from listening tests iteration performs better than '=' operator
