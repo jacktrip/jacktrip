@@ -40,7 +40,11 @@
 
 #include <iostream>
 //#include <tr1/memory> //for shared_ptr
+#ifdef USE_WEAK_JACK
+#include "weak_libjack.h"
+#else
 #include <jack/jack.h>
+#endif
 
 #include <QMutex>
 #include <QVarLengthArray>

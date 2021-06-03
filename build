@@ -13,6 +13,7 @@ nojack - build without jack\n
 rtaudio - build with rtaudio\n
 nogui - build without the gui\n
 static - build with static libraries\n
+weakjack - build with weak linking of jack libraries\n
 "
 while [[ "$#" -gt 0 ]]; do
   if [[ -z "$UNKNOWN_OPTIONS" ]]; then
@@ -33,6 +34,10 @@ while [[ "$#" -gt 0 ]]; do
       static)
       echo "Building with static libraries"
       CONFIG="-config static $CONFIG" 
+      ;;
+      weakjack)
+      echo "Building with static libraries"
+      CONFIG="-config weakjack $CONFIG"
       ;;
       -h|--help) 
       echo -e $HELP_STR; exit 
