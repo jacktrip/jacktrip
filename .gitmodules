@@ -1,0 +1,3 @@
+[submodule "subprojects/weakjack"]
+	path = subprojects/weakjack
+	url = https://github.com/x42/weakjack.git
