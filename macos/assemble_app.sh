@@ -62,14 +62,24 @@ sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
-# The qt bin folder needs to be in your PATH for this script to work.
 DYNAMIC_QT=$(otool -L ../builddir/jacktrip | grep QtCore)
 if [ ! -z "$DYNAMIC_QT" ]; then
-    [ -z $(which macdeployqt) ] && { echo "The Qt bin folder needs to be in your PATH for this script to work."; exit 1; }
+    DEPLOY_CMD="$(which macdeployqt)"
+    if [ -z "$DEPLOY_CMD" ]; then
+        # Attempt to find macdeployqt. Try macports location first, then brew.
+        if [ -x "/opt/local/libexec/qt5/bin/macdeployqt" ]; then
+            DEPLOY_CMD="/opt/local/libexec/qt5/bin/macdeployqt"
+        elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix qt5) ]; then
+            DEPLOY_CMD="$(brew --prefix qt5)/bin/macdeployqt"
+        else
+            echo "The Qt bin folder needs to be in your PATH for this script to work."
+            exit 1
+        fi
+    fi
     if [ ! -z "$CERTIFICATE" ]; then
-        macdeployqt "$APPNAME.app" -codesign="$CERTIFICATE"
+        $DEPLOY_CMD "$APPNAME.app" -codesign="$CERTIFICATE"
     else
-        macdeployqt "$APPNAME.app"
+        $DEPLOY_CMD "$APPNAME.app"
     fi
 fi
 
