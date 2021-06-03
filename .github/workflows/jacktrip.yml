@@ -200,14 +200,30 @@ jobs:
             CONFIG_STRING="nogui $CONFIG_STRING"
           fi
           ./build $CONFIG_STRING
-      - name: create app bundle
-        if: runner.os == 'macOS' && matrix.bundle-path
+      - name: create app bundle and installer on macOS
+        if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
         run: |
-          if [[ "${{ matrix.static }}" == true ]]; then 
-            export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
-          else
-            export PATH=`brew --prefix qt5`/bin:$PATH
+          CONFIG=
+          if [[ -n "${{ matrix.installer-path }}" ]]; then 
+            CONFIG="-i $CONFIG"
           fi
+          cd macos
+          ./assemble_app.sh $CONFIG
+          if [[ -n ${{ matrix.bundle-path }} ]]; then
+            mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
+            cp -R *.app $BUILD_PATH/${{ matrix.bundle-path }}
+          fi
+          if [[ -n ${{ matrix.installer-path }} ]]; then
+            mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
+            cp -R package/build/* $BUILD_PATH/${{ matrix.installer-path }}
+          fi
+        run: |
+          CONFIG=
+          if [[ -n "${{ matrix.installer-path }}" ]]; then 
+            CONFIG="-i $CONFIG"
+          fi
+          cd macos
+          ./assemble_app.sh $CONFIG
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
         if: matrix.jacktrip-path
