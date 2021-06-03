@@ -16,7 +16,7 @@ jobs:
           do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
   build:
     needs: skip-duplicates
-    if: ${{ needs.skip-duplicates.outputs.should_skip != 'true' }}
+    if: ${{ needs.skip-duplicates.outputs.should_skip != 'true' }} || ${{ github.ref == 'refs/heads/dev' }}
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
     strategy:
