@@ -16,46 +16,51 @@ jobs:
           do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
   build:
     needs: skip-duplicates
-    if: ${{ needs.skip-duplicates.outputs.should_skip != 'true' }}
+    if: ${{ needs.skip-duplicates.outputs.should_skip != 'true' }} || ${{ github.ref == 'refs/heads/dev' }}
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false # don't abort if one of the build failse
       matrix:
         include:
-          - name: Linux
+          - name: Linux-x64
             runs-on: ubuntu-18.04
-            qmake-spec: linux-g++
-            make-cmd: make
+            static: true
+            jacktrip-path: jacktrip
 
-          - name: macOS
-            runs-on: macos-10.15
-            qmake-spec: macx-clang
-            make-cmd: make
-            rtaudio: true
+          - name: Linux-x64-dynamic-nogui
+            runs-on: ubuntu-18.04
+            jacktrip-path: jacktrip
+            nogui: true
 
-          - name: macOS-static
+          # - name: macOS-dynamic
+          #   runs-on: macos-10.15
+          #   rtaudio: true
+          #   jacktrip-path: jacktrip
+
+          - name: macOS-x64
             runs-on: macos-10.15
-            qmake-spec: macx-clang
-            make-cmd: make
             rtaudio: true
             static: true
+            jacktrip-path: jacktrip # relative to build path; triggers artifact upload for jacktrip binary
+            bundle-path: bundle # relative to build path; triggers application bundle creation and upload (macOS)
+            installer-path: installer # relative to build path; triggers installer creation and upload
 
-          - name: Windows
-            runs-on: windows-2019
-            qmake-spec: win32-g++
-            make-cmd: mingw32-make
-            rtaudio: true
+          # - name: Windows-dynamic
+          #   runs-on: windows-2019
+          #   rtaudio: true
+          #   jacktrip-path: release/jacktrip.exe
 
-          - name: Windows-static
+          - name: Windows-x64
+            # suffix: installer
             runs-on: windows-2019
-            qmake-spec: win32-g++
-            make-cmd: mingw32-make
             rtaudio: true
             static: true
+            # installer: true
+            jacktrip-path: release/jacktrip.exe
+            installer-path: installer # relative to build path; triggers installer creation and upload
 
     env:
-      SRC_PATH: ${{ github.workspace }}/src
       BUILD_PATH: ${{ github.workspace }}/builddir
       QT_VERSION: '5.15.2'
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
@@ -67,6 +72,16 @@ jobs:
       
     steps:
       - uses: actions/checkout@v2
+      - name: set version string for artifacts
+        shell: bash
+        id: set-version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=$GITHUB_SHA
+          fi
+          echo "::set-output name=version::$VERSION"
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
@@ -91,6 +106,9 @@ jobs:
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
             brew install rt-audio
             rm -f `brew --prefix rt-audio`/lib/*.dylib # remove the dynamic library, we want static only
+          fi
+          if [[ -n ${{ matrix.installer-path }} ]]; then
+            brew install packages
           fi
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
@@ -156,24 +174,73 @@ jobs:
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
+      - name: set Qt environment variables
+        shell: bash
+        run: |
+          if [[ "${{ matrix.static }}" == true ]]; then 
+            echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "`brew --prefix qt5`/bin" >> $GITHUB_PATH
+          else
+            echo "$Qt5_DIR/bin" >> $GITHUB_PATH
+          fi
       - name: build JackTrip
         shell: bash
         run: |
-          mkdir $BUILD_PATH 
-          cd $BUILD_PATH
-          CONFIG_STRING=
+          CONFIG_STRING="noclean"
           if [[ "${{ matrix.static }}" == true ]]; then 
-            export PATH=$QT_STATIC_BUILD_PATH/bin:$PATH
-            CONFIG_STRING="-config static $CONFIG_STRING"
+            CONFIG_STRING="static $CONFIG_STRING"
           fi
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
-            CONFIG_STRING="-config rtaudio $CONFIG_STRING"
+            CONFIG_STRING="rtaudio $CONFIG_STRING"
           fi
-          qmake -spec ${{ matrix.qmake-spec }} $CONFIG_STRING ../jacktrip.pro
-          ${{ matrix.make-cmd }} release
-      - name: upload artifacts
+          if [[ "${{ matrix.nojack }}" == true ]]; then 
+            CONFIG_STRING="nojack $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.nogui }}" == true ]]; then 
+            CONFIG_STRING="nogui $CONFIG_STRING"
+          fi
+          ./build $CONFIG_STRING
+      - name: create app bundle and installer on macOS
+        if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
+        run: |
+          CONFIG=
+          if [[ -n "${{ matrix.installer-path }}" ]]; then 
+            CONFIG="-i $CONFIG"
+          fi
+          cd macos
+          ./assemble_app.sh $CONFIG
+          if [[ -n ${{ matrix.bundle-path }} ]]; then
+            mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
+            cp -R *.app $BUILD_PATH/${{ matrix.bundle-path }}
+          fi
+          if [[ -n ${{ matrix.installer-path }} ]]; then
+            mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
+            cp -R package/build/* $BUILD_PATH/${{ matrix.installer-path }}
+          fi
+      - name: create installer on Windows
+        if: runner.os == 'Windows' && matrix.installer-path
+        shell: cmd
+        run: |
+          cd win
+          call "build_installer.bat"
+          bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
+          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}"
+      - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
+        if: matrix.jacktrip-path
         with:
-          name: JackTrip-${{ matrix.name }} # version number could be added here
-          path: ${{ env.BUILD_PATH }}
-          retention-days: 30 # remove artifacts after 30 days
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}
+          path: ${{ env.BUILD_PATH }}/${{ matrix.jacktrip-path }}
+      - name: upload application bundle
+        uses: actions/upload-artifact@v2
+        if: matrix.bundle-path
+        with:
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application
+          path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
+      - name: upload installer
+        uses: actions/upload-artifact@v2
+        if: matrix.installer-path
+        with:
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer
+          path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
