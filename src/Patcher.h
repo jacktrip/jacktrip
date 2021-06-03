@@ -39,7 +39,11 @@
 #define __PATCHER_H__
  
 #include "JackTrip.h"
+#ifdef USE_WEAK_JACK
+#include "weak_libjack.h"
+#else
 #include <jack/jack.h>
+#endif
 #include <QStringList>
 #include <QMutex>
  

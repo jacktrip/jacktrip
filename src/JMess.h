@@ -43,7 +43,11 @@
 //#include <QXmlSimpleReader>
 //#include <QXmlInputSource>
 //#include <QXmlContentHandler>
+#ifdef USE_WEAK_JACK
+#include "weak_libjack.h"
+#else
 #include <jack/jack.h>
+#endif
 
 #include <QMutexLocker>
 

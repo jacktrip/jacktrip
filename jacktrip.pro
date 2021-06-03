@@ -43,11 +43,17 @@ INCLUDEPATH += faust-src-lair/stk
 # INCLUDEPATH+=/usr/include/stk
 # LIBS += -L/usr/local/lib -ljack -lstk -lm
   LIBS += -L/usr/local/lib -lm
-  nojack {
-    message(Building NONJACK)
+  weakjack {
+    message(Building with weak linking of JACK)
+    INCLUDEPATH += subprojects/weakjack
+    DEFINES += USE_WEAK_JACK
   } else {
-    CONFIG += link_pkgconfig
-    PKGCONFIG += jack
+    nojack {
+      message(Building NONJACK)
+    } else {
+      CONFIG += link_pkgconfig
+      PKGCONFIG += jack
+    }
   }
 }
 
@@ -120,14 +126,26 @@ win32 {
   exists("C:\Program Files\JACK2") {
     message("using Jack in C:\Program Files\JACK2")
     INCLUDEPATH += "C:\Program Files\JACK2\include"
-    LIBS += "C:\Program Files\JACK2\lib\libjack64.lib"
-    LIBS += "C:\Program Files\JACK2\lib\libjackserver64.lib"
+    weakjack {
+      message(Building with weak linking of JACK)
+      INCLUDEPATH += subprojects/weakjack
+      DEFINES += USE_WEAK_JACK
+    } else {
+      LIBS += "C:\Program Files\JACK2\lib\libjack64.lib"
+      LIBS += "C:\Program Files\JACK2\lib\libjackserver64.lib"
+    }
   } else {
     exists("C:\Program Files (x86)\Jack") {
       message("using Jack in C:\Program Files (x86)\Jack")
       INCLUDEPATH += "C:\Program Files (x86)\Jack\includes"
-      LIBS += "C:\Program Files (x86)\Jack\lib\libjack64.lib"
-      LIBS += "C:\Program Files (x86)\Jack\lib\libjackserver64.lib"
+      weakjack {
+        message(Building with weak linking of JACK)
+        INCLUDEPATH += subprojects/weakjack
+        DEFINES += USE_WEAK_JACK
+      } else {
+        LIBS += "C:\Program Files (x86)\Jack\lib\libjack64.lib"
+        LIBS += "C:\Program Files (x86)\Jack\lib\libjackserver64.lib"
+      }
     } else {
       message("Jack library not found")
     }
@@ -248,4 +266,8 @@ SOURCES += src/gui/messageDialog.cpp \
 
 rtaudio {
     SOURCES += src/RtAudioInterface.cpp
+}
+
+weakjack {
+  SOURCES += subprojects/weakjack/weak_libjack.c
 }
