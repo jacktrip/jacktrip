@@ -27,10 +27,12 @@ jobs:
             runs-on: ubuntu-18.04
             static: true
             jacktrip-path: jacktrip
+            binary-path: binary
 
           - name: Linux-x64-dynamic-nogui
             runs-on: ubuntu-18.04
             jacktrip-path: jacktrip
+            binary-path: binary
             nogui: true
 
           # - name: macOS-dynamic
@@ -43,9 +45,10 @@ jobs:
             rtaudio: true
             static: true
             weakjack: true
-            jacktrip-path: jacktrip # relative to build path; triggers artifact upload for jacktrip binary
-            bundle-path: bundle # relative to build path; triggers application bundle creation and upload (macOS)
-            installer-path: installer # relative to build path; triggers installer creation and upload
+            jacktrip-path: jacktrip # relative to build path
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
+            installer-path: installer # directory relative to build path; triggers installer creation and upload
 
           # - name: Windows-dynamic
           #   runs-on: windows-2019
@@ -59,7 +62,8 @@ jobs:
             static: true
             weakjack: true
             jacktrip-path: release/jacktrip.exe
-            installer-path: installer # relative to build path; triggers installer creation and upload
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            installer-path: installer # directory relative to build path; triggers installer creation and upload
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
@@ -207,6 +211,16 @@ jobs:
             CONFIG_STRING="weakjack $CONFIG_STRING"
           fi
           ./build $CONFIG_STRING
+      - name: compress the binary
+        shell: bash
+        if: matrix.binary-path
+        run: |
+          mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }}
+          else
+            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
+          fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
         run: |
@@ -218,11 +232,11 @@ jobs:
           ./assemble_app.sh $CONFIG
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
-            cp -R *.app $BUILD_PATH/${{ matrix.bundle-path }}
+            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip *.app
           fi
           if [[ -n ${{ matrix.installer-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
-            cp -R package/build/* $BUILD_PATH/${{ matrix.installer-path }}
+            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.pkg
           fi
       - name: create installer on Windows
         if: runner.os == 'Windows' && matrix.installer-path
@@ -231,13 +245,13 @@ jobs:
           cd win
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
-          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}"
+          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.msi"
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
-        if: matrix.jacktrip-path
+        if: matrix.binary-path
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}
-          path: ${{ env.BUILD_PATH }}/${{ matrix.jacktrip-path }}
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary
+          path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: upload application bundle
         uses: actions/upload-artifact@v2
         if: matrix.bundle-path
@@ -267,11 +281,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Linux-x64/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-binary/*
             ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-application/*
             ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-installer/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-binary/*
             ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-installer/*
           draft: true
         env:
