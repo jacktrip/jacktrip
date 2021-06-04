@@ -5,7 +5,17 @@ Changelog
 ---
 - (added) optional GUI from QJackTrip
 - (added) authentication in hub server mode
+- (added) different number of sending and receiving channels
 - (added) new patcher mechanism that doesn't delete existing connections
+- (added) MkDocs based documentation
+- (added) weak jack linking
+- (added) manpage
+- (added) MSVC build
+- (added) RtAudio Meson subproject
+- (added) Formatting with clang-format
+- (added) Cross Compilation for Windows
+- (fixed) Regression in remote client name handling
+- (update) RtAudio revive (only default devices supported)
 - (update) build script moved to root directory
 
 1.3.0
@@ -22,6 +32,7 @@ Changelog
 - (added) hubpatch 5, no auto patching
 - (added) jack client name length check
 - (added) scripts/hubMode/test_hub_mode_server_and_client.sh
+- (added) Meson build
 - (fixed) misc. typos, indentation
 - (fixed) short form IO stat options
 - (fixed) nullptr jack server name when creating jack client
