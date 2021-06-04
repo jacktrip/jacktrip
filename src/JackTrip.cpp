@@ -543,11 +543,11 @@ void JackTrip::completeConnection()
     if (gVerboseFlag)
         std::cout << "  JackTrip:startProcess before mAudioInterface->startProcess"
                   << std::endl;
-    for (int i = 0; i < mProcessPluginsFromNetwork.size(); ++i) {
-        mAudioInterface->appendProcessPluginFromNetwork(mProcessPluginsFromNetwork[i]);
+    for (auto & i : mProcessPluginsFromNetwork) {
+        mAudioInterface->appendProcessPluginFromNetwork(i);
     }
-    for (int i = 0; i < mProcessPluginsToNetwork.size(); ++i) {
-        mAudioInterface->appendProcessPluginToNetwork(mProcessPluginsToNetwork[i]);
+    for (auto & i : mProcessPluginsToNetwork) {
+        mAudioInterface->appendProcessPluginToNetwork(i);
     }
     mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
