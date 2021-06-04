@@ -30,8 +30,4 @@
     <binary>jacktrip</binary>
   </provides>
 
-  <releases>
-    <release version="1.4.0rc1" date="2021-06-17">
-    </release>
-  </releases>
 </component>
