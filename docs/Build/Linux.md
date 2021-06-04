@@ -6,11 +6,12 @@ experimental.  For quicker ways to install Jacktrip, go to README.md in the root
 directory of the project.
 
 ## Dependencies
-- g++
-- Qt 5.14.2
+- C++ compiler
+- Qt5
 
 Optional:
-- Jack (preferred) or RtAudio (not fully functional)
+
+- JACK (preferred) or RtAudio (not fully functional)
 - help2man for generating the manpage
 
 ### Fedora

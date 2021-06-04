@@ -6,9 +6,9 @@ experimental.  For quicker ways to install Jacktrip, go to README.md in the root
 directory of the project.
 
 ## Dependencies
-- g++
-- Qt 5.14.2
-- Jack
+- C++ compiler
+- Qt5
+- JACK
 
 RtAudio is no longer a dependency.
 You might want to skip the steps you don't need.
@@ -33,7 +33,6 @@ If you don't have Homebrew, install it:
 To install git if you don't have it:
 ```sh
 brew install git
-brew install qjackctl
 ```
 
 Install and link qt5:
@@ -58,7 +57,7 @@ $ cd builddir
 $ ls
 ```
 
-You should see a `qjacktrip` executable and a `jacktrip` symlink in this folder.
+You should see a `jacktrip` executable in this folder.
 
 If the build script doesn't work, try building
 the Makefiles yourself. You'd need qmake. Then you can build by:
@@ -69,6 +68,7 @@ $ make release
 ```
 
 To build using QtCreator:
+
   * Open jacktrip.pro using QtCreator
   * Choose a correctly configured Kit
 
