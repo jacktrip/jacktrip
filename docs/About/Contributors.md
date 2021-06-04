@@ -15,11 +15,12 @@
 
 ??? note "Aaron Wyatt /// ***Monash University***"
 
-    **2019 - **
+    **2020 - **
 
     Feature Work
 
     * Graphical User Interface (QJackTrip)
+    * IPv6 support
     * Authentication
     * Installer Creation Scripts
 
