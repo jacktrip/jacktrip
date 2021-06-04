@@ -36,19 +36,10 @@
  */
 
 // EXPERIMENTAL for testing in JackTrip v1.4.0
-// tested against server running main -p1
-// 128 server  --udprt --bufstrategy 1 (+ defaults)
-// this client --udprt --bufstrategy 3 --pktpool 2 -q2
-
-// 32 server --udprt  --bufstrategy 1 -q20
-// jacktrip -S -p1 --udprt --bufstrategy 3 --pktpool 30 -q2 -n1
-// --udprt --bufstrategy 3 --pktpool 3 -q2
-// --udprt --bufstrategy 3 --pktpool 4000 -q3000
-
-// 16 server --udprt --bufstrategy 1 -q40
-//  --pktpool 4 -q3
-
-// should size pktpool from StdDev
+// for example, server
+//jacktrip -S --udprt  -p1 --bufstrategy 3 -q2
+// and client
+//jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3
 
 #include "PoolBuffer.h"
 
@@ -99,6 +90,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mHist++;  // min packets
     else if (mHist > 6)
         mHist = 6;  // max packets
+    if (gVerboseFlag)
+        cout << "mHist = " << mHist << " at " << mFPP << "\n";
     //    qDebug() << "mHist =" << mHist << "@" << mFPP;
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
     mXfrBuffer = new int8_t[mBytes];
@@ -162,7 +155,8 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
 
     stdDev->tick();
     if (stdDev->longTermStdDevAcc > 0.0) {
-        int newPoolSize = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE);
+        double FPPfactor = 32 / (double) mFPP;
+        int newPoolSize = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * FPPfactor);
         if (newPoolSize > mPoolSize) {
             if (newPoolSize > MAXPOOLSIZE)
                 newPoolSize = MAXPOOLSIZE;  // avoid insanely large pool
