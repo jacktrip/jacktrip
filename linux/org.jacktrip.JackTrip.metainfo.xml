@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2021 Nils Tonnätt <nils.tonnaett@posteo.de> -->
+<component type="desktop-application">
+  <id>org.jacktrip.JackTrip</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <name>JackTrip</name>
+  <summary>Connect and Play with other Musicians</summary>
+  <summary lang="de_DE">Verbinde dich und spiele mit anderen Musikern</summary>
+
+  <description>
+    <p>
+      JackTrip is a cross-platform multi-machine audio system
+      used for network music performance over the Internet.
+      It supports any number of channels (as many as the computer/network can handle)
+      of bidirectional, high quality, uncompressed audio signal streaming.
+    </p>
+    <p>
+      You can use it between any combination of machines e.g., one end using
+      Linux can connect to another using Mac OSX.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">org.jacktrip.JackTrip.desktop</launchable>
+
+  <url type="homepage">https://jacktrip.github.io/jacktrip/</url>
+  <project_group>JackTrip</project_group>
+
+  <provides>
+    <binary>jacktrip</binary>
+  </provides>
+
+  <releases>
+    <release version="1.4.0rc1" date="2021-06-17">
+    </release>
+  </releases>
+</component>
