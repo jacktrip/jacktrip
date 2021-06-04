@@ -31,9 +31,10 @@
     Feature Work
 
     * Different number of input and output channels
-    * Append Thread ID to
+    * Append Thread ID to JACK client names
     * Meson build
     * RtAudio backend
+    * MkDocs based documentation
     * Github Actions
 
 ??? note "Julius Smith /// ***CCRMA, Stanford University***"
