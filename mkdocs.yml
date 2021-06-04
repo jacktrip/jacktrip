@@ -5,10 +5,14 @@ nav:
   - User Guide:
     - Installation: Install.md
   - Developer Guide:
-    - Linux: Build/Linux.md
-    - Mac OS: Build/Mac.md
-    - Windows: Build/Windows.md
+    - QMake Build:
+      - Linux: Build/Linux.md
+      - Mac OS: Build/Mac.md
+      - Windows: Build/Windows.md
     - Meson Build: Build/Meson_build.md
+    - Development Tools:
+      - Formatting: DevTools/Formatting.md
+      - Static Analysis: DevTools/StaticAnalysis.md
     - Write Documentation: Documentation/MkDocs.md
   - About:
     - Contributors: About/Contributors.md
