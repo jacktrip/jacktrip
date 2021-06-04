@@ -250,3 +250,29 @@ jobs:
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
+  # release - list of files uploaded to GH release is specified in the *upload* step
+  deploy_gh:
+    if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
+    needs: build
+    runs-on: ubuntu-18.04
+    name: 'deploy release'
+    env:
+      DOWNLOAD_PATH: ${{ github.workspace }}/Install
+    steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ env.DOWNLOAD_PATH }} # no "name" paramter - download all artifacts
+      - name: upload to the release page
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*Linux-x64/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-application/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-installer/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-installer/*
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
