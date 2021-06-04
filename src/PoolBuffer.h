@@ -54,7 +54,6 @@ using std::vector;
 class BurgAlgorithm
 {
    public:
-    BurgAlgorithm() {}
     bool classify(double d);
     void train(vector<long double>& coeffs, const vector<float>& x);
     void predict(vector<long double>& coeffs, vector<float>& tail);

@@ -155,7 +155,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
 
     stdDev->tick();
     if (stdDev->longTermStdDevAcc > 0.0) {
-        double FPPfactor = 32 / (double) mFPP;
+        double FPPfactor = 0.25 + (32 / (double) mFPP);
         int newPoolSize = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * FPPfactor);
         if (newPoolSize > mPoolSize) {
             if (newPoolSize > MAXPOOLSIZE)
