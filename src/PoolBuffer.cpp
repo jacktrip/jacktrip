@@ -36,10 +36,13 @@
  */
 
 // EXPERIMENTAL for testing in JackTrip v1.4.0
+// runs ok from FPP 16 up to 512, but don't try 1024 yet
+// in / out channels are the same -- mono, stereo and -n3 tested fine
+
 // for example, server
-//jacktrip -S --udprt  -p1 --bufstrategy 3 -q2
+// jacktrip -S --udprt  -p1 --bufstrategy 3 -q2
 // and client
-//jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3
+// jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -q2
 
 #include "PoolBuffer.h"
 
@@ -50,7 +53,6 @@ using std::cout;
 using std::endl;
 using std::setw;
 
-#define RUN             3
 #define STDDEVINDOW     200  // packets
 #define STDDEV2POOLSIZE 30.0
 #define MAXPOOLSIZE     6000  // insanely large pool, 2 sec FPP16
