@@ -13,8 +13,7 @@ finish-args:
   - --share=network
   # Pipewire/Jack
   - --filesystem=xdg-run/pipewire-0
-  - --socket=system-bus
-  - --socket=pulseaudio
+  - --system-talk-name=org.freedesktop.RealtimeKit1
   - --device=all
 modules:
   - shared-modules/linux-audio/jack2.json
