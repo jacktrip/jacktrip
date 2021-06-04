@@ -12,6 +12,7 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
+    if: github.repository == 'jacktrip/jacktrip'
     steps:
       - name: Checkout main
         uses: actions/checkout@v2
