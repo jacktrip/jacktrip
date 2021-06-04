@@ -14,7 +14,7 @@ MkDocs and Material for MkDocs are installed from pip:
 pip install mkdocs mkdocs-material
 ``` 
 
-When writing documentation it is very handy to run `mkdocs serve'. This will open
+When writing documentation it is very handy to run `mkdocs serve`. This will open
 a local webserver (usually at [http://127.0.0.1:8000/](http://127.0.0.1:8000/)).
 If you change Markdown files of the documentation and save them, the website automatically
 updates. 
