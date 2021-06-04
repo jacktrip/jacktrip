@@ -7,7 +7,7 @@ FPP=$2
 
 echo starting $JACKTRIP server
 
-$(PIPEWIRE_LATENCY="$FPP/48000" $JACKTRIP -S -p1 --udprt  > /dev/null 2>&1 & )
+$(PIPEWIRE_LATENCY="$FPP/48000" $JACKTRIP -S -p1 --udprt  --bufstrategy 3 --pktpool 3 -q1 > /dev/null 2>&1 & )
 
 
 

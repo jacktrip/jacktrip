@@ -41,6 +41,7 @@
 #include "JackAudioInterface.h"
 #endif
 #include "JitterBuffer.h"
+#include "PoolBuffer.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
@@ -359,6 +360,16 @@ void JackTrip::setupRingBuffers()
         if (0 > mBufferStrategy) {
             mReceiveRingBuffer =
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
+            mPacketHeader->setBufferRequiresSameSettings(true);
+        } else if (mBufferStrategy == 3) {
+            qDebug() << "experimental buffer strategy 3 -- pool buffer with PLC";
+            mSendRingBuffer = new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
+            mReceiveRingBuffer = new PoolBuffer(
+                        mSampleRate, mNumAudioChansIn, mAudioBitResolution,
+                        mAudioBufferSize, mBufferQueueLength);
+            //            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this, SLOT(onStatTimer(QString)));
+            //            connect(mReceiveRingBuffer, SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
+
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;

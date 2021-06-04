@@ -21,7 +21,7 @@ nogui {
 
 QT += network
 
-# rc.1.2 switch enables experimental wair build, merge some of it with WAIRTOHUB
+# switch added in rc.1.2 enables wair build, some of it merged as WAIRTOHUB
 # DEFINES += WAIR
 DEFINES += WAIRTOHUB
 
@@ -183,6 +183,7 @@ HEADERS += src/DataProtocol.h \
            src/Compressor.h \
            src/CompressorPresets.h \
            src/Limiter.h \
+           src/PoolBuffer.h \
            src/Reverb.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
@@ -225,6 +226,7 @@ SOURCES += src/DataProtocol.cpp \
            src/JackTrip.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
+           src/PoolBuffer.cpp \
            src/Reverb.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
