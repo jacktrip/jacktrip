@@ -31,6 +31,12 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
     meson --buildtype release --pkg-config-path `brew --prefix qt5`/lib/pkgconfig build_release
     ``` 
 
+## Configuration
+
+If you are in a build directory, `meson configure` shows you all available options.
+Current project options are `jack`, `nogui`, `rtaudio` and `wair`.
+Meson shows you also the options of subprojects like RtAudio.
+
 ## Build
 
 Meson builds in a separate directory. It doesn't touch anything of your project.
@@ -67,8 +73,4 @@ Install with:
 sudo meson install
 ```
 
-## Configure
 
-If you are in a build directory, `meson configure` shows you all available options.
-Current project options are `jack`, `nogui`, `rtaudio` and `wair`.
-Meson shows you also the options of subprojects like RtAudio.
