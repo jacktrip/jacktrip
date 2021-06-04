@@ -112,11 +112,7 @@ if host_machine.system() == 'darwin'
 	add_languages('objcpp')
 endif
 
-if host_machine.system() == 'linux'
-	install_data('linux/jacktrip.desktop', install_dir: get_option('datadir') / 'applications')
-	install_data('linux/jacktrip.svg', install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps')
-	install_data('linux/jacktrip_48x48.png', rename: 'jacktrip.png', install_dir: get_option('datadir') / 'icons' / 'hicolor' / '48x48' / 'apps')
-endif
+subdir('linux')
 
 jacktrip = executable('jacktrip', src, prepro_files, dependencies: deps, cpp_args: defines, install: true )
 
