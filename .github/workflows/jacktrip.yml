@@ -1,5 +1,25 @@
 name: build
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
+  workflow_dispatch:
+  schedule:
+    - cron:  '* * * * 0' # run weekly to refresh static Qt cache
 jobs:
   skip-duplicates:
     runs-on: ubuntu-latest
