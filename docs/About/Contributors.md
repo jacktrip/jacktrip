@@ -1,6 +1,8 @@
 # Contributors
 
-## Original Authors
+In order of first contribution
+
+## 2008
 
 ??? note "Chris Chafe /// ***CCRMA, Stanford University*** /// ***JackTrip Foundation***"
 
@@ -10,19 +12,7 @@
 
     **2008 - 2018**
 
-
-## Developers
-
-??? note "Aaron Wyatt /// ***Monash University***"
-
-    **2020 - **
-
-    Feature Work
-
-    * Graphical User Interface (QJackTrip)
-    * IPv6 support
-    * Authentication
-    * Installer Creation Scripts
+## 2019
 
 ??? note "Nils Tonnätt /// ***Audiocommunication, TU Berlin***"
 
@@ -37,7 +27,18 @@
     * MkDocs based documentation
     * Github Actions
 
-??? note "Julius Smith /// ***CCRMA, Stanford University***"
+## 2020
+
+??? note "Aaron Wyatt /// ***Monash University***"
+
+    **2020 - **
+
+    Feature Work
+
+    * Graphical User Interface (QJackTrip)
+    * IPv6 support
+    * Authentication
+    * Installer Creation Scripts
 
 ??? note "Marcin Pączkowski /// ***Composer***"
 
@@ -47,21 +48,23 @@
 
     * Github Actions
 
-## User Community Building
-
-??? note "Bonnie Kwong"
-
-??? note "Mike Dickey /// ***JackTrip Foundation***"
-
-## Visiting Contributors
-
-??? note  "Anton Runov"
+## 2021
 
 ??? note  "Olivier Humbert" 
 
     **2021**
 
     * French Translation Work
+
+## unknown
+
+??? note "Julius Smith /// ***CCRMA, Stanford University***"
+
+??? note "Bonnie Kwong"
+
+??? note "Mike Dickey /// ***JackTrip Foundation***"
+
+??? note  "Anton Runov"
 
 ??? note "Maximilian Wagenbach"
 
