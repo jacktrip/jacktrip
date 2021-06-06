@@ -61,6 +61,7 @@ set(qjacktrip_SRC
   src/PacketHeader.cpp
   src/RingBuffer.cpp
   src/JitterBuffer.cpp
+  src/PoolBuffer.cpp
   src/Compressor.cpp
   src/Limiter.cpp
   src/Reverb.cpp
