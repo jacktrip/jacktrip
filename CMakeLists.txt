@@ -5,7 +5,7 @@ project(QJackTrip)
 set(nogui FALSE)
 
 if (nogui)
-  add_compile_definitions(__NO_GUI__)
+  add_compile_definitions(NO_GUI)
 endif ()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")

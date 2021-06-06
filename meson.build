@@ -65,7 +65,7 @@ endif
 deps = [threads_dep, jack_dep]
 
 if get_option('nogui') == true
-	defines += '-D__NO_GUI__'
+	defines += '-DNO_GUI'
 	qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
 else
 	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])

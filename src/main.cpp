@@ -35,7 +35,7 @@
  * \date July 2020
  */
 
-#ifndef __NO_GUI__
+#ifndef NO_GUI
 #include "gui/qjacktrip.h"
 #include <QApplication>
 #else
@@ -59,7 +59,7 @@ QCoreApplication *createApplication(int &argc, char *argv[])
         } else if (strcmp(argv[i], "--test-gui") == 0) {
             //Command line option to test if the binary has been built with GUI support.
             //Exits immediately. Exits with an error if GUI support has not been built in.
-#ifdef __NO_GUI__
+#ifdef NO_GUI
             std::exit(1);
 #else
             std::exit(0);
@@ -69,7 +69,7 @@ QCoreApplication *createApplication(int &argc, char *argv[])
 
     //If we have command line arguments and aren't forcing the GUI run on the command line.
     if (argc == 1 || forceGui) {
-#ifdef __NO_GUI__
+#ifdef NO_GUI
         if (forceGui) {
             std::cout << "This version of jacktrip has not been built with GUI support." << std::endl;
             std::exit(1);
@@ -77,8 +77,16 @@ QCoreApplication *createApplication(int &argc, char *argv[])
             return new QCoreApplication(argc, argv);
         }
 #else
+#ifdef __LINUX__
+        //Check if X or Wayland environment variables are set.
+        if (std::getenv("WAYLAND_DISPLAY") == nullptr && std::getenv("DISPLAY") == nullptr) {
+            std::cout << "ERROR: Display not found. Make sure X or Wayland is running or try running jacktrip in command line mode." << std::endl;
+            std::cout << "(To display a list of command line options run \"jacktrip -h\")" << std::endl;
+            std::exit(1);
+        }
+#endif // __LINUX__
         return new QApplication(argc, argv);
-#endif
+#endif // NO_GUI
     } else {
         return new QCoreApplication(argc, argv);
     }
@@ -134,7 +142,7 @@ int main(int argc, char *argv[])
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
-#ifndef __NO_GUI__    
+#ifndef NO_GUI    
     QScopedPointer<QJackTrip> window;
     if (qobject_cast<QApplication *>(app.data())) {
         //Start the GUI if there are no command line options.
@@ -146,9 +154,8 @@ int main(int argc, char *argv[])
         window.reset(new QJackTrip);
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(), &QCoreApplication::quit, Qt::QueuedConnection);
         window->show();
-
     } else {
-#endif // __NO_GUI__
+#endif // NO_GUI
         //Otherwise use the non-GUI version, and parse our command line.
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
         qInstallMessageHandler(qtMessageHandler);
@@ -199,9 +206,9 @@ int main(int argc, char *argv[])
             std::cerr << gPrintSeparator << std::endl;
             return -1;
         }
-#ifndef __NO_GUI__
+#ifndef NO_GUI
     }
-#endif // __NO_GUI__
+#endif // NO_GUI
     
     return app->exec();
 }
