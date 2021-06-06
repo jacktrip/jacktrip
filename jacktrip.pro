@@ -13,7 +13,7 @@ CONFIG(debug, debug|release) {
   }
 
 nogui {
-  DEFINES += __NO_GUI__
+  DEFINES += NO_GUI
 } else {
   QT += gui
   QT += widgets
