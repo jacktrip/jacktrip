@@ -1,22 +1,27 @@
 name: build
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
+  workflow_dispatch:
+  schedule:
+    - cron:  '* * * * 0' # run weekly to refresh static Qt cache
 jobs:
-  skip-duplicates:
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@master
-        with:
-          # All of these options are optional, so you can remove them if you are happy with the defaults
-          concurrent_skipping: 'same_content'
-          skip_after_successful_duplicate: 'true'
-          paths_ignore: '["**/README.md", "**/INSTALL*"]'
-          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
   build:
-    needs: skip-duplicates
-    if: ${{ needs.skip-duplicates.outputs.should_skip != 'true' }} || ${{ github.ref == 'refs/heads/dev' }}
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
     strategy:
@@ -27,10 +32,12 @@ jobs:
             runs-on: ubuntu-18.04
             static: true
             jacktrip-path: jacktrip
+            binary-path: binary
 
           - name: Linux-x64-dynamic-nogui
             runs-on: ubuntu-18.04
             jacktrip-path: jacktrip
+            binary-path: binary
             nogui: true
 
           # - name: macOS-dynamic
@@ -43,9 +50,10 @@ jobs:
             rtaudio: true
             static: true
             weakjack: true
-            jacktrip-path: jacktrip # relative to build path; triggers artifact upload for jacktrip binary
-            bundle-path: bundle # relative to build path; triggers application bundle creation and upload (macOS)
-            installer-path: installer # relative to build path; triggers installer creation and upload
+            jacktrip-path: jacktrip # relative to build path
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
+            installer-path: installer # directory relative to build path; triggers installer creation and upload
 
           # - name: Windows-dynamic
           #   runs-on: windows-2019
@@ -59,7 +67,8 @@ jobs:
             static: true
             weakjack: true
             jacktrip-path: release/jacktrip.exe
-            installer-path: installer # relative to build path; triggers installer creation and upload
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            installer-path: installer # directory relative to build path; triggers installer creation and upload
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
@@ -207,6 +216,16 @@ jobs:
             CONFIG_STRING="weakjack $CONFIG_STRING"
           fi
           ./build $CONFIG_STRING
+      - name: compress the binary
+        shell: bash
+        if: matrix.binary-path
+        run: |
+          mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }}
+          else
+            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
+          fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
         run: |
@@ -218,11 +237,11 @@ jobs:
           ./assemble_app.sh $CONFIG
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
-            cp -R *.app $BUILD_PATH/${{ matrix.bundle-path }}
+            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip *.app
           fi
           if [[ -n ${{ matrix.installer-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
-            cp -R package/build/* $BUILD_PATH/${{ matrix.installer-path }}
+            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.pkg
           fi
       - name: create installer on Windows
         if: runner.os == 'Windows' && matrix.installer-path
@@ -231,13 +250,13 @@ jobs:
           cd win
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
-          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}"
+          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.msi"
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
-        if: matrix.jacktrip-path
+        if: matrix.binary-path
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}
-          path: ${{ env.BUILD_PATH }}/${{ matrix.jacktrip-path }}
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary
+          path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: upload application bundle
         uses: actions/upload-artifact@v2
         if: matrix.bundle-path
@@ -250,3 +269,28 @@ jobs:
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
+  # release - list of files uploaded to GH release is specified in the *upload* step
+  deploy_gh:
+    if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
+    needs: build
+    runs-on: ubuntu-18.04
+    name: 'deploy release'
+    env:
+      DOWNLOAD_PATH: ${{ github.workspace }}/Install
+    steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ env.DOWNLOAD_PATH }} # no "name" paramter - download all artifacts
+      - name: upload to the release page
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-binary/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-application/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-installer/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-binary/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-installer/*
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
