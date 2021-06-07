@@ -30,7 +30,7 @@ jobs:
         include:
           - name: Linux-x64
             runs-on: ubuntu-18.04
-            static: true
+            static-qt-version: 5.12.11 # older Qt version so that we can compile in xcb platform plugin
             jacktrip-path: jacktrip
             binary-path: binary
 
@@ -48,7 +48,7 @@ jobs:
           - name: macOS-x64
             runs-on: macos-10.15
             rtaudio: true
-            static: true
+            static-qt-version: 5.12.11 # if set, it will enable static Qt build
             weakjack: true
             jacktrip-path: jacktrip # relative to build path
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
@@ -64,7 +64,7 @@ jobs:
             # suffix: installer
             runs-on: windows-2019
             rtaudio: true
-            static: true
+            static-qt-version: 5.15.2
             weakjack: true
             jacktrip-path: release/jacktrip.exe
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
@@ -72,13 +72,12 @@ jobs:
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
-      QT_VERSION: '5.15.2'
+      QT_VERSION: '5.15.2' # for dynamic qt installer using install-qt-action
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
-      QT_SRC_URL: 'https://download.qt.io/official_releases/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz'
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
-      QT_STATIC_CACHE_KEY: '5.15.2_v02' # update this to force rebuilding static Qt
-      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmultimedia -skip qtpurchasing -skip qtquick3d -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtquicktimeline -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtsvg -skip qttools -skip qtvirtualkeyboard -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
+      QT_STATIC_VERSION: 'v02' # update this to force rebuilding static Qt
+      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtsvg -skip qttools -skip qtvirtualkeyboard -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
       
     steps:
       - uses: actions/checkout@v2
@@ -111,7 +110,7 @@ jobs:
           curl -L https://github.com/jackaudio/jack2-releases/releases/download/v1.9.16/jack2-macOS-v1.9.16.tar.gz -o jack2.tar.gz
           tar -xf jack2.tar.gz
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
-          if [[ "${{ matrix.static }}" != true ]]; then 
+          if [[ -z "${{ matrix.static-qt-version }}" ]]; then 
             brew install qt5
             brew link qt5 --force
           fi
@@ -135,37 +134,40 @@ jobs:
           fi
       - name: cache Qt
         id: cache-qt
-        if: runner.os == 'Windows' && matrix.static != true
+        if: runner.os == 'Windows' && '!matrix.static-qt-version'
         uses: actions/cache@v1
         with:
           path: ../Qt
           key: ${{ runner.os }}-QtCache-${{ env.QT_VERSION }}
       - name: install Qt
         uses: jurplel/install-qt-action@v2
-        if: runner.os == 'Windows' && matrix.static != true
+        if: runner.os == 'Windows' && '!matrix.static-qt-version'
         with:
           version: ${{ env.QT_VERSION }}
           arch: 'win64_mingw81'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       - name: cache static Qt
         id: cache-static-qt
-        if: matrix.static == true
+        if: matrix.static-qt-version
         uses: actions/cache@v1
         with:
           path: ${{ env.QT_STATIC_BUILD_PATH }}
-          key: ${{ runner.os }}-QtStaticCache-${{ env.QT_STATIC_CACHE_KEY }}
+          key: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ env.QT_STATIC_VERSION }}
       - name: download Qt sources
-        if: matrix.static == true && steps.cache-static-qt.outputs.cache-hit != 'true'
+        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          echo "Downloading Qt source"
+          QT_FULL_VERSION=${{ matrix.static-qt-version }}
+          QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
+          QT_SRC_URL="https://download.qt.io/official_releases/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/qt-everywhere-src-$QT_FULL_VERSION.tar.xz"
+          echo "Downloading Qt source from $QT_SRC_URL"
           curl -L $QT_SRC_URL -o qt.tar.xz
           echo "Unpacking Qt source"
           tar -xf qt.tar.xz
           # move qt to a known location
           mv qt-everywhere* $QT_SRC_PATH
       - name: build static Qt on Linux / macOS
-        if: matrix.static == true && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os != 'Windows'
+        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os != 'Windows'
         run: |
           mkdir $QT_STATIC_BUILD_PATH
           # configure
@@ -177,7 +179,7 @@ jobs:
           echo "installing Qt"
           make install
       - name: build static Qt on Windows
-        if: matrix.static == true && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os == 'Windows'
+        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os == 'Windows'
         shell: cmd
         run: |
           mkdir %QT_STATIC_BUILD_PATH%
@@ -189,7 +191,7 @@ jobs:
       - name: set Qt environment variables
         shell: bash
         run: |
-          if [[ "${{ matrix.static }}" == true ]]; then 
+          if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
           elif [[ "${{ runner.os }}" == "macOS" ]]; then
             echo "`brew --prefix qt5`/bin" >> $GITHUB_PATH
@@ -200,7 +202,7 @@ jobs:
         shell: bash
         run: |
           CONFIG_STRING="noclean"
-          if [[ "${{ matrix.static }}" == true ]]; then 
+          if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             CONFIG_STRING="static $CONFIG_STRING"
           fi
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
