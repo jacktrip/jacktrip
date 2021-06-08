@@ -36,6 +36,8 @@ jobs:
       QT_VERSION: '5.15.2'
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: true
       - name: Set up Python
         uses: actions/setup-python@v2
       - name: install dependencies for Linux
