@@ -1,4 +1,4 @@
-project('jacktrip', 'cpp',
+project('jacktrip', ['cpp','c'],
 		default_options: ['cpp_std=c++17','warning_level=2'])
 qt5 = import('qt5')
 cmake = import('cmake')
@@ -6,6 +6,7 @@ cmake = import('cmake')
 compiler = meson.get_compiler('cpp')
 
 defines = ['-DWAIRTOHUB']
+c_defines = []
 if host_machine.system() == 'linux'
 	defines += '-D__LINUX__'
 elif host_machine.system() == 'darwin'
@@ -16,6 +17,8 @@ elif host_machine.system() == 'windows'
 	defines += '-DWIN32_LEAN_AND_MEAN'
 	defines += '-DNOMINMAX'
 endif
+
+incdir = include_directories('externals/weakjack')
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
@@ -51,7 +54,7 @@ moc_h = ['src/DataProtocol.h',
 ui_h = []
 qres = []
 
-threads_dep = dependency('threads')
+deps = [dependency('threads')]
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
 	defines += '-D__NO_JACK__'
@@ -60,9 +63,16 @@ else
 		'src/JMess.cpp',
 		'src/Patcher.cpp']
 	moc_h += ['src/Patcher.h']
+	if get_option('weakjack') == true
+		src += 'externals/weakjack/weak_libjack.c'
+		defines += '-DUSE_WEAK_JACK'
+		c_defines += '-DUSE_WEAK_JACK'
+		deps += jack_dep.partial_dependency(includes: true)
+		deps += compiler.find_library('dl', required : false)
+	else
+		deps += jack_dep
+	endif
 endif
-
-deps = [threads_dep, jack_dep]
 
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
@@ -115,7 +125,7 @@ endif
 
 subdir('linux')
 
-jacktrip = executable('jacktrip', src, prepro_files, dependencies: deps, cpp_args: defines, install: true )
+jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdir, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
 if not (host_machine.system() == 'windows')
 	help2man = find_program('help2man', required: false)
