@@ -93,7 +93,7 @@ jobs:
         run: |
           meson --buildtype release -Drtaudio=enabled builddir
           cd builddir
-          meson configure -Ddefault_library=both -Drtaudio:default_library=static -Drtaudio:wasapi=true -Dwingetopt:default_library=static
+          meson configure -Ddefault_library=both -Drtaudio:default_library=static -Drtaudio:wasapi=true -Dwingetopt:default_library=static -Dweakjack=true
           meson compile
       - name: upload artifacts
         uses: actions/upload-artifact@v2
