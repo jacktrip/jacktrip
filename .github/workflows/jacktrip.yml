@@ -31,6 +31,7 @@ jobs:
           - name: Linux-x64
             runs-on: ubuntu-18.04
             static-qt-version: 5.12.11 # older Qt version so that we can compile in xcb platform plugin
+            qt-static-cache-key: 'v07' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip
             binary-path: binary
 
@@ -49,6 +50,7 @@ jobs:
             runs-on: macos-10.15
             rtaudio: true
             static-qt-version: 5.12.11 # if set, it will enable static Qt build
+            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
             weakjack: true
             jacktrip-path: jacktrip # relative to build path
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
@@ -65,6 +67,7 @@ jobs:
             runs-on: windows-2019
             rtaudio: true
             static-qt-version: 5.15.2
+            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
             weakjack: true
             jacktrip-path: release/jacktrip.exe
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
@@ -76,7 +79,6 @@ jobs:
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
-      QT_STATIC_CACHE_KEY: 'v07' # update this to force rebuilding static Qt
       QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtsvg -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
       
     steps:
@@ -157,7 +159,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.QT_STATIC_BUILD_PATH }}
-          key: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ env.QT_STATIC_CACHE_KEY }}
+          key: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ matrix.qt-static-cache-key }}
       - name: download Qt sources
         if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true'
         shell: bash
