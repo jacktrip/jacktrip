@@ -30,8 +30,8 @@ jobs:
         include:
           - name: Linux-x64
             runs-on: ubuntu-18.04
-            static-qt-version: 5.12.11 # older Qt version so that we can compile in xcb platform plugin
-            qt-static-cache-key: 'v07' # required for static qt; update this to force rebuilding static Qt
+            static-qt-version: 5.15.2 # older Qt version so that we can compile in xcb platform plugin
+            qt-static-cache-key: 'v08' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip
             binary-path: binary
 
@@ -179,7 +179,7 @@ jobs:
           mkdir $QT_STATIC_BUILD_PATH
           # configure
           if [[ "${{ runner.os }}" == "Linux" ]]; then
-            QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -qt-xcb -no-icu -opengl desktop $QT_STATIC_OPTIONS"
+            QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
           fi
           "$QT_SRC_PATH/configure" -ltcg -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
           # build
