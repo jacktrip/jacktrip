@@ -552,6 +552,102 @@ To connect to a hub server you need to run as a hub client.</string>
           </layout>
          </widget>
         </item>
+        <item row="3" column="0" colspan="3">
+         <widget class="QGroupBox" name="backendGroupBox">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <widget class="QComboBox" name="backendBox">
+           <property name="geometry">
+            <rect>
+             <x>160</x>
+             <y>6</y>
+             <width>171</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="toolTip">
+            <string>set the backend</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>Jack</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>RtAudio</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QSpinBox" name="sampleRateBox">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>46</y>
+             <width>151</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="toolTip">
+            <string>set sampling rate (RtAudio only)</string>
+           </property>
+           <property name="prefix">
+            <string/>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>384000</number>
+           </property>
+           <property name="stepType">
+            <enum>QAbstractSpinBox::DefaultStepType</enum>
+           </property>
+           <property name="value">
+            <number>48000</number>
+           </property>
+          </widget>
+          <widget class="QLabel" name="samplingRateLabel">
+           <property name="geometry">
+            <rect>
+             <x>17</x>
+             <y>46</y>
+             <width>120</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Sampling rate:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="backendLabel">
+           <property name="geometry">
+            <rect>
+             <x>17</x>
+             <y>6</y>
+             <width>80</width>
+             <height>30</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Backend:</string>
+           </property>
+          </widget>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="advancedTab">

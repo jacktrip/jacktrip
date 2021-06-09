@@ -172,6 +172,19 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui->requireAuthGroupBox->setVisible(false);
     m_ui->authGroupBox->setVisible(false);
     
+#ifdef __RT_AUDIO__
+    m_ui->backendGroupBox->setVisible(true);
+    connect(m_ui->backendBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
+            if (index == 1) {
+                m_ui->sampleRateBox->setEnabled(true);
+            } else {
+                m_ui->sampleRateBox->setEnabled(false);
+            }
+        } );
+#else
+    m_ui->backendGroupBox->setVisible(false);
+#endif
+    
     migrateSettings();
     loadSettings();
 
@@ -335,6 +348,9 @@ void QJackTrip::chooseRunType(int index)
         advancedOptionsForHubServer(true);
         m_ui->optionsTabWidget->removeTab(3);
         authFilesChanged();
+#ifdef __RT_AUDIO__
+        m_ui->backendGroupBox->setVisible(false);
+#endif
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
         m_ui->autoPatchLabel->setVisible(false);
@@ -345,6 +361,9 @@ void QJackTrip::chooseRunType(int index)
         if (m_ui->optionsTabWidget->count() < 4) {
             m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
         }
+#ifdef __RT_AUDIO__
+        m_ui->backendGroupBox->setVisible(true);
+#endif
     }
 
     if (index == HUB_CLIENT) {
@@ -640,6 +659,13 @@ void QJackTrip::start()
                              Qt::QueuedConnection);
             m_ui->statusBar->showMessage("Waiting for Peer...");
             m_ui->disconnectButton->setEnabled(true);
+#ifdef __RT_AUDIO__
+            if (m_ui->backendBox->currentIndex() == 1) { 
+                m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO); 
+                m_jackTrip->setSampleRate(m_ui->sampleRateBox->value());
+                // TODO: set device
+            }
+#endif
 #ifdef WAIRTOHUB // WAIR
             m_jackTrip->startProcess(0); // for WAIR compatibility, ID in jack client name
 #else
@@ -767,6 +793,15 @@ void QJackTrip::loadSettings()
         m_ui->channelRecvSpinBox->setValue(settings.value("ChannelsRecv", gDefaultNumOutChannels).toInt());
     }
     
+#ifdef __RT_AUDIO__
+    m_ui->backendBox->setCurrentIndex(settings.value("Backend", 0).toInt());
+    m_ui->sampleRateBox->setValue(settings.value("SampleRate", 48000).toInt());
+    if (m_ui->backendBox->currentIndex() == 0) {
+        m_ui->sampleRateBox->setEnabled(false);
+    }
+    // TODO: load device
+#endif
+    
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
@@ -856,6 +891,11 @@ void QJackTrip::saveSettings()
     settings.setValue("LastAddress", m_ui->addressComboBox->currentText());
     settings.setValue("ChannelsSend", m_ui->channelSendSpinBox->value());
     settings.setValue("ChannelsRecv", m_ui->channelRecvSpinBox->value());
+#ifdef __RT_AUDIO__
+    settings.setValue("Backend", m_ui->backendBox->currentIndex());
+    settings.setValue("SampleRate", m_ui->sampleRateBox->value());
+    // TODO: save device
+#endif
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
     settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
@@ -1151,6 +1191,14 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->realTimeCheckBox->isChecked()) {
         commandLine.append(" --udprt");
     }
+    
+#ifdef __RT_AUDIO__
+    if (m_ui->backendBox->currentIndex() == 1) {
+        commandLine.append(" --rtaudio");
+        commandLine.append(QString(" --srate %1").arg(m_ui->sampleRateBox->value()));
+        // TODO: set device
+    }
+#endif
     
     return commandLine;
 }
