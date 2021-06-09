@@ -45,7 +45,7 @@ INCLUDEPATH += faust-src-lair/stk
   LIBS += -L/usr/local/lib -lm
   weakjack {
     message(Building with weak linking of JACK)
-    INCLUDEPATH += subprojects/weakjack
+    INCLUDEPATH += externals/weakjack
     DEFINES += USE_WEAK_JACK
   } else {
     nojack {
@@ -128,7 +128,7 @@ win32 {
     INCLUDEPATH += "C:\Program Files\JACK2\include"
     weakjack {
       message(Building with weak linking of JACK)
-      INCLUDEPATH += subprojects/weakjack
+      INCLUDEPATH += externals/weakjack
       DEFINES += USE_WEAK_JACK
     } else {
       LIBS += "C:\Program Files\JACK2\lib\libjack64.lib"
@@ -140,7 +140,7 @@ win32 {
       INCLUDEPATH += "C:\Program Files (x86)\Jack\includes"
       weakjack {
         message(Building with weak linking of JACK)
-        INCLUDEPATH += subprojects/weakjack
+        INCLUDEPATH += externals/weakjack
         DEFINES += USE_WEAK_JACK
       } else {
         LIBS += "C:\Program Files (x86)\Jack\lib\libjack64.lib"
@@ -271,5 +271,5 @@ rtaudio {
 }
 
 weakjack {
-  SOURCES += subprojects/weakjack/weak_libjack.c
+  SOURCES += externals/weakjack/weak_libjack.c
 }

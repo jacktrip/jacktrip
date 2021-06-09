@@ -1,5 +1,5 @@
 [submodule "subprojects/weakjack"]
-	path = subprojects/weakjack
+	path = externals/weakjack
 	url = https://github.com/x42/weakjack.git
 [submodule "linux/flatpak/shared-modules"]
 	path = linux/flatpak/shared-modules
