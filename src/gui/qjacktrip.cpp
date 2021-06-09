@@ -46,7 +46,8 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_messageDialog(new MessageDialog(this)),
     m_jackTripRunning(false),
     m_isExiting(false),
-    m_hasIPv4Reply(false)
+    m_hasIPv4Reply(false),
+    m_argc(1)
 {
     m_ui->setupUi(this);
     
@@ -221,6 +222,25 @@ void QJackTrip::resizeEvent(QResizeEvent* event)
             m_ui->requireAuthGroupBox->contentsMargins().right();
     rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap, m_ui->authDisclaimerLabel->text());
     m_ui->authDisclaimerLabel->setMinimumHeight(rect.height());
+}
+
+void QJackTrip::showEvent(QShowEvent* event)
+{
+    QMainWindow::showEvent(event);
+    
+    //One of our arguments will always be --gui, so if that's the only one
+    //then we don't need to show the warning message.
+    if (m_argc > 2) {
+        QMessageBox msgBox;
+        msgBox.setText("The GUI version of JackTrip currently\nignores any command line options.\n\nThis may change in future.");
+        msgBox.setWindowTitle("Command line options");
+        msgBox.exec();
+    }
+}
+
+void QJackTrip::setArgc(int argc)
+{
+    m_argc = argc;
 }
 
 void QJackTrip::processFinished()

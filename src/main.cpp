@@ -60,8 +60,12 @@ QCoreApplication *createApplication(int &argc, char *argv[])
             //Command line option to test if the binary has been built with GUI support.
             //Exits immediately. Exits with an error if GUI support has not been built in.
 #ifdef NO_GUI
+            std::cout << "This version of JackTrip has been built without GUI support." << std::endl;
+            std::cout << "(To run JackTrip normally, please omit the --test-gui option.)" << std::endl;
             std::exit(1);
 #else
+            std::cout << "This version of JackTrip has been built with GUI support." << std::endl;
+            std::cout << "(To run JackTrip normally, please omit the --test-gui option.)" << std::endl;
             std::exit(0);
 #endif
         }
@@ -152,6 +156,7 @@ int main(int argc, char *argv[])
 #endif // __WIN_32__
         app->setApplicationName("QJackTrip");
         window.reset(new QJackTrip);
+        window->setArgc(argc);
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(), &QCoreApplication::quit, Qt::QueuedConnection);
         window->show();
     } else {
