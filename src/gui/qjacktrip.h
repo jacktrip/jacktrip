@@ -58,7 +58,10 @@ public:
     
     void closeEvent(QCloseEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
-
+    void showEvent(QShowEvent* event) override;
+    
+    void setArgc(int argc);
+    
 signals:
     void signalExit();
     
@@ -114,6 +117,7 @@ private:
     QString m_lastPath;
     
     QLabel m_autoQueueIndicator;
+    int m_argc;
     
 #ifdef __MAC_OSX__
     NoNap m_noNap;
