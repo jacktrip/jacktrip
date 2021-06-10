@@ -2,7 +2,28 @@ on:
   push:
     branches: [dev]
   pull_request:
-name: Flatpak
+name: Flatpak Devel
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:kde-5.15
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
+      with:
+        bundle: jacktrip-dev.flatpak
+        manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
+        cache-key: flatpak-builder-${{ github.sha }}
+
+on:
+  release:
+    types: [published]
+name: Flatpak Stable
 jobs:
   flatpak:
     name: "Flatpak"
@@ -17,5 +38,5 @@ jobs:
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
       with:
         bundle: jacktrip.flatpak
-        manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
+        manifest-path: linux/flatpak/org.jacktrip.JackTrip.yml
         cache-key: flatpak-builder-${{ github.sha }}
