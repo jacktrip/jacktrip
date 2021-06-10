@@ -793,15 +793,6 @@ void QJackTrip::loadSettings()
         m_ui->channelRecvSpinBox->setValue(settings.value("ChannelsRecv", gDefaultNumOutChannels).toInt());
     }
     
-#ifdef __RT_AUDIO__
-    m_ui->backendBox->setCurrentIndex(settings.value("Backend", 0).toInt());
-    m_ui->sampleRateBox->setValue(settings.value("SampleRate", 48000).toInt());
-    if (m_ui->backendBox->currentIndex() == 0) {
-        m_ui->sampleRateBox->setEnabled(false);
-    }
-    // TODO: load device
-#endif
-    
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
@@ -816,6 +807,17 @@ void QJackTrip::loadSettings()
     m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
     m_ui->realTimeCheckBox->setChecked(settings.value("RTNetworking", true).toBool());
     m_lastPath = settings.value("LastPath", QDir::homePath()).toString();
+    
+#ifdef __RT_AUDIO__
+    settings.beginGroup("Audio");
+    m_ui->backendBox->setCurrentIndex(settings.value("Backend", 0).toInt());
+    m_ui->sampleRateBox->setValue(settings.value("SampleRate", 48000).toInt());
+    if (m_ui->backendBox->currentIndex() == 0) {
+        m_ui->sampleRateBox->setEnabled(false);
+    }
+    // TODO: load device
+    settings.endGroup();
+#endif
     
     settings.beginGroup("RecentServers");
     for (int i = 1; i <= 5; i++) {
@@ -891,11 +893,6 @@ void QJackTrip::saveSettings()
     settings.setValue("LastAddress", m_ui->addressComboBox->currentText());
     settings.setValue("ChannelsSend", m_ui->channelSendSpinBox->value());
     settings.setValue("ChannelsRecv", m_ui->channelRecvSpinBox->value());
-#ifdef __RT_AUDIO__
-    settings.setValue("Backend", m_ui->backendBox->currentIndex());
-    settings.setValue("SampleRate", m_ui->sampleRateBox->value());
-    // TODO: save device
-#endif
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
     settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
@@ -910,6 +907,14 @@ void QJackTrip::saveSettings()
     settings.setValue("ConnectAudio", m_ui->connectAudioCheckBox->isChecked());
     settings.setValue("RTNetworking", m_ui->realTimeCheckBox->isChecked());
     settings.setValue("LastPath", m_lastPath);
+    
+#ifdef __RT_AUDIO__
+    settings.beginGroup("Audio");
+    settings.setValue("Backend", m_ui->backendBox->currentIndex());
+    settings.setValue("SampleRate", m_ui->sampleRateBox->value());
+    // TODO: save device
+    settings.endGroup();
+#endif
     
     settings.beginGroup("RecentServers");
     for (int i = 0; i < m_ui->addressComboBox->count(); i++) {
