@@ -1,5 +1,20 @@
 project('jacktrip', ['cpp','c'],
 		default_options: ['cpp_std=c++17','warning_level=2'])
+
+if get_option('profile') == 'Devel'
+  name_suffix = ' (Development Snapshot)'
+elif get_option('profile') != ''
+  profile = get_option('profile')
+  name_suffix = get_option('profile')
+else
+  profile = ''
+  name_suffix = ''
+endif
+
+# Replace AppName with your app name
+application_id = 'org.jacktrip.JackTrip.@0@'.format(profile)
+
+
 qt5 = import('qt5')
 cmake = import('cmake')
 
