@@ -26,4 +26,4 @@ modules:
     sources:
       - type: git
         url: https://github.com/jacktrip/jacktrip.git
-        branch: prepare_flatpak
+        branch: dev
