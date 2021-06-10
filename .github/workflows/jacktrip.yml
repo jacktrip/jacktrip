@@ -298,6 +298,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*Linux-x64-binary/*
             ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-binary/*
             ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-application/*
             ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-installer/*
