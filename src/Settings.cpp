@@ -47,8 +47,8 @@
 #endif  // endwhere
 
 //#include "JackTripWorker.h"
-#include <assert.h>
-#include <ctype.h>
+#include <cassert>
+#include <cctype>
 #include <getopt.h>  // for command line parsing
 
 #include <cstdlib>
