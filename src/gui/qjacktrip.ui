@@ -146,7 +146,7 @@ To connect to a hub server you need to run as a hub client.</string>
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
