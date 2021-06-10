@@ -3,9 +3,14 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 project(QJackTrip)
 
 set(nogui FALSE)
+set (rtaudio TRUE)
 
 if (nogui)
   add_compile_definitions(NO_GUI)
+endif ()
+
+if (rtaudio)
+  add_compile_definitions(__RT_AUDIO__)
 endif ()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -28,6 +33,9 @@ endif ()
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(JACK REQUIRED IMPORTED_TARGET jack)
+  if (rtaudio)
+    pkg_check_modules(RTAUDIO REQUIRED IMPORTED_TARGET rtaudio)
+  endif ()
 endif ()
 
 # Find includes in corresponding build directories
@@ -71,6 +79,12 @@ set(qjacktrip_SRC
   src/Auth.cpp
 )
 
+if (rtaudio)
+  set (qjacktrip_SRC ${qjacktrip_SRC}
+    src/RtAudioInterface.cpp
+  )
+endif ()
+
 if (NOT nogui)
   set (qjacktrip_SRC ${qjacktrip_SRC}
     src/gui/qjacktrip.cpp
@@ -93,20 +107,23 @@ add_compile_definitions(WAIRTOHUB)
 # Tell CMake to create the executable
 add_executable(jacktrip ${qjacktrip_SRC})
 
-# Use the Widgets module from Qt 5.
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  if (nogui)
-    target_link_libraries(jacktrip Qt5::Network PkgConfig::JACK)
-  else ()
-    target_link_libraries(jacktrip Qt5::Widgets Qt5::Network PkgConfig::JACK)
-  endif ()
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  if (nogui)
-    target_link_libraries(jacktrip Qt5::Network ${jacklib} ws2_32)
-  else ()
-    target_link_libraries(jacktrip Qt5::Widgets Qt5::Network ${jacklib} ws2_32)
-  endif ()
+# Set our libraries for our linker
+set (qjacktrip_LIBS Qt5::Widgets)
+if (NOT nogui)
+  set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Network)
 endif ()
+
+if (rtaudio)
+  set (qjacktrip_LIBS ${qjacktrip_LIBS} PkgConfig::RTAUDIO)
+endif ()
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set (qjacktrip_LIBS ${qjacktrip_LIBS} PkgConfig::JACK)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  set (qjacktrip_LIBS ${qjacktrip_LIBS} ${jacklib} ws2_32)
+endif ()
+
+target_link_libraries(jacktrip ${qjacktrip_LIBS})
 
 # Install the executable
 install(TARGETS jacktrip DESTINATION bin)

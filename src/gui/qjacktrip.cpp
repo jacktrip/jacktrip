@@ -172,6 +172,21 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_ui->requireAuthGroupBox->setVisible(false);
     m_ui->authGroupBox->setVisible(false);
     
+#ifdef __RT_AUDIO__
+    m_ui->backendGroupBox->setVisible(true);
+    connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
+            if (index == 1) {
+                m_ui->sampleRateComboBox->setEnabled(true);
+                m_ui->sampleRateLabel->setEnabled(true);
+            } else {
+                m_ui->sampleRateComboBox->setEnabled(false);
+                m_ui->sampleRateLabel->setEnabled(false);
+            }
+        } );
+#else
+    m_ui->backendGroupBox->setVisible(false);
+#endif
+    
     migrateSettings();
     loadSettings();
 
@@ -335,6 +350,9 @@ void QJackTrip::chooseRunType(int index)
         advancedOptionsForHubServer(true);
         m_ui->optionsTabWidget->removeTab(3);
         authFilesChanged();
+#ifdef __RT_AUDIO__
+        m_ui->backendGroupBox->setVisible(false);
+#endif
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
         m_ui->autoPatchLabel->setVisible(false);
@@ -345,6 +363,9 @@ void QJackTrip::chooseRunType(int index)
         if (m_ui->optionsTabWidget->count() < 4) {
             m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
         }
+#ifdef __RT_AUDIO__
+        m_ui->backendGroupBox->setVisible(true);
+#endif
     }
 
     if (index == HUB_CLIENT) {
@@ -577,6 +598,14 @@ void QJackTrip::start()
                 m_jackTrip->setUnderRunMode(JackTrip::ZEROS);
             }
             
+#ifdef __RT_AUDIO__
+            if (m_ui->backendComboBox->currentIndex() == 1) { 
+                m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO); 
+                m_jackTrip->setSampleRate(m_ui->sampleRateComboBox->currentText().toInt());
+                // TODO: set device
+            }
+#endif
+            
             if (m_ui->timeoutCheckBox->isChecked()) {
                 m_jackTrip->setStopOnTimeout(true);
             }
@@ -793,13 +822,24 @@ void QJackTrip::loadSettings()
     //Need to get this here so it isn't overwritten by the previous section.
     m_ui->addressComboBox->setCurrentText(settings.value("LastAddress", "").toString());
     
+#ifdef __RT_AUDIO__
+    settings.beginGroup("Audio");
+    m_ui->backendComboBox->setCurrentIndex(settings.value("Backend", 0).toInt());
+    m_ui->sampleRateComboBox->setCurrentText(settings.value("SampleRate", "48000").toString());
+    if (m_ui->backendComboBox->currentIndex() == 0) {
+        m_ui->sampleRateComboBox->setEnabled(false);
+    }
+    // TODO: load device
+    settings.endGroup();
+#endif
+    
     settings.beginGroup("Auth");
     m_ui->requireAuthCheckBox->setChecked(settings.value("Require", false).toBool());
     m_ui->certEdit->setText(settings.value("CertFile", "").toString());
     m_ui->keyEdit->setText(settings.value("KeyFile", "").toString());
     m_ui->credsEdit->setText(settings.value("CredsFile", "").toString());
     m_ui->authCheckBox->setChecked(settings.value("Use", false).toBool());
-     m_ui->usernameEdit->setText(settings.value("Username", "").toString());
+    m_ui->usernameEdit->setText(settings.value("Username", "").toString());
     settings.endGroup();
     
     settings.beginGroup("IOStats");
@@ -845,7 +885,14 @@ void QJackTrip::loadSettings()
     settings.endGroup();
     
     settings.beginGroup("Window");
-    restoreGeometry(settings.value("Geometry").toByteArray());
+    QByteArray geometry = settings.value("Geometry").toByteArray();
+    if (geometry.size() > 0) {
+        restoreGeometry(settings.value("Geometry").toByteArray());
+    } else {
+        //Because of hidden elements in our dialog window, it's vertical size in the creator is
+        //getting rediculous. Set it to something sensible by default if this is our first load.
+        this->resize(QSize(this->size().width(), 600));
+    }
     settings.endGroup();
 }
 
@@ -876,6 +923,14 @@ void QJackTrip::saveSettings()
         settings.setValue(QString("Server%1").arg(i + 1), m_ui->addressComboBox->itemText(i));
     }
     settings.endGroup();
+    
+#ifdef __RT_AUDIO__
+    settings.beginGroup("Audio");
+    settings.setValue("Backend", m_ui->backendComboBox->currentIndex());
+    settings.setValue("SampleRate", m_ui->sampleRateComboBox->currentText());
+    // TODO: save device
+    settings.endGroup();
+#endif
     
     settings.beginGroup("Auth");
     settings.setValue("Require", m_ui->requireAuthCheckBox->isChecked());
@@ -1152,6 +1207,14 @@ QString QJackTrip::commandLineFromCurrentOptions()
         commandLine.append(" --udprt");
     }
     
+#ifdef __RT_AUDIO__
+    if (m_ui->typeComboBox->currentIndex() != HUB_SERVER && m_ui->backendComboBox->currentIndex() == 1) {
+        commandLine.append(" --rtaudio");
+        commandLine.append(QString(" --srate %1").arg(m_ui->sampleRateComboBox->currentText()));
+        // TODO: set device
+    }
+#endif
+
     return commandLine;
 }
 
