@@ -2,6 +2,17 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLDIR">
+            <Component Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" Guid="27BFCC7D-F4A8-4F71-8A2B-00A8BC74B106">
+                <File Id="fil5E6E1243EAE085FE802B6D64690357B0" KeyPath="yes" Source="SourceDir\jacktrip.exe" />
+                <Shortcut Id="startmenuJackTrip" Directory="ProgramMenuDir" Name="JackTrip"
+                    WorkingDirectory="INSTALLDIR" Icon="jacktrip.exe" IconIndex="0" Advertise="yes" />
+            </Component>
+<?ifdef rtaudio?>
+            <Component Id="cmpD683260746BC875AE3BDED667AA8F954" Guid="20A867E8-36B6-49E3-A1DA-76CFCE967908">
+                <File Id="filA7BCB2CDD7D00C9DFB32AEB94F294425" KeyPath="yes" Source="SourceDir\librtaudio.dll" />
+            </Component>
+<?endif?>
+<?ifdef dynamic?>
             <Component Id="cmpF83098612A5B11C5398DBA3894ED590A" Guid="6A0A67A9-3318-4CFB-BC07-5AF3FF7B7E87">
                 <File Id="fil526FA994C1850220CFA7BD7FCD995C32" KeyPath="yes" Source="SourceDir\D3Dcompiler_47.dll" />
             </Component>
@@ -28,11 +39,6 @@
             </Component>
             <Component Id="cmpEA16414E09FD1D5068139520966B49EB" Guid="9B14A007-CA41-4C45-BE9E-0B1067DD5311">
                 <File Id="filFC8C908E3AD35E8090AFF39C9B0FB744" KeyPath="yes" Source="SourceDir\opengl32sw.dll" />
-            </Component>
-            <Component Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" Guid="27BFCC7D-F4A8-4F71-8A2B-00A8BC74B106">
-                <File Id="fil5E6E1243EAE085FE802B6D64690357B0" KeyPath="yes" Source="SourceDir\jacktrip.exe" />
-                <Shortcut Id="startmenuJackTrip" Directory="ProgramMenuDir" Name="JackTrip"
-                    WorkingDirectory="INSTALLDIR" Icon="jacktrip.exe" IconIndex="0" Advertise="yes" />
             </Component>
             <Component Id="cmp01229088A6F1DEA1BE391E6E7CC3D3EE" Guid="9A610B9C-6322-4045-9C4B-910FFBA38502">
                 <File Id="filAD80F4724AAE3D8B0682F5982CC2548D" KeyPath="yes" Source="SourceDir\Qt5Core.dll" />
@@ -166,10 +172,16 @@
                     <File Id="fil9085627E4E33630ABCDB62A5CC05B794" KeyPath="yes" Source="SourceDir\translations\qt_zh_TW.qm" />
                 </Component>
             </Directory>
+<?endif?>
         </DirectoryRef>
     </Fragment>
     <Fragment>
         <ComponentGroup Id="jacktrip">
+            <ComponentRef Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" />
+<?ifdef rtaudio?>
+            <ComponentRef Id="cmpD683260746BC875AE3BDED667AA8F954" />
+<?endif?>
+<?ifdef dynamic?>
             <ComponentRef Id="cmpF83098612A5B11C5398DBA3894ED590A" />
             <ComponentRef Id="cmpB60B52D038613C3F20F84A0E1C83D4D4" />
             <ComponentRef Id="cmp5DDCF0CE56D406D1B8B1F93E988AED6B" />
@@ -179,7 +191,6 @@
             <ComponentRef Id="cmp57DDA83E372188A5B760684B961DE685" />
             <ComponentRef Id="cmpF76D0CD1138260DB167395B86D0011CF" />
             <ComponentRef Id="cmpEA16414E09FD1D5068139520966B49EB" />
-            <ComponentRef Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" />
             <ComponentRef Id="cmp01229088A6F1DEA1BE391E6E7CC3D3EE" />
             <ComponentRef Id="cmp1658AEC83DA2CDD0D93D5BAAABBEAD46" />
             <ComponentRef Id="cmp2DE804C107C75B0C71470A93647D09B5" />
@@ -220,6 +231,7 @@
             <ComponentRef Id="cmpF5EA7E37332E95C614BD2D7EAA933E5D" />
             <ComponentRef Id="cmpA214B663A372012F5DCBA6A5CDAE421D" />
             <ComponentRef Id="cmpFDB70117D8E46EB188997470A3793B5D" />
+<?endif?>
         </ComponentGroup>
     </Fragment>
 </Wix>
