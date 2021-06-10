@@ -3,3 +3,4 @@ option('rtaudio', type : 'feature', value : 'auto', description: 'Build with RtA
 option('jack', type : 'feature', value : 'auto', description: 'Build with JACK Backend')
 option('weakjack', type : 'boolean', value : 'false', description: 'Weak link JACK library')
 option('nogui', type : 'boolean', value : 'false', description: 'Build without graphical user interface')
+option('profile', type: 'combo', choices: ['default', 'development'], value: 'default', description: 'Choose build profile / Sets desktop id accordingly')

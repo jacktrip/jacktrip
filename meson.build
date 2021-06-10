@@ -1,5 +1,14 @@
 project('jacktrip', ['cpp','c'],
 		default_options: ['cpp_std=c++17','warning_level=2'])
+
+if get_option('profile') == 'development'
+  application_id = 'org.jacktrip.JackTrip.Devel'
+  name_suffix = ' (Development Snapshot)'
+else
+  application_id = 'org.jacktrip.JackTrip'
+  name_suffix = ''
+endif
+
 qt5 = import('qt5')
 cmake = import('cmake')
 

@@ -1,4 +1,4 @@
-app-id: org.jacktrip.JackTrip
+app-id: org.jacktrip.JackTrip.Devel
 runtime: org.kde.Platform
 runtime-version: '5.15'
 sdk: org.kde.Sdk
@@ -21,7 +21,9 @@ modules:
   - shared-modules/linux-audio/jack2.json
   - name: jacktrip
     buildsystem: meson
+    config-opts:
+      - -Dprofile=development
     sources:
       - type: git
         url: https://github.com/jacktrip/jacktrip.git
-        branch: main
+        branch: dev
