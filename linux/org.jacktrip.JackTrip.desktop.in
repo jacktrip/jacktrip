@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=JackTrip
+Name=JackTrip@name_suffix@
 Comment=Network Music Performance over the Internet
 Comment[fr]=Performance de musique en réseau sur internet
 Exec=jacktrip

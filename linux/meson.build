@@ -4,6 +4,7 @@ if host_machine.system() == 'linux'
 
 	desktop_conf = configuration_data()
 	desktop_conf.set('icon', application_id)
+	desktop_conf.set('name_suffix', name_suffix)
 	configure_file(
 	    input: files('org.jacktrip.JackTrip.desktop.in'),
 	    output: '@0@.desktop'.format(application_id),
