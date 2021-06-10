@@ -44,7 +44,7 @@
 /// \todo Add this namespace
 //namespace JackTrip
 
-const char* const gVersion = "1.4.0-rc1";  ///< JackTrip version
+const char* const gVersion = "1.4.0-rc.1";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
