@@ -2,9 +2,17 @@
 ## Linux
 On Linux the easiest way to install JackTrip is to use the distribution's package manager.
 
-Fedora: `sudo dnf install jacktrip`
+=== "Fedora"
 
-Debian/Ubuntu: `sudo apt install jacktrip`
+    ```bash
+    sudo dnf install jacktrip
+    ```
+
+=== "Debian/Ubuntu"
+
+    ```bash
+    sudo apt install jacktrip
+    ```
 
 
 ## MacOS
