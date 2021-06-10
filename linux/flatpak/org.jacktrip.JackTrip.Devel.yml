@@ -18,6 +18,7 @@ modules:
   - shared-modules/linux-audio/jack2.json
   - name: jacktrip
     buildsystem: meson
+    config-opts: -Dprofile=development
     sources:
       - type: git
         url: https://github.com/jacktrip/jacktrip.git

@@ -17,5 +17,5 @@ jobs:
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
       with:
         bundle: jacktrip.flatpak
-        manifest-path: linux/flatpak/org.jacktrip.JackTrip.yml
+        manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
         cache-key: flatpak-builder-${{ github.sha }}
