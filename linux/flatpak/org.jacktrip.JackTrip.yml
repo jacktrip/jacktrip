@@ -13,7 +13,7 @@ finish-args:
   - --share=network
   # Pipewire/Jack
   - --filesystem=xdg-run/pipewire-0
-  - --device=all
+  - --socket=system-bus
 modules:
   - shared-modules/linux-audio/jack2.json
   - name: jacktrip
