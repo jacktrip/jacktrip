@@ -21,7 +21,7 @@
     </p>
   </description>
 
-  <launchable type="desktop-id">org.jacktrip.JackTrip.desktop</launchable>
+  <launchable type="desktop-id">@appid@.desktop</launchable>
 
   <url type="homepage">https://jacktrip.github.io/jacktrip/</url>
   <project_group>JackTrip</project_group>

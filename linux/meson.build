@@ -1,7 +1,23 @@
 if host_machine.system() == 'linux'
-	install_data('org.jacktrip.JackTrip.desktop', install_dir: get_option('datadir') / 'applications')
-	install_data('icons/jacktrip.svg', rename: 'org.jacktrip.JackTrip.svg', install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps')
-	install_data('icons/jacktrip_48x48.png', rename: 'org.jacktrip.JackTrip.png', install_dir: get_option('datadir') / 'icons' / 'hicolor' / '48x48' / 'apps')
+	install_data('icons/jacktrip.svg', rename: '@0@.svg'.format(application_id), install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps')
+	install_data('icons/jacktrip_48x48.png', rename: '@0@.png'.format(application_id), install_dir: get_option('datadir') / 'icons' / 'hicolor' / '48x48' / 'apps')
 
-	install_data('org.jacktrip.JackTrip.metainfo.xml', install_dir: get_option('datadir') / 'metainfo')
+	desktop_conf = configuration_data()
+	desktop_conf.set('icon', application_id)
+	configure_file(
+	    input: files('org.jacktrip.JackTrip.desktop.in'),
+	    output: '@0@.desktop'.format(application_id),
+	    configuration: desktop_conf,
+	    install_dir: get_option('datadir') / 'applications'
+	)
+
+	appdata_conf = configuration_data()
+	appdata_conf.set('appid', application_id)
+	configure_file(
+	    input: files('org.jacktrip.JackTrip.metainfo.xml.in'),
+	    output: '@0@.metainfo.xml'.format(application_id),
+	    configuration: appdata_conf,
+	    install_dir: get_option('datadir') / 'metainfo'
+	)
+
 endif
