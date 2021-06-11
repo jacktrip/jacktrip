@@ -664,6 +664,76 @@ To connect to a hub server you need to run as a hub client.</string>
              </item>
             </widget>
            </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="bufferSizeLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&amp;Buffer Size:</string>
+             </property>
+             <property name="buddy">
+              <cstring>bufferSizeComboBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="bufferSizeComboBox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the driver's buffer size to use with the RtAudio backend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="currentText">
+              <string>128</string>
+             </property>
+             <property name="currentIndex">
+              <number>3</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>16</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>32</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>64</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>128</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>256</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>512</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1024</string>
+              </property>
+             </item>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1583,6 +1653,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>channelSendSpinBox</tabstop>
   <tabstop>backendComboBox</tabstop>
   <tabstop>sampleRateComboBox</tabstop>
+  <tabstop>bufferSizeComboBox</tabstop>
   <tabstop>autoPatchComboBox</tabstop>
   <tabstop>zeroCheckBox</tabstop>
   <tabstop>timeoutCheckBox</tabstop>

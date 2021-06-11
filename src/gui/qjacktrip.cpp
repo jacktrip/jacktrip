@@ -178,9 +178,13 @@ QJackTrip::QJackTrip(QWidget *parent) :
             if (index == 1) {
                 m_ui->sampleRateComboBox->setEnabled(true);
                 m_ui->sampleRateLabel->setEnabled(true);
+                m_ui->bufferSizeComboBox->setEnabled(true);
+                m_ui->bufferSizeLabel->setEnabled(true);
             } else {
                 m_ui->sampleRateComboBox->setEnabled(false);
                 m_ui->sampleRateLabel->setEnabled(false);
+                m_ui->bufferSizeComboBox->setEnabled(false);
+                m_ui->bufferSizeLabel->setEnabled(false);
             }
         } );
 #else
@@ -602,6 +606,7 @@ void QJackTrip::start()
             if (m_ui->backendComboBox->currentIndex() == 1) { 
                 m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO); 
                 m_jackTrip->setSampleRate(m_ui->sampleRateComboBox->currentText().toInt());
+                m_jackTrip->setAudioBufferSizeInSamples(m_ui->bufferSizeComboBox->currentText().toInt());
                 // TODO: set device
             }
 #endif
@@ -826,8 +831,10 @@ void QJackTrip::loadSettings()
     settings.beginGroup("Audio");
     m_ui->backendComboBox->setCurrentIndex(settings.value("Backend", 0).toInt());
     m_ui->sampleRateComboBox->setCurrentText(settings.value("SampleRate", "48000").toString());
+    m_ui->bufferSizeComboBox->setCurrentText(settings.value("BufferSize", "128").toString());
     if (m_ui->backendComboBox->currentIndex() == 0) {
         m_ui->sampleRateComboBox->setEnabled(false);
+        m_ui->bufferSizeComboBox->setEnabled(false);
     }
     // TODO: load device
     settings.endGroup();
@@ -928,6 +935,7 @@ void QJackTrip::saveSettings()
     settings.beginGroup("Audio");
     settings.setValue("Backend", m_ui->backendComboBox->currentIndex());
     settings.setValue("SampleRate", m_ui->sampleRateComboBox->currentText());
+    settings.setValue("BufferSize", m_ui->bufferSizeComboBox->currentText());
     // TODO: save device
     settings.endGroup();
 #endif
@@ -1211,6 +1219,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->typeComboBox->currentIndex() != HUB_SERVER && m_ui->backendComboBox->currentIndex() == 1) {
         commandLine.append(" --rtaudio");
         commandLine.append(QString(" --srate %1").arg(m_ui->sampleRateComboBox->currentText()));
+        commandLine.append(QString(" --bufsize %1").arg(m_ui->bufferSizeComboBox->currentText()));
         // TODO: set device
     }
 #endif
