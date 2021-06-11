@@ -118,6 +118,7 @@ private:
     
     QLabel m_autoQueueIndicator;
     int m_argc;
+    bool m_hideWarning;
     
 #ifdef __MAC_OSX__
     NoNap m_noNap;
