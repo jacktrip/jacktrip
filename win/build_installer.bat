@@ -54,6 +54,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 rem Get our version number
 for /f "tokens=*" %%a in ('.\jacktrip -v ^| findstr VERSION') do for %%b in (%%~a) do set VERSION=%%b
+for /f "tokens=1 delims=-" %%a in ("%VERSION%") do set VERSION=%%a
 echo Version=%VERSION%
 candle.exe -dVersion=%VERSION%%WIXDEFINES% jacktrip.wxs files.wxs
 light.exe -ext WixUIExtension -o JackTrip.msi jacktrip.wixobj files.wixobj
