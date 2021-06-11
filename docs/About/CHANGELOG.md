@@ -3,7 +3,7 @@ Changelog
 
 1.4.0
 ---
-- (added) optional GUI from QJackTrip
+- (added) optional GUI from QJackTrip (the application is now called JackTrip, even though it includes the gui previously released as QJackTrip)
 - (added) authentication in hub server mode
 - (added) different number of sending and receiving channels
 - (added) append thread IDs to jack client names
