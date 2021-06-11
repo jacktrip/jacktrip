@@ -33,6 +33,9 @@
 #include <QFileDialog>
 #include <cstdlib>
 #include <ctime>
+#ifdef USE_WEAK_JACK
+#include "weak_libjack.h"
+#endif
 
 #include "../Limiter.h"
 #include "../Compressor.h"
@@ -47,7 +50,8 @@ QJackTrip::QJackTrip(QWidget *parent) :
     m_jackTripRunning(false),
     m_isExiting(false),
     m_hasIPv4Reply(false),
-    m_argc(1)
+    m_argc(1),
+    m_hideWarning(false)
 {
     m_ui->setupUi(this);
     
@@ -210,6 +214,46 @@ QJackTrip::QJackTrip(QWidget *parent) :
     } else {
         m_autoQueueIndicator.setText("Auto queue: disabled");
     }
+    
+#ifdef USE_WEAK_JACK
+//Check if Jack is actually available
+    if (have_libjack() != 0) {
+#ifdef __RT_AUDIO__
+        m_ui->backendComboBox->setCurrentIndex(1);
+        m_ui->backendComboBox->setEnabled(false);
+        m_ui->backendLabel->setEnabled(false);
+        
+        //If we're in Hub Server mode, switch us back to P2P server mode.
+        if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+            m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
+        }
+        m_ui->typeComboBox->removeItem(HUB_SERVER);
+        
+        QSettings settings;
+        settings.beginGroup("Audio");
+        if (!settings.value("HideJackWarning", false).toBool()) {
+            QCheckBox *dontBugMe = new QCheckBox("Don't show this warning again");
+            QMessageBox msgBox;
+            msgBox.setText("An instllation of JACK was not found. Only the RtAudio\nbackend will be available. (Hub Server mode is not\ncurrently supported in this configuration.");
+            msgBox.setWindowTitle("JACK Not Available");
+            msgBox.setCheckBox(dontBugMe);
+            QObject::connect(dontBugMe, &QCheckBox::stateChanged, this, [=]() {
+                    m_hideWarning = dontBugMe->isChecked();
+                } );
+            msgBox.exec();
+            if (m_hideWarning) {
+                settings.setValue("HideJackWarning", true);
+            }
+        }
+        settings.endGroup();
+#else
+        QMessageBox msgBox;
+        msgBox.setText("An instllation of JACK was not found, and no other audio\nbackends are available. JackTrip will not be able to start.\n(Please install JACK to fix this.)");
+        msgBox.setWindowTitle("JACK Not Available");
+        msgBox.exec();
+#endif // __RT_AUDIO__
+    }
+#endif // USE_WEAK_JACK
 }
 
 void QJackTrip::closeEvent(QCloseEvent *event)
@@ -832,10 +876,6 @@ void QJackTrip::loadSettings()
     m_ui->backendComboBox->setCurrentIndex(settings.value("Backend", 0).toInt());
     m_ui->sampleRateComboBox->setCurrentText(settings.value("SampleRate", "48000").toString());
     m_ui->bufferSizeComboBox->setCurrentText(settings.value("BufferSize", "128").toString());
-    if (m_ui->backendComboBox->currentIndex() == 0) {
-        m_ui->sampleRateComboBox->setEnabled(false);
-        m_ui->bufferSizeComboBox->setEnabled(false);
-    }
     // TODO: load device
     settings.endGroup();
 #endif
