@@ -234,7 +234,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
         if (!settings.value("HideJackWarning", false).toBool()) {
             QCheckBox *dontBugMe = new QCheckBox("Don't show this warning again");
             QMessageBox msgBox;
-            msgBox.setText("An instllation of JACK was not found. Only the RtAudio\nbackend will be available. (Hub Server mode is not\ncurrently supported in this configuration.");
+            msgBox.setText("An installation of JACK was not found. Only the RtAudio\nbackend will be available. (Hub Server mode is not\ncurrently supported in this configuration.");
             msgBox.setWindowTitle("JACK Not Available");
             msgBox.setCheckBox(dontBugMe);
             QObject::connect(dontBugMe, &QCheckBox::stateChanged, this, [=]() {
@@ -248,7 +248,7 @@ QJackTrip::QJackTrip(QWidget *parent) :
         settings.endGroup();
 #else
         QMessageBox msgBox;
-        msgBox.setText("An instllation of JACK was not found, and no other audio\nbackends are available. JackTrip will not be able to start.\n(Please install JACK to fix this.)");
+        msgBox.setText("An installation of JACK was not found, and no other audio\nbackends are available. JackTrip will not be able to start.\n(Please install JACK to fix this.)");
         msgBox.setWindowTitle("JACK Not Available");
         msgBox.exec();
 #endif // __RT_AUDIO__
