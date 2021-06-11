@@ -35,33 +35,41 @@
   </content_rating>
 
   <releases>
-    <release version="1.4.0-rc.1" type="development" date="2021-06-09">
+    <release version="1.4.0-rc.2" type="development" date="2021-06-11">
       <description>
         <ul>
-          <il>(added) optional GUI from QJackTrip</il>
-          <il>(added) authentication in hub server mode</il>
-          <il>(added) different number of sending and receiving channels</il>
-          <il>(added) append thread IDs to jack client names</il>
-          <il>(added) new patcher mechanism that doesn't delete existing connections</il>
-          <il>(added) MkDocs based documentation</il>
-          <il>(added) weak jack linking</il>
-          <il>(added) manpage</il>
-          <il>(added) MSVC build</il>
-          <il>(added) RtAudio Meson subproject</il>
-          <il>(added) formatting with clang-format</il>
-          <il>(added) static snalysis with clang-tidy</il>
-          <il>(added) cross compilation for Windows</il>
-          <il>(added) flatpaks</il>
-          <il>(added) appstream</il>
-          <il>(added) automated builds and deployment for Linux, macOS and Windows</il>
-          <il>(added) macOS and Windows Installers</il>
-          <il>(fixed) regression in remote client name handling</il>
-          <il>(fixed) long jack client names (> 27 characters) in 1.9.11</il>
-          <il>(fixed) Hardcode Derived Class Names of ProcessPlugins to prevent undefined behavior</il>
-          <il>(update) Change helpscreen wording for --broadcast argument</il>
-          <il>(update) jitter buffer alternatives</il>
-          <il>(update) RtAudio revive (only default devices supported)</il>
-          <il>(update) build script moved to root directory</il>
+          <li>(fixed) Windows installer build</li>
+          <li>(fixed) Appstream and Flatpak build</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.4.0-rc.1" type="development" date="2021-06-11">
+      <description>
+        <ul>
+          <li>(added) optional GUI from QJackTrip</li>
+          <li>(added) authentication in hub server mode</li>
+          <li>(added) different number of sending and receiving channels</li>
+          <li>(added) append thread IDs to jack client names</li>
+          <li>(added) new patcher mechanism that doesn't delete existing connections</li>
+          <li>(added) MkDocs based documentation</li>
+          <li>(added) weak jack linking</li>
+          <li>(added) manpage</li>
+          <li>(added) MSVC build</li>
+          <li>(added) RtAudio Meson subproject</li>
+          <li>(added) formatting with clang-format</li>
+          <li>(added) static snalysis with clang-tidy</li>
+          <li>(added) cross compilation for Windows</li>
+          <li>(added) flatpaks</li>
+          <li>(added) appstream</li>
+          <li>(added) automated builds and deployment for Linux, macOS and Windows</li>
+          <li>(added) macOS and Windows Installers</li>
+          <li>(fixed) regression in remote client name handling</li>
+          <li>(fixed) long jack client names (> 27 characters) in 1.9.11</li>
+          <li>(fixed) Hardcode Derived Class Names of ProcessPlugins to prevent undefined behavior</li>
+          <li>(update) Change helpscreen wording for --broadcast argument</li>
+          <li>(update) jitter buffer alternatives</li>
+          <li>(update) RtAudio revive (only default devices supported)</li>
+          <li>(update) build script moved to root directory</li>
         </ul>
       </description>
     </release>
