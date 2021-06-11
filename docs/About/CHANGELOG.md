@@ -3,7 +3,7 @@ Changelog
 
 1.4.0
 ---
-- (added) optional GUI from QJackTrip (the application is now called JackTrip, even though it includes the gui previously released as QJackTrip)
+- (added) optional GUI from QJackTrip
 - (added) authentication in hub server mode
 - (added) different number of sending and receiving channels
 - (added) append thread IDs to jack client names
@@ -23,6 +23,7 @@ Changelog
 - (fixed) regression in remote client name handling
 - (fixed) long jack client names (> 27 characters) in 1.9.11
 - (fixed) Hardcode Derived Class Names of ProcessPlugins to prevent undefined behavior
+- (update) QJackTrip and JackTrip are now identical
 - (update) Change helpscreen wording for --broadcast argument
 - (update) jitter buffer alternatives
 - (update) RtAudio revive (only default devices supported)
