@@ -41,10 +41,10 @@
 //#include <tr1/memory> //for shared_ptr
 #include <QObject>
 #include <QSharedPointer>
-#include <QString>
-#include <QUdpSocket>
 #include <QSslSocket>
+#include <QString>
 #include <QTimer>
+#include <QUdpSocket>
 #include <stdexcept>
 
 #include "AudioInterface.h"
@@ -255,16 +255,10 @@ class JackTrip : public QObject
         mSenderPeerPort   = port;
         mReceiverPeerPort = port;
     }
-    void setPeerHandshakePort(int port)
-    {
-        mTcpServerPort = port;
-    }
-    void setUseAuth(bool auth)
-    { mUseAuth = auth; }
-    void setUsername(QString username)
-    { mUsername = username; }
-    void setPassword(QString password)
-    { mPassword = password; }
+    void setPeerHandshakePort(int port) { mTcpServerPort = port; }
+    void setUseAuth(bool auth) { mUseAuth = auth; }
+    void setUsername(QString username) { mUsername = username; }
+    void setPassword(QString password) { mPassword = password; }
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(QString clientName) { mJackClientName = clientName; }
     virtual void setRemoteClientName(QString remoteClientName)
@@ -431,7 +425,8 @@ class JackTrip : public QObject
     QString getAssignedClientName()
     {
         if (mAudioInterface && mAudiointerfaceMode == JackTrip::JACK) {
-            return static_cast<JackAudioInterface *>(mAudioInterface)->getAssignedClientName();
+            return static_cast<JackAudioInterface*>(mAudioInterface)
+                ->getAssignedClientName();
         } else {
             return "";
         }
@@ -474,11 +469,10 @@ class JackTrip : public QObject
     uint8_t getPeerNumOutgoingChannels(int8_t* full_packet) const
     {
         if (0 == mPacketHeader->getPeerNumOutgoingChannels(full_packet)) {
-          return mPacketHeader->getPeerNumIncomingChannels(full_packet);
+            return mPacketHeader->getPeerNumIncomingChannels(full_packet);
         } else {
-          return mPacketHeader->getPeerNumOutgoingChannels(full_packet);
+            return mPacketHeader->getPeerNumOutgoingChannels(full_packet);
         }
-
     }
 
     size_t getSizeInBytesPerChannel() const
@@ -518,7 +512,10 @@ class JackTrip : public QObject
         mSimulatedDelayRel   = delay_rel;
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueueLength = broadcast_queue; }
-    void queueLengthChanged(int queueLength) { emit signalQueueLengthChanged(queueLength); }
+    void queueLengthChanged(int queueLength)
+    {
+        emit signalQueueLengthChanged(queueLength);
+    }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 
    public slots:
@@ -610,11 +607,11 @@ class JackTrip : public QObject
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
-    int mNumAudioChansIn;   ///< Number of Audio Input Channels
-    int mNumAudioChansOut;  ///< Number of Audio Output Channels
-#ifdef WAIR                 // WAIR
-    int mNumNetRevChans;  ///< Number of Network Audio Channels (net comb filters)
-#endif                    // endwhere
+    int mNumAudioChansIn;    ///< Number of Audio Input Channels
+    int mNumAudioChansOut;   ///< Number of Audio Output Channels
+#ifdef WAIR                  // WAIR
+    int mNumNetRevChans;     ///< Number of Network Audio Channels (net comb filters)
+#endif                       // endwhere
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
     int mBufferStrategy;
     int mBroadcastQueueLength;
@@ -644,7 +641,7 @@ class JackTrip : public QObject
     int mSenderBindPort;    ///< Outgoing (sending) port for local machine
     int mReceiverPeerPort;  ///< Outgoing (sending) port for peer machine
     int mTcpServerPort;
-    
+
     bool mUseAuth;
     QString mUsername;
     QString mPassword;

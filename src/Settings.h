@@ -74,7 +74,7 @@ class Settings : public QObject
 
    private:
     void disableEcho(bool disabled);
-    
+
     JackTrip::jacktripModeT mJackTripMode =
         JackTrip::SERVER;                                   ///< JackTrip::jacktripModeT
     JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data Protocol
@@ -94,7 +94,7 @@ class Settings : public QObject
     bool mStopOnTimeout{false};  /// < Stop jacktrip after 10 second network timeout
     int mBufferStrategy{1};
 
-#ifdef WAIR  // wair
+#ifdef WAIR                   // wair
     int mNumNetRevChans = 0;  ///< Number of Network Audio Channels (net comb filters)
     int mClientAddCombLen;    ///< cmd line adjustment of net comb
     double mClientRoomSize;   ///< freeverb room size
@@ -131,7 +131,7 @@ class Settings : public QObject
     QString mCredsFile;
     QString mUsername;
     QString mPassword;
-    
+
     AudioTester mAudioTester;
 };
 

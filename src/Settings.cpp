@@ -47,10 +47,10 @@
 #endif  // endwhere
 
 //#include "JackTripWorker.h"
-#include <cassert>
-#include <cctype>
 #include <getopt.h>  // for command line parsing
 
+#include <cassert>
+#include <cctype>
 #include <cstdlib>
 #include <iostream>
 
@@ -108,14 +108,14 @@ void Settings::parseInput(int argc, char** argv)
         {"receivechannels", required_argument, NULL,
          OPT_NUMRECEIVE},  // Number of incoming channels
         {"sendchannels", required_argument, NULL,
-         OPT_NUMSEND},  // Number of outgoing channels
-#ifdef WAIR                 // WAIR
+         OPT_NUMSEND},                     // Number of outgoing channels
+#ifdef WAIR                                // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
         {"addcombfilterlength", required_argument, NULL,
          'N'},                                                 // added comb filter length
         {"combfilterfeedback", required_argument, NULL, 'H'},  // comb filter feedback
-#endif  // endwhere
-        {"server", no_argument, NULL, 's'},  // Run in P2P server mode
+#endif                                                         // endwhere
+        {"server", no_argument, NULL, 's'},                    // Run in P2P server mode
         {"client", required_argument, NULL,
          'c'},  // Run in P2P client mode, set server IP address
         {"localaddress", required_argument, NULL,
@@ -163,12 +163,18 @@ void Settings::parseInput(int argc, char** argv)
         {"simjitter", required_argument, NULL, OPT_SIMJITTER},
         {"broadcast", required_argument, NULL, OPT_BROADCAST},
         {"udprt", no_argument, NULL, OPT_RTUDPPRIORITY},
-        {"auth", no_argument, NULL, 'A'},  // Enable authentication between hub client and hub server
-        {"certfile", required_argument, NULL, OPT_AUTHCERT},  // Certificate for server authentication
-        {"keyfile", required_argument, NULL, OPT_AUTHKEY},  // Private key for server authentication
-        {"credsfile", required_argument, NULL, OPT_AUTHCREDS},  // Username and password store for server authentication
-        {"username", required_argument, NULL, OPT_AUTHUSER},  // Username when using authentication as a hub client
-        {"password", required_argument, NULL, OPT_AUTHPASS},  // Password when using authentication as a hub client
+        {"auth", no_argument, NULL,
+         'A'},  // Enable authentication between hub client and hub server
+        {"certfile", required_argument, NULL,
+         OPT_AUTHCERT},  // Certificate for server authentication
+        {"keyfile", required_argument, NULL,
+         OPT_AUTHKEY},  // Private key for server authentication
+        {"credsfile", required_argument, NULL,
+         OPT_AUTHCREDS},  // Username and password store for server authentication
+        {"username", required_argument, NULL,
+         OPT_AUTHUSER},  // Username when using authentication as a hub client
+        {"password", required_argument, NULL,
+         OPT_AUTHPASS},  // Password when using authentication as a hub client
         {"help", no_argument, NULL, 'h'},  // Print Help
         {"examine-audio-delay", required_argument, NULL,
          'x'},  // test mode - measure audio round-trip latency statistics
@@ -178,18 +184,18 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     /// \todo Specify mandatory arguments
     int ch;
-    while ((ch = getopt_long(
-                argc, argv,
-                "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:A", longopts,
-                NULL))
-           != -1)
+    while (
+        (ch = getopt_long(argc, argv,
+                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:A",
+                          longopts, NULL))
+        != -1)
         switch (ch) {
         case OPT_NUMRECEIVE:
             if (0 < atoi(optarg)) {
                 mNumAudioOutputChans = atoi(optarg);
             } else {
-                std::cerr
-                    << "--receivechannels ERROR: Number of channels must be greater than 0\n";
+                std::cerr << "--receivechannels ERROR: Number of channels must be "
+                             "greater than 0\n";
                 std::exit(1);
             }
             break;
@@ -197,8 +203,8 @@ void Settings::parseInput(int argc, char** argv)
             if (0 < atoi(optarg)) {
                 mNumAudioInputChans = atoi(optarg);
             } else {
-                std::cerr
-                    << "--sendchannels ERROR: Number of channels must be greater than 0\n";
+                std::cerr << "--sendchannels ERROR: Number of channels must be greater "
+                             "than 0\n";
                 std::exit(1);
             }
             break;
@@ -232,7 +238,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mClientRoomSize = atof(optarg);  // cmd line comb feedback adjustment
             break;
-#endif  // endwhere
+#endif             // endwhere
         case 's':  // Run in P2P server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;
@@ -625,6 +631,7 @@ void Settings::parseInput(int argc, char** argv)
 //*******************************************************************************
 void Settings::printUsage()
 {
+    // clang-format off
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
@@ -775,6 +782,7 @@ void Settings::printUsage()
          << endl;
     cout << " -h, --help                               Prints this Help" << endl;
     cout << "" << endl;
+    // clang-format on
 }
 
 //*******************************************************************************
@@ -813,9 +821,10 @@ UdpHubListener* Settings::getConfiguredHubServer()
         udpHub->setIOStatTimeout(mIOStatTimeout);
         udpHub->setIOStatStream(mIOStatStream);
     }
-    
+
     if (mAuth) {
-        //(We don't need to check the validity of these files because it's done by the UdpHubListener.)
+        //(We don't need to check the validity of these files because it's done by the
+        //UdpHubListener.)
         udpHub->setRequireAuth(mAuth);
         udpHub->setCertFile(mCertFile);
         udpHub->setKeyFile(mKeyFile);
@@ -1002,7 +1011,7 @@ void Settings::disableEcho(bool disabled)
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD mode;
     GetConsoleMode(hStdin, &mode);
-    
+
     if (disabled) {
         mode &= ~ENABLE_ECHO_INPUT;
     } else {

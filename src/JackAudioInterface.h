@@ -115,8 +115,7 @@ class JackAudioInterface : public AudioInterface
 
     //--------------GETTERS---------------------------------------------
     /// \brief Get the actual client name assigned by the Jack server
-    virtual QString getAssignedClientName() final
-    { return mAssignedClientName; }
+    virtual QString getAssignedClientName() final { return mAssignedClientName; }
     /// \brief Get the Jack Server Sampling Rate, in samples/second
     virtual uint32_t getSampleRate() const;
     /// \brief Get the Jack Server Buffer Size, in samples
@@ -174,18 +173,18 @@ class JackAudioInterface : public AudioInterface
     // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
     static int wrapperProcessCallback(jack_nframes_t nframes, void* arg);
 
-    int mNumInChans;   ///< Number of Input Channels
-    int mNumOutChans;  ///<  Number of Output Channels
-#ifdef WAIR            // WAIR
+    int mNumInChans;      ///< Number of Input Channels
+    int mNumOutChans;     ///<  Number of Output Channels
+#ifdef WAIR               // WAIR
     int mNumNetRevChans;  ///<  Number of Network Audio Channels (network comb filters
 #endif                    // endwhere
-    int mNumFrames;  ///< Buffer block size, in samples
+    int mNumFrames;       ///< Buffer block size, in samples
     // int mAudioBitResolution; ///< Bit resolution in audio samples
     AudioInterface::audioBitResolutionT
         mBitResolutionMode;  ///< Bit resolution (audioBitResolutionT) mode
 
-    jack_client_t* mClient;                         ///< Jack Client
-    QString mClientName;                            ///< Jack Client Name
+    jack_client_t* mClient;  ///< Jack Client
+    QString mClientName;     ///< Jack Client Name
     QString mAssignedClientName;
     QVarLengthArray<jack_port_t*> mInPorts;         ///< Vector of Input Ports (Channels)
     QVarLengthArray<jack_port_t*> mOutPorts;        ///< Vector of Output Ports (Channels)

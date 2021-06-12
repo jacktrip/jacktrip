@@ -53,7 +53,8 @@
 class Compressor : public ProcessPlugin
 {
    public:
-    /// \brief The class constructor sets the number of audio channels and default parameters.
+    /// \brief The class constructor sets the number of audio channels and default
+    /// parameters.
     Compressor(int numchans,  // xtor
                bool verboseIn = false, float ratioIn = 2.0f, float thresholdDBIn = -24.0f,
                float attackMSIn = 15.0f, float releaseMSIn = 40.0f,

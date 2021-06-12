@@ -26,15 +26,15 @@ Compilation options: -lang cpp -inpl -scal -ftz 0
  and/or modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 3 of
  the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; If not, see <http://www.gnu.org/licenses/>.
- 
+
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
@@ -66,8 +66,8 @@ struct dsp_memory_manager {
 };
 
 /**
-* Signal processor definition.
-*/
+ * Signal processor definition.
+ */
 
 class dsp
 {
@@ -82,37 +82,37 @@ class dsp
     virtual int getNumOutputs() = 0;
 
     /**
-         * Trigger the ui_interface parameter with instance specific calls
-         * to 'openTabBox', 'addButton', 'addVerticalSlider'... in order to build the UI.
-         *
-         * @param ui_interface - the user interface builder
-         */
+     * Trigger the ui_interface parameter with instance specific calls
+     * to 'openTabBox', 'addButton', 'addVerticalSlider'... in order to build the UI.
+     *
+     * @param ui_interface - the user interface builder
+     */
     virtual void buildUserInterface(UI* ui_interface) = 0;
 
     /* Returns the sample rate currently used by the instance */
     virtual int getSampleRate() = 0;
 
     /**
-         * Global init, calls the following methods:
-         * - static class 'classInit': static tables initialization
-         * - 'instanceInit': constants and instance state initialization
-         *
-         * @param sample_rate - the sampling rate in Hertz
-         */
+     * Global init, calls the following methods:
+     * - static class 'classInit': static tables initialization
+     * - 'instanceInit': constants and instance state initialization
+     *
+     * @param sample_rate - the sampling rate in Hertz
+     */
     virtual void init(int sample_rate) = 0;
 
     /**
-         * Init instance state
-         *
-         * @param sample_rate - the sampling rate in Hertz
-         */
+     * Init instance state
+     *
+     * @param sample_rate - the sampling rate in Hertz
+     */
     virtual void instanceInit(int sample_rate) = 0;
 
     /**
-         * Init instance constant state
-         *
-         * @param sample_rate - the sampling rate in Hertz
-         */
+     * Init instance constant state
+     *
+     * @param sample_rate - the sampling rate in Hertz
+     */
     virtual void instanceConstants(int sample_rate) = 0;
 
     /* Init default control parameters values */
@@ -122,38 +122,43 @@ class dsp
     virtual void instanceClear() = 0;
 
     /**
-         * Return a clone of the instance.
-         *
-         * @return a copy of the instance on success, otherwise a null pointer.
-         */
+     * Return a clone of the instance.
+     *
+     * @return a copy of the instance on success, otherwise a null pointer.
+     */
     virtual dsp* clone() = 0;
 
     /**
-         * Trigger the Meta* parameter with instance specific calls to 'declare' (key, value) metadata.
-         *
-         * @param m - the Meta* meta user
-         */
+     * Trigger the Meta* parameter with instance specific calls to 'declare' (key, value)
+     * metadata.
+     *
+     * @param m - the Meta* meta user
+     */
     virtual void metadata(Meta* m) = 0;
 
     /**
-         * DSP instance computation, to be called with successive in/out audio buffers.
-         *
-         * @param count - the number of frames to compute
-         * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT samples (eiher float, double or quad)
-         * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT samples (eiher float, double or quad)
-         *
-         */
+     * DSP instance computation, to be called with successive in/out audio buffers.
+     *
+     * @param count - the number of frames to compute
+     * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT
+     * samples (eiher float, double or quad)
+     * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT
+     * samples (eiher float, double or quad)
+     *
+     */
     virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) = 0;
 
     /**
-         * DSP instance computation: alternative method to be used by subclasses.
-         *
-         * @param date_usec - the timestamp in microsec given by audio driver.
-         * @param count - the number of frames to compute
-         * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT samples (either float, double or quad)
-         * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT samples (either float, double or quad)
-         *
-         */
+     * DSP instance computation: alternative method to be used by subclasses.
+     *
+     * @param date_usec - the timestamp in microsec given by audio driver.
+     * @param count - the number of frames to compute
+     * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT
+     * samples (either float, double or quad)
+     * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT
+     * samples (either float, double or quad)
+     *
+     */
     virtual void compute(double /*date_usec*/, int count, FAUSTFLOAT** inputs,
                          FAUSTFLOAT** outputs)
     {
@@ -255,15 +260,15 @@ class dsp_factory
  and/or modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 3 of
  the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; If not, see <http://www.gnu.org/licenses/>.
- 
+
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
@@ -288,15 +293,15 @@ class dsp_factory
  and/or modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 3 of
  the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; If not, see <http://www.gnu.org/licenses/>.
- 
+
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
@@ -322,15 +327,15 @@ struct Meta {
  and/or modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 3 of
  the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; If not, see <http://www.gnu.org/licenses/>.
- 
+
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
@@ -409,15 +414,15 @@ struct UI : public UIReal<FAUSTFLOAT> {
  and/or modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 3 of
  the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; If not, see <http://www.gnu.org/licenses/>.
- 
+
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
@@ -478,15 +483,15 @@ class PathBuilder
  and/or modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 3 of
  the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; If not, see <http://www.gnu.org/licenses/>.
- 
+
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
@@ -497,7 +502,7 @@ class PathBuilder
 #define __ValueConverter__
 
 /***************************************************************************************
-								ValueConverter.h
+                                                                ValueConverter.h
                             (GRAME, Copyright 2015-2019)
 
 Set of conversion objects used to map user interface values (for example a gui slider
@@ -507,8 +512,9 @@ delivering values between 0 and 1) to faust values (for example a vslider betwee
 -- Utilities
 
 Range(lo,hi) : clip a value x between lo and hi
-Interpolator(lo,hi,v1,v2) : Maps a value x between lo and hi to a value y between v1 and v2
-Interpolator3pt(lo,mi,hi,v1,vm,v2) : Map values between lo mid hi to values between v1 vm v2
+Interpolator(lo,hi,v1,v2) : Maps a value x between lo and hi to a value y between v1 and
+v2 Interpolator3pt(lo,mi,hi,v1,vm,v2) : Map values between lo mid hi to values between v1
+vm v2
 
 -- Value Converters
 
@@ -539,10 +545,9 @@ ZoneReader(zone, valueConverter) : a zone with a data converter
 
 ****************************************************************************************/
 
+#include <algorithm>  // std::max
 #include <cassert>
 #include <cfloat>
-
-#include <algorithm>  // std::max
 #include <cmath>
 #include <vector>
 
@@ -783,7 +788,8 @@ class AccUpConverter : public UpdatableValueConverter
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
                                   double fmid, double fmax)
     {
-        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
+        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpConverter update %f %f %f
+        //%f %f %f", amin,amid,amax,fmin,fmid,fmax);
         fA2F = Interpolator3pt(amin, amid, amax, fmin, fmid, fmax);
         fF2A = Interpolator3pt(fmin, fmid, fmax, amin, amid, amax);
     }
@@ -818,7 +824,8 @@ class AccDownConverter : public UpdatableValueConverter
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
                                   double fmid, double fmax)
     {
-        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
+        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownConverter update %f %f
+        //%f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
         fA2F = Interpolator3pt(amin, amid, amax, fmax, fmid, fmin);
         fF2A = Interpolator3pt(fmin, fmid, fmax, amax, amid, amin);
     }
@@ -840,8 +847,8 @@ class AccUpDownConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
-                       double fmax)
+    AccUpDownConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -854,7 +861,8 @@ class AccUpDownConverter : public UpdatableValueConverter
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
                                   double /*fmid*/, double fmax)
     {
-        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
+        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f
+        //%f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
         fA2F = Interpolator3pt(amin, amid, amax, fmin, fmax, fmin);
         fF2A = Interpolator(fmin, fmax, amin, amax);
     }
@@ -876,8 +884,8 @@ class AccDownUpConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
-                       double fmax)
+    AccDownUpConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -890,7 +898,8 @@ class AccDownUpConverter : public UpdatableValueConverter
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
                                   double /*fmid*/, double fmax)
     {
-        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
+        //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f
+        //%f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
         fA2F = Interpolator3pt(amin, amid, amax, fmax, fmin, fmax);
         fF2A = Interpolator(fmin, fmax, amin, amax);
     }
@@ -915,8 +924,9 @@ class ZoneControl
 
     virtual void update(double /*v*/) const {}
 
-    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/,
-                                  double /*min*/, double /*init*/, double /*max*/)
+    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/,
+                                  double /*amax*/, double /*min*/, double /*init*/,
+                                  double /*max*/)
     {
     }
     virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
@@ -1406,12 +1416,12 @@ class APIUI
     double ratio2value(int p, double r) { return fConversion[p]->ui2faust(r); }
 
     /**
-         * Return the control type (kAcc, kGyr, or -1) for a given parameter
-         *
-         * @param p - the UI parameter index
-         *
-         * @return the type
-         */
+     * Return the control type (kAcc, kGyr, or -1) for a given parameter
+     *
+     * @param p - the UI parameter index
+     *
+     * @return the type
+     */
     Type getParamType(int p)
     {
         if (p >= 0) {
@@ -1427,69 +1437,76 @@ class APIUI
     }
 
     /**
-         * Return the Item type (kButton = 0, kCheckButton, kVSlider, kHSlider, kNumEntry, kHBargraph, kVBargraph) for a given parameter
-         *
-         * @param p - the UI parameter index
-         *
-         * @return the Item type
-         */
+     * Return the Item type (kButton = 0, kCheckButton, kVSlider, kHSlider, kNumEntry,
+     * kHBargraph, kVBargraph) for a given parameter
+     *
+     * @param p - the UI parameter index
+     *
+     * @return the Item type
+     */
     ItemType getParamItemType(int p) { return fItemType[p]; }
 
     /**
-         * Set a new value coming from an accelerometer, propagate it to all relevant FAUSTFLOAT* zones.
-         *
-         * @param acc - 0 for X accelerometer, 1 for Y accelerometer, 2 for Z accelerometer
-         * @param value - the new value
-         *
-         */
+     * Set a new value coming from an accelerometer, propagate it to all relevant
+     * FAUSTFLOAT* zones.
+     *
+     * @param acc - 0 for X accelerometer, 1 for Y accelerometer, 2 for Z accelerometer
+     * @param value - the new value
+     *
+     */
     void propagateAcc(int acc, double value)
     {
         for (size_t i = 0; i < fAcc[acc].size(); i++) { fAcc[acc][i]->update(value); }
     }
 
     /**
-         * Used to edit accelerometer curves and mapping. Set curve and related mapping for a given UI parameter.
-         *
-         * @param p - the UI parameter index
-         * @param acc - 0 for X accelerometer, 1 for Y accelerometer, 2 for Z accelerometer (-1 means "no mapping")
-         * @param curve - between 0 and 3
-         * @param amin - mapping 'min' point
-         * @param amid - mapping 'middle' point
-         * @param amax - mapping 'max' point
-         *
-         */
+     * Used to edit accelerometer curves and mapping. Set curve and related mapping for a
+     * given UI parameter.
+     *
+     * @param p - the UI parameter index
+     * @param acc - 0 for X accelerometer, 1 for Y accelerometer, 2 for Z accelerometer
+     * (-1 means "no mapping")
+     * @param curve - between 0 and 3
+     * @param amin - mapping 'min' point
+     * @param amid - mapping 'middle' point
+     * @param amax - mapping 'max' point
+     *
+     */
     void setAccConverter(int p, int acc, int curve, double amin, double amid, double amax)
     {
         setConverter(fAcc, p, acc, curve, amin, amid, amax);
     }
 
     /**
-         * Used to edit gyroscope curves and mapping. Set curve and related mapping for a given UI parameter.
-         *
-         * @param p - the UI parameter index
-         * @param acc - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope (-1 means "no mapping")
-         * @param curve - between 0 and 3
-         * @param amin - mapping 'min' point
-         * @param amid - mapping 'middle' point
-         * @param amax - mapping 'max' point
-         *
-         */
+     * Used to edit gyroscope curves and mapping. Set curve and related mapping for a
+     * given UI parameter.
+     *
+     * @param p - the UI parameter index
+     * @param acc - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope (-1 means "no
+     * mapping")
+     * @param curve - between 0 and 3
+     * @param amin - mapping 'min' point
+     * @param amid - mapping 'middle' point
+     * @param amax - mapping 'max' point
+     *
+     */
     void setGyrConverter(int p, int gyr, int curve, double amin, double amid, double amax)
     {
         setConverter(fGyr, p, gyr, curve, amin, amid, amax);
     }
 
     /**
-         * Used to edit accelerometer curves and mapping. Get curve and related mapping for a given UI parameter.
-         *
-         * @param p - the UI parameter index
-         * @param acc - the acc value to be retrieved (-1 means "no mapping")
-         * @param curve - the curve value to be retrieved
-         * @param amin - the amin value to be retrieved
-         * @param amid - the amid value to be retrieved
-         * @param amax - the amax value to be retrieved
-         *
-         */
+     * Used to edit accelerometer curves and mapping. Get curve and related mapping for a
+     * given UI parameter.
+     *
+     * @param p - the UI parameter index
+     * @param acc - the acc value to be retrieved (-1 means "no mapping")
+     * @param curve - the curve value to be retrieved
+     * @param amin - the amin value to be retrieved
+     * @param amid - the amid value to be retrieved
+     * @param amax - the amax value to be retrieved
+     *
+     */
     void getAccConverter(int p, int& acc, int& curve, double& amin, double& amid,
                          double& amax)
     {
@@ -1497,16 +1514,17 @@ class APIUI
     }
 
     /**
-         * Used to edit gyroscope curves and mapping. Get curve and related mapping for a given UI parameter.
-         *
-         * @param p - the UI parameter index
-         * @param gyr - the gyr value to be retrieved (-1 means "no mapping")
-         * @param curve - the curve value to be retrieved
-         * @param amin - the amin value to be retrieved
-         * @param amid - the amid value to be retrieved
-         * @param amax - the amax value to be retrieved
-         *
-         */
+     * Used to edit gyroscope curves and mapping. Get curve and related mapping for a
+     * given UI parameter.
+     *
+     * @param p - the UI parameter index
+     * @param gyr - the gyr value to be retrieved (-1 means "no mapping")
+     * @param curve - the curve value to be retrieved
+     * @param amin - the amin value to be retrieved
+     * @param amid - the amid value to be retrieved
+     * @param amax - the amax value to be retrieved
+     *
+     */
     void getGyrConverter(int p, int& gyr, int& curve, double& amin, double& amid,
                          double& amax)
     {
@@ -1514,33 +1532,34 @@ class APIUI
     }
 
     /**
-         * Set a new value coming from an gyroscope, propagate it to all relevant FAUSTFLOAT* zones.
-         *
-         * @param gyr - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope
-         * @param value - the new value
-         *
-         */
+     * Set a new value coming from an gyroscope, propagate it to all relevant FAUSTFLOAT*
+     * zones.
+     *
+     * @param gyr - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope
+     * @param value - the new value
+     *
+     */
     void propagateGyr(int gyr, double value)
     {
         for (size_t i = 0; i < fGyr[gyr].size(); i++) { fGyr[gyr][i]->update(value); }
     }
 
     /**
-         * Get the number of FAUSTFLOAT* zones controlled with the accelerometer
-         *
-         * @param acc - 0 for X accelerometer, 1 for Y accelerometer, 2 for Z accelerometer
-         * @return the number of zones
-         *
-         */
+     * Get the number of FAUSTFLOAT* zones controlled with the accelerometer
+     *
+     * @param acc - 0 for X accelerometer, 1 for Y accelerometer, 2 for Z accelerometer
+     * @return the number of zones
+     *
+     */
     int getAccCount(int acc) { return (acc >= 0 && acc < 3) ? int(fAcc[acc].size()) : 0; }
 
     /**
-         * Get the number of FAUSTFLOAT* zones controlled with the gyroscope
-         *
-         * @param gyr - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope
-         * @param the number of zones
-         *
-         */
+     * Get the number of FAUSTFLOAT* zones controlled with the gyroscope
+     *
+     * @param gyr - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope
+     * @param the number of zones
+     *
+     */
     int getGyrCount(int gyr) { return (gyr >= 0 && gyr < 3) ? int(fGyr[gyr].size()) : 0; }
 
     // getScreenColor() : -1 means no screen color control (no screencolor metadata found)
@@ -1571,8 +1590,6 @@ class APIUI
 #ifndef FAUSTFLOAT
 #define FAUSTFLOAT float
 #endif
-
-#include <cmath>
 
 #include <algorithm>
 #include <cmath>

@@ -5,7 +5,7 @@
   internet.
 
   Copyright (c) 2020 Aaron Wyatt.
-  
+
   This file is part of QJackTrip.
 
   QJackTrip is free software: you can redistribute it and/or modify
@@ -26,25 +26,27 @@
 #ifndef QJACKTRIP_H
 #define QJACKTRIP_H
 
-#include <QMainWindow>
-#include <QScopedPointer>
+#include <QByteArray>
 #include <QCloseEvent>
+#include <QLabel>
+#include <QMainWindow>
+#include <QMutex>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QMutex>
-#include <QByteArray>
+#include <QScopedPointer>
 #include <QString>
 #include <QTemporaryFile>
-#include <QLabel>
-#include "../UdpHubListener.h"
+
 #include "../JackTrip.h"
+#include "../UdpHubListener.h"
 #include "messageDialog.h"
 
 #ifdef __MAC_OSX__
 #include "NoNap.h"
 #endif
 
-namespace Ui {
+namespace Ui
+{
 class QJackTrip;
 }
 
@@ -52,56 +54,51 @@ class QJackTrip : public QMainWindow
 {
     Q_OBJECT
 
-public:
-    explicit QJackTrip(QWidget *parent = nullptr);
+   public:
+    explicit QJackTrip(QWidget* parent = nullptr);
     ~QJackTrip() override;
-    
-    void closeEvent(QCloseEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
+
+    void closeEvent(QCloseEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
     void showEvent(QShowEvent* event) override;
-    
+
     void setArgc(int argc);
-    
-signals:
+
+   signals:
     void signalExit();
-    
-private slots:
+
+   private slots:
     void processFinished();
-    void processError(const QString &errorMessage);
+    void processError(const QString& errorMessage);
     void receivedConnectionFromPeer();
     void udpWaitingTooLong();
     void queueLengthChanged(int queueLength);
     void chooseRunType(int index);
-    void addressChanged(const QString &address);
+    void addressChanged(const QString& address);
     void authFilesChanged();
     void credentialsChanged();
     void browseForFile();
-    void receivedIP(QNetworkReply *reply);
+    void receivedIP(QNetworkReply* reply);
     void resetOptions();
     void start();
     void stop();
     void exit();
-    
-private:
-    enum runTypeT {
-        P2P_CLIENT,
-        P2P_SERVER,
-        HUB_CLIENT,
-        HUB_SERVER
-    };
-    
+
+   private:
+    enum runTypeT { P2P_CLIENT, P2P_SERVER, HUB_CLIENT, HUB_SERVER };
+
     void enableUi(bool enabled);
     void advancedOptionsForHubServer(bool isHubServer);
     void migrateSettings();
     void loadSettings();
     void saveSettings();
-    
+
     void setupStatsWindow();
-    void appendPlugins(JackTrip *jackTrip, int numSendChannels, int numRecvChannels);
-    
+    void appendPlugins(JackTrip* jackTrip, int numSendChannels, int numRecvChannels);
+
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
-    
+
     QScopedPointer<Ui::QJackTrip> m_ui;
     QScopedPointer<UdpHubListener> m_udpHub;
     QScopedPointer<JackTrip> m_jackTrip;
@@ -115,14 +112,14 @@ private:
     QString m_IPv6Address;
     bool m_hasIPv4Reply;
     QString m_lastPath;
-    
+
     QLabel m_autoQueueIndicator;
     int m_argc;
     bool m_hideWarning;
-    
+
 #ifdef __MAC_OSX__
     NoNap m_noNap;
 #endif
 };
 
-#endif // QJACKTRIP_H
+#endif  // QJACKTRIP_H

@@ -33,49 +33,50 @@
  * \author Aaron Wyatt
  * \date September 2020
  */
- 
+
 #ifndef __AUTH_H__
 #define __AUTH_H__
 
-#include <QObject>
-#include <QHash>
 #include <QFileSystemWatcher>
+#include <QHash>
+#include <QObject>
 
 class Auth : public QObject
 {
     Q_OBJECT;
 
-public:
+   public:
     enum AuthResponseT {
-        OK = 1 << 16,
-        REQUIRED = 2 << 16,
+        OK          = 1 << 16,
+        REQUIRED    = 2 << 16,
         NOTREQUIRED = 3 << 16,
-        WRONGCREDS = 4 << 16,
-        WRONGTIME = 5 << 16
+        WRONGCREDS  = 4 << 16,
+        WRONGTIME   = 5 << 16
     };
-    
+
     Auth(QString fileName);
     ~Auth();
-    
+
     AuthResponseT checkCredentials(QString username, QString password);
 
-private slots:
+   private slots:
     void reloadAuthFile();
-    
-private:
+
+   private:
     void loadAuthFile(QString filename);
     bool checkTime(QString username);
-    
+
     char char64(int value);
-    QByteArray charGroup(unsigned char byte3, unsigned char byte2, unsigned char byte1, unsigned int n);
+    QByteArray charGroup(unsigned char byte3, unsigned char byte2, unsigned char byte1,
+                         unsigned int n);
     QByteArray generateSha512Hash(QString passwordString, QString saltString);
-    
+
     QStringList m_days;
     QHash<QString, QString> m_passwordTable;
     QHash<QString, QString> m_timesTable;
-    
+
     QString m_authFileName;
     QFileSystemWatcher m_authFileWatcher;
 };
 
-#endif // __AUTH_H__
+#endif  // __AUTH_H__

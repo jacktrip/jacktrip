@@ -50,7 +50,7 @@
 #include "Settings.h"
 #ifdef WAIR  // wair
 #include "dcblock2gain.dsp.h"
-#endif // endwhere
+#endif  // endwhere
 
 using std::cout;
 using std::endl;
@@ -65,9 +65,10 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
     , mUnderRunMode(UnderRunMode)
     , mClientName(clientName)
 {
-    //mNetks = new NetKS;
-    //mNetks->play();
-    connect(&mUdpSockTemp, &QUdpSocket::readyRead, this, &JackTripWorker::receivedDataUDP);
+    // mNetks = new NetKS;
+    // mNetks->play();
+    connect(&mUdpSockTemp, &QUdpSocket::readyRead, this,
+            &JackTripWorker::receivedDataUDP);
 }
 
 //*******************************************************************************
@@ -86,9 +87,9 @@ void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server
 #endif
         mRunning = false;
     }
-    //Set as spawning from this point on.
+    // Set as spawning from this point on.
     mSpawning = true;
-    
+
     mID = id;
     // Set the jacktrip address and ports
     mClientAddress             = client_address;
@@ -96,55 +97,59 @@ void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server
     mClientPort                = client_port;
     m_connectDefaultAudioPorts = connectDefaultAudioPorts;
     mAssignedClientName        = "";
-    
+
     // Create and setup JackTrip Object
-    //JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
+    // JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
     if (gVerboseFlag) cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
 
-#ifdef WAIR // WAIR
-    // forces    BufferQueueLength to 2
-    // need to parse numNetChans from incoming header
-    // but force to 16 for now
+#ifdef WAIR  // WAIR
+        // forces    BufferQueueLength to 2
+        // need to parse numNetChans from incoming header
+        // but force to 16 for now
 #define FORCEBUFFERQ 2
-    if (mUdpHubListener->isWAIR()) { // invoked with -Sw
-        mWAIR = true;
+    if (mUdpHubListener->isWAIR()) {  // invoked with -Sw
+        mWAIR           = true;
         mNumNetRevChans = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
-    } else {};
-#endif // endwhere
+    } else {
+    };
+#endif  // endwhere
 
 #ifndef __JAMTEST__
-#ifdef WAIR // WAIR
+#ifdef WAIR  // WAIR
     //        bool tmp = mJTWorkers->at(id)->isWAIR();
     //        qDebug() << "is WAIR?" <<  tmp ;
-    qDebug() << "mNumNetRevChans" <<  mNumNetRevChans ;
+    qDebug() << "mNumNetRevChans" << mNumNetRevChans;
 
     mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1,
                                  mNumNetRevChans, FORCEBUFFERQ));
     // Add Plugins
-    if ( mWAIR ) {
+    if (mWAIR) {
         cout << "Running in WAIR Mode..." << endl;
         cout << gPrintSeparator << std::endl;
-        switch ( mNumNetRevChans )
-        {
-        case 16 : // freeverb
-            mJackTrip->appendProcessPluginFromNetwork(new dcblock2gain(1)); // plugin slot 0
+        switch (mNumNetRevChans) {
+        case 16:  // freeverb
+            mJackTrip->appendProcessPluginFromNetwork(
+                new dcblock2gain(1));  // plugin slot 0
             ///////////////
             //            mJackTrip->appendProcessPlugin(new comb16server(mNumNetChans));
             // -S LAIR no AP  mJackTrip->appendProcessPlugin(new AP8(mNumChans));
             break;
         default:
-            throw std::invalid_argument("Settings: mNumNetChans doesn't correspond to Faust plugin");
+            throw std::invalid_argument(
+                "Settings: mNumNetChans doesn't correspond to Faust plugin");
             break;
         }
     }
-#else // endwhere
-    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, mBufferQueueLength));
-#endif // not wair
-#endif // ifndef __JAMTEST__
+#else   // endwhere
+    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1,
+                                 mBufferQueueLength));
+#endif  // not wair
+#endif  // ifndef __JAMTEST__
 
 #ifdef __JAMTEST__
-    mJackTrip.reset(new JamTest(JackTrip::SERVERPINGSERVER)); // ########### JamTest #################
-    //JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
+    mJackTrip.reset(new JamTest(
+        JackTrip::SERVERPINGSERVER));  // ########### JamTest #################
+    // JackTrip jacktrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, mNumChans, 2);
 #endif
 }
 
@@ -153,10 +158,10 @@ void JackTripWorker::start()
 {
     QMutexLocker lock(&mMutex);
     if (!mSpawning) {
-        //Something else has aborted the connection.
+        // Something else has aborted the connection.
         return;
     }
-    
+
     mJackTrip->setConnectDefaultAudioPorts(m_connectDefaultAudioPorts);
 
     // Set our underrun mode
@@ -165,18 +170,18 @@ void JackTripWorker::start()
         mJackTrip->setIOStatTimeout(mIOStatTimeout);
         mJackTrip->setIOStatStream(mIOStatStream);
     }
-    
+
     if (!mClientName.isEmpty()) { mJackTrip->setClientName(mClientName); }
 
-    //ClientAddress.setAddress(mClientAddress);
+    // ClientAddress.setAddress(mClientAddress);
     // If I don't type this line, I get a bus error in the next line.
     // I still haven't figure out why
-    //ClientAddress.toString().toLatin1().constData();
-    //jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
+    // ClientAddress.toString().toLatin1().constData();
+    // jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
     if (mAppendThreadID) { mJackTrip->setID(mID + 1); }
     mJackTrip->setPeerAddress(mClientAddress);
     mJackTrip->setBindPorts(mServerPort);
-    //jacktrip.setPeerPorts(mClientPort);
+    // jacktrip.setPeerPorts(mClientPort);
     mJackTrip->setBufferStrategy(mBufferStrategy);
     mJackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                       mSimulatedDelayRel);
@@ -187,11 +192,13 @@ void JackTripWorker::start()
     connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTripWorker::udpTimerTick);
     mElapsedTime = 0;
     mTimeoutTimer.start();
-    if (gVerboseFlag) cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
+    if (gVerboseFlag)
+        cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
     if (!mUdpSockTemp.bind(QHostAddress::Any, mServerPort,
-                           QUdpSocket::DefaultForPlatform))
-    {
-        std::cerr << "in JackTripWorker: Could not bind UDP socket. It may already be bound." << endl;
+                           QUdpSocket::DefaultForPlatform)) {
+        std::cerr
+            << "in JackTripWorker: Could not bind UDP socket. It may already be bound."
+            << endl;
         throw std::runtime_error("Could not bind UDP socket. It may already be bound.");
     }
 }
@@ -219,22 +226,24 @@ void JackTripWorker::stopThread()
 void JackTripWorker::receivedDataUDP()
 {
     QMutexLocker lock(&mMutex);
-    
+
     if (!mSpawning || mUdpSockTemp.state() != QAbstractSocket::BoundState) {
-        //Check if something has interrupted the process.
+        // Check if something has interrupted the process.
         return;
     }
     mTimeoutTimer.stop();
-    
-    //Set our jacktrip parameters from the received header data.
+
+    // Set our jacktrip parameters from the received header data.
     quint16 port;
-    int packet_size = mUdpSockTemp.pendingDatagramSize();
-    int8_t *full_packet = new int8_t[packet_size];
-    mUdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet), packet_size, nullptr, &port);
-    mUdpSockTemp.close(); // close the socket
-    
-    //Alert the hub listener of the actual client port for incoming packets.
-    //This will remove any old worker objects, and will set the client port member variable on this object.
+    int packet_size     = mUdpSockTemp.pendingDatagramSize();
+    int8_t* full_packet = new int8_t[packet_size];
+    mUdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet), packet_size, nullptr,
+                              &port);
+    mUdpSockTemp.close();  // close the socket
+
+    // Alert the hub listener of the actual client port for incoming packets.
+    // This will remove any old worker objects, and will set the client port member
+    // variable on this object.
     mUdpHubListener->releaseDuplicateThreads(this, port);
 
     int PeerBufferSize          = mJackTrip->getPeerBufferSize(full_packet);
@@ -271,32 +280,37 @@ void JackTripWorker::receivedDataUDP()
     }
 
     if (PeerNumOutgoingChannels == -1) {
-        //Shut it down
+        // Shut it down
         mSpawning = false;
         mUdpHubListener->releaseThread(mID);
     }
-    
+
     // Connect signals and slots
     // -------------------------
-    if (gVerboseFlag) cout << "---> JackTripWorker: Connecting signals and slots..." << endl;
+    if (gVerboseFlag)
+        cout << "---> JackTripWorker: Connecting signals and slots..." << endl;
     // Connection to terminate JackTrip when packets haven't arrive for
     // a certain amount of time
     connect(mJackTrip.data(), &JackTrip::signalNoUdpPacketsForSeconds, mJackTrip.data(),
             &JackTrip::slotStopProcesses, Qt::QueuedConnection);
-    connect(mJackTrip.data(), &JackTrip::signalProcessesStopped, this, &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
-    connect(mJackTrip.data(), &JackTrip::signalError, this, &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
+    connect(mJackTrip.data(), &JackTrip::signalProcessesStopped, this,
+            &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
+    connect(mJackTrip.data(), &JackTrip::signalError, this,
+            &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
 #ifndef __NO_JACK__
-    connect(mJackTrip.data(), &JackTrip::signalAudioStarted, this, &JackTripWorker::alertPatcher, Qt::QueuedConnection);
+    connect(mJackTrip.data(), &JackTrip::signalAudioStarted, this,
+            &JackTripWorker::alertPatcher, Qt::QueuedConnection);
 #endif
-    connect(this, &JackTripWorker::signalRemoveThread, mJackTrip.data(), &JackTrip::slotStopProcesses, Qt::QueuedConnection);
-    
+    connect(this, &JackTripWorker::signalRemoveThread, mJackTrip.data(),
+            &JackTrip::slotStopProcesses, Qt::QueuedConnection);
+
     if (gVerboseFlag) cout << "---> JackTripWorker: startProcess..." << endl;
     mJackTrip->startProcess(
-        #ifdef WAIRTOHUB // wair
-                mID
-        #endif // endwhere
-                );
-    mRunning = true;
+#ifdef WAIRTOHUB  // wair
+        mID
+#endif  // endwhere
+    );
+    mRunning  = true;
     mSpawning = false;
     // if (gVerboseFlag) cout << "---> JackTripWorker: start..." << endl;
     // jacktrip.start(); // ########### JamTest Only #################
@@ -311,7 +325,7 @@ void JackTripWorker::udpTimerTick()
     }
     mElapsedTime += mSleepTime;
     if (gVerboseFlag) cout << "---------> ELAPSED TIME: " << mElapsedTime << endl;
-    //Check if we've timed out.
+    // Check if we've timed out.
     if (gTimeOutMultiThreadedServer > 0 && mElapsedTime >= gTimeOutMultiThreadedServer) {
         std::cerr << "--->JackTripWorker: is not receiving Datagrams (timeout)" << endl;
         mTimeoutTimer.stop();
@@ -325,7 +339,7 @@ void JackTripWorker::jacktripStopped()
 {
     QMutexLocker lock(&mMutex);
     if (mSpawning || !mRunning) {
-        //This has already been taken care of elsewhere.
+        // This has already been taken care of elsewhere.
         return;
     }
     mRunning = false;
@@ -340,12 +354,12 @@ void JackTripWorker::jacktripStopped()
 
 void JackTripWorker::alertPatcher()
 {
-    #ifndef __NO_JACK__
+#ifndef __NO_JACK__
     QMutexLocker lock(&mMutex);
     if (mRunning) {
         mAssignedClientName = mJackTrip->getAssignedClientName();
         mUdpHubListener->registerClientWithPatcher(mAssignedClientName);
         mPatched = true;
     }
-    #endif
+#endif
 }

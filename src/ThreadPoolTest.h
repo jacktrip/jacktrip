@@ -19,7 +19,7 @@
 class ThreadPoolTest
     : public QObject
     , public QRunnable
-//class ThreadPoolTest : public QThread
+// class ThreadPoolTest : public QThread
 {
     Q_OBJECT;
 
@@ -30,22 +30,24 @@ class ThreadPoolTest
     {
         JackTripWorkerMessages jtm;
         QThread testThread;
-        //jtm.moveToThread(&testThread);
+        // jtm.moveToThread(&testThread);
 
-        //QObject::connect(&jtm, SIGNAL(signalTest()), &jtm, SLOT(slotTest()), Qt::QueuedConnection);
+        // QObject::connect(&jtm, SIGNAL(signalTest()), &jtm, SLOT(slotTest()),
+        // Qt::QueuedConnection);
         testThread.start();
         jtm.play();
-        //testThread.wait();
+        // testThread.wait();
 
-        //std::cout << "--------------- BEFORE ---------------" << std::endl;
-        //NetKS netks;
-        //netks.play();
-        //std::cout << "--------------- AFTER ---------------" << std::endl;
+        // std::cout << "--------------- BEFORE ---------------" << std::endl;
+        // NetKS netks;
+        // netks.play();
+        // std::cout << "--------------- AFTER ---------------" << std::endl;
 
         QEventLoop loop;
-        //QObject::connect(this, SIGNAL(stopELoop()), &loop, SLOT(quit()), Qt::QueuedConnection);
+        // QObject::connect(this, SIGNAL(stopELoop()), &loop, SLOT(quit()),
+        // Qt::QueuedConnection);
         loop.exec();
-        //std::cout << "--------------- EXITING QRUNNABLE---------------" << std::endl;
+        // std::cout << "--------------- EXITING QRUNNABLE---------------" << std::endl;
         /*
     while (true) {
       std::cout << "Hello world from thread" << std::endl;

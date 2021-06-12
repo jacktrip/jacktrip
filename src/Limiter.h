@@ -48,10 +48,10 @@
 #include "limitertest.h"
 #endif
 
+#include <cassert>
 #include <vector>
 
 #include "ProcessPlugin.h"
-#include <cassert>
 #include "limiterdsp.h"
 
 /** \brief The Limiter class confines the output dynamic range to a
@@ -142,8 +142,8 @@ class Limiter : public ProcessPlugin
             double tmp_sample = double(buf[i]);
             double limiterAmp =
                 fabs(tmp_sample)
-                / sqrt(double(
-                    mNumClients));  // KEEP IN SYNC with gain in ../faust-src/limiterdsp.dsp
+                / sqrt(double(mNumClients));  // KEEP IN SYNC with gain in
+                                              // ../faust-src/limiterdsp.dsp
             if (limiterAmp >= warningAmp) {
                 warnCount++;
                 peakMagnitude = std::max(peakMagnitude, limiterAmp);
@@ -174,8 +174,8 @@ class Limiter : public ProcessPlugin
                                 peakMagnitudeDB - warningAmpDB);
                     }
                     peakMagnitude = 0.0;  // reset for next group measurement
-                    if (nextWarning
-                        < maxWarningInterval) {  // don't let it stop reporting for too long
+                    if (nextWarning < maxWarningInterval) {  // don't let it stop
+                                                             // reporting for too long
                         nextWarning *= 10;
                     } else {
                         warnCount = 0;

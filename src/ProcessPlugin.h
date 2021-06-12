@@ -43,10 +43,10 @@
 /** \brief Interface for the process plugins to add to the JACK callback process in
  * JackAudioInterface
  *
- * This class contains the same methods of the FAUST dsp class. A mydsp class can inherit from
- * this class the same way it inherits from dsp. Subclass should implement all methods
- * except init, which is optional for processing that are sampling rate dependent or
- * that need specific initialization.
+ * This class contains the same methods of the FAUST dsp class. A mydsp class can inherit
+ * from this class the same way it inherits from dsp. Subclass should implement all
+ * methods except init, which is optional for processing that are sampling rate dependent
+ * or that need specific initialization.
  */
 class ProcessPlugin : public QObject
 {
@@ -61,20 +61,18 @@ class ProcessPlugin : public QObject
     /// \brief Return Number of Output Channels
     virtual int getNumOutputs() = 0;
 
-    //virtual void buildUserInterface(UI* interface) = 0;
+    // virtual void buildUserInterface(UI* interface) = 0;
 
-    virtual const char* getName() const = 0; // get name of DERIVED class
+    virtual const char* getName() const = 0;  // get name of DERIVED class
 
     /** \brief Do proper Initialization of members and class instances. By default this
-   * initializes the Sampling Frequency. If a class instance depends on the
-   * sampling frequency, it should be initialize here.
-   */
+     * initializes the Sampling Frequency. If a class instance depends on the
+     * sampling frequency, it should be initialize here.
+     */
     virtual void init(int samplingRate)
     {
         fSamplingFreq = samplingRate;
-        if (verbose) {
-            printf("%s: init(%d)\n", getName(), samplingRate);
-        }
+        if (verbose) { printf("%s: init(%d)\n", getName(), samplingRate); }
     }
     virtual bool getInited() { return inited; }
     virtual void setVerbose(bool v) { verbose = v; }

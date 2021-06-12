@@ -76,10 +76,8 @@ inline int gettimeofday(struct timeval* p, void* tz /* IGNORED */)
 //#######################################################################
 //***********************************************************************
 PacketHeader::PacketHeader(JackTrip* jacktrip)
-    : mBufferRequiresSameSettings(false)
-    , mSeqNumber(0)
-    , mJackTrip(jacktrip)
-{    
+    : mBufferRequiresSameSettings(false), mSeqNumber(0), mJackTrip(jacktrip)
+{
 }
 
 //***********************************************************************
@@ -136,32 +134,40 @@ bool DefaultHeader::checkPeerSettings(int8_t* full_packet)
     peer_header = reinterpret_cast<DefaultHeaderStruct*>(full_packet);
 
     // Check Buffer Size
-    if (peer_header->BufferSize != mHeader.BufferSize)
-    {
+    if (peer_header->BufferSize != mHeader.BufferSize) {
         if (mBufferRequiresSameSettings) {
-            std::cerr << "ERROR: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
+            std::cerr << "ERROR: Peer Buffer Size is  : " << peer_header->BufferSize
+                      << endl;
             std::cerr << "       Local Buffer Size is : " << mHeader.BufferSize << endl;
             std::cerr << "Make sure both machines use same buffer size" << endl;
             std::cerr << gPrintSeparator << endl;
             error = true;
-            report.append(QString("\n\nPeer Buffer Size is %1\nLocal Buffer Size is %2\nMake sure both machines use the same Buffer Size").arg(peer_header->BufferSize).arg(mHeader.BufferSize));
+            report.append(QString("\n\nPeer Buffer Size is %1\nLocal Buffer Size is "
+                                  "%2\nMake sure both machines use the same Buffer Size")
+                              .arg(peer_header->BufferSize)
+                              .arg(mHeader.BufferSize));
         } else {
-            std::cerr << "WARNING: Peer Buffer Size is  : " << peer_header->BufferSize << endl;
+            std::cerr << "WARNING: Peer Buffer Size is  : " << peer_header->BufferSize
+                      << endl;
             std::cerr << "         Local Buffer Size is : " << mHeader.BufferSize << endl;
         }
     }
 
     // Check Sampling Rate
-    if ( peer_header->SamplingRate != mHeader.SamplingRate )
-    {
-        int peerRate = AudioInterface::getSampleRateFromType(static_cast<AudioInterface::samplingRateT>(peer_header->SamplingRate));
-        int localRate = AudioInterface::getSampleRateFromType(static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate));
+    if (peer_header->SamplingRate != mHeader.SamplingRate) {
+        int peerRate = AudioInterface::getSampleRateFromType(
+            static_cast<AudioInterface::samplingRateT>(peer_header->SamplingRate));
+        int localRate = AudioInterface::getSampleRateFromType(
+            static_cast<AudioInterface::samplingRateT>(mHeader.SamplingRate));
         std::cerr << "ERROR: Peer Sampling Rate is   : " << peerRate << endl;
         std::cerr << "       Local Sampling Rate is  : " << localRate << endl;
         std::cerr << "Make sure both machines use the same Sampling Rate" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
-        report.append(QString("\n\nPeer Sampling Rate is %1\nLocal Sampling Rate is %2\nMake sure both machines use the same Sampling Rate").arg(peerRate).arg(localRate));
+        report.append(QString("\n\nPeer Sampling Rate is %1\nLocal Sampling Rate is "
+                              "%2\nMake sure both machines use the same Sampling Rate")
+                          .arg(peerRate)
+                          .arg(localRate));
     }
 
     // Check Audio Bit Resolution
@@ -173,17 +179,21 @@ bool DefaultHeader::checkPeerSettings(int8_t* full_packet)
         std::cerr << "Make sure both machines use the same Bit Resolution" << endl;
         std::cerr << gPrintSeparator << endl;
         error = true;
-        report.append(QString("\n\nPeer Audio Bit Resolution is %1\nLocal Audio Bit Resolution is %2\nMake sure both machines use the same Bit Resolution").arg(peer_header->BitResolution).arg(mHeader.BitResolution));
+        report.append(
+            QString("\n\nPeer Audio Bit Resolution is %1\nLocal Audio Bit Resolution is "
+                    "%2\nMake sure both machines use the same Bit Resolution")
+                .arg(peer_header->BitResolution)
+                .arg(mHeader.BitResolution));
     }
 
     // Exit program if error
     if (error) {
-        //std::cerr << "Exiting program..." << endl;
-        //std::exit(1);
-        //throw std::logic_error("Local and Peer Settings don't match");
+        // std::cerr << "Exiting program..." << endl;
+        // std::exit(1);
+        // throw std::logic_error("Local and Peer Settings don't match");
         emit signalError(QString("Local and Peer Settings don't match").append(report));
     }
-    
+
     return !error;
     /// \todo Check number of channels and other parameters
 }
@@ -309,7 +319,8 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
         // with JackTrip at the moment." << endl; throw std::logic_error("ERROR: JamLink
         // only support 64 buffer size for communication with JackTrip at the moment.");
         emit signalError(
-            "JamLink only supports a buffer size of 64 for communication with JackTrip at the moment.");
+            "JamLink only supports a buffer size of 64 for communication with JackTrip "
+            "at the moment.");
     }
 
     mHeader.Common = (ETX_MONO | ETX_16BIT | ETX_XTND) + 64;

@@ -18,9 +18,9 @@ class TestRingBufferWrite : public QThread
         writeSlot[0] = *"a";
         writeSlot[1] = *"b";
         while (true) {
-            //std::cout << "writing BEFORE" << std::endl;
+            // std::cout << "writing BEFORE" << std::endl;
             rb.insertSlotBlocking(writeSlot);
-            //std::cout << "writing AFTER" << std::endl;
+            // std::cout << "writing AFTER" << std::endl;
         }
     }
 };
@@ -33,11 +33,11 @@ class TestRingBufferRead : public QThread
         int8_t* readSlot;
         readSlot = new int8_t[2];
         while (true) {
-            //std::cout << "reading BEFORE" << std::endl;
+            // std::cout << "reading BEFORE" << std::endl;
             rb.readSlotBlocking(readSlot);
-            //std::cout << "reading AFTER" << std::endl;
-            //std::cout << *(readSlot) << std::endl;
-            //std::cout << *(readSlot+1) << std::endl;
+            // std::cout << "reading AFTER" << std::endl;
+            // std::cout << *(readSlot) << std::endl;
+            // std::cout << *(readSlot+1) << std::endl;
         }
     }
 };

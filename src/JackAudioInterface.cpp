@@ -103,7 +103,7 @@ void JackAudioInterface::setup()
 void JackAudioInterface::setupClient()
 {
     QByteArray clientName = mClientName.toUtf8();
-    int maxSize = jack_client_name_size();
+    int maxSize           = jack_client_name_size();
     if (clientName.length() > maxSize) {
         int length = maxSize;
         // Make sure we don't cut mid multi-byte character.
@@ -149,7 +149,8 @@ void JackAudioInterface::setupClient()
     mAssignedClientName = jack_get_client_name(mClient);
     if (status & JackServerStarted) { fprintf(stderr, "JACK server started\n"); }
     if (status & JackNameNotUnique) {
-        fprintf(stderr, "unique name `%s' assigned\n", mAssignedClientName.toUtf8().constData());
+        fprintf(stderr, "unique name `%s' assigned\n",
+                mAssignedClientName.toUtf8().constData());
     }
 
     // Set function to call if Jack shuts down

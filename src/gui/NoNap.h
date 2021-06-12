@@ -5,7 +5,7 @@
   internet.
 
   Copyright (c) 2020 Aaron Wyatt.
-  
+
   This file is part of QJackTrip.
 
   QJackTrip is free software: you can redistribute it and/or modify
@@ -30,16 +30,16 @@
 
 class NoNap
 {
-public:
+   public:
     NoNap();
     ~NoNap();
-    
+
     void disableNap();
     void enableNap();
-    
-private:
+
+   private:
     id m_activity;
     bool m_preventNap;
 };
 
-#endif // __NONAP_H__
+#endif  // __NONAP_H__

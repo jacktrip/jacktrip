@@ -38,7 +38,6 @@
 #pragma once
 
 #include <cassert>
-
 #include <vector>
 
 #include "Compressor.h"
@@ -151,7 +150,8 @@ class Effects
 
     int getOutgoingNumChans() { return mNumOutgoingChans; }
 
-    // call these next two after it is decided what effects we will be using for the duration:
+    // call these next two after it is decided what effects we will be using for the
+    // duration:
 
     std::vector<ProcessPlugin*> allocateIncomingEffects(int nIncomingChans)
     {
@@ -193,7 +193,8 @@ class Effects
             inLimiterP = new Limiter(
                 mNumIncomingChans, 1,
                 gVerboseFlag);  // mNumClientsAssumed not needed this direction
-            // Never needed in normal practice for incoming limiter: inLimiterP->setWarningAmplitude(limiterWarningAmplitude);
+            // Never needed in normal practice for incoming limiter:
+            // inLimiterP->setWarningAmplitude(limiterWarningAmplitude);
             incomingEffects.push_back(inLimiterP);
         }
         incomingEffectsAllocated = true;
@@ -241,7 +242,8 @@ class Effects
                 assert(outLimiterP == nullptr);
                 outLimiterP = new Limiter(mNumOutgoingChans, mNumClientsAssumed);
                 outLimiterP->setWarningAmplitude(limiterWarningAmplitude);
-                // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate) here
+                // do not have mSampleRate yet, so cannot call limiter->init(mSampleRate)
+                // here
                 outgoingEffects.push_back(outLimiterP);
             }
         }
@@ -365,8 +367,8 @@ class Effects
             setCompressorPresetIndexFrom1(presetIndexFrom1, inOrOut);
         } else {
             // args can be presetIndexFrom1, handled above, or (all optional, any order):
-            // c(c:compressionRatio, t:thresholdDB, a:attackTimeMS, r:releaseTimeMS, g:makeUpGainDB)
-            // See ./CompressorPresets.h for example settings.
+            // c(c:compressionRatio, t:thresholdDB, a:attackTimeMS, r:releaseTimeMS,
+            // g:makeUpGainDB) See ./CompressorPresets.h for example settings.
             if (gVerboseFlag) {
                 std::cout << "parseCompressorArgs = " << args << std::endl;
             }
@@ -374,8 +376,8 @@ class Effects
             char lastParam = '\0';
 
             CompressorPreset newPreset(
-                CompressorPresets::
-                    voice);  // Anything unset gets voice value (most gentle)
+                CompressorPresets::voice);  // Anything unset gets voice value (most
+                                            // gentle)
 
             int nSkip = 0;
             for (ulong i = 0; i < argLen; i++) {
@@ -409,9 +411,8 @@ class Effects
                         for (ulong j = i; j < argLen;
                              j++) {  // scan ahead for end of number
                             if (args[j] == ',' || args[j] == ' '
-                                || j
-                                       == argLen
-                                              - 1) {  // comma or space required between parameters
+                                || j == argLen - 1) {  // comma or space required between
+                                                       // parameters
                                 char argsj = args[j];
                                 if (j < argLen - 1) {  // there's more
                                     args[j] = '\0';
@@ -651,8 +652,10 @@ class Effects
                                      : (haveOutgoing ? LIMITER_OUTGOING : LIMITER_NONE)));
             if (haveWarnings) {
                 limiterWarningAmplitude =
-                    0.5;  // KEEP IN SYNC WITH LIMITER THRESHOLD/CEILING 'softClipLevel' in ../faust-src/limiterdsp.dsp
-                // the warning amplitude and limiter compression threshold can of course be brought as a parameters, e.g. w(0.5)
+                    0.5;  // KEEP IN SYNC WITH LIMITER THRESHOLD/CEILING 'softClipLevel'
+                          // in ../faust-src/limiterdsp.dsp
+                // the warning amplitude and limiter compression threshold can of course
+                // be brought as a parameters, e.g. w(0.5)
             }
             if (gVerboseFlag) {
                 if (haveIncoming) { std::cout << "Set up INCOMING Overflow Limiter\n"; }

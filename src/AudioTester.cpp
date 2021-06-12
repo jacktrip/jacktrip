@@ -63,7 +63,8 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                     if (cellNum > pendingCell) {  // we missed it
                         std::cerr << " - ABORTING CURRENT PULSE\n";
                         impulsePending = false;
-                    } else {  // somehow we got the previous pulse again - repeated packet or underrun-caused repetition (old buffer)
+                    } else {  // somehow we got the previous pulse again - repeated packet
+                              // or underrun-caused repetition (old buffer)
                         std::cerr << " - IGNORING FOUND PULSE WAITING FURTHER\n";
                     }
                 } else {  // found our impulse:
@@ -82,8 +83,9 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                     // int64_t curTimeUS = timeMicroSec(); // time since launch in us
                     // int64_t impulseDelayUS = curTimeUS - ImpulseTimeUS;
                     // float impulseDelaySec = float(impulseDelayUS) * 1.0e-6;
-                    // float impulseDelayBuffers = impulseDelaySec / (float(n_frames)/float(sampleRate));
-                    // int64_t impulseDelayMS = (int64_t)round(double(impulseDelayUS)/1000.0);
+                    // float impulseDelayBuffers = impulseDelaySec /
+                    // (float(n_frames)/float(sampleRate)); int64_t impulseDelayMS =
+                    // (int64_t)round(double(impulseDelayUS)/1000.0);
                     if (elapsedSamples
                         > 0) {  // found impulse and reset, time to print buffer results:
                         double elapsedSamplesMS =
@@ -128,10 +130,12 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                             }
                             printf(" after skipping first %d buffers:\n",
                                    bufferSkipStart);
-                            // not printing this presently: printf("( * means buffer skipped due missing timestamp or lost impulse)\n");
+                            // not printing this presently: printf("( * means buffer
+                            // skipped due missing timestamp or lost impulse)\n");
                             lastPrintTimeUS = timeMicroSec();
                         }
-                        //printf("%d (%d) ", elapsedSamplesMS, impulseDelayMS); // measured time is "buffer time" not sample time
+                        // printf("%d (%d) ", elapsedSamplesMS, impulseDelayMS); //
+                        // measured time is "buffer time" not sample time
                         int64_t curTimeUS = timeMicroSec();  // time since launch in us
                         double timeSinceLastPrintUS = double(curTimeUS - lastPrintTimeUS);
                         double stdDev =
@@ -154,7 +158,8 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                         }
                         std::cout << std::flush;
                     } else {
-                        // not printing this presently: printf("* "); // we got the impulse but lost its timestamp in samples
+                        // not printing this presently: printf("* "); // we got the
+                        // impulse but lost its timestamp in samples
                     }
                     impulsePending = false;
                 }  // found our impulse
@@ -191,15 +196,16 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
             assert(sendChannel < mInBufCopy.size());
             mInBufCopy[sendChannel][0] = getImpulseAmp();
             for (uint n = 1; n < n_frames; n++) { mInBufCopy[sendChannel][n] = 0; }
-            impulsePending = true;
-            impulseTimeUS  = timeMicroSec();
-            impulseTimeSamples =
-                sampleCountSinceImpulse;  // timer in samples for current impulse loopback test
+            impulsePending     = true;
+            impulseTimeUS      = timeMicroSec();
+            impulseTimeSamples = sampleCountSinceImpulse;  // timer in samples for current
+                                                           // impulse loopback test
             // Also send impulse time:
             if (n_frames > 1) {  // always true?
                 mInBufCopy[sendChannel][1] =
                     -float(impulseTimeSamples)
-                    / 32768.0f;  // survives if there is no digital processing at the server
+                    / 32768.0f;  // survives if there is no digital processing at the
+                                 // server
             } else {
                 std::cerr << "\n*** AudioTester.h: Timestamp cannot fit into a length "
                           << n_frames << " buffer ***\n";

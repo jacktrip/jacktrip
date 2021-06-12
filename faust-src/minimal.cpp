@@ -4,19 +4,20 @@
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 
 // abs is now predefined
-//template<typename T> T abs (T a)			{ return (a<T(0)) ? -a : a; }
+// template<typename T> T abs (T a)			{ return (a<T(0)) ? -a : a; }
 
 inline int lsr(int x, int n) { return int(((unsigned int)x) >> n); }
 
 /******************************************************************************
 *******************************************************************************
 
-							       VECTOR INTRINSICS
+                                                               VECTOR INTRINSICS
 
 *******************************************************************************
 *******************************************************************************/
 
-//inline void *aligned_calloc(size_t nmemb, size_t size) { return (void*)((unsigned)(calloc((nmemb*size)+15,sizeof(char)))+15 & 0xfffffff0); }
+// inline void *aligned_calloc(size_t nmemb, size_t size) { return
+// (void*)((unsigned)(calloc((nmemb*size)+15,sizeof(char)))+15 & 0xfffffff0); }
 inline void* aligned_calloc(size_t nmemb, size_t size)
 {
     return (void*)((size_t)(calloc((nmemb * size) + 15, sizeof(char))) + 15 & ~15);
@@ -29,7 +30,7 @@ inline void* aligned_calloc(size_t nmemb, size_t size)
     /******************************************************************************
 *******************************************************************************
 
-			ABSTRACT USER INTERFACE
+                        ABSTRACT USER INTERFACE
 
 *******************************************************************************
 *******************************************************************************/
@@ -67,7 +68,7 @@ inline void* aligned_calloc(size_t nmemb, size_t size)
 /******************************************************************************
 *******************************************************************************
 
-			    FAUST DSP
+                            FAUST DSP
 
 *******************************************************************************
 *******************************************************************************/

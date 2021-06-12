@@ -62,8 +62,8 @@ class UdpHubListener;  // forward declaration
  * another thread into the pool. setAutoDelete must be set to false
  * in order for this to work.
  */
-// Note that it is not possible to start run() as an event loop. That has to be implemented
-// inside a QThread
+// Note that it is not possible to start run() as an event loop. That has to be
+// implemented inside a QThread
 class JackTripWorker : public QObject
 {
     Q_OBJECT;
@@ -81,10 +81,18 @@ class JackTripWorker : public QObject
     void start();
     /// \brief Check if the Thread is Spawning
     /// \return true is it is spawning, false if it's already running
-    bool isSpawning() { QMutexLocker lock(&mMutex); return mSpawning; }
+    bool isSpawning()
+    {
+        QMutexLocker lock(&mMutex);
+        return mSpawning;
+    }
     /// \brief Check if jacktrip is running
     /// \return true if it is running, false if not
-    bool isRunning() { QMutexLocker lock(&mMutex); return mRunning; }
+    bool isRunning()
+    {
+        QMutexLocker lock(&mMutex);
+        return mRunning;
+    }
     /// \brief Sets the JackTripWorker properties
     /// \param id ID number
     /// \param address
@@ -130,7 +138,7 @@ class JackTripWorker : public QObject
 
    private:
     JackTrip::connectionModeT getConnectionModeFromHeader();
-    
+
     QUdpSocket mUdpSockTemp;
     QTimer mTimeoutTimer;
     int mSleepTime;
@@ -159,8 +167,8 @@ class JackTripWorker : public QObject
     /// Thread spawning internal lock.
     /// If true, the prototype is working on creating (spawning) a new thread
     volatile bool mSpawning = false;
-    volatile bool mRunning = false;
-    volatile bool mPatched = false;
+    volatile bool mRunning  = false;
+    volatile bool mPatched  = false;
     QMutex mMutex;  ///< Mutex to protect mSpawning
 
     int mID = 0;  ///< ID thread number
@@ -174,7 +182,7 @@ class JackTripWorker : public QObject
 
     int mIOStatTimeout = 0;
     QSharedPointer<std::ofstream> mIOStatStream;
-#ifdef WAIR  // wair
+#ifdef WAIR                   // wair
     int mNumNetRevChans = 0;  ///< Number of Net Channels = net combs
     bool mWAIR          = false;
 #endif  // endwhere

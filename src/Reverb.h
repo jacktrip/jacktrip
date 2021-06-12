@@ -147,6 +147,7 @@ class Reverb : public ProcessPlugin
     int getNumOutputs() override { return (mNumOutChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
     const char* getName() const override { return "Reverb"; }
+
    private:
     float fs;
     int mNumInChannels;
