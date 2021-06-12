@@ -5,6 +5,7 @@ on:
       - main
       - dev
     tags:
+      - '**'
     paths-ignore:
       - 'docs/**'
       - 'mkdocs.yml'
