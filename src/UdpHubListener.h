@@ -56,7 +56,7 @@
 #include "Auth.h"
 #include "SslServer.h"
 
-class JackTripWorker; // forward declaration
+class JackTripWorker;  // forward declaration
 class Settings;
 
 /** \brief Hub UDP listener on the Server.
@@ -79,17 +79,18 @@ class UdpHubListener : public QObject
     void stop() { mStopped = true; }
 
 #ifndef __NO_JACK__
-    void registerClientWithPatcher(QString &clientName);
-    void unregisterClientWithPatcher(QString &clientName);
+    void registerClientWithPatcher(QString& clientName);
+    void unregisterClientWithPatcher(QString& clientName);
 #endif
     int releaseThread(int id);
-    void releaseDuplicateThreads(JackTripWorker *worker, uint16_t actual_peer_port);
+    void releaseDuplicateThreads(JackTripWorker* worker, uint16_t actual_peer_port);
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
     {
-        //Only allow us to override this in the default patching mode. (Or TUB mode.)
+        // Only allow us to override this in the default patching mode. (Or TUB mode.)
         //(Allows -D to continue to function as a synonym for -p5.)
-        if (mHubPatch == JackTrip::SERVERTOCLIENT || mHubPatch == JackTrip::RESERVEDMATRIX) {
+        if (mHubPatch == JackTrip::SERVERTOCLIENT
+            || mHubPatch == JackTrip::RESERVEDMATRIX) {
             m_connectDefaultAudioPorts = connectDefaultAudioPorts;
         }
     }
@@ -120,12 +121,12 @@ class UdpHubListener : public QObject
      * \param udpsocket a QUdpSocket
      * \param port Port number
      */
-    void receivedClientInfo(QSslSocket *clientConnection);
+    void receivedClientInfo(QSslSocket* clientConnection);
 
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
-    int readClientUdpPort(QSslSocket* clientConnection, QString &clientName);
-    int checkAuthAndReadPort(QSslSocket* clientConnection, QString &clientName);
+    int readClientUdpPort(QSslSocket* clientConnection, QString& clientName);
+    int checkAuthAndReadPort(QSslSocket* clientConnection, QString& clientName);
     int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
 
     /**
@@ -141,7 +142,7 @@ class UdpHubListener : public QObject
      * \param address as string (IPv4 or IPv6)
      * \return id number of JackTripWorker
      */
-    int getJackTripWorker(QString address, uint16_t port, QString &clientName);
+    int getJackTripWorker(QString address, uint16_t port, QString& clientName);
 
     /** \brief Returns the ID of the client in the pool. If the client
      * is not in the pool yet, returns -1.
@@ -153,15 +154,15 @@ class UdpHubListener : public QObject
     // QUdpSocket mUdpHubSocket; ///< The UDP socket
     // QHostAddress mPeerAddress; ///< The Peer Address
 
-    //JackTripWorker* mJTWorker; ///< Class that will be used as prototype
+    // JackTripWorker* mJTWorker; ///< Class that will be used as prototype
     QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorkers
 
     SslServer mTcpServer;
     int mServerPort;     //< Server known port number
     int mServerUdpPort;  //< Server udp base port number
     int mBasePort;
-    //addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool addresses
-    //QHash<QString, uint16_t> mActiveAddressPortPair;
+    // addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool
+    // addresses QHash<QString, uint16_t> mActiveAddressPortPair;
 
     bool mRequireAuth;
     QString mCertFile;
@@ -204,7 +205,7 @@ class UdpHubListener : public QObject
     bool isWAIR() { return mWAIR; }
 #endif  // endwhere
 #ifndef __NO_JACK__
-    void connectPatch(bool spawn, const QString &clientName);
+    void connectPatch(bool spawn, const QString& clientName);
 #endif
 
    public:
@@ -220,7 +221,7 @@ class UdpHubListener : public QObject
 #ifndef __NO_JACK__
         mPatcher.setPatchMode(static_cast<JackTrip::hubConnectionModeT>(p));
 #endif
-        //Set the correct audio port connection setting for our chosen patch mode.
+        // Set the correct audio port connection setting for our chosen patch mode.
         if (mHubPatch == JackTrip::SERVERTOCLIENT) {
             m_connectDefaultAudioPorts = true;
         } else {

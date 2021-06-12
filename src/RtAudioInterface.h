@@ -49,11 +49,11 @@ class RtAudioInterface : public AudioInterface
 {
    public:
     /** \brief The class constructor
-   * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
-   * \param NumInChans Number of Input Channels
-   * \param NumOutChans Number of Output Channels
-   * \param AudioBitResolution Audio Sample Resolutions in bits
-   */
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
+     * \param NumInChans Number of Input Channels
+     * \param NumOutChans Number of Output Channels
+     * \param AudioBitResolution Audio Sample Resolutions in bits
+     */
     RtAudioInterface(JackTrip* jacktrip, int NumInChans = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
                      audioBitResolutionT AudioBitResolution = BIT16);

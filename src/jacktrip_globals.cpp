@@ -51,8 +51,8 @@
 #endif  //__MAC_OSX__
 
 #if defined(__WIN_32__)
-#include <windows.h>
 #include <processthreadsapi.h>
+#include <windows.h>
 #endif
 #include "jacktrip_globals.h"
 
@@ -60,11 +60,13 @@
 
 // The following function is taken from the chromium source code
 // https://github.com/chromium/chromium/blob/master/base/threading/platform_thread_mac.mm
-// For the following macOS implementation of the function setRealtimeProcessPriority() only: Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// For the following macOS implementation of the function setRealtimeProcessPriority()
+// only: Copyright (c) 2012 The Chromium Authors. All rights reserved.
 
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
-void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
+void setRealtimeProcessPriority(int bufferSize, int sampleRate)
+{
     // Set thread QoS to allow maximum performance.
     pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
 
@@ -91,8 +93,7 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
     // Set to relatively high priority. (BASEPRI_FOREGROUND = 47)
     thread_precedence_policy_data_t precedence;
     precedence.importance = 52;
-    result = thread_policy_set(mach_thread_id,
-                               THREAD_PRECEDENCE_POLICY,
+    result                = thread_policy_set(mach_thread_id, THREAD_PRECEDENCE_POLICY,
                                reinterpret_cast<thread_policy_t>(&precedence),
                                THREAD_PRECEDENCE_POLICY_COUNT);
     if (result != KERN_SUCCESS) {
@@ -107,9 +108,9 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate) {
     // means the scheduler would give half the time to the thread.
     // These values have empirically been found to yield good behavior.
     // Good means that audio performance is high and other threads won't starve.
-    //const double kGuaranteedAudioDutyCycle = 0.75;
+    // const double kGuaranteedAudioDutyCycle = 0.75;
     const double kGuaranteedAudioDutyCycle = 0.5;
-    const double kMaxAudioDutyCycle = 0.85;
+    const double kMaxAudioDutyCycle        = 0.85;
 
     // Define constants determining how much time the audio thread can
     // use in a given time quantum.  All times are in milliseconds.

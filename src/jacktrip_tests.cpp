@@ -71,7 +71,7 @@ void test_threads_server()
         jacktrips[i] = new JackTripThread(JackTrip::SERVER);
         jacktrips[i]->setPort(port_num);
         jacktrips[i]->start(QThread::NormalPriority);
-        //sleep(1);
+        // sleep(1);
     }
 }
 
@@ -87,8 +87,8 @@ void test_threads_client(const char* peer_address)
         jacktrips[i] = new JackTripThread(JackTrip::CLIENT);
         jacktrips[i]->setPort(port_num);
         jacktrips[i]->setPeerAddress(peer_address);
-        //sleep(1);
+        // sleep(1);
         jacktrips[i]->start(QThread::NormalPriority);
-        //sleep(1);
+        // sleep(1);
     }
 }

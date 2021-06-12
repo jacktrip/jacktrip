@@ -34,44 +34,43 @@
  * \author Aaron Wyatt
  * \date September 2020
  */
- 
+
 #ifndef __PATCHER_H__
 #define __PATCHER_H__
- 
+
 #include "JackTrip.h"
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
 #else
 #include <jack/jack.h>
 #endif
-#include <QStringList>
 #include <QMutex>
- 
-class Patcher: public QObject
+#include <QStringList>
+
+class Patcher : public QObject
 {
     Q_OBJECT
-    
-public:
+
+   public:
     Patcher();
     virtual ~Patcher();
-     
+
     void setPatchMode(JackTrip::hubConnectionModeT patchMode);
-    
-    void registerClient(const QString &clientName);
-    void unregisterClient(const QString &clientName);
-    
-    //Jack shutdown callback
-    static void shutdownCallback(void *arg);
-    
-private:
+
+    void registerClient(const QString& clientName);
+    void unregisterClient(const QString& clientName);
+
+    // Jack shutdown callback
+    static void shutdownCallback(void* arg);
+
+   private:
     QStringList m_clients;
     JackTrip::hubConnectionModeT m_patchMode;
-    
-    jack_client_t *m_jackClient;
+
+    jack_client_t* m_jackClient;
     jack_status_t m_status;
-    
+
     QMutex m_connectionMutex;
 };
- 
-#endif // __PATCHER_H__
- 
+
+#endif  // __PATCHER_H__

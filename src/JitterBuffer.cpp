@@ -139,7 +139,7 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
         delta = available;
         mBufIncUnderrun += -delta;
         mLevelCur = len;
-        //cout << "reset" << endl;
+        // cout << "reset" << endl;
     } else if (available + len > mMaxLatency) {
         delta = mOverflowDropStep;
         mOverflows += delta;
@@ -170,7 +170,7 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
     int n    = std::min(mTotalSize - wpos, len);
     std::memcpy(mRingBuffer + wpos, ptrToSlot, n);
     if (n < len) {
-        //cout << "split write: " << len << "-" << n << endl;
+        // cout << "split write: " << len << "-" << n << endl;
         std::memcpy(mRingBuffer, ptrToSlot + n, len - n);
     }
     mWritePosition += len;
@@ -223,7 +223,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     int n        = std::min(mTotalSize - rpos, read_len);
     std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
     if (n < read_len) {
-        //cout << "split read: " << read_len << "-" << n << endl;
+        // cout << "split read: " << read_len << "-" << n << endl;
         std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
     }
     if (read_len < len) {
@@ -272,7 +272,7 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
         int n    = std::min(mTotalSize - rpos, read_len);
         std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
         if (n < read_len) {
-            //cout << "split read: " << read_len << "-" << n << endl;
+            // cout << "split read: " << read_len << "-" << n << endl;
             std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
         }
         if (read_len < len) { std::memset(ptrToReadSlot + read_len, 0, len - read_len); }
@@ -329,7 +329,7 @@ void JitterBuffer::processPacketLoss(int lostLen)
         int n    = std::min(mTotalSize - wpos, lostLen);
         std::memset(mRingBuffer + wpos, 0, n);
         if (n < lostLen) {
-            //cout << "split write: " << lostLen << "-" << n << endl;
+            // cout << "split write: " << lostLen << "-" << n << endl;
             std::memset(mRingBuffer, 0, lostLen - n);
         }
         mUnderruns += std::max(0, lostLen - std::max(0, -available));

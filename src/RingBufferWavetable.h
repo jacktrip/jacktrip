@@ -45,20 +45,20 @@ class RingBufferWavetable : public RingBuffer
 {
    public:
     /** \brief The class constructor
-   * \param SlotSize Size of one slot in bytes
-   * \param NumSlots Number of slots
-   */
+     * \param SlotSize Size of one slot in bytes
+     * \param NumSlots Number of slots
+     */
     RingBufferWavetable(int SlotSize, int NumSlots) : RingBuffer(SlotSize, NumSlots) {}
 
     /** \brief The class destructor
-   */
+     */
     virtual ~RingBufferWavetable() {}
 
    protected:
     /** \brief Sets the memory in the Read Slot when uderrun occurs. This loops as a
-   * wavetable in the last received packet.
-   * \param ptrToReadSlot Pointer to read slot from the RingBuffer
-   */
+     * wavetable in the last received packet.
+     * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+     */
     virtual void setUnderrunReadSlot(int8_t* ptrToReadSlot)
     {
         setMemoryInReadSlotWithLastReadSlot(ptrToReadSlot);

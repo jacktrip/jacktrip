@@ -5,7 +5,7 @@
   internet.
 
   Copyright (c) 2020 Aaron Wyatt.
-  
+
   This file is part of QJackTrip.
 
   QJackTrip is free software: you can redistribute it and/or modify
@@ -24,12 +24,11 @@
 //*****************************************************************
 
 #include "messageDialog.h"
+
 #include "ui_messageDialog.h"
 
-MessageDialog::MessageDialog(QWidget *parent) :
-    QDialog(parent),
-    m_ui(new Ui::MessageDialog),
-    m_ioTimer(new QTimer(this))
+MessageDialog::MessageDialog(QWidget* parent)
+    : QDialog(parent), m_ui(new Ui::MessageDialog), m_ioTimer(new QTimer(this))
 {
     m_ui->setupUi(this);
     connect(&m_ioTimer, &QTimer::timeout, this, &MessageDialog::writeOutput);
@@ -42,15 +41,9 @@ void MessageDialog::setStatsFile(QSharedPointer<QTemporaryFile> statsFile)
     m_ioStatsFile = statsFile;
 }
 
-void MessageDialog::startMonitoring()
-{
-    m_ioTimer.start();
-}
+void MessageDialog::startMonitoring() { m_ioTimer.start(); }
 
-void MessageDialog::stopMonitoring()
-{
-    m_ioTimer.stop();
-}
+void MessageDialog::stopMonitoring() { m_ioTimer.stop(); }
 
 void MessageDialog::writeOutput()
 {

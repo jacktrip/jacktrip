@@ -74,10 +74,10 @@ class JackTrip;  // forward declaration
  * Redundancy and forward error correction should be implemented on each
  * Transport protocol, cause they depend on the protocol itself
  *
- * \todo This Class should contain definition of jacktrip header and basic funcionality to obtain
- * local machine IPs and maybe functions to manipulate IPs.
- * Redundancy and forward error correction should be implemented on each
- * Transport protocol, cause they depend on the protocol itself
+ * \todo This Class should contain definition of jacktrip header and basic funcionality to
+ * obtain local machine IPs and maybe functions to manipulate IPs. Redundancy and forward
+ * error correction should be implemented on each Transport protocol, cause they depend on
+ * the protocol itself
  *
  * \todo The transport protocol itself has to be implemented subclassing this class, i.e.,
  * using a TCP or UDP protocol.
@@ -109,13 +109,14 @@ class DataProtocol : public QThread
     //---------------------------------------------------------
 
     /** \brief The class constructor
-   * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
-   * \param runmode Sets the run mode, use either DataProtocol::SENDER or
-   * DataProtocol::RECEIVER
-   * \param headertype packetHeaderTypeT header type to use for packets
-   * \param bind_port Port number to bind for this socket (this is the receive or send port depending on the runmode)
-   * \param peer_port Peer port number (this is the receive or send port depending on the runmode)
-   */
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
+     * \param runmode Sets the run mode, use either DataProtocol::SENDER or
+     * DataProtocol::RECEIVER
+     * \param headertype packetHeaderTypeT header type to use for packets
+     * \param bind_port Port number to bind for this socket (this is the receive or send
+     * port depending on the runmode) \param peer_port Peer port number (this is the
+     * receive or send port depending on the runmode)
+     */
     DataProtocol(JackTrip* jacktrip, const runModeT runmode, int bind_port,
                  int peer_port);
 
@@ -123,10 +124,10 @@ class DataProtocol : public QThread
     virtual ~DataProtocol();
 
     /** \brief Implements the thread loop
-   *
-   * Depending on the runmode, with will run a DataProtocol::SENDER thread or
-   * DataProtocol::RECEIVER thread
-   */
+     *
+     * Depending on the runmode, with will run a DataProtocol::SENDER thread or
+     * DataProtocol::RECEIVER thread
+     */
     virtual void run() = 0;
 
     /// \brief Stops the execution of the Thread
@@ -137,28 +138,28 @@ class DataProtocol : public QThread
     }
 
     /** \brief Sets the size of the audio part of the packets
-   * \param size_bytes Size in bytes
-   */
+     * \param size_bytes Size in bytes
+     */
     void setAudioPacketSize(const size_t size_bytes) { mAudioPacketSize = size_bytes; }
 
     /** \brief Get the size of the audio part of the packets
-   * \return size_bytes Size in bytes
-   */
+     * \return size_bytes Size in bytes
+     */
     size_t getAudioPacketSizeInBites() { return (mAudioPacketSize); }
 
     /** \brief Set the peer address
-   * \param peerHostOrIP IPv4 number or host name
-   * \todo implement here instead of in the subclass UDP
-   */
+     * \param peerHostOrIP IPv4 number or host name
+     * \todo implement here instead of in the subclass UDP
+     */
     virtual void setPeerAddress(const char* peerHostOrIP) = 0;
 
     /** \brief Set the peer incomming (receiving) port number
-   * \param port Port number
-   * \todo implement here instead of in the subclass UDP
-   */
+     * \param port Port number
+     * \todo implement here instead of in the subclass UDP
+     */
     virtual void setPeerPort(int port) = 0;
 
-    //virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+    // virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
     //				     uint16_t& port) = 0;
 
 #if defined(__WIN_32__)
@@ -190,8 +191,8 @@ class DataProtocol : public QThread
 
    protected:
     /** \brief Get the Run Mode of the object
-   * \return SENDER or RECEIVER
-   */
+     * \return SENDER or RECEIVER
+     */
     runModeT getRunMode() const { return mRunMode; }
 
     /// Boolean stop the execution of the thread
@@ -218,7 +219,7 @@ class DataProtocol : public QThread
 
     /// \todo check a better way to access the header from the subclasses
    protected:
-    //PacketHeader* mHeader; ///< Packet Header
+    // PacketHeader* mHeader; ///< Packet Header
     JackTrip* mJackTrip;  ///< JackTrip mediator class
     bool mUseRtPriority;
 };

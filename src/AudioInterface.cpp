@@ -38,7 +38,6 @@
 #include "AudioInterface.h"
 
 #include <cassert>
-
 #include <cmath>
 #include <iostream>
 
@@ -78,7 +77,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutCha
     // Set pointer to NULL
     for (int i = 0; i < mNumInChans; i++) { mInProcessBuffer[i] = NULL; }
     for (int i = 0; i < mNumOutChans; i++) { mOutProcessBuffer[i] = NULL; }
-#else  // WAIR
+#else   // WAIR
     int iCnt = (mNumInChans > mNumNetRevChans) ? mNumInChans : mNumNetRevChans;
     int oCnt = (mNumOutChans > mNumNetRevChans) ? mNumOutChans : mNumNetRevChans;
     int aCnt = (mNumNetRevChans) ? mNumInChans : 0;
@@ -103,7 +102,7 @@ AudioInterface::~AudioInterface()
     for (int i = 0; i < mNumInChans; i++) { delete[] mInProcessBuffer[i]; }
 
     for (int i = 0; i < mNumOutChans; i++) { delete[] mOutProcessBuffer[i]; }
-#else  // WAIR
+#else   // WAIR
     int iCnt = (mNumInChans > mNumNetRevChans) ? mNumInChans : mNumNetRevChans;
     int oCnt = (mNumOutChans > mNumNetRevChans) ? mNumOutChans : mNumNetRevChans;
     int aCnt = (mNumNetRevChans) ? mNumInChans : 0;
@@ -112,12 +111,8 @@ AudioInterface::~AudioInterface()
     for (int i = 0; i < aCnt; i++) { delete[] mAPInBuffer[i]; }
 #endif  // endwhere
 
-    for (auto & i : mProcessPluginsFromNetwork) {
-        delete[] i;
-    }
-    for (auto & i : mProcessPluginsToNetwork) {
-        delete[] i;
-    }
+    for (auto& i : mProcessPluginsFromNetwork) { delete[] i; }
+    for (auto& i : mProcessPluginsToNetwork) { delete[] i; }
     for (int i = 0; i < mNumInChans; i++) { delete[] mInBufCopy[i]; }
 }
 
@@ -129,7 +124,7 @@ void AudioInterface::setup()
 
     int size_audio_input  = mSizeInBytesPerChannel * getNumInputChannels();
     int size_audio_output = mSizeInBytesPerChannel * getNumOutputChannels();
-#ifdef WAIR  // WAIR
+#ifdef WAIR               // WAIR
     if (mNumNetRevChans)  // else don't change sizes
     {
         size_audio_input  = mSizeInBytesPerChannel * mNumNetRevChans;
@@ -147,7 +142,7 @@ void AudioInterface::setup()
         mAPInBuffer.resize(mNumInChans);
         mNetInBuffer.resize(mNumNetRevChans);
     } else  // don't change sizes
-#endif  // endwhere
+#endif      // endwhere
     {
         mInProcessBuffer.resize(mNumInChans);
         mOutProcessBuffer.resize(mNumOutChans);
@@ -166,7 +161,7 @@ void AudioInterface::setup()
         // set memory to 0
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
     }
-#else  // WAIR
+#else   // WAIR
     for (int i = 0; i < ((mNumNetRevChans) ? mNumNetRevChans : mNumInChans); i++) {
         mInProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
@@ -245,7 +240,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
         }
     }
-#else  // WAIR:
+#else   // WAIR:
     for (int i = 0; i < ((mNumNetRevChans) ? mNumNetRevChans : mNumOutChans); i++) {
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
@@ -310,7 +305,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // aib2 + cob16 to nob16
 #endif  // endwhere
 
-#ifdef WAIR  // WAIR
+#ifdef WAIR               // WAIR
     if (mNumNetRevChans)  // else not wair, so skip all this
     {
 #define AP
@@ -324,7 +319,7 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
             sample_t* tmp_sample = mNetInBuffer[i];  // mNetInBuffer
             for (int j = 0; j < (int)n_frames; j++) { mix_sample[j] += tmp_sample[j]; }
         }  // nib6 to aob2
-#else  // AP
+#else      // AP
 
         // output through all-pass cascade
         // AP2 is 2 channel, mixes inputs to mono, then splits to two parallel AP chains
@@ -426,7 +421,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
             }
         }
     else  // not wair
-#endif  // endwhere
+#endif    // endwhere
 
         // Extract separate channels to send to Jack
         for (int i = 0; i < mNumOutChans; i++) {
@@ -482,7 +477,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
             }
         }
     else  // not wair
-#endif  // endwhere
+#endif    // endwhere
 
         for (int i = 0; i < mNumInChans; i++) {
             //--------

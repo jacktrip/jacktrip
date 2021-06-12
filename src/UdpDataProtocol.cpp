@@ -52,14 +52,14 @@
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
 #endif
-#if defined (__LINUX__) || defined (__MAC_OSX__)
-#include <sys/socket.h> // for POSIX Sockets
-#include <unistd.h>
+#if defined(__LINUX__) || defined(__MAC_OSX__)
 #include <sys/fcntl.h>
+#include <sys/socket.h>  // for POSIX Sockets
+#include <unistd.h>
 #endif
-#if defined (__MAC_OSX__) && !defined (__MANUAL_POLL__)
+#if defined(__MAC_OSX__) && !defined(__MANUAL_POLL__)
 #include <sys/event.h>
-#elif defined (__LINUX__) && !defined (__MANUAL_POLL__)
+#elif defined(__LINUX__) && !defined(__MANUAL_POLL__)
 #include <sys/epoll.h>
 #endif
 
@@ -123,8 +123,8 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
-#if defined (__LINUX__) || defined (__MAC_OSX__)
-    //Don't make the following code conditional on windows
+#if defined(__LINUX__) || defined(__MAC_OSX__)
+    // Don't make the following code conditional on windows
     //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
 #endif
@@ -135,7 +135,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         }
         // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
-#if defined (__LINUX__) || defined (__MAC_OSX__)
+#if defined(__LINUX__) || defined(__MAC_OSX__)
     }
 #endif
 
@@ -233,7 +233,7 @@ int UdpDataProtocol::bindSocket()
     SOCKET sock_fd;
 #endif
 
-#if defined ( __LINUX__ ) || defined (__MAC_OSX__)
+#if defined(__LINUX__) || defined(__MAC_OSX__)
     int sock_fd;
 #endif
 
@@ -302,8 +302,8 @@ int UdpDataProtocol::bindSocket()
         if ((::connect(sock_fd, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr))) < 0) {
             throw std::runtime_error("ERROR: Could not connect UDP socket");
         }
-#if defined (__LINUX__) || defined (__MAC_OSX__)
-        //if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
+#if defined(__LINUX__) || defined(__MAC_OSX__)
+        // if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
         //{ throw std::runtime_error("ERROR: Could shutdown SHUT_WR UDP socket"); }
 #endif
 #if defined __WIN_32__
@@ -492,8 +492,9 @@ void UdpDataProtocol::run()
     // std::endl;
     // Anton Runov: making setRealtimeProcessPriority optional
     if (mUseRtPriority) {
-#if defined (__MAC_OSX__)
-        setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(), mJackTrip->getSampleRate());
+#if defined(__MAC_OSX__)
+        setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(),
+                                   mJackTrip->getSampleRate());
 #else
         setRealtimeProcessPriority();
 #endif

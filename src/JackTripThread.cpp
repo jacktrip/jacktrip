@@ -55,15 +55,15 @@ void JackTripThread::run()
 
     NetKS netks;
     jacktrip.appendProcessPluginFromNetwork(&netks);
-    //netks.play();
+    // netks.play();
 
-    //QThread::sleep(1);
+    // QThread::sleep(1);
     jacktrip.start();
-    //netks.play();
+    // netks.play();
     jacktrip.wait();
 
     cout << "******** AFTER JACKTRIPTHREAD START **************" << endl;
-    //QThread::sleep(9999999);
+    // QThread::sleep(9999999);
 
     /*
   jack_client_t* mClient;

@@ -5,7 +5,7 @@
   internet.
 
   Copyright (c) 2020 Aaron Wyatt.
-  
+
   This file is part of QJackTrip.
 
   QJackTrip is free software: you can redistribute it and/or modify
@@ -31,30 +31,31 @@
 #include <QTemporaryFile>
 #include <QTimer>
 
-namespace Ui {
+namespace Ui
+{
 class MessageDialog;
 }
 
-class MessageDialog : public QDialog 
+class MessageDialog : public QDialog
 {
     Q_OBJECT
 
-public:
-    explicit MessageDialog(QWidget *parent = nullptr);
+   public:
+    explicit MessageDialog(QWidget* parent = nullptr);
     ~MessageDialog() override;
-    
+
     void setStatsFile(QSharedPointer<QTemporaryFile> statsFile);
     void startMonitoring();
     void stopMonitoring();
-    
-private slots:
+
+   private slots:
     void writeOutput();
-    
-private:
+
+   private:
     QScopedPointer<Ui::MessageDialog> m_ui;
     QSharedPointer<QTemporaryFile> m_ioStatsFile;
-    //Using a QFileSystem watcher didn't work on OS X, so use a timer instead.
+    // Using a QFileSystem watcher didn't work on OS X, so use a timer instead.
     QTimer m_ioTimer;
 };
 
-#endif // MESSAGEDIALOG_H
+#endif  // MESSAGEDIALOG_H

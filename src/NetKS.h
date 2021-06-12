@@ -71,11 +71,11 @@ class NetKS : public ProcessPlugin
     {
         std::cout << "========= EXTICING STRING ===========" << std::endl;
         fbutton0 = 1.0;
-        //std::cout << fbutton0 << std::endl;
-        QThread::usleep(
-            280000);  /// \todo Define this number based on the sampling rate and buffer size
+        // std::cout << fbutton0 << std::endl;
+        QThread::usleep(280000);  /// \todo Define this number based on the sampling rate
+                                  /// and buffer size
         fbutton0 = 0.0;
-        //std::cout << fbutton0 << std::endl;
+        // std::cout << fbutton0 << std::endl;
     }
 
     //=========== FROM FAUST ===================================================

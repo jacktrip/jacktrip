@@ -123,11 +123,11 @@ class PacketHeader : public QObject
     /// \todo Implement this using a JackTrip Method (Mediator) member instead of the
     /// reference to JackAudio
     virtual void fillHeaderCommonFromAudio() = 0;
-    /// \brief Parse the packet header and take appropriate measures (like change settings, or
-    /// quit the program if peer settings don't match)
-    virtual void parseHeader()                          = 0;
-    /// \brief Check that the settings in the supplied packet header match the server's settings 
-    /// \return True if settings match, false otherwise 
+    /// \brief Parse the packet header and take appropriate measures (like change
+    /// settings, or quit the program if peer settings don't match)
+    virtual void parseHeader() = 0;
+    /// \brief Check that the settings in the supplied packet header match the server's
+    /// settings \return True if settings match, false otherwise
     virtual bool checkPeerSettings(int8_t* full_packet) = 0;
 
     virtual uint64_t getPeerTimeStamp(int8_t* full_packet) const          = 0;
@@ -161,7 +161,7 @@ class PacketHeader : public QObject
     }
 
    signals:
-    void signalError(const QString &error_message);
+    void signalError(const QString& error_message);
 
    protected:
     bool mBufferRequiresSameSettings;
@@ -230,13 +230,34 @@ class JamLinkHeader : public PacketHeader
     virtual void parseHeader() override {}
     virtual bool checkPeerSettings(int8_t* /*full_packet*/) override { return true; }
 
-    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const override { return 0; }
-    uint8_t getPeerNumIncomingChannels(int8_t* /*full_packet*/) const override { return 0; }
-    uint8_t getPeerNumOutgoingChannels(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    uint8_t getPeerNumIncomingChannels(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    uint8_t getPeerNumOutgoingChannels(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
 
     virtual void increaseSequenceNumber() override {}
     virtual int getHeaderSizeInBytes() const override { return sizeof(mHeader); }
@@ -268,13 +289,34 @@ class EmptyHeader : public PacketHeader
     virtual void increaseSequenceNumber() override {}
     virtual int getHeaderSizeInBytes() const override { return 0; }
 
-    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const override { return 0; }
-    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const override { return 0; }
-    uint8_t getPeerNumIncomingChannels(int8_t* /*full_packet*/) const override { return 0; }
-    uint8_t getPeerNumOutgoingChannels(int8_t* /*full_packet*/) const override { return 0; }
+    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    uint8_t getPeerNumIncomingChannels(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
+    uint8_t getPeerNumOutgoingChannels(int8_t* /*full_packet*/) const override
+    {
+        return 0;
+    }
 
     virtual void putHeaderInPacket(int8_t* /*full_packet*/) override {}
 

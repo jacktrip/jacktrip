@@ -92,8 +92,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mHist++;  // min packets
     else if (mHist > 6)
         mHist = 6;  // max packets
-    if (gVerboseFlag)
-        cout << "mHist = " << mHist << " at " << mFPP << "\n";
+    if (gVerboseFlag) cout << "mHist = " << mHist << " at " << mFPP << "\n";
     //    qDebug() << "mHist =" << mHist << "@" << mFPP;
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
     mXfrBuffer = new int8_t[mBytes];
@@ -157,8 +156,8 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
 
     stdDev->tick();
     if (stdDev->longTermStdDevAcc > 0.0) {
-        double FPPfactor = 0.25 + (32 / (double) mFPP);
-        int newPoolSize = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * FPPfactor);
+        double FPPfactor = 0.25 + (32 / (double)mFPP);
+        int newPoolSize  = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * FPPfactor);
         if (newPoolSize > mPoolSize) {
             if (newPoolSize > MAXPOOLSIZE)
                 newPoolSize = MAXPOOLSIZE;  // avoid insanely large pool

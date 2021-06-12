@@ -42,7 +42,7 @@
 //#include "JackAudioInterface.h"
 
 /// \todo Add this namespace
-//namespace JackTrip
+// namespace JackTrip
 
 const char* const gVersion = "1.4.0-rc.2";  ///< JackTrip version
 
@@ -61,9 +61,9 @@ const int gMAX_WAIRS          = 128;  // FIXME, should agree with maxThreadCount
 // hubpatch = 3 for TUB ensemble patching
 ///////////////////////////////
 // test NUC as server
-//const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
-//const int gMIN_TUB = 245; // lowest client address
-//const int gMAX_TUB = 245; // highest client address
+// const QString gDOMAIN_TRIPLE = QString("130.149.23"); // for TUB multiclient hub
+// const int gMIN_TUB = 245; // lowest client address
+// const int gMAX_TUB = 245; // highest client address
 ///////////////////////////////
 // test Riviera as server
 const QString gDOMAIN_TRIPLE = QString("192.168.0");  // for TUB multiclient hub
@@ -79,7 +79,7 @@ const int gDefaultAddCombFilterLength = 0;
 const int gDefaultCombFilterFeedback  = 0;
 #endif  // endwhere
 
-//const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
+// const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
 //    JackAudioInterface::BIT16;
 const AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
     AudioInterface::BIT16;
@@ -100,9 +100,9 @@ const int gWaitCounter                     = 60;
 const int gDefaultPort  = 4464;  ///< Default JackTrip Port
 const int gBindPortLow  = 3464;  ///< lowest Bindport
 const int gBindPortHigh = 5464;  ///< highest Bindport
-//const int gInputPort_0 = 4464; ///< Input base port
-//const int gOutputPort_0 = 4465; ///< Output base port
-//const int gDefaultSendPort = 4464; ///< Default for to use to send packet
+// const int gInputPort_0 = 4464; ///< Input base port
+// const int gOutputPort_0 = 4465; ///< Output base port
+// const int gDefaultSendPort = 4464; ///< Default for to use to send packet
 //@}
 
 //*******************************************************************************

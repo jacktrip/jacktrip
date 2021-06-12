@@ -5,7 +5,7 @@
   internet.
 
   Copyright (c) 2020 Aaron Wyatt.
-  
+
   This file is part of QJackTrip.
 
   QJackTrip is free software: you can redistribute it and/or modify
@@ -30,26 +30,27 @@
 #include <QScopedPointer>
 #include <QTextDocument>
 
-namespace Ui {
+namespace Ui
+{
 class About;
 }
 
-class About : public QDialog 
+class About : public QDialog
 {
     Q_OBJECT
 
-public:
-    explicit About(QWidget *parent = nullptr);
+   public:
+    explicit About(QWidget* parent = nullptr);
     ~About() override;
-    
-    void resizeEvent(QResizeEvent *event) override;
-    
+
+    void resizeEvent(QResizeEvent* event) override;
+
     static const QString s_buildType;
     static const QString s_buildID;
-    
-private:
+
+   private:
     QScopedPointer<Ui::About> m_ui;
     QTextDocument aboutText;
 };
 
-#endif // ABOUT_H
+#endif  // ABOUT_H

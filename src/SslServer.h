@@ -33,29 +33,29 @@
  * \author Aaron Wyatt
  * \date September 2020
  */
- 
+
 #ifndef __SSLSERVER_H__
 #define __SSLSERVER_H__
 
-#include <QTcpServer>
 #include <QSslCertificate>
 #include <QSslKey>
+#include <QTcpServer>
 
-class SslServer: public QTcpServer
+class SslServer : public QTcpServer
 {
     Q_OBJECT
-    
-public:
-    SslServer(QObject *parent);
+
+   public:
+    SslServer(QObject* parent);
     ~SslServer();
-    
+
     void incomingConnection(qintptr socketDescriptor) override;
-    void setCertificate(const QSslCertificate &certificate);
-    void setPrivateKey(const QSslKey &key);
-    
-private:
+    void setCertificate(const QSslCertificate& certificate);
+    void setPrivateKey(const QSslKey& key);
+
+   private:
     QSslCertificate m_certificate;
     QSslKey m_privateKey;
 };
 
-#endif // __SSLSERVER_H__
+#endif  // __SSLSERVER_H__

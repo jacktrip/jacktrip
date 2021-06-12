@@ -2,7 +2,7 @@
 
 /*
 //----------------------------------------------------------------------------
-// Jack Callbacks 
+// Jack Callbacks
 //----------------------------------------------------------------------------
 
 int srate(jack_nframes_t nframes, void *arg)
@@ -13,7 +13,7 @@ int srate(jack_nframes_t nframes, void *arg)
 
 void jack_shutdown(void *arg)
 {
-  std::cout << "" << std::endl; 
+  std::cout << "" << std::endl;
   std::exit(1);
 }
 
