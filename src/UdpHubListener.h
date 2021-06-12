@@ -128,13 +128,16 @@ class UdpHubListener : public QObject
     int checkAuthAndReadPort(QSslSocket* clientConnection, QString &clientName);
     int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
 
-    /** \brief Send the JackTripWorker to the thread pool. This will run
+    /**
+     * \brief Send the JackTripWorker to the thread pool. This will run
      * until it's done. We still have control over the prototype class.
      * \param id Identification Number
      */
     // void sendToPoolPrototype(int id);
 
-    /** \brief Check if address is already handled and reuse or create a JackTripWorker as appropriate
+    /**
+     * \brief Check if address is already handled and reuse or create
+     * a JackTripWorker as appropriate
      * \param address as string (IPv4 or IPv6)
      * \return id number of JackTripWorker
      */
