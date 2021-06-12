@@ -1,12 +1,11 @@
 on:
   release:
-    types: [published]
+    types: [released]
 name: Flatpak Stable
 jobs:
   flatpak:
     name: "Flatpak"
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/head/main')
     container:
       image: bilelmoussaoui/flatpak-github-actions:kde-5.15
       options: --privileged
