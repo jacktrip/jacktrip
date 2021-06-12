@@ -18,4 +18,5 @@ jobs:
       with:
         bundle: jacktrip-dev.flatpak
         manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
+        branch: dev
         cache-key: flatpak-builder-${{ github.sha }}
