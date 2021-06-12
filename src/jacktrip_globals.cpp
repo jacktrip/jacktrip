@@ -51,8 +51,11 @@
 #endif  //__MAC_OSX__
 
 #if defined(__WIN_32__)
-#include <processthreadsapi.h>
+// Windows libraries that rely on the ordering of includes…
+// clang-format off
 #include <windows.h>
+#include <processthreadsapi.h>
+// clang-format on
 #endif
 #include "jacktrip_globals.h"
 
