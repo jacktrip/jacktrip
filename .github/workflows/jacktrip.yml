@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - dev
+    tags:
     paths-ignore:
       - 'docs/**'
       - 'mkdocs.yml'
