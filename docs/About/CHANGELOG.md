@@ -23,6 +23,7 @@ Changelog
 - (fixed) regression in remote client name handling
 - (fixed) long jack client names (> 27 characters) in 1.9.11
 - (fixed) Hardcode Derived Class Names of ProcessPlugins to prevent undefined behavior
+- (update) QJackTrip and JackTrip are now identical
 - (update) Change helpscreen wording for --broadcast argument
 - (update) jitter buffer alternatives
 - (update) RtAudio revive (only default devices supported)
