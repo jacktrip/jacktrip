@@ -625,6 +625,7 @@ void Settings::parseInput(int argc, char** argv)
 //*******************************************************************************
 void Settings::printUsage()
 {
+// clang-format off
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
@@ -775,6 +776,7 @@ void Settings::printUsage()
          << endl;
     cout << " -h, --help                               Prints this Help" << endl;
     cout << "" << endl;
+// clang-format on
 }
 
 //*******************************************************************************
