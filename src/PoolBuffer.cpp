@@ -159,8 +159,9 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
         double FPPfactor = 0.25 + (32 / (double)mFPP);
         int newPoolSize  = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * FPPfactor);
         if (newPoolSize > mPoolSize) {
-            if (newPoolSize > MAXPOOLSIZE)
-                newPoolSize = MAXPOOLSIZE;  // avoid insanely large pool
+            int maxPoolSize = MAXPOOLSIZE / ((mFPP-16)+1);
+            if (newPoolSize > maxPoolSize)
+                newPoolSize = maxPoolSize;  // avoid insanely large pool
             mIndexPool.resize(newPoolSize);
             for (int i = mPoolSize; i < newPoolSize; i++) {
                 int8_t* tmp = new int8_t[mBytes];
