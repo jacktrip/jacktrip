@@ -53,6 +53,7 @@ using std::cout;
 using std::endl;
 using std::setw;
 
+#define MINFPP 16
 #define STDDEVINDOW     200  // packets
 #define STDDEV2POOLSIZE 30.0
 #define MAXPOOLSIZE     6000  // insanely large pool, 2 sec FPP16
@@ -158,8 +159,8 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
     if (stdDev->longTermStdDevAcc > 0.0) {
         double FPPfactor = 0.25 + (32 / (double)mFPP);
         int newPoolSize  = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * FPPfactor);
-        if (newPoolSize > mPoolSize) {
-            int maxPoolSize = MAXPOOLSIZE / ((mFPP-16)+1);
+        if ((newPoolSize > mPoolSize) && (mFPP >= MINFPP)) {
+            int maxPoolSize = MAXPOOLSIZE / ((mFPP-MINFPP)+1);
             if (newPoolSize > maxPoolSize)
                 newPoolSize = maxPoolSize;  // avoid insanely large pool
             mIndexPool.resize(newPoolSize);
