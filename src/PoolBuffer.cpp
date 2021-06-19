@@ -56,7 +56,7 @@ using std::setw;
 
 #define MINFPP 16
 #define STDDEVINDOW     200  // packets
-#define STDDEV2POOLSIZE 30.0
+#define STDDEV2POOLSIZE 20.0
 #define MAXPOOLSIZE     6000  // insanely large pool, 2 sec FPP16
 #define HIST            6     // at FPP32
 #define OUT(x, ch, s)   sampleToBits(x, ch, s)
@@ -86,7 +86,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mMinPoolSize = mQlen + 2;
+//    mQlen = 0;
+    mMinPoolSize = mQlen; // + 2;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
@@ -131,7 +132,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mZeros = new int8_t[mBytes];
     memcpy(mZeros, mXfrBuffer, mBytes);
     stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)) );
-    mFPPfactor = 0.25 + (32 / (double)mFPP);
+    mFPPfactor = STDDEV2POOLSIZE * (0.0 + (32 / (double)mFPP));
 }
 
 //*******************************************************************************
@@ -161,7 +162,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
 
     stdDev->tick();
     if (stdDev->longTermStdDevAcc > 0.0) {
-        int newPoolSize  = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * mFPPfactor);
+        int newPoolSize  = (int)(stdDev->longTermStdDev * mFPPfactor);
         if (newPoolSize > mMaxPoolSize) newPoolSize = mMaxPoolSize;  // avoid insanely large pool
         if (newPoolSize < mMinPoolSize) newPoolSize = mMinPoolSize;  // avoid insanely small pool
         if (newPoolSize < mPoolSize) {
@@ -172,6 +173,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
         }
         mPoolSize = newPoolSize;
     }
+    mPoolSize = mQlen;
     return true;
 };
 
@@ -182,7 +184,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
     mOutgoingCnt++;  // will saturate in 33 days at FPP 32
     //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     bool glitch     = false;
-    int target      = mOutgoingCnt - mQlen;
+    int target      = mOutgoingCnt; // - mQlen;
     int targetIndex = mPoolSize;
     int oldest      = 999999;
     int oldestIndex = 0;
