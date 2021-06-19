@@ -163,6 +163,7 @@ class PoolBuffer : public RingBuffer
     StdDev* stdDev;
     int mFPPfactor;
     int mMaxPoolSize;
+    int mMinPoolSize;
 };
 
 #endif  //__POOLUFFER_H__

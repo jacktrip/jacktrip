@@ -70,7 +70,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mSampleRate(sample_rate)
-    , mPoolSize(qLen)
     , mQlen(qLen)
 {
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
@@ -87,6 +86,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
+mMinPoolSize = mQlen + 2;
+mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
     mHist            = (int)histFloat;
@@ -122,7 +123,9 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mTimer0 = new QElapsedTimer();
     mTimer0->start();
     mGlitchCnt = 0;
-    mGlitchMax = mHist * 2 * mFPP;  // tested with 400 @ FPP32
+    mGlitchMax = mHist; // * 2 * mFPP;  // tested with 400 @ FPP32
+//    mGlitchMax /= 64;
+    qDebug() << mGlitchMax;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
@@ -161,7 +164,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
     if (stdDev->longTermStdDevAcc > 0.0) {
         int newPoolSize  = (int)(stdDev->longTermStdDev * STDDEV2POOLSIZE * mFPPfactor);
         if (newPoolSize > mMaxPoolSize) newPoolSize = mMaxPoolSize;  // avoid insanely large pool
-        if (newPoolSize < mQlen) newPoolSize = mQlen;  // avoid insanely small pool
+        if (newPoolSize < mMinPoolSize) newPoolSize = mMinPoolSize;  // avoid insanely small pool
         if (newPoolSize < mPoolSize) {
             if (gVerboseFlag) cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
         } else
