@@ -39,6 +39,7 @@
 #define __RINGBUFFER_H__
 
 #include <QMutex>
+#include <QString>
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include <atomic>
