@@ -570,7 +570,7 @@ void JackTrip::completeConnection()
 
     // Start our IO stat timer
     if (mIOStatTimeout > 0) {
-        cout << "STATS" << mIOStatTimeout << endl;
+        cout << "STATS " << mIOStatTimeout << endl;
         if (!mIOStatStream.isNull()) {
             mIOStatLogStream.rdbuf(
                 (reinterpret_cast<std::ostream*>(mIOStatStream.data()))->rdbuf());
@@ -587,6 +587,14 @@ void JackTrip::onStatTimer()
     DataProtocol::PktStat pkt_stat;
     if (!mDataProtocolReceiver->getStats(&pkt_stat)) { return; }
     bool reset = (0 == pkt_stat.statCount);
+
+    QString poolStats = mReceiveRingBuffer->getStats(pkt_stat.statCount);
+    if (poolStats == nullptr) { return; }
+    else {
+        mIOStatLogStream << poolStats.toStdString();
+        return;
+    };
+
     RingBuffer::IOStat recv_io_stat;
     if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) { return; }
     RingBuffer::IOStat send_io_stat;

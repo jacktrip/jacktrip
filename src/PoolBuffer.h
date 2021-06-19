@@ -93,9 +93,11 @@ class StdDev
     double lastMean;
     double lastMin;
     double lastMax;
+    double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
     int longTermCnt;
+    int glitches;
 };
 
 class PoolBuffer : public RingBuffer
@@ -123,6 +125,8 @@ class PoolBuffer : public RingBuffer
     void pullPacket(int8_t* buf);
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
+
+    virtual QString getStats(uint32_t statCount);
 
    private:
     void processPacket(bool glitch);
@@ -157,6 +161,8 @@ class PoolBuffer : public RingBuffer
     int mGlitchMax;
     vector<ChanData*> mChanData;
     StdDev* stdDev;
+    int mFPPfactor;
+    int mMaxPoolSize;
 };
 
 #endif  //__POOLUFFER_H__

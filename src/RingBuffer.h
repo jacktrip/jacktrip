@@ -116,6 +116,7 @@ class RingBuffer
         int32_t autoq_corr;
         int32_t autoq_rate;
     };
+    virtual QString getStats( [[maybe_unused]] uint32_t statCount) { return nullptr; };
     virtual bool getStats(IOStat* stat, bool reset);
 
    protected:
