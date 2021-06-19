@@ -86,8 +86,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-mMinPoolSize = mQlen + 2;
-mPoolSize = mMinPoolSize;
+    mMinPoolSize = mQlen + 2;
+    mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
     mHist            = (int)histFloat;
@@ -117,20 +117,19 @@ mPoolSize = mMinPoolSize;
     mIndexPool.resize(mMaxPoolSize);
     for (int i = 0; i < mMaxPoolSize; i++) mIndexPool[i] = -1;
 
-    mZeros = new int8_t[mBytes];
-    memcpy(mZeros, mXfrBuffer, mBytes);
     mIncomingCnt = 0;
     mTimer0 = new QElapsedTimer();
     mTimer0->start();
     mGlitchCnt = 0;
     mGlitchMax = mHist; // * 2 * mFPP;  // tested with 400 @ FPP32
-//    mGlitchMax /= 64;
-    qDebug() << mGlitchMax;
+//    qDebug() << mGlitchMax;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
-        for PACKETSAMP OUT(0.0, i, s);
+        for PACKETSAMP OUT(0.0, i, s); // zero mXfrBuffer
     }
+    mZeros = new int8_t[mBytes];
+    memcpy(mZeros, mXfrBuffer, mBytes);
     stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)) );
     mFPPfactor = 0.25 + (32 / (double)mFPP);
 }
