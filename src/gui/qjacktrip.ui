@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
+    <width>409</width>
     <height>947</height>
    </rect>
   </property>
@@ -1277,6 +1277,11 @@ for better quality at the expense of latency.</string>
             <string>2</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>3 (experimental)</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="2" column="0">
@@ -1632,8 +1637,8 @@ and wetness is the essence of beauty.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>403</width>
-     <height>30</height>
+     <width>409</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>
