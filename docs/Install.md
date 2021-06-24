@@ -14,16 +14,17 @@ On Linux the easiest way to install JackTrip is to use the distribution's packag
     sudo apt install jacktrip
     ```
 
+The [GitHub releases page](https://github.com/jacktrip/jacktrip/releases) also includes a binary which should run on most Linux distributions (x64). This build is known to not look well under Wayland.
 
-## MacOS
-OSX installer or executable at [CCRMA](https://ccrma.stanford.edu/software/jacktrip/osx/index.html). 
-
-- Temporary [link](https://www.dropbox.com/s/jb7vh9oiew50cm6/jacktrip-macos-installer-x64-1.2.1.pkg?dl=0) to JackTrip 1.2.1 installer (see more details [here](https://github.com/jacktrip/jacktrip/issues/158#issuecomment-699215590))
+## macOS
+macOS installer and application bundle are available on the [GitHub releases page](https://github.com/jacktrip/jacktrip/releases). The installer will install the JackTrip app in `/Applications`, as well as create a link to the `jacktrip` executable in `/usr/local/bin` for use in the command line.
 
 ## Windows
-Windows installer or executable at [CCRMA](https://ccrma.stanford.edu/software/jacktrip/windows/index.html).
+Windows installer and executable are available on the [GitHub releases page](https://github.com/jacktrip/jacktrip/releases). The installer will add a shortcut to your Start menu.
 
+# Experimental builds
+
+To keep up with the latest changes, including experimental functionality, you can access builds from the `dev` branch for Linux, macOS and Windows at https://nightly.link/jacktrip/jacktrip/workflows/jacktrip/dev. Please note that macOS binaries are not signed, so you need to right-click and select "Open" in order to run them.
 
 # Build from Source
-To keep up with the latest changes, both experimental and stable, follow instructions to compile for [Linux](Build/Linux.md), [MacOS](Build/Mac.md) 
-or [Windows](Build/Windows.md).
+To build JackTrip yourself, follow instructions to compile for [Linux](Build/Linux.md), [MacOS](Build/Mac.md) or [Windows](Build/Windows.md).
