@@ -336,6 +336,8 @@ void JackAudioInterface::connectDefaultPorts()
             // Check that we don't run out of capture ports
             if (ports[i] != NULL) {
                 jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
+            } else {
+                break;
             }
         }
         std::free(ports);
@@ -352,6 +354,8 @@ void JackAudioInterface::connectDefaultPorts()
             // Check that we don't run out of capture ports
             if (ports[i] != NULL) {
                 jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
+            } else {
+                break;
             }
         }
         std::free(ports);
