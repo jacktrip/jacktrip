@@ -24,7 +24,7 @@ Windows installer and executable are available on the [GitHub releases page](htt
 
 # Experimental builds
 
-To keep up with the latest changes, including experimental functionality, you can access builds from the `dev` branch for Linux, macOS and Windows at https://nightly.link/jacktrip/jacktrip/workflows/jacktrip/dev. Please note that macOS binaries are not signed, so you need to right-click and select "Open" in order to run them.
+To keep up with the latest changes, including experimental functionality, you can access builds from the `dev` branch for Linux, macOS and Windows at [https://nightly.link/jacktrip/jacktrip/workflows/jacktrip/dev](https://nightly.link/jacktrip/jacktrip/workflows/jacktrip/dev). Please note that macOS binaries are not signed, so you need to right-click and select "Open" in order to run them.
 
 # Build from Source
 To build JackTrip yourself, follow instructions to compile for [Linux](Build/Linux.md), [MacOS](Build/Mac.md) or [Windows](Build/Windows.md).
