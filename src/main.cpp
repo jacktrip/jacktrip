@@ -161,6 +161,7 @@ int main(int argc, char* argv[])
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
+    Settings settings;
 #ifndef NO_GUI
     QScopedPointer<QJackTrip> window;
     if (qobject_cast<QApplication*>(app.data())) {
@@ -181,7 +182,6 @@ int main(int argc, char* argv[])
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
         qInstallMessageHandler(qtMessageHandler);
         try {
-            Settings settings;
             settings.parseInput(argc, argv);
 
             // Either start our hub server or our jacktrip process as appropriate.
