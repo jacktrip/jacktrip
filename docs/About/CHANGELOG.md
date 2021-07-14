@@ -28,6 +28,7 @@ Changelog
 - (update) jitter buffer alternatives
 - (update) RtAudio revive (only default devices supported)
 - (update) build script moved to root directory
+- (update) default to Meson for Linux
 
 1.3.0
 ---
