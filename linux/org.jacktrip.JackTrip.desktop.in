@@ -6,3 +6,4 @@ Comment[fr]=Performance de musique en réseau sur internet
 Exec=jacktrip
 Icon=@icon@
 Terminal=false
+StartupWMClass=@wmclass@
