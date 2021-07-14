@@ -111,8 +111,8 @@ AudioInterface::~AudioInterface()
     for (int i = 0; i < aCnt; i++) { delete[] mAPInBuffer[i]; }
 #endif  // endwhere
 
-    for (auto* i : mProcessPluginsFromNetwork) { delete i; }
-    for (auto* i : mProcessPluginsToNetwork) { delete i; }
+    for (auto* i : qAsConst(mProcessPluginsFromNetwork)) { delete i; }
+    for (auto* i : qAsConst(mProcessPluginsToNetwork)) { delete i; }
     for (int i = 0; i < mNumInChans; i++) { delete[] mInBufCopy[i]; }
 }
 
