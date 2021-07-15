@@ -85,9 +85,9 @@ endif
 
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
-	qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
+	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 else
-	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])
+	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp']

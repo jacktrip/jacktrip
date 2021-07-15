@@ -8,11 +8,6 @@ struct CompressorPreset {
     float attackMS;
     float releaseMS;
     float makeUpGainDB;
-    CompressorPreset(float r, float t, float a, float rel, float m)
-        : ratio(r), thresholdDB(t), attackMS(a), releaseMS(rel), makeUpGainDB(m)
-    {
-    }
-    ~CompressorPreset() = default;
 };
 
 namespace CompressorPresets
