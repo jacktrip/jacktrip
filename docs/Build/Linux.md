@@ -1,7 +1,9 @@
 # Build Instructions
 
-The following are instructions for compiling Jacktrip from source.  Compiling
-from source is the best way to keep up with the latest changes, both stable and
+The following are instructions for compiling Jacktrip from source with QMake.
+On Linux you are advised to [build JackTrip with Meson](Meson_build.md). 
+
+Compiling from source is the best way to keep up with the latest changes, both stable and
 experimental.  For quicker ways to install Jacktrip, go to README.md in the root
 directory of the project.
 
