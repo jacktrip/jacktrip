@@ -161,6 +161,10 @@ int main(int argc, char* argv[])
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
+    // settings has to stay in scope until app->exec() is reached because
+    // AudioTester lives in settings but is used with a pointer
+    // from jacktrip. TODO Let Settings be just a struct with settings
+    Settings settings;
 #ifndef NO_GUI
     QScopedPointer<QJackTrip> window;
     if (qobject_cast<QApplication*>(app.data())) {
@@ -181,7 +185,6 @@ int main(int argc, char* argv[])
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
         qInstallMessageHandler(qtMessageHandler);
         try {
-            Settings settings;
             settings.parseInput(argc, argv);
 
             // Either start our hub server or our jacktrip process as appropriate.

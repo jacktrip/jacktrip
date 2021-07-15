@@ -254,6 +254,9 @@ int JackAudioInterface::startProcess() const
 int JackAudioInterface::stopProcess() const
 {
     QMutexLocker locker(&sJackMutex);
+    for(auto* inPort: qAsConst(mInPorts)) jack_port_unregister(mClient, inPort);
+    for(auto* outPort: qAsConst(mOutPorts)) jack_port_unregister(mClient, outPort);
+    for(auto* port: qAsConst(mBroadcastPorts)) jack_port_unregister(mClient, port);
     int code = (jack_client_close(mClient));
     if (code != 0) {
         std::cerr << "Cannot disconnect client" << std::endl;
@@ -336,6 +339,8 @@ void JackAudioInterface::connectDefaultPorts()
             // Check that we don't run out of capture ports
             if (ports[i] != NULL) {
                 jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
+            } else {
+                break;
             }
         }
         std::free(ports);
@@ -352,6 +357,8 @@ void JackAudioInterface::connectDefaultPorts()
             // Check that we don't run out of capture ports
             if (ports[i] != NULL) {
                 jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
+            } else {
+                break;
             }
         }
         std::free(ports);
