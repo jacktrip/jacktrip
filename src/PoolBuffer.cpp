@@ -184,7 +184,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
     mOutgoingCnt++;  // will saturate in 33 days at FPP 32
     //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     bool glitch     = false;
-    int target      = mOutgoingCnt; // - mQlen;
+    int target      = mOutgoingCnt - 1xxx; //mQlen;
     int targetIndex = mPoolSize;
     int oldest      = 999999;
     int oldestIndex = 0;
