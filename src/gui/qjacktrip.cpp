@@ -282,6 +282,8 @@ QJackTrip::QJackTrip(QWidget* parent)
 #endif  // __RT_AUDIO__
     }
 #endif  // USE_WEAK_JACK
+
+    m_ui->optionsTabWidget->setCurrentIndex(0);
 }
 
 void QJackTrip::closeEvent(QCloseEvent* event)
