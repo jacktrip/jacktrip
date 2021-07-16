@@ -136,8 +136,8 @@ subdir('linux')
 
 jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdir, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
+help2man = find_program('help2man', required: false)
 if not (host_machine.system() == 'windows')
-	help2man = find_program('help2man', required: false)
 	if help2man.found()
 		help2man_opts = [
 			'--no-info',
@@ -149,4 +149,13 @@ if not (host_machine.system() == 'windows')
 			install_dir: get_option('mandir') / 'man1')
 	endif
 endif
+
+summary({'JACK': jack_dep.found(),
+	'Weak JACK Linking': get_option('weakjack'),
+	'RtAudio': rtaudio_dep.found()}, bool_yn: true, section: 'Audio Backends')
+
+summary({'Application ID': application_id,
+	'GUI': not get_option('nogui'),
+	'WAIR': get_option('wair'),
+	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')
 
