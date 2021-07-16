@@ -199,7 +199,6 @@ QJackTrip::QJackTrip(QWidget* parent)
     m_ui->authGroupBox->setVisible(false);
 
 #ifdef __RT_AUDIO__
-    m_ui->backendGroupBox->setVisible(true);
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [=](int index) {
                 if (index == 1) {
@@ -215,7 +214,10 @@ QJackTrip::QJackTrip(QWidget* parent)
                 }
             });
 #else
-    m_ui->backendGroupBox->setVisible(false);
+    int index = findTab("Audio Backend");
+    if (index != -1) {
+        m_ui->optionsTabWidget->removeTab(index);
+    }
 #endif
 
     migrateSettings();
@@ -428,10 +430,16 @@ void QJackTrip::chooseRunType(int index)
         m_ui->autoPatchLabel->setVisible(true);
         m_ui->requireAuthGroupBox->setVisible(true);
         advancedOptionsForHubServer(true);
-        m_ui->optionsTabWidget->removeTab(3);
+        int index = findTab("Plugins");
+        if (index != -1) {
+            m_ui->optionsTabWidget->removeTab(index);
+        }
         authFilesChanged();
 #ifdef __RT_AUDIO__
-        m_ui->backendGroupBox->setVisible(false);
+        index = findTab("Audio Backend");
+        if (index != -1) {
+            m_ui->optionsTabWidget->removeTab(index);
+        }
 #endif
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
@@ -440,11 +448,13 @@ void QJackTrip::chooseRunType(int index)
         m_ui->channelGroupBox->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
         advancedOptionsForHubServer(false);
-        if (m_ui->optionsTabWidget->count() < 4) {
+        if (findTab("Plugins") == -1) {
             m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
         }
 #ifdef __RT_AUDIO__
-        m_ui->backendGroupBox->setVisible(true);
+        if (findTab("Audio Backend") == -1) {
+            m_ui->optionsTabWidget->insertTab(2, m_ui->backendTab, "Audio Backend");
+        }
 #endif
     }
 
@@ -821,6 +831,16 @@ void QJackTrip::exit()
     } else {
         emit signalExit();
     }
+}
+
+int QJackTrip::findTab(const QString& tabName)
+{
+    for (int i = 0; i < m_ui->optionsTabWidget->count(); i++) {
+        if (m_ui->optionsTabWidget->tabText(i) == tabName) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void QJackTrip::enableUi(bool enabled)
