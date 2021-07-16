@@ -214,9 +214,9 @@ QJackTrip::QJackTrip(QWidget* parent)
                 }
             });
 #else
-    int index = findTab("Audio Backend");
-    if (index != -1) {
-        m_ui->optionsTabWidget->removeTab(index);
+    int tabIndex = findTab("Audio Backend");
+    if (tabIndex != -1) {
+        m_ui->optionsTabWidget->removeTab(tabIndex);
     }
 #endif
 
