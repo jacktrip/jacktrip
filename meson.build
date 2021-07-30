@@ -127,7 +127,11 @@ endif
 
 if host_machine.system() == 'darwin'
 	src += ['src/gui/NoNap.mm']
-	apple_dep = dependency('appleframeworks', modules : 'foundation')
+	# Adding CoreAudio here is a workaround and should be removed
+	# when https://github.com/thestk/rtaudio/issues/302 is fixed
+	# and arrived in all common package managers
+	# Check at 2022-07-30
+	apple_dep = dependency('appleframeworks', modules : ['foundation','coreaudio'])
 	deps += apple_dep
 	add_languages('objcpp')
 endif
