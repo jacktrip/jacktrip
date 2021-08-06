@@ -196,7 +196,6 @@ class JackAudioInterface : public AudioInterface
     QVarLengthArray<sample_t*>
         mBroadcastBuffer;  ///< Vector of Output buffer/channel to write to JACK
     bool mBroadcast;
-    size_t mSizeInBytesPerChannel;            ///< Size in bytes per audio channel
     QVector<ProcessPlugin*> mProcessPlugins;  ///< Vector of ProcesPlugin<EM>s</EM>
     JackTrip* mJackTrip;                      ///< JackTrip mediator class
     static QMutex sJackMutex;  ///< Mutex to make thread safe jack functions that are not
