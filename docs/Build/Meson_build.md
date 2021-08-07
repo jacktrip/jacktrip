@@ -20,8 +20,15 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
 === "MacOS"
 
     ```bash
-    brew install meson qt5 rt-audio jack help2man
+    brew install meson qt5 rt-audio help2man
     ```
+    
+    You also need to install Jack, unless you want to disable jack support
+    (`-Djack=disabled`). On macOS Jack is often installed using an installer
+    from the [Jack2 release
+    page](https://github.com/jackaudio/jack2-releases/releases). You can also
+    install it using homebrew (`brew install jack`), but you should not use both
+    installation methods simultaneously.
 
     Meson might not find qt when installed with brew. But brew tells you to set
     PKG_CONFIG_PATH to a directory where it finds qt's pkgconfig file.
