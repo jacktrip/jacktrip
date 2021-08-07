@@ -244,7 +244,7 @@ int JackAudioInterface::startProcess() const
     // Tell the JACK server that we are ready to roll.  Our
     // process() callback will start running now.
     if (int code = (jack_activate(mClient))) {
-        std::cerr << "Cannot activate client" << std::endl;
+        std::cerr << "Cannot activate JACK client" << std::endl;
         return (code);
     }
     return (0);
@@ -254,12 +254,14 @@ int JackAudioInterface::startProcess() const
 int JackAudioInterface::stopProcess() const
 {
     QMutexLocker locker(&sJackMutex);
-    for(auto* inPort: qAsConst(mInPorts)) jack_port_unregister(mClient, inPort);
-    for(auto* outPort: qAsConst(mOutPorts)) jack_port_unregister(mClient, outPort);
-    for(auto* port: qAsConst(mBroadcastPorts)) jack_port_unregister(mClient, port);
-    int code = (jack_client_close(mClient));
+    int code = (jack_deactivate(mClient));
     if (code != 0) {
-        std::cerr << "Cannot disconnect client" << std::endl;
+        std::cerr << "Cannot deactivate JACK client" << std::endl;
+        return (code);
+    }
+    code = (jack_client_close(mClient));
+    if (code != 0) {
+        std::cerr << "Cannot disconnect JACK client" << std::endl;
         return (code);
     }
     return (0);
