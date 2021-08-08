@@ -11,6 +11,7 @@ public:
     void method2();
     void method3();
     void method4();
+    int setFPP(int FPP);
 };
 
 #endif // PIPEWIRESERVICE_H

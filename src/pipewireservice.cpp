@@ -74,3 +74,11 @@ void PipewireService::method4()
     }
     process.waitForFinished();
 }
+
+int PipewireService::setFPP(int FPP) {
+    const QString pwls =  "PIPEWIRE_LATENCY";
+    QString pwFPP =  QString::number(FPP)+"/48000";
+    setenv(pwls.toLocal8Bit(), pwFPP.toLocal8Bit(), true);
+    qDebug() << QString(std::getenv("PIPEWIRE_LATENCY"));
+    return 0;
+}

@@ -71,6 +71,7 @@ class Settings : public QObject
 
     bool getLoopBack() { return mLoopBack; }
     bool isHubServer() { return mJackTripServer; }
+    int getAudioBufferSize() { return mAudioBufferSize; }
 
    private:
     void disableEcho(bool disabled);
