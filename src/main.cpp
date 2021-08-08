@@ -51,6 +51,8 @@
 #include "UdpHubListener.h"
 #include "jacktrip_globals.h"
 
+#include "pipewireservice.h"
+
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
     // Check for some specific, GUI related command line options.
@@ -185,6 +187,18 @@ int main(int argc, char* argv[])
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
         qInstallMessageHandler(qtMessageHandler);
         try {
+            // Check if pipewire is running as a dbus service.
+            PipewireService pws;
+            pws.printStatus();
+            pws.method4();
+setenv("PIPEWIRE_LATENCY", "512/48000", true);
+//#include <glib.h>
+
+//            if (!g_setenv ("PIPEWIRE_LATENCY", "32/48000", TRUE)) {
+//                qDebug() << "Unable to set PIPEWIRE_LATENCY environment variable";
+//            }
+qDebug() << QString(std::getenv("PIPEWIRE_LATENCY"));
+
             settings.parseInput(argc, argv);
 
             // Either start our hub server or our jacktrip process as appropriate.
@@ -240,6 +254,5 @@ int main(int argc, char* argv[])
 #ifndef NO_GUI
     }
 #endif  // NO_GUI
-
     return app->exec();
 }

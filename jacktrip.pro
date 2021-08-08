@@ -6,6 +6,10 @@ CONFIG += c++11 console
 CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release build_all
+
+#experiment with pipewire env
+QT += dbus
+
 CONFIG(debug, debug|release) {
   TARGET = jacktrip_debug
   } else {
@@ -203,7 +207,8 @@ HEADERS += src/DataProtocol.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
            src/SslServer.h \
-           src/Auth.h
+           src/Auth.h \
+           src/pipewireservice.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
@@ -241,7 +246,8 @@ SOURCES += src/DataProtocol.cpp \
            src/AudioInterface.cpp \
            src/main.cpp \
            src/SslServer.cpp \
-           src/Auth.cpp
+           src/Auth.cpp \
+           src/pipewireservice.cpp
 #(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {
