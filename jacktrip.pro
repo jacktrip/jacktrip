@@ -322,5 +322,10 @@ if(linux-g++ | linux-g++-64):!nogui {
     icon_svg.files = $${OUT_PWD}/$${application_id}.svg
     icon_svg.path = $${PREFIX}/share/icons/hicolor/scalable/apps
 
-    INSTALLS += metainfo desktop icon48 icon_svg
+    icon_symbolic.extra = cp $${PWD}/linux/icons/jacktrip-symbolic.svg $${OUT_PWD}/$${application_id}-symbolic.svg
+    icon_symbolic.CONFIG += no_check_exist
+    icon_symbolic.files = $${OUT_PWD}/$${application_id}-symbolic.svg
+    icon_symbolic.path = $${PREFIX}/share/icons/hicolor/symbolic/apps
+
+    INSTALLS += metainfo desktop icon48 icon_svg icon_symbolic
 }
