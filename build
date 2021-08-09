@@ -3,10 +3,11 @@
 
 # Parse command line options
 clean=1
+install=0
 CONFIG=
 UNKNOWN_OPTIONS=
 HELP_STR="usage:\n
-./build [noclean nojack rtaudio nogui static [-config static]]\n\n
+./build [noclean nojack rtaudio nogui static install [-config static]]\n\n
 options:\n
 noclean - do not run \"make clean\" first\n
 nojack - build without jack\n
@@ -14,6 +15,7 @@ rtaudio - build with rtaudio\n
 nogui - build without the gui\n
 static - build with static libraries\n
 weakjack - build with weak linking of jack libraries\n
+install - install jacktrip in system location (uses sudo)\n
 "
 while [[ "$#" -gt 0 ]]; do
   if [[ -z "$UNKNOWN_OPTIONS" ]]; then
@@ -38,6 +40,10 @@ while [[ "$#" -gt 0 ]]; do
       weakjack)
       echo "Building with static libraries"
       CONFIG="-config weakjack $CONFIG"
+      ;;
+      install)
+      echo "Will install JackTrip in system location"
+      install=1
       ;;
       -h|--help) 
       echo -e $HELP_STR; exit 
@@ -116,3 +122,8 @@ if [[ $clean == 1 ]]; then
 fi
 $QCMD -spec $QSPEC $CONFIG ../jacktrip.pro $UNKNOWN_OPTIONS
 $MCMD release
+if [[ $install == 1 ]]; then
+  echo "*** Installing JackTrip ***"
+  echo "We need elevated privileges to install JackTrip in the system location"
+  sudo $MCMD release-install
+fi
