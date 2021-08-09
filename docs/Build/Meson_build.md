@@ -72,12 +72,12 @@ If `help2man` is found, Meson will create a manpage from `jacktrip --help`.
 Now build with:
 ```bash
 cd builddir
-meson compile
+ninja
 ```
 
 Install with:
 ```bash
-sudo meson install
+sudo ninja install
 ```
 
 
