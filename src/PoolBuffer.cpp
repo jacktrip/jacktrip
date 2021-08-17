@@ -246,12 +246,15 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                 ba.train(cd->mCoeffs, cd->mTrain);
 
                 // LINEAR PREDICT DATA
-                vector<sample_t> tail(cd->mTrain);
+//                vector<sample_t> tail(cd->mTrain);
+mTail = cd->mTrain;
 
-                ba.predict(cd->mCoeffs, tail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+//                ba.predict(cd->mCoeffs, tail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+ba.predict(cd->mCoeffs, mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
                 for (int i = 0; i < (cd->trainSamps - 1); i++)
-                    cd->mPrediction[i] = tail[i + cd->trainSamps];
+//                    cd->mPrediction[i] = tail[i + cd->trainSamps];
+cd->mPrediction[i] = mTail[i + cd->trainSamps];
 
                 for
                         PACKETSAMP cd->mXfadedPred[s] =
@@ -339,14 +342,16 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
     //        the AR order is";
 
     // INITIALIZE Ak
-    vector<long double> Ak(m + 1, 0.0);
+//    vector<long double> Ak(m + 1, 0.0);
+Ak.assign(m + 1, 0.0);
     Ak[0] = 1.0;
 
     // INITIALIZE f and b
-    vector<long double> f;
+//    vector<long double> f;
     f.resize(x.size());
     for (unsigned int i = 0; i < x.size(); i++) f[i] = x[i];
-    vector<long double> b(f);
+//    vector<long double> b(f);
+b = f;
 
     // INITIALIZE Dk
     long double Dk = 0.0;

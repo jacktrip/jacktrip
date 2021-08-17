@@ -57,7 +57,11 @@ class BurgAlgorithm
     bool classify(double d);
     void train(vector<long double>& coeffs, const vector<float>& x);
     void predict(vector<long double>& coeffs, vector<float>& tail);
-};
+private:
+// the following are class members to minimize heap memory allocations
+vector<long double> Ak;
+vector<long double> f;
+vector<long double> b;};
 
 class ChanData
 {
@@ -160,6 +164,7 @@ class PoolBuffer : public RingBuffer
     int mGlitchCnt;
     int mGlitchMax;
     vector<ChanData*> mChanData;
+vector<sample_t> mTail;
     StdDev* stdDev;
     int mFPPfactor;
     int mMaxPoolSize;
