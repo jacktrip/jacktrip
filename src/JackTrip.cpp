@@ -187,7 +187,7 @@ void JackTrip::setupAudio(
                                    mAudioBitResolution);
 
 #ifdef WAIRTOHUB                                        // WAIR
-        QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME;  // legacy for WAIR
+
         // Set our Jack client name if we're a hub server or a custom name hasn't been set
         if (mJackClientName.isEmpty()) {
             if (!mPeerAddress.isEmpty()) { 

@@ -84,7 +84,6 @@ class RtAudioInterface : public AudioInterface
                                       RtAudioStreamStatus status, void* userData);
     void printDeviceInfo(unsigned int deviceId);
 
-    JackTrip* mJackTrip;  ///< JackTrip Mediator Class pointer
     int mNumInChans;      ///< Number of Input Channels
     int mNumOutChans;     ///<  Number of Output Channels
     QVarLengthArray<float*>

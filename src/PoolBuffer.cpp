@@ -62,12 +62,11 @@ using std::setw;
 #define PACKETSAMP (int s = 0; s < mFPP; s++)
 
 //*******************************************************************************
-PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen)
+PoolBuffer::PoolBuffer(int /*sample_rate*/, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
     , mNumChannels(channels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
-    , mSampleRate(sample_rate)
     , mPoolSize(qLen)
     , mQlen(qLen)
 {

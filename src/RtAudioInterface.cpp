@@ -49,7 +49,6 @@ using std::endl;
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(jacktrip, NumInChans, NumOutChans, AudioBitResolution)
-    , mJackTrip(jacktrip)
     , mRtAudio(NULL)
 {
 }
