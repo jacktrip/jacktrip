@@ -129,9 +129,7 @@ class PoolBuffer : public RingBuffer
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
     int mAudioBitRes;
-    int mMinStepSize;
     int mFPP;
-    int mSampleRate;
 
     int mPoolSize;
     int mHist;
@@ -145,7 +143,6 @@ class PoolBuffer : public RingBuffer
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
     unsigned int mOutgoingCnt;
-    int mLastDelta;
     int mBytes;
     vector<int8_t*> mIncomingDat;
     int8_t* mZeros;

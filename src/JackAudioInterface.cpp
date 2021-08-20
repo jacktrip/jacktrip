@@ -74,17 +74,12 @@ JackAudioInterface::JackAudioInterface(
                      AudioBitResolution)
     , mNumInChans(NumInChans)
     , mNumOutChans(NumOutChans)
-    ,
 #ifdef WAIR  // WAIR
-    mNumNetRevChans(NumNetRevChans)
-    ,
+    , mNumNetRevChans(NumNetRevChans)
 #endif  // endwhere
-    // mAudioBitResolution(AudioBitResolution*8),
-    mBitResolutionMode(AudioBitResolution)
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)
-    , mJackTrip(jacktrip)
 {
 }
 
