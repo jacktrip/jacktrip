@@ -7,10 +7,14 @@ CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release build_all
 CONFIG(debug, debug|release) {
-  TARGET = jacktrip_debug
+    TARGET = jacktrip_debug
+    application_id = 'org.jacktrip.JackTrip.Devel'
+    name_suffix = ' (Development Snapshot)'
   } else {
-  TARGET = jacktrip
-  }
+    TARGET = jacktrip
+    application_id = 'org.jacktrip.JackTrip'
+    name_suffix = ''
+}
 
 nogui {
   DEFINES += NO_GUI
@@ -163,7 +167,7 @@ win32 {
 }
 
 DESTDIR = .
-QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug
+QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug ./$${application_id}.xml ./$${application_id}.desktop ./$${application_id}.png ./$${application_id}.svg ./jacktrip.1
 
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr
@@ -272,4 +276,56 @@ rtaudio {
 
 weakjack {
   SOURCES += externals/weakjack/weak_libjack.c
+}
+
+# install man page
+!win32 {
+    HELP2MAN_BIN = $$system(which help2man)
+
+    isEmpty(HELP2MAN_BIN) {
+        message("help2man not found")
+    } else {
+        message("Building man page with help2man")
+        man.extra = $${HELP2MAN_BIN} --no-info --section=1 --output $${OUT_PWD}/jacktrip.1 $${OUT_PWD}/jacktrip
+        man.CONFIG += no_check_exist
+        man.files = $${OUT_PWD}/jacktrip.1
+        man.path = $${PREFIX}/share/man/man1
+        INSTALLS += man
+    }
+}
+
+# install Linux desktop integration resources
+if(linux-g++ | linux-g++-64):!nogui {
+    appdata = $$cat($${PWD}/linux/org.jacktrip.JackTrip.metainfo.xml.in, blob)
+    appdata = $$replace(appdata, @appid@, $${application_id})
+    write_file($${OUT_PWD}/$${application_id}.metainfo.xml, appdata)
+
+    metainfo.files = $${OUT_PWD}/$${application_id}.metainfo.xml
+    metainfo.path = $${PREFIX}/share/metainfo
+
+    desktop_conf = $$cat($${PWD}/linux/org.jacktrip.JackTrip.desktop.in, blob)
+    desktop_conf = $$replace(desktop_conf, @icon@, $${application_id})
+    desktop_conf = $$replace(desktop_conf, @wmclass@, $$lower($${application_id}))
+    desktop_conf = $$replace(desktop_conf, @name_suffix@, $${name_suffix})
+    write_file($${OUT_PWD}/$${application_id}.desktop, desktop_conf)
+
+    desktop.files = $${OUT_PWD}/$${application_id}.desktop
+    desktop.path = $${PREFIX}/share/applications
+
+    icon48.extra = cp $${PWD}/linux/icons/jacktrip_48x48.png $${OUT_PWD}/$${application_id}.png
+    icon48.CONFIG += no_check_exist
+    icon48.files = $${OUT_PWD}/$${application_id}.png
+    icon48.path = $${PREFIX}/share/icons/hicolor/48x48/apps
+
+    icon_svg.extra = cp $${PWD}/linux/icons/jacktrip.svg $${OUT_PWD}/$${application_id}.svg
+    icon_svg.CONFIG += no_check_exist
+    icon_svg.files = $${OUT_PWD}/$${application_id}.svg
+    icon_svg.path = $${PREFIX}/share/icons/hicolor/scalable/apps
+
+    icon_symbolic.extra = cp $${PWD}/linux/icons/jacktrip-symbolic.svg $${OUT_PWD}/$${application_id}-symbolic.svg
+    icon_symbolic.CONFIG += no_check_exist
+    icon_symbolic.files = $${OUT_PWD}/$${application_id}-symbolic.svg
+    icon_symbolic.path = $${PREFIX}/share/icons/hicolor/symbolic/apps
+
+    INSTALLS += metainfo desktop icon48 icon_svg icon_symbolic
 }

@@ -120,7 +120,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mTcpServerPort(tcp_peer_port)
     , mUseAuth(false)
     , mRedundancy(redundancy)
-    , mJackClientName(gJackDefaultClientName)
     , mTimeoutTimer(this)
     , mSleepTime(100)
     , mElapsedTime(0)
@@ -190,9 +189,12 @@ void JackTrip::setupAudio(
 #ifdef WAIRTOHUB                                        // WAIR
         QString VARIABLE_AUDIO_NAME = WAIR_AUDIO_NAME;  // legacy for WAIR
         // Set our Jack client name if we're a hub server or a custom name hasn't been set
-        if (!mPeerAddress.isEmpty()
-            && (mJackClientName.constData() == gJackDefaultClientName.constData())) {
-            mJackClientName = QString(mPeerAddress).replace(":", "_");
+        if (mJackClientName.isEmpty()) {
+            if (!mPeerAddress.isEmpty()) { 
+                mJackClientName = QString(mPeerAddress).replace(":", "_");
+            } else {
+                mJackClientName = gJackDefaultClientName;
+            }
         }
         // std::cout  << "WAIR ID " << ID << " jacktrip client name set to=" <<
         //              mJackClientName.toStdString() << std::endl;

@@ -1,9 +1,10 @@
 if host_machine.system() == 'linux'
 	install_data('icons/jacktrip.svg', rename: '@0@.svg'.format(application_id), install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps')
 	install_data('icons/jacktrip_48x48.png', rename: '@0@.png'.format(application_id), install_dir: get_option('datadir') / 'icons' / 'hicolor' / '48x48' / 'apps')
-
+	install_data('icons/jacktrip-symbolic.svg', rename: '@0@-symbolic.svg'.format(application_id), install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'symbolic' / 'apps')
 	desktop_conf = configuration_data()
 	desktop_conf.set('icon', application_id)
+	desktop_conf.set('wmclass', application_id.to_lower())
 	desktop_conf.set('name_suffix', name_suffix)
 	configure_file(
 	    input: files('org.jacktrip.JackTrip.desktop.in'),

@@ -47,7 +47,7 @@ Clone the git repo and run `./build` in the src directory or use QtCreator to co
 You can compile using the build script or QtCreator.
 
 To clone the repo in the Terminal:
-$ git clone https://github.com/jacktrip/jacktrip.git
+$ git clone --recurse-submodules https://github.com/jacktrip/jacktrip.git
 
 To compile using the build script:
 ```sh
@@ -82,7 +82,7 @@ To install using Terminal (skip the first three steps if you've already followed
 the Build instructions above):
 
 ```sh
-$ git clone https://github.com/jacktrip/jacktrip.git
+$ git clone --recurse-submodules https://github.com/jacktrip/jacktrip.git
 $ cd jacktrip
 $ ./build
 $ cd builddir

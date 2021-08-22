@@ -13,8 +13,8 @@ Open the command line by typing cmd.exe in the Windows search bar.
 Use the `cd` command to navigate to the directory where you would like to
 install jacktrip, e.g. `cd C:\Users\Your User Name\`.
 
-Use `git clone https://github.com/jacktrip/jacktrip.git` to download a fresh
-copy of the repo or `git pull` to update your repo.
+Use `git clone --recurse-submodules https://github.com/jacktrip/jacktrip.git` to
+download a fresh copy of the repo or `git pull` to update your repo.
 
 On Windows 10, the easiest way to build is in the command line:
 

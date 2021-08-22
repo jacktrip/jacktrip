@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>947</height>
+    <height>817</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -162,7 +162,220 @@ To connect to a hub server you need to run as a hub client.</string>
         <string>Basic options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
+        <item row="2" column="0" colspan="3">
+         <widget class="QGroupBox" name="channelGroupBox">
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="3" column="0">
+            <widget class="QLabel" name="channelRecvLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&amp;Received from network:</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelRecvSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="channelRecvSpinBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Number of audio channels toaccept from the network.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="channelSendSpinBox">
+             <property name="toolTip">
+              <string>Number of audio channels to send to the network.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="channelSendLabel">
+             <property name="text">
+              <string>&amp;Sent to network:</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelSendSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QLabel" name="channelLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&amp;Number of channels</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelRecvSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
         <item row="8" column="0" colspan="3">
+         <widget class="QGroupBox" name="authGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0" colspan="2">
+            <widget class="QCheckBox" name="authCheckBox">
+             <property name="toolTip">
+              <string>Supply a username and password to connect to the server.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Use Authentication</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="passwordEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your password. (This will not be shown or saved.)</string>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::Password</enum>
+             </property>
+             <property name="cursorPosition">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="usernameEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your username for the server.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="passwordLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Password</string>
+             </property>
+             <property name="buddy">
+              <cstring>passwordEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="usernameLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Username</string>
+             </property>
+             <property name="buddy">
+              <cstring>usernameEdit</cstring>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="3" column="1" colspan="2">
+         <widget class="QComboBox" name="autoPatchComboBox">
+          <property name="toolTip">
+           <string>Select how you want audio to be routed by the hub server.</string>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>Server to clients</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Client loopback</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Client fan out/in but no loopback</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Full Mix</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>No auto patching</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="11" column="0" colspan="3">
+         <layout class="QHBoxLayout" name="aboutLayout">
+          <item>
+           <spacer name="aboutSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="aboutButton">
+            <property name="text">
+             <string>About</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="7" column="0" colspan="3">
          <widget class="QGroupBox" name="requireAuthGroupBox">
           <property name="title">
            <string/>
@@ -290,7 +503,7 @@ To connect to a hub server you need to run as a hub client.</string>
           </layout>
          </widget>
         </item>
-        <item row="7" column="0" colspan="3">
+        <item row="6" column="0" colspan="3">
          <widget class="QCheckBox" name="timeoutCheckBox">
           <property name="toolTip">
            <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
@@ -300,57 +513,7 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="0" colspan="3">
-         <widget class="QCheckBox" name="zeroCheckBox">
-          <property name="toolTip">
-           <string>Silence the audio when there's a buffer underrun.</string>
-          </property>
-          <property name="text">
-           <string>Set buffer to &amp;zero when underrun occurs</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="autoPatchLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Hub auto&amp;patch mode</string>
-          </property>
-          <property name="buddy">
-           <cstring>autoPatchComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="0" colspan="3">
-         <layout class="QHBoxLayout" name="aboutLayout">
-          <item>
-           <spacer name="aboutSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="aboutButton">
-            <property name="text">
-             <string>About</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="10" column="0">
+        <item row="9" column="0">
          <spacer name="basicVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -366,372 +529,30 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </spacer>
         </item>
-        <item row="2" column="0" colspan="3">
-         <widget class="QGroupBox" name="channelGroupBox">
-          <layout class="QGridLayout" name="gridLayout_9">
-           <item row="3" column="0">
-            <widget class="QLabel" name="channelRecvLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Received from network:</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QSpinBox" name="channelRecvSpinBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Number of audio channels toaccept from the network.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QSpinBox" name="channelSendSpinBox">
-             <property name="toolTip">
-              <string>Number of audio channels to send to the network.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="channelSendLabel">
-             <property name="text">
-              <string>&amp;Sent to network:</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelSendSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="channelLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Number of channels</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="9" column="0" colspan="3">
-         <widget class="QGroupBox" name="authGroupBox">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="title">
-           <string/>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0" colspan="2">
-            <widget class="QCheckBox" name="authCheckBox">
-             <property name="toolTip">
-              <string>Supply a username and password to connect to the server.</string>
-             </property>
-             <property name="text">
-              <string>&amp;Use Authentication</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="passwordEdit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Enter your password. (This will not be shown or saved.)</string>
-             </property>
-             <property name="echoMode">
-              <enum>QLineEdit::Password</enum>
-             </property>
-             <property name="cursorPosition">
-              <number>0</number>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="usernameEdit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Enter your username for the server.</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="passwordLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>&amp;Password</string>
-             </property>
-             <property name="buddy">
-              <cstring>passwordEdit</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="usernameLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>&amp;Username</string>
-             </property>
-             <property name="buddy">
-              <cstring>usernameEdit</cstring>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="4" column="1" colspan="2">
-         <widget class="QComboBox" name="autoPatchComboBox">
+        <item row="5" column="0" colspan="3">
+         <widget class="QCheckBox" name="zeroCheckBox">
           <property name="toolTip">
-           <string>Select how you want audio to be routed by the hub server.</string>
+           <string>Silence the audio when there's a buffer underrun.</string>
           </property>
-          <property name="currentIndex">
-           <number>0</number>
+          <property name="text">
+           <string>Set buffer to &amp;zero when underrun occurs</string>
           </property>
-          <item>
-           <property name="text">
-            <string>Server to clients</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Client loopback</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Client fan out/in but no loopback</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Full Mix</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>No auto patching</string>
-           </property>
-          </item>
          </widget>
         </item>
-        <item row="3" column="0" colspan="3">
-         <widget class="QGroupBox" name="backendGroupBox">
-          <property name="title">
-           <string/>
+        <item row="3" column="0">
+         <widget class="QLabel" name="autoPatchLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <layout class="QGridLayout" name="gridLayout_10">
-           <item row="0" column="1">
-            <widget class="QComboBox" name="backendComboBox">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the audio backend to use. JACK is the default and is well tested, but requires the JACK audio server to be installed.&lt;/p&gt;&lt;p&gt;RtAudio is still a work in progress, but it works with your operating system's native audio drivers and requires no additional software.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>JACK</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>RtAudio</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="backendLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Audio &amp;Backend:</string>
-             </property>
-             <property name="buddy">
-              <cstring>backendComboBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="sampleRateLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Sampling Rate:</string>
-             </property>
-             <property name="buddy">
-              <cstring>sampleRateComboBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="sampleRateComboBox">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the audio sample rate to use with the RtAudio backend. This setting should be the same on both ends of the connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="currentText">
-              <string>48000</string>
-             </property>
-             <property name="currentIndex">
-              <number>3</number>
-             </property>
-             <item>
-              <property name="text">
-               <string>22050</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>32000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>44100</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>48000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>88200</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>96000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>192000</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QComboBox" name="bufferSizeComboBox">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the driver's buffer size to use with the RtAudio backend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="currentIndex">
-              <number>3</number>
-             </property>
-             <item>
-              <property name="text">
-               <string>16</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>32</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>64</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>128</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>256</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>512</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>1024</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="bufferSizeLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Buffer Size:</string>
-             </property>
-             <property name="buddy">
-              <cstring>bufferSizeComboBox</cstring>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <property name="text">
+           <string>Hub auto&amp;patch mode</string>
+          </property>
+          <property name="buddy">
+           <cstring>autoPatchComboBox</cstring>
+          </property>
          </widget>
         </item>
        </layout>
@@ -1124,6 +945,196 @@ To connect to a hub server you need to run as a hub client.</string>
            <bool>true</bool>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="backendTab">
+       <attribute name="title">
+        <string>Audio Backend</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_11">
+        <item row="0" column="0">
+         <widget class="QLabel" name="backendLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Audio &amp;Backend:</string>
+          </property>
+          <property name="buddy">
+           <cstring>backendComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="backendComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the audio backend to use. JACK is the default and is well tested, but requires the JACK audio server to be installed.&lt;/p&gt;&lt;p&gt;RtAudio is still a work in progress, but it works with your operating system's native audio drivers and requires no additional software.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>JACK</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>RtAudio</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="sampleRateLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Sampling Rate:</string>
+          </property>
+          <property name="buddy">
+           <cstring>sampleRateComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="sampleRateComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the audio sample rate to use with the RtAudio backend. This setting should be the same on both ends of the connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="currentText">
+           <string>48000</string>
+          </property>
+          <property name="currentIndex">
+           <number>3</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>22050</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>32000</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>44100</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>48000</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>88200</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>96000</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>192000</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="bufferSizeLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Buffer Size:</string>
+          </property>
+          <property name="buddy">
+           <cstring>bufferSizeComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="bufferSizeComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the driver's buffer size to use with the RtAudio backend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="currentIndex">
+           <number>3</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>16</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>32</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>64</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>128</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>256</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>512</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1024</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <spacer name="backendSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>444</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>
@@ -1638,7 +1649,7 @@ and wetness is the essence of beauty.</string>
      <x>0</x>
      <y>0</y>
      <width>409</width>
-     <height>22</height>
+     <height>30</height>
     </rect>
    </property>
   </widget>
@@ -1653,9 +1664,6 @@ and wetness is the essence of beauty.</string>
   <tabstop>optionsTabWidget</tabstop>
   <tabstop>channelRecvSpinBox</tabstop>
   <tabstop>channelSendSpinBox</tabstop>
-  <tabstop>backendComboBox</tabstop>
-  <tabstop>sampleRateComboBox</tabstop>
-  <tabstop>bufferSizeComboBox</tabstop>
   <tabstop>autoPatchComboBox</tabstop>
   <tabstop>zeroCheckBox</tabstop>
   <tabstop>timeoutCheckBox</tabstop>
@@ -1684,6 +1692,9 @@ and wetness is the essence of beauty.</string>
   <tabstop>ioStatsSpinBox</tabstop>
   <tabstop>commandLineButton</tabstop>
   <tabstop>useDefaultsButton</tabstop>
+  <tabstop>backendComboBox</tabstop>
+  <tabstop>sampleRateComboBox</tabstop>
+  <tabstop>bufferSizeComboBox</tabstop>
   <tabstop>jitterCheckBox</tabstop>
   <tabstop>bufferStrategyComboBox</tabstop>
   <tabstop>broadcastCheckBox</tabstop>

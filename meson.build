@@ -85,9 +85,9 @@ endif
 
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
-	qt5_dep = dependency('qt5', modules: ['Core', 'Network'])
+	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 else
-	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'])
+	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp']
@@ -127,7 +127,11 @@ endif
 
 if host_machine.system() == 'darwin'
 	src += ['src/gui/NoNap.mm']
-	apple_dep = dependency('appleframeworks', modules : 'foundation')
+	# Adding CoreAudio here is a workaround and should be removed
+	# when https://github.com/thestk/rtaudio/issues/302 is fixed
+	# and arrived in all common package managers
+	# Check at 2022-07-30
+	apple_dep = dependency('appleframeworks', modules : ['foundation','coreaudio'])
 	deps += apple_dep
 	add_languages('objcpp')
 endif
@@ -136,8 +140,8 @@ subdir('linux')
 
 jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdir, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
+help2man = find_program('help2man', required: false)
 if not (host_machine.system() == 'windows')
-	help2man = find_program('help2man', required: false)
 	if help2man.found()
 		help2man_opts = [
 			'--no-info',
@@ -149,4 +153,13 @@ if not (host_machine.system() == 'windows')
 			install_dir: get_option('mandir') / 'man1')
 	endif
 endif
+
+summary({'JACK': jack_dep.found(),
+	'Weak JACK Linking': get_option('weakjack'),
+	'RtAudio': rtaudio_dep.found()}, bool_yn: true, section: 'Audio Backends')
+
+summary({'Application ID': application_id,
+	'GUI': not get_option('nogui'),
+	'WAIR': get_option('wair'),
+	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')
 
