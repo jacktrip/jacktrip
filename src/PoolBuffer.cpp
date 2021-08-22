@@ -160,7 +160,11 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
     memcpy(mIncomingDat[oldestIndex], buf, mBytes);
     //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
 
-    stdDev->tick();
+    double msElapsed = stdDev->tick();
+    if(mQlen==19) {}// fprintf(stderr,"%f\n",msElapsed);
+    else if((mQlen==20)&&(msElapsed<8.0)) fprintf(stderr,"%d\t%f\n",mIncomingCnt,msElapsed);
+    fflush(stderr);
+
     if (stdDev->longTermStdDevAcc > 0.0) {
         int newPoolSize  = (int)(stdDev->longTermStdDev * mFPPfactor);
         if (newPoolSize > mMaxPoolSize) newPoolSize = mMaxPoolSize;  // avoid insanely large pool
@@ -459,7 +463,7 @@ void StdDev::reset()
     glitches = 0;
 };
 
-void StdDev::tick()
+double StdDev::tick()
 {
     double msElapsed = (double)mTimer->nsecsElapsed() / 1000000.0;
     mTimer->start();
@@ -508,6 +512,7 @@ void StdDev::tick()
         lastStdDev = stdDev;
         reset();
     }
+    return msElapsed;
 }
 
 //*******************************************************************************

@@ -362,7 +362,7 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
-            qDebug() << "experimental buffer strategy 3 -- pool buffer with PLC";
+//            qDebug() << "experimental buffer strategy 3 -- pool buffer with PLC";
             mSendRingBuffer =
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer =

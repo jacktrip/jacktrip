@@ -83,7 +83,7 @@ class StdDev
    public:
     StdDev(int w);
     void reset();
-    void tick();
+    double tick();
     QElapsedTimer* mTimer;
     vector<double> data;
     double mean;

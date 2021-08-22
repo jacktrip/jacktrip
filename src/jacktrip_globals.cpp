@@ -153,6 +153,15 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
 
 #if defined(__LINUX__)
 //*******************************************************************************
+// if permissions for user are not set
+// perror("sched_setscheduler") = operation not permitted
+/* -- fix as root, only needs to be done once --
+ * groupadd realtime
+ * gpasswd -a <username> realtime
+ * echo "@realtime   -  rtprio     99" > /etc/security/limits.d/99-realtime.conf
+ * echo "@realtime   -  memlock    unlimited" >> /etc/security/limits.d/99-realtime.conf
+ * reboot
+ */
 void setRealtimeProcessPriority()
 {
     int priority = sched_get_priority_max(SCHED_FIFO);  // 99 is the highest possible
@@ -165,8 +174,8 @@ void setRealtimeProcessPriority()
 
     if (sched_setscheduler(0, SCHED_FIFO, &sp) == -1) {
         std::cerr << "Failed to set the scheduler policy and priority." << std::endl;
-        ;
-    }
+        perror("sched_setscheduler");
+    }   
 }
 #endif  //__LINUX__
 
