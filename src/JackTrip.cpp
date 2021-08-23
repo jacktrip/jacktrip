@@ -590,7 +590,8 @@ void JackTrip::onStatTimer()
     if (!mDataProtocolReceiver->getStats(&pkt_stat)) { return; }
     bool reset = (0 == pkt_stat.statCount);
 
-    if (mBufferStrategy == 3) {    QString poolStats = mReceiveRingBuffer->getStats(pkt_stat.statCount);
+    if (mBufferStrategy == 3) {
+        QString poolStats = mReceiveRingBuffer->getStats(pkt_stat.statCount, pkt_stat.lost);
         if (poolStats == nullptr) { return; }
         else {
             mIOStatLogStream << poolStats.toStdString();

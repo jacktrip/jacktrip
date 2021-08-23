@@ -118,6 +118,8 @@ class RingBuffer
         int32_t autoq_rate;
     };
     virtual QString getStats( [[maybe_unused]] uint32_t statCount) { return nullptr; };
+    // to get lost packet count to PoolBuffer
+    virtual QString getStats([[maybe_unused]] uint32_t statCount, [[maybe_unused]] uint32_t lostCount) { return nullptr; };
     virtual bool getStats(IOStat* stat, bool reset);
 
    protected:

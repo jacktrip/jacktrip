@@ -86,7 +86,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-//    mQlen = 0;
+    //    mQlen = 0;
     mMinPoolSize = mQlen; // + 2;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
@@ -122,8 +122,9 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mTimer0 = new QElapsedTimer();
     mTimer0->start();
     mGlitchCnt = 0;
-    mGlitchMax = mHist; // * 2 * mFPP;  // tested with 400 @ FPP32
-//    qDebug() << mGlitchMax;
+    //    mGlitchMax = mHist; // * 2 * mFPP;  // tested with 400 @ FPP32
+    mGlitchMax = 1;  // tested with 400 @ FPP32
+    //    qDebug() << mGlitchMax;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
@@ -133,6 +134,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     memcpy(mZeros, mXfrBuffer, mBytes);
     stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)) );
     mFPPfactor = STDDEV2POOLSIZE * (0.0 + (32 / (double)mFPP));
+    mLastLostCount = 0;
 }
 
 //*******************************************************************************
@@ -160,10 +162,10 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
     memcpy(mIncomingDat[oldestIndex], buf, mBytes);
     //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
 
-    double msElapsed = stdDev->tick();
-    if(mQlen==19) {}// fprintf(stderr,"%f\n",msElapsed);
-    else if((mQlen==20)&&(msElapsed<8.0)) fprintf(stderr,"%d\t%f\n",mIncomingCnt,msElapsed);
-    fflush(stderr);
+    //    double msElapsed = stdDev->tick();
+    //        if(mQlen==19) {}// fprintf(stderr,"%f\n",msElapsed);
+    //        else if((mQlen==20)&&(msElapsed<8.0)) fprintf(stderr,"%d\t%f\n",mIncomingCnt,msElapsed);
+    //        fflush(stderr);
 
     if (stdDev->longTermStdDevAcc > 0.0) {
         int newPoolSize  = (int)(stdDev->longTermStdDev * mFPPfactor);
@@ -172,9 +174,9 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
         if (newPoolSize < mPoolSize) {
             if (gVerboseFlag) cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
         } else
-        if (newPoolSize > mPoolSize) {
-            if (gVerboseFlag) cout << "growing to " << newPoolSize << " from " << mPoolSize << "\n";
-        }
+            if (newPoolSize > mPoolSize) {
+                if (gVerboseFlag) cout << "growing to " << newPoolSize << " from " << mPoolSize << "\n";
+            }
         mPoolSize = newPoolSize;
     }
     mPoolSize = mQlen;
@@ -200,10 +202,12 @@ void PoolBuffer::pullPacket(int8_t* buf)
         }
     }
     if (targetIndex == mPoolSize) {
-        //            qDebug() << " ";
-        //            qDebug() << "!available" << target;
-        //            for ( int i = 0; i < POOLSIZE; i++ ) qDebug() << i << mIndexPool[i];
-        //            qDebug() << " ";
+        if(mQlen==-1) {
+            qDebug() << " ";
+            qDebug() << "!available" << target;
+            for ( int i = 0; i < mPoolSize; i++ ) qDebug() << i << mIndexPool[i];
+            qDebug() << " ";
+        }
         targetIndex             = oldestIndex;
         mIndexPool[targetIndex] = -1;
         glitch                  = true;
@@ -220,6 +224,13 @@ void PoolBuffer::pullPacket(int8_t* buf)
         memcpy(mXfrBuffer, mZeros, mBytes);
     }
     memcpy(buf, mXfrBuffer, mBytes);
+    double msElapsed = stdDev->tick();
+    double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
+    double off = 0.0;
+    if (glitch) off = 1.0;
+    if((mQlen==200)&&(msElapsed<8.0)) fprintf(stderr,"%d\t%f\n",mOutgoingCnt,off+msElapsed);
+//    if((mQlen==200)&&(msElapsed<8.0)) fprintf(stderr,"%f\t%f\n",msNow/1000.0,off+msElapsed);
+    fflush(stderr);
 };
 
 //*******************************************************************************
@@ -250,15 +261,15 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                 ba.train(cd->mCoeffs, cd->mTrain);
 
                 // LINEAR PREDICT DATA
-//                vector<sample_t> tail(cd->mTrain);
-mTail = cd->mTrain;
+                //                vector<sample_t> tail(cd->mTrain);
+                mTail = cd->mTrain;
 
-//                ba.predict(cd->mCoeffs, tail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
-ba.predict(cd->mCoeffs, mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+                //                ba.predict(cd->mCoeffs, tail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+                ba.predict(cd->mCoeffs, mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
                 for (int i = 0; i < (cd->trainSamps - 1); i++)
-//                    cd->mPrediction[i] = tail[i + cd->trainSamps];
-cd->mPrediction[i] = mTail[i + cd->trainSamps];
+                    //                    cd->mPrediction[i] = tail[i + cd->trainSamps];
+                    cd->mPrediction[i] = mTail[i + cd->trainSamps];
 
                 for
                         PACKETSAMP cd->mXfadedPred[s] =
@@ -346,16 +357,16 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
     //        the AR order is";
 
     // INITIALIZE Ak
-//    vector<long double> Ak(m + 1, 0.0);
-Ak.assign(m + 1, 0.0);
+    //    vector<long double> Ak(m + 1, 0.0);
+    Ak.assign(m + 1, 0.0);
     Ak[0] = 1.0;
 
     // INITIALIZE f and b
-//    vector<long double> f;
+    //    vector<long double> f;
     f.resize(x.size());
     for (unsigned int i = 0; i < x.size(); i++) f[i] = x[i];
-//    vector<long double> b(f);
-b = f;
+    //    vector<long double> b(f);
+    b = f;
 
     // INITIALIZE Dk
     long double Dk = 0.0;
@@ -516,7 +527,7 @@ double StdDev::tick()
 }
 
 //*******************************************************************************
-QString PoolBuffer::getStats(uint32_t statCount)
+QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
 {
     // formatting floats in columns looks better with std::stringstream than with QTextStream
     QString tmp;
@@ -525,9 +536,11 @@ QString PoolBuffer::getStats(uint32_t statCount)
         tmp += "      (window of last ";
         tmp += QString::number(stdDev->window);
         tmp += " packets)\n";
-        tmp += "secs   (mean       min       max     stdDev)   avgStdDev  plc   poolsize\n";
+        tmp += "secs   (mean       min       max     stdDev)   avgStdDev  plc   poolsize   lost\n";
     }
     else {
+        uint32_t lost = lostCount - mLastLostCount;
+        mLastLostCount = lostCount;
 #define PDBL(x) << setw(10) << (QString("%1").arg(stdDev->x, 0, 'f', 2)).toStdString()
         std::stringstream logger;
         logger << setw(2) << statCount
@@ -537,7 +550,8 @@ QString PoolBuffer::getStats(uint32_t statCount)
                   PDBL(lastStdDev)
                   PDBL(longTermStdDev)
                << setw(8) << stdDev->glitches
-               << setw(8) << mPoolSize << endl;
+               << setw(8) << mPoolSize
+               << setw(8) << lost << endl;
         tmp = QString::fromStdString(logger.str());
     }
     return tmp;

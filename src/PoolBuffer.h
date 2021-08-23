@@ -130,7 +130,7 @@ class PoolBuffer : public RingBuffer
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
 
-    virtual QString getStats(uint32_t statCount);
+    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
 
    private:
     void processPacket(bool glitch);
@@ -140,6 +140,7 @@ class PoolBuffer : public RingBuffer
     int mMinStepSize;
     int mFPP;
     int mSampleRate;
+    uint32_t mLastLostCount;
 
     int mPoolSize;
     int mHist;
