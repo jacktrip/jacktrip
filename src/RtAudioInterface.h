@@ -62,6 +62,7 @@ class RtAudioInterface : public AudioInterface
 
     /// \brief List all avialable audio interfaces, with its properties
     virtual void listAllInterfaces();
+    virtual int getDeviceIdFromName(std::string deviceName, bool isInput);
     virtual void setup();
     virtual int startProcess() const;
     virtual int stopProcess() const;

@@ -68,6 +68,10 @@ class Settings : public QObject
 
     /// \brief Prints usage help
     void printUsage();
+#ifdef __RT_AUDIO__
+    void printRtAudioDevices();
+    void parseDeviceArg(std::string nameArg);
+#endif
 
     bool getLoopBack() { return mLoopBack; }
     bool isHubServer() { return mJackTripServer; }
@@ -108,12 +112,15 @@ class Settings : public QObject
     QString mLocalAddress    = gDefaultLocalAddress;  ///< Local Address
     unsigned int mRedundancy = 1;      ///< Redundancy factor for data in the network
     bool mUseJack            = true;   ///< Use or not JackAduio
-    bool mChanfeDefaultSR    = false;  ///< Change Default Sampling Rate
-    bool mChanfeDefaultID    = 0;      ///< Change Default device ID
-    bool mChanfeDefaultBS    = false;  ///< Change Default Buffer Size
+    bool mChangeDefaultSR    = false;  ///< Change Default Sampling Rate
+    bool mChangeDefaultID    = 0;      ///< Change Default device ID
+    bool mChangeDefaultBS    = false;  ///< Change Default Buffer Size
+#ifdef __RT_AUDIO__
     unsigned int mSampleRate;
     unsigned int mDeviceID;
     unsigned int mAudioBufferSize;
+    std::string mInputDeviceName, mOutputDeviceName;
+#endif
     unsigned int mHubConnectionMode = JackTrip::SERVERTOCLIENT;
     bool mConnectDefaultAudioPorts  = true;  ///< Connect or not jack audio ports
     int mIOStatTimeout              = 0;

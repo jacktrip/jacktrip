@@ -63,6 +63,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef __RT_AUDIO__
+#include "RtAudio.h"
+#endif
+
 //#include "ThreadPoolTest.h"
 
 using std::cout;
@@ -83,7 +87,9 @@ enum JTLongOptIDS {
     OPT_AUTHPASS,
     OPT_NUMRECEIVE,
     OPT_NUMSEND,
-    OPT_APPENDTHREADID
+    OPT_APPENDTHREADID,
+    OPT_LISTDEVICES,
+    OPT_AUDIODEVICE
 };
 
 //*******************************************************************************
@@ -140,9 +146,13 @@ void Settings::parseInput(int argc, char** argv)
         {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
         {"appendthreadid", no_argument, NULL,
          OPT_APPENDTHREADID},                        // Append thread id to client names
+#ifdef __RT_AUDIO__
         {"rtaudio", no_argument, NULL, 'R'},         // Run in JamLink mode
         {"srate", required_argument, NULL, 'T'},     // Set Sample Rate
-        {"deviceid", required_argument, NULL, 'd'},  // Set RTAudio device id to use
+        {"deviceid", required_argument, NULL, 'd'},  // Set RTAudio device id to use (DEPRECATED)
+        {"audiodevice", required_argument, NULL, OPT_AUDIODEVICE},  // Set RTAudio devices by name
+        {"listdevices", no_argument, NULL, OPT_LISTDEVICES},  // Set RTAudio device id to use
+#endif
         {"bufsize", required_argument, NULL, 'F'},   // Set buffer Size
         {"nojackportsconnect", no_argument, NULL,
          'D'},                                // Don't connect default Audio Ports
@@ -359,25 +369,36 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_APPENDTHREADID:
             mAppendThreadID = true;
             break;
+#ifdef __RT_AUDIO__
         case 'R':  // RtAudio
             //-------------------------------------------------------
             mUseJack = false;
             break;
         case 'T':  // Sampling Rate
             //-------------------------------------------------------
-            mChanfeDefaultSR = true;
+            mChangeDefaultSR = true;
             mSampleRate      = atoi(optarg);
             break;
         case 'd':  // RTAudio device id
             //-------------------------------------------------------
-            mChanfeDefaultID = true;
+            mChangeDefaultID = true;
             mDeviceID        = atoi(optarg);
             break;
         case 'F':  // Buffer Size
             //-------------------------------------------------------
-            mChanfeDefaultBS = true;
+            mChangeDefaultBS = true;
             mAudioBufferSize = atoi(optarg);
             break;
+        case OPT_AUDIODEVICE:  // Set audio device
+            //-------------------------------------------------------
+            parseDeviceArg(optarg);
+            break;
+        case OPT_LISTDEVICES:  // List audio devices
+            //-------------------------------------------------------
+            printRtAudioDevices();
+            std::exit(0);
+            break;
+#endif
         case 'D':
             //-------------------------------------------------------
             mConnectDefaultAudioPorts = false;
@@ -736,6 +757,7 @@ void Settings::printUsage()
             "(sources) mixing at Hub Server (otherwise 2 assumed by -O)"
          << endl;
     cout << endl;
+#ifdef __RT_AUDIO__
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " -R, --rtaudio                            Use system's default sound system "
             "instead of Jack"
@@ -746,10 +768,18 @@ void Settings::printUsage()
     cout << " -F, --bufsize #                          Set the buffer size, works on "
             "--rtaudio mode only (default: 128)"
          << endl;
-    cout << " -d, --deviceid #                         The rtaudio device id --rtaudio "
-            "mode only (default: 0)"
+    cout << " --audiodevice \"input-output device name\"" << endl;
+    cout << " --audiodevice \"input device name\",\"output device name\"" << endl;
+    cout << "                                          Set audio device to use; if not set, "
+            "the default device will be used"
+         << endl;
+    cout << " --listdevices                            List available audio devices"
+         << endl;
+    cout << " -d, --deviceid #                         Set rtaudio device id (DEPRECATED, "
+            "use --audiodevice instead)"
          << endl;
     cout << endl;
+#endif
     cout << "ARGUMENTS TO DISPLAY IO STATISTICS:" << endl;
     cout << " -I, --iostat <time_in_secs>              Turn on IO stat reporting with "
             "specified interval (in seconds)"
@@ -784,6 +814,35 @@ void Settings::printUsage()
     cout << "" << endl;
     // clang-format on
 }
+
+#ifdef __RT_AUDIO__
+void Settings::printRtAudioDevices()
+{
+    RtAudio audio;
+    cout << "Available audio devices: " << endl;
+    unsigned int devices = audio.getDeviceCount();
+    RtAudio::DeviceInfo info;
+    for ( unsigned int i=0; i<devices; i++ ) {
+        info = audio.getDeviceInfo( i );
+        if ( info.probed == true ) {
+            std::cout << i << ": \"" << info.name << "\" ";
+            std::cout << "(" << info.inputChannels << " ins, " << info.outputChannels << " outs)" << endl;
+        }
+    }
+}
+
+void Settings::parseDeviceArg(std::string nameArg)
+{
+    size_t commaPos;
+    commaPos = nameArg.rfind(',');
+    if (commaPos) {
+        mInputDeviceName = nameArg.substr(0, commaPos);
+        mOutputDeviceName = nameArg.substr(commaPos + 1);
+    } else {
+        mInputDeviceName = mOutputDeviceName = nameArg;
+    }
+}
+#endif
 
 //*******************************************************************************
 UdpHubListener* Settings::getConfiguredHubServer()
@@ -895,16 +954,21 @@ JackTrip* Settings::getConfiguredJackTrip()
     // Set RtAudio
 #ifdef __RT_AUDIO__
     if (!mUseJack) { jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO); }
+
+    // Change default Sampling Rate
+    if (mChangeDefaultSR) { jackTrip->setSampleRate(mSampleRate); }
+
+    // Change defualt device ID
+    if (mChangeDefaultID) { jackTrip->setDeviceID(mDeviceID); }
+
+    // Change default Buffer Size
+    if (mChangeDefaultBS) { jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize); }
+    
+    // Set device names
+    jackTrip->setInputDevice(mInputDeviceName);
+    jackTrip->setOutputDevice(mOutputDeviceName);
 #endif
 
-    // Chanfe default Sampling Rate
-    if (mChanfeDefaultSR) { jackTrip->setSampleRate(mSampleRate); }
-
-    // Chanfe defualt device ID
-    if (mChanfeDefaultID) { jackTrip->setDeviceID(mDeviceID); }
-
-    // Chanfe default Buffer Size
-    if (mChanfeDefaultBS) { jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize); }
     jackTrip->setBufferStrategy(mBufferStrategy);
     jackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                      mSimulatedDelayRel);

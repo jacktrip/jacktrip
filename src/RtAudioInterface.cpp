@@ -66,43 +66,59 @@ void RtAudioInterface::setup()
     mInBuffer.resize(getNumInputChannels());
     mOutBuffer.resize(getNumOutputChannels());
 
-    cout << "Settin Up Default RtAudio Interface" << endl;
+    cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
     mRtAudio = new RtAudio;
 
-    uint32_t deviceId_input{0};
-    uint32_t deviceId_output{0};
-    RtAudio::DeviceInfo dev_info_input;
-    RtAudio::DeviceInfo dev_info_output;
-    if (unsigned int n_devices = mRtAudio->getDeviceCount(); n_devices < 1) {
+    int deviceId_input;
+    int deviceId_output;
+    unsigned int n_devices = mRtAudio->getDeviceCount();
+    if (n_devices < 1) {
         cout << "No audio devices found!" << endl;
         std::exit(0);
     } else {
-        RtAudio::DeviceInfo info;
-        for (unsigned int i = 0; i < n_devices; ++i) {
-            info = mRtAudio->getDeviceInfo(i);
-            if (info.isDefaultInput == true) {
-                deviceId_input = i;
-                dev_info_input = info;
-            }
-            if (info.isDefaultOutput == true) {
-                deviceId_output = i;
-                dev_info_output = info;
+        deviceId_input = getDeviceID();
+        if(deviceId_input < 0) {
+            auto inName = getInputDevice();
+            deviceId_input = getDeviceIdFromName(inName, true);
+            if(!inName.empty() && (deviceId_input < 0)) {
+                // TODO: maybe we should fail if the requested device was not found? (same with output)
+                cout << "WARNING: requested input device \"" << inName << "\" not found" << endl;
             }
         }
+        if(deviceId_input < 0) {
+            cout << "Selecting default INPUT device" << endl;
+            deviceId_input = mRtAudio->getDefaultInputDevice();
+        }
+        
+        deviceId_output = getDeviceID();
+        if(deviceId_output < 0) {
+            auto outName = getOutputDevice();
+            deviceId_output = getDeviceIdFromName(outName, false);
+            if(!outName.empty() && (deviceId_output < 0)) {
+                cout << "WARNING: requested output device \"" << outName << "\" not found" << endl;
+            }
+        }
+        if(deviceId_output < 0) {
+            cout << "Selecting default OUTPUT device" << endl;
+            deviceId_output = mRtAudio->getDefaultOutputDevice();
+        }
     }
+    
+    auto dev_info_input = mRtAudio->getDeviceInfo(deviceId_input);
+    auto dev_info_output = mRtAudio->getDeviceInfo(deviceId_output);
 
-    if (getNumInputChannels() > dev_info_input.inputChannels) {
+    if ((unsigned int)getNumInputChannels() > dev_info_input.inputChannels) {
         setNumInputChannels(dev_info_input.inputChannels);
     }
-    if (getNumOutputChannels() > dev_info_output.outputChannels) {
+    if ((unsigned int)getNumOutputChannels() > dev_info_output.outputChannels) {
         setNumOutputChannels(dev_info_output.outputChannels);
     }
 
-    cout << "DEFAULT INPUT DEVICE  : " << endl;
+    cout << "INPUT DEVICE:" << endl;
     printDeviceInfo(deviceId_input);
     cout << gPrintSeparator << endl;
-    cout << "DEFAULT OUTPUT DEVICE : " << endl;
+    cout << "OUTPUT DEVICE:" << endl;
     printDeviceInfo(deviceId_output);
     cout << gPrintSeparator << endl;
 
@@ -153,6 +169,25 @@ void RtAudioInterface::listAllInterfaces()
             cout << gPrintSeparator << endl;
         }
     }
+}
+
+//*******************************************************************************
+int RtAudioInterface::getDeviceIdFromName(std::string deviceName, bool isInput)
+{
+    RtAudio rtaudio;
+    for (unsigned int i = 0; i < rtaudio.getDeviceCount(); i++) {
+        auto info = rtaudio.getDeviceInfo( i );
+        if ( info.probed == true ) {
+            if (info.name == deviceName) {
+                if (isInput && info.inputChannels > 0) {
+                    return i;
+                } else if (!isInput && info.outputChannels > 0) {
+                    return i;
+                }
+            }
+        }
+    }
+    return -1;
 }
 
 //*******************************************************************************

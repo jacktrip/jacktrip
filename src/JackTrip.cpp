@@ -228,6 +228,8 @@ void JackTrip::setupAudio(
                                                mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
+        mAudioInterface->setInputDevice(mInputDeviceName);
+        mAudioInterface->setOutputDevice(mOutputDeviceName);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup();
         // Setup might have reduced number of channels
@@ -241,6 +243,8 @@ void JackTrip::setupAudio(
                                                mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
+        mAudioInterface->setInputDevice(mInputDeviceName);
+        mAudioInterface->setOutputDevice(mOutputDeviceName);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup();
         // Setup might have reduced number of channels
