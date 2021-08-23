@@ -1,0 +1,18 @@
+<jmess>
+  <connection>
+    <output>system:capture_1</output>
+    <input>jackloop32.stanford.edu:send_1</input>
+  </connection>
+  <connection>
+    <output>system:capture_2</output>
+    <input>jackloop32.stanford.edu:send_2</input>
+  </connection>
+  <connection>
+    <output>jackloop32.stanford.edu:receive_1</output>
+    <input>system:playback_1</input>
+  </connection>
+  <connection>
+    <output>jackloop32.stanford.edu:receive_2</output>
+    <input>system:playback_2</input>
+  </connection>
+</jmess>

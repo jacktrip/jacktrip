@@ -1,0 +1,18 @@
+<jmess>
+  <connection>
+    <output>U-22 Analog Stereo:capture_FL</output>
+    <input>jackloop32.stanford.edu:send_1</input>
+  </connection>
+  <connection>
+    <output>U-22 Analog Stereo:capture_FL</output>
+    <input>jackloop32.stanford.edu:send_2</input>
+  </connection>
+  <connection>
+    <output>jackloop32.stanford.edu:receive_2</output>
+    <input>U-22 Analog Stereo:playback_FL</input>
+  </connection>
+  <connection>
+    <output>jackloop32.stanford.edu:receive_1</output>
+    <input>U-22 Analog Stereo:playback_FR</input>
+  </connection>
+</jmess>

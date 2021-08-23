@@ -227,7 +227,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
     double msElapsed = stdDev->tick();
     double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
     double off = 0.0;
-    if (glitch) off = 1.0;
+    if (glitch) off = 3.0;
     if((mQlen==200)&&(msElapsed<8.0)) fprintf(stderr,"%d\t%f\n",mOutgoingCnt,off+msElapsed);
 //    if((mQlen==200)&&(msElapsed<8.0)) fprintf(stderr,"%f\t%f\n",msNow/1000.0,off+msElapsed);
     fflush(stderr);
