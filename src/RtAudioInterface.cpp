@@ -82,8 +82,7 @@ void RtAudioInterface::setup()
             auto inName = getInputDevice();
             deviceId_input = getDeviceIdFromName(inName, true);
             if(!inName.empty() && (deviceId_input < 0)) {
-                // TODO: maybe we should fail if the requested device was not found? (same with output)
-                cout << "WARNING: requested input device \"" << inName << "\" not found" << endl;
+                throw RtAudioError("Requested input device \"" + inName + "\" not found", RtAudioError::INVALID_DEVICE);
             }
         }
         if(deviceId_input < 0) {
@@ -96,7 +95,7 @@ void RtAudioInterface::setup()
             auto outName = getOutputDevice();
             deviceId_output = getDeviceIdFromName(outName, false);
             if(!outName.empty() && (deviceId_output < 0)) {
-                cout << "WARNING: requested output device \"" << outName << "\" not found" << endl;
+                throw RtAudioError("Requested output device \"" + outName + "\" not found", RtAudioError::INVALID_DEVICE);
             }
         }
         if(deviceId_output < 0) {
