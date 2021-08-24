@@ -82,7 +82,7 @@ void RtAudioInterface::setup()
             auto inName = getInputDevice();
             deviceId_input = getDeviceIdFromName(inName, true);
             if(!inName.empty() && (deviceId_input < 0)) {
-                throw RtAudioError("Requested input device \"" + inName + "\" not found", RtAudioError::INVALID_DEVICE);
+                throw std::runtime_error("Requested input device \"" + inName + "\" not found.");
             }
         }
         if(deviceId_input < 0) {
@@ -95,7 +95,7 @@ void RtAudioInterface::setup()
             auto outName = getOutputDevice();
             deviceId_output = getDeviceIdFromName(outName, false);
             if(!outName.empty() && (deviceId_output < 0)) {
-                throw RtAudioError("Requested output device \"" + outName + "\" not found", RtAudioError::INVALID_DEVICE);
+                throw std::runtime_error("Requested output device \"" + outName + "\" not found.");
             }
         }
         if(deviceId_output < 0) {
