@@ -122,8 +122,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mTimer0 = new QElapsedTimer();
     mTimer0->start();
     mGlitchCnt = 0;
-    //    mGlitchMax = mHist; // * 2 * mFPP;  // tested with 400 @ FPP32
-    mGlitchMax = 1;  // tested with 400 @ FPP32
+    mGlitchMax = mHist; // * 2 * mFPP;  // tested with 400 @ FPP32
+    //    mGlitchMax = 1;  // tested with 400 @ FPP32
     //    qDebug() << mGlitchMax;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
@@ -160,25 +160,21 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
     }
     mIndexPool[oldestIndex] = mIncomingCnt;
     memcpy(mIncomingDat[oldestIndex], buf, mBytes);
-    //        qDebug() << oldestIndex << mIndexPool[oldestIndex];
+    mIndexPool[oldestIndex] = mIncomingCnt;
+    memcpy(mIncomingDat[oldestIndex], buf, mBytes);
 
-    //    double msElapsed = stdDev->tick();
-    //        if(mQlen==19) {}// fprintf(stderr,"%f\n",msElapsed);
-    //        else if((mQlen==20)&&(msElapsed<8.0)) fprintf(stderr,"%d\t%f\n",mIncomingCnt,msElapsed);
-    //        fflush(stderr);
-
-    if (stdDev->longTermStdDevAcc > 0.0) {
-        int newPoolSize  = (int)(stdDev->longTermStdDev * mFPPfactor);
-        if (newPoolSize > mMaxPoolSize) newPoolSize = mMaxPoolSize;  // avoid insanely large pool
-        if (newPoolSize < mMinPoolSize) newPoolSize = mMinPoolSize;  // avoid insanely small pool
-        if (newPoolSize < mPoolSize) {
-            if (gVerboseFlag) cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
-        } else
-            if (newPoolSize > mPoolSize) {
-                if (gVerboseFlag) cout << "growing to " << newPoolSize << " from " << mPoolSize << "\n";
-            }
-        mPoolSize = newPoolSize;
-    }
+//    if (stdDev->longTermStdDevAcc > 0.0) {
+//        int newPoolSize  = (int)(stdDev->longTermStdDev * mFPPfactor);
+//        if (newPoolSize > mMaxPoolSize) newPoolSize = mMaxPoolSize;  // avoid insanely large pool
+//        if (newPoolSize < mMinPoolSize) newPoolSize = mMinPoolSize;  // avoid insanely small pool
+//        if (newPoolSize < mPoolSize) {
+//            if (gVerboseFlag) cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
+//        } else
+//            if (newPoolSize > mPoolSize) {
+//                if (gVerboseFlag) cout << "growing to " << newPoolSize << " from " << mPoolSize << "\n";
+//            }
+//        mPoolSize = newPoolSize;
+//    }
     mPoolSize = mQlen;
     return true;
 };
@@ -196,18 +192,16 @@ void PoolBuffer::pullPacket(int8_t* buf)
     int oldestIndex = 0;
     for (int i = 0; i < mPoolSize; i++) {
         if (mIndexPool[i] == target) { targetIndex = i; }
-        if (mIndexPool[i] < oldest) {
+        if ((mIndexPool[i] < 1)||(mIndexPool[i] < oldest)) { // was (mIndexPool[i] < oldest)
             oldest      = mIndexPool[i];
             oldestIndex = i;
         }
     }
     if (targetIndex == mPoolSize) {
-        if(mQlen==-1) {
-            qDebug() << " ";
-            qDebug() << "!available" << target;
-            for ( int i = 0; i < mPoolSize; i++ ) qDebug() << i << mIndexPool[i];
-            qDebug() << " ";
-        }
+//            qDebug() << " ";
+//            qDebug() << "!available" << target;
+//            for ( int i = 0; i < mPoolSize; i++ ) qDebug() << i << mIndexPool[i];
+//            qDebug() << " ";
         targetIndex             = oldestIndex;
         mIndexPool[targetIndex] = -1;
         glitch                  = true;
@@ -226,11 +220,12 @@ void PoolBuffer::pullPacket(int8_t* buf)
     memcpy(buf, mXfrBuffer, mBytes);
     double msElapsed = stdDev->tick();
     double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
-    double off = 0.0;
-    if (glitch) off = 3.0;
-    if((mQlen==200)&&(msElapsed<8.0)) fprintf(stderr,"%d\t%f\n",mOutgoingCnt,off+msElapsed);
-//    if((mQlen==200)&&(msElapsed<8.0)) fprintf(stderr,"%f\t%f\n",msNow/1000.0,off+msElapsed);
-    fflush(stderr);
+//    if(msElapsed<8.0) {
+//        double off = 0.0;
+//        if (glitch) off = 3.0;
+//        fprintf(stderr,"%f\t%f\t%d\t%d\n",msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt);
+//        fflush(stderr);
+//    }
 };
 
 //*******************************************************************************
