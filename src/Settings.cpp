@@ -152,8 +152,8 @@ void Settings::parseInput(int argc, char** argv)
         {"deviceid", required_argument, NULL, 'd'},  // Set RTAudio device id to use (DEPRECATED)
         {"audiodevice", required_argument, NULL, OPT_AUDIODEVICE},  // Set RTAudio devices by name
         {"listdevices", no_argument, NULL, OPT_LISTDEVICES},  // Set RTAudio device id to use
-#endif
         {"bufsize", required_argument, NULL, 'F'},   // Set buffer Size
+#endif
         {"nojackportsconnect", no_argument, NULL,
          'D'},                                // Don't connect default Audio Ports
         {"version", no_argument, NULL, 'v'},  // Version Number
