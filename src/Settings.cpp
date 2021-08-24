@@ -818,7 +818,9 @@ void Settings::printUsage()
 #ifdef __RT_AUDIO__
 void Settings::printRtAudioDevices()
 {
+    // TODO: evenntually list devices for all RtAudio-compiled backends
     RtAudio audio;
+    audio.showWarnings(false);
     cout << "Available audio devices: " << endl;
     unsigned int devices = audio.getDeviceCount();
     RtAudio::DeviceInfo info;
