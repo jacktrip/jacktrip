@@ -108,10 +108,10 @@ void RtAudioInterface::setup()
     auto dev_info_input = mRtAudio->getDeviceInfo(deviceId_input);
     auto dev_info_output = mRtAudio->getDeviceInfo(deviceId_output);
 
-    if ((unsigned int)getNumInputChannels() > dev_info_input.inputChannels) {
+    if (static_cast<unsigned int>(getNumInputChannels()) > dev_info_input.inputChannels) {
         setNumInputChannels(dev_info_input.inputChannels);
     }
-    if ((unsigned int)getNumOutputChannels() > dev_info_output.outputChannels) {
+    if (static_cast<unsigned int>(getNumOutputChannels()) > dev_info_output.outputChannels) {
         setNumOutputChannels(dev_info_output.outputChannels);
     }
 
