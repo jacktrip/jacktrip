@@ -381,6 +381,8 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'd':  // RTAudio device id
             //-------------------------------------------------------
+            cout << "WARNING: Setting device ID is deprecated and will be removed in the future."
+                 << endl;
             mChangeDefaultID = true;
             mDeviceID        = atoi(optarg);
             break;
