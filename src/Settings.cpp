@@ -393,7 +393,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case OPT_AUDIODEVICE:  // Set audio device
             //-------------------------------------------------------
-            parseDeviceArg(optarg);
+            setDevicesByString(optarg);
             break;
         case OPT_LISTDEVICES:  // List audio devices
             //-------------------------------------------------------
@@ -835,7 +835,7 @@ void Settings::printRtAudioDevices()
     }
 }
 
-void Settings::parseDeviceArg(std::string nameArg)
+void Settings::setDevicesByString(std::string nameArg)
 {
     size_t commaPos;
     commaPos = nameArg.rfind(',');

@@ -70,7 +70,7 @@ class Settings : public QObject
     void printUsage();
 #ifdef __RT_AUDIO__
     void printRtAudioDevices();
-    void parseDeviceArg(std::string nameArg);
+    void setDevicesByString(std::string nameArg);
 #endif
 
     bool getLoopBack() { return mLoopBack; }
