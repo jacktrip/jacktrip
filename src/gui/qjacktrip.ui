@@ -1191,7 +1191,7 @@ To connect to a hub server you need to run as a hub client.</string>
         <item row="8" column="0" colspan="2">
           <layout class="QHBoxLayout" name="deviceManagementLayout">
            <item>
-            <spacer name="useDefaultsSpacer">
+            <spacer name="backendTabSpacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
