@@ -94,9 +94,7 @@ class RtAudioInterface : public AudioInterface
     QVarLengthArray<float*>
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudio;  ///< RtAudio class
-#ifdef __LINUX__
     unsigned int getDefaultDevice(bool isInput);
-#endif
 };
 
 #endif  // __RTAUDIOINTERFACE_H__

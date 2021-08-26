@@ -87,11 +87,11 @@ void RtAudioInterface::setup()
         }
         if(deviceId_input < 0) {
             cout << "Selecting default INPUT device" << endl;
-#ifdef __LINUX__
-            deviceId_input = getDefaultDevice(true);
-#else
-            deviceId_input = mRtAudio->getDefaultInputDevice();
-#endif
+            if( mRtAudio->getCurrentApi() == RtAudio::LINUX_PULSE ) {
+                deviceId_input = getDefaultDevice(true);
+            } else {
+                deviceId_input = mRtAudio->getDefaultInputDevice();
+            }
         }
         
         deviceId_output = getDeviceID();
@@ -104,11 +104,11 @@ void RtAudioInterface::setup()
         }
         if(deviceId_output < 0) {
             cout << "Selecting default OUTPUT device" << endl;
-#ifdef __LINUX__
-            deviceId_output = getDefaultDevice(false);
-#else
-            deviceId_output = mRtAudio->getDefaultOutputDevice();
-#endif
+            if( mRtAudio->getCurrentApi() == RtAudio::LINUX_PULSE ) {
+                deviceId_output = getDefaultDevice(false);
+            } else {
+                deviceId_output = mRtAudio->getDefaultOutputDevice();
+            }
         }
     }
     
@@ -215,9 +215,10 @@ int RtAudioInterface::getDeviceIdFromName(std::string deviceName, bool isInput)
     return -1;
 }
 
-#ifdef __LINUX__
+//*******************************************************************************
+// Use this for getting the default device with PulseAudio
 // At the time of writing this, the latest RtAudio release did not properly
-// select default devices on Linux (PulseAudio and ALSA)
+// select default devices with PulseAudio
 // Once this functinoality is provided upstream and in the distributions' 
 // package managers, the following function can be removed and the default device
 // can be obtained by calls to getDefaultInputDevice() / getDefaultOutputDevice()
@@ -238,7 +239,6 @@ unsigned int RtAudioInterface::getDefaultDevice(bool isInput)
     // this is consistent with RtAudio API
     return 0;
 }
-#endif
 
 //*******************************************************************************
 void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
