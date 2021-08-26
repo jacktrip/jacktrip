@@ -171,6 +171,24 @@ void RtAudioInterface::listAllInterfaces()
 }
 
 //*******************************************************************************
+void RtAudioInterface::printDevices()
+{
+    // TODO: evenntually list devices for all RtAudio-compiled backends
+    RtAudio audio;
+    audio.showWarnings(false);
+    cout << "Available audio devices: " << endl;
+    unsigned int devices = audio.getDeviceCount();
+    RtAudio::DeviceInfo info;
+    for ( unsigned int i=0; i<devices; i++ ) {
+        info = audio.getDeviceInfo( i );
+        if ( info.probed == true ) {
+            std::cout << i << ": \"" << info.name << "\" ";
+            std::cout << "(" << info.inputChannels << " ins, " << info.outputChannels << " outs)" << endl;
+        }
+    }
+}
+
+//*******************************************************************************
 int RtAudioInterface::getDeviceIdFromName(std::string deviceName, bool isInput)
 {
     RtAudio rtaudio;

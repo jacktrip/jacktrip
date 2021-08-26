@@ -69,7 +69,6 @@ class Settings : public QObject
     /// \brief Prints usage help
     void printUsage();
 #ifdef __RT_AUDIO__
-    void printRtAudioDevices();
     void setDevicesByString(std::string nameArg);
 #endif
 

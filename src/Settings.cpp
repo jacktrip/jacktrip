@@ -64,7 +64,7 @@
 #endif
 
 #ifdef __RT_AUDIO__
-#include "RtAudio.h"
+#include "RtAudioInterface.h"
 #endif
 
 //#include "ThreadPoolTest.h"
@@ -397,7 +397,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case OPT_LISTDEVICES:  // List audio devices
             //-------------------------------------------------------
-            printRtAudioDevices();
+            RtAudioInterface::printDevices();
             std::exit(0);
             break;
 #endif
@@ -818,23 +818,6 @@ void Settings::printUsage()
 }
 
 #ifdef __RT_AUDIO__
-void Settings::printRtAudioDevices()
-{
-    // TODO: evenntually list devices for all RtAudio-compiled backends
-    RtAudio audio;
-    audio.showWarnings(false);
-    cout << "Available audio devices: " << endl;
-    unsigned int devices = audio.getDeviceCount();
-    RtAudio::DeviceInfo info;
-    for ( unsigned int i=0; i<devices; i++ ) {
-        info = audio.getDeviceInfo( i );
-        if ( info.probed == true ) {
-            std::cout << i << ": \"" << info.name << "\" ";
-            std::cout << "(" << info.inputChannels << " ins, " << info.outputChannels << " outs)" << endl;
-        }
-    }
-}
-
 void Settings::setDevicesByString(std::string nameArg)
 {
     size_t commaPos;
