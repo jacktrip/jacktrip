@@ -218,18 +218,19 @@ void PoolBuffer::pullPacket(int8_t* buf)
     }
     memcpy(buf, mXfrBuffer, mBytes);
     double msElapsed = stdDev->tick();
-    double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
-        if(msElapsed<8.0) {
-            double glitchMark = -2.0;
-            if (glitch) glitchMark = targetIndex;
-            double resetMark = -3.0;
-            if (mGlitchCnt > mGlitchMax) resetMark = targetIndex;
-            double off = 0.0;
-            if (glitch) off = 3.0;
-            fprintf(stderr,"%f\t%f\t%d\t%d\t%f\t%f\n",
-                    msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt,glitchMark,resetMark);
-            fflush(stderr);
-        }
+    // print diagnostics each audio callback
+//        if(msElapsed<8.0) {
+//            double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
+//            double glitchMark = -2.0;
+//            if (glitch) glitchMark = targetIndex;
+//            double resetMark = -3.0;
+//            if (mGlitchCnt > mGlitchMax) resetMark = targetIndex;
+//            double off = 0.0;
+//            if (glitch) off = 3.0;
+//            fprintf(stderr,"%f\t%f\t%d\t%d\t%f\t%f\n",
+//                    msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt,glitchMark,resetMark);
+//            fflush(stderr);
+//        }
 };
 
 //*******************************************************************************
