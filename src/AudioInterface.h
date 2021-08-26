@@ -166,6 +166,8 @@ class AudioInterface
     virtual void setNumOutputChannels(int nchannels) { mNumOutChans = nchannels; }
     virtual void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
     virtual void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
+    virtual void setInputDevice(std::string device_name) { mInputDeviceName = device_name; }
+    virtual void setOutputDevice(std::string device_name) { mOutputDeviceName = device_name; }
     virtual void setBufferSizeInSamples(uint32_t buf_size)
     {
         mBufferSizeInSamples = buf_size;
@@ -184,6 +186,8 @@ class AudioInterface
     virtual int getNumOutputChannels() const { return mNumOutChans; }
     virtual uint32_t getBufferSizeInSamples() const { return mBufferSizeInSamples; }
     virtual uint32_t getDeviceID() const { return mDeviceID; }
+    virtual std::string getInputDevice() const { return mInputDeviceName; }
+    virtual std::string getOutputDevice() const { return mOutputDeviceName; }
     virtual size_t getSizeInBytesPerChannel() const;
     /// \brief Get the Jack Server Sampling Rate, in samples/second
     virtual uint32_t getSampleRate() const { return mSampleRate; }
@@ -228,6 +232,7 @@ class AudioInterface
         mBitResolutionMode;         ///< Bit resolution (audioBitResolutionT) mode
     uint32_t mSampleRate;           ///< Sampling Rate
     uint32_t mDeviceID;             ///< RTAudio DeviceID
+    std::string mInputDeviceName, mOutputDeviceName; ///< RTAudio device names
     uint32_t mBufferSizeInSamples;  ///< Buffer size in samples
     size_t mSizeInBytesPerChannel;  ///< Size in bytes per audio channel
     QVector<ProcessPlugin*>

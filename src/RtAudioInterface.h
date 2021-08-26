@@ -62,6 +62,8 @@ class RtAudioInterface : public AudioInterface
 
     /// \brief List all avialable audio interfaces, with its properties
     virtual void listAllInterfaces();
+    static void printDevices();
+    virtual int getDeviceIdFromName(std::string deviceName, bool isInput);
     virtual void setup();
     virtual int startProcess() const;
     virtual int stopProcess() const;
@@ -91,6 +93,7 @@ class RtAudioInterface : public AudioInterface
     QVarLengthArray<float*>
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudio;  ///< RtAudio class
+    unsigned int getDefaultDevice(bool isInput);
 };
 
 #endif  // __RTAUDIOINTERFACE_H__

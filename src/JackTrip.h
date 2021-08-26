@@ -339,6 +339,8 @@ class JackTrip : public QObject
 
     void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
     void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
+    void setInputDevice(std::string device_name) { mInputDeviceName = device_name; }
+    void setOutputDevice(std::string device_name) { mOutputDeviceName = device_name; }
     void setAudioBufferSizeInSamples(uint32_t buf_size) { mAudioBufferSize = buf_size; }
 
     JackTrip::hubConnectionModeT getHubConnectionModeT() const
@@ -617,6 +619,7 @@ class JackTrip : public QObject
     int mBroadcastQueueLength;
     uint32_t mSampleRate;       ///< Sample Rate
     uint32_t mDeviceID;         ///< RTAudio DeviceID
+    std::string mInputDeviceName, mOutputDeviceName; ///< RTAudio device names
     uint32_t mAudioBufferSize;  ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution;  ///< Audio Bit Resolutions
     bool mLoopBack;
