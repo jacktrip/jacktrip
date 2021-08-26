@@ -838,7 +838,12 @@ void Settings::printRtAudioDevices()
 void Settings::setDevicesByString(std::string nameArg)
 {
     size_t commaPos;
-    commaPos = nameArg.rfind(',');
+    char delim = ',';
+    if (std::count(nameArg.begin(), nameArg.end(), delim) > 1) {
+        throw std::invalid_argument(
+            "Found multiple commas in the --audiodevice argument, cannot parse reliably.");
+    }
+    commaPos = nameArg.rfind(delim);
     if (commaPos) {
         mInputDeviceName = nameArg.substr(0, commaPos);
         mOutputDeviceName = nameArg.substr(commaPos + 1);
