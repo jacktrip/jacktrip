@@ -87,7 +87,11 @@ void RtAudioInterface::setup()
         }
         if(deviceId_input < 0) {
             cout << "Selecting default INPUT device" << endl;
+#ifdef __LINUX__
+            deviceId_input = getDefaultDevice(true);
+#else
             deviceId_input = mRtAudio->getDefaultInputDevice();
+#endif
         }
         
         deviceId_output = getDeviceID();
@@ -100,7 +104,11 @@ void RtAudioInterface::setup()
         }
         if(deviceId_output < 0) {
             cout << "Selecting default OUTPUT device" << endl;
+#ifdef __LINUX__
+            deviceId_output = getDefaultDevice(false);
+#else
             deviceId_output = mRtAudio->getDefaultOutputDevice();
+#endif
         }
     }
     
@@ -206,6 +214,31 @@ int RtAudioInterface::getDeviceIdFromName(std::string deviceName, bool isInput)
     }
     return -1;
 }
+
+#ifdef __LINUX__
+// At the time of writing this, the latest RtAudio release did not properly
+// select default devices on Linux (PulseAudio and ALSA)
+// Once this functinoality is provided upstream and in the distributions' 
+// package managers, the following function can be removed and the default device
+// can be obtained by calls to getDefaultInputDevice() / getDefaultOutputDevice()
+unsigned int RtAudioInterface::getDefaultDevice(bool isInput)
+{
+    RtAudio rtaudio;
+    for (unsigned int i = 0; i < rtaudio.getDeviceCount(); i++) {
+        auto info = rtaudio.getDeviceInfo( i );
+        if ( info.probed == true ) {
+            if (info.isDefaultInput && isInput) {
+                return i;
+            } else if (info.isDefaultOutput && !isInput) {
+                return i;
+            }
+        }
+    }
+    // return the first device if default was not found
+    // this is consistent with RtAudio API
+    return 0;
+}
+#endif
 
 //*******************************************************************************
 void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
