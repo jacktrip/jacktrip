@@ -86,16 +86,16 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    //    mQlen = 0;
-    mMinPoolSize = mQlen; // + 2;
+    mQlen = 20; // hardcoded works ok 26-Aug-2021
+    mMinPoolSize = mQlen;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
     mHist            = (int)histFloat;
-    if (!mHist)
-        mHist++;  // min packets
+    if (mHist < 2)
+        mHist = 2;  // min packets, needs a pair
     else if (mHist > 6)
-        mHist = 6;  // max packets
+        mHist = 6;  // max packets, keep a lid on CPU load
     if (gVerboseFlag) cout << "mHist = " << mHist << " at " << mFPP << "\n";
     //    qDebug() << "mHist =" << mHist << "@" << mFPP;
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
@@ -122,8 +122,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mTimer0 = new QElapsedTimer();
     mTimer0->start();
     mGlitchCnt = 0;
-    mGlitchMax = mHist; // * 2 * mFPP;  // tested with 400 @ FPP32
-    //    mGlitchMax = 1;  // tested with 400 @ FPP32
+    mGlitchMax = mHist; // max relevant signal history, otherwise reset
     //    qDebug() << mGlitchMax;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
@@ -192,7 +191,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
     int oldestIndex = 0;
     for (int i = 0; i < mPoolSize; i++) {
         if (mIndexPool[i] == target) { targetIndex = i; }
-        if ((mIndexPool[i] < 1)||(mIndexPool[i] < oldest)) { // was (mIndexPool[i] < oldest)
+        if ((mIndexPool[i] < 0)||(mIndexPool[i] < oldest)) { // was (mIndexPool[i] < oldest)
             oldest      = mIndexPool[i];
             oldestIndex = i;
         }
@@ -220,12 +219,17 @@ void PoolBuffer::pullPacket(int8_t* buf)
     memcpy(buf, mXfrBuffer, mBytes);
     double msElapsed = stdDev->tick();
     double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
-//    if(msElapsed<8.0) {
-//        double off = 0.0;
-//        if (glitch) off = 3.0;
-//        fprintf(stderr,"%f\t%f\t%d\t%d\n",msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt);
-//        fflush(stderr);
-//    }
+        if(msElapsed<8.0) {
+            double glitchMark = -2.0;
+            if (glitch) glitchMark = targetIndex;
+            double resetMark = -3.0;
+            if (mGlitchCnt > mGlitchMax) resetMark = targetIndex;
+            double off = 0.0;
+            if (glitch) off = 3.0;
+            fprintf(stderr,"%f\t%f\t%d\t%d\t%f\t%f\n",
+                    msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt,glitchMark,resetMark);
+            fflush(stderr);
+        }
 };
 
 //*******************************************************************************
