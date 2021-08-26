@@ -827,7 +827,7 @@ void Settings::setDevicesByString(std::string nameArg)
             "Found multiple commas in the --audiodevice argument, cannot parse reliably.");
     }
     commaPos = nameArg.rfind(delim);
-    if (commaPos) {
+    if (commaPos || nameArg[0] == delim) {
         mInputDeviceName = nameArg.substr(0, commaPos);
         mOutputDeviceName = nameArg.substr(commaPos + 1);
     } else {
