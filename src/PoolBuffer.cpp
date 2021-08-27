@@ -86,7 +86,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mQlen = 20; // hardcoded works ok 26-Aug-2021
+    mQlen = 6; // hardcoded works ok 26-Aug-2021
     mMinPoolSize = mQlen;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
@@ -159,8 +159,6 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
     }
     mIndexPool[oldestIndex] = mIncomingCnt;
     memcpy(mIncomingDat[oldestIndex], buf, mBytes);
-    mIndexPool[oldestIndex] = mIncomingCnt;
-    memcpy(mIncomingDat[oldestIndex], buf, mBytes);
 
 //    if (stdDev->longTermStdDevAcc > 0.0) {
 //        int newPoolSize  = (int)(stdDev->longTermStdDev * mFPPfactor);
@@ -174,7 +172,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
 //            }
 //        mPoolSize = newPoolSize;
 //    }
-    mPoolSize = mQlen;
+//    mPoolSize = mQlen;
     return true;
 };
 
@@ -185,7 +183,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
     mOutgoingCnt++;  // will saturate in 33 days at FPP 32
     //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     bool glitch     = false;
-    int target      = mOutgoingCnt - 1; // XXX xxx; //mQlen;
+    int target      = mOutgoingCnt; // XXX xxx; //mQlen;
     int targetIndex = mPoolSize;
     int oldest      = 999999;
     int oldestIndex = 0;
@@ -503,7 +501,7 @@ double StdDev::tick()
                 cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
                      << stdDev << setw(10) << longTermStdDev << endl;
         } else if (gVerboseFlag)
-            cout << "printing from PoolBuffer->stdDev->tick:\n (mean / min / max / "
+            cout << "printing directly from PoolBuffer->stdDev->tick:\n (mean / min / max / "
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
