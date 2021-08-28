@@ -2,13 +2,13 @@
 
 ---
 ### MIT License
---8<-- "LICENSE_MIT"
+--8<-- "LICENSES/MIT.txt"
 
 
 ---
 ### GPL License
---8<-- "LICENSE_GPL"
+--8<-- "LICENSES/GPL-3.0-only.txt"
 
 ---
 ### LGPL License
---8<-- "LICENSE_LGPL"
+--8<-- "LICENSES/LGPL-3.0-only.txt"
