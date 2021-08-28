@@ -236,9 +236,9 @@ jobs:
         run: |
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
           if [[ "${{ runner.os }}" == "Windows" ]]; then
-            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }}
+            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSE_MIT $GITHUB_WORKSPACE/LICENSE_GPL $GITHUB_WORKSPACE/LICENSE_LGPL
           else
-            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
+            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSE_MIT $GITHUB_WORKSPACE/LICENSE_GPL $GITHUB_WORKSPACE/LICENSE_LGPL
           fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
