@@ -58,6 +58,9 @@ rm -rf "$APPNAME.app"
 [ ! -d "JackTrip.app_template/Contents/MacOS" ] && mkdir JackTrip.app_template/Contents/MacOS
 cp -a JackTrip.app_template "$APPNAME.app"
 cp -f ../builddir/jacktrip "$APPNAME.app/Contents/MacOS/"
+# copy licenses
+cp -f ../LICENSE.md "$APPNAME.app/Contents/Resources/"
+cp -Rf ../LICENSES "$APPNAME.app/Contents/Resources/"
 sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
