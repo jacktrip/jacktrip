@@ -103,6 +103,10 @@ deps += qt5_dep
 
 prepro_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
 
+# TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
+# in QMake this can be checked with QT_EDITION == 'OpenSource'
+defines += '-DQT_OPENSOURCE'
+
 rtaudio_dep = dependency('rtaudio', required: get_option('rtaudio'))
 if rtaudio_dep.found() == true
 	defines += '-D__RT_AUDIO__'
