@@ -102,6 +102,7 @@ class StdDev
     double longTermStdDevAcc;
     int longTermCnt;
     int glitches;
+    int balance;
 };
 
 class PoolBuffer : public RingBuffer
@@ -153,13 +154,13 @@ class PoolBuffer : public RingBuffer
     vector<sample_t> mFadeUp;
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
-    unsigned int mOutgoingCnt;
+    int mOutgoingCnt;
     int mLastDelta;
     int mBytes;
     vector<int8_t*> mIncomingDat;
     int8_t* mZeros;
     QElapsedTimer* mTimer0;
-    unsigned int mIncomingCnt;
+    int mIncomingCnt;
     vector<int> mIndexPool;
     int mQlen;
     int mGlitchCnt;
