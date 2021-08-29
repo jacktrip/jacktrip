@@ -45,6 +45,10 @@
 #include "NoNap.h"
 #endif
 
+#ifdef __RT_AUDIO__
+#include <QComboBox>
+#endif
+
 namespace Ui
 {
 class QJackTrip;
@@ -93,6 +97,10 @@ class QJackTrip : public QMainWindow
     void migrateSettings();
     void loadSettings();
     void saveSettings();
+
+#ifdef __RT_AUDIO__
+    void populateDeviceMenu(QComboBox* menu, bool isInput);
+#endif
 
     void setupStatsWindow();
     void appendPlugins(JackTrip* jackTrip, int numSendChannels, int numRecvChannels);

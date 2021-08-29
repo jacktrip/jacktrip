@@ -165,10 +165,10 @@ class PacketHeader : public QObject
 
    protected:
     bool mBufferRequiresSameSettings;
+    JackTrip* mJackTrip;  ///< JackTrip mediator class
 
    private:
     uint16_t mSeqNumber;
-    JackTrip* mJackTrip;  ///< JackTrip mediator class
 };
 
 //#######################################################################
@@ -211,7 +211,6 @@ class DefaultHeader : public PacketHeader
 
    private:
     DefaultHeaderStruct mHeader;  ///< Default Header Struct
-    JackTrip* mJackTrip;          ///< JackTrip mediator class
 };
 
 //#######################################################################
@@ -268,7 +267,6 @@ class JamLinkHeader : public PacketHeader
 
    private:
     JamLinkHeaderStuct mHeader;  ///< JamLink Header Struct
-    JackTrip* mJackTrip;         ///< JackTrip mediator class
 };
 
 //#######################################################################
@@ -319,9 +317,6 @@ class EmptyHeader : public PacketHeader
     }
 
     virtual void putHeaderInPacket(int8_t* /*full_packet*/) override {}
-
-   private:
-    JackTrip* mJackTrip;  ///< JackTrip mediator class
 };
 
 #endif  //__PACKETHEADER_H__

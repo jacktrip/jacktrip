@@ -39,6 +39,10 @@
 #include "weak_libjack.h"
 #endif
 
+#ifdef __RT_AUDIO__
+#include "RtAudio.h"
+#endif
+
 #include "../Compressor.h"
 #include "../CompressorPresets.h"
 #include "../Limiter.h"
@@ -206,13 +210,29 @@ QJackTrip::QJackTrip(QWidget* parent)
                     m_ui->sampleRateLabel->setEnabled(true);
                     m_ui->bufferSizeComboBox->setEnabled(true);
                     m_ui->bufferSizeLabel->setEnabled(true);
+                    m_ui->inputDeviceComboBox->setEnabled(true);
+                    m_ui->inputDeviceLabel->setEnabled(true);
+                    m_ui->outputDeviceComboBox->setEnabled(true);
+                    m_ui->outputDeviceLabel->setEnabled(true);
+                    m_ui->refreshDevicesButton->setEnabled(true);
+                    populateDeviceMenu(m_ui->inputDeviceComboBox, true);
+                    populateDeviceMenu(m_ui->outputDeviceComboBox, false);
                 } else {
                     m_ui->sampleRateComboBox->setEnabled(false);
                     m_ui->sampleRateLabel->setEnabled(false);
                     m_ui->bufferSizeComboBox->setEnabled(false);
                     m_ui->bufferSizeLabel->setEnabled(false);
+                    m_ui->inputDeviceComboBox->setEnabled(false);
+                    m_ui->inputDeviceLabel->setEnabled(false);
+                    m_ui->outputDeviceComboBox->setEnabled(false);
+                    m_ui->outputDeviceLabel->setEnabled(false);
+                    m_ui->refreshDevicesButton->setEnabled(false);
                 }
             });
+    connect(m_ui->refreshDevicesButton, &QPushButton::clicked, this, [=]() {
+        populateDeviceMenu(m_ui->inputDeviceComboBox, true);
+        populateDeviceMenu(m_ui->outputDeviceComboBox, false);
+    });
 #else
     int tabIndex = findTab("Audio Backend");
     if (tabIndex != -1) {
@@ -703,7 +723,19 @@ void QJackTrip::start()
                     m_ui->sampleRateComboBox->currentText().toInt());
                 m_jackTrip->setAudioBufferSizeInSamples(
                     m_ui->bufferSizeComboBox->currentText().toInt());
-                // TODO: set device
+                // we assume that first entry is "(default)"
+                if(m_ui->inputDeviceComboBox->currentIndex() == 0) {
+                    m_jackTrip->setInputDevice("");
+                } else {
+                    m_jackTrip->setInputDevice(
+                      m_ui->inputDeviceComboBox->currentText().toStdString());
+                }
+                if(m_ui->outputDeviceComboBox->currentIndex() == 0) {
+                    m_jackTrip->setOutputDevice("");
+                } else {
+                    m_jackTrip->setOutputDevice(
+                      m_ui->outputDeviceComboBox->currentText().toStdString());
+                }
             }
 #endif
 
@@ -950,7 +982,17 @@ void QJackTrip::loadSettings()
         settings.value("SampleRate", "48000").toString());
     m_ui->bufferSizeComboBox->setCurrentText(
         settings.value("BufferSize", "128").toString());
-    // TODO: load device
+    // update device list and set the device
+    populateDeviceMenu(m_ui->inputDeviceComboBox, true);
+    auto inDevice = settings.value("InputDevice").toString();
+    if(!inDevice.isEmpty()) {
+        m_ui->inputDeviceComboBox->setCurrentText(inDevice);
+    }
+    populateDeviceMenu(m_ui->outputDeviceComboBox, false);
+    auto outDevice = settings.value("OutputDevice").toString();
+    if(!outDevice.isEmpty()) {
+        m_ui->outputDeviceComboBox->setCurrentText(outDevice);
+    }
     settings.endGroup();
 #endif
 
@@ -1057,7 +1099,8 @@ void QJackTrip::saveSettings()
     settings.setValue("Backend", m_ui->backendComboBox->currentIndex());
     settings.setValue("SampleRate", m_ui->sampleRateComboBox->currentText());
     settings.setValue("BufferSize", m_ui->bufferSizeComboBox->currentText());
-    // TODO: save device
+    settings.setValue("InputDevice", m_ui->inputDeviceComboBox->currentText());
+    settings.setValue("OutputDevice", m_ui->outputDeviceComboBox->currentText());
     settings.endGroup();
 #endif
 
@@ -1350,12 +1393,46 @@ QString QJackTrip::commandLineFromCurrentOptions()
             QString(" --srate %1").arg(m_ui->sampleRateComboBox->currentText()));
         commandLine.append(
             QString(" --bufsize %1").arg(m_ui->bufferSizeComboBox->currentText()));
-        // TODO: set device
+        QString inDevice;
+        if(m_ui->inputDeviceComboBox->currentIndex() > 0) {
+            inDevice = m_ui->inputDeviceComboBox->currentText();
+        }
+        QString outDevice;
+        if(m_ui->outputDeviceComboBox->currentIndex() > 0) {
+            outDevice = m_ui->outputDeviceComboBox->currentText();
+        }
+        commandLine.append(
+            QString(" --audiodevice \"%1\",\"%2\"").arg(inDevice, outDevice));
     }
 #endif
 
     return commandLine;
 }
+
+#ifdef __RT_AUDIO__
+void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
+{
+    RtAudio audio;
+    QString previousString = menu->currentText();
+    menu->clear();
+    // std::cout << "previousString: " << previousString.toStdString() << std::endl;
+    menu->addItem("(default)");
+    unsigned int devices = audio.getDeviceCount();
+    RtAudio::DeviceInfo info;
+    for (unsigned int i=0; i<devices; i++) {
+        info = audio.getDeviceInfo(i);
+        if (info.probed == true) {
+            if (isInput && info.inputChannels > 0) {
+                menu->addItem(QString::fromStdString(info.name));
+            } else if (!isInput && info.outputChannels > 0) {
+                menu->addItem(QString::fromStdString(info.name));
+            }
+        }
+    }
+    // set the previous value
+    menu->setCurrentText(previousString);
+}
+#endif
 
 void QJackTrip::showCommandLineMessageBox()
 {

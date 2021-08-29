@@ -70,6 +70,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mSampleRate(sample_rate)
+    , mPoolSize(qLen)
     , mQlen(qLen)
 {
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
