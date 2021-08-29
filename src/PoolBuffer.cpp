@@ -86,8 +86,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mQlen = 200; // hardcoded works ok 26-Aug-2021
-    mMinPoolSize = mQlen;
+    mMinPoolSize = 200;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
@@ -510,7 +509,7 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
         tmp += "      (window of last ";
         tmp += QString::number(stdDev->window);
         tmp += " packets)\n";
-        tmp += "secs   (mean       min       max     stdDev)   avgStdDev  balance  plc   poolsize   lost\n";
+        tmp += "secs   (mean       min       max     stdDev)   avgStdDev  balance  plc   poolsize   q   lost\n";
     }
     else {
         uint32_t lost = lostCount - mLastLostCount;
@@ -526,6 +525,7 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
                << setw(8) << stdDev->balance
                << setw(8) << stdDev->glitches
                << setw(8) << mPoolSize
+               << setw(8) << mQlen
                << setw(8) << lost << endl;
         tmp = QString::fromStdString(logger.str());
     }
