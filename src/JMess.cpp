@@ -177,7 +177,6 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
     int ctr = 0;
 
     const char** ports;               //, **connections; //vector of ports and connections
-    QVector<QString> OutputInput(2);  // helper variable
 
     // Get active output ports.
     ports = jack_get_ports(mClient, NULL, NULL, JackPortIsOutput);
@@ -359,8 +358,6 @@ void JMess::connectTUB(int /*nChans*/)
 //-------------------------------------------------------------------------------
 void JMess::disconnectAll()
 {
-    QVector<QString> OutputInput(2);
-
     this->setConnectedPorts();
 
     for (auto& OutputInput : mConnectedPorts) {
@@ -445,7 +442,7 @@ int JMess::parseXML(QString /*xmlInFile*/)
 //-------------------------------------------------------------------------------
 void JMess::connectPorts(QString /*xmlInFile*/)
 {
-    QVector<QString> OutputInput(2);
+    //    QVector<QString> OutputInput(2);
 
     //  if ( !(this->parseXML(xmlInFile)) ) {
     //    for (QVector<QVector<QString> >::iterator it = mPortsToConnect.begin();

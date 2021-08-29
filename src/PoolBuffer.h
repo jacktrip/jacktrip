@@ -138,11 +138,9 @@ class PoolBuffer : public RingBuffer
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
     int mAudioBitRes;
-    int mMinStepSize;
     int mFPP;
     int mSampleRate;
     uint32_t mLastLostCount;
-
     int mPoolSize;
     int mHist;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
