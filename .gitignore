@@ -17,3 +17,5 @@ site/
 # app bundle and installer
 macos/*.app
 macos/package/build
+macos/package/*.pkgproj
+macos/package/*.txt
