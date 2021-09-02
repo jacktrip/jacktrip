@@ -94,6 +94,26 @@ fi
 # Needed for notarization.
 [ ! -z "$CERTIFICATE" ] && codesign -f -s "$CERTIFICATE" --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
 
+# prepare license
+LICENSE_PATH="package/license.txt"
+cat ../LICENSE.md > "$LICENSE_PATH"
+printf "\n\n" >> "$LICENSE_PATH"
+cat ../LICENSES/MIT.txt >> "$LICENSE_PATH"
+printf "\n\n" >> "$LICENSE_PATH"
+cat ../LICENSES/GPL-3.0-only.txt >> "$LICENSE_PATH"
+printf "\n\n" >> "$LICENSE_PATH"
+cat ../LICENSES/LGPL-3.0-only.txt >> "$LICENSE_PATH"
+
+sed -i '' "s/# //" "$LICENSE_PATH" # remove markdown header
+perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' "$LICENSE_PATH" > tmp && mv tmp "$LICENSE_PATH" # unwrap lines
+
+
+# prepare readme
+README_PATH="package/readme.txt"
+cp ../README.md "$README_PATH"
+sed -i '' "s/# //" "$README_PATH" # remove markdown header
+perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' "$README_PATH" > tmp && mv tmp "$README_PATH" # unwrap lines
+
 cp package/JackTrip.pkgproj_template package/JackTrip.pkgproj
 sed -i '' "s/%VERSION%/$VERSION/" package/JackTrip.pkgproj
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" package/JackTrip.pkgproj
