@@ -392,7 +392,6 @@ void Settings::parseInput(int argc, char** argv)
 #endif
             cout << "JackTrip source code is released under MIT and GPL licenses." << endl;
             cout << "See LICENSE.md file for more information." << endl;
-            cout << "VERSION: " << gVersion << endl;
             cout << "" << endl;
             std::exit(0);
             break;
