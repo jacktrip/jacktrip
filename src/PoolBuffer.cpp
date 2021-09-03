@@ -135,7 +135,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mLastLostCount = 0;
     tmpCtr = 0;
     tmpTimer = new QElapsedTimer();
-    mLastSeqNum = 0;
+    mLastSeqNum = -1;
     mLastSeqNumOut = 1;
     mModSeqNum = 65536;
 }
@@ -145,7 +145,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     //    qDebug() << "pushPacket" << seq_num;
-    if(((mLastSeqNum+1)%mModSeqNum) != seq_num) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
+    if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num)) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
     mLastSeqNum = seq_num;
 
     int freeSlot = -1;
@@ -192,7 +192,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
         lag--;
     }
 
-    if (mLastSeqNum) {
+    if (mLastSeqNum != -1) {
         if (slot == -1) {
             qDebug() << "missing mLastSeqNum" << mLastSeqNum;
             processPacket(true);
@@ -204,10 +204,10 @@ void PoolBuffer::pullPacket(int8_t* buf)
             processPacket(false);
             mIndexPool[slot] = -1;
         }
-        memcpy(buf, mXfrBuffer, mBytes);
     } else {
         memcpy(mXfrBuffer, mZeros, mBytes);
     }
+    memcpy(buf, mXfrBuffer, mBytes);
 };
 
 //*******************************************************************************
