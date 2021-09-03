@@ -192,18 +192,22 @@ void PoolBuffer::pullPacket(int8_t* buf)
         lag--;
     }
 
-    if (slot == -1) {
-        qDebug() << "missing mLastSeqNum" << mLastSeqNum;
-        processPacket(true);
+    if (mLastSeqNum) {
+        if (slot == -1) {
+            qDebug() << "missing mLastSeqNum" << mLastSeqNum;
+            processPacket(true);
+        }
+        else {
+            //        qDebug() << "lag" << lag;
+            //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
+            memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
+            processPacket(false);
+            mIndexPool[slot] = -1;
+        }
+        memcpy(buf, mXfrBuffer, mBytes);
+    } else {
+        memcpy(mXfrBuffer, mZeros, mBytes);
     }
-    else {
-//        qDebug() << "lag" << lag;
-//        fprintf(stderr,"%d\t", lag);             fflush(stderr);
-        memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
-        processPacket(false);
-        mIndexPool[slot] = -1;
-    }
-    memcpy(buf, mXfrBuffer, mBytes);
 };
 
 //*******************************************************************************
