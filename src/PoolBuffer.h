@@ -174,7 +174,7 @@ private:
     int tmpCtr;
     QElapsedTimer* tmpTimer;
     int mLastSeqNum;
-    int mLastSeqNumOut;
+    int mSuccesiveGlitches;
     int mModSeqNum;
 };
 

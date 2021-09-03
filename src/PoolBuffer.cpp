@@ -136,7 +136,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     tmpCtr = 0;
     tmpTimer = new QElapsedTimer();
     mLastSeqNum = -1;
-    mLastSeqNumOut = 1;
+    mSuccesiveGlitches = 0;
     mModSeqNum = 65536;
 }
 
@@ -194,7 +194,8 @@ void PoolBuffer::pullPacket(int8_t* buf)
 
     if (mLastSeqNum != -1) {
         if (slot == -1) {
-            qDebug() << "missing mLastSeqNum" << mLastSeqNum;
+            mSuccesiveGlitches++;
+            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
             processPacket(true);
         }
         else {
@@ -203,6 +204,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
             processPacket(false);
             mIndexPool[slot] = -1;
+            mSuccesiveGlitches = 0;
         }
     } else {
         memcpy(mXfrBuffer, mZeros, mBytes);
