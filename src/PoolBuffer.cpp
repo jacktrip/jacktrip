@@ -179,7 +179,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
     int slot = -1;
-    int lag = 3;
+    int lag = mQlen;
     while (lag && (slot == -1)) {
         for (int i = 0; i < mPoolSize; i++) {
             if (mIndexPool[i] == mLastSeqNum-lag) {
