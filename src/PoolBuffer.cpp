@@ -87,7 +87,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mMinPoolSize = 200;
+    mMinPoolSize = 6;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
@@ -129,15 +129,25 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     }
     mZeros = new int8_t[mBytes];
     memcpy(mZeros, mXfrBuffer, mBytes);
-    stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)) );
+    stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)), 1);
+    stdDev2 = new StdDev( (int)(floor(48000.0 / (double)mFPP)), 2);
     mFPPfactor = STDDEV2POOLSIZE * (0.0 + (32 / (double)mFPP));
     mLastLostCount = 0;
+    tmpCtr = 0;
+    tmpTimer = new QElapsedTimer();
 }
 
 //*******************************************************************************
 bool PoolBuffer::pushPacket(const int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
+    double msElapsed = stdDev->tick();
+
+//        if (tmpCtr%9000 == 0) {
+//            for (int i = 0; i < mPoolSize; i++)mIndexPool[i] = -1;
+//            qDebug() << "nuked pool";
+//        }
+
     int freeSlot = -1;
     for (int i = 0; i < mPoolSize; i++) {
         if (mIndexPool[i] == -1) {
@@ -145,11 +155,30 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
             break;
         }
     }
-    if (freeSlot == -1) qDebug() << "pool too small";
+    if (freeSlot == -1)
+    {
+        qDebug() << "pushPacket pool too small" << tmpCtr;
+        int oldest      = 999999;
+        int oldestIndex = 0;
+        for (int i = 0; i < mPoolSize; i++) {
+            if ((mIndexPool[i] != -1) && (mIndexPool[i] < oldest))
+            {
+                oldest     = mIndexPool[i];
+                oldestIndex = i;
+            }
+        }
+        freeSlot = oldestIndex;
+    } //else qDebug() << "pushPacket"  << freeSlot;
     mIncomingCnt++;
     //    qDebug() << "pushPacket"  << freeSlot << mIncomingCnt;
     mIndexPool[freeSlot] = mIncomingCnt;
     memcpy(mIncomingDat[freeSlot], buf, mBytes);
+
+    if (tmpCtr%300 == -1) {
+        tmpTimer->start();
+        mIndexPool[freeSlot] = 999;
+    }
+    tmpCtr++;
     return true;
 };
 
@@ -157,30 +186,43 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
 void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
+    double msElapsed = stdDev2->tick();
     //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
     int delta = mIncomingCnt - mOutgoingCnt;
-    stdDev->balance+=(delta-1);
-
+    stdDev2->balance+=(delta-1);
+    //qDebug() << "delta"  << delta;
     if (mIncomingCnt) {
         if (delta<=0) {
-            //            qDebug() << "underrun (<1)"  << delta;
+            //                        qDebug() << "underrun (<1)"  << delta;
+            tmpTimer->start();
             processPacket(true);
             mGlitchCnt++;
-            stdDev->glitches++;
+            double tmpElapsed = (double)tmpTimer->nsecsElapsed() / 1000000.0;
+//            qDebug() << "tmpElapsed(ms)"  << tmpElapsed  << mGlitchCnt;
+            stdDev2->glitches++;
             mIncomingCnt = mOutgoingCnt+1;
         } else {
             //            qDebug() << "overrun or balanced (1)"  << delta;
-            for (int j = delta; j > 0; j--) {
+            //            for (int j = delta; j > 0; j--)
+            {
                 int oldest      = 999999;
                 int oldestIndex = 0;
+                int free = 0;
                 for (int i = 0; i < mPoolSize; i++) {
                     if ((mIndexPool[i] != -1) && (mIndexPool[i] < oldest))
                     {
                         oldest     = mIndexPool[i];
                         oldestIndex = i;
                     }
+                    if (mIndexPool[i] == -1) free++;
                 }
-                //qDebug() << "overrun"  << oldestIndex << mIndexPool[oldestIndex];
+                //                qDebug() << "overrun"  << oldestIndex << mIndexPool[oldestIndex] << "free"  << free;
+
+                if (mIndexPool[oldestIndex] == -999) {
+                    double tmpElapsed = (double)tmpTimer->nsecsElapsed() / 1000000.0;
+                    qDebug() << "tmpElapsed(ms)"  << tmpElapsed  << oldestIndex;
+                }
+
                 mIndexPool[oldestIndex] = -1;
                 memcpy(mXfrBuffer, mIncomingDat[oldestIndex], mBytes);
                 processPacket(false);
@@ -192,7 +234,6 @@ void PoolBuffer::pullPacket(int8_t* buf)
         memcpy(mXfrBuffer, mZeros, mBytes);
     }
     memcpy(buf, mXfrBuffer, mBytes);
-    double msElapsed = stdDev->tick();
     // print diagnostics each audio callback
     //        if(msElapsed<8.0) {
     //            double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
@@ -422,7 +463,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(int w) : window(w)
+StdDev::StdDev(int w, int id) : window(w), mId(id)
 {
     reset();
     longTermStdDev    = 0.0;
@@ -508,7 +549,7 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
     if (!statCount) {
         tmp = QString("PoolBuffer: inter-packet intervals msec\n");
         tmp += "      (window of last ";
-        tmp += QString::number(stdDev->window);
+        tmp += QString::number(stdDev2->window);
         tmp += " packets)\n";
         tmp += "secs   (mean       min       max     stdDev)   avgStdDev  balance  plc   poolsize   q   lost\n";
     }
@@ -516,6 +557,7 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
         uint32_t lost = lostCount - mLastLostCount;
         mLastLostCount = lostCount;
 #define PDBL(x) << setw(10) << (QString("%1").arg(stdDev->x, 0, 'f', 2)).toStdString()
+#define PDBL2(x) << setw(10) << (QString("%1").arg(stdDev2->x, 0, 'f', 2)).toStdString()
         std::stringstream logger;
         logger << setw(2) << statCount
                   PDBL(lastMean)
@@ -523,12 +565,21 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
                   PDBL(lastMax)
                   PDBL(lastStdDev)
                   PDBL(longTermStdDev)
-               << setw(8) << stdDev->balance
-               << setw(8) << stdDev->glitches
-               << setw(8) << mPoolSize
-               << setw(8) << mQlen
-               << setw(8) << lost << endl;
+               << endl;
         tmp = QString::fromStdString(logger.str());
+        std::stringstream logger2;
+        logger2 << setw(2) << ""
+                   PDBL2(lastMean)
+                   PDBL2(lastMin)
+                   PDBL2(lastMax)
+                   PDBL2(lastStdDev)
+                   PDBL2(longTermStdDev)
+                << setw(8) << stdDev2->balance
+                << setw(8) << stdDev2->glitches
+                << setw(8) << mPoolSize
+                << setw(8) << mQlen
+                << setw(8) << lost << endl;
+        tmp += QString::fromStdString(logger2.str());
     }
     return tmp;
 }

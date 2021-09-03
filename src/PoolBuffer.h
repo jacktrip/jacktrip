@@ -53,19 +53,19 @@ using std::vector;
 
 class BurgAlgorithm
 {
-   public:
+public:
     bool classify(double d);
     void train(vector<long double>& coeffs, const vector<float>& x);
     void predict(vector<long double>& coeffs, vector<float>& tail);
 private:
-// the following are class members to minimize heap memory allocations
-vector<long double> Ak;
-vector<long double> f;
-vector<long double> b;};
+    // the following are class members to minimize heap memory allocations
+    vector<long double> Ak;
+    vector<long double> f;
+    vector<long double> b;};
 
 class ChanData
 {
-   public:
+public:
     ChanData(int i, int FPP, int hist);
     int ch;
     int trainSamps;
@@ -80,8 +80,8 @@ class ChanData
 
 class StdDev
 {
-   public:
-    StdDev(int w);
+public:
+    StdDev(int w, int id);
     void reset();
     double tick();
     QElapsedTimer* mTimer;
@@ -90,6 +90,7 @@ class StdDev
     double var;
     //    double varRunning;
     int window;
+    int mId;
     double acc;
     double min;
     double max;
@@ -109,7 +110,7 @@ class PoolBuffer : public RingBuffer
 {
     //    Q_OBJECT;
 
-   public:
+public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~PoolBuffer() {}
 
@@ -121,7 +122,7 @@ class PoolBuffer : public RingBuffer
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot,
                                        [[maybe_unused]] int unused,
-                                       [[maybe_unused]] int unused2)
+    [[maybe_unused]] int unused2)
     {
         pushPacket(ptrToSlot);
         return (true);
@@ -133,7 +134,7 @@ class PoolBuffer : public RingBuffer
 
     virtual QString getStats(uint32_t statCount, uint32_t lostCount);
 
-   private:
+private:
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
@@ -164,11 +165,14 @@ class PoolBuffer : public RingBuffer
     int mGlitchCnt;
     int mGlitchMax;
     vector<ChanData*> mChanData;
-vector<sample_t> mTail;
+    vector<sample_t> mTail;
     StdDev* stdDev;
+    StdDev* stdDev2;
     int mFPPfactor;
     int mMaxPoolSize;
     int mMinPoolSize;
+    int tmpCtr;
+    QElapsedTimer* tmpTimer;
 };
 
 #endif  //__POOLUFFER_H__
