@@ -184,7 +184,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
         for (int i = 0; i < mPoolSize; i++) {
             int tmp = mLastSeqNum-lag;
             if (tmp<0) tmp+=mModSeqNum;
-            if (mIndexPool[i] == mLastSeqNum-lag) {
+            if (mIndexPool[i] == tmp) {
                 slot = i;
                 break;
             }
