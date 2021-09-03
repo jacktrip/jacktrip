@@ -195,7 +195,8 @@ void PoolBuffer::pullPacket(int8_t* buf)
     if (mLastSeqNum != -1) {
         if (slot == -1) {
             mSuccesiveGlitches++;
-            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
+//            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
+    if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
         }
         else {
