@@ -114,7 +114,7 @@ public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~PoolBuffer() {}
 
-    bool pushPacket(const int8_t* buf);
+    bool pushPacket(const int8_t* buf, int seq_num);
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
@@ -122,9 +122,9 @@ public:
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot,
                                        [[maybe_unused]] int unused,
-    [[maybe_unused]] int unused2)
+    [[maybe_unused]] int seq_num)
     {
-        pushPacket(ptrToSlot);
+        pushPacket(ptrToSlot, seq_num);
         return (true);
     }
 
@@ -173,6 +173,9 @@ private:
     int mMinPoolSize;
     int tmpCtr;
     QElapsedTimer* tmpTimer;
+    int mLastSeqNum;
+    int mLastSeqNumOut;
+    int mModSeqNum;
 };
 
 #endif  //__POOLUFFER_H__

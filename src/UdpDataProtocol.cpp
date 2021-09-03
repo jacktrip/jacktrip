@@ -255,7 +255,7 @@ int UdpDataProtocol::bindSocket()
         std::memset(&local_addr, 0, sizeof(local_addr));  // set buffer to 0
         local_addr.sin_family = AF_INET;                  // AF_INET: IPv4 Protocol
         local_addr.sin_addr.s_addr =
-            htonl(INADDR_ANY);  // INADDR_ANY: let the kernel decide the active address
+                htonl(INADDR_ANY);  // INADDR_ANY: let the kernel decide the active address
         local_addr.sin_port = htons(mBindPort);  // set local port
     }
 
@@ -416,16 +416,16 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
 void UdpDataProtocol::run()
 {
     if (gVerboseFlag) switch (mRunMode) {
-        case RECEIVER: {
-            std::cout << "step 3" << std::endl;
-            break;
-        }
+    case RECEIVER: {
+        std::cout << "step 3" << std::endl;
+        break;
+    }
 
-        case SENDER: {
-            std::cout << "step 4" << std::endl;
-            break;
-        }
-        }
+    case SENDER: {
+        std::cout << "step 4" << std::endl;
+        break;
+    }
+    }
 
     // QObject::connect(this, SIGNAL(signalError(const char*)),
     //                 mJackTrip, SLOT(slotStopProcesses()),
@@ -584,7 +584,7 @@ void UdpDataProtocol::run()
         full_redundant_packet_size = 0x10000;  // max UDP datagram size
         full_redundant_packet      = new int8_t[full_redundant_packet_size];
         full_redundant_packet_size = receivePacket(
-            reinterpret_cast<char*>(full_redundant_packet), full_redundant_packet_size);
+                    reinterpret_cast<char*>(full_redundant_packet), full_redundant_packet_size);
         // Check that peer has the same audio settings
         if (gVerboseFlag)
             std::cout << std::endl
@@ -600,8 +600,8 @@ void UdpDataProtocol::run()
 
         int peer_chans   = mJackTrip->getPeerNumOutgoingChannels(full_redundant_packet);
         full_packet_size = mJackTrip->getHeaderSizeInBytes()
-                           + mJackTrip->getPeerBufferSize(full_redundant_packet)
-                                 * peer_chans * mSmplSize;
+                + mJackTrip->getPeerBufferSize(full_redundant_packet)
+                * peer_chans * mSmplSize;
         /*
         cout << "peer sizes: " << mJackTrip->getHeaderSizeInBytes()
              << " + " << mJackTrip->getPeerBufferSize(full_redundant_packet)
@@ -665,7 +665,7 @@ void UdpDataProtocol::run()
             receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                     full_packet_size, current_seq_num, last_seq_num,
                                     newer_seq_num);
-	}
+        }
 #else
             
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
@@ -770,13 +770,13 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
 
 //*******************************************************************************
 void UdpDataProtocol::receivePacketRedundancy(
-    int8_t* full_redundant_packet, int full_redundant_packet_size, int full_packet_size,
-    uint16_t& current_seq_num, uint16_t& last_seq_num, uint16_t& newer_seq_num)
+        int8_t* full_redundant_packet, int full_redundant_packet_size, int full_packet_size,
+        uint16_t& current_seq_num, uint16_t& last_seq_num, uint16_t& newer_seq_num)
 {
     // This is blocking until we get a packet...
     if (receivePacket(reinterpret_cast<char*>(full_redundant_packet),
                       full_redundant_packet_size)
-        <= 0) {
+            <= 0) {
         return;
     }
 
@@ -825,7 +825,7 @@ void UdpDataProtocol::receivePacketRedundancy(
         // or there aren't more available packets
         redun_last_index = i;  // index of packet to use in the redundant packet
         current_seq_num  = mJackTrip->getPeerSequenceNumber(full_redundant_packet
-                                                           + (i * full_packet_size));
+                                                            + (i * full_packet_size));
         //cout << current_seq_num << " ";
     }
     mRevivedCount += redun_last_index;
@@ -855,7 +855,12 @@ void UdpDataProtocol::receivePacketRedundancy(
             }
             src = dst;
         }
-        if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size)) {
+        int ok = true; // send audio buf to
+        ok = (mJackTrip->getBufferStrategy() !=3) ? // ring or jitter
+                    mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size)
+                  : // pool
+                    mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num);
+        if (!ok) {
             emit signalError("Local and Peer buffer settings are incompatible");
             cout << "ERROR: Local and Peer buffer settings are incompatible" << endl;
             mStopped = true;

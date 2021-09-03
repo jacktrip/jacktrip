@@ -87,7 +87,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mMinPoolSize = 6;
+    mMinPoolSize = 5;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
@@ -135,18 +135,18 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mLastLostCount = 0;
     tmpCtr = 0;
     tmpTimer = new QElapsedTimer();
+    mLastSeqNum = 0;
+    mLastSeqNumOut = 1;
+    mModSeqNum = 65536;
 }
 
 //*******************************************************************************
-bool PoolBuffer::pushPacket(const int8_t* buf)
+bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
-    double msElapsed = stdDev->tick();
-
-//        if (tmpCtr%9000 == 0) {
-//            for (int i = 0; i < mPoolSize; i++)mIndexPool[i] = -1;
-//            qDebug() << "nuked pool";
-//        }
+    //    qDebug() << "pushPacket" << seq_num;
+    if(((mLastSeqNum+1)%mModSeqNum) != seq_num) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
+    mLastSeqNum = seq_num;
 
     int freeSlot = -1;
     for (int i = 0; i < mPoolSize; i++) {
@@ -155,98 +155,53 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
             break;
         }
     }
-    if (freeSlot == -1)
-    {
-        qDebug() << "pushPacket pool too small" << tmpCtr;
-        int oldest      = 999999;
-        int oldestIndex = 0;
+    if (freeSlot == -1) {
+        int oldest      = 2*mModSeqNum;
+        int oldestIndex = -2;
         for (int i = 0; i < mPoolSize; i++) {
-            if ((mIndexPool[i] != -1) && (mIndexPool[i] < oldest))
-            {
-                oldest     = mIndexPool[i];
+            if (mIndexPool[i]+mModSeqNum < oldest) {
+                oldest = mIndexPool[i]+mModSeqNum;
                 oldestIndex = i;
             }
         }
         freeSlot = oldestIndex;
-    } //else qDebug() << "pushPacket"  << freeSlot;
-    mIncomingCnt++;
-    //    qDebug() << "pushPacket"  << freeSlot << mIncomingCnt;
-    mIndexPool[freeSlot] = mIncomingCnt;
-    memcpy(mIncomingDat[freeSlot], buf, mBytes);
-
-    if (tmpCtr%300 == -1) {
-        tmpTimer->start();
-        mIndexPool[freeSlot] = 999;
+        //        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
     }
-    tmpCtr++;
+    if (freeSlot == -2) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
+    mIndexPool[freeSlot] = seq_num;
+    memcpy(mIncomingDat[freeSlot], buf, mBytes);
     return true;
 };
 
 //*******************************************************************************
+//    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-    double msElapsed = stdDev2->tick();
-    //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
-    int delta = mIncomingCnt - mOutgoingCnt;
-    stdDev2->balance+=(delta-1);
-    //qDebug() << "delta"  << delta;
-    if (mIncomingCnt) {
-        if (delta<=0) {
-            //                        qDebug() << "underrun (<1)"  << delta;
-            tmpTimer->start();
-            processPacket(true);
-            mGlitchCnt++;
-            double tmpElapsed = (double)tmpTimer->nsecsElapsed() / 1000000.0;
-//            qDebug() << "tmpElapsed(ms)"  << tmpElapsed  << mGlitchCnt;
-            stdDev2->glitches++;
-            mIncomingCnt = mOutgoingCnt+1;
-        } else {
-            //            qDebug() << "overrun or balanced (1)"  << delta;
-            //            for (int j = delta; j > 0; j--)
-            {
-                int oldest      = 999999;
-                int oldestIndex = 0;
-                int free = 0;
-                for (int i = 0; i < mPoolSize; i++) {
-                    if ((mIndexPool[i] != -1) && (mIndexPool[i] < oldest))
-                    {
-                        oldest     = mIndexPool[i];
-                        oldestIndex = i;
-                    }
-                    if (mIndexPool[i] == -1) free++;
-                }
-                //                qDebug() << "overrun"  << oldestIndex << mIndexPool[oldestIndex] << "free"  << free;
-
-                if (mIndexPool[oldestIndex] == -999) {
-                    double tmpElapsed = (double)tmpTimer->nsecsElapsed() / 1000000.0;
-                    qDebug() << "tmpElapsed(ms)"  << tmpElapsed  << oldestIndex;
-                }
-
-                mIndexPool[oldestIndex] = -1;
-                memcpy(mXfrBuffer, mIncomingDat[oldestIndex], mBytes);
-                processPacket(false);
+    int slot = -1;
+    int lag = 3;
+    while (lag && (slot == -1)) {
+        for (int i = 0; i < mPoolSize; i++) {
+            if (mIndexPool[i] == mLastSeqNum-lag) {
+                slot = i;
+                break;
             }
-            mOutgoingCnt = mIncomingCnt-1;
         }
-        mOutgoingCnt++;  // will saturate in 33 days at FPP 32
-    } else {
-        memcpy(mXfrBuffer, mZeros, mBytes);
+        lag--;
+    }
+
+    if (slot == -1) {
+        qDebug() << "missing mLastSeqNum" << mLastSeqNum;
+        processPacket(true);
+    }
+    else {
+//        qDebug() << "lag" << lag;
+//        fprintf(stderr,"%d\t", lag);             fflush(stderr);
+        memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
+        processPacket(false);
+        mIndexPool[slot] = -1;
     }
     memcpy(buf, mXfrBuffer, mBytes);
-    // print diagnostics each audio callback
-    //        if(msElapsed<8.0) {
-    //            double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
-    //            double glitchMark = -2.0;
-    //            if (glitch) glitchMark = targetIndex;
-    //            double resetMark = -3.0;
-    //            if (mGlitchCnt > mGlitchMax) resetMark = targetIndex;
-    //            double off = 0.0;
-    //            if (glitch) off = 3.0;
-    //            fprintf(stderr,"%f\t%f\t%d\t%d\t%f\t%f\n",
-    //                    msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt,glitchMark,resetMark);
-    //            fflush(stderr);
-    //        }
 };
 
 //*******************************************************************************
