@@ -180,7 +180,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
     QMutexLocker locker(&mMutex);
     int slot = -1;
     int lag = mQlen;
-    while (lag && (slot == -1)) {
+    while ((lag>=0) && (slot == -1)) {
         for (int i = 0; i < mPoolSize; i++) {
             int tmp = mLastSeqNum-lag;
             if (tmp<0) tmp+=mModSeqNum;
@@ -195,11 +195,10 @@ void PoolBuffer::pullPacket(int8_t* buf)
     if (mLastSeqNum != -1) {
         if (slot == -1) {
             mSuccesiveGlitches++;
-//            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
-    if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
+            //            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
+            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
-        }
-        else {
+        } else {
             //        qDebug() << "lag" << lag;
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
