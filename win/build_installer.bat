@@ -24,8 +24,19 @@ mkdir deploy
 
 copy ..\LICENSE.md deploy\
 xcopy ..\LICENSES deploy\LICENSES\
+
+REM create RTF file with licenses' text
+set LICENSEPATH=deploy\license.rtf
+echo {\rtf1\ansi\deff0 {\fonttbl {\f0 Calibri;}} \f0\fs22>%LICENSEPATH%
+for %%f in (..\LICENSE.md ..\LICENSES\MIT.txt ..\LICENSES\GPL-3.0-only.txt ..\LICENSES\LGPL-3.0-only.txt) do (
+  for /f "delims=" %%x in ('type %%f') do (
+    echo %%x\line>>%LICENSEPATH%
+  )
+  echo \par >>%LICENSEPATH%
+)
+echo }>>%LICENSEPATH%
+
 copy dialog.bmp deploy\
-copy license.rtf deploy\
 if exist ..\builddir\release\jacktrip.exe (set JACKTRIP=..\builddir\release\jacktrip.exe) else (set JACKTRIP=..\builddir\jacktrip.exe)
 copy %JACKTRIP% deploy\
 cd deploy
