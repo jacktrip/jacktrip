@@ -7,7 +7,7 @@
 
 ---
 ### GPL License
---8<-- "LICENSES/GPL-3.0-only.txt"
+--8<-- "LICENSES/GPL-3.0.txt"
 
 ---
 ### LGPL License

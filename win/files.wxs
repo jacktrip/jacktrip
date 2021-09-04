@@ -18,7 +18,7 @@
                     <File Id="fil496C76DCE2246C589E09AC68BCFDFB32" KeyPath="yes" Source="SourceDir\LICENSES\MIT.txt" />
                 </Component>
                 <Component Id="cmpF915A8D749EFFA98CD8DD582A7C82614" Guid="{A3C72CE1-0570-497B-A84F-F21C53771ABC}">
-                    <File Id="filCCF13ED800A4C7B438EC52A50C3A6755" KeyPath="yes" Source="SourceDir\LICENSES\GPL-3.0-only.txt" />
+                    <File Id="filCCF13ED800A4C7B438EC52A50C3A6755" KeyPath="yes" Source="SourceDir\LICENSES\GPL-3.0.txt" />
                 </Component>
               </Directory>
 <?ifdef rtaudio?>

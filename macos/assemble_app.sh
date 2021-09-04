@@ -100,7 +100,7 @@ cat ../LICENSE.md > "$LICENSE_PATH"
 printf "\n\n" >> "$LICENSE_PATH"
 cat ../LICENSES/MIT.txt >> "$LICENSE_PATH"
 printf "\n\n" >> "$LICENSE_PATH"
-cat ../LICENSES/GPL-3.0-only.txt >> "$LICENSE_PATH"
+cat ../LICENSES/GPL-3.0.txt >> "$LICENSE_PATH"
 printf "\n\n" >> "$LICENSE_PATH"
 cat ../LICENSES/LGPL-3.0-only.txt >> "$LICENSE_PATH"
 
