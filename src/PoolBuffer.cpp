@@ -70,7 +70,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mSampleRate(sample_rate)
-    , mPoolSize(qLen)
     , mQlen(qLen)
 {
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
@@ -87,6 +86,58 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
+#define OLD
+#ifdef OLD
+    mQlen = 20; // hardcoded works ok 26-Aug-2021
+    mMinPoolSize = mQlen;
+    mPoolSize = mMinPoolSize;
+    mHist            = 6 * 32;                // samples, from original settings
+    double histFloat = mHist / (double)mFPP;  // packets for other FPP
+    mHist            = (int)histFloat;
+    if (mHist < 2)
+        mHist = 2;  // min packets, needs a pair
+    else if (mHist > 6)
+        mHist = 6;  // max packets, keep a lid on CPU load
+    if (gVerboseFlag) cout << "mHist = " << mHist << " at " << mFPP << "\n";
+    //    qDebug() << "mHist =" << mHist << "@" << mFPP;
+    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
+    mXfrBuffer = new int8_t[mBytes];
+    mPacketCnt = 0;  // burg
+    mFadeUp.resize(mFPP, 0.0);
+    mFadeDown.resize(mFPP, 0.0);
+    for (int i = 0; i < mFPP; i++) {
+        mFadeUp[i]   = (double)i / (double)mFPP;
+        mFadeDown[i] = 1.0 - mFadeUp[i];
+    }
+    mLastWasGlitch = false;
+    mOutgoingCnt   = 0;
+
+    mMaxPoolSize = MAXPOOLSIZE / ((mFPP-MINFPP)+1);
+    for (int i = 0; i < mMaxPoolSize; i++) {
+        int8_t* tmp = new int8_t[mBytes];
+        mIncomingDat.push_back(tmp);
+    }
+    mIndexPool.resize(mMaxPoolSize);
+    for (int i = 0; i < mMaxPoolSize; i++) mIndexPool[i] = -1;
+
+    mIncomingCnt = 0;
+    mTimer0 = new QElapsedTimer();
+    mTimer0->start();
+    mGlitchCnt = 0;
+    mGlitchMax = mHist; // max relevant signal history, otherwise reset
+    //    qDebug() << mGlitchMax;
+    for (int i = 0; i < mNumChannels; i++) {
+        ChanData* tmp = new ChanData(i, mFPP, mHist);
+        mChanData.push_back(tmp);
+        for PACKETSAMP OUT(0.0, i, s); // zero mXfrBuffer
+    }
+    mZeros = new int8_t[mBytes];
+    memcpy(mZeros, mXfrBuffer, mBytes);
+    stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)) );
+    mFPPfactor = STDDEV2POOLSIZE * (0.0 + (32 / (double)mFPP));
+    mLastLostCount = 0;
+}
+#else
     mMinPoolSize = mQlen + 1;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
@@ -139,90 +190,115 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mSuccesiveGlitches = 0;
     mModSeqNum = 65536;
 }
+#endif
 
 //*******************************************************************************
-bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
+bool PoolBuffer::pushPacketOld(const int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-    //    qDebug() << "pushPacket" << seq_num;
-    if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num)) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
-    mLastSeqNum = seq_num;
 
-    int freeSlot = -1;
+    mIncomingCnt++;
+    if (mGlitchCnt > mGlitchMax) {
+        //        double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
+        //        qDebug() << mGlitchCnt << mIncomingCnt << mOutgoingCnt
+        //                 << elapsed0/1000.0 << "\n";
+        mIncomingCnt = mOutgoingCnt;
+        mGlitchCnt   = 0;
+    }
+    int oldest      = 214748364;  // not so BIGNUM, approx. 2^31-1 / 10
+    int oldestIndex = 0;
     for (int i = 0; i < mPoolSize; i++) {
-        if (mIndexPool[i] == -1) {
-            freeSlot = i;
-            break;
+        if (mIndexPool[i] < oldest) {
+            oldest      = mIndexPool[i];
+            oldestIndex = i;
         }
     }
-    if (freeSlot == -1) {
-        int oldest      = 2*mModSeqNum;
-        int oldestIndex = -2;
-        for (int i = 0; i < mPoolSize; i++) {
-            if (mIndexPool[i]+mModSeqNum < oldest) {
-                oldest = mIndexPool[i]+mModSeqNum;
-                oldestIndex = i;
-            }
-        }
-        freeSlot = oldestIndex;
-        //        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
-    }
-    if (freeSlot == -2) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
-    mIndexPool[freeSlot] = seq_num;
-    memcpy(mIncomingDat[freeSlot], buf, mBytes);
+    mIndexPool[oldestIndex] = mIncomingCnt;
+    memcpy(mIncomingDat[oldestIndex], buf, mBytes);
+    mIndexPool[oldestIndex] = mIncomingCnt;
+    memcpy(mIncomingDat[oldestIndex], buf, mBytes);
+
+//    if (stdDev->longTermStdDevAcc > 0.0) {
+//        int newPoolSize  = (int)(stdDev->longTermStdDev * mFPPfactor);
+//        if (newPoolSize > mMaxPoolSize) newPoolSize = mMaxPoolSize;  // avoid insanely large pool
+//        if (newPoolSize < mMinPoolSize) newPoolSize = mMinPoolSize;  // avoid insanely small pool
+//        if (newPoolSize < mPoolSize) {
+//            if (gVerboseFlag) cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
+//        } else
+//            if (newPoolSize > mPoolSize) {
+//                if (gVerboseFlag) cout << "growing to " << newPoolSize << " from " << mPoolSize << "\n";
+//            }
+//        mPoolSize = newPoolSize;
+//    }
+    mPoolSize = mQlen;
     return true;
 };
 
 //*******************************************************************************
-//    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
-void PoolBuffer::pullPacket(int8_t* buf)
+void PoolBuffer::pullPacketOld(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-    int slot = -1;
-    int lag = mQlen;
-    while ((lag>=0) && (slot == -1)) {
-        for (int i = 0; i < mPoolSize; i++) {
-            int tmp = mLastSeqNum-lag;
-            if (tmp<0) tmp+=mModSeqNum;
-            if (mIndexPool[i] == tmp) {
-                slot = i;
-                break;
-            }
+    mOutgoingCnt++;  // will saturate in 33 days at FPP 32
+    //    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
+    bool glitch     = false;
+    int target      = mOutgoingCnt - 1; // XXX xxx; //mQlen;
+    int targetIndex = mPoolSize;
+    int oldest      = 999999;
+    int oldestIndex = 0;
+    for (int i = 0; i < mPoolSize; i++) {
+        if (mIndexPool[i] == target) { targetIndex = i; }
+        if ((mIndexPool[i] < 0)||(mIndexPool[i] < oldest)) { // was (mIndexPool[i] < oldest)
+            oldest      = mIndexPool[i];
+            oldestIndex = i;
         }
-        lag--;
     }
-
-    if (mLastSeqNum != -1) {
-        if (slot == -1) {
-            mSuccesiveGlitches++;
-            //            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
-            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
-            processPacket(true);
-        } else {
-            //        qDebug() << "lag" << lag;
-            //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
-            memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
-            processPacket(false);
-            mIndexPool[slot] = -1;
-            mSuccesiveGlitches = 0;
-        }
+    if (targetIndex == mPoolSize) {
+//            qDebug() << " ";
+//            qDebug() << "!available" << target;
+//            for ( int i = 0; i < mPoolSize; i++ ) qDebug() << i << mIndexPool[i];
+//            qDebug() << " ";
+        targetIndex             = oldestIndex;
+        mIndexPool[targetIndex] = -1;
+        glitch                  = true;
+        mGlitchCnt++;
+        stdDev->glitches++;
+        //            QThread::usleep(450); force lateness for debugging
+    } else {
+        mIndexPool[targetIndex] = 0;
+        memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
+    }
+    if (mIncomingCnt) {
+        processPacketOld(glitch);
     } else {
         memcpy(mXfrBuffer, mZeros, mBytes);
     }
     memcpy(buf, mXfrBuffer, mBytes);
+    double msElapsed = stdDev->tick();
+    double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
+        if(msElapsed<8.0) {
+            double glitchMark = -2.0;
+            if (glitch) glitchMark = targetIndex;
+            double resetMark = -3.0;
+            if (mGlitchCnt > mGlitchMax) resetMark = targetIndex;
+            double off = 0.0;
+            if (glitch) off = 3.0;
+            fprintf(stderr,"%f\t%f\t%d\t%d\t%f\t%f\n",
+                    msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt,glitchMark,resetMark);
+            fflush(stderr);
+        }
 };
 
 //*******************************************************************************
-void PoolBuffer::processPacket(bool glitch)
+void PoolBuffer::processPacketOld(bool glitch)
 {
     for (int ch = 0; ch < mNumChannels; ch++)
-        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
+        processChannelOld(ch, glitch, mPacketCnt, mLastWasGlitch);
     mLastWasGlitch = glitch;
     mPacketCnt++;
 }
 
 //*******************************************************************************
-void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch)
+void PoolBuffer::processChannelOld(int ch, bool glitch, int packetCnt, bool lastWasGlitch)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
 
@@ -235,43 +311,45 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                             PACKETSAMP cd->mTrain[s + ((mHist - (i + 1)) * mFPP)] =
                                     cd->mLastPackets[i][s];
                 }
-                if (glitch) {
-                    // GET LINEAR PREDICTION COEFFICIENTS
-                    ba.train(cd->mCoeffs, cd->mTrain);
 
-                    // LINEAR PREDICT DATA
-                    //                vector<sample_t> tail(cd->mTrain);
-                    mTail = cd->mTrain;
+                // GET LINEAR PREDICTION COEFFICIENTS
+                ba.train(cd->mCoeffs, cd->mTrain);
 
-                    //                ba.predict(cd->mCoeffs, tail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
-                    ba.predict(cd->mCoeffs, mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+                // LINEAR PREDICT DATA
+                //                vector<sample_t> tail(cd->mTrain);
+                mTail = cd->mTrain;
 
-                    for (int i = 0; i < (cd->trainSamps - 1); i++)
-                        //                    cd->mPrediction[i] = tail[i + cd->trainSamps];
-                        cd->mPrediction[i] = mTail[i + cd->trainSamps];
-                }
-                if (lastWasGlitch) for PACKETSAMP
-                        cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+                //                ba.predict(cd->mCoeffs, tail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+                ba.predict(cd->mCoeffs, mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
-                for PACKETSAMP
-                        OUT((glitch) ? cd->mPrediction[s]
-                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
-                            ch, s);
+                for (int i = 0; i < (cd->trainSamps - 1); i++)
+                    //                    cd->mPrediction[i] = tail[i + cd->trainSamps];
+                    cd->mPrediction[i] = mTail[i + cd->trainSamps];
 
-                if (glitch) {
-                    for PACKETSAMP cd->mNextPred[s] = cd->mPrediction[s + mFPP];
-                }
+                for
+                        PACKETSAMP cd->mXfadedPred[s] =
+                                cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+
+                        for
+                                PACKETSAMP
+                                        OUT((glitch) ? cd->mPrediction[s]
+                                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                                            ch, s);
+
+                                for
+                                        PACKETSAMP cd->mNextPred[s] = cd->mPrediction[s + mFPP];
             }
 
             // if mPacketCnt==0 initialization follows
             for (int i = mHist - 1; i > 0; i--) {
-                for PACKETSAMP
-                        cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
+                for
+                        PACKETSAMP cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
             }
 
             // will only be able to glitch if mPacketCnt>0
-            for PACKETSAMP cd->mLastPackets[0][s] =
-                    ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+            for
+                    PACKETSAMP cd->mLastPackets[0][s] =
+                            ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
 }
 
 //*******************************************************************************
@@ -426,6 +504,19 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
+StdDev::StdDev(int w) : window(w)
+{
+    reset();
+    longTermStdDev    = 0.0;
+    longTermStdDevAcc = 0.0;
+    longTermCnt       = 0;
+    lastMean          = 0.0;
+    lastMin           = 0;
+    lastMax           = 0;
+    mTimer            = new QElapsedTimer();
+    mTimer->start();
+    data.resize(w, 0.0);
+}
 StdDev::StdDev(int w, int id) : window(w), mId(id)
 {
     reset();
@@ -449,7 +540,6 @@ void StdDev::reset()
     max = 0.0;
     ctr = 0;
     glitches = 0;
-    balance = 0;
 };
 
 double StdDev::tick()
@@ -481,7 +571,7 @@ double StdDev::tick()
                 cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
                      << stdDev << setw(10) << longTermStdDev << endl;
         } else if (gVerboseFlag)
-            cout << "printing directly from PoolBuffer->stdDev->tick:\n (mean / min / max / "
+            cout << "printing from PoolBuffer->stdDev->tick:\n (mean / min / max / "
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
@@ -512,15 +602,14 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
     if (!statCount) {
         tmp = QString("PoolBuffer: inter-packet intervals msec\n");
         tmp += "      (window of last ";
-        tmp += QString::number(stdDev2->window);
+        tmp += QString::number(stdDev->window);
         tmp += " packets)\n";
-        tmp += "secs   (mean       min       max     stdDev)   avgStdDev  balance  plc   poolsize   q   lost\n";
+        tmp += "secs   (mean       min       max     stdDev)   avgStdDev  plc   poolsize   lost\n";
     }
     else {
         uint32_t lost = lostCount - mLastLostCount;
         mLastLostCount = lostCount;
 #define PDBL(x) << setw(10) << (QString("%1").arg(stdDev->x, 0, 'f', 2)).toStdString()
-#define PDBL2(x) << setw(10) << (QString("%1").arg(stdDev2->x, 0, 'f', 2)).toStdString()
         std::stringstream logger;
         logger << setw(2) << statCount
                   PDBL(lastMean)
@@ -528,22 +617,287 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
                   PDBL(lastMax)
                   PDBL(lastStdDev)
                   PDBL(longTermStdDev)
-               << endl;
+               << setw(8) << stdDev->glitches
+               << setw(8) << mPoolSize
+               << setw(8) << lost << endl;
         tmp = QString::fromStdString(logger.str());
-        std::stringstream logger2;
-        logger2 << setw(2) << ""
-                   PDBL2(lastMean)
-                   PDBL2(lastMin)
-                   PDBL2(lastMax)
-                   PDBL2(lastStdDev)
-                   PDBL2(longTermStdDev)
-                << setw(8) << stdDev2->balance
-                << setw(8) << stdDev2->glitches
-                << setw(8) << mPoolSize
-                << setw(8) << mQlen
-                << setw(8) << lost << endl;
-        tmp += QString::fromStdString(logger2.str());
     }
     return tmp;
+}
+
+//*****************************************************************
+///*
+//  JackTrip: A System for High-Quality Audio Network Performance
+//  over the Internet
+
+//  Copyright (c) 2021 Juan-Pablo Caceres, Chris Chafe.
+//  SoundWIRE group at CCRMA, Stanford University.
+
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
+
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
+
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
+//*/
+////*****************************************************************
+
+///**
+// * \file PoolBuffer.cpp
+// * \author Chris Chafe
+// * \date May 2021
+// */
+
+//// EXPERIMENTAL for testing in JackTrip v1.4.0
+//// runs ok from FPP 16 up to 512, but don't try 1024 yet
+//// in / out channels are the same -- mono, stereo and -n3 tested fine
+
+//// for example, server
+//// jacktrip -S --udprt  -p1 --bufstrategy 3 -q2
+//// and client
+//// jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -q2
+
+//#include "PoolBuffer.h"
+//#include <iomanip>
+//#include <QTextStream>
+//#include <sstream>
+
+//#include "jacktrip_globals.h"
+//using std::cout;
+//using std::endl;
+//using std::setw;
+
+//#define MINFPP 16
+//#define STDDEVINDOW     200  // packets
+//#define STDDEV2POOLSIZE 20.0
+//#define MAXPOOLSIZE     6000  // insanely large pool, 2 sec FPP16
+//#define HIST            6     // at FPP32
+//#define OUT(x, ch, s)   sampleToBits(x, ch, s)
+//// from listening tests iteration performs better than '=' operator
+//#define PACKETSAMP (int s = 0; s < mFPP; s++)
+
+////*******************************************************************************
+//PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen)
+//    : RingBuffer(0, 0)
+//    , mNumChannels(channels)
+//    , mAudioBitRes(bit_res)
+//    , mFPP(FPP)
+//    , mSampleRate(sample_rate)
+//    , mPoolSize(qLen)
+//    , mQlen(qLen)
+//{
+//    switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
+//    case 1:
+//        mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
+//        break;
+//    case 2:
+//        mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT16;
+//        break;
+//    case 3:
+//        mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT24;
+//        break;
+//    case 4:
+//        mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
+//        break;
+//    }
+//    mMinPoolSize = mQlen + 1;
+//    mPoolSize = mMinPoolSize;
+//    mHist            = 6 * 32;                // samples, from original settings
+//    double histFloat = mHist / (double)mFPP;  // packets for other FPP
+//    mHist            = (int)histFloat;
+//    if (mHist < 2)
+//        mHist = 2;  // min packets, needs a pair
+//    else if (mHist > 6)
+//        mHist = 6;  // max packets, keep a lid on CPU load
+//    if (gVerboseFlag) cout << "mHist = " << mHist << " at " << mFPP << "\n";
+//    //    qDebug() << "mHist =" << mHist << "@" << mFPP;
+//    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
+//    mXfrBuffer = new int8_t[mBytes];
+//    mPacketCnt = 0;  // burg
+//    mFadeUp.resize(mFPP, 0.0);
+//    mFadeDown.resize(mFPP, 0.0);
+//    for (int i = 0; i < mFPP; i++) {
+//        mFadeUp[i]   = (double)i / (double)mFPP;
+//        mFadeDown[i] = 1.0 - mFadeUp[i];
+//    }
+//    mLastWasGlitch = false;
+//    mOutgoingCnt   = 0;
+
+//    mMaxPoolSize = mPoolSize;
+//    for (int i = 0; i < mMaxPoolSize; i++) {
+//        int8_t* tmp = new int8_t[mBytes];
+//        mIncomingDat.push_back(tmp);
+//    }
+//    mIndexPool.resize(mMaxPoolSize);
+//    for (int i = 0; i < mMaxPoolSize; i++) mIndexPool[i] = -1;
+
+//    mIncomingCnt = 0;
+//    mTimer0 = new QElapsedTimer();
+//    mTimer0->start();
+//    mGlitchCnt = 0;
+//    for (int i = 0; i < mNumChannels; i++) {
+//        ChanData* tmp = new ChanData(i, mFPP, mHist);
+//        mChanData.push_back(tmp);
+//        for PACKETSAMP OUT(0.0, i, s); // zero mXfrBuffer
+//    }
+//    mZeros = new int8_t[mBytes];
+//    memcpy(mZeros, mXfrBuffer, mBytes);
+//    stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)), 1);
+//    stdDev2 = new StdDev( (int)(floor(48000.0 / (double)mFPP)), 2);
+//    mFPPfactor = STDDEV2POOLSIZE * (0.0 + (32 / (double)mFPP));
+//    mLastLostCount = 0;
+//    tmpCtr = 0;
+//    tmpTimer = new QElapsedTimer();
+//    mLastSeqNum = -1;
+//    mSuccesiveGlitches = 0;
+//    mModSeqNum = 65536;
+//}
+
+//*******************************************************************************
+bool PoolBuffer::pushPacketNew(const int8_t* buf, int seq_num)
+{
+    QMutexLocker locker(&mMutex);
+    //    qDebug() << "pushPacket" << seq_num;
+    if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num)) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
+    mLastSeqNum = seq_num;
+
+    int freeSlot = -1;
+    for (int i = 0; i < mPoolSize; i++) {
+        if (mIndexPool[i] == -1) {
+            freeSlot = i;
+            break;
+        }
+    }
+    if (freeSlot == -1) {
+        int oldest      = 2*mModSeqNum;
+        int oldestIndex = -2;
+        for (int i = 0; i < mPoolSize; i++) {
+            if (mIndexPool[i]+mModSeqNum < oldest) {
+                oldest = mIndexPool[i]+mModSeqNum;
+                oldestIndex = i;
+            }
+        }
+        freeSlot = oldestIndex;
+        //        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
+    }
+    if (freeSlot == -2) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
+    mIndexPool[freeSlot] = seq_num;
+    memcpy(mIncomingDat[freeSlot], buf, mBytes);
+    return true;
+};
+
+//*******************************************************************************
+//    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
+void PoolBuffer::pullPacketNew(int8_t* buf)
+{
+    QMutexLocker locker(&mMutex);
+    int slot = -1;
+    int lag = mQlen;
+    while ((lag>=0) && (slot == -1)) {
+        for (int i = 0; i < mPoolSize; i++) {
+            int tmp = mLastSeqNum-lag;
+            if (tmp<0) tmp+=mModSeqNum;
+            if (mIndexPool[i] == tmp) {
+                slot = i;
+                break;
+            }
+        }
+        lag--;
+    }
+
+    if (mLastSeqNum != -1) {
+        if (slot == -1) {
+            mSuccesiveGlitches++;
+            //            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
+            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
+            processPacketNew(true);
+        } else {
+            //        qDebug() << "lag" << lag;
+            //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
+            memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
+            processPacketNew(false);
+            mIndexPool[slot] = -1;
+            mSuccesiveGlitches = 0;
+        }
+    } else {
+        memcpy(mXfrBuffer, mZeros, mBytes);
+    }
+    memcpy(buf, mXfrBuffer, mBytes);
+};
+
+//*******************************************************************************
+void PoolBuffer::processPacketNew(bool glitch)
+{
+    for (int ch = 0; ch < mNumChannels; ch++)
+        processChannelNew(ch, glitch, mPacketCnt, mLastWasGlitch);
+    mLastWasGlitch = glitch;
+    mPacketCnt++;
+}
+
+//*******************************************************************************
+void PoolBuffer::processChannelNew(int ch, bool glitch, int packetCnt, bool lastWasGlitch)
+{
+    //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
+
+    ChanData* cd = mChanData[ch];
+    for
+            PACKETSAMP cd->mTruth[s] = bitsToSample(ch, s);
+            if (packetCnt) {
+                for (int i = 0; i < mHist; i++) {
+                    for
+                            PACKETSAMP cd->mTrain[s + ((mHist - (i + 1)) * mFPP)] =
+                                    cd->mLastPackets[i][s];
+                }
+                if (glitch) {
+                    // GET LINEAR PREDICTION COEFFICIENTS
+                    ba.train(cd->mCoeffs, cd->mTrain);
+
+                    // LINEAR PREDICT DATA
+                    //                vector<sample_t> tail(cd->mTrain);
+                    mTail = cd->mTrain;
+
+                    //                ba.predict(cd->mCoeffs, tail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+                    ba.predict(cd->mCoeffs, mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+
+                    for (int i = 0; i < (cd->trainSamps - 1); i++)
+                        //                    cd->mPrediction[i] = tail[i + cd->trainSamps];
+                        cd->mPrediction[i] = mTail[i + cd->trainSamps];
+                }
+                if (lastWasGlitch) for PACKETSAMP
+                        cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+
+                for PACKETSAMP
+                        OUT((glitch) ? cd->mPrediction[s]
+                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                            ch, s);
+
+                if (glitch) {
+                    for PACKETSAMP cd->mNextPred[s] = cd->mPrediction[s + mFPP];
+                }
+            }
+
+            // if mPacketCnt==0 initialization follows
+            for (int i = mHist - 1; i > 0; i--) {
+                for PACKETSAMP
+                        cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
+            }
+
+            // will only be able to glitch if mPacketCnt>0
+            for PACKETSAMP cd->mLastPackets[0][s] =
+                    ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
 }
 
