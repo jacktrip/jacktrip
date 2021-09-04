@@ -140,8 +140,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mLastLostCount = 0;
 }
 #else
-    mQlen = 0;
-    mMinPoolSize = mQlen + 1;
+    mMinPoolSize = mQlen;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
@@ -776,7 +775,7 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
 bool PoolBuffer::pushPacketNew(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
-    qDebug() << seq_num;
+//    qDebug() << seq_num;
     //    qDebug() << "pushPacket" << seq_num;
     if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num)) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
     mLastSeqNum = seq_num;
@@ -813,7 +812,7 @@ void PoolBuffer::pullPacketNew(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
     int slot = -1;
-    int lag = mQlen;
+    int lag = mQlen-1;
     while ((lag>=0) && (slot == -1)) {
         for (int i = 0; i < mPoolSize; i++) {
             int tmp = mLastSeqNum-lag;
@@ -832,12 +831,13 @@ void PoolBuffer::pullPacketNew(int8_t* buf)
             //            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
             if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacketNew(true);
+            qDebug() << "glitch";
         } else {
             //        qDebug() << "lag" << lag;
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
             processPacketNew(false);
-            qDebug() << "seq" << mSeqPool[slot] << mPoolSize << mQlen;
+//            qDebug() << "seq" << mSeqPool[slot] << mPoolSize << mQlen;
             mIndexPool[slot] = -1;
             mSuccesiveGlitches = 0;
         }
