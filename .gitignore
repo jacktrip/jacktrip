@@ -19,3 +19,6 @@ macos/*.app
 macos/package/build
 macos/package/*.pkgproj
 macos/package/*.txt
+
+# windows deploy files
+win/deploy
