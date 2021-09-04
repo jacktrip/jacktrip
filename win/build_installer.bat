@@ -21,6 +21,9 @@ set PATH=%PATH%;%WIXPATH%
 del deploy /s /q
 rmdir deploy /s /q
 mkdir deploy
+
+copy ..\LICENSE.md deploy\
+xcopy ..\LICENSES deploy\LICENSES\
 copy dialog.bmp deploy\
 copy license.rtf deploy\
 if exist ..\builddir\release\jacktrip.exe (set JACKTRIP=..\builddir\release\jacktrip.exe) else (set JACKTRIP=..\builddir\jacktrip.exe)
