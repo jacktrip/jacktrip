@@ -319,10 +319,10 @@ void Settings::parseInput(int argc, char** argv)
                 mBufferQueueLength = -atoi(optarg + 4);
                 if (0 == mBufferQueueLength) { mBufferQueueLength = -500; }
             } else if (atoi(optarg) <= 0) {
-                printUsage();
-                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2"
-                          << endl;
-                std::exit(1);
+//                printUsage();
+//                std::cerr << "--queue ERROR: The queue has to be equal or greater than 2"
+//                          << endl;
+//                std::exit(1);
             } else {
                 mBufferQueueLength = atoi(optarg);
             }
