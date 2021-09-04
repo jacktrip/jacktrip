@@ -115,7 +115,7 @@ class PoolBuffer : public RingBuffer
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~PoolBuffer() {}
 
-    bool pushPacketOld(const int8_t* buf);
+    bool pushPacketOld(const int8_t* buf, int seq_num);
     bool pushPacketNew(const int8_t* buf, int seq_num);
     void pullPacketOld(int8_t* buf);
     void pullPacketNew(int8_t* buf);
@@ -129,12 +129,12 @@ class PoolBuffer : public RingBuffer
                                        [[maybe_unused]] int unused,
     [[maybe_unused]] int seq_num)
     {
-        pushPacketOld(ptrToSlot);
-//        pushPacketNew(ptrToSlot, seq_num);
+//        pushPacketOld(ptrToSlot, seq_num);
+        pushPacketNew(ptrToSlot, seq_num);
         return (true);
     }
-    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacketOld(ptrToReadSlot); }
-//    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacketNew(ptrToReadSlot); }
+//    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacketOld(ptrToReadSlot); }
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacketNew(ptrToReadSlot); }
 
     virtual QString getStats(uint32_t statCount, uint32_t lostCount);
 
@@ -185,6 +185,8 @@ vector<sample_t> mTail;
     int mSuccesiveGlitches;
     int mModSeqNum;
     StdDev* stdDev2;
+
+    vector<int> mSeqPool;
 };
 
 #endif  //__POOLUFFER_H__

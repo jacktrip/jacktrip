@@ -86,7 +86,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-#define OLD
+//#define OLD
 #ifdef OLD
     mQlen = 20; // hardcoded works ok 26-Aug-2021
     mMinPoolSize = mQlen;
@@ -119,6 +119,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     }
     mIndexPool.resize(mMaxPoolSize);
     for (int i = 0; i < mMaxPoolSize; i++) mIndexPool[i] = -1;
+    mSeqPool.resize(mMaxPoolSize);
+    for (int i = 0; i < mMaxPoolSize; i++) mSeqPool[i] = -1;
 
     mIncomingCnt = 0;
     mTimer0 = new QElapsedTimer();
@@ -138,6 +140,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mLastLostCount = 0;
 }
 #else
+    mQlen = 0;
     mMinPoolSize = mQlen + 1;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
@@ -168,6 +171,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     }
     mIndexPool.resize(mMaxPoolSize);
     for (int i = 0; i < mMaxPoolSize; i++) mIndexPool[i] = -1;
+    mSeqPool.resize(mMaxPoolSize);
+    for (int i = 0; i < mMaxPoolSize; i++) mSeqPool[i] = -1;
 
     mIncomingCnt = 0;
     mTimer0 = new QElapsedTimer();
@@ -193,10 +198,10 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
 #endif
 
 //*******************************************************************************
-bool PoolBuffer::pushPacketOld(const int8_t* buf)
+bool PoolBuffer::pushPacketOld(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
-
+qDebug() << seq_num;
     mIncomingCnt++;
     if (mGlitchCnt > mGlitchMax) {
         //        double elapsed0 = (double)mTimer0->nsecsElapsed() / 1000000.0;
@@ -213,8 +218,7 @@ bool PoolBuffer::pushPacketOld(const int8_t* buf)
             oldestIndex = i;
         }
     }
-    mIndexPool[oldestIndex] = mIncomingCnt;
-    memcpy(mIncomingDat[oldestIndex], buf, mBytes);
+    mSeqPool[oldestIndex] = seq_num;
     mIndexPool[oldestIndex] = mIncomingCnt;
     memcpy(mIncomingDat[oldestIndex], buf, mBytes);
 
@@ -264,6 +268,7 @@ void PoolBuffer::pullPacketOld(int8_t* buf)
         stdDev->glitches++;
         //            QThread::usleep(450); force lateness for debugging
     } else {
+        qDebug() << "seq" << mSeqPool[targetIndex] << mPoolSize;
         mIndexPool[targetIndex] = 0;
         memcpy(mXfrBuffer, mIncomingDat[targetIndex], mBytes);
     }
@@ -274,18 +279,18 @@ void PoolBuffer::pullPacketOld(int8_t* buf)
     }
     memcpy(buf, mXfrBuffer, mBytes);
     double msElapsed = stdDev->tick();
-    double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
-        if(msElapsed<8.0) {
-            double glitchMark = -2.0;
-            if (glitch) glitchMark = targetIndex;
-            double resetMark = -3.0;
-            if (mGlitchCnt > mGlitchMax) resetMark = targetIndex;
-            double off = 0.0;
-            if (glitch) off = 3.0;
-            fprintf(stderr,"%f\t%f\t%d\t%d\t%f\t%f\n",
-                    msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt,glitchMark,resetMark);
-            fflush(stderr);
-        }
+//    double msNow = (double)mTimer0->nsecsElapsed() / 1000000.0;
+//        if(msElapsed<8.0) {
+//            double glitchMark = -2.0;
+//            if (glitch) glitchMark = targetIndex;
+//            double resetMark = -3.0;
+//            if (mGlitchCnt > mGlitchMax) resetMark = targetIndex;
+//            double off = 0.0;
+//            if (glitch) off = 3.0;
+//            fprintf(stderr,"%f\t%f\t%d\t%d\t%f\t%f\n",
+//                    msNow/1000.0,off+msElapsed,targetIndex,mIncomingCnt-mOutgoingCnt,glitchMark,resetMark);
+//            fflush(stderr);
+//        }
 };
 
 //*******************************************************************************
@@ -771,6 +776,7 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
 bool PoolBuffer::pushPacketNew(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
+    qDebug() << seq_num;
     //    qDebug() << "pushPacket" << seq_num;
     if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num)) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
     mLastSeqNum = seq_num;
@@ -796,6 +802,7 @@ bool PoolBuffer::pushPacketNew(const int8_t* buf, int seq_num)
     }
     if (freeSlot == -2) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
     mIndexPool[freeSlot] = seq_num;
+    mSeqPool[freeSlot] = seq_num;
     memcpy(mIncomingDat[freeSlot], buf, mBytes);
     return true;
 };
@@ -830,6 +837,7 @@ void PoolBuffer::pullPacketNew(int8_t* buf)
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
             processPacketNew(false);
+            qDebug() << "seq" << mSeqPool[slot] << mPoolSize << mQlen;
             mIndexPool[slot] = -1;
             mSuccesiveGlitches = 0;
         }
