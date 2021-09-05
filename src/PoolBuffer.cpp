@@ -87,7 +87,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mMinPoolSize = mQlen + 1;
+    mMinPoolSize = mPoolSize;
     mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
@@ -179,7 +179,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
     int slot = -1;
-    int lag = mQlen;
+    int lag = mQlen-1;
     while ((lag>=0) && (slot == -1)) {
         for (int i = 0; i < mPoolSize; i++) {
             int tmp = mLastSeqNum-lag;
