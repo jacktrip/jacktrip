@@ -44,6 +44,12 @@ About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
     connect(m_ui->closeButton, &QPushButton::clicked, this, [=]() { this->done(0); });
 
     m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%VERSION%", gVersion));
+#ifdef QT_OPENSOURCE
+    m_ui->aboutLabel->setText(
+        m_ui->aboutLabel->text().replace("%LICENSE%", "This build of JackTrip is subject to LGPL license. "));
+#else
+    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%LICENSE%", ""));
+#endif
     if (!s_buildType.isEmpty() || !s_buildID.isEmpty()) {
         QString buildString = "<br/>(";
         if (!s_buildType.isEmpty()) {

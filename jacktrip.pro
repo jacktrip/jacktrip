@@ -16,6 +16,10 @@ CONFIG(debug, debug|release) {
     name_suffix = ''
 }
 
+equals(QT_EDITION, "OpenSource") {
+    DEFINES += QT_OPENSOURCE
+}
+
 nogui {
   DEFINES += NO_GUI
 } else {

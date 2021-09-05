@@ -236,9 +236,11 @@ jobs:
         run: |
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
           if [[ "${{ runner.os }}" == "Windows" ]]; then
-            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }}
+            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
           else
             zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
+            cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
+            zip -r $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip LICENSE.md LICENSES
           fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
@@ -252,8 +254,11 @@ jobs:
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
             zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip *.app
+            cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
+            zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip LICENSE.md LICENSES
           fi
           if [[ -n ${{ matrix.installer-path }} ]]; then
+            cd $GITHUB_WORKSPACE/macos
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
             cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.pkg
           fi
