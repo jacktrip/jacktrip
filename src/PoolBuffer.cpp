@@ -235,7 +235,7 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                             PACKETSAMP cd->mTrain[s + ((mHist - (i + 1)) * mFPP)] =
                                     cd->mLastPackets[i][s];
                 }
-                if (glitch) {
+                if (true) {
                     // GET LINEAR PREDICTION COEFFICIENTS
                     ba.train(cd->mCoeffs, cd->mTrain);
 
@@ -250,7 +250,7 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                         //                    cd->mPrediction[i] = tail[i + cd->trainSamps];
                         cd->mPrediction[i] = mTail[i + cd->trainSamps];
                 }
-                if (lastWasGlitch) for PACKETSAMP
+                if (true) for PACKETSAMP
                         cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 
                 for PACKETSAMP
@@ -258,7 +258,7 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                                        : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                             ch, s);
 
-                if (glitch) {
+                if (true) {
                     for PACKETSAMP cd->mNextPred[s] = cd->mPrediction[s + mFPP];
                 }
             }
