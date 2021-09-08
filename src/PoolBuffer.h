@@ -179,6 +179,7 @@ private:
 
     int lastSeqNumx;
     int seq_numx;
+    int mXfrState;
 
 };
 

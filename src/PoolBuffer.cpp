@@ -70,7 +70,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mSampleRate(sample_rate)
-    , mPoolSize(qLen)
+    , mPoolSize(qLen + 20)
     , mQlen(qLen)
 {
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
@@ -88,7 +88,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         break;
     }
     mMinPoolSize = mPoolSize;
-    mPoolSize = mMinPoolSize;
     mHist            = 6 * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
     mHist            = (int)histFloat;
@@ -169,9 +168,9 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
             }
         }
         freeSlot = oldestIndex;
-        //        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
+        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
     }
-    if (freeSlot == -2) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
+    if (freeSlot < 0) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
     mIndexPool[freeSlot] = seq_num;
     memcpy(mIncomingDat[freeSlot], buf, mBytes);
     return true;
@@ -185,10 +184,11 @@ void PoolBuffer::pullPacket(int8_t* buf)
 
     if (mLastSeqNum == -1) {
         memcpy(mXfrBuffer, mZeros, mBytes);
+        mXfrState = -1;
     } else {
         int slot = -1;
         int lag = mQlen-1;
-        while ((lag>=0) && (slot == -1)) {
+        while (lag>=0) {
             for (int i = 0; i < mPoolSize; i++) {
                 int tmp = mLastSeqNum-lag;
                 if (tmp<0) tmp+=mModSeqNum;
@@ -202,15 +202,27 @@ void PoolBuffer::pullPacket(int8_t* buf)
         if (slot == -1) goto GLITCH;
 PACKETOK:
         {
-            seq_numx = mIndexPool[slot];
-            if((lastSeqNumx != -1) && (((lastSeqNumx+1)%mModSeqNum) != seq_numx))
-                qDebug() << "lost packet detected in pullPacket" << seq_numx << lastSeqNumx;
-            lastSeqNumx = seq_numx;
+
+            {
+                bool test = false;
+                seq_numx = mIndexPool[slot];
+                if((lastSeqNumx != -1) && (((lastSeqNumx+1)%mModSeqNum) != seq_numx)) {
+                    //                    if ((seq_numx-lastSeqNumx)>7)
+                    //                        for (int i = 0; i < mPoolSize; i++)
+                    //                        { fprintf(stderr,"%d\t", mIndexPool[i]); fflush(stderr);}
+                    test = true;
+                    //                    qDebug() << "lost packet detected in pullPacket" << lastSeqNumx << seq_numx;
+                }
+                lastSeqNumx = seq_numx;
+                if (test) goto GLITCH;
+            }
 
             //        qDebug() << "lag" << lag;
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
+            mXfrState = 0;
             processPacket(false);
+            mXfrState = 1;
             mIndexPool[slot] = -1;
             mSuccesiveGlitches = 0;
             goto OUTPUT;
@@ -218,12 +230,14 @@ PACKETOK:
 GLITCH:
         {
             mSuccesiveGlitches++;
-            //            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
-            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
+            qDebug() << "glitch" << mPoolSize << mQlen;
+//            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
+            mXfrState = 2;
         }
     }
 OUTPUT:
+    //    if (mXfrState==2) qDebug() << "mXfrState" << mXfrState;
     memcpy(buf, mXfrBuffer, mBytes);
 };
 
@@ -272,10 +286,10 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                         OUT((glitch) ?
                                 ( (!ch) ? cd->mPrediction[s] : ( (s)?0.0:-0.2) )
                               :
-                                (
-                                    ( (!ch)&&(lastWasGlitch) ) ? cd->mXfadedPred[s] : cd->mTruth[s]
-                                                                 ),
+                                ( (!ch) ? ( (lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s] )
+                                        : cd->mTruth[s]),
                             ch, s);
+
 
                 //                for PACKETSAMP
                 //                        OUT((glitch) ? cd->mPrediction[s]
