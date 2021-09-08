@@ -146,6 +146,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
 bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
+    { fprintf(stderr,"%d\t", seq_num); fflush(stderr);}
     //    qDebug() << "pushPacket" << seq_num;
     if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num))
         qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
@@ -168,7 +169,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
             }
         }
         freeSlot = oldestIndex;
-        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
+//        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
     }
     if (freeSlot < 0) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
     mIndexPool[freeSlot] = seq_num;
@@ -230,7 +231,7 @@ PACKETOK:
 GLITCH:
         {
             mSuccesiveGlitches++;
-            qDebug() << "glitch" << mPoolSize << mQlen;
+//            qDebug() << "glitch" << mPoolSize << mQlen;
 //            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
             mXfrState = 2;
