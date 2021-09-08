@@ -176,6 +176,10 @@ private:
     int mLastSeqNum;
     int mSuccesiveGlitches;
     int mModSeqNum;
+
+    int lastSeqNumx;
+    int seq_numx;
+
 };
 
 #endif  //__POOLUFFER_H__

@@ -138,6 +138,9 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mLastSeqNum = -1;
     mSuccesiveGlitches = 0;
     mModSeqNum = 65536;
+
+
+    lastSeqNumx = -1;
 }
 
 //*******************************************************************************
@@ -145,7 +148,8 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     //    qDebug() << "pushPacket" << seq_num;
-    if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num)) qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
+    if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num))
+        qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
     mLastSeqNum = seq_num;
 
     int freeSlot = -1;
@@ -178,37 +182,48 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-    int slot = -1;
-    int lag = mQlen-1;
-    while ((lag>=0) && (slot == -1)) {
-        for (int i = 0; i < mPoolSize; i++) {
-            int tmp = mLastSeqNum-lag;
-            if (tmp<0) tmp+=mModSeqNum;
-            if (mIndexPool[i] == tmp) {
-                slot = i;
-                break;
-            }
-        }
-        lag--;
-    }
 
-    if (mLastSeqNum != -1) {
-        if (slot == -1) {
-            mSuccesiveGlitches++;
-            //            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
-            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
-            processPacket(true);
-        } else {
+    if (mLastSeqNum == -1) {
+        memcpy(mXfrBuffer, mZeros, mBytes);
+    } else {
+        int slot = -1;
+        int lag = mQlen-1;
+        while ((lag>=0) && (slot == -1)) {
+            for (int i = 0; i < mPoolSize; i++) {
+                int tmp = mLastSeqNum-lag;
+                if (tmp<0) tmp+=mModSeqNum;
+                if (mIndexPool[i] == tmp) {
+                    slot = i;
+                    goto PACKETOK;
+                }
+            }
+            lag--;
+        }
+        if (slot == -1) goto GLITCH;
+PACKETOK:
+        {
+            seq_numx = mIndexPool[slot];
+            if((lastSeqNumx != -1) && (((lastSeqNumx+1)%mModSeqNum) != seq_numx))
+                qDebug() << "lost packet detected in pullPacket" << seq_numx << lastSeqNumx;
+            lastSeqNumx = seq_numx;
+
             //        qDebug() << "lag" << lag;
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
             processPacket(false);
             mIndexPool[slot] = -1;
             mSuccesiveGlitches = 0;
+            goto OUTPUT;
         }
-    } else {
-        memcpy(mXfrBuffer, mZeros, mBytes);
+GLITCH:
+        {
+            mSuccesiveGlitches++;
+            //            qDebug() << "missing mLastSeqNum" << mLastSeqNum << "mSuccesiveGlitches" << mSuccesiveGlitches;
+            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
+            processPacket(true);
+        }
     }
+OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
 };
 
@@ -235,7 +250,7 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                             PACKETSAMP cd->mTrain[s + ((mHist - (i + 1)) * mFPP)] =
                                     cd->mLastPackets[i][s];
                 }
-                if (true) {
+                if (glitch) {
                     // GET LINEAR PREDICTION COEFFICIENTS
                     ba.train(cd->mCoeffs, cd->mTrain);
 
@@ -256,18 +271,18 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                 for PACKETSAMP
                         OUT((glitch) ?
                                 ( (!ch) ? cd->mPrediction[s] : ( (s)?0.0:-0.2) )
-                                       :
+                              :
                                 (
                                     ( (!ch)&&(lastWasGlitch) ) ? cd->mXfadedPred[s] : cd->mTruth[s]
-                                                      ),
+                                                                 ),
                             ch, s);
 
-//                for PACKETSAMP
-//                        OUT((glitch) ? cd->mPrediction[s]
-//                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
-//                            ch, s);
+                //                for PACKETSAMP
+                //                        OUT((glitch) ? cd->mPrediction[s]
+                //                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                //                            ch, s);
 
-                if (true) {
+                if (glitch) {
                     for PACKETSAMP cd->mNextPred[s] = cd->mPrediction[s + mFPP];
                 }
             }
