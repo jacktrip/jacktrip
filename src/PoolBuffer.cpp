@@ -349,18 +349,18 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                         cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 
                 for PACKETSAMP
-                        OUT((glitch) ?
-                                ( (!ch) ? cd->mPrediction[s] : ( (s)?0.0:-0.2) )
-                              :
-                                ( (!ch) ? ( (lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s] )
-                                        : cd->mTruth[s]),
-                            ch, s);
+//                        OUT((glitch) ?
+//                                ( (!ch) ? cd->mPrediction[s] : ( (s)?0.0:-0.2) )
+//                              :
+//                                ( (!ch) ? ( (lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s] )
+//                                        : cd->mTruth[s]),
+//                            ch, s);
 
 
-                //                for PACKETSAMP
-                //                        OUT((glitch) ? cd->mPrediction[s]
-                //                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
-                //                            ch, s);
+                                for PACKETSAMP
+                                        OUT((glitch) ? cd->mPrediction[s]
+                                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                                            ch, s);
 
                 if (glitch) {
                     for PACKETSAMP cd->mNextPred[s] = cd->mPrediction[s + mFPP];
