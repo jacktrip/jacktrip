@@ -32,17 +32,43 @@
 /**
  * \file PoolBuffer.cpp
  * \author Chris Chafe
- * \date May 2021
+ * \date May-Sep 2021
  */
 
 // EXPERIMENTAL for testing in JackTrip v1.4.0
-// runs ok from FPP 16 up to 512, but don't try 1024 yet
+// runs ok from FPP 16 up to 256, but don't try 512 or 1024 yet
 // in / out channels are the same -- mono, stereo and -n3 tested fine
 
-// for example, server
-// jacktrip -S --udprt  -p1 --bufstrategy 3 -q2
-// and client
-// jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -q2
+// local loopback test with 4 terminals running and the following jmess file
+// jacktrip -S --udprt --nojackportsconnect -q1 --bufstrategy 3
+// jacktrip -C localhost --udprt --nojackportsconnect -q1  --bufstrategy 3
+// jack_iodelay
+// jmess -c delay.xml
+// ---------delay.xml----------
+//<jmess>
+//  <connection>
+//    <output>localhost:receive_1</output>
+//    <input>jack_delay:in</input>
+//  </connection>
+//  <connection>
+//    <output>__1:receive_1</output>
+//    <input>__1:send_1</input>
+//  </connection>
+//  <connection>
+//    <output>__1:receive_2</output>
+//    <input>__1:send_2</input>
+//  </connection>
+//  <connection>
+//    <output>jack_delay:out</output>
+//    <input>localhost:send_1</input>
+//  </connection>
+//</jmess>
+
+// tested loss and jitter impairments with
+// sudo tc qdisc add dev lo root netem loss 1%
+// sudo tc qdisc del dev lo root netem loss 1%
+// sudo tc qdisc add dev lo root netem slot distribution pareto 0.5ms 0.5ms
+// sudo tc qdisc del dev lo root netem slot distribution pareto 0.5ms 0.5ms
 
 #include "PoolBuffer.h"
 #include <iomanip>
@@ -134,28 +160,36 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mLastLostCount = 0;
     tmpCtr = 0;
     tmpTimer = new QElapsedTimer();
+    tmpTimer->start();
+    tmpTimer2 = new QElapsedTimer();
+    tmpTimer2->start();
     mLastSeqNum = -1;
     mSuccesiveGlitches = 0;
     mModSeqNum = 65536;
 
-
     lastSeqNumx = -1;
+    mDl.resize(mModSeqNum);
+    for (int i = 0; i < mModSeqNum; i++) mDl[i] = -1.0;
+    mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
+    if (mFPP>256) qDebug() << "\n!!!!!!! bufstrategy 3\n mFPP needs to be 16 - 256, but =" << mFPP;
 }
 
 //*******************************************************************************
 bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
-    { fprintf(stderr,"%d\t", seq_num); fflush(stderr);}
     //    qDebug() << "pushPacket" << seq_num;
     if((mLastSeqNum != -1) && (((mLastSeqNum+1)%mModSeqNum) != seq_num))
+    {
         qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
+    }
     mLastSeqNum = seq_num;
-
+    int state = 0;
     int freeSlot = -1;
     for (int i = 0; i < mPoolSize; i++) {
         if (mIndexPool[i] == -1) {
             freeSlot = i;
+            state = 2;
             break;
         }
     }
@@ -169,11 +203,19 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
             }
         }
         freeSlot = oldestIndex;
-//        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
+        //        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"  << freeSlot;
+        state = 3;
     }
     if (freeSlot < 0) qDebug() << "pool overflow -- trouble erasing"  << "freeSlot"  << freeSlot;
     mIndexPool[freeSlot] = seq_num;
     memcpy(mIncomingDat[freeSlot], buf, mBytes);
+
+    //    {
+    //        double ms = (double)tmpTimer->nsecsElapsed() / 1000000.0;
+    //        tmpTimer->start();
+    //        fprintf(stderr,"%f\t%d\t%d\n", ms, seq_num, state); fflush(stderr);
+    //    }
+
     return true;
 };
 
@@ -182,6 +224,7 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
+    int state = 0;
 
     if (mLastSeqNum == -1) {
         memcpy(mXfrBuffer, mZeros, mBytes);
@@ -195,7 +238,26 @@ void PoolBuffer::pullPacket(int8_t* buf)
                 if (tmp<0) tmp+=mModSeqNum;
                 if (mIndexPool[i] == tmp) {
                     slot = i;
-                    goto PACKETOK;
+                    if (!(tmp%10)) {
+                        {
+                            double msx = (double)tmpTimer2->nsecsElapsed() / 1000000.0;
+//                            msx += 0.666666666666;
+                            for (int i = 0; i < 10; i++) {
+//                                fprintf(stderr,"   %f\t%d\t%f\n", 0.0, tmp+i, mDl[tmp+i]); fflush(stderr);
+                                mDl[tmp+i] = msx +
+                                        i*mPacketDurMsec;
+                            }
+                        }
+                    }
+                    double ms = (double)tmpTimer2->nsecsElapsed() / 1000000.0;
+                    if (ms>1000.0)
+                    {
+                        double tmp2 = mDl[tmp]-ms;
+//                        fprintf(stderr,"%f\t%d\t%f\n", ms, tmp, mDl[tmp]-ms); fflush(stderr);
+                    if (tmp2>-1.0) goto PACKETOK;
+                    else goto GLITCH;
+                    }
+
                 }
             }
             lag--;
@@ -226,20 +288,23 @@ PACKETOK:
             mXfrState = 1;
             mIndexPool[slot] = -1;
             mSuccesiveGlitches = 0;
+            state = 4;
             goto OUTPUT;
         }
 GLITCH:
         {
             mSuccesiveGlitches++;
-//            qDebug() << "glitch" << mPoolSize << mQlen;
-//            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
+            //            qDebug() << "glitch" << mPoolSize << mQlen;
+            //            if (mSuccesiveGlitches > mQlen)         qDebug() << "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
             mXfrState = 2;
+            state = 5;
         }
     }
 OUTPUT:
     //    if (mXfrState==2) qDebug() << "mXfrState" << mXfrState;
     memcpy(buf, mXfrBuffer, mBytes);
+
 };
 
 //*******************************************************************************
