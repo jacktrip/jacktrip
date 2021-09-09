@@ -94,7 +94,7 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
           else
-            VERSION=$GITHUB_SHA
+            VERSION=${GITHUB_SHA::7}
           fi
           echo "::set-output name=version::$VERSION"
       - name: install dependencies for Linux
