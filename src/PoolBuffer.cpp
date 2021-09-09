@@ -39,6 +39,13 @@
 // runs ok from FPP 16 up to 256, but don't try 512 or 1024 yet
 // in / out channels are the same -- mono, stereo and -n3 tested fine
 
+// still problems with server at cmn9 and local client
+// better with lockup prevention
+//                     else if (mSuccesiveGlitches < 7) goto GLITCH;
+
+// jacktrip -S --udprt -p1 --bufstrategy 3 -q33
+// PIPEWIRE_LATENCY=32/48000 ./jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -q3
+
 // local loopback test with 4 terminals running and the following jmess file
 // jacktrip -S --udprt --nojackportsconnect -q1 --bufstrategy 3
 // jacktrip -C localhost --udprt --nojackportsconnect -q1  --bufstrategy 3
@@ -241,9 +248,9 @@ void PoolBuffer::pullPacket(int8_t* buf)
                     if (!(tmp%10)) {
                         {
                             double msx = (double)tmpTimer2->nsecsElapsed() / 1000000.0;
-//                            msx += 0.666666666666;
+                            //                            msx += 0.666666666666;
                             for (int i = 0; i < 10; i++) {
-//                                fprintf(stderr,"   %f\t%d\t%f\n", 0.0, tmp+i, mDl[tmp+i]); fflush(stderr);
+                                //                                fprintf(stderr,"   %f\t%d\t%f\n", 0.0, tmp+i, mDl[tmp+i]); fflush(stderr);
                                 mDl[tmp+i] = msx +
                                         i*mPacketDurMsec;
                             }
@@ -253,9 +260,11 @@ void PoolBuffer::pullPacket(int8_t* buf)
                     if (ms>1000.0)
                     {
                         double tmp2 = mDl[tmp]-ms;
-//                        fprintf(stderr,"%f\t%d\t%f\n", ms, tmp, mDl[tmp]-ms); fflush(stderr);
-                    if (tmp2>-1.0) goto PACKETOK;
-                    else goto GLITCH;
+                        //                        fprintf(stderr,"%f\t%d\t%f\n", ms, tmp, mDl[tmp]-ms); fflush(stderr);
+                        if (tmp2>-1.0) goto PACKETOK;
+                        else if (mSuccesiveGlitches < 12) goto GLITCH;
+                        else memcpy(mXfrBuffer, mZeros, mBytes);
+
                     }
 
                 }
@@ -349,18 +358,18 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
                         cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 
                 for PACKETSAMP
-//                        OUT((glitch) ?
-//                                ( (!ch) ? cd->mPrediction[s] : ( (s)?0.0:-0.2) )
-//                              :
-//                                ( (!ch) ? ( (lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s] )
-//                                        : cd->mTruth[s]),
-//                            ch, s);
+                        //                        OUT((glitch) ?
+                        //                                ( (!ch) ? cd->mPrediction[s] : ( (s)?0.0:-0.2) )
+                        //                              :
+                        //                                ( (!ch) ? ( (lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s] )
+                        //                                        : cd->mTruth[s]),
+                        //                            ch, s);
 
 
-                                for PACKETSAMP
-                                        OUT((glitch) ? cd->mPrediction[s]
-                                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
-                                            ch, s);
+                        for PACKETSAMP
+                        OUT((glitch) ? cd->mPrediction[s]
+                                       : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                            ch, s);
 
                 if (glitch) {
                     for PACKETSAMP cd->mNextPred[s] = cd->mPrediction[s + mFPP];
