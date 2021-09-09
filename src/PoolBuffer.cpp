@@ -39,10 +39,6 @@
 // runs ok from FPP 16 up to 256, but don't try 512 or 1024 yet
 // in / out channels are the same -- mono, stereo and -n3 tested fine
 
-// still problems with server at cmn9 and local client
-// better with lockup prevention
-//                     else if (mSuccesiveGlitches < 7) goto GLITCH;
-
 // jacktrip -S --udprt -p1 --bufstrategy 3 -q33
 // PIPEWIRE_LATENCY=32/48000 ./jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -q3
 
@@ -87,10 +83,6 @@ using std::cout;
 using std::endl;
 using std::setw;
 
-#define MINFPP 16
-#define STDDEVINDOW     200  // packets
-#define STDDEV2POOLSIZE 20.0
-#define MAXPOOLSIZE     6000  // insanely large pool, 2 sec FPP16
 #define HIST            6     // at FPP32
 #define OUT(x, ch, s)   sampleToBits(x, ch, s)
 // from listening tests iteration performs better than '=' operator
@@ -163,7 +155,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     memcpy(mZeros, mXfrBuffer, mBytes);
     stdDev = new StdDev( (int)(floor(48000.0 / (double)mFPP)), 1);
     stdDev2 = new StdDev( (int)(floor(48000.0 / (double)mFPP)), 2);
-    mFPPfactor = STDDEV2POOLSIZE * (0.0 + (32 / (double)mFPP));
     mLastLostCount = 0;
     tmpCtr = 0;
     tmpTimer = new QElapsedTimer();
