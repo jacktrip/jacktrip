@@ -23,7 +23,6 @@ jobs:
       env:
         REPO: https://github.com/${{ github.repository }}
         REF: ${{ github.ref }}
-        COMMIT: ${{ github.sha }}
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
       with:
         bundle: jacktrip-dev-${{ github.sha }}.flatpak
