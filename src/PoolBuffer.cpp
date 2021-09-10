@@ -338,21 +338,21 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
         if (lastWasGlitch) for (int s = 0; s < mFPP; s++)
             cd->mXfadedPred[s] = cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 
-        for (int s = 0; s < mFPP; s++)
-            //                        OUT((glitch) ?
-            //                                ( (!ch) ? cd->mPrediction[s] : (
-            //                                (s)?0.0:-0.2) )
-            //                              :
-            //                                ( (!ch) ? ( (lastWasGlitch) ?
-            //                                cd->mXfadedPred[s] : cd->mTruth[s] )
-            //                                        : cd->mTruth[s]),
-            //                            ch, s);
+        //        for (int s = 0; s < mFPP; s++)
+        //                        OUT((glitch) ?
+        //                                ( (!ch) ? cd->mPrediction[s] : (
+        //                                (s)?0.0:-0.2) )
+        //                              :
+        //                                ( (!ch) ? ( (lastWasGlitch) ?
+        //                                cd->mXfadedPred[s] : cd->mTruth[s] )
+        //                                        : cd->mTruth[s]),
+        //                            ch, s);
 
-            for (int s = 0; s < mFPP; s++)
-                sampleToBits((glitch)
-                             ? cd->mPrediction[s]
-                               : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
-                             ch, s);
+        for (int s = 0; s < mFPP; s++)
+            sampleToBits((glitch)
+                         ? cd->mPrediction[s]
+                           : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                         ch, s);
 
         if (glitch) {
             for (int s = 0; s < mFPP; s++)
