@@ -26,6 +26,6 @@ jobs:
         COMMIT: ${{ github.sha }}
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
       with:
-        bundle: jacktrip-dev.flatpak
+        bundle: jacktrip-dev-${{ github.sha }}.flatpak
         manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
         cache-key: flatpak-builder-${{ github.sha }}
