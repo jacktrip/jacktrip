@@ -14,7 +14,7 @@ Changelog
 - (added) MSVC build
 - (added) RtAudio Meson subproject
 - (added) formatting with clang-format
-- (added) static snalysis with clang-tidy
+- (added) static analysis with clang-tidy
 - (added) cross compilation for Windows
 - (added) flatpaks
 - (added) appstream
@@ -26,7 +26,8 @@ Changelog
 - (update) QJackTrip and JackTrip are now identical
 - (update) Change helpscreen wording for --broadcast argument
 - (update) jitter buffer alternatives
-- (update) RtAudio revive (only default devices supported)
+- (update) RtAudio revive
+- (update) RtAudio device selection
 - (update) build script moved to root directory
 
 1.3.0

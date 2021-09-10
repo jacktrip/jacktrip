@@ -244,7 +244,7 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
     }
     // latency correction
     int32_t d = mReadPosition - mBroadcastLatency - mBroadcastPosition - len;
-    if (std::abs(d) > mBroadcastLatency / 2) {
+    if (static_cast<uint32_t>(std::abs(d)) > mBroadcastLatency / 2) {
         mBroadcastPosition     = mReadPosition - mBroadcastLatency - len;
         mBroadcastPositionCorr = 0.0;
         mBroadcastSkew += d / mMinStepSize;

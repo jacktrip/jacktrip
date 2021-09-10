@@ -7,6 +7,20 @@
                 <Shortcut Id="startmenuJackTrip" Directory="ProgramMenuDir" Name="JackTrip"
                     WorkingDirectory="INSTALLDIR" Icon="jacktrip.exe" IconIndex="0" Advertise="yes" />
             </Component>
+            <Component Id="cmp52FE9CFF214054652C281C37201305EC" Guid="{158D5247-525B-417F-B12B-48F13CD7E414}">
+                <File Id="fil8AF433A253A49035CB32EA6F957BF7D4" KeyPath="yes" Source="SourceDir\LICENSE.md" />
+            </Component>
+            <Directory Id="LICENSESDIR" Name="LICENSES">
+                <Component Id="cmpA07F2DC814BECD1E5F3FC36DC47718E5" Guid="{36E317A7-BA26-4E2B-99CD-0728CD8779DD}">
+                    <File Id="fil39657C9CD79E70F8B3033F0CF1D035A1" KeyPath="yes" Source="SourceDir\LICENSES\LGPL-3.0-only.txt" />
+                </Component>
+                <Component Id="cmpBF7FA1E27DF091A3CCFA1CD7B7CD94BA" Guid="{2D555037-9C09-4042-8F0C-C6EBAB80681A}">
+                    <File Id="fil496C76DCE2246C589E09AC68BCFDFB32" KeyPath="yes" Source="SourceDir\LICENSES\MIT.txt" />
+                </Component>
+                <Component Id="cmpF915A8D749EFFA98CD8DD582A7C82614" Guid="{A3C72CE1-0570-497B-A84F-F21C53771ABC}">
+                    <File Id="filCCF13ED800A4C7B438EC52A50C3A6755" KeyPath="yes" Source="SourceDir\LICENSES\GPL-3.0.txt" />
+                </Component>
+              </Directory>
 <?ifdef rtaudio?>
             <Component Id="cmpD683260746BC875AE3BDED667AA8F954" Guid="20A867E8-36B6-49E3-A1DA-76CFCE967908">
                 <File Id="filA7BCB2CDD7D00C9DFB32AEB94F294425" KeyPath="yes" Source="SourceDir\librtaudio.dll" />
@@ -178,6 +192,10 @@
     <Fragment>
         <ComponentGroup Id="jacktrip">
             <ComponentRef Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" />
+            <ComponentRef Id="cmp52FE9CFF214054652C281C37201305EC" />
+            <ComponentRef Id="cmpA07F2DC814BECD1E5F3FC36DC47718E5" />
+            <ComponentRef Id="cmpBF7FA1E27DF091A3CCFA1CD7B7CD94BA" />
+            <ComponentRef Id="cmpF915A8D749EFFA98CD8DD582A7C82614" />
 <?ifdef rtaudio?>
             <ComponentRef Id="cmpD683260746BC875AE3BDED667AA8F954" />
 <?endif?>
