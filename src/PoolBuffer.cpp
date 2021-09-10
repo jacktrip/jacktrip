@@ -183,12 +183,10 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
         qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
     }
     mLastSeqNum  = seq_num;
-    int state    = 0;
     int freeSlot = -1;
     for (int i = 0; i < mPoolSize; i++) {
         if (mIndexPool[i] == -1) {
             freeSlot = i;
-            state    = 2;
             break;
         }
     }
@@ -204,19 +202,12 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
         freeSlot = oldestIndex;
         //        qDebug() << "pool overflow -- erasing"  << mIndexPool[freeSlot] << "at"
         //        << freeSlot;
-        state = 3;
     }
     if (freeSlot < 0)
         qDebug() << "pool overflow -- trouble erasing"
                  << "freeSlot" << freeSlot;
     mIndexPool[freeSlot] = seq_num;
     memcpy(mIncomingDat[freeSlot], buf, mBytes);
-
-    //    {
-    //        double ms = (double)tmpTimer->nsecsElapsed() / 1000000.0;
-    //        tmpTimer->start();
-    //        fprintf(stderr,"%f\t%d\t%d\n", ms, seq_num, state); fflush(stderr);
-    //    }
 
     return true;
 };
@@ -226,11 +217,9 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-    int state = 0;
 
     if (mLastSeqNum == -1) {
         memcpy(mXfrBuffer, mZeros, mBytes);
-        mXfrState = -1;
     } else {
         int slot = -1;
         int lag  = mQlen - 1;
@@ -290,12 +279,9 @@ PACKETOK : {
             //        qDebug() << "lag" << lag;
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
-            mXfrState = 0;
             processPacket(false);
-            mXfrState          = 1;
             mIndexPool[slot]   = -1;
             mSuccesiveGlitches = 0;
-            state              = 4;
             goto OUTPUT;
         }
 GLITCH : {
@@ -304,12 +290,9 @@ GLITCH : {
             //            if (mSuccesiveGlitches > mQlen)         qDebug() <<
             //            "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
-            mXfrState = 2;
-            state     = 5;
         }
     }
 OUTPUT:
-    //    if (mXfrState==2) qDebug() << "mXfrState" << mXfrState;
     memcpy(buf, mXfrBuffer, mBytes);
 };
 

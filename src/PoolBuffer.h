@@ -181,7 +181,6 @@ class PoolBuffer : public RingBuffer
 
     int lastSeqNumx;
     int seq_numx;
-    int mXfrState;
     QElapsedTimer* tmpTimer2;
     vector<double> mDl;
     double mPacketDurMsec;
