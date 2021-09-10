@@ -300,7 +300,7 @@ class JackTrip : public QObject
     {
         mDataProtocolReceiver = DataProtocolReceiver;
     }
-    virtual int getBufferStrategy()
+    virtual int getBufferStrategy() const
     {
         return mBufferStrategy;
     }
