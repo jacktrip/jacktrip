@@ -114,7 +114,7 @@ class PoolBuffer : public RingBuffer
 
    public:
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen);
-    virtual ~PoolBuffer() {}
+    virtual ~PoolBuffer();
 
     bool pushPacket(const int8_t* buf, int seq_num);
     // can hijack unused2 to propagate incoming seq num if needed

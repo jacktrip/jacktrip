@@ -163,10 +163,12 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         qDebug() << "\n!!!!!!! bufstrategy 3\n mFPP needs to be 16 - 256, but =" << mFPP;
 }
 
-//mXfrBuffer
-//mZeros
-//for (int i = 0; i < mNumChannels; i++) {ChanData* tmp = new ChanData(i, mFPP, mHist);
-
+PoolBuffer::~PoolBuffer()
+{
+    delete mXfrBuffer;
+    delete mZeros;
+    for (int i = 0; i < mNumChannels; i++) delete mChanData[i];
+}
 //*******************************************************************************
 bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 {
