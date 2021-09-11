@@ -23,8 +23,10 @@ jobs:
       env:
         REPO: https://github.com/${{ github.repository }}
         REF: ${{ github.ref }}
+    - name: Add SHORT_SHA environment variable
+      run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
       with:
-        bundle: jacktrip-dev-${{ github.sha }}.flatpak
+        bundle: JackTrip-Devel-${{ env.SHORT_SHA }}.flatpak
         manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
         cache-key: flatpak-builder-${{ github.sha }}
