@@ -148,6 +148,7 @@ class PoolBuffer : public RingBuffer
     int mHist;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
+    int mBytes;
     int8_t* mXfrBuffer;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
@@ -155,14 +156,9 @@ class PoolBuffer : public RingBuffer
     vector<sample_t> mFadeUp;
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
-    int mOutgoingCnt;
-    int mLastDelta;
-    int mBytes;
     vector<int8_t*> mIncomingDat;
-    int8_t* mZeros;
-    QElapsedTimer mTimer0;
-    int mIncomingCnt;
     vector<int> mIndexPool;
+    int8_t* mZeros;
     int mQlen;
     int mGlitchCnt;
     int mGlitchMax;
@@ -170,17 +166,12 @@ class PoolBuffer : public RingBuffer
     vector<sample_t> mTail;
     StdDev* stdDev;
     StdDev* stdDev2;
-    int mFPPfactor;
-    int tmpCtr;
-    QElapsedTimer tmpTimer;
+    QElapsedTimer mPredTimer;
     int mLastSeqNum;
+    int mLastPoolSeqNum;
     int mSuccesiveGlitches;
-    int mModSeqNum;
 
-    int lastSeqNumx;
-    int seq_numx;
-    QElapsedTimer tmpTimer2;
-    vector<double> mDl;
+    vector<double> mDeadline;
     double mPacketDurMsec;
 };
 

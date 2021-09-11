@@ -86,7 +86,11 @@ using std::cout;
 using std::endl;
 using std::setw;
 
+// constants... for now
 constexpr int HIST = 6;  // at FPP32
+constexpr int USEFULPREDICTIONS = 12;  // at FPP32
+constexpr int POOLPAD = 20;  // pool headroom
+constexpr int mModSeqNum  = 65536; // corresponds to packet header seq
 
 //*******************************************************************************
 PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen)
@@ -95,7 +99,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mSampleRate(sample_rate)
-    , mPoolSize(qLen + 20)
+    , mPoolSize(qLen + POOLPAD)
     , mQlen(qLen)
 {
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
@@ -116,14 +120,13 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
     mHist            = (int)histFloat;
     if (mHist < 2)
-        mHist = 2;  // min packets, needs a pair
+        mHist = 2;  // min packets for prediction, needs at least 2
     else if (mHist > 6)
         mHist = 6;  // max packets, keep a lid on CPU load
     if (gVerboseFlag) cout << "mHist = " << mHist << " at " << mFPP << "\n";
-    //    qDebug() << "mHist =" << mHist << "@" << mFPP;
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
     mXfrBuffer = new int8_t[mBytes];
-    mPacketCnt = 0;  // burg
+    mPacketCnt = 0;  // burg initialization
     mFadeUp.resize(mFPP, 0.0);
     mFadeDown.resize(mFPP, 0.0);
     for (int i = 0; i < mFPP; i++) {
@@ -131,43 +134,38 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
     mLastWasGlitch = false;
-    mOutgoingCnt   = 0;
-
     for (int i = 0; i < mPoolSize; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
     }
     mIndexPool.resize(mPoolSize);
     for (int i = 0; i < mPoolSize; i++) mIndexPool[i] = -1;
-
-    mIncomingCnt = 0;
-    mTimer0.start();
     mGlitchCnt = 0;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
         for (int s = 0; s < mFPP; s++)
-            sampleToBits(0.0, i, s);  // zero mXfrBuffer
+            sampleToBits(0.0, i, s);  // zero all channels in mXfrBuffer
     }
     mZeros = new int8_t[mBytes];
     memcpy(mZeros, mXfrBuffer, mBytes);
     stdDev         = new StdDev((int)(floor(48000.0 / (double)mFPP)), 1);
     stdDev2        = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;
-    tmpCtr         = 0;
-    tmpTimer.start();
-    tmpTimer2.start();
+    mPredTimer.start();
     mLastSeqNum        = -1;
+    mLastPoolSeqNum = -1;
     mSuccesiveGlitches = 0;
-    mModSeqNum         = 65536;
-
-    lastSeqNumx = -1;
-    mDl.resize(mModSeqNum);
-    for (int i = 0; i < mModSeqNum; i++) mDl[i] = -1.0;
+    mDeadline.resize(mModSeqNum);
+    for (int i = 0; i < mModSeqNum; i++) mDeadline[i] = -1.0;
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
     if (mFPP > 256)
         qDebug() << "\n!!!!!!! bufstrategy 3\n mFPP needs to be 16 - 256, but =" << mFPP;
 }
+
+//mXfrBuffer
+//mZeros
+//for (int i = 0; i < mNumChannels; i++) {ChanData* tmp = new ChanData(i, mFPP, mHist);
 
 //*******************************************************************************
 bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
@@ -208,47 +206,42 @@ bool PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 };
 
 //*******************************************************************************
-//    (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 void PoolBuffer::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
 
     if (mLastSeqNum == -1) {
-        memcpy(mXfrBuffer, mZeros, mBytes);
+        goto ZERO_OUTPUT;
     } else {
         int slot = -1;
         int lag  = mQlen - 1;
         while (lag >= 0) {
             for (int i = 0; i < mPoolSize; i++) {
-                int tmp = mLastSeqNum - lag;
-                if (tmp < 0) tmp += mModSeqNum;
-                if (mIndexPool[i] == tmp) {
+                int target = mLastSeqNum - lag;
+                if (target < 0) target += mModSeqNum;
+                if (mIndexPool[i] == target) {
                     slot = i;
-                    if (!(tmp % 10)) {
+                    if (!(target % USEFULPREDICTIONS)) { // predict a group of timings
                         {
-                            double msx = (double)tmpTimer2.nsecsElapsed() / 1000000.0;
-                            //                            msx += 0.666666666666;
-                            for (int i = 0; i < 10; i++) {
+                            double msx = (double)mPredTimer.nsecsElapsed() / 1000000.0;
+                            for (int j = 0; j < USEFULPREDICTIONS; j++) {
                                 //                                fprintf(stderr,"
                                 //                                %f\t%d\t%f\n", 0.0,
-                                //                                tmp+i, mDl[tmp+i]);
+                                //                                tmp+i, mDeadline[tmp+i]);
                                 //                                fflush(stderr);
-                                mDl[tmp + i] = msx + i * mPacketDurMsec;
+                                mDeadline[target + j] = msx + j * mPacketDurMsec;
                             }
                         }
                     }
-                    double ms = (double)tmpTimer2.nsecsElapsed() / 1000000.0;
-                    if (ms > 1000.0) {
-                        double tmp2 = mDl[tmp] - ms;
-                        //                        fprintf(stderr,"%f\t%d\t%f\n", ms, tmp,
-                        //                        mDl[tmp]-ms); fflush(stderr);
-                        if (tmp2 > -1.0)
-                            goto PACKETOK;
-                        else if (mSuccesiveGlitches < 12)
-                            goto GLITCH;
-                        else
-                            memcpy(mXfrBuffer, mZeros, mBytes);
-                    }
+                    double ms = (double)mPredTimer.nsecsElapsed() / 1000000.0;
+                    //                        fprintf(stderr,"%f\t%d\t%f\n", ms, tmp,
+                    //                        mDeadline[tmp]-ms); fflush(stderr);
+                    if ((mDeadline[target] - ms) > -mPacketDurMsec) // check sufficient lead time
+                        goto PACKETOK;
+                    else if (mSuccesiveGlitches < USEFULPREDICTIONS)
+                        goto GLITCH;
+                    else
+                        goto ZERO_OUTPUT;
                 }
             }
             lag--;
@@ -256,19 +249,12 @@ void PoolBuffer::pullPacket(int8_t* buf)
         if (slot == -1) goto GLITCH;
 PACKETOK : {
             {
-                bool test = false;
-                seq_numx  = mIndexPool[slot];
-                if ((lastSeqNumx != -1) && (((lastSeqNumx + 1) % mModSeqNum) != seq_numx)) {
-                    //                    if ((seq_numx-lastSeqNumx)>7)
-                    //                        for (int i = 0; i < mPoolSize; i++)
-                    //                        { fprintf(stderr,"%d\t", mIndexPool[i]);
-                    //                        fflush(stderr);}
-                    test = true;
-                    //                    qDebug() << "lost packet detected in pullPacket" <<
-                    //                    lastSeqNumx << seq_numx;
-                }
-                lastSeqNumx = seq_numx;
-                if (test) goto GLITCH;
+                // observe seq coming out of pool
+                bool outOfSeq = ((mLastPoolSeqNum != -1) &&
+                                 (((mLastPoolSeqNum + 1) % mModSeqNum)
+                                  != mIndexPool[slot]));
+                mLastPoolSeqNum = mIndexPool[slot];
+                if (outOfSeq) goto GLITCH;
             }
 
             //        qDebug() << "lag" << lag;
@@ -279,14 +265,17 @@ PACKETOK : {
             mSuccesiveGlitches = 0;
             goto OUTPUT;
         }
-GLITCH : {
+GLITCH: {
             mSuccesiveGlitches++;
             //            qDebug() << "glitch" << mPoolSize << mQlen;
             //            if (mSuccesiveGlitches > mQlen)         qDebug() <<
             //            "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
+            goto OUTPUT;
         }
     }
+ZERO_OUTPUT:
+    memcpy(mXfrBuffer, mZeros, mBytes);
 OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
 };
@@ -298,6 +287,7 @@ void PoolBuffer::processPacket(bool glitch)
         processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
     mLastWasGlitch = glitch;
     mPacketCnt++;
+    // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }
 
 //*******************************************************************************
@@ -355,17 +345,16 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
         }
     }
 
-    // if mPacketCnt==0 initialization follows
+    // copy down history
     for (int i = mHist - 1; i > 0; i--) {
         for (int s = 0; s < mFPP; s++)
             cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
     }
 
-    // will only be able to glitch if mPacketCnt>0
+    // add current input or prediction to history, for latter checking if primed
     for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] = ((!glitch) || (packetCnt < mHist))
-                ? cd->mTruth[s]
-                  : cd->mPrediction[s];
+                ? cd->mTruth[s] : cd->mPrediction[s];
 }
 
 //*******************************************************************************
