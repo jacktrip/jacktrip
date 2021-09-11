@@ -250,14 +250,14 @@ void PoolBuffer::pullPacket(int8_t* buf)
         }
         if (slot == -1) goto GLITCH;
 PACKETOK : {
-            {
-                // observe seq coming out of pool
-                bool outOfSeq = ((mLastPoolSeqNum != -1) &&
-                                 (((mLastPoolSeqNum + 1) % mModSeqNum)
-                                  != mIndexPool[slot]));
-                mLastPoolSeqNum = mIndexPool[slot];
-                if (outOfSeq) goto GLITCH;
-            }
+//            {
+//                // observe seq coming out of pool
+//                bool outOfSeq = ((mLastPoolSeqNum != -1) &&
+//                                 (((mLastPoolSeqNum + 1) % mModSeqNum)
+//                                  != mIndexPool[slot]));
+//                mLastPoolSeqNum = mIndexPool[slot];
+//                if (outOfSeq) goto GLITCH;
+//            }
 
             //        qDebug() << "lag" << lag;
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
