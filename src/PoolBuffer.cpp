@@ -89,7 +89,7 @@ using std::setw;
 // constants... for now
 constexpr int HIST = 6;  // at FPP32
 constexpr int USEFULPREDICTIONS = 12;  // at FPP32
-constexpr int POOLPAD = 20;  // pool headroom
+constexpr int POOLPAD = 10;  // pool headroom
 constexpr int mModSeqNum  = 65536; // corresponds to packet header seq
 
 //*******************************************************************************
