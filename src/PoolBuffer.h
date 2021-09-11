@@ -169,8 +169,6 @@ class PoolBuffer : public RingBuffer
     QElapsedTimer mPredTimer;
     int mLastSeqNum;
     int mLastPoolSeqNum;
-    int mSuccesiveGlitches;
-
     vector<double> mDeadline;
     double mPacketDurMsec;
 };

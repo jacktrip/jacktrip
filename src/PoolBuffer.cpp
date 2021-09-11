@@ -41,7 +41,7 @@
 // number of in / out channels should be the same
 // mono, stereo and -n3 tested fine
 
-// ./jacktrip -S --udprt -p1 --bufstrategy 3 -q33
+// ./jacktrip -S --udprt -p1 --bufstrategy 3 -q10
 // PIPEWIRE_LATENCY=32/48000 ./jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -q3
 
 // local loopback test with 4 terminals running and the following jmess file
@@ -240,31 +240,27 @@ void PoolBuffer::pullPacket(int8_t* buf)
                     //                        mDeadline[tmp]-ms); fflush(stderr);
                     if ((mDeadline[target] - ms) > -mPacketDurMsec) // check sufficient lead time
                         goto PACKETOK;
-                    else if (mSuccesiveGlitches < USEFULPREDICTIONS)
-                        goto GLITCH;
-                    else
-                        goto ZERO_OUTPUT;
+                    else goto GLITCH;
                 }
             }
             lag--;
         }
         if (slot == -1) goto GLITCH;
 PACKETOK : {
-//            {
-//                // observe seq coming out of pool
-//                bool outOfSeq = ((mLastPoolSeqNum != -1) &&
-//                                 (((mLastPoolSeqNum + 1) % mModSeqNum)
-//                                  != mIndexPool[slot]));
-//                mLastPoolSeqNum = mIndexPool[slot];
-//                if (outOfSeq) goto GLITCH;
-//            }
+            //            {
+            //                // observe seq coming out of pool
+            //                bool outOfSeq = ((mLastPoolSeqNum != -1) &&
+            //                                 (((mLastPoolSeqNum + 1) % mModSeqNum)
+            //                                  != mIndexPool[slot]));
+            //                mLastPoolSeqNum = mIndexPool[slot];
+            //                if (outOfSeq) goto GLITCH;
+            //            }
 
             //        qDebug() << "lag" << lag;
             //        fprintf(stderr,"%d\t", lag);             fflush(stderr);
             memcpy(mXfrBuffer, mIncomingDat[slot], mBytes);
             processPacket(false);
             mIndexPool[slot]   = -1;
-            mSuccesiveGlitches = 0;
             goto OUTPUT;
         }
 GLITCH: {
@@ -273,7 +269,6 @@ GLITCH: {
             //            "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
             if (slot != -1) mIndexPool[slot]   = -1;
-            mSuccesiveGlitches++;
             goto OUTPUT;
         }
     }
@@ -338,8 +333,11 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
 
         for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
-                         ? cd->mPrediction[s]
-                           : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                         ? ((!ch) ? cd->mPrediction[s] : 0.5) // mute ch1
+                         : ((lastWasGlitch) ?
+                                ((!ch) ? cd->mXfadedPred[s] : 0.5) :
+                                ((!ch) ? cd->mTruth[s] : 0.5)
+                                ),
                          ch, s);
 
         if (glitch) {
