@@ -112,7 +112,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mMinPoolSize     = mPoolSize;
     mHist            = HIST * 32;                // samples, from original settings
     double histFloat = mHist / (double)mFPP;  // packets for other FPP
     mHist            = (int)histFloat;
@@ -134,13 +133,12 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mLastWasGlitch = false;
     mOutgoingCnt   = 0;
 
-    mMaxPoolSize = mPoolSize;
-    for (int i = 0; i < mMaxPoolSize; i++) {
+    for (int i = 0; i < mPoolSize; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
     }
-    mIndexPool.resize(mMaxPoolSize);
-    for (int i = 0; i < mMaxPoolSize; i++) mIndexPool[i] = -1;
+    mIndexPool.resize(mPoolSize);
+    for (int i = 0; i < mPoolSize; i++) mIndexPool[i] = -1;
 
     mIncomingCnt = 0;
     mTimer0.start();

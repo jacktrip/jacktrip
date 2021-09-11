@@ -171,8 +171,6 @@ class PoolBuffer : public RingBuffer
     StdDev* stdDev;
     StdDev* stdDev2;
     int mFPPfactor;
-    int mMaxPoolSize;
-    int mMinPoolSize;
     int tmpCtr;
     QElapsedTimer tmpTimer;
     int mLastSeqNum;
