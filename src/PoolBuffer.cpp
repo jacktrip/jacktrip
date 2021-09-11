@@ -268,11 +268,12 @@ PACKETOK : {
             goto OUTPUT;
         }
 GLITCH: {
-            mSuccesiveGlitches++;
             //            qDebug() << "glitch" << mPoolSize << mQlen;
             //            if (mSuccesiveGlitches > mQlen)         qDebug() <<
             //            "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
+            mIndexPool[slot]   = -1;
+            mSuccesiveGlitches++;
             goto OUTPUT;
         }
     }
