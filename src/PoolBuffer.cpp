@@ -155,7 +155,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mPredTimer.start();
     mLastSeqNum        = -1;
     mLastPoolSeqNum = -1;
-    mSuccesiveGlitches = 0;
     mDeadline.resize(mModSeqNum);
     for (int i = 0; i < mModSeqNum; i++) mDeadline[i] = -1.0;
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
