@@ -272,7 +272,7 @@ GLITCH: {
             //            if (mSuccesiveGlitches > mQlen)         qDebug() <<
             //            "mSuccesiveGlitches > mQlen" << mSuccesiveGlitches;
             processPacket(true);
-            mIndexPool[slot]   = -1;
+            if (slot != -1) mIndexPool[slot]   = -1;
             mSuccesiveGlitches++;
             goto OUTPUT;
         }
