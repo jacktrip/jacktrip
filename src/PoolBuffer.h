@@ -86,7 +86,7 @@ class StdDev
     StdDev(int w, int id);
     void reset();
     double tick();
-    QElapsedTimer* mTimer;
+    QElapsedTimer mTimer;
     vector<double> data;
     double mean;
     double var;
@@ -160,7 +160,7 @@ class PoolBuffer : public RingBuffer
     int mBytes;
     vector<int8_t*> mIncomingDat;
     int8_t* mZeros;
-    QElapsedTimer* mTimer0;
+    QElapsedTimer mTimer0;
     int mIncomingCnt;
     vector<int> mIndexPool;
     int mQlen;
@@ -174,14 +174,14 @@ class PoolBuffer : public RingBuffer
     int mMaxPoolSize;
     int mMinPoolSize;
     int tmpCtr;
-    QElapsedTimer* tmpTimer;
+    QElapsedTimer tmpTimer;
     int mLastSeqNum;
     int mSuccesiveGlitches;
     int mModSeqNum;
 
     int lastSeqNumx;
     int seq_numx;
-    QElapsedTimer* tmpTimer2;
+    QElapsedTimer tmpTimer2;
     vector<double> mDl;
     double mPacketDurMsec;
 };

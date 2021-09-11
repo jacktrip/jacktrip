@@ -143,8 +143,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     for (int i = 0; i < mMaxPoolSize; i++) mIndexPool[i] = -1;
 
     mIncomingCnt = 0;
-    mTimer0      = new QElapsedTimer();
-    mTimer0->start();
+    mTimer0.start();
     mGlitchCnt = 0;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
@@ -158,10 +157,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     stdDev2        = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;
     tmpCtr         = 0;
-    tmpTimer       = new QElapsedTimer();
-    tmpTimer->start();
-    tmpTimer2 = new QElapsedTimer();
-    tmpTimer2->start();
+    tmpTimer.start();
+    tmpTimer2.start();
     mLastSeqNum        = -1;
     mSuccesiveGlitches = 0;
     mModSeqNum         = 65536;
@@ -231,7 +228,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
                     slot = i;
                     if (!(tmp % 10)) {
                         {
-                            double msx = (double)tmpTimer2->nsecsElapsed() / 1000000.0;
+                            double msx = (double)tmpTimer2.nsecsElapsed() / 1000000.0;
                             //                            msx += 0.666666666666;
                             for (int i = 0; i < 10; i++) {
                                 //                                fprintf(stderr,"
@@ -242,7 +239,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
                             }
                         }
                     }
-                    double ms = (double)tmpTimer2->nsecsElapsed() / 1000000.0;
+                    double ms = (double)tmpTimer2.nsecsElapsed() / 1000000.0;
                     if (ms > 1000.0) {
                         double tmp2 = mDl[tmp] - ms;
                         //                        fprintf(stderr,"%f\t%d\t%f\n", ms, tmp,
@@ -534,8 +531,7 @@ StdDev::StdDev(int w, int id) : window(w), mId(id)
     lastMean          = 0.0;
     lastMin           = 0;
     lastMax           = 0;
-    mTimer            = new QElapsedTimer();
-    mTimer->start();
+    mTimer.start();
     data.resize(w, 0.0);
 }
 
@@ -553,8 +549,8 @@ void StdDev::reset()
 
 double StdDev::tick()
 {
-    double msElapsed = (double)mTimer->nsecsElapsed() / 1000000.0;
-    mTimer->start();
+    double msElapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
+    mTimer.start();
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
