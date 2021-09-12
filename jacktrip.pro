@@ -85,6 +85,11 @@ macx {
     LIBS += -framework Foundation
     CONFIG += objective_c
   }
+  static {
+    # fix ld warning "direct access in function (...) to global weak symbol (...) means the weak symbol cannot be overridden at runtime
+    # see issue #393
+    QMAKE_LFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
+  }
 }
 
 linux-g++ | linux-g++-64 {
