@@ -88,6 +88,7 @@ macx {
   static {
     # fix ld warning "direct access in function (...) to global weak symbol (...) means the weak symbol cannot be overridden at runtime
     # see issue #393
+    message(adding visibility hidden flags)
     QMAKE_LFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
   }
 }
