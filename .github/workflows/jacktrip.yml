@@ -172,10 +172,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          choco install jack --version=1.9.17
-          choco install openssl
+          choco install jack --version=1.9.17 --no-progress
+          choco install openssl --no-progress
           if [[ "${{ matrix.rtaudio }}" == true ]] && [[ "${{ matrix.build-rtaudio }}" != true ]]; then 
-            choco install pkgconfiglite
+            choco install pkgconfiglite --no-progress
             vcpkg install rtaudio[asio] --triplet=x64-mingw-static
             echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\x64-mingw-static\lib\pkgconfig" >> $GITHUB_ENV
           fi
