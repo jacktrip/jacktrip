@@ -6,12 +6,14 @@ clean=1
 install=0
 CONFIG=
 UNKNOWN_OPTIONS=
+BUILD_RTAUDIO=0
 HELP_STR="usage:\n
 ./build [noclean nojack rtaudio nogui static install [-config static]]\n\n
 options:\n
 noclean - do not run \"make clean\" first\n
 nojack - build without jack\n
 rtaudio - build with rtaudio\n
+build-rtaudio - build rtaudio ourselves instead of using system library\n
 nogui - build without the gui\n
 static - build with static libraries\n
 weakjack - build with weak linking of jack libraries\n
@@ -28,6 +30,10 @@ while [[ "$#" -gt 0 ]]; do
       rtaudio) 
       echo "Building with rtaudio"
       CONFIG="-config rtaudio $CONFIG" 
+      ;;
+      build-rtaudio) 
+      echo "Building with vendored rtaudio"
+      BUILD_RTAUDIO=1
       ;;
       nogui)
       echo "Building without the gui"
@@ -113,16 +119,19 @@ fi
 mkdir -p builddir
 cd builddir
 
+PRO_FILE="../jacktrip.pro"
+if [[ $BUILD_RTAUDIO == 1 ]]; then PRO_FILE="../jacktrip_and_rtaudio.pro"; fi
+
 # Build
 echo "qmake command:"
-echo "$QCMD -spec $QSPEC $CONFIG ../jacktrip.pro" $UNKNOWN_OPTIONS
+echo "$QCMD -spec $QSPEC $CONFIG $PRO_FILE" $UNKNOWN_OPTIONS
 if [[ $clean == 1 ]]; then
-  $QCMD -spec $QSPEC $CONFIG ../jacktrip.pro $UNKNOWN_OPTIONS
+  $QCMD -spec $QSPEC $CONFIG ../jacktrip.pro $UNKNOWN_OPTIONS # we want to configure with the regular .pro file for clean
   $MCMD clean
 fi
-$QCMD -spec $QSPEC $CONFIG ../jacktrip.pro $UNKNOWN_OPTIONS
+$QCMD -spec $QSPEC $CONFIG $PRO_FILE $UNKNOWN_OPTIONS
 $MCMD release
-if [[ $install == 1 ]]; then
+if [[ "$install" == 1 ]]; then
   echo "*** Installing JackTrip ***"
   echo "We need elevated privileges to install JackTrip in the system location"
   sudo $MCMD release-install

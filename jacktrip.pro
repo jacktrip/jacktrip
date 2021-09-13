@@ -65,10 +65,15 @@ INCLUDEPATH += faust-src-lair/stk
   }
 }
 
-# pkg-config is required for building with rtaudio
 rtaudio {
-  CONFIG += link_pkgconfig
-  PKGCONFIG += rtaudio
+  build_rtaudio {
+    INCLUDEPATH += externals/rtaudio/rtaudio-submodule/
+    LIBS += -lrtaudio
+  } else {
+    # pkg-config is required for building with system-provided rtaudio
+    CONFIG += link_pkgconfig
+    PKGCONFIG += rtaudio
+  }
 }
 
 macx {
@@ -158,7 +163,7 @@ win32 {
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
   DEFINES += WIN32_LEAN_AND_MEAN
 
-  rtaudio {
+  rtaudio:!build_rtaudio {
     # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
     CONFIG += no_lflags_merge    
     LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
@@ -166,7 +171,7 @@ win32 {
 }
 
 DESTDIR = .
-QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug ./$${application_id}.xml ./$${application_id}.desktop ./$${application_id}.png ./$${application_id}.svg ./jacktrip.1
+QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release/* ./debug/* ./externals/rtaudio/* ./$${application_id}.xml ./$${application_id}.desktop ./$${application_id}.png ./$${application_id}.svg ./jacktrip.1
 
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr
