@@ -88,43 +88,43 @@ macx {
 }
 
 linux-g++ | linux-g++-64 {
-#   LIBS += -lasound -lrtaudio
+  #   LIBS += -lasound -lrtaudio
   QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
-
-FEDORA = $$system(cat /proc/version | grep -o fc)
-
-contains( FEDORA, fc): {
-  message(building on fedora)
-}
-
-UBUNTU = $$system(cat /proc/version | grep -o Ubuntu)
-
-contains( UBUNTU, Ubuntu): {
-  message(building on  Ubuntu)
-
-# workaround for Qt bug under ubuntu 18.04
-# gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)
-# QMake version 3.1
-# Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
-  INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
-
-# sets differences from original fedora version
-  DEFINES += __UBUNTU__
-}
-
+  
+  FEDORA = $$system(cat /proc/version | grep -o fc)
+  
+  contains( FEDORA, fc): {
+    message(building on fedora)
+  }
+  
+  UBUNTU = $$system(cat /proc/version | grep -o Ubuntu)
+  
+  contains( UBUNTU, Ubuntu): {
+    message(building on  Ubuntu)
+    
+    # workaround for Qt bug under ubuntu 18.04
+    # gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)
+    # QMake version 3.1
+    # Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
+    INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
+    
+    # sets differences from original fedora version
+    DEFINES += __UBUNTU__
+  }
+  
   QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
-  }
+}
 
 linux-g++ {
   message(Linux)
   QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
-  }
+}
 
 linux-g++-64 {
   message(Linux 64bit)
   QMAKE_CXXFLAGS += -fPIC -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
-  }
+}
 
 
 win32 {
