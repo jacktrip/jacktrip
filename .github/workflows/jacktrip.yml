@@ -36,6 +36,15 @@ jobs:
             qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip
             binary-path: binary
+            
+          - name: Linux-x64-bundled-rtaudio
+            runs-on: ubuntu-18.04
+            system-rtaudio: false
+            bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
+            static-qt-version: 5.12.11 # if set, it will enable static Qt build
+            qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
+            jacktrip-path: jacktrip
+            binary-path: binary
 
           - name: Linux-x64-dynamic-nogui
             runs-on: ubuntu-18.04
@@ -45,12 +54,12 @@ jobs:
 
           # - name: macOS-dynamic
           #   runs-on: macos-10.15
-          #   rtaudio: true
+          #   system-rtaudio: true
           #   jacktrip-path: jacktrip
 
           - name: macOS-x64
             runs-on: macos-10.15
-            rtaudio: true
+            system-rtaudio: true
             static-qt-version: 5.12.11 # if set, it will enable static Qt build
             qt-static-cache-key: 'v05' # required for static qt; update this to force rebuilding static Qt
             weakjack: true
@@ -59,21 +68,40 @@ jobs:
             bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
             installer-path: installer # directory relative to build path; triggers installer creation and upload
 
+          - name: macOS-x64-bundled-rtaudio
+            runs-on: macos-10.15
+            bundled-rtaudio: true
+            static-qt-version: 5.12.11 # if set, it will enable static Qt build
+            qt-static-cache-key: 'v05' # required for static qt; update this to force rebuilding static Qt
+            weakjack: true
+            jacktrip-path: jacktrip # relative to build path
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+
           # - name: Windows-dynamic
           #   runs-on: windows-2019
-          #   rtaudio: true
+          #   system-rtaudio: true
           #   jacktrip-path: release/jacktrip.exe
 
           - name: Windows-x64
             # suffix: installer
             runs-on: windows-2019
-            rtaudio: true
+            system-rtaudio: true
             static-qt-version: 5.15.2
             qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
             weakjack: true
             jacktrip-path: release/jacktrip.exe
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             installer-path: installer # directory relative to build path; triggers installer creation and upload
+            
+          - name: Windows-x64-bundled-rtaudio
+            # suffix: installer
+            runs-on: windows-2019
+            bundled-rtaudio: true
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
+            weakjack: true
+            jacktrip-path: release/jacktrip.exe
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
@@ -107,6 +135,12 @@ jobs:
           else
             sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev
           fi
+          if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
+            sudo apt-get install --yes rtaudio
+          fi
+          if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
+            sudo apt-get install --yes libasound2-dev libpulse-dev
+          fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
         env:
@@ -123,7 +157,7 @@ jobs:
             brew install qt5
             brew link qt5 --force
           fi
-          if [[ "${{ matrix.rtaudio }}" == true ]]; then 
+          if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             brew install rt-audio
             rm -f `brew --prefix rt-audio`/lib/*.dylib # remove the dynamic library, we want static only
           fi
@@ -136,7 +170,7 @@ jobs:
         run: |
           choco install jack --version=1.9.17 --no-progress
           choco install openssl --no-progress
-          if [[ "${{ matrix.rtaudio }}" == true ]]; then 
+          if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             choco install pkgconfiglite --no-progress
             # check out an older version of rtaudio library, see issue #408
             cd $VCPKG_INSTALLATION_ROOT
@@ -221,7 +255,7 @@ jobs:
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             CONFIG_STRING="static $CONFIG_STRING"
           fi
-          if [[ "${{ matrix.rtaudio }}" == true ]]; then 
+          if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             CONFIG_STRING="rtaudio $CONFIG_STRING"
           fi
           if [[ "${{ matrix.nojack }}" == true ]]; then 
