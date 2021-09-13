@@ -34,7 +34,8 @@ QT += network
 DEFINES += WAIRTOHUB
 
 # configuration with RtAudio
-rtaudio {
+rtaudio|bundled_rtaudio {
+  message(Building with RtAudio)
   DEFINES += __RT_AUDIO__
 }
 # Configuration without Jack
@@ -65,10 +66,29 @@ INCLUDEPATH += faust-src-lair/stk
   }
 }
 
-# pkg-config is required for building with rtaudio
-rtaudio {
-  CONFIG += link_pkgconfig
-  PKGCONFIG += rtaudio
+bundled_rtaudio {
+  INCLUDEPATH += externals/rtaudio/
+  LIBS += -L$${OUT_PWD} -L$${OUT_PWD}/debug -L$${OUT_PWD}/release -lrtaudio
+  linux-g++ | linux-g++-64 {
+    LIBS += -lasound -lpthread -lpulse-simple -lpulse
+  }
+  macx {
+    LIBS += -lpthread -framework CoreAudio -framework CoreFoundation
+  }
+  win32 {
+    LIBS += -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
+  }
+} else {
+  rtaudio {
+    # pkg-config is required for building with system-provided rtaudio
+    CONFIG += link_pkgconfig
+    PKGCONFIG += rtaudio
+    win32 {
+      # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
+      CONFIG += no_lflags_merge    
+      LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
+    }
+  }
 }
 
 macx {
@@ -157,12 +177,6 @@ win32 {
   DEFINES += __WIN_32__
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
   DEFINES += WIN32_LEAN_AND_MEAN
-
-  rtaudio {
-    # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
-    CONFIG += no_lflags_merge    
-    LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
-  }
 }
 
 DESTDIR = .
@@ -221,7 +235,7 @@ HEADERS += src/gui/about.h \
            src/gui/qjacktrip.h
 }
 
-rtaudio {
+rtaudio|bundled_rtaudio {
     HEADERS += src/RtAudioInterface.h
 }
 
@@ -269,7 +283,7 @@ SOURCES += src/gui/messageDialog.cpp \
   RESOURCES += src/gui/qjacktrip.qrc
 }
 
-rtaudio {
+rtaudio|bundled_rtaudio {
     SOURCES += src/RtAudioInterface.cpp
 }
 
