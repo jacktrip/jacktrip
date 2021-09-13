@@ -65,10 +65,56 @@ INCLUDEPATH += faust-src-lair/stk
   }
 }
 
-# pkg-config is required for building with rtaudio
 rtaudio {
-  CONFIG += link_pkgconfig
-  PKGCONFIG += rtaudio
+  build_rtaudio {
+    INCLUDEPATH += externals/rtaudio
+    DEPENDPATH += externals/rtaudio
+    HEADERS += externals/rtaudio/RtAudio.h
+    SOURCES_RTAUDIO = externals/rtaudio/RtAudio.cpp
+    # set up rtaudio flags here
+    linux-g++ | linux-g++-64 {
+      RTAUDIO_CXXFLAGS = -D__LINUX_PULSE__ -D__LINUX_ALSA__ $(CXXFLAGS)
+      RTAUDIO_LIBS = -lasound -lpthread -lpulse-simple -lpulse
+    }
+    macx {
+      RTAUDIO_CXXFLAGS = -D__MACOSX_CORE__ $(CXXFLAGS)
+      RTAUDIO_LIBS = -lpthread -framework CoreAudio -framework CoreFoundation
+    }
+    win32 {
+      RTAUDIO_CXXFLAGS = -D__WINDOWS_ASIO__ -D__WINDOWS_WASAPI__ -Wall -O2
+      RTAUDIO_LIBS = -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
+      INCLUDEPATH += externals/rtaudio/include
+      DEPENDPATH += externals/rtaudio/include
+      HEADERS += externals/rtaudio/include/asio.h \
+                 externals/rtaudio/include/asiodrivers.h \
+                 externals/rtaudio/include/asiolist.h \
+                 externals/rtaudio/include/asiodrvr.h \
+                 externals/rtaudio/include/asiosys.h \
+                 externals/rtaudio/include/ginclude.h \
+                 externals/rtaudio/include/iasiodrv.h \
+                 externals/rtaudio/include/iasiothiscallresolver.h \
+                 externals/rtaudio/include/functiondiscoverykeys_devpkey.h
+      SOURCES_RTAUDIO += externals/rtaudio/include/asio.cpp \
+                         externals/rtaudio/include/asiodrivers.cpp \
+                         externals/rtaudio/include/asiolist.cpp \
+                         externals/rtaudio/include/iasiothiscallresolver.cpp
+    }
+    
+    # since we need different flags for RtAudio library, we build it separately
+    rtaudio_lib.name = rtaudio_lib
+    rtaudio_lib.input = SOURCES_RTAUDIO
+    rtaudio_lib.dependency_type = TYPE_C
+    rtaudio_lib.variable_out = OBJECTS
+    rtaudio_lib.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_IN_BASE}$${first(QMAKE_EXT_OBJ)}
+    rtaudio_lib.commands = $${QMAKE_CXX} $${RTAUDIO_CXXFLAGS} $(INCPATH) -c ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+    QMAKE_EXTRA_COMPILERS += rtaudio_lib
+    
+    LIBS += $${RTAUDIO_LIBS}
+  } else {
+    # pkg-config is required for building with system-provided rtaudio
+    CONFIG += link_pkgconfig
+    PKGCONFIG += rtaudio
+  }
 }
 
 macx {
@@ -158,7 +204,7 @@ win32 {
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
   DEFINES += WIN32_LEAN_AND_MEAN
 
-  rtaudio {
+  rtaudio:!build_rtaudio {
     # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
     CONFIG += no_lflags_merge    
     LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
