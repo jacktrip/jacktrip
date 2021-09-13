@@ -16,6 +16,7 @@ nogui - build without the gui\n
 static - build with static libraries\n
 weakjack - build with weak linking of jack libraries\n
 install - install jacktrip in system location (uses sudo)\n
+build_rtaudio - build rtaudio instead of using system library\n
 "
 while [[ "$#" -gt 0 ]]; do
   if [[ -z "$UNKNOWN_OPTIONS" ]]; then
@@ -40,6 +41,10 @@ while [[ "$#" -gt 0 ]]; do
       weakjack)
       echo "Building with static libraries"
       CONFIG="-config weakjack $CONFIG"
+      ;;
+      build_rtaudio)
+      echo "Building rtaudio library"
+      CONFIG="-config build_rtaudio $CONFIG"
       ;;
       install)
       echo "Will install JackTrip in system location"
