@@ -7,3 +7,6 @@
 [submodule "documentation/doxygen-awesome-css"]
 	path = externals/doxygen-awesome-css
 	url = https://github.com/jothepro/doxygen-awesome-css.git
+[submodule "externals/rtaudio"]
+	path = externals/rtaudio
+	url = https://github.com/thestk/rtaudio.git
