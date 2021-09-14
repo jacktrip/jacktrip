@@ -167,7 +167,7 @@ class PoolBuffer : public RingBuffer
     vector<sample_t> mTail;
     StdDev* stdDev;
     StdDev* stdDev2;
-    QElapsedTimer mPredTimer;
+    QElapsedTimer mIncomingTimer;
     int mLastSeqNum;
     int mLastSeqNumOut;
     vector<double> mDeadline;
