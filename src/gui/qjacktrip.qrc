@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2021 Aaron Wyatt
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 <RCC>
   <qresource prefix="qjacktrip">
     <file>about@2x.png</file>

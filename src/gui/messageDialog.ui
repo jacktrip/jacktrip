@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2021 Aaron Wyatt
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <ui version="4.0">
  <class>MessageDialog</class>
  <widget class="QDialog" name="MessageDialog">

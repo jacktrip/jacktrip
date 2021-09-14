@@ -5,8 +5,16 @@
 # build directory
 builddir/
 
-# kdevelop directory
+# IDE directories
 .kdev4
+.vscode
+
+# Clangd Cache
+.cache
+
+# Meson subprojects
+subprojects/rtaudio/
+subprojects/wingetopt/
 
 # Ignore mkdocs build
 site/
