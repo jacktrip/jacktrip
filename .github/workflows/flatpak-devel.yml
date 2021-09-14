@@ -14,8 +14,19 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: true
+    - name: Generate flatpak manifest
+      uses: cuchi/jinja2-action@v1.2.0
+      with:
+        template: linux/flatpak/org.jacktrip.JackTrip.Devel.yml.j2
+        output_file: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
+        strict: true
+      env:
+        REPO: https://github.com/${{ github.repository }}
+        REF: ${{ github.ref }}
+    - name: Add SHORT_SHA environment variable
+      run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
       with:
-        bundle: jacktrip-dev.flatpak
+        bundle: JackTrip-Devel-${{ env.SHORT_SHA }}.flatpak
         manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
         cache-key: flatpak-builder-${{ github.sha }}

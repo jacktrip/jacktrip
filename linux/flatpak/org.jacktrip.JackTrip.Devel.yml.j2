@@ -1,0 +1,29 @@
+app-id: org.jacktrip.JackTrip.Devel
+runtime: org.kde.Platform
+runtime-version: '5.15'
+sdk: org.kde.Sdk
+command: jacktrip
+finish-args:
+  # X11 + XShm access
+  - --share=ipc
+  - --socket=x11
+  - --socket=fallback-x11
+  - --device=dri
+  # Wayland access
+  - --socket=wayland
+  # Needs network access
+  - --share=network
+  # Pipewire/Jack
+  - --filesystem=xdg-run/pipewire-0
+  - --system-talk-name=org.freedesktop.RealtimeKit1
+  - --socket=system-bus
+modules:
+  - shared-modules/linux-audio/jack2.json
+  - name: jacktrip
+    buildsystem: meson
+    config-opts:
+      - -Dprofile=development
+    sources:
+      - type: git
+        url: {{ env['REPO'] }}
+        branch: {{ env['REF'] }}

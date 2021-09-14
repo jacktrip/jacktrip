@@ -33,7 +33,7 @@ jobs:
           - name: Linux-x64
             runs-on: ubuntu-18.04
             static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v21' # required for static qt; update this to force rebuilding static Qt
+            qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip
             binary-path: binary
 
@@ -52,7 +52,7 @@ jobs:
             runs-on: macos-10.15
             rtaudio: true
             static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
+            qt-static-cache-key: 'v05' # required for static qt; update this to force rebuilding static Qt
             weakjack: true
             jacktrip-path: jacktrip # relative to build path
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
@@ -94,7 +94,7 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
           else
-            VERSION=$GITHUB_SHA
+            VERSION=${GITHUB_SHA::7}
           fi
           echo "::set-output name=version::$VERSION"
       - name: install dependencies for Linux
@@ -183,7 +183,7 @@ jobs:
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
           fi
-          "$QT_SRC_PATH/configure" -ltcg -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
+          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
           # build
           echo "building Qt"
           make -j4
