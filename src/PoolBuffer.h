@@ -78,6 +78,7 @@ class ChanData
     vector<sample_t> mXfadedPred;
     vector<sample_t> mNextPred;
     vector<vector<sample_t>> mLastPackets;
+    vector<sample_t> mTruthXfade;
 };
 
 class StdDev
@@ -168,9 +169,18 @@ class PoolBuffer : public RingBuffer
     StdDev* stdDev2;
     QElapsedTimer mPredTimer;
     int mLastSeqNum;
-    int mLastPoolSeqNum;
+    int mLastSeqNumOut;
     vector<double> mDeadline;
     double mPacketDurMsec;
+    vector<double> mPhasor;
+    void sampleToBitsTmp(sample_t sample, int ch, int frame);
+    int8_t* mTmpBuffer;
+    vector<double> mIncomingTiming;
+    void processXfade();
+    void processChannelXfade(int ch);
+    int8_t* mXfrBufferXfade;
+    sample_t bitsToSampleXfade(int ch, int frame);
+    bool mInitHappened;
 };
 
 #endif  //__POOLUFFER_H__
