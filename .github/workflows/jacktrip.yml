@@ -181,14 +181,14 @@ jobs:
           fi
       - name: cache Qt
         id: cache-qt
-        if: runner.os == 'Windows' && '!matrix.static-qt-version'
+        if: runner.os == 'Windows' && !matrix.static-qt-version
         uses: actions/cache@v1
         with:
           path: ../Qt
           key: ${{ runner.os }}-QtCache-${{ env.QT_VERSION }}
       - name: install Qt
         uses: jurplel/install-qt-action@v2
-        if: runner.os == 'Windows' && '!matrix.static-qt-version'
+        if: runner.os == 'Windows' && !matrix.static-qt-version
         with:
           version: ${{ env.QT_VERSION }}
           arch: 'win64_mingw81'
