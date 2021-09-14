@@ -44,7 +44,7 @@ while [[ "$#" -gt 0 ]]; do
       CONFIG="-config static $CONFIG" 
       ;;
       weakjack)
-      echo "Building with static libraries"
+      echo "Building with weak linking of jack"
       CONFIG="-config weakjack $CONFIG"
       ;;
       install)
