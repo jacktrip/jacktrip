@@ -73,6 +73,7 @@ class ChanData
     int trainSamps;
     vector<sample_t> mTruth;
     vector<sample_t> mTrain;
+    vector<sample_t> mTail;
     vector<sample_t> mPrediction;  // ORDER
     vector<long double> mCoeffs;
     vector<sample_t> mXfadedPred;
@@ -105,8 +106,10 @@ class StdDev
     double longTermStdDev;
     double longTermStdDevAcc;
     int longTermCnt;
-    int glitches;
-    int balance;
+    int plcUnderruns;
+    int plcOverruns;
+    int lastPlcUnderruns;
+    int lastPlcOverruns;
 };
 
 class PoolBuffer : public RingBuffer
@@ -117,7 +120,7 @@ class PoolBuffer : public RingBuffer
     PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~PoolBuffer();
 
-    bool pushPacket(const int8_t* buf, int seq_num);
+    void pushPacket(const int8_t* buf, int seq_num);
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
@@ -164,9 +167,8 @@ class PoolBuffer : public RingBuffer
     int mGlitchCnt;
     int mGlitchMax;
     vector<ChanData*> mChanData;
-    vector<sample_t> mTail;
-    StdDev* stdDev;
-    StdDev* stdDev2;
+    StdDev* pushStat;
+    StdDev* pullStat;
     QElapsedTimer mIncomingTimer;
     int mLastSeqNum;
     int mLastSeqNumOut;
