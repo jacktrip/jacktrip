@@ -192,16 +192,16 @@ void PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 
     // diagnostic input
     /////////////////////
-    for (int i = 0; i < mNumChannels; i++) {
-        for (int s = 0; s < mFPP; s++) {
-            sampleToBitsTmp(0.1 * sin(mPhasor[i]), i, s);
-            mPhasor[i] += (!i) ? 0.01 : 0.01;
-        }
-    }
-    memcpy(mIncomingDat[mLastSeqNum % mPoolSize], mTmpBuffer, mBytes);
+    //    for (int i = 0; i < mNumChannels; i++) {
+    //        for (int s = 0; s < mFPP; s++) {
+    //            sampleToBitsTmp(0.1 * sin(mPhasor[i]), i, s);
+    //            mPhasor[i] += (!i) ? 0.01 : 0.01;
+    //        }
+    //    }
+    //    memcpy(mIncomingDat[mLastSeqNum % mPoolSize], mTmpBuffer, mBytes);
     /////////////////////
 
-    //    memcpy(mIncomingDat[mLastSeqNum%mPoolSize], buf, mBytes);
+    memcpy(mIncomingDat[mLastSeqNum % mPoolSize], buf, mBytes);
     pushStat->tick();
 };
 
