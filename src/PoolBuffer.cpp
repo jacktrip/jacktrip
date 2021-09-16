@@ -226,6 +226,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
             t += mQlen * mPacketDurMsec;
             if (t > now) {
                 int next = ((mLastSeqNumOut + 1) % mModSeqNum);
+                pullStat->plcSkipped+=(test-next);
                 if (test != next) {  // overrun
                     //                    qDebug() << "overrun" << test
                     //                             << (test - next)
@@ -544,6 +545,7 @@ StdDev::StdDev(int w, int id) : window(w), mId(id)
     lastMax           = 0;
     lastPlcUnderruns  = 0;
     lastPlcOverruns   = 0;
+    lastPlcSkipped   = 0;
     mTimer.start();
     data.resize(w, 0.0);
 }
@@ -558,6 +560,7 @@ void StdDev::reset()
     ctr          = 0;
     plcUnderruns = 0;
     plcOverruns  = 0;
+    plcSkipped  = 0;
 };
 
 double StdDev::tick()
@@ -611,6 +614,7 @@ double StdDev::tick()
         lastStdDev       = stdDev;
         lastPlcUnderruns = plcUnderruns;
         lastPlcOverruns  = plcOverruns;
+        lastPlcSkipped  = plcSkipped;
         reset();
     }
     return msElapsed;
@@ -629,7 +633,7 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
         tmp += " packets)\n";
         tmp +=
             "secs   avgStdDev (mean       min       max     stdDev) "
-            "PLC(under over    lost)\n";
+            "PLC(under over  skipped) lost\n";
     } else {
         uint32_t lost  = lostCount - mLastLostCount;
         mLastLostCount = lostCount;
@@ -647,7 +651,9 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
                 << "" PDBL2(longTermStdDev) PDBL2(lastMean) PDBL2(lastMin) PDBL2(lastMax)
                        PDBL2(lastStdDev)
                 << setw(8) << pullStat->lastPlcUnderruns << setw(8)
-                << pullStat->lastPlcOverruns << setw(8) << lost << endl;
+                << pullStat->lastPlcOverruns << setw(8)
+                << pullStat->lastPlcSkipped << setw(8)
+                << lost << endl;
         tmp += QString::fromStdString(logger2.str());
     }
     return tmp;

@@ -108,8 +108,10 @@ class StdDev
     int longTermCnt;
     int plcUnderruns;
     int plcOverruns;
+    int plcSkipped;
     int lastPlcUnderruns;
     int lastPlcOverruns;
+    int lastPlcSkipped;
 };
 
 class PoolBuffer : public RingBuffer
