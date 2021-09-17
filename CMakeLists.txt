@@ -3,8 +3,9 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 project(QJackTrip)
 
 set(nogui FALSE)
-set (rtaudio TRUE)
-set (weakjack TRUE)
+set(rtaudio TRUE)
+set(weakjack TRUE)
+add_compile_definitions(QT_OPENSOURCE)
 
 if (nogui)
   add_compile_definitions(NO_GUI)
