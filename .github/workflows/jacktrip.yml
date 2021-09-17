@@ -138,6 +138,10 @@ jobs:
           choco install openssl --no-progress
           if [[ "${{ matrix.rtaudio }}" == true ]]; then 
             choco install pkgconfiglite --no-progress
+            # check out an older version of rtaudio library, see issue #408
+            cd $VCPKG_INSTALLATION_ROOT
+            git fetch origin f60125a3a1f527f1bbeeff6ccfdde43634a64235
+            git checkout f60125a3a1f527f1bbeeff6ccfdde43634a64235 -- ports/rtaudio
             vcpkg install rtaudio[asio] --triplet=x64-mingw-static
             echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\x64-mingw-static\lib\pkgconfig" >> $GITHUB_ENV
           fi
