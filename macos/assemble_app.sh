@@ -9,10 +9,11 @@ BUILD_INSTALLER=false
 #USERNAME=""
 #PASSWORD=""
 #ASC_PROVIDER=""
+BINARY="../builddir/jacktrip"
 
 OPTIND=1
 
-while getopts ":ic:u:p:a:" opt; do
+while getopts ":ic:u:p:a:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
@@ -28,6 +29,9 @@ while getopts ":ic:u:p:a:" opt; do
         ;;
       a)
         ASC_PROVIDER=$OPTARG
+        ;;
+      b)
+        BINARY=$OPTARG
         ;;
       \?)
         echo "Invalid option -$OPTARG ignored."
@@ -45,11 +49,11 @@ shift $((OPTIND - 1))
 [ "$#" -gt 0 ] && APPNAME="$1"
 [ "$#" -gt 1 ] && BUNDLE_ID="$2"
 
-VERSION="$(../builddir/jacktrip -v | awk '/VERSION/{print $NF}')"
+VERSION="$($BINARY -v | awk '/VERSION/{print $NF}')"
 [ -z "$VERSION" ] && { echo "Unable to determine binary version. Quitting."; exit 1; }
 
 # Make sure that jacktrip has been built with GUI support.
-../builddir/jacktrip --test-gui || { echo "You need to build jacktrip with GUI support to build an app bundle."; exit 1; }
+$BINARY --test-gui || { echo "You need to build jacktrip with GUI support to build an app bundle."; exit 1; }
 
 echo "Building bundle $APPNAME (id: $BUNDLE_ID)"
 echo "for binary version $VERSION"
@@ -57,7 +61,7 @@ echo "for binary version $VERSION"
 rm -rf "$APPNAME.app"
 [ ! -d "JackTrip.app_template/Contents/MacOS" ] && mkdir JackTrip.app_template/Contents/MacOS
 cp -a JackTrip.app_template "$APPNAME.app"
-cp -f ../builddir/jacktrip "$APPNAME.app/Contents/MacOS/"
+cp -f $BINARY "$APPNAME.app/Contents/MacOS/"
 # copy licenses
 cp -f ../LICENSE.md "$APPNAME.app/Contents/Resources/"
 cp -Rf ../LICENSES "$APPNAME.app/Contents/Resources/"
@@ -122,14 +126,19 @@ sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" package/JackTrip.pkgproj
 packagesbuild package/JackTrip.pkgproj
 
 # Offer to submit a notarization request to apple if we have the required credentials.
-if [ -z "$CERTIFICATE" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$ASC_PROVIDER" ]; then
+if [ -z "$CERTIFICATE" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
     echo "Not sending notarization request: incomplete credentials."
     exit 0
 fi
 
+ASC=""
+if [ ! -z "$ASC_PROVIDER" ]; then
+    ASC=" --asc-provider \"$ASC_PROVIDER\""
+fi
+
 read -n1 -rsp "Press any key to submit a notarization request to apple..."
 echo
-xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" --username "$USERNAME" --password "$PASSWORD" --asc-provider "$ASC_PROVIDER" --file "package/build/$APPNAME.pkg"
+xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" --username "$USERNAME" --password "$PASSWORD"$ASC --file "package/build/$APPNAME.pkg"
 read -n1 -rsp "Press any key to staple the notarization once it's been approved..."
 echo
 xcrun stapler staple "package/build/$APPNAME.pkg"
