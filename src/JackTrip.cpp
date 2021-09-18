@@ -374,9 +374,7 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer =
                     new PoolBuffer(mSampleRate, mNumAudioChansIn, mAudioBitResolution,
                                    mAudioBufferSize, mBufferQueueLength);
-            //            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this,
-            //            SLOT(onStatTimer(QString))); connect(mReceiveRingBuffer,
-            //            SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
+            // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else {

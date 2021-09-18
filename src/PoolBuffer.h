@@ -165,7 +165,7 @@ class PoolBuffer : public RingBuffer
     vector<int8_t*> mIncomingDat;
     vector<int> mIndexPool;
     int8_t* mZeros;
-    int mQlen;
+    int mLag;
     int mGlitchCnt;
     int mGlitchMax;
     vector<ChanData*> mChanData;
