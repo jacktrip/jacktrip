@@ -217,20 +217,21 @@ void PoolBuffer::pullPacket(int8_t* buf)
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
         for (int i = mPoolSize; i >= 0; i--) {
             //            for (int i = mLastSeqNum-mPoolSize; i <= mLastSeqNum; i++) {
-            int test = mLastSeqNum - i;
-            if (test < 0) test += mModSeqNum;
+            int next = mLastSeqNum - i;
+            if (next < 0) next += mModSeqNum;
             //            qDebug() << "test" << i << test << mLastSeqNumOut <<
             //            mLastSeqNum;
             // related to WRAP?
-            if ((test > mPoolSize) && (test <= mLastSeqNumOut)) continue;
+            if ((next > mPoolSize) && (next <= mLastSeqNumOut)) continue;
             // the first clause is req'd to avoid wrap problem
 
-            double t = mIncomingTiming[test];
+            double t = mIncomingTiming[next];
             t += mQlen * mPacketDurMsec;
             if (t > now) {
-                int next = ((mLastSeqNumOut + 1) % mModSeqNum);
-                pullStat->plcSkipped+=(test-next);
-                if (test != next) {  // overrun
+                int nextInSeq = ((mLastSeqNumOut + 1) % mModSeqNum);
+                int skipping = next-nextInSeq;
+                pullStat->plcSkipped+=skipping;
+                if (skipping) {  // overrun
                     //                    qDebug() << "overrun" << test
                     //                             << (test - next)
                     //                             << t << now;
@@ -239,17 +240,23 @@ void PoolBuffer::pullPacket(int8_t* buf)
                     //                                 <<
                     //                                 mIncomingTiming[mIndexPool[j%mPoolSize]];
                     //                    }
-//                    memcpy(mXfrBuffer, mIncomingDat[test % mPoolSize], mBytes);
-//                    processPacket(false);  // extend history
+                    int history = skipping;
+                    if (history > mHist) history = mHist;
+                    for (int j = history; j>0; j--) {
+                        int skip = next - j;
+                        if (skip < 0) skip += mModSeqNum;
+                        memcpy(mXfrBuffer, mIncomingDat[skip % mPoolSize], mBytes);
+                        processPacket(false);  // extend history
+                    }
 
                     // fade down this one
-                    memcpy(mXfrBuffer, mIncomingDat[next % mPoolSize], mBytes);
+                    memcpy(mXfrBuffer, mIncomingDat[nextInSeq % mPoolSize], mBytes);
                     // fade up this one
-                    memcpy(mXfrBufferXfade, mIncomingDat[test % mPoolSize], mBytes);
-                    mLastSeqNumOut = test;
+                    memcpy(mXfrBufferXfade, mIncomingDat[next % mPoolSize], mBytes);
+                    mLastSeqNumOut = next;
                     goto OVERRUN;
                 }
-                mLastSeqNumOut = test;
+                mLastSeqNumOut = next;
                 if (mInitHappened) goto PACKETOK;
             }
         }
