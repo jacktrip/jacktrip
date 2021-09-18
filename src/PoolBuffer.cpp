@@ -90,6 +90,7 @@ using std::setw;
 constexpr int HIST       = 6;      // at FPP32
 constexpr int POOLPAD    = 3;      // pool headroom
 constexpr int mModSeqNum = 65536;  // power of 2 req'd, 65536 is packet header seq
+// FIXME: problem going lower than 65536 -- see related to WRAP?
 //*******************************************************************************
 PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -220,7 +221,9 @@ void PoolBuffer::pullPacket(int8_t* buf)
             if (test < 0) test += mModSeqNum;
             //            qDebug() << "test" << i << test << mLastSeqNumOut <<
             //            mLastSeqNum;
+            // related to WRAP?
             if ((test > mPoolSize) && (test <= mLastSeqNumOut)) continue;
+            // the first clause is req'd to avoid wrap problem
 
             double t = mIncomingTiming[test];
             t += mQlen * mPacketDurMsec;
@@ -236,9 +239,12 @@ void PoolBuffer::pullPacket(int8_t* buf)
                     //                                 <<
                     //                                 mIncomingTiming[mIndexPool[j%mPoolSize]];
                     //                    }
-                    memcpy(mXfrBuffer, mIncomingDat[test % mPoolSize], mBytes);
-                    processPacket(false);  // extend history
+//                    memcpy(mXfrBuffer, mIncomingDat[test % mPoolSize], mBytes);
+//                    processPacket(false);  // extend history
+
+                    // fade down this one
                     memcpy(mXfrBuffer, mIncomingDat[next % mPoolSize], mBytes);
+                    // fade up this one
                     memcpy(mXfrBufferXfade, mIncomingDat[test % mPoolSize], mBytes);
                     mLastSeqNumOut = test;
                     goto OVERRUN;
@@ -251,6 +257,7 @@ void PoolBuffer::pullPacket(int8_t* buf)
 
     OVERRUN : {
         processXfade();
+        processPacket(false);
         pullStat->plcOverruns++;
         goto OUTPUT;
     }
@@ -283,11 +290,13 @@ void PoolBuffer::processXfade()
 void PoolBuffer::processChannelXfade(int ch)
 {
     ChanData* cd = mChanData[ch];
+    // fade down this one
     for (int s = 0; s < mFPP; s++) cd->mTruth[s] = bitsToSample(ch, s);
+    // fade up this one
     for (int s = 0; s < mFPP; s++) cd->mTruthXfade[s] = bitsToSampleXfade(ch, s);
     for (int s = 0; s < mFPP; s++)
         cd->mTruth[s] = cd->mTruth[s] * mFadeDown[s] + cd->mTruthXfade[s] * mFadeUp[s];
-    for (int s = 0; s < mFPP; s++) sampleToBits(cd->mTruth[s], ch, s);
+//    for (int s = 0; s < mFPP; s++) sampleToBits(cd->mTruth[s], ch, s);
 }
 
 //*******************************************************************************
