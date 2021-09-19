@@ -133,7 +133,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     }
     mLastWasGlitch = false;
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
-    mPoolSize = ((int)ceil(qLen /mPacketDurMsec))  + POOLPAD;
+    mPoolSize = ((int)ceil(mLag /mPacketDurMsec))  + POOLPAD;
     for (int i = 0; i < mPoolSize; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
