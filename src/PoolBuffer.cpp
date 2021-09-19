@@ -37,7 +37,7 @@
 
 // EXPERIMENTAL for testing in JackTrip v1.4.0
 // requires server and client have same FPP
-// runs ok from FPP 16 up to 256, but don't try 512 or 1024 yet
+// runs ok from FPP 16 up to 1024
 // number of in / out channels should be the same
 // mono, stereo and -n3 tested fine
 
@@ -157,9 +157,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mIncomingTiming.resize(mModSeqNum);
     for (int i = 0; i < mModSeqNum; i++) mIncomingTiming[i] = 0.0;
     mXfrBufferXfade = new int8_t[mBytes];
-    // sanity checks
-    if (mFPP > 256)
-        qDebug() << "\n!!!!!!! bufstrategy 3\n mFPP needs to be 16 - 256, but =" << mFPP;
 }
 
 PoolBuffer::~PoolBuffer()
