@@ -182,7 +182,6 @@ class PoolBuffer : public RingBuffer
     void processChannelXfade(int ch);
     int8_t* mXfrBufferXfade;
     sample_t bitsToSampleXfade(int ch, int frame);
-    bool mInitHappened;
 };
 
 #endif  //__POOLUFFER_H__

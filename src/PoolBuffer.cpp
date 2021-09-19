@@ -89,8 +89,7 @@ using std::setw;
 // constants... tested for now
 constexpr int HIST       = 6;      // at FPP32
 constexpr int PADSLOTS   = 3;      // headroom
-constexpr int mModSeqNum = 65536;  // power of 2 req'd, 65536 is packet header seq
-// FIXME: problem going lower than 65536 -- see related to WRAP?
+constexpr int mModSeqNum = 1024;  // power of 2 req'd, 65536 is packet header seq
 //*******************************************************************************
 PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -158,7 +157,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mIncomingTiming.resize(mModSeqNum);
     for (int i = 0; i < mModSeqNum; i++) mIncomingTiming[i] = 0.0;
     mXfrBufferXfade = new int8_t[mBytes];
-    mInitHappened   = false;
     // sanity checks
     if (mFPP > 256)
         qDebug() << "\n!!!!!!! bufstrategy 3\n mFPP needs to be 16 - 256, but =" << mFPP;
@@ -174,9 +172,9 @@ PoolBuffer::~PoolBuffer()
 void PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
-    if ((!mInitHappened) && (seq_num > 200)) mInitHappened = true;
     seq_num %= mModSeqNum;
-    mIncomingTiming[seq_num] = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    mIncomingTiming[seq_num] = mMsecTolerance +
+            (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
 
     if ((mLastSeqNum != -1) && (((mLastSeqNum + 1) % mModSeqNum) != seq_num)) {
         qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
@@ -208,31 +206,19 @@ void PoolBuffer::pullPacket(int8_t* buf)
     } else {
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
         for (int i = mNumSlots; i >= 0; i--) {
-            //            for (int i = mLastSeqNum-mNumSlots; i <= mLastSeqNum; i++) {
             int next = mLastSeqNum - i;
             if (next < 0) next += mModSeqNum;
-            //            qDebug() << "test" << i << test << mLastSeqNumOut <<
-            //            mLastSeqNum;
-            // related to WRAP?
-            if ((next > mNumSlots) && (next <= mLastSeqNumOut)) continue;
-            // the first clause is req'd to avoid wrap problem
-
-            double slotReady = mIncomingTiming[next];
-            slotReady += mMsecTolerance;
-            if ((mInitHappened) && (slotReady > now)) {
+            if (mIncomingTiming[next] <= mIncomingTiming[mLastSeqNumOut]) continue;
+            if (mIncomingTiming[next] > now) {
                 int nextInSeq  = ((mLastSeqNumOut + 1) % mModSeqNum);
                 int skipping   = next - nextInSeq;
+                if (skipping < 0) {
+//                    qDebug() << "skipping < 0" << skipping << next <<  nextInSeq;
+                    skipping += mModSeqNum;
+                }
                 mLastSeqNumOut = next;
                 pullStat->plcSkipped += skipping;
                 if (skipping) {  // overrun
-                    //                    qDebug() << "overrun" << test
-                    //                             << (test - next)
-                    //                             << t << now;
-                    //                    for (int j = next; j<test; j++) {
-                    //                        qDebug() << j << mIndexPool[j%mNumSlots]
-                    //                                 <<
-                    //                                 mIncomingTiming[mIndexPool[j%mNumSlots]];
-                    //                    }
                     int history = skipping;
                     if (history > mHist) history = mHist;
                     for (int j = history; j > 0; j--) {
@@ -253,24 +239,24 @@ void PoolBuffer::pullPacket(int8_t* buf)
         }
         goto UNDERRUN;
 
-    OVERRUN : {
-        processXfade();
-        processPacket(false);
-        pullStat->plcOverruns++;
-        goto OUTPUT;
-    }
+OVERRUN : {
+            processXfade();
+            processPacket(false);
+            pullStat->plcOverruns++;
+            goto OUTPUT;
+        }
 
-    PACKETOK : {
-        memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
-        processPacket(false);
-        goto OUTPUT;
-    }
+PACKETOK : {
+            memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
+            processPacket(false);
+            goto OUTPUT;
+        }
 
-    UNDERRUN : {
-        processPacket(true);
-        pullStat->plcUnderruns++;
-        goto OUTPUT;
-    }
+UNDERRUN : {
+            processPacket(true);
+            pullStat->plcUnderruns++;
+            goto OUTPUT;
+        }
     }
 
 ZERO_OUTPUT:
@@ -334,7 +320,7 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
         if (lastWasGlitch)
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
-                    cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+                        cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 
         // diagnostic output
         //        for (int s = 0; s < mFPP; s++)
@@ -348,8 +334,8 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
 
         for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
-                             ? cd->mPrediction[s]
-                             : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                         ? cd->mPrediction[s]
+                           : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                          ch, s);
 
         if (glitch) {
@@ -366,7 +352,7 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
     // add current input or prediction to history, the latter checking if primed
     for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] =
-            ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
 }
 
 //*******************************************************************************
@@ -376,9 +362,9 @@ sample_t PoolBuffer::bitsToSample(int ch, int frame)
 {
     sample_t sample = 0.0;
     AudioInterface::fromBitToSampleConversion(
-        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-                    + (ch * mBitResolutionMode)],
-        &sample, mBitResolutionMode);
+                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            &sample, mBitResolutionMode);
     return sample;
 }
 
@@ -386,28 +372,28 @@ sample_t PoolBuffer::bitsToSampleXfade(int ch, int frame)
 {
     sample_t sample = 0.0;
     AudioInterface::fromBitToSampleConversion(
-        &mXfrBufferXfade[(frame * mBitResolutionMode * mNumChannels)
-                         + (ch * mBitResolutionMode)],
-        &sample, mBitResolutionMode);
+                &mXfrBufferXfade[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            &sample, mBitResolutionMode);
     return sample;
 }
 
 void PoolBuffer::sampleToBits(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
-        &sample,
-        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-                    + (ch * mBitResolutionMode)],
-        mBitResolutionMode);
+                &sample,
+                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            mBitResolutionMode);
 }
 
 void PoolBuffer::sampleToBitsTmp(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
-        &sample,
-        &mTmpBuffer[(frame * mBitResolutionMode * mNumChannels)
-                    + (ch * mBitResolutionMode)],
-        mBitResolutionMode);
+                &sample,
+                &mTmpBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            mBitResolutionMode);
 }
 
 //*******************************************************************************
@@ -639,8 +625,8 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
         tmp += QString::number(pullStat->window);
         tmp += " packets)\n";
         tmp +=
-            "secs   avgStdDev (mean       min       max     stdDev) "
-            "PLC(under over  skipped) lost\n";
+                "secs   avgStdDev (mean       min       max     stdDev) "
+                "PLC(under over  skipped) lost\n";
     } else {
         uint32_t lost  = lostCount - mLastLostCount;
         mLastLostCount = lostCount;
@@ -649,14 +635,14 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
         std::stringstream logger;
         logger << setw(2)
                << statCount PDBL(longTermStdDev) PDBL(lastMean) PDBL(lastMin)
-                      PDBL(lastMax) PDBL(lastStdDev)
+                  PDBL(lastMax) PDBL(lastStdDev)
 
                << endl;
         tmp = QString::fromStdString(logger.str());
         std::stringstream logger2;
         logger2 << setw(2)
                 << "" PDBL2(longTermStdDev) PDBL2(lastMean) PDBL2(lastMin) PDBL2(lastMax)
-                       PDBL2(lastStdDev)
+                   PDBL2(lastStdDev)
                 << setw(8) << pullStat->lastPlcUnderruns << setw(8)
                 << pullStat->lastPlcOverruns << setw(8) << pullStat->lastPlcSkipped
                 << setw(8) << lost << endl;
