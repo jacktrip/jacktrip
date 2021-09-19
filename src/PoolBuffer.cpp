@@ -132,7 +132,8 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
     mLastWasGlitch = false;
-    mPoolSize = mHist + POOLPAD;
+    mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
+    mPoolSize = ((int)ceil(qLen /mPacketDurMsec))  + POOLPAD;
     for (int i = 0; i < mPoolSize; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mIncomingDat.push_back(tmp);
@@ -154,9 +155,6 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mIncomingTimer.start();
     mLastSeqNum    = -1;
     mLastSeqNumOut = -1;
-    mDeadline.resize(mModSeqNum);
-    for (int i = 0; i < mModSeqNum; i++) mDeadline[i] = -1.0;
-    mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
     mPhasor.resize(mNumChannels, 0.0);
     mTmpBuffer = new int8_t[mBytes];
     mIncomingTiming.resize(mModSeqNum);

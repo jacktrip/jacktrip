@@ -174,7 +174,6 @@ class PoolBuffer : public RingBuffer
     QElapsedTimer mIncomingTimer;
     int mLastSeqNum;
     int mLastSeqNumOut;
-    vector<double> mDeadline;
     double mPacketDurMsec;
     vector<double> mPhasor;
     void sampleToBitsTmp(sample_t sample, int ch, int frame);
