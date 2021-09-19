@@ -150,7 +150,7 @@ class PoolBuffer : public RingBuffer
     int mFPP;
     int mSampleRate;
     uint32_t mLastLostCount;
-    int mPoolSize;
+    int mNumSlots;
     int mHist;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
@@ -162,10 +162,9 @@ class PoolBuffer : public RingBuffer
     vector<sample_t> mFadeUp;
     vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
-    vector<int8_t*> mIncomingDat;
-    vector<int> mIndexPool;
+    vector<int8_t*> mSlots;
     int8_t* mZeros;
-    double mLag;
+    double mMsecTolerance;
     int mGlitchCnt;
     int mGlitchMax;
     vector<ChanData*> mChanData;
