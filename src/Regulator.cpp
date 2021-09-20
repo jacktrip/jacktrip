@@ -88,7 +88,7 @@ using std::setw;
 
 // constants... tested for now
 constexpr int HIST       = 6;     // at FPP32
-constexpr int PADSLOTS   = 3;     // headroom
+constexpr int PADSLOTS   = 80;     // headroom scales with FPP, 80/16 --- 3/64 ??
 constexpr int mModSeqNum = 1024;  // power of 2 req'd, 65536 is packet header seq
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
