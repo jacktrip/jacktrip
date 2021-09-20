@@ -191,7 +191,7 @@ HEADERS += src/DataProtocol.h \
            src/Compressor.h \
            src/CompressorPresets.h \
            src/Limiter.h \
-           src/PoolBuffer.h \
+           src/Regulator.h \
            src/Reverb.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
@@ -234,7 +234,7 @@ SOURCES += src/DataProtocol.cpp \
            src/JackTrip.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
-           src/PoolBuffer.cpp \
+           src/Regulator.cpp \
            src/Reverb.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \

@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file PoolBuffer.h
+ * \file Regulator.h
  * \author Chris Chafe
  * \date May 2021
  */
@@ -40,8 +40,8 @@
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
-#ifndef __POOLUFFER_H__
-#define __POOLUFFER_H__
+#ifndef __REGULATOR_H__
+#define __REGULATOR_H__
 
 #include <QDebug>
 #include <QElapsedTimer>
@@ -114,13 +114,13 @@ class StdDev
     int lastPlcSkipped;
 };
 
-class PoolBuffer : public RingBuffer
+class Regulator : public RingBuffer
 {
     //    Q_OBJECT;
 
    public:
-    PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen);
-    virtual ~PoolBuffer();
+    Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
+    virtual ~Regulator();
 
     void pushPacket(const int8_t* buf, int seq_num);
     // can hijack unused2 to propagate incoming seq num if needed
@@ -184,4 +184,4 @@ class PoolBuffer : public RingBuffer
     sample_t bitsToSampleXfade(int ch, int frame);
 };
 
-#endif  //__POOLUFFER_H__
+#endif  //__REGULATOR_H__

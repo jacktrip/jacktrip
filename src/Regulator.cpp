@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file PoolBuffer.cpp
+ * \file Regulator.cpp
  * \author Chris Chafe
  * \date May-Sep 2021
  */
@@ -75,7 +75,7 @@
 // sudo tc qdisc add dev lo root netem slot distribution pareto 0.5ms 0.5ms
 // sudo tc qdisc del dev lo root netem slot distribution pareto 0.5ms 0.5ms
 
-#include "PoolBuffer.h"
+#include "Regulator.h"
 
 #include <QTextStream>
 #include <iomanip>
@@ -87,11 +87,11 @@ using std::endl;
 using std::setw;
 
 // constants... tested for now
-constexpr int HIST       = 6;      // at FPP32
-constexpr int PADSLOTS   = 3;      // headroom
+constexpr int HIST       = 6;     // at FPP32
+constexpr int PADSLOTS   = 3;     // headroom
 constexpr int mModSeqNum = 1024;  // power of 2 req'd, 65536 is packet header seq
 //*******************************************************************************
-PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int qLen)
+Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
     , mNumChannels(channels)
     , mAudioBitRes(bit_res)
@@ -132,7 +132,7 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     }
     mLastWasGlitch = false;
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
-    mNumSlots         = ((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
+    mNumSlots      = ((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
     for (int i = 0; i < mNumSlots; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mSlots.push_back(tmp);
@@ -159,19 +159,19 @@ PoolBuffer::PoolBuffer(int sample_rate, int channels, int bit_res, int FPP, int 
     mXfrBufferXfade = new int8_t[mBytes];
 }
 
-PoolBuffer::~PoolBuffer()
+Regulator::~Regulator()
 {
     delete mXfrBuffer;
     delete mZeros;
     for (int i = 0; i < mNumChannels; i++) delete mChanData[i];
 }
 //*******************************************************************************
-void PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
+void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
-    mIncomingTiming[seq_num] = mMsecTolerance +
-            (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    mIncomingTiming[seq_num] =
+        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
 
     if ((mLastSeqNum != -1) && (((mLastSeqNum + 1) % mModSeqNum) != seq_num)) {
         qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
@@ -194,7 +194,7 @@ void PoolBuffer::pushPacket(const int8_t* buf, int seq_num)
 };
 
 //*******************************************************************************
-void PoolBuffer::pullPacket(int8_t* buf)
+void Regulator::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
 
@@ -207,10 +207,11 @@ void PoolBuffer::pullPacket(int8_t* buf)
             if (next < 0) next += mModSeqNum;
             if (mIncomingTiming[next] <= mIncomingTiming[mLastSeqNumOut]) continue;
             if (mIncomingTiming[next] > now) {
-                int nextInSeq  = ((mLastSeqNumOut + 1) % mModSeqNum);
-                int skipping   = next - nextInSeq;
+                int nextInSeq = ((mLastSeqNumOut + 1) % mModSeqNum);
+                int skipping  = next - nextInSeq;
                 if (skipping < 0) {
-//                    qDebug() << "skipping < 0" << skipping << next <<  nextInSeq;
+                    //                    qDebug() << "skipping < 0" << skipping << next
+                    //                    <<  nextInSeq;
                     skipping += mModSeqNum;
                 }
                 mLastSeqNumOut = next;
@@ -236,24 +237,24 @@ void PoolBuffer::pullPacket(int8_t* buf)
         }
         goto UNDERRUN;
 
-OVERRUN : {
-            processXfade();
-            processPacket(false);
-            pullStat->plcOverruns++;
-            goto OUTPUT;
-        }
+    OVERRUN : {
+        processXfade();
+        processPacket(false);
+        pullStat->plcOverruns++;
+        goto OUTPUT;
+    }
 
-PACKETOK : {
-            memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
-            processPacket(false);
-            goto OUTPUT;
-        }
+    PACKETOK : {
+        memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
+        processPacket(false);
+        goto OUTPUT;
+    }
 
-UNDERRUN : {
-            processPacket(true);
-            pullStat->plcUnderruns++;
-            goto OUTPUT;
-        }
+    UNDERRUN : {
+        processPacket(true);
+        pullStat->plcUnderruns++;
+        goto OUTPUT;
+    }
     }
 
 ZERO_OUTPUT:
@@ -264,11 +265,11 @@ OUTPUT:
     pullStat->tick();
 };
 
-void PoolBuffer::processXfade()
+void Regulator::processXfade()
 {
     for (int ch = 0; ch < mNumChannels; ch++) processChannelXfade(ch);
 }
-void PoolBuffer::processChannelXfade(int ch)
+void Regulator::processChannelXfade(int ch)
 {
     ChanData* cd = mChanData[ch];
     // fade down this one
@@ -281,7 +282,7 @@ void PoolBuffer::processChannelXfade(int ch)
 }
 
 //*******************************************************************************
-void PoolBuffer::processPacket(bool glitch)
+void Regulator::processPacket(bool glitch)
 {
     for (int ch = 0; ch < mNumChannels; ch++)
         processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
@@ -291,7 +292,7 @@ void PoolBuffer::processPacket(bool glitch)
 }
 
 //*******************************************************************************
-void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch)
+void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
 
@@ -317,7 +318,7 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
         if (lastWasGlitch)
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
-                        cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+                    cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 
         // diagnostic output
         //        for (int s = 0; s < mFPP; s++)
@@ -331,8 +332,8 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
 
         for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
-                         ? cd->mPrediction[s]
-                           : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                             ? cd->mPrediction[s]
+                             : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                          ch, s);
 
         if (glitch) {
@@ -349,48 +350,48 @@ void PoolBuffer::processChannel(int ch, bool glitch, int packetCnt, bool lastWas
     // add current input or prediction to history, the latter checking if primed
     for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] =
-                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+            ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
 }
 
 //*******************************************************************************
 // copped from AudioInterface.cpp
 
-sample_t PoolBuffer::bitsToSample(int ch, int frame)
+sample_t Regulator::bitsToSample(int ch, int frame)
 {
     sample_t sample = 0.0;
     AudioInterface::fromBitToSampleConversion(
-                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            &sample, mBitResolutionMode);
+        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+                    + (ch * mBitResolutionMode)],
+        &sample, mBitResolutionMode);
     return sample;
 }
 
-sample_t PoolBuffer::bitsToSampleXfade(int ch, int frame)
+sample_t Regulator::bitsToSampleXfade(int ch, int frame)
 {
     sample_t sample = 0.0;
     AudioInterface::fromBitToSampleConversion(
-                &mXfrBufferXfade[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            &sample, mBitResolutionMode);
+        &mXfrBufferXfade[(frame * mBitResolutionMode * mNumChannels)
+                         + (ch * mBitResolutionMode)],
+        &sample, mBitResolutionMode);
     return sample;
 }
 
-void PoolBuffer::sampleToBits(sample_t sample, int ch, int frame)
+void Regulator::sampleToBits(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
-                &sample,
-                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            mBitResolutionMode);
+        &sample,
+        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+                    + (ch * mBitResolutionMode)],
+        mBitResolutionMode);
 }
 
-void PoolBuffer::sampleToBitsTmp(sample_t sample, int ch, int frame)
+void Regulator::sampleToBitsTmp(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
-                &sample,
-                &mTmpBuffer[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            mBitResolutionMode);
+        &sample,
+        &mTmpBuffer[(frame * mBitResolutionMode * mNumChannels)
+                    + (ch * mBitResolutionMode)],
+        mBitResolutionMode);
 }
 
 //*******************************************************************************
@@ -583,7 +584,7 @@ double StdDev::tick()
                      << setw(10) << stdDev << setw(10) << longTermStdDev << " " << mId
                      << endl;
         } else if (gVerboseFlag)
-            cout << "printing directly from PoolBuffer->stdDev->tick:\n (mean / min / "
+            cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
                     "max / "
                     "stdDev / longTermStdDev) \n";
 
@@ -611,19 +612,19 @@ double StdDev::tick()
 }
 
 //*******************************************************************************
-QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
+QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
 {
     // formatting floats in columns looks better with std::stringstream than with
     // QTextStream
     QString tmp;
     if (!statCount) {
-        tmp = QString("PoolBuffer: inter-packet intervals msec\n");
+        tmp = QString("Regulator: inter-packet intervals msec\n");
         tmp += "                 (window of last ";
         tmp += QString::number(pullStat->window);
         tmp += " packets)\n";
         tmp +=
-                "secs   avgStdDev (mean       min       max     stdDev) "
-                "PLC(under over  skipped) lost\n";
+            "secs   avgStdDev (mean       min       max     stdDev) "
+            "PLC(under over  skipped) lost\n";
     } else {
         uint32_t lost  = lostCount - mLastLostCount;
         mLastLostCount = lostCount;
@@ -632,14 +633,14 @@ QString PoolBuffer::getStats(uint32_t statCount, uint32_t lostCount)
         std::stringstream logger;
         logger << setw(2)
                << statCount PDBL(longTermStdDev) PDBL(lastMean) PDBL(lastMin)
-                  PDBL(lastMax) PDBL(lastStdDev)
+                      PDBL(lastMax) PDBL(lastStdDev)
 
                << endl;
         tmp = QString::fromStdString(logger.str());
         std::stringstream logger2;
         logger2 << setw(2)
                 << "" PDBL2(longTermStdDev) PDBL2(lastMean) PDBL2(lastMin) PDBL2(lastMax)
-                   PDBL2(lastStdDev)
+                       PDBL2(lastStdDev)
                 << setw(8) << pullStat->lastPlcUnderruns << setw(8)
                 << pullStat->lastPlcOverruns << setw(8) << pullStat->lastPlcSkipped
                 << setw(8) << lost << endl;
