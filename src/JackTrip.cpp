@@ -253,8 +253,9 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
-    if (!mAudioTesterP.isNull()) {  // if we're a hub server, this will be a nullptr - MAJOR
-                          // REFACTOR NEEDED, in my opinion
+    if (!mAudioTesterP
+             .isNull()) {  // if we're a hub server, this will be a nullptr - MAJOR
+                           // REFACTOR NEEDED, in my opinion
         mAudioTesterP->setSampleRate(mSampleRate);
     }
     mAudioInterface->setAudioTesterP(mAudioTesterP.data());
@@ -610,7 +611,9 @@ void JackTrip::onStatTimer()
 
     static QMutex mutex;
     QMutexLocker locker(&mutex);
-    if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) { mIOStatLogStream << "\n"; }
+    if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) {
+        mIOStatLogStream << "\n";
+    }
     mIOStatLogStream << now.toLocal8Bit().constData() << " "
                      << getPeerAddress().toLocal8Bit().constData()
                      << " send: " << send_io_stat.underruns << "/"

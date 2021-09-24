@@ -42,7 +42,8 @@
 // mono, stereo and -n3 tested fine
 
 // ./jacktrip -S --udprt -p1 --bufstrategy 3  -I 1 -q10
-// PIPEWIRE_LATENCY=32/48000 ./jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -I 1 -q4
+// PIPEWIRE_LATENCY=32/48000 ./jacktrip -C cmn9.stanford.edu --udprt --bufstrategy 3 -I 1
+// -q4
 
 // at 48000 / 32 = 2.667 ms total roundtrip latency
 // local loopback test with 4 terminals running and the following jmess file
@@ -89,8 +90,8 @@ using std::endl;
 using std::setw;
 
 // constants... tested for now
-constexpr int HIST       = 12;     // at FPP32
-constexpr int PADSLOTS   = 80;     // headroom scales with FPP, 80/16 --- 3/64 ??
+constexpr int HIST       = 12;    // at FPP32
+constexpr int PADSLOTS   = 80;    // headroom scales with FPP, 80/16 --- 3/64 ??
 constexpr int mModSeqNum = 1024;  // power of 2 req'd, 65536 is packet header seq
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
@@ -176,7 +177,8 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
 
     if ((mLastSeqNum != -1) && (((mLastSeqNum + 1) % mModSeqNum) != seq_num)) {
-//        qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
+        //        qDebug() << "lost packet detected in pushPacket" << seq_num <<
+        //        mLastSeqNum;
     }
     mLastSeqNum = seq_num;
 
