@@ -339,7 +339,7 @@ class JackTrip : public QObject
         mAudioInterface = AudioInterface;
     }
     virtual void setLoopBack(bool b) { mLoopBack = b; }
-    virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
+    virtual void setAudioTesterP(QSharedPointer<AudioTester> atp) { mAudioTesterP = atp; }
 
     void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
     void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
@@ -690,7 +690,7 @@ class JackTrip : public QObject
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
 
-    AudioTester* mAudioTesterP;
+    QSharedPointer<AudioTester> mAudioTesterP;
 };
 
 #endif

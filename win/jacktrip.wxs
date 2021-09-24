@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
     <Product Name='JackTrip' Manufacturer='JackTrip'
-        Id='d5a8cca9-264c-41fd-8efc-1cef0850091f'
+        Id='*'
         UpgradeCode='70450e42-8a91-4c28-8f00-52c6b8e86e37'
         Language='1033' Codepage='1252' Version='$(var.Version)'>
 
@@ -10,6 +10,8 @@
             InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
         <Media Id='1' Cabinet='JackTrip.cab' EmbedCab='yes' DiskPrompt='Disk 1' />
         <Property Id='DiskPrompt' Value='JackTrip Installer File' />
+        <MajorUpgrade AllowDowngrades="no" DowngradeErrorMessage="A newer version is already installed."
+            AllowSameVersionUpgrades="no" />
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='ProgramFilesFolder' Name='PFiles'>

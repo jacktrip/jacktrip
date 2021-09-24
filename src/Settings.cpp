@@ -561,10 +561,10 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             char cmd[]{"--examine-audio-delay (-x)"};
             if (tolower(optarg[0]) == 'h') {
-                mAudioTester.printHelp(cmd, ch);
+                mAudioTester->printHelp(cmd, ch);
                 std::exit(0);
             }
-            mAudioTester.setEnabled(true);
+            mAudioTester->setEnabled(true);
             if (optarg == 0 || optarg[0] == '-'
                 || optarg[0] == 0) {  // happens when no -f argument specified
                 printUsage();
@@ -573,7 +573,7 @@ void Settings::parseInput(int argc, char** argv)
                              "see every delay)\n";
                 std::exit(1);
             }
-            mAudioTester.setPrintIntervalSec(atof(optarg));
+            mAudioTester->setPrintIntervalSec(atof(optarg));
             break;
         }
         case ':': {
@@ -611,9 +611,9 @@ void Settings::parseInput(int argc, char** argv)
         std::exit(1);
     }
 
-    if (true == mAudioTester.getEnabled()) {
+    if (true == mAudioTester->getEnabled()) {
         assert(mNumAudioInputChans > 0);
-        mAudioTester.setSendChannel(mNumAudioInputChans
+        mAudioTester->setSendChannel(mNumAudioInputChans
                                     - 1);  // use last channel for latency testing
         // Originally, testing only in the last channel was adopted
         // because channel 0 ("left") was a clap track on CCRMA loopback
@@ -640,12 +640,12 @@ void Settings::parseInput(int argc, char** argv)
         // don't exit since an outgoing limiter should be the default (could exit for
         // incoming case): std::exit(1);
     }
-    if (mAudioTester.getEnabled() && haveSomeServerMode) {
+    if (mAudioTester->getEnabled() && haveSomeServerMode) {
         std::cerr << "*** --examine-audio-delay (-x) ERROR: Audio latency measurement "
                      "not supported in server modes (-S and -s)\n\n";
         std::exit(1);
     }
-    if (mAudioTester.getEnabled() && (mAudioBitResolution != AudioInterface::BIT16)
+    if (mAudioTester->getEnabled() && (mAudioBitResolution != AudioInterface::BIT16)
         && (mAudioBitResolution
             != AudioInterface::BIT32)) {  // BIT32 not tested but should be ok
         // BIT24 should work also, but there's a comment saying it's broken right now, so
@@ -1027,11 +1027,11 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setIOStatStream(mIOStatStream);
     }
 
-    jackTrip->setAudioTesterP(&mAudioTester);
+    jackTrip->setAudioTesterP(mAudioTester);
 
     // Allocate audio effects in client, if any:
     int nReservedChans =
-        mAudioTester.getEnabled() ? 1 : 0;  // no fx allowed on tester channel
+        mAudioTester->getEnabled() ? 1 : 0;  // no fx allowed on tester channel
 
     std::vector<ProcessPlugin*> outgoingEffects =
         mEffects.allocateOutgoingEffects(mNumAudioInputChans - nReservedChans);

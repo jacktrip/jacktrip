@@ -139,7 +139,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mSimulatedJitterRate(0.0)
     , mSimulatedDelayRel(0.0)
     , mUseRtUdpPriority(false)
-    , mAudioTesterP(nullptr)
 {
     createHeader(mPacketHeaderType);
     sJackStopped = false;
@@ -254,11 +253,11 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
-    if (mAudioTesterP) {  // if we're a hub server, this will be a nullptr - MAJOR
-        // REFACTOR NEEDED, in my opinion
+    if (!mAudioTesterP.isNull()) {  // if we're a hub server, this will be a nullptr - MAJOR
+                          // REFACTOR NEEDED, in my opinion
         mAudioTesterP->setSampleRate(mSampleRate);
     }
-    mAudioInterface->setAudioTesterP(mAudioTesterP);
+    mAudioInterface->setAudioTesterP(mAudioTesterP.data());
 
     std::cout << "The Sampling Rate is: " << mSampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
@@ -611,7 +610,7 @@ void JackTrip::onStatTimer()
 
     static QMutex mutex;
     QMutexLocker locker(&mutex);
-    if (mAudioTesterP && mAudioTesterP->getEnabled()) { mIOStatLogStream << "\n"; }
+    if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) { mIOStatLogStream << "\n"; }
     mIOStatLogStream << now.toLocal8Bit().constData() << " "
                      << getPeerAddress().toLocal8Bit().constData()
                      << " send: " << send_io_stat.underruns << "/"

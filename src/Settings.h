@@ -60,6 +60,8 @@ class Settings : public QObject
     Q_OBJECT;
 
    public:
+    Settings() : mAudioTester(new AudioTester) {}
+
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
 
@@ -138,7 +140,7 @@ class Settings : public QObject
     QString mUsername;
     QString mPassword;
 
-    AudioTester mAudioTester;
+    QSharedPointer<AudioTester> mAudioTester;
 };
 
 #endif
