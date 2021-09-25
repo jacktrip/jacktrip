@@ -761,7 +761,7 @@ void QJackTrip::start()
             // Set peer address in client mode
             if (jackTripMode == JackTrip::CLIENT
                 || jackTripMode == JackTrip::CLIENTTOPINGSERVER) {
-                m_jackTrip->setPeerAddress(m_ui->addressComboBox->currentText());
+                m_jackTrip->setPeerAddress(m_ui->addressComboBox->currentText().trimmed());
                 if (jackTripMode == JackTrip::CLIENTTOPINGSERVER
                     && !m_ui->remoteNameEdit->text().isEmpty()) {
                     m_jackTrip->setRemoteClientName(m_ui->remoteNameEdit->text());
@@ -832,7 +832,7 @@ void QJackTrip::start()
     }
 
     // Add the address to our server history.
-    QString serverAddress = m_ui->addressComboBox->currentText();
+    QString serverAddress = m_ui->addressComboBox->currentText().trimmed();
     int serverIndex       = m_ui->addressComboBox->findText(serverAddress);
     if (serverIndex != -1) { m_ui->addressComboBox->removeItem(serverIndex); }
     m_ui->addressComboBox->insertItem(0, serverAddress);
