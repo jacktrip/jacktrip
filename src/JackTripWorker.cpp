@@ -103,9 +103,9 @@ void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server
     if (gVerboseFlag) cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
 
 #ifdef WAIR  // WAIR
-        // forces    BufferQueueLength to 2
-        // need to parse numNetChans from incoming header
-        // but force to 16 for now
+             // forces    BufferQueueLength to 2
+             // need to parse numNetChans from incoming header
+             // but force to 16 for now
 #define FORCEBUFFERQ 2
     if (mUdpHubListener->isWAIR()) {  // invoked with -Sw
         mWAIR           = true;

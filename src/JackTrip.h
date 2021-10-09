@@ -617,9 +617,9 @@ class JackTrip : public QObject
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
     int mBufferStrategy;
     int mBroadcastQueueLength;
-    uint32_t mSampleRate;       ///< Sample Rate
-    uint32_t mDeviceID;         ///< RTAudio DeviceID
-    std::string mInputDeviceName, mOutputDeviceName; ///< RTAudio device names
+    uint32_t mSampleRate;                             ///< Sample Rate
+    uint32_t mDeviceID;                               ///< RTAudio DeviceID
+    std::string mInputDeviceName, mOutputDeviceName;  ///< RTAudio device names
     uint32_t mAudioBufferSize;  ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution;  ///< Audio Bit Resolutions
     bool mLoopBack;

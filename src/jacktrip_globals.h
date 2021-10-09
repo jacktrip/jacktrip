@@ -55,7 +55,7 @@ constexpr int gDefaultNumOutChannels = 2;
 #define PROTOCOL_STACK QHostAddress::AnyIPv4  // as opposed to Any
 // #define WAIR_AUDIO_NAME "JackTrip" // for jack connection
 constexpr const char* WAIR_AUDIO_NAME = "JackTrip";  // keep legacy for WAIR
-constexpr int gMAX_WAIRS          = 128;  // FIXME, should agree with maxThreadCount
+constexpr int gMAX_WAIRS              = 128;  // FIXME, should agree with maxThreadCount
 // jmess revision needed for string parse if > 1 digit
 
 // hubpatch = 3 for TUB ensemble patching
@@ -67,8 +67,8 @@ constexpr int gMAX_WAIRS          = 128;  // FIXME, should agree with maxThreadC
 ///////////////////////////////
 // test Riviera as server
 constexpr const char* gDOMAIN_TRIPLE = "192.168.0";  // for TUB multiclient hub
-constexpr int gMIN_TUB           = 11;                    // lowest client address
-constexpr int gMAX_TUB           = 20;                    // highest client address
+constexpr int gMIN_TUB               = 11;           // lowest client address
+constexpr int gMAX_TUB               = 20;           // highest client address
 
 #ifdef WAIR  // wair
 // uses hub mode
@@ -88,7 +88,7 @@ constexpr int gDefaultOutputQueueLength        = 4;
 constexpr uint32_t gDefaultSampleRate          = 48000;
 constexpr int gDefaultDeviceID                 = -1;
 constexpr uint32_t gDefaultBufferSizeInSamples = 128;
-constexpr const char* gDefaultLocalAddress         = "";
+constexpr const char* gDefaultLocalAddress     = "";
 constexpr int gDefaultRedundancy               = 1;
 constexpr int gTimeOutMultiThreadedServer      = 10000;  // seconds
 constexpr int gWaitCounter                     = 60;
@@ -121,9 +121,9 @@ extern int gVerboseFlag;  ///< Verbose mode flag declaration
 //*******************************************************************************
 /// \name JackAudio
 //@{
-constexpr int gJackBitResolution         = 32;  ///< Audio Bit Resolution of the Jack Server
+constexpr int gJackBitResolution = 32;  ///< Audio Bit Resolution of the Jack Server
 constexpr const char* gJackDefaultClientName = "JackTrip";
-constexpr int gMaxRemoteNameLength       = 64;
+constexpr int gMaxRemoteNameLength           = 64;
 //@}
 
 //*******************************************************************************

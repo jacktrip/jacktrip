@@ -166,8 +166,14 @@ class AudioInterface
     virtual void setNumOutputChannels(int nchannels) { mNumOutChans = nchannels; }
     virtual void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
     virtual void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
-    virtual void setInputDevice(std::string device_name) { mInputDeviceName = device_name; }
-    virtual void setOutputDevice(std::string device_name) { mOutputDeviceName = device_name; }
+    virtual void setInputDevice(std::string device_name)
+    {
+        mInputDeviceName = device_name;
+    }
+    virtual void setOutputDevice(std::string device_name)
+    {
+        mOutputDeviceName = device_name;
+    }
     virtual void setBufferSizeInSamples(uint32_t buf_size)
     {
         mBufferSizeInSamples = buf_size;
@@ -229,12 +235,12 @@ class AudioInterface
         mInBufCopy;           ///< needed in callback() to modify JACK audio input
     int mAudioBitResolution;  ///< Bit resolution in audio samples
     AudioInterface::audioBitResolutionT
-        mBitResolutionMode;         ///< Bit resolution (audioBitResolutionT) mode
-    uint32_t mSampleRate;           ///< Sampling Rate
-    uint32_t mDeviceID;             ///< RTAudio DeviceID
-    std::string mInputDeviceName, mOutputDeviceName; ///< RTAudio device names
-    uint32_t mBufferSizeInSamples;  ///< Buffer size in samples
-    size_t mSizeInBytesPerChannel;  ///< Size in bytes per audio channel
+        mBitResolutionMode;  ///< Bit resolution (audioBitResolutionT) mode
+    uint32_t mSampleRate;    ///< Sampling Rate
+    uint32_t mDeviceID;      ///< RTAudio DeviceID
+    std::string mInputDeviceName, mOutputDeviceName;  ///< RTAudio device names
+    uint32_t mBufferSizeInSamples;                    ///< Buffer size in samples
+    size_t mSizeInBytesPerChannel;                    ///< Size in bytes per audio channel
     QVector<ProcessPlugin*>
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*>

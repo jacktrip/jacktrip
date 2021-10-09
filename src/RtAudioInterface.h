@@ -86,8 +86,8 @@ class RtAudioInterface : public AudioInterface
                                       RtAudioStreamStatus status, void* userData);
     void printDeviceInfo(unsigned int deviceId);
 
-    int mNumInChans;      ///< Number of Input Channels
-    int mNumOutChans;     ///<  Number of Output Channels
+    int mNumInChans;   ///< Number of Input Channels
+    int mNumOutChans;  ///<  Number of Output Channels
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>

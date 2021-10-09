@@ -185,11 +185,11 @@ void JackTrip::setupAudio(
 #endif  // endwhere
                                    mAudioBitResolution);
 
-#ifdef WAIRTOHUB                                        // WAIR
+#ifdef WAIRTOHUB  // WAIR
 
         // Set our Jack client name if we're a hub server or a custom name hasn't been set
         if (mJackClientName.isEmpty()) {
-            if (!mPeerAddress.isEmpty()) { 
+            if (!mPeerAddress.isEmpty()) {
                 mJackClientName = QString(mPeerAddress).replace(":", "_");
             } else {
                 mJackClientName = gJackDefaultClientName;
@@ -253,8 +253,9 @@ void JackTrip::setupAudio(
     }
 
     mAudioInterface->setLoopBack(mLoopBack);
-    if (!mAudioTesterP.isNull()) {  // if we're a hub server, this will be a nullptr - MAJOR
-                          // REFACTOR NEEDED, in my opinion
+    if (!mAudioTesterP
+             .isNull()) {  // if we're a hub server, this will be a nullptr - MAJOR
+                           // REFACTOR NEEDED, in my opinion
         mAudioTesterP->setSampleRate(mSampleRate);
     }
     mAudioInterface->setAudioTesterP(mAudioTesterP.data());
@@ -600,7 +601,9 @@ void JackTrip::onStatTimer()
 
     static QMutex mutex;
     QMutexLocker locker(&mutex);
-    if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) { mIOStatLogStream << "\n"; }
+    if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) {
+        mIOStatLogStream << "\n";
+    }
     mIOStatLogStream << now.toLocal8Bit().constData() << " "
                      << getPeerAddress().toLocal8Bit().constData()
                      << " send: " << send_io_stat.underruns << "/"
@@ -784,7 +787,7 @@ void JackTrip::connectionSecured()
 {
     // Now that the connection is encrypted, send out port, and credentials.
     //(Remember to include an additional 2 bytes for the username and password
-    //terminators.)
+    // terminators.)
     QByteArray username = mUsername.toUtf8();
     QByteArray password = mPassword.toUtf8();
     int size            = (sizeof(qint32) * 3) + gMaxRemoteNameLength + username.length()
