@@ -180,7 +180,7 @@ win32 {
 }
 
 DESTDIR = .
-QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug ./$${application_id}.xml ./$${application_id}.desktop ./$${application_id}.png ./$${application_id}.svg ./jacktrip.1
+QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release/* ./debug/* ./$${application_id}.xml ./$${application_id}.desktop ./$${application_id}.png ./$${application_id}.svg ./jacktrip.1 ./librtaudio.a
 
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr
