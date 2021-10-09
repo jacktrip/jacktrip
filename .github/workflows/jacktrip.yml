@@ -46,13 +46,13 @@ jobs:
             jacktrip-path: jacktrip
             binary-path: binary
 
-          - name: Linux-x64-dynamic-nogui
+          - name: Linux-x64-shared-libs-nogui
             runs-on: ubuntu-18.04
             jacktrip-path: jacktrip
             binary-path: binary
             nogui: true
 
-          # - name: macOS-dynamic
+          # - name: macOS-shared-libs
           #   runs-on: macos-10.15
           #   system-rtaudio: true
           #   jacktrip-path: jacktrip
@@ -77,7 +77,7 @@ jobs:
             jacktrip-path: jacktrip # relative to build path
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
 
-          # - name: Windows-dynamic
+          # - name: Windows-shared-libs
           #   runs-on: windows-2019
           #   system-rtaudio: true
           #   jacktrip-path: release/jacktrip.exe
@@ -105,7 +105,7 @@ jobs:
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
-      QT_VERSION: '5.15.2' # for dynamic qt installer using install-qt-action
+      QT_VERSION: '5.15.2' # for shared qt installer using install-qt-action
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
@@ -159,7 +159,7 @@ jobs:
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             brew install rt-audio
-            rm -f `brew --prefix rt-audio`/lib/*.dylib # remove the dynamic library, we want static only
+            rm -f `brew --prefix rt-audio`/lib/*.dylib # remove the shared library, we want static only
           fi
           if [[ -n "${{ matrix.installer-path }}" ]]; then
             brew install packages
