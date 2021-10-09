@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -44,7 +44,7 @@
 /// \todo Add this namespace
 // namespace JackTrip
 
-constexpr const char* const gVersion = "1.4.0-rc.4";  ///< JackTrip version
+constexpr const char* const gVersion = "1.4.0-rc.6";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
