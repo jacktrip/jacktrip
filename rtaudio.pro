@@ -1,3 +1,6 @@
+# created by Marcin Pączkowski 
+# configuration for building RtAudio library using qmake
+
 TEMPLATE = lib
 INCLUDEPATH += . externals/rtaudio
 
