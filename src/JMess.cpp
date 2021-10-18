@@ -1,6 +1,9 @@
 /*
   JMess: A simple utility so save your jack-audio mess.
-
+  Incorporated into JackTrip:
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
+  SoundWIRE group at CCRMA, Stanford University.
+  JMess itself is:
   Copyright (C) 2007-2010 Juan-Pablo Caceres.
 
   Permission is hereby granted, free of charge, to any person
@@ -176,7 +179,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
     QString IPS[gMAX_WAIRS];
     int ctr = 0;
 
-    const char** ports;               //, **connections; //vector of ports and connections
+    const char** ports;  //, **connections; //vector of ports and connections
 
     // Get active output ports.
     ports = jack_get_ports(mClient, NULL, NULL, JackPortIsOutput);

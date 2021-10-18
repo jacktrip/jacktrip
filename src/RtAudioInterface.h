@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -86,8 +86,8 @@ class RtAudioInterface : public AudioInterface
                                       RtAudioStreamStatus status, void* userData);
     void printDeviceInfo(unsigned int deviceId);
 
-    int mNumInChans;      ///< Number of Input Channels
-    int mNumOutChans;     ///<  Number of Output Channels
+    int mNumInChans;   ///< Number of Input Channels
+    int mNumOutChans;  ///<  Number of Output Channels
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>

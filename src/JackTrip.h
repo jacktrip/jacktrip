@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -617,9 +617,9 @@ class JackTrip : public QObject
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
     int mBufferStrategy;
     int mBroadcastQueueLength;
-    uint32_t mSampleRate;       ///< Sample Rate
-    uint32_t mDeviceID;         ///< RTAudio DeviceID
-    std::string mInputDeviceName, mOutputDeviceName; ///< RTAudio device names
+    uint32_t mSampleRate;                             ///< Sample Rate
+    uint32_t mDeviceID;                               ///< RTAudio DeviceID
+    std::string mInputDeviceName, mOutputDeviceName;  ///< RTAudio device names
     uint32_t mAudioBufferSize;  ///< Audio buffer size to process on each callback
     AudioInterface::audioBitResolutionT mAudioBitResolution;  ///< Audio Bit Resolutions
     bool mLoopBack;
