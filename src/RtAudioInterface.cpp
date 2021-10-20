@@ -157,6 +157,7 @@ void RtAudioInterface::setup()
         mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                              &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
                              this, &options);
+        setBufferSize(bufferFrames);
     } catch (RtAudioError& e) {
         std::cout << '\n' << e.getMessage() << '\n' << std::endl;
         exit(0);

@@ -165,6 +165,7 @@ class AudioInterface
     virtual void setNumInputChannels(int nchannels) { mNumInChans = nchannels; }
     virtual void setNumOutputChannels(int nchannels) { mNumOutChans = nchannels; }
     virtual void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
+    virtual void setBufferSize(uint32_t buffersize) { mBufferSizeInSamples = buffersize; }
     virtual void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
     virtual void setInputDevice(std::string device_name)
     {
