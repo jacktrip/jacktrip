@@ -40,6 +40,8 @@
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
+#define GUIBS3
+
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
 
@@ -50,15 +52,18 @@
 #include "RingBuffer.h"
 using std::vector;
 #include <math.h>
+#include "herlpergui.h"
+#include "ui_herlpergui.h"
+#include <QWidget>
 
 class BurgAlgorithm
 {
-   public:
+public:
     bool classify(double d);
     void train(vector<long double>& coeffs, const vector<float>& x);
     void predict(vector<long double>& coeffs, vector<float>& tail);
 
-   private:
+private:
     // the following are class members to minimize heap memory allocations
     vector<long double> Ak;
     vector<long double> f;
@@ -67,7 +72,7 @@ class BurgAlgorithm
 
 class ChanData
 {
-   public:
+public:
     ChanData(int i, int FPP, int hist);
     int ch;
     int trainSamps;
@@ -84,7 +89,7 @@ class ChanData
 
 class StdDev
 {
-   public:
+public:
     StdDev(int w, int id);
     void reset();
     double tick();
@@ -114,11 +119,15 @@ class StdDev
     int lastPlcSkipped;
 };
 
-class Regulator : public RingBuffer
-{
-    //    Q_OBJECT;
+#ifdef GUIBS3
+class Regulator : public QObject, public RingBuffer {
+        Q_OBJECT;
+        #else
+class Regulator : public RingBuffer {
+        #endif
 
-   public:
+
+public:
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
@@ -130,7 +139,7 @@ class Regulator : public RingBuffer
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot,
                                        [[maybe_unused]] int unused,
-                                       [[maybe_unused]] int seq_num)
+    [[maybe_unused]] int seq_num)
     {
         pushPacket(ptrToSlot, seq_num);
         return (true);
@@ -142,9 +151,9 @@ class Regulator : public RingBuffer
 
     virtual QString getStats(uint32_t statCount, uint32_t lostCount);
 
-   private:
-    void processPacket(bool glitch);
-    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
+private:
+    void processPacket(bool glitch, bool extendHist);
+    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch, bool extendHist);
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
@@ -182,6 +191,14 @@ class Regulator : public RingBuffer
     void processChannelXfade(int ch);
     int8_t* mXfrBufferXfade;
     sample_t bitsToSampleXfade(int ch, int frame);
-};
+    int mModSeqNum;
+    bool mEnable;
+#ifdef GUIBS3
+    HerlperGUI* hg;
 
+public slots:
+    void changeGlobal(int);
+    void changeGlobal_2(int);
+};
+#endif
 #endif  //__REGULATOR_H__

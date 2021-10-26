@@ -87,11 +87,12 @@
 using std::cout;
 using std::endl;
 using std::setw;
+#include <QObject>
 
 // constants... tested for now
-constexpr int HIST       = 12;    // at FPP32
+constexpr int HIST       = 6;    // at FPP32
 constexpr int PADSLOTS   = 80;    // headroom scales with FPP, 80/16 --- 3/64 ??
-constexpr int mModSeqNum = 1024;  // power of 2 req'd, 65536 is packet header seq
+constexpr int mModSeqNumInit = 128;  // 65536 is packet header seq
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -134,7 +135,9 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     }
     mLastWasGlitch = false;
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
-    mNumSlots      = ((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
+    if (mMsecTolerance < mPacketDurMsec) mMsecTolerance = mPacketDurMsec; // absolute minimum
+    mNumSlots      = 16; //((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
+
     for (int i = 0; i < mNumSlots; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mSlots.push_back(tmp);
@@ -156,10 +159,33 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
     mTmpBuffer = new int8_t[mBytes];
-    mIncomingTiming.resize(mModSeqNum);
-    for (int i = 0; i < mModSeqNum; i++) mIncomingTiming[i] = 0.0;
+    mIncomingTiming.resize(mModSeqNumInit);
+    for (int i = 0; i < mModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
     mXfrBufferXfade = new int8_t[mBytes];
+    mModSeqNum = mNumSlots * 2;
+#ifdef GUIBS3
+    hg = new HerlperGUI(qApp->activeWindow());
+    connect(hg, SIGNAL(moved(int)), this, SLOT(changeGlobal(int)));
+    connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
+#endif
+    mEnable = false;
 }
+
+#ifdef GUIBS3
+
+void Regulator::changeGlobal_2(int x) {
+    mEnable = x;
+    qDebug() << "mMsecTolerance" << mMsecTolerance
+                << "mNumSlots" << mNumSlots
+                << "mModSeqNum" << mModSeqNum
+                                ;
+    qDebug() << "mEnable" << mEnable;
+}
+
+void Regulator::changeGlobal(int x) {
+    mMsecTolerance = (0.1*((double)x));
+}
+#endif
 
 Regulator::~Regulator()
 {
@@ -173,11 +199,10 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
     mIncomingTiming[seq_num] =
-        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+            mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
 
     if ((mLastSeqNum != -1) && (((mLastSeqNum + 1) % mModSeqNum) != seq_num)) {
-        //        qDebug() << "lost packet detected in pushPacket" << seq_num <<
-        //        mLastSeqNum;
+        //        qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
     }
     mLastSeqNum = seq_num;
 
@@ -205,8 +230,15 @@ void Regulator::pullPacket(int8_t* buf)
         goto ZERO_OUTPUT;
     } else {
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+        if(!mEnable) {
+            int next = mLastSeqNum - mModSeqNum;
+            if (next < 0) next += mModSeqNum;
+            memcpy(mXfrBuffer, mSlots[next % mNumSlots], mBytes);
+            goto PACKETOK;
+        }
         for (int i = mNumSlots; i >= 0; i--) {
             int next = mLastSeqNum - i;
+            //            if (next < 0) qDebug() << ".........next" << next;
             if (next < 0) next += mModSeqNum;
             if (mIncomingTiming[next] <= mIncomingTiming[mLastSeqNumOut]) continue;
             if (mIncomingTiming[next] > now) {
@@ -222,11 +254,12 @@ void Regulator::pullPacket(int8_t* buf)
                 if (skipping) {  // overrun
                     int history = skipping;
                     if (history > mHist) history = mHist;
+                    //                    history = 0;
                     for (int j = history; j > 0; j--) {
                         int skip = next - j;
                         if (skip < 0) skip += mModSeqNum;
                         memcpy(mXfrBuffer, mSlots[skip % mNumSlots], mBytes);
-                        processPacket(false);  // extend history
+                        processPacket(false, true);  // extend history
                     }
 
                     // fade down this one
@@ -235,29 +268,29 @@ void Regulator::pullPacket(int8_t* buf)
                     memcpy(mXfrBufferXfade, mSlots[next % mNumSlots], mBytes);
                     goto OVERRUN;
                 }
+                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
                 goto PACKETOK;
             }
         }
         goto UNDERRUN;
 
-    OVERRUN : {
-        processXfade();
-        processPacket(false);
-        pullStat->plcOverruns++;
-        goto OUTPUT;
-    }
+OVERRUN : {
+            processXfade();
+            processPacket(false, false);
+            pullStat->plcOverruns++;
+            goto OUTPUT;
+        }
 
-    PACKETOK : {
-        memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
-        processPacket(false);
-        goto OUTPUT;
-    }
+PACKETOK : {
+            processPacket(false, false);
+            goto OUTPUT;
+        }
 
-    UNDERRUN : {
-        processPacket(true);
-        pullStat->plcUnderruns++;
-        goto OUTPUT;
-    }
+UNDERRUN : {
+            processPacket(true, false);
+            pullStat->plcUnderruns++;
+            goto OUTPUT;
+        }
     }
 
 ZERO_OUTPUT:
@@ -285,17 +318,17 @@ void Regulator::processChannelXfade(int ch)
 }
 
 //*******************************************************************************
-void Regulator::processPacket(bool glitch)
+void Regulator::processPacket(bool glitch, bool extendHist)
 {
     for (int ch = 0; ch < mNumChannels; ch++)
-        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
+        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch, extendHist);
     mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }
 
 //*******************************************************************************
-void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch)
+void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch, bool extendHist)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
 
@@ -318,25 +351,15 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
             for (int i = 0; i < (cd->trainSamps - 1); i++)
                 cd->mPrediction[i] = cd->mTail[i + cd->trainSamps];
         }
-        if (lastWasGlitch)
+        if (!extendHist)        if (lastWasGlitch)
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
-                    cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+                        cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
 
-        // diagnostic output
-        //        for (int s = 0; s < mFPP; s++)
-        //            sampleToBits((glitch)
-        //                         ? ((!ch) ? cd->mPrediction[s] : 0.0) // mute ch1
-        //                         : ((lastWasGlitch) ?
-        //                                ((!ch) ? cd->mXfadedPred[s] : cd->mTruth[s]) :
-        //                                ((!ch) ? cd->mTruth[s] : cd->mTruth[s])
-        //                                ),
-        //                         ch, s);
-
-        for (int s = 0; s < mFPP; s++)
+        if (!extendHist)        for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
-                             ? cd->mPrediction[s]
-                             : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                         ? cd->mPrediction[s]
+                           : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                          ch, s);
 
         if (glitch) {
@@ -345,15 +368,23 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
     }
 
     // copy down history
-    for (int i = mHist - 1; i > 0; i--) {
+    if (!extendHist)     for (int i = mHist - 1; i > 0; i--) {
         for (int s = 0; s < mFPP; s++)
             cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
     }
 
     // add current input or prediction to history, the latter checking if primed
-    for (int s = 0; s < mFPP; s++)
+    if (!extendHist)     for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] =
-            ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+
+    // diagnostic output
+    /////////////////////
+    if (false) for (int s = 0; s < mFPP; s++) {
+        sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
+        mPhasor[ch] += (!ch) ? 0.1 : 0.11;
+    }
+    /////////////////////
 }
 
 //*******************************************************************************
@@ -363,9 +394,9 @@ sample_t Regulator::bitsToSample(int ch, int frame)
 {
     sample_t sample = 0.0;
     AudioInterface::fromBitToSampleConversion(
-        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-                    + (ch * mBitResolutionMode)],
-        &sample, mBitResolutionMode);
+                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            &sample, mBitResolutionMode);
     return sample;
 }
 
@@ -373,28 +404,28 @@ sample_t Regulator::bitsToSampleXfade(int ch, int frame)
 {
     sample_t sample = 0.0;
     AudioInterface::fromBitToSampleConversion(
-        &mXfrBufferXfade[(frame * mBitResolutionMode * mNumChannels)
-                         + (ch * mBitResolutionMode)],
-        &sample, mBitResolutionMode);
+                &mXfrBufferXfade[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            &sample, mBitResolutionMode);
     return sample;
 }
 
 void Regulator::sampleToBits(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
-        &sample,
-        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-                    + (ch * mBitResolutionMode)],
-        mBitResolutionMode);
+                &sample,
+                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            mBitResolutionMode);
 }
 
 void Regulator::sampleToBitsTmp(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
-        &sample,
-        &mTmpBuffer[(frame * mBitResolutionMode * mNumChannels)
-                    + (ch * mBitResolutionMode)],
-        mBitResolutionMode);
+                &sample,
+                &mTmpBuffer[(frame * mBitResolutionMode * mNumChannels)
+            + (ch * mBitResolutionMode)],
+            mBitResolutionMode);
 }
 
 //*******************************************************************************
@@ -626,8 +657,8 @@ QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
         tmp += QString::number(pullStat->window);
         tmp += " packets)\n";
         tmp +=
-            "secs   avgStdDev (mean       min       max     stdDev) "
-            "PLC(under over  skipped) lost\n";
+                "secs   avgStdDev (mean       min       max     stdDev) "
+                "PLC(under over  skipped) lost\n";
     } else {
         uint32_t lost  = lostCount - mLastLostCount;
         mLastLostCount = lostCount;
@@ -635,15 +666,19 @@ QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
 #define PDBL2(x) << setw(10) << (QString("%1").arg(pullStat->x, 0, 'f', 2)).toStdString()
         std::stringstream logger;
         logger << setw(2)
-               << statCount PDBL(longTermStdDev) PDBL(lastMean) PDBL(lastMin)
-                      PDBL(lastMax) PDBL(lastStdDev)
-
-               << endl;
+               << statCount
+                  PDBL(longTermStdDev) PDBL(lastMean) PDBL(lastMin) PDBL(lastMax) PDBL(lastStdDev)
+          #ifndef GUIBS3
+                  // comment out this next line for GUI because...
+               << endl
+                  // ...print all stats in one line when running in GUI because can't handle extra crlf
+          #endif
+                  ;
         tmp = QString::fromStdString(logger.str());
         std::stringstream logger2;
         logger2 << setw(2)
                 << "" PDBL2(longTermStdDev) PDBL2(lastMean) PDBL2(lastMin) PDBL2(lastMax)
-                       PDBL2(lastStdDev)
+                   PDBL2(lastStdDev)
                 << setw(8) << pullStat->lastPlcUnderruns << setw(8)
                 << pullStat->lastPlcOverruns << setw(8) << pullStat->lastPlcSkipped
                 << setw(8) << lost << endl;

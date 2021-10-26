@@ -599,6 +599,7 @@ void JackTrip::onStatTimer()
             return;
         } else {
             mIOStatLogStream << poolStats.toStdString();
+            mIOStatLogStream << endl; // GUI needs me
             return;
         };
     }

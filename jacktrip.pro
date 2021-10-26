@@ -186,6 +186,7 @@ INCLUDEPATH += faust-src-lair
 
 # Input
 HEADERS += src/DataProtocol.h \
+           herlpergui.h \
            src/JackTrip.h \
            src/Effects.h \
            src/Compressor.h \
@@ -231,6 +232,7 @@ rtaudio {
 }
 
 SOURCES += src/DataProtocol.cpp \
+           herlpergui.cpp \
            src/JackTrip.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
@@ -333,3 +335,6 @@ if(linux-g++ | linux-g++-64):!nogui {
 
     INSTALLS += metainfo desktop icon48 icon_svg icon_symbolic
 }
+
+FORMS += \
+    herlpergui.ui
