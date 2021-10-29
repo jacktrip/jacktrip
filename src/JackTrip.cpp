@@ -234,6 +234,8 @@ void JackTrip::setupAudio(
         // Setup might have reduced number of channels
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        // Setup might have changed buffer size
+        mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
@@ -249,6 +251,8 @@ void JackTrip::setupAudio(
         // Setup might have reduced number of channels
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        // Setup might have changed buffer size
+        mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
     }
 
