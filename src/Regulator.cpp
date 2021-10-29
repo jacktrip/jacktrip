@@ -93,6 +93,7 @@ using std::setw;
 constexpr int HIST       = 6;    // at FPP32
 constexpr int PADSLOTS   = 80;    // headroom scales with FPP, 80/16 --- 3/64 ??
 constexpr int mModSeqNumInit = 128;  // 65536 is packet header seq
+constexpr int mNumSlotsMax = 32;  // 65536 is packet header seq
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -136,7 +137,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mLastWasGlitch = false;
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
     if (mMsecTolerance < mPacketDurMsec) mMsecTolerance = mPacketDurMsec; // absolute minimum
-    mNumSlots      = 16; //((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
+    mNumSlots      = mNumSlotsMax; //((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
 
     for (int i = 0; i < mNumSlots; i++) {
         int8_t* tmp = new int8_t[mBytes];
@@ -169,16 +170,22 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
 #endif
     mEnable = false;
+    changeGlobal_2(8);
 }
 
 #ifdef GUIBS3
 
 void Regulator::changeGlobal_2(int x) {
+    QMutexLocker locker(&mMutex);
     mEnable = x;
+    mNumSlots = x;
+    if (!mNumSlots) mNumSlots = x;
+    if (mNumSlots > mNumSlotsMax ) mNumSlots = mNumSlotsMax;
+    mModSeqNum = mNumSlots * 2;
     qDebug() << "mMsecTolerance" << mMsecTolerance
-                << "mNumSlots" << mNumSlots
-                << "mModSeqNum" << mModSeqNum
-                                ;
+             << "mNumSlots" << mNumSlots
+             << "mModSeqNum" << mModSeqNum
+                ;
     qDebug() << "mEnable" << mEnable;
 }
 
@@ -249,6 +256,19 @@ void Regulator::pullPacket(int8_t* buf)
                     //                    <<  nextInSeq;
                     skipping += mModSeqNum;
                 }
+
+                if (skipping) {
+                    for (int j = i; j >= 0; j--) {
+                        int tmp = mLastSeqNum - j;
+                        if (tmp < 0) tmp += mModSeqNum;
+                        qDebug() << j << (mIncomingTiming[tmp] - now);
+                    }
+                    qDebug() << i << "...." << now << "\n";
+                    next = mLastSeqNum;
+                }
+
+
+
                 mLastSeqNumOut = next;
                 pullStat->plcSkipped += skipping;
                 if (skipping) {  // overrun
@@ -268,6 +288,12 @@ void Regulator::pullPacket(int8_t* buf)
                     memcpy(mXfrBufferXfade, mSlots[next % mNumSlots], mBytes);
                     goto OVERRUN;
                 }
+                for (int j = i; j >= 0; j--) {
+                    int tmp = mLastSeqNum - j;
+                    if (tmp < 0) tmp += mModSeqNum;
+                    qDebug() << j << (mIncomingTiming[tmp] - now);
+                }
+                qDebug() << i << "...." << now << "\n";
                 memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
                 goto PACKETOK;
             }

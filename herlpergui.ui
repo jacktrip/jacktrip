@@ -26,7 +26,7 @@
     <number>1</number>
    </property>
    <property name="maximum">
-    <number>60</number>
+    <number>100</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
@@ -68,7 +68,7 @@
     <number>0</number>
    </property>
    <property name="maximum">
-    <number>250</number>
+    <number>64</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
