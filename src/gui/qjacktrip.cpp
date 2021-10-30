@@ -934,7 +934,7 @@ void QJackTrip::migrateSettings()
 void QJackTrip::loadSettings()
 {
     QSettings settings;
-    m_ui->typeComboBox->setCurrentIndex(settings.value("RunMode", 0).toInt());
+    m_ui->typeComboBox->setCurrentIndex(settings.value("RunMode", 2).toInt());
 
     // Migrate to separate send and receive channel numbers.
     int oldChannelSetting = settings.value("Channels", -1).toInt();
@@ -1028,7 +1028,7 @@ void QJackTrip::loadSettings()
         settings.value("BroadcastLength", gDefaultQueueLength * 2).toInt());
     m_ui->bufferStrategyComboBox->setCurrentIndex(settings.value("Strategy", 1).toInt()
                                                   - 1);
-    m_ui->autoQueueCheckBox->setChecked(settings.value("AutoQueue", false).toBool());
+    m_ui->autoQueueCheckBox->setChecked(settings.value("AutoQueue", true).toBool());
     m_ui->autoQueueSpinBox->setValue(settings.value("TuningParameter", 500).toInt());
     settings.endGroup();
 
