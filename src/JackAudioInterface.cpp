@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -193,7 +193,7 @@ void JackAudioInterface::createChannels()
             QTextStream(&outName) << "broadcast_" << i + 1;
             mBroadcastPorts[i] =
                 jack_port_register(mClient, outName.toLatin1(), JACK_DEFAULT_AUDIO_TYPE,
-                                   JackPortIsTerminal, 0);
+                                   JackPortIsOutput | JackPortIsTerminal, 0);
         }
     }
 }

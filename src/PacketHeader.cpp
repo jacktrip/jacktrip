@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -94,8 +94,7 @@ uint64_t PacketHeader::usecTime()
 //####################### DefaultHeader #################################
 //#######################################################################
 //***********************************************************************
-DefaultHeader::DefaultHeader(JackTrip* jacktrip)
-    : PacketHeader(jacktrip)
+DefaultHeader::DefaultHeader(JackTrip* jacktrip) : PacketHeader(jacktrip)
 {
     mHeader.TimeStamp                  = 0;
     mHeader.SeqNumber                  = 0;
@@ -277,8 +276,7 @@ uint8_t DefaultHeader::getPeerNumOutgoingChannels(int8_t* full_packet) const
 //####################### JamLinkHeader #################################
 //#######################################################################
 //***********************************************************************
-JamLinkHeader::JamLinkHeader(JackTrip* jacktrip)
-    : PacketHeader(jacktrip)
+JamLinkHeader::JamLinkHeader(JackTrip* jacktrip) : PacketHeader(jacktrip)
 {
     mHeader.Common    = 0;
     mHeader.SeqNumber = 0;
@@ -350,6 +348,4 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
 //####################### EmptyHeader #################################
 //#######################################################################
 //***********************************************************************
-EmptyHeader::EmptyHeader(JackTrip* jacktrip) : PacketHeader(jacktrip)
-{
-}
+EmptyHeader::EmptyHeader(JackTrip* jacktrip) : PacketHeader(jacktrip) {}

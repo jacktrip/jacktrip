@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -145,14 +145,17 @@ void Settings::parseInput(int argc, char** argv)
         {"clientname", required_argument, NULL, 'J'},  // Run in JamLink mode
         {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
         {"appendthreadid", no_argument, NULL,
-         OPT_APPENDTHREADID},                        // Append thread id to client names
+         OPT_APPENDTHREADID},  // Append thread id to client names
 #ifdef __RT_AUDIO__
-        {"rtaudio", no_argument, NULL, 'R'},         // Run in JamLink mode
-        {"srate", required_argument, NULL, 'T'},     // Set Sample Rate
-        {"deviceid", required_argument, NULL, 'd'},  // Set RTAudio device id to use (DEPRECATED)
-        {"audiodevice", required_argument, NULL, OPT_AUDIODEVICE},  // Set RTAudio devices by name
-        {"listdevices", no_argument, NULL, OPT_LISTDEVICES},  // Set RTAudio device id to use
-        {"bufsize", required_argument, NULL, 'F'},   // Set buffer Size
+        {"rtaudio", no_argument, NULL, 'R'},      // Run in JamLink mode
+        {"srate", required_argument, NULL, 'T'},  // Set Sample Rate
+        {"deviceid", required_argument, NULL,
+         'd'},  // Set RTAudio device id to use (DEPRECATED)
+        {"audiodevice", required_argument, NULL,
+         OPT_AUDIODEVICE},  // Set RTAudio devices by name
+        {"listdevices", no_argument, NULL,
+         OPT_LISTDEVICES},                          // Set RTAudio device id to use
+        {"bufsize", required_argument, NULL, 'F'},  // Set buffer Size
 #endif
         {"nojackportsconnect", no_argument, NULL,
          'D'},                                // Don't connect default Audio Ports
@@ -381,7 +384,8 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'd':  // RTAudio device id
             //-------------------------------------------------------
-            cout << "WARNING: Setting device ID is deprecated and will be removed in the future."
+            cout << "WARNING: Setting device ID is deprecated and will be removed in the "
+                    "future."
                  << endl;
             mChangeDefaultID = true;
             mDeviceID        = atoi(optarg);
@@ -408,12 +412,13 @@ void Settings::parseInput(int argc, char** argv)
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
+            cout << "Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
 #ifdef QT_OPENSOURCE
             cout << "This build of JackTrip is subject to LGPL license." << endl;
 #endif
-            cout << "JackTrip source code is released under MIT and GPL licenses." << endl;
+            cout << "JackTrip source code is released under MIT and GPL licenses."
+                 << endl;
             cout << "See LICENSE.md file for more information." << endl;
             cout << "" << endl;
             std::exit(0);
@@ -614,7 +619,7 @@ void Settings::parseInput(int argc, char** argv)
     if (true == mAudioTester->getEnabled()) {
         assert(mNumAudioInputChans > 0);
         mAudioTester->setSendChannel(mNumAudioInputChans
-                                    - 1);  // use last channel for latency testing
+                                     - 1);  // use last channel for latency testing
         // Originally, testing only in the last channel was adopted
         // because channel 0 ("left") was a clap track on CCRMA loopback
         // servers.  Now, however, we also do it in order to easily keep
@@ -663,7 +668,7 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
-    cout << "Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe." << endl;
+    cout << "Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
 #ifdef QT_OPENSOURCE
     cout << "This build of JackTrip is subject to LGPL license." << endl;
@@ -834,11 +839,12 @@ void Settings::setDevicesByString(std::string nameArg)
     char delim = ',';
     if (std::count(nameArg.begin(), nameArg.end(), delim) > 1) {
         throw std::invalid_argument(
-            "Found multiple commas in the --audiodevice argument, cannot parse reliably.");
+            "Found multiple commas in the --audiodevice argument, cannot parse "
+            "reliably.");
     }
     commaPos = nameArg.rfind(delim);
     if (commaPos || nameArg[0] == delim) {
-        mInputDeviceName = nameArg.substr(0, commaPos);
+        mInputDeviceName  = nameArg.substr(0, commaPos);
         mOutputDeviceName = nameArg.substr(commaPos + 1);
     } else {
         mInputDeviceName = mOutputDeviceName = nameArg;
@@ -885,7 +891,7 @@ UdpHubListener* Settings::getConfiguredHubServer()
 
     if (mAuth) {
         //(We don't need to check the validity of these files because it's done by the
-        //UdpHubListener.)
+        // UdpHubListener.)
         udpHub->setRequireAuth(mAuth);
         udpHub->setCertFile(mCertFile);
         udpHub->setKeyFile(mKeyFile);
@@ -965,7 +971,7 @@ JackTrip* Settings::getConfiguredJackTrip()
 
     // Change default Buffer Size
     if (mChangeDefaultBS) { jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize); }
-    
+
     // Set device names
     jackTrip->setInputDevice(mInputDeviceName);
     jackTrip->setOutputDevice(mOutputDeviceName);

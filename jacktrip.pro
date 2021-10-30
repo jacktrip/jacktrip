@@ -34,7 +34,8 @@ QT += network
 DEFINES += WAIRTOHUB
 
 # configuration with RtAudio
-rtaudio {
+rtaudio|bundled_rtaudio {
+  message(Building with RtAudio)
   DEFINES += __RT_AUDIO__
 }
 # Configuration without Jack
@@ -65,15 +66,33 @@ INCLUDEPATH += faust-src-lair/stk
   }
 }
 
-# pkg-config is required for building with rtaudio
-rtaudio {
-  CONFIG += link_pkgconfig
-  PKGCONFIG += rtaudio
+bundled_rtaudio {
+  INCLUDEPATH += externals/rtaudio/
+  LIBS += -L$${OUT_PWD} -L$${OUT_PWD}/debug -L$${OUT_PWD}/release -lrtaudio
+  linux-g++ | linux-g++-64 {
+    LIBS += -lasound -lpthread -lpulse-simple -lpulse
+  }
+  macx {
+    LIBS += -lpthread -framework CoreAudio -framework CoreFoundation
+  }
+  win32 {
+    LIBS += -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
+  }
+} else {
+  rtaudio {
+    # pkg-config is required for building with system-provided rtaudio
+    CONFIG += link_pkgconfig
+    PKGCONFIG += rtaudio
+    win32 {
+      # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
+      CONFIG += no_lflags_merge    
+      LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
+    }
+  }
 }
 
 macx {
   message(Building on MAC OS X)
-  QMAKE_CXXFLAGS += -D__MACOSX_CORE__ #-D__UNIX_JACK__ #RtAudio Flags
   QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
   #QMAKE_MAC_SDK = macosx10.9
   CONFIG -= app_bundle
@@ -88,43 +107,39 @@ macx {
 }
 
 linux-g++ | linux-g++-64 {
-#   LIBS += -lasound -lrtaudio
-  QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
-
-FEDORA = $$system(cat /proc/version | grep -o fc)
-
-contains( FEDORA, fc): {
-  message(building on fedora)
-}
-
-UBUNTU = $$system(cat /proc/version | grep -o Ubuntu)
-
-contains( UBUNTU, Ubuntu): {
-  message(building on  Ubuntu)
-
-# workaround for Qt bug under ubuntu 18.04
-# gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)
-# QMake version 3.1
-# Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
-  INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
-
-# sets differences from original fedora version
-  DEFINES += __UBUNTU__
-}
-
+  
+  FEDORA = $$system(cat /proc/version | grep -o fc)
+  
+  contains( FEDORA, fc): {
+    message(building on fedora)
+  }
+  
+  UBUNTU = $$system(cat /proc/version | grep -o Ubuntu)
+  
+  contains( UBUNTU, Ubuntu): {
+    message(building on  Ubuntu)
+    
+    # workaround for Qt bug under ubuntu 18.04
+    # gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)
+    # QMake version 3.1
+    # Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
+    INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
+    
+    # sets differences from original fedora version
+    DEFINES += __UBUNTU__
+  }
+  
   QMAKE_CXXFLAGS += -g -O2
   DEFINES += __LINUX__
-  }
+}
 
 linux-g++ {
   message(Linux)
-  QMAKE_CXXFLAGS += -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
-  }
+}
 
 linux-g++-64 {
   message(Linux 64bit)
-  QMAKE_CXXFLAGS += -fPIC -D__LINUX_ALSA__ #-D__LINUX_OSS__ #RtAudio Flags
-  }
+}
 
 
 win32 {
@@ -162,16 +177,10 @@ win32 {
   DEFINES += __WIN_32__
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
   DEFINES += WIN32_LEAN_AND_MEAN
-
-  rtaudio {
-    # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
-    CONFIG += no_lflags_merge    
-    LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
-  }
 }
 
 DESTDIR = .
-QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release ./debug ./$${application_id}.xml ./$${application_id}.desktop ./$${application_id}.png ./$${application_id}.svg ./jacktrip.1
+QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release/* ./debug/* ./$${application_id}.xml ./$${application_id}.desktop ./$${application_id}.png ./$${application_id}.svg ./jacktrip.1 ./librtaudio.a
 
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr
@@ -227,7 +236,7 @@ HEADERS += src/gui/about.h \
            src/gui/qjacktrip.h
 }
 
-rtaudio {
+rtaudio|bundled_rtaudio {
     HEADERS += src/RtAudioInterface.h
 }
 
@@ -276,7 +285,7 @@ SOURCES += src/gui/messageDialog.cpp \
   RESOURCES += src/gui/qjacktrip.qrc
 }
 
-rtaudio {
+rtaudio|bundled_rtaudio {
     SOURCES += src/RtAudioInterface.cpp
 }
 
