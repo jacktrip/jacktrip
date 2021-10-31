@@ -91,9 +91,8 @@ using std::setw;
 
 // constants... tested for now
 constexpr int HIST       = 6;    // at FPP32
-constexpr int PADSLOTS   = 80;    // headroom scales with FPP, 80/16 --- 3/64 ??
-constexpr int mModSeqNumInit = 128;  // 65536 is packet header seq
-constexpr int mNumSlotsMax = 32;  // 65536 is packet header seq
+constexpr int mModSeqNumInit = 96;  // 65536 is packet header seq
+constexpr int mNumSlotsMax = 48;  // 65536 is packet header seq
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -164,13 +163,14 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     for (int i = 0; i < mModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
     mXfrBufferXfade = new int8_t[mBytes];
     mModSeqNum = mNumSlots * 2;
+    mEnable = true;
+    mSkip = 0;
 #ifdef GUIBS3
     hg = new HerlperGUI(qApp->activeWindow());
     connect(hg, SIGNAL(moved(int)), this, SLOT(changeGlobal(int)));
     connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
+    //    changeGlobal_2(32);
 #endif
-    mEnable = false;
-    changeGlobal_2(8);
 }
 
 #ifdef GUIBS3
@@ -178,19 +178,22 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
 void Regulator::changeGlobal_2(int x) {
     QMutexLocker locker(&mMutex);
     mEnable = x;
-    mNumSlots = x;
-    if (!mNumSlots) mNumSlots = x;
-    if (mNumSlots > mNumSlotsMax ) mNumSlots = mNumSlotsMax;
-    mModSeqNum = mNumSlots * 2;
-    qDebug() << "mMsecTolerance" << mMsecTolerance
-             << "mNumSlots" << mNumSlots
-             << "mModSeqNum" << mModSeqNum
-                ;
-    qDebug() << "mEnable" << mEnable;
+    //    mNumSlots = x;
+    //    if (!mNumSlots) mNumSlots = x;
+    //    if (mNumSlots > mNumSlotsMax ) mNumSlots = mNumSlotsMax;
+    //    mModSeqNum = mNumSlots * 2;
+    //    qDebug() << "mMsecTolerance" << mMsecTolerance
+    //             << "mNumSlots" << mNumSlots
+    //             << "mModSeqNum" << mModSeqNum
+    //                ;
+    //    qDebug() << "mEnable" << mEnable;
 }
 
 void Regulator::changeGlobal(int x) {
     mMsecTolerance = (0.1*((double)x));
+    if ((mMsecTolerance/mPacketDurMsec)>mNumSlots)
+        qDebug() << "mMsecTolerance" << mMsecTolerance
+                 << "mNumSlots" << mNumSlots;
 }
 #endif
 
@@ -251,30 +254,25 @@ void Regulator::pullPacket(int8_t* buf)
             if (mIncomingTiming[next] > now) {
                 int nextInSeq = ((mLastSeqNumOut + 1) % mModSeqNum);
                 int skipping  = next - nextInSeq;
-                if (skipping < 0) {
-                    //                    qDebug() << "skipping < 0" << skipping << next
-                    //                    <<  nextInSeq;
-                    skipping += mModSeqNum;
-                }
-
                 if (skipping) {
-                    for (int j = i; j >= 0; j--) {
-                        int tmp = mLastSeqNum - j;
-                        if (tmp < 0) tmp += mModSeqNum;
-                        qDebug() << j << (mIncomingTiming[tmp] - now);
-                    }
-                    qDebug() << i << "...." << now << "\n";
-                    next = mLastSeqNum;
+                    //                    for (int j = i; j >= 0; j--) {
+                    //                        int tmp = mLastSeqNum - j;
+                    //                        if (tmp < 0) tmp += mModSeqNum;
+                    //                        qDebug() << j << (mIncomingTiming[tmp] - now);
+                    //                    }
+                    //                    qDebug() << i << "...." << now << "\n";
+                    next = mLastSeqNum; // sync to most recent incoming
+                    skipping  = next - nextInSeq;
+                    if (skipping < 0) skipping += mModSeqNum;
+                    pullStat->plcSkipped += skipping;
+                    qDebug() << skipping << "skipping";
+                    if (mSkip > 0) qDebug() << mSkip << "already skipping";
+                    mSkip = skipping;
                 }
-
-
-
                 mLastSeqNumOut = next;
-                pullStat->plcSkipped += skipping;
                 if (skipping) {  // overrun
                     int history = skipping;
                     if (history > mHist) history = mHist;
-                    //                    history = 0;
                     for (int j = history; j > 0; j--) {
                         int skip = next - j;
                         if (skip < 0) skip += mModSeqNum;
@@ -288,12 +286,12 @@ void Regulator::pullPacket(int8_t* buf)
                     memcpy(mXfrBufferXfade, mSlots[next % mNumSlots], mBytes);
                     goto OVERRUN;
                 }
-                for (int j = i; j >= 0; j--) {
-                    int tmp = mLastSeqNum - j;
-                    if (tmp < 0) tmp += mModSeqNum;
-                    qDebug() << j << (mIncomingTiming[tmp] - now);
-                }
-                qDebug() << i << "...." << now << "\n";
+                //                for (int j = i; j >= 0; j--) {
+                //                    int tmp = mLastSeqNum - j;
+                //                    if (tmp < 0) tmp += mModSeqNum;
+                //                    qDebug() << j << (mIncomingTiming[tmp] - now);
+                //                }
+                //                qDebug() << i << "...." << now << "\n";
                 memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
                 goto PACKETOK;
             }
@@ -325,6 +323,8 @@ ZERO_OUTPUT:
 OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
     pullStat->tick();
+    mSkip--;
+//    qDebug() << mSkip << "";
 };
 
 void Regulator::processXfade()
@@ -340,7 +340,7 @@ void Regulator::processChannelXfade(int ch)
     for (int s = 0; s < mFPP; s++) cd->mTruthXfade[s] = bitsToSampleXfade(ch, s);
     for (int s = 0; s < mFPP; s++)
         cd->mTruth[s] = cd->mTruth[s] * mFadeDown[s] + cd->mTruthXfade[s] * mFadeUp[s];
-    //    for (int s = 0; s < mFPP; s++) sampleToBits(cd->mTruth[s], ch, s);
+    for (int s = 0; s < mFPP; s++) sampleToBits(cd->mTruth[s], ch, s);
 }
 
 //*******************************************************************************
@@ -394,19 +394,21 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
     }
 
     // copy down history
-    if (!extendHist)     for (int i = mHist - 1; i > 0; i--) {
+    //    if (!extendHist)
+    for (int i = mHist - 1; i > 0; i--) {
         for (int s = 0; s < mFPP; s++)
             cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
     }
 
     // add current input or prediction to history, the latter checking if primed
-    if (!extendHist)     for (int s = 0; s < mFPP; s++)
+    //    if (!extendHist)
+    for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] =
                 ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
 
     // diagnostic output
     /////////////////////
-    if (false) for (int s = 0; s < mFPP; s++) {
+    if (false) if (!extendHist) for (int s = 0; s < mFPP; s++) {
         sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
         mPhasor[ch] += (!ch) ? 0.1 : 0.11;
     }
@@ -698,6 +700,7 @@ QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
                   // comment out this next line for GUI because...
                << endl
                   // ...print all stats in one line when running in GUI because can't handle extra crlf
+                  // and... to actually see the two lines, need to run it in terminal
           #endif
                   ;
         tmp = QString::fromStdString(logger.str());

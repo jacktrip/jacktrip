@@ -193,12 +193,13 @@ private:
     sample_t bitsToSampleXfade(int ch, int frame);
     int mModSeqNum;
     bool mEnable;
+    int mSkip;
 #ifdef GUIBS3
     HerlperGUI* hg;
 
 public slots:
     void changeGlobal(int);
     void changeGlobal_2(int);
-};
 #endif
+};
 #endif  //__REGULATOR_H__
