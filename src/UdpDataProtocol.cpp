@@ -858,7 +858,7 @@ void UdpDataProtocol::receivePacketRedundancy(
         int ok = true; // send audio buf to
         ok = (mJackTrip->getBufferStrategy() !=3) ? // ring or jitter
                     mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size)
-                  : // pool
+                  : // regulator needs matching local and peer buffer settings
                     mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num);
         if (!ok) {
             emit signalError("Local and Peer buffer settings are incompatible");

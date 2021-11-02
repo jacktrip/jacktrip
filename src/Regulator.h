@@ -194,6 +194,10 @@ private:
     int mModSeqNum;
     bool mEnable;
     int mSkip;
+    int mCut;
+    double mFadeSlope;
+    double mFadeOff;
+    vector<bool> mIncomingLost;
 #ifdef GUIBS3
     HerlperGUI* hg;
 
