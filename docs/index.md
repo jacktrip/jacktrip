@@ -1,4 +1,4 @@
-# Welcome to JackTrip
+# Welcome to JackTrip Core Software
 
 JackTrip is a Linux, macOS, or Windows multi-machine audio system used for network music performance over the Internet.
 It supports any number of channels (as many as the computer/network can handle) of bidirectional, high quality, uncompressed audio signal streaming.
