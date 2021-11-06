@@ -2,10 +2,10 @@
 /*
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
-
+  
   Copyright (c) 2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
-
+  
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -14,10 +14,10 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-
+  
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-
+  
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -71,8 +71,8 @@
 //</jmess>
 
 // tested loss impairments with
-// sudo tc qdisc add dev lo root netem loss 1%
-// sudo tc qdisc del dev lo root netem loss 1%
+// sudo tc qdisc add dev lo root netem loss 2%
+// sudo tc qdisc del dev lo root netem loss 2%
 // tested jitter impairments with
 // for wifi
 // sudo tc qdisc add dev lo root netem slot distribution pareto 0.1ms 3.0ms
@@ -95,6 +95,7 @@ using std::setw;
 
 // constants... tested for now
 constexpr int HIST       = 6;    // at FPP32
+constexpr int LOSTWINDOW       = 6;    // how far to back check for lost packets
 constexpr int mModSeqNumInit = 128;  // bounds on mSkip // 65536 is packet header seq
 constexpr int mNumSlotsMax = 64;  // 65536 is packet header seq
 //*******************************************************************************
@@ -141,7 +142,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
     if (mMsecTolerance < mPacketDurMsec) mMsecTolerance = mPacketDurMsec; // absolute minimum
     mNumSlots      = mNumSlotsMax; //((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
-
+    
     for (int i = 0; i < mNumSlots; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mSlots.push_back(tmp);
@@ -159,7 +160,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     pullStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;
     mIncomingTimer.start();
-    mLastSeqNum    = -1;
+    mLastSeqNumIn    = -1;
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
     mTmpBuffer = new int8_t[mBytes];
@@ -167,18 +168,17 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     for (int i = 0; i < mModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
     mXfrBufferXfade = new int8_t[mBytes];
     mModSeqNum = mNumSlots * 2;
-    mEnable = true;
     mSkip = 0;
     mCut = 0;
     mFadeOff = 0.0;
     mIncomingLost.resize(mModSeqNumInit);
-    for (int i = 0; i < mModSeqNumInit; i++) mIncomingLost[i] = false;
+    for (int i = 0; i < mModSeqNumInit; i++) mIncomingLost[i] = true; // at start
 #ifdef GUIBS3
     hg = new HerlperGUI(qApp->activeWindow());
     connect(hg, SIGNAL(moved(int)), this, SLOT(changeGlobal(int)));
     connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
     //    changeGlobal_2(32);
-    changeGlobal(30);
+    changeGlobal(25);
 #endif
 }
 
@@ -186,7 +186,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
 
 void Regulator::changeGlobal_2(int x) {
     QMutexLocker locker(&mMutex);
-    mEnable = x;
     //    mNumSlots = x;
     //    if (!mNumSlots) mNumSlots = x;
     //    if (mNumSlots > mNumSlotsMax ) mNumSlots = mNumSlotsMax;
@@ -195,7 +194,6 @@ void Regulator::changeGlobal_2(int x) {
     //             << "mNumSlots" << mNumSlots
     //             << "mModSeqNum" << mModSeqNum
     //                ;
-    //    qDebug() << "mEnable" << mEnable;
 }
 
 void Regulator::changeGlobal(int x) {
@@ -214,16 +212,25 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
+//                if (seq_num==0) return;
+//        if (seq_num==1) return;
     mIncomingTiming[seq_num] =
             mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mIncomingLost[seq_num] = false;
-    // only good for isolated lost packets, not 2 or more
-    if ((mLastSeqNum != -1) && (((mLastSeqNum + 1) % mModSeqNum) != seq_num)) {
-//                qDebug() << "lost packet detected in pushPacket" << seq_num << mLastSeqNum;
-       mIncomingLost[((mLastSeqNum + 1) % mModSeqNum)] = true;
-       pushStat->plcSkipped++;
-    }
-    mLastSeqNum = seq_num;
+    int resetLost = seq_num - (LOSTWINDOW+1);
+    if (resetLost < 0) resetLost += mModSeqNum;
+    mIncomingLost[resetLost] = false;
+    if (mLastSeqNumIn != -1)
+        for (int i = 1; i < LOSTWINDOW; i++) {
+            int test = seq_num - i;
+            if (test < 0) test += mModSeqNum;
+//            qDebug() << seq_num << mIncomingTiming[seq_num] << test << mIncomingTiming[test];
+            if ((mIncomingTiming[seq_num] - mIncomingTiming[test]) > mMsecTolerance) {
+                if (!mIncomingLost[test]) pushStat->plcSkipped++;
+                mIncomingLost[test] = true;
+            }
+        }
+    mLastSeqNumIn = seq_num;
 
     // diagnostic input
     /////////////////////
@@ -235,8 +242,8 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     //    }
     //    memcpy(mSlots[mLastSeqNum % mNumSlots], mTmpBuffer, mBytes);
     /////////////////////
-
-    memcpy(mSlots[mLastSeqNum % mNumSlots], buf, mBytes);
+    
+    if (mLastSeqNumIn != -1) memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
     pushStat->tick();
 };
 
@@ -244,112 +251,85 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 void Regulator::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-
-    if (mLastSeqNum == -1) {
+    int condition = -1;
+    if (true) {
+        //        if (mLastSeqNumIn == -1) {
+        condition = 0;
         goto ZERO_OUTPUT;
     } else {
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-        if(!mEnable) {
-            int next = mLastSeqNum - mModSeqNum;
-            if (next < 0) next += mModSeqNum;
-            memcpy(mXfrBuffer, mSlots[next % mNumSlots], mBytes);
-            goto PACKETOK;
-        }
         for (int i = mNumSlots; i >= 0; i--) {
-            int next = mLastSeqNum - i;
-            //            if (next < 0) qDebug() << ".........next" << next;
+            int next = mLastSeqNumIn - i;
             if (next < 0) next += mModSeqNum;
-
-//            if (mIncomingLost[next])
-//            {
-//                qDebug() << "lost packet detected in pullPacket"
-//                         << next;
-//                 continue;
-//            }
-            if (mIncomingTiming[next] <= mIncomingTiming[mLastSeqNumOut]) continue;
+            //            if (mIncomingTiming[next] == mIncomingTiming[mLastSeqNumOut]) qDebug() << "EQUAL" << i;
+            if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut]) continue;
             if (mIncomingTiming[next] > now) {
                 int nextInSeq = ((mLastSeqNumOut + 1) % mModSeqNum);
-                int skipping  = 0; // next - nextInSeq;
+                int skipping  =  next - nextInSeq;
                 if (skipping) {
-                    //                    for (int j = i; j >= 0; j--) {
-                    //                        int tmp = mLastSeqNum - j;
-                    //                        if (tmp < 0) tmp += mModSeqNum;
-                    //                        qDebug() << j << (mIncomingTiming[tmp] - now);
-                    //                    }
-                    //                    qDebug() << i << "...." << now << "\n";
-                    next = mLastSeqNum; // sync to most recent incoming
+                    //                    next = mLastSeqNum; // sync to most recent incoming <<< YIKES
                     skipping  = next - nextInSeq;
                     if (skipping < 0) skipping += mModSeqNum;
                     pullStat->plcSkipped += skipping;
-                    //                    qDebug() << skipping << "skipping";
-                    //                    if (mSkip > 0) qDebug() << mSkip << "already skipping";
                     mSkip = skipping;
                     mCut = nextInSeq;
                     mFadeSlope = 1.0 / (double) mSkip;
                     mFadeOff = 0.0;
                     for (int i = 0; i < mFPP; i++) mFadeUp[i] = 0.0;
-                    qDebug() << mSkip << "mFadeSlope = " << mFadeSlope;
                 }
                 mLastSeqNumOut = next;
+                if (mIncomingLost[mLastSeqNumOut]) goto UNDERRUN;
+                //                    qDebug() << "missing" << next;
                 if (skipping) {  // overrun to history
-                    //                    int history = skipping;
-                    //                    if (history > mHist) history = mHist;
-                    //                    for (int j = history; j > 0; j--) {
-                    //                        int skip = next - j;
-                    //                        if (skip < 0) skip += mModSeqNum;
-                    //                        memcpy(mXfrBuffer, mSlots[skip % mNumSlots], mBytes);
-                    //                        processPacket(false, true);  // extend history
-                    //                    }
+                    // predict lost for cross fade down
+                    processPacket(true, false);
+                    memcpy(mSlots[mCut % mNumSlots], mXfrBuffer,  mBytes);
 
-                    //                    // fade down this one
-                    //                    memcpy(mXfrBuffer, mSlots[mCut % mNumSlots], mBytes);
-                    //                    // fade up this one
-                    //                    memcpy(mXfrBufferXfade, mSlots[next % mNumSlots], mBytes);
+                    // copy next for cross fade up
                     memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
                     goto OVERRUN;
                 }
-                //                for (int j = i; j >= 0; j--) {
-                //                    int tmp = mLastSeqNum - j;
-                //                    if (tmp < 0) tmp += mModSeqNum;
-                //                    qDebug() << j << (mIncomingTiming[tmp] - now);
-                //                }
-                //                qDebug() << i << "...." << now << "\n";
                 memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
                 goto PACKETOK;
             }
         }
         goto UNDERRUN;
-
+        
 OVERRUN : {
-            //            processPacket(false, false);
+            condition = 0;
             pullStat->plcOverruns++;
             goto OUTPUT;
         }
-
+        
 PACKETOK : {
+            condition = 1;
             processPacket(false, false);
             goto OUTPUT;
         }
-
+        
 UNDERRUN : {
+            condition = 2;
             processPacket(true, false);
             pullStat->plcUnderruns++;
             goto OUTPUT;
         }
     }
-
+    
 ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
-
+    
 OUTPUT:
-    if (mSkip>0) {
-        // fade up this one
-        memcpy(mXfrBufferXfade, mXfrBuffer, mBytes);
-        // fade down this one
-        memcpy(mXfrBuffer, mSlots[mCut % mNumSlots], mBytes);
-        processPacket(false, true);  // extend history
-        processXfade();
-    }
+    //    if (mSkip>0) {
+    //        // fade up this one
+    //        memcpy(mXfrBufferXfade, mXfrBuffer, mBytes);
+    //        // fade down this one but what if mCut is lost packet?
+    //        memcpy(mXfrBuffer, mSlots[mCut % mNumSlots], mBytes);
+    //        processPacket(false, true);  // only extend history
+    //        processXfade();
+    //    }
+    //    qDebug() << condition << mLastSeqNumOut;
+    if (condition==-1) qDebug() << "....................." << condition;
+    processPacket(false, true);
     memcpy(buf, mXfrBuffer, mBytes);
     pullStat->tick();
 };
@@ -370,14 +350,20 @@ void Regulator::processXfade()
 void Regulator::processChannelXfade(int ch)
 {
     ChanData* cd = mChanData[ch];
-
+    
     for (int s = 0; s < mFPP; s++) {
-        cd->mTruth[s] = bitsToSample(ch, s); // fade down this one
-        cd->mTruthXfade[s] = bitsToSampleXfade(ch, s); // fade up this one
-        cd->mTruth[s] = cd->mTruth[s] * mFadeDown[s] + cd->mTruthXfade[s] * mFadeUp[s];
-        sampleToBits(cd->mTruth[s], ch, s);
-    }
+        cd->mCrossFadeDown[s] =
+                (false) ? 0.0 : bitsToSample(ch, s); // fade down this one
+        cd->mCrossFadeUp[s] =
+                (false) ? 0.0 : bitsToSampleXfade(ch, s); // fade up this one
 
+
+        cd->mCrossfade[s] = cd->mCrossFadeDown[s] * mFadeDown[s] +
+                cd->mCrossFadeUp[s] * mFadeUp[s];
+        //        cd->mCrossfade[0] = 0.2;
+        sampleToBits(cd->mCrossfade[s], ch, s);
+    }
+    
     //    // fade down this one
     //    for (int s = 0; s < mFPP; s++) cd->mTruth[s] = bitsToSample(ch, s);
     //    // fade up this one
@@ -398,10 +384,11 @@ void Regulator::processPacket(bool glitch, bool extendHist)
 }
 
 //*******************************************************************************
-void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch, bool extendHist)
+void Regulator::processChannel(int ch, bool glitch, int packetCnt,
+                               bool lastWasGlitch, bool extendHist)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
-
+    
     ChanData* cd = mChanData[ch];
     for (int s = 0; s < mFPP; s++) cd->mTruth[s] = bitsToSample(ch, s);
     if (packetCnt) {
@@ -412,12 +399,12 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
         if (glitch) {
             // GET LINEAR PREDICTION COEFFICIENTS
             ba.train(cd->mCoeffs, cd->mTrain);
-
+            
             // LINEAR PREDICT DATA
             cd->mTail = cd->mTrain;
-
+            
             ba.predict(cd->mCoeffs, cd->mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
-
+            
             for (int i = 0; i < (cd->trainSamps - 1); i++)
                 cd->mPrediction[i] = cd->mTail[i + cd->trainSamps];
         }
@@ -425,34 +412,34 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
                         cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
-
+        
         if (!extendHist)        for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
                          ? cd->mPrediction[s]
                            : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                          ch, s);
-
+        
         if (glitch) {
             for (int s = 0; s < mFPP; s++) cd->mNextPred[s] = cd->mPrediction[s + mFPP];
         }
     }
-
+    
     // copy down history
     //    if (!extendHist)
     for (int i = mHist - 1; i > 0; i--) {
         for (int s = 0; s < mFPP; s++)
             cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
     }
-
+    
     // add current input or prediction to history, the latter checking if primed
     //    if (!extendHist)
     for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] =
                 ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
-
+    
     // diagnostic output
     /////////////////////
-    if (false) if (!extendHist) for (int s = 0; s < mFPP; s++) {
+    if (true) for (int s = 0; s < mFPP; s++) {
         sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
         mPhasor[ch] += (!ch) ? 0.1 : 0.11;
     }
@@ -533,22 +520,22 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;
     size_t m = coeffs.size();
-
+    
     //        if (x.size() < m) qDebug() << "time_series should have more elements than
     //        the AR order is";
-
+    
     // INITIALIZE Ak
     //    vector<long double> Ak(m + 1, 0.0);
     Ak.assign(m + 1, 0.0);
     Ak[0] = 1.0;
-
+    
     // INITIALIZE f and b
     //    vector<long double> f;
     f.resize(x.size());
     for (unsigned int i = 0; i < x.size(); i++) f[i] = x[i];
     //    vector<long double> b(f);
     b = f;
-
+    
     // INITIALIZE Dk
     long double Dk = 0.0;
     for (size_t j = 0; j <= N; j++)  // CC: N is $#x-1 in C++ but $#x in perl
@@ -556,25 +543,25 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
         Dk += 2.00001 * f[j] * f[j];  // CC: needs more damping than orig 2.0
     }
     Dk -= f[0] * f[0] + b[N] * b[N];
-
+    
     //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
     //        if ( classify(Dk) )
     //        { qDebug() << pCnt << "init";
     //        }
-
+    
     // BURG RECURSION
     for (size_t k = 0; k < m; k++) {
         // COMPUTE MU
         long double mu = 0.0;
         for (size_t n = 0; n <= N - k - 1; n++) { mu += f[n + k + 1] * b[n]; }
-
+        
         if (Dk == 0.0) Dk = 0.0000001;  // CC: from testing, needs eps
         //            if ( classify(Dk) ) qDebug() << pCnt << "run";
-
+        
         mu *= -2.0 / Dk;
         //            if ( isnan(Dk) )  { qDebug() << "k" << k; }
         //            if (Dk==0.0) qDebug() << "k" << k << "Dk==0";
-
+        
         // UPDATE Ak
         for (size_t n = 0; n <= (k + 1) / 2; n++) {
             long double t1 = Ak[n] + mu * Ak[k + 1 - n];
@@ -582,7 +569,7 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
             Ak[n]          = t1;
             Ak[k + 1 - n]  = t2;
         }
-
+        
         // UPDATE f and b
         for (size_t n = 0; n <= N - k - 1; n++) {
             long double t1 = f[n + k + 1] + mu * b[n];  // were double
@@ -590,7 +577,7 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
             f[n + k + 1]   = t1;
             b[n]           = t2;
         }
-
+        
         // UPDATE Dk
         Dk = (1.0 - mu * mu) * Dk - f[k + 1] * f[k + 1] - b[N - k - 1] * b[N - k - 1];
     }
@@ -627,7 +614,9 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
     mTrain.resize(trainSamps, 0.0);
     mPrediction.resize(trainSamps - 1, 0.0);  // ORDER
     mCoeffs.resize(trainSamps - 2, 0.0);
-    mTruthXfade.resize(FPP, 0.0);
+    mCrossFadeDown.resize(FPP, 0.0);
+    mCrossFadeUp.resize(FPP, 0.0);
+    mCrossfade.resize(FPP, 0.0);
 }
 
 //*******************************************************************************
@@ -693,7 +682,7 @@ double StdDev::tick()
             cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
                     "max / "
                     "stdDev / longTermStdDev) \n";
-
+        
         longTermCnt++;
         //            QString out;
         //            out += (QString::number(msNow) + QString("\t"));
@@ -740,7 +729,7 @@ QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
         logger << setw(2)
                << statCount
                   PDBL(longTermStdDev) PDBL(lastMean) PDBL(lastMin) PDBL(lastMax) PDBL(lastStdDev)
-                   << setw(8) << pushStat->lastPlcSkipped
+               << setw(8) << pushStat->lastPlcSkipped
           #ifndef GUIBS3
                   // comment out this next line for GUI because...
                << endl

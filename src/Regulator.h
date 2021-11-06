@@ -40,7 +40,7 @@
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
-#define GUIBS3
+//#define GUIBS3
 
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
@@ -84,7 +84,9 @@ public:
     vector<sample_t> mXfadedPred;
     vector<sample_t> mNextPred;
     vector<vector<sample_t>> mLastPackets;
-    vector<sample_t> mTruthXfade;
+    vector<sample_t> mCrossFadeDown;
+    vector<sample_t> mCrossFadeUp;
+    vector<sample_t> mCrossfade;
 };
 
 class StdDev
@@ -180,7 +182,7 @@ private:
     StdDev* pushStat;
     StdDev* pullStat;
     QElapsedTimer mIncomingTimer;
-    int mLastSeqNum;
+    int mLastSeqNumIn;
     int mLastSeqNumOut;
     double mPacketDurMsec;
     vector<double> mPhasor;
@@ -192,7 +194,6 @@ private:
     int8_t* mXfrBufferXfade;
     sample_t bitsToSampleXfade(int ch, int frame);
     int mModSeqNum;
-    bool mEnable;
     int mSkip;
     int mCut;
     double mFadeSlope;
