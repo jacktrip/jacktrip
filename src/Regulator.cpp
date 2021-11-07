@@ -212,7 +212,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
-    if (seq_num==0) return;
+//    if (seq_num==0) return;
     //        if (seq_num==1) return;
     mIncomingTiming[seq_num] =
             mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
@@ -259,12 +259,11 @@ void Regulator::pullPacket(int8_t* buf)
     } else {
         mLastSeqNumOut++;
         mLastSeqNumOut %= mModSeqNum;
-        if (mIncomingLost[mLastSeqNumOut]) goto UNDERRUN;
+        if (mIncomingLost[mLastSeqNumOut]) goto UNDERRUNLOSS;
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-        for (int i = mNumSlots; i >= 0; i--) {
+        for (int i = LOSTWINDOW; i >= 0; i--) {
             int next = mLastSeqNumIn - i;
             if (next < 0) next += mModSeqNum;
-            //            if (mIncomingTiming[next] == mIncomingTiming[mLastSeqNumOut]) qDebug() << "EQUAL" << i;
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut]) continue;
             mLastSeqNumOut = next;
             if (mIncomingTiming[next] > now) {
@@ -281,13 +280,20 @@ PACKETOK : {
         goto OUTPUT;
     }
 
-UNDERRUN : {
+UNDERRUNLOSS : {
         condition = 2;
         processPacket(true, false);
         pullStat->plcUnderruns++;
         goto OUTPUT;
     }
-    
+
+UNDERRUN : {
+        condition = 3;
+        processPacket(true, false);
+        pullStat->plcUnderruns++;
+        goto OUTPUT;
+    }
+
 ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
     
@@ -301,7 +307,7 @@ OUTPUT:
     //        processXfade();
     //    }
 //    qDebug() << condition << mLastSeqNumOut;
-    if (condition==-1) qDebug() << "....................." << condition;
+    if (condition==-1) qDebug() << "....................." << condition << mLastSeqNumOut;
     //    processPacket(false, true);
     memcpy(buf, mXfrBuffer, mBytes);
     pullStat->tick();
