@@ -163,7 +163,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mLastSeqNumIn    = -1;
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
-    mTmpBuffer = new int8_t[mBytes];
     mIncomingTiming.resize(mModSeqNumInit);
     for (int i = 0; i < mModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
     mModSeqNum = mNumSlots * 2;
@@ -194,6 +193,10 @@ void Regulator::changeGlobal_2(int x) {
 
 void Regulator::changeGlobal(int x) {
     mMsecTolerance = (0.1*((double)x));
+        qDebug() << "mMsecTolerance" << mMsecTolerance
+                 << "mNumSlots" << mNumSlots
+                 << "mModSeqNum" << mModSeqNum
+                    ;
 }
 #endif
 
@@ -222,7 +225,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
             if (test < 0) test += mModSeqNum;
             //            qDebug() << seq_num << mIncomingTiming[seq_num] << test << mIncomingTiming[test];
             if ((mIncomingTiming[seq_num] - mIncomingTiming[test]) > mMsecTolerance) {
-                if (!mIncomingLost[test]) pushStat->plcSkipped++;
+                //                if (!mIncomingLost[test]) pushStat->plcSkipped++;
                 mIncomingLost[test] = true;
             }
         }
@@ -267,7 +270,7 @@ PACKETOK : {
 UNDERRUNLOSS : {
         condition = 2;
         processPacket(true);
-        pullStat->plcUnderruns++;
+        pushStat->plcSkipped++;
         goto OUTPUT;
     }
 
@@ -282,15 +285,7 @@ ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
     
 OUTPUT:
-    //    if (mSkip>0) {
-    //        // fade up this one
-    //        memcpy(mXfrBufferXfade, mXfrBuffer, mBytes);
-    //        // fade down this one but what if mCut is lost packet?
-    //        memcpy(mXfrBuffer, mSlots[mCut % mNumSlots], mBytes);
-    //        processPacket(false, true);  // only extend history
-    //        processXfade();
-    //    }
-    if(condition==22)    qDebug() << condition << mLastSeqNumOut;
+    //qDebug() << condition << mLastSeqNumOut;
     //else qDebug() << "";
     if (condition==-1) qDebug() << "....................." << condition << mLastSeqNumOut;
     //    processPacket(false, true);
@@ -313,10 +308,10 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
                                bool lastWasGlitch)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
-    
     ChanData* cd = mChanData[ch];
     for (int s = 0; s < mFPP; s++) cd->mTruth[s] = bitsToSample(ch, s);
     if (packetCnt) {
+        // always update mTrain
         for (int i = 0; i < mHist; i++) {
             for (int s = 0; s < mFPP; s++)
                 cd->mTrain[s + ((mHist - (i + 1)) * mFPP)] = cd->mLastPackets[i][s];
@@ -333,24 +328,18 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
             for (int i = 0; i < (cd->trainSamps - 1); i++)
                 cd->mPrediction[i] = cd->mTail[i + cd->trainSamps];
         }
+        // cross fade last prediction with mTruth
         if (lastWasGlitch)
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
-                        cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
-
-        if (glitch && lastWasGlitch)
-            for (int s = 0; s < mFPP; s++)
-                cd->mXfadedPred[s] =
-                        cd->mPrediction[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
-
+                        cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
         for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
                          ? cd->mPrediction[s]
                            : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                          ch, s);
-        
         if (glitch) {
-            for (int s = 0; s < mFPP; s++) cd->mNextPred[s] = cd->mPrediction[s + mFPP];
+            for (int s = 0; s < mFPP; s++) cd->mLastPred[s] = cd->mPrediction[s + mFPP];
         }
     }
     
@@ -367,9 +356,9 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
         cd->mLastPackets[0][s] =
                 //                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
                 ((glitch)
-                 ? ((packetCnt < mHist) ? cd->mTruth[s] : cd->mPrediction[s])
-                   : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s])
-                 );
+                 ? ((packetCnt >= mHist) ? cd->mPrediction[s] : cd->mTruth[s])
+                 : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s])
+                   );
     
     // diagnostic output
     /////////////////////
@@ -521,7 +510,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
     trainSamps = (hist * FPP);
     mTruth.resize(FPP, 0.0);
     mXfadedPred.resize(FPP, 0.0);
-    mNextPred.resize(FPP, 0.0);
+    mLastPred.resize(FPP, 0.0);
     for (int i = 0; i < hist; i++) {
         vector<sample_t> tmp(FPP, 0.0);
         mLastPackets.push_back(tmp);

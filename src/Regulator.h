@@ -40,7 +40,7 @@
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
-//#define GUIBS3
+#define GUIBS3
 
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
@@ -82,7 +82,7 @@ public:
     vector<sample_t> mPrediction;  // ORDER
     vector<long double> mCoeffs;
     vector<sample_t> mXfadedPred;
-    vector<sample_t> mNextPred;
+    vector<sample_t> mLastPred;
     vector<vector<sample_t>> mLastPackets;
     vector<sample_t> mCrossFadeDown;
     vector<sample_t> mCrossFadeUp;
@@ -186,18 +186,8 @@ private:
     int mLastSeqNumOut;
     double mPacketDurMsec;
     vector<double> mPhasor;
-    void sampleToBitsTmp(sample_t sample, int ch, int frame);
-    int8_t* mTmpBuffer;
     vector<double> mIncomingTiming;
-    void processXfade();
-    void processChannelXfade(int ch);
-    int8_t* mXfrBufferXfade;
-    sample_t bitsToSampleXfade(int ch, int frame);
     int mModSeqNum;
-    int mSkip;
-    int mCut;
-    double mFadeSlope;
-    double mFadeOff;
     vector<bool> mIncomingLost;
 #ifdef GUIBS3
     HerlperGUI* hg;
