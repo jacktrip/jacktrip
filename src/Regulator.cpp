@@ -95,7 +95,7 @@ using std::setw;
 
 // constants... tested for now
 constexpr int HIST       = 6;    // at FPP32
-constexpr int LOSTWINDOW       = 6;    // how far to back check for lost packets
+constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
 constexpr int mModSeqNumInit = 128;  // bounds on mSkip // 65536 is packet header seq
 constexpr int mNumSlotsMax = 64;  // 65536 is packet header seq
 //*******************************************************************************
@@ -212,7 +212,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
-//    if (seq_num==0) return;
+    //    if (seq_num==0) return;
     //        if (seq_num==1) return;
     mIncomingTiming[seq_num] =
             mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
@@ -276,20 +276,20 @@ void Regulator::pullPacket(int8_t* buf)
 
 PACKETOK : {
         condition = 1;
-        processPacket(false, false);
+        processPacket(false);
         goto OUTPUT;
     }
 
 UNDERRUNLOSS : {
         condition = 2;
-        processPacket(true, false);
+        processPacket(true);
         pullStat->plcUnderruns++;
         goto OUTPUT;
     }
 
 UNDERRUN : {
         condition = 3;
-        processPacket(true, false);
+        processPacket(true);
         pullStat->plcUnderruns++;
         goto OUTPUT;
     }
@@ -306,7 +306,8 @@ OUTPUT:
     //        processPacket(false, true);  // only extend history
     //        processXfade();
     //    }
-//    qDebug() << condition << mLastSeqNumOut;
+    if(condition==22)    qDebug() << condition << mLastSeqNumOut;
+    //else qDebug() << "";
     if (condition==-1) qDebug() << "....................." << condition << mLastSeqNumOut;
     //    processPacket(false, true);
     memcpy(buf, mXfrBuffer, mBytes);
@@ -353,10 +354,10 @@ void Regulator::processChannelXfade(int ch)
 }
 
 //*******************************************************************************
-void Regulator::processPacket(bool glitch, bool extendHist)
+void Regulator::processPacket(bool glitch)
 {
     for (int ch = 0; ch < mNumChannels; ch++)
-        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch, extendHist);
+        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
     mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
@@ -364,7 +365,7 @@ void Regulator::processPacket(bool glitch, bool extendHist)
 
 //*******************************************************************************
 void Regulator::processChannel(int ch, bool glitch, int packetCnt,
-                               bool lastWasGlitch, bool extendHist)
+                               bool lastWasGlitch)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
     
@@ -387,12 +388,17 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
             for (int i = 0; i < (cd->trainSamps - 1); i++)
                 cd->mPrediction[i] = cd->mTail[i + cd->trainSamps];
         }
-        if (!extendHist)        if (lastWasGlitch)
+        if (lastWasGlitch)
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
                         cd->mTruth[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
-        
-        if (!extendHist)        for (int s = 0; s < mFPP; s++)
+
+        if (glitch && lastWasGlitch)
+            for (int s = 0; s < mFPP; s++)
+                cd->mXfadedPred[s] =
+                        cd->mPrediction[s] * mFadeUp[s] + cd->mNextPred[s] * mFadeDown[s];
+
+        for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
                          ? cd->mPrediction[s]
                            : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
@@ -404,17 +410,21 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
     }
     
     // copy down history
-    //    if (!extendHist)
+
     for (int i = mHist - 1; i > 0; i--) {
         for (int s = 0; s < mFPP; s++)
             cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
     }
     
-    // add current input or prediction to history, the latter checking if primed
-    //    if (!extendHist)
+    // add prediction  or current input to history, the former checking if primed
+
     for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] =
-                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+                //                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] : cd->mPrediction[s];
+                ((glitch)
+                 ? ((packetCnt < mHist) ? cd->mTruth[s] : cd->mPrediction[s])
+                   : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s])
+                 );
     
     // diagnostic output
     /////////////////////

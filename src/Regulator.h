@@ -154,8 +154,8 @@ public:
     virtual QString getStats(uint32_t statCount, uint32_t lostCount);
 
 private:
-    void processPacket(bool glitch, bool extendHist);
-    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch, bool extendHist);
+    void processPacket(bool glitch);
+    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
