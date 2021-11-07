@@ -166,11 +166,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mTmpBuffer = new int8_t[mBytes];
     mIncomingTiming.resize(mModSeqNumInit);
     for (int i = 0; i < mModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
-    mXfrBufferXfade = new int8_t[mBytes];
     mModSeqNum = mNumSlots * 2;
-    mSkip = 0;
-    mCut = 0;
-    mFadeOff = 0.0;
     mIncomingLost.resize(mModSeqNumInit);
     for (int i = 0; i < mModSeqNumInit; i++) mIncomingLost[i] = true; // at start
 #ifdef GUIBS3
@@ -231,18 +227,6 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
             }
         }
     mLastSeqNumIn = seq_num;
-
-    // diagnostic input
-    /////////////////////
-    //    for (int i = 0; i < mNumChannels; i++) {
-    //        for (int s = 0; s < mFPP; s++) {
-    //            sampleToBitsTmp(0.1 * sin(mPhasor[i]), i, s);
-    //            mPhasor[i] += (!i) ? 0.01 : 0.01;
-    //        }
-    //    }
-    //    memcpy(mSlots[mLastSeqNum % mNumSlots], mTmpBuffer, mBytes);
-    /////////////////////
-    
     if (mLastSeqNumIn != -1) memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
     pushStat->tick();
 };
@@ -313,45 +297,6 @@ OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
     pullStat->tick();
 };
-
-void Regulator::processXfade()
-{
-    qDebug() << "processChannelXfade: mSkip" << mSkip << "mFadeOff" << mFadeOff;
-    for (int i = 0; i < mFPP; i++) {
-        mFadeUp[i]   = mFadeOff + (mFadeSlope * (double)i / (double)mFPP);
-        mFadeDown[i] = 1.0 - mFadeUp[i];
-    }
-    for (int ch = 0; ch < mNumChannels; ch++) processChannelXfade(ch);
-    mSkip--;
-    mCut++;
-    mFadeOff += mFadeSlope;
-}
-
-void Regulator::processChannelXfade(int ch)
-{
-    ChanData* cd = mChanData[ch];
-    
-    for (int s = 0; s < mFPP; s++) {
-        cd->mCrossFadeDown[s] =
-                (false) ? 0.0 : bitsToSample(ch, s); // fade down this one
-        cd->mCrossFadeUp[s] =
-                (false) ? 0.0 : bitsToSampleXfade(ch, s); // fade up this one
-
-
-        cd->mCrossfade[s] = cd->mCrossFadeDown[s] * mFadeDown[s] +
-                cd->mCrossFadeUp[s] * mFadeUp[s];
-        //        cd->mCrossfade[0] = 0.2;
-        sampleToBits(cd->mCrossfade[s], ch, s);
-    }
-    
-    //    // fade down this one
-    //    for (int s = 0; s < mFPP; s++) cd->mTruth[s] = bitsToSample(ch, s);
-    //    // fade up this one
-    //    for (int s = 0; s < mFPP; s++) cd->mTruthXfade[s] = bitsToSampleXfade(ch, s);
-    //    for (int s = 0; s < mFPP; s++)
-    //        cd->mTruth[s] = cd->mTruth[s] * mFadeDown[s] + cd->mTruthXfade[s] * mFadeUp[s];
-    //    for (int s = 0; s < mFPP; s++) sampleToBits(cd->mTruth[s], ch, s);
-}
 
 //*******************************************************************************
 void Regulator::processPacket(bool glitch)
@@ -448,30 +393,11 @@ sample_t Regulator::bitsToSample(int ch, int frame)
     return sample;
 }
 
-sample_t Regulator::bitsToSampleXfade(int ch, int frame)
-{
-    sample_t sample = 0.0;
-    AudioInterface::fromBitToSampleConversion(
-                &mXfrBufferXfade[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            &sample, mBitResolutionMode);
-    return sample;
-}
-
 void Regulator::sampleToBits(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
                 &sample,
                 &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            mBitResolutionMode);
-}
-
-void Regulator::sampleToBitsTmp(sample_t sample, int ch, int frame)
-{
-    AudioInterface::fromSampleToBitConversion(
-                &sample,
-                &mTmpBuffer[(frame * mBitResolutionMode * mNumChannels)
             + (ch * mBitResolutionMode)],
             mBitResolutionMode);
 }
