@@ -174,7 +174,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
     //    changeGlobal_2(32);
 #endif
-    changeGlobal(177);
+    changeGlobal(qLen*10.0);
 }
 
 #ifdef GUIBS3
