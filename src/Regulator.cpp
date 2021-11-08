@@ -96,8 +96,8 @@ using std::setw;
 // constants... tested for now
 constexpr int HIST       = 6;    // at FPP32
 constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
-constexpr int mModSeqNumInit = 128;  // bounds on mSkip // 65536 is packet header seq
-constexpr int mNumSlotsMax = 64;  // 65536 is packet header seq
+constexpr int mModSeqNumInit = 64;  // bounds on mSkip // 65536 is packet header seq
+constexpr int mNumSlotsMax = 32;  // 65536 is packet header seq
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -173,8 +173,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     connect(hg, SIGNAL(moved(int)), this, SLOT(changeGlobal(int)));
     connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
     //    changeGlobal_2(32);
-    changeGlobal(25);
 #endif
+    changeGlobal(177);
 }
 
 #ifdef GUIBS3
@@ -190,6 +190,7 @@ void Regulator::changeGlobal_2(int x) {
     //             << "mModSeqNum" << mModSeqNum
     //                ;
 }
+#endif
 
 void Regulator::changeGlobal(int x) {
     mMsecTolerance = (0.1*((double)x));
@@ -198,7 +199,6 @@ void Regulator::changeGlobal(int x) {
                  << "mModSeqNum" << mModSeqNum
                     ;
 }
-#endif
 
 Regulator::~Regulator()
 {
@@ -287,7 +287,7 @@ ZERO_OUTPUT:
 OUTPUT:
     //qDebug() << condition << mLastSeqNumOut;
     //else qDebug() << "";
-    if (condition==-1) qDebug() << "....................." << condition << mLastSeqNumOut;
+//    if (condition==-1) qDebug() << "....................." << condition << mLastSeqNumOut;
     //    processPacket(false, true);
     memcpy(buf, mXfrBuffer, mBytes);
     pullStat->tick();
