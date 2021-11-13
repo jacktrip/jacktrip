@@ -94,7 +94,7 @@
     <number>1</number>
    </property>
    <property name="maximum">
-    <number>64</number>
+    <number>128</number>
    </property>
    <property name="value">
     <number>64</number>
@@ -129,7 +129,7 @@
     <number>0</number>
    </property>
    <property name="maximum">
-    <number>64</number>
+    <number>128</number>
    </property>
    <property name="value">
     <number>64</number>
