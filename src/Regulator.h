@@ -188,7 +188,6 @@ private:
     int mModSeqNum;
     int mLostWindow;
     vector<bool> mIncomingLost;
-    void changeGlobal(int);
 #ifdef GUIBS3
     HerlperGUI* hg;
 
@@ -196,5 +195,7 @@ public slots:
     void changeGlobal_2(int);
     void changeGlobal_3(int);
 #endif
+public slots:
+    void changeGlobal(int);
 };
 #endif  //__REGULATOR_H__
