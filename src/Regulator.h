@@ -40,7 +40,7 @@
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
-// #define GUIBS3
+ #define GUIBS3
 
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
@@ -176,8 +176,6 @@ private:
     vector<int8_t*> mSlots;
     int8_t* mZeros;
     double mMsecTolerance;
-    int mGlitchCnt;
-    int mGlitchMax;
     vector<ChanData*> mChanData;
     StdDev* pushStat;
     StdDev* pullStat;
@@ -188,13 +186,15 @@ private:
     vector<double> mPhasor;
     vector<double> mIncomingTiming;
     int mModSeqNum;
+    int mLostWindow;
     vector<bool> mIncomingLost;
+    void changeGlobal(int);
 #ifdef GUIBS3
     HerlperGUI* hg;
 
 public slots:
     void changeGlobal_2(int);
+    void changeGlobal_3(int);
 #endif
-    void changeGlobal(int);
 };
 #endif  //__REGULATOR_H__

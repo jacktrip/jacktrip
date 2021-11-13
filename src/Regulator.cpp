@@ -35,7 +35,7 @@
  * \date May-Sep 2021
  */
 
-// EXPERIMENTAL for testing in JackTrip v1.4.0
+// EXPERIMENTAL for testing in JackTrip v1.5.0
 // requires server and client have same FPP
 // runs ok from FPP 16 up to 1024
 // number of in / out channels should be the same
@@ -48,27 +48,8 @@
 // local loopback test with 4 terminals running and the following jmess file
 // jacktrip -S --udprt --nojackportsconnect -q1 --bufstrategy 3
 // jacktrip -C localhost --udprt --nojackportsconnect -q1  --bufstrategy 3
-// jack_iodelay
-// jmess -c delay.xml
-// ---------delay.xml----------
-//<jmess>
-//  <connection>
-//    <output>localhost:receive_1</output>
-//    <input>jack_delay:in</input>
-//  </connection>
-//  <connection>
-//    <output>__1:receive_1</output>
-//    <input>__1:send_1</input>
-//  </connection>
-//  <connection>
-//    <output>__1:receive_2</output>
-//    <input>__1:send_2</input>
-//  </connection>
-//  <connection>
-//    <output>jack_delay:out</output>
-//    <input>localhost:send_1</input>
-//  </connection>
-//</jmess>
+// use jack_iodelay
+// use jmess -s delay.xml and jmess -c delay.xml
 
 // tested loss impairments with
 // sudo tc qdisc add dev lo root netem loss 2%
@@ -83,7 +64,6 @@
 
 #include "Regulator.h"
 
-#include <QTextStream>
 #include <iomanip>
 #include <sstream>
 
@@ -91,13 +71,13 @@
 using std::cout;
 using std::endl;
 using std::setw;
-#include <QObject>
 
 // constants... tested for now
 constexpr int HIST       = 6;    // at FPP32
-constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
-constexpr int mModSeqNumInit = 64;  // bounds on mSkip // 65536 is packet header seq
-constexpr int mNumSlotsMax = 32;  // 65536 is packet header seq
+//constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
+constexpr int LostWindowMax       = 64;    // how far to back check for lost packets
+constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
+constexpr int NumSlotsMax = 128;  // mNumSlots looped for recent arribals
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -141,13 +121,12 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mLastWasGlitch = false;
     mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
     if (mMsecTolerance < mPacketDurMsec) mMsecTolerance = mPacketDurMsec; // absolute minimum
-    mNumSlots      = mNumSlotsMax; //((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
+    mNumSlots      = NumSlotsMax; //((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
     
     for (int i = 0; i < mNumSlots; i++) {
         int8_t* tmp = new int8_t[mBytes];
         mSlots.push_back(tmp);
     }
-    mGlitchCnt = 0;
     for (int i = 0; i < mNumChannels; i++) {
         ChanData* tmp = new ChanData(i, mFPP, mHist);
         mChanData.push_back(tmp);
@@ -158,47 +137,61 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     memcpy(mZeros, mXfrBuffer, mBytes);
     pushStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 1);
     pullStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
-    mLastLostCount = 0;
+    mLastLostCount = 0; // for stats
     mIncomingTimer.start();
     mLastSeqNumIn    = -1;
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
-    mIncomingTiming.resize(mModSeqNumInit);
-    for (int i = 0; i < mModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
+    mIncomingTiming.resize(ModSeqNumInit);
+    for (int i = 0; i < ModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
     mModSeqNum = mNumSlots * 2;
-    mIncomingLost.resize(mModSeqNumInit);
-    for (int i = 0; i < mModSeqNumInit; i++) mIncomingLost[i] = true; // at start
+    mIncomingLost.resize(ModSeqNumInit);
+    for (int i = 0; i < ModSeqNumInit; i++) mIncomingLost[i] = true; // at start
 #ifdef GUIBS3
     hg = new HerlperGUI(qApp->activeWindow());
     connect(hg, SIGNAL(moved(int)), this, SLOT(changeGlobal(int)));
     connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
-    //    changeGlobal_2(32);
+    connect(hg, SIGNAL(moved_3(int)), this, SLOT(changeGlobal_3(int)));
 #endif
     changeGlobal(qLen*10.0);
+    changeGlobal_2(NumSlotsMax);
+    changeGlobal_3(LostWindowMax);
+}
+
+void Regulator::changeGlobal(int x) { // mMsecTolerance
+    mMsecTolerance = (0.1*((double)x));
+    qDebug() << "mMsecTolerance" << mMsecTolerance
+             << "mNumSlots" << mNumSlots
+             << "mLostWindow" << mLostWindow
+             << "mModSeqNum" << mModSeqNum
+                ;
 }
 
 #ifdef GUIBS3
 
-void Regulator::changeGlobal_2(int x) {
+void Regulator::changeGlobal_2(int x) { // mNumSlots
     QMutexLocker locker(&mMutex);
-    //    mNumSlots = x;
-    //    if (!mNumSlots) mNumSlots = x;
-    //    if (mNumSlots > mNumSlotsMax ) mNumSlots = mNumSlotsMax;
-    //    mModSeqNum = mNumSlots * 2;
-    //    qDebug() << "mMsecTolerance" << mMsecTolerance
-    //             << "mNumSlots" << mNumSlots
-    //             << "mModSeqNum" << mModSeqNum
-    //                ;
-}
-#endif
-
-void Regulator::changeGlobal(int x) {
-    mMsecTolerance = (0.1*((double)x));
+        mNumSlots = x;
+        if (!mNumSlots) mNumSlots = 1;
+        if (mNumSlots > NumSlotsMax ) mNumSlots = NumSlotsMax;
         qDebug() << "mMsecTolerance" << mMsecTolerance
                  << "mNumSlots" << mNumSlots
+                 << "mLostWindow" << mLostWindow
                  << "mModSeqNum" << mModSeqNum
                     ;
 }
+
+void Regulator::changeGlobal_3(int x) { // mLostWindow
+    QMutexLocker locker(&mMutex);
+        mLostWindow = x;
+        if (mLostWindow > LostWindowMax ) mLostWindow = LostWindowMax;
+        qDebug() << "mMsecTolerance" << mMsecTolerance
+                 << "mNumSlots" << mNumSlots
+                 << "mLostWindow" << mLostWindow
+                 << "mModSeqNum" << mModSeqNum
+                    ;
+}
+#endif
 
 Regulator::~Regulator()
 {
@@ -211,23 +204,20 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
-    //    if (seq_num==0) return;
-    //        if (seq_num==1) return;
+    // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
     mIncomingTiming[seq_num] =
             mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mIncomingLost[seq_num] = false;
-    int resetLost = seq_num - (LOSTWINDOW+1);
+    int resetLost = seq_num - (mLostWindow+1);
     if (resetLost < 0) resetLost += mModSeqNum;
-    mIncomingLost[resetLost] = false;
+    mIncomingLost[resetLost] = false; // forget trailing state
     if (mLastSeqNumIn != -1)
-        for (int i = 1; i < LOSTWINDOW; i++) {
+        for (int i = 1; i < mLostWindow; i++) { // check for lost
             int test = seq_num - i;
             if (test < 0) test += mModSeqNum;
-            //            qDebug() << seq_num << mIncomingTiming[seq_num] << test << mIncomingTiming[test];
-            if ((mIncomingTiming[seq_num] - mIncomingTiming[test]) > mMsecTolerance) {
-                //                if (!mIncomingLost[test]) pushStat->plcSkipped++;
+            //  qDebug() << seq_num << mIncomingTiming[seq_num] << test << mIncomingTiming[test];
+            if ((mIncomingTiming[seq_num] - mIncomingTiming[test]) > mMsecTolerance)
                 mIncomingLost[test] = true;
-            }
         }
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1) memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
@@ -238,17 +228,14 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 void Regulator::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-    int condition = -1;
-    //    if (true) {
     if (mLastSeqNumIn == -1) {
-        //        condition = 0;
         goto ZERO_OUTPUT;
     } else {
         mLastSeqNumOut++;
         mLastSeqNumOut %= mModSeqNum;
         if (mIncomingLost[mLastSeqNumOut]) goto UNDERRUNLOSS;
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-        for (int i = LOSTWINDOW; i >= 0; i--) {
+        for (int i = mLostWindow; i >= 0; i--) {
             int next = mLastSeqNumIn - i;
             if (next < 0) next += mModSeqNum;
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut]) continue;
@@ -262,22 +249,19 @@ void Regulator::pullPacket(int8_t* buf)
     }
 
 PACKETOK : {
-        condition = 1;
         processPacket(false);
         goto OUTPUT;
     }
 
 UNDERRUNLOSS : {
-        condition = 2;
         processPacket(true);
-        pushStat->plcSkipped++;
+        pushStat->plcSkipped++; // count lost
         goto OUTPUT;
     }
 
 UNDERRUN : {
-        condition = 3;
         processPacket(true);
-        pullStat->plcUnderruns++;
+        pullStat->plcUnderruns++; // count late
         goto OUTPUT;
     }
 
@@ -285,10 +269,6 @@ ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
     
 OUTPUT:
-    //qDebug() << condition << mLastSeqNumOut;
-    //else qDebug() << "";
-//    if (condition==-1) qDebug() << "....................." << condition << mLastSeqNumOut;
-    //    processPacket(false, true);
     memcpy(buf, mXfrBuffer, mBytes);
     pullStat->tick();
 };

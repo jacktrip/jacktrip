@@ -17,9 +17,11 @@ public:
 public slots:
     void sliderMoved(int);
     void slider_2Moved(int);
+    void slider_3Moved(int);
 signals:
     void moved(int);
     void moved_2(int);
+    void moved_3(int);
 
 private:
     Ui::HerlperGUI *ui;

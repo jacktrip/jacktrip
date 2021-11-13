@@ -16,6 +16,10 @@ HerlperGUI::HerlperGUI(QWidget *parent) :
             ui->lcdNumber_2, SLOT(display(int)));
     connect(ui->slider_2, SIGNAL(valueChanged(int)),
             this, SLOT(slider_2Moved(int)));
+    connect(ui->slider_3, SIGNAL(valueChanged(int)),
+            ui->lcdNumber_3, SLOT(display(int)));
+    connect(ui->slider_3, SIGNAL(valueChanged(int)),
+            this, SLOT(slider_3Moved(int)));
     this->show();
 }
 
@@ -27,6 +31,11 @@ void HerlperGUI::sliderMoved(int x)
 void HerlperGUI::slider_2Moved(int x)
 {
     emit moved_2(x);
+}
+
+void HerlperGUI::slider_3Moved(int x)
+{
+    emit moved_3(x);
 }
 
 HerlperGUI::~HerlperGUI()

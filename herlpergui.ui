@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>369</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QSlider" name="slider">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>140</y>
+     <x>10</x>
+     <y>10</y>
      <width>361</width>
      <height>16</height>
     </rect>
@@ -38,8 +38,31 @@
   <widget class="QLCDNumber" name="lcdNumber">
    <property name="geometry">
     <rect>
+     <x>10</x>
+     <y>40</y>
+     <width>111</width>
+     <height>71</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>40</y>
+     <width>131</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>tolerance (ms * 0.1))</string>
+   </property>
+  </widget>
+  <widget class="QLCDNumber" name="lcdNumber_2">
+   <property name="geometry">
+    <rect>
      <x>20</x>
-     <y>170</y>
+     <y>150</y>
      <width>111</width>
      <height>71</height>
     </rect>
@@ -49,20 +72,20 @@
    <property name="geometry">
     <rect>
      <x>170</x>
-     <y>50</y>
+     <y>140</y>
      <width>91</width>
      <height>41</height>
     </rect>
    </property>
    <property name="text">
-    <string>enable</string>
+    <string>numslots</string>
    </property>
   </widget>
   <widget class="QSlider" name="slider_2">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>30</y>
+     <y>120</y>
      <width>361</width>
      <height>16</height>
     </rect>
@@ -77,27 +100,46 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="lcdNumber_2">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>60</y>
-     <width>111</width>
-     <height>71</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
+  <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
      <x>160</x>
-     <y>170</y>
-     <width>131</width>
+     <y>260</y>
+     <width>91</width>
      <height>41</height>
     </rect>
    </property>
    <property name="text">
-    <string>tolerance (ms * 0.1))</string>
+    <string>loss window</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="slider_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>240</y>
+     <width>361</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>0</number>
+   </property>
+   <property name="maximum">
+    <number>64</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLCDNumber" name="lcdNumber_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>270</y>
+     <width>111</width>
+     <height>71</height>
+    </rect>
    </property>
   </widget>
  </widget>
