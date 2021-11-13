@@ -73,7 +73,7 @@ using std::endl;
 using std::setw;
 
 // constants... tested for now
-constexpr int HIST       = 12;    // at FPP32
+constexpr int HIST       = 4;    // at FPP32
 //constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
 constexpr int LostWindowMax       = 64;    // how far to back check for lost packets
 constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
@@ -106,8 +106,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mHist            = (int)histFloat;
     if (mHist < 2)
         mHist = 2;  // min packets for prediction, needs at least 2
-    else if (mHist > 12)
-        mHist = 12;  // max packets, keep a lid on CPU load
+    else if (mHist > 4)
+        mHist = 4;  // max packets, keep a lid on CPU load
     if (gVerboseFlag) cout << "mHist = " << mHist << " at " << mFPP << "\n";
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
     mXfrBuffer = new int8_t[mBytes];
