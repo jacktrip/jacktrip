@@ -174,6 +174,7 @@ void Regulator::changeGlobal_2(int x) { // mNumSlots
         mNumSlots = x;
         if (!mNumSlots) mNumSlots = 1;
         if (mNumSlots > NumSlotsMax ) mNumSlots = NumSlotsMax;
+        mModSeqNum = mNumSlots * 2;
         qDebug() << "mMsecTolerance" << mMsecTolerance
                  << "mNumSlots" << mNumSlots
                  << "mLostWindow" << mLostWindow
