@@ -14,12 +14,13 @@ class HerlperGUI : public QDialog
 public:
     explicit HerlperGUI(QWidget *parent = nullptr);
     ~HerlperGUI();
+    void updateDisplay(double msTol, int nSlots, int lostWin);
 public slots:
-    void sliderMoved(int);
+    void sliderMoved(double);
     void slider_2Moved(int);
     void slider_3Moved(int);
 signals:
-    void moved(int);
+    void moved(double);
     void moved_2(int);
     void moved_3(int);
 

@@ -154,8 +154,8 @@ public:
     virtual QString getStats(uint32_t statCount, uint32_t lostCount);
 
 private:
-    void processPacket(bool glitch);
-    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
+    void processPacket(bool glitch, int streamState);
+    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch, int streamState);
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
@@ -187,15 +187,16 @@ private:
     vector<double> mIncomingTiming;
     int mModSeqNum;
     int mLostWindow;
+    int mSkip;
     vector<bool> mIncomingLost;
 #ifdef GUIBS3
     HerlperGUI* hg;
-
+#endif
+    void printParams();
+    void updateGUI(double msTol, int nSlots, int lostWin);
 public slots:
+    void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);
-#endif
-public slots:
-    void changeGlobal(int);
 };
 #endif  //__REGULATOR_H__

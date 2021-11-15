@@ -5,6 +5,9 @@
 CONFIG += c++11 console
 CONFIG -= app_bundle
 
+#using float slider -- CC
+CONFIG += qwt
+
 CONFIG += qt thread debug_and_release build_all
 CONFIG(debug, debug|release) {
     TARGET = jacktrip_debug

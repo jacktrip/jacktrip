@@ -6,40 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>369</height>
+    <width>480</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QSlider" name="slider">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>361</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="minimum">
-    <number>1</number>
-   </property>
-   <property name="maximum">
-    <number>1000</number>
-   </property>
-   <property name="value">
-    <number>1000</number>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-  </widget>
   <widget class="QLCDNumber" name="lcdNumber">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>40</y>
+     <y>150</y>
      <width>111</width>
      <height>71</height>
     </rect>
@@ -49,20 +27,20 @@
    <property name="geometry">
     <rect>
      <x>150</x>
-     <y>40</y>
+     <y>150</y>
      <width>131</width>
      <height>41</height>
     </rect>
    </property>
    <property name="text">
-    <string>tolerance (ms * 0.1))</string>
+    <string>tolerance (ms)</string>
    </property>
   </widget>
   <widget class="QLCDNumber" name="lcdNumber_2">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>150</y>
+     <y>260</y>
      <width>111</width>
      <height>71</height>
     </rect>
@@ -72,7 +50,7 @@
    <property name="geometry">
     <rect>
      <x>170</x>
-     <y>140</y>
+     <y>250</y>
      <width>91</width>
      <height>41</height>
     </rect>
@@ -85,7 +63,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>120</y>
+     <y>230</y>
      <width>361</width>
      <height>16</height>
     </rect>
@@ -107,7 +85,7 @@
    <property name="geometry">
     <rect>
      <x>160</x>
-     <y>260</y>
+     <y>370</y>
      <width>91</width>
      <height>41</height>
     </rect>
@@ -120,7 +98,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>240</y>
+     <y>350</y>
      <width>361</width>
      <height>16</height>
     </rect>
@@ -142,13 +120,33 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>270</y>
+     <y>380</y>
      <width>111</width>
      <height>71</height>
     </rect>
    </property>
   </widget>
+  <widget class="QwtSlider" name="slider">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>80</y>
+     <width>371</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QwtSlider</class>
+   <extends>QWidget</extends>
+   <header>qwt_slider.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
