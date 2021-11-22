@@ -351,11 +351,11 @@ void QJackTrip::showEvent(QShowEvent* event)
 
     // One of our arguments will always be --gui, so if that's the only one
     // then we don't need to show the warning message.
-    if (m_argc > 2) {
+    if ((!gVerboseFlag && m_argc > 2) || m_argc > 3) {
         QMessageBox msgBox;
         msgBox.setText(
             "The GUI version of JackTrip currently\nignores any command line "
-            "options.\n\nThis may change in future.");
+            "options other\nthan the verbose option (-V).\n\nThis may change in future.");
         msgBox.setWindowTitle("Command line options");
         msgBox.exec();
     }
