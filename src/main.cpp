@@ -56,7 +56,6 @@
 #include <windows.h>
 #include <psapi.h>
 #include <tlhelp32.h>
-#include <winbase.h>
 #endif
 
 QCoreApplication* createApplication(int& argc, char* argv[])
@@ -188,7 +187,7 @@ bool isRunFromCmd() {
     h = NULL;
     h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, ppid);
     if (h) {
-        if (QueryFullProcessImageName(h, 0, pname, &size)) {
+        if (QueryFullProcessImageNameA(h, 0, pname, &size)) {
             CloseHandle(h);
             
             //Check if our parent process is a command line.
