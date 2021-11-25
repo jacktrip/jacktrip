@@ -186,7 +186,7 @@ class UdpHubListener : public QObject
 #endif
 
     int mIOStatTimeout;
-    QSharedPointer<std::ofstream> mIOStatStream;
+    QSharedPointer<std::ostream> mIOStatStream;
 
     int mBufferStrategy;
     int mBroadcastQueue;
@@ -240,7 +240,7 @@ class UdpHubListener : public QObject
     }
 
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
-    void setIOStatStream(QSharedPointer<std::ofstream> statStream)
+    void setIOStatStream(QSharedPointer<std::ostream> statStream)
     {
         mIOStatStream = statStream;
     }

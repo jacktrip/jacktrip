@@ -271,7 +271,7 @@ class JackTrip : public QObject
     virtual void setNumOutputChannels(int num_chans) { mNumAudioChansOut = num_chans; }
 
     virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
-    virtual void setIOStatStream(QSharedPointer<std::ofstream> statStream)
+    virtual void setIOStatStream(QSharedPointer<std::ostream> statStream)
     {
         mIOStatStream = statStream;
     }
@@ -678,7 +678,7 @@ class JackTrip : public QObject
     volatile bool mHasShutdown;
 
     bool mConnectDefaultAudioPorts;  ///< Connect or not default audio ports
-    QSharedPointer<std::ofstream> mIOStatStream;
+    QSharedPointer<std::ostream> mIOStatStream;
     int mIOStatTimeout;
     std::ostream mIOStatLogStream;
     double mSimulatedLossRate;

@@ -5,6 +5,7 @@ project(QJackTrip)
 set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
+add_compile_definitions(NO_JTVS)
 add_compile_definitions(QT_OPENSOURCE)
 
 if (nogui)
@@ -111,6 +112,7 @@ if (NOT nogui)
     src/gui/qjacktrip.cpp
     src/gui/about.cpp
     src/gui/messageDialog.cpp
+    src/gui/textbuf.cpp
     src/gui/qjacktrip.qrc
   )
 

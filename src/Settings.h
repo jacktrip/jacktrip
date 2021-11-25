@@ -125,7 +125,7 @@ class Settings : public QObject
     unsigned int mHubConnectionMode = JackTrip::SERVERTOCLIENT;
     bool mConnectDefaultAudioPorts  = true;  ///< Connect or not jack audio ports
     int mIOStatTimeout              = 0;
-    QSharedPointer<std::ofstream> mIOStatStream;
+    QSharedPointer<std::ostream> mIOStatStream;
     Effects mEffects            = false;  // outgoing limiter OFF by default
     double mSimulatedLossRate   = 0.0;
     double mSimulatedJitterRate = 0.0;

@@ -28,8 +28,8 @@
 
 #include <QDialog>
 #include <QScopedPointer>
-#include <QTemporaryFile>
-#include <QTimer>
+#include <QSharedPointer>
+#include "textbuf.h"
 
 namespace Ui
 {
@@ -43,19 +43,18 @@ class MessageDialog : public QDialog
    public:
     explicit MessageDialog(QWidget* parent = nullptr);
     ~MessageDialog() override;
-
-    void setStatsFile(QSharedPointer<QTemporaryFile> statsFile);
-    void startMonitoring();
-    void stopMonitoring();
-
-   private slots:
-    void writeOutput();
+    
+    QSharedPointer<std::ostream> getOutputStream();
+    void setRelayStream(std::ostream *relay);
+    void clearOutput();
+    
+private slots:
+    void receiveOutput(const QString& output);
 
    private:
     QScopedPointer<Ui::MessageDialog> m_ui;
-    QSharedPointer<QTemporaryFile> m_ioStatsFile;
-    // Using a QFileSystem watcher didn't work on OS X, so use a timer instead.
-    QTimer m_ioTimer;
+    QSharedPointer<std::ostream> m_outStream;
+    QSharedPointer<textbuf> m_outBuf;
 };
 
 #endif  // MESSAGEDIALOG_H

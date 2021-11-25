@@ -222,10 +222,6 @@ int main(int argc, char* argv[])
         }
 #endif  // __WIN_32__
         app->setApplicationName("QJackTrip");
-        window.reset(new QJackTrip);
-        window->setArgc(argc);
-        QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
-                         &QCoreApplication::quit, Qt::QueuedConnection);
         
         QCommandLineParser parser;
         QCommandLineOption verboseOption(QStringList() << "V" << "verbose");   
@@ -235,6 +231,10 @@ int main(int argc, char* argv[])
             gVerboseFlag = true;
         }
         
+        window.reset(new QJackTrip);
+        window->setArgc(argc);
+        QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
+                         &QCoreApplication::quit, Qt::QueuedConnection);
         window->show();
     } else {
 #endif  // NO_GUI

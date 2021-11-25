@@ -4,7 +4,7 @@
   system for high quality audio network performance over the
   internet.
 
-  Copyright (c) 2020 Aaron Wyatt.
+  Copyright (c) 2021 Aaron Wyatt.
 
   This file is part of QJackTrip.
 
@@ -23,37 +23,46 @@
 */
 //*****************************************************************
 
-#include "messageDialog.h"
+#include "textbuf.h"
 
-#include "ui_messageDialog.h"
-#include <iostream>
-
-MessageDialog::MessageDialog(QWidget* parent)
-    : QDialog(parent), m_ui(new Ui::MessageDialog), m_outBuf(new textbuf)
+void textbuf::setOutStream(std::ostream* output)
 {
-    m_ui->setupUi(this);
-    m_outStream.reset(new std::ostream(m_outBuf.data()));
-    connect(m_outBuf.data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
+    m_outStream = output;
 }
 
-QSharedPointer<std::ostream> MessageDialog::getOutputStream()
+int textbuf::overflow(int c)
 {
-    return m_outStream;
+    //Output our buffer.
+    putChars(pbase(), pptr());
+    
+    if (c != traits_t::eof()) {
+        char out = c;
+        putChars(&out, &out + 1);
+    }
+    
+    //Set buffer to empty again
+    setp(m_buf, m_buf + BUF_SIZE);
+    
+    return c;
 }
 
-void MessageDialog::setRelayStream(std::ostream *relay)
+int textbuf::sync()
 {
-    m_outBuf->setOutStream(relay);
+    //Flush our buffer.
+    putChars(pbase(), pptr());
+    setp(m_buf, m_buf + BUF_SIZE);
+    return 0;
 }
 
-void MessageDialog::clearOutput()
+void textbuf::putChars(const char* begin, const char* end)
 {
-    m_ui->messagesTextEdit->clear();
+    if (m_outStream) {
+        for (const char* c = begin; c < end; c++) {
+            *m_outStream << *c;
+        }
+        m_outStream->flush();
+    }
+    
+    emit outputString(QString(QByteArray(begin, end - begin)));
 }
 
-void MessageDialog::receiveOutput(const QString& output)
-{
-    m_ui->messagesTextEdit->insertPlainText(output);
-}
-
-MessageDialog::~MessageDialog() = default;

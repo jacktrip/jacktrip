@@ -4,7 +4,7 @@
   system for high quality audio network performance over the
   internet.
 
-  Copyright (c) 2020 Aaron Wyatt.
+  Copyright (c) 2021 Aaron Wyatt.
 
   This file is part of QJackTrip.
 
@@ -23,37 +23,39 @@
 */
 //*****************************************************************
 
-#include "messageDialog.h"
+#ifndef TEXTBUF_H
+#define TEXTBUF_H
 
-#include "ui_messageDialog.h"
+#include <streambuf>
 #include <iostream>
+#include <QPlainTextEdit>
 
-MessageDialog::MessageDialog(QWidget* parent)
-    : QDialog(parent), m_ui(new Ui::MessageDialog), m_outBuf(new textbuf)
+//Extension of a stream buffer to output to a QTextEdit
+class textbuf : public QObject, public std::basic_streambuf<char, std::char_traits<char>>
 {
-    m_ui->setupUi(this);
-    m_outStream.reset(new std::ostream(m_outBuf.data()));
-    connect(m_outBuf.data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
-}
+    Q_OBJECT
+    
+   public:
+    textbuf() { setp(m_buf, m_buf + BUF_SIZE); }
+    
+    void setOutStream(std::ostream *output);
 
-QSharedPointer<std::ostream> MessageDialog::getOutputStream()
-{
-    return m_outStream;
-}
+   signals:
+    void outputString(const QString& output);
+    
+   protected:
+    virtual int overflow(int c = traits_t::eof());
+    virtual int sync();
+    
+   private:
+    typedef std::char_traits<char> traits_t;
+    
+    static const size_t BUF_SIZE = 64;
+    char m_buf[BUF_SIZE];
+    
+    std::ostream *m_outStream = nullptr;
+    
+    void putChars(const char* begin, const char* end);
+};
 
-void MessageDialog::setRelayStream(std::ostream *relay)
-{
-    m_outBuf->setOutStream(relay);
-}
-
-void MessageDialog::clearOutput()
-{
-    m_ui->messagesTextEdit->clear();
-}
-
-void MessageDialog::receiveOutput(const QString& output)
-{
-    m_ui->messagesTextEdit->insertPlainText(output);
-}
-
-MessageDialog::~MessageDialog() = default;
+#endif  // TEXTBUF_H

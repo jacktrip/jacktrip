@@ -90,13 +90,15 @@ else
 	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
-		'src/gui/messageDialog.cpp']
+		'src/gui/messageDialog.cpp',
+		'src/gui/textbuf.cpp']
 	ui_h += ['src/gui/qjacktrip.ui',
 		'src/gui/messageDialog.ui',
 		'src/gui/about.ui']
 	moc_h += ['src/gui/about.h',
 		'src/gui/qjacktrip.h',
-		'src/gui/messageDialog.h']
+		'src/gui/messageDialog.h',
+		'src/gui/textbuf.h']
 	qres = ['src/gui/qjacktrip.qrc']
 endif
 deps += qt5_dep

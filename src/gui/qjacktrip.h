@@ -51,7 +51,11 @@
 
 namespace Ui
 {
+#ifdef NO_JTVS
 class QJackTrip;
+#else
+class QJackTripVS;
+#endif
 }
 
 class QJackTrip : public QMainWindow
@@ -102,18 +106,22 @@ class QJackTrip : public QMainWindow
     void populateDeviceMenu(QComboBox* menu, bool isInput);
 #endif
 
-    void setupStatsWindow();
     void appendPlugins(JackTrip* jackTrip, int numSendChannels, int numRecvChannels);
 
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
 
+#ifdef NO_JTVS
     QScopedPointer<Ui::QJackTrip> m_ui;
+#else
+    QScopedPointer<Ui::QJackTripVS> m_ui;
+#endif
     QScopedPointer<UdpHubListener> m_udpHub;
     QScopedPointer<JackTrip> m_jackTrip;
     QScopedPointer<QNetworkAccessManager> m_netManager;
-    QScopedPointer<MessageDialog> m_messageDialog;
-    QSharedPointer<QTemporaryFile> m_ioStatsOutput;
+    QScopedPointer<MessageDialog> m_statsDialog;
+    QScopedPointer<MessageDialog> m_debugDialog;
+    std::ostream m_realCout;
     bool m_jackTripRunning;
     bool m_isExiting;
 
