@@ -27,6 +27,8 @@
 
 #include "ui_messageDialog.h"
 #include <iostream>
+#include <QScrollBar>
+#include <QMenu>
 
 MessageDialog::MessageDialog(QWidget* parent)
     : QDialog(parent), m_ui(new Ui::MessageDialog), m_outBuf(new textbuf)
@@ -34,6 +36,8 @@ MessageDialog::MessageDialog(QWidget* parent)
     m_ui->setupUi(this);
     m_outStream.reset(new std::ostream(m_outBuf.data()));
     connect(m_outBuf.data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
+    m_ui->messagesTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_ui->messagesTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MessageDialog::provideContextMenu);
 }
 
 QSharedPointer<std::ostream> MessageDialog::getOutputStream()
@@ -53,7 +57,23 @@ void MessageDialog::clearOutput()
 
 void MessageDialog::receiveOutput(const QString& output)
 {
+    // Automatically scroll if we're at the bottom of the text box.
+    bool autoScroll = (m_ui->messagesTextEdit->verticalScrollBar()->value() == m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+    // Make sure our cursor is at the end.
+    m_ui->messagesTextEdit->moveCursor(QTextCursor::End);
     m_ui->messagesTextEdit->insertPlainText(output);
+    if (autoScroll) {
+        m_ui->messagesTextEdit->verticalScrollBar()->setValue(m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+    }
+}
+
+void MessageDialog::provideContextMenu()
+{
+    // Add a custom context menu entry to clear the output.
+    QMenu *menu = m_ui->messagesTextEdit->createStandardContextMenu();
+    QAction *action = menu->addAction(QIcon::fromTheme("edit-delete"), "Clear");
+    connect(action, &QAction::triggered, this, &MessageDialog::clearOutput);
+    menu->exec(QCursor::pos());
 }
 
 MessageDialog::~MessageDialog() = default;

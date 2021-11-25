@@ -128,9 +128,16 @@ QJackTrip::QJackTrip(QWidget* parent)
     connect(m_ui->ioStatsCheckBox, &QCheckBox::stateChanged, this, [=]() {
         m_ui->ioStatsLabel->setEnabled(m_ui->ioStatsCheckBox->isChecked());
         m_ui->ioStatsSpinBox->setEnabled(m_ui->ioStatsCheckBox->isChecked());
+        if (!m_ui->ioStatsCheckBox->isChecked()) {
+            m_statsDialog->hide();
+        }
     });
     connect(m_ui->verboseCheckBox, &QCheckBox::stateChanged, this, [=]() {
         gVerboseFlag = m_ui->verboseCheckBox->isChecked();
+        if (!gVerboseFlag) {
+            m_debugDialog->hide();
+            m_debugDialog->clearOutput();
+        }
     });
     connect(m_ui->jitterCheckBox, &QCheckBox::stateChanged, this, [=]() {
         m_ui->broadcastCheckBox->setEnabled(m_ui->jitterCheckBox->isChecked());

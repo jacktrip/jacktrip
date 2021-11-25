@@ -46,10 +46,13 @@ class MessageDialog : public QDialog
     
     QSharedPointer<std::ostream> getOutputStream();
     void setRelayStream(std::ostream *relay);
+    
+   public slots:
     void clearOutput();
     
-private slots:
+   private slots:
     void receiveOutput(const QString& output);
+    void provideContextMenu();
 
    private:
     QScopedPointer<Ui::MessageDialog> m_ui;
