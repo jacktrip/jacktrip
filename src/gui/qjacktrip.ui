@@ -950,7 +950,7 @@ To connect to a hub server you need to run as a hub client.</string>
          </widget>
         </item>
         <item row="12" column="0" colspan="3">
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="verboseCheckBox">
           <property name="text">
            <string>Show &amp;Debug Information</string>
           </property>
