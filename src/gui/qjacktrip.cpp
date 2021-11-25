@@ -1401,6 +1401,8 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->ioStatsCheckBox->isChecked()) {
         commandLine.append(QString(" -I %1").arg(m_ui->ioStatsSpinBox->value()));
     }
+    
+    if (m_ui->verboseCheckBox->isChecked()) { commandLine.append(" -V"); }
 
     if (m_ui->realTimeCheckBox->isChecked()) { commandLine.append(" --udprt"); }
 
