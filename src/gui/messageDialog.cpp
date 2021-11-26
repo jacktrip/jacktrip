@@ -47,6 +47,7 @@ MessageDialog::MessageDialog(QWidget* parent, QString windowFunction, quint32 st
     
     m_ui->messagesTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_ui->messagesTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MessageDialog::provideContextMenu);
+    m_ui->messagesTextEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     
     if (!m_windowFunction.isEmpty()) {
         setWindowTitle(m_windowFunction);
