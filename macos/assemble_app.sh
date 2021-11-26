@@ -13,7 +13,7 @@ BINARY="../builddir/jacktrip"
 
 OPTIND=1
 
-while getopts ":ic:u:p:a:b:" opt; do
+while getopts ":ihc:u:p:a:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
@@ -35,6 +35,23 @@ while getopts ":ic:u:p:a:b:" opt; do
         ;;
       \?)
         echo "Invalid option -$OPTARG ignored."
+        ;;
+      h)
+        echo "JackTrip App Bundle assembly script."
+        echo "Copyright (C) 2020-2021 Aaron Wyatt et al."
+        echo "Relased under the GNU GPLv3 License."
+        echo ""
+        echo "Usage: ./assemble-app.sh [options]"
+        echo ""
+        echo "Options:"
+        echo " -b <filename>      The binary file to be placed in the app bundle. (Defaults to ../builddir/jacktrip)"
+        echo " -i                 Build an installer package as well. (Requires Packages to be installed.)"
+        echo " -c <certname>      Name of the developer certificate to use for signing (No signing by default.)"
+        echo " -u <username>      Apple ID username (email address) for installer notarization."
+        echo " -p <password>      App specific password for installer notarization."
+        echo " -a <ascprovider>   ASC provider for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -h                 Display this help screen and exit."
+        exit 0
         ;;
       :)
         echo "Option $OPTARG requires an argument."
