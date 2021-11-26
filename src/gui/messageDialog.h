@@ -29,6 +29,7 @@
 #include <QDialog>
 #include <QScopedPointer>
 #include <QSharedPointer>
+#include <QVector>
 #include "textbuf.h"
 
 namespace Ui
@@ -41,14 +42,14 @@ class MessageDialog : public QDialog
     Q_OBJECT
 
    public:
-    explicit MessageDialog(QWidget* parent = nullptr, QString windowFunction = "");
+    explicit MessageDialog(QWidget* parent = nullptr, QString windowFunction = "", quint32 streamCount = 1);
     ~MessageDialog() override;
     
     void showEvent(QShowEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
     
-    QSharedPointer<std::ostream> getOutputStream();
-    void setRelayStream(std::ostream *relay);
+    QSharedPointer<std::ostream> getOutputStream(quint32 index = 0);
+    bool setRelayStream(std::ostream *relay, quint32 index = 0);
     
    public slots:
     void clearOutput();
@@ -59,8 +60,8 @@ class MessageDialog : public QDialog
 
    private:
     QScopedPointer<Ui::MessageDialog> m_ui;
-    QSharedPointer<std::ostream> m_outStream;
-    QSharedPointer<textbuf> m_outBuf;
+    QVector<QSharedPointer<std::ostream>> m_outStreams;
+    QVector<QSharedPointer<textbuf>> m_outBufs;
     QString m_windowFunction;
 };
 

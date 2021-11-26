@@ -61,8 +61,9 @@ QJackTrip::QJackTrip(QWidget* parent)
 #endif
     , m_netManager(new QNetworkAccessManager(this))
     , m_statsDialog(new MessageDialog(this, "Stats"))
-    , m_debugDialog(new MessageDialog(this, "Debug"))
+    , m_debugDialog(new MessageDialog(this, "Debug", 2))
     , m_realCout(std::cout.rdbuf())
+    , m_realCerr(std::cerr.rdbuf())
     , m_jackTripRunning(false)
     , m_isExiting(false)
     , m_hasIPv4Reply(false)
@@ -77,7 +78,9 @@ QJackTrip::QJackTrip(QWidget* parent)
     
     // Set up our debug window, and relay everything to our real cout.
     std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
+    std::cerr.rdbuf(m_debugDialog->getOutputStream(1)->rdbuf());
     m_debugDialog->setRelayStream(&m_realCout);
+    m_debugDialog->setRelayStream(&m_realCerr, 1);
 
     // Create all our UI connections.
     connect(m_ui->typeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -1470,4 +1473,5 @@ QJackTrip::~QJackTrip()
 {
     //Restore cout. (Stops a crash on exit.)
     std::cout.rdbuf(m_realCout.rdbuf());
+    std::cerr.rdbuf(m_realCerr.rdbuf());
 }

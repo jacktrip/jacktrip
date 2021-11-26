@@ -31,12 +31,20 @@
 #include <QMenu>
 #include <QSettings>
 
-MessageDialog::MessageDialog(QWidget* parent, QString windowFunction)
-    : QDialog(parent), m_ui(new Ui::MessageDialog), m_outBuf(new textbuf), m_windowFunction(windowFunction)
+MessageDialog::MessageDialog(QWidget* parent, QString windowFunction, quint32 streamCount)
+    : QDialog(parent)
+    , m_ui(new Ui::MessageDialog)
+    , m_outStreams(streamCount)
+    , m_outBufs(streamCount)
+    , m_windowFunction(windowFunction)
 {
     m_ui->setupUi(this);
-    m_outStream.reset(new std::ostream(m_outBuf.data()));
-    connect(m_outBuf.data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
+    for (int i = 0; i < streamCount; i++) {
+        m_outBufs[i].reset(new textbuf);
+        m_outStreams[i].reset(new std::ostream(m_outBufs.at(i).data()));
+        connect(m_outBufs.at(i).data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
+    }
+    
     m_ui->messagesTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_ui->messagesTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MessageDialog::provideContextMenu);
     
@@ -69,14 +77,20 @@ void MessageDialog::closeEvent(QCloseEvent* event)
     }
 }
 
-QSharedPointer<std::ostream> MessageDialog::getOutputStream()
+QSharedPointer<std::ostream> MessageDialog::getOutputStream(quint32 index)
 {
-    return m_outStream;
+    if (index < m_outStreams.size()) {
+        return m_outStreams.at(index);
+    }
+    return QSharedPointer<std::ostream>();
 }
 
-void MessageDialog::setRelayStream(std::ostream *relay)
+bool MessageDialog::setRelayStream(std::ostream *relay, quint32 index)
 {
-    m_outBuf->setOutStream(relay);
+    if (index < m_outBufs.size()) {
+        m_outBufs.at(index)->setOutStream(relay);
+    }
+    return false;
 }
 
 void MessageDialog::clearOutput()

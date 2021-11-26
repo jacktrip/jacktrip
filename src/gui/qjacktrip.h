@@ -122,6 +122,7 @@ class QJackTrip : public QMainWindow
     QScopedPointer<MessageDialog> m_statsDialog;
     QScopedPointer<MessageDialog> m_debugDialog;
     std::ostream m_realCout;
+    std::ostream m_realCerr;
     bool m_jackTripRunning;
     bool m_isExiting;
 
