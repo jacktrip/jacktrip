@@ -41,8 +41,11 @@ class MessageDialog : public QDialog
     Q_OBJECT
 
    public:
-    explicit MessageDialog(QWidget* parent = nullptr);
+    explicit MessageDialog(QWidget* parent = nullptr, QString windowFunction = "");
     ~MessageDialog() override;
+    
+    void showEvent(QShowEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
     
     QSharedPointer<std::ostream> getOutputStream();
     void setRelayStream(std::ostream *relay);
@@ -58,6 +61,7 @@ class MessageDialog : public QDialog
     QScopedPointer<Ui::MessageDialog> m_ui;
     QSharedPointer<std::ostream> m_outStream;
     QSharedPointer<textbuf> m_outBuf;
+    QString m_windowFunction;
 };
 
 #endif  // MESSAGEDIALOG_H

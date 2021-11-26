@@ -29,15 +29,44 @@
 #include <iostream>
 #include <QScrollBar>
 #include <QMenu>
+#include <QSettings>
 
-MessageDialog::MessageDialog(QWidget* parent)
-    : QDialog(parent), m_ui(new Ui::MessageDialog), m_outBuf(new textbuf)
+MessageDialog::MessageDialog(QWidget* parent, QString windowFunction)
+    : QDialog(parent), m_ui(new Ui::MessageDialog), m_outBuf(new textbuf), m_windowFunction(windowFunction)
 {
     m_ui->setupUi(this);
     m_outStream.reset(new std::ostream(m_outBuf.data()));
     connect(m_outBuf.data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
     m_ui->messagesTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_ui->messagesTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MessageDialog::provideContextMenu);
+    
+    if (!m_windowFunction.isEmpty()) {
+        setWindowTitle(m_windowFunction);
+    }
+}
+
+void MessageDialog::showEvent(QShowEvent* event)
+{
+    QDialog::showEvent(event);
+    if (!m_windowFunction.isEmpty()) {
+        QSettings settings;
+        settings.beginGroup("Window");
+        QByteArray geometry = settings.value(m_windowFunction + "Geometry").toByteArray();
+        if (geometry.size() > 0) {
+            restoreGeometry(geometry);
+        }
+    }
+}
+
+void MessageDialog::closeEvent(QCloseEvent* event)
+{
+    QDialog::closeEvent(event);
+    if (!m_windowFunction.isEmpty()) {
+        QSettings settings;
+        settings.beginGroup("Window");
+        settings.setValue(m_windowFunction + "Geometry", saveGeometry());
+        settings.endGroup();
+    }
 }
 
 QSharedPointer<std::ostream> MessageDialog::getOutputStream()

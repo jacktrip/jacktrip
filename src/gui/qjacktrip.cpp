@@ -60,8 +60,8 @@ QJackTrip::QJackTrip(QWidget* parent)
     , m_ui(new Ui::QJackTripVS)
 #endif
     , m_netManager(new QNetworkAccessManager(this))
-    , m_statsDialog(new MessageDialog(this))
-    , m_debugDialog(new MessageDialog(this))
+    , m_statsDialog(new MessageDialog(this, "Stats"))
+    , m_debugDialog(new MessageDialog(this, "Debug"))
     , m_realCout(std::cout.rdbuf())
     , m_jackTripRunning(false)
     , m_isExiting(false)
@@ -76,7 +76,6 @@ QJackTrip::QJackTrip(QWidget* parent)
     QCoreApplication::setApplicationName("JackTrip");
     
     // Set up our debug window, and relay everything to our real cout.
-    m_debugDialog->setWindowTitle("Debug");
     std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
     m_debugDialog->setRelayStream(&m_realCout);
 
@@ -1082,7 +1081,7 @@ void QJackTrip::loadSettings()
     settings.beginGroup("Window");
     QByteArray geometry = settings.value("Geometry").toByteArray();
     if (geometry.size() > 0) {
-        restoreGeometry(settings.value("Geometry").toByteArray());
+        restoreGeometry(geometry);
     } else {
         // Because of hidden elements in our dialog window, it's vertical size in the
         // creator is getting rediculous. Set it to something sensible by default if this
@@ -1305,7 +1304,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
     // Auth settings
     if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         if (m_ui->requireAuthCheckBox->isChecked()) {
-            commandLine.append(QString(" -A"));
+            commandLine.append(" -A");
             if (!m_ui->certEdit->text().isEmpty()) {
                 commandLine.append(" --certfile ").append(m_ui->certEdit->text());
             }
@@ -1318,7 +1317,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
     } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
         if (m_ui->authCheckBox->isChecked()) {
-            commandLine.append(QString(" -A"));
+            commandLine.append(" -A");
             if (!m_ui->usernameEdit->text().isEmpty()) {
                 commandLine.append(" --username ").append(m_ui->usernameEdit->text());
             }
