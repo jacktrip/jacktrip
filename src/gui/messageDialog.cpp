@@ -48,6 +48,7 @@ MessageDialog::MessageDialog(QWidget* parent, QString windowFunction, quint32 st
     m_ui->messagesTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_ui->messagesTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MessageDialog::provideContextMenu);
     m_ui->messagesTextEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    connect(this, &QDialog::rejected, this, &MessageDialog::savePosition);
     
     if (!m_windowFunction.isEmpty()) {
         setWindowTitle(m_windowFunction);
@@ -70,12 +71,7 @@ void MessageDialog::showEvent(QShowEvent* event)
 void MessageDialog::closeEvent(QCloseEvent* event)
 {
     QDialog::closeEvent(event);
-    if (!m_windowFunction.isEmpty()) {
-        QSettings settings;
-        settings.beginGroup("Window");
-        settings.setValue(m_windowFunction + "Geometry", saveGeometry());
-        settings.endGroup();
-    }
+    savePosition();
 }
 
 QSharedPointer<std::ostream> MessageDialog::getOutputStream(quint32 index)
@@ -120,4 +116,18 @@ void MessageDialog::provideContextMenu()
     menu->exec(QCursor::pos());
 }
 
-MessageDialog::~MessageDialog() = default;
+void MessageDialog::savePosition()
+{
+    if (!m_windowFunction.isEmpty()) {
+        QSettings settings;
+        settings.beginGroup("Window");
+        settings.setValue(m_windowFunction + "Geometry", saveGeometry());
+        settings.endGroup();
+    }
+}
+
+MessageDialog::~MessageDialog() {
+    if (isVisible()) {
+        savePosition();
+    }
+}
