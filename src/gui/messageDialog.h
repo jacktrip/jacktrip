@@ -59,7 +59,7 @@ class MessageDialog : public QDialog
     void provideContextMenu();
     void savePosition();
 
-   private:       
+   private:
     QScopedPointer<Ui::MessageDialog> m_ui;
     QVector<QSharedPointer<std::ostream>> m_outStreams;
     QVector<QSharedPointer<textbuf>> m_outBufs;
