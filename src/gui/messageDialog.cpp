@@ -39,7 +39,7 @@ MessageDialog::MessageDialog(QWidget* parent, QString windowFunction, quint32 st
     , m_windowFunction(windowFunction)
 {
     m_ui->setupUi(this);
-    for (int i = 0; i < streamCount; i++) {
+    for (qint32 i = 0; i < streamCount; i++) {
         m_outBufs[i].reset(new textbuf);
         m_outStreams[i].reset(new std::ostream(m_outBufs.at(i).data()));
         connect(m_outBufs.at(i).data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
@@ -74,17 +74,17 @@ void MessageDialog::closeEvent(QCloseEvent* event)
     savePosition();
 }
 
-QSharedPointer<std::ostream> MessageDialog::getOutputStream(quint32 index)
+QSharedPointer<std::ostream> MessageDialog::getOutputStream(int index)
 {
-    if (index < m_outStreams.size()) {
+    if (index >=0 && index < m_outStreams.size()) {
         return m_outStreams.at(index);
     }
     return QSharedPointer<std::ostream>();
 }
 
-bool MessageDialog::setRelayStream(std::ostream *relay, quint32 index)
+bool MessageDialog::setRelayStream(std::ostream *relay, int index)
 {
-    if (index < m_outBufs.size()) {
+    if (index >=0 && index < m_outBufs.size()) {
         m_outBufs.at(index)->setOutStream(relay);
     }
     return false;

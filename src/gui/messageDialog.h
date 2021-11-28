@@ -48,8 +48,8 @@ class MessageDialog : public QDialog
     void showEvent(QShowEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
     
-    QSharedPointer<std::ostream> getOutputStream(quint32 index = 0);
-    bool setRelayStream(std::ostream *relay, quint32 index = 0);
+    QSharedPointer<std::ostream> getOutputStream(int index = 0);
+    bool setRelayStream(std::ostream *relay, int index = 0);
     
    public slots:
     void clearOutput();
