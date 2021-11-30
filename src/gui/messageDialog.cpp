@@ -39,7 +39,7 @@ MessageDialog::MessageDialog(QWidget* parent, QString windowFunction, quint32 st
     , m_windowFunction(windowFunction)
 {
     m_ui->setupUi(this);
-    for (qint32 i = 0; i < streamCount; i++) {
+    for (quint32 i = 0; i < streamCount; i++) {
         m_outBufs[i].reset(new textbuf);
         m_outStreams[i].reset(new std::ostream(m_outBufs.at(i).data()));
         connect(m_outBufs.at(i).data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
