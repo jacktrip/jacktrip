@@ -461,12 +461,15 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'G':  // IO Stat log file
             //-------------------------------------------------------
-            mIOStatStream.reset(new std::ofstream(optarg));
-            if (!mIOStatStream->is_open()) {
-                printUsage();
-                std::cerr << "--iostatlog FAILED to open " << optarg << " for writing."
-                          << endl;
-                std::exit(1);
+            {
+                std::ofstream *outStream = new std::ofstream(optarg);
+                if (!outStream->is_open()) {
+                    printUsage();
+                    std::cerr << "--iostatlog FAILED to open " << optarg << " for writing."
+                            << endl;
+                    std::exit(1);
+                }
+                mIOStatStream.reset(outStream);
             }
             break;
         case OPT_BUFSTRATEGY:  // Buf strategy

@@ -34,7 +34,11 @@
 #include <ctime>
 
 #include "about.h"
+#ifdef NO_JTVS
+#include "ui_qjacktrip_novs.h"
+#else
 #include "ui_qjacktrip.h"
+#endif
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
 #endif
@@ -50,9 +54,16 @@
 
 QJackTrip::QJackTrip(QWidget* parent)
     : QMainWindow(parent)
+#ifdef NO_JTVS
     , m_ui(new Ui::QJackTrip)
+#else
+    , m_ui(new Ui::QJackTripVS)
+#endif
     , m_netManager(new QNetworkAccessManager(this))
-    , m_messageDialog(new MessageDialog(this))
+    , m_statsDialog(new MessageDialog(this, "Stats"))
+    , m_debugDialog(new MessageDialog(this, "Debug", 2))
+    , m_realCout(std::cout.rdbuf())
+    , m_realCerr(std::cerr.rdbuf())
     , m_jackTripRunning(false)
     , m_isExiting(false)
     , m_hasIPv4Reply(false)
@@ -64,6 +75,12 @@ QJackTrip::QJackTrip(QWidget* parent)
     QCoreApplication::setOrganizationName("jacktrip");
     QCoreApplication::setOrganizationDomain("jacktrip.org");
     QCoreApplication::setApplicationName("JackTrip");
+    
+    // Set up our debug window, and relay everything to our real cout.
+    std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
+    std::cerr.rdbuf(m_debugDialog->getOutputStream(1)->rdbuf());
+    m_debugDialog->setRelayStream(&m_realCout);
+    m_debugDialog->setRelayStream(&m_realCerr, 1);
 
     // Create all our UI connections.
     connect(m_ui->typeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -113,6 +130,16 @@ QJackTrip::QJackTrip(QWidget* parent)
     connect(m_ui->ioStatsCheckBox, &QCheckBox::stateChanged, this, [=]() {
         m_ui->ioStatsLabel->setEnabled(m_ui->ioStatsCheckBox->isChecked());
         m_ui->ioStatsSpinBox->setEnabled(m_ui->ioStatsCheckBox->isChecked());
+        if (!m_ui->ioStatsCheckBox->isChecked()) {
+            m_statsDialog->hide();
+        }
+    });
+    connect(m_ui->verboseCheckBox, &QCheckBox::stateChanged, this, [=]() {
+        gVerboseFlag = m_ui->verboseCheckBox->isChecked();
+        if (!gVerboseFlag) {
+            m_debugDialog->hide();
+            m_debugDialog->clearOutput();
+        }
     });
     connect(m_ui->jitterCheckBox, &QCheckBox::stateChanged, this, [=]() {
         m_ui->broadcastCheckBox->setEnabled(m_ui->jitterCheckBox->isChecked());
@@ -195,12 +222,9 @@ QJackTrip::QJackTrip(QWidget* parent)
 
     // Set up our interface for the default Client run mode.
     //(loadSettings will take care of the UI in all other cases.)
-    m_ui->remoteNameLabel->setVisible(false);
-    m_ui->remoteNameEdit->setVisible(false);
     m_ui->basePortLabel->setVisible(false);
     m_ui->basePortSpinBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
-    m_ui->authGroupBox->setVisible(false);
 
 #ifdef __RT_AUDIO__
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -351,11 +375,11 @@ void QJackTrip::showEvent(QShowEvent* event)
 
     // One of our arguments will always be --gui, so if that's the only one
     // then we don't need to show the warning message.
-    if (m_argc > 2) {
+    if ((!gVerboseFlag && m_argc > 2) || m_argc > 3) {
         QMessageBox msgBox;
         msgBox.setText(
             "The GUI version of JackTrip currently\nignores any command line "
-            "options.\n\nThis may change in future.");
+            "options other\nthan the verbose option (-V).\n\nThis may change in future.");
         msgBox.setWindowTitle("Command line options");
         msgBox.exec();
     }
@@ -373,7 +397,6 @@ void QJackTrip::processFinished()
 #ifdef __MAC_OSX__
     m_noNap.enableNap();
 #endif
-    if (m_ui->ioStatsCheckBox->isChecked()) { m_messageDialog->stopMonitoring(); }
     m_ui->disconnectButton->setEnabled(false);
     if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         m_udpHub.reset();
@@ -620,6 +643,10 @@ void QJackTrip::start()
     m_ui->connectButton->setEnabled(false);
     enableUi(false);
     m_jackTripRunning = true;
+    
+    if (gVerboseFlag) {
+        m_debugDialog->show();
+    }
 
     // Start the appropriate JackTrip process.
     try {
@@ -667,10 +694,10 @@ void QJackTrip::start()
 
             // Open our stats window if needed
             if (m_ui->ioStatsCheckBox->isChecked()) {
-                setupStatsWindow();
+                m_statsDialog->clearOutput();
+                m_statsDialog->show();
                 m_udpHub->setIOStatTimeout(m_ui->ioStatsSpinBox->value());
-                m_udpHub->setIOStatStream(QSharedPointer<std::ofstream>(
-                    new std::ofstream(m_ioStatsOutput->fileName().toUtf8().constData())));
+                m_udpHub->setIOStatStream(m_statsDialog->getOutputStream());
             }
 
             QObject::connect(m_udpHub.data(), &UdpHubListener::signalStopped, this,
@@ -785,10 +812,10 @@ void QJackTrip::start()
 
             // Open our stats window if needed
             if (m_ui->ioStatsCheckBox->isChecked()) {
-                setupStatsWindow();
+                m_statsDialog->clearOutput();
+                m_statsDialog->show();
                 m_jackTrip->setIOStatTimeout(m_ui->ioStatsSpinBox->value());
-                m_jackTrip->setIOStatStream(QSharedPointer<std::ofstream>(
-                    new std::ofstream(m_ioStatsOutput->fileName().toUtf8().constData())));
+                m_jackTrip->setIOStatStream(m_statsDialog->getOutputStream());
             }
 
             // Append any plugins
@@ -964,6 +991,8 @@ void QJackTrip::loadSettings()
     m_ui->resolutionComboBox->setCurrentIndex(settings.value("Resolution", 1).toInt());
     m_ui->connectAudioCheckBox->setChecked(settings.value("ConnectAudio", true).toBool());
     m_ui->realTimeCheckBox->setChecked(settings.value("RTNetworking", true).toBool());
+    // This may have been set by the command line, so don't overwrite if that's the case.
+    m_ui->verboseCheckBox->setChecked(gVerboseFlag || settings.value("Debug", 0).toBool());
     m_lastPath = settings.value("LastPath", QDir::homePath()).toString();
 
     settings.beginGroup("RecentServers");
@@ -1055,7 +1084,7 @@ void QJackTrip::loadSettings()
     settings.beginGroup("Window");
     QByteArray geometry = settings.value("Geometry").toByteArray();
     if (geometry.size() > 0) {
-        restoreGeometry(settings.value("Geometry").toByteArray());
+        restoreGeometry(geometry);
     } else {
         // Because of hidden elements in our dialog window, it's vertical size in the
         // creator is getting rediculous. Set it to something sensible by default if this
@@ -1085,6 +1114,7 @@ void QJackTrip::saveSettings()
     settings.setValue("Resolution", m_ui->resolutionComboBox->currentIndex());
     settings.setValue("ConnectAudio", m_ui->connectAudioCheckBox->isChecked());
     settings.setValue("RTNetworking", m_ui->realTimeCheckBox->isChecked());
+    settings.setValue("Debug", m_ui->verboseCheckBox->isChecked());
     settings.setValue("LastPath", m_lastPath);
 
     settings.beginGroup("RecentServers");
@@ -1149,15 +1179,6 @@ void QJackTrip::saveSettings()
     settings.beginGroup("Window");
     settings.setValue("Geometry", saveGeometry());
     settings.endGroup();
-}
-
-void QJackTrip::setupStatsWindow()
-{
-    m_ioStatsOutput.reset(new QTemporaryFile());
-    m_ioStatsOutput->open();
-    m_messageDialog->setStatsFile(m_ioStatsOutput);
-    m_messageDialog->show();
-    m_messageDialog->startMonitoring();
 }
 
 void QJackTrip::appendPlugins(JackTrip* jackTrip, int numSendChannels,
@@ -1286,7 +1307,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
     // Auth settings
     if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         if (m_ui->requireAuthCheckBox->isChecked()) {
-            commandLine.append(QString(" -A"));
+            commandLine.append(" -A");
             if (!m_ui->certEdit->text().isEmpty()) {
                 commandLine.append(" --certfile ").append(m_ui->certEdit->text());
             }
@@ -1299,7 +1320,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
     } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
         if (m_ui->authCheckBox->isChecked()) {
-            commandLine.append(QString(" -A"));
+            commandLine.append(" -A");
             if (!m_ui->usernameEdit->text().isEmpty()) {
                 commandLine.append(" --username ").append(m_ui->usernameEdit->text());
             }
@@ -1382,6 +1403,8 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->ioStatsCheckBox->isChecked()) {
         commandLine.append(QString(" -I %1").arg(m_ui->ioStatsSpinBox->value()));
     }
+    
+    if (m_ui->verboseCheckBox->isChecked()) { commandLine.append(" -V"); }
 
     if (m_ui->realTimeCheckBox->isChecked()) { commandLine.append(" --udprt"); }
 
@@ -1446,4 +1469,9 @@ void QJackTrip::showCommandLineMessageBox()
     msgBox.exec();
 }
 
-QJackTrip::~QJackTrip() = default;
+QJackTrip::~QJackTrip()
+{
+    //Restore cout. (Stops a crash on exit.)
+    std::cout.rdbuf(m_realCout.rdbuf());
+    std::cerr.rdbuf(m_realCerr.rdbuf());
+}

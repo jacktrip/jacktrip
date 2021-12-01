@@ -113,7 +113,7 @@ class JackTripWorker : public QObject
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
-    void setIOStatStream(QSharedPointer<std::ofstream> statStream)
+    void setIOStatStream(QSharedPointer<std::ostream> statStream)
     {
         mIOStatStream = statStream;
     }
@@ -181,7 +181,7 @@ class JackTripWorker : public QObject
     bool mUseRtUdpPriority      = false;
 
     int mIOStatTimeout = 0;
-    QSharedPointer<std::ofstream> mIOStatStream;
+    QSharedPointer<std::ostream> mIOStatStream;
 #ifdef WAIR                   // wair
     int mNumNetRevChans = 0;  ///< Number of Net Channels = net combs
     bool mWAIR          = false;

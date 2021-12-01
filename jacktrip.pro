@@ -232,7 +232,8 @@ HEADERS += src/JackAudioInterface.h \
 !nogui {
 HEADERS += src/gui/about.h \
            src/gui/messageDialog.h \
-           src/gui/qjacktrip.h
+           src/gui/qjacktrip.h \
+           src/gui/textbuf.h
 }
 
 rtaudio|bundled_rtaudio {
@@ -270,7 +271,8 @@ SOURCES += src/JackAudioInterface.cpp \
 !nogui {
 SOURCES += src/gui/messageDialog.cpp \
            src/gui/qjacktrip.cpp \
-           src/gui/about.cpp
+           src/gui/about.cpp \
+           src/gui/textbuf.cpp
 }
 
 !nogui {

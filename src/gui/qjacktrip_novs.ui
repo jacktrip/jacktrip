@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QJackTripVS</class>
- <widget class="QMainWindow" name="QJackTripVS">
+ <class>QJackTrip</class>
+ <widget class="QMainWindow" name="QJackTrip">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>845</height>
+    <height>817</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -239,6 +239,80 @@ To connect to a hub server you need to run as a hub client.</string>
              </property>
              <property name="buddy">
               <cstring>channelRecvSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="3">
+         <widget class="QGroupBox" name="authGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0" colspan="2">
+            <widget class="QCheckBox" name="authCheckBox">
+             <property name="toolTip">
+              <string>Supply a username and password to connect to the server.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Use Authentication</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="passwordEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your password. (This will not be shown or saved.)</string>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::Password</enum>
+             </property>
+             <property name="cursorPosition">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="usernameEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your username for the server.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="passwordLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Password</string>
+             </property>
+             <property name="buddy">
+              <cstring>passwordEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="usernameLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Username</string>
+             </property>
+             <property name="buddy">
+              <cstring>usernameEdit</cstring>
              </property>
             </widget>
            </item>
@@ -494,6 +568,48 @@ To connect to a hub server you need to run as a hub client.</string>
         <string>Advanced options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
+        <item row="5" column="0">
+         <widget class="QLabel" name="queueLengthLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Queue Buffer Length</string>
+          </property>
+          <property name="buddy">
+           <cstring>queueLengthSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="clientNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client.</string>
+          </property>
+          <property name="maxLength">
+           <number>64</number>
+          </property>
+          <property name="placeholderText">
+           <string>JackTrip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0">
+         <spacer name="advancedVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item row="7" column="0">
          <widget class="QLabel" name="resolutionLabel">
           <property name="sizePolicy">
@@ -507,6 +623,16 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
           <property name="buddy">
            <cstring>resolutionComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="remoteNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client as it will appear on the hub server.</string>
+          </property>
+          <property name="maxLength">
+           <number>64</number>
           </property>
          </widget>
         </item>
@@ -540,290 +666,16 @@ To connect to a hub server you need to run as a hub client.</string>
           </item>
          </widget>
         </item>
-        <item row="1" column="1" colspan="2">
-         <widget class="QLineEdit" name="remoteNameEdit">
+        <item row="9" column="0" colspan="3">
+         <widget class="QCheckBox" name="realTimeCheckBox">
           <property name="toolTip">
-           <string>Set the name of the Jack client as it will appear on the hub server.</string>
-          </property>
-          <property name="maxLength">
-           <number>64</number>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="0">
-         <widget class="QCheckBox" name="ioStatsCheckBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Display IO stats in another window.</string>
+           <string>Use real time priority for the networking threads.</string>
           </property>
           <property name="text">
-           <string>Display &amp;IO Stats</string>
+           <string>Enable real&amp;time priority for networking threads</string>
           </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="remoteNameLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Remote Client &amp;Name</string>
-          </property>
-          <property name="buddy">
-           <cstring>remoteNameEdit</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="remotePortLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Remote &amp;Port</string>
-          </property>
-          <property name="buddy">
-           <cstring>remotePortSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1" colspan="2">
-         <widget class="QSpinBox" name="localPortSpinBox">
-          <property name="toolTip">
-           <string>Set the local port to use for the connection. The default is 4464.
-(Useful for running multiple hub clients behind the same router.)</string>
-          </property>
-          <property name="minimum">
-           <number>1024</number>
-          </property>
-          <property name="maximum">
-           <number>65535</number>
-          </property>
-          <property name="value">
-           <number>4464</number>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="0" colspan="3">
-         <widget class="QGroupBox" name="authGroupBox">
-          <property name="enabled">
+          <property name="checked">
            <bool>true</bool>
-          </property>
-          <property name="title">
-           <string/>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0" colspan="2">
-            <widget class="QCheckBox" name="authCheckBox">
-             <property name="toolTip">
-              <string>Supply a username and password to connect to the server.</string>
-             </property>
-             <property name="text">
-              <string>&amp;Use Authentication</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="passwordEdit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Enter your password. (This will not be shown or saved.)</string>
-             </property>
-             <property name="echoMode">
-              <enum>QLineEdit::Password</enum>
-             </property>
-             <property name="cursorPosition">
-              <number>0</number>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="usernameEdit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Enter your username for the server.</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="passwordLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>&amp;Password</string>
-             </property>
-             <property name="buddy">
-              <cstring>passwordEdit</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="usernameLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>&amp;Username</string>
-             </property>
-             <property name="buddy">
-              <cstring>usernameEdit</cstring>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="localPortLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Local Port</string>
-          </property>
-          <property name="buddy">
-           <cstring>localPortSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="queueLengthLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Queue Buffer Length</string>
-          </property>
-          <property name="buddy">
-           <cstring>queueLengthSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="14" column="0">
-         <spacer name="advancedVerticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="basePortLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;UDP Base Port</string>
-          </property>
-          <property name="buddy">
-           <cstring>basePortSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="clientNameLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Custom Client &amp;Name</string>
-          </property>
-          <property name="buddy">
-           <cstring>clientNameEdit</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="2">
-         <widget class="QLabel" name="ioStatsLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Reporting &amp;Interval (s)</string>
-          </property>
-          <property name="buddy">
-           <cstring>ioStatsSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1" colspan="2">
-         <widget class="QSpinBox" name="queueLengthSpinBox">
-          <property name="toolTip">
-           <string>Set the queue buffer length, in packet size.</string>
-          </property>
-          <property name="minimum">
-           <number>2</number>
-          </property>
-          <property name="value">
-           <number>4</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1" colspan="2">
-         <widget class="QSpinBox" name="redundancySpinBox">
-          <property name="toolTip">
-           <string>Number of redundant packets to be sent to avoid glitches related to packet loss.</string>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="redundancyLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Redundancy</string>
-          </property>
-          <property name="buddy">
-           <cstring>redundancySpinBox</cstring>
           </property>
          </widget>
         </item>
@@ -840,48 +692,6 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
           <property name="maximum">
            <number>120</number>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1" colspan="2">
-         <widget class="QSpinBox" name="remotePortSpinBox">
-          <property name="toolTip">
-           <string>Set the remote port to use for the connection. The default is 4464.</string>
-          </property>
-          <property name="minimum">
-           <number>1024</number>
-          </property>
-          <property name="maximum">
-           <number>65535</number>
-          </property>
-          <property name="value">
-           <number>4464</number>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0" colspan="3">
-         <widget class="QCheckBox" name="connectAudioCheckBox">
-          <property name="toolTip">
-           <string>Connect the Jack client to the default system audio ports.</string>
-          </property>
-          <property name="text">
-           <string>&amp;Connect default audio ports</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1" colspan="2">
-         <widget class="QLineEdit" name="clientNameEdit">
-          <property name="toolTip">
-           <string>Set the name of the Jack client.</string>
-          </property>
-          <property name="maxLength">
-           <number>64</number>
-          </property>
-          <property name="placeholderText">
-           <string>JackTrip</string>
           </property>
          </widget>
         </item>
@@ -902,7 +712,7 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="15" column="0" colspan="3">
+        <item row="14" column="0" colspan="3">
          <layout class="QHBoxLayout" name="useDefaultsLayout">
           <item>
            <spacer name="useDefaultsSpacer">
@@ -936,16 +746,206 @@ To connect to a hub server you need to run as a hub client.</string>
           </item>
          </layout>
         </item>
-        <item row="9" column="0" colspan="3">
-         <widget class="QCheckBox" name="realTimeCheckBox">
-          <property name="toolTip">
-           <string>Use real time priority for the networking threads.</string>
+        <item row="1" column="0">
+         <widget class="QLabel" name="remoteNameLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="text">
-           <string>Enable real&amp;time priority for networking threads</string>
+           <string>Remote Client &amp;Name</string>
+          </property>
+          <property name="buddy">
+           <cstring>remoteNameEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QCheckBox" name="ioStatsCheckBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Display IO stats in another window.</string>
+          </property>
+          <property name="text">
+           <string>Display &amp;IO Stats</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="remotePortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Remote &amp;Port</string>
+          </property>
+          <property name="buddy">
+           <cstring>remotePortSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="clientNameLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Custom Client &amp;Name</string>
+          </property>
+          <property name="buddy">
+           <cstring>clientNameEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="redundancyLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Redundancy</string>
+          </property>
+          <property name="buddy">
+           <cstring>redundancySpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="3">
+         <widget class="QCheckBox" name="connectAudioCheckBox">
+          <property name="toolTip">
+           <string>Connect the Jack client to the default system audio ports.</string>
+          </property>
+          <property name="text">
+           <string>&amp;Connect default audio ports</string>
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="2">
+         <widget class="QSpinBox" name="localPortSpinBox">
+          <property name="toolTip">
+           <string>Set the local port to use for the connection. The default is 4464.
+(Useful for running multiple hub clients behind the same router.)</string>
+          </property>
+          <property name="minimum">
+           <number>1024</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>4464</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" colspan="2">
+         <widget class="QSpinBox" name="remotePortSpinBox">
+          <property name="toolTip">
+           <string>Set the remote port to use for the connection. The default is 4464.</string>
+          </property>
+          <property name="minimum">
+           <number>1024</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>4464</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="basePortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;UDP Base Port</string>
+          </property>
+          <property name="buddy">
+           <cstring>basePortSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="localPortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Local Port</string>
+          </property>
+          <property name="buddy">
+           <cstring>localPortSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1" colspan="2">
+         <widget class="QSpinBox" name="redundancySpinBox">
+          <property name="toolTip">
+           <string>Number of redundant packets to be sent to avoid glitches related to packet loss.</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2">
+         <widget class="QLabel" name="ioStatsLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Reporting &amp;Interval (s)</string>
+          </property>
+          <property name="buddy">
+           <cstring>ioStatsSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" colspan="2">
+         <widget class="QSpinBox" name="queueLengthSpinBox">
+          <property name="toolTip">
+           <string>Set the queue buffer length, in packet size.</string>
+          </property>
+          <property name="minimum">
+           <number>2</number>
+          </property>
+          <property name="value">
+           <number>4</number>
           </property>
          </widget>
         </item>
@@ -1763,6 +1763,9 @@ and wetness is the essence of beauty.</string>
   <tabstop>keyBrowse</tabstop>
   <tabstop>credsEdit</tabstop>
   <tabstop>credsBrowse</tabstop>
+  <tabstop>authCheckBox</tabstop>
+  <tabstop>usernameEdit</tabstop>
+  <tabstop>passwordEdit</tabstop>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
   <tabstop>remoteNameEdit</tabstop>
@@ -1776,9 +1779,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>realTimeCheckBox</tabstop>
   <tabstop>ioStatsCheckBox</tabstop>
   <tabstop>ioStatsSpinBox</tabstop>
-  <tabstop>authCheckBox</tabstop>
-  <tabstop>usernameEdit</tabstop>
-  <tabstop>passwordEdit</tabstop>
+  <tabstop>verboseCheckBox</tabstop>
   <tabstop>commandLineButton</tabstop>
   <tabstop>useDefaultsButton</tabstop>
   <tabstop>backendComboBox</tabstop>

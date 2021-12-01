@@ -39,6 +39,7 @@
 #include <QApplication>
 
 #include "gui/qjacktrip.h"
+#include <QCommandLineParser>
 #else
 #include <QCoreApplication>
 #endif
@@ -50,6 +51,12 @@
 #include "Settings.h"
 #include "UdpHubListener.h"
 #include "jacktrip_globals.h"
+
+#ifdef __WIN_32__
+#include <windows.h>
+#include <psapi.h>
+#include <tlhelp32.h>
+#endif
 
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
@@ -154,6 +161,49 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
         return false;
     }
 }
+
+bool isRunFromCmd() {
+    //Get our parent process pid
+    HANDLE h = NULL;
+    PROCESSENTRY32 pe = {0};
+    DWORD pid = GetCurrentProcessId();
+    DWORD ppid = 0;
+    pe.dwSize = sizeof(PROCESSENTRY32);
+    h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (Process32First(h, &pe)) {
+        do {
+            //Loop through the list of processes until we find ours.
+            if (pe.th32ProcessID == pid) {
+                ppid = pe.th32ParentProcessID;
+                break;
+            }
+        } while (Process32Next(h, &pe));
+    }
+    CloseHandle(h);
+    
+    //Get the name of our parent process;
+    char pname[MAX_PATH] = {0};
+    DWORD size = MAX_PATH;
+    h = NULL;
+    h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, ppid);
+    if (h) {
+        if (QueryFullProcessImageNameA(h, 0, pname, &size)) {
+            CloseHandle(h);
+            
+            //Check if our parent process is a command line.
+            if (size >= 14 && strncmp(pname + size - 14, "powershell.exe", 14) == 0) {
+                return true;
+            }
+            if (size >= 7 && strncmp(pname + size - 7, "cmd.exe", 7) == 0) {
+                return true;
+            }
+        } else {
+            CloseHandle(h);
+        }
+    }
+    
+    return false;
+}
 #endif
 
 int main(int argc, char* argv[])
@@ -166,10 +216,21 @@ int main(int argc, char* argv[])
     if (qobject_cast<QApplication*>(app.data())) {
         // Start the GUI if there are no command line options.
 #ifdef __WIN_32__
-        // Remove the console that appears if we're in windows.
-        FreeConsole();
+        // Remove the console that appears if we're on windows and not running from a command line.
+        if (!isRunFromCmd()) {
+            FreeConsole();
+        }
 #endif  // __WIN_32__
         app->setApplicationName("QJackTrip");
+        
+        QCommandLineParser parser;
+        QCommandLineOption verboseOption(QStringList() << "V" << "verbose");   
+        parser.addOption(verboseOption);
+        parser.parse(app->arguments());
+        if (parser.isSet(verboseOption)) {
+            gVerboseFlag = true;
+        }
+        
         window.reset(new QJackTrip);
         window->setArgc(argc);
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
