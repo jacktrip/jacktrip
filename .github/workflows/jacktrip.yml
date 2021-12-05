@@ -21,7 +21,7 @@ on:
       - 'README**'
   workflow_dispatch:
   schedule:
-    - cron:  '* * * * 0' # run weekly to refresh static Qt cache
+    - cron:  '0 0 * * 0' # run weekly to refresh static Qt cache
 jobs:
   build:
     runs-on: ${{ matrix.runs-on }}
