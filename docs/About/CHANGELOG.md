@@ -2,7 +2,7 @@ Changelog
 =========
 
 {% for release in releases %}
-## {{ release.Version }}
+## {{ release.Version }} {% if release.Type == 'development' %}(Development){% endif %}
 
 {% for change in release.Description %}
 - {{ change }}
