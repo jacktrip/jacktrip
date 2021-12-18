@@ -1,3 +1,19 @@
+- Version: "1.4.3"
+  Date: 2021-12-18
+  Description:
+  - "Generating changelog from YAML file for MkDocs and Flatpaks by @ntonnaett in #442"
+  - "Update jacktrip_globals.h by @cchafe in #443"
+- Version: "1.4.2"
+  Date: 2021-12-06
+  Description:
+  - "[Meson] Set RtAudio subproject to version 5.2.0 by @ntonnaett in #436"
+  - "Verbose mode in GUI by @psiborg112 in #434"
+  - "Help screen for app bundle script by @psiborg112 in #439"
+  - "[GHA] Fix weekly cron job entry by @ntonnaett in #441"
+- Version: "1.4.1"
+  Date: 2021-11-11
+  Description:
+  - "Fix for OSX installer failures by @mikedickey in #431"
 - Version: "1.4.0"
   Date: 2021-11-03
   Description:
