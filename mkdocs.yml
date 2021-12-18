@@ -20,6 +20,10 @@ nav:
     - Resources: About/Resources.md
     - Changelog: About/CHANGELOG.md
     - License: About/License.md
+plugins:
+  - macros:
+      include_yaml:
+        - releases: docs/changelog.yml
 theme:
   name: material
   features:

@@ -29,6 +29,18 @@
     <binary>jacktrip</binary>
   </provides>
 
+  <releases>
+  {%- for release in releases %}
+    <release version="{{ release.Version }}" {%- if release.Date %} date="{{ release.Date }}"{%- endif %}{% if release.Type == 'development' %} type="development"{% endif %}>
+      <description>
+      {%- for change in release.Description %}
+        <p>{{ change }}</p>
+      {%- endfor %}
+      </description>
+    </release>
+  {%- endfor %}
+  </releases>
+
   <content_rating type="oars-1.1">
     <content_attribute id="social-audio">intense</content_attribute>
   </content_rating>

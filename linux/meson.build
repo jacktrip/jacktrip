@@ -13,10 +13,18 @@ if host_machine.system() == 'linux'
 	    install_dir: get_option('datadir') / 'applications'
 	)
 
+	prog_python = import('python').find_installation('python3')
+
+	metainfo_in = configure_file(
+		input: ['add_changelog_to_metainfo.py', 'org.jacktrip.JackTrip.metainfo.xml.in.in'],
+		output: 'org.jacktrip.JackTrip.metainfo.xml.in',
+		command: [prog_python, '@INPUT@', '@OUTPUT@']
+	)
+
 	appdata_conf = configuration_data()
 	appdata_conf.set('appid', application_id)
 	configure_file(
-	    input: files('org.jacktrip.JackTrip.metainfo.xml.in'),
+	    input: metainfo_in,
 	    output: '@0@.metainfo.xml'.format(application_id),
 	    configuration: appdata_conf,
 	    install_dir: get_option('datadir') / 'metainfo'
