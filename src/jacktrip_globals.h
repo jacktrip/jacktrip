@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file globals.cpp
+ * \file jacktrip_globals.h
  * \author Juan-Pablo Caceres
  * \date June 2008
  */
@@ -39,12 +39,8 @@
 #define __JACKTRIP_GLOBALS_H__
 
 #include "AudioInterface.h"
-//#include "JackAudioInterface.h"
 
-/// \todo Add this namespace
-// namespace JackTrip
-
-constexpr const char* const gVersion = "1.4.2";  ///< JackTrip version
+constexpr const char* const gVersion = "1.4.3";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
