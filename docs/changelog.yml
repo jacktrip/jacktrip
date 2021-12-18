@@ -99,11 +99,13 @@
   - (added) Basic Karplus-Strong model added as Plug-in
   - (added) Some functionality reimplemented using signals and slots for more flexibility
   - (added) Multiple-Client-Server in alpha testing, expect it working in the next release
-- Version: "1.0.2 Alpha"
+- Version: "1.0.2"
+  Type: development
   Description:
   - (added) Port offset mode, to use a different UDP port than the default one.
   - (fixed) Improved thread behavior
-- Version: "1.0.1 Alpha"
+- Version: "1.0.1"
+  Type: development
   Description:
   - (added) jamlink mode to connect with jamlink boxes
   - (fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X Version)
@@ -112,4 +114,7 @@
   - "(added) Underrun Modes: Wavetable (default) and set to zeros"
   - (added) Check for peer audio settings, program exists if they don't match
   - (added) Automatically connect ports to available physical audio interface.
-- Version: "1.0 Alpha  - initial release"
+- Version: "1.0"
+  Type: "development"
+  Description:
+  - initial release
