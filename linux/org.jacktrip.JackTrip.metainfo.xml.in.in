@@ -37,6 +37,12 @@
     <binary>jacktrip</binary>
   </provides>
 
+  <requires>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <display_length compare="ge">907</display_length>
+  </requires>
+
   <releases>
   {%- for release in releases %}
     <release version="{{ release.Version }}" {%- if release.Date %} date="{{ release.Date }}"{%- endif %}{% if release.Type == 'development' %} type="development"{% endif %}>
