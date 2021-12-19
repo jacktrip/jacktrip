@@ -26,6 +26,7 @@
   <url type="help">https://jacktrip.github.io/jacktrip</url>
   <url type="bugtracker">https://github.com/jacktrip/jacktrip/issues</url>
   <project_group>JackTrip</project_group>
+  <developer_name>The JackTrip Community</developer_name>
 
   <provides>
     <binary>jacktrip</binary>
