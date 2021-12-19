@@ -7,6 +7,11 @@
   <name>JackTrip</name>
   <summary>Connect and play with other musicians</summary>
 
+  <categories>
+    <category>Audio</category>
+    <category>Network</category>
+  </categories>
+
   <description>
     <p>
       JackTrip is a cross-platform multi-machine audio system
