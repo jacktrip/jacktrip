@@ -22,7 +22,9 @@
 
   <launchable type="desktop-id">@appid@.desktop</launchable>
 
-  <url type="homepage">https://jacktrip.github.io/jacktrip/</url>
+  <url type="homepage">https://github.com/jacktrip/jacktrip</url>
+  <url type="help">https://jacktrip.github.io/jacktrip</url>
+  <url type="bugtracker">https://github.com/jacktrip/jacktrip/issues</url>
   <project_group>JackTrip</project_group>
 
   <provides>
