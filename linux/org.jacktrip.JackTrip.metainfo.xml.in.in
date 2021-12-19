@@ -36,9 +36,11 @@
   {%- for release in releases %}
     <release version="{{ release.Version }}" {%- if release.Date %} date="{{ release.Date }}"{%- endif %}{% if release.Type == 'development' %} type="development"{% endif %}>
       <description>
+        <ul>
       {%- for change in release.Description %}
-        <p>{{ change }}</p>
+          <li>{{ change }}</li>
       {%- endfor %}
+        </ul>
       </description>
     </release>
   {%- endfor %}
