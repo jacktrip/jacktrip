@@ -200,7 +200,7 @@ void Settings::parseInput(int argc, char** argv)
     int ch;
     while (
         (ch = getopt_long(argc, argv,
-                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:A",
+                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uDvVhI:G:f:O:a:x:A",
                           longopts, NULL))
         != -1)
         switch (ch) {
