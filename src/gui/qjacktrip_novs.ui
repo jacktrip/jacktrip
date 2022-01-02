@@ -558,6 +558,13 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
+        <item row="4" column="0" colspan="3">
+         <widget class="QCheckBox" name="upmixCheckBox">
+          <property name="text">
+           <string>&amp;Upmix mono clients to stereo</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="advancedTab">
@@ -1754,6 +1761,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>channelRecvSpinBox</tabstop>
   <tabstop>channelSendSpinBox</tabstop>
   <tabstop>autoPatchComboBox</tabstop>
+  <tabstop>upmixCheckBox</tabstop>
   <tabstop>zeroCheckBox</tabstop>
   <tabstop>timeoutCheckBox</tabstop>
   <tabstop>requireAuthCheckBox</tabstop>

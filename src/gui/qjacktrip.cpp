@@ -224,6 +224,7 @@ QJackTrip::QJackTrip(QWidget* parent)
     //(loadSettings will take care of the UI in all other cases.)
     m_ui->basePortLabel->setVisible(false);
     m_ui->basePortSpinBox->setVisible(false);
+    m_ui->upmixCheckBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
 
 #ifdef __RT_AUDIO__
@@ -473,6 +474,7 @@ void QJackTrip::chooseRunType(int index)
         m_ui->timeoutCheckBox->setVisible(false);
         m_ui->autoPatchComboBox->setVisible(true);
         m_ui->autoPatchLabel->setVisible(true);
+        m_ui->upmixCheckBox->setVisible(true);
         m_ui->requireAuthGroupBox->setVisible(true);
         advancedOptionsForHubServer(true);
         int index = findTab("Plugins");
@@ -489,6 +491,7 @@ void QJackTrip::chooseRunType(int index)
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
         m_ui->autoPatchLabel->setVisible(false);
+        m_ui->upmixCheckBox->setVisible(false);
         m_ui->requireAuthGroupBox->setVisible(false);
         m_ui->channelGroupBox->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
@@ -660,6 +663,7 @@ void QJackTrip::start()
             }
 
             m_udpHub->setHubPatch(hubConnectionMode);
+            m_udpHub->setStereoUpmix(m_ui->upmixCheckBox->isChecked());
 
             if (m_ui->zeroCheckBox->isChecked()) {
                 // Set buffers to zero when underrun

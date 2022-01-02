@@ -123,6 +123,7 @@ class Settings : public QObject
     std::string mInputDeviceName, mOutputDeviceName;
 #endif
     unsigned int mHubConnectionMode = JackTrip::SERVERTOCLIENT;
+    bool mStereoUpmix               = false;
     bool mConnectDefaultAudioPorts  = true;  ///< Connect or not jack audio ports
     int mIOStatTimeout              = 0;
     QSharedPointer<std::ostream> mIOStatStream;

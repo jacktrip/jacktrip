@@ -184,6 +184,7 @@ class UdpHubListener : public QObject
 #ifndef __NO_JACK__
     Patcher mPatcher;
 #endif
+    bool mStereoUpmix;
 
     int mIOStatTimeout;
     QSharedPointer<std::ostream> mIOStatStream;
@@ -229,6 +230,12 @@ class UdpHubListener : public QObject
         }
     }
     unsigned int getHubPatch() { return mHubPatch; }
+    
+    void setStereoUpmix([[maybe_unused]] bool upmix) {
+#ifndef __NO_JACK__
+        mPatcher.setStereoUpmix(upmix);
+#endif
+    }
 
     void setUnderRunMode(JackTrip::underrunModeT UnderRunMode)
     {

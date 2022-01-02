@@ -56,6 +56,7 @@ class Patcher : public QObject
     virtual ~Patcher();
 
     void setPatchMode(JackTrip::hubConnectionModeT patchMode);
+    void setStereoUpmix(bool upmix);
 
     void registerClient(const QString& clientName);
     void unregisterClient(const QString& clientName);
@@ -65,7 +66,9 @@ class Patcher : public QObject
 
    private:
     QStringList m_clients;
-    JackTrip::hubConnectionModeT m_patchMode;
+    QStringList m_monoClients;
+    JackTrip::hubConnectionModeT m_patchMode = JackTrip::SERVERTOCLIENT;
+    bool m_steroUpmix = false;
 
     jack_client_t* m_jackClient;
     jack_status_t m_status;
