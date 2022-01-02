@@ -40,7 +40,7 @@
 
 #include "AudioInterface.h"
 
-constexpr const char* const gVersion = "1.4.4";  ///< JackTrip version
+constexpr const char* const gVersion = "1.5.0";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values

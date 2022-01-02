@@ -38,8 +38,6 @@
 #include "Patcher.h"
 #include <QVector>
 
-Patcher::Patcher() : m_jackClient(nullptr) {}
-
 void Patcher::setPatchMode(JackTrip::hubConnectionModeT patchMode)
 {
     m_patchMode = patchMode;
