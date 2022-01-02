@@ -48,7 +48,6 @@ void Patcher::setStereoUpmix(bool upmix)
     m_steroUpmix = upmix;
 }
 
-
 void Patcher::registerClient(const QString& clientName)
 {
     QMutexLocker locker(&m_connectionMutex);
