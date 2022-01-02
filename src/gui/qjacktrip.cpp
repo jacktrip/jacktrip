@@ -981,6 +981,7 @@ void QJackTrip::loadSettings()
     }
 
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
+    m_ui->upmixCheckBox->setChecked(settings.value("StereoUpmix", false).toBool());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
     m_ui->clientNameEdit->setText(settings.value("ClientName", "").toString());
@@ -1106,6 +1107,7 @@ void QJackTrip::saveSettings()
     settings.setValue("ChannelsSend", m_ui->channelSendSpinBox->value());
     settings.setValue("ChannelsRecv", m_ui->channelRecvSpinBox->value());
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
+    settings.setValue("StereoUpmix", m_ui->upmixCheckBox->isChecked());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
     settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
     settings.setValue("ClientName", m_ui->clientNameEdit->text());
@@ -1257,6 +1259,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
         if (hubConnectionMode > 0) {
             commandLine.append(QString(" -p %1").arg(hubConnectionMode));
+        }
+        if (m_ui->upmixCheckBox->isChecked()) {
+            commandLine.append(" -u");
         }
     } else {
         if (m_ui->channelSendSpinBox->value() != gDefaultNumInChannels
