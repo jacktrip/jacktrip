@@ -96,10 +96,7 @@ void Patcher::registerClient(const QString& clientName)
         }
     }
 
-    bool clientIsMono = false;
-    if (clientOutPorts.count() == 1) {
-        clientIsMono = true;
-    }
+    bool clientIsMono = (clientOutPorts.count() == 1);
 
     // Start with our receiving ports.
     for (int i = 0; i < clientOutPorts.count(); i++) {
