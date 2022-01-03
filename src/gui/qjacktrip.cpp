@@ -395,7 +395,7 @@ void QJackTrip::processFinished()
         return;
     }
     m_jackTripRunning = false;
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     m_noNap.enableNap();
 #endif
     m_ui->disconnectButton->setEnabled(false);
@@ -869,7 +869,7 @@ void QJackTrip::start()
     m_ui->addressComboBox->insertItem(0, serverAddress);
     m_ui->addressComboBox->setCurrentIndex(0);
 
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     m_noNap.disableNap();
 #endif
 }
@@ -950,7 +950,7 @@ void QJackTrip::migrateSettings()
     // Function to migrate settings for users who previously had QJackTrip installed.
     QSettings settings;
     if (settings.value("Migrated", false).toBool()) { return; }
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     QSettings oldSettings("psi-borg.org", "QJackTrip");
 #else
     QSettings oldSettings("psi-borg", "QJackTrip");

@@ -123,7 +123,7 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
     std::cerr << msg.toStdString() << std::endl;
 }
 
-#if defined(__linux__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
 static int setupUnixSignalHandler(void (*handler)(int))
 {
     // Setup our SIGINT handler.
@@ -256,7 +256,7 @@ int main(int argc, char* argv[])
                                  Qt::QueuedConnection);
                 QObject::connect(udpHub.data(), &UdpHubListener::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined(__linux__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
                 setupUnixSignalHandler(UdpHubListener::sigIntHandler);
 #else
             isHubServer = true;
@@ -273,7 +273,7 @@ int main(int argc, char* argv[])
                                  Qt::QueuedConnection);
                 QObject::connect(jackTrip.data(), &JackTrip::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined(__linux__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
                 setupUnixSignalHandler(JackTrip::sigIntHandler);
 #else
             std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;

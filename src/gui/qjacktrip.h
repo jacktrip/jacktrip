@@ -41,7 +41,7 @@
 #include "../UdpHubListener.h"
 #include "messageDialog.h"
 
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
 #include "NoNap.h"
 #endif
 
@@ -135,7 +135,7 @@ class QJackTrip : public QMainWindow
     int m_argc;
     bool m_hideWarning;
 
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     NoNap m_noNap;
 #endif
 };

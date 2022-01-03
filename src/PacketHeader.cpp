@@ -37,7 +37,7 @@
 
 #include "PacketHeader.h"
 
-#if defined(__linux__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
 #include <sys/time.h>
 #endif
 

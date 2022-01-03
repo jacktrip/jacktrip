@@ -1200,7 +1200,7 @@ active address local_addr.sin_port = htons(bind_port); //set bind port
 #if defined ( __linux__ )
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 #endif
-#if defined ( __MAC_OSX__ )
+#if defined ( __APPLE__ )
   // This option is not avialable on Linux, and without it MAC OS X
   // has problems rebinding a socket
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
