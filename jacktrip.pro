@@ -99,7 +99,6 @@ macx {
   #CONFIG += x86 #ppc #### If you have both libraries installed, you
   # can change between 32bits (x86) or 64bits(x86_64) Change this to go back to 32 bits (x86)
   LIBS += -framework CoreAudio -framework CoreFoundation
-  DEFINES += __MAC_OSX__
   !nogui {
     LIBS += -framework Foundation
     CONFIG += objective_c
@@ -130,7 +129,6 @@ linux-g++ | linux-g++-64 {
   }
   
   QMAKE_CXXFLAGS += -g -O2
-  DEFINES += __LINUX__
 }
 
 linux-g++ {
@@ -174,7 +172,6 @@ win32 {
     }
   }
   LIBS += -lWs2_32
-  DEFINES += __WIN_32__
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
   DEFINES += WIN32_LEAN_AND_MEAN
 }
