@@ -1197,7 +1197,7 @@ active address local_addr.sin_port = htons(bind_port); //set bind port
 
   // Set socket to be reusable, this is platform dependent
   int one = 1;
-#if defined ( __LINUX__ )
+#if defined ( __linux__ )
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 #endif
 #if defined ( __MAC_OSX__ )

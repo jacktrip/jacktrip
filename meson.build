@@ -16,9 +16,7 @@ compiler = meson.get_compiler('cpp')
 
 defines = ['-DWAIRTOHUB']
 c_defines = []
-if host_machine.system() == 'linux'
-	defines += '-D__LINUX__'
-elif host_machine.system() == 'darwin'
+if host_machine.system() == 'darwin'
 	defines += '-D__MAC_OSX__'
 elif host_machine.system() == 'windows'
 	defines += '-D__WIN_32__'

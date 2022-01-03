@@ -37,11 +37,11 @@
 
 #include <iostream>
 
-#if defined(__LINUX__)
+#if defined(__linux__)
 #include <sched.h>
 #include <sys/types.h>
 #include <unistd.h>
-#endif  //__LINUX__
+#endif  //__linux__
 
 #if defined(__MAC_OSX__)
 #include <mach/mach.h>
@@ -151,7 +151,7 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
 
 #endif  //__MAC_OSX__
 
-#if defined(__LINUX__)
+#if defined(__linux__)
 //*******************************************************************************
 void setRealtimeProcessPriority()
 {
@@ -168,7 +168,7 @@ void setRealtimeProcessPriority()
         ;
     }
 }
-#endif  //__LINUX__
+#endif  //__linux__
 
 #if defined(__WIN_32__)
 void setRealtimeProcessPriority()
