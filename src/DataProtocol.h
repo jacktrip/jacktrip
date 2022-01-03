@@ -38,12 +38,12 @@
 #ifndef __DATAPROTOCOL_H__
 #define __DATAPROTOCOL_H__
 
-#ifdef __WIN_32__
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
 
-#ifndef __WIN_32__
+#ifndef _WIN32
 #include <arpa/inet.h>  //inet(3) functions
 #include <netdb.h>
 #include <netinet/in.h>  //sockaddr_in{} and other Internet defns
@@ -162,7 +162,7 @@ class DataProtocol : public QThread
     // virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
     //				     uint16_t& port) = 0;
 
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     virtual void setSocket(SOCKET& socket) = 0;
 #else
     virtual void setSocket(int& socket) = 0;

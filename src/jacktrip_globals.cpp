@@ -50,7 +50,7 @@
 #include <sys/qos.h>
 #endif  //__APPLE__
 
-#if defined(__WIN_32__)
+#if defined(_WIN32)
 // Windows libraries that rely on the ordering of includes…
 // clang-format off
 #include <windows.h>
@@ -170,7 +170,7 @@ void setRealtimeProcessPriority()
 }
 #endif  //__linux__
 
-#if defined(__WIN_32__)
+#if defined(_WIN32)
 void setRealtimeProcessPriority()
 {
     if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0) {
@@ -180,4 +180,4 @@ void setRealtimeProcessPriority()
         std::cerr << "Failed to set thread priority." << std::endl;
     }
 }
-#endif  //__WIN_32__
+#endif  //_WIN32

@@ -140,7 +140,7 @@ void RtAudioInterface::setup()
     RtAudio::StreamOptions options;
     // The second flag affects linux and mac only
     options.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_SCHEDULE_REALTIME;
-#ifdef __WIN_32__
+#ifdef _WIN32
     options.flags = options.flags | RTAUDIO_MINIMIZE_LATENCY;
 #endif
     // linux only

@@ -90,7 +90,7 @@ class UdpDataProtocol : public DataProtocol
      */
     void setPeerAddress(const char* peerHostOrIP);
 
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     void setSocket(SOCKET& socket);
 #else
     void setSocket(int& socket);
@@ -163,7 +163,7 @@ class UdpDataProtocol : public DataProtocol
    protected:
     /** \brief Binds the UDP socket to the available address and specified port
      */
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     SOCKET bindSocket();
 #else
     int bindSocket();
@@ -204,7 +204,7 @@ class UdpDataProtocol : public DataProtocol
     QHostAddress mPeerAddress;  ///< The Peer Address
     struct sockaddr_in mPeerAddr;
     struct sockaddr_in6 mPeerAddr6;
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     SOCKET mSocket;
 #else
     int mSocket;

@@ -52,7 +52,7 @@
 #include "UdpHubListener.h"
 #include "jacktrip_globals.h"
 
-#ifdef __WIN_32__
+#ifdef _WIN32
 #include <windows.h>
 #include <psapi.h>
 #include <tlhelp32.h>
@@ -215,12 +215,12 @@ int main(int argc, char* argv[])
     QScopedPointer<QJackTrip> window;
     if (qobject_cast<QApplication*>(app.data())) {
         // Start the GUI if there are no command line options.
-#ifdef __WIN_32__
+#ifdef _WIN32
         // Remove the console that appears if we're on windows and not running from a command line.
         if (!isRunFromCmd()) {
             FreeConsole();
         }
-#endif  // __WIN_32__
+#endif  // _WIN32
         app->setApplicationName("QJackTrip");
         
         QCommandLineParser parser;

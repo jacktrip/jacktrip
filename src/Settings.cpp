@@ -56,7 +56,7 @@
 
 #include "jacktrip_globals.h"
 
-#ifdef __WIN_32__
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <termios.h>
@@ -1090,7 +1090,7 @@ return jackTrip;
 
 void Settings::disableEcho(bool disabled)
 {
-#ifdef __WIN_32__
+#ifdef _WIN32
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD mode;
     GetConsoleMode(hStdin, &mode);

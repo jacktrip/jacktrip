@@ -17,7 +17,6 @@ compiler = meson.get_compiler('cpp')
 defines = ['-DWAIRTOHUB']
 c_defines = []
 if host_machine.system() == 'windows'
-	defines += '-D__WIN_32__'
 	defines += '-D_WIN32_WINNT=0x0600'
 	defines += '-DWIN32_LEAN_AND_MEAN'
 	defines += '-DNOMINMAX'

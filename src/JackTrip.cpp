@@ -66,7 +66,7 @@ using std::endl;
 // the following function has to remain outside the Jacktrip class definition
 // its purpose is to close the app when control c is hit by the user in rtaudio/asio4all
 // mode
-/*if defined __WIN_32__
+/*if defined _WIN32
 void sigint_handler(int sig)
 {
     exit(0);
@@ -428,7 +428,7 @@ void JackTrip::startProcess(
 #endif  // endwhere
 )
 {  // signal that catches ctrl c in rtaudio-asio mode
-    /*#if defined (__WIN_32__)
+    /*#if defined (_WIN32)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
         perror("signal");
         exit(1);
@@ -442,7 +442,7 @@ void JackTrip::startProcess(
         std::cout
             << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)"
             << std::endl;
-#if defined __WIN_32__
+#if defined _WIN32
         // cc fixed windows crash with this print statement!
         // qDebug() << "before mJackTrip->startProcess" << mReceiverBindPort<<
         // mSenderBindPort;
@@ -537,7 +537,7 @@ void JackTrip::startProcess(
 void JackTrip::completeConnection()
 {
     // Have the threads share a single socket that operates at full duplex.
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     SOCKET sock_fd = INVALID_SOCKET;
 #else
     int sock_fd = -1;
