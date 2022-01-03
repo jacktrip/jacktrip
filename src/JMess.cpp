@@ -55,11 +55,12 @@ JMess::JMess()
     mClient = jack_client_open("lsp", JackNoStartServer, &mStatus);
     if (mClient == NULL) {
         if (mStatus & JackServerFailed) {
-            cerr << "JACK server not running" << endl;
+            std::cerr << "JACK server not running"
+                      << "\n";
         } else {
-            cerr << "jack_client_open() failed, "
-                 << "status = 0x%2.0x\n"
-                 << mStatus << endl;
+            std::cerr << "jack_client_open() failed, "
+                      << "status = 0x%2.0x\n"
+                      << mStatus << "\n";
         }
         exit(1);
     }
@@ -73,7 +74,8 @@ JMess::JMess()
 JMess::~JMess()
 {
     if (jack_client_close(mClient))
-        cerr << "ERROR: Could not close the hidden jmess jack client." << endl;
+        std::cerr << "ERROR: Could not close the hidden jmess jack client."
+                  << "\n";
 }
 
 //-------------------------------------------------------------------------------
@@ -96,8 +98,8 @@ void JMess::writeOutput(QString /*xmlOutFile*/)
     //  for (QVector<QVector<QString> >::iterator it = mConnectedPorts.begin();
     //       it != mConnectedPorts.end(); ++it) {
     //    OutputInput = *it;
-    //    //cout << "Output ===> " <<qPrintable(OutputInput[0]) << endl;
-    //    //cout << "Input ===> " <<qPrintable(OutputInput[1]) << endl;
+    //    //cout << "Output ===> " <<qPrintable(OutputInput[0]) << "\n";
+    //    //cout << "Input ===> " <<qPrintable(OutputInput[1]) << "\n";
 
     //    //Initialize XML elements
     //    connection = jmess_xml.createElement("connection");
@@ -128,14 +130,14 @@ void JMess::writeOutput(QString /*xmlOutFile*/)
 
     //  if (answer == "yes") {
     //    if (!file.open(QIODevice::WriteOnly)) {
-    //      cerr << "Cannot open file for writing: "
-    //	   << qPrintable(file.errorString()) << endl;
+    //      std::cerr << "Cannot open file for writing: "
+    //	   << qPrintable(file.errorString()) << "\n";
     //      exit(1);
     //    }
 
     //    QTextStream out(&file);
     //    jmess_xml.save(out, Indent);
-    //    cout << qPrintable(xmlOutFile) << " written." << endl;
+    //    cout << qPrintable(xmlOutFile) << " written." << "\n";
     //  }
 }
 
@@ -160,9 +162,9 @@ void JMess::setConnectedPorts()
             != 0) {
             for (unsigned int in_i = 0; connections[in_i]; ++in_i) {
                 OutputInput[0] = ports[out_i];
-                //    cout << "Output ===> " <<qPrintable(OutputInput[0]) << endl;
+                //    cout << "Output ===> " <<qPrintable(OutputInput[0]) << "\n";
                 OutputInput[1] = connections[in_i];
-                //    cout << "Input ===> " << qPrintable(OutputInput[1]) << endl;
+                //    cout << "Input ===> " << qPrintable(OutputInput[1]) << "\n";
                 mConnectedPorts.append(OutputInput);
             }
         }
@@ -342,7 +344,7 @@ void JMess::connectTUB(int /*nChans*/)
                      << tmp << "with " << client << ":send_" << l;
 
             left  = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
-                           + QString::number(tmp));
+                            + QString::number(tmp));
             right = QString(client + ":send_" + QString::number(l));
 
             if (0
@@ -365,9 +367,9 @@ void JMess::disconnectAll()
 
     for (auto& OutputInput : mConnectedPorts) {
         if (jack_disconnect(mClient, OutputInput[0].toUtf8(), OutputInput[1].toUtf8())) {
-            cerr << "WARNING: port: " << qPrintable(OutputInput[0])
-                 << "and port: " << qPrintable(OutputInput[1])
-                 << " could not be disconnected.\n";
+            std::cerr << "WARNING: port: " << qPrintable(OutputInput[0])
+                      << "and port: " << qPrintable(OutputInput[1])
+                      << " could not be disconnected.\n";
         }
     }
 }
@@ -388,15 +390,15 @@ int JMess::parseXML(QString /*xmlInFile*/)
 
     //  QFile file(xmlInFile);
     //  if (!file.open(QIODevice::ReadOnly)) {
-    //    cerr << "Cannot open file for reading: "
-    //	 << qPrintable(file.errorString()) << endl;
+    //    std::cerr << "Cannot open file for reading: "
+    //	 << qPrintable(file.errorString()) << "\n";
     //    return 1;
     //  }
 
     //  QDomDocument doc;
     //  if (!doc.setContent(&file, true, &errorStr, &errorLine,
     //		      &errorColumn)) {
-    //    cerr << "===================================================\n"
+    //    std::cerr << "===================================================\n"
     //	 << "Error parsing XML input file:\n"
     //	 << "Parse error at line " << errorLine
     //	 << ", column " << errorColumn << "\n"
@@ -407,8 +409,8 @@ int JMess::parseXML(QString /*xmlInFile*/)
 
     //  QDomElement jmess = doc.documentElement();
     //  if (jmess.tagName() != "jmess") {
-    //    cerr << "Error: Root tag should be <jmess>: "
-    //	 << qPrintable(jmess.tagName()) << endl;
+    //    std::cerr << "Error: Root tag should be <jmess>: "
+    //	 << qPrintable(jmess.tagName()) << "\n";
     //    return 1;
     //  }
 
@@ -422,8 +424,8 @@ int JMess::parseXML(QString /*xmlInFile*/)
     //      for(QDomNode n_sck = cntn.firstChild();
     //	  !n_sck.isNull(); n_sck = n_sck.nextSibling()) {
     //	QDomElement sck = n_sck.toElement();
-    //	//cout << qPrintable(sck.tagName()) << endl;
-    //	//cout << qPrintable(sck.text()) << endl;
+    //	//cout << qPrintable(sck.tagName()) << "\n";
+    //	//cout << qPrintable(sck.text()) << "\n";
     //	if (sck.tagName() == "output") {
     //	  OutputInput[0] = sck.text();
     //	}
@@ -459,7 +461,7 @@ void JMess::connectPorts(QString /*xmlInFile*/)
     //	if (EEXIST !=
     //        jack_connect(mClient, OutputInput[0].toLatin1(), OutputInput[1].toLatin1()))
     //        {
-    //	  cerr << "WARNING: port: " << qPrintable(OutputInput[0])
+    //	  std::cerr << "WARNING: port: " << qPrintable(OutputInput[0])
     //	       << "and port: " << qPrintable(OutputInput[1])
     //	       << " could not be connected.\n";
     //	}
