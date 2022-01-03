@@ -37,7 +37,7 @@
 
 #include "JackTrip.h"
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #include "JackAudioInterface.h"
 #endif
 #include "Auth.h"
@@ -46,7 +46,7 @@
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 #include "RtAudioInterface.h"
 #endif
 
@@ -66,7 +66,7 @@ using std::endl;
 // the following function has to remain outside the Jacktrip class definition
 // its purpose is to close the app when control c is hit by the user in rtaudio/asio4all
 // mode
-/*if defined __WIN_32__
+/*if defined _WIN32
 void sigint_handler(int sig)
 {
     exit(0);
@@ -174,7 +174,7 @@ void JackTrip::setupAudio(
 
     // Create AudioInterface Client Object
     if (mAudiointerfaceMode == JackTrip::JACK) {
-#ifndef __NO_JACK__
+#ifndef NO_JACK
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
@@ -220,8 +220,8 @@ void JackTrip::setupAudio(
                 << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif              //__NON_JACK__
-#ifdef __NO_JACK__  /// \todo FIX THIS REPETITION OF CODE
-#ifdef __RT_AUDIO__
+#ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
+#ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
@@ -239,7 +239,7 @@ void JackTrip::setupAudio(
 #endif
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
@@ -428,7 +428,7 @@ void JackTrip::startProcess(
 #endif  // endwhere
 )
 {  // signal that catches ctrl c in rtaudio-asio mode
-    /*#if defined (__WIN_32__)
+    /*#if defined (_WIN32)
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
         perror("signal");
         exit(1);
@@ -442,7 +442,7 @@ void JackTrip::startProcess(
         std::cout
             << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)"
             << std::endl;
-#if defined __WIN_32__
+#if defined _WIN32
         // cc fixed windows crash with this print statement!
         // qDebug() << "before mJackTrip->startProcess" << mReceiverBindPort<<
         // mSenderBindPort;
@@ -537,7 +537,7 @@ void JackTrip::startProcess(
 void JackTrip::completeConnection()
 {
     // Have the threads share a single socket that operates at full duplex.
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     SOCKET sock_fd = INVALID_SOCKET;
 #else
     int sock_fd = -1;
@@ -1197,10 +1197,10 @@ active address local_addr.sin_port = htons(bind_port); //set bind port
 
   // Set socket to be reusable, this is platform dependent
   int one = 1;
-#if defined ( __LINUX__ )
+#if defined ( __linux__ )
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 #endif
-#if defined ( __MAC_OSX__ )
+#if defined ( __APPLE__ )
   // This option is not avialable on Linux, and without it MAC OS X
   // has problems rebinding a socket
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));

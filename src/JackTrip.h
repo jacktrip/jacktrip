@@ -50,9 +50,9 @@
 #include "AudioInterface.h"
 #include "DataProtocol.h"
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #include "JackAudioInterface.h"
-#endif  //__NO_JACK__
+#endif  //NO_JACK
 
 #include "AudioTester.h"
 #include "PacketHeader.h"
@@ -423,7 +423,7 @@ class JackTrip : public QObject
     {
         return mNumAudioChansOut; /*return mAudioInterface->getNumOutputChannels();*/
     }
-#ifndef __NO_JACK__
+#ifndef NO_JACK
     QString getAssignedClientName()
     {
         if (mAudioInterface && mAudiointerfaceMode == JackTrip::JACK) {

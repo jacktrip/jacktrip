@@ -48,18 +48,18 @@
 
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
-#ifdef __WIN_32__
+#ifdef _WIN32
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
 #endif
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
 #include <sys/fcntl.h>
 #include <sys/socket.h>  // for POSIX Sockets
 #include <unistd.h>
 #endif
-#if defined(__MAC_OSX__) && !defined(__MANUAL_POLL__)
+#if defined(__APPLE__) && !defined(__MANUAL_POLL__)
 #include <sys/event.h>
-#elif defined(__LINUX__) && !defined(__MANUAL_POLL__)
+#elif defined(__linux__) && !defined(__MANUAL_POLL__)
 #include <sys/epoll.h>
 #endif
 
@@ -110,7 +110,7 @@ UdpDataProtocol::~UdpDataProtocol()
     delete[] mAudioPacket;
     delete[] mFullPacket;
     if (mRunMode == RECEIVER) {
-#ifdef __WIN_32__
+#ifdef _WIN32
         closesocket(mSocket);
 #else
         ::close(mSocket);
@@ -123,7 +123,7 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
     // Don't make the following code conditional on windows
     //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
@@ -135,7 +135,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         }
         // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
     }
 #endif
 
@@ -172,14 +172,14 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
     }
 }
 
-#if defined(__WIN_32__)
+#if defined(_WIN32)
 void UdpDataProtocol::setSocket(SOCKET& socket)
 #else
 void UdpDataProtocol::setSocket(int& socket)
 #endif
 {
     // If we haven't been passed a valid socket, then we should bind one.
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     if (socket == INVALID_SOCKET) {
 #else
     if (socket == -1) {
@@ -198,7 +198,7 @@ void UdpDataProtocol::setSocket(int& socket)
 }
 
 //*******************************************************************************
-#if defined(__WIN_32__)
+#if defined(_WIN32)
 SOCKET UdpDataProtocol::bindSocket()
 #else
 int UdpDataProtocol::bindSocket()
@@ -206,7 +206,7 @@ int UdpDataProtocol::bindSocket()
 {
     QMutexLocker locker(&sUdpMutex);
 
-#if defined __WIN_32__
+#if defined _WIN32
     WORD wVersionRequested;
     WSADATA wsaData;
     int err;
@@ -233,7 +233,7 @@ int UdpDataProtocol::bindSocket()
     SOCKET sock_fd;
 #endif
 
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
     int sock_fd;
 #endif
 
@@ -261,15 +261,15 @@ int UdpDataProtocol::bindSocket()
 
     // Set socket to be reusable, this is platform dependent
     int one = 1;
-#if defined(__LINUX__)
+#if defined(__linux__)
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 #endif
-#if defined(__MAC_OSX__)
+#if defined(__APPLE__)
     // This option is not avialable on Linux, and without it MAC OS X
     // has problems rebinding a socket
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     // make address/port reusable
     setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
 #endif
@@ -302,11 +302,11 @@ int UdpDataProtocol::bindSocket()
         if ((::connect(sock_fd, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr))) < 0) {
             throw std::runtime_error("ERROR: Could not connect UDP socket");
         }
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
         // if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
         //{ throw std::runtime_error("ERROR: Could shutdown SHUT_WR UDP socket"); }
 #endif
-#if defined __WIN_32__
+#if defined _WIN32
         /*int shut_sr = shutdown(sock_fd, SD_SEND);  //shut down sender's receive function
         if ( shut_sr< 0)
         {
@@ -367,7 +367,7 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 //*******************************************************************************
 int UdpDataProtocol::sendPacket(const char* buf, const size_t n)
 {
-    /*#if defined (__WIN_32__)
+    /*#if defined (_WIN32)
     //Alternative windows specific code that uses winsock equivalents of the bsd socket
 functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf = (char
 *)buf;
@@ -435,7 +435,7 @@ void UdpDataProtocol::run()
         cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
         cout << gPrintSeparator << endl;
         // Make sure our socket is in non-blocking mode.
-#ifdef __WIN_32__
+#ifdef _WIN32
         u_long nonblock = 1;
         ioctlsocket(mSocket, FIONBIO, &nonblock);
 #else
@@ -492,7 +492,7 @@ void UdpDataProtocol::run()
     // std::endl;
     // Anton Runov: making setRealtimeProcessPriority optional
     if (mUseRtPriority) {
-#if defined(__MAC_OSX__)
+#if defined(__APPLE__)
         setRealtimeProcessPriority(mJackTrip->getBufferSizeInSamples(),
                                    mJackTrip->getSampleRate());
 #else
@@ -633,8 +633,8 @@ void UdpDataProtocol::run()
         mStatCount               = 0;
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
-#if !defined (__MANUAL_POLL__) && !defined (__WIN_32__)
-#if defined (__MAC_OSX__)
+#if !defined (__MANUAL_POLL__) && !defined (_WIN32)
+#if defined (__APPLE__)
         int kq = kqueue();
         struct kevent change;
         struct kevent event;
@@ -660,7 +660,7 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-#if defined (__WIN_32__) || defined (__MANUAL_POLL__)
+#if defined (_WIN32) || defined (__MANUAL_POLL__)
             waitForReady(60000); //60 seconds
             receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                     full_packet_size, current_seq_num, last_seq_num,
@@ -682,7 +682,7 @@ void UdpDataProtocol::run()
         */
             //----------------------------------------------------------------------------------
 
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
             int n = kevent(kq, &change, 1, &event, 1, &timeout);
 #else
             int n = epoll_wait(epollfd, &event, 1, 10);
@@ -697,12 +697,12 @@ void UdpDataProtocol::run()
                 emit signalWaitingTooLong(waitTime);
             }
         }
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
         close(kq);
 #else
         close(epollfd);
 #endif
-#endif // __WIN_32__ || __MANUAL_POLL__
+#endif // _WIN32 || __MANUAL_POLL__
         break; }
 
     case SENDER : {
@@ -983,7 +983,7 @@ bool UdpDataProtocol::datagramAvailable()
     //Currently using a simplified version of the way QUdpSocket checks for datagrams.
     //TODO: Consider changing to use poll() or select().
     char c;
-#if defined(__WIN_32__)
+#if defined(_WIN32)
     //Need to use the winsock version of the function for MSG_PEEK
     WSABUF buffer;
     buffer.buf  = &c;

@@ -50,7 +50,7 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #include "Patcher.h"
 #endif
 #include "Auth.h"
@@ -78,7 +78,7 @@ class UdpHubListener : public QObject
     /// \brief Stops the execution of the Thread
     void stop() { mStopped = true; }
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
     void registerClientWithPatcher(QString& clientName);
     void unregisterClientWithPatcher(QString& clientName);
 #endif
@@ -181,7 +181,7 @@ class UdpHubListener : public QObject
 
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
-#ifndef __NO_JACK__
+#ifndef NO_JACK
     Patcher mPatcher;
 #endif
     bool mStereoUpmix;
@@ -205,7 +205,7 @@ class UdpHubListener : public QObject
     void setWAIR(int b) { mWAIR = b; }
     bool isWAIR() { return mWAIR; }
 #endif  // endwhere
-#ifndef __NO_JACK__
+#ifndef NO_JACK
     void connectPatch(bool spawn, const QString& clientName);
 #endif
 
@@ -219,7 +219,7 @@ class UdpHubListener : public QObject
     void setHubPatch(unsigned int p)
     {
         mHubPatch = p;
-#ifndef __NO_JACK__
+#ifndef NO_JACK
         mPatcher.setPatchMode(static_cast<JackTrip::hubConnectionModeT>(p));
 #endif
         // Set the correct audio port connection setting for our chosen patch mode.
@@ -232,7 +232,7 @@ class UdpHubListener : public QObject
     unsigned int getHubPatch() { return mHubPatch; }
     
     void setStereoUpmix([[maybe_unused]] bool upmix) {
-#ifndef __NO_JACK__
+#ifndef NO_JACK
         mPatcher.setStereoUpmix(upmix);
 #endif
     }

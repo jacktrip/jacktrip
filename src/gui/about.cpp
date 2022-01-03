@@ -66,7 +66,7 @@ About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
     } else {
         m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%BUILD%", ""));
     }
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     m_ui->aboutImage->setPixmap(QPixmap(":/qjacktrip/about@2x.png"));
 #endif
 

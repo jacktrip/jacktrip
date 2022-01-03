@@ -56,14 +56,14 @@
 
 #include "jacktrip_globals.h"
 
-#ifdef __WIN_32__
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <termios.h>
 #include <unistd.h>
 #endif
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 #include "RtAudioInterface.h"
 #endif
 
@@ -146,7 +146,7 @@ void Settings::parseInput(int argc, char** argv)
         {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
         {"appendthreadid", no_argument, NULL,
          OPT_APPENDTHREADID},  // Append thread id to client names
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         {"rtaudio", no_argument, NULL, 'R'},      // Run in JamLink mode
         {"srate", required_argument, NULL, 'T'},  // Set Sample Rate
         {"deviceid", required_argument, NULL,
@@ -373,7 +373,7 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_APPENDTHREADID:
             mAppendThreadID = true;
             break;
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         case 'R':  // RtAudio
             //-------------------------------------------------------
             mUseJack = false;
@@ -784,7 +784,7 @@ void Settings::printUsage()
             "(sources) mixing at Hub Server (otherwise 2 assumed by -O)"
          << endl;
     cout << endl;
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " -R, --rtaudio                            Use system's default sound system "
             "instead of Jack"
@@ -842,7 +842,7 @@ void Settings::printUsage()
     // clang-format on
 }
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 void Settings::setDevicesByString(std::string nameArg)
 {
     size_t commaPos;
@@ -971,7 +971,7 @@ JackTrip* Settings::getConfiguredJackTrip()
     }
 
     // Set RtAudio
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     if (!mUseJack) { jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO); }
 
     // Change default Sampling Rate
@@ -1090,7 +1090,7 @@ return jackTrip;
 
 void Settings::disableEcho(bool disabled)
 {
-#ifdef __WIN_32__
+#ifdef _WIN32
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD mode;
     GetConsoleMode(hStdin, &mode);

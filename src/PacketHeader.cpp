@@ -37,7 +37,7 @@
 
 #include "PacketHeader.h"
 
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
 #include <sys/time.h>
 #endif
 
@@ -54,7 +54,7 @@ using std::endl;
 // below is the gettimeofday definition for windows: this function is not defined in
 // sys/time.h as it is in unix for more info check:
 // http://www.halcode.com/archives/2008/08/26/retrieving-system-time-gettimeofday/
-#if defined __WIN_32__
+#if defined _WIN32
 #ifdef __cplusplus
 // void GetSystemTimeAsFileTime(FILETIME*);
 inline int gettimeofday(struct timeval* p, void* tz /* IGNORED */)

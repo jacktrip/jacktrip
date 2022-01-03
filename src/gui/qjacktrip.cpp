@@ -43,7 +43,7 @@
 #include "weak_libjack.h"
 #endif
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 #include "RtAudio.h"
 #endif
 
@@ -227,7 +227,7 @@ QJackTrip::QJackTrip(QWidget* parent)
     m_ui->upmixCheckBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [=](int index) {
                 if (index == 1) {
@@ -288,7 +288,7 @@ QJackTrip::QJackTrip(QWidget* parent)
 #ifdef USE_WEAK_JACK
     // Check if Jack is actually available
     if (have_libjack() != 0) {
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         m_ui->backendComboBox->setCurrentIndex(1);
         m_ui->backendComboBox->setEnabled(false);
         m_ui->backendLabel->setEnabled(false);
@@ -324,7 +324,7 @@ QJackTrip::QJackTrip(QWidget* parent)
             "this.)");
         msgBox.setWindowTitle("JACK Not Available");
         msgBox.exec();
-#endif  // __RT_AUDIO__
+#endif  // RT_AUDIO
     }
 #endif  // USE_WEAK_JACK
 
@@ -395,7 +395,7 @@ void QJackTrip::processFinished()
         return;
     }
     m_jackTripRunning = false;
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     m_noNap.enableNap();
 #endif
     m_ui->disconnectButton->setEnabled(false);
@@ -482,7 +482,7 @@ void QJackTrip::chooseRunType(int index)
             m_ui->optionsTabWidget->removeTab(index);
         }
         authFilesChanged();
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         index = findTab("Audio Backend");
         if (index != -1) {
             m_ui->optionsTabWidget->removeTab(index);
@@ -499,7 +499,7 @@ void QJackTrip::chooseRunType(int index)
         if (findTab("Plugins") == -1) {
             m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, "Plugins");
         }
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         if (findTab("Audio Backend") == -1) {
             m_ui->optionsTabWidget->insertTab(2, m_ui->backendTab, "Audio Backend");
         }
@@ -747,7 +747,7 @@ void QJackTrip::start()
                 m_jackTrip->setUnderRunMode(JackTrip::ZEROS);
             }
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
             if (m_ui->backendComboBox->currentIndex() == 1) {
                 m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
                 m_jackTrip->setSampleRate(
@@ -869,7 +869,7 @@ void QJackTrip::start()
     m_ui->addressComboBox->insertItem(0, serverAddress);
     m_ui->addressComboBox->setCurrentIndex(0);
 
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     m_noNap.disableNap();
 #endif
 }
@@ -950,7 +950,7 @@ void QJackTrip::migrateSettings()
     // Function to migrate settings for users who previously had QJackTrip installed.
     QSettings settings;
     if (settings.value("Migrated", false).toBool()) { return; }
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     QSettings oldSettings("psi-borg.org", "QJackTrip");
 #else
     QSettings oldSettings("psi-borg", "QJackTrip");
@@ -1009,7 +1009,7 @@ void QJackTrip::loadSettings()
     // Need to get this here so it isn't overwritten by the previous section.
     m_ui->addressComboBox->setCurrentText(settings.value("LastAddress", "").toString());
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     settings.beginGroup("Audio");
     m_ui->backendComboBox->setCurrentIndex(settings.value("Backend", 0).toInt());
     m_ui->sampleRateComboBox->setCurrentText(
@@ -1130,7 +1130,7 @@ void QJackTrip::saveSettings()
     }
     settings.endGroup();
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     settings.beginGroup("Audio");
     settings.setValue("Backend", m_ui->backendComboBox->currentIndex());
     settings.setValue("SampleRate", m_ui->sampleRateComboBox->currentText());
@@ -1417,7 +1417,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
 
     if (m_ui->realTimeCheckBox->isChecked()) { commandLine.append(" --udprt"); }
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     if (m_ui->typeComboBox->currentIndex() != HUB_SERVER
         && m_ui->backendComboBox->currentIndex() == 1) {
         commandLine.append(" --rtaudio");
@@ -1441,7 +1441,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
     return commandLine;
 }
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
 {
     RtAudio audio;

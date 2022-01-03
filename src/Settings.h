@@ -44,9 +44,9 @@
 
 #include "DataProtocol.h"
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #include "JackAudioInterface.h"
-#endif  //__NO_JACK__
+#endif  //NO_JACK
 
 #include "AudioTester.h"
 #include "Effects.h"
@@ -70,7 +70,7 @@ class Settings : public QObject
 
     /// \brief Prints usage help
     void printUsage();
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     void setDevicesByString(std::string nameArg);
 #endif
 
@@ -116,7 +116,7 @@ class Settings : public QObject
     bool mChangeDefaultSR    = false;  ///< Change Default Sampling Rate
     bool mChangeDefaultID    = 0;      ///< Change Default device ID
     bool mChangeDefaultBS    = false;  ///< Change Default Buffer Size
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     unsigned int mSampleRate;
     unsigned int mDeviceID;
     unsigned int mAudioBufferSize;

@@ -52,7 +52,7 @@
 #include "UdpHubListener.h"
 #include "jacktrip_globals.h"
 
-#ifdef __WIN_32__
+#ifdef _WIN32
 #include <windows.h>
 #include <psapi.h>
 #include <tlhelp32.h>
@@ -97,7 +97,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             return new QCoreApplication(argc, argv);
         }
 #else
-#ifdef __LINUX__
+#ifdef __linux__
         // Check if X or Wayland environment variables are set.
         if (std::getenv("WAYLAND_DISPLAY") == nullptr
             && std::getenv("DISPLAY") == nullptr) {
@@ -108,7 +108,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
                       << std::endl;
             std::exit(1);
         }
-#endif  // __LINUX__
+#endif  // __linux__
         return new QApplication(argc, argv);
 #endif  // NO_GUI
     } else {
@@ -123,7 +123,7 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
     std::cerr << msg.toStdString() << std::endl;
 }
 
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
 static int setupUnixSignalHandler(void (*handler)(int))
 {
     // Setup our SIGINT handler.
@@ -215,12 +215,12 @@ int main(int argc, char* argv[])
     QScopedPointer<QJackTrip> window;
     if (qobject_cast<QApplication*>(app.data())) {
         // Start the GUI if there are no command line options.
-#ifdef __WIN_32__
+#ifdef _WIN32
         // Remove the console that appears if we're on windows and not running from a command line.
         if (!isRunFromCmd()) {
             FreeConsole();
         }
-#endif  // __WIN_32__
+#endif  // _WIN32
         app->setApplicationName("QJackTrip");
         
         QCommandLineParser parser;
@@ -256,7 +256,7 @@ int main(int argc, char* argv[])
                                  Qt::QueuedConnection);
                 QObject::connect(udpHub.data(), &UdpHubListener::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
                 setupUnixSignalHandler(UdpHubListener::sigIntHandler);
 #else
             isHubServer = true;
@@ -273,7 +273,7 @@ int main(int argc, char* argv[])
                                  Qt::QueuedConnection);
                 QObject::connect(jackTrip.data(), &JackTrip::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined(__LINUX__) || defined(__MAC_OSX__)
+#if defined(__linux__) || defined(__APPLE__)
                 setupUnixSignalHandler(JackTrip::sigIntHandler);
 #else
             std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;

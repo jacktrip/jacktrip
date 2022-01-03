@@ -49,7 +49,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #include "JMess.h"
 #endif
 
@@ -532,7 +532,7 @@ int UdpHubListener::getPoolID(QString address, uint16_t port)
     return -1;
 }
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 void UdpHubListener::registerClientWithPatcher(QString& clientName)
 {
     cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads
@@ -553,7 +553,7 @@ void UdpHubListener::unregisterClientWithPatcher(QString& clientName)
 #endif                                 // endwhere
     connectPatch(false, clientName);
 }
-#endif  // __NO_JACK__
+#endif  // NO_JACK
 
 //*******************************************************************************
 int UdpHubListener::releaseThread(int id)
@@ -586,7 +586,7 @@ void UdpHubListener::releaseDuplicateThreads(JackTripWorker* worker,
     worker->setClientPort(actual_peer_port);
 }
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #ifdef WAIR  // wair
 //*******************************************************************************
 void UdpHubListener::connectMesh(bool spawn)
@@ -634,7 +634,7 @@ void UdpHubListener::connectPatch(bool spawn, const QString& clientName)
         }
     }
 }
-#endif  // __NO_JACK__
+#endif  // NO_JACK
 
 void UdpHubListener::stopAllThreads()
 {

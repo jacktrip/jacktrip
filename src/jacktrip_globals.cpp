@@ -37,20 +37,20 @@
 
 #include <iostream>
 
-#if defined(__LINUX__)
+#if defined(__linux__)
 #include <sched.h>
 #include <sys/types.h>
 #include <unistd.h>
-#endif  //__LINUX__
+#endif  //__linux__
 
-#if defined(__MAC_OSX__)
+#if defined(__APPLE__)
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
 #include <sys/qos.h>
-#endif  //__MAC_OSX__
+#endif  //__APPLE__
 
-#if defined(__WIN_32__)
+#if defined(_WIN32)
 // Windows libraries that rely on the ordering of includes…
 // clang-format off
 #include <windows.h>
@@ -59,7 +59,7 @@
 #endif
 #include "jacktrip_globals.h"
 
-#if defined(__MAC_OSX__)
+#if defined(__APPLE__)
 
 // The following function is taken from the chromium source code
 // https://github.com/chromium/chromium/blob/master/base/threading/platform_thread_mac.mm
@@ -149,9 +149,9 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
     return;
 }
 
-#endif  //__MAC_OSX__
+#endif  //__APPLE__
 
-#if defined(__LINUX__)
+#if defined(__linux__)
 //*******************************************************************************
 void setRealtimeProcessPriority()
 {
@@ -168,9 +168,9 @@ void setRealtimeProcessPriority()
         ;
     }
 }
-#endif  //__LINUX__
+#endif  //__linux__
 
-#if defined(__WIN_32__)
+#if defined(_WIN32)
 void setRealtimeProcessPriority()
 {
     if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0) {
@@ -180,4 +180,4 @@ void setRealtimeProcessPriority()
         std::cerr << "Failed to set thread priority." << std::endl;
     }
 }
-#endif  //__WIN_32__
+#endif  //_WIN32

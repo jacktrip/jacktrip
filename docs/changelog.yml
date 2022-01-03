@@ -1,7 +1,9 @@
 - Version: "1.5.1"
   Date: 2022-01-03
   Description:
-  - (fixed) [Meson] Only add weakjack include directory when enabled
+  - (update) [Meson] Only add weakjack include directory when enabled
+  - (update) Remove reserved macro identifiers // use predefined macros
+  - (update) Remove 'using namespace std' and add clang-tidy check
 - Version: "1.5.0"
   Date: 2022-01-03
   Description:

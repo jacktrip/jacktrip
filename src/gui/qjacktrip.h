@@ -41,11 +41,11 @@
 #include "../UdpHubListener.h"
 #include "messageDialog.h"
 
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
 #include "NoNap.h"
 #endif
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 #include <QComboBox>
 #endif
 
@@ -102,7 +102,7 @@ class QJackTrip : public QMainWindow
     void loadSettings();
     void saveSettings();
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     void populateDeviceMenu(QComboBox* menu, bool isInput);
 #endif
 
@@ -135,7 +135,7 @@ class QJackTrip : public QMainWindow
     int m_argc;
     bool m_hideWarning;
 
-#ifdef __MAC_OSX__
+#ifdef __APPLE__
     NoNap m_noNap;
 #endif
 };
