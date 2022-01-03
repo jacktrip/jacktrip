@@ -224,6 +224,7 @@ QJackTrip::QJackTrip(QWidget* parent)
     //(loadSettings will take care of the UI in all other cases.)
     m_ui->basePortLabel->setVisible(false);
     m_ui->basePortSpinBox->setVisible(false);
+    m_ui->upmixCheckBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
 
 #ifdef __RT_AUDIO__
@@ -473,6 +474,7 @@ void QJackTrip::chooseRunType(int index)
         m_ui->timeoutCheckBox->setVisible(false);
         m_ui->autoPatchComboBox->setVisible(true);
         m_ui->autoPatchLabel->setVisible(true);
+        m_ui->upmixCheckBox->setVisible(true);
         m_ui->requireAuthGroupBox->setVisible(true);
         advancedOptionsForHubServer(true);
         int index = findTab("Plugins");
@@ -489,6 +491,7 @@ void QJackTrip::chooseRunType(int index)
     } else {
         m_ui->autoPatchComboBox->setVisible(false);
         m_ui->autoPatchLabel->setVisible(false);
+        m_ui->upmixCheckBox->setVisible(false);
         m_ui->requireAuthGroupBox->setVisible(false);
         m_ui->channelGroupBox->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
@@ -660,6 +663,7 @@ void QJackTrip::start()
             }
 
             m_udpHub->setHubPatch(hubConnectionMode);
+            m_udpHub->setStereoUpmix(m_ui->upmixCheckBox->isChecked());
 
             if (m_ui->zeroCheckBox->isChecked()) {
                 // Set buffers to zero when underrun
@@ -977,6 +981,7 @@ void QJackTrip::loadSettings()
     }
 
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
+    m_ui->upmixCheckBox->setChecked(settings.value("StereoUpmix", false).toBool());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
     m_ui->clientNameEdit->setText(settings.value("ClientName", "").toString());
@@ -1102,6 +1107,7 @@ void QJackTrip::saveSettings()
     settings.setValue("ChannelsSend", m_ui->channelSendSpinBox->value());
     settings.setValue("ChannelsRecv", m_ui->channelRecvSpinBox->value());
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
+    settings.setValue("StereoUpmix", m_ui->upmixCheckBox->isChecked());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
     settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
     settings.setValue("ClientName", m_ui->clientNameEdit->text());
@@ -1253,6 +1259,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
         if (hubConnectionMode > 0) {
             commandLine.append(QString(" -p %1").arg(hubConnectionMode));
+        }
+        if (m_ui->upmixCheckBox->isChecked()) {
+            commandLine.append(" -u");
         }
     } else {
         if (m_ui->channelSendSpinBox->value() != gDefaultNumInChannels

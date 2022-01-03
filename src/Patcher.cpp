@@ -36,12 +36,16 @@
  */
 
 #include "Patcher.h"
-
-Patcher::Patcher() : m_patchMode(JackTrip::SERVERTOCLIENT), m_jackClient(nullptr) {}
+#include <QVector>
 
 void Patcher::setPatchMode(JackTrip::hubConnectionModeT patchMode)
 {
     m_patchMode = patchMode;
+}
+
+void Patcher::setStereoUpmix(bool upmix)
+{
+    m_steroUpmix = upmix;
 }
 
 void Patcher::registerClient(const QString& clientName)
@@ -71,29 +75,52 @@ void Patcher::registerClient(const QString& clientName)
     outPorts = jack_get_ports(m_jackClient, NULL, NULL, JackPortIsOutput);
     inPorts  = jack_get_ports(m_jackClient, NULL, NULL, JackPortIsInput);
 
-    // Start with our receiving ports.
+    // Find the ports belonging to our client.
+    QVector<const char*> clientOutPorts;
+    QVector<const char*> clientInPorts;
+    
     for (int i = 0; outPorts[i]; i++) {
-        QString client = QString(outPorts[i]).section(":", 0, 0);
-        if (client == clientName) {
-            QString channel = QString(outPorts[i]).section("_", -1, -1);
-            for (int j = 0; inPorts[j]; j++) {
-                // First check if this is one of our other clients. (Fan out/in and full
-                // mix.)
-                if (m_patchMode == JackTrip::CLIENTFOFI
-                    || m_patchMode == JackTrip::FULLMIX) {
-                    if (m_clients.contains(QString(inPorts[j]).section(":", 0, 0))
-                        && QString(inPorts[j]).section("_", -1, -1) == channel
-                        && !QString(outPorts[i]).contains("broadcast")) {
-                        jack_connect(m_jackClient, outPorts[i], inPorts[j]);
+        // Exclude broadcast ports.
+        if (QString(outPorts[i]).section(":", 0, 0) == clientName 
+            && !QString(outPorts[i]).contains("broadcast")) {
+            clientOutPorts.append(outPorts[i]);
+        }
+    }
+
+    for (int i = 0; inPorts[i]; i++) {
+        if (QString(inPorts[i]).section(":", 0, 0) == clientName) {
+            clientInPorts.append(inPorts[i]);
+        }
+    }
+
+    bool clientIsMono = (clientOutPorts.count() == 1);
+
+    // Start with our receiving ports.
+    for (int i = 0; i < clientOutPorts.count(); i++) {
+        QString channel = QString(clientOutPorts.at(i)).section("_", -1, -1);
+        for (int j = 0; inPorts[j]; j++) {
+            QString otherClient = QString(inPorts[j]).section(":", 0, 0);
+            QString otherChannel = QString(inPorts[j]).section("_", -1, -1);
+
+            // First check if this is one of our other clients. (Fan out/in and full mix.)
+            if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
+                if (m_clients.contains(otherClient) && otherChannel == channel) {
+                    jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
+                } else if (m_steroUpmix && clientIsMono) {
+                    // Deal with the special case of stereo upmix
+                    if (m_clients.contains(otherClient) && otherChannel == "2") {
+                        jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
                     }
                 }
-                // Then check if it's our registering client. (Client Echo and full mix.)
-                if (m_patchMode == JackTrip::CLIENTECHO
-                    || m_patchMode == JackTrip::FULLMIX) {
-                    if (QString(inPorts[j]).section(":", 0, 0) == clientName
-                        && QString(inPorts[j]).section("_", -1, -1) == channel
-                        && !QString(outPorts[i]).contains("broadcast")) {
-                        jack_connect(m_jackClient, outPorts[i], inPorts[j]);
+            }
+
+            // Then check if it's our registering client. (Client Echo and full mix.)
+            if (m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::FULLMIX) {
+                if (otherClient == clientName && otherChannel == channel) {
+                    jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
+                } else if (m_steroUpmix && clientIsMono) {
+                    if (otherClient == clientName && otherChannel == "2") {
+                        jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
                     }
                 }
             }
@@ -101,17 +128,18 @@ void Patcher::registerClient(const QString& clientName)
     }
 
     // Then our sending ports. We only need to check for other clients here.
-    //(Any loopback connections will have been made in the previous loop.)
+    // (Any loopback connections will have been made in the previous loop.)
     if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
-        for (int i = 0; inPorts[i]; i++) {
-            QString client = QString(inPorts[i]).section(":", 0, 0);
-            if (client == clientName) {
-                QString channel = QString(inPorts[i]).section("_", -1, -1);
-                for (int j = 0; outPorts[j]; j++) {
-                    if (m_clients.contains(QString(outPorts[j]).section(":", 0, 0))
-                        && QString(outPorts[j]).section("_", -1, -1) == channel
-                        && !QString(outPorts[j]).contains("broadcast")) {
-                        jack_connect(m_jackClient, outPorts[j], inPorts[i]);
+        for (int i = 0; i < clientInPorts.count(); i++) {
+            QString channel = QString(clientInPorts.at(i)).section("_", -1, -1);
+            for (int j = 0; outPorts[j]; j++) {
+                QString otherClient = QString(outPorts[j]).section(":", 0, 0);
+                QString otherChannel = QString(outPorts[j]).section("_", -1, -1);
+                if (m_clients.contains(otherClient)
+                    && !QString(outPorts[j]).contains("broadcast")) {
+                    if (otherChannel == channel || 
+                        (m_steroUpmix && channel == "2" && m_monoClients.contains(otherClient))) {
+                        jack_connect(m_jackClient, outPorts[j], clientInPorts.at(i));
                     }
                 }
             }
@@ -119,6 +147,9 @@ void Patcher::registerClient(const QString& clientName)
     }
 
     m_clients.append(clientName);
+    if (clientIsMono) {
+        m_monoClients.append(clientName);
+    }
     jack_free(outPorts);
     jack_free(inPorts);
 }
@@ -127,6 +158,7 @@ void Patcher::unregisterClient(const QString& clientName)
 {
     QMutexLocker locker(&m_connectionMutex);
     m_clients.removeAll(clientName);
+    m_monoClients.removeAll(clientName);
 }
 
 void Patcher::shutdownCallback(void* arg)

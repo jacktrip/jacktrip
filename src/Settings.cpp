@@ -163,6 +163,7 @@ void Settings::parseInput(int argc, char** argv)
         {"verbose", no_argument, NULL, 'V'},  // Verbose mode
         {"hubpatch", required_argument, NULL,
          'p'},  // Set hubConnectionMode for auto patch in Jack
+        {"upmix", no_argument, NULL, 'u'}, // Upmix mono clients when patching
         {"iostat", required_argument, NULL, 'I'},     // Set IO stat timeout
         {"iostatlog", required_argument, NULL, 'G'},  // Set IO stat log file
         {"effects", required_argument, NULL,
@@ -199,7 +200,7 @@ void Settings::parseInput(int argc, char** argv)
     int ch;
     while (
         (ch = getopt_long(argc, argv,
-                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:DvVhI:G:f:O:a:x:A",
+                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uDvVhI:G:f:O:a:x:A",
                           longopts, NULL))
         != -1)
         switch (ch) {
@@ -449,6 +450,9 @@ void Settings::parseInput(int argc, char** argv)
                           << " is not supported." << endl;
                 std::exit(1);
             }
+            break;
+        case 'u':
+            mStereoUpmix = true;
             break;
         case 'I':  // IO Stat timeout
             //-------------------------------------------------------
@@ -732,6 +736,9 @@ void Settings::printUsage()
             "2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no "
             "auto patching (default: 0)"
          << endl;
+    cout << " -u, --upmix                              Upmix mono clients to stereo when "
+            "patching in HUB SERVER mode"
+         << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun "
             "occurs (default: wavetable)"
          << endl;
@@ -869,6 +876,7 @@ UdpHubListener* Settings::getConfiguredHubServer()
     udpHub->setWAIR(mWAIR);
 #endif  // endwhere
     udpHub->setHubPatch(mHubConnectionMode);
+    udpHub->setStereoUpmix(mStereoUpmix);
     // Connect default audio ports must be set after the connection mode.
     udpHub->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
     // Set buffers to zero when underrun
