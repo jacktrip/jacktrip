@@ -1,3 +1,7 @@
+- Version: "1.5.0"
+  Date: 2022-01-03
+  Description:
+  - (added) option to upmix mono clients to stereo in hub server mode patching
 - Version: "1.4.3"
   Date: 2021-12-18
   Description:
