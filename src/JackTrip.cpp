@@ -46,7 +46,7 @@
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 #include "RtAudioInterface.h"
 #endif
 
@@ -221,7 +221,7 @@ void JackTrip::setupAudio(
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif              //__NON_JACK__
 #ifdef __NO_JACK__  /// \todo FIX THIS REPETITION OF CODE
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
@@ -239,7 +239,7 @@ void JackTrip::setupAudio(
 #endif
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);

@@ -36,7 +36,7 @@ DEFINES += WAIRTOHUB
 # configuration with RtAudio
 rtaudio|bundled_rtaudio {
   message(Building with RtAudio)
-  DEFINES += __RT_AUDIO__
+  DEFINES += RT_AUDIO
 }
 # Configuration without Jack
 nojack {

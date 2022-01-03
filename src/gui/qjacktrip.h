@@ -45,7 +45,7 @@
 #include "NoNap.h"
 #endif
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
 #include <QComboBox>
 #endif
 
@@ -102,7 +102,7 @@ class QJackTrip : public QMainWindow
     void loadSettings();
     void saveSettings();
 
-#ifdef __RT_AUDIO__
+#ifdef RT_AUDIO
     void populateDeviceMenu(QComboBox* menu, bool isInput);
 #endif
 

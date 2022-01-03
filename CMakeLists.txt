@@ -13,7 +13,7 @@ if (nogui)
 endif ()
 
 if (rtaudio)
-  add_compile_definitions(__RT_AUDIO__)
+  add_compile_definitions(RT_AUDIO)
 endif ()
 
 if (weakjack)

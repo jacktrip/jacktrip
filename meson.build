@@ -107,7 +107,7 @@ defines += '-DQT_OPENSOURCE'
 
 rtaudio_dep = dependency('rtaudio', required: get_option('rtaudio'))
 if rtaudio_dep.found() == true
-	defines += '-D__RT_AUDIO__'
+	defines += '-DRT_AUDIO'
 	src += 'src/RtAudioInterface.cpp'
 	deps += rtaudio_dep
 endif
