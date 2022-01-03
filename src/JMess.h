@@ -53,8 +53,6 @@
 
 #include <QMutexLocker>
 
-using namespace std;
-
 const int Indent = 2;
 
 //-------------------------------------------------------------------------------
