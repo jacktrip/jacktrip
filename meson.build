@@ -27,7 +27,7 @@ elif host_machine.system() == 'windows'
 	defines += '-DNOMINMAX'
 endif
 
-incdir = include_directories('externals/weakjack')
+incdirs = []
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
@@ -73,6 +73,7 @@ else
 		'src/Patcher.cpp']
 	moc_h += ['src/Patcher.h']
 	if get_option('weakjack') == true
+		incdirs += include_directories('externals/weakjack')
 		src += 'externals/weakjack/weak_libjack.c'
 		defines += '-DUSE_WEAK_JACK'
 		c_defines += '-DUSE_WEAK_JACK'
@@ -144,7 +145,7 @@ endif
 
 subdir('linux')
 
-jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdir, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
+jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
 help2man = find_program('help2man', required: false)
 if not (host_machine.system() == 'windows')
