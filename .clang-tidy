@@ -1,1 +1,1 @@
-Checks: '-*,modernize-deprecated-headers,modernize-loop-convert'
+Checks: '-*,modernize-deprecated-headers,modernize-loop-convert,google-build-using-namespace'
