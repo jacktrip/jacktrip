@@ -40,7 +40,7 @@ rtaudio|bundled_rtaudio {
 }
 # Configuration without Jack
 nojack {
-  DEFINES += __NO_JACK__
+  DEFINES += NO_JACK
 }
 
 # for plugins

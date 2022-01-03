@@ -61,7 +61,7 @@ qres = []
 deps = [dependency('threads')]
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
-	defines += '-D__NO_JACK__'
+	defines += '-DNO_JACK'
 else
 	src += 	['src/JackAudioInterface.cpp',
 		'src/JMess.cpp',

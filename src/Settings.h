@@ -44,9 +44,9 @@
 
 #include "DataProtocol.h"
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #include "JackAudioInterface.h"
-#endif  //__NO_JACK__
+#endif  //NO_JACK
 
 #include "AudioTester.h"
 #include "Effects.h"

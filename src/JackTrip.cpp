@@ -37,7 +37,7 @@
 
 #include "JackTrip.h"
 
-#ifndef __NO_JACK__
+#ifndef NO_JACK
 #include "JackAudioInterface.h"
 #endif
 #include "Auth.h"
@@ -174,7 +174,7 @@ void JackTrip::setupAudio(
 
     // Create AudioInterface Client Object
     if (mAudiointerfaceMode == JackTrip::JACK) {
-#ifndef __NO_JACK__
+#ifndef NO_JACK
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
@@ -220,7 +220,7 @@ void JackTrip::setupAudio(
                 << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif              //__NON_JACK__
-#ifdef __NO_JACK__  /// \todo FIX THIS REPETITION OF CODE
+#ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
