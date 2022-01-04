@@ -16,12 +16,6 @@ compiler = meson.get_compiler('cpp')
 
 defines = ['-DWAIRTOHUB']
 c_defines = []
-if host_machine.system() == 'windows'
-	defines += '-D_WIN32_WINNT=0x0600'
-	defines += '-DWIN32_LEAN_AND_MEAN'
-	defines += '-DNOMINMAX'
-endif
-
 incdirs = []
 
 src = [	'src/DataProtocol.cpp',
@@ -57,8 +51,11 @@ moc_h = ['src/DataProtocol.h',
 
 ui_h = []
 qres = []
-
 deps = [dependency('threads')]
+
+subdir('win')
+subdir('linux')
+
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
 	defines += '-DNO_JACK'
@@ -112,21 +109,6 @@ if rtaudio_dep.found() == true
 	deps += rtaudio_dep
 endif
 
-if host_machine.system() == 'windows'
-	deps += compiler.find_library('ws2_32', required: true)
-endif
-
-if compiler.get_id() == 'msvc'
-	opt_var = cmake.subproject_options()
-	if get_option('buildtype') == 'release'
-		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
-	else
-		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
-	endif
-	wingetopt = cmake.subproject('wingetopt', options: opt_var)
-	deps += wingetopt.dependency('wingetopt')
-endif
-
 if host_machine.system() == 'darwin'
 	src += ['src/gui/NoNap.mm']
 	# Adding CoreAudio here is a workaround and should be removed
@@ -137,8 +119,6 @@ if host_machine.system() == 'darwin'
 	deps += apple_dep
 	add_languages('objcpp')
 endif
-
-subdir('linux')
 
 jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
