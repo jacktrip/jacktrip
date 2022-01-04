@@ -131,7 +131,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         QHostInfo info = QHostInfo::fromName(peerHostOrIP);
         if (!info.addresses().isEmpty()) {
             // use the first IP address
-            mPeerAddress = info.addresses().first();
+            mPeerAddress = info.addresses().constFirst();
         }
         // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
