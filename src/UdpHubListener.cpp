@@ -75,7 +75,8 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
     , mTotalRunningThreads(0)
     , mHubPatchDescriptions({"server-to-clients", "client loopback",
                              "client fan out/in but not loopback", "reserved for TUB",
-                             "full mix", "no auto patching"})
+                             "full mix", "no auto patching", "client fan out/in, including server",
+                             "full mix, including server"})
     , m_connectDefaultAudioPorts(false)
     , mIOStatTimeout(0)
 {

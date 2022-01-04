@@ -67,7 +67,10 @@ class Patcher : public QObject
    private:
     QStringList m_clients;
     QStringList m_monoClients;
-    JackTrip::hubConnectionModeT m_patchMode = JackTrip::SERVERTOCLIENT;
+    
+    bool m_fan = false;
+    bool m_loop = false;
+    bool m_includeServer = true;
     bool m_steroUpmix = false;
 
     jack_client_t* m_jackClient = nullptr;

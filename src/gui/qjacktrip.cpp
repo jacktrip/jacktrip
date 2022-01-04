@@ -108,6 +108,14 @@ QJackTrip::QJackTrip(QWidget* parent)
         About about(this);
         about.exec();
     });
+    connect(m_ui->autoPatchComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=]() {
+       if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI ||
+           m_ui->autoPatchComboBox->currentIndex() == FULLMIX) {
+           m_ui->patchServerCheckBox->setEnabled(true);
+       } else {
+           m_ui->patchServerCheckBox->setEnabled(false);
+       }
+    });
     connect(m_ui->authCheckBox, &QCheckBox::stateChanged, this, [=]() {
         m_ui->usernameLabel->setEnabled(m_ui->authCheckBox->isChecked());
         m_ui->usernameEdit->setEnabled(m_ui->authCheckBox->isChecked());
@@ -210,8 +218,6 @@ QJackTrip::QJackTrip(QWidget* parent)
         m_ui->outLimiterLabel->setEnabled(m_ui->outLimiterCheckBox->isChecked());
         m_ui->outClientsSpinBox->setEnabled(m_ui->outLimiterCheckBox->isChecked());
     });
-    m_ui->autoPatchComboBox->setVisible(false);
-    m_ui->autoPatchLabel->setVisible(false);
 
     connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
             &QJackTrip::receivedIP);
@@ -224,7 +230,7 @@ QJackTrip::QJackTrip(QWidget* parent)
     //(loadSettings will take care of the UI in all other cases.)
     m_ui->basePortLabel->setVisible(false);
     m_ui->basePortSpinBox->setVisible(false);
-    m_ui->upmixCheckBox->setVisible(false);
+    m_ui->autoPatchGroupBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
 
 #ifdef RT_AUDIO
@@ -472,9 +478,7 @@ void QJackTrip::chooseRunType(int index)
     if (index == HUB_SERVER) {
         m_ui->channelGroupBox->setVisible(false);
         m_ui->timeoutCheckBox->setVisible(false);
-        m_ui->autoPatchComboBox->setVisible(true);
-        m_ui->autoPatchLabel->setVisible(true);
-        m_ui->upmixCheckBox->setVisible(true);
+        m_ui->autoPatchGroupBox->setVisible(true);
         m_ui->requireAuthGroupBox->setVisible(true);
         advancedOptionsForHubServer(true);
         int index = findTab("Plugins");
@@ -489,9 +493,7 @@ void QJackTrip::chooseRunType(int index)
         }
 #endif
     } else {
-        m_ui->autoPatchComboBox->setVisible(false);
-        m_ui->autoPatchLabel->setVisible(false);
-        m_ui->upmixCheckBox->setVisible(false);
+        m_ui->autoPatchGroupBox->setVisible(false);
         m_ui->requireAuthGroupBox->setVisible(false);
         m_ui->channelGroupBox->setVisible(true);
         m_ui->timeoutCheckBox->setVisible(true);
@@ -657,9 +659,16 @@ void QJackTrip::start()
             m_udpHub.reset(new UdpHubListener(m_ui->localPortSpinBox->value(),
                                               m_ui->basePortSpinBox->value()));
             int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
-            if (hubConnectionMode > 2) {
+            if (hubConnectionMode > CLIENTFOFI) {
                 // Adjust for the RESERVEDMATRIX gap.
                 hubConnectionMode++;
+            }
+            if (m_ui->patchServerCheckBox->isChecked()) {
+                if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI) {
+                    hubConnectionMode = JackTrip::SERVFOFI;
+                } else if (m_ui->autoPatchComboBox->currentIndex() == FULLMIX) {
+                    hubConnectionMode = JackTrip::SERVFULLMIX;
+                }
             }
 
             m_udpHub->setHubPatch(hubConnectionMode);
@@ -981,6 +990,7 @@ void QJackTrip::loadSettings()
     }
 
     m_ui->autoPatchComboBox->setCurrentIndex(settings.value("AutoPatchMode", 0).toInt());
+    m_ui->patchServerCheckBox->setChecked(settings.value("PatchIncludesServer", false).toBool());
     m_ui->upmixCheckBox->setChecked(settings.value("StereoUpmix", false).toBool());
     m_ui->zeroCheckBox->setChecked(settings.value("ZeroUnderrun", false).toBool());
     m_ui->timeoutCheckBox->setChecked(settings.value("Timeout", false).toBool());
@@ -1107,6 +1117,7 @@ void QJackTrip::saveSettings()
     settings.setValue("ChannelsSend", m_ui->channelSendSpinBox->value());
     settings.setValue("ChannelsRecv", m_ui->channelRecvSpinBox->value());
     settings.setValue("AutoPatchMode", m_ui->autoPatchComboBox->currentIndex());
+    settings.setValue("PatchIncludesServer", m_ui->patchServerCheckBox->isChecked());
     settings.setValue("StereoUpmix", m_ui->upmixCheckBox->isChecked());
     settings.setValue("ZeroUnderrun", m_ui->zeroCheckBox->isChecked());
     settings.setValue("Timeout", m_ui->timeoutCheckBox->isChecked());
