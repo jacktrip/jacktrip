@@ -1100,7 +1100,7 @@ int JackTrip::clientPingToServerStart()
         QHostInfo info = QHostInfo::fromName(mPeerAddress);
         if (!info.addresses().isEmpty()) {
             // use the first IP address
-            serverHostAddress = info.addresses().first();
+            serverHostAddress = info.addresses().constFirst();
         }
     }
 
