@@ -174,6 +174,7 @@ win32 {
   LIBS += -lWs2_32
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
   DEFINES += WIN32_LEAN_AND_MEAN
+  RC_FILE = win/qjacktrip.rc
 }
 
 DESTDIR = .
