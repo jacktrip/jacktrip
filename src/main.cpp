@@ -165,7 +165,8 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
 bool isRunFromCmd() {
     //Get our parent process pid
     HANDLE h = NULL;
-    PROCESSENTRY32 pe = {0};
+    PROCESSENTRY32 pe;
+    ZeroMemory(&pe, sizeof(PROCESSENTRY32));
     DWORD pid = GetCurrentProcessId();
     DWORD ppid = 0;
     pe.dwSize = sizeof(PROCESSENTRY32);
@@ -180,7 +181,7 @@ bool isRunFromCmd() {
         } while (Process32Next(h, &pe));
     }
     CloseHandle(h);
-    
+
     //Get the name of our parent process;
     char pname[MAX_PATH] = {0};
     DWORD size = MAX_PATH;
@@ -189,7 +190,7 @@ bool isRunFromCmd() {
     if (h) {
         if (QueryFullProcessImageNameA(h, 0, pname, &size)) {
             CloseHandle(h);
-            
+
             //Check if our parent process is a command line.
             if (size >= 14 && strncmp(pname + size - 14, "powershell.exe", 14) == 0) {
                 return true;
@@ -201,7 +202,7 @@ bool isRunFromCmd() {
             CloseHandle(h);
         }
     }
-    
+
     return false;
 }
 #endif
@@ -222,7 +223,7 @@ int main(int argc, char* argv[])
         }
 #endif  // _WIN32
         app->setApplicationName("QJackTrip");
-        
+
         QCommandLineParser parser;
         QCommandLineOption verboseOption(QStringList() << "V" << "verbose");   
         parser.addOption(verboseOption);
@@ -230,7 +231,7 @@ int main(int argc, char* argv[])
         if (parser.isSet(verboseOption)) {
             gVerboseFlag = true;
         }
-        
+
         window.reset(new QJackTrip);
         window->setArgc(argc);
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
