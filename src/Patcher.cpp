@@ -36,6 +36,7 @@
  */
 
 #include "Patcher.h"
+
 #include <QVector>
 
 void Patcher::setPatchMode(JackTrip::hubConnectionModeT patchMode)
@@ -43,21 +44,11 @@ void Patcher::setPatchMode(JackTrip::hubConnectionModeT patchMode)
     m_patchMode = patchMode;
 }
 
-void Patcher::setStereoUpmix(bool upmix)
-{
-    m_steroUpmix = upmix;
-}
+void Patcher::setStereoUpmix(bool upmix) { m_steroUpmix = upmix; }
 
 void Patcher::registerClient(const QString& clientName)
 {
     QMutexLocker locker(&m_connectionMutex);
-
-    if (!(m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::CLIENTFOFI
-          || m_patchMode == JackTrip::FULLMIX)) {
-        // Nothing to do here other than track our clients.
-        m_clients.append(clientName);
-        return;
-    }
 
     // If our jack client isn't running, start it.
     if (!m_jackClient) {
@@ -78,10 +69,10 @@ void Patcher::registerClient(const QString& clientName)
     // Find the ports belonging to our client.
     QVector<const char*> clientOutPorts;
     QVector<const char*> clientInPorts;
-    
+
     for (int i = 0; outPorts[i]; i++) {
         // Exclude broadcast ports.
-        if (QString(outPorts[i]).section(":", 0, 0) == clientName 
+        if (QString(outPorts[i]).section(":", 0, 0) == clientName
             && !QString(outPorts[i]).contains("broadcast")) {
             clientOutPorts.append(outPorts[i]);
         }
@@ -95,51 +86,67 @@ void Patcher::registerClient(const QString& clientName)
 
     bool clientIsMono = (clientOutPorts.count() == 1);
 
-    // Start with our receiving ports.
-    for (int i = 0; i < clientOutPorts.count(); i++) {
-        QString channel = QString(clientOutPorts.at(i)).section("_", -1, -1);
-        for (int j = 0; inPorts[j]; j++) {
-            QString otherClient = QString(inPorts[j]).section(":", 0, 0);
-            QString otherChannel = QString(inPorts[j]).section("_", -1, -1);
+    if (m_patchMode == JackTrip::SERVERTOCLIENT && clientIsMono && m_steroUpmix) {
+        // Most connections in server to clients mode are created already by the code in
+        // JackAudioInterface. We only need to handle any upmixing of mono clients here.
+        const char** systemInPorts = jack_get_ports(m_jackClient, NULL, NULL,
+                                                    JackPortIsPhysical | JackPortIsInput);
+        if (systemInPorts[0] && systemInPorts[1]) {
+            jack_connect(m_jackClient, clientOutPorts.at(0), systemInPorts[1]);
+        }
+        jack_free(systemInPorts);
+    } else if (m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::CLIENTFOFI
+               || m_patchMode == JackTrip::FULLMIX) {
+        // Start with our receiving ports.
+        for (int i = 0; i < clientOutPorts.count(); i++) {
+            QString channel = QString(clientOutPorts.at(i)).section("_", -1, -1);
+            for (int j = 0; inPorts[j]; j++) {
+                QString otherClient  = QString(inPorts[j]).section(":", 0, 0);
+                QString otherChannel = QString(inPorts[j]).section("_", -1, -1);
 
-            // First check if this is one of our other clients. (Fan out/in and full mix.)
-            if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
-                if (m_clients.contains(otherClient) && otherChannel == channel) {
-                    jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
-                } else if (m_steroUpmix && clientIsMono) {
-                    // Deal with the special case of stereo upmix
-                    if (m_clients.contains(otherClient) && otherChannel == "2") {
+                // First check if this is one of our other clients. (Fan out/in and full
+                // mix.)
+                if (m_patchMode == JackTrip::CLIENTFOFI
+                    || m_patchMode == JackTrip::FULLMIX) {
+                    if (m_clients.contains(otherClient) && otherChannel == channel) {
                         jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
+                    } else if (m_steroUpmix && clientIsMono) {
+                        // Deal with the special case of stereo upmix
+                        if (m_clients.contains(otherClient) && otherChannel == "2") {
+                            jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
+                        }
                     }
                 }
-            }
 
-            // Then check if it's our registering client. (Client Echo and full mix.)
-            if (m_patchMode == JackTrip::CLIENTECHO || m_patchMode == JackTrip::FULLMIX) {
-                if (otherClient == clientName && otherChannel == channel) {
-                    jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
-                } else if (m_steroUpmix && clientIsMono) {
-                    if (otherClient == clientName && otherChannel == "2") {
+                // Then check if it's our registering client. (Client Echo and full mix.)
+                if (m_patchMode == JackTrip::CLIENTECHO
+                    || m_patchMode == JackTrip::FULLMIX) {
+                    if (otherClient == clientName && otherChannel == channel) {
                         jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
+                    } else if (m_steroUpmix && clientIsMono) {
+                        if (otherClient == clientName && otherChannel == "2") {
+                            jack_connect(m_jackClient, clientOutPorts.at(i), inPorts[j]);
+                        }
                     }
                 }
             }
         }
-    }
 
-    // Then our sending ports. We only need to check for other clients here.
-    // (Any loopback connections will have been made in the previous loop.)
-    if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
-        for (int i = 0; i < clientInPorts.count(); i++) {
-            QString channel = QString(clientInPorts.at(i)).section("_", -1, -1);
-            for (int j = 0; outPorts[j]; j++) {
-                QString otherClient = QString(outPorts[j]).section(":", 0, 0);
-                QString otherChannel = QString(outPorts[j]).section("_", -1, -1);
-                if (m_clients.contains(otherClient)
-                    && !QString(outPorts[j]).contains("broadcast")) {
-                    if (otherChannel == channel || 
-                        (m_steroUpmix && channel == "2" && m_monoClients.contains(otherClient))) {
-                        jack_connect(m_jackClient, outPorts[j], clientInPorts.at(i));
+        // Then our sending ports. We only need to check for other clients here.
+        // (Any loopback connections will have been made in the previous loop.)
+        if (m_patchMode == JackTrip::CLIENTFOFI || m_patchMode == JackTrip::FULLMIX) {
+            for (int i = 0; i < clientInPorts.count(); i++) {
+                QString channel = QString(clientInPorts.at(i)).section("_", -1, -1);
+                for (int j = 0; outPorts[j]; j++) {
+                    QString otherClient  = QString(outPorts[j]).section(":", 0, 0);
+                    QString otherChannel = QString(outPorts[j]).section("_", -1, -1);
+                    if (m_clients.contains(otherClient)
+                        && !QString(outPorts[j]).contains("broadcast")) {
+                        if (otherChannel == channel
+                            || (m_steroUpmix && channel == "2"
+                                && m_monoClients.contains(otherClient))) {
+                            jack_connect(m_jackClient, outPorts[j], clientInPorts.at(i));
+                        }
                     }
                 }
             }
@@ -147,9 +154,7 @@ void Patcher::registerClient(const QString& clientName)
     }
 
     m_clients.append(clientName);
-    if (clientIsMono) {
-        m_monoClients.append(clientName);
-    }
+    if (clientIsMono) { m_monoClients.append(clientName); }
     jack_free(outPorts);
     jack_free(inPorts);
 }
