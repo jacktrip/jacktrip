@@ -37,6 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           submodules: true
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -44,7 +45,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes libpulse-dev libasound2-dev libjack-dev qt5-default qt5-qmake qttools5-dev help2man
+          sudo apt-get install --yes libpulse-dev libasound2-dev libjack-dev qt5-default qt5-qmake qttools5-dev help2man clang-tidy
           python -m pip install --upgrade pip
           pip install meson ninja pyyaml jinja2
       - name: install dependencies for macOS
@@ -104,6 +105,26 @@ jobs:
           cd builddir
           meson configure -Ddefault_library=both -Drtaudio:default_library=static -Drtaudio:wasapi=true -Drtaudio:jack=disabled -Dwingetopt:default_library=static -Dweakjack=true
           meson compile
+      - name: Create results directory
+        if: runner.os == 'Linux'
+        run: |
+          mkdir clang-tidy-result
+      - name: Analyze
+        if: runner.os == 'Linux'
+        run: |
+          git diff -U0 origin/${{ github.base_ref }} | clang-tidy-diff -p1 -path builddir -export-fixes clang-tidy-result/fixes.yml
+      - name: Save PR metadata
+        if: runner.os == 'Linux'
+        run: |
+          echo ${{ github.event.number }} > clang-tidy-result/pr-id.txt
+          echo ${{ github.event.pull_request.head.repo.full_name }} > clang-tidy-result/pr-head-repo.txt
+          echo ${{ github.event.pull_request.head.ref }} > clang-tidy-result/pr-head-ref.txt
+      - name: Upload static analysis
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v2
+        with:
+          name: clang-tidy-result
+          path: clang-tidy-result/
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
