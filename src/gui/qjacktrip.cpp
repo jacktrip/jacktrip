@@ -1271,6 +1271,10 @@ QString QJackTrip::commandLineFromCurrentOptions()
         if (hubConnectionMode > 0) {
             commandLine.append(QString(" -p %1").arg(hubConnectionMode));
         }
+        if (m_ui->patchServerCheckBox->isChecked() && (m_ui->typeComboBox->currentIndex() ==
+            CLIENTFOFI || m_ui->typeComboBox->currentIndex() == FULLMIX)) {
+            commandLine.append(" -i");
+        }
         if (m_ui->upmixCheckBox->isChecked()) {
             commandLine.append(" -u");
         }
