@@ -1814,6 +1814,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>realTimeCheckBox</tabstop>
   <tabstop>ioStatsCheckBox</tabstop>
   <tabstop>ioStatsSpinBox</tabstop>
+  <tabstop>verboseCheckBox</tabstop>
   <tabstop>authCheckBox</tabstop>
   <tabstop>usernameEdit</tabstop>
   <tabstop>passwordEdit</tabstop>
@@ -1844,7 +1845,6 @@ and wetness is the essence of beauty.</string>
   <tabstop>outCompressorCheckBox</tabstop>
   <tabstop>outLimiterCheckBox</tabstop>
   <tabstop>outClientsSpinBox</tabstop>
-  <tabstop>verboseCheckBox</tabstop>
  </tabstops>
  <resources>
   <include location="qjacktrip.qrc"/>
