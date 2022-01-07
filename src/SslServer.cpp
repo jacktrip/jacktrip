@@ -56,6 +56,9 @@ void SslServer::setCertificate(const QSslCertificate& certificate)
     m_certificate = certificate;
 }
 
-void SslServer::setPrivateKey(const QSslKey& key) { m_privateKey = key; }
+void SslServer::setPrivateKey(const QSslKey& key)
+{
+    m_privateKey = key;
+}
 
 SslServer::~SslServer() = default;

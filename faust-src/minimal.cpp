@@ -6,7 +6,10 @@
 // abs is now predefined
 // template<typename T> T abs (T a)			{ return (a<T(0)) ? -a : a; }
 
-inline int lsr(int x, int n) { return int(((unsigned int)x) >> n); }
+inline int lsr(int x, int n)
+{
+    return int(((unsigned int)x) >> n);
+}
 
 /******************************************************************************
 *******************************************************************************

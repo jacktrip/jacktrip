@@ -34,7 +34,7 @@ const QString About::s_buildType = QStringLiteral(BUILD_TYPE);
 const QString About::s_buildType = QLatin1String("");
 #endif
 #ifdef BUILD_ID
-const QString About::s_buildID   = QStringLiteral(BUILD_ID);
+const QString About::s_buildID = QStringLiteral(BUILD_ID);
 #else
 const QString About::s_buildID   = QLatin1String("");
 #endif
@@ -42,13 +42,16 @@ const QString About::s_buildID   = QLatin1String("");
 About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
 {
     m_ui->setupUi(this);
-    connect(m_ui->closeButton, &QPushButton::clicked, this, [=]() { this->done(0); });
+    connect(m_ui->closeButton, &QPushButton::clicked, this, [=]() {
+        this->done(0);
+    });
 
-    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace(QLatin1String("%VERSION%"), gVersion));
-#ifdef QT_OPENSOURCE
     m_ui->aboutLabel->setText(
-        m_ui->aboutLabel->text().replace(QLatin1String("%LICENSE%"),
-                                         QLatin1String("This build of JackTrip is subject to LGPL license. ")));
+        m_ui->aboutLabel->text().replace(QLatin1String("%VERSION%"), gVersion));
+#ifdef QT_OPENSOURCE
+    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace(
+        QLatin1String("%LICENSE%"),
+        QLatin1String("This build of JackTrip is subject to LGPL license. ")));
 #else
     m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%LICENSE%", ""));
 #endif
@@ -66,7 +69,8 @@ About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
         m_ui->aboutLabel->setText(
             m_ui->aboutLabel->text().replace(QLatin1String("%BUILD%"), buildString));
     } else {
-        m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace(QLatin1String("%BUILD%"), QLatin1String("")));
+        m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace(
+            QLatin1String("%BUILD%"), QLatin1String("")));
     }
 #ifdef __APPLE__
     m_ui->aboutImage->setPixmap(QPixmap(":/qjacktrip/about@2x.png"));

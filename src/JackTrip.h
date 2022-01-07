@@ -52,7 +52,7 @@
 
 #ifndef NO_JACK
 #include "JackAudioInterface.h"
-#endif  //NO_JACK
+#endif  // NO_JACK
 
 #include "AudioTester.h"
 #include "PacketHeader.h"
@@ -263,7 +263,10 @@ class JackTrip : public QObject
     void setUsername(const QString& username) { mUsername = username; }
     void setPassword(const QString& password) { mPassword = password; }
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(const QString& clientName) { mJackClientName = clientName; }
+    virtual void setClientName(const QString& clientName)
+    {
+        mJackClientName = clientName;
+    }
     virtual void setRemoteClientName(const QString& remoteClientName)
     {
         mRemoteClientName = remoteClientName;
@@ -541,7 +544,9 @@ class JackTrip : public QObject
         int wait_time = 10000;  // msec
         if (!(wait_msec % wait_time)) {
             std::cerr << "UDP WAITED MORE THAN 10 seconds." << std::endl;
-            if (mStopOnTimeout) { stop(QStringLiteral("No network data received for 10 seconds")); }
+            if (mStopOnTimeout) {
+                stop(QStringLiteral("No network data received for 10 seconds"));
+            }
             emit signalNoUdpPacketsForSeconds();
         }
     }

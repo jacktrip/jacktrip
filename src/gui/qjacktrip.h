@@ -56,7 +56,7 @@ class QJackTrip;
 #else
 class QJackTripVS;
 #endif
-}
+}  // namespace Ui
 
 class QJackTrip : public QMainWindow
 {

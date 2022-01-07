@@ -54,7 +54,10 @@ RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOu
 }
 
 //*******************************************************************************
-RtAudioInterface::~RtAudioInterface() { delete mRtAudio; }
+RtAudioInterface::~RtAudioInterface()
+{
+    delete mRtAudio;
+}
 
 //*******************************************************************************
 void RtAudioInterface::setup()
@@ -261,9 +264,15 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
         cout << sampleRates[ii] << " ";
     }
     cout << endl;
-    if (info.isDefaultOutput) { cout << "  --Default Output Device--" << endl; }
-    if (info.isDefaultInput) { cout << "  --Default Intput Device--" << endl; }
-    if (info.probed) { cout << "  --Probed Successful--" << endl; }
+    if (info.isDefaultOutput) {
+        cout << "  --Default Output Device--" << endl;
+    }
+    if (info.isDefaultInput) {
+        cout << "  --Default Intput Device--" << endl;
+    }
+    if (info.probed) {
+        cout << "  --Probed Successful--" << endl;
+    }
 }
 
 //*******************************************************************************

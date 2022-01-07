@@ -74,17 +74,19 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
     , mWAIR(false)
 #endif  // endwhere
     , mTotalRunningThreads(0)
-    , mHubPatchDescriptions({"server-to-clients", "client loopback",
-                             "client fan out/in but not loopback", "reserved for TUB",
-                             "full mix", "no auto patching", "client fan out/in, including server",
-                             "full mix, including server"})
+    , mHubPatchDescriptions(
+          {"server-to-clients", "client loopback", "client fan out/in but not loopback",
+           "reserved for TUB", "full mix", "no auto patching",
+           "client fan out/in, including server", "full mix, including server"})
     , m_connectDefaultAudioPorts(false)
     , mIOStatTimeout(0)
 {
     // Register JackTripWorker with the hub listener
     // mJTWorker = new JackTripWorker(this);
     mJTWorkers = new QVector<JackTripWorker*>;
-    for (int i = 0; i < gMaxThreads; i++) { mJTWorkers->append(nullptr); }
+    for (int i = 0; i < gMaxThreads; i++) {
+        mJTWorkers->append(nullptr);
+    }
 
     qDebug() << "mThreadPool default maxThreadCount =" << QThread::idealThreadCount();
     qDebug() << "mThreadPool maxThreadCount previously set to"
@@ -121,7 +123,9 @@ UdpHubListener::~UdpHubListener()
 {
     QMutexLocker lock(&mMutex);
     // delete mJTWorker;
-    for (int i = 0; i < gMaxThreads; i++) { delete mJTWorkers->at(i); }
+    for (int i = 0; i < gMaxThreads; i++) {
+        delete mJTWorkers->at(i);
+    }
     delete mJTWorkers;
 }
 
@@ -191,8 +195,9 @@ void UdpHubListener::start()
                 if (!key.isNull()) {
                     mTcpServer.setPrivateKey(key);
                 } else {
-                    error         = true;
-                    error_message = QStringLiteral("Unable to read RSA private key file.");
+                    error = true;
+                    error_message =
+                        QStringLiteral("Unable to read RSA private key file.");
                 }
             } else {
                 error         = true;
@@ -231,8 +236,9 @@ void UdpHubListener::receivedNewConnection()
 {
     QSslSocket* clientSocket =
         static_cast<QSslSocket*>(mTcpServer.nextPendingConnection());
-    connect(clientSocket, &QAbstractSocket::readyRead, this,
-            [=] { receivedClientInfo(clientSocket); });
+    connect(clientSocket, &QAbstractSocket::readyRead, this, [=] {
+        receivedClientInfo(clientSocket);
+    });
     cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 }
 
@@ -299,7 +305,9 @@ void UdpHubListener::receivedClientInfo(QSslSocket* clientConnection)
         }
     }
     // If we haven't received our port, wait for more data to arrive.
-    if (peer_udp_port == 0) { return; }
+    if (peer_udp_port == 0) {
+        return;
+    }
 
     // At this stage, we should definitely only be dealing with a 16 bit integer. (Ignore
     // the upper bytes.)
@@ -360,7 +368,8 @@ void UdpHubListener::stopCheck()
 // Returns 0 on error
 int UdpHubListener::readClientUdpPort(QSslSocket* clientConnection, QString& clientName)
 {
-    if (gVerboseFlag) cout << "Ready To Read From Client!" << endl;
+    if (gVerboseFlag)
+        cout << "Ready To Read From Client!" << endl;
     // Read UDP Port Number from Server
     // --------------------------------
     qint32 udp_port;
@@ -385,7 +394,8 @@ int UdpHubListener::readClientUdpPort(QSslSocket* clientConnection, QString& cli
 int UdpHubListener::checkAuthAndReadPort(QSslSocket* clientConnection,
                                          QString& clientName)
 {
-    if (gVerboseFlag) cout << "Ready To Read Authentication Data From Client!" << endl;
+    if (gVerboseFlag)
+        cout << "Ready To Read Authentication Data From Client!" << endl;
     // Because we don't know how long our username and password are, we have to peek at
     // our data to read the expected lengths and know if we have enough to work with.
 
@@ -397,7 +407,9 @@ int UdpHubListener::checkAuthAndReadPort(QSslSocket* clientConnection,
     // Variable length: Our username and password, each with added null terminator.
 
     int size = gMaxRemoteNameLength + (3 * sizeof(qint32));
-    if (clientConnection->bytesAvailable() < size) { return 0; }
+    if (clientConnection->bytesAvailable() < size) {
+        return 0;
+    }
 
     qint32 usernameLength, passwordLength;
     char* buf = new char[size];
@@ -490,8 +502,8 @@ void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 }
 
 //*******************************************************************************
-int UdpHubListener::getJackTripWorker(const QString& address, [[maybe_unused]] uint16_t port,
-                                      QString& clientName)
+int UdpHubListener::getJackTripWorker(const QString& address,
+                                      [[maybe_unused]] uint16_t port, QString& clientName)
 {
     // Find our first empty slot in our vector of worker object pointers.
     // Return -1 if we have no space left for additional threads, or the index of the new
@@ -507,7 +519,9 @@ int UdpHubListener::getJackTripWorker(const QString& address, [[maybe_unused]] u
 
     if (id >= 0) {
         mTotalRunningThreads++;
-        if (mAppendThreadID) { clientName = clientName + QStringLiteral("_%1").arg(id + 1); }
+        if (mAppendThreadID) {
+            clientName = clientName + QStringLiteral("_%1").arg(id + 1);
+        }
         mJTWorkers->replace(
             id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
         mJTWorkers->at(id)->setJackTrip(
@@ -540,9 +554,10 @@ void UdpHubListener::registerClientWithPatcher(QString& clientName)
     cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads
          << endl;
     cout << "===============================================================" << endl;
-#ifdef WAIR                           // WAIR
-    if (isWAIR()) connectMesh(true);  // invoked with -Sw
-#endif                                // endwhere
+#ifdef WAIR  // WAIR
+    if (isWAIR())
+        connectMesh(true);  // invoked with -Sw
+#endif                      // endwhere
     // qDebug() << "mPeerAddress" << mActiveAddress[id].address <<
     // mActiveAddress[id].port;
     connectPatch(true, clientName);
@@ -550,9 +565,10 @@ void UdpHubListener::registerClientWithPatcher(QString& clientName)
 
 void UdpHubListener::unregisterClientWithPatcher(QString& clientName)
 {
-#ifdef WAIR                            // wair
-    if (isWAIR()) connectMesh(false);  // invoked with -Sw
-#endif                                 // endwhere
+#ifdef WAIR  // wair
+    if (isWAIR())
+        connectMesh(false);  // invoked with -Sw
+#endif                       // endwhere
     connectPatch(false, clientName);
 }
 #endif  // NO_JACK
@@ -562,9 +578,10 @@ int UdpHubListener::releaseThread(int id)
 {
     QMutexLocker lock(&mMutex);
     mTotalRunningThreads--;
-#ifdef WAIR                            // wair
-    if (isWAIR()) connectMesh(false);  // invoked with -Sw
-#endif                                 // endwhere
+#ifdef WAIR  // wair
+    if (isWAIR())
+        connectMesh(false);  // invoked with -Sw
+#endif                       // endwhere
     mJTWorkers->at(id)->deleteLater();
     mJTWorkers->replace(id, nullptr);
     return 0;  /// \todo Check if we really need to return an argument here
@@ -607,7 +624,9 @@ void UdpHubListener::connectMesh(bool spawn)
 void UdpHubListener::enumerateRunningThreadIDs()
 {
     for (int id = 0; id < gMaxThreads; id++) {
-        if (mJTWorkers->at(id) != nullptr) { qDebug() << id; }
+        if (mJTWorkers->at(id) != nullptr) {
+            qDebug() << id;
+        }
     }
 }
 #endif  // endwhere

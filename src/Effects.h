@@ -166,21 +166,27 @@ class Effects
             assert(inCompressorP == nullptr);
             inCompressorP =
                 new Compressor(mNumIncomingChans, gVerboseFlag, inCompressorPreset);
-            if (gVerboseFlag) { std::cout << "Set up INCOMING COMPRESSOR\n"; }
+            if (gVerboseFlag) {
+                std::cout << "Set up INCOMING COMPRESSOR\n";
+            }
             incomingEffects.push_back(inCompressorP);
         }
         if (inZitarev) {
             assert(inZitarevP == nullptr);
             inZitarevP =
                 new Reverb(mNumIncomingChans, mNumIncomingChans, 1.0 + zitarevInLevel);
-            if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Zitarev)\n"; }
+            if (gVerboseFlag) {
+                std::cout << "Set up INCOMING REVERB (Zitarev)\n";
+            }
             incomingEffects.push_back(inZitarevP);
         }
         if (inFreeverb) {
             assert(inFreeverbP == nullptr);
             inFreeverbP =
                 new Reverb(mNumIncomingChans, mNumIncomingChans, freeverbInLevel);
-            if (gVerboseFlag) { std::cout << "Set up INCOMING REVERB (Freeverb)\n"; }
+            if (gVerboseFlag) {
+                std::cout << "Set up INCOMING REVERB (Freeverb)\n";
+            }
             incomingEffects.push_back(inFreeverbP);
         }
         // LIMITER MUST GO LAST:
@@ -214,21 +220,27 @@ class Effects
             assert(outCompressorP == nullptr);
             outCompressorP =
                 new Compressor(mNumOutgoingChans, gVerboseFlag, outCompressorPreset);
-            if (gVerboseFlag) { std::cout << "Set up OUTGOING COMPRESSOR\n"; }
+            if (gVerboseFlag) {
+                std::cout << "Set up OUTGOING COMPRESSOR\n";
+            }
             outgoingEffects.push_back(outCompressorP);
         }
         if (outZitarev) {
             assert(outZitarevP == nullptr);
             outZitarevP =
                 new Reverb(mNumOutgoingChans, mNumOutgoingChans, 1.0 + zitarevOutLevel);
-            if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Zitarev)\n"; }
+            if (gVerboseFlag) {
+                std::cout << "Set up OUTGOING REVERB (Zitarev)\n";
+            }
             outgoingEffects.push_back(outZitarevP);
         }
         if (outFreeverb) {
             assert(outFreeverbP == nullptr);
             outFreeverbP =
                 new Reverb(mNumOutgoingChans, mNumOutgoingChans, freeverbOutLevel);
-            if (gVerboseFlag) { std::cout << "Set up OUTGOING REVERB (Freeverb)\n"; }
+            if (gVerboseFlag) {
+                std::cout << "Set up OUTGOING REVERB (Freeverb)\n";
+            }
             outgoingEffects.push_back(outFreeverbP);
         }
         // LIMITER MUST GO LAST:
@@ -501,7 +513,9 @@ class Effects
             ulong argLen = strlen(optarg);
 
             for (ulong i = 0; i < argLen; i++) {
-                if (optarg[i] != ')' && parenLevel > 0) { continue; }
+                if (optarg[i] != ')' && parenLevel > 0) {
+                    continue;
+                }
                 switch (optarg[i]) {
                 case ' ':
                     break;
@@ -658,8 +672,12 @@ class Effects
                 // be brought as a parameters, e.g. w(0.5)
             }
             if (gVerboseFlag) {
-                if (haveIncoming) { std::cout << "Set up INCOMING Overflow Limiter\n"; }
-                if (haveOutgoing) { std::cout << "Set up OUTGOING Overflow Limiter\n"; }
+                if (haveIncoming) {
+                    std::cout << "Set up INCOMING Overflow Limiter\n";
+                }
+                if (haveOutgoing) {
+                    std::cout << "Set up OUTGOING Overflow Limiter\n";
+                }
                 if (haveWarnings) {
                     std::cout << "Enable DISTORTION WARNINGS in Overflow Limiters\n";
                 }

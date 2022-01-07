@@ -143,7 +143,8 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
     if (mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol) {
         mIPv6 = true;
     } else if (mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol) {
-        QString error_message = QStringLiteral("Incorrect presentation format address\n'");
+        QString error_message =
+            QStringLiteral("Incorrect presentation format address\n'");
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");
         // std::cerr << "ERROR: Incorrect presentation format address" << endl;
@@ -397,7 +398,9 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
 void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
                                                     uint16_t& port)
 {
-    while (!datagramAvailable()) { msleep(100); }
+    while (!datagramAvailable()) {
+        msleep(100);
+    }
     char buf[1];
 
     struct sockaddr_storage addr;
@@ -415,7 +418,8 @@ void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddres
 //*******************************************************************************
 void UdpDataProtocol::run()
 {
-    if (gVerboseFlag) switch (mRunMode) {
+    if (gVerboseFlag)
+        switch (mRunMode) {
         case RECEIVER: {
             std::cout << "step 3" << std::endl;
             break;
@@ -462,7 +466,8 @@ void UdpDataProtocol::run()
 
     if (mRunMode == RECEIVER) {
         mChans = mJackTrip->getNumOutputChannels();
-        if (0 == mChans) return;
+        if (0 == mChans)
+            return;
         full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
         mFullPacket      = new int8_t[full_packet_size];
         std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0
@@ -471,7 +476,8 @@ void UdpDataProtocol::run()
 
     } else {
         mChans = mJackTrip->getNumInputChannels();
-        if (0 == mChans) return;
+        if (0 == mChans)
+            return;
         full_packet_size = mJackTrip->getSendPacketSizeInBytes();
         mFullPacket      = new int8_t[full_packet_size];
         std::memset(mFullPacket, 0, full_packet_size);  // set buffer to 0

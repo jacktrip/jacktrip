@@ -67,11 +67,11 @@ class Patcher : public QObject
    private:
     QStringList m_clients;
     QStringList m_monoClients;
-    
-    bool m_fan = false;
-    bool m_loop = false;
+
+    bool m_fan           = false;
+    bool m_loop          = false;
     bool m_includeServer = true;
-    bool m_steroUpmix = false;
+    bool m_steroUpmix    = false;
 
     jack_client_t* m_jackClient = nullptr;
     jack_status_t m_status;

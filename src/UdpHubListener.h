@@ -69,7 +69,8 @@ class UdpHubListener : public QObject
     Q_OBJECT;
 
    public:
-    UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0, QObject* parent = nullptr);
+    UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0,
+                   QObject* parent = nullptr);
     virtual ~UdpHubListener();
 
     /// \brief Starts the TCP server
@@ -223,16 +224,17 @@ class UdpHubListener : public QObject
         mPatcher.setPatchMode(static_cast<JackTrip::hubConnectionModeT>(p));
 #endif
         // Set the correct audio port connection setting for our chosen patch mode.
-        if (mHubPatch == JackTrip::SERVERTOCLIENT || mHubPatch == JackTrip::SERVFOFI ||
-            mHubPatch == JackTrip::SERVFULLMIX) {
+        if (mHubPatch == JackTrip::SERVERTOCLIENT || mHubPatch == JackTrip::SERVFOFI
+            || mHubPatch == JackTrip::SERVFULLMIX) {
             m_connectDefaultAudioPorts = true;
         } else {
             m_connectDefaultAudioPorts = false;
         }
     }
     unsigned int getHubPatch() { return mHubPatch; }
-    
-    void setStereoUpmix([[maybe_unused]] bool upmix) {
+
+    void setStereoUpmix([[maybe_unused]] bool upmix)
+    {
 #ifndef NO_JACK
         mPatcher.setStereoUpmix(upmix);
 #endif

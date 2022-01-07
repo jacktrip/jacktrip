@@ -91,7 +91,8 @@ PoolBuffer::PoolBuffer(int /*sample_rate*/, int channels, int bit_res, int FPP, 
         mHist++;  // min packets
     else if (mHist > 6)
         mHist = 6;  // max packets
-    if (gVerboseFlag) cout << "mHist = " << mHist << " at " << mFPP << "\n";
+    if (gVerboseFlag)
+        cout << "mHist = " << mHist << " at " << mFPP << "\n";
     //    qDebug() << "mHist =" << mHist << "@" << mFPP;
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
     mXfrBuffer = new int8_t[mBytes];
@@ -116,7 +117,8 @@ PoolBuffer::PoolBuffer(int /*sample_rate*/, int channels, int bit_res, int FPP, 
     memcpy(mZeros, mXfrBuffer, mBytes);
     mIncomingCnt = 0;
     mIndexPool.resize(mPoolSize);
-    for (int i = 0; i < mPoolSize; i++) mIndexPool[i] = -1;
+    for (int i = 0; i < mPoolSize; i++)
+        mIndexPool[i] = -1;
     mTimer0 = new QElapsedTimer();
     mTimer0->start();
     mGlitchCnt = 0;
@@ -170,7 +172,8 @@ bool PoolBuffer::pushPacket(const int8_t* buf)
             mPoolSize = newPoolSize;
         }
         if (newPoolSize != mPoolSize) {
-            if (newPoolSize < mQlen) newPoolSize = mQlen;  // avoid insanely small pool
+            if (newPoolSize < mQlen)
+                newPoolSize = mQlen;  // avoid insanely small pool
             if (gVerboseFlag)
                 cout << "shrinking to " << newPoolSize << " from " << mPoolSize << "\n";
             mPoolSize = newPoolSize;
@@ -192,7 +195,9 @@ void PoolBuffer::pullPacket(int8_t* buf)
     int oldest      = 999999;
     int oldestIndex = 0;
     for (int i = 0; i < mPoolSize; i++) {
-        if (mIndexPool[i] == target) { targetIndex = i; }
+        if (mIndexPool[i] == target) {
+            targetIndex = i;
+        }
         if (mIndexPool[i] < oldest) {
             oldest      = mIndexPool[i];
             oldestIndex = i;
@@ -347,7 +352,8 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
     // INITIALIZE f and b
     vector<long double> f;
     f.resize(x.size());
-    for (unsigned int i = 0; i < x.size(); i++) f[i] = x[i];
+    for (unsigned int i = 0; i < x.size(); i++)
+        f[i] = x[i];
     vector<long double> b(f);
 
     // INITIALIZE Dk
@@ -367,9 +373,12 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
     for (size_t k = 0; k < m; k++) {
         // COMPUTE MU
         long double mu = 0.0;
-        for (size_t n = 0; n <= N - k - 1; n++) { mu += f[n + k + 1] * b[n]; }
+        for (size_t n = 0; n <= N - k - 1; n++) {
+            mu += f[n + k + 1] * b[n];
+        }
 
-        if (Dk == 0.0) Dk = 0.0000001;  // CC: from testing, needs eps
+        if (Dk == 0.0)
+            Dk = 0.0000001;  // CC: from testing, needs eps
         //            if ( classify(Dk) ) qDebug() << pCnt << "run";
 
         mu *= -2.0 / Dk;
@@ -410,7 +419,9 @@ void BurgAlgorithm::predict(vector<long double>& coeffs, vector<float>& tail)
     //    qDebug() << "m" << m << "tail.size()" << tail.size();
     for (size_t i = m; i < tail.size(); i++) {
         tail[i] = 0.0;
-        for (size_t j = 0; j < m; j++) { tail[i] -= coeffs[j] * tail[i - 1 - j]; }
+        for (size_t j = 0; j < m; j++) {
+            tail[i] -= coeffs[j] * tail[i - 1 - j];
+        }
     }
 }
 

@@ -26,35 +26,40 @@
 #ifndef TEXTBUF_H
 #define TEXTBUF_H
 
-#include <streambuf>
-#include <iostream>
 #include <QPlainTextEdit>
+#include <iostream>
+#include <streambuf>
 
-//Extension of a stream buffer to output to a QTextEdit via a signal
-class textbuf : public QObject, public std::basic_streambuf<char, std::char_traits<char>>
+// Extension of a stream buffer to output to a QTextEdit via a signal
+class textbuf
+    : public QObject
+    , public std::basic_streambuf<char, std::char_traits<char>>
 {
     Q_OBJECT
-    
+
    public:
-    textbuf(QObject* parent = nullptr) : QObject(parent) { setp(m_buf, m_buf + BUF_SIZE); }
-    
-    void setOutStream(std::ostream *output);
+    textbuf(QObject* parent = nullptr) : QObject(parent)
+    {
+        setp(m_buf, m_buf + BUF_SIZE);
+    }
+
+    void setOutStream(std::ostream* output);
 
    signals:
     void outputString(const QString& output);
-    
+
    protected:
     virtual int overflow(int c = traits_t::eof());
     virtual int sync();
-    
+
    private:
     typedef std::char_traits<char> traits_t;
-    
+
     static const size_t BUF_SIZE = 64;
     char m_buf[BUF_SIZE];
-    
-    std::ostream *m_outStream = nullptr;
-    
+
+    std::ostream* m_outStream = nullptr;
+
     void putChars(const char* begin, const char* end);
 };
 

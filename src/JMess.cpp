@@ -78,7 +78,6 @@ JMess::~JMess()
                   << "\n";
 }
 
-
 //*******************************************************************************
 // connectTUB is called when in hubpatch mode 4 = RESERVEDMATRIX
 // TU Berlin Raspberry Pi ensemble, Winter 2019

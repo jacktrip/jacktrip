@@ -72,7 +72,9 @@ class ProcessPlugin
     virtual void init(int samplingRate)
     {
         fSamplingFreq = samplingRate;
-        if (verbose) { printf("%s: init(%d)\n", getName(), samplingRate); }
+        if (verbose) {
+            printf("%s: init(%d)\n", getName(), samplingRate);
+        }
     }
     virtual bool getInited() { return inited; }
     virtual void setVerbose(bool v) { verbose = v; }

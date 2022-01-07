@@ -1192,7 +1192,8 @@ class APIUI
     {
         FAUSTFLOAT* zone = fZone[p];
         for (size_t i = 0; i < table[val].size(); i++) {
-            if (zone == table[val][i]->getZone()) return int(i);
+            if (zone == table[val][i]->getZone())
+                return int(i);
         }
         return -1;
     }
@@ -1205,9 +1206,12 @@ class APIUI
         int id3 = getZoneIndex(table, p, 2);
 
         // Deactivates everywhere..
-        if (id1 != -1) table[0][id1]->setActive(false);
-        if (id2 != -1) table[1][id2]->setActive(false);
-        if (id3 != -1) table[2][id3]->setActive(false);
+        if (id1 != -1)
+            table[0][id1]->setActive(false);
+        if (id2 != -1)
+            table[1][id2]->setActive(false);
+        if (id3 != -1)
+            table[2][id3]->setActive(false);
 
         if (val == -1) {  // Means: no more mapping...
             // So stay all deactivated...
@@ -1270,10 +1274,13 @@ class APIUI
 
     virtual ~APIUI()
     {
-        for (auto& it : fConversion) delete it;
+        for (auto& it : fConversion)
+            delete it;
         for (int i = 0; i < 3; i++) {
-            for (auto& it : fAcc[i]) delete it;
-            for (auto& it : fGyr[i]) delete it;
+            for (auto& it : fAcc[i])
+                delete it;
+            for (auto& it : fGyr[i])
+                delete it;
         }
         delete fRedReader;
         delete fGreenReader;
@@ -1388,7 +1395,9 @@ class APIUI
     {
         std::map<const char*, const char*> res;
         std::map<std::string, std::string> metadata = fMetaData[p];
-        for (const auto& it : metadata) { res[it.first.c_str()] = it.second.c_str(); }
+        for (const auto& it : metadata) {
+            res[it.first.c_str()] = it.second.c_str();
+        }
         return res;
     }
 
@@ -1453,7 +1462,9 @@ class APIUI
      */
     void propagateAcc(int acc, double value)
     {
-        for (size_t i = 0; i < fAcc[acc].size(); i++) { fAcc[acc][i]->update(value); }
+        for (size_t i = 0; i < fAcc[acc].size(); i++) {
+            fAcc[acc][i]->update(value);
+        }
     }
 
     /**
@@ -1538,7 +1549,9 @@ class APIUI
      */
     void propagateGyr(int gyr, double value)
     {
-        for (size_t i = 0; i < fGyr[gyr].size(); i++) { fGyr[gyr][i]->update(value); }
+        for (size_t i = 0; i < fGyr[gyr].size(); i++) {
+            fGyr[gyr][i]->update(value);
+        }
     }
 
     /**
@@ -1705,13 +1718,25 @@ class limiterdsp : public dsp
 
     virtual void instanceClear()
     {
-        for (int l0 = 0; (l0 < 2); l0 = (l0 + 1)) { iRec5[l0] = 0; }
+        for (int l0 = 0; (l0 < 2); l0 = (l0 + 1)) {
+            iRec5[l0] = 0;
+        }
         IOTA = 0;
-        for (int l1 = 0; (l1 < 32); l1 = (l1 + 1)) { fVec0[l1] = 0.0f; }
-        for (int l2 = 0; (l2 < 2); l2 = (l2 + 1)) { fRec4[l2] = 0.0f; }
-        for (int l3 = 0; (l3 < 2); l3 = (l3 + 1)) { iRec2[l3] = 0; }
-        for (int l4 = 0; (l4 < 2); l4 = (l4 + 1)) { fRec1[l4] = 0.0f; }
-        for (int l5 = 0; (l5 < 2); l5 = (l5 + 1)) { fRec0[l5] = 0.0f; }
+        for (int l1 = 0; (l1 < 32); l1 = (l1 + 1)) {
+            fVec0[l1] = 0.0f;
+        }
+        for (int l2 = 0; (l2 < 2); l2 = (l2 + 1)) {
+            fRec4[l2] = 0.0f;
+        }
+        for (int l3 = 0; (l3 < 2); l3 = (l3 + 1)) {
+            iRec2[l3] = 0;
+        }
+        for (int l4 = 0; (l4 < 2); l4 = (l4 + 1)) {
+            fRec1[l4] = 0.0f;
+        }
+        for (int l5 = 0; (l5 < 2); l5 = (l5 + 1)) {
+            fRec0[l5] = 0.0f;
+        }
     }
 
     virtual void init(int sample_rate)

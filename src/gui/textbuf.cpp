@@ -32,23 +32,23 @@ void textbuf::setOutStream(std::ostream* output)
 
 int textbuf::overflow(int c)
 {
-    //Output our buffer.
+    // Output our buffer.
     putChars(pbase(), pptr());
-    
+
     if (c != traits_t::eof()) {
         char out = c;
         putChars(&out, &out + 1);
     }
-    
-    //Set buffer to empty again
+
+    // Set buffer to empty again
     setp(m_buf, m_buf + BUF_SIZE);
-    
+
     return c;
 }
 
 int textbuf::sync()
 {
-    //Flush our buffer.
+    // Flush our buffer.
     putChars(pbase(), pptr());
     setp(m_buf, m_buf + BUF_SIZE);
     return 0;
@@ -62,9 +62,8 @@ void textbuf::putChars(const char* begin, const char* end)
         }
         m_outStream->flush();
     }
-    
-    //Send a signal here rather than writing directly to our
-    //QTextEdit to avoid any issues with threading.
+
+    // Send a signal here rather than writing directly to our
+    // QTextEdit to avoid any issues with threading.
     emit outputString(QString(QByteArray(begin, end - begin)));
 }
-

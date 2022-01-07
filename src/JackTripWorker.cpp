@@ -57,7 +57,8 @@ using std::endl;
 
 //*******************************************************************************
 JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength,
-                               JackTrip::underrunModeT UnderRunMode, const QString& clientName)
+                               JackTrip::underrunModeT UnderRunMode,
+                               const QString& clientName)
     : mAppendThreadID(false)
     , mSleepTime(100)
     , mUdpHubListener(udphublistener)
@@ -72,8 +73,9 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
 }
 
 //*******************************************************************************
-void JackTripWorker::setJackTrip(int id, const QString& client_address, uint16_t server_port,
-                                 uint16_t client_port, bool connectDefaultAudioPorts)
+void JackTripWorker::setJackTrip(int id, const QString& client_address,
+                                 uint16_t server_port, uint16_t client_port,
+                                 bool connectDefaultAudioPorts)
 {
     QMutexLocker locker(&mMutex);
     mUdpSockTemp.close();
@@ -100,7 +102,8 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address, uint16_t
 
     // Create and setup JackTrip Object
     // JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);
-    if (gVerboseFlag) cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
+    if (gVerboseFlag)
+        cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
 
 #ifdef WAIR  // WAIR
              // forces    BufferQueueLength to 2
@@ -171,14 +174,18 @@ void JackTripWorker::start()
         mJackTrip->setIOStatStream(mIOStatStream);
     }
 
-    if (!mClientName.isEmpty()) { mJackTrip->setClientName(mClientName); }
+    if (!mClientName.isEmpty()) {
+        mJackTrip->setClientName(mClientName);
+    }
 
     // ClientAddress.setAddress(mClientAddress);
     // If I don't type this line, I get a bus error in the next line.
     // I still haven't figure out why
     // ClientAddress.toString().toLatin1().constData();
     // jacktrip.setPeerAddress(ClientAddress.toString().toLatin1().constData());
-    if (mAppendThreadID) { mJackTrip->setID(mID + 1); }
+    if (mAppendThreadID) {
+        mJackTrip->setID(mID + 1);
+    }
     mJackTrip->setPeerAddress(mClientAddress);
     mJackTrip->setBindPorts(mServerPort);
     // jacktrip.setPeerPorts(mClientPort);
@@ -304,7 +311,8 @@ void JackTripWorker::receivedDataUDP()
     connect(this, &JackTripWorker::signalRemoveThread, mJackTrip.data(),
             &JackTrip::slotStopProcesses, Qt::QueuedConnection);
 
-    if (gVerboseFlag) cout << "---> JackTripWorker: startProcess..." << endl;
+    if (gVerboseFlag)
+        cout << "---> JackTripWorker: startProcess..." << endl;
     mJackTrip->startProcess(
 #ifdef WAIRTOHUB  // wair
         mID
@@ -324,7 +332,8 @@ void JackTripWorker::udpTimerTick()
         return;
     }
     mElapsedTime += mSleepTime;
-    if (gVerboseFlag) cout << "---------> ELAPSED TIME: " << mElapsedTime << endl;
+    if (gVerboseFlag)
+        cout << "---------> ELAPSED TIME: " << mElapsedTime << endl;
     // Check if we've timed out.
     if (gTimeOutMultiThreadedServer > 0 && mElapsedTime >= gTimeOutMultiThreadedServer) {
         std::cerr << "--->JackTripWorker: is not receiving Datagrams (timeout)" << endl;

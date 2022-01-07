@@ -163,8 +163,8 @@ void Settings::parseInput(int argc, char** argv)
         {"verbose", no_argument, NULL, 'V'},  // Verbose mode
         {"hubpatch", required_argument, NULL,
          'p'},  // Set hubConnectionMode for auto patch in Jack
-        {"includeserver", no_argument, NULL, 'i'}, // Include server audio in patch
-        {"upmix", no_argument, NULL, 'u'}, // Upmix mono clients when patching
+        {"includeserver", no_argument, NULL, 'i'},    // Include server audio in patch
+        {"upmix", no_argument, NULL, 'u'},            // Upmix mono clients when patching
         {"iostat", required_argument, NULL, 'I'},     // Set IO stat timeout
         {"iostatlog", required_argument, NULL, 'G'},  // Set IO stat log file
         {"effects", required_argument, NULL,
@@ -199,11 +199,11 @@ void Settings::parseInput(int argc, char** argv)
     //----------------------------------------------------------------------------
     /// \todo Specify mandatory arguments
     int ch;
-    while (
-        (ch = getopt_long(argc, argv,
-                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uiDvVhI:G:f:O:a:x:A",
-                          longopts, NULL))
-        != -1)
+    while ((ch = getopt_long(
+                argc, argv,
+                "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uiDvVhI:G:f:O:a:x:A",
+                longopts, NULL))
+           != -1)
         switch (ch) {
         case OPT_NUMRECEIVE:
             if (0 < atoi(optarg)) {
@@ -322,7 +322,9 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             if (0 == strncmp(optarg, "auto", 4)) {
                 mBufferQueueLength = -atoi(optarg + 4);
-                if (0 == mBufferQueueLength) { mBufferQueueLength = -500; }
+                if (0 == mBufferQueueLength) {
+                    mBufferQueueLength = -500;
+                }
             } else if (atoi(optarg) <= 0) {
                 printUsage();
                 std::cerr << "--queue ERROR: The queue has to be equal or greater than 2"
@@ -428,7 +430,8 @@ void Settings::parseInput(int argc, char** argv)
         case 'V':
             //-------------------------------------------------------
             gVerboseFlag = true;
-            if (gVerboseFlag) std::cout << "Verbose mode" << std::endl;
+            if (gVerboseFlag)
+                std::cout << "Verbose mode" << std::endl;
             mEffects.setVerboseFlag(gVerboseFlag);
             break;
         case 'p':
@@ -470,11 +473,11 @@ void Settings::parseInput(int argc, char** argv)
         case 'G':  // IO Stat log file
             //-------------------------------------------------------
             {
-                std::ofstream *outStream = new std::ofstream(optarg);
+                std::ofstream* outStream = new std::ofstream(optarg);
                 if (!outStream->is_open()) {
                     printUsage();
-                    std::cerr << "--iostatlog FAILED to open " << optarg << " for writing."
-                            << endl;
+                    std::cerr << "--iostatlog FAILED to open " << optarg
+                              << " for writing." << endl;
                     std::exit(1);
                 }
                 mIOStatStream.reset(outStream);
@@ -514,7 +517,9 @@ void Settings::parseInput(int argc, char** argv)
         case 'O': {  // Overflow limiter (i, o, or io)
             //-------------------------------------------------------
             char cmd[]{"--overflowlimiting (-O)"};
-            if (gVerboseFlag) { printf("%s argument = %s\n", cmd, optarg); }
+            if (gVerboseFlag) {
+                printf("%s argument = %s\n", cmd, optarg);
+            }
             int returnCode = mEffects.parseLimiterOptArg(cmd, optarg);
             if (returnCode > 1) {
                 mEffects.printHelp(cmd, ch);
@@ -529,7 +534,9 @@ void Settings::parseInput(int argc, char** argv)
         case 'a': {  // assumed number of clients (applies to outgoing limiter)
             //-------------------------------------------------------
             char cmd[]{"--assumednumclients (-a)"};
-            if (gVerboseFlag) { printf("%s argument = %s\n", cmd, optarg); }
+            if (gVerboseFlag) {
+                printf("%s argument = %s\n", cmd, optarg);
+            }
             int returnCode = mEffects.parseAssumedNumClientsOptArg(cmd, optarg);
             if (returnCode > 1) {
                 mEffects.printHelp(cmd, ch);
@@ -620,7 +627,9 @@ void Settings::parseInput(int argc, char** argv)
         if (strcmp(argv[optind], "help") != 0) {
             cout << gPrintSeparator << endl;
             cout << "*** Unexpected command-line argument(s): ";
-            for (; optind < argc; optind++) { cout << argv[optind] << " "; }
+            for (; optind < argc; optind++) {
+                cout << argv[optind] << " ";
+            }
             cout << endl << gPrintSeparator << endl;
         }
         printUsage();
@@ -892,7 +901,8 @@ UdpHubListener* Settings::getConfiguredHubServer()
             mHubConnectionMode = JackTrip::SERVFULLMIX;
         } else {
             std::cout << "WARNING: The -i (--includeserver) flag has no effect in this "
-                "patch mode and will be ignored." << std::endl;
+                         "patch mode and will be ignored."
+                      << std::endl;
         }
     }
     udpHub->setHubPatch(mHubConnectionMode);
@@ -913,7 +923,9 @@ UdpHubListener* Settings::getConfiguredHubServer()
     udpHub->setBroadcast(mBroadcastQueue);
     udpHub->setUseRtUdpPriority(mUseRtUdpPriority);
 
-    if (true == mAppendThreadID) { udpHub->mAppendThreadID = true; }
+    if (true == mAppendThreadID) {
+        udpHub->mAppendThreadID = true;
+    }
 
     if (mIOStatTimeout > 0) {
         udpHub->setIOStatTimeout(mIOStatTimeout);
@@ -956,7 +968,9 @@ JackTrip* Settings::getConfiguredJackTrip()
     jackTrip->setConnectDefaultAudioPorts(mConnectDefaultAudioPorts);
 
     // Change client name if different from default
-    if (!mClientName.isEmpty()) { jackTrip->setClientName(mClientName); }
+    if (!mClientName.isEmpty()) {
+        jackTrip->setClientName(mClientName);
+    }
 
     if (!mRemoteClientName.isEmpty() && (mJackTripMode == JackTrip::CLIENTTOPINGSERVER)) {
         jackTrip->setRemoteClientName(mRemoteClientName);
@@ -992,16 +1006,24 @@ JackTrip* Settings::getConfiguredJackTrip()
 
     // Set RtAudio
 #ifdef RT_AUDIO
-    if (!mUseJack) { jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO); }
+    if (!mUseJack) {
+        jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
+    }
 
     // Change default Sampling Rate
-    if (mChangeDefaultSR) { jackTrip->setSampleRate(mSampleRate); }
+    if (mChangeDefaultSR) {
+        jackTrip->setSampleRate(mSampleRate);
+    }
 
     // Change defualt device ID
-    if (mChangeDefaultID) { jackTrip->setDeviceID(mDeviceID); }
+    if (mChangeDefaultID) {
+        jackTrip->setDeviceID(mDeviceID);
+    }
 
     // Change default Buffer Size
-    if (mChangeDefaultBS) { jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize); }
+    if (mChangeDefaultBS) {
+        jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize);
+    }
 
     // Set device names
     jackTrip->setInputDevice(mInputDeviceName);
@@ -1072,11 +1094,15 @@ JackTrip* Settings::getConfiguredJackTrip()
 
     std::vector<ProcessPlugin*> outgoingEffects =
         mEffects.allocateOutgoingEffects(mNumAudioInputChans - nReservedChans);
-    for (auto p : outgoingEffects) { jackTrip->appendProcessPluginToNetwork(p); }
+    for (auto p : outgoingEffects) {
+        jackTrip->appendProcessPluginToNetwork(p);
+    }
 
     std::vector<ProcessPlugin*> incomingEffects =
         mEffects.allocateIncomingEffects(mNumAudioOutputChans - nReservedChans);
-    for (auto p : incomingEffects) { jackTrip->appendProcessPluginFromNetwork(p); }
+    for (auto p : incomingEffects) {
+        jackTrip->appendProcessPluginFromNetwork(p);
+    }
 
 #ifdef WAIR  // WAIR
     if (mWAIR) {

@@ -195,7 +195,9 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
         if (sendImpulse) {
             assert(sendChannel < mInBufCopy.size());
             mInBufCopy[sendChannel][0] = getImpulseAmp();
-            for (uint n = 1; n < n_frames; n++) { mInBufCopy[sendChannel][n] = 0; }
+            for (uint n = 1; n < n_frames; n++) {
+                mInBufCopy[sendChannel][n] = 0;
+            }
             impulsePending     = true;
             impulseTimeUS      = timeMicroSec();
             impulseTimeSamples = sampleCountSinceImpulse;  // timer in samples for current
@@ -213,7 +215,9 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
         } else {
             mInBufCopy[sendChannel][0] =
                 0.0f;  // send zeros until a new impulse is needed
-            if (n_frames > 1) { mInBufCopy[sendChannel][1] = 0.0f; }
+            if (n_frames > 1) {
+                mInBufCopy[sendChannel][1] = 0.0f;
+            }
         }
     } else {
         bufferSkip--;

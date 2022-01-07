@@ -163,7 +163,9 @@ class AudioTester
         int histLast  = latencyHistogramLastNonzeroCellIndex();
         for (int i = histStart; i <= histLast; ++i) {
             int lhi = latencyHistogram[i];
-            if (lhi > lhMax) { lhMax = lhi; }
+            if (lhi > lhMax) {
+                lhMax = lhi;
+            }
         }
         return lhMax;
     }
@@ -171,7 +173,9 @@ class AudioTester
     int latencyHistogramFirstNonzeroCellIndex()
     {
         for (int i = latencyHistogramCellMin; i <= latencyHistogramCellMax; i++) {
-            if (latencyHistogram[i] > 0) { return i; }
+            if (latencyHistogram[i] > 0) {
+                return i;
+            }
         }
         std::cerr << "*** AudioTester: LATENCY HISTOGRAM IS EMPTY!\n";
         return -1;
@@ -180,7 +184,9 @@ class AudioTester
     int latencyHistogramLastNonzeroCellIndex()
     {
         for (int i = latencyHistogramCellMax; i >= latencyHistogramCellMin; i--) {
-            if (latencyHistogram[i] > 0) { return i; }
+            if (latencyHistogram[i] > 0) {
+                return i;
+            }
         }
         std::cerr << "*** AudioTester: LATENCY HISTOGRAM IS EMPTY!\n";
         return -1;
@@ -209,12 +215,18 @@ class AudioTester
                 std::to_string(int(latencyHistogramCellWidth * double(i + 1)));
             // std::string histr = boost::format("%02d",hi);
             std::string histr = std::to_string(hi);
-            while (histr.length() < 3) { histr = " " + histr; }
+            while (histr.length() < 3) {
+                histr = " " + histr;
+            }
             std::string row = "[" + istrm1 + "-" + istr + "ms]=" + histr + ":";
-            for (int j = 0; j < hin; j++) { row += marker; }
+            for (int j = 0; j < hin; j++) {
+                row += marker;
+            }
             rows += row + "\n";
         }
-        if (histLast == latencyHistogramCellMax) { rows += " and above\n"; }
+        if (histLast == latencyHistogramCellMax) {
+            rows += " and above\n";
+        }
         return rows;
     }
 };

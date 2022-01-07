@@ -37,9 +37,9 @@
 
 #ifndef NO_GUI
 #include <QApplication>
+#include <QCommandLineParser>
 
 #include "gui/qjacktrip.h"
-#include <QCommandLineParser>
 #else
 #include <QCoreApplication>
 #endif
@@ -53,9 +53,9 @@
 #include "jacktrip_globals.h"
 
 #ifdef _WIN32
-#include <windows.h>
 #include <psapi.h>
 #include <tlhelp32.h>
+#include <windows.h>
 #endif
 
 QCoreApplication* createApplication(int& argc, char* argv[])
@@ -162,8 +162,9 @@ BOOL WINAPI windowsCtrlHandler(DWORD fdwCtrlType)
     }
 }
 
-bool isRunFromCmd() {
-    //Get our parent process pid
+bool isRunFromCmd()
+{
+    // Get our parent process pid
     HANDLE h = NULL;
     PROCESSENTRY32 pe;
     ZeroMemory(&pe, sizeof(PROCESSENTRY32));
@@ -173,7 +174,7 @@ bool isRunFromCmd() {
     h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (Process32First(h, &pe)) {
         do {
-            //Loop through the list of processes until we find ours.
+            // Loop through the list of processes until we find ours.
             if (pe.th32ProcessID == pid) {
                 ppid = pe.th32ParentProcessID;
                 break;
@@ -182,7 +183,7 @@ bool isRunFromCmd() {
     }
     CloseHandle(h);
 
-    //Get the name of our parent process;
+    // Get the name of our parent process;
     char pname[MAX_PATH] = {0};
     DWORD size = MAX_PATH;
     h = NULL;
@@ -191,7 +192,7 @@ bool isRunFromCmd() {
         if (QueryFullProcessImageNameA(h, 0, pname, &size)) {
             CloseHandle(h);
 
-            //Check if our parent process is a command line.
+            // Check if our parent process is a command line.
             if (size >= 14 && strncmp(pname + size - 14, "powershell.exe", 14) == 0) {
                 return true;
             }
@@ -217,7 +218,8 @@ int main(int argc, char* argv[])
     if (qobject_cast<QApplication*>(app.data())) {
         // Start the GUI if there are no command line options.
 #ifdef _WIN32
-        // Remove the console that appears if we're on windows and not running from a command line.
+        // Remove the console that appears if we're on windows and not running from a
+        // command line.
         if (!isRunFromCmd()) {
             FreeConsole();
         }
@@ -225,7 +227,8 @@ int main(int argc, char* argv[])
         app->setApplicationName(QStringLiteral("QJackTrip"));
 
         QCommandLineParser parser;
-        QCommandLineOption verboseOption(QStringList() << QStringLiteral("V") << QStringLiteral("verbose"));   
+        QCommandLineOption verboseOption(QStringList() << QStringLiteral("V")
+                                                       << QStringLiteral("verbose"));
         parser.addOption(verboseOption);
         parser.parse(app->arguments());
         if (parser.isSet(verboseOption)) {
@@ -287,8 +290,10 @@ int main(int argc, char* argv[])
 #endif  // endwhere
             }
 
-            if (gVerboseFlag) std::cout << "step 6" << std::endl;
-            if (gVerboseFlag) std::cout << "jmain before app->exec()" << std::endl;
+            if (gVerboseFlag)
+                std::cout << "step 6" << std::endl;
+            if (gVerboseFlag)
+                std::cout << "jmain before app->exec()" << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "ERROR:" << std::endl;
             std::cerr << e.what() << std::endl;
