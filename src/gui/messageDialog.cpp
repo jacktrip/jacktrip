@@ -31,7 +31,7 @@
 #include <QMenu>
 #include <QSettings>
 
-MessageDialog::MessageDialog(QWidget* parent, QString windowFunction, quint32 streamCount)
+MessageDialog::MessageDialog(QWidget* parent, const QString &windowFunction, quint32 streamCount)
     : QDialog(parent)
     , m_ui(new Ui::MessageDialog)
     , m_outStreams(streamCount)
@@ -60,7 +60,7 @@ void MessageDialog::showEvent(QShowEvent* event)
     QDialog::showEvent(event);
     if (!m_windowFunction.isEmpty()) {
         QSettings settings;
-        settings.beginGroup("Window");
+        settings.beginGroup(QStringLiteral("Window"));
         QByteArray geometry = settings.value(m_windowFunction + "Geometry").toByteArray();
         if (geometry.size() > 0) {
             restoreGeometry(geometry);
@@ -111,7 +111,7 @@ void MessageDialog::provideContextMenu()
 {
     // Add a custom context menu entry to clear the output.
     QMenu *menu = m_ui->messagesTextEdit->createStandardContextMenu();
-    QAction *action = menu->addAction(QIcon::fromTheme("edit-delete"), "Clear");
+    QAction *action = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-delete")), QStringLiteral("Clear"));
     connect(action, &QAction::triggered, this, &MessageDialog::clearOutput);
     menu->exec(QCursor::pos());
 }
@@ -120,7 +120,7 @@ void MessageDialog::savePosition()
 {
     if (!m_windowFunction.isEmpty()) {
         QSettings settings;
-        settings.beginGroup("Window");
+        settings.beginGroup(QStringLiteral("Window"));
         settings.setValue(m_windowFunction + "Geometry", saveGeometry());
         settings.endGroup();
     }

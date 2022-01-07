@@ -180,7 +180,7 @@ class AudioInterface
         mBufferSizeInSamples = buf_size;
     }
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(QString ClientName) = 0;
+    virtual void setClientName(const QString& ClientName) = 0;
     virtual void setLoopBack(bool b) { mLoopBack = b; }
     virtual void enableBroadcastOutput() {}
     virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }

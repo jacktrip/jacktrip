@@ -95,8 +95,8 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     mPeerAddr6.sin6_port = htons(mPeerPort);
 
     if (mRunMode == RECEIVER) {
-        QObject::connect(this, SIGNAL(signalWaitingTooLong(int)), jacktrip,
-                         SLOT(slotUdpWaitingTooLongClientGoneProbably(int)),
+        QObject::connect(this, &UdpDataProtocol::signalWaitingTooLong, jacktrip,
+                         &JackTrip::slotUdpWaitingTooLongClientGoneProbably,
                          Qt::QueuedConnection);
     }
     mSimulatedLossRate       = 0.0;
@@ -143,7 +143,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
     if (mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol) {
         mIPv6 = true;
     } else if (mPeerAddress.protocol() != QAbstractSocket::IPv4Protocol) {
-        QString error_message = "Incorrect presentation format address\n'";
+        QString error_message = QStringLiteral("Incorrect presentation format address\n'");
         error_message.append(peerHostOrIP);
         error_message.append("' is not a valid IP address or Host Name");
         // std::cerr << "ERROR: Incorrect presentation format address" << endl;
@@ -356,7 +356,7 @@ int UdpDataProtocol::receivePacket(char* buf, const size_t n)
         }
         if (exit && !mStopSignalSent) {
             mStopSignalSent = true;
-            emit signalCeaseTransmission("Peer Stopped");
+            emit signalCeaseTransmission(QStringLiteral("Peer Stopped"));
             std::cout << "Peer Stopped" << std::endl;
         }
         return 0;
@@ -566,8 +566,8 @@ void UdpDataProtocol::run()
     switch (mRunMode) {
     case RECEIVER: {
         // Connect signals and slots for packets arriving too late notifications
-        QObject::connect(this, SIGNAL(signalWaitingTooLong(int)), this,
-                         SLOT(printUdpWaitedTooLong(int)), Qt::QueuedConnection);
+        QObject::connect(this, &UdpDataProtocol::signalWaitingTooLong, this,
+                         &UdpDataProtocol::printUdpWaitedTooLong, Qt::QueuedConnection);
         //-----------------------------------------------------------------------------------
         // Wait for the first packet to be ready and obtain address
         // from that packet

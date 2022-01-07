@@ -42,7 +42,7 @@ class MessageDialog : public QDialog
     Q_OBJECT
 
    public:
-    explicit MessageDialog(QWidget* parent = nullptr, QString windowFunction = "", quint32 streamCount = 1);
+    explicit MessageDialog(QWidget* parent = nullptr, const QString& windowFunction = QLatin1String(""), quint32 streamCount = 1);
     ~MessageDialog() override;
     
     void showEvent(QShowEvent* event) override;

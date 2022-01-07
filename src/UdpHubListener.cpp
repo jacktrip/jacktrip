@@ -62,8 +62,9 @@ using std::endl;
 bool UdpHubListener::sSigInt = false;
 
 //*******************************************************************************
-UdpHubListener::UdpHubListener(int server_port, int server_udp_port)
-    : mTcpServer(this)
+UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* parent)
+    : QObject(parent)
+    , mTcpServer(this)
     , mServerPort(server_port)
     , mServerUdpPort(server_udp_port)
     ,  // final udp base port number
@@ -138,7 +139,7 @@ void UdpHubListener::start()
     QObject::connect(&mTcpServer, &SslServer::newConnection, this,
                      &UdpHubListener::receivedNewConnection);
     if (!mTcpServer.listen(QHostAddress::Any, mServerPort)) {
-        QString error_message = QString("TCP Socket Server on Port %1 ERROR: %2")
+        QString error_message = QStringLiteral("TCP Socket Server on Port %1 ERROR: %2")
                                     .arg(mServerPort)
                                     .arg(mTcpServer.errorString());
         std::cerr << error_message.toStdString() << endl;
@@ -160,10 +161,10 @@ void UdpHubListener::start()
 
         if (mCertFile.isEmpty()) {
             error         = true;
-            error_message = "No certificate file specified.";
+            error_message = QStringLiteral("No certificate file specified.");
         } else if (mKeyFile.isEmpty()) {
             error         = true;
-            error_message = "No private key file specified.";
+            error_message = QStringLiteral("No private key file specified.");
         }
 
         // Load our certificate and private key
@@ -175,11 +176,11 @@ void UdpHubListener::start()
                     mTcpServer.setCertificate(cert);
                 } else {
                     error         = true;
-                    error_message = "Unable to load certificate file.";
+                    error_message = QStringLiteral("Unable to load certificate file.");
                 }
             } else {
                 error         = true;
-                error_message = "Could not find certificate file.";
+                error_message = QStringLiteral("Could not find certificate file.");
             }
         }
 
@@ -191,11 +192,11 @@ void UdpHubListener::start()
                     mTcpServer.setPrivateKey(key);
                 } else {
                     error         = true;
-                    error_message = "Unable to read RSA private key file.";
+                    error_message = QStringLiteral("Unable to read RSA private key file.");
                 }
             } else {
                 error         = true;
-                error_message = "Could not find RSA private key file.";
+                error_message = QStringLiteral("Could not find RSA private key file.");
             }
         }
 
@@ -203,7 +204,7 @@ void UdpHubListener::start()
             QFileInfo credsInfo(mCredsFile);
             if (!credsInfo.exists() || !credsInfo.isFile()) {
                 error         = true;
-                error_message = "Could not find credentials file.";
+                error_message = QStringLiteral("Could not find credentials file.");
             }
         }
 
@@ -489,7 +490,7 @@ void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 }
 
 //*******************************************************************************
-int UdpHubListener::getJackTripWorker(QString address, [[maybe_unused]] uint16_t port,
+int UdpHubListener::getJackTripWorker(const QString& address, [[maybe_unused]] uint16_t port,
                                       QString& clientName)
 {
     // Find our first empty slot in our vector of worker object pointers.
@@ -506,7 +507,7 @@ int UdpHubListener::getJackTripWorker(QString address, [[maybe_unused]] uint16_t
 
     if (id >= 0) {
         mTotalRunningThreads++;
-        if (mAppendThreadID) { clientName = clientName + QString("_%1").arg(id + 1); }
+        if (mAppendThreadID) { clientName = clientName + QStringLiteral("_%1").arg(id + 1); }
         mJTWorkers->replace(
             id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
         mJTWorkers->at(id)->setJackTrip(
@@ -519,7 +520,7 @@ int UdpHubListener::getJackTripWorker(QString address, [[maybe_unused]] uint16_t
 }
 
 //*******************************************************************************
-int UdpHubListener::getPoolID(QString address, uint16_t port)
+int UdpHubListener::getPoolID(const QString& address, uint16_t port)
 {
     QMutexLocker lock(&mMutex);
     // for (int id = 0; id<mThreadPool.activeThreadCount(); id++ )

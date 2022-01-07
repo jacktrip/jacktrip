@@ -83,8 +83,8 @@ JMess::~JMess()
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::writeOutput(QString /*xmlOutFile*/)
-{
+//void JMess::writeOutput(QString /*xmlOutFile*/)
+//{
     //  QDomDocument jmess_xml;   QDomElement root;
     //  QDomElement connection;   QDomElement output;
     //  QDomElement input;        QDomText output_name;
@@ -139,14 +139,14 @@ void JMess::writeOutput(QString /*xmlOutFile*/)
     //    jmess_xml.save(out, Indent);
     //    cout << qPrintable(xmlOutFile) << " written." << "\n";
     //  }
-}
+//}
 
 //-------------------------------------------------------------------------------
 /*! \brief Set list of ouput ports that have connections.
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::setConnectedPorts()
+/*void JMess::setConnectedPorts()
 {
     mConnectedPorts.clear();
 
@@ -171,9 +171,9 @@ void JMess::setConnectedPorts()
     }
 
     free(ports);
-}
+}*/
 //*******************************************************************************
-void JMess::connectSpawnedPorts(int nChans, int hubPatch)
+/*void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 // called from UdpHubListener::connectMesh
 {
     QMutexLocker locker(&sJMessMutex);
@@ -188,7 +188,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
 
     for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
         //        qDebug() << QString(ports[out_i]);
-        bool systemPort = QString(ports[out_i]).contains(QString("system"));
+        bool systemPort = QString(ports[out_i]).contains(QLatin1String("system"));
 
         QString str = QString(ports[out_i]);
         //  for example              "171.64.197.121:receive_1"
@@ -241,7 +241,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
     // do it again to implement the FULLMIX part which is CLIENTFOFI
     if (hubPatch == JackTrip::FULLMIX) {
         jLimit = (ctr - 1);  // same as CLIENTFOFI
-        /*************/
+
         // todo: the next block should be in a method, it's a repeat of the above
         for (int i = 0; i < ctr; i++) {
             for (int j = 0; j < jLimit; j++) {
@@ -265,7 +265,7 @@ void JMess::connectSpawnedPorts(int nChans, int hubPatch)
     }
 
     free(ports);
-}
+}*/
 
 //*******************************************************************************
 // connectTUB is called when in hubpatch mode 4 = RESERVEDMATRIX
@@ -320,8 +320,8 @@ void JMess::connectTUB(int /*nChans*/)
         {
             // jacktrip to SC
             QString client =
-                gDOMAIN_TRIPLE + QString(".") + QString::number(gMIN_TUB + i);
-            QString serverAudio = QString(HARDWIRED_AUDIO_PROCESS_ON_SERVER);
+                gDOMAIN_TRIPLE + QStringLiteral(".") + QString::number(gMIN_TUB + i);
+            QString serverAudio = QStringLiteral(HARDWIRED_AUDIO_PROCESS_ON_SERVER);
             int tmp =
                 i + l;  // only works for mono... completely wrong for 2 or more chans
             qDebug() << "connect " << client << ":receive_ " << l << "with "
@@ -361,7 +361,7 @@ void JMess::connectTUB(int /*nChans*/)
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::disconnectAll()
+/*void JMess::disconnectAll()
 {
     this->setConnectedPorts();
 
@@ -372,7 +372,7 @@ void JMess::disconnectAll()
                       << " could not be disconnected.\n";
         }
     }
-}
+}*/
 
 //-------------------------------------------------------------------------------
 /*! \brief Parse the XML input file.
@@ -381,8 +381,8 @@ void JMess::disconnectAll()
  * read the file.
  */
 //-------------------------------------------------------------------------------
-int JMess::parseXML(QString /*xmlInFile*/)
-{
+//int JMess::parseXML(QString /*xmlInFile*/)
+//{
     //  mPortsToConnect.clear();
     //  QString errorStr;
     //  int errorLine;
@@ -437,16 +437,16 @@ int JMess::parseXML(QString /*xmlInFile*/)
     //    }
     //  }
 
-    return 0;
-}
+//    return 0;
+//}
 
 //-------------------------------------------------------------------------------
 /*! \brief Connect ports specified in input XML file xmlInFile
  *
  */
 //-------------------------------------------------------------------------------
-void JMess::connectPorts(QString /*xmlInFile*/)
-{
+//void JMess::connectPorts(QString /*xmlInFile*/)
+//{
     //    QVector<QString> OutputInput(2);
 
     //  if ( !(this->parseXML(xmlInFile)) ) {
@@ -468,4 +468,4 @@ void JMess::connectPorts(QString /*xmlInFile*/)
     //      }
     //    }
     //  }
-}
+//}

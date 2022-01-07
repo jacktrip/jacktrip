@@ -48,7 +48,7 @@
  * methods except init, which is optional for processing that are sampling rate dependent
  * or that need specific initialization.
  */
-class ProcessPlugin : public QObject
+class ProcessPlugin
 {
    public:
     /// \brief The Class Constructor

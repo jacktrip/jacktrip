@@ -28,43 +28,45 @@
 #include "../jacktrip_globals.h"
 #include "ui_about.h"
 
-#ifndef BUILD_TYPE
-#define BUILD_TYPE "";
+#ifdef BUILD_TYPE
+const QString About::s_buildType = QStringLiteral(BUILD_TYPE);
+#else
+const QString About::s_buildType = QLatin1String("");
 #endif
-#ifndef BUILD_ID
-#define BUILD_ID "";
+#ifdef BUILD_ID
+const QString About::s_buildID   = QStringLiteral(BUILD_ID);
+#else
+const QString About::s_buildID   = QLatin1String("");
 #endif
-
-const QString About::s_buildType = BUILD_TYPE;
-const QString About::s_buildID   = BUILD_ID;
 
 About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
 {
     m_ui->setupUi(this);
     connect(m_ui->closeButton, &QPushButton::clicked, this, [=]() { this->done(0); });
 
-    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%VERSION%", gVersion));
+    m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace(QLatin1String("%VERSION%"), gVersion));
 #ifdef QT_OPENSOURCE
     m_ui->aboutLabel->setText(
-        m_ui->aboutLabel->text().replace("%LICENSE%", "This build of JackTrip is subject to LGPL license. "));
+        m_ui->aboutLabel->text().replace(QLatin1String("%LICENSE%"),
+                                         QLatin1String("This build of JackTrip is subject to LGPL license. ")));
 #else
     m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%LICENSE%", ""));
 #endif
     if (!s_buildType.isEmpty() || !s_buildID.isEmpty()) {
-        QString buildString = "<br/>(";
+        QString buildString = QStringLiteral("<br/>(");
         if (!s_buildType.isEmpty()) {
             buildString.append(s_buildType);
             if (!s_buildID.isEmpty()) {
-                buildString.append(QString(", build %1").arg(s_buildID));
+                buildString.append(QStringLiteral(", build %1").arg(s_buildID));
             }
         } else {
-            buildString.append(QString("Build %1").arg(s_buildID));
+            buildString.append(QStringLiteral("Build %1").arg(s_buildID));
         }
         buildString.append(")");
         m_ui->aboutLabel->setText(
-            m_ui->aboutLabel->text().replace("%BUILD%", buildString));
+            m_ui->aboutLabel->text().replace(QLatin1String("%BUILD%"), buildString));
     } else {
-        m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace("%BUILD%", ""));
+        m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace(QLatin1String("%BUILD%"), QLatin1String("")));
     }
 #ifdef __APPLE__
     m_ui->aboutImage->setPixmap(QPixmap(":/qjacktrip/about@2x.png"));

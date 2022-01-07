@@ -52,7 +52,7 @@ class Patcher : public QObject
     Q_OBJECT
 
    public:
-    Patcher() = default;
+    Patcher(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~Patcher();
 
     void setPatchMode(JackTrip::hubConnectionModeT patchMode);

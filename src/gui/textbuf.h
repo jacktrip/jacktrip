@@ -30,13 +30,13 @@
 #include <iostream>
 #include <QPlainTextEdit>
 
-//Extension of a stream buffer to output to a QTextEdit
+//Extension of a stream buffer to output to a QTextEdit via a signal
 class textbuf : public QObject, public std::basic_streambuf<char, std::char_traits<char>>
 {
     Q_OBJECT
     
    public:
-    textbuf() { setp(m_buf, m_buf + BUF_SIZE); }
+    textbuf(QObject* parent = nullptr) : QObject(parent) { setp(m_buf, m_buf + BUF_SIZE); }
     
     void setOutStream(std::ostream *output);
 

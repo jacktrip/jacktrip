@@ -109,7 +109,7 @@ struct JamLinkHeaderStuct : public HeaderStruct {
  */
 class PacketHeader : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
     /// \brief The class Constructor
@@ -178,6 +178,8 @@ class PacketHeader : public QObject
  */
 class DefaultHeader : public PacketHeader
 {
+    Q_OBJECT
+    
    public:
     DefaultHeader(JackTrip* jacktrip);
     virtual ~DefaultHeader() {}
@@ -221,6 +223,8 @@ class DefaultHeader : public PacketHeader
  */
 class JamLinkHeader : public PacketHeader
 {
+    Q_OBJECT
+    
    public:
     JamLinkHeader(JackTrip* jacktrip);
     virtual ~JamLinkHeader() {}
@@ -277,6 +281,8 @@ class JamLinkHeader : public PacketHeader
  */
 class EmptyHeader : public PacketHeader
 {
+    Q_OBJECT
+    
    public:
     EmptyHeader(JackTrip* jacktrip);
     virtual ~EmptyHeader() {}

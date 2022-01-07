@@ -144,7 +144,8 @@ class JackTrip : public QObject
         DataProtocol::packetHeaderTypeT PacketHeaderType       = DataProtocol::DEFAULT,
         underrunModeT UnderRunMode = WAVETABLE, int receiver_bind_port = gDefaultPort,
         int sender_bind_port = gDefaultPort, int receiver_peer_port = gDefaultPort,
-        int sender_peer_port = gDefaultPort, int tcp_peer_port = gDefaultPort);
+        int sender_peer_port = gDefaultPort, int tcp_peer_port = gDefaultPort,
+        QObject* parent = nullptr);
 
     /// \brief The class destructor
     virtual ~JackTrip();
@@ -164,7 +165,7 @@ class JackTrip : public QObject
     }*/
 
     /// \brief Set the Peer Address for jacktripModeT::CLIENT mode only
-    virtual void setPeerAddress(QString PeerHostOrIP);
+    virtual void setPeerAddress(const QString& PeerHostOrIP);
 
     /** \brief Append a process plugin. Processes will be appended in order
      * \param plugin Pointer to ProcessPlugin Class
@@ -182,7 +183,7 @@ class JackTrip : public QObject
     virtual void completeConnection();
 
     /// \brief Stop the processing threads
-    virtual void stop(QString errorMessage = "");
+    virtual void stop(const QString& errorMessage = QLatin1String(""));
 
     /// \brief Wait for all the threads to finish. This functions is used when JackTrip is
     /// run as a thread
@@ -259,11 +260,11 @@ class JackTrip : public QObject
     }
     void setPeerHandshakePort(int port) { mTcpServerPort = port; }
     void setUseAuth(bool auth) { mUseAuth = auth; }
-    void setUsername(QString username) { mUsername = username; }
-    void setPassword(QString password) { mPassword = password; }
+    void setUsername(const QString& username) { mUsername = username; }
+    void setPassword(const QString& password) { mPassword = password; }
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(QString clientName) { mJackClientName = clientName; }
-    virtual void setRemoteClientName(QString remoteClientName)
+    virtual void setClientName(const QString& clientName) { mJackClientName = clientName; }
+    virtual void setRemoteClientName(const QString& remoteClientName)
     {
         mRemoteClientName = remoteClientName;
     }
@@ -432,7 +433,7 @@ class JackTrip : public QObject
             return static_cast<JackAudioInterface*>(mAudioInterface)
                 ->getAssignedClientName();
         } else {
-            return "";
+            return QLatin1String("");
         }
     }
 #endif
@@ -540,7 +541,7 @@ class JackTrip : public QObject
         int wait_time = 10000;  // msec
         if (!(wait_msec % wait_time)) {
             std::cerr << "UDP WAITED MORE THAN 10 seconds." << std::endl;
-            if (mStopOnTimeout) { stop("No network data received for 10 seconds"); }
+            if (mStopOnTimeout) { stop(QStringLiteral("No network data received for 10 seconds")); }
             emit signalNoUdpPacketsForSeconds();
         }
     }

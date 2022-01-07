@@ -57,7 +57,7 @@ using std::endl;
 
 //*******************************************************************************
 JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength,
-                               JackTrip::underrunModeT UnderRunMode, QString clientName)
+                               JackTrip::underrunModeT UnderRunMode, const QString& clientName)
     : mAppendThreadID(false)
     , mSleepTime(100)
     , mUdpHubListener(udphublistener)
@@ -72,7 +72,7 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
 }
 
 //*******************************************************************************
-void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server_port,
+void JackTripWorker::setJackTrip(int id, const QString& client_address, uint16_t server_port,
                                  uint16_t client_port, bool connectDefaultAudioPorts)
 {
     QMutexLocker locker(&mMutex);
@@ -96,7 +96,7 @@ void JackTripWorker::setJackTrip(int id, QString client_address, uint16_t server
     mServerPort                = server_port;
     mClientPort                = client_port;
     m_connectDefaultAudioPorts = connectDefaultAudioPorts;
-    mAssignedClientName        = "";
+    mAssignedClientName        = QLatin1String("");
 
     // Create and setup JackTrip Object
     // JackTrip jacktrip(JackTrip::SERVER, JackTrip::UDP, mNumChans, 2);

@@ -69,7 +69,7 @@ class UdpHubListener : public QObject
     Q_OBJECT;
 
    public:
-    UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0);
+    UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0, QObject* parent = nullptr);
     virtual ~UdpHubListener();
 
     /// \brief Starts the TCP server
@@ -142,12 +142,12 @@ class UdpHubListener : public QObject
      * \param address as string (IPv4 or IPv6)
      * \return id number of JackTripWorker
      */
-    int getJackTripWorker(QString address, uint16_t port, QString& clientName);
+    int getJackTripWorker(const QString& address, uint16_t port, QString& clientName);
 
     /** \brief Returns the ID of the client in the pool. If the client
      * is not in the pool yet, returns -1.
      */
-    int getPoolID(QString address, uint16_t port);
+    int getPoolID(const QString& address, uint16_t port);
 
     void stopAllThreads();
 
@@ -211,9 +211,9 @@ class UdpHubListener : public QObject
 
    public:
     void setRequireAuth(bool requireAuth) { mRequireAuth = requireAuth; }
-    void setCertFile(QString certFile) { mCertFile = certFile; }
-    void setKeyFile(QString keyFile) { mKeyFile = keyFile; }
-    void setCredsFile(QString credsFile) { mCredsFile = credsFile; }
+    void setCertFile(const QString& certFile) { mCertFile = certFile; }
+    void setKeyFile(const QString& keyFile) { mKeyFile = keyFile; }
+    void setCredsFile(const QString& credsFile) { mCredsFile = credsFile; }
 
     unsigned int mHubPatch;
     void setHubPatch(unsigned int p)

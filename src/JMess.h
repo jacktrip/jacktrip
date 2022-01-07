@@ -35,12 +35,12 @@
 #ifndef __JMESS_H
 #define __JMESS_H
 
-#include <QIODevice>
+//#include <QIODevice>
 #include <QString>
-#include <QVector>
-#include <cerrno>
-#include <iostream>
-#include <string>
+//#include <QVector>
+//#include <cerrno>
+//#include <iostream>
+//#include <string>
 //#include <QtXml>
 //#include <QXmlSimpleReader>
 //#include <QXmlInputSource>
@@ -70,16 +70,16 @@ class JMess
     JMess();
     virtual ~JMess();
 
-    void disconnectAll();
-    void writeOutput(QString xmlOutFile);
-    void connectPorts(QString xmlInFile);
-    void setConnectedPorts();
+    //void disconnectAll();
+    //void writeOutput(QString xmlOutFile);
+    //void connectPorts(QString xmlInFile);
+    //void setConnectedPorts();
     /// \brief Cross connect ports between net combs, -l LAIR mode
-    void connectSpawnedPorts(int nChans, int hubPatch);
+    //void connectSpawnedPorts(int nChans, int hubPatch);
     void connectTUB(int nChans);
 
    private:
-    int parseXML(QString xmlInFile);
+    //int parseXML(QString xmlInFile);
 
     jack_client_t* mClient;  // Class client
     jack_status_t mStatus;   // Class client status
@@ -89,8 +89,8 @@ class JMess
     // OuputPort1 InputPort1
     // ...
     // OuputPortN InputPortN
-    QVector<QVector<QString> > mConnectedPorts;
-    QVector<QVector<QString> > mPortsToConnect;
+    //QVector<QVector<QString> > mConnectedPorts;
+    //QVector<QVector<QString> > mPortsToConnect;
     static QMutex sJMessMutex;  ///< Mutex to make thread safe jack functions that are not
 };
 #endif
