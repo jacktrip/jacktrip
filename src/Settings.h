@@ -60,7 +60,7 @@ class Settings : public QObject
     Q_OBJECT;
 
    public:
-    Settings() : mAudioTester(new AudioTester) {}
+    Settings(QObject* parent = nullptr) : QObject(parent), mAudioTester(new AudioTester) {}
 
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
@@ -123,6 +123,7 @@ class Settings : public QObject
     std::string mInputDeviceName, mOutputDeviceName;
 #endif
     unsigned int mHubConnectionMode = JackTrip::SERVERTOCLIENT;
+    bool mPatchServerAudio          = false;
     bool mStereoUpmix               = false;
     bool mConnectDefaultAudioPorts  = true;  ///< Connect or not jack audio ports
     int mIOStatTimeout              = 0;

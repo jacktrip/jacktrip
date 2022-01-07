@@ -165,146 +165,7 @@ To connect to a hub server you need to run as a hub client.</string>
         <string>Basic options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="2" column="0" colspan="3">
-         <widget class="QGroupBox" name="channelGroupBox">
-          <layout class="QGridLayout" name="gridLayout_9">
-           <item row="3" column="0">
-            <widget class="QLabel" name="channelRecvLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Received from network:</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QSpinBox" name="channelRecvSpinBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Number of audio channels toaccept from the network.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QSpinBox" name="channelSendSpinBox">
-             <property name="toolTip">
-              <string>Number of audio channels to send to the network.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="channelSendLabel">
-             <property name="text">
-              <string>&amp;Sent to network:</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelSendSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="channelLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Number of channels</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="3" column="1" colspan="2">
-         <widget class="QComboBox" name="autoPatchComboBox">
-          <property name="toolTip">
-           <string>Select how you want audio to be routed by the hub server.</string>
-          </property>
-          <property name="currentIndex">
-           <number>0</number>
-          </property>
-          <item>
-           <property name="text">
-            <string>Server to clients</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Client loopback</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Client fan out/in but no loopback</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Full Mix</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>No auto patching</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="11" column="0" colspan="3">
-         <layout class="QHBoxLayout" name="aboutLayout">
-          <item>
-           <spacer name="aboutSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="aboutButton">
-            <property name="text">
-             <string>About</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="7" column="0" colspan="3">
+        <item row="7" column="0" colspan="2">
          <widget class="QGroupBox" name="requireAuthGroupBox">
           <property name="title">
            <string/>
@@ -432,15 +293,29 @@ To connect to a hub server you need to run as a hub client.</string>
           </layout>
          </widget>
         </item>
-        <item row="6" column="0" colspan="3">
-         <widget class="QCheckBox" name="timeoutCheckBox">
-          <property name="toolTip">
-           <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
-          </property>
-          <property name="text">
-           <string>&amp;Disconnect after 10 seconds of no network activity</string>
-          </property>
-         </widget>
+        <item row="11" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="aboutLayout">
+          <item>
+           <spacer name="aboutSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="aboutButton">
+            <property name="text">
+             <string>About</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item row="9" column="0">
          <spacer name="basicVerticalSpacer">
@@ -458,7 +333,87 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </spacer>
         </item>
-        <item row="5" column="0" colspan="3">
+        <item row="2" column="0" colspan="2">
+         <widget class="QGroupBox" name="channelGroupBox">
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="3" column="0">
+            <widget class="QLabel" name="channelRecvLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&amp;Received from network:</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelRecvSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="channelRecvSpinBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Number of audio channels toaccept from the network.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="channelSendSpinBox">
+             <property name="toolTip">
+              <string>Number of audio channels to send to the network.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="channelSendLabel">
+             <property name="text">
+              <string>&amp;Sent to network:</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelSendSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QLabel" name="channelLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&amp;Number of channels</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelRecvSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="2">
          <widget class="QCheckBox" name="zeroCheckBox">
           <property name="toolTip">
            <string>Silence the audio when there's a buffer underrun.</string>
@@ -468,27 +423,98 @@ To connect to a hub server you need to run as a hub client.</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="autoPatchLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+        <item row="6" column="0" colspan="2">
+         <widget class="QCheckBox" name="timeoutCheckBox">
+          <property name="toolTip">
+           <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
           </property>
           <property name="text">
-           <string>Hub auto&amp;patch mode</string>
-          </property>
-          <property name="buddy">
-           <cstring>autoPatchComboBox</cstring>
+           <string>&amp;Disconnect after 10 seconds of no network activity</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0" colspan="3">
-         <widget class="QCheckBox" name="upmixCheckBox">
-          <property name="text">
-           <string>&amp;Upmix mono clients to stereo</string>
+        <item row="3" column="0" colspan="2">
+         <widget class="QGroupBox" name="autoPatchGroupBox">
+          <property name="title">
+           <string/>
           </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="2" column="0" colspan="2">
+            <widget class="QCheckBox" name="upmixCheckBox">
+             <property name="toolTip">
+              <string>For clients that only send one channel of audio, relay their signal in stereo.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Upmix mono clients to stereo</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="autoPatchComboBox">
+             <property name="toolTip">
+              <string>Select how you want audio to be routed by the hub server.</string>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>Server to clients</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Client loopback</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Client fan out/in but no loopback</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Full Mix</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>No auto patching</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="autoPatchLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Hub auto&amp;patch mode</string>
+             </property>
+             <property name="buddy">
+              <cstring>autoPatchComboBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QCheckBox" name="patchServerCheckBox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Include the server in the audio patching. This allows an ensemble member to
+play from this machine. (Available in client fan out/in and full mix modes.)</string>
+             </property>
+             <property name="text">
+              <string>&amp;Include server in patching</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -958,6 +984,9 @@ To connect to a hub server you need to run as a hub client.</string>
         </item>
         <item row="12" column="0" colspan="3">
          <widget class="QCheckBox" name="verboseCheckBox">
+          <property name="toolTip">
+           <string>Display debugging information that would normally appear on the console.</string>
+          </property>
           <property name="text">
            <string>Show &amp;Debug Information</string>
           </property>
@@ -1761,6 +1790,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>channelRecvSpinBox</tabstop>
   <tabstop>channelSendSpinBox</tabstop>
   <tabstop>autoPatchComboBox</tabstop>
+  <tabstop>patchServerCheckBox</tabstop>
   <tabstop>upmixCheckBox</tabstop>
   <tabstop>zeroCheckBox</tabstop>
   <tabstop>timeoutCheckBox</tabstop>
@@ -1784,6 +1814,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>realTimeCheckBox</tabstop>
   <tabstop>ioStatsCheckBox</tabstop>
   <tabstop>ioStatsSpinBox</tabstop>
+  <tabstop>verboseCheckBox</tabstop>
   <tabstop>authCheckBox</tabstop>
   <tabstop>usernameEdit</tabstop>
   <tabstop>passwordEdit</tabstop>
@@ -1814,7 +1845,6 @@ and wetness is the essence of beauty.</string>
   <tabstop>outCompressorCheckBox</tabstop>
   <tabstop>outLimiterCheckBox</tabstop>
   <tabstop>outClientsSpinBox</tabstop>
-  <tabstop>verboseCheckBox</tabstop>
  </tabstops>
  <resources>
   <include location="qjacktrip.qrc"/>

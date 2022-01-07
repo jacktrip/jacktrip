@@ -94,6 +94,7 @@ class QJackTrip : public QMainWindow
 
    private:
     enum runTypeT { P2P_CLIENT, P2P_SERVER, HUB_CLIENT, HUB_SERVER };
+    enum patchTypeT { SERVERTOCLIENT, CLIENTECHO, CLIENTFOFI, FULLMIX, NOAUTO };
 
     int findTab(const QString& tabName);
     void enableUi(bool enabled);

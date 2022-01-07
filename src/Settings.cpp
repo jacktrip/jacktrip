@@ -163,6 +163,7 @@ void Settings::parseInput(int argc, char** argv)
         {"verbose", no_argument, NULL, 'V'},  // Verbose mode
         {"hubpatch", required_argument, NULL,
          'p'},  // Set hubConnectionMode for auto patch in Jack
+        {"includeserver", no_argument, NULL, 'i'}, // Include server audio in patch
         {"upmix", no_argument, NULL, 'u'}, // Upmix mono clients when patching
         {"iostat", required_argument, NULL, 'I'},     // Set IO stat timeout
         {"iostatlog", required_argument, NULL, 'G'},  // Set IO stat log file
@@ -200,7 +201,7 @@ void Settings::parseInput(int argc, char** argv)
     int ch;
     while (
         (ch = getopt_long(argc, argv,
-                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uDvVhI:G:f:O:a:x:A",
+                          "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uiDvVhI:G:f:O:a:x:A",
                           longopts, NULL))
         != -1)
         switch (ch) {
@@ -450,6 +451,9 @@ void Settings::parseInput(int argc, char** argv)
                           << " is not supported." << endl;
                 std::exit(1);
             }
+            break;
+        case 'i':
+            mPatchServerAudio = true;
             break;
         case 'u':
             mStereoUpmix = true;
@@ -731,14 +735,6 @@ void Settings::printUsage()
     cout << " -b, --bitres # (8, 16, 24, 32)           Audio Bit Rate Resolutions "
             "(default: 16, 32 uses floating-point)"
          << endl;
-    cout << " -p, --hubpatch # (0, 1, 2, 3, 4, 5)      Hub auto audio patch, only has "
-            "effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, "
-            "2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no "
-            "auto patching (default: 0)"
-         << endl;
-    cout << " -u, --upmix                              Upmix mono clients to stereo when "
-            "patching in HUB SERVER mode"
-         << endl;
     cout << " -z, --zerounderrun                       Set buffer to zeros when underrun "
             "occurs (default: wavetable)"
          << endl;
@@ -769,6 +765,20 @@ void Settings::printUsage()
                                                        "Broadcast outputs have higher latency but less packet loss.\n";
     cout << " --udprt                                  Use RT thread priority for "
             "network I/O"
+         << endl;
+    cout << endl;
+    cout << "OPTIONS FOR AUDIO PATCHING IN HUB SERVER MODE:" << endl;
+    cout << " -p, --hubpatch # (0, 1, 2, 3, 4, 5)      Hub auto audio patch, only has "
+            "effect if running HUB SERVER mode, 0=server-to-clients, 1=client loopback, "
+            "2=client fan out/in but not loopback, 3=reserved for TUB, 4=full mix, 5=no "
+            "auto patching (default: 0)"
+         << endl;
+    cout << " -i, --includeserver                      Include audio to and from the "
+            "server in the mix when patching. Only affects -p 2 (client fan out/in "
+            "but not loopback) and -p 4 (full mix) patch modes."
+         << endl;
+    cout << " -u, --upmix                              Upmix mono clients to stereo when "
+            "patching"
          << endl;
     cout << endl;
     cout << "OPTIONAL SIGNAL PROCESSING: " << endl;
@@ -875,6 +885,16 @@ UdpHubListener* Settings::getConfiguredHubServer()
 #ifdef WAIR  // WAIR
     udpHub->setWAIR(mWAIR);
 #endif  // endwhere
+    if (mPatchServerAudio) {
+        if (mHubConnectionMode == JackTrip::CLIENTFOFI) {
+            mHubConnectionMode = JackTrip::SERVFOFI;
+        } else if (mHubConnectionMode == JackTrip::FULLMIX) {
+            mHubConnectionMode = JackTrip::SERVFULLMIX;
+        } else {
+            std::cout << "WARNING: The -i (--includeserver) flag has no effect in this "
+                "patch mode and will be ignored." << std::endl;
+        }
+    }
     udpHub->setHubPatch(mHubConnectionMode);
     udpHub->setStereoUpmix(mStereoUpmix);
     // Connect default audio ports must be set after the connection mode.
@@ -1076,16 +1096,10 @@ JackTrip* Settings::getConfiguredJackTrip()
                 "Settings: mNumNetRevChans doesn't correspond to Faust plugin");
             break;
         }
-        break;
-    default:
-        throw std::invalid_argument(
-            "Settings: mNumNetRevChans doesn't correspond to Faust plugin");
-        break;
     }
-}
 #endif  // endwhere
 
-return jackTrip;
+    return jackTrip;
 }
 
 void Settings::disableEcho(bool disabled)

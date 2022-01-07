@@ -223,7 +223,8 @@ class UdpHubListener : public QObject
         mPatcher.setPatchMode(static_cast<JackTrip::hubConnectionModeT>(p));
 #endif
         // Set the correct audio port connection setting for our chosen patch mode.
-        if (mHubPatch == JackTrip::SERVERTOCLIENT) {
+        if (mHubPatch == JackTrip::SERVERTOCLIENT || mHubPatch == JackTrip::SERVFOFI ||
+            mHubPatch == JackTrip::SERVFULLMIX) {
             m_connectDefaultAudioPorts = true;
         } else {
             m_connectDefaultAudioPorts = false;

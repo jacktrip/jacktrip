@@ -118,7 +118,9 @@ class JackTrip : public QObject
         RESERVEDMATRIX,  ///< Reserved for custom patch matrix (for TUB ensemble)
         FULLMIX,         ///< Client Fan Out to Clients and Fan In from Clients (including
                          ///< self-to-self)
-        NOAUTO           ///< No automatic patching
+        NOAUTO,          ///< No automatic patching
+        SERVFOFI,        ///< Like CLIENTFOFI, but include the server in the mix
+        SERVFULLMIX      ///< Like FULLMIX, but include the server in the mix
     };
     //---------------------------------------------------------
 
