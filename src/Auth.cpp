@@ -43,8 +43,8 @@
 #include <QThread>
 #include <iostream>
 
-Auth::Auth(QString fileName)
-    : m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}), m_authFileName(fileName)
+Auth::Auth(const QString& fileName, QObject* parent)
+    : QObject(parent), m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}), m_authFileName(fileName)
 {
     // Load our credentials file.
     loadAuthFile(m_authFileName);
@@ -55,13 +55,13 @@ Auth::Auth(QString fileName)
                      &Auth::reloadAuthFile, Qt::QueuedConnection);
 }
 
-Auth::AuthResponseT Auth::checkCredentials(QString username, QString password)
+Auth::AuthResponseT Auth::checkCredentials(const QString& username, const QString& password)
 {
     if (username.isEmpty() || password.isEmpty()) { return WRONGCREDS; }
 
     if (m_passwordTable.contains(username)) {
         // Check our generated hash against our stored hash.
-        QString salt = m_passwordTable[username].section("$", 2, 2);
+        QString salt = m_passwordTable[username].section(QStringLiteral("$"), 2, 2);
         QString hash(generateSha512Hash(password, salt));
 
         if (hash == m_passwordTable[username]) {
@@ -86,7 +86,7 @@ void Auth::reloadAuthFile()
     loadAuthFile(m_authFileName);
 }
 
-void Auth::loadAuthFile(QString filename)
+void Auth::loadAuthFile(const QString& filename)
 {
     QFile file(filename);
     if (file.open(QIODevice::ReadOnly)) {
@@ -98,7 +98,7 @@ void Auth::loadAuthFile(QString filename)
         int lineNumber = 0;
         while (!input.atEnd()) {
             lineNumber++;
-            QStringList lineParts = input.readLine().split(":");
+            QStringList lineParts = input.readLine().split(QStringLiteral(":"));
             if (lineParts.count() < 3) {
                 // We don't have a correctly formatted line. Ignore it.
                 std::cout
@@ -109,8 +109,8 @@ void Auth::loadAuthFile(QString filename)
 
             // Check that our password hash is useable.
             bool invalid = false;
-            if (lineParts.at(1).startsWith("$6$")) {
-                QStringList hashParts = lineParts.at(1).split("$");
+            if (lineParts.at(1).startsWith(QLatin1String("$6$"))) {
+                QStringList hashParts = lineParts.at(1).split(QStringLiteral("$"));
                 if (hashParts.count() < 4) {
                     invalid = true;
                 } else if (hashParts.at(2).isEmpty() || hashParts.at(3).isEmpty()) {
@@ -132,13 +132,13 @@ void Auth::loadAuthFile(QString filename)
     }
 }
 
-bool Auth::checkTime(QString username)
+bool Auth::checkTime(const QString& username)
 {
-    QStringList times = m_timesTable[username].split(",");
+    QStringList times = m_timesTable[username].split(QStringLiteral(","));
     // First check for the all or none cases.
     if (times.count() == 1 && times.at(0).isEmpty()) {
         return false;
-    } else if (times.contains("*")) {
+    } else if (times.contains(QStringLiteral("*"))) {
         return true;
     }
 
@@ -148,14 +148,14 @@ bool Auth::checkTime(QString username)
         if (times.at(i).startsWith(dayOfWeek)) {
             QString accessTime = QString(times.at(i)).remove(0, 2);
             // Check for the all day option first.
-            if (accessTime == "*") { return true; }
+            if (accessTime == QLatin1String("*")) { return true; }
 
             // See if we can interpret it as a time range.
             bool valid        = false;
-            QStringList range = accessTime.split("-");
+            QStringList range = accessTime.split(QStringLiteral("-"));
             if (range.count() == 2) {
-                QTime start = QTime::fromString(range.at(0), "hhmm");
-                QTime end   = QTime::fromString(range.at(1), "hhmm");
+                QTime start = QTime::fromString(range.at(0), QStringLiteral("hhmm"));
+                QTime end   = QTime::fromString(range.at(1), QStringLiteral("hhmm"));
 
                 if (start.isValid() && end.isValid()) {
                     valid = true;
@@ -206,7 +206,7 @@ QByteArray Auth::charGroup(unsigned char byte2, unsigned char byte1, unsigned ch
     return output;
 }
 
-QByteArray Auth::generateSha512Hash(QString passwordString, QString saltString)
+QByteArray Auth::generateSha512Hash(const QString& passwordString, const QString& saltString)
 {
     // Qt implementation of the unix crypt using SHA-512
     // (Should give the same output as openssl passwd -6)

@@ -187,7 +187,7 @@ class DataProtocol : public QThread
 
     void signalError(const char* error_message);
     void signalReceivedConnectionFromPeer();
-    void signalCeaseTransmission(const QString& reason = "");
+    void signalCeaseTransmission(const QString& reason = QLatin1String(""));
 
    protected:
     /** \brief Get the Run Mode of the object

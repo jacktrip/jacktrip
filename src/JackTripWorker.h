@@ -73,7 +73,7 @@ class JackTripWorker : public QObject
     JackTripWorker(UdpHubListener* udphublistener,
                    int BufferQueueLength                = gDefaultQueueLength,
                    JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE,
-                   QString clientName                   = "");
+                   const QString& clientName            = QLatin1String(""));
     /// \brief The class destructor
     ~JackTripWorker() = default;
 
@@ -96,7 +96,7 @@ class JackTripWorker : public QObject
     /// \brief Sets the JackTripWorker properties
     /// \param id ID number
     /// \param address
-    void setJackTrip(int id, QString client_address, uint16_t server_port,
+    void setJackTrip(int id, const QString& client_address, uint16_t server_port,
                      uint16_t client_port, bool connectDefaultAudioPorts);
     /// Stop thread
     void stopThread();

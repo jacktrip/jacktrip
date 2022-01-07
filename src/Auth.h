@@ -54,22 +54,22 @@ class Auth : public QObject
         WRONGTIME   = 5 << 16
     };
 
-    Auth(QString fileName);
+    Auth(const QString& fileName, QObject* parent = nullptr);
     ~Auth();
 
-    AuthResponseT checkCredentials(QString username, QString password);
+    AuthResponseT checkCredentials(const QString& username, const QString& password);
 
    private slots:
     void reloadAuthFile();
 
    private:
-    void loadAuthFile(QString filename);
-    bool checkTime(QString username);
+    void loadAuthFile(const QString& filename);
+    bool checkTime(const QString& username);
 
     char char64(int value);
     QByteArray charGroup(unsigned char byte3, unsigned char byte2, unsigned char byte1,
                          unsigned int n);
-    QByteArray generateSha512Hash(QString passwordString, QString saltString);
+    QByteArray generateSha512Hash(const QString& passwordString, const QString& saltString);
 
     QStringList m_days;
     QHash<QString, QString> m_passwordTable;

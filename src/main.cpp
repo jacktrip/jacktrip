@@ -222,10 +222,10 @@ int main(int argc, char* argv[])
             FreeConsole();
         }
 #endif  // _WIN32
-        app->setApplicationName("QJackTrip");
+        app->setApplicationName(QStringLiteral("QJackTrip"));
 
         QCommandLineParser parser;
-        QCommandLineOption verboseOption(QStringList() << "V" << "verbose");   
+        QCommandLineOption verboseOption(QStringList() << QStringLiteral("V") << QStringLiteral("verbose"));   
         parser.addOption(verboseOption);
         parser.parse(app->arguments());
         if (parser.isSet(verboseOption)) {

@@ -63,6 +63,8 @@ void textbuf::putChars(const char* begin, const char* end)
         m_outStream->flush();
     }
     
+    //Send a signal here rather than writing directly to our
+    //QTextEdit to avoid any issues with threading.
     emit outputString(QString(QByteArray(begin, end - begin)));
 }
 

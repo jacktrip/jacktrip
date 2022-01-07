@@ -79,7 +79,7 @@ class JackAudioInterface : public AudioInterface
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-        QString ClientName                                     = "JackTrip");
+        const QString& ClientName                              = QStringLiteral("JackTrip"));
     /// \brief The class destructor
     virtual ~JackAudioInterface();
 
@@ -99,7 +99,7 @@ class JackAudioInterface : public AudioInterface
 
     //--------------SETTERS---------------------------------------------
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(QString ClientName) { mClientName = ClientName; }
+    virtual void setClientName(const QString& ClientName) { mClientName = ClientName; }
     virtual void setSampleRate(uint32_t /*sample_rate*/)
     {
         std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect."

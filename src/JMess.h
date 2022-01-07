@@ -35,16 +35,7 @@
 #ifndef __JMESS_H
 #define __JMESS_H
 
-#include <QIODevice>
 #include <QString>
-#include <QVector>
-#include <cerrno>
-#include <iostream>
-#include <string>
-//#include <QtXml>
-//#include <QXmlSimpleReader>
-//#include <QXmlInputSource>
-//#include <QXmlContentHandler>
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
 #else
@@ -70,27 +61,12 @@ class JMess
     JMess();
     virtual ~JMess();
 
-    void disconnectAll();
-    void writeOutput(QString xmlOutFile);
-    void connectPorts(QString xmlInFile);
-    void setConnectedPorts();
-    /// \brief Cross connect ports between net combs, -l LAIR mode
-    void connectSpawnedPorts(int nChans, int hubPatch);
     void connectTUB(int nChans);
 
    private:
-    int parseXML(QString xmlInFile);
-
     jack_client_t* mClient;  // Class client
     jack_status_t mStatus;   // Class client status
 
-    // Vectors of Connected Ports and Ports to connects
-    // This are a matrix (Nx2) of string like this:
-    // OuputPort1 InputPort1
-    // ...
-    // OuputPortN InputPortN
-    QVector<QVector<QString> > mConnectedPorts;
-    QVector<QVector<QString> > mPortsToConnect;
     static QMutex sJMessMutex;  ///< Mutex to make thread safe jack functions that are not
 };
 #endif

@@ -87,8 +87,9 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
                    DataProtocol::packetHeaderTypeT PacketHeaderType,
                    underrunModeT UnderRunMode, int receiver_bind_port,
                    int sender_bind_port, int receiver_peer_port, int sender_peer_port,
-                   int tcp_peer_port)
-    : mJackTripMode(JacktripMode)
+                   int tcp_peer_port, QObject* parent)
+    : QObject(parent)
+    , mJackTripMode(JacktripMode)
     , mDataProtocol(DataProtocolType)
     , mPacketHeaderType(PacketHeaderType)
     , mAudiointerfaceMode(JackTrip::JACK)
@@ -190,7 +191,7 @@ void JackTrip::setupAudio(
         // Set our Jack client name if we're a hub server or a custom name hasn't been set
         if (mJackClientName.isEmpty()) {
             if (!mPeerAddress.isEmpty()) {
-                mJackClientName = QString(mPeerAddress).replace(":", "_");
+                mJackClientName = QString(mPeerAddress).replace(QLatin1String(":"), QLatin1String("_"));
             } else {
                 mJackClientName = gJackDefaultClientName;
             }
@@ -401,7 +402,7 @@ void JackTrip::setupRingBuffers()
 }
 
 //*******************************************************************************
-void JackTrip::setPeerAddress(QString PeerHostOrIP) { mPeerAddress = PeerHostOrIP; }
+void JackTrip::setPeerAddress(const QString& PeerHostOrIP) { mPeerAddress = PeerHostOrIP; }
 
 //*******************************************************************************
 void JackTrip::appendProcessPluginToNetwork(ProcessPlugin* plugin)
@@ -470,8 +471,8 @@ void JackTrip::startProcess(
     // -------------------------
     QObject::connect(mPacketHeader, &PacketHeader::signalError, this,
                      &JackTrip::slotStopProcessesDueToError, Qt::QueuedConnection);
-    QObject::connect(mDataProtocolReceiver, SIGNAL(signalReceivedConnectionFromPeer()),
-                     this, SLOT(slotReceivedConnectionFromPeer()), Qt::QueuedConnection);
+    QObject::connect(mDataProtocolReceiver, &DataProtocol::signalReceivedConnectionFromPeer,
+                     this, &JackTrip::slotReceivedConnectionFromPeer, Qt::QueuedConnection);
     // QObject::connect(this, SIGNAL(signalUdpTimeOut()),
     //                 this, SLOT(slotStopProcesses()), Qt::QueuedConnection);
     QObject::connect(static_cast<UdpDataProtocol*>(mDataProtocolReceiver),
@@ -512,7 +513,7 @@ void JackTrip::startProcess(
                       << std::endl;
         if (clientPingToServerStart()
             == -1) {  // if error on server start (-1) we return inmediatly
-            stop("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode");
+            stop(QStringLiteral("Peer Address has to be set if you run in CLIENTTOPINGSERVER mode"));
             return;
         }
         break;
@@ -585,7 +586,7 @@ void JackTrip::completeConnection()
             mIOStatLogStream.rdbuf((mIOStatStream.data()->rdbuf()));
         }
         QTimer* timer = new QTimer(this);
-        connect(timer, SIGNAL(timeout()), this, SLOT(onStatTimer()));
+        connect(timer, &QTimer::timeout, this, &JackTrip::onStatTimer);
         timer->start(mIOStatTimeout * 1000);
     }
 }
@@ -694,11 +695,11 @@ void JackTrip::receivedDataTCP()
             if (authResponse == Auth::NOTREQUIRED) {
                 std::cout << "ERROR: The Server does not require authentication."
                           << std::endl;
-                stop("The server does not require authentication");
+                stop(QStringLiteral("The server does not require authentication"));
             } else {
                 std::cout << "ERROR: The Server does not support authentication."
                           << std::endl;
-                stop("The server does not support authentication");
+                stop(QStringLiteral("The server does not support authentication"));
                 // Send a header sized packet to the server so we don't lock up the
                 // main/UdpHubListener thread on the server. (Prevents a denial of
                 // service.) TODO: This should ultimately be fixed server side, but work
@@ -749,11 +750,11 @@ void JackTrip::receivedDataTCP()
     if (mUseAuth && udp_port > 65535) {
         QString error_message;
         if (udp_port == Auth::WRONGCREDS) {
-            error_message = "Incorrect username or password.";
+            error_message = QStringLiteral("Incorrect username or password.");
         } else if (udp_port == Auth::WRONGTIME) {
-            error_message = "You are not authorized to access the server at this time.";
+            error_message = QStringLiteral("You are not authorized to access the server at this time.");
         } else {
-            error_message = "Unknown authentication error.";
+            error_message = QStringLiteral("Unknown authentication error.");
         }
         std::cout << "ERROR: " << error_message.toStdString() << std::endl;
         stop(error_message);
@@ -762,9 +763,9 @@ void JackTrip::receivedDataTCP()
         QString error_message;
         if (udp_port == Auth::REQUIRED) {
             error_message =
-                "The server you are attempting to connect to requires authentication.";
+                QStringLiteral("The server you are attempting to connect to requires authentication.");
         } else {
-            error_message = "Unknown authentication error.";
+            error_message = QStringLiteral("Unknown authentication error.");
         }
         std::cout << "ERROR: " << error_message.toStdString() << std::endl;
         stop(error_message);
@@ -915,7 +916,7 @@ void JackTrip::udpTimerTick()
         mUdpSockTemp.close();
         mTimeoutTimer.stop();
         cout << "JackTrip Server Timed Out!" << endl;
-        stop("JackTrip Server Timed Out");
+        stop(QStringLiteral("JackTrip Server Timed Out"));
     }
 }
 
@@ -938,12 +939,12 @@ void JackTrip::tcpTimerTick()
         mTcpClient.close();
         mTimeoutTimer.stop();
         cout << "JackTrip Server Timed Out!" << endl;
-        stop("Initial TCP Connection Timed Out");
+        stop(QStringLiteral("Initial TCP Connection Timed Out"));
     }
 }
 
 //*******************************************************************************
-void JackTrip::stop(QString errorMessage)
+void JackTrip::stop(const QString& errorMessage)
 {
     mStopped = true;
     // Make sure we're only run once
@@ -968,7 +969,7 @@ void JackTrip::stop(QString errorMessage)
 
     // Emit the jack stopped signal
     if (sJackStopped) {
-        emit signalError("The Jack Server was shut down!");
+        emit signalError(QStringLiteral("The Jack Server was shut down!"));
     } else if (errorMessage.isEmpty()) {
         emit signalProcessesStopped();
     } else {

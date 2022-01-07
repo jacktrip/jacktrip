@@ -66,7 +66,7 @@ JackAudioInterface::JackAudioInterface(
 #ifdef WAIR  // wair
     int NumNetRevChans,
 #endif  // endwhere
-    AudioInterface::audioBitResolutionT AudioBitResolution, QString ClientName)
+    AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
     : AudioInterface(jacktrip, NumInChans, NumOutChans,
 #ifdef WAIR  // wair
                      NumNetRevChans,
