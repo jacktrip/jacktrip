@@ -43,6 +43,25 @@
     <display_length compare="ge">907</display_length>
   </requires>
 
+  <screenshots>
+    <screenshot type="default">
+      <caption>Hubclient Mode</caption>
+      <image>https://jacktrip.github.io/jacktrip/images/jacktrip_hubclient_basic.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Hubclient Mode // Plugins tab</caption>
+      <image>https://jacktrip.github.io/jacktrip/images/jacktrip_hubclient_plugins.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Hubserver Mode</caption>
+      <image>https://jacktrip.github.io/jacktrip/images/jacktrip_hubserver_basic.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Hubserver Mode // Jitter Buffer Tab</caption>
+      <image>https://jacktrip.github.io/jacktrip/images/jacktrip_hubserver_jitter.png</image>
+    </screenshot>
+  </screenshots>
+
   <releases>
   {%- for release in releases %}
     <release version="{{ release.Version }}" {%- if release.Date %} date="{{ release.Date }}"{%- endif %}{% if release.Type == 'development' %} type="development"{% endif %}>
