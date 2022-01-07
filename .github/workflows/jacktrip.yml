@@ -30,78 +30,157 @@ jobs:
       fail-fast: false # don't abort if one of the build failse
       matrix:
         include:
-          - name: Linux-x64
-            runs-on: ubuntu-18.04
-            static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
-            jacktrip-path: jacktrip
-            binary-path: binary
-            
-          - name: Linux-x64-bundled-rtaudio
+          - name: Linux-x64 # static qmake build
             runs-on: ubuntu-18.04
             system-rtaudio: false
-            bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
+            bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
+            nogui: false
+            weakjack: false
+            # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
+            # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
             static-qt-version: 5.12.11 # if set, it will enable static Qt build
             qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
-            jacktrip-path: jacktrip
-            binary-path: binary
-
-          - name: Linux-x64-shared-libs-nogui
+            jacktrip-path: jacktrip # needed for binary upload
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
+            # installer-path: installer # directory relative to build path; triggers installer creation and upload (macOS, Windows)
+            build-system: qmake # qmake, meson, cmake (todo)
+            # meson-library-type: shared # shared, static, both
+            
+          - name: Linux-x64-bundled-rtaudio # uses static qt as well
             runs-on: ubuntu-18.04
-            jacktrip-path: jacktrip
-            binary-path: binary
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: false
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v22'
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: qmake
+
+          - name: Linux-x64-shared-qmake-nogui
+            runs-on: ubuntu-18.04
+            system-rtaudio: false
+            bundled-rtaudio: false
             nogui: true
+            weakjack: false
+            build-system: qmake
 
-          # - name: macOS-shared-libs
-          #   runs-on: macos-10.15
-          #   system-rtaudio: true
+          - name: Linux-x64-shared-meson
+            runs-on: ubuntu-18.04
+            system-rtaudio: false
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: false
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
+            
+          # - name: Linux-x64-static-meson # meson static build doesn't work currently
+          #   runs-on: ubuntu-18.04
+          #   system-rtaudio: false
+          #   bundled-rtaudio: false
+          #   nogui: false
+          #   weakjack: false
+          #   static-qt-version: 5.12.11
+          #   qt-static-cache-key: 'v22'
           #   jacktrip-path: jacktrip
+          #   binary-path: binary
+          #   build-system: meson
+          #   meson-library-type: static
 
-          - name: macOS-x64
+          - name: macOS-x64 # static qmake build
             runs-on: macos-10.15
             system-rtaudio: true
-            static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v05' # required for static qt; update this to force rebuilding static Qt
+            bundled-rtaudio: false
+            nogui: false
             weakjack: true
-            jacktrip-path: jacktrip # relative to build path
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
-            bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
-            installer-path: installer # directory relative to build path; triggers installer creation and upload
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v05'
+            jacktrip-path: jacktrip
+            binary-path: binary
+            bundle-path: bundle
+            installer-path: installer
+            build-system: qmake
 
           - name: macOS-x64-bundled-rtaudio
             runs-on: macos-10.15
+            system-rtaudio: false
             bundled-rtaudio: true
-            static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v05' # required for static qt; update this to force rebuilding static Qt
+            nogui: false
             weakjack: true
-            jacktrip-path: jacktrip # relative to build path
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v05'
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            # bundle-path: bundle
+            # installer-path: installer
+            build-system: qmake
 
-          # - name: Windows-shared-libs
-          #   runs-on: windows-2019
-          #   system-rtaudio: true
-          #   jacktrip-path: release/jacktrip.exe
-
-          - name: Windows-x64
-            # suffix: installer
+          - name: macOS-x64-shared-meson
+            runs-on: macos-10.15
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: true
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            # bundle-path: bundle
+            # installer-path: installer
+            build-system: meson
+            meson-library-type: both
+            
+          - name: Windows-x64 # static qmake build
             runs-on: windows-2019
             system-rtaudio: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
+            bundled-rtaudio: false
+            nogui: false
             weakjack: true
+            vcpkg-triplet: x64-mingw-static
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v04'
             jacktrip-path: release/jacktrip.exe
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
-            installer-path: installer # directory relative to build path; triggers installer creation and upload
+            binary-path: binary
+            installer-path: installer
+            build-system: qmake
             
           - name: Windows-x64-bundled-rtaudio
-            # suffix: installer
             runs-on: windows-2019
+            system-rtaudio: false
             bundled-rtaudio: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
+            nogui: false
             weakjack: true
-            jacktrip-path: release/jacktrip.exe
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v04'
+            # jacktrip-path: release/jacktrip.exe
+            # binary-path: binary
+            build-system: qmake
+
+          - name: Windows-x64-shared
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: true
+            vcpkg-triplet: x64-mingw-shared
+            qt-arch: 'win64_mingw81'
+            # jacktrip-path: release/jacktrip.exe
+            # binary-path: binary
+            build-system: qmake
+            
+          - name: Windows-x64-shared-meson
+            runs-on: windows-2019
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: true
+            qt-arch: 'win64_msvc2019_64'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: both
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
@@ -125,6 +204,10 @@ jobs:
             VERSION=${GITHUB_SHA::7}
           fi
           echo "::set-output name=version::$VERSION"
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
@@ -140,6 +223,11 @@ jobs:
           fi
           if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes libasound2-dev libpulse-dev
+          fi
+          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
+            sudo apt-get install --yes help2man
+            python -m pip install --upgrade pip
+            pip install meson ninja pyyaml Jinja2
           fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
@@ -164,6 +252,9 @@ jobs:
           if [[ -n "${{ matrix.installer-path }}" ]]; then
             brew install packages
           fi
+          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
+            brew install meson help2man
+          fi
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
         shell: bash
@@ -179,19 +270,27 @@ jobs:
             vcpkg install rtaudio[asio] --triplet=x64-mingw-static
             echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\x64-mingw-static\lib\pkgconfig" >> $GITHUB_ENV
           fi
+          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
+            python -m pip install --upgrade pip
+            pip install meson ninja
+            mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
+          fi
+      - name: setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows' && matrix.build-system == 'meson' # MSVC used only by meson
       - name: cache Qt
         id: cache-qt
-        if: runner.os == 'Windows' && !matrix.static-qt-version
+        if: matrix.qt-arch && !matrix.static-qt-version
         uses: actions/cache@v1
         with:
           path: ../Qt
-          key: ${{ runner.os }}-QtCache-${{ env.QT_VERSION }}
+          key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}
       - name: install Qt
         uses: jurplel/install-qt-action@v2
         if: runner.os == 'Windows' && !matrix.static-qt-version
         with:
           version: ${{ env.QT_VERSION }}
-          arch: 'win64_mingw81'
+          arch: ${{ matrix.qt-arch }}
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       - name: cache static Qt
         id: cache-static-qt
@@ -248,7 +347,8 @@ jobs:
           else
             echo "$Qt5_DIR/bin" >> $GITHUB_PATH
           fi
-      - name: build JackTrip
+      - name: build JackTrip with QMake
+        if: matrix.build-system == 'qmake'
         shell: bash
         run: |
           CONFIG_STRING="noclean"
@@ -268,6 +368,32 @@ jobs:
             CONFIG_STRING="weakjack $CONFIG_STRING"
           fi
           ./build $CONFIG_STRING
+      - name: build JackTrip with Meson
+        if: matrix.build-system == 'meson'
+        shell: bash
+        run: |
+          CONFIG_STRING="-Ddefault_library=${{ matrix.meson-library-type }}"
+          if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
+            CONFIG_STRING="-Drtaudio=enabled $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
+            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
+            if [[ "${{ runner.os }}" == 'Windows' ]]; then 
+              CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
+            fi
+          fi
+          if [[ "${{ matrix.nojack }}" == true ]]; then 
+            CONFIG_STRING="-Djack=disabled $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.nogui }}" == true ]]; then 
+            CONFIG_STRING="-Dnogui=true $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.weakjack }}" == true ]]; then 
+            CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
+          fi
+          meson --buildtype release $CONFIG_STRING $BUILD_PATH
+          cd $BUILD_PATH
+          meson compile
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
