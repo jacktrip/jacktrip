@@ -79,7 +79,7 @@ class JackAudioInterface : public AudioInterface
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-        const QString& ClientName                              = QStringLiteral("JackTrip"));
+        const QString& ClientName = QStringLiteral("JackTrip"));
     /// \brief The class destructor
     virtual ~JackAudioInterface();
 

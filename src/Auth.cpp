@@ -44,7 +44,9 @@
 #include <iostream>
 
 Auth::Auth(const QString& fileName, QObject* parent)
-    : QObject(parent), m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}), m_authFileName(fileName)
+    : QObject(parent)
+    , m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"})
+    , m_authFileName(fileName)
 {
     // Load our credentials file.
     loadAuthFile(m_authFileName);
@@ -55,9 +57,12 @@ Auth::Auth(const QString& fileName, QObject* parent)
                      &Auth::reloadAuthFile, Qt::QueuedConnection);
 }
 
-Auth::AuthResponseT Auth::checkCredentials(const QString& username, const QString& password)
+Auth::AuthResponseT Auth::checkCredentials(const QString& username,
+                                           const QString& password)
 {
-    if (username.isEmpty() || password.isEmpty()) { return WRONGCREDS; }
+    if (username.isEmpty() || password.isEmpty()) {
+        return WRONGCREDS;
+    }
 
     if (m_passwordTable.contains(username)) {
         // Check our generated hash against our stored hash.
@@ -148,7 +153,9 @@ bool Auth::checkTime(const QString& username)
         if (times.at(i).startsWith(dayOfWeek)) {
             QString accessTime = QString(times.at(i)).remove(0, 2);
             // Check for the all day option first.
-            if (accessTime == QLatin1String("*")) { return true; }
+            if (accessTime == QLatin1String("*")) {
+                return true;
+            }
 
             // See if we can interpret it as a time range.
             bool valid        = false;
@@ -180,7 +187,9 @@ char Auth::char64(int value)
 {
     // Returns a base 64 enconding using the following characters:
     // ./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-    if (value < 0 || value >= 64) { return 0; }
+    if (value < 0 || value >= 64) {
+        return 0;
+    }
 
     if (value < 12) {
         return (value + 46);
@@ -206,7 +215,8 @@ QByteArray Auth::charGroup(unsigned char byte2, unsigned char byte1, unsigned ch
     return output;
 }
 
-QByteArray Auth::generateSha512Hash(const QString& passwordString, const QString& saltString)
+QByteArray Auth::generateSha512Hash(const QString& passwordString,
+                                    const QString& saltString)
 {
     // Qt implementation of the unix crypt using SHA-512
     // (Should give the same output as openssl passwd -6)
@@ -232,7 +242,9 @@ QByteArray Auth::generateSha512Hash(const QString& passwordString, const QString
 
     // Step 9 and 10
     int n;
-    for (n = passwd.length(); n > 64; n -= 64) { a.addData(bResult); }
+    for (n = passwd.length(); n > 64; n -= 64) {
+        a.addData(bResult);
+    }
     a.addData(bResult.constData(), n);
 
     // Step 11
@@ -250,23 +262,31 @@ QByteArray Auth::generateSha512Hash(const QString& passwordString, const QString
     // Step 13
     // Reuse a as dp.
     a.reset();
-    for (n = 0; n < passwd.length(); n++) { a.addData(passwd); }
+    for (n = 0; n < passwd.length(); n++) {
+        a.addData(passwd);
+    }
     QByteArray dp = a.result();
 
     // Step 16
     QByteArray p;
-    for (n = passwd.length(); n > 64; n -= 64) { p.append(dp); }
+    for (n = passwd.length(); n > 64; n -= 64) {
+        p.append(dp);
+    }
     p.append(dp.constData(), n);
 
     // Step 17
     // Reuse b as ds
     b.reset();
-    for (n = 16 + (unsigned char)aResult.at(0); n > 0; n--) { b.addData(salt); }
+    for (n = 16 + (unsigned char)aResult.at(0); n > 0; n--) {
+        b.addData(salt);
+    }
     QByteArray ds = b.result();
 
     // Step 20
     QByteArray s;
-    for (n = salt.length(); n > 64; n -= 64) { s.append(ds); }
+    for (n = salt.length(); n > 64; n -= 64) {
+        s.append(ds);
+    }
     s.append(ds.constData(), n);
 
     // Step 21
@@ -279,8 +299,12 @@ QByteArray Auth::generateSha512Hash(const QString& passwordString, const QString
             a.addData(aResult);
         }
 
-        if (n % 3) { a.addData(s); }
-        if (n % 7) { a.addData(p); }
+        if (n % 3) {
+            a.addData(s);
+        }
+        if (n % 7) {
+            a.addData(p);
+        }
 
         if (n & 1) {
             a.addData(aResult);

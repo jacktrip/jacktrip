@@ -46,7 +46,7 @@
 
 #ifndef NO_JACK
 #include "JackAudioInterface.h"
-#endif  //NO_JACK
+#endif  // NO_JACK
 
 #include "AudioTester.h"
 #include "Effects.h"
@@ -60,7 +60,9 @@ class Settings : public QObject
     Q_OBJECT;
 
    public:
-    Settings(QObject* parent = nullptr) : QObject(parent), mAudioTester(new AudioTester) {}
+    Settings(QObject* parent = nullptr) : QObject(parent), mAudioTester(new AudioTester)
+    {
+    }
 
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);

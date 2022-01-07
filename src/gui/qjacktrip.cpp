@@ -75,7 +75,7 @@ QJackTrip::QJackTrip(QWidget* parent)
     QCoreApplication::setOrganizationName(QStringLiteral("jacktrip"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("jacktrip.org"));
     QCoreApplication::setApplicationName(QStringLiteral("JackTrip"));
-    
+
     // Set up our debug window, and relay everything to our real cout.
     std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
     std::cerr.rdbuf(m_debugDialog->getOutputStream(1)->rdbuf());
@@ -108,14 +108,15 @@ QJackTrip::QJackTrip(QWidget* parent)
         About about(this);
         about.exec();
     });
-    connect(m_ui->autoPatchComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=]() {
-       if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI ||
-           m_ui->autoPatchComboBox->currentIndex() == FULLMIX) {
-           m_ui->patchServerCheckBox->setEnabled(true);
-       } else {
-           m_ui->patchServerCheckBox->setEnabled(false);
-       }
-    });
+    connect(m_ui->autoPatchComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [=]() {
+                if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI
+                    || m_ui->autoPatchComboBox->currentIndex() == FULLMIX) {
+                    m_ui->patchServerCheckBox->setEnabled(true);
+                } else {
+                    m_ui->patchServerCheckBox->setEnabled(false);
+                }
+            });
     connect(m_ui->authCheckBox, &QCheckBox::stateChanged, this, [=]() {
         m_ui->usernameLabel->setEnabled(m_ui->authCheckBox->isChecked());
         m_ui->usernameEdit->setEnabled(m_ui->authCheckBox->isChecked());
@@ -308,7 +309,8 @@ QJackTrip::QJackTrip(QWidget* parent)
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
         if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
-            QCheckBox* dontBugMe = new QCheckBox(QStringLiteral("Don't show this warning again"));
+            QCheckBox* dontBugMe =
+                new QCheckBox(QStringLiteral("Don't show this warning again"));
             QMessageBox msgBox;
             msgBox.setText(
                 "An installation of JACK was not found. Only the RtAudio\nbackend will "
@@ -316,10 +318,13 @@ QJackTrip::QJackTrip(QWidget* parent)
                 "configuration.");
             msgBox.setWindowTitle(QStringLiteral("JACK Not Available"));
             msgBox.setCheckBox(dontBugMe);
-            QObject::connect(dontBugMe, &QCheckBox::stateChanged, this,
-                             [=]() { m_hideWarning = dontBugMe->isChecked(); });
+            QObject::connect(dontBugMe, &QCheckBox::stateChanged, this, [=]() {
+                m_hideWarning = dontBugMe->isChecked();
+            });
             msgBox.exec();
-            if (m_hideWarning) { settings.setValue(QStringLiteral("HideJackWarning"), true); }
+            if (m_hideWarning) {
+                settings.setValue(QStringLiteral("HideJackWarning"), true);
+            }
         }
         settings.endGroup();
 #else
@@ -392,7 +397,10 @@ void QJackTrip::showEvent(QShowEvent* event)
     }
 }
 
-void QJackTrip::setArgc(int argc) { m_argc = argc; }
+void QJackTrip::setArgc(int argc)
+{
+    m_argc = argc;
+}
 
 void QJackTrip::processFinished()
 {
@@ -446,7 +454,8 @@ void QJackTrip::queueLengthChanged(int queueLength)
 
 void QJackTrip::udpWaitingTooLong()
 {
-    m_ui->statusBar->showMessage(QStringLiteral("UDP waiting too long (more than 30ms)"), 1000);
+    m_ui->statusBar->showMessage(QStringLiteral("UDP waiting too long (more than 30ms)"),
+                                 1000);
 }
 
 void QJackTrip::chooseRunType(int index)
@@ -503,7 +512,8 @@ void QJackTrip::chooseRunType(int index)
         }
 #ifdef RT_AUDIO
         if (findTab(QStringLiteral("Audio Backend")) == -1) {
-            m_ui->optionsTabWidget->insertTab(2, m_ui->backendTab, QStringLiteral("Audio Backend"));
+            m_ui->optionsTabWidget->insertTab(2, m_ui->backendTab,
+                                              QStringLiteral("Audio Backend"));
         }
 #endif
     }
@@ -523,8 +533,10 @@ void QJackTrip::addressChanged(const QString& address)
 {
     // Make sure we check that JackTrip isn't running.
     //(This also gets called when we save our recent address list on connecting to a
-    //server.)
-    if (m_jackTripRunning) { return; }
+    // server.)
+    if (m_jackTripRunning) {
+        return;
+    }
     if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         m_ui->connectButton->setEnabled(!address.isEmpty());
     } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
@@ -534,7 +546,9 @@ void QJackTrip::addressChanged(const QString& address)
 
 void QJackTrip::authFilesChanged()
 {
-    if (m_ui->typeComboBox->currentIndex() != HUB_SERVER) { return; }
+    if (m_ui->typeComboBox->currentIndex() != HUB_SERVER) {
+        return;
+    }
 
     if (m_ui->requireAuthCheckBox->isChecked()
         && (m_ui->certEdit->text().isEmpty() || m_ui->keyEdit->text().isEmpty()
@@ -547,7 +561,9 @@ void QJackTrip::authFilesChanged()
 
 void QJackTrip::credentialsChanged()
 {
-    if (m_ui->typeComboBox->currentIndex() != HUB_CLIENT) { return; }
+    if (m_ui->typeComboBox->currentIndex() != HUB_CLIENT) {
+        return;
+    }
 
     if (m_ui->authCheckBox->isChecked()
         && (m_ui->usernameEdit->text().isEmpty()
@@ -573,8 +589,8 @@ void QJackTrip::browseForFile()
         fileType = QLatin1String("");
         fileEdit = m_ui->credsEdit;
     }
-    QString fileName =
-        QFileDialog::getOpenFileName(this, QStringLiteral("Open File"), m_lastPath, fileType);
+    QString fileName = QFileDialog::getOpenFileName(this, QStringLiteral("Open File"),
+                                                    m_lastPath, fileType);
     if (!fileName.isEmpty()) {
         fileEdit->setText(fileName);
         fileEdit->setFocus(Qt::OtherFocusReason);
@@ -603,15 +619,17 @@ void QJackTrip::receivedIP(QNetworkReply* reply)
         }
     } else {
         if (reply->error() != QNetworkReply::NoError) {
-            m_ui->ipLabel->setText(QStringLiteral("Unable to determine external IP address."));
+            m_ui->ipLabel->setText(
+                QStringLiteral("Unable to determine external IP address."));
         } else {
             QByteArray address = reply->readAll();
-            m_ui->ipLabel->setText(QStringLiteral("External IP address: ").append(address));
+            m_ui->ipLabel->setText(
+                QStringLiteral("External IP address: ").append(address));
             m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
         }
         if (!m_IPv6Address.isEmpty()) {
-            m_ui->ipLabel->setText(
-                m_ui->ipLabel->text().append(QStringLiteral("\n(IPv6: %1)").arg(m_IPv6Address)));
+            m_ui->ipLabel->setText(m_ui->ipLabel->text().append(
+                QStringLiteral("\n(IPv6: %1)").arg(m_IPv6Address)));
         }
         m_hasIPv4Reply = true;
     }
@@ -648,7 +666,7 @@ void QJackTrip::start()
     m_ui->connectButton->setEnabled(false);
     enableUi(false);
     m_jackTripRunning = true;
-    
+
     if (gVerboseFlag) {
         m_debugDialog->show();
     }
@@ -764,17 +782,17 @@ void QJackTrip::start()
                 m_jackTrip->setAudioBufferSizeInSamples(
                     m_ui->bufferSizeComboBox->currentText().toInt());
                 // we assume that first entry is "(default)"
-                if(m_ui->inputDeviceComboBox->currentIndex() == 0) {
+                if (m_ui->inputDeviceComboBox->currentIndex() == 0) {
                     m_jackTrip->setInputDevice("");
                 } else {
                     m_jackTrip->setInputDevice(
-                      m_ui->inputDeviceComboBox->currentText().toStdString());
+                        m_ui->inputDeviceComboBox->currentText().toStdString());
                 }
-                if(m_ui->outputDeviceComboBox->currentIndex() == 0) {
+                if (m_ui->outputDeviceComboBox->currentIndex() == 0) {
                     m_jackTrip->setOutputDevice("");
                 } else {
                     m_jackTrip->setOutputDevice(
-                      m_ui->outputDeviceComboBox->currentText().toStdString());
+                        m_ui->outputDeviceComboBox->currentText().toStdString());
                 }
             }
 #endif
@@ -801,7 +819,8 @@ void QJackTrip::start()
             // Set peer address in client mode
             if (jackTripMode == JackTrip::CLIENT
                 || jackTripMode == JackTrip::CLIENTTOPINGSERVER) {
-                m_jackTrip->setPeerAddress(m_ui->addressComboBox->currentText().trimmed());
+                m_jackTrip->setPeerAddress(
+                    m_ui->addressComboBox->currentText().trimmed());
                 if (jackTripMode == JackTrip::CLIENTTOPINGSERVER
                     && !m_ui->remoteNameEdit->text().isEmpty()) {
                     m_jackTrip->setRemoteClientName(m_ui->remoteNameEdit->text());
@@ -874,7 +893,9 @@ void QJackTrip::start()
     // Add the address to our server history.
     QString serverAddress = m_ui->addressComboBox->currentText().trimmed();
     int serverIndex       = m_ui->addressComboBox->findText(serverAddress);
-    if (serverIndex != -1) { m_ui->addressComboBox->removeItem(serverIndex); }
+    if (serverIndex != -1) {
+        m_ui->addressComboBox->removeItem(serverIndex);
+    }
     m_ui->addressComboBox->insertItem(0, serverAddress);
     m_ui->addressComboBox->setCurrentIndex(0);
 
@@ -896,7 +917,9 @@ void QJackTrip::stop()
 void QJackTrip::exit()
 {
     // Only run this once.
-    if (m_isExiting) { return; }
+    if (m_isExiting) {
+        return;
+    }
     m_isExiting = true;
     m_ui->exitButton->setEnabled(false);
     saveSettings();
@@ -958,7 +981,9 @@ void QJackTrip::migrateSettings()
 {
     // Function to migrate settings for users who previously had QJackTrip installed.
     QSettings settings;
-    if (settings.value(QStringLiteral("Migrated"), false).toBool()) { return; }
+    if (settings.value(QStringLiteral("Migrated"), false).toBool()) {
+        return;
+    }
 #ifdef __APPLE__
     QSettings oldSettings(QStringLiteral("psi-borg.org"), QStringLiteral("QJackTrip"));
 #else
@@ -974,7 +999,8 @@ void QJackTrip::migrateSettings()
 void QJackTrip::loadSettings()
 {
     QSettings settings;
-    m_ui->typeComboBox->setCurrentIndex(settings.value(QStringLiteral("RunMode"), 2).toInt());
+    m_ui->typeComboBox->setCurrentIndex(
+        settings.value(QStringLiteral("RunMode"), 2).toInt());
 
     // Migrate to separate send and receive channel numbers.
     int oldChannelSetting = settings.value(QStringLiteral("Channels"), -1).toInt();
@@ -984,44 +1010,65 @@ void QJackTrip::loadSettings()
         settings.remove(QStringLiteral("Channels"));
     } else {
         m_ui->channelSendSpinBox->setValue(
-            settings.value(QStringLiteral("ChannelsSend"), gDefaultNumInChannels).toInt());
+            settings.value(QStringLiteral("ChannelsSend"), gDefaultNumInChannels)
+                .toInt());
         m_ui->channelRecvSpinBox->setValue(
-            settings.value(QStringLiteral("ChannelsRecv"), gDefaultNumOutChannels).toInt());
+            settings.value(QStringLiteral("ChannelsRecv"), gDefaultNumOutChannels)
+                .toInt());
     }
 
-    m_ui->autoPatchComboBox->setCurrentIndex(settings.value(QStringLiteral("AutoPatchMode"), 0).toInt());
-    m_ui->patchServerCheckBox->setChecked(settings.value(QStringLiteral("PatchIncludesServer"), false).toBool());
-    m_ui->upmixCheckBox->setChecked(settings.value(QStringLiteral("StereoUpmix"), false).toBool());
-    m_ui->zeroCheckBox->setChecked(settings.value(QStringLiteral("ZeroUnderrun"), false).toBool());
-    m_ui->timeoutCheckBox->setChecked(settings.value(QStringLiteral("Timeout"), false).toBool());
-    m_ui->clientNameEdit->setText(settings.value(QStringLiteral("ClientName"), "").toString());
-    m_ui->remoteNameEdit->setText(settings.value(QStringLiteral("RemoteName"), "").toString());
-    m_ui->localPortSpinBox->setValue(settings.value(QStringLiteral("LocalPort"), gDefaultPort).toInt());
-    m_ui->remotePortSpinBox->setValue(settings.value(QStringLiteral("RemotePort"), gDefaultPort).toInt());
-    m_ui->basePortSpinBox->setValue(settings.value(QStringLiteral("BasePort"), 61002).toInt());
+    m_ui->autoPatchComboBox->setCurrentIndex(
+        settings.value(QStringLiteral("AutoPatchMode"), 0).toInt());
+    m_ui->patchServerCheckBox->setChecked(
+        settings.value(QStringLiteral("PatchIncludesServer"), false).toBool());
+    m_ui->upmixCheckBox->setChecked(
+        settings.value(QStringLiteral("StereoUpmix"), false).toBool());
+    m_ui->zeroCheckBox->setChecked(
+        settings.value(QStringLiteral("ZeroUnderrun"), false).toBool());
+    m_ui->timeoutCheckBox->setChecked(
+        settings.value(QStringLiteral("Timeout"), false).toBool());
+    m_ui->clientNameEdit->setText(
+        settings.value(QStringLiteral("ClientName"), "").toString());
+    m_ui->remoteNameEdit->setText(
+        settings.value(QStringLiteral("RemoteName"), "").toString());
+    m_ui->localPortSpinBox->setValue(
+        settings.value(QStringLiteral("LocalPort"), gDefaultPort).toInt());
+    m_ui->remotePortSpinBox->setValue(
+        settings.value(QStringLiteral("RemotePort"), gDefaultPort).toInt());
+    m_ui->basePortSpinBox->setValue(
+        settings.value(QStringLiteral("BasePort"), 61002).toInt());
     m_ui->queueLengthSpinBox->setValue(
         settings.value(QStringLiteral("QueueLength"), gDefaultQueueLength).toInt());
     m_ui->redundancySpinBox->setValue(
         settings.value(QStringLiteral("Redundancy"), gDefaultRedundancy).toInt());
-    m_ui->resolutionComboBox->setCurrentIndex(settings.value(QStringLiteral("Resolution"), 1).toInt());
-    m_ui->connectAudioCheckBox->setChecked(settings.value(QStringLiteral("ConnectAudio"), true).toBool());
-    m_ui->realTimeCheckBox->setChecked(settings.value(QStringLiteral("RTNetworking"), true).toBool());
+    m_ui->resolutionComboBox->setCurrentIndex(
+        settings.value(QStringLiteral("Resolution"), 1).toInt());
+    m_ui->connectAudioCheckBox->setChecked(
+        settings.value(QStringLiteral("ConnectAudio"), true).toBool());
+    m_ui->realTimeCheckBox->setChecked(
+        settings.value(QStringLiteral("RTNetworking"), true).toBool());
     // This may have been set by the command line, so don't overwrite if that's the case.
-    m_ui->verboseCheckBox->setChecked(gVerboseFlag || settings.value(QStringLiteral("Debug"), 0).toBool());
+    m_ui->verboseCheckBox->setChecked(
+        gVerboseFlag || settings.value(QStringLiteral("Debug"), 0).toBool());
     m_lastPath = settings.value(QStringLiteral("LastPath"), QDir::homePath()).toString();
 
     settings.beginGroup(QStringLiteral("RecentServers"));
     for (int i = 1; i <= 5; i++) {
-        QString address = settings.value(QStringLiteral("Server%1").arg(i), "").toString();
-        if (!address.isEmpty()) { m_ui->addressComboBox->addItem(address); }
+        QString address =
+            settings.value(QStringLiteral("Server%1").arg(i), "").toString();
+        if (!address.isEmpty()) {
+            m_ui->addressComboBox->addItem(address);
+        }
     }
     settings.endGroup();
     // Need to get this here so it isn't overwritten by the previous section.
-    m_ui->addressComboBox->setCurrentText(settings.value(QStringLiteral("LastAddress"), "").toString());
+    m_ui->addressComboBox->setCurrentText(
+        settings.value(QStringLiteral("LastAddress"), "").toString());
 
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
-    m_ui->backendComboBox->setCurrentIndex(settings.value(QStringLiteral("Backend"), 0).toInt());
+    m_ui->backendComboBox->setCurrentIndex(
+        settings.value(QStringLiteral("Backend"), 0).toInt());
     m_ui->sampleRateComboBox->setCurrentText(
         settings.value(QStringLiteral("SampleRate"), "48000").toString());
     m_ui->bufferSizeComboBox->setCurrentText(
@@ -1029,33 +1076,38 @@ void QJackTrip::loadSettings()
     // update device list and set the device
     populateDeviceMenu(m_ui->inputDeviceComboBox, true);
     auto inDevice = settings.value(QStringLiteral("InputDevice")).toString();
-    if(!inDevice.isEmpty()) {
+    if (!inDevice.isEmpty()) {
         m_ui->inputDeviceComboBox->setCurrentText(inDevice);
     }
     populateDeviceMenu(m_ui->outputDeviceComboBox, false);
     auto outDevice = settings.value(QStringLiteral("OutputDevice")).toString();
-    if(!outDevice.isEmpty()) {
+    if (!outDevice.isEmpty()) {
         m_ui->outputDeviceComboBox->setCurrentText(outDevice);
     }
     settings.endGroup();
 #endif
 
     settings.beginGroup(QStringLiteral("Auth"));
-    m_ui->requireAuthCheckBox->setChecked(settings.value(QStringLiteral("Require"), false).toBool());
+    m_ui->requireAuthCheckBox->setChecked(
+        settings.value(QStringLiteral("Require"), false).toBool());
     m_ui->certEdit->setText(settings.value(QStringLiteral("CertFile"), "").toString());
     m_ui->keyEdit->setText(settings.value(QStringLiteral("KeyFile"), "").toString());
     m_ui->credsEdit->setText(settings.value(QStringLiteral("CredsFile"), "").toString());
     m_ui->authCheckBox->setChecked(settings.value(QStringLiteral("Use"), false).toBool());
-    m_ui->usernameEdit->setText(settings.value(QStringLiteral("Username"), "").toString());
+    m_ui->usernameEdit->setText(
+        settings.value(QStringLiteral("Username"), "").toString());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("IOStats"));
-    m_ui->ioStatsCheckBox->setChecked(settings.value(QStringLiteral("Display"), false).toBool());
-    m_ui->ioStatsSpinBox->setValue(settings.value(QStringLiteral("ReportingInterval"), 1).toInt());
+    m_ui->ioStatsCheckBox->setChecked(
+        settings.value(QStringLiteral("Display"), false).toBool());
+    m_ui->ioStatsSpinBox->setValue(
+        settings.value(QStringLiteral("ReportingInterval"), 1).toInt());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("JitterBuffer"));
-    bool jitterAnnounce = settings.value(QStringLiteral("JitterAnnounce"), false).toBool();
+    bool jitterAnnounce =
+        settings.value(QStringLiteral("JitterAnnounce"), false).toBool();
     if (!jitterAnnounce && !settings.value(QStringLiteral("Enabled"), true).toBool()) {
         QMessageBox msgBox;
         msgBox.setText(
@@ -1066,34 +1118,51 @@ void QJackTrip::loadSettings()
         settings.setValue(QStringLiteral("Enabled"), true);
     }
     settings.setValue(QStringLiteral("JitterAnnounce"), true);
-    m_ui->jitterCheckBox->setChecked(settings.value(QStringLiteral("Enabled"), true).toBool());
-    m_ui->broadcastCheckBox->setChecked(settings.value(QStringLiteral("Broadcast"), false).toBool());
+    m_ui->jitterCheckBox->setChecked(
+        settings.value(QStringLiteral("Enabled"), true).toBool());
+    m_ui->broadcastCheckBox->setChecked(
+        settings.value(QStringLiteral("Broadcast"), false).toBool());
     m_ui->broadcastQueueSpinBox->setValue(
-        settings.value(QStringLiteral("BroadcastLength"), gDefaultQueueLength * 2).toInt());
-    m_ui->bufferStrategyComboBox->setCurrentIndex(settings.value(QStringLiteral("Strategy"), 1).toInt()
-                                                  - 1);
-    m_ui->autoQueueCheckBox->setChecked(settings.value(QStringLiteral("AutoQueue"), true).toBool());
-    m_ui->autoQueueSpinBox->setValue(settings.value(QStringLiteral("TuningParameter"), 500).toInt());
+        settings.value(QStringLiteral("BroadcastLength"), gDefaultQueueLength * 2)
+            .toInt());
+    m_ui->bufferStrategyComboBox->setCurrentIndex(
+        settings.value(QStringLiteral("Strategy"), 1).toInt() - 1);
+    m_ui->autoQueueCheckBox->setChecked(
+        settings.value(QStringLiteral("AutoQueue"), true).toBool());
+    m_ui->autoQueueSpinBox->setValue(
+        settings.value(QStringLiteral("TuningParameter"), 500).toInt());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("InPlugins"));
-    m_ui->inFreeverbCheckBox->setChecked(settings.value(QStringLiteral("Freeverb"), false).toBool());
-    m_ui->inFreeverbWetnessSlider->setValue(settings.value(QStringLiteral("FreeverbWetness"), 0).toInt());
-    m_ui->inZitarevCheckBox->setChecked(settings.value(QStringLiteral("Zitarev"), false).toBool());
-    m_ui->inZitarevWetnessSlider->setValue(settings.value(QStringLiteral("ZitarevWetness"), 0).toInt());
-    m_ui->inCompressorCheckBox->setChecked(settings.value(QStringLiteral("Compressor"), false).toBool());
-    m_ui->inLimiterCheckBox->setChecked(settings.value(QStringLiteral("Limiter"), false).toBool());
+    m_ui->inFreeverbCheckBox->setChecked(
+        settings.value(QStringLiteral("Freeverb"), false).toBool());
+    m_ui->inFreeverbWetnessSlider->setValue(
+        settings.value(QStringLiteral("FreeverbWetness"), 0).toInt());
+    m_ui->inZitarevCheckBox->setChecked(
+        settings.value(QStringLiteral("Zitarev"), false).toBool());
+    m_ui->inZitarevWetnessSlider->setValue(
+        settings.value(QStringLiteral("ZitarevWetness"), 0).toInt());
+    m_ui->inCompressorCheckBox->setChecked(
+        settings.value(QStringLiteral("Compressor"), false).toBool());
+    m_ui->inLimiterCheckBox->setChecked(
+        settings.value(QStringLiteral("Limiter"), false).toBool());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("OutPlugins"));
-    m_ui->outFreeverbCheckBox->setChecked(settings.value(QStringLiteral("Freeverb"), false).toBool());
+    m_ui->outFreeverbCheckBox->setChecked(
+        settings.value(QStringLiteral("Freeverb"), false).toBool());
     m_ui->outFreeverbWetnessSlider->setValue(
         settings.value(QStringLiteral("FreeverbWetness"), 0).toInt());
-    m_ui->outZitarevCheckBox->setChecked(settings.value(QStringLiteral("Zitarev"), false).toBool());
-    m_ui->outZitarevWetnessSlider->setValue(settings.value(QStringLiteral("ZitarevWetness"), 0).toInt());
-    m_ui->outCompressorCheckBox->setChecked(settings.value(QStringLiteral("Compressor"), false).toBool());
-    m_ui->outLimiterCheckBox->setChecked(settings.value(QStringLiteral("Limiter"), false).toBool());
-    m_ui->outClientsSpinBox->setValue(settings.value(QStringLiteral("Clients"), 1).toInt());
+    m_ui->outZitarevCheckBox->setChecked(
+        settings.value(QStringLiteral("Zitarev"), false).toBool());
+    m_ui->outZitarevWetnessSlider->setValue(
+        settings.value(QStringLiteral("ZitarevWetness"), 0).toInt());
+    m_ui->outCompressorCheckBox->setChecked(
+        settings.value(QStringLiteral("Compressor"), false).toBool());
+    m_ui->outLimiterCheckBox->setChecked(
+        settings.value(QStringLiteral("Limiter"), false).toBool());
+    m_ui->outClientsSpinBox->setValue(
+        settings.value(QStringLiteral("Clients"), 1).toInt());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("Window"));
@@ -1113,11 +1182,14 @@ void QJackTrip::saveSettings()
 {
     QSettings settings;
     settings.setValue(QStringLiteral("RunMode"), m_ui->typeComboBox->currentIndex());
-    settings.setValue(QStringLiteral("LastAddress"), m_ui->addressComboBox->currentText());
+    settings.setValue(QStringLiteral("LastAddress"),
+                      m_ui->addressComboBox->currentText());
     settings.setValue(QStringLiteral("ChannelsSend"), m_ui->channelSendSpinBox->value());
     settings.setValue(QStringLiteral("ChannelsRecv"), m_ui->channelRecvSpinBox->value());
-    settings.setValue(QStringLiteral("AutoPatchMode"), m_ui->autoPatchComboBox->currentIndex());
-    settings.setValue(QStringLiteral("PatchIncludesServer"), m_ui->patchServerCheckBox->isChecked());
+    settings.setValue(QStringLiteral("AutoPatchMode"),
+                      m_ui->autoPatchComboBox->currentIndex());
+    settings.setValue(QStringLiteral("PatchIncludesServer"),
+                      m_ui->patchServerCheckBox->isChecked());
     settings.setValue(QStringLiteral("StereoUpmix"), m_ui->upmixCheckBox->isChecked());
     settings.setValue(QStringLiteral("ZeroUnderrun"), m_ui->zeroCheckBox->isChecked());
     settings.setValue(QStringLiteral("Timeout"), m_ui->timeoutCheckBox->isChecked());
@@ -1128,9 +1200,12 @@ void QJackTrip::saveSettings()
     settings.setValue(QStringLiteral("BasePort"), m_ui->basePortSpinBox->value());
     settings.setValue(QStringLiteral("QueueLength"), m_ui->queueLengthSpinBox->value());
     settings.setValue(QStringLiteral("Redundancy"), m_ui->redundancySpinBox->value());
-    settings.setValue(QStringLiteral("Resolution"), m_ui->resolutionComboBox->currentIndex());
-    settings.setValue(QStringLiteral("ConnectAudio"), m_ui->connectAudioCheckBox->isChecked());
-    settings.setValue(QStringLiteral("RTNetworking"), m_ui->realTimeCheckBox->isChecked());
+    settings.setValue(QStringLiteral("Resolution"),
+                      m_ui->resolutionComboBox->currentIndex());
+    settings.setValue(QStringLiteral("ConnectAudio"),
+                      m_ui->connectAudioCheckBox->isChecked());
+    settings.setValue(QStringLiteral("RTNetworking"),
+                      m_ui->realTimeCheckBox->isChecked());
     settings.setValue(QStringLiteral("Debug"), m_ui->verboseCheckBox->isChecked());
     settings.setValue(QStringLiteral("LastPath"), m_lastPath);
 
@@ -1144,10 +1219,14 @@ void QJackTrip::saveSettings()
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
     settings.setValue(QStringLiteral("Backend"), m_ui->backendComboBox->currentIndex());
-    settings.setValue(QStringLiteral("SampleRate"), m_ui->sampleRateComboBox->currentText());
-    settings.setValue(QStringLiteral("BufferSize"), m_ui->bufferSizeComboBox->currentText());
-    settings.setValue(QStringLiteral("InputDevice"), m_ui->inputDeviceComboBox->currentText());
-    settings.setValue(QStringLiteral("OutputDevice"), m_ui->outputDeviceComboBox->currentText());
+    settings.setValue(QStringLiteral("SampleRate"),
+                      m_ui->sampleRateComboBox->currentText());
+    settings.setValue(QStringLiteral("BufferSize"),
+                      m_ui->bufferSizeComboBox->currentText());
+    settings.setValue(QStringLiteral("InputDevice"),
+                      m_ui->inputDeviceComboBox->currentText());
+    settings.setValue(QStringLiteral("OutputDevice"),
+                      m_ui->outputDeviceComboBox->currentText());
     settings.endGroup();
 #endif
 
@@ -1168,27 +1247,35 @@ void QJackTrip::saveSettings()
     settings.beginGroup(QStringLiteral("JitterBuffer"));
     settings.setValue(QStringLiteral("Enabled"), m_ui->jitterCheckBox->isChecked());
     settings.setValue(QStringLiteral("Broadcast"), m_ui->broadcastCheckBox->isChecked());
-    settings.setValue(QStringLiteral("BroadcastLength"), m_ui->broadcastQueueSpinBox->value());
-    settings.setValue(QStringLiteral("Strategy"), m_ui->bufferStrategyComboBox->currentIndex() + 1);
+    settings.setValue(QStringLiteral("BroadcastLength"),
+                      m_ui->broadcastQueueSpinBox->value());
+    settings.setValue(QStringLiteral("Strategy"),
+                      m_ui->bufferStrategyComboBox->currentIndex() + 1);
     settings.setValue(QStringLiteral("AutoQueue"), m_ui->autoQueueCheckBox->isChecked());
     settings.setValue(QStringLiteral("TuningParameter"), m_ui->autoQueueSpinBox->value());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("InPlugins"));
     settings.setValue(QStringLiteral("Freeverb"), m_ui->inFreeverbCheckBox->isChecked());
-    settings.setValue(QStringLiteral("FreeverbWetness"), m_ui->inFreeverbWetnessSlider->value());
+    settings.setValue(QStringLiteral("FreeverbWetness"),
+                      m_ui->inFreeverbWetnessSlider->value());
     settings.setValue(QStringLiteral("Zitarev"), m_ui->inZitarevCheckBox->isChecked());
-    settings.setValue(QStringLiteral("ZitarevWetness"), m_ui->inZitarevWetnessSlider->value());
-    settings.setValue(QStringLiteral("Compressor"), m_ui->inCompressorCheckBox->isChecked());
+    settings.setValue(QStringLiteral("ZitarevWetness"),
+                      m_ui->inZitarevWetnessSlider->value());
+    settings.setValue(QStringLiteral("Compressor"),
+                      m_ui->inCompressorCheckBox->isChecked());
     settings.setValue(QStringLiteral("Limiter"), m_ui->inLimiterCheckBox->isChecked());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("OutPlugins"));
     settings.setValue(QStringLiteral("Freeverb"), m_ui->outFreeverbCheckBox->isChecked());
-    settings.setValue(QStringLiteral("FreeverbWetness"), m_ui->outFreeverbWetnessSlider->value());
+    settings.setValue(QStringLiteral("FreeverbWetness"),
+                      m_ui->outFreeverbWetnessSlider->value());
     settings.setValue(QStringLiteral("Zitarev"), m_ui->outZitarevCheckBox->isChecked());
-    settings.setValue(QStringLiteral("ZitarevWetness"), m_ui->outZitarevWetnessSlider->value());
-    settings.setValue(QStringLiteral("Compressor"), m_ui->outCompressorCheckBox->isChecked());
+    settings.setValue(QStringLiteral("ZitarevWetness"),
+                      m_ui->outZitarevWetnessSlider->value());
+    settings.setValue(QStringLiteral("Compressor"),
+                      m_ui->outCompressorCheckBox->isChecked());
     settings.setValue(QStringLiteral("Limiter"), m_ui->outLimiterCheckBox->isChecked());
     settings.setValue(QStringLiteral("Clients"), m_ui->outClientsSpinBox->value());
     settings.endGroup();
@@ -1201,7 +1288,9 @@ void QJackTrip::saveSettings()
 void QJackTrip::appendPlugins(JackTrip* jackTrip, int numSendChannels,
                               int numRecvChannels)
 {
-    if (!jackTrip) { return; }
+    if (!jackTrip) {
+        return;
+    }
 
     // These effects are currently deleted by the AudioInterface of jacktrip.
     // May need to change this code if we move to smart pointers.
@@ -1260,7 +1349,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
         commandLine.append(" -S");
     }
 
-    if (m_ui->zeroCheckBox->isChecked()) { commandLine.append(" -z"); }
+    if (m_ui->zeroCheckBox->isChecked()) {
+        commandLine.append(" -z");
+    }
 
     if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
@@ -1271,8 +1362,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
         if (hubConnectionMode > 0) {
             commandLine.append(QStringLiteral(" -p %1").arg(hubConnectionMode));
         }
-        if (m_ui->patchServerCheckBox->isChecked() && (m_ui->typeComboBox->currentIndex() ==
-            CLIENTFOFI || m_ui->typeComboBox->currentIndex() == FULLMIX)) {
+        if (m_ui->patchServerCheckBox->isChecked()
+            && (m_ui->typeComboBox->currentIndex() == CLIENTFOFI
+                || m_ui->typeComboBox->currentIndex() == FULLMIX)) {
             commandLine.append(" -i");
         }
         if (m_ui->upmixCheckBox->isChecked()) {
@@ -1285,12 +1377,15 @@ QString QJackTrip::commandLineFromCurrentOptions()
                 commandLine.append(
                     QStringLiteral(" -n %1").arg(m_ui->channelRecvSpinBox->value()));
             } else {
-                commandLine.append(QStringLiteral(" --receivechannels %1 --sendchannels %2")
-                                       .arg(m_ui->channelRecvSpinBox->value())
-                                       .arg(m_ui->channelSendSpinBox->value()));
+                commandLine.append(
+                    QStringLiteral(" --receivechannels %1 --sendchannels %2")
+                        .arg(m_ui->channelRecvSpinBox->value())
+                        .arg(m_ui->channelSendSpinBox->value()));
             }
         }
-        if (m_ui->timeoutCheckBox->isChecked()) { commandLine.append(" -t"); }
+        if (m_ui->timeoutCheckBox->isChecked()) {
+            commandLine.append(" -t");
+        }
     }
 
     int bufStrategy = -1;
@@ -1309,7 +1404,8 @@ QString QJackTrip::commandLineFromCurrentOptions()
                 QStringLiteral(" -q auto%1").arg(m_ui->autoQueueSpinBox->value()));
         }
     } else if (m_ui->queueLengthSpinBox->value() != gDefaultQueueLength) {
-        commandLine.append(QStringLiteral(" -q %1").arg(m_ui->queueLengthSpinBox->value()));
+        commandLine.append(
+            QStringLiteral(" -q %1").arg(m_ui->queueLengthSpinBox->value()));
     }
 
     if (m_ui->jitterCheckBox->isChecked() && m_ui->broadcastCheckBox->isChecked()) {
@@ -1324,7 +1420,8 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT
         || m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         if (m_ui->remotePortSpinBox->value() != gDefaultPort) {
-            commandLine.append(QStringLiteral(" -P %1").arg(m_ui->remotePortSpinBox->value()));
+            commandLine.append(
+                QStringLiteral(" -P %1").arg(m_ui->remotePortSpinBox->value()));
         }
     }
 
@@ -1357,28 +1454,36 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         int offset = m_ui->localPortSpinBox->value() - gDefaultPort;
         if (m_ui->basePortSpinBox->value() != 61002 + offset) {
-            commandLine.append(QStringLiteral(" -U %1").arg(m_ui->basePortSpinBox->value()));
+            commandLine.append(
+                QStringLiteral(" -U %1").arg(m_ui->basePortSpinBox->value()));
         }
     } else {
         if (!m_ui->clientNameEdit->text().isEmpty()) {
-            commandLine.append(QStringLiteral(" -J \"%1\"").arg(m_ui->clientNameEdit->text()));
+            commandLine.append(
+                QStringLiteral(" -J \"%1\"").arg(m_ui->clientNameEdit->text()));
         }
         if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT
             && !m_ui->remoteNameEdit->text().isEmpty()) {
-            commandLine.append(QStringLiteral(" -K \"%1\"").arg(m_ui->remoteNameEdit->text()));
+            commandLine.append(
+                QStringLiteral(" -K \"%1\"").arg(m_ui->remoteNameEdit->text()));
         }
         if (m_ui->redundancySpinBox->value() > 1) {
-            commandLine.append(QStringLiteral(" -r %1").arg(m_ui->redundancySpinBox->value()));
+            commandLine.append(
+                QStringLiteral(" -r %1").arg(m_ui->redundancySpinBox->value()));
         }
         if (m_ui->resolutionComboBox->currentText() != QLatin1String("16")) {
             commandLine.append(" -b ").append(m_ui->resolutionComboBox->currentText());
         }
-        if (!m_ui->connectAudioCheckBox->isChecked()) { commandLine.append(" -D"); }
+        if (!m_ui->connectAudioCheckBox->isChecked()) {
+            commandLine.append(" -D");
+        }
 
         if (m_ui->inLimiterCheckBox->isChecked()
             || m_ui->outLimiterCheckBox->isChecked()) {
             commandLine.append(" -O ");
-            if (m_ui->inLimiterCheckBox->isChecked()) { commandLine.append("i"); }
+            if (m_ui->inLimiterCheckBox->isChecked()) {
+                commandLine.append("i");
+            }
             if (m_ui->outLimiterCheckBox->isChecked()) {
                 commandLine.append("o");
                 if (m_ui->outClientsSpinBox->value() != 2) {
@@ -1398,7 +1503,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
             commandLine.append(" -f \"");
             if (inEffects) {
                 commandLine.append("i:");
-                if (m_ui->inCompressorCheckBox->isChecked()) { commandLine.append("c"); }
+                if (m_ui->inCompressorCheckBox->isChecked()) {
+                    commandLine.append("c");
+                }
                 if (m_ui->inFreeverbCheckBox->isChecked()) {
                     commandLine.append(QStringLiteral("f(%1)").arg(
                         m_ui->inFreeverbWetnessSlider->value() / 100.0));
@@ -1407,11 +1514,15 @@ QString QJackTrip::commandLineFromCurrentOptions()
                     commandLine.append(QStringLiteral("f(%1)").arg(
                         m_ui->inZitarevWetnessSlider->value() / 100.0));
                 }
-                if (outEffects) { commandLine.append(", "); }
+                if (outEffects) {
+                    commandLine.append(", ");
+                }
             }
             if (outEffects) {
                 commandLine.append("o:");
-                if (m_ui->outCompressorCheckBox->isChecked()) { commandLine.append("c"); }
+                if (m_ui->outCompressorCheckBox->isChecked()) {
+                    commandLine.append("c");
+                }
                 if (m_ui->outFreeverbCheckBox->isChecked()) {
                     commandLine.append(QStringLiteral("f(%1)").arg(
                         m_ui->outFreeverbWetnessSlider->value() / 100.0));
@@ -1427,10 +1538,14 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->ioStatsCheckBox->isChecked()) {
         commandLine.append(QStringLiteral(" -I %1").arg(m_ui->ioStatsSpinBox->value()));
     }
-    
-    if (m_ui->verboseCheckBox->isChecked()) { commandLine.append(" -V"); }
 
-    if (m_ui->realTimeCheckBox->isChecked()) { commandLine.append(" --udprt"); }
+    if (m_ui->verboseCheckBox->isChecked()) {
+        commandLine.append(" -V");
+    }
+
+    if (m_ui->realTimeCheckBox->isChecked()) {
+        commandLine.append(" --udprt");
+    }
 
 #ifdef RT_AUDIO
     if (m_ui->typeComboBox->currentIndex() != HUB_SERVER
@@ -1441,11 +1556,11 @@ QString QJackTrip::commandLineFromCurrentOptions()
         commandLine.append(
             QStringLiteral(" --bufsize %1").arg(m_ui->bufferSizeComboBox->currentText()));
         QString inDevice;
-        if(m_ui->inputDeviceComboBox->currentIndex() > 0) {
+        if (m_ui->inputDeviceComboBox->currentIndex() > 0) {
             inDevice = m_ui->inputDeviceComboBox->currentText();
         }
         QString outDevice;
-        if(m_ui->outputDeviceComboBox->currentIndex() > 0) {
+        if (m_ui->outputDeviceComboBox->currentIndex() > 0) {
             outDevice = m_ui->outputDeviceComboBox->currentText();
         }
         commandLine.append(
@@ -1466,7 +1581,7 @@ void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
     menu->addItem(QStringLiteral("(default)"));
     unsigned int devices = audio.getDeviceCount();
     RtAudio::DeviceInfo info;
-    for (unsigned int i=0; i<devices; i++) {
+    for (unsigned int i = 0; i < devices; i++) {
         info = audio.getDeviceInfo(i);
         if (info.probed == true) {
             if (isInput && info.inputChannels > 0) {
@@ -1495,7 +1610,7 @@ void QJackTrip::showCommandLineMessageBox()
 
 QJackTrip::~QJackTrip()
 {
-    //Restore cout. (Stops a crash on exit.)
+    // Restore cout. (Stops a crash on exit.)
     std::cout.rdbuf(m_realCout.rdbuf());
     std::cerr.rdbuf(m_realCerr.rdbuf());
 }

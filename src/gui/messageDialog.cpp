@@ -25,13 +25,15 @@
 
 #include "messageDialog.h"
 
-#include "ui_messageDialog.h"
-#include <iostream>
-#include <QScrollBar>
 #include <QMenu>
+#include <QScrollBar>
 #include <QSettings>
+#include <iostream>
 
-MessageDialog::MessageDialog(QWidget* parent, const QString &windowFunction, quint32 streamCount)
+#include "ui_messageDialog.h"
+
+MessageDialog::MessageDialog(QWidget* parent, const QString& windowFunction,
+                             quint32 streamCount)
     : QDialog(parent)
     , m_ui(new Ui::MessageDialog)
     , m_outStreams(streamCount)
@@ -42,14 +44,16 @@ MessageDialog::MessageDialog(QWidget* parent, const QString &windowFunction, qui
     for (quint32 i = 0; i < streamCount; i++) {
         m_outBufs[i].reset(new textbuf);
         m_outStreams[i].reset(new std::ostream(m_outBufs.at(i).data()));
-        connect(m_outBufs.at(i).data(), &textbuf::outputString, this, &MessageDialog::receiveOutput, Qt::QueuedConnection);
+        connect(m_outBufs.at(i).data(), &textbuf::outputString, this,
+                &MessageDialog::receiveOutput, Qt::QueuedConnection);
     }
-    
+
     m_ui->messagesTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_ui->messagesTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MessageDialog::provideContextMenu);
+    connect(m_ui->messagesTextEdit, &QPlainTextEdit::customContextMenuRequested, this,
+            &MessageDialog::provideContextMenu);
     m_ui->messagesTextEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     connect(this, &QDialog::rejected, this, &MessageDialog::savePosition);
-    
+
     if (!m_windowFunction.isEmpty()) {
         setWindowTitle(m_windowFunction);
     }
@@ -76,15 +80,15 @@ void MessageDialog::closeEvent(QCloseEvent* event)
 
 QSharedPointer<std::ostream> MessageDialog::getOutputStream(int index)
 {
-    if (index >=0 && index < m_outStreams.size()) {
+    if (index >= 0 && index < m_outStreams.size()) {
         return m_outStreams.at(index);
     }
     return QSharedPointer<std::ostream>();
 }
 
-bool MessageDialog::setRelayStream(std::ostream *relay, int index)
+bool MessageDialog::setRelayStream(std::ostream* relay, int index)
 {
-    if (index >=0 && index < m_outBufs.size()) {
+    if (index >= 0 && index < m_outBufs.size()) {
         m_outBufs.at(index)->setOutStream(relay);
     }
     return false;
@@ -98,20 +102,23 @@ void MessageDialog::clearOutput()
 void MessageDialog::receiveOutput(const QString& output)
 {
     // Automatically scroll if we're at the bottom of the text box.
-    bool autoScroll = (m_ui->messagesTextEdit->verticalScrollBar()->value() == m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+    bool autoScroll = (m_ui->messagesTextEdit->verticalScrollBar()->value()
+                       == m_ui->messagesTextEdit->verticalScrollBar()->maximum());
     // Make sure our cursor is at the end.
     m_ui->messagesTextEdit->moveCursor(QTextCursor::End);
     m_ui->messagesTextEdit->insertPlainText(output);
     if (autoScroll) {
-        m_ui->messagesTextEdit->verticalScrollBar()->setValue(m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+        m_ui->messagesTextEdit->verticalScrollBar()->setValue(
+            m_ui->messagesTextEdit->verticalScrollBar()->maximum());
     }
 }
 
 void MessageDialog::provideContextMenu()
 {
     // Add a custom context menu entry to clear the output.
-    QMenu *menu = m_ui->messagesTextEdit->createStandardContextMenu();
-    QAction *action = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-delete")), QStringLiteral("Clear"));
+    QMenu* menu     = m_ui->messagesTextEdit->createStandardContextMenu();
+    QAction* action = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-delete")),
+                                      QStringLiteral("Clear"));
     connect(action, &QAction::triggered, this, &MessageDialog::clearOutput);
     menu->exec(QCursor::pos());
 }
@@ -126,7 +133,8 @@ void MessageDialog::savePosition()
     }
 }
 
-MessageDialog::~MessageDialog() {
+MessageDialog::~MessageDialog()
+{
     if (isVisible()) {
         savePosition();
     }

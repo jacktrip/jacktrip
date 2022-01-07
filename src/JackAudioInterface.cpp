@@ -102,7 +102,9 @@ void JackAudioInterface::setupClient()
     if (clientName.length() > maxSize) {
         int length = maxSize;
         // Make sure we don't cut mid multi-byte character.
-        while ((length > 0) && ((clientName.at(length) & 0xc0) == 0x80)) { length--; }
+        while ((length > 0) && ((clientName.at(length) & 0xc0) == 0x80)) {
+            length--;
+        }
         clientName.truncate(length);
     }
 
@@ -142,7 +144,9 @@ void JackAudioInterface::setupClient()
     }
 
     mAssignedClientName = jack_get_client_name(mClient);
-    if (status & JackServerStarted) { fprintf(stderr, "JACK server started\n"); }
+    if (status & JackServerStarted) {
+        fprintf(stderr, "JACK server started\n");
+    }
     if (status & JackNameNotUnique) {
         fprintf(stderr, "unique name `%s' assigned\n",
                 mAssignedClientName.toUtf8().constData());

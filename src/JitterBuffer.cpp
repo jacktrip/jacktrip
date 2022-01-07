@@ -119,12 +119,20 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 //*******************************************************************************
 bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen)
 {
-    if (0 == len) { len = mSlotSize; }
+    if (0 == len) {
+        len = mSlotSize;
+    }
     QMutexLocker locker(&mMutex);
     mInSlotSize = len;
-    if (!mActive) { mActive = true; }
-    if (mMaxLatency < len + mSlotSize) { mMaxLatency = len + mSlotSize; }
-    if (0 < lostLen) { processPacketLoss(lostLen); }
+    if (!mActive) {
+        mActive = true;
+    }
+    if (mMaxLatency < len + mSlotSize) {
+        mMaxLatency = len + mSlotSize;
+    }
+    if (0 < lostLen) {
+        processPacketLoss(lostLen);
+    }
     mSkewRaw += mReadsNew - len;
     mReadsNew = 0;
     mUnderruns += mUnderrunsNew;
@@ -201,7 +209,9 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     } else if (mInSlotSize + mSlotSize < mAutoQueueCorr) {
         mAutoQueueCorr -= mAutoQRate * mAutoQFactor;
     }
-    if (mAutoQRate > mAutoQRateMin) { mAutoQRate *= mAutoQRateDecay; }
+    if (mAutoQRate > mAutoQRateMin) {
+        mAutoQRate *= mAutoQRateDecay;
+    }
     if (0 != mAutoQueue) {
         int PPS = mSampleRate / mFPP;
         if (2 * PPS == mAutoQueue++ % (4 * PPS)) {
@@ -275,7 +285,9 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
             // cout << "split read: " << read_len << "-" << n << endl;
             std::memcpy(ptrToReadSlot + n, mRingBuffer, read_len - n);
         }
-        if (read_len < len) { std::memset(ptrToReadSlot + read_len, 0, len - read_len); }
+        if (read_len < len) {
+            std::memset(ptrToReadSlot + read_len, 0, len - read_len);
+        }
     } else {
         // interpolation len => mSlotSize
         double K = 1.0 * len / mSlotSize;

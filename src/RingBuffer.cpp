@@ -129,7 +129,9 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
     while (mFullSlots == 0) {
         // std::cerr << "READ UNDER-RUN BLOCKING before" << endl;
         mBufferIsNotEmpty.wait(&mMutex, 200);
-        if (JackTrip::sJackStopped) { return; }
+        if (JackTrip::sJackStopped) {
+            return;
+        }
     }
 
     // Copy mSlotSize bytes to ReadSlot

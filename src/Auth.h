@@ -69,7 +69,8 @@ class Auth : public QObject
     char char64(int value);
     QByteArray charGroup(unsigned char byte3, unsigned char byte2, unsigned char byte1,
                          unsigned int n);
-    QByteArray generateSha512Hash(const QString& passwordString, const QString& saltString);
+    QByteArray generateSha512Hash(const QString& passwordString,
+                                  const QString& saltString);
 
     QStringList m_days;
     QHash<QString, QString> m_passwordTable;
