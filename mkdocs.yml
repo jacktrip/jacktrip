@@ -29,8 +29,10 @@ theme:
   features:
     - navigation.tabs
 markdown_extensions:
+  - attr_list
   - pymdownx.snippets
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.superfences
   - pymdownx.details
   - admonition
