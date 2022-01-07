@@ -1,9 +1,14 @@
 - Version: "1.5.1"
-  Date: 2022-01-03
+  Date: 2022-01-07
   Description:
-  - (update) [Meson] Only add weakjack include directory when enabled
-  - (update) Remove reserved macro identifiers // use predefined macros
-  - (update) Remove 'using namespace std' and add clang-tidy check
+  - (added) option to include the server in the patching for client fan out/in and full mix modes
+  - (added) clang-tidy and clang-format CI checks
+  - (update) [Meson] only add weakjack include directory when enabled
+  - (update) remove reserved macro identifiers // use predefined macros
+  - (update) remove 'using namespace std' and add clang-tidy check
+  - (fixed) nearly all clazy warnings level 2 fixed
+  - (fixed) missing Windows startmenu icon
+  - (fixed) missing initializer for PROCESSENTRY32 type (Windows)
 - Version: "1.5.0"
   Date: 2022-01-03
   Description:
