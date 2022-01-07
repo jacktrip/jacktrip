@@ -7,20 +7,22 @@ finish-args:
   # X11 + XShm access
   - --share=ipc
   - --socket=x11
-  - --socket=fallback-x11
-  - --device=dri
-  # Wayland access
-  - --socket=wayland
+  # Wayland access (disabled because of missing window shadows)
+  # - --socket=wayland
   # Needs network access
   - --share=network
   # Pipewire/Jack
   - --filesystem=xdg-run/pipewire-0
-  - --system-talk-name=org.freedesktop.RealtimeKit1
+  # For setting realtime priority for network thread?
   - --socket=system-bus
+cleanup:
+  - /lib/python3.8
+  - /share/man
 modules:
   - shared-modules/linux-audio/jack2.json
   - name: python3-pyyaml
     buildsystem: simple
+    cleanup: [ "*" ]
     build-commands:
     - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} "pyyaml" --no-build-isolation
     sources:
@@ -29,6 +31,7 @@ modules:
       url: https://files.pythonhosted.org/packages/36/2b/61d51a2c4f25ef062ae3f74576b01638bebad5e045f747ff12643df63844/PyYAML-6.0.tar.gz
   - name: python3-jinja2
     buildsystem: simple
+    cleanup: [ "*" ]
     build-commands:
     - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} "jinja2" --no-build-isolation
     sources:

@@ -54,6 +54,7 @@
   - (update) RtAudio device selection
   - (update) build script moved to root directory
 - Version: "1.3.0"
+  Date: 2021-01-14
   Description:
   - (added) async networking in hub listener
   - (added) limiter, compressor, reverb
@@ -82,15 +83,18 @@
   - (update) clipping to saturation
   - (update) build instructions
 - Version: "1.2.2"
+  Date: 2020-12-27
   Description:
   - (added) bindPort range to reject oddball connections
   - (fixed) jack client name strings
 - Version: "1.2.1"
+  Date: 2020-08-05
   Description:
   - (added) src/build script builds in ../builddir
   - (fixed) refactor "Master" to be "Hub"
   - (fixed) 1.2.1 correctly Versioned and tagged
 - Version: "1.2"
+  Date: 2020-06-07
   Description:
   - (added) jack patching modes (-p) for Hub Mode server (-S)
   - (fixed) Compilation under ubuntu
@@ -101,12 +105,14 @@
   - (fixed) Fixed compilation for  MacOSX10.11.sdk.
   - (update) Updated to RtAudio 4.1.1, and using shared lib in linux.
 - Version: "1.1"
+  Date: 2015-05-27
   Description:
   - (added) Support for RtAudio. Jacktrip can now be used without Jack
   - (added) DNS Look-up support, now one machine can have a private IP (but still needs to have UDP ports open)
   - (added) New port to Windows XP and Windows Vista (experimental and not tested for a long time, only when using jacktrip as a library)
   - (added) Multiclient Server (experimental and not exposed in the executable)
 - Version: "1.0.5"
+  Date: 2010-11-25
   Description:
   - (added) Compatibility with JamLink boxes (restricted at the moment to 48KHz, 64 buffer size and 1 channel)
   - (added) New port structure that allows the communication between a public server and a local client
@@ -115,9 +121,11 @@
   - (fixed) General optimizations and code cleanup
   - (added) Improved, now cross-platform build script
 - Version: "1.0.4"
+  Date: 2009-02-05
   Description:
   - (fixed) Buss error caused when no physical inputs or outputs ports are available
 - Version: "1.0.3"
+  Date: 2008-12-29
   Description:
   - (added) Redundancy Algorithm for UDP Packets to avoid glitches with packet losses
   - (fixed) Now compiles on 64bits machines
@@ -126,11 +134,13 @@
   - (added) Some functionality reimplemented using signals and slots for more flexibility
   - (added) Multiple-Client-Server in alpha testing, expect it working in the next release
 - Version: "1.0.2"
+  Date: 2008-09-30
   Type: development
   Description:
   - (added) Port offset mode, to use a different UDP port than the default one.
   - (fixed) Improved thread behavior
 - Version: "1.0.1"
+  Date: 2008-09-23
   Type: development
   Description:
   - (added) jamlink mode to connect with jamlink boxes
@@ -141,6 +151,7 @@
   - (added) Check for peer audio settings, program exists if they don't match
   - (added) Automatically connect ports to available physical audio interface.
 - Version: "1.0"
+  Date: 2008-09-23
   Type: "development"
   Description:
   - initial release
