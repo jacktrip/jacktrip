@@ -31,6 +31,7 @@ jobs:
       matrix:
         include:
           - name: Linux-x64-qmake-static
+            release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-18.04
             system-rtaudio: false
             bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
@@ -92,6 +93,7 @@ jobs:
           #   meson-library-type: static
 
           - name: macOS-x64-qmake-static
+            release-name: macOS-x64
             runs-on: macos-10.15
             system-rtaudio: true
             bundled-rtaudio: false
@@ -133,6 +135,7 @@ jobs:
             meson-library-type: both
             
           - name: Windows-x64-qmake-static
+            release-name: Windows-x64
             runs-on: windows-2019
             system-rtaudio: true
             bundled-rtaudio: false
@@ -203,7 +206,13 @@ jobs:
           else
             VERSION=${GITHUB_SHA::7}
           fi
+          if [[ -n "${{ matrix.release-name }}" && "$GITHUB_REF" == refs/tags/* ]]; then
+            NAME="${{ matrix.release-name }}"
+          else
+            NAME="${{ matrix.name }}"
+          fi
           echo "::set-output name=version::$VERSION"
+          echo "::set-output name=name::$NAME"
       - name: setup python
         uses: actions/setup-python@v2
         with:
@@ -400,11 +409,11 @@ jobs:
         run: |
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
           if [[ "${{ runner.os }}" == "Windows" ]]; then
-            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
+            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
           else
-            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
+            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip LICENSE.md LICENSES
+            zip -r $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip LICENSE.md LICENSES
           fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
@@ -417,14 +426,14 @@ jobs:
           ./assemble_app.sh $CONFIG
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
-            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip *.app
+            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application.zip *.app
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip LICENSE.md LICENSES
+            zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application.zip LICENSE.md LICENSES
           fi
           if [[ -n ${{ matrix.installer-path }} ]]; then
             cd $GITHUB_WORKSPACE/macos
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
-            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.pkg
+            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.pkg
           fi
       - name: create installer on Windows
         if: runner.os == 'Windows' && matrix.installer-path
@@ -433,24 +442,24 @@ jobs:
           cd win
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
-          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.msi"
+          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
-        if: matrix.binary-path
+        if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: upload application bundle
         uses: actions/upload-artifact@v2
-        if: matrix.bundle-path
+        if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload installer
         uses: actions/upload-artifact@v2
-        if: matrix.installer-path
+        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
@@ -469,12 +478,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Linux-x64-binary/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-binary/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-application/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-installer/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-binary/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-installer/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*/*
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
