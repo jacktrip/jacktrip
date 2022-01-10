@@ -1326,12 +1326,12 @@ void QJackTrip::appendPlugins(JackTrip* jackTrip, int numSendChannels,
     }
 
     // Limiters go last in the plugin sequence.
-    if (m_ui->inLimiterCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginFromNetwork(new Limiter(numSendChannels, 1));
-    }
     if (m_ui->outLimiterCheckBox->isChecked()) {
         jackTrip->appendProcessPluginToNetwork(
-            new Limiter(numRecvChannels, m_ui->outClientsSpinBox->value()));
+            new Limiter(numSendChannels, m_ui->outClientsSpinBox->value()));
+    }
+    if (m_ui->inLimiterCheckBox->isChecked()) {
+        jackTrip->appendProcessPluginFromNetwork(new Limiter(numRecvChannels, 1));
     }
 }
 
