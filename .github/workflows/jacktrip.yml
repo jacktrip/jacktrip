@@ -49,14 +49,12 @@ jobs:
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
-          - name: Linux-x64-qmake-gcc-static-bundled_rtaudio
+          - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
             runs-on: ubuntu-18.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
             weakjack: false
-            static-qt-version: 5.12.11
-            qt-static-cache-key: 'v22'
             # jacktrip-path: jacktrip
             # binary-path: binary
             build-system: qmake
@@ -109,14 +107,12 @@ jobs:
             installer-path: installer
             build-system: qmake
 
-          - name: macOS-x64-qmake-clang-static-bundled_rtaudio
+          - name: macOS-x64-qmake-clang-shared-bundled_rtaudio
             runs-on: macos-10.15
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
             weakjack: true
-            static-qt-version: 5.12.11
-            qt-static-cache-key: 'v05'
             # jacktrip-path: jacktrip
             # binary-path: binary
             # bundle-path: bundle
