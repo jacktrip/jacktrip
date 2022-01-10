@@ -72,7 +72,7 @@ jobs:
           - name: Linux-x64-meson-shared
             runs-on: ubuntu-20.04
             system-rtaudio: false
-            bundled-rtaudio: false
+            bundled-rtaudio: true
             nogui: false
             weakjack: false
             # jacktrip-path: jacktrip
