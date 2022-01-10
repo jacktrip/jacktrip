@@ -132,22 +132,8 @@ jobs:
             build-system: meson
             meson-library-type: both
             
-          - name: Windows-x64-qmake-gcc-static
-            release-name: Windows-x64
-            runs-on: windows-2019
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            weakjack: true
-            vcpkg-triplet: x64-mingw-static
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v04'
-            jacktrip-path: release/jacktrip.exe
-            binary-path: binary
-            installer-path: installer
-            build-system: qmake
-            
           - name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            release-name: Windows-x64
             runs-on: windows-2019
             system-rtaudio: false
             bundled-rtaudio: true
@@ -155,8 +141,9 @@ jobs:
             weakjack: true
             static-qt-version: 5.15.2
             qt-static-cache-key: 'v04'
-            # jacktrip-path: release/jacktrip.exe
-            # binary-path: binary
+            jacktrip-path: release/jacktrip.exe
+            binary-path: binary
+            installer-path: installer
             build-system: qmake
 
           - name: Windows-x64-qmake-gcc-shared
