@@ -364,8 +364,9 @@ jobs:
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
-      - name: set Qt environment variables
+      - name: set Qt environment variables # needed to find qmake depending on the way qt was installed
         shell: bash
+        if: matrix.build-system == 'qmake'
         run: |
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
