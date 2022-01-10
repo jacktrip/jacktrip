@@ -174,7 +174,20 @@ jobs:
             # jacktrip-path: release/jacktrip.exe
             # binary-path: binary
             build-system: qmake
-            
+
+          - name: Windows-x64-meson-shared
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: true
+            vcpkg-triplet: x64-windows
+            qt-arch: 'win64_msvc2019_64'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
+
           - name: Windows-x64-meson-shared-bundled_rtaudio
             runs-on: windows-2019
             system-rtaudio: false
