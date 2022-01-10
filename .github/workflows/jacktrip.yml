@@ -30,78 +30,175 @@ jobs:
       fail-fast: false # don't abort if one of the build failse
       matrix:
         include:
-          - name: Linux-x64
-            runs-on: ubuntu-18.04
-            static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
-            jacktrip-path: jacktrip
-            binary-path: binary
-            
-          - name: Linux-x64-bundled-rtaudio
+          - name: Linux-x64-qmake-gcc-static
+            release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-18.04
             system-rtaudio: false
-            bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
+            bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
+            nogui: false
+            weakjack: false
+            # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
+            # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
             static-qt-version: 5.12.11 # if set, it will enable static Qt build
             qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
-            jacktrip-path: jacktrip
-            binary-path: binary
-
-          - name: Linux-x64-shared-libs-nogui
-            runs-on: ubuntu-18.04
-            jacktrip-path: jacktrip
-            binary-path: binary
-            nogui: true
-
-          # - name: macOS-shared-libs
-          #   runs-on: macos-10.15
-          #   system-rtaudio: true
-          #   jacktrip-path: jacktrip
-
-          - name: macOS-x64
-            runs-on: macos-10.15
-            system-rtaudio: true
-            static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v05' # required for static qt; update this to force rebuilding static Qt
-            weakjack: true
-            jacktrip-path: jacktrip # relative to build path
+            jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
-            bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
-            installer-path: installer # directory relative to build path; triggers installer creation and upload
-
-          - name: macOS-x64-bundled-rtaudio
-            runs-on: macos-10.15
-            bundled-rtaudio: true
-            static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v05' # required for static qt; update this to force rebuilding static Qt
-            weakjack: true
-            jacktrip-path: jacktrip # relative to build path
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
-
-          # - name: Windows-shared-libs
-          #   runs-on: windows-2019
-          #   system-rtaudio: true
-          #   jacktrip-path: release/jacktrip.exe
-
-          - name: Windows-x64
-            # suffix: installer
-            runs-on: windows-2019
-            system-rtaudio: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
-            weakjack: true
-            jacktrip-path: release/jacktrip.exe
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
-            installer-path: installer # directory relative to build path; triggers installer creation and upload
+            # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
+            # installer-path: installer # directory relative to build path; triggers installer creation and upload (macOS, Windows)
+            build-system: qmake # qmake, meson, cmake (todo)
+            # meson-library-type: shared # shared, static, both
+            # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
-          - name: Windows-x64-bundled-rtaudio
-            # suffix: installer
-            runs-on: windows-2019
+          - name: Linux-x64-qmake-gcc-static-bundled_rtaudio
+            runs-on: ubuntu-18.04
+            system-rtaudio: false
             bundled-rtaudio: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v04' # required for static qt; update this to force rebuilding static Qt
+            nogui: false
+            weakjack: false
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v22'
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: qmake
+
+          - name: Linux-x64-qmake-gcc-shared-nogui
+            runs-on: ubuntu-18.04
+            system-rtaudio: false
+            bundled-rtaudio: false
+            nogui: true
+            weakjack: false
+            build-system: qmake
+
+          - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
+            runs-on: ubuntu-20.04
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: false
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
+            static-analysis: true
+            
+          # - name: Linux-x64-meson-gcc-shared # meson static build doesn't work currently
+          #   runs-on: ubuntu-18.04
+          #   system-rtaudio: false
+          #   bundled-rtaudio: false
+          #   nogui: false
+          #   weakjack: false
+          #   static-qt-version: 5.12.11
+          #   qt-static-cache-key: 'v22'
+          #   jacktrip-path: jacktrip
+          #   binary-path: binary
+          #   build-system: meson
+          #   meson-library-type: static
+
+          - name: macOS-x64-qmake-clang-static
+            release-name: macOS-x64
+            runs-on: macos-10.15
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
             weakjack: true
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v05'
+            jacktrip-path: jacktrip
+            binary-path: binary
+            bundle-path: bundle
+            installer-path: installer
+            build-system: qmake
+
+          - name: macOS-x64-qmake-clang-static-bundled_rtaudio
+            runs-on: macos-10.15
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: true
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v05'
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            # bundle-path: bundle
+            # installer-path: installer
+            build-system: qmake
+
+          - name: macOS-x64-meson-clang-shared-bundled_rtaudio
+            runs-on: macos-10.15
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: true
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            # bundle-path: bundle
+            # installer-path: installer
+            build-system: meson
+            meson-library-type: both
+            
+          - name: Windows-x64-qmake-gcc-static
+            release-name: Windows-x64
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: true
+            vcpkg-triplet: x64-mingw-static
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v04'
             jacktrip-path: release/jacktrip.exe
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            binary-path: binary
+            installer-path: installer
+            build-system: qmake
+            
+          - name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            runs-on: windows-2019
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: true
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v04'
+            # jacktrip-path: release/jacktrip.exe
+            # binary-path: binary
+            build-system: qmake
+
+          - name: Windows-x64-qmake-gcc-shared
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: true
+            vcpkg-triplet: x64-mingw-dynamic
+            qt-arch: 'win64_mingw81'
+            # jacktrip-path: release/jacktrip.exe
+            # binary-path: binary
+            build-system: qmake
+
+          - name: Windows-x64-meson-msvc-shared
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: true
+            vcpkg-triplet: x64-windows
+            qt-arch: 'win64_msvc2019_64'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
+
+          - name: Windows-x64-meson-msvc-shared-bundled_rtaudio
+            runs-on: windows-2019
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: true
+            qt-arch: 'win64_msvc2019_64'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: both
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
@@ -110,10 +207,13 @@ jobs:
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
       QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtsvg -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
+      CLANG_TIDY_NAME: clang-tidy-result
+      CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       
     steps:
       - uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           submodules: true
       - name: set version string for artifacts
         shell: bash
@@ -124,7 +224,17 @@ jobs:
           else
             VERSION=${GITHUB_SHA::7}
           fi
+          if [[ -n "${{ matrix.release-name }}" && "$GITHUB_REF" == refs/tags/* ]]; then
+            NAME="${{ matrix.release-name }}"
+          else
+            NAME="${{ matrix.name }}"
+          fi
           echo "::set-output name=version::$VERSION"
+          echo "::set-output name=name::$NAME"
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
@@ -136,10 +246,15 @@ jobs:
             sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
-            sudo apt-get install --yes rtaudio
+            sudo apt-get install --yes librtaudio-dev
           fi
           if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes libasound2-dev libpulse-dev
+          fi
+          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
+            sudo apt-get install --yes help2man clang-tidy
+            python -m pip install --upgrade pip
+            pip install meson ninja pyyaml Jinja2
           fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
@@ -164,34 +279,45 @@ jobs:
           if [[ -n "${{ matrix.installer-path }}" ]]; then
             brew install packages
           fi
+          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
+            brew install meson help2man
+          fi
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
         shell: bash
         run: |
           choco install jack --version=1.9.17 --no-progress
           choco install openssl --no-progress
-          if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
+          if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             choco install pkgconfiglite --no-progress
             # check out an older version of rtaudio library, see issue #408
             cd $VCPKG_INSTALLATION_ROOT
             git fetch origin f60125a3a1f527f1bbeeff6ccfdde43634a64235
             git checkout f60125a3a1f527f1bbeeff6ccfdde43634a64235 -- ports/rtaudio
-            vcpkg install rtaudio[asio] --triplet=x64-mingw-static
-            echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\x64-mingw-static\lib\pkgconfig" >> $GITHUB_ENV
+            vcpkg install rtaudio[asio] --triplet="${{ matrix.vcpkg-triplet }}"
+            echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\${{ matrix.vcpkg-triplet }}\lib\pkgconfig" >> $GITHUB_ENV
           fi
+          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
+            python -m pip install --upgrade pip
+            pip install meson ninja
+            mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
+          fi
+      - name: setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows' && matrix.build-system == 'meson' # MSVC used only by meson
       - name: cache Qt
         id: cache-qt
-        if: runner.os == 'Windows' && !matrix.static-qt-version
+        if: matrix.qt-arch && !matrix.static-qt-version
         uses: actions/cache@v1
         with:
           path: ../Qt
-          key: ${{ runner.os }}-QtCache-${{ env.QT_VERSION }}
+          key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}
       - name: install Qt
         uses: jurplel/install-qt-action@v2
         if: runner.os == 'Windows' && !matrix.static-qt-version
         with:
           version: ${{ env.QT_VERSION }}
-          arch: 'win64_mingw81'
+          arch: ${{ matrix.qt-arch }}
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       - name: cache static Qt
         id: cache-static-qt
@@ -238,8 +364,9 @@ jobs:
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
-      - name: set Qt environment variables
+      - name: set Qt environment variables # needed to find qmake depending on the way qt was installed
         shell: bash
+        if: matrix.build-system == 'qmake'
         run: |
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
@@ -248,7 +375,8 @@ jobs:
           else
             echo "$Qt5_DIR/bin" >> $GITHUB_PATH
           fi
-      - name: build JackTrip
+      - name: build JackTrip with QMake
+        if: matrix.build-system == 'qmake'
         shell: bash
         run: |
           CONFIG_STRING="noclean"
@@ -268,17 +396,43 @@ jobs:
             CONFIG_STRING="weakjack $CONFIG_STRING"
           fi
           ./build $CONFIG_STRING
+      - name: build JackTrip with Meson
+        if: matrix.build-system == 'meson'
+        shell: bash
+        run: |
+          CONFIG_STRING="-Ddefault_library=${{ matrix.meson-library-type }}"
+          if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
+            CONFIG_STRING="-Drtaudio=enabled $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
+            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
+            if [[ "${{ runner.os }}" == 'Windows' ]]; then 
+              CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
+            fi
+          fi
+          if [[ "${{ matrix.nojack }}" == true ]]; then 
+            CONFIG_STRING="-Djack=disabled $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.nogui }}" == true ]]; then 
+            CONFIG_STRING="-Dnogui=true $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.weakjack }}" == true ]]; then 
+            CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
+          fi
+          meson --buildtype release $CONFIG_STRING $BUILD_PATH
+          cd $BUILD_PATH
+          meson compile
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
         run: |
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
           if [[ "${{ runner.os }}" == "Windows" ]]; then
-            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
+            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
           else
-            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
+            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary.zip LICENSE.md LICENSES
+            zip -r $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip LICENSE.md LICENSES
           fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
@@ -291,14 +445,14 @@ jobs:
           ./assemble_app.sh $CONFIG
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
-            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip *.app
+            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application.zip *.app
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application.zip LICENSE.md LICENSES
+            zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application.zip LICENSE.md LICENSES
           fi
           if [[ -n ${{ matrix.installer-path }} ]]; then
             cd $GITHUB_WORKSPACE/macos
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
-            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.pkg
+            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.pkg
           fi
       - name: create installer on Windows
         if: runner.os == 'Windows' && matrix.installer-path
@@ -307,25 +461,44 @@ jobs:
           cd win
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
-          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer.msi"
+          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
-        if: matrix.binary-path
+        if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-binary
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: upload application bundle
         uses: actions/upload-artifact@v2
-        if: matrix.bundle-path
+        if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-application
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload installer
         uses: actions/upload-artifact@v2
-        if: matrix.installer-path
+        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ matrix.name }}-installer
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
+      - name: analyze build
+        if: github.event_name == 'pull_request' && matrix.static-analysis == true
+        shell: bash
+        run: |
+          mkdir $CLANG_TIDY_PATH
+          git diff -U0 origin/${{ github.base_ref }} | clang-tidy-diff -p1 -path $BUILD_PATH -export-fixes $CLANG_TIDY_PATH/fixes.yml
+      - name: save PR metadata for static analysis
+        if: github.event_name == 'pull_request' && matrix.static-analysis == true
+        shell: bash
+        run: |
+          echo ${{ github.event.number }} > $CLANG_TIDY_PATH/pr-id.txt
+          echo ${{ github.event.pull_request.head.repo.full_name }} > $CLANG_TIDY_PATH/pr-head-repo.txt
+          echo ${{ github.event.pull_request.head.ref }} > $CLANG_TIDY_PATH/pr-head-ref.txt
+      - name: upload static analysis
+        if: github.event_name == 'pull_request' && matrix.static-analysis == true
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.CLANG_TIDY_NAME }}
+          path: ${{ env.CLANG_TIDY_PATH }}/
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
@@ -343,12 +516,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Linux-x64-binary/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-binary/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-application/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*macOS-x64-installer/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-binary/*
-            ${{ env.DOWNLOAD_PATH }}/JackTrip*Windows-x64-installer/*
+            ${{ env.DOWNLOAD_PATH }}/JackTrip*/*
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
