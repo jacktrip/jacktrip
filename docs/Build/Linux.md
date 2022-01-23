@@ -134,3 +134,36 @@ Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe.
 SoundWIRE group at CCRMA, Stanford University
 ```
 
+### Running Two Versions of JackTrip in Parallel
+One level above the project directory of your current JackTrip installation, make another folder, enter it and clone the JackTrip repository again:
+
+```sh
+$ mkdir jacktrip-1.x.x
+$ cd jacktrip-1.x.x
+$ git clone --recurse-submodules https://github.com/jacktrip/jacktrip.git
+```
+
+You now have two separate folders side by side: the new version in the jacktrip-1.x.x folder and the original one in the jacktrip folder.  You should be in the jacktrip-1.x.x folder now.  To build the new version without installing it:
+```sh
+$ cd jacktrip
+$ ./build
+```
+
+To experiment with the new version of JackTrip, enter builddir/build directory and check the JackTrip version:  
+```sh
+$ cd builddir
+$ ./jacktrip -v
+```
+
+You can use JackTrip from this directory, e.g.:
+```sh
+$ ./jacktrip -C serveraddress
+```
+
+You can switch back and forth between different JackTrip versions by running them in their respective build directories.
+
+Hint: If you lose track of where you are, this command will show your present working directory:
+```sh
+$ pwd
+```
+
