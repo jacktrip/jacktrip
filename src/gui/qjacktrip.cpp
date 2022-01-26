@@ -52,7 +52,7 @@
 #include "../Limiter.h"
 #include "../Reverb.h"
 
-QJackTrip::QJackTrip(QWidget* parent)
+QJackTrip::QJackTrip(int argc, QWidget* parent)
     : QMainWindow(parent)
 #ifdef NO_JTVS
     , m_ui(new Ui::QJackTrip)
@@ -67,7 +67,7 @@ QJackTrip::QJackTrip(QWidget* parent)
     , m_jackTripRunning(false)
     , m_isExiting(false)
     , m_hasIPv4Reply(false)
-    , m_argc(1)
+    , m_argc(argc)
     , m_hideWarning(false)
 {
     m_ui->setupUi(this);
@@ -272,6 +272,17 @@ QJackTrip::QJackTrip(QWidget* parent)
     }
 #endif
 
+    // One of our arguments will always be --gui, so if that's the only one
+    // then we don't need to show the warning message.
+    if ((!gVerboseFlag && m_argc > 2) || m_argc > 3) {
+        QMessageBox msgBox;
+        msgBox.setText(
+            "The GUI version of JackTrip currently ignores any command line "
+            "options other than the verbose option (-V).\n\nThis may change in future.");
+        msgBox.setWindowTitle(QStringLiteral("Command line options"));
+        msgBox.exec();
+    }
+
     migrateSettings();
     loadSettings();
 
@@ -313,8 +324,8 @@ QJackTrip::QJackTrip(QWidget* parent)
                 new QCheckBox(QStringLiteral("Don't show this warning again"));
             QMessageBox msgBox;
             msgBox.setText(
-                "An installation of JACK was not found. Only the RtAudio\nbackend will "
-                "be available. (Hub Server mode is not\ncurrently supported in this "
+                "An installation of JACK was not found. Only the RtAudio backend will "
+                "be available. (Hub Server mode is not currently supported in this "
                 "configuration.");
             msgBox.setWindowTitle(QStringLiteral("JACK Not Available"));
             msgBox.setCheckBox(dontBugMe);
@@ -330,8 +341,8 @@ QJackTrip::QJackTrip(QWidget* parent)
 #else
         QMessageBox msgBox;
         msgBox.setText(
-            "An installation of JACK was not found, and no other audio\nbackends are "
-            "available. JackTrip will not be able to start.\n(Please install JACK to fix "
+            "An installation of JACK was not found, and no other audio backends are "
+            "available. JackTrip will not be able to start. (Please install JACK to fix "
             "this.)");
         msgBox.setWindowTitle("JACK Not Available");
         msgBox.exec();
@@ -379,27 +390,6 @@ void QJackTrip::resizeEvent(QResizeEvent* event)
     rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap,
                                 m_ui->authDisclaimerLabel->text());
     m_ui->authDisclaimerLabel->setMinimumHeight(rect.height());
-}
-
-void QJackTrip::showEvent(QShowEvent* event)
-{
-    QMainWindow::showEvent(event);
-
-    // One of our arguments will always be --gui, so if that's the only one
-    // then we don't need to show the warning message.
-    if ((!gVerboseFlag && m_argc > 2) || m_argc > 3) {
-        QMessageBox msgBox;
-        msgBox.setText(
-            "The GUI version of JackTrip currently\nignores any command line "
-            "options other\nthan the verbose option (-V).\n\nThis may change in future.");
-        msgBox.setWindowTitle(QStringLiteral("Command line options"));
-        msgBox.exec();
-    }
-}
-
-void QJackTrip::setArgc(int argc)
-{
-    m_argc = argc;
 }
 
 void QJackTrip::processFinished()
