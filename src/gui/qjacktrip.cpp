@@ -282,7 +282,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
         msgBox.setWindowTitle(QStringLiteral("Command line options"));
         msgBox.exec();
     }
-    
+
     migrateSettings();
     loadSettings();
 
