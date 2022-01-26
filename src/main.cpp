@@ -235,8 +235,7 @@ int main(int argc, char* argv[])
             gVerboseFlag = true;
         }
 
-        window.reset(new QJackTrip);
-        window->setArgc(argc);
+        window.reset(new QJackTrip(argc));
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
         window->show();
