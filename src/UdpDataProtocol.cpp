@@ -35,7 +35,7 @@
  * \date June 2008
  */
 
-//#define __MANUAL_POLL__
+//#define MANUAL_POLL
 
 #include "UdpDataProtocol.h"
 
@@ -57,9 +57,9 @@
 #include <sys/socket.h>  // for POSIX Sockets
 #include <unistd.h>
 #endif
-#if defined(__APPLE__) && !defined(__MANUAL_POLL__)
+#if defined(__APPLE__) && !defined(MANUAL_POLL)
 #include <sys/event.h>
-#elif defined(__linux__) && !defined(__MANUAL_POLL__)
+#elif defined(__linux__) && !defined(MANUAL_POLL)
 #include <sys/epoll.h>
 #endif
 
@@ -639,7 +639,7 @@ void UdpDataProtocol::run()
         mStatCount               = 0;
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
-#if !defined (__MANUAL_POLL__) && !defined (_WIN32)
+#if !defined (MANUAL_POLL) && !defined (_WIN32)
 #if defined (__APPLE__)
         int kq = kqueue();
         struct kevent change;
@@ -656,7 +656,7 @@ void UdpDataProtocol::run()
         epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
 #endif
         int waitTime = 0;
-#endif // __MANUAL_POLL__
+#endif // MANUAL_POLL
 
         if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while (!mStopped) {
@@ -666,7 +666,7 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-#if defined (_WIN32) || defined (__MANUAL_POLL__)
+#if defined (_WIN32) || defined (MANUAL_POLL)
             waitForReady(60000); //60 seconds
             receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                     full_packet_size, current_seq_num, last_seq_num,
@@ -708,7 +708,7 @@ void UdpDataProtocol::run()
 #else
         close(epollfd);
 #endif
-#endif // _WIN32 || __MANUAL_POLL__
+#endif // _WIN32 || MANUAL_POLL
         break; }
 
     case SENDER : {
