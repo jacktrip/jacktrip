@@ -341,7 +341,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
                 settings.setValue(QStringLiteral("HideJackWarning"), true);
             }
             if (!usingRtAudioAlready) {
-                settings.setValue(QStringLiteral("UsingFallback"), true); 
+                settings.setValue(QStringLiteral("UsingFallback"), true);
             }
         }
         settings.endGroup();
