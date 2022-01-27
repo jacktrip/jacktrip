@@ -233,6 +233,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
     m_ui->basePortSpinBox->setVisible(false);
     m_ui->autoPatchGroupBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
+    m_ui->backendWarningLabel->setVisible(false);
 
 #ifdef RT_AUDIO
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -247,6 +248,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
                     m_ui->outputDeviceComboBox->setEnabled(true);
                     m_ui->outputDeviceLabel->setEnabled(true);
                     m_ui->refreshDevicesButton->setEnabled(true);
+                    m_ui->backendWarningLabel->setVisible(true);
                     populateDeviceMenu(m_ui->inputDeviceComboBox, true);
                     populateDeviceMenu(m_ui->outputDeviceComboBox, false);
                 } else {
@@ -259,6 +261,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
                     m_ui->outputDeviceComboBox->setEnabled(false);
                     m_ui->outputDeviceLabel->setEnabled(false);
                     m_ui->refreshDevicesButton->setEnabled(false);
+                    m_ui->backendWarningLabel->setVisible(false);
                 }
             });
     connect(m_ui->refreshDevicesButton, &QPushButton::clicked, this, [=]() {
@@ -317,6 +320,9 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
             m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
         }
         m_ui->typeComboBox->removeItem(HUB_SERVER);
+        m_ui->backendWarningLabel->setText(
+            "JACK was not found. This means that only the RtAudio backend is available "
+            "and that JackTrip cannot be run in hub server mode.");
 
 #ifdef NO_JTVS
         QSettings settings;
