@@ -354,8 +354,8 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
             settings.setValue(QStringLiteral("UsingFallback"), false);
         }
         settings.endGroup();
-#endif
-#else
+#endif  // NO_JTVS
+#else  // RT_AUDIO
         QMessageBox msgBox;
         msgBox.setText(
             "An installation of JACK was not found, and no other audio backends are "
