@@ -337,7 +337,7 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
         n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr6,
                            sizeof(mPeerAddr6));
     } else {
-        n_bytes = 
+        n_bytes =
             ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr));
     }
     return n_bytes;
