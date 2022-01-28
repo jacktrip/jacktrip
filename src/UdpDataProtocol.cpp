@@ -286,60 +286,9 @@ int UdpDataProtocol::bindSocket()
         }
     }
 
-    // To be able to use the two UDP sockets bound to the same port number,
-    // we connect the receiver and issue a SHUT_WR.
-
-    // This didn't work for IPv6, so we'll instead share a full duplex socket.
-    /*if (mRunMode == SENDER) {
-        // We use the sender as an unconnected UDP socket
-        UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::BoundState,
-                                      QUdpSocket::WriteOnly);
-    }*/
-    if (!mIPv6) {
-        // Connect only if we're using IPv4.
-        // (Connecting presents an issue when a host has multiple IP addresses and the
-        // peer decides to send from a different address. While this generally won't be a
-        // problem for IPv4, it will for IPv6.)
-        if ((::connect(sock_fd, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr))) < 0) {
-            throw std::runtime_error("ERROR: Could not connect UDP socket");
-        }
-#if defined(__linux__) || defined(__APPLE__)
-        // if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
-        //{ throw std::runtime_error("ERROR: Could shutdown SHUT_WR UDP socket"); }
-#endif
-#if defined _WIN32
-        /*int shut_sr = shutdown(sock_fd, SD_SEND);  //shut down sender's receive function
-        if ( shut_sr< 0)
-        {
-            fprintf(stderr, "ERROR: Could not shutdown SD_SEND UDP socket");
-            throw std::runtime_error("ERROR: Could not shutdown SD_SEND UDP socket");
-        }*/
-#endif
-    }
-
+    // Return our file descriptor so the socket can be shared for a
+    // full duplex connection.
     return sock_fd;
-
-    // OLD CODE WITHOUT POSIX FIX--------------------------------------------------
-    /*
-  /// \todo if port is already used, try binding in a different port
-  QUdpSocket::BindMode bind_mode;
-  if (mRunMode == RECEIVER) {
-    bind_mode = QUdpSocket::DontShareAddress; }
-  else if (mRunMode == SENDER) { //Share sender socket
-    bind_mode = QUdpSocket::ShareAddress; }
-
-  // QHostAddress::Any : let the kernel decide the active address
-  if ( !UdpSocket.bind(QHostAddress::Any, mBindPort, bind_mode) ) {
-    throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
-  }
-  else {
-    if ( mRunMode == RECEIVER ) {
-      cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
-      cout << gPrintSeparator << endl;
-    }
-  }
-  */
-    // ----------------------------------------------------------------------------
 }
 
 //*******************************************************************************
@@ -388,7 +337,8 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
         n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr6,
                            sizeof(mPeerAddr6));
     } else {
-        n_bytes = ::send(mSocket, buf, n, 0);
+        n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr,
+                           sizeof(mPeerAddr));
     }
     return n_bytes;
     //#endif
