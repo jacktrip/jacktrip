@@ -210,4 +210,5 @@ if [ "$STATUS" = "success" ]; then
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
     echo "Notarization failed"
+    exit 1
 fi
