@@ -48,9 +48,9 @@ while getopts ":inhc:d:u:p:a:b:" opt; do
         echo "JackTrip App Bundle assembly script."
         echo "Copyright (C) 2020-2021 Aaron Wyatt et al."
         echo "Relased under the GNU GPLv3 License."
-        echo ""
-        echo "Usage: ./assemble-app.sh [options]"
-        echo ""
+        echo
+        echo "Usage: ./assemble-app.sh [options] [appname] [bundlename]"
+        echo
         echo "Options:"
         echo " -b <filename>      The binary file to be placed in the app bundle. (Defaults to ../builddir/jacktrip)"
         echo " -i                 Build an installer package as well. (Requires Packages to be installed.)"
@@ -61,6 +61,10 @@ while getopts ":inhc:d:u:p:a:b:" opt; do
         echo " -p <password>      App specific password for installer notarization."
         echo " -a <ascprovider>   ASC provider for notarization. (Only required if you belong to multiple dev teams.)"
         echo " -h                 Display this help screen and exit."
+        echo
+        echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
+        echo "(These should be left as is for official builds.)"
+ 
         exit 0
         ;;
       :)
@@ -178,12 +182,32 @@ fi
 
 ASC=""
 if [ ! -z "$ASC_PROVIDER" ]; then
-    ASC=" --asc-provider \"$ASC_PROVIDER\""
+    ASC=" --asc-provider $ASC_PROVIDER"
 fi
+CREDENTIALS="--username $USERNAME --password $PASSWORD$ASC"
 
-read -n1 -rsp "Press any key to submit a notarization request to apple..."
-echo
-xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" --username "$USERNAME" --password "$PASSWORD"$ASC --file "package/build/$APPNAME.pkg"
-read -n1 -rsp "Press any key to staple the notarization once it's been approved..."
-echo
-xcrun stapler staple "package/build/$APPNAME.pkg"
+echo "Sending notarization request"
+UUID=$(xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" $CREDENTIALS --file "package/build/$APPNAME.pkg" | awk '/RequestUUID/{print $NF}')
+if [ -z "$UUID" ]; then
+    echo "Error sending notarization request"
+    exit 1
+fi
+echo "Package uploaded"
+echo "Request UUID is $UUID"
+echo "Awaiting response from Apple"
+STATUS="in progress"
+ELAPSED=0
+while [ "$STATUS" = "in progress" ]; do
+    sleep 60
+    ((ELAPSED++))
+    STATUS=$(xcrun altool --notarization-info "$UUID" $CREDENTIALS | awk '/Status:/{for(i = 2; i <= NF - 1; i++) printf $i" "; print $NF}')
+    echo "Waited $ELAPSED minute(s). Current status: $STATUS"
+done
+#read -n1 -rsp "Press any key to staple the notarization once it's been approved..."
+#echo
+
+if [ "$STATUS" = "success" ]; then
+    xcrun stapler staple "package/build/$APPNAME.pkg"
+else
+    echo "Notarization failed"
+fi
