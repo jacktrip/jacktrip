@@ -279,13 +279,13 @@ int main(int argc, char* argv[])
 #ifndef _WIN32
                 setupUnixSignalHandler(JackTrip::sigIntHandler);
 #else
-                std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
+            std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
 #endif
 #ifdef WAIRTOHUB  // WAIR
                 jackTrip->startProcess(
                     0);  // for WAIR compatibility, ID in jack client name
 #else
-                jackTrip->startProcess();
+            jackTrip->startProcess();
 #endif  // endwhere
             }
 
