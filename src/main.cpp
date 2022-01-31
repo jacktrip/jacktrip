@@ -97,7 +97,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             return new QCoreApplication(argc, argv);
         }
 #else
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__)
         // Check if X or Wayland environment variables are set.
         if (std::getenv("WAYLAND_DISPLAY") == nullptr
             && std::getenv("DISPLAY") == nullptr) {
@@ -108,7 +108,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
                       << std::endl;
             std::exit(1);
         }
-#endif  // __linux__
+#endif
         return new QApplication(argc, argv);
 #endif  // NO_GUI
     } else {
@@ -123,7 +123,7 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
     std::cerr << msg.toStdString() << std::endl;
 }
 
-#if defined(__linux__) || defined(__APPLE__)
+#ifndef _WIN32
 static int setupUnixSignalHandler(void (*handler)(int))
 {
     // Setup our SIGINT handler.
@@ -259,11 +259,11 @@ int main(int argc, char* argv[])
                                  Qt::QueuedConnection);
                 QObject::connect(udpHub.data(), &UdpHubListener::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined(__linux__) || defined(__APPLE__)
+#ifndef _WIN32
                 setupUnixSignalHandler(UdpHubListener::sigIntHandler);
 #else
-            isHubServer = true;
-            SetConsoleCtrlHandler(windowsCtrlHandler, true);
+                isHubServer = true;
+                SetConsoleCtrlHandler(windowsCtrlHandler, true);
 #endif
                 udpHub->start();
             } else {
@@ -276,16 +276,16 @@ int main(int argc, char* argv[])
                                  Qt::QueuedConnection);
                 QObject::connect(jackTrip.data(), &JackTrip::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
-#if defined(__linux__) || defined(__APPLE__)
+#ifndef _WIN32
                 setupUnixSignalHandler(JackTrip::sigIntHandler);
 #else
-            std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
+                std::cout << SetConsoleCtrlHandler(windowsCtrlHandler, true) << std::endl;
 #endif
 #ifdef WAIRTOHUB  // WAIR
                 jackTrip->startProcess(
                     0);  // for WAIR compatibility, ID in jack client name
 #else
-            jackTrip->startProcess();
+                jackTrip->startProcess();
 #endif  // endwhere
             }
 

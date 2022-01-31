@@ -149,9 +149,17 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
     return;
 }
 
-#endif  //__APPLE__
-
-#if defined(__linux__)
+#elif defined(_WIN32)
+void setRealtimeProcessPriority()
+{
+    if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0) {
+        std::cerr << "Failed to set process priority class." << std::endl;
+    }
+    if (SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0) {
+        std::cerr << "Failed to set thread priority." << std::endl;
+    }
+}
+#else
 //*******************************************************************************
 void setRealtimeProcessPriority()
 {
@@ -168,16 +176,5 @@ void setRealtimeProcessPriority()
         ;
     }
 }
-#endif  //__linux__
 
-#if defined(_WIN32)
-void setRealtimeProcessPriority()
-{
-    if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0) {
-        std::cerr << "Failed to set process priority class." << std::endl;
-    }
-    if (SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0) {
-        std::cerr << "Failed to set thread priority." << std::endl;
-    }
-}
-#endif  //_WIN32
+#endif
