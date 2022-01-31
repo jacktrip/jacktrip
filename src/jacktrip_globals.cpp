@@ -149,28 +149,7 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
     return;
 }
 
-#endif  //__APPLE__
-
-#if defined(__linux__)
-//*******************************************************************************
-void setRealtimeProcessPriority()
-{
-    int priority = sched_get_priority_max(SCHED_FIFO);  // 99 is the highest possible
-#ifdef __UBUNTU__
-    priority = 95;  // anything higher is silently ignored by Ubuntu 18.04
-#endif
-    priority = 3;
-
-    struct sched_param sp = {.sched_priority = priority};
-
-    if (sched_setscheduler(0, SCHED_FIFO, &sp) == -1) {
-        std::cerr << "Failed to set the scheduler policy and priority." << std::endl;
-        ;
-    }
-}
-#endif  //__linux__
-
-#if defined(_WIN32)
+#elif defined(_WIN32)
 void setRealtimeProcessPriority()
 {
     if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0) {
@@ -180,4 +159,22 @@ void setRealtimeProcessPriority()
         std::cerr << "Failed to set thread priority." << std::endl;
     }
 }
-#endif  //_WIN32
+#else
+//*******************************************************************************
+void setRealtimeProcessPriority()
+{
+    int priority = sched_get_priority_max(SCHED_FIFO);  // 99 is the highest possible
+#ifdef __UBUNTU__
+    priority     = 95;  // anything higher is silently ignored by Ubuntu 18.04
+#endif
+    priority     = 3;
+
+    struct sched_param sp = {.sched_priority = priority};
+
+    if (sched_setscheduler(0, SCHED_FIFO, &sp) == -1) {
+        std::cerr << "Failed to set the scheduler policy and priority." << std::endl;
+        ;
+    }
+}
+
+#endif

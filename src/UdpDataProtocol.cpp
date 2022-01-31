@@ -51,17 +51,18 @@
 #ifdef _WIN32
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
-#endif
-#if defined(__linux__) || defined(__APPLE__)
+#else
 #include <sys/fcntl.h>
 #include <sys/socket.h>  // for POSIX Sockets
 #include <unistd.h>
-#endif
-#if defined(__APPLE__) && !defined(MANUAL_POLL)
-#include <sys/event.h>
-#elif defined(__linux__) && !defined(MANUAL_POLL)
+#ifndef MANUAL_POLL
+#ifdef __linux__
 #include <sys/epoll.h>
-#endif
+#else
+#include <sys/event.h>
+#endif  // __linux__
+#endif  // MANUAL_POLL
+#endif  // _WIN32
 
 using std::cout;
 using std::endl;
@@ -123,7 +124,7 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
-#if defined(__linux__) || defined(__APPLE__)
+#ifndef _WIN32
     // Don't make the following code conditional on windows
     //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
@@ -135,7 +136,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         }
         // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
-#if defined(__linux__) || defined(__APPLE__)
+#ifndef _WIN32
     }
 #endif
 
@@ -207,7 +208,7 @@ int UdpDataProtocol::bindSocket()
 {
     QMutexLocker locker(&sUdpMutex);
 
-#if defined _WIN32
+#ifdef _WIN32
     WORD wVersionRequested;
     WSADATA wsaData;
     int err;
@@ -232,9 +233,7 @@ int UdpDataProtocol::bindSocket()
     }
 
     SOCKET sock_fd;
-#endif
-
-#if defined(__linux__) || defined(__APPLE__)
+#else
     int sock_fd;
 #endif
 
@@ -262,17 +261,15 @@ int UdpDataProtocol::bindSocket()
 
     // Set socket to be reusable, this is platform dependent
     int one = 1;
-#if defined(__linux__)
-    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-#endif
-#if defined(__APPLE__)
-    // This option is not avialable on Linux, and without it MAC OS X
-    // has problems rebinding a socket
-    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
-#endif
 #if defined(_WIN32)
     // make address/port reusable
     setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
+#elif defined(__linux__)
+    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+#else
+    // This option is not avialable on Linux, and without it MAC OS X
+    // has problems rebinding a socket
+    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
 
     // Bind the Socket
@@ -590,7 +587,13 @@ void UdpDataProtocol::run()
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
 #if !defined (MANUAL_POLL) && !defined (_WIN32)
-#if defined (__APPLE__)
+#ifdef __linux__
+        int epollfd = epoll_create1(0);
+        struct epoll_event change, event;
+        change.events = EPOLLIN;
+        change.data.fd = mSocket;
+        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
+#else
         int kq = kqueue();
         struct kevent change;
         struct kevent event;
@@ -598,12 +601,6 @@ void UdpDataProtocol::run()
         struct timespec timeout;
         timeout.tv_sec = 0;
         timeout.tv_nsec = 10000000;
-#else
-        int epollfd = epoll_create1(0);
-        struct epoll_event change, event;
-        change.events = EPOLLIN;
-        change.data.fd = mSocket;
-        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
 #endif
         int waitTime = 0;
 #endif // MANUAL_POLL
@@ -638,10 +635,10 @@ void UdpDataProtocol::run()
         */
             //----------------------------------------------------------------------------------
 
-#ifdef __APPLE__
-            int n = kevent(kq, &change, 1, &event, 1, &timeout);
-#else
+#ifdef __linux__
             int n = epoll_wait(epollfd, &event, 1, 10);
+#else
+            int n = kevent(kq, &change, 1, &event, 1, &timeout);
 #endif
             if (n > 0) {
                 waitTime = 0;
@@ -653,10 +650,10 @@ void UdpDataProtocol::run()
                 emit signalWaitingTooLong(waitTime);
             }
         }
-#ifdef __APPLE__
-        close(kq);
-#else
+#ifdef __linux__
         close(epollfd);
+#else
+        close(kq);
 #endif
 #endif // _WIN32 || MANUAL_POLL
         break; }
