@@ -208,7 +208,7 @@ int UdpDataProtocol::bindSocket()
 {
     QMutexLocker locker(&sUdpMutex);
 
-#if defined _WIN32
+#ifdef _WIN32
     WORD wVersionRequested;
     WSADATA wsaData;
     int err;
@@ -233,9 +233,7 @@ int UdpDataProtocol::bindSocket()
     }
 
     SOCKET sock_fd;
-#endif
-
-#ifndef _WIN32
+#else
     int sock_fd;
 #endif
 
@@ -589,7 +587,13 @@ void UdpDataProtocol::run()
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
 #if !defined (MANUAL_POLL) && !defined (_WIN32)
-#ifndef __linux__
+#ifdef __linux__
+        int epollfd = epoll_create1(0);
+        struct epoll_event change, event;
+        change.events = EPOLLIN;
+        change.data.fd = mSocket;
+        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
+#else
         int kq = kqueue();
         struct kevent change;
         struct kevent event;
@@ -597,12 +601,6 @@ void UdpDataProtocol::run()
         struct timespec timeout;
         timeout.tv_sec = 0;
         timeout.tv_nsec = 10000000;
-#else
-        int epollfd = epoll_create1(0);
-        struct epoll_event change, event;
-        change.events = EPOLLIN;
-        change.data.fd = mSocket;
-        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
 #endif
         int waitTime = 0;
 #endif // MANUAL_POLL
@@ -637,10 +635,10 @@ void UdpDataProtocol::run()
         */
             //----------------------------------------------------------------------------------
 
-#ifndef __linux__
-            int n = kevent(kq, &change, 1, &event, 1, &timeout);
-#else
+#ifdef __linux__
             int n = epoll_wait(epollfd, &event, 1, 10);
+#else
+            int n = kevent(kq, &change, 1, &event, 1, &timeout);
 #endif
             if (n > 0) {
                 waitTime = 0;
@@ -652,10 +650,10 @@ void UdpDataProtocol::run()
                 emit signalWaitingTooLong(waitTime);
             }
         }
-#ifndef __linux__
-        close(kq);
-#else
+#ifdef __linux__
         close(epollfd);
+#else
+        close(kq);
 #endif
 #endif // _WIN32 || MANUAL_POLL
         break; }
