@@ -262,8 +262,8 @@ int main(int argc, char* argv[])
 #ifndef _WIN32
                 setupUnixSignalHandler(UdpHubListener::sigIntHandler);
 #else
-                isHubServer = true;
-                SetConsoleCtrlHandler(windowsCtrlHandler, true);
+            isHubServer = true;
+            SetConsoleCtrlHandler(windowsCtrlHandler, true);
 #endif
                 udpHub->start();
             } else {
