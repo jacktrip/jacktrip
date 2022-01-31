@@ -97,7 +97,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             return new QCoreApplication(argc, argv);
         }
 #else
-#if !(defined(_WIN32) || defined(__APPLE__))
+#if defined(__unix__)
         // Check if X or Wayland environment variables are set.
         if (std::getenv("WAYLAND_DISPLAY") == nullptr
             && std::getenv("DISPLAY") == nullptr) {
