@@ -3,9 +3,11 @@
 APPNAME="JackTrip"
 BUNDLE_ID="org.jacktrip.jacktrip"
 BUILD_INSTALLER=false
+NOTARIZE=false
 
 #If you're lazy like I am, you can pre-populate these variables to save you stuffing about with command line options.
 #CERTIFICATE=""
+#PACKAGE_CERT=""
 #USERNAME=""
 #PASSWORD=""
 #ASC_PROVIDER=""
@@ -13,13 +15,19 @@ BINARY="../builddir/jacktrip"
 
 OPTIND=1
 
-while getopts ":ihc:u:p:a:b:" opt; do
+while getopts ":inhc:d:u:p:a:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
         ;;
+      n)
+        NOTARIZE=true
+        ;;
       c)
         CERTIFICATE=$OPTARG
+        ;;
+      d)
+        PACKAGE_CERT=$OPTARG
         ;;
       u)
         USERNAME=$OPTARG
@@ -40,17 +48,23 @@ while getopts ":ihc:u:p:a:b:" opt; do
         echo "JackTrip App Bundle assembly script."
         echo "Copyright (C) 2020-2021 Aaron Wyatt et al."
         echo "Relased under the GNU GPLv3 License."
-        echo ""
-        echo "Usage: ./assemble-app.sh [options]"
-        echo ""
+        echo
+        echo "Usage: ./assemble-app.sh [options] [appname] [bundlename]"
+        echo
         echo "Options:"
         echo " -b <filename>      The binary file to be placed in the app bundle. (Defaults to ../builddir/jacktrip)"
         echo " -i                 Build an installer package as well. (Requires Packages to be installed.)"
-        echo " -c <certname>      Name of the developer certificate to use for signing (No signing by default.)"
+        echo " -n                 Send a notarization request to Apple. (Only takes effect if building an installer.)"
+        echo " -c <certname>      Name of the developer certificate to use for code signing. (No signing by default.)"
+        echo " -d <certname>      Name of the certificate to use for package signing. (No signing by default.)"
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
         echo " -a <ascprovider>   ASC provider for notarization. (Only required if you belong to multiple dev teams.)"
         echo " -h                 Display this help screen and exit."
+        echo
+        echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
+        echo "(These should be left as is for official builds.)"
+ 
         exit 0
         ;;
       :)
@@ -107,7 +121,7 @@ if [ ! -z "$DYNAMIC_QT" ]; then
     fi
 fi
 
-[ "$BUILD_INSTALLER" = true ] || exit 0
+[ $BUILD_INSTALLER = true ] || exit 0
 
 # If you have Packages installed, you can build an installer for the newly created app bundle.
 [ -z $(which packagesbuild) ] && { echo "You need to have Packages installed to build a package."; exit 1; }
@@ -128,7 +142,6 @@ cat ../LICENSES/LGPL-3.0-only.txt >> "$LICENSE_PATH"
 sed -i '' "s/# //" "$LICENSE_PATH" # remove markdown header
 perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' "$LICENSE_PATH" > tmp && mv tmp "$LICENSE_PATH" # unwrap lines
 
-
 # prepare readme
 README_PATH="package/readme.txt"
 cp ../README.md "$README_PATH"
@@ -141,21 +154,61 @@ sed -i '' "s/%BUNDLENAME%/$APPNAME/" package/JackTrip.pkgproj
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" package/JackTrip.pkgproj
 
 packagesbuild package/JackTrip.pkgproj
+if pkgutil --check-signature package/build/JackTrip.pkg; then
+    echo "Package already signed."
+    SIGNED=true
+else
+    if [ ! -z "$PACKAGE_CERT" ]; then
+        echo "Signing package."
+        if productsign --sign "$PACKAGE_CERT" package/build/JackTrip.pkg package/build/JackTrip-signed.pkg; then
+            mv package/build/JackTrip-signed.pkg package/build/JackTrip.pkg
+            SIGNED=true
+        else
+            echo "Unable to sign package."
+            exit 1
+        fi
+    else
+        SIGNED=false
+    fi
+fi 
 
-# Offer to submit a notarization request to apple if we have the required credentials.
-if [ -z "$CERTIFICATE" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+[ $NOTARIZE = true ] || exit 0
+
+# Submit a notarization request to apple if we have the required credentials.
+if [ -z "$CERTIFICATE" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ $SIGNED = false ] ; then
     echo "Not sending notarization request: incomplete credentials."
-    exit 0
+    exit 1
 fi
 
 ASC=""
 if [ ! -z "$ASC_PROVIDER" ]; then
-    ASC=" --asc-provider \"$ASC_PROVIDER\""
+    ASC=" --asc-provider $ASC_PROVIDER"
 fi
+CREDENTIALS="--username $USERNAME --password $PASSWORD$ASC"
 
-read -n1 -rsp "Press any key to submit a notarization request to apple..."
-echo
-xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" --username "$USERNAME" --password "$PASSWORD"$ASC --file "package/build/$APPNAME.pkg"
-read -n1 -rsp "Press any key to staple the notarization once it's been approved..."
-echo
-xcrun stapler staple "package/build/$APPNAME.pkg"
+echo "Sending notarization request"
+UUID=$(xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" $CREDENTIALS --file "package/build/$APPNAME.pkg" | awk '/RequestUUID/{print $NF}')
+if [ -z "$UUID" ]; then
+    echo "Error sending notarization request"
+    exit 1
+fi
+echo "Package uploaded"
+echo "Request UUID is $UUID"
+echo "Awaiting response from Apple"
+STATUS="in progress"
+ELAPSED=0
+while [ "$STATUS" = "in progress" ]; do
+    sleep 60
+    ((ELAPSED++))
+    STATUS=$(xcrun altool --notarization-info "$UUID" $CREDENTIALS | awk '/Status:/{for(i = 2; i <= NF - 1; i++) printf $i" "; print $NF}')
+    echo "Waited $ELAPSED minute(s). Current status: $STATUS"
+done
+#read -n1 -rsp "Press any key to staple the notarization once it's been approved..."
+#echo
+
+if [ "$STATUS" = "success" ]; then
+    xcrun stapler staple "package/build/$APPNAME.pkg"
+else
+    echo "Notarization failed"
+    exit 1
+fi
