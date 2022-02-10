@@ -1,6 +1,6 @@
 # Installation
 ## Linux
-On Linux the easiest way to install JackTrip is to use the distribution's package manager.
+On Linux the easiest way to install JackTrip is to use the distribution's package manager. However, this may not be the most up-to-date version. For the most recent version, go to the Github releases page below.
 
 === "Fedora"
 
