@@ -218,7 +218,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
             if (test < 0) test += mModSeqNum;
             //  qDebug() << seq_num << mIncomingTiming[seq_num] << test << mIncomingTiming[test];
             if ((mIncomingTiming[seq_num] - mIncomingTiming[test]) > mMsecTolerance)
-                mIncomingLost[test] = true;
+                mIncomingLost[test] = false;
         }
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1) memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
