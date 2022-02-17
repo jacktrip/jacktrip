@@ -51,7 +51,7 @@
 // use jack_iodelay
 // use jmess -s delay.xml and jmess -c delay.xml
 
-// tested loss impairments with
+// tested outgoing loss impairments with
 // sudo tc qdisc add dev lo root netem loss 2%
 // sudo tc qdisc del dev lo root netem loss 2%
 // tested jitter impairments with
@@ -324,13 +324,13 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
             double tmp = (streamState + streamSkip) * 0.1;
             switch (streamState) {  // int from JitterBuffer to AudioInterface enum
             case 1:
-                if(streamSkip>10) qDebug() << tmp << streamSkip;
+                if(streamSkip>10) qDebug() << "state = 1" << tmp << streamSkip;
                 break;
             case 0:
 //                qDebug() << tmp << streamSkip;
                 break;
             case -1:
-                qDebug() << tmp << streamSkip;
+                qDebug() << "state = -1" << tmp << streamSkip;
                 break;
             }
             for (int s = 0; s < mFPP; s++)
