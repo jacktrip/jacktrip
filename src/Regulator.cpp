@@ -76,8 +76,10 @@ using std::setw;
 constexpr int HIST       = 6;    // at FPP32
 //constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
 constexpr int LostWindowMax       = 32;    // how far to back check for lost packets
-constexpr int ModSeqNumInit = 128;  // bounds on seqnums, 65536 is max in packet header
-constexpr int NumSlotsMax = 64;  // mNumSlots looped for recent arribals
+constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
+constexpr int NumSlotsMax = 128;  // mNumSlots looped for recent arribals
+//constexpr int ModSeqNumInit = 128;  // bounds on seqnums, 65536 is max in packet header
+//constexpr int NumSlotsMax = 64;  // mNumSlots looped for recent arribals
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -240,6 +242,7 @@ void Regulator::pullPacket(int8_t* buf)
             if (next < 0) next += mModSeqNum;
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut]) continue;
             mSkip = next - mLastSeqNumOut;
+            if (mSkip < 0) mSkip += mModSeqNum;
             mLastSeqNumOut = next;
             if (mIncomingTiming[next] > now) {
                 memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
@@ -251,20 +254,20 @@ void Regulator::pullPacket(int8_t* buf)
 
 PACKETOK : {
         if (mSkip)
-            processPacket(true, 1 + mSkip);
+            processPacket(true, 1, mSkip);
         else
-            processPacket(false, 1 + mSkip);
+            processPacket(false, 1, mSkip);
         goto OUTPUT;
     }
 
 UNDERRUNLOSS : {
-        processPacket(true, 0);
+        processPacket(true, 0, mSkip);
         pushStat->plcSkipped++; // count lost
         goto OUTPUT;
     }
 
 UNDERRUN : {
-        processPacket(true, -1 - mSkip);
+        processPacket(true, -1, mSkip);
         pullStat->plcUnderruns++; // count late
         goto OUTPUT;
     }
@@ -278,10 +281,10 @@ OUTPUT:
 };
 
 //*******************************************************************************
-void Regulator::processPacket(bool glitch, int streamState)
+void Regulator::processPacket(bool glitch, int streamState, int streamSkip)
 {
     for (int ch = 0; ch < mNumChannels; ch++)
-        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch, streamState);
+        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch, streamState, streamSkip);
     mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
@@ -289,7 +292,7 @@ void Regulator::processPacket(bool glitch, int streamState)
 
 //*******************************************************************************
 void Regulator::processChannel(int ch, bool glitch, int packetCnt,
-                               bool lastWasGlitch, int streamState)
+                               bool lastWasGlitch, int streamState, int streamSkip)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
     ChanData* cd = mChanData[ch];
@@ -318,8 +321,18 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
                 cd->mXfadedPred[s] =
                         cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
         if (ch) {
-            double tmp = streamState * 0.1;
-            if (tmp < 0.0) qDebug() << tmp;
+            double tmp = (streamState + streamSkip) * 0.1;
+            switch (streamState) {  // int from JitterBuffer to AudioInterface enum
+            case 1:
+                if(streamSkip>10) qDebug() << tmp << streamSkip;
+                break;
+            case 0:
+//                qDebug() << tmp << streamSkip;
+                break;
+            case -1:
+                qDebug() << tmp << streamSkip;
+                break;
+            }
             for (int s = 0; s < mFPP; s++)
                 sampleToBits(tmp,
                              ch, s);
