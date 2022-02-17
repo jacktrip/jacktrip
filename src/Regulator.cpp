@@ -77,7 +77,7 @@ constexpr int HIST       = 6;    // at FPP32
 //constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
 constexpr int LostWindowMax       = 32;    // how far to back check for lost packets
 constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
-constexpr int NumSlotsMax = 128;  // mNumSlots looped for recent arribals
+constexpr int NumSlotsMax = 128;  // mNumSlots looped for recent arrivals
 //constexpr int ModSeqNumInit = 128;  // bounds on seqnums, 65536 is max in packet header
 //constexpr int NumSlotsMax = 64;  // mNumSlots looped for recent arribals
 //*******************************************************************************
@@ -320,7 +320,7 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
                         cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
-        if (ch == 2) {
+        if (ch == 2) { // set to 1 to hear non-PLC glitches
             double tmp = (streamState + streamSkip) * 0.1;
             switch (streamState) {  // int from JitterBuffer to AudioInterface enum
             case 1:

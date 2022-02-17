@@ -40,7 +40,7 @@
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
-// #define GUIBS3
+#define GUIBS3
 
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
@@ -52,8 +52,12 @@
 #include "RingBuffer.h"
 using std::vector;
 #include <math.h>
-//#include "herlpergui.h"
-//#include "ui_herlpergui.h"
+
+#ifdef GUIBS3
+#include "herlpergui.h"
+#include "ui_herlpergui.h"
+#endif
+
 #include <QWidget>
 
 class BurgAlgorithm
@@ -121,14 +125,8 @@ public:
     int lastPlcSkipped;
 };
 
-//#ifdef GUIBS3
 class Regulator : public QObject, public RingBuffer {
         Q_OBJECT;
-//        #else
-//class Regulator : public RingBuffer {
-//        #endif
-
-
 public:
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
