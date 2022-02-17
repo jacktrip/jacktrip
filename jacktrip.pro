@@ -6,7 +6,7 @@ CONFIG += c++11 console
 CONFIG -= app_bundle
 
 #using float slider -- CC
-CONFIG += qwt
+#CONFIG += qwt
 
 CONFIG += qt thread debug_and_release build_all
 CONFIG(debug, debug|release) {
@@ -198,7 +198,7 @@ INCLUDEPATH += faust-src-lair
 
 # Input
 HEADERS += src/DataProtocol.h \
-           herlpergui.h \
+#           herlpergui.h \
            src/JackTrip.h \
            src/Effects.h \
            src/Compressor.h \
@@ -244,7 +244,7 @@ rtaudio|bundled_rtaudio {
 }
 
 SOURCES += src/DataProtocol.cpp \
-           herlpergui.cpp \
+#           herlpergui.cpp \
            src/JackTrip.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
@@ -349,4 +349,4 @@ if(linux-g++ | linux-g++-64):!nogui {
 }
 
 FORMS += \
-    herlpergui.ui
+#    herlpergui.ui
