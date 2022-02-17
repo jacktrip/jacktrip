@@ -320,7 +320,7 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
                         cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
-        if (ch) {
+        if (ch == 2) {
             double tmp = (streamState + streamSkip) * 0.1;
             switch (streamState) {  // int from JitterBuffer to AudioInterface enum
             case 1:
