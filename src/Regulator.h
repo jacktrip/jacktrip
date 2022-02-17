@@ -52,7 +52,7 @@
 using std::vector;
 #include <math.h>
 
-//#define GUIBS3
+#define GUIBS3
 #ifdef GUIBS3
 #include "herlpergui.h"
 #include "ui_herlpergui.h"
