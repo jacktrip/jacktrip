@@ -3,7 +3,7 @@ name: Post the static analysis results
 
 on:
   workflow_run:
-    workflows: [ meson-build ]
+    workflows: [ build ]
     types: [ completed ]
 
 jobs:

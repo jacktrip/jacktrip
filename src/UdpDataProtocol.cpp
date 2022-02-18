@@ -35,7 +35,7 @@
  * \date June 2008
  */
 
-//#define __MANUAL_POLL__
+//#define MANUAL_POLL
 
 #include "UdpDataProtocol.h"
 
@@ -51,17 +51,18 @@
 #ifdef _WIN32
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
-#endif
-#if defined(__linux__) || defined(__APPLE__)
+#else
 #include <sys/fcntl.h>
 #include <sys/socket.h>  // for POSIX Sockets
 #include <unistd.h>
-#endif
-#if defined(__APPLE__) && !defined(__MANUAL_POLL__)
-#include <sys/event.h>
-#elif defined(__linux__) && !defined(__MANUAL_POLL__)
+#ifndef MANUAL_POLL
+#ifdef __linux__
 #include <sys/epoll.h>
-#endif
+#else
+#include <sys/event.h>
+#endif  // __linux__
+#endif  // MANUAL_POLL
+#endif  // _WIN32
 
 using std::cout;
 using std::endl;
@@ -123,7 +124,7 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
-#if defined(__linux__) || defined(__APPLE__)
+#ifndef _WIN32
     // Don't make the following code conditional on windows
     //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
@@ -135,7 +136,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         }
         // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
-#if defined(__linux__) || defined(__APPLE__)
+#ifndef _WIN32
     }
 #endif
 
@@ -207,7 +208,7 @@ int UdpDataProtocol::bindSocket()
 {
     QMutexLocker locker(&sUdpMutex);
 
-#if defined _WIN32
+#ifdef _WIN32
     WORD wVersionRequested;
     WSADATA wsaData;
     int err;
@@ -232,9 +233,7 @@ int UdpDataProtocol::bindSocket()
     }
 
     SOCKET sock_fd;
-#endif
-
-#if defined(__linux__) || defined(__APPLE__)
+#else
     int sock_fd;
 #endif
 
@@ -262,17 +261,15 @@ int UdpDataProtocol::bindSocket()
 
     // Set socket to be reusable, this is platform dependent
     int one = 1;
-#if defined(__linux__)
-    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-#endif
-#if defined(__APPLE__)
-    // This option is not avialable on Linux, and without it MAC OS X
-    // has problems rebinding a socket
-    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
-#endif
 #if defined(_WIN32)
     // make address/port reusable
     setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
+#elif defined(__linux__)
+    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+#else
+    // This option is not avialable on Linux, and without it MAC OS X
+    // has problems rebinding a socket
+    ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
 
     // Bind the Socket
@@ -286,60 +283,9 @@ int UdpDataProtocol::bindSocket()
         }
     }
 
-    // To be able to use the two UDP sockets bound to the same port number,
-    // we connect the receiver and issue a SHUT_WR.
-
-    // This didn't work for IPv6, so we'll instead share a full duplex socket.
-    /*if (mRunMode == SENDER) {
-        // We use the sender as an unconnected UDP socket
-        UdpSocket.setSocketDescriptor(sock_fd, QUdpSocket::BoundState,
-                                      QUdpSocket::WriteOnly);
-    }*/
-    if (!mIPv6) {
-        // Connect only if we're using IPv4.
-        // (Connecting presents an issue when a host has multiple IP addresses and the
-        // peer decides to send from a different address. While this generally won't be a
-        // problem for IPv4, it will for IPv6.)
-        if ((::connect(sock_fd, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr))) < 0) {
-            throw std::runtime_error("ERROR: Could not connect UDP socket");
-        }
-#if defined(__linux__) || defined(__APPLE__)
-        // if ( (::shutdown(sock_fd,SHUT_WR)) < 0)
-        //{ throw std::runtime_error("ERROR: Could shutdown SHUT_WR UDP socket"); }
-#endif
-#if defined _WIN32
-        /*int shut_sr = shutdown(sock_fd, SD_SEND);  //shut down sender's receive function
-        if ( shut_sr< 0)
-        {
-            fprintf(stderr, "ERROR: Could not shutdown SD_SEND UDP socket");
-            throw std::runtime_error("ERROR: Could not shutdown SD_SEND UDP socket");
-        }*/
-#endif
-    }
-
+    // Return our file descriptor so the socket can be shared for a
+    // full duplex connection.
     return sock_fd;
-
-    // OLD CODE WITHOUT POSIX FIX--------------------------------------------------
-    /*
-  /// \todo if port is already used, try binding in a different port
-  QUdpSocket::BindMode bind_mode;
-  if (mRunMode == RECEIVER) {
-    bind_mode = QUdpSocket::DontShareAddress; }
-  else if (mRunMode == SENDER) { //Share sender socket
-    bind_mode = QUdpSocket::ShareAddress; }
-
-  // QHostAddress::Any : let the kernel decide the active address
-  if ( !UdpSocket.bind(QHostAddress::Any, mBindPort, bind_mode) ) {
-    throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
-  }
-  else {
-    if ( mRunMode == RECEIVER ) {
-      cout << "UDP Socket Receiving in Port: " << mBindPort << endl;
-      cout << gPrintSeparator << endl;
-    }
-  }
-  */
-    // ----------------------------------------------------------------------------
 }
 
 //*******************************************************************************
@@ -388,7 +334,8 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
         n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr6,
                            sizeof(mPeerAddr6));
     } else {
-        n_bytes = ::send(mSocket, buf, n, 0);
+        n_bytes =
+            ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr));
     }
     return n_bytes;
     //#endif
@@ -639,8 +586,14 @@ void UdpDataProtocol::run()
         mStatCount               = 0;
 
         //Set up our platform specific polling mechanism. (kqueue, epoll)
-#if !defined (__MANUAL_POLL__) && !defined (_WIN32)
-#if defined (__APPLE__)
+#if !defined (MANUAL_POLL) && !defined (_WIN32)
+#ifdef __linux__
+        int epollfd = epoll_create1(0);
+        struct epoll_event change, event;
+        change.events = EPOLLIN;
+        change.data.fd = mSocket;
+        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
+#else
         int kq = kqueue();
         struct kevent change;
         struct kevent event;
@@ -648,15 +601,9 @@ void UdpDataProtocol::run()
         struct timespec timeout;
         timeout.tv_sec = 0;
         timeout.tv_nsec = 10000000;
-#else
-        int epollfd = epoll_create1(0);
-        struct epoll_event change, event;
-        change.events = EPOLLIN;
-        change.data.fd = mSocket;
-        epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
 #endif
         int waitTime = 0;
-#endif // __MANUAL_POLL__
+#endif // MANUAL_POLL
 
         if (gVerboseFlag) std::cout << "step 8" << std::endl;
         while (!mStopped) {
@@ -666,7 +613,7 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-#if defined (_WIN32) || defined (__MANUAL_POLL__)
+#if defined (_WIN32) || defined (MANUAL_POLL)
             waitForReady(60000); //60 seconds
             receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                     full_packet_size, current_seq_num, last_seq_num,
@@ -688,10 +635,10 @@ void UdpDataProtocol::run()
         */
             //----------------------------------------------------------------------------------
 
-#ifdef __APPLE__
-            int n = kevent(kq, &change, 1, &event, 1, &timeout);
-#else
+#ifdef __linux__
             int n = epoll_wait(epollfd, &event, 1, 10);
+#else
+            int n = kevent(kq, &change, 1, &event, 1, &timeout);
 #endif
             if (n > 0) {
                 waitTime = 0;
@@ -703,12 +650,12 @@ void UdpDataProtocol::run()
                 emit signalWaitingTooLong(waitTime);
             }
         }
-#ifdef __APPLE__
-        close(kq);
-#else
+#ifdef __linux__
         close(epollfd);
+#else
+        close(kq);
 #endif
-#endif // _WIN32 || __MANUAL_POLL__
+#endif // _WIN32 || MANUAL_POLL
         break; }
 
     case SENDER : {
