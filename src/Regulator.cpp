@@ -76,8 +76,6 @@ using std::setw;
 constexpr int HIST       = 6;    // at FPP32
 constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax = 128;  // mNumSlots looped for recent arrivals
-//constexpr int ModSeqNumInit = 128;  // bounds on seqnums, 65536 is max in packet header
-//constexpr int NumSlotsMax = 64;  // mNumSlots looped for recent arribals
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -171,17 +169,18 @@ void Regulator::changeGlobal_2(int x) { // mNumSlots
 void Regulator::printParams() {
     qDebug() << "mMsecTolerance" << mMsecTolerance
              << "mNumSlots" << mNumSlots
-             << "mLostWindow" << mLostWindow
              << "mModSeqNum" << mModSeqNum
                 ;
-    updateGUI((int)mMsecTolerance,mNumSlots,mLostWindow);
+#ifdef GUIBS3
+    updateGUI((int)mMsecTolerance,mNumSlots);
+#endif
 };
 
-void Regulator::updateGUI(double msTol, int nSlots, int lostWin) {
 #ifdef GUIBS3
-    hg->updateDisplay(msTol,nSlots,lostWin);
-#endif
+void Regulator::updateGUI(double msTol, int nSlots) {
+    hg->updateDisplay(msTol,nSlots,0);//need to remove last param
 }
+#endif
 
 Regulator::~Regulator()
 {
@@ -491,8 +490,6 @@ StdDev::StdDev(int w, int id) : window(w), mId(id)
     lastMin           = 0;
     lastMax           = 0;
     lastPlcUnderruns  = 0;
-    lastPlcOverruns   = 0;
-    lastPlcSkipped    = 0;
     mTimer.start();
     data.resize(w, 0.0);
 }
@@ -506,8 +503,6 @@ void StdDev::reset()
     max          = 0.0;
     ctr          = 0;
     plcUnderruns = 0;
-    plcOverruns  = 0;
-    plcSkipped   = 0;
 };
 
 double StdDev::tick()
@@ -549,14 +544,45 @@ double StdDev::tick()
         lastMax          = max;
         lastStdDev       = stdDev;
         lastPlcUnderruns = plcUnderruns;
-        lastPlcOverruns  = plcOverruns;
-        lastPlcSkipped   = plcSkipped;
         reset();
     }
     return msElapsed;
 }
-
 //*******************************************************************************
+bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
+{
+    QMutexLocker locker(&mMutex);
+    if (reset) { // all are unused
+        mUnderruns        = 0;
+        mOverflows        = 0;
+        mSkew0            = mLevel;
+        mSkewRaw          = 0;
+        mBufDecOverflow   = 0;
+        mBufDecPktLoss    = 0;
+        mBufIncUnderrun   = 0;
+        mBufIncCompensate = 0;
+        mBroadcastSkew    = 0;
+    }
+// hijack  of  struct IOStat {
+    stat->underruns = pullStat->lastPlcUnderruns;
+#define FLOATFACTOR 1000.0
+    stat->overflows = FLOATFACTOR * pushStat->longTermStdDev;
+    stat->skew = FLOATFACTOR * pushStat->lastMean;
+    stat->skew_raw = FLOATFACTOR * pushStat->lastMin;
+    stat->level = FLOATFACTOR * pushStat->lastMax;
+    stat->buf_dec_overflows = FLOATFACTOR * pushStat->lastStdDev;
+
+    stat->buf_dec_pktloss = FLOATFACTOR * pullStat->longTermStdDev;
+    stat->buf_inc_underrun = FLOATFACTOR * pullStat->lastMean;
+    stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
+    stat->broadcast_skew = FLOATFACTOR * pullStat->lastMax;
+    stat->broadcast_delta = FLOATFACTOR * pullStat->lastStdDev;
+// unused
+//        int32_t autoq_corr;
+//        int32_t autoq_rate;
+    return true;
+}
+/*
 QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
 {
     // formatting floats in columns looks better with std::stringstream than with
@@ -599,3 +625,4 @@ QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
     }
     return tmp;
 }
+*/

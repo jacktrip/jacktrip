@@ -118,11 +118,7 @@ public:
     double longTermStdDevAcc;
     int longTermCnt;
     int plcUnderruns;
-    int plcOverruns;
-    int plcSkipped;
     int lastPlcUnderruns;
-    int lastPlcOverruns;
-    int lastPlcSkipped;
 };
 
 class Regulator : public QObject, public RingBuffer {
@@ -149,7 +145,8 @@ public:
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
 
-    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
+//    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
+    virtual bool getStats(IOStat* stat, bool reset);
 
 private:
     void processPacket(bool glitch);
@@ -189,9 +186,9 @@ private:
     vector<bool> mIncomingLost;
 #ifdef GUIBS3
     HerlperGUI* hg;
+    void updateGUI(double msTol, int nSlots, int lostWin);
 #endif
     void printParams();
-    void updateGUI(double msTol, int nSlots, int lostWin);
 public slots:
     void changeGlobal(double);
     void changeGlobal_2(int);
