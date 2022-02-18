@@ -42,7 +42,7 @@
 #endif
 #include "Auth.h"
 #include "JitterBuffer.h"
-#include "PoolBuffer.h"
+#include "Regulator.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
@@ -379,11 +379,9 @@ void JackTrip::setupRingBuffers()
             mSendRingBuffer =
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer =
-                new PoolBuffer(mSampleRate, mNumAudioChansIn, mAudioBitResolution,
-                               mAudioBufferSize, mBufferQueueLength);
-            //            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this,
-            //            SLOT(onStatTimer(QString))); connect(mReceiveRingBuffer,
-            //            SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
+                new Regulator(mSampleRate, mNumAudioChansIn, mAudioBitResolution,
+                              mAudioBufferSize, mBufferQueueLength);
+            // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else {
