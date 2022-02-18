@@ -195,6 +195,5 @@ private:
 public slots:
     void changeGlobal(double);
     void changeGlobal_2(int);
-    void changeGlobal_3(int);
 };
 #endif  //__REGULATOR_H__

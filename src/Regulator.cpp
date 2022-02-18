@@ -74,8 +74,6 @@ using std::setw;
 
 // constants... tested for now
 constexpr int HIST       = 6;    // at FPP32
-//constexpr int LOSTWINDOW       = 16;    // how far to back check for lost packets
-constexpr int LostWindowMax       = 32;    // how far to back check for lost packets
 constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax = 128;  // mNumSlots looped for recent arrivals
 //constexpr int ModSeqNumInit = 128;  // bounds on seqnums, 65536 is max in packet header
@@ -154,7 +152,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     connect(hg, SIGNAL(moved_3(int)), this, SLOT(changeGlobal_3(int)));
 #endif
     changeGlobal_2(NumSlotsMax); // need hg if running GUI
-    changeGlobal_3(LostWindowMax);
     changeGlobal((double)qLen);
 }
 
@@ -168,12 +165,6 @@ void Regulator::changeGlobal_2(int x) { // mNumSlots
     if (!mNumSlots) mNumSlots = 1;
     if (mNumSlots > NumSlotsMax ) mNumSlots = NumSlotsMax;
     mModSeqNum = mNumSlots * 2;
-    printParams();
-}
-
-void Regulator::changeGlobal_3(int x) { // mLostWindow
-    mLostWindow = x;
-    if (mLostWindow > LostWindowMax ) mLostWindow = LostWindowMax;
     printParams();
 }
 
@@ -543,7 +534,6 @@ double StdDev::tick()
         if (longTermCnt) {
             longTermStdDevAcc += stdDev;
             longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
-            //            qDebug() << mean << min << max << stdDev << longTermStdDev;
             if (gVerboseFlag)
                 cout << setw(10) << mean << setw(10) << lastMin << setw(10) << max
                      << setw(10) << stdDev << setw(10) << longTermStdDev << " " << mId
@@ -554,16 +544,6 @@ double StdDev::tick()
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
-        //            QString out;
-        //            out += (QString::number(msNow) + QString("\t"));
-        //            out += (QString::number(mean) + QString("\t"));
-        //            out += (QString::number(min) + QString("\t"));
-        //            out += (QString::number(max) + QString("\t"));
-        //            out += (QString::number(stdDev) + QString("\t"));
-        //                        emit printStats(out);
-        // build-jacktrip-Desktop-Release/jacktrip -C cmn9.stanford.edu --bufstrategy 3 -I
-        // 1 -G /tmp/iostat.log plot 'iostat.log' u  1:2 w l, 'iostat.log' u  1:3 w l,
-        // 'iostat.log' u  1:4 w l, 'iostat.log' u  1:5 w l,
         lastMean         = mean;
         lastMin          = min;
         lastMax          = max;
