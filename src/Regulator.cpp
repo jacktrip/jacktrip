@@ -147,8 +147,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mIncomingTiming.resize(ModSeqNumInit);
     for (int i = 0; i < ModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
     mModSeqNum = mNumSlots * 2;
-    mIncomingLost.resize(ModSeqNumInit);
-    for (int i = 0; i < ModSeqNumInit; i++) mIncomingLost[i] = true; // at start
 #ifdef GUIBS3
     hg = new HerlperGUI(qApp->activeWindow());
     connect(hg, SIGNAL(moved(double)), this, SLOT(changeGlobal(double)));
@@ -208,18 +206,6 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
     mIncomingTiming[seq_num] =
             mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    mIncomingLost[seq_num] = false;
-    int resetLost = seq_num - (mLostWindow+1);
-    if (resetLost < 0) resetLost += mModSeqNum;
-    mIncomingLost[resetLost] = false; // forget trailing state
-    if (mLastSeqNumIn != -1)
-        for (int i = 1; i < mLostWindow; i++) { // check for lost
-            int test = seq_num - i;
-            if (test < 0) test += mModSeqNum;
-            //  qDebug() << seq_num << mIncomingTiming[seq_num] << test << mIncomingTiming[test];
-            if ((mIncomingTiming[seq_num] - mIncomingTiming[test]) > mMsecTolerance)
-                mIncomingLost[test] = false;
-        }
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1) memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
     pushStat->tick();
@@ -235,7 +221,6 @@ void Regulator::pullPacket(int8_t* buf)
     } else {
         mLastSeqNumOut++;
         mLastSeqNumOut %= mModSeqNum;
-        if (mIncomingLost[mLastSeqNumOut]) goto UNDERRUNLOSS;
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
         for (int i = mLostWindow; i >= 0; i--) {
             int next = mLastSeqNumIn - i;
@@ -257,12 +242,6 @@ PACKETOK : {
             processPacket(true, 1, mSkip);
         else
             processPacket(false, 1, mSkip);
-        goto OUTPUT;
-    }
-
-UNDERRUNLOSS : {
-        processPacket(true, 0, mSkip);
-        pushStat->plcSkipped++; // count lost
         goto OUTPUT;
     }
 
