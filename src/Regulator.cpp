@@ -76,6 +76,7 @@ using std::setw;
 constexpr int HIST       = 6;    // at FPP32
 constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax = 128;  // mNumSlots looped for recent arrivals
+constexpr int LostWindowMax = 32;  // mLostWindow looped for recent arrivals
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -143,18 +144,20 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mIncomingTiming.resize(ModSeqNumInit);
     for (int i = 0; i < ModSeqNumInit; i++) mIncomingTiming[i] = 0.0;
     mModSeqNum = mNumSlots * 2;
-#ifdef GUIBS3
+#ifdef GUIBS3 
+// hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
     connect(hg, SIGNAL(moved(double)), this, SLOT(changeGlobal(double)));
     connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
     connect(hg, SIGNAL(moved_3(int)), this, SLOT(changeGlobal_3(int)));
 #endif
+    changeGlobal_3(LostWindowMax); 
     changeGlobal_2(NumSlotsMax); // need hg if running GUI
     changeGlobal((double)qLen);
 }
 
 void Regulator::changeGlobal(double x) { // mMsecTolerance
-    mMsecTolerance = (x);
+    mMsecTolerance = x;
     printParams();
 }
 
@@ -166,10 +169,16 @@ void Regulator::changeGlobal_2(int x) { // mNumSlots
     printParams();
 }
 
+void Regulator::changeGlobal_3(int x) { // mLostWindow
+    mLostWindow = x;
+    printParams();
+}
+
 void Regulator::printParams() {
     qDebug() << "mMsecTolerance" << mMsecTolerance
              << "mNumSlots" << mNumSlots
              << "mModSeqNum" << mModSeqNum
+             << "mLostWindow" << mLostWindow
                 ;
 #ifdef GUIBS3
     updateGUI((int)mMsecTolerance,mNumSlots);
