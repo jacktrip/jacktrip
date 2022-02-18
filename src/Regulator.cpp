@@ -299,29 +299,11 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt,
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
                         cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
-        if (ch == 2) { // set to 1 to hear non-PLC glitches
-            double tmp = (streamState + streamSkip) * 0.1;
-            switch (streamState) {  // int from JitterBuffer to AudioInterface enum
-            case 1:
-                if(streamSkip>10) qDebug() << "state = 1" << tmp << streamSkip;
-                break;
-            case 0:
-//                qDebug() << tmp << streamSkip;
-                break;
-            case -1:
-                qDebug() << "state = -1" << tmp << streamSkip;
-                break;
-            }
-            for (int s = 0; s < mFPP; s++)
-                sampleToBits(tmp,
-                             ch, s);
-        } else {
-            for (int s = 0; s < mFPP; s++)
-                sampleToBits((glitch)
-                             ? cd->mPrediction[s]
-                               : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
-                             ch, s);
-        }
+        for (int s = 0; s < mFPP; s++)
+            sampleToBits((glitch)
+                         ? cd->mPrediction[s]
+                           : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                         ch, s);
         if (glitch) {
             for (int s = 0; s < mFPP; s++) cd->mLastPred[s] = cd->mPrediction[s + mFPP];
         }
