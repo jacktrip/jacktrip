@@ -239,14 +239,14 @@ void Regulator::pullPacket(int8_t* buf)
 
 PACKETOK : {
         if (mSkip)
-            processPacket(true, 1, mSkip);
+            processPacket(true);
         else
-            processPacket(false, 1, mSkip);
+            processPacket(false);
         goto OUTPUT;
     }
 
 UNDERRUN : {
-        processPacket(true, -1, mSkip);
+        processPacket(true);
         pullStat->plcUnderruns++; // count late
         goto OUTPUT;
     }
@@ -260,10 +260,10 @@ OUTPUT:
 };
 
 //*******************************************************************************
-void Regulator::processPacket(bool glitch, int streamState, int streamSkip)
+void Regulator::processPacket(bool glitch)
 {
     for (int ch = 0; ch < mNumChannels; ch++)
-        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch, streamState, streamSkip);
+        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
     mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
@@ -271,7 +271,7 @@ void Regulator::processPacket(bool glitch, int streamState, int streamSkip)
 
 //*******************************************************************************
 void Regulator::processChannel(int ch, bool glitch, int packetCnt,
-                               bool lastWasGlitch, int streamState, int streamSkip)
+                               bool lastWasGlitch)
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
     ChanData* cd = mChanData[ch];
