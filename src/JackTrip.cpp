@@ -987,7 +987,7 @@ void JackTrip::stop(const QString& errorMessage)
 {
     // Take a snapshot of sJackStopped
     bool serverStopped = sJackStopped;
-    mStopped = true;
+    mStopped           = true;
     // Make sure we're only run once
     if (mHasShutdown) {
         return;
