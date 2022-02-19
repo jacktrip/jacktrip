@@ -57,10 +57,9 @@
 #include <QTimer>
 #include <QtEndian>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
-
-#include <iomanip>
 using std::setw;
 
 using std::cout;
@@ -616,7 +615,7 @@ void JackTrip::onStatTimer()
     }
     bool reset = (0 == pkt_stat.statCount);
     RingBuffer::IOStat recv_io_stat;
-    if (getBufferStrategy() !=3) {
+    if (getBufferStrategy() != 3) {
         if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) {
             return;
         }
@@ -636,67 +635,71 @@ void JackTrip::onStatTimer()
     if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) {
         mIOStatLogStream << "\n";
     }
-    if (getBufferStrategy() !=3)
+    if (getBufferStrategy() != 3)
         mIOStatLogStream << now.toLocal8Bit().constData() << " "
-                     << getPeerAddress().toLocal8Bit().constData()
-                     << " send: " << send_io_stat.underruns << "/"
-                     << send_io_stat.overflows << " recv: " << recv_io_stat.underruns
-                     << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost << "/"
-                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
-                     << " tot: " << pkt_stat.tot << " sync: " << recv_io_stat.level << "/"
-                     << recv_io_stat.buf_inc_underrun << "/"
-                     << recv_io_stat.buf_inc_compensate << "/"
-                     << recv_io_stat.buf_dec_overflows << "/"
-                     << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
-                     << "/" << recv_io_stat.skew_raw
-                     << " bcast: " << recv_io_stat.broadcast_skew << "/"
-                     << recv_io_stat.broadcast_delta
-                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
-                     << 0.1 * recv_io_stat.autoq_rate << endl;
-    else { // bufstrategy 3
-        mIOStatLogStream << now.toLocal8Bit().constData() << " "
-                     << getPeerAddress().toLocal8Bit().constData()
-                     << " send: " << send_io_stat.underruns << "/"
-                     << send_io_stat.overflows
-                     << " Pull underruns: "
-                     << recv_io_stat.underruns // pullStat->lastPlcUnderruns;
-                    #define INVFLOATFACTOR 0.001
-                     << "\nPUSH -- SD avg/last: "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.overflows // pushStat->longTermStdDev;
-                     << " / "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.buf_dec_overflows // pushStat->lastStdDev;
-                     << " \t mean/min/max: "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.skew // pushStat->lastMean;
-                     << " / "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.skew_raw // pushStat->lastMin;
-                     << " / "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.level // pushStat->lastMax;
+                         << getPeerAddress().toLocal8Bit().constData()
+                         << " send: " << send_io_stat.underruns << "/"
+                         << send_io_stat.overflows << " recv: " << recv_io_stat.underruns
+                         << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost
+                         << "/" << pkt_stat.outOfOrder << "/" << pkt_stat.revived
+                         << " tot: " << pkt_stat.tot << " sync: " << recv_io_stat.level
+                         << "/" << recv_io_stat.buf_inc_underrun << "/"
+                         << recv_io_stat.buf_inc_compensate << "/"
+                         << recv_io_stat.buf_dec_overflows << "/"
+                         << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
+                         << "/" << recv_io_stat.skew_raw
+                         << " bcast: " << recv_io_stat.broadcast_skew << "/"
+                         << recv_io_stat.broadcast_delta
+                         << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
+                         << 0.1 * recv_io_stat.autoq_rate << endl;
+    else {  // bufstrategy 3
+        mIOStatLogStream
+            << now.toLocal8Bit().constData() << " "
+            << getPeerAddress().toLocal8Bit().constData()
+            << " send: " << send_io_stat.underruns << "/" << send_io_stat.overflows
+            << " Pull underruns: "
+            << recv_io_stat.underruns  // pullStat->lastPlcUnderruns;
+#define INVFLOATFACTOR 0.001
+            << "\nPUSH -- SD avg/last: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.overflows  // pushStat->longTermStdDev;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_dec_overflows  // pushStat->lastStdDev;
+            << " \t mean/min/max: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.skew  // pushStat->lastMean;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.skew_raw  // pushStat->lastMin;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.level  // pushStat->lastMax;
 
-                     << "\nPULL -- SD avg/last: "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.buf_dec_pktloss // pullStat->longTermStdDev;
-                     << " / "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.broadcast_delta // pullStat->lastStdDev;
-                     << " \t mean/min/max: "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.buf_inc_underrun // pullStat->lastMean;
-                     << " / "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.buf_inc_compensate // pullStat->lastMin;
-                     << " / "
-                     << setw(5) << INVFLOATFACTOR * recv_io_stat.broadcast_skew // pullStat->lastMax;
+            << "\nPULL -- SD avg/last: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_dec_pktloss  // pullStat->longTermStdDev;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.broadcast_delta  // pullStat->lastStdDev;
+            << " \t mean/min/max: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_inc_underrun  // pullStat->lastMean;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_inc_compensate  // pullStat->lastMin;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.broadcast_skew  // pullStat->lastMax;
 
-//                     << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost << "/"
-//                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
-                     << " \n tot: " << pkt_stat.tot
-//                     << " sync: " << recv_io_stat.level << "/"
-//                     << recv_io_stat.buf_inc_underrun << "/"
-//                     << recv_io_stat.buf_inc_compensate << "/"
-//                     << recv_io_stat.buf_dec_overflows << "/"
-//                     << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
-//                     << "/" << recv_io_stat.skew_raw
-//                     << " bcast: " << recv_io_stat.broadcast_skew << "/"
-//                     << recv_io_stat.broadcast_delta
-//                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
-//                     << 0.1 * recv_io_stat.autoq_rate
-                     << "\n" << endl;
+            //                     << "/" << recv_io_stat.overflows << " prot: " <<
+            //                     pkt_stat.lost << "/"
+            //                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
+            << " \n tot: "
+            << pkt_stat.tot
+            //                     << " sync: " << recv_io_stat.level << "/"
+            //                     << recv_io_stat.buf_inc_underrun << "/"
+            //                     << recv_io_stat.buf_inc_compensate << "/"
+            //                     << recv_io_stat.buf_dec_overflows << "/"
+            //                     << recv_io_stat.buf_dec_pktloss << " skew: " <<
+            //                     recv_io_stat.skew
+            //                     << "/" << recv_io_stat.skew_raw
+            //                     << " bcast: " << recv_io_stat.broadcast_skew << "/"
+            //                     << recv_io_stat.broadcast_delta
+            //                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
+            //                     << 0.1 * recv_io_stat.autoq_rate
+            << "\n"
+            << endl;
     }
 }
 
