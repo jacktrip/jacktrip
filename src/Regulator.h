@@ -40,7 +40,6 @@
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
-
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
 
@@ -62,12 +61,12 @@ using std::vector;
 
 class BurgAlgorithm
 {
-public:
+   public:
     bool classify(double d);
     void train(vector<long double>& coeffs, const vector<float>& x);
     void predict(vector<long double>& coeffs, vector<float>& tail);
 
-private:
+   private:
     // the following are class members to minimize heap memory allocations
     vector<long double> Ak;
     vector<long double> f;
@@ -76,7 +75,7 @@ private:
 
 class ChanData
 {
-public:
+   public:
     ChanData(int i, int FPP, int hist);
     int ch;
     int trainSamps;
@@ -95,7 +94,7 @@ public:
 
 class StdDev
 {
-public:
+   public:
     StdDev(int w, int id);
     void reset();
     double tick();
@@ -122,12 +121,16 @@ public:
 };
 
 #ifdef GUIBS3
-class Regulator : public QObject, public RingBuffer {
-        Q_OBJECT;
+class Regulator
+    : public QObject
+    , public RingBuffer
+{
+    Q_OBJECT;
 #else
-class Regulator : public RingBuffer {
+class Regulator : public RingBuffer
+{
 #endif
-public:
+   public:
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
@@ -139,7 +142,7 @@ public:
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot,
                                        [[maybe_unused]] int unused,
-    [[maybe_unused]] int seq_num)
+                                       [[maybe_unused]] int seq_num)
     {
         pushPacket(ptrToSlot, seq_num);
         return (true);
@@ -149,10 +152,10 @@ public:
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
 
-//    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
+    //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
 
-private:
+   private:
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
@@ -191,7 +194,7 @@ private:
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);
-public slots:
+   public slots:
 #endif
     void changeGlobal(double);
     void changeGlobal_2(int);
