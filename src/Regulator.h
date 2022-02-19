@@ -121,8 +121,12 @@ public:
     int lastPlcUnderruns;
 };
 
+#ifdef GUIBS3
 class Regulator : public QObject, public RingBuffer {
         Q_OBJECT;
+#else
+class Regulator : public RingBuffer {
+#endif
 public:
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
@@ -187,11 +191,11 @@ private:
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);
-#endif
-    void printParams();
 public slots:
+#endif
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);
+    void printParams();
 };
 #endif  //__REGULATOR_H__
