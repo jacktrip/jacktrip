@@ -48,7 +48,7 @@
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
-using std::vector;
+
 #include <math.h>
 
 //#define GUIBS3
@@ -63,14 +63,14 @@ class BurgAlgorithm
 {
    public:
     bool classify(double d);
-    void train(vector<long double>& coeffs, const vector<float>& x);
-    void predict(vector<long double>& coeffs, vector<float>& tail);
+    void train(std::vector<long double>& coeffs, const std::vector<float>& x);
+    void predict(std::vector<long double>& coeffs, std::vector<float>& tail);
 
    private:
     // the following are class members to minimize heap memory allocations
-    vector<long double> Ak;
-    vector<long double> f;
-    vector<long double> b;
+    std::vector<long double> Ak;
+    std::vector<long double> f;
+    std::vector<long double> b;
 };
 
 class ChanData
@@ -79,17 +79,17 @@ class ChanData
     ChanData(int i, int FPP, int hist);
     int ch;
     int trainSamps;
-    vector<sample_t> mTruth;
-    vector<sample_t> mTrain;
-    vector<sample_t> mTail;
-    vector<sample_t> mPrediction;  // ORDER
-    vector<long double> mCoeffs;
-    vector<sample_t> mXfadedPred;
-    vector<sample_t> mLastPred;
-    vector<vector<sample_t>> mLastPackets;
-    vector<sample_t> mCrossFadeDown;
-    vector<sample_t> mCrossFadeUp;
-    vector<sample_t> mCrossfade;
+    std::vector<sample_t> mTruth;
+    std::vector<sample_t> mTrain;
+    std::vector<sample_t> mTail;
+    std::vector<sample_t> mPrediction;  // ORDER
+    std::vector<long double> mCoeffs;
+    std::vector<sample_t> mXfadedPred;
+    std::vector<sample_t> mLastPred;
+    std::vector<std::vector<sample_t>> mLastPackets;
+    std::vector<sample_t> mCrossFadeDown;
+    std::vector<sample_t> mCrossFadeUp;
+    std::vector<sample_t> mCrossfade;
 };
 
 class StdDev
@@ -99,7 +99,7 @@ class StdDev
     void reset();
     double tick();
     QElapsedTimer mTimer;
-    vector<double> data;
+    std::vector<double> data;
     double mean;
     double var;
     //    double varRunning;
@@ -172,25 +172,25 @@ class Regulator : public RingBuffer
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
-    vector<sample_t> mFadeUp;
-    vector<sample_t> mFadeDown;
+    std::vector<sample_t> mFadeUp;
+    std::vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
-    vector<int8_t*> mSlots;
+    std::vector<int8_t*> mSlots;
     int8_t* mZeros;
     double mMsecTolerance;
-    vector<ChanData*> mChanData;
+    std::vector<ChanData*> mChanData;
     StdDev* pushStat;
     StdDev* pullStat;
     QElapsedTimer mIncomingTimer;
     int mLastSeqNumIn;
     int mLastSeqNumOut;
     double mPacketDurMsec;
-    vector<double> mPhasor;
-    vector<double> mIncomingTiming;
+    std::vector<double> mPhasor;
+    std::vector<double> mIncomingTiming;
     int mModSeqNum;
     int mLostWindow;
     int mSkip;
-    vector<bool> mIncomingLost;
+    std::vector<bool> mIncomingLost;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);

@@ -397,7 +397,7 @@ bool BurgAlgorithm::classify(double d)
     return tmp;
 }
 
-void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
+void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<float>& x)
 {
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;
@@ -471,7 +471,7 @@ void BurgAlgorithm::train(vector<long double>& coeffs, const vector<float>& x)
     coeffs.assign(++Ak.begin(), Ak.end());
 }
 
-void BurgAlgorithm::predict(vector<long double>& coeffs, vector<float>& tail)
+void BurgAlgorithm::predict(std::vector<long double>& coeffs, std::vector<float>& tail)
 {
     size_t m = coeffs.size();
     //    qDebug() << "tail.at(0)" << tail[0]*32768;
@@ -496,7 +496,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
     mXfadedPred.resize(FPP, 0.0);
     mLastPred.resize(FPP, 0.0);
     for (int i = 0; i < hist; i++) {
-        vector<sample_t> tmp(FPP, 0.0);
+        std::vector<sample_t> tmp(FPP, 0.0);
         mLastPackets.push_back(tmp);
     }
     mTrain.resize(trainSamps, 0.0);
