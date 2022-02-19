@@ -53,11 +53,11 @@
 
 //#define GUIBS3
 #ifdef GUIBS3
+#include <QWidget>
+
 #include "herlpergui.h"
 #include "ui_herlpergui.h"
 #endif
-
-#include <QWidget>
 
 class BurgAlgorithm
 {
