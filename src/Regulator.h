@@ -43,13 +43,13 @@
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
 
+#include <math.h>
+
 #include <QDebug>
 #include <QElapsedTimer>
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
-
-#include <math.h>
 
 //#define GUIBS3
 #ifdef GUIBS3
