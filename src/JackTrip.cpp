@@ -615,14 +615,8 @@ void JackTrip::onStatTimer()
     }
     bool reset = (0 == pkt_stat.statCount);
     RingBuffer::IOStat recv_io_stat;
-    if (getBufferStrategy() != 3) {
-        if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) {
-            return;
-        }
-    } else {
-        if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) {
-            return;
-        }
+    if (!mReceiveRingBuffer->getStats(&recv_io_stat, reset)) {
+        return;
     }
     RingBuffer::IOStat send_io_stat;
     if (!mSendRingBuffer->getStats(&send_io_stat, reset)) {
