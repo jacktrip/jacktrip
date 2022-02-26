@@ -61,6 +61,7 @@
 // for wired cmn9
 // sudo tc qdisc add dev lo root netem slot distribution pareto 0.2ms 0.3ms
 // sudo tc qdisc del dev lo root netem slot distribution pareto 0.2ms 0.3ms
+#define TEST1
 
 #include "Regulator.h"
 
@@ -86,6 +87,11 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)
 {
+#ifndef TEST1
+    cout << "test1 is OFF, this is normal operation\n";
+#else
+    cout << "test1 is ON, no LPC being computed\n";
+#endif
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -245,13 +251,18 @@ void Regulator::pullPacket(int8_t* buf)
                 goto PACKETOK;
             }
         }
+#ifndef TEST1
+        // cout << "test1 is OFF, this is normal operation\n";
         goto UNDERRUN;
+#endif
     }
 
 PACKETOK : {
+#ifndef TEST1
     if (mSkip)
         processPacket(true);
     else
+#endif
         processPacket(false);
     goto OUTPUT;
 }
