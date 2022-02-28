@@ -1553,8 +1553,14 @@ QString QJackTrip::commandLineFromCurrentOptions()
         if (m_ui->outputDeviceComboBox->currentIndex() > 0) {
             outDevice = m_ui->outputDeviceComboBox->currentText();
         }
-        commandLine.append(
-            QStringLiteral(" --audiodevice \"%1\",\"%2\"").arg(inDevice, outDevice));
+        QString delim;  // note: this should match delimiters specified in
+                        // Settings::setDevicesByString
+        if (inDevice.contains(",") || outDevice.contains(","))
+            delim = "\\\\,";
+        else
+            delim = ",";
+        commandLine.append(QStringLiteral(" --audiodevice \"%1\"%2\"%3\"")
+                               .arg(inDevice, delim, outDevice));
     }
 #endif
 

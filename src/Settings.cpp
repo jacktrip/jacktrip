@@ -816,6 +816,7 @@ void Settings::printUsage()
          << endl;
     cout << " --audiodevice \"input-output device name\"" << endl;
     cout << " --audiodevice \"input device name\",\"output device name\"" << endl;
+    cout << " --audiodevice \"input device name, with comma\"\\\\,\"output device name, with comma\"" << endl;
     cout << "                                          Set audio device to use; if not set, "
             "the default device will be used"
          << endl;
@@ -865,16 +866,28 @@ void Settings::printUsage()
 void Settings::setDevicesByString(std::string nameArg)
 {
     size_t commaPos;
+    size_t outNameOffset;
     char delim = ',';
     if (std::count(nameArg.begin(), nameArg.end(), delim) > 1) {
-        throw std::invalid_argument(
-            "Found multiple commas in the --audiodevice argument, cannot parse "
-            "reliably.");
+        std::string delimAlt("\\,");
+        commaPos      = nameArg.rfind(delimAlt);
+        outNameOffset = delimAlt.length();
+        if (commaPos == std::string::npos) {
+            throw std::invalid_argument(
+                "Found multiple commas in the --audiodevice argument.\n"
+                "Please use double-escaped comma do delineate input "
+                "and output device names that include commas, e.g.:\n"
+                "--audiodevice \"input device, with comma\"\\\\,"
+                "\"output device, with comma\"");
+        }
+    } else {
+        commaPos      = nameArg.rfind(delim);
+        outNameOffset = 1;
     }
-    commaPos = nameArg.rfind(delim);
-    if (commaPos || nameArg[0] == delim) {
+    // note: we also treat comma + space as a comma within a single device's name
+    if ((commaPos || nameArg[0] == delim) && nameArg[commaPos + 1] != ' ') {
         mInputDeviceName  = nameArg.substr(0, commaPos);
-        mOutputDeviceName = nameArg.substr(commaPos + 1);
+        mOutputDeviceName = nameArg.substr(commaPos + outNameOffset);
     } else {
         mInputDeviceName = mOutputDeviceName = nameArg;
     }
