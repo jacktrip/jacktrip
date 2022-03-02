@@ -1,3 +1,19 @@
+- Version: "1.5.2"
+  Date: 2022-03-02
+  Description:
+  - (update) RingBuffer replaced by Regulator for experimental buffer strategy 3
+  - (update) call out old jacktrip versions in package repos on Debian and others
+  - (update) first attempt to support BSDs (especially FreeBSD)
+  - (update) add signing to macOS packaging script
+  - (update) Rename __MANUAL_POLL__ TO MANUAL_POLL
+  - (update) RtAudio warning changes
+  - (update) Use bundled rtaudio for Windows release builds
+  - (update) Incorporate meson build in the main GHA file
+  - (fixed) build script doesn't exit if build fails
+  - (fixed) false error message for JACK 1.9.20 on M1 builds
+  - (fixed) Don't connect our UDP socket
+  - (fixed) Fix GUI command line warning
+  - (fixed) Limiter allocation in GUI
 - Version: "1.5.1"
   Date: 2022-01-07
   Description:
