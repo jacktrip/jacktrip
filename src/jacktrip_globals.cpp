@@ -37,7 +37,7 @@
 
 #include <iostream>
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
 #include <sched.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -151,7 +151,7 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
 
 #endif  //__APPLE__
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
 //*******************************************************************************
 void setRealtimeProcessPriority()
 {

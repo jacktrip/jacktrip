@@ -45,6 +45,7 @@
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <sys/time.h> // for gettimeofday
 
 #include "JackTrip.h"
 
