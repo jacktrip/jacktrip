@@ -999,6 +999,13 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
         <string>Audio Backend</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_11">
+        <item row="3" column="1">
+         <widget class="QComboBox" name="inputDeviceComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="backendLabel">
           <property name="sizePolicy">
@@ -1015,40 +1022,52 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="backendComboBox">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the audio backend to use. JACK is the default and is well tested, but requires the JACK audio server to be installed.&lt;/p&gt;&lt;p&gt;RtAudio is still a work in progress, but it works with your operating system's native audio drivers and requires no additional software.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <item>
-           <property name="text">
-            <string>JACK</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>RtAudio</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="sampleRateLabel">
+        <item row="2" column="1">
+         <widget class="QComboBox" name="bufferSizeComboBox">
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the driver's buffer size to use with the RtAudio backend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="text">
-           <string>&amp;Sampling Rate:</string>
+          <property name="currentIndex">
+           <number>3</number>
           </property>
-          <property name="buddy">
-           <cstring>sampleRateComboBox</cstring>
-          </property>
+          <item>
+           <property name="text">
+            <string>16</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>32</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>64</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>128</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>256</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>512</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1024</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="1" column="1">
@@ -1102,73 +1121,6 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </item>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="bufferSizeLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Buffer Size:</string>
-          </property>
-          <property name="buddy">
-           <cstring>bufferSizeComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QComboBox" name="bufferSizeComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the driver's buffer size to use with the RtAudio backend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="currentIndex">
-           <number>3</number>
-          </property>
-          <item>
-           <property name="text">
-            <string>16</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>32</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>64</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>128</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>256</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>512</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>1024</string>
-           </property>
-          </item>
-         </widget>
-        </item>
         <item row="3" column="0">
          <widget class="QLabel" name="inputDeviceLabel">
           <property name="enabled">
@@ -1188,40 +1140,7 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QComboBox" name="inputDeviceComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="outputDeviceLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Output Device:</string>
-          </property>
-          <property name="buddy">
-           <cstring>outputDeviceComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QComboBox" name="outputDeviceComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <spacer name="backendSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -1234,7 +1153,7 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </spacer>
         </item>
-        <item row="8" column="0" colspan="2">
+        <item row="9" column="0" colspan="2">
          <layout class="QHBoxLayout" name="deviceManagementLayout">
           <item>
            <spacer name="backendTabSpacer">
@@ -1257,6 +1176,97 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
            </widget>
           </item>
          </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="outputDeviceLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Output Device:</string>
+          </property>
+          <property name="buddy">
+           <cstring>outputDeviceComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="bufferSizeLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Buffer Size:</string>
+          </property>
+          <property name="buddy">
+           <cstring>bufferSizeComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="backendComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the audio backend to use. JACK is the default and is well tested, but requires the JACK audio server to be installed.&lt;/p&gt;&lt;p&gt;RtAudio is still a work in progress, but it works with your operating system's native audio drivers and requires no additional software.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>JACK</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>RtAudio</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="sampleRateLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Sampling Rate:</string>
+          </property>
+          <property name="buddy">
+           <cstring>sampleRateComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QComboBox" name="outputDeviceComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="2">
+         <widget class="QLabel" name="backendWarningLabel">
+          <property name="text">
+           <string>These settings are ignored in Hub Server mode which requires JACK to operate.</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
