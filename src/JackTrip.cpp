@@ -1035,7 +1035,9 @@ void JackTrip::tcpTimerTick()
 //*******************************************************************************
 void JackTrip::stop(const QString& errorMessage)
 {
-    mStopped = true;
+    // Take a snapshot of sJackStopped
+    bool serverStopped = sJackStopped;
+    mStopped           = true;
     // Make sure we're only run once
     if (mHasShutdown) {
         return;
@@ -1059,7 +1061,7 @@ void JackTrip::stop(const QString& errorMessage)
     cout << gPrintSeparator << endl;
 
     // Emit the jack stopped signal
-    if (sJackStopped) {
+    if (serverStopped) {
         emit signalError(QStringLiteral("The Jack Server was shut down!"));
     } else if (errorMessage.isEmpty()) {
         emit signalProcessesStopped();
