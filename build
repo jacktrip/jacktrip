@@ -148,6 +148,9 @@ fi
 mkdir -p builddir
 cd builddir
 
+# exit if build commands fail
+set -e
+
 # Build
 echo "qmake command:"
 echo "$QCMD -spec $QSPEC $CONFIG $PRO_FILE" $UNKNOWN_OPTIONS

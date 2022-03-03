@@ -233,6 +233,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
     m_ui->basePortSpinBox->setVisible(false);
     m_ui->autoPatchGroupBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
+    m_ui->backendWarningLabel->setVisible(false);
 
 #ifdef RT_AUDIO
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -247,6 +248,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
                     m_ui->outputDeviceComboBox->setEnabled(true);
                     m_ui->outputDeviceLabel->setEnabled(true);
                     m_ui->refreshDevicesButton->setEnabled(true);
+                    m_ui->backendWarningLabel->setVisible(true);
                     populateDeviceMenu(m_ui->inputDeviceComboBox, true);
                     populateDeviceMenu(m_ui->outputDeviceComboBox, false);
                 } else {
@@ -259,6 +261,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
                     m_ui->outputDeviceComboBox->setEnabled(false);
                     m_ui->outputDeviceLabel->setEnabled(false);
                     m_ui->refreshDevicesButton->setEnabled(false);
+                    m_ui->backendWarningLabel->setVisible(false);
                 }
             });
     connect(m_ui->refreshDevicesButton, &QPushButton::clicked, this, [=]() {
@@ -307,6 +310,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
     // Check if Jack is actually available
     if (have_libjack() != 0) {
 #ifdef RT_AUDIO
+        bool usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
         m_ui->backendComboBox->setCurrentIndex(1);
         m_ui->backendComboBox->setEnabled(false);
         m_ui->backendLabel->setEnabled(false);
@@ -316,7 +320,11 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
             m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
         }
         m_ui->typeComboBox->removeItem(HUB_SERVER);
+        m_ui->backendWarningLabel->setText(
+            "JACK was not found. This means that only the RtAudio backend is available "
+            "and that JackTrip cannot be run in hub server mode.");
 
+#ifdef NO_JTVS
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
         if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
@@ -324,9 +332,11 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
                 new QCheckBox(QStringLiteral("Don't show this warning again"));
             QMessageBox msgBox;
             msgBox.setText(
-                "An installation of JACK was not found. Only the RtAudio backend will "
-                "be available. (Hub Server mode is not currently supported in this "
-                "configuration.");
+                "An installation of JACK was not found. JackTrip will still run using "
+                "a different audio backend (RtAudio) but some more advanced features, "
+                "like the ability to run your own hub server, will not be available."
+                "\n\n(If you install JACK at a later stage, these features will "
+                "automatically be re-enabled.)");
             msgBox.setWindowTitle(QStringLiteral("JACK Not Available"));
             msgBox.setCheckBox(dontBugMe);
             QObject::connect(dontBugMe, &QCheckBox::stateChanged, this, [=]() {
@@ -336,9 +346,22 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
             if (m_hideWarning) {
                 settings.setValue(QStringLiteral("HideJackWarning"), true);
             }
+            if (!usingRtAudioAlready) {
+                settings.setValue(QStringLiteral("UsingFallback"), true);
+            }
         }
         settings.endGroup();
-#else
+    } else {
+        // If we've fallen back to RtAudio before and JACK is now installed, use JACK.
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("Audio"));
+        if (settings.value(QStringLiteral("UsingFallback"), false).toBool()) {
+            m_ui->backendComboBox->setCurrentIndex(0);
+            settings.setValue(QStringLiteral("UsingFallback"), false);
+        }
+        settings.endGroup();
+#endif  // NO_JTVS
+#else   // RT_AUDIO
         QMessageBox msgBox;
         msgBox.setText(
             "An installation of JACK was not found, and no other audio backends are "

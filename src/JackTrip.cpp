@@ -42,7 +42,7 @@
 #endif
 #include "Auth.h"
 #include "JitterBuffer.h"
-#include "PoolBuffer.h"
+#include "Regulator.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
@@ -57,8 +57,10 @@
 #include <QTimer>
 #include <QtEndian>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
+using std::setw;
 
 using std::cout;
 using std::endl;
@@ -379,11 +381,9 @@ void JackTrip::setupRingBuffers()
             mSendRingBuffer =
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer =
-                new PoolBuffer(mSampleRate, mNumAudioChansIn, mAudioBitResolution,
-                               mAudioBufferSize, mBufferQueueLength);
-            //            connect(mReceiveRingBuffer, SIGNAL(print(QString)), this,
-            //            SLOT(onStatTimer(QString))); connect(mReceiveRingBuffer,
-            //            SIGNAL(printStats(QString)), this, SLOT(onStatTimer(QString)));
+                new Regulator(mSampleRate, mNumAudioChansIn, mAudioBitResolution,
+                              mAudioBufferSize, mBufferQueueLength);
+            // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else {
@@ -629,22 +629,72 @@ void JackTrip::onStatTimer()
     if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) {
         mIOStatLogStream << "\n";
     }
-    mIOStatLogStream << now.toLocal8Bit().constData() << " "
-                     << getPeerAddress().toLocal8Bit().constData()
-                     << " send: " << send_io_stat.underruns << "/"
-                     << send_io_stat.overflows << " recv: " << recv_io_stat.underruns
-                     << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost << "/"
-                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
-                     << " tot: " << pkt_stat.tot << " sync: " << recv_io_stat.level << "/"
-                     << recv_io_stat.buf_inc_underrun << "/"
-                     << recv_io_stat.buf_inc_compensate << "/"
-                     << recv_io_stat.buf_dec_overflows << "/"
-                     << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
-                     << "/" << recv_io_stat.skew_raw
-                     << " bcast: " << recv_io_stat.broadcast_skew << "/"
-                     << recv_io_stat.broadcast_delta
-                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
-                     << 0.1 * recv_io_stat.autoq_rate << endl;
+    if (getBufferStrategy() != 3)
+        mIOStatLogStream << now.toLocal8Bit().constData() << " "
+                         << getPeerAddress().toLocal8Bit().constData()
+                         << " send: " << send_io_stat.underruns << "/"
+                         << send_io_stat.overflows << " recv: " << recv_io_stat.underruns
+                         << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost
+                         << "/" << pkt_stat.outOfOrder << "/" << pkt_stat.revived
+                         << " tot: " << pkt_stat.tot << " sync: " << recv_io_stat.level
+                         << "/" << recv_io_stat.buf_inc_underrun << "/"
+                         << recv_io_stat.buf_inc_compensate << "/"
+                         << recv_io_stat.buf_dec_overflows << "/"
+                         << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
+                         << "/" << recv_io_stat.skew_raw
+                         << " bcast: " << recv_io_stat.broadcast_skew << "/"
+                         << recv_io_stat.broadcast_delta
+                         << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
+                         << 0.1 * recv_io_stat.autoq_rate << endl;
+    else {  // bufstrategy 3
+        mIOStatLogStream
+            << now.toLocal8Bit().constData() << " "
+            << getPeerAddress().toLocal8Bit().constData()
+            << " send: " << send_io_stat.underruns << "/" << send_io_stat.overflows
+            << " Pull underruns: "
+            << recv_io_stat.underruns  // pullStat->lastPlcUnderruns;
+#define INVFLOATFACTOR 0.001
+            << "\nPUSH -- SD avg/last: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.overflows  // pushStat->longTermStdDev;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_dec_overflows  // pushStat->lastStdDev;
+            << " \t mean/min/max: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.skew  // pushStat->lastMean;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.skew_raw  // pushStat->lastMin;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.level  // pushStat->lastMax;
+
+            << "\nPULL -- SD avg/last: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_dec_pktloss  // pullStat->longTermStdDev;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.broadcast_delta  // pullStat->lastStdDev;
+            << " \t mean/min/max: " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_inc_underrun  // pullStat->lastMean;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.buf_inc_compensate  // pullStat->lastMin;
+            << " / " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.broadcast_skew  // pullStat->lastMax;
+
+            //                     << "/" << recv_io_stat.overflows << " prot: " <<
+            //                     pkt_stat.lost << "/"
+            //                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
+            << " \n tot: "
+            << pkt_stat.tot
+            //                     << " sync: " << recv_io_stat.level << "/"
+            //                     << recv_io_stat.buf_inc_underrun << "/"
+            //                     << recv_io_stat.buf_inc_compensate << "/"
+            //                     << recv_io_stat.buf_dec_overflows << "/"
+            //                     << recv_io_stat.buf_dec_pktloss << " skew: " <<
+            //                     recv_io_stat.skew
+            //                     << "/" << recv_io_stat.skew_raw
+            //                     << " bcast: " << recv_io_stat.broadcast_skew << "/"
+            //                     << recv_io_stat.broadcast_delta
+            //                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
+            //                     << 0.1 * recv_io_stat.autoq_rate
+            << "\n"
+            << endl;
+    }
 }
 
 void JackTrip::receivedConnectionTCP()
@@ -985,7 +1035,9 @@ void JackTrip::tcpTimerTick()
 //*******************************************************************************
 void JackTrip::stop(const QString& errorMessage)
 {
-    mStopped = true;
+    // Take a snapshot of sJackStopped
+    bool serverStopped = sJackStopped;
+    mStopped           = true;
     // Make sure we're only run once
     if (mHasShutdown) {
         return;
@@ -1009,7 +1061,7 @@ void JackTrip::stop(const QString& errorMessage)
     cout << gPrintSeparator << endl;
 
     // Emit the jack stopped signal
-    if (sJackStopped) {
+    if (serverStopped) {
         emit signalError(QStringLiteral("The Jack Server was shut down!"));
     } else if (errorMessage.isEmpty()) {
         emit signalProcessesStopped();
