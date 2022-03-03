@@ -502,9 +502,9 @@ jobs:
           - name: Sign Windows artifacts
             release-name: Windows-x64
             build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
-            runs-on: windows-2019
+            runs-on: ubuntu-latest
             binary-path: binary
-            # installer-path: installer
+            installer-path: installer
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
@@ -536,6 +536,12 @@ jobs:
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
+      - name: Retrieve Windows installer artifact
+        uses: actions/download-artifact@v2
+        if: runner.os == 'Linux' && matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        with:
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
+          path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
         env:
@@ -603,16 +609,21 @@ jobs:
             cd $GITHUB_WORKSPACE/macos
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
             cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.pkg
-          fi
-          
-      - name: create installer on Windows
-        if: runner.os == 'Windows' && matrix.installer-path
-        shell: cmd
+          fi      
+      - name: sign artifacts on Windows
+        if: runner.os == 'Linux' && matrix.installer-path
+        env:
+          TOTP: ${{ secrets.TOTP_SECRET }}
+          CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
+          USERNAME: jacktrip
+          PASSWORD: ${{ secrets.SSL_COM_PWD}}
         run: |
-          cd win
-          call "build_installer.bat"
-          bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
-          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+          cd win/CodeSignTool
+          curl -L -O -J https://storage.googleapis.com/files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-jars.zip
+          unzip CodeSignTool-jars.zip
+          mkdir signed
+          ./CodeSignTool.sh sign -credential_id=$CRED_ID -username=$USERNAME -password=$PASSWORD -totp_secret=$TOTP -output_dir_path=signed -input_file_path=$BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
+          cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: upload application bundle
         uses: actions/upload-artifact@v2
         if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
@@ -628,7 +639,7 @@ jobs:
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
-    needs: build
+    needs: sign
     runs-on: ubuntu-18.04
     name: 'deploy release'
     env:
