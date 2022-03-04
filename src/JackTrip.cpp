@@ -225,7 +225,7 @@ void JackTrip::setupAudio(
                 << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples"
                 << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
-#endif          //__NON_JACK__
+#endif  //__NON_JACK__
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
@@ -381,7 +381,7 @@ void JackTrip::setupRingBuffers()
             mSendRingBuffer =
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer =
-                new Regulator(mSampleRate, mNumAudioChansIn, mAudioBitResolution,
+                new Regulator(mSampleRate, mNumAudioChansOut, mAudioBitResolution,
                               mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
