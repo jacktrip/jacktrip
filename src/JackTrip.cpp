@@ -381,7 +381,7 @@ void JackTrip::setupRingBuffers()
             mSendRingBuffer =
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer =
-                new Regulator(mSampleRate, mNumAudioChansIn, mAudioBitResolution,
+                new Regulator(mSampleRate, mNumAudioChansOut, mAudioBitResolution,
                               mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
