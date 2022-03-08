@@ -377,7 +377,7 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
-            qDebug() << "experimental buffer strategy 3 -- pool buffer with PLC";
+            qDebug() << "experimental buffer strategy 3 -- regulator with PLC";
             mSendRingBuffer =
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
             mReceiveRingBuffer =
@@ -385,7 +385,7 @@ void JackTrip::setupRingBuffers()
                               mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
-            mPacketHeader->setBufferRequiresSameSettings(true);
+            mPacketHeader->setBufferRequiresSameSettings(false); // = default
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {

@@ -211,6 +211,8 @@ Regulator::~Regulator()
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
+    mFPPratioNumerator = 1; // pushes per pull
+    seq_num /= mFPPratioNumerator;
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
