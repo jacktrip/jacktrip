@@ -190,7 +190,6 @@ class Regulator : public RingBuffer
     int mModSeqNum;
     int mLostWindow;
     int mSkip;
-    std::vector<bool> mIncomingLost;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);
