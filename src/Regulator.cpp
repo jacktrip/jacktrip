@@ -147,6 +147,9 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     for (int i = 0; i < ModSeqNumInit; i++)
         mIncomingTiming[i] = 0.0;
     mModSeqNum = mNumSlots * 2;
+    mFPPratioNumerator = 1;
+    mFPPratioDenominator = 1;
+
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
