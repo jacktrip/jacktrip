@@ -999,21 +999,29 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
         <string>Audio Backend</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_11">
-        <item row="0" column="0">
-         <widget class="QLabel" name="backendLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Audio &amp;Backend:</string>
-          </property>
-          <property name="buddy">
-           <cstring>backendComboBox</cstring>
-          </property>
-         </widget>
+        <item row="9" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="deviceManagementLayout">
+          <item>
+           <spacer name="backendTabSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="refreshDevicesButton">
+            <property name="text">
+             <string>&amp;Refresh Device List</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item row="0" column="1">
          <widget class="QComboBox" name="backendComboBox">
@@ -1032,8 +1040,28 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </item>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="sampleRateLabel">
+        <item row="3" column="1">
+         <widget class="QComboBox" name="inputDeviceComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <spacer name="backendSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>444</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="inputDeviceLabel">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1044,10 +1072,93 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
            </sizepolicy>
           </property>
           <property name="text">
-           <string>&amp;Sampling Rate:</string>
+           <string>&amp;Input Device:</string>
           </property>
           <property name="buddy">
-           <cstring>sampleRateComboBox</cstring>
+           <cstring>inputDeviceComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="bufferSizeComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the driver's buffer size to use with the RtAudio backend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="currentIndex">
+           <number>3</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>16</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>32</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>64</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>128</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>256</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>512</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1024</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="backendLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Audio &amp;Backend:</string>
+          </property>
+          <property name="buddy">
+           <cstring>backendComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="bufferSizeLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Buffer Size:</string>
+          </property>
+          <property name="buddy">
+           <cstring>bufferSizeComboBox</cstring>
           </property>
          </widget>
         </item>
@@ -1102,8 +1213,8 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </item>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="bufferSizeLabel">
+        <item row="1" column="0">
+         <widget class="QLabel" name="sampleRateLabel">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1114,84 +1225,10 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
            </sizepolicy>
           </property>
           <property name="text">
-           <string>&amp;Buffer Size:</string>
+           <string>&amp;Sampling Rate:</string>
           </property>
           <property name="buddy">
-           <cstring>bufferSizeComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QComboBox" name="bufferSizeComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the driver's buffer size to use with the RtAudio backend.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="currentIndex">
-           <number>3</number>
-          </property>
-          <item>
-           <property name="text">
-            <string>16</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>32</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>64</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>128</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>256</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>512</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>1024</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="inputDeviceLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Input Device:</string>
-          </property>
-          <property name="buddy">
-           <cstring>inputDeviceComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QComboBox" name="inputDeviceComboBox">
-          <property name="enabled">
-           <bool>false</bool>
+           <cstring>sampleRateComboBox</cstring>
           </property>
          </widget>
         </item>
@@ -1221,42 +1258,15 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
-         <spacer name="backendSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+        <item row="5" column="0" colspan="2">
+         <widget class="QLabel" name="backendWarningLabel">
+          <property name="text">
+           <string>These settings are ignored in hub server mode which requires JACK to operate.</string>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>444</height>
-           </size>
+          <property name="wordWrap">
+           <bool>true</bool>
           </property>
-         </spacer>
-        </item>
-        <item row="8" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="deviceManagementLayout">
-          <item>
-           <spacer name="backendTabSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="refreshDevicesButton">
-            <property name="text">
-             <string>&amp;Refresh Device List</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         </widget>
         </item>
        </layout>
       </widget>
