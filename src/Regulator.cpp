@@ -350,7 +350,12 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
 
     // diagnostic output
     /////////////////////
-    if (false)
+#ifndef TEST1
+   bool diagnostic = false;
+#else
+   bool diagnostic = true;
+#endif
+    if (diagnostic)
         for (int s = 0; s < mFPP; s++) {
             sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
             mPhasor[ch] += (!ch) ? 0.1 : 0.11;
