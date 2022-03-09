@@ -134,6 +134,7 @@ class Regulator : public RingBuffer
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
+    void shimFPP(const int8_t* buf, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
@@ -144,7 +145,7 @@ class Regulator : public RingBuffer
                                        [[maybe_unused]] int unused,
                                        [[maybe_unused]] int seq_num)
     {
-        pushPacket(ptrToSlot, seq_num);
+        shimFPP(ptrToSlot, seq_num);
         return (true);
     }
 
@@ -168,7 +169,9 @@ class Regulator : public RingBuffer
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
     int mBytes;
+    int mBytesPeerPacket;
     int8_t* mXfrBuffer;
+    int8_t* mAssembledPacket;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
@@ -192,6 +195,7 @@ class Regulator : public RingBuffer
     int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
+    int mPartialPacketCnt;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);
