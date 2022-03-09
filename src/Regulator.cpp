@@ -110,11 +110,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
-#define FPPNUM 4
-    //    mBytesPeerPacket     = mBytes / FPPNUM;
-    mAssembledPacket = new int8_t[mBytes];
-#define FPPDEN 4
-    mBytesPeerPacket     = mBytes * FPPDEN;
     mXfrBuffer = new int8_t[mBytes];
     mPacketCnt = 0;  // burg initialization
     mFadeUp.resize(mFPP, 0.0);
@@ -141,6 +136,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     }
     mZeros = new int8_t[mBytes];
     memcpy(mZeros, mXfrBuffer, mBytes);
+    mAssembledPacket = new int8_t[mBytes]; // for asym
+    memcpy(mAssembledPacket, mXfrBuffer, mBytes);
     pushStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 1);
     pullStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;  // for stats
@@ -155,6 +152,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mFPPratioNumerator = 1;
     mFPPratioDenominator = 1;
     mPartialPacketCnt = 0;
+    mFPPratioIsSet = false;
+    mBytesPeerPacket = mBytes;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -214,35 +213,42 @@ Regulator::~Regulator()
         delete mChanData[i];
 }
 
-//*******************************************************************************
-void Regulator::shimFPP(const int8_t* buf, int seq_num)
-{
-    if (false) { // tested in / out = 2/1, 4/1
-        int modSeqNumPeer = mModSeqNum * FPPNUM;
-        if (seq_num != -1) {
-            seq_num %= modSeqNumPeer;
-            //        qDebug() << seq_num << seq_num / FPPNUM << mPartialPacketCnt;
-            seq_num /= FPPNUM;
-            int tmp = (mPartialPacketCnt % FPPNUM) * mBytesPeerPacket;
-            memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-            if ((mPartialPacketCnt % FPPNUM)==(FPPNUM-1)) pushPacket(mAssembledPacket, seq_num);
-            mPartialPacketCnt++;
-        }
-    } else { // 1/2
-        int modSeqNumPeer = mModSeqNum / FPPDEN;
-        if (seq_num != -1) {
-            seq_num %= modSeqNumPeer;
-            //        qDebug() << seq_num << seq_num / FPPDEN << mPartialPacketCnt;
-            seq_num *= FPPDEN;
+void Regulator::setFPPratio(int len) {
+    int peerFPP = len/(mNumChannels * mBitResolutionMode);
+    if (peerFPP != mFPP) {
+        if (peerFPP > mFPP) mFPPratioDenominator = peerFPP / mFPP;
+        else mFPPratioNumerator = mFPP / peerFPP;
+        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / " << mFPPratioDenominator;
+    }
+    if (mFPPratioNumerator > 1) mBytesPeerPacket = mBytes / mFPPratioNumerator;
+    mFPPratioIsSet = true;
+}
 
-            for (int i = 0; i < FPPDEN; i++) {
+//*******************************************************************************
+void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
+{
+    if (seq_num != -1) {
+        if (!mFPPratioIsSet) setFPPratio(len);
+        if (mFPPratioNumerator > 1) { // 2/1, 4/1 peer FPP is lower
+            int modSeqNumPeer = mModSeqNum * mFPPratioNumerator;
+            seq_num %= modSeqNumPeer;
+            //        qDebug() << seq_num << seq_num / mFPPratioNumerator << mPartialPacketCnt;
+            seq_num /= mFPPratioNumerator;
+            int tmp = (mPartialPacketCnt % mFPPratioNumerator) * mBytesPeerPacket;
+            memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
+            if ((mPartialPacketCnt % mFPPratioNumerator)==(mFPPratioNumerator-1)) pushPacket(mAssembledPacket, seq_num);
+            mPartialPacketCnt++;
+        } else if (mFPPratioDenominator > 1) { // 1/2, 1/4 peer FPP is higher
+            int modSeqNumPeer = mModSeqNum / mFPPratioDenominator;
+            seq_num %= modSeqNumPeer;
+            seq_num *= mFPPratioDenominator;
+            for (int i = 0; i < mFPPratioDenominator; i++) {
                 int tmp = i * mBytes;
                 memcpy(mAssembledPacket, &buf[tmp], mBytes);
                 pushPacket(mAssembledPacket, seq_num);
                 seq_num++;
             }
-            mPartialPacketCnt++;
-        }
+        } else pushPacket(buf, seq_num);
     }
 };
 

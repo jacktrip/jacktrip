@@ -134,7 +134,7 @@ class Regulator : public RingBuffer
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
-    void shimFPP(const int8_t* buf, int seq_num);
+    void shimFPP(const int8_t* buf, int len, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
@@ -142,10 +142,10 @@ class Regulator : public RingBuffer
     // instread of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot,
-                                       [[maybe_unused]] int unused,
+                                       [[maybe_unused]] int len,
                                        [[maybe_unused]] int seq_num)
     {
-        shimFPP(ptrToSlot, seq_num);
+        shimFPP(ptrToSlot, len, seq_num);
         return (true);
     }
 
@@ -157,6 +157,8 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
+    void setFPPratio(int len);
+    bool mFPPratioIsSet;
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
