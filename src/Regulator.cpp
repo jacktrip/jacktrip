@@ -136,7 +136,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     }
     mZeros = new int8_t[mBytes];
     memcpy(mZeros, mXfrBuffer, mBytes);
-    mAssembledPacket = new int8_t[mBytes]; // for asym
+    mAssembledPacket = new int8_t[mBytes];  // for asym
     memcpy(mAssembledPacket, mXfrBuffer, mBytes);
     pushStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 1);
     pullStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
@@ -148,12 +148,12 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mIncomingTiming.resize(ModSeqNumInit);
     for (int i = 0; i < ModSeqNumInit; i++)
         mIncomingTiming[i] = 0.0;
-    mModSeqNum = mNumSlots * 2;
-    mFPPratioNumerator = 1;
+    mModSeqNum           = mNumSlots * 2;
+    mFPPratioNumerator   = 1;
     mFPPratioDenominator = 1;
-    mPartialPacketCnt = 0;
-    mFPPratioIsSet = false;
-    mBytesPeerPacket = mBytes;
+    mPartialPacketCnt    = 0;
+    mFPPratioIsSet       = false;
+    mBytesPeerPacket     = mBytes;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -213,14 +213,19 @@ Regulator::~Regulator()
         delete mChanData[i];
 }
 
-void Regulator::setFPPratio(int len) {
-    int peerFPP = len/(mNumChannels * mBitResolutionMode);
+void Regulator::setFPPratio(int len)
+{
+    int peerFPP = len / (mNumChannels * mBitResolutionMode);
     if (peerFPP != mFPP) {
-        if (peerFPP > mFPP) mFPPratioDenominator = peerFPP / mFPP;
-        else mFPPratioNumerator = mFPP / peerFPP;
-        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / " << mFPPratioDenominator;
+        if (peerFPP > mFPP)
+            mFPPratioDenominator = peerFPP / mFPP;
+        else
+            mFPPratioNumerator = mFPP / peerFPP;
+        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
+                 << mFPPratioDenominator;
     }
-    if (mFPPratioNumerator > 1) mBytesPeerPacket = mBytes / mFPPratioNumerator;
+    if (mFPPratioNumerator > 1)
+        mBytesPeerPacket = mBytes / mFPPratioNumerator;
     mFPPratioIsSet = true;
 }
 
@@ -228,17 +233,20 @@ void Regulator::setFPPratio(int len) {
 void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
-        if (!mFPPratioIsSet) setFPPratio(len);
-        if (mFPPratioNumerator > 1) { // 2/1, 4/1 peer FPP is lower
+        if (!mFPPratioIsSet)
+            setFPPratio(len);
+        if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower
             int modSeqNumPeer = mModSeqNum * mFPPratioNumerator;
             seq_num %= modSeqNumPeer;
-            //        qDebug() << seq_num << seq_num / mFPPratioNumerator << mPartialPacketCnt;
+            //        qDebug() << seq_num << seq_num / mFPPratioNumerator <<
+            //        mPartialPacketCnt;
             seq_num /= mFPPratioNumerator;
             int tmp = (mPartialPacketCnt % mFPPratioNumerator) * mBytesPeerPacket;
             memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-            if ((mPartialPacketCnt % mFPPratioNumerator)==(mFPPratioNumerator-1)) pushPacket(mAssembledPacket, seq_num);
+            if ((mPartialPacketCnt % mFPPratioNumerator) == (mFPPratioNumerator - 1))
+                pushPacket(mAssembledPacket, seq_num);
             mPartialPacketCnt++;
-        } else if (mFPPratioDenominator > 1) { // 1/2, 1/4 peer FPP is higher
+        } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
             int modSeqNumPeer = mModSeqNum / mFPPratioDenominator;
             seq_num %= modSeqNumPeer;
             seq_num *= mFPPratioDenominator;
@@ -248,7 +256,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 pushPacket(mAssembledPacket, seq_num);
                 seq_num++;
             }
-        } else pushPacket(buf, seq_num);
+        } else
+            pushPacket(buf, seq_num);
     }
 };
 
@@ -260,7 +269,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
     mIncomingTiming[seq_num] =
-            mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
@@ -297,18 +306,18 @@ void Regulator::pullPacket(int8_t* buf)
     }
 
 PACKETOK : {
-        if (mSkip)
-            processPacket(true);
-        else
-            processPacket(false);
-        goto OUTPUT;
-    }
+    if (mSkip)
+        processPacket(true);
+    else
+        processPacket(false);
+    goto OUTPUT;
+}
 
 UNDERRUN : {
-        processPacket(true);
-        pullStat->plcUnderruns++;  // count late
-        goto OUTPUT;
-    }
+    processPacket(true);
+    pullStat->plcUnderruns++;  // count late
+    goto OUTPUT;
+}
 
 ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
@@ -357,11 +366,11 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
         if (lastWasGlitch)
             for (int s = 0; s < mFPP; s++)
                 cd->mXfadedPred[s] =
-                        cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
+                    cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
         for (int s = 0; s < mFPP; s++)
             sampleToBits((glitch)
-                         ? cd->mPrediction[s]
-                           : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
+                             ? cd->mPrediction[s]
+                             : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                          ch, s);
         if (glitch) {
             for (int s = 0; s < mFPP; s++)
@@ -380,10 +389,10 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
 
     for (int s = 0; s < mFPP; s++)
         cd->mLastPackets[0][s] =
-                //                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] :
-                //                cd->mPrediction[s];
-                ((glitch) ? ((packetCnt >= mHist) ? cd->mPrediction[s] : cd->mTruth[s])
-                          : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]));
+            //                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] :
+            //                cd->mPrediction[s];
+            ((glitch) ? ((packetCnt >= mHist) ? cd->mPrediction[s] : cd->mTruth[s])
+                      : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]));
 
     // diagnostic output
     /////////////////////
@@ -402,19 +411,19 @@ sample_t Regulator::bitsToSample(int ch, int frame)
 {
     sample_t sample = 0.0;
     AudioInterface::fromBitToSampleConversion(
-                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            &sample, mBitResolutionMode);
+        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+                    + (ch * mBitResolutionMode)],
+        &sample, mBitResolutionMode);
     return sample;
 }
 
 void Regulator::sampleToBits(sample_t sample, int ch, int frame)
 {
     AudioInterface::fromSampleToBitConversion(
-                &sample,
-                &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
-            + (ch * mBitResolutionMode)],
-            mBitResolutionMode);
+        &sample,
+        &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
+                    + (ch * mBitResolutionMode)],
+        mBitResolutionMode);
 }
 
 //*******************************************************************************

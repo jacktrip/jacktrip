@@ -385,7 +385,7 @@ void JackTrip::setupRingBuffers()
                               mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
-            mPacketHeader->setBufferRequiresSameSettings(false); // = asym is default
+            mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {
