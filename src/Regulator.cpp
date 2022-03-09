@@ -110,7 +110,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
-#define FPPDEN 2
+#define FPPDEN 4
     mBytesPeerPacket     = mBytes / FPPDEN;
     mAssembledPacket = new int8_t[mBytes];
     mXfrBuffer = new int8_t[mBytes];
@@ -217,20 +217,19 @@ void Regulator::shimFPP(const int8_t* buf, int seq_num)
     int modSeqNumPeer = mModSeqNum * FPPDEN;
     if (seq_num != -1) {
         seq_num %= modSeqNumPeer;
-        qDebug() << seq_num << seq_num / FPPDEN << mPartialPacketCnt;
+//        qDebug() << seq_num << seq_num / FPPDEN << mPartialPacketCnt;
         seq_num /= FPPDEN;
         int tmp = (mPartialPacketCnt % FPPDEN) * mBytesPeerPacket;
         memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-        if (mPartialPacketCnt % FPPDEN) pushPacket(mAssembledPacket, seq_num);
+        if ((mPartialPacketCnt % FPPDEN)==(FPPDEN-1)) pushPacket(mAssembledPacket, seq_num);
         mPartialPacketCnt++;
     }
 };
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
-    qDebug() << "\t" << seq_num;
     QMutexLocker locker(&mMutex);
-    qDebug() << "\t" << seq_num;
+//    qDebug() << "\t" << seq_num;
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
     mIncomingTiming[seq_num] =
