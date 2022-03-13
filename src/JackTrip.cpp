@@ -651,7 +651,7 @@ void JackTrip::onStatTimer()
             << now.toLocal8Bit().constData() << " "
             << getPeerAddress().toLocal8Bit().constData()
             << " send: " << send_io_stat.underruns << "/" << send_io_stat.overflows
-            << " Pull underruns: "
+            << " rcv concealed: "
             << recv_io_stat.underruns  // pullStat->lastPlcUnderruns;
 #define INVFLOATFACTOR 0.001
             << "\nPUSH -- SD avg/last: " << setw(5)

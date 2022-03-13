@@ -306,16 +306,16 @@ void Regulator::pullPacket(int8_t* buf)
     }
 
 PACKETOK : {
-    if (mSkip)
+    if (mSkip) {
         processPacket(true);
-    else
-        processPacket(false);
+        pullStat->plcConcealments += mSkip;  // count skipped
+    } else processPacket(false);
     goto OUTPUT;
 }
 
 UNDERRUN : {
     processPacket(true);
-    pullStat->plcUnderruns++;  // count late
+    pullStat->plcConcealments++;  // count late
     goto OUTPUT;
 }
 
@@ -574,7 +574,7 @@ StdDev::StdDev(int w, int id) : window(w), mId(id)
     lastMean          = 0.0;
     lastMin           = 0;
     lastMax           = 0;
-    lastPlcUnderruns  = 0;
+    lastPlcConcealments  = 0;
     mTimer.start();
     data.resize(w, 0.0);
 }
@@ -587,7 +587,7 @@ void StdDev::reset()
     min          = 999999.0;
     max          = 0.0;
     ctr          = 0;
-    plcUnderruns = 0;
+    plcConcealments = 0;
 };
 
 double StdDev::tick()
@@ -628,7 +628,7 @@ double StdDev::tick()
         lastMin          = min;
         lastMax          = max;
         lastStdDev       = stdDev;
-        lastPlcUnderruns = plcUnderruns;
+        lastPlcConcealments = plcConcealments;
         reset();
     }
     return msElapsed;
@@ -649,7 +649,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBroadcastSkew    = 0;
     }
     // hijack  of  struct IOStat {
-    stat->underruns = pullStat->lastPlcUnderruns;
+    stat->underruns = pullStat->lastPlcConcealments; // underruns = under + over
 #define FLOATFACTOR 1000.0
     stat->overflows         = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew              = FLOATFACTOR * pushStat->lastMean;
@@ -705,7 +705,7 @@ handle extra crlf
         logger2 << setw(2)
                 << "" PDBL2(longTermStdDev) PDBL2(lastMean) PDBL2(lastMin) PDBL2(lastMax)
                    PDBL2(lastStdDev)
-                << setw(8) << pullStat->lastPlcUnderruns << setw(8)
+                << setw(8) << pullStat->lastPlcConcealments << setw(8)
                 << pullStat->lastPlcOverruns << setw(8) << pullStat->lastPlcSkipped
                 << setw(8) << lost << endl;
         tmp += QString::fromStdString(logger2.str());

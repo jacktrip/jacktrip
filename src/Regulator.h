@@ -116,8 +116,8 @@ class StdDev
     double longTermStdDev;
     double longTermStdDevAcc;
     int longTermCnt;
-    int plcUnderruns;
-    int lastPlcUnderruns;
+    int plcConcealments;
+    int lastPlcConcealments;
 };
 
 #ifdef GUIBS3
