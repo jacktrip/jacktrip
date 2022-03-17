@@ -655,7 +655,10 @@ if (tmp>3.0)        cout << "exceeds...................." << tmp
                          << "\t" << recv_io_stat.underruns
                          << "\t" << recv_io_stat.autoq_rate << endl;
         */
-//
+        //
+cout << "...................." << recv_io_stat.autoq_corr << endl;
+        //
+/*
 mIOStatLogStream
             << now.toLocal8Bit().constData() << " "
             << getPeerAddress().toLocal8Bit().constData()
@@ -702,9 +705,12 @@ mIOStatLogStream
             //                     << recv_io_stat.broadcast_delta
             //                     << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
             //                     << 0.1 * recv_io_stat.autoq_rate
+            << " skew: "
+            << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.autoq_corr // pushStat->lastSkew;
             << "\n"
             << endl;
-        //
+        */
     }
 }
 

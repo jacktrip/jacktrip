@@ -119,6 +119,8 @@ class StdDev
     int plcConcealments;
     int lastPlcConcealments;
     int plcTotalConcealments;
+    double skew;
+    double lastSkew;
     double lastTime;
 };
 
@@ -199,6 +201,8 @@ class Regulator : public RingBuffer
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     int mPartialPacketCnt;
+    int mLastSeqNumInRaw;
+    int mLastSeqNumOutRaw;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);

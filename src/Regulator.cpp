@@ -154,6 +154,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mPartialPacketCnt    = 0;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
+mLastSeqNumInRaw= 0;
+mLastSeqNumOutRaw= 0;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -266,7 +268,18 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     //    qDebug() << "\t" << seq_num;
+    mLastSeqNumInRaw++;
     seq_num %= mModSeqNum;
+
+    bool lost = false;
+    int tmp = mLastSeqNumIn + 1;
+    tmp %= mModSeqNum;
+    lost = (seq_num != tmp);
+    if (lost) qDebug() << "lost";
+
+    // qDebug() << "\t" << mLastSeqNumIn - mLastSeqNumOut;
+    pushStat->skew = (double)(mLastSeqNumInRaw - mLastSeqNumOutRaw);
+
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
@@ -284,6 +297,7 @@ void Regulator::pullPacket(int8_t* buf)
     if (mLastSeqNumIn == -1) {
         goto ZERO_OUTPUT;
     } else {
+        mLastSeqNumOutRaw++;
         mLastSeqNumOut++;
         mLastSeqNumOut %= mModSeqNum;
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
@@ -573,11 +587,12 @@ StdDev::StdDev(QElapsedTimer* timer, int w, int id) :
     longTermStdDevAcc = 0.0;
     longTermCnt       = 0;
     lastMean          = 0.0;
-    lastMin           = 0;
-    lastMax           = 0;
+    lastMin           = 0.0;
+    lastMax           = 0.0;
     lastPlcConcealments  = 0;
     plcTotalConcealments  = 0;
     lastTime = 0.0;
+    lastSkew           = 0.0;
     data.resize(w, 0.0);
 }
 
@@ -590,6 +605,7 @@ void StdDev::reset()
     max          = 0.0;
     ctr          = 0;
     plcConcealments = 0;
+    skew          = 0.0;
 };
 
 double StdDev::tick()
@@ -633,6 +649,7 @@ double StdDev::tick()
         lastStdDev       = stdDev;
         lastPlcConcealments = plcConcealments;
         plcTotalConcealments += plcConcealments;
+        lastSkew          = skew;
         reset();
     }
     return msElapsed;
@@ -656,6 +673,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->underruns = pullStat->lastPlcConcealments; // windowed under + over
     stat->autoq_rate = pullStat->plcTotalConcealments; // total under + over
 #define FLOATFACTOR 1000.0
+    stat->autoq_corr = pushStat->lastSkew; // windowed skew
     stat->overflows         = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew              = FLOATFACTOR * pushStat->lastMean;
     stat->skew_raw          = FLOATFACTOR * pushStat->lastMin;
@@ -667,9 +685,6 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
     stat->broadcast_skew     = FLOATFACTOR * pullStat->lastMax;
     stat->broadcast_delta    = FLOATFACTOR * pullStat->lastStdDev;
-    // unused
-    //        int32_t autoq_corr;
-    //        int32_t autoq_rate;
     return true;
 }
 /*
