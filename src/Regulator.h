@@ -95,10 +95,10 @@ class ChanData
 class StdDev
 {
    public:
-    StdDev(int w, int id);
+    StdDev(QElapsedTimer* timer, int w, int id);
     void reset();
     double tick();
-    QElapsedTimer mTimer;
+    QElapsedTimer* mTimer;
     std::vector<double> data;
     double mean;
     double var;
@@ -118,6 +118,8 @@ class StdDev
     int longTermCnt;
     int plcConcealments;
     int lastPlcConcealments;
+    int plcTotalConcealments;
+    double lastTime;
 };
 
 #ifdef GUIBS3

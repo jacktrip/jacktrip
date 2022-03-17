@@ -647,13 +647,23 @@ void JackTrip::onStatTimer()
                          << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
                          << 0.1 * recv_io_stat.autoq_rate << endl;
     else {  // bufstrategy 3
-        mIOStatLogStream
+#define INVFLOATFACTOR 0.001
+
+        /*
+        double tmp = INVFLOATFACTOR * recv_io_stat.level;
+if (tmp>3.0)        cout << "exceeds...................." << tmp
+                         << "\t" << recv_io_stat.underruns
+                         << "\t" << recv_io_stat.autoq_rate << endl;
+        */
+//
+mIOStatLogStream
             << now.toLocal8Bit().constData() << " "
             << getPeerAddress().toLocal8Bit().constData()
             << " send: " << send_io_stat.underruns << "/" << send_io_stat.overflows
-            << " rcv concealed: "
-            << recv_io_stat.underruns  // pullStat->lastPlcUnderruns;
-#define INVFLOATFACTOR 0.001
+            << " reset concealed: "
+            << recv_io_stat.underruns  // pullStat->lastPlcConcealments;
+            << " total concealed: "
+            << recv_io_stat.autoq_rate  // pullStat->plcTotalConcealments;
             << "\nPUSH -- SD avg/last: " << setw(5)
             << INVFLOATFACTOR * recv_io_stat.overflows  // pushStat->longTermStdDev;
             << " / " << setw(5)
@@ -694,6 +704,7 @@ void JackTrip::onStatTimer()
             //                     << 0.1 * recv_io_stat.autoq_rate
             << "\n"
             << endl;
+        //
     }
 }
 

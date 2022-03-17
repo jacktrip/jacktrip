@@ -138,8 +138,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     memcpy(mZeros, mXfrBuffer, mBytes);
     mAssembledPacket = new int8_t[mBytes];  // for asym
     memcpy(mAssembledPacket, mXfrBuffer, mBytes);
-    pushStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 1);
-    pullStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
+    pushStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 1);
+    pullStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;  // for stats
     mIncomingTimer.start();
     mLastSeqNumIn  = -1;
@@ -565,7 +565,8 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(int w, int id) : window(w), mId(id)
+StdDev::StdDev(QElapsedTimer* timer, int w, int id) :
+     mTimer(timer), window(w), mId(id)
 {
     reset();
     longTermStdDev    = 0.0;
@@ -575,7 +576,8 @@ StdDev::StdDev(int w, int id) : window(w), mId(id)
     lastMin           = 0;
     lastMax           = 0;
     lastPlcConcealments  = 0;
-    mTimer.start();
+    plcTotalConcealments  = 0;
+    lastTime = 0.0;
     data.resize(w, 0.0);
 }
 
@@ -592,8 +594,9 @@ void StdDev::reset()
 
 double StdDev::tick()
 {
-    double msElapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
-    mTimer.start();
+    double now = (double)mTimer->nsecsElapsed() / 1000000.0;
+    double msElapsed = now - lastTime;
+    lastTime = now;
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
@@ -629,6 +632,7 @@ double StdDev::tick()
         lastMax          = max;
         lastStdDev       = stdDev;
         lastPlcConcealments = plcConcealments;
+        plcTotalConcealments += plcConcealments;
         reset();
     }
     return msElapsed;
@@ -649,7 +653,8 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBroadcastSkew    = 0;
     }
     // hijack  of  struct IOStat {
-    stat->underruns = pullStat->lastPlcConcealments; // underruns = under + over
+    stat->underruns = pullStat->lastPlcConcealments; // windowed under + over
+    stat->autoq_rate = pullStat->plcTotalConcealments; // total under + over
 #define FLOATFACTOR 1000.0
     stat->overflows         = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew              = FLOATFACTOR * pushStat->lastMean;
