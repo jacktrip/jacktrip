@@ -22,6 +22,3 @@ macos/package/*.txt
 
 # windows deploy files
 win/deploy
-
-# Python virtual environment for MkDocs
-venv/
