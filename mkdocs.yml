@@ -5,7 +5,7 @@ nav:
   - Home: index.md
   - User Guide:
     - Installation: Install.md
-    - Running multiple instances: MultipleInstances.md
+    - Using custom JACK server name: CustomJackServerName.md
   - Developer Guide:
     - QMake Build:
       - Linux: Build/Linux.md
