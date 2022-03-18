@@ -165,4 +165,4 @@ Hint: If you lose track of where you are, this command will show your present wo
 $ pwd
 ```
 
-The new version's directory structure might look like this: ``` jacktrip-1.x.x/jacktrip/builddir``` and the old version ``` jacktrip/builddir```.
+The new version's directory structure might look like this: ``` jacktrip-1.x.x/builddir``` and the old version ``` jacktrip/builddir```.
