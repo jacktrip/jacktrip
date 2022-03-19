@@ -107,7 +107,7 @@ jobs:
             static-qt-version: 5.12.11
             qt-static-cache-key: 'v05'
             jacktrip-path: jacktrip
-            binary-path: binary
+            # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
             installer-path: installer
             build-system: qmake
