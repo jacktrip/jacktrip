@@ -47,6 +47,7 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QFile>
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
@@ -203,6 +204,8 @@ class Regulator : public RingBuffer
     int mPartialPacketCnt;
     int mLastSeqNumInRaw;
     int mLastSeqNumOutRaw;
+    QFile* ofile;
+    QTextStream* fout;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);

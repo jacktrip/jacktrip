@@ -154,8 +154,15 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mPartialPacketCnt    = 0;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
-mLastSeqNumInRaw= 0;
-mLastSeqNumOutRaw= 0;
+    mLastSeqNumInRaw     = 0;
+    mLastSeqNumOutRaw    = 0;
+    ofile                = new QFile("/tmp/skew.dat");
+    if (!ofile->open(QFile::WriteOnly | QFile::Text)) {
+        qDebug() << " Could not open file for writing";
+        return;
+    }
+    fout = new QTextStream(ofile);
+
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -193,8 +200,8 @@ void Regulator::changeGlobal_3(int x)
 
 void Regulator::printParams()
 {
-    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
+//    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
+//             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
 #ifdef GUIBS3
     updateGUI((int)mMsecTolerance, mNumSlots);
 #endif
@@ -209,6 +216,8 @@ void Regulator::updateGUI(double msTol, int nSlots)
 
 Regulator::~Regulator()
 {
+    ofile->flush();
+    ofile->close();
     delete mXfrBuffer;
     delete mZeros;
     for (int i = 0; i < mNumChannels; i++)
@@ -271,14 +280,11 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     mLastSeqNumInRaw++;
     seq_num %= mModSeqNum;
 
-    bool lost = false;
-    int tmp = mLastSeqNumIn + 1;
-    tmp %= mModSeqNum;
-    lost = (seq_num != tmp);
-    if (lost) qDebug() << "lost";
-
-    // qDebug() << "\t" << mLastSeqNumIn - mLastSeqNumOut;
-    pushStat->skew = (double)(mLastSeqNumInRaw - mLastSeqNumOutRaw);
+    //    bool lost = false;
+    //    int tmp = mLastSeqNumIn + 1;
+    //    tmp %= mModSeqNum;
+    //    lost = (seq_num != tmp);
+    //    if (lost) qDebug() << "lost";
 
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
     mIncomingTiming[seq_num] =
@@ -293,7 +299,8 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 void Regulator::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
-    mSkip = 0;
+    mSkip     = 0;
+    int under = 0;
     if (mLastSeqNumIn == -1) {
         goto ZERO_OUTPUT;
     } else {
@@ -323,13 +330,15 @@ PACKETOK : {
     if (mSkip) {
         processPacket(true);
         pullStat->plcConcealments += mSkip;  // count skipped
-    } else processPacket(false);
+    } else
+        processPacket(false);
     goto OUTPUT;
 }
 
 UNDERRUN : {
     processPacket(true);
     pullStat->plcConcealments++;  // count late
+    under = 1;
     goto OUTPUT;
 }
 
@@ -338,6 +347,10 @@ ZERO_OUTPUT:
 
 OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
+    int tmpSkew = mLastSeqNumInRaw - mLastSeqNumOutRaw;
+    //    if (tmpSkew) qDebug() << tmpSkew << "\t" << mSkip;
+    *fout << tmpSkew << "\t" << mSkip << "\t" << under << "\n";
+    pullStat->skew = (double)tmpSkew;
     pullStat->tick();
 };
 
@@ -579,20 +592,19 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(QElapsedTimer* timer, int w, int id) :
-     mTimer(timer), window(w), mId(id)
+StdDev::StdDev(QElapsedTimer* timer, int w, int id) : mTimer(timer), window(w), mId(id)
 {
     reset();
-    longTermStdDev    = 0.0;
-    longTermStdDevAcc = 0.0;
-    longTermCnt       = 0;
-    lastMean          = 0.0;
-    lastMin           = 0.0;
-    lastMax           = 0.0;
+    longTermStdDev       = 0.0;
+    longTermStdDevAcc    = 0.0;
+    longTermCnt          = 0;
+    lastMean             = 0.0;
+    lastMin              = 0.0;
+    lastMax              = 0.0;
     lastPlcConcealments  = 0;
-    plcTotalConcealments  = 0;
-    lastTime = 0.0;
-    lastSkew           = 0.0;
+    plcTotalConcealments = 0;
+    lastTime             = 0.0;
+    lastSkew             = 0.0;
     data.resize(w, 0.0);
 }
 
@@ -600,19 +612,19 @@ void StdDev::reset()
 {
     mean = 0.0;
     //        varRunning = 0.0;
-    acc          = 0.0;
-    min          = 999999.0;
-    max          = 0.0;
-    ctr          = 0;
+    acc             = 0.0;
+    min             = 999999.0;
+    max             = 0.0;
+    ctr             = 0;
     plcConcealments = 0;
-    skew          = 0.0;
+    skew            = 0.0;
 };
 
 double StdDev::tick()
 {
-    double now = (double)mTimer->nsecsElapsed() / 1000000.0;
+    double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
-    lastTime = now;
+    lastTime         = now;
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
@@ -643,13 +655,13 @@ double StdDev::tick()
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
-        lastMean         = mean;
-        lastMin          = min;
-        lastMax          = max;
-        lastStdDev       = stdDev;
+        lastMean            = mean;
+        lastMin             = min;
+        lastMax             = max;
+        lastStdDev          = stdDev;
         lastPlcConcealments = plcConcealments;
         plcTotalConcealments += plcConcealments;
-        lastSkew          = skew;
+        lastSkew = skew;
         reset();
     }
     return msElapsed;
@@ -670,10 +682,10 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBroadcastSkew    = 0;
     }
     // hijack  of  struct IOStat {
-    stat->underruns = pullStat->lastPlcConcealments; // windowed under + over
-    stat->autoq_rate = pullStat->plcTotalConcealments; // total under + over
+    stat->underruns  = pullStat->lastPlcConcealments;   // windowed under + over
+    stat->autoq_rate = pullStat->plcTotalConcealments;  // total under + over
 #define FLOATFACTOR 1000.0
-    stat->autoq_corr = pushStat->lastSkew; // windowed skew
+    stat->autoq_corr        = pullStat->lastSkew;  // windowed skew
     stat->overflows         = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew              = FLOATFACTOR * pushStat->lastMean;
     stat->skew_raw          = FLOATFACTOR * pushStat->lastMin;
