@@ -22,6 +22,7 @@ equals(QT_EDITION, "OpenSource") {
 
 nogui {
   DEFINES += NO_GUI
+  QT -= gui
 } else {
   QT += gui
   QT += widgets
