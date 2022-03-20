@@ -78,9 +78,10 @@ class AudioTester
 
     int pendingCell{0};  // 0 is not used
     float sampleRate{48000.0f};
+    int64_t startTimeUS;  // time since launch in us
 
    public:
-    AudioTester() {}
+    AudioTester() { startTimeUS = 0; }
     ~AudioTester() = default;
 
     void lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,

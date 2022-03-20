@@ -48,7 +48,9 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
         std::cerr << "*** AudioTester.h: lookForReturnPulse: NOT ENABLED\n";
         return;
     }
-    if (impulsePending) {  // look for return impulse in channel sendChannel:
+    if (!startTimeUS)
+        startTimeUS = timeMicroSec();  // init once
+    if (impulsePending) {              // look for return impulse in channel sendChannel:
         assert(sendChannel < out_buffer.size());
         for (uint n = 0; n < n_frames; n++) {
             float amp = out_buffer[sendChannel][n];
@@ -65,7 +67,8 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                         impulsePending = false;
                     } else {  // somehow we got the previous pulse again - repeated packet
                               // or underrun-caused repetition (old buffer)
-                        std::cerr << " - IGNORING FOUND PULSE WAITING FURTHER\n";
+                        //                        std::cerr << " - IGNORING FOUND PULSE
+                        //                        WAITING FURTHER\n";
                     }
                 } else {  // found our impulse:
                     int64_t elapsedSamples = -1;
@@ -143,11 +146,16 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                                                 - (roundTripMean * roundTripMean))));
                         if (timeSinceLastPrintUS >= printIntervalSec * 1.0e6) {
                             if (printIntervalSec == 0.0) {
-                                printf("%0.1f (", elapsedSamplesMS);
+                                fprintf(stderr, "%0.4f %0.1f\n",
+                                        (curTimeUS - startTimeUS) / 1000000.0,
+                                        elapsedSamplesMS);
+                                //                                printf("%0.1f (",
+                                //                                elapsedSamplesMS);
                             }
-                            printf("%0.1f [%0.1f]", roundTripMean, stdDev);
+                            //                            printf("%0.1f [%0.1f]",
+                            //                            roundTripMean, stdDev);
                             if (printIntervalSec == 0.0) {
-                                printf(") ");
+                                //                                printf(") ");
                             } else {
                                 printf(" ");
                             }
@@ -186,8 +194,9 @@ void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
             const uint64_t timeOut = 500e3;  // time out after waiting 500 ms
             if (timeMicroSec() > (impulseTimeUS + timeOut)) {
                 sendImpulse = true;
-                std::cout << "\n*** Audio Latency Test (-x): TIMED OUT waiting for "
-                             "return impulse *** sending a new one\n";
+                //                std::cout << "\n*** Audio Latency Test (-x): TIMED OUT
+                //                waiting for "
+                //                             "return impulse *** sending a new one\n";
             }
         } else {  // time for the next repeating impulse:
             sendImpulse = true;
