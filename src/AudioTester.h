@@ -42,6 +42,8 @@
 
 #include "jacktrip_types.h"  // sample_t
 //#include <ctime>
+#include <QFile>
+#include <QTextStream>
 #include <QVarLengthArray>
 #include <chrono>
 #include <cmath>
@@ -79,10 +81,25 @@ class AudioTester
     int pendingCell{0};  // 0 is not used
     float sampleRate{48000.0f};
     int64_t startTimeUS;  // time since launch in us
+    QFile* ofile;
+    QTextStream* fout;
 
    public:
-    AudioTester() { startTimeUS = 0; }
-    ~AudioTester() = default;
+    AudioTester()
+    {
+        startTimeUS = 0;
+        ofile       = new QFile("/tmp/rtt.dat");
+        if (!ofile->open(QFile::WriteOnly | QFile::Text)) {
+            std::cerr << "/tmp/rtt.dat Could not open file for writing";
+            return;
+        }
+        fout = new QTextStream(ofile);
+    }
+    ~AudioTester()
+    {
+        ofile->flush();
+        ofile->close();
+    }
 
     void lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                             unsigned int n_frames);

@@ -48,9 +48,10 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
         std::cerr << "*** AudioTester.h: lookForReturnPulse: NOT ENABLED\n";
         return;
     }
-    if (!startTimeUS)
+    if (!startTimeUS) {
         startTimeUS = timeMicroSec();  // init once
-    if (impulsePending) {              // look for return impulse in channel sendChannel:
+    }
+    if (impulsePending) {  // look for return impulse in channel sendChannel:
         assert(sendChannel < out_buffer.size());
         for (uint n = 0; n < n_frames; n++) {
             float amp = out_buffer[sendChannel][n];
@@ -141,14 +142,21 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                         // measured time is "buffer time" not sample time
                         int64_t curTimeUS = timeMicroSec();  // time since launch in us
                         double timeSinceLastPrintUS = double(curTimeUS - lastPrintTimeUS);
-                        double stdDev =
-                            sqrt(std::max(0.0, (roundTripMeanSquare
-                                                - (roundTripMean * roundTripMean))));
+                        //                        double stdDev =
+                        //                            sqrt(std::max(0.0,
+                        //                            (roundTripMeanSquare
+                        //                                                - (roundTripMean
+                        //                                                * roundTripMean))));
                         if (timeSinceLastPrintUS >= printIntervalSec * 1.0e6) {
                             if (printIntervalSec == 0.0) {
-                                fprintf(stderr, "%0.4f %0.1f\n",
-                                        (curTimeUS - startTimeUS) / 1000000.0,
-                                        elapsedSamplesMS);
+                                //                                fprintf(stderr, "%0.4f
+                                //                                %0.1f\n",
+                                //                                        (curTimeUS -
+                                //                                        startTimeUS) /
+                                //                                        1000000.0,
+                                //                                        elapsedSamplesMS);
+                                *fout << ((curTimeUS - startTimeUS) / 1000000.0) << "\t"
+                                      << elapsedSamplesMS << "\n";
                                 //                                printf("%0.1f (",
                                 //                                elapsedSamplesMS);
                             }
