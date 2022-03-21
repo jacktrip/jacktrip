@@ -138,8 +138,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     memcpy(mZeros, mXfrBuffer, mBytes);
     mAssembledPacket = new int8_t[mBytes];  // for asym
     memcpy(mAssembledPacket, mXfrBuffer, mBytes);
-    pushStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 1);
-    pullStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
+    pushStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 1);
+    pullStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;  // for stats
     mIncomingTimer.start();
     mLastSeqNumIn  = -1;
@@ -191,8 +191,8 @@ void Regulator::changeGlobal_3(int x)
 
 void Regulator::printParams()
 {
-    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
+//    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
+//             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
 #ifdef GUIBS3
     updateGUI((int)mMsecTolerance, mNumSlots);
 #endif
@@ -273,7 +273,12 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
-    pushStat->tick();
+    double nowMS = pushStat->tick();
+    if (nowMS > 2000.0) {
+        double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
+        tmp += 2.0;
+        changeGlobal(tmp);
+    }
 };
 
 //*******************************************************************************
@@ -565,17 +570,18 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(int w, int id) : window(w), mId(id)
+StdDev::StdDev(QElapsedTimer* timer, int w, int id) : mTimer(timer), window(w), mId(id)
 {
     reset();
     longTermStdDev    = 0.0;
     longTermStdDevAcc = 0.0;
     longTermCnt       = 0;
     lastMean          = 0.0;
-    lastMin           = 0;
-    lastMax           = 0;
-    lastPlcUnderruns  = 0;
-    mTimer.start();
+    lastMin           = 0.0;
+    lastMax           = 0.0;
+    longTermMax       = 0.0;
+    longTermMaxAcc    = 0.0;
+    lastTime          = 0.0;
     data.resize(w, 0.0);
 }
 
@@ -592,8 +598,9 @@ void StdDev::reset()
 
 double StdDev::tick()
 {
-    double msElapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
-    mTimer.start();
+    double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
+    double msElapsed = now - lastTime;
+    lastTime         = now;
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
@@ -624,14 +631,13 @@ double StdDev::tick()
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
-        lastMean         = mean;
-        lastMin          = min;
-        lastMax          = max;
-        lastStdDev       = stdDev;
-        lastPlcUnderruns = plcUnderruns;
+        lastMean   = mean;
+        lastMin    = min;
+        lastMax    = max;
+        lastStdDev = stdDev;
         reset();
     }
-    return msElapsed;
+    return lastTime;
 }
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
