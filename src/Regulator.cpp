@@ -293,8 +293,8 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
     if (pushStat->tick() > 2000.0) {
-        double tmp = pushStat->longTermStdDev + pushStat->lastMax;
-        tmp += 1.0;
+        double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
+        tmp += 2.0;
         //        qDebug() << tmp;
         changeGlobal(tmp);
     }
@@ -606,6 +606,8 @@ StdDev::StdDev(QElapsedTimer* timer, int w, int id) : mTimer(timer), window(w), 
     lastMean             = 0.0;
     lastMin              = 0.0;
     lastMax              = 0.0;
+    longTermMax          = 0.0;
+    longTermMaxAcc       = 0.0;
     lastPlcConcealments  = 0;
     plcTotalConcealments = 0;
     lastTime             = 0.0;
@@ -650,6 +652,8 @@ double StdDev::tick()
         if (longTermCnt) {
             longTermStdDevAcc += stdDev;
             longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
+            longTermMaxAcc += max;
+            longTermMax = longTermMaxAcc / (double)longTermCnt;
             if (gVerboseFlag)
                 cout << setw(10) << mean << setw(10) << lastMin << setw(10) << max
                      << setw(10) << stdDev << setw(10) << longTermStdDev << " " << mId

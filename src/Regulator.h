@@ -116,6 +116,8 @@ class StdDev
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
+    double longTermMax;
+    double longTermMaxAcc;
     int longTermCnt;
     int plcConcealments;
     int lastPlcConcealments;
