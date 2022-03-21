@@ -292,11 +292,13 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
-    if (pushStat->tick() > 2000.0) {
+    double nowMS = pushStat->tick();
+    if (nowMS > 2000.0) {
         double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
         tmp += 2.0;
         //        qDebug() << tmp;
         changeGlobal(tmp);
+        *fout << nowMS << "\t" << tmp << "\n";
     }
 };
 
@@ -354,7 +356,7 @@ OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
     int tmpSkew = mLastSeqNumInRaw - mLastSeqNumOutRaw;
     //    if (tmpSkew) qDebug() << tmpSkew << "\t" << mSkip;
-    *fout << tmpSkew << "\t" << mSkip << "\t" << under << "\n";
+    //    *fout << tmpSkew << "\t" << mSkip << "\t" << under << "\n";
     pullStat->skew = (double)tmpSkew;
     pullStat->tick();
 };
