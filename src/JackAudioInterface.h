@@ -173,12 +173,12 @@ class JackAudioInterface : public AudioInterface
     // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
     static int wrapperProcessCallback(jack_nframes_t nframes, void* arg);
 
-    int mNumInChans;      ///< Number of Input Channels
-    int mNumOutChans;     ///<  Number of Output Channels
-#ifdef WAIR               // WAIR
+    int mNumInChans;   ///< Number of Input Channels
+    int mNumOutChans;  ///<  Number of Output Channels
+#ifdef WAIR            // WAIR
     int mNumNetRevChans;  ///<  Number of Network Audio Channels (network comb filters
-#endif                    // endwhere
-    int mNumFrames;       ///< Buffer block size, in samples
+#endif  // endwhere
+    int mNumFrames;  ///< Buffer block size, in samples
 
     jack_client_t* mClient;  ///< Jack Client
     QString mClientName;     ///< Jack Client Name

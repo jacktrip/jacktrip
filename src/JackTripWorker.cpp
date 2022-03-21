@@ -143,7 +143,7 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
             break;
         }
     }
-#else   // endwhere
+#else  // endwhere
     mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1,
                                  mBufferQueueLength));
 #endif  // not wair

@@ -97,8 +97,8 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
     thread_precedence_policy_data_t precedence;
     precedence.importance = 52;
     result                = thread_policy_set(mach_thread_id, THREAD_PRECEDENCE_POLICY,
-                                              reinterpret_cast<thread_policy_t>(&precedence),
-                                              THREAD_PRECEDENCE_POLICY_COUNT);
+                               reinterpret_cast<thread_policy_t>(&precedence),
+                               THREAD_PRECEDENCE_POLICY_COUNT);
     if (result != KERN_SUCCESS) {
         std::cerr << "Failed to set thread priority. " << result << std::endl;
         return;
@@ -165,9 +165,9 @@ void setRealtimeProcessPriority()
 {
     int priority = sched_get_priority_max(SCHED_FIFO);  // 99 is the highest possible
 #ifdef __UBUNTU__
-    priority     = 95;  // anything higher is silently ignored by Ubuntu 18.04
+    priority = 95;  // anything higher is silently ignored by Ubuntu 18.04
 #endif
-    priority     = 3;
+    priority = 3;
 
     struct sched_param sp = {.sched_priority = priority};
 

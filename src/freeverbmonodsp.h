@@ -2172,7 +2172,7 @@ class freeverbmonodsp : public dsp
             fRec24[0]             = fVec23[((IOTA - iConst19) & 1023)];
             float fRec25          = (0.0f - (0.5f * fTemp9));
             output0[i]            = FAUSTFLOAT(
-                           (fRec0[1] + ((fRec24[1] + (fRec25 + fRec1)) + (fSlow19 * fTemp0))));
+                (fRec0[1] + ((fRec24[1] + (fRec25 + fRec1)) + (fSlow19 * fTemp0))));
             fRec9[1]  = fRec9[0];
             IOTA      = (IOTA + 1);
             fRec8[1]  = fRec8[0];

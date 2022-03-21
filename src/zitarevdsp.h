@@ -2511,7 +2511,7 @@ class zitarevdsp : public dsp
             float fTemp24 = (fSlow5 * fRec2[0]);
             float fTemp25 = (1.0f - fRec1[0]);
             output0[i]    = FAUSTFLOAT(
-                   (fRec0[0]
+                (fRec0[0]
                  * ((0.5f
                      * (fRec1[0]
                         * ((fTemp24 + (fRec2[2] + (fTemp22 + fTemp23)))
@@ -2529,7 +2529,7 @@ class zitarevdsp : public dsp
             fRec44[0]     = (fTemp29 - (fTemp30 + (fSlow5 * fRec44[2])));
             float fTemp31 = (fSlow5 * fRec44[0]);
             output1[i]    = FAUSTFLOAT(
-                   (fRec0[0]
+                (fRec0[0]
                  * ((0.5f
                      * (fRec1[0]
                         * ((fTemp31 + (fRec44[2] + (fTemp29 + fTemp30)))
