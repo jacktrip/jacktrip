@@ -281,7 +281,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     double nowMS = pushStat->tick();
     if (mAuto && (nowMS > 2000.0)) {
         double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
-        tmp += 2.0;
+        tmp += 2.0;  // 2 ms -- kind of a guess
         changeGlobal(tmp);
     }
 };
