@@ -85,7 +85,12 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     , mFPP(FPP)
     , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)
+    , mAuto(false)
 {
+    if (mMsecTolerance < 0.0) {  // handle, for example, CLI -q auto15 or -q auto
+        mAuto = true;
+        mMsecTolerance *= -1.0;
+    };
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -274,7 +279,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
     double nowMS = pushStat->tick();
-    if (nowMS > 2000.0) {
+    if (mAuto && (nowMS > 2000.0)) {
         double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
         tmp += 2.0;
         changeGlobal(tmp);
