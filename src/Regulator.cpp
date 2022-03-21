@@ -292,7 +292,12 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
-    pushStat->tick();
+    if (pushStat->tick() > 2000.0) {
+        double tmp = pushStat->longTermStdDev + pushStat->lastMax;
+        tmp += 1.0;
+        //        qDebug() << tmp;
+        changeGlobal(tmp);
+    }
 };
 
 //*******************************************************************************
@@ -664,7 +669,7 @@ double StdDev::tick()
         lastSkew = skew;
         reset();
     }
-    return msElapsed;
+    return lastTime;
 }
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
