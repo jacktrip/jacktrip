@@ -626,6 +626,8 @@ double StdDev::tick()
         if (longTermCnt) {
             longTermStdDevAcc += stdDev;
             longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
+            longTermMaxAcc += max;
+            longTermMax = longTermMaxAcc / (double)longTermCnt;
             if (gVerboseFlag)
                 cout << setw(10) << mean << setw(10) << lastMin << setw(10) << max
                      << setw(10) << stdDev << setw(10) << longTermStdDev << " " << mId
