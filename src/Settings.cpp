@@ -114,14 +114,14 @@ void Settings::parseInput(int argc, char** argv)
         {"receivechannels", required_argument, NULL,
          OPT_NUMRECEIVE},  // Number of incoming channels
         {"sendchannels", required_argument, NULL,
-         OPT_NUMSEND},  // Number of outgoing channels
-#ifdef WAIR             // WAIR
+         OPT_NUMSEND},                     // Number of outgoing channels
+#ifdef WAIR                                // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
         {"addcombfilterlength", required_argument, NULL,
          'N'},                                                 // added comb filter length
         {"combfilterfeedback", required_argument, NULL, 'H'},  // comb filter feedback
-#endif  // endwhere
-        {"server", no_argument, NULL, 's'},  // Run in P2P server mode
+#endif                                                         // endwhere
+        {"server", no_argument, NULL, 's'},                    // Run in P2P server mode
         {"client", required_argument, NULL,
          'c'},  // Run in P2P client mode, set server IP address
         {"localaddress", required_argument, NULL,
@@ -253,7 +253,7 @@ void Settings::parseInput(int argc, char** argv)
             //-------------------------------------------------------
             mClientRoomSize = atof(optarg);  // cmd line comb feedback adjustment
             break;
-#endif  // endwhere
+#endif             // endwhere
         case 's':  // Run in P2P server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;

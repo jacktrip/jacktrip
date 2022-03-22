@@ -182,7 +182,7 @@ class JackTripWorker : public QObject
 
     int mIOStatTimeout = 0;
     QSharedPointer<std::ostream> mIOStatStream;
-#ifdef WAIR  // wair
+#ifdef WAIR                   // wair
     int mNumNetRevChans = 0;  ///< Number of Net Channels = net combs
     bool mWAIR          = false;
 #endif  // endwhere

@@ -225,7 +225,7 @@ void JackTrip::setupAudio(
                 << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples"
                 << std::endl;
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
-#endif  //__NON_JACK__
+#endif          //__NON_JACK__
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;

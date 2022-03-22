@@ -155,7 +155,7 @@ void JMess::connectTUB(int /*nChans*/)
                      << tmp << "with " << client << ":send_" << l;
 
             left  = QString(serverAudio + HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
-                           + QString::number(tmp));
+                            + QString::number(tmp));
             right = QString(client + ":send_" + QString::number(l));
 
             if (0
