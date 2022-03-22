@@ -51,7 +51,7 @@
 // use jack_iodelay
 // use jmess -s delay.xml and jmess -c delay.xml
 
-// tested outgoing loss impairments with
+// tested outgoing loss impairments with (replace lo with relevant network interface)
 // sudo tc qdisc add dev lo root netem loss 2%
 // sudo tc qdisc del dev lo root netem loss 2%
 // tested jitter impairments with
