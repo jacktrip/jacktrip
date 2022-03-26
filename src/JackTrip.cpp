@@ -629,23 +629,42 @@ void JackTrip::onStatTimer()
     if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) {
         mIOStatLogStream << "\n";
     }
+    static bool first = false;
+    if (false == first) {
+        mIOStatLogStream <<
+                "time peer send_underrun send_overflow recv_underrun recv_overflow "
+                "udp_lost out_of_order revived total sync_level "
+                "buf_inc_underrun buf_inc_compensate buf_dec_overflows buf_dec_pktloss "
+                "skew skew_raw broadcast_skew broadcast_delta autoq_corr autoq_rate"
+                << endl;
+        first = true;
+    }
+
+    // clang-format off
     if (getBufferStrategy() != 3)
         mIOStatLogStream << now.toLocal8Bit().constData() << " "
                          << getPeerAddress().toLocal8Bit().constData()
-                         << " send: " << send_io_stat.underruns << "/"
-                         << send_io_stat.overflows << " recv: " << recv_io_stat.underruns
-                         << "/" << recv_io_stat.overflows << " prot: " << pkt_stat.lost
-                         << "/" << pkt_stat.outOfOrder << "/" << pkt_stat.revived
-                         << " tot: " << pkt_stat.tot << " sync: " << recv_io_stat.level
-                         << "/" << recv_io_stat.buf_inc_underrun << "/"
-                         << recv_io_stat.buf_inc_compensate << "/"
-                         << recv_io_stat.buf_dec_overflows << "/"
-                         << recv_io_stat.buf_dec_pktloss << " skew: " << recv_io_stat.skew
-                         << "/" << recv_io_stat.skew_raw
-                         << " bcast: " << recv_io_stat.broadcast_skew << "/"
-                         << recv_io_stat.broadcast_delta
-                         << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
-                         << 0.1 * recv_io_stat.autoq_rate << endl;
+                         << " " << send_io_stat.underruns
+                         << " " << send_io_stat.overflows
+                         << " " << recv_io_stat.underruns
+                         << " " << recv_io_stat.overflows
+                         << " " << pkt_stat.lost
+                         << " " << pkt_stat.outOfOrder
+                         << " " << pkt_stat.revived
+                         << " " << pkt_stat.tot
+                         << " " << recv_io_stat.level
+                         << " " << recv_io_stat.buf_inc_underrun
+                         << " " << recv_io_stat.buf_inc_compensate
+                         << " " << recv_io_stat.buf_dec_overflows
+                         << " " << recv_io_stat.buf_dec_pktloss
+                         << " " << recv_io_stat.skew
+                         << " " << recv_io_stat.skew_raw
+                         << " " << recv_io_stat.broadcast_skew
+                         << " " << recv_io_stat.broadcast_delta
+                         << " " << 0.1 * recv_io_stat.autoq_corr
+                         << " " << 0.1 * recv_io_stat.autoq_rate
+                         << endl;
+    // clang-format on
     else {  // bufstrategy 3
         mIOStatLogStream
             << now.toLocal8Bit().constData() << " "
