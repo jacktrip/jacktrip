@@ -95,10 +95,10 @@ class ChanData
 class StdDev
 {
    public:
-    StdDev(int w, int id);
+    StdDev(QElapsedTimer* timer, int w, int id);
     void reset();
     double tick();
-    QElapsedTimer mTimer;
+    QElapsedTimer* mTimer;
     std::vector<double> data;
     double mean;
     double var;
@@ -112,12 +112,15 @@ class StdDev
     double lastMean;
     double lastMin;
     double lastMax;
+    int plcUnderruns;
+    int lastPlcUnderruns;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
+    double longTermMax;
+    double longTermMaxAcc;
+    double lastTime;
     int longTermCnt;
-    int plcUnderruns;
-    int lastPlcUnderruns;
 };
 
 #ifdef GUIBS3
@@ -197,6 +200,7 @@ class Regulator : public RingBuffer
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     int mPartialPacketCnt;
+    bool mAuto;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);
