@@ -292,22 +292,22 @@ int UdpDataProtocol::bindSocket()
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
     int n_bytes = ::recv(mSocket, buf, n, 0);
-    if (n_bytes == mControlPacketSize) {
+    // if (n_bytes == mControlPacketSize) {
         // Control signal (currently just check for exit packet);
-        bool exit = true;
-        for (int i = 0; i < mControlPacketSize; i++) {
-            if (buf[i] != char(0xff)) {
-                exit = false;
-                i    = mControlPacketSize;
-            }
-        }
-        if (exit && !mStopSignalSent) {
-            mStopSignalSent = true;
-            emit signalCeaseTransmission(QStringLiteral("Peer Stopped"));
-            std::cout << "Peer Stopped" << std::endl;
-        }
-        return 0;
-    }
+    //     bool exit = true;
+    //     for (int i = 0; i < mControlPacketSize; i++) {
+    //         if (buf[i] != char(0xff)) {
+    //             exit = false;
+    //             i    = mControlPacketSize;
+    //         }
+    //     }
+    //     if (exit && !mStopSignalSent) {
+    //         mStopSignalSent = true;
+    //         emit signalCeaseTransmission(QStringLiteral("Peer Stopped"));
+    //         std::cout << "Peer Stopped" << std::endl;
+    //     }
+    //     return 0;
+    // }
     return n_bytes;
 }
 
