@@ -1,3 +1,12 @@
+- Version: "1.5.3"
+  Date: 2022-03-28
+  Description:
+  - (added) linux instructions for parallel versions
+  - (added) docs on running JackTrip with a named JACK server
+  - (added) nogui linux release build
+  - (update) Auto mode for buffer strategy 3
+  - (update) remove extra macOS binary release artifact
+  - (fixed) Don't link nogui qmake build with gui libraries
 - Version: "1.5.2"
   Date: 2022-03-02
   Description:

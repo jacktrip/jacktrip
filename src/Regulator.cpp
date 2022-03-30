@@ -51,7 +51,7 @@
 // use jack_iodelay
 // use jmess -s delay.xml and jmess -c delay.xml
 
-// tested outgoing loss impairments with
+// tested outgoing loss impairments with (replace lo with relevant network interface)
 // sudo tc qdisc add dev lo root netem loss 2%
 // sudo tc qdisc del dev lo root netem loss 2%
 // tested jitter impairments with
@@ -85,7 +85,12 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     , mFPP(FPP)
     , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)
+    , mAuto(false)
 {
+    if (mMsecTolerance < 0.0) {  // handle, for example, CLI -q auto15 or -q auto
+        mAuto = true;
+        mMsecTolerance *= -1.0;
+    };
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -136,8 +141,10 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     }
     mZeros = new int8_t[mBytes];
     memcpy(mZeros, mXfrBuffer, mBytes);
-    pushStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 1);
-    pullStat       = new StdDev((int)(floor(48000.0 / (double)mFPP)), 2);
+    mAssembledPacket = new int8_t[mBytes];  // for asym
+    memcpy(mAssembledPacket, mXfrBuffer, mBytes);
+    pushStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 1);
+    pullStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;  // for stats
     mIncomingTimer.start();
     mLastSeqNumIn  = -1;
@@ -146,7 +153,12 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mIncomingTiming.resize(ModSeqNumInit);
     for (int i = 0; i < ModSeqNumInit; i++)
         mIncomingTiming[i] = 0.0;
-    mModSeqNum = mNumSlots * 2;
+    mModSeqNum           = mNumSlots * 2;
+    mFPPratioNumerator   = 1;
+    mFPPratioDenominator = 1;
+    mPartialPacketCnt    = 0;
+    mFPPratioIsSet       = false;
+    mBytesPeerPacket     = mBytes;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -184,8 +196,8 @@ void Regulator::changeGlobal_3(int x)
 
 void Regulator::printParams()
 {
-    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
+//    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
+//             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
 #ifdef GUIBS3
     updateGUI((int)mMsecTolerance, mNumSlots);
 #endif
@@ -205,10 +217,60 @@ Regulator::~Regulator()
     for (int i = 0; i < mNumChannels; i++)
         delete mChanData[i];
 }
+
+void Regulator::setFPPratio(int len)
+{
+    int peerFPP = len / (mNumChannels * mBitResolutionMode);
+    if (peerFPP != mFPP) {
+        if (peerFPP > mFPP)
+            mFPPratioDenominator = peerFPP / mFPP;
+        else
+            mFPPratioNumerator = mFPP / peerFPP;
+        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
+                 << mFPPratioDenominator;
+    }
+    if (mFPPratioNumerator > 1)
+        mBytesPeerPacket = mBytes / mFPPratioNumerator;
+    mFPPratioIsSet = true;
+}
+
+//*******************************************************************************
+void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
+{
+    if (seq_num != -1) {
+        if (!mFPPratioIsSet)
+            setFPPratio(len);
+        if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower
+            int modSeqNumPeer = mModSeqNum * mFPPratioNumerator;
+            seq_num %= modSeqNumPeer;
+            //        qDebug() << seq_num << seq_num / mFPPratioNumerator <<
+            //        mPartialPacketCnt;
+            seq_num /= mFPPratioNumerator;
+            int tmp = (mPartialPacketCnt % mFPPratioNumerator) * mBytesPeerPacket;
+            memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
+            if ((mPartialPacketCnt % mFPPratioNumerator) == (mFPPratioNumerator - 1))
+                pushPacket(mAssembledPacket, seq_num);
+            mPartialPacketCnt++;
+        } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
+            int modSeqNumPeer = mModSeqNum / mFPPratioDenominator;
+            seq_num %= modSeqNumPeer;
+            seq_num *= mFPPratioDenominator;
+            for (int i = 0; i < mFPPratioDenominator; i++) {
+                int tmp = i * mBytes;
+                memcpy(mAssembledPacket, &buf[tmp], mBytes);
+                pushPacket(mAssembledPacket, seq_num);
+                seq_num++;
+            }
+        } else
+            pushPacket(buf, seq_num);
+    }
+};
+
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
+    //    qDebug() << "\t" << seq_num;
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
     mIncomingTiming[seq_num] =
@@ -216,7 +278,12 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
-    pushStat->tick();
+    double nowMS = pushStat->tick();
+    if (mAuto && (nowMS > 2000.0)) {
+        double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
+        tmp += 2.0;  // 2 ms -- kind of a guess
+        changeGlobal(tmp);
+    }
 };
 
 //*******************************************************************************
@@ -508,17 +575,18 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(int w, int id) : window(w), mId(id)
+StdDev::StdDev(QElapsedTimer* timer, int w, int id) : mTimer(timer), window(w), mId(id)
 {
     reset();
     longTermStdDev    = 0.0;
     longTermStdDevAcc = 0.0;
     longTermCnt       = 0;
     lastMean          = 0.0;
-    lastMin           = 0;
-    lastMax           = 0;
-    lastPlcUnderruns  = 0;
-    mTimer.start();
+    lastMin           = 0.0;
+    lastMax           = 0.0;
+    longTermMax       = 0.0;
+    longTermMaxAcc    = 0.0;
+    lastTime          = 0.0;
     data.resize(w, 0.0);
 }
 
@@ -535,8 +603,9 @@ void StdDev::reset()
 
 double StdDev::tick()
 {
-    double msElapsed = (double)mTimer.nsecsElapsed() / 1000000.0;
-    mTimer.start();
+    double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
+    double msElapsed = now - lastTime;
+    lastTime         = now;
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
@@ -557,6 +626,8 @@ double StdDev::tick()
         if (longTermCnt) {
             longTermStdDevAcc += stdDev;
             longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
+            longTermMaxAcc += max;
+            longTermMax = longTermMaxAcc / (double)longTermCnt;
             if (gVerboseFlag)
                 cout << setw(10) << mean << setw(10) << lastMin << setw(10) << max
                      << setw(10) << stdDev << setw(10) << longTermStdDev << " " << mId
@@ -567,14 +638,13 @@ double StdDev::tick()
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
-        lastMean         = mean;
-        lastMin          = min;
-        lastMax          = max;
-        lastStdDev       = stdDev;
-        lastPlcUnderruns = plcUnderruns;
+        lastMean   = mean;
+        lastMin    = min;
+        lastMax    = max;
+        lastStdDev = stdDev;
         reset();
     }
-    return msElapsed;
+    return lastTime;
 }
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)

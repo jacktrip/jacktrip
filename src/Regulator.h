@@ -95,10 +95,10 @@ class ChanData
 class StdDev
 {
    public:
-    StdDev(int w, int id);
+    StdDev(QElapsedTimer* timer, int w, int id);
     void reset();
     double tick();
-    QElapsedTimer mTimer;
+    QElapsedTimer* mTimer;
     std::vector<double> data;
     double mean;
     double var;
@@ -112,12 +112,15 @@ class StdDev
     double lastMean;
     double lastMin;
     double lastMax;
+    int plcUnderruns;
+    int lastPlcUnderruns;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
+    double longTermMax;
+    double longTermMaxAcc;
+    double lastTime;
     int longTermCnt;
-    int plcUnderruns;
-    int lastPlcUnderruns;
 };
 
 #ifdef GUIBS3
@@ -134,17 +137,17 @@ class Regulator : public RingBuffer
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
+    void shimFPP(const int8_t* buf, int len, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instread of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot,
-                                       [[maybe_unused]] int unused,
+    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, [[maybe_unused]] int len,
                                        [[maybe_unused]] int seq_num)
     {
-        pushPacket(ptrToSlot, seq_num);
+        shimFPP(ptrToSlot, len, seq_num);
         return (true);
     }
 
@@ -156,6 +159,8 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
+    void setFPPratio(int len);
+    bool mFPPratioIsSet;
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
@@ -168,7 +173,9 @@ class Regulator : public RingBuffer
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     BurgAlgorithm ba;
     int mBytes;
+    int mBytesPeerPacket;
     int8_t* mXfrBuffer;
+    int8_t* mAssembledPacket;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
@@ -190,7 +197,10 @@ class Regulator : public RingBuffer
     int mModSeqNum;
     int mLostWindow;
     int mSkip;
-    std::vector<bool> mIncomingLost;
+    int mFPPratioNumerator;
+    int mFPPratioDenominator;
+    int mPartialPacketCnt;
+    bool mAuto;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);

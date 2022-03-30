@@ -59,12 +59,17 @@ jobs:
             # binary-path: binary
             build-system: qmake
 
-          - name: Linux-x64-qmake-gcc-shared-nogui
+          - name: Linux-x64-qmake-gcc-static-nogui
+            release-name: Linux-x64-nogui
             runs-on: ubuntu-18.04
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: true
             weakjack: false
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v22' # we use the same key as the main Linux build
+            jacktrip-path: jacktrip
+            binary-path: binary
             build-system: qmake
 
           - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
@@ -102,7 +107,7 @@ jobs:
             static-qt-version: 5.12.11
             qt-static-cache-key: 'v05'
             jacktrip-path: jacktrip
-            binary-path: binary
+            # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
             installer-path: installer
             build-system: qmake
