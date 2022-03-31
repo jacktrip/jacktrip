@@ -450,6 +450,7 @@ jobs:
           mkdir signed
           ./CodeSignTool.sh sign -credential_id=$CRED_ID -username=$USERNAME -password=$PASSWORD -totp_secret=$TOTP -output_dir_path=signed -input_file_path=$BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
           cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi
+          rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: upload application bundle
         uses: actions/upload-artifact@v2
         if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
@@ -462,6 +463,25 @@ jobs:
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
+      - name: analyze build
+        if: github.event_name == 'pull_request' && matrix.static-analysis == true
+        shell: bash
+        run: |
+          mkdir $CLANG_TIDY_PATH
+          git diff -U0 origin/${{ github.base_ref }} | clang-tidy-diff -p1 -path $BUILD_PATH -export-fixes $CLANG_TIDY_PATH/fixes.yml
+      - name: save PR metadata for static analysis
+        if: github.event_name == 'pull_request' && matrix.static-analysis == true
+        shell: bash
+        run: |
+          echo ${{ github.event.number }} > $CLANG_TIDY_PATH/pr-id.txt
+          echo ${{ github.event.pull_request.head.repo.full_name }} > $CLANG_TIDY_PATH/pr-head-repo.txt
+          echo ${{ github.event.pull_request.head.ref }} > $CLANG_TIDY_PATH/pr-head-ref.txt
+      - name: upload static analysis
+        if: github.event_name == 'pull_request' && matrix.static-analysis == true
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.CLANG_TIDY_NAME }}
+          path: ${{ env.CLANG_TIDY_PATH }}/
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
