@@ -21,6 +21,7 @@ jobs:
               repo: context.repo.repo,
               run_id: ${{github.event.workflow_run.id }},
           });
+          console.log(artifacts);
           let matchArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "clang-tidy-result"
           })[0];
