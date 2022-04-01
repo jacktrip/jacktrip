@@ -200,6 +200,7 @@ class Regulator : public RingBuffer
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     int mPartialPacketCnt;
+    int mAssembly;
     bool mAuto;
 #ifdef GUIBS3
     HerlperGUI* hg;

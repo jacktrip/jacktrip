@@ -162,6 +162,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mPartialPacketCnt    = 0;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
+    mAssembly = 0;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -251,8 +252,13 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             seq_num /= mFPPratioNumerator;
             int tmp = (mPartialPacketCnt % mFPPratioNumerator) * mBytesPeerPacket;
             memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-            if ((mPartialPacketCnt % mFPPratioNumerator) == (mFPPratioNumerator - 1))
-                pushPacket(mAssembledPacket, seq_num);
+            if ((mPartialPacketCnt % mFPPratioNumerator) == (mFPPratioNumerator - 1)) {
+                if (mAssembly == mFPPratioNumerator) pushPacket(mAssembledPacket, seq_num);
+                else qDebug() << "incomplete due to lost packet";
+                mAssembly = 0;
+            }
+
+            // lost packets will not work, parts are missing or the count doesn't correspond
             mPartialPacketCnt++;
         } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
             int modSeqNumPeer = mModSeqNum / mFPPratioDenominator;
