@@ -199,7 +199,6 @@ class Regulator : public RingBuffer
     int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
-    int mPartialPacketCnt;
     int mAssemblyCnt;
 int mModCycle;
 bool mAuto;
