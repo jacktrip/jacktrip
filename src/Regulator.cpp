@@ -249,17 +249,17 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             seq_num %= modSeqNumPeer;
             //        qDebug() << seq_num << seq_num / mFPPratioNumerator <<
             //        mPartialPacketCnt;
-            seq_num /= mFPPratioNumerator;
-            int tmp = (mPartialPacketCnt % mFPPratioNumerator) * mBytesPeerPacket;
+            int assemblySeq_num = seq_num / mFPPratioNumerator;
+            int tmp = (seq_num % mFPPratioNumerator) * mBytesPeerPacket;
             memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-            if ((mPartialPacketCnt % mFPPratioNumerator) == (mFPPratioNumerator - 1)) {
-                if (mAssembly == (mFPPratioNumerator - 1)) pushPacket(mAssembledPacket, seq_num);
+            if ((seq_num % mFPPratioNumerator) == (mFPPratioNumerator - 1)) {
+                if (mAssembly == (mFPPratioNumerator - 1)) pushPacket(mAssembledPacket, assemblySeq_num);
                 else qDebug() << "incomplete due to lost packet";
                 mAssembly = 0;
             } else mAssembly++;
 
             // lost packets will not work, parts are missing or the count doesn't correspond
-            mPartialPacketCnt++;
+//            mPartialPacketCnt++;
         } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
             int modSeqNumPeer = mModSeqNum / mFPPratioDenominator;
             seq_num %= modSeqNumPeer;
