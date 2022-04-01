@@ -253,10 +253,10 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             int tmp = (mPartialPacketCnt % mFPPratioNumerator) * mBytesPeerPacket;
             memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
             if ((mPartialPacketCnt % mFPPratioNumerator) == (mFPPratioNumerator - 1)) {
-                if (mAssembly == mFPPratioNumerator) pushPacket(mAssembledPacket, seq_num);
+                if (mAssembly == (mFPPratioNumerator - 1)) pushPacket(mAssembledPacket, seq_num);
                 else qDebug() << "incomplete due to lost packet";
                 mAssembly = 0;
-            }
+            } else mAssembly++;
 
             // lost packets will not work, parts are missing or the count doesn't correspond
             mPartialPacketCnt++;
