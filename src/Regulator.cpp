@@ -54,6 +54,9 @@
 // tested outgoing loss impairments with (replace lo with relevant network interface)
 // sudo tc qdisc add dev lo root netem loss 2%
 // sudo tc qdisc del dev lo root netem loss 2%
+// or more revealing
+// sudo tc qdisc add dev lo root netem loss 20%
+// sudo tc qdisc del dev lo root netem loss 20%
 // tested jitter impairments with
 // for wifi
 // sudo tc qdisc add dev lo root netem slot distribution pareto 0.1ms 3.0ms
