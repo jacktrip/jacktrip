@@ -159,7 +159,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mModSeqNum           = mNumSlots * 2;
     mFPPratioNumerator   = 1;
     mFPPratioDenominator = 1;
-    mPartialPacketCnt    = 0;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
     mAssemblyCnt = 0;
