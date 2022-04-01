@@ -162,7 +162,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mPartialPacketCnt    = 0;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
-    mAssembly = 0;
+    mAssemblyCnt = 0;
+    mModCycle = 1;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -233,8 +234,10 @@ void Regulator::setFPPratio(int len)
         qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
                  << mFPPratioDenominator;
     }
-    if (mFPPratioNumerator > 1)
+    if (mFPPratioNumerator > 1) {
         mBytesPeerPacket = mBytes / mFPPratioNumerator;
+    mModCycle = mFPPratioNumerator - 1;
+}
     mFPPratioIsSet = true;
 }
 
@@ -247,19 +250,15 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
         if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower
             int modSeqNumPeer = mModSeqNum * mFPPratioNumerator;
             seq_num %= modSeqNumPeer;
-            //        qDebug() << seq_num << seq_num / mFPPratioNumerator <<
-            //        mPartialPacketCnt;
+            //        qDebug() << seq_num << seq_num / mFPPratioNumerator;
             int assemblySeq_num = seq_num / mFPPratioNumerator;
             int tmp = (seq_num % mFPPratioNumerator) * mBytesPeerPacket;
             memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-            if ((seq_num % mFPPratioNumerator) == (mFPPratioNumerator - 1)) {
-                if (mAssembly == (mFPPratioNumerator - 1)) pushPacket(mAssembledPacket, assemblySeq_num);
-                else qDebug() << "incomplete due to lost packet";
-                mAssembly = 0;
-            } else mAssembly++;
-
-            // lost packets will not work, parts are missing or the count doesn't correspond
-//            mPartialPacketCnt++;
+            if ((seq_num % mFPPratioNumerator) == mModCycle) {
+                if (mAssemblyCnt == mModCycle) pushPacket(mAssembledPacket, assemblySeq_num);
+//                else qDebug() << "incomplete due to lost packet";
+                mAssemblyCnt = 0;
+            } else mAssemblyCnt++;
         } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
             int modSeqNumPeer = mModSeqNum / mFPPratioDenominator;
             seq_num %= modSeqNumPeer;
