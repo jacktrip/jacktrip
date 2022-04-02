@@ -246,12 +246,6 @@ void Regulator::setFPPratio(int len)
 }
 
 //*******************************************************************************
-double Regulator::calcAuto()
-{
-    return pushStat->longTermStdDev + pushStat->longTermMax + mAutoHeadroom;
-};
-
-//*******************************************************************************
 void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
@@ -282,10 +276,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 }
             }
         }
-        double nowMS = pushStat->tick();
-        if (mAuto && (nowMS > 2000.0)) {
-            changeGlobal(calcAuto());
-        }
+        double adjustAuto = pushStat->tick(mAutoHeadroom);
+        mMsecTolerance    = (adjustAuto > 0.0) ? adjustAuto : mMsecTolerance;
     }
 };
 
@@ -351,7 +343,7 @@ ZERO_OUTPUT:
 
 OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
-    pullStat->tick();
+    pullStat->tick(-1.0);
 };
 
 //*******************************************************************************
@@ -618,8 +610,14 @@ void StdDev::reset()
     plcUnderruns = 0;
 };
 
-double StdDev::tick()
+double StdDev::calcAuto(double autoHeadroom)
 {
+    return longTermStdDev + longTermMax + autoHeadroom;
+};
+
+double StdDev::tick(double autoHeadroom)
+{
+    double returnVal = -1.0;
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
     lastTime         = now;
@@ -660,8 +658,10 @@ double StdDev::tick()
         lastMax    = max;
         lastStdDev = stdDev;
         reset();
+        if (lastTime > 2000.0)
+            returnVal = calcAuto(autoHeadroom);
     }
-    return lastTime;
+    return returnVal;
 }
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)

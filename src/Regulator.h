@@ -96,8 +96,20 @@ class StdDev
 {
    public:
     StdDev(QElapsedTimer* timer, int w, int id);
+    double tick(double autoHeadroom);
+    int plcUnderruns;
+    double lastMean;
+    double lastMin;
+    double lastMax;
+    int lastPlcUnderruns;
+    double lastStdDev;
+    double longTermStdDev;
+    double longTermStdDevAcc;
+    double longTermMax;
+    double longTermMaxAcc;
+
+   private:
     void reset();
-    double tick();
     QElapsedTimer* mTimer;
     std::vector<double> data;
     double mean;
@@ -109,18 +121,9 @@ class StdDev
     double min;
     double max;
     int ctr;
-    double lastMean;
-    double lastMin;
-    double lastMax;
-    int plcUnderruns;
-    int lastPlcUnderruns;
-    double lastStdDev;
-    double longTermStdDev;
-    double longTermStdDevAcc;
-    double longTermMax;
-    double longTermMaxAcc;
     double lastTime;
     int longTermCnt;
+    double calcAuto(double autoHeadroom);
 };
 
 #ifdef GUIBS3
@@ -203,7 +206,6 @@ class Regulator : public RingBuffer
     int mModCycle;
     bool mAuto;
     int mModSeqNumPeer;
-    double calcAuto();
     double mAutoHeadroom;
 #ifdef GUIBS3
     HerlperGUI* hg;
