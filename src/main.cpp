@@ -41,6 +41,7 @@
 #ifndef NO_VS
 #include <QQuickView>
 #include <QSettings>
+
 #include "gui/virtualstudio.h"
 #endif
 
@@ -223,7 +224,7 @@ int main(int argc, char* argv[])
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> vs;
 #endif
-    
+
     if (qobject_cast<QApplication*>(app.data())) {
         // Start the GUI if there are no command line options.
 #ifdef _WIN32
@@ -245,7 +246,7 @@ int main(int argc, char* argv[])
         if (parser.isSet(verboseOption)) {
             gVerboseFlag = true;
         }
-        
+
 #ifndef NO_VS
         // Check if we need to show our first run window.
         QSettings settings;
@@ -258,7 +259,7 @@ int main(int argc, char* argv[])
         vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
         vs->setStandardWindow(window);
         window->setVs(vs);
-        
+
         if (uiMode == QJackTrip::UNSET) {
             vs->show();
         } else if (uiMode == QJackTrip::VIRTUAL_STUDIO) {

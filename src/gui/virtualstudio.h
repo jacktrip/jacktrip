@@ -38,13 +38,14 @@
 #ifndef VIRTUALSTUDIO_H
 #define VIRTUALSTUDIO_H
 
-#include "vsServerInfo.h"
+#include <QList>
 #include <QQuickView>
+#include <QScopedPointer>
 #include <QSharedPointer>
 #include <QtNetworkAuth>
-#include <QList>
-#include <QScopedPointer>
+
 #include "../JackTrip.h"
+#include "vsServerInfo.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -60,19 +61,22 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString logoSection READ logoSection NOTIFY logoSectionChanged)
     Q_PROPERTY(QString audioBackend READ audioBackend CONSTANT)
-    Q_PROPERTY(int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
-    Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY outputDeviceChanged)
-    Q_PROPERTY(int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
+    Q_PROPERTY(
+        int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
+    Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
+                   outputDeviceChanged)
+    Q_PROPERTY(
+        int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
-    
+
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
     ~VirtualStudio() override;
-    
+
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
-    
+
     bool showFirstRun();
     bool hasRefreshToken();
     QString versionString();
@@ -86,7 +90,7 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int currentStudio();
     QString connectionState();
-    
+
    public slots:
     void toStandard();
     void toVirtualStudio();
@@ -98,7 +102,7 @@ class VirtualStudio : public QObject
     void completeConnection();
     void manageStudio(int studioIndex);
     void showAbout();
-    
+
    signals:
     void authSucceeded();
     void authFailed();
@@ -118,14 +122,14 @@ class VirtualStudio : public QObject
     void processFinished();
     void processError();
     void receivedConnectionFromPeer();
-    
+
    private:
     void setupAuthenticator();
     void getServerList();
     void getUserId();
     void getSubscriptions();
 #ifdef RT_AUDIO
-    void getDeviceList(QStringList *list, bool isInput);
+    void getDeviceList(QStringList* list, bool isInput);
 #endif
 
     bool m_showFirstRun = false;
@@ -134,15 +138,15 @@ class VirtualStudio : public QObject
     QQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
-    
+
     QList<QObject*> m_servers;
     QStringList m_subscribedServers;
-    QString m_logoSection = QStringLiteral("Your Studios");
-    bool m_useRtAudio = false;
-    int m_currentStudio = 0;
+    QString m_logoSection     = QStringLiteral("Your Studios");
+    bool m_useRtAudio         = false;
+    int m_currentStudio       = 0;
     QString m_connectionState = "Connecting...";
     QScopedPointer<JackTrip> m_jackTrip;
-    
+
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
     QStringList m_outputDeviceList;
@@ -152,12 +156,12 @@ class VirtualStudio : public QObject
     QString m_previousInput;
     QString m_previousOutput;
     quint16 m_previousBuffer;
-    
-    QStringList m_bufferOptions = { "16", "32", "64", "128", "256", "512", "1024" };
+
+    QStringList m_bufferOptions = {"16", "32", "64", "128", "256", "512", "1024"};
 #endif
 #ifdef __APPLE__
     NoNap m_noNap;
 #endif
 };
 
-#endif  //VIRTUALSTUDIO_H
+#endif  // VIRTUALSTUDIO_H

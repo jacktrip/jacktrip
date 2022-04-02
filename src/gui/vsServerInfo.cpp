@@ -37,8 +37,7 @@
 
 #include "vsServerInfo.h"
 
-VsServerInfo::VsServerInfo(QObject* parent) : QObject(parent)
-{ }
+VsServerInfo::VsServerInfo(QObject* parent) : QObject(parent) {}
 
 VsServerInfo::serverSectionT VsServerInfo::section()
 {
@@ -142,7 +141,6 @@ void VsServerInfo::setIsManageable(bool isManageable)
 {
     m_isManageable = isManageable;
 }
-
 
 quint16 VsServerInfo::period()
 {

@@ -108,7 +108,8 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
         about.exec();
     });
 #ifndef NO_VS
-    connect(m_ui->vsModeButton, &QPushButton::clicked, this, &QJackTrip::virtualStudioMode);
+    connect(m_ui->vsModeButton, &QPushButton::clicked, this,
+            &QJackTrip::virtualStudioMode);
 #endif
     connect(m_ui->autoPatchComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [=]() {

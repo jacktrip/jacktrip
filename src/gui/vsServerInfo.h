@@ -43,7 +43,7 @@
 class VsServerInfo : public QObject
 {
     Q_OBJECT
-    
+
     Q_PROPERTY(QString type READ type CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(QString host READ host CONSTANT)
@@ -55,24 +55,20 @@ class VsServerInfo : public QObject
     Q_PROPERTY(quint16 period READ period CONSTANT)
     Q_PROPERTY(quint32 sampleRate READ sampleRate CONSTANT)
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
-    
+
    public:
-    enum serverSectionT {
-        YOUR_STUDIOS,
-        SUBSCRIBED_STUDIOS,
-        PUBLIC_STUDIOS
-    };
-    
+    enum serverSectionT { YOUR_STUDIOS, SUBSCRIBED_STUDIOS, PUBLIC_STUDIOS };
+
     explicit VsServerInfo(QObject* parent = nullptr);
     ~VsServerInfo() override;
-    
+
     serverSectionT section();
     QString type();
     void setSection(serverSectionT section);
     QString name();
-    void setName(const QString &name);
+    void setName(const QString& name);
     QString host();
-    void setHost(const QString &host);
+    void setHost(const QString& host);
     quint16 port();
     void setPort(quint16 port);
     bool isPublic();
@@ -80,7 +76,7 @@ class VsServerInfo : public QObject
     QString region();
     QString flag();
     QString location();
-    void setRegion(const QString &region);
+    void setRegion(const QString& region);
     bool isManageable();
     void setIsManageable(bool isManageable);
     quint16 period();
@@ -90,7 +86,7 @@ class VsServerInfo : public QObject
     quint16 queueBuffer();
     void setQueueBuffer(quint16 queueBuffer);
     QString id();
-    void setId(const QString &id);
+    void setId(const QString& id);
 
    private:
     serverSectionT m_section = PUBLIC_STUDIOS;
@@ -104,7 +100,7 @@ class VsServerInfo : public QObject
     quint32 m_sampleRate;
     quint16 m_queueBuffer;
     QString m_id;
-    
+
     /* Remaining JSON fields
     "loopback": true,
     "stereo": true,
@@ -127,4 +123,4 @@ class VsServerInfo : public QObject
     */
 };
 
-#endif  //VSSERVERINFO_H
+#endif  // VSSERVERINFO_H
