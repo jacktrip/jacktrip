@@ -293,7 +293,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     double nowMS = pushStat->tick();
     if (mAuto && (nowMS > 2000.0)) {
         double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
-        tmp += 4.0;  // 2 ms -- kind of a guess
+        tmp += 2.0;  // 2 ms -- kind of a guess
         changeGlobal(tmp);
     }
 };
@@ -679,7 +679,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->overflows         = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew              = FLOATFACTOR * pushStat->lastMean;
     stat->skew_raw          = FLOATFACTOR * pushStat->lastMin;
-    stat->level             = FLOATFACTOR * pushStat->lastMax;
+    stat->level             = FLOATFACTOR * pushStat->longTermMax;  // was lastMax
     stat->buf_dec_overflows = FLOATFACTOR * pushStat->lastStdDev;
 
     stat->buf_dec_pktloss    = FLOATFACTOR * pullStat->longTermStdDev;
