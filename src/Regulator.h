@@ -203,6 +203,7 @@ class Regulator : public RingBuffer
     int mModCycle;
     bool mAuto;
     int mModSeqNumPeer;
+    double calcAuto();
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);

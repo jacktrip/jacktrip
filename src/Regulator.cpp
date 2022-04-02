@@ -173,7 +173,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
 #endif
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
-    changeGlobal((double)qLen);
+    changeGlobal(0.0);
 }
 
 void Regulator::changeGlobal(double x)
@@ -245,6 +245,12 @@ void Regulator::setFPPratio(int len)
 }
 
 //*******************************************************************************
+double Regulator::calcAuto()
+{
+    return pushStat->longTermStdDev + pushStat->longTermMax;
+};
+
+//*******************************************************************************
 void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
@@ -275,6 +281,10 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 }
             }
         }
+        double nowMS = pushStat->tick();
+        if (mAuto && (nowMS > 2000.0)) {
+            changeGlobal(calcAuto());
+        }
     }
 };
 
@@ -290,12 +300,6 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
-    double nowMS = pushStat->tick();
-    if (mAuto && (nowMS > 2000.0)) {
-        double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
-        tmp += 2.0;  // 2 ms -- kind of a guess
-        changeGlobal(tmp);
-    }
 };
 
 //*******************************************************************************
@@ -676,16 +680,12 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     // hijack  of  struct IOStat {
     stat->underruns = pullStat->lastPlcUnderruns;
 #define FLOATFACTOR 1000.0
-    stat->overflows         = FLOATFACTOR * pushStat->longTermStdDev;
-    stat->skew              = FLOATFACTOR * pushStat->lastMean;
-    stat->skew_raw          = FLOATFACTOR * pushStat->lastMin;
-    stat->level             = FLOATFACTOR * pushStat->longTermMax;  // was lastMax
-    stat->buf_dec_overflows = FLOATFACTOR * pushStat->lastStdDev;
-
-    double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
-
-    stat->autoq_corr = FLOATFACTOR * tmp;
-
+    stat->overflows          = FLOATFACTOR * pushStat->longTermStdDev;
+    stat->skew               = FLOATFACTOR * pushStat->lastMean;
+    stat->skew_raw           = FLOATFACTOR * pushStat->lastMin;
+    stat->level              = FLOATFACTOR * pushStat->longTermMax;  // was lastMax
+    stat->buf_dec_overflows  = FLOATFACTOR * pushStat->lastStdDev;
+    stat->autoq_corr         = FLOATFACTOR * mMsecTolerance;  // calcAuto();
     stat->buf_dec_pktloss    = FLOATFACTOR * pullStat->longTermStdDev;
     stat->buf_inc_underrun   = FLOATFACTOR * pullStat->lastMean;
     stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
