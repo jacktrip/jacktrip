@@ -89,10 +89,12 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)
     , mAuto(false)
+    , mAutoHeadroom((double)qLen)
 {
-    if (mMsecTolerance < 0.0) {  // handle, for example, CLI -q auto15 or -q auto
+    if (qLen < 0) {  // handle, for example, CLI -q auto15 or -q auto
         mAuto = true;
         mMsecTolerance *= -1.0;
+        mAutoHeadroom *= -1.0;
     };
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
@@ -173,7 +175,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
 #endif
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
-    changeGlobal(0.0);
 }
 
 void Regulator::changeGlobal(double x)
@@ -247,7 +248,7 @@ void Regulator::setFPPratio(int len)
 //*******************************************************************************
 double Regulator::calcAuto()
 {
-    return pushStat->longTermStdDev + pushStat->longTermMax;
+    return pushStat->longTermStdDev + pushStat->longTermMax + mAutoHeadroom;
 };
 
 //*******************************************************************************
