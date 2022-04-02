@@ -248,8 +248,8 @@ void Regulator::setFPPratio(int len)
 void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
-        if (!mFPPratioIsSet)
-            setFPPratio(len);
+        //        if (!mFPPratioIsSet)
+        //            setFPPratio(len);
         if (true) {
             //            if (mFPPratioNumerator == mFPPratioDenominator) {
             pushPacket(buf, seq_num);
