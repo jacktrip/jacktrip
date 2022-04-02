@@ -97,6 +97,7 @@ class StdDev
    public:
     StdDev(QElapsedTimer* timer, int w, int id);
     double tick(double autoHeadroom);
+    void setWindow(int w) { window = w; };
     int plcUnderruns;
     double lastMean;
     double lastMin;

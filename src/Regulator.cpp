@@ -148,8 +148,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     memcpy(mZeros, mXfrBuffer, mBytes);
     mAssembledPacket = new int8_t[mBytes];  // for asym
     memcpy(mAssembledPacket, mXfrBuffer, mBytes);
-    pushStat = new StdDev(&mIncomingTimer, (int)(floor(4 * 48000.0 / (double)mFPP)), 1);
-    pullStat = new StdDev(&mIncomingTimer, (int)(floor(4 * 48000.0 / (double)mFPP)), 2);
+    pushStat = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 1);
+    pullStat = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
     //    pushStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 /
     //    (double)mFPP)), 1); pullStat       = new StdDev(&mIncomingTimer,
     //    (int)(floor(48000.0 / (double)mFPP)), 2);
@@ -230,6 +230,7 @@ Regulator::~Regulator()
 void Regulator::setFPPratio(int len)
 {
     int peerFPP = len / (mNumChannels * mBitResolutionMode);
+    pushStat->setWindow((int)(floor(48000.0 / (double)peerFPP)));
     if (peerFPP != mFPP) {
         if (peerFPP > mFPP)
             mFPPratioDenominator = peerFPP / mFPP;
