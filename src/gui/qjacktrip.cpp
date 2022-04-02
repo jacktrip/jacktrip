@@ -34,7 +34,10 @@
 #include <ctime>
 
 #include "about.h"
-#ifdef NO_JTVS
+#ifndef NO_VS
+#include "virtualstudio.h"
+#endif
+#ifdef PSI
 #include "ui_qjacktrip_novs.h"
 #else
 #include "ui_qjacktrip.h"
@@ -54,7 +57,7 @@
 
 QJackTrip::QJackTrip(int argc, QWidget* parent)
     : QMainWindow(parent)
-#ifdef NO_JTVS
+#ifdef PSI
     , m_ui(new Ui::QJackTrip)
 #else
     , m_ui(new Ui::QJackTripVS)
@@ -71,10 +74,6 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
     , m_hideWarning(false)
 {
     m_ui->setupUi(this);
-
-    QCoreApplication::setOrganizationName(QStringLiteral("jacktrip"));
-    QCoreApplication::setOrganizationDomain(QStringLiteral("jacktrip.org"));
-    QCoreApplication::setApplicationName(QStringLiteral("JackTrip"));
 
     // Set up our debug window, and relay everything to our real cout.
     std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
@@ -108,6 +107,9 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
         About about(this);
         about.exec();
     });
+#ifndef NO_VS
+    connect(m_ui->vsModeButton, &QPushButton::clicked, this, &QJackTrip::virtualStudioMode);
+#endif
     connect(m_ui->autoPatchComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [=]() {
                 if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI
@@ -234,6 +236,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
     m_ui->autoPatchGroupBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
     m_ui->backendWarningLabel->setVisible(false);
+    m_ui->vsModeButton->setVisible(false);
 
 #ifdef RT_AUDIO
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -324,7 +327,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
             "JACK was not found. This means that only the RtAudio backend is available "
             "and that JackTrip cannot be run in hub server mode.");
 
-#ifdef NO_JTVS
+#ifdef PSI
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
         if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
@@ -360,7 +363,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
             settings.setValue(QStringLiteral("UsingFallback"), false);
         }
         settings.endGroup();
-#endif  // NO_JTVS
+#endif  // PSI
 #else   // RT_AUDIO
         QMessageBox msgBox;
         msgBox.setText(
@@ -414,6 +417,14 @@ void QJackTrip::resizeEvent(QResizeEvent* event)
                                 m_ui->authDisclaimerLabel->text());
     m_ui->authDisclaimerLabel->setMinimumHeight(rect.height());
 }
+
+#ifndef NO_VS
+void QJackTrip::setVs(QSharedPointer<VirtualStudio> vs)
+{
+    m_vs = vs;
+    m_ui->vsModeButton->setVisible(!m_vs.isNull());
+}
+#endif
 
 void QJackTrip::processFinished()
 {
@@ -942,6 +953,15 @@ void QJackTrip::exit()
         emit signalExit();
     }
 }
+
+#ifndef NO_VS
+void QJackTrip::virtualStudioMode()
+{
+    this->hide();
+    m_vs->show();
+    m_vs->toVirtualStudio();
+}
+#endif
 
 int QJackTrip::findTab(const QString& tabName)
 {

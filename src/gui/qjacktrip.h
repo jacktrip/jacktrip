@@ -51,12 +51,16 @@
 
 namespace Ui
 {
-#ifdef NO_JTVS
+#ifdef PSI
 class QJackTrip;
 #else
 class QJackTripVS;
 #endif
 }  // namespace Ui
+
+#ifndef NO_VS
+class VirtualStudio;
+#endif
 
 class QJackTrip : public QMainWindow
 {
@@ -68,7 +72,12 @@ class QJackTrip : public QMainWindow
 
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
-
+    
+#ifndef NO_VS
+    enum uiModeT { UNSET, VIRTUAL_STUDIO, STANDARD };
+    void setVs(QSharedPointer<VirtualStudio> vs);
+#endif
+    
    signals:
     void signalExit();
 
@@ -88,6 +97,9 @@ class QJackTrip : public QMainWindow
     void start();
     void stop();
     void exit();
+#ifndef NO_VS
+    void virtualStudioMode();
+#endif
 
    private:
     enum runTypeT { P2P_CLIENT, P2P_SERVER, HUB_CLIENT, HUB_SERVER };
@@ -109,7 +121,7 @@ class QJackTrip : public QMainWindow
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
 
-#ifdef NO_JTVS
+#ifdef PSI
     QScopedPointer<Ui::QJackTrip> m_ui;
 #else
     QScopedPointer<Ui::QJackTripVS> m_ui;
@@ -133,6 +145,9 @@ class QJackTrip : public QMainWindow
     int m_argc;
     bool m_hideWarning;
 
+#ifndef NO_VS
+    QSharedPointer<VirtualStudio> m_vs;
+#endif
 #ifdef __APPLE__
     NoNap m_noNap;
 #endif

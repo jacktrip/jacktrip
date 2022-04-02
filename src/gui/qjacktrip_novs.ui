@@ -573,6 +573,13 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
            </spacer>
           </item>
           <item>
+           <widget class="QPushButton" name="vsModeButton">
+            <property name="text">
+             <string>&amp;Virtual Studio Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="aboutButton">
             <property name="text">
              <string>About</string>
@@ -1814,6 +1821,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>authCheckBox</tabstop>
   <tabstop>usernameEdit</tabstop>
   <tabstop>passwordEdit</tabstop>
+  <tabstop>vsModeButton</tabstop>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
   <tabstop>remoteNameEdit</tabstop>

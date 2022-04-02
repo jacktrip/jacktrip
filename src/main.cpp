@@ -38,6 +38,11 @@
 #ifndef NO_GUI
 #include <QApplication>
 #include <QCommandLineParser>
+#ifndef NO_VS
+#include <QQuickView>
+#include <QSettings>
+#include "gui/virtualstudio.h"
+#endif
 
 #include "gui/qjacktrip.h"
 #else
@@ -214,7 +219,11 @@ int main(int argc, char* argv[])
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
 #ifndef NO_GUI
-    QScopedPointer<QJackTrip> window;
+    QSharedPointer<QJackTrip> window;
+#ifndef NO_VS
+    QSharedPointer<VirtualStudio> vs;
+#endif
+    
     if (qobject_cast<QApplication*>(app.data())) {
         // Start the GUI if there are no command line options.
 #ifdef _WIN32
@@ -224,7 +233,9 @@ int main(int argc, char* argv[])
             FreeConsole();
         }
 #endif  // _WIN32
-        app->setApplicationName(QStringLiteral("QJackTrip"));
+        app->setOrganizationName(QStringLiteral("jacktrip"));
+        app->setOrganizationDomain(QStringLiteral("jacktrip.org"));
+        app->setApplicationName(QStringLiteral("JackTrip"));
 
         QCommandLineParser parser;
         QCommandLineOption verboseOption(QStringList() << QStringLiteral("V")
@@ -234,11 +245,30 @@ int main(int argc, char* argv[])
         if (parser.isSet(verboseOption)) {
             gVerboseFlag = true;
         }
-
+        
+#ifndef NO_VS
+        // Check if we need to show our first run window.
+        QSettings settings;
+        int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+#endif  // NO_VS
         window.reset(new QJackTrip(argc));
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
+#ifndef NO_VS
+        vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
+        vs->setStandardWindow(window);
+        window->setVs(vs);
+        
+        if (uiMode == QJackTrip::UNSET) {
+            vs->show();
+        } else if (uiMode == QJackTrip::VIRTUAL_STUDIO) {
+            vs->show();
+        } else {
+            window->show();
+        }
+#else
         window->show();
+#endif  // NO_VS
     } else {
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.
