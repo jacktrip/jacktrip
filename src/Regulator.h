@@ -200,8 +200,9 @@ class Regulator : public RingBuffer
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     int mAssemblyCnt;
-int mModCycle;
-bool mAuto;
+    int mModCycle;
+    bool mAuto;
+    int mModSeqNumPeer;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);

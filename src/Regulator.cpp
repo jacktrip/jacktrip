@@ -161,8 +161,9 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mFPPratioDenominator = 1;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
-    mAssemblyCnt = 0;
-    mModCycle = 1;
+    mAssemblyCnt         = 0;
+    mModCycle            = 1;
+    mModSeqNumPeer       = 1;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -235,8 +236,11 @@ void Regulator::setFPPratio(int len)
     }
     if (mFPPratioNumerator > 1) {
         mBytesPeerPacket = mBytes / mFPPratioNumerator;
-    mModCycle = mFPPratioNumerator - 1;
-}
+        mModCycle        = mFPPratioNumerator - 1;
+        mModSeqNumPeer   = mModSeqNum * mFPPratioNumerator;
+    } else if (mFPPratioDenominator > 1) {
+        mModSeqNumPeer = mModSeqNum / mFPPratioDenominator;
+    }
     mFPPratioIsSet = true;
 }
 
@@ -246,30 +250,31 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
     if (seq_num != -1) {
         if (!mFPPratioIsSet)
             setFPPratio(len);
-        if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower
-            int modSeqNumPeer = mModSeqNum * mFPPratioNumerator;
-            seq_num %= modSeqNumPeer;
-            //        qDebug() << seq_num << seq_num / mFPPratioNumerator;
-            int assemblySeq_num = seq_num / mFPPratioNumerator;
-            int tmp = (seq_num % mFPPratioNumerator) * mBytesPeerPacket;
-            memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-            if ((seq_num % mFPPratioNumerator) == mModCycle) {
-                if (mAssemblyCnt == mModCycle) pushPacket(mAssembledPacket, assemblySeq_num);
-//                else qDebug() << "incomplete due to lost packet";
-                mAssemblyCnt = 0;
-            } else mAssemblyCnt++;
-        } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
-            int modSeqNumPeer = mModSeqNum / mFPPratioDenominator;
-            seq_num %= modSeqNumPeer;
-            seq_num *= mFPPratioDenominator;
-            for (int i = 0; i < mFPPratioDenominator; i++) {
-                int tmp = i * mBytes;
-                memcpy(mAssembledPacket, &buf[tmp], mBytes);
-                pushPacket(mAssembledPacket, seq_num);
-                seq_num++;
-            }
-        } else
+        if (mFPPratioNumerator == mFPPratioDenominator) {
             pushPacket(buf, seq_num);
+        } else {
+            seq_num %= mModSeqNumPeer;
+            if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower
+                int tmp = (seq_num % mFPPratioNumerator) * mBytesPeerPacket;
+                memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
+                seq_num /= mFPPratioNumerator;
+                if ((seq_num % mFPPratioNumerator) == mModCycle) {
+                    if (mAssemblyCnt == mModCycle)
+                        pushPacket(mAssembledPacket, seq_num);
+                    //                else qDebug() << "incomplete due to lost packet";
+                    mAssemblyCnt = 0;
+                } else
+                    mAssemblyCnt++;
+            } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
+                seq_num *= mFPPratioDenominator;
+                for (int i = 0; i < mFPPratioDenominator; i++) {
+                    int tmp = i * mBytes;
+                    memcpy(mAssembledPacket, &buf[tmp], mBytes);
+                    pushPacket(mAssembledPacket, seq_num);
+                    seq_num++;
+                }
+            }
+        }
     }
 };
 
