@@ -682,6 +682,10 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->level             = FLOATFACTOR * pushStat->longTermMax;  // was lastMax
     stat->buf_dec_overflows = FLOATFACTOR * pushStat->lastStdDev;
 
+    double tmp = pushStat->longTermStdDev + pushStat->longTermMax;
+
+    stat->autoq_corr = FLOATFACTOR * tmp;
+
     stat->buf_dec_pktloss    = FLOATFACTOR * pullStat->longTermStdDev;
     stat->buf_inc_underrun   = FLOATFACTOR * pullStat->lastMean;
     stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
