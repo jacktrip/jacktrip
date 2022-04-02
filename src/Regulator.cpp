@@ -200,8 +200,8 @@ void Regulator::changeGlobal_3(int x)
 
 void Regulator::printParams()
 {
-//    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-//             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
+    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
+             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
 #ifdef GUIBS3
     updateGUI((int)mMsecTolerance, mNumSlots);
 #endif
