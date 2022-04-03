@@ -96,8 +96,9 @@ class StdDev
 {
    public:
     StdDev(QElapsedTimer* timer, int w, int id);
-    double tick(double autoHeadroom);
+    double tick();
     void setWindow(int w) { window = w; };
+    int mId;
     int plcUnderruns;
     double lastMean;
     double lastMin;
@@ -117,14 +118,13 @@ class StdDev
     double var;
     //    double varRunning;
     int window;
-    int mId;
     double acc;
     double min;
     double max;
     int ctr;
     double lastTime;
     int longTermCnt;
-    double calcAuto(double autoHeadroom);
+    double calcAuto();
 };
 
 #ifdef GUIBS3
@@ -163,7 +163,7 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-    void setFPPratio(int len);
+    int setFPPratio(int len);
     bool mFPPratioIsSet;
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
@@ -207,7 +207,6 @@ class Regulator : public RingBuffer
     int mModCycle;
     bool mAuto;
     int mModSeqNumPeer;
-    double mAutoHeadroom;
 #ifdef GUIBS3
     HerlperGUI* hg;
     void updateGUI(double msTol, int nSlots, int lostWin);

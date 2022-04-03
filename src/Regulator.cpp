@@ -76,10 +76,11 @@ using std::endl;
 using std::setw;
 
 // constants... tested for now
-constexpr int HIST          = 6;    // at FPP32
-constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
-constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
-constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
+constexpr int HIST            = 6;    // at FPP32
+constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in packet header
+constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
+constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
+constexpr double AutoHeadroom = 1.0;  // msec padding for auto adjusting mMsecTolerance
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -94,7 +95,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
         mAuto = true;
         // no adjstments necessary, so make it not possible
         mMsecTolerance = 1.0;
-        mAutoHeadroom  = 1.0;
     };
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
@@ -148,11 +148,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     memcpy(mZeros, mXfrBuffer, mBytes);
     mAssembledPacket = new int8_t[mBytes];  // for asym
     memcpy(mAssembledPacket, mXfrBuffer, mBytes);
-    pushStat = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 1);
-    pullStat = new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
-    //    pushStat       = new StdDev(&mIncomingTimer, (int)(floor(48000.0 /
-    //    (double)mFPP)), 1); pullStat       = new StdDev(&mIncomingTimer,
-    //    (int)(floor(48000.0 / (double)mFPP)), 2);
     mLastLostCount = 0;  // for stats
     mIncomingTimer.start();
     mLastSeqNumIn  = -1;
@@ -227,10 +222,9 @@ Regulator::~Regulator()
         delete mChanData[i];
 }
 
-void Regulator::setFPPratio(int len)
+int Regulator::setFPPratio(int len)
 {
     int peerFPP = len / (mNumChannels * mBitResolutionMode);
-    pushStat->setWindow((int)(floor(48000.0 / (double)peerFPP)));
     if (peerFPP != mFPP) {
         if (peerFPP > mFPP)
             mFPPratioDenominator = peerFPP / mFPP;
@@ -246,15 +240,23 @@ void Regulator::setFPPratio(int len)
     } else if (mFPPratioDenominator > 1) {
         mModSeqNumPeer = mModSeqNum / mFPPratioDenominator;
     }
-    mFPPratioIsSet = true;
+    return peerFPP;
 }
 
 //*******************************************************************************
 void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
+    QMutexLocker locker(&mMutex);
     if (seq_num != -1) {
-        if (!mFPPratioIsSet)
-            setFPPratio(len);
+        if (!mFPPratioIsSet) {
+            int peerFPP = setFPPratio(len);
+            // num tick calls per sec
+            pushStat =
+                new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)peerFPP)), 1);
+            pullStat =
+                new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
+            mFPPratioIsSet = true;
+        }
         if (mFPPratioNumerator == mFPPratioDenominator) {
             pushPacket(buf, seq_num);
         } else {
@@ -280,7 +282,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 }
             }
         }
-        double adjustAuto = pushStat->tick(mAutoHeadroom);
+        double adjustAuto = pushStat->tick();
         mMsecTolerance    = (adjustAuto > 0.0) ? adjustAuto : mMsecTolerance;
     }
 };
@@ -288,7 +290,6 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
-    QMutexLocker locker(&mMutex);
     //    qDebug() << "\t" << seq_num;
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
@@ -304,7 +305,7 @@ void Regulator::pullPacket(int8_t* buf)
 {
     QMutexLocker locker(&mMutex);
     mSkip = 0;
-    if (mLastSeqNumIn == -1) {
+    if ((mLastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;
     } else {
         mLastSeqNumOut++;
@@ -333,12 +334,14 @@ PACKETOK : {
         processPacket(true);
     else
         processPacket(false);
+    pullStat->tick();
     goto OUTPUT;
 }
 
 UNDERRUN : {
     processPacket(true);
     pullStat->plcUnderruns++;  // count late
+    pullStat->tick();
     goto OUTPUT;
 }
 
@@ -347,7 +350,6 @@ ZERO_OUTPUT:
 
 OUTPUT:
     memcpy(buf, mXfrBuffer, mBytes);
-    pullStat->tick(-1.0);
 };
 
 //*******************************************************************************
@@ -614,13 +616,14 @@ void StdDev::reset()
     plcUnderruns = 0;
 };
 
-double StdDev::calcAuto(double autoHeadroom)
+double StdDev::calcAuto()
 {
-    return longTermStdDev + longTermMax + autoHeadroom;
+    return longTermStdDev + longTermMax + AutoHeadroom;
 };
 
-double StdDev::tick(double autoHeadroom)
+double StdDev::tick()
 {
+    //    qDebug() << mId;
     double returnVal = -1.0;
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
@@ -663,7 +666,7 @@ double StdDev::tick(double autoHeadroom)
         lastStdDev = stdDev;
         reset();
         if (lastTime > 2000.0)
-            returnVal = calcAuto(autoHeadroom);
+            returnVal = calcAuto();
     }
     return returnVal;
 }
@@ -671,7 +674,7 @@ double StdDev::tick(double autoHeadroom)
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
 {
     QMutexLocker locker(&mMutex);
-    if (reset) {  // all are unused
+    if (reset) {  // all are unused, this is copied from superclass
         mUnderruns        = 0;
         mOverflows        = 0;
         mSkew0            = mLevel;
@@ -682,6 +685,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBufIncCompensate = 0;
         mBroadcastSkew    = 0;
     }
+
     // hijack  of  struct IOStat {
     stat->underruns = pullStat->lastPlcUnderruns;
 #define FLOATFACTOR 1000.0
@@ -690,60 +694,14 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->skew_raw           = FLOATFACTOR * pushStat->lastMin;
     stat->level              = FLOATFACTOR * pushStat->longTermMax;  // was lastMax
     stat->buf_dec_overflows  = FLOATFACTOR * pushStat->lastStdDev;
-    stat->autoq_corr         = FLOATFACTOR * mMsecTolerance;  // calcAuto();
+    stat->autoq_corr         = FLOATFACTOR * mMsecTolerance;
     stat->buf_dec_pktloss    = FLOATFACTOR * pullStat->longTermStdDev;
     stat->buf_inc_underrun   = FLOATFACTOR * pullStat->lastMean;
     stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
     stat->broadcast_skew     = FLOATFACTOR * pullStat->lastMax;
     stat->broadcast_delta    = FLOATFACTOR * pullStat->lastStdDev;
     // unused
-    //        int32_t autoq_corr;
     //        int32_t autoq_rate;
+    qDebug() << pushStat->mId << pullStat->mId;
     return true;
 }
-/*
-QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
-{
-    // formatting floats in columns looks better with std::stringstream than with
-    // QTextStream
-    QString tmp;
-    if (!statCount) {
-        tmp = QString("Regulator: inter-packet intervals msec\n");
-        tmp += "                 (window of last ";
-        tmp += QString::number(pullStat->window);
-        tmp += " packets)\n";
-        tmp +=
-                "secs   avgStdDev (mean       min       max     stdDev) "
-                "PLC(under over  skipped) lost\n";
-    } else {
-        uint32_t lost  = lostCount - mLastLostCount;
-        mLastLostCount = lostCount;
-#define PDBL(x)  << setw(10) << (QString("%1").arg(pushStat->x, 0, 'f', 2)).toStdString()
-#define PDBL2(x) << setw(10) << (QString("%1").arg(pullStat->x, 0, 'f', 2)).toStdString()
-        std::stringstream logger;
-        logger << setw(2)
-               << statCount
-                  PDBL(longTermStdDev) PDBL(lastMean) PDBL(lastMin) PDBL(lastMax)
-PDBL(lastStdDev)
-               << setw(8) << pushStat->lastPlcSkipped
-          #ifndef GUIBS3
-                  // comment out this next line for GUI because...
-               << endl
-                  // ...print all stats in one line when running in GUI because can't
-handle extra crlf
-                  // and... to actually see the two lines, need to run it in terminal
-          #endif
-                  ;
-        tmp = QString::fromStdString(logger.str());
-        std::stringstream logger2;
-        logger2 << setw(2)
-                << "" PDBL2(longTermStdDev) PDBL2(lastMean) PDBL2(lastMin) PDBL2(lastMax)
-                   PDBL2(lastStdDev)
-                << setw(8) << pullStat->lastPlcUnderruns << setw(8)
-                << pullStat->lastPlcOverruns << setw(8) << pullStat->lastPlcSkipped
-                << setw(8) << lost << endl;
-        tmp += QString::fromStdString(logger2.str());
-    }
-    return tmp;
-}
-*/
