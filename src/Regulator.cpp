@@ -89,12 +89,12 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)
     , mAuto(false)
-    , mAutoHeadroom((double)qLen)
 {
-    if (qLen < 0) {  // handle, for example, CLI -q auto15 or -q auto
+    if (qLen < 0) {  // handle -q auto
         mAuto = true;
-        mMsecTolerance *= -1.0;
-        mAutoHeadroom *= -1.0;
+        // no adjstments necessary, so make it not possible
+        mMsecTolerance = 1.0;
+        mAutoHeadroom  = 1.0;
     };
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
@@ -181,7 +181,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
 }
 
 void Regulator::changeGlobal(double x)
-{  // mMsecTolerance
+{
     mMsecTolerance = x;
     printParams();
 }
