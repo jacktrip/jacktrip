@@ -3,7 +3,22 @@ import QtQuick.Controls 2.15
 
 Item {
     width: 696; height: 577
+    
+    property bool refreshing: false
 
+    Rectangle {
+        z: 1
+        width: parent.width; height: parent.height
+        color: "#40000000"
+        visible: refreshing
+        MouseArea {
+            anchors.fill: parent
+            propagateComposedEvents: false
+            hoverEnabled: true
+            preventStealing: true
+        }
+    }
+    
     Component {
         id: sectionHeading
         Rectangle {
@@ -47,6 +62,7 @@ Item {
             studioName: name
             publicStudio: isPublic
             manageable: isManageable
+            available: canConnect
             connected: false
         }
         
@@ -58,6 +74,26 @@ Item {
     Rectangle {
         x: 0; y: parent.height - 36; width: parent.width; height: 36
         border.color: "#33979797"
+        
+        Button {
+            id: refreshButton
+            background: Rectangle {
+                radius: 6
+                color: refreshButton.down ? "#4E979797" : (refreshButton.hovered ? "#34979797" : "#1A979797")
+                border.width: 0.3
+                border.color: "#34979797"
+            }
+            onClicked: { refreshing = true; virtualstudio.refreshStudios() }
+            anchors.verticalCenter: parent.verticalCenter
+            x: 16; width: 103; height: 25
+            Text {
+                text: "Refresh List"
+                font.family: "Poppins"
+                font.pointSize: 11
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
         
         Button {
             id: aboutButton

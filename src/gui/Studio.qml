@@ -14,6 +14,7 @@ Rectangle {
     property string studioName: "Test Studio"
     property bool publicStudio: false
     property bool manageable: false
+    property bool available: true
     property bool connected: false
     
     Rectangle {
@@ -96,12 +97,13 @@ Rectangle {
             radius: 20
             color: connected ? "#FCB6B6" : "#C4F4BE"
         }
+        visible: connected || canConnect
         onClicked: {
             if (!connected) {
                 window.state = "connected";
                 virtualstudio.connectToStudio(index);
             } else {
-                window.state = "browse";
+                virtualstudio.disconnect();
             }
         }
         Image {
@@ -118,6 +120,7 @@ Rectangle {
         text: connected ? "Leave" : "Join"
         font.family: "Poppins"
         font.pointSize: 11
+        visible: connected || canConnect
     }
     
     Button {

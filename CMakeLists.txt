@@ -127,6 +127,7 @@ if (NOT nogui)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/gui/virtualstudio.cpp
       src/gui/vsServerInfo.cpp
+      src/gui/vsQuickView.cpp
       src/gui/qjacktrip.qrc
     )
   else ()

@@ -75,6 +75,15 @@ QString VsServerInfo::host()
     return m_host;
 }
 
+bool VsServerInfo::canConnect()
+{
+#ifndef PSI
+    return !m_host.isEmpty();
+#else
+    return true;
+#endif
+}
+
 void VsServerInfo::setHost(const QString& host)
 {
     m_host = host;

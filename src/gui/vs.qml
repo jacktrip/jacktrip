@@ -85,5 +85,7 @@ Rectangle {
         function onAuthSucceeded() { window.state = "browse" }
         function onAuthFailed() { loginScreen.failTextVisible = true }
         //function onConnected() { }
+        function onDisconnected() { window.state = "browse" }
+        function onRefreshFinished() {browseScreen.refreshing = false }
     }
 }

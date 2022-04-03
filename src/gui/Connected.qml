@@ -21,7 +21,7 @@ Item {
     }
     
     Studio {
-        x: 16; y: 91
+        x: 16; y: 96
         connected: true
         serverLocation: serverModel[virtualstudio.currentStudio].location
         flagImage: serverModel[virtualstudio.currentStudio].flag

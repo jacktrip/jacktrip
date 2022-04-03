@@ -1116,6 +1116,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)  // udpTimeout unused
             mEndTime = udpTimeout;
         }
         mTimeoutTimer.setInterval(mSleepTime);
+        mTimeoutTimer.disconnect();
         connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::udpTimerTick);
         mTimeoutTimer.start();
     }
@@ -1210,6 +1211,7 @@ int JackTrip::clientPingToServerStart()
         mElapsedTime = 0;
         mEndTime     = 5000;  // Timeout after 5 seconds.
         mTimeoutTimer.setInterval(mSleepTime);
+        mTimeoutTimer.disconnect();
         connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
         mTimeoutTimer.start();
     }

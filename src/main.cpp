@@ -257,6 +257,8 @@ int main(int argc, char* argv[])
                          &QCoreApplication::quit, Qt::QueuedConnection);
 #ifndef NO_VS
         vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
+        QObject::connect(vs.data(), &VirtualStudio::signalExit, app.data(),
+                         &QCoreApplication::quit, Qt::QueuedConnection);
         vs->setStandardWindow(window);
         window->setVs(vs);
 
