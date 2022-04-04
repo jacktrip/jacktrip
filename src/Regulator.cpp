@@ -240,7 +240,7 @@ void Regulator::setFPPratio()
 //*******************************************************************************
 void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
-    QMutexLocker locker(&mMutex);
+    //    qDebug() << "rcv packet" << seq_num;
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
             mPeerFPP                 = len / (mNumChannels * mBitResolutionMode);
@@ -255,9 +255,9 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
             pushStat =
-                new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mPeerFPP)), 1);
+                new StdDev(1, &mIncomingTimer, (int)(floor(48000.0 / (double)mPeerFPP)));
             pullStat =
-                new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
+                new StdDev(2, &mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)));
             mFPPratioIsSet = true;
         }
         if (mFPPratioNumerator == mFPPratioDenominator) {
@@ -270,8 +270,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 if ((seq_num % mFPPratioNumerator) == mModCycle) {
                     if (mAssemblyCnt == mModCycle)
                         pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
-                    //                    else
-                    //                        qDebug() << "incomplete due to lost packet";
+                    else
+                        qDebug() << "incomplete due to lost packet";
                     mAssemblyCnt = 0;
                 } else
                     mAssemblyCnt++;
@@ -293,6 +293,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
+    QMutexLocker locker(&mMutex);
     //    qDebug() << "\t" << seq_num;
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
@@ -593,7 +594,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(QElapsedTimer* timer, int w, int id) : mTimer(timer), window(w), mId(id)
+StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), window(w)
 {
     reset();
     longTermStdDev    = 0.0;
@@ -626,7 +627,7 @@ double StdDev::calcAuto()
 
 double StdDev::tick()
 {
-    //    qDebug() << mId;
+    qDebug() << mId;  // << lastTime;
     double returnVal = -1.0;
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;

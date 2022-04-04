@@ -95,9 +95,8 @@ class ChanData
 class StdDev
 {
    public:
-    StdDev(QElapsedTimer* timer, int w, int id);
+    StdDev(int id, QElapsedTimer* timer, int w);
     double tick();
-    void setWindow(int w) { window = w; };
     int mId;
     int plcUnderruns;
     double lastMean;
