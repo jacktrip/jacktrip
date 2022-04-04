@@ -286,7 +286,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             }
         }
         double adjustAuto = pushStat->tick();
-        mMsecTolerance    = (adjustAuto > 0.0) ? adjustAuto : mMsecTolerance;
+        mMsecTolerance    = (mAuto) ? adjustAuto : mMsecTolerance;
     }
 };
 
