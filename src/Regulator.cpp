@@ -252,7 +252,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 mMsecTolerance =
                     (mMsecTolerance == -500.0) ? peerPacketDurMsec : -mMsecTolerance;
             };
-            setFPPratio(len);
+            setFPPratio();
             // number of stats tick calls per sec depends on FPP
             pushStat =
                 new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mPeerFPP)), 1);
