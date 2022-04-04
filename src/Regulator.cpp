@@ -81,6 +81,7 @@ constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in pack
 constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
 constexpr double AutoHeadroom = 1.0;  // msec padding for auto adjusting mMsecTolerance
+constexpr double DefaultInitialAuto = 4.0;  // if auto with no arg
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -88,14 +89,9 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mSampleRate(sample_rate)
-    , mMsecTolerance((double)qLen)
+    , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
 {
-    if (qLen < 0) {  // handle -q auto
-        mAuto = true;
-        // no adjstments necessary, so make it not possible
-        mMsecTolerance = 1.0;
-    };
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -129,10 +125,9 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
     mLastWasGlitch = false;
-    mPacketDurMsec = 1000.0 * (double)mFPP / (double)mSampleRate;
-    if (mMsecTolerance < mPacketDurMsec)
-        mMsecTolerance = mPacketDurMsec;  // absolute minimum
-    mNumSlots = NumSlotsMax;  //((int)ceil(mMsecTolerance / mPacketDurMsec)) + PADSLOTS;
+    //    if (mMsecTolerance < mPacketDurMsec)
+    //        mMsecTolerance = mPacketDurMsec;  // absolute minimum
+    mNumSlots = NumSlotsMax;
 
     for (int i = 0; i < mNumSlots; i++) {
         int8_t* tmp = new int8_t[mBytes];
@@ -164,6 +159,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mAssemblyCnt         = 0;
     mModCycle            = 1;
     mModSeqNumPeer       = 1;
+    mPeerFPP             = mFPP;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -222,14 +218,13 @@ Regulator::~Regulator()
         delete mChanData[i];
 }
 
-int Regulator::setFPPratio(int len)
+void Regulator::setFPPratio(int len)
 {
-    int peerFPP = len / (mNumChannels * mBitResolutionMode);
-    if (peerFPP != mFPP) {
-        if (peerFPP > mFPP)
-            mFPPratioDenominator = peerFPP / mFPP;
+    if (mPeerFPP != mFPP) {
+        if (mPeerFPP > mFPP)
+            mFPPratioDenominator = mPeerFPP / mFPP;
         else
-            mFPPratioNumerator = mFPP / peerFPP;
+            mFPPratioNumerator = mFPP / mPeerFPP;
         qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
                  << mFPPratioDenominator;
     }
@@ -240,7 +235,6 @@ int Regulator::setFPPratio(int len)
     } else if (mFPPratioDenominator > 1) {
         mModSeqNumPeer = mModSeqNum / mFPPratioDenominator;
     }
-    return peerFPP;
 }
 
 //*******************************************************************************
@@ -248,11 +242,19 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     if (seq_num != -1) {
-        if (!mFPPratioIsSet) {
-            int peerFPP = setFPPratio(len);
-            // num tick calls per sec
+        if (!mFPPratioIsSet) { // first peer packet
+            mPeerFPP                 = len / (mNumChannels * mBitResolutionMode);
+            double peerPacketDurMsec = 1000.0 * (double)mPeerFPP / (double)mSampleRate;
+            // Anton's autoq mode overloads qLen with negative
+            if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
+                mAuto = true;
+                // default is -500 from
+                mMsecTolerance = (mMsecTolerance == -500.0) ? peerPacketDurMsec : -mMsecTolerance;
+            };
+            setFPPratio(len);
+            // number of stats tick calls per sec depends on FPP
             pushStat =
-                new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)peerFPP)), 1);
+                new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mPeerFPP)), 1);
             pullStat =
                 new StdDev(&mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)), 2);
             mFPPratioIsSet = true;
@@ -702,6 +704,5 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->broadcast_delta    = FLOATFACTOR * pullStat->lastStdDev;
     // unused
     //        int32_t autoq_rate;
-    qDebug() << pushStat->mId << pullStat->mId;
     return true;
 }

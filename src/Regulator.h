@@ -163,13 +163,14 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-    int setFPPratio(int len);
+    void setFPPratio(int len);
     bool mFPPratioIsSet;
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
+    int mPeerFPP;
     int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;
