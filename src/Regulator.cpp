@@ -125,9 +125,7 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
     mLastWasGlitch = false;
-    //    if (mMsecTolerance < mPacketDurMsec)
-    //        mMsecTolerance = mPacketDurMsec;  // absolute minimum
-    mNumSlots = NumSlotsMax;
+    mNumSlots      = NumSlotsMax;
 
     for (int i = 0; i < mNumSlots; i++) {
         int8_t* tmp = new int8_t[mBytes];
@@ -159,7 +157,8 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mAssemblyCnt         = 0;
     mModCycle            = 1;
     mModSeqNumPeer       = 1;
-    mPeerFPP             = mFPP;
+    mPeerFPP             = mFPP;  // use local until first packet arrives
+    mPeerPacketDurMsec   = 1000.0 * (double)mFPP / (double)mSampleRate;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -243,14 +242,14 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
     //    qDebug() << "rcv packet" << seq_num;
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
-            mPeerFPP                 = len / (mNumChannels * mBitResolutionMode);
-            double peerPacketDurMsec = 1000.0 * (double)mPeerFPP / (double)mSampleRate;
+            mPeerFPP           = len / (mNumChannels * mBitResolutionMode);
+            mPeerPacketDurMsec = 1000.0 * (double)mPeerFPP / (double)mSampleRate;
             // Anton's autoq mode overloads qLen with negative
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from
                 mMsecTolerance =
-                    (mMsecTolerance == -500.0) ? peerPacketDurMsec : -mMsecTolerance;
+                    (mMsecTolerance == -500.0) ? mPeerPacketDurMsec : -mMsecTolerance;
             };
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
@@ -285,7 +284,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 }
             }
         }
-        double adjustAuto = pushStat->tick();
+        // first packet has arrived use theoretical length while measuring for 2 secs
+        double adjustAuto = pushStat->tick(mPeerPacketDurMsec);
         mMsecTolerance    = (mAuto) ? adjustAuto : mMsecTolerance;
     }
 };
@@ -338,14 +338,14 @@ PACKETOK : {
         processPacket(true);
     else
         processPacket(false);
-    pullStat->tick();
+    pullStat->tick(mPeerPacketDurMsec);  // sets up first 2 secs
     goto OUTPUT;
 }
 
 UNDERRUN : {
     processPacket(true);
-    pullStat->plcUnderruns++;  // count late
-    pullStat->tick();
+    pullStat->plcUnderruns++;            // count late
+    pullStat->tick(mPeerPacketDurMsec);  // sets up first 2 secs
     goto OUTPUT;
 }
 
@@ -625,10 +625,10 @@ double StdDev::calcAuto()
     return longTermStdDev + longTermMax + AutoHeadroom;
 };
 
-double StdDev::tick()
+double StdDev::tick(double defaultToPeerDur)
 {
     //    qDebug() << mId;  // << lastTime;
-    double returnVal = -1.0;
+    double returnVal = defaultToPeerDur;
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
     lastTime         = now;

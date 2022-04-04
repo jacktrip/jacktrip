@@ -96,7 +96,7 @@ class StdDev
 {
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
-    double tick();
+    double tick(double defaultToPeerDur);
     int mId;
     int plcUnderruns;
     double lastMean;
@@ -170,6 +170,7 @@ class Regulator : public RingBuffer
     int mAudioBitRes;
     int mFPP;
     int mPeerFPP;
+    double mPeerPacketDurMsec;
     int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;
@@ -195,7 +196,6 @@ class Regulator : public RingBuffer
     QElapsedTimer mIncomingTimer;
     int mLastSeqNumIn;
     int mLastSeqNumOut;
-    double mPacketDurMsec;
     std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
     int mModSeqNum;
