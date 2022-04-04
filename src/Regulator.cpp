@@ -218,7 +218,7 @@ Regulator::~Regulator()
         delete mChanData[i];
 }
 
-void Regulator::setFPPratio(int len)
+void Regulator::setFPPratio()
 {
     if (mPeerFPP != mFPP) {
         if (mPeerFPP > mFPP)
