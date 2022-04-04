@@ -627,7 +627,7 @@ double StdDev::calcAuto()
 
 double StdDev::tick()
 {
-    qDebug() << mId;  // << lastTime;
+//    qDebug() << mId;  // << lastTime;
     double returnVal = -1.0;
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
