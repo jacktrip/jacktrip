@@ -242,14 +242,15 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     QMutexLocker locker(&mMutex);
     if (seq_num != -1) {
-        if (!mFPPratioIsSet) { // first peer packet
+        if (!mFPPratioIsSet) {  // first peer packet
             mPeerFPP                 = len / (mNumChannels * mBitResolutionMode);
             double peerPacketDurMsec = 1000.0 * (double)mPeerFPP / (double)mSampleRate;
             // Anton's autoq mode overloads qLen with negative
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from
-                mMsecTolerance = (mMsecTolerance == -500.0) ? peerPacketDurMsec : -mMsecTolerance;
+                mMsecTolerance =
+                    (mMsecTolerance == -500.0) ? peerPacketDurMsec : -mMsecTolerance;
             };
             setFPPratio(len);
             // number of stats tick calls per sec depends on FPP
