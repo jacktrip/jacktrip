@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_PATTERN">
+            %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
+        </Property>
+    </Properties>
+    <Appenders>
+        <RollingFile name="FileAppenderApp" fileName="./logs/code_signing_tool.log"
+                     filePattern="./logs/code_signing_tool-%d{yyyy-MM-dd}.log">
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="nomax"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="FileAppenderApp" />
+        </Root>
+        <!--<Logger name="com.ssl.code.signing.tool" level="info" additivity="false">
+            <AppenderRef ref="FileAppenderApp" />
+        </Logger>-->
+    </Loggers>
+</Configuration>
