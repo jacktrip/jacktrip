@@ -288,7 +288,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 
         double adjustAuto = pushStat->calcAuto();
         pushStat->tick(mPeerPacketDurMsec);
-        if (pushStat->lastTime > 12000.0) mMsecTolerance = (mAuto) ? adjustAuto : mMsecTolerance;
+        if (pushStat->lastTime > 12000.0)
+            mMsecTolerance = (mAuto) ? adjustAuto : mMsecTolerance;
     }
 };
 
@@ -624,7 +625,7 @@ void StdDev::reset()
 
 double StdDev::calcAuto()
 {
-//    qDebug() << "yes";
+    //    qDebug() << "yes";
     return longTermStdDev + longTermMax + AutoHeadroom;
 };
 
