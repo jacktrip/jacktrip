@@ -30,6 +30,7 @@ nogui {
   } else {
     QT += networkauth
     QT += quick
+    QT += quickcontrols2
   }
 }
 

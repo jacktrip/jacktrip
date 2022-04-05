@@ -11,13 +11,14 @@ RTAUDIO=0
 NO_SYSTEM_RTAUDIO=0
 PRO_FILE="../jacktrip.pro"
 HELP_STR="usage:\n
-./build [noclean nojack rtaudio nogui static install [-config static]]\n\n
+./build [noclean nojack rtaudio nogui novs static install [-config static]]\n\n
 options:\n
 noclean - do not run \"make clean\" first\n
 nojack - build without jack\n
 rtaudio - build with RtAudio\n
 no-system-rtaudio - use bundled RtAudio library even if it's available in the system\n
 nogui - build without the gui\n
+novs - build without Virtual Studio support\n
 static - build with static libraries\n
 weakjack - build with weak linking of jack libraries\n
 install - install jacktrip in system location (uses sudo)\n
@@ -39,6 +40,10 @@ while [[ "$#" -gt 0 ]]; do
       nogui)
       echo "Building without the gui"
       CONFIG="-config nogui $CONFIG" 
+      ;;
+      novs)
+      echo "Building without Virtual Studio support"
+      CONFIG="-config novs $CONFIG" 
       ;;
       static)
       echo "Building with static libraries"
@@ -65,6 +70,9 @@ while [[ "$#" -gt 0 ]]; do
     shift
   fi
 done
+
+echo "All build options:"
+echo "$CONFIG"
 
 # Check for Platform
 platform='unknown'
