@@ -285,8 +285,10 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             }
         }
         // first packet has arrived use theoretical length while measuring for 2 secs
-        double adjustAuto = pushStat->tick(mPeerPacketDurMsec);
-        mMsecTolerance    = (mAuto) ? adjustAuto : mMsecTolerance;
+
+        double adjustAuto = pushStat->calcAuto();
+        pushStat->tick(mPeerPacketDurMsec);
+        if (pushStat->lastTime > 12000.0) mMsecTolerance = (mAuto) ? adjustAuto : mMsecTolerance;
     }
 };
 
@@ -622,6 +624,7 @@ void StdDev::reset()
 
 double StdDev::calcAuto()
 {
+//    qDebug() << "yes";
     return longTermStdDev + longTermMax + AutoHeadroom;
 };
 
@@ -669,8 +672,6 @@ double StdDev::tick(double defaultToPeerDur)
         lastMax    = max;
         lastStdDev = stdDev;
         reset();
-        if (lastTime > 2000.0)
-            returnVal = calcAuto();
     }
     return returnVal;
 }

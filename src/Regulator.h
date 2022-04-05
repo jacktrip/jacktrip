@@ -97,6 +97,8 @@ class StdDev
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
     double tick(double defaultToPeerDur);
+    double calcAuto();
+    double lastTime;
     int mId;
     int plcUnderruns;
     double lastMean;
@@ -121,9 +123,7 @@ class StdDev
     double min;
     double max;
     int ctr;
-    double lastTime;
     int longTermCnt;
-    double calcAuto();
 };
 
 #ifdef GUIBS3
