@@ -77,16 +77,22 @@ QString VsServerInfo::host()
 
 bool VsServerInfo::canConnect()
 {
-#ifndef PSI
     return !m_host.isEmpty();
-#else
+}
+
+bool VsServerInfo::canStart()
+{
+#ifdef PSI
     return true;
+#else
+    return false;
 #endif
 }
 
 void VsServerInfo::setHost(const QString& host)
 {
     m_host = host;
+    emit canConnectChanged();
 }
 
 quint16 VsServerInfo::port()

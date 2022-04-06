@@ -16,7 +16,7 @@ Item {
         y: 168
         text: "Which JackTrip experience do you need?"
         font.family: "Poppins"
-        font.pointSize: 17
+        font.pointSize: 17 * virtualstudio.fontScale
     }
 
     Text {
@@ -24,7 +24,7 @@ Item {
         y: 219
         text: "You'll be able to change your mind later"
         font.family: "Poppins"
-        font.pointSize: 11
+        font.pointSize: 11 * virtualstudio.fontScale
     }
 
     Button {
@@ -45,14 +45,14 @@ Item {
         Text {
             text: "Virtual Studio"
             font.family: "Poppins"
-            font.pointSize: 17
+            font.pointSize: 17 * virtualstudio.fontScale
             anchors.horizontalCenter: parent.horizontalCenter
             y: 73
         }
         Text {
             text: "Simply connect to a JackTrip Virtual Studio"
             font.family: "Poppins"
-            font.pointSize: 11
+            font.pointSize: 11 * virtualstudio.fontScale
             anchors.horizontalCenter: parent.horizontalCenter
             y:130; width: 190
             wrapMode: Text.WordWrap
@@ -78,14 +78,14 @@ Item {
         Text {
             text: "Standard"
             font.family: "Poppins"
-            font.pointSize: 20
+            font.pointSize: 20 * virtualstudio.fontScale
             anchors.horizontalCenter: parent.horizontalCenter
             y: 73
         }
         Text {
             text: "A more flexible, customizable JackTrip"
             font.family: "Poppins"
-            font.pointSize: 11
+            font.pointSize: 11 * virtualstudio.fontScale
             anchors.horizontalCenter: parent.horizontalCenter
             y:130; width: 190
             wrapMode: Text.WordWrap

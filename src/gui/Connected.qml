@@ -5,29 +5,32 @@ Item {
     width: 696; height: 577
     
     property bool connecting: false
+    
+    property int leftMargin: 16
+    property int fontBig: 28
+    property int fontMedium: 18
 
     Image {
-        x: 647; y: 16; width: 32; height: 59
+        x: parent.width - 49; y: 16; width: 32; height: 59
         source: "logo.svg"
     }
     
     Text {
         id: heading
         text: virtualstudio.connectionState
-        x: 16; y: 34
-        font.family: "Poppins"
-        font.weight: Font.Bold
-        font.pointSize: 28
+        x: leftMargin; y: 34
+        font { family: "Poppins"; weight: Font.Bold; pointSize: fontBig * virtualstudio.fontScale }
     }
     
     Studio {
-        x: 16; y: 96
+        x: parent.leftMargin; y: 96
         connected: true
         serverLocation: serverModel[virtualstudio.currentStudio].location
         flagImage: serverModel[virtualstudio.currentStudio].flag
         studioName: serverModel[virtualstudio.currentStudio].name
         publicStudio: serverModel[virtualstudio.currentStudio].isPublic
         manageable: serverModel[virtualstudio.currentStudio].isManageable
+        available: serverModel[virtualstudio.currentStudio].canConnect
     }
     
     Image {
@@ -47,8 +50,7 @@ Item {
         x: 120
         text: virtualstudio.audioBackend == "JACK" ? 
             virtualstudio.audioBackend : inputComboModel[virtualstudio.inputDevice]
-        font.family: "Poppins"
-        font.pointSize: 18
+        font {family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
         anchors.verticalCenter: mic.verticalCenter
     }
     
@@ -56,8 +58,7 @@ Item {
         x: 120
         text: virtualstudio.audioBackend == "JACK" ? 
             virtualstudio.audioBackend : outputComboModel[virtualstudio.outputDevice]
-        font.family: "Poppins"
-        font.pointSize: 18
+        font {family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
         anchors.verticalCenter: headphones.verticalCenter
     }
     

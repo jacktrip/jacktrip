@@ -14,6 +14,7 @@
     <file>Connected.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
+    <file>wedge_inactive.svg</file>
     <file>private.svg</file>
     <file>public.svg</file>
     <file>join.svg</file>

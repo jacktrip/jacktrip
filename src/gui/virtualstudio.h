@@ -70,6 +70,7 @@ class VirtualStudio : public QObject
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(float fontScale READ fontScale CONSTANT)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -91,6 +92,7 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int currentStudio();
     QString connectionState();
+    float fontScale();
 
    public slots:
     void toStandard();

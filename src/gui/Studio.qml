@@ -17,14 +17,21 @@ Rectangle {
     property bool available: true
     property bool connected: false
     
+    property int leftMargin: 81
+    property int topMargin: 13
+    
+    property real fontBig: 18
+    property real fontMedium: 11
+    property real fontSmall: 8
+    
     Rectangle {
-        width: 12; height: 83
-        radius: 6
-        color: "#0C1424"
+        width: 12; height: parent.height
+        radius: width / 2
+        color: available ? "#0C1424" : "#B3B3B3"
     }
     
     Image {
-        source: "wedge.svg"
+        source: available ? "wedge.svg" : "wedge_inactive.svg"
         x: 6; y: 0; width: 52; height: 83
     }
     
@@ -34,15 +41,15 @@ Rectangle {
     }
     
     Rectangle {
-        x: 33; y: 8; width: 32; height: 32
-        radius: 16
-        color: "#0C1424"
+        x: 33; y: 8; width: 32; height: width
+        radius: width / 2
+        color: available ? "#0C1424" : "#B3B3B3"
     }
     
     Image {
         id: flag
         source: flagImage
-        x: 30; y: 9; width: 40; height: 30
+        x: 30; y: 9; width: 40; height: width / 4 * 3
         fillMode: Image.PreserveAspectCrop
         layer.enabled: true
         layer.effect: OpacityMask {
@@ -52,32 +59,30 @@ Rectangle {
 
     Rectangle {
         id: mask
-        x: 0 ; y: 0 ; width: 40; height: 30
+        x: 0 ; y: 0 ; width: flag.width; height: flag.height
         visible: false
         color: "#00000000"
         Rectangle {
-            x: 7; y: 3; width:24; height: 24
-            radius: 12
+            x: 7; y: 3; width:24; height: width
+            radius: width / 2
         }
     }
     
     Text {
-        x: 81; y: 11; width: manageable ? 431 : 508
+        x: leftMargin; y: 11; width: manageable ? parent.width - 233 : parent.width - 156
         text: studioName
-        font.family: "Poppins"
-        font.pointSize: 18
-        font.weight: Font.Bold
+        font { family: "Poppins"; weight: Font.Bold; pointSize: fontBig * virtualstudio.fontScale }
         elide: Text.ElideRight
     }
     
     Rectangle {
         id: publicRect
-        x: 81; y: 52; width: 14; height: 14
+        x: leftMargin; y: 52; width: 14; height: width
         radius: 2
         color: publicStudio ? "#0095FF" : "#FF9800"
         Image {
             source: publicStudio ? "public.svg" : "private.svg"
-            x: 1; y: 1; width: 12; height: 12
+            x: 1; y: x; width: 12; height: width
         }
     }
     
@@ -85,19 +90,18 @@ Rectangle {
         anchors.verticalCenter: publicRect.verticalCenter
         x: 103
         text: publicStudio ? "Public hub studio in " + serverLocation : "Private hub studio in " + serverLocation
-        font.family: "Poppins"
-        font.pointSize: 7
+        font { family: "Poppins"; pointSize: fontSmall * virtualstudio.fontScale }
     }
     
     Button {
         id: joinButton
-        x: manageable ? 522 : 599
-        y: 13; width: 40; height: 40
+        x: manageable ? parent.width - 142 : parent.width - 65
+        y: topMargin; width: 40; height: width
         background: Rectangle {
-            radius: 20
+            radius: width / 2
             color: connected ? "#FCB6B6" : "#C4F4BE"
         }
-        visible: connected || canConnect
+        visible: connected || canConnect || canStart
         onClicked: {
             if (!connected) {
                 window.state = "connected";
@@ -108,8 +112,7 @@ Rectangle {
         }
         Image {
             width: 22; height: 20
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: connected ? "leave.svg" : "join.svg"
         }
     }
@@ -118,16 +121,15 @@ Rectangle {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56
         text: connected ? "Leave" : "Join"
-        font.family: "Poppins"
-        font.pointSize: 11
-        visible: connected || canConnect
+        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        visible: connected || canConnect || canStart
     }
     
     Button {
         id: manageButton
-        x: 599; y: 13; width: 40; height: 40
+        x: parent.width - 65; y: topMargin; width: 40; height: width
         background: Rectangle {
-            radius: 20
+            radius: width / 2
             color: "#EAEBEB"
         }
         onClicked: { 
@@ -139,9 +141,8 @@ Rectangle {
         }
         visible: manageable
         Image {
-            width: 20; height: 20
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.horizontalCenter
+            width: 20; height: width
+            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: "cog.svg"
         }
     }
@@ -150,8 +151,7 @@ Rectangle {
         anchors.horizontalCenter: manageButton.horizontalCenter
         y: 56
         text: "Manage"
-        font.family: "Poppins"
-        font.pointSize: 11
+        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
         visible: manageable
     }
 }

@@ -46,9 +46,10 @@ class VsServerInfo : public QObject
 
     Q_PROPERTY(QString type READ type CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString host READ host CONSTANT)
-    Q_PROPERTY(bool canConnect READ canConnect CONSTANT)
-    Q_PROPERTY(quint16 port READ port CONSTANT)
+    //Q_PROPERTY(QString host READ host CONSTANT)
+    Q_PROPERTY(bool canConnect READ canConnect NOTIFY canConnectChanged)
+    Q_PROPERTY(bool canStart READ canStart CONSTANT)
+    //Q_PROPERTY(quint16 port READ port CONSTANT)
     Q_PROPERTY(bool isPublic READ isPublic CONSTANT)
     Q_PROPERTY(QString flag READ flag CONSTANT)
     Q_PROPERTY(QString location READ location CONSTANT)
@@ -70,6 +71,7 @@ class VsServerInfo : public QObject
     void setName(const QString& name);
     QString host();
     bool canConnect();
+    bool canStart();
     void setHost(const QString& host);
     quint16 port();
     void setPort(quint16 port);
@@ -89,6 +91,9 @@ class VsServerInfo : public QObject
     void setQueueBuffer(quint16 queueBuffer);
     QString id();
     void setId(const QString& id);
+
+   signals:
+    void canConnectChanged();
 
    private:
     serverSectionT m_section = PUBLIC_STUDIOS;
