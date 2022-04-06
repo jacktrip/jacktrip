@@ -184,6 +184,8 @@ jobs:
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
           fi
+          echo "QT Configure command"
+          echo ""$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS"
           "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
           # build
           echo "building Qt"
