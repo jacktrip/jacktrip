@@ -419,6 +419,29 @@ void QJackTrip::resizeEvent(QResizeEvent* event)
     m_ui->authDisclaimerLabel->setMinimumHeight(rect.height());
 }
 
+void QJackTrip::showEvent(QShowEvent* event)
+{
+    // We need to wait to load geometry until here rather than with our other settings.
+    // If we don't, the window geometry will be improperly set on macOS whenever the
+    // VirtualStudio window is shown first.
+    QMainWindow::showEvent(event);
+    if (m_firstShow) {
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("Window"));
+        QByteArray geometry = settings.value(QStringLiteral("Geometry")).toByteArray();
+        if (geometry.size() > 0) {
+            restoreGeometry(geometry);
+        } else {
+            // Because of hidden elements in our dialog window, it's vertical size in the
+            // creator is getting rediculous. Set it to something sensible by default if
+            // this is our first load.
+            this->resize(QSize(this->size().height(), 600));
+        }
+        settings.endGroup();
+        m_firstShow = false;
+    }
+}
+
 #ifndef NO_VS
 void QJackTrip::setVs(QSharedPointer<VirtualStudio> vs)
 {
@@ -960,7 +983,6 @@ void QJackTrip::virtualStudioMode()
 {
     this->hide();
     m_vs->show();
-    m_vs->toVirtualStudio();
 }
 #endif
 
@@ -1197,18 +1219,6 @@ void QJackTrip::loadSettings()
         settings.value(QStringLiteral("Limiter"), false).toBool());
     m_ui->outClientsSpinBox->setValue(
         settings.value(QStringLiteral("Clients"), 1).toInt());
-    settings.endGroup();
-
-    settings.beginGroup(QStringLiteral("Window"));
-    QByteArray geometry = settings.value(QStringLiteral("Geometry")).toByteArray();
-    if (geometry.size() > 0) {
-        restoreGeometry(geometry);
-    } else {
-        // Because of hidden elements in our dialog window, it's vertical size in the
-        // creator is getting rediculous. Set it to something sensible by default if this
-        // is our first load.
-        this->resize(QSize(this->size().width(), 600));
-    }
     settings.endGroup();
 }
 

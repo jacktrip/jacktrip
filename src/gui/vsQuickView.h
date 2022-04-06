@@ -45,7 +45,7 @@ class VsQuickView : public QQuickView
     Q_OBJECT
 
    public:
-    VsQuickView() : QQuickView() {}
+    VsQuickView(QWindow* parent = nullptr) : QQuickView(parent) {}
     bool event(QEvent* event) override;
 
    signals:

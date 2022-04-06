@@ -5,6 +5,10 @@ Item {
     width: 696; height: 577
     
     property bool refreshing: false
+    
+    property int buttonHeight: 25
+    property int buttonWidth: 103
+    property int fontMedium: 11
 
     Rectangle {
         z: 1
@@ -29,9 +33,7 @@ Item {
                 //anchors.bottom: parent.bottom
                 y: 12
                 text: parent.section
-                font.family: "Poppins"
-                font.pointSize: 28
-                font.weight: Font.Bold
+                font { family: "Poppins"; pointSize: 28 * virtualstudio.fontScale; weight: Font.Bold }
             }
             Image {
                 source: "logo.svg"
@@ -50,7 +52,7 @@ Item {
     }
 
     ListView {
-        x:16; y: 0; width: 664; height: parent.height - 36
+        x:16; y: 0; width: parent.width - (2 * x); height: parent.height - 36
         spacing: 16
         header: footer
         footer: footer
@@ -66,9 +68,7 @@ Item {
             connected: false
         }
         
-        section.property: "type"
-        section.criteria: ViewSection.FullString
-        section.delegate: sectionHeading
+        section {property: "type"; criteria: ViewSection.FullString; delegate: sectionHeading }
     }
     
     Rectangle {
@@ -80,18 +80,15 @@ Item {
             background: Rectangle {
                 radius: 6
                 color: refreshButton.down ? "#4E979797" : (refreshButton.hovered ? "#34979797" : "#1A979797")
-                border.width: 0.3
-                border.color: "#34979797"
+                border { width: 0.3; color: "#34979797" }
             }
             onClicked: { refreshing = true; virtualstudio.refreshStudios() }
             anchors.verticalCenter: parent.verticalCenter
-            x: 16; width: 103; height: 25
+            x: 16; width: buttonWidth; height: buttonHeight
             Text {
                 text: "Refresh List"
-                font.family: "Poppins"
-                font.pointSize: 11
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
+                font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+                anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
         
@@ -100,18 +97,15 @@ Item {
             background: Rectangle {
                 radius: 6
                 color: aboutButton.down ? "#4E979797" : (aboutButton.hovered ? "#34979797" : "#1A979797")
-                border.width: 0.3
-                border.color: "#34979797"
+                border { width: 0.3; color: "#34979797" }
             }
             onClicked: { virtualstudio.showAbout() }
             anchors.verticalCenter: parent.verticalCenter
-            x: 466; width: 103; height: 25
+            x: parent.width - 230; width: buttonWidth; height: buttonHeight
             Text {
                 text: "About"
-                font.family: "Poppins"
-                font.pointSize: 11
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
+                font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
         
@@ -120,18 +114,15 @@ Item {
             background: Rectangle {
                 radius: 6
                 color: settingsButton.down ? "#4E979797" : (settingsButton.hovered ? "#34979797" : "#1A979797")
-                border.width: 0.3
-                border.color: "#34979797"
+                border { width: 0.3; color: "#34979797" }
             }
             onClicked: window.state = "settings"
             anchors.verticalCenter: parent.verticalCenter
             x: 577; width: 103; height: 25
             Text {
                 text: "Settings"
-                font.family: "Poppins"
-                font.pointSize: 11
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
+                font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
     }

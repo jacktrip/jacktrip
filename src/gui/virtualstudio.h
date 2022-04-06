@@ -57,7 +57,7 @@ class QJackTrip;
 class VirtualStudio : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool showFirstRun READ showFirstRun CONSTANT)
+    Q_PROPERTY(bool showFirstRun READ showFirstRun NOTIFY showFirstRunChanged)
     Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString logoSection READ logoSection NOTIFY logoSectionChanged)
@@ -70,6 +70,7 @@ class VirtualStudio : public QObject
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(float fontScale READ fontScale CONSTANT)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -91,6 +92,7 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int currentStudio();
     QString connectionState();
+    float fontScale();
 
    public slots:
     void toStandard();
@@ -113,6 +115,7 @@ class VirtualStudio : public QObject
     void connected();
     void disconnected();
     void refreshFinished();
+    void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
     void inputDeviceChanged();
