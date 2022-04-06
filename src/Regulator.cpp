@@ -81,7 +81,8 @@ constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in pack
 constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
 constexpr double AutoHeadroom = 1.0;  // msec padding for auto adjusting mMsecTolerance
-constexpr double AutoInitDur  = 6000.0;  // msec init phase
+constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
+constexpr double AutoInitDur = 6000.0;  // msec init phase
 constexpr double AutoInitVal =
     100.0;  // msec for initial mMsecTolerance during init phase if unspecified
 //*******************************************************************************
@@ -625,8 +626,8 @@ void StdDev::reset()
 
 double StdDev::calcAuto()
 {
-    //    qDebug() << "yes";
-    return longTermStdDev + longTermMax + AutoHeadroom;
+    return AutoHeadroom + longTermStdDev
+           + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
 };
 
 void StdDev::tick()
