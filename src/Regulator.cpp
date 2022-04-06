@@ -247,8 +247,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from
-                mMsecTolerance = (mMsecTolerance == -500.0) ? (2.0 * mPeerPacketDurMsec)
-                                                            : -mMsecTolerance;
+                mMsecTolerance = (mMsecTolerance == -500.0) ? 100.0 : -mMsecTolerance;
             };
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
