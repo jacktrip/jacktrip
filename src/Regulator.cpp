@@ -81,7 +81,6 @@ constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in pack
 constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
 constexpr double AutoHeadroom = 1.0;  // msec padding for auto adjusting mMsecTolerance
-constexpr double DefaultInitialAuto = 4.0;  // if auto with no arg
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -248,8 +247,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from
-                mMsecTolerance =
-                    (mMsecTolerance == -500.0) ? mPeerPacketDurMsec : -mMsecTolerance;
+                mMsecTolerance = (mMsecTolerance == -500.0) ? (2.0 * mPeerPacketDurMsec)
+                                                            : -mMsecTolerance;
             };
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
@@ -287,9 +286,9 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
         // first packet has arrived use theoretical length while measuring for 2 secs
 
         double adjustAuto = pushStat->calcAuto();
-        pushStat->tick(mPeerPacketDurMsec);
-        if (pushStat->lastTime > 12000.0)
-            mMsecTolerance = (mAuto) ? adjustAuto : mMsecTolerance;
+        pushStat->tick();
+        if (mAuto && (pushStat->lastTime > 12000.0))
+            mMsecTolerance = adjustAuto;
     }
 };
 
@@ -341,14 +340,14 @@ PACKETOK : {
         processPacket(true);
     else
         processPacket(false);
-    pullStat->tick(mPeerPacketDurMsec);  // sets up first 2 secs
+    pullStat->tick();  // sets up first 2 secs
     goto OUTPUT;
 }
 
 UNDERRUN : {
     processPacket(true);
-    pullStat->plcUnderruns++;            // count late
-    pullStat->tick(mPeerPacketDurMsec);  // sets up first 2 secs
+    pullStat->plcUnderruns++;  // count late
+    pullStat->tick();          // sets up first 2 secs
     goto OUTPUT;
 }
 
@@ -629,10 +628,8 @@ double StdDev::calcAuto()
     return longTermStdDev + longTermMax + AutoHeadroom;
 };
 
-double StdDev::tick(double defaultToPeerDur)
+void StdDev::tick()
 {
-    //    qDebug() << mId;  // << lastTime;
-    double returnVal = defaultToPeerDur;
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
     lastTime         = now;
@@ -674,8 +671,8 @@ double StdDev::tick(double defaultToPeerDur)
         lastStdDev = stdDev;
         reset();
     }
-    return returnVal;
 }
+
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
 {

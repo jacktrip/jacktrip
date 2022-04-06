@@ -96,7 +96,7 @@ class StdDev
 {
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
-    double tick(double defaultToPeerDur);
+    void tick();
     double calcAuto();
     double lastTime;
     int mId;
