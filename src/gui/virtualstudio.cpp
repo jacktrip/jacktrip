@@ -236,9 +236,9 @@ QString VirtualStudio::connectionState()
 float VirtualStudio::fontScale()
 {
 #ifdef __APPLE__
-        return 4.0 / 3.0;
+    return 4.0 / 3.0;
 #else
-        return 1;
+    return 1;
 #endif
 }
 
@@ -477,7 +477,8 @@ void VirtualStudio::disconnect()
 
     if (m_jackTripRunning) {
         if (m_startedStudio) {
-            VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
+            VsServerInfo* studioInfo =
+                static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
             QMessageBox msgBox;
             msgBox.setText(QStringLiteral("Do you want to stop the current studio?"));
             msgBox.setWindowTitle(QStringLiteral("Stop Studio"));
