@@ -72,6 +72,7 @@ class QJackTrip : public QMainWindow
 
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
+    void showEvent(QShowEvent* event) override;
 
 #ifndef NO_VS
     enum uiModeT{UNSET, VIRTUAL_STUDIO, STANDARD};
@@ -144,6 +145,7 @@ class QJackTrip : public QMainWindow
     QLabel m_autoQueueIndicator;
     int m_argc;
     bool m_hideWarning;
+    bool m_firstShow = true;
 
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> m_vs;

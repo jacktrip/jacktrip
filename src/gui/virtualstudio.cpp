@@ -110,14 +110,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.setMinimumSize(QSize(696, 577));
     m_view.setMaximumSize(QSize(696, 577));
 
-    if (!m_refreshToken.isEmpty() && !m_showFirstRun) {
-        // Attempt to refresh our virtual studio auth token
-        setupAuthenticator();
-
-        m_authenticator->setRefreshToken(m_refreshToken);
-        m_authenticator->refreshAccessToken();
-    }
-
     // Connect our timers
     connect(&m_startTimer, &QTimer::timeout, this, &VirtualStudio::checkForHostname);
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);
@@ -130,6 +122,9 @@ void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
 
 void VirtualStudio::show()
 {
+    if (!m_showFirstRun) {
+        toVirtualStudio();
+    }
     m_view.show();
 }
 
@@ -250,11 +245,17 @@ void VirtualStudio::toStandard()
     }
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
+
+    if (m_showFirstRun) {
+        m_showFirstRun = false;
+        emit showFirstRunChanged();
+    }
 }
 
 void VirtualStudio::toVirtualStudio()
 {
     if (!m_refreshToken.isEmpty()) {
+        // Attempt to refresh our virtual studio auth token
         setupAuthenticator();
 
         m_authenticator->setRefreshToken(m_refreshToken);
