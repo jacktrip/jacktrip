@@ -170,7 +170,6 @@ class Regulator : public RingBuffer
     int mAudioBitRes;
     int mFPP;
     int mPeerFPP;
-    double mPeerPacketDurMsec;
     int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;

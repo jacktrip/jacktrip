@@ -81,6 +81,9 @@ constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in pack
 constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
 constexpr double AutoHeadroom = 1.0;  // msec padding for auto adjusting mMsecTolerance
+constexpr double AutoInitDur  = 6000.0;  // msec init phase
+constexpr double AutoInitVal =
+    100.0;  // msec for initial mMsecTolerance during init phase if unspecified
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -157,7 +160,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mModCycle            = 1;
     mModSeqNumPeer       = 1;
     mPeerFPP             = mFPP;  // use local until first packet arrives
-    mPeerPacketDurMsec   = 1000.0 * (double)mFPP / (double)mSampleRate;
 #ifdef GUIBS3
     // hg for GUI
     hg = new HerlperGUI(qApp->activeWindow());
@@ -241,13 +243,13 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
     //    qDebug() << "rcv packet" << seq_num;
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
-            mPeerFPP           = len / (mNumChannels * mBitResolutionMode);
-            mPeerPacketDurMsec = 1000.0 * (double)mPeerFPP / (double)mSampleRate;
-            // Anton's autoq mode overloads qLen with negative
+            mPeerFPP = len / (mNumChannels * mBitResolutionMode);
+            // bufstrategy 1 autoq mode overloads qLen with negative val
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from
-                mMsecTolerance = (mMsecTolerance == -500.0) ? 100.0 : -mMsecTolerance;
+                mMsecTolerance =
+                    (mMsecTolerance == -500.0) ? AutoInitVal : -mMsecTolerance;
             };
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
@@ -286,7 +288,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 
         double adjustAuto = pushStat->calcAuto();
         pushStat->tick();
-        if (mAuto && (pushStat->lastTime > 12000.0))
+        if (mAuto && (pushStat->lastTime > AutoInitDur))
             mMsecTolerance = adjustAuto;
     }
 };
