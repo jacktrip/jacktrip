@@ -161,7 +161,7 @@ void setRealtimeProcessPriority()
 }
 #else
 //*******************************************************************************
-void setRealtimeProcessPriority()
+extern "C" void setRealtimeProcessPriority()
 {
     int priority = sched_get_priority_max(SCHED_FIFO);  // 99 is the highest possible
 #ifdef __UBUNTU__

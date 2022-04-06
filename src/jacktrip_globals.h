@@ -127,8 +127,10 @@ constexpr int gMaxRemoteNameLength           = 64;
 
 #ifdef __APPLE__
 void setRealtimeProcessPriority(int bufferSize, int sampleRate);
-#else
+#elif defined(_WIN32)
 void setRealtimeProcessPriority();
+#else
+extern "C" void setRealtimeProcessPriority();
 #endif
 
 //*******************************************************************************
