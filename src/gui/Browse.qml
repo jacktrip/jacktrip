@@ -54,12 +54,14 @@ Item {
     }
 
     ListView {
+        id: studioListView
         x:0; y: 0; width: parent.width - (2 * x); height: parent.height - 36
         spacing: 16
         header: footer
         footer: footer
         model: serverModel
         clip: true
+        boundsBehavior: Flickable.StopAtBounds
         delegate: Studio {
             serverLocation: location
             flagImage: flag
@@ -71,6 +73,31 @@ Item {
         }
         
         section {property: "type"; criteria: ViewSection.FullString; delegate: sectionHeading }
+
+        // Disable momentum scroll
+        MouseArea {
+            z: -1
+            anchors.fill: parent
+            onWheel: {
+                // trackpad
+                studioListView.contentY -= wheel.pixelDelta.y;
+                // mouse wheel
+                studioListView.contentY -= wheel.angleDelta.y;
+                studioListView.returnToBounds();
+            }
+        }
+
+        Component.onCompleted: {
+            // Customize scroll properties on different platforms
+            if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
+                Qt.platform.os == "unix" || Qt.platform.os == "windows") {
+                var scrollBar = Qt.createQmlObject('import QtQuick.Controls 2.15; ScrollBar{}',
+                                                   studioListView,
+                                                   "dynamicSnippet1");
+                scrollBar.policy = ScrollBar.AlwaysOn;
+                ScrollBar.vertical = scrollBar;
+            }
+        }
     }
     
     Rectangle {
