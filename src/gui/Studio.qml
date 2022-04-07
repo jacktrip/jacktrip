@@ -3,11 +3,20 @@ import QtQuick.Controls 2.15
 import QtGraphicalEffects 1.15
 
 Rectangle {
-    width: 664; height: 83
+    x: 16; width: 664; height: 83
     radius: 6
     color: "#F6F8F8"
     border.width: 0.3
     border.color: "#34979797"
+
+    layer.enabled: true
+    layer.effect: DropShadow {
+        horizontalOffset: 1
+        verticalOffset: 1
+        radius: 8.0
+        samples: 17
+        color: "#80A1A1A1"
+    }
     
     property string serverLocation: "Germany - Berlin"
     property string flagImage: "flags/DE.svg"
@@ -23,6 +32,22 @@ Rectangle {
     property real fontBig: 18
     property real fontMedium: 11
     property real fontSmall: 8
+
+    Rectangle {
+        id: shadow
+        anchors.fill: parent
+        color: "transparent"
+        radius: 6
+    }
+
+    DropShadow {
+        horizontalOffset: -1
+        verticalOffset: -1
+        radius: 8.0
+        samples: 17
+        color: "#80A1A1A1"
+        source: shadow
+    }
     
     Rectangle {
         width: 12; height: parent.height
