@@ -26,8 +26,8 @@ Item {
     Component {
         id: sectionHeading
         Rectangle {
-            color: "#FAFBFB"
-            height: 72; width: ListView.view.width
+            color: "transparent"
+            height: 72; x: 16; width: ListView.view.width - (2 * x)
             required property string section
             Text {
                 //anchors.bottom: parent.bottom
@@ -48,11 +48,13 @@ Item {
         id: footer
         Rectangle {
             height: 16
+            x: 16
+            width: parent.width - (2 * x)
         }
     }
 
     ListView {
-        x:16; y: 0; width: parent.width - (2 * x); height: parent.height - 36
+        x:0; y: 0; width: parent.width - (2 * x); height: parent.height - 36
         spacing: 16
         header: footer
         footer: footer
