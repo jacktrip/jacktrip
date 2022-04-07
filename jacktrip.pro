@@ -29,8 +29,8 @@ nogui {
     DEFINES += NO_VS
   } else {
     QT += networkauth
-    QT += quick
     QT += qml
+    QT += quick
   }
 }
 
