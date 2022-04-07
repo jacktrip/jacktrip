@@ -107,9 +107,7 @@ elif [[ $platform == 'macosx' ]]; then
     QSPEC=macx-clang-arm64
   fi  
   # if qmake is not in path, try homebrew qt5
-  echo "path to qmake"
-  echo "$(which qmake)"
-  if ! command -v $QCMD &> /dev/null; then
+  # if ! command -v $QCMD &> /dev/null; then
     # echo "qmake not found in \$PATH, searching for homebrew qt5"
     QT_PREFIX=`brew --prefix qt5`
     if [[ -n $QT_PREFIX ]]; then
@@ -119,16 +117,24 @@ elif [[ $platform == 'macosx' ]]; then
       echo "Homebrew installation of qt5 not found"
       exit
     fi
-  fi
+  # fi
   MCMD=make
 elif [[ $platform == 'mingw' ]]; then
   QCMD=qmake
+  QT_MINGW_DIR=/Qt/5.15.2/win64_mingw81/bin
+  if [[ -e $QT_MINGW_DIR ]]; then
+    QCMD="$QT_MINGW_DIR/$QCMD"
+    echo "Using qmake at $QCMD"
+  fi
   QSPEC=win32-g++
   MCMD=mingw32-make
 elif [[ $platform == 'unknown' ]]; then
   echo "Unregonized platform, exiting"
   exit
 fi
+
+echo "path to qmake"
+echo "$(which qmake)"
 
 # check for RtAudio
 if [[ $RTAUDIO == 1 ]]; then
