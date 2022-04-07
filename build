@@ -103,9 +103,9 @@ elif [[ $platform == 'macosx' ]]; then
   QCMD=qmake
   QSPEC=macx-clang
   arch=`arch`
-  if [[ "$arch" == 'arm64' ]]; then
-    QSPEC=macx-clang-arm64
-  fi  
+  # if [[ "$arch" == 'arm64' ]]; then
+  #   QSPEC=macx-clang-arm64
+  # fi  
   # if qmake is not in path, try homebrew qt5
   if ! command -v $QCMD &> /dev/null; then
     # echo "qmake not found in \$PATH, searching for homebrew qt5"
