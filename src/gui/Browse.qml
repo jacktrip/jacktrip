@@ -28,7 +28,7 @@ Item {
         Rectangle {
             color: "transparent"
             height: 72; x: 16; width: ListView.view.width - (2 * x)
-            required property string section
+            // required property string section
             Text {
                 //anchors.bottom: parent.bottom
                 y: 12

@@ -115,7 +115,7 @@ if [ ! -z "$DYNAMIC_QT" ]; then
         fi
     fi
     if [ ! -z "$CERTIFICATE" ]; then
-        $DEPLOY_CMD "$APPNAME.app" -codesign="$CERTIFICATE"
+        $DEPLOY_CMD --qmldir ../src/gui "$APPNAME.app" -codesign="$CERTIFICATE"
     else
         $DEPLOY_CMD "$APPNAME.app"
     fi

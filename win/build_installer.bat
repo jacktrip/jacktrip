@@ -44,7 +44,7 @@ set "WIXDEFINES="
 for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Core.dll') do set DYNAMIC_QT=%%a
 if defined DYNAMIC_QT (
 	echo Including Qt Files
-	%QTBINPATH%\windeployqt jacktrip.exe
+	%QTBINPATH%\windeployqt --qmldir ..\src\gui jacktrip.exe
 	copy "%QTLIBPATH%\libgcc_s_seh-1.dll" .\
 	copy "%QTLIBPATH%\libstdc++-6.dll" .\
 	copy "%QTLIBPATH%\libwinpthread-1.dll" .\
