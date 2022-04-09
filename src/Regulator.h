@@ -35,8 +35,7 @@
  * \date May 2021
  */
 
-// EXPERIMENTAL for testing in JackTrip v1.4.0
-// Initial references and starter code
+// Initial references and starter code to bring up Burg's recursion
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 

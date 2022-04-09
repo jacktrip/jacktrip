@@ -36,30 +36,56 @@
  */
 
 // EXPERIMENTAL for testing in JackTrip v1.5.<n>
-// server and client can have different FPP (tested from FPP 32 to 512)
+// server and client can have different FPP (tested from FPP 16 to 1024)
+// stress tested by repeatedly starting & stopping across range of FPP's
 // server and client can have different in / out channel count
+// auto mode -- use -q auto
+// or for manual setting of initial mMsecTolerance -- use -q auto<msec>
+// gathers data for 6 sec and then goes full auto
 
-// ./jacktrip -S --udprt -p1 --bufstrategy 3  -I 1 -q10
-// PIPEWIRE_LATENCY=32/48000 ./jacktrip -C <SERV> --udprt --bufstrategy 3 -I 1 -q4
+// example WAN test
+// ./jacktrip -S --udprt -p1 --bufstrategy 3 -q auto
+// PIPEWIRE_LATENCY=32/48000 ./jacktrip -C <SERV> --udprt --bufstrategy 3 -q auto
 
+// example WAN test
 // at 48000 / 32 = 2.667 ms total roundtrip latency
-// local loopback test with 4 terminals running and the following jmess file
+// local loopback test with 4 terminals running and a jmess file
 // jacktrip -S --udprt --nojackportsconnect -q1 --bufstrategy 3
 // jacktrip -C localhost --udprt --nojackportsconnect -q1  --bufstrategy 3
 // use jack_iodelay
-// use jmess -s delay.xml and jmess -c delay.xml
+// use jmess -c delay.xml
+/* delay.xml
+<jmess>
+  <connection>
+    <output>localhost:receive_1</output>
+    <input>jack_delay:in</input>
+  </connection>
+  <connection>
+    <output>jack_delay:out</output>
+    <input>localhost:send_1</input>
+  </connection>
+  <connection>
+    <output>__1:receive_1</output>
+    <input>__1:send_2</input>
+  </connection>
+  <connection>
+    <output>__1:receive_1</output>
+    <input>__1:send_1</input>
+  </connection>
+</jmess>
+*/
 
 // tested outgoing loss impairments with (replace lo with relevant network interface)
-// sudo tc qdisc add dev lo root netem loss 2%
-// sudo tc qdisc del dev lo root netem loss 2%
-// or more revealing
+// sudo tc qdisc add dev lo root netem loss 5%
+// sudo tc qdisc del dev lo root netem loss 5%
+// or very revealing
 // sudo tc qdisc add dev lo root netem loss 20%
 // sudo tc qdisc del dev lo root netem loss 20%
 // tested jitter impairments with
-// for wifi
+// wifi simulation
 // sudo tc qdisc add dev lo root netem slot distribution pareto 0.1ms 3.0ms
 // sudo tc qdisc del dev lo root netem slot distribution pareto 0.1ms 3.0ms
-// for wired cmn9
+// ugly wired simulation
 // sudo tc qdisc add dev lo root netem slot distribution pareto 0.2ms 0.3ms
 // sudo tc qdisc del dev lo root netem slot distribution pareto 0.2ms 0.3ms
 
@@ -73,7 +99,7 @@ using std::cout;
 using std::endl;
 using std::setw;
 
-// constants... tested for now
+// constants...
 constexpr int HIST            = 6;    // at FPP32
 constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
