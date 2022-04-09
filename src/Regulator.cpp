@@ -338,14 +338,14 @@ PACKETOK : {
         processPacket(true);
     else
         processPacket(false);
-    pullStat->tick();  // sets up first 2 secs
+    pullStat->tick();
     goto OUTPUT;
 }
 
 UNDERRUN : {
     processPacket(true);
     pullStat->plcUnderruns++;  // count late
-    pullStat->tick();          // sets up first 2 secs
+    pullStat->tick();
     goto OUTPUT;
 }
 
@@ -622,6 +622,8 @@ void StdDev::reset()
 
 double StdDev::calcAuto()
 {
+    if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
+        return AutoHeadroom;
     return AutoHeadroom + longTermStdDev
            + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
 };
