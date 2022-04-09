@@ -224,8 +224,8 @@ void Regulator::setFPPratio()
             mFPPratioDenominator = mPeerFPP / mFPP;
         else
             mFPPratioNumerator = mFPP / mPeerFPP;
-        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
-                 << mFPPratioDenominator;
+        //        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
+        //                 << mFPPratioDenominator;
     }
     if (mFPPratioNumerator > 1) {
         mBytesPeerPacket = mBytes / mFPPratioNumerator;
@@ -239,7 +239,6 @@ void Regulator::setFPPratio()
 //*******************************************************************************
 void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
-    //    qDebug() << "rcv packet" << seq_num;
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
             mPeerFPP = len / (mNumChannels * mBitResolutionMode);
@@ -299,9 +298,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     QMutexLocker locker(&mMutex);
-    //    qDebug() << "\t" << seq_num;
     seq_num %= mModSeqNum;
-    // if (seq_num==0) return;   // if (seq_num==1) return; // impose regular loss
+    // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mLastSeqNumIn = seq_num;
@@ -474,7 +472,7 @@ bool BurgAlgorithm::classify(double d)
         tmp = true;
         break;
     case FP_ZERO:
-        //      qDebug() <<  ("zero");
+        qDebug() << ("zero");
         tmp = true;
         break;
     case FP_SUBNORMAL:
