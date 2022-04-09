@@ -269,8 +269,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 if ((seq_num % mFPPratioNumerator) == mModCycle) {
                     if (mAssemblyCnt == mModCycle)
                         pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
-                    else
-                        qDebug() << "incomplete due to lost packet";
+                    //                    else
+                    //                        qDebug() << "incomplete due to lost packet";
                     mAssemblyCnt = 0;
                 } else
                     mAssemblyCnt++;
@@ -623,7 +623,7 @@ void StdDev::reset()
 
 double StdDev::calcAuto()
 {
-    qDebug() << longTermStdDev << longTermMax << AutoMax << window << longTermCnt;
+    //    qDebug() << longTermStdDev << longTermMax << AutoMax << window << longTermCnt;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
     return AutoHeadroom + longTermStdDev
