@@ -35,11 +35,9 @@
  * \date May-Sep 2021
  */
 
-// EXPERIMENTAL for testing in JackTrip v1.5.0
-// requires server and client have same FPP
-// runs ok from FPP 16 up to 1024
-// number of in / out channels should be the same
-// mono, stereo and -n3 tested fine
+// EXPERIMENTAL for testing in JackTrip v1.5.<n>
+// server and client can have different FPP (tested from FPP 32 to 512)
+// server and client can have different in / out channel count
 
 // ./jacktrip -S --udprt -p1 --bufstrategy 3  -I 1 -q10
 // PIPEWIRE_LATENCY=32/48000 ./jacktrip -C <SERV> --udprt --bufstrategy 3 -I 1 -q4
@@ -285,10 +283,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 }
             }
         }
-        // first packet has arrived use theoretical length while measuring for 2 secs
-
-        double adjustAuto = pushStat->calcAuto();
         pushStat->tick();
+        double adjustAuto = pushStat->calcAuto();
         if (mAuto && (pushStat->lastTime > AutoInitDur))
             mMsecTolerance = adjustAuto;
     }
