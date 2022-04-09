@@ -622,7 +622,7 @@ void StdDev::reset()
 
 double StdDev::calcAuto()
 {
-    //    qDebug() << longTermStdDev << longTermMax << AutoMax;
+    qDebug() << longTermStdDev << longTermMax << AutoMax;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
     return AutoHeadroom + longTermStdDev
