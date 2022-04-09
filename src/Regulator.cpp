@@ -81,8 +81,8 @@ constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
 constexpr double AutoHeadroom = 1.0;  // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 6000.0;  // msec init phase
-constexpr double AutoInitVal =
-    100.0;  // msec for initial mMsecTolerance during init phase if unspecified
+constexpr double AutoInitValFactor =
+    0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 //*******************************************************************************
 Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -244,11 +244,15 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
         if (!mFPPratioIsSet) {  // first peer packet
             mPeerFPP = len / (mNumChannels * mBitResolutionMode);
             // bufstrategy 1 autoq mode overloads qLen with negative val
+            // found an interesting relationship between mPeerFPP and initial
+            // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
+            // conversion of bufsize directly to msec
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from
-                mMsecTolerance =
-                    (mMsecTolerance == -500.0) ? AutoInitVal : -mMsecTolerance;
+                mMsecTolerance = (mMsecTolerance == -500.0)
+                                     ? (mPeerFPP * AutoInitValFactor)
+                                     : -mMsecTolerance;
             };
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
