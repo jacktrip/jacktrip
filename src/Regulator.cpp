@@ -253,7 +253,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
             pushStat =
-                new StdDev(1, &mIncomingTimer, (int)(floor(48000.0 / (double)mPeerFPP)));
+                new StdDev(1, &mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)));
             pullStat =
                 new StdDev(2, &mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)));
             mFPPratioIsSet = true;
