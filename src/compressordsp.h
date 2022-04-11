@@ -630,7 +630,7 @@ vm v2
 
 ****************************************************************************************/
 
-#include <assert.h>
+#include <cassert>
 #include <float.h>
 
 #include <algorithm>  // std::max
