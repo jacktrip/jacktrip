@@ -344,7 +344,7 @@ architecture section is not modified.
 #ifndef API_UI_H
 #define API_UI_H
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <map>
 #include <sstream>
