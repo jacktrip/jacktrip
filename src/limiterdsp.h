@@ -1,7 +1,8 @@
 /* ------------------------------------------------------------
 name: "limiterdsp"
-Code generated with Faust 2.28.6 (https://faust.grame.fr)
-Compilation options: -lang cpp -inpl -scal -ftz 0
+Code generated with Faust 2.40.0 (https://faust.grame.fr)
+Compilation options: -a faust2header.cpp -lang cpp -i -inpl -cn limiterdsp -es 1 -mcd 16
+-single -ftz 0
 ------------------------------------------------------------ */
 
 #ifndef __limiterdsp_H__
@@ -14,23 +15,23 @@ Compilation options: -lang cpp -inpl -scal -ftz 0
 // aimed at creating a simple C++ header file (.h) containing a Faust DSP.
 // See the Makefile for how to use it.
 
-/************************** BEGIN dsp.h **************************/
-/************************************************************************
+/************************** BEGIN dsp.h ********************************
  FAUST Architecture File
- Copyright (C) 2003-2017 GRAME, Centre National de Creation Musicale
+ Copyright (C) 2003-2022 GRAME, Centre National de Creation Musicale
  ---------------------------------------------------------------------
- This Architecture section is free software; you can redistribute it
- and/or modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 3 of
- the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Lesser General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
@@ -58,8 +59,37 @@ struct Meta;
 struct dsp_memory_manager {
     virtual ~dsp_memory_manager() {}
 
+    /**
+     * Inform the Memory Manager with the number of expected memory zones.
+     * @param count - the number of expected memory zones
+     */
+    virtual void begin(size_t count) {}
+
+    /**
+     * Give the Memory Manager information on a given memory zone.
+     * @param size - the size in bytes of the memory zone
+     * @param reads - the number of Read access to the zone used to compute one frame
+     * @param writes - the number of Write access to the zone used to compute one frame
+     */
+    virtual void info(size_t size, size_t reads, size_t writes) {}
+
+    /**
+     * Inform the Memory Manager that all memory zones have been described,
+     * to possibly start a 'compute the best allocation strategy' step.
+     */
+    virtual void end() {}
+
+    /**
+     * Allocate a memory zone.
+     * @param size - the memory zone size in bytes
+     */
     virtual void* allocate(size_t size) = 0;
-    virtual void destroy(void* ptr)     = 0;
+
+    /**
+     * Destroy a memory zone.
+     * @param ptr - the memory zone pointer to be deallocated
+     */
+    virtual void destroy(void* ptr) = 0;
 };
 
 /**
@@ -86,7 +116,7 @@ class dsp
      */
     virtual void buildUserInterface(UI* ui_interface) = 0;
 
-    /* Returns the sample rate currently used by the instance */
+    /* Return the sample rate currently used by the instance */
     virtual int getSampleRate() = 0;
 
     /**
@@ -94,28 +124,28 @@ class dsp
      * - static class 'classInit': static tables initialization
      * - 'instanceInit': constants and instance state initialization
      *
-     * @param sample_rate - the sampling rate in Hertz
+     * @param sample_rate - the sampling rate in Hz
      */
     virtual void init(int sample_rate) = 0;
 
     /**
      * Init instance state
      *
-     * @param sample_rate - the sampling rate in Hertz
+     * @param sample_rate - the sampling rate in Hz
      */
     virtual void instanceInit(int sample_rate) = 0;
 
     /**
      * Init instance constant state
      *
-     * @param sample_rate - the sampling rate in Hertz
+     * @param sample_rate - the sampling rate in Hz
      */
     virtual void instanceConstants(int sample_rate) = 0;
 
     /* Init default control parameters values */
     virtual void instanceResetUserInterface() = 0;
 
-    /* Init instance state (delay lines...) */
+    /* Init instance state (like delay lines...) but keep the control parameter values */
     virtual void instanceClear() = 0;
 
     /**
@@ -206,7 +236,8 @@ class decorator_dsp : public dsp
 };
 
 /**
- * DSP factory class.
+ * DSP factory class, used with LLVM and Interpreter backends
+ * to create DSP instances from a compiled DSP program.
  */
 
 class dsp_factory
@@ -229,75 +260,114 @@ class dsp_factory
     virtual dsp_memory_manager* getMemoryManager()             = 0;
 };
 
-/**
- * On Intel set FZ (Flush to Zero) and DAZ (Denormals Are Zero)
- * flags to avoid costly denormals.
- */
+// Denormal handling
 
-#ifdef __SSE__
+#if defined(__SSE__)
 #include <xmmintrin.h>
-#ifdef __SSE2__
-#define AVOIDDENORMALS _mm_setcsr(_mm_getcsr() | 0x8040)
+#endif
+
+class ScopedNoDenormals
+{
+   private:
+    intptr_t fpsr;
+
+    void setFpStatusRegister(intptr_t fpsr_aux) noexcept
+    {
+#if defined(__arm64__) || defined(__aarch64__)
+        asm volatile("msr fpcr, %0" : : "ri"(fpsr_aux));
+#elif defined(__SSE__)
+        _mm_setcsr(static_cast<uint32_t>(fpsr_aux));
+#endif
+    }
+
+    void getFpStatusRegister() noexcept
+    {
+#if defined(__arm64__) || defined(__aarch64__)
+        asm volatile("mrs %0, fpcr" : "=r"(fpsr));
+#elif defined(__SSE__)
+        fpsr          = static_cast<intptr_t>(_mm_getcsr());
+#endif
+    }
+
+   public:
+    ScopedNoDenormals() noexcept
+    {
+#if defined(__arm64__) || defined(__aarch64__)
+        intptr_t mask = (1 << 24 /* FZ */);
 #else
-#define AVOIDDENORMALS _mm_setcsr(_mm_getcsr() | 0x8000)
+#if defined(__SSE__)
+#if defined(__SSE2__)
+        intptr_t mask = 0x8040;
+#else
+        intptr_t mask = 0x8000;
 #endif
 #else
-#define AVOIDDENORMALS
+        intptr_t mask = 0x0000;
+#endif
+#endif
+        getFpStatusRegister();
+        setFpStatusRegister(fpsr | mask);
+    }
+
+    ~ScopedNoDenormals() noexcept { setFpStatusRegister(fpsr); }
+};
+
+#define AVOIDDENORMALS ScopedNoDenormals();
+
 #endif
 
-#endif
-/**************************  END  dsp.h **************************/
+/************************** END dsp.h **************************/
+/************************** BEGIN APIUI.h *****************************
+FAUST Architecture File
+Copyright (C) 2003-2022 GRAME, Centre National de Creation Musicale
+---------------------------------------------------------------------
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 2.1 of the License, or
+(at your option) any later version.
 
-/************************** BEGIN APIUI.h **************************/
-/************************************************************************
- FAUST Architecture File
- Copyright (C) 2003-2017 GRAME, Centre National de Creation Musicale
- ---------------------------------------------------------------------
- This Architecture section is free software; you can redistribute it
- and/or modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 3 of
- the License, or (at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
- You should have received a copy of the GNU General Public License
- along with this program; If not, see <http://www.gnu.org/licenses/>.
-
- EXCEPTION : As a special exception, you may create a larger work
- that contains this FAUST architecture section and distribute
- that work under terms of your choice, so long as this FAUST
- architecture section is not modified.
- ************************************************************************/
+EXCEPTION : As a special exception, you may create a larger work
+that contains this FAUST architecture section and distribute
+that work under terms of your choice, so long as this FAUST
+architecture section is not modified.
+************************************************************************/
 
 #ifndef API_UI_H
 #define API_UI_H
 
-#include <iostream>
+#include <stdio.h>
+
 #include <map>
 #include <sstream>
 #include <string>
 #include <vector>
 
-/************************** BEGIN meta.h **************************/
-/************************************************************************
+/************************** BEGIN meta.h *******************************
  FAUST Architecture File
- Copyright (C) 2003-2017 GRAME, Centre National de Creation Musicale
+ Copyright (C) 2003-2022 GRAME, Centre National de Creation Musicale
  ---------------------------------------------------------------------
- This Architecture section is free software; you can redistribute it
- and/or modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 3 of
- the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Lesser General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
@@ -308,36 +378,40 @@ class dsp_factory
 #ifndef __meta__
 #define __meta__
 
+/**
+ The base class of Meta handler to be used in dsp::metadata(Meta* m) method to retrieve
+ (key, value) metadata.
+ */
 struct Meta {
-    virtual ~Meta(){};
+    virtual ~Meta() {}
     virtual void declare(const char* key, const char* value) = 0;
 };
 
 #endif
 /**************************  END  meta.h **************************/
-/************************** BEGIN UI.h **************************/
-/************************************************************************
+/************************** BEGIN UI.h *****************************
  FAUST Architecture File
- Copyright (C) 2003-2020 GRAME, Centre National de Creation Musicale
+ Copyright (C) 2003-2022 GRAME, Centre National de Creation Musicale
  ---------------------------------------------------------------------
- This Architecture section is free software; you can redistribute it
- and/or modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 3 of
- the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Lesser General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
  architecture section is not modified.
- ************************************************************************/
+ ********************************************************************/
 
 #ifndef __UI_H__
 #define __UI_H__
@@ -392,7 +466,10 @@ struct UIReal {
 
     // -- metadata declarations
 
-    virtual void declare(REAL* /*zone*/, const char* /*key*/, const char* /*val*/) {}
+    virtual void declare(REAL* zone, const char* key, const char* val) {}
+
+    // To be used by LLVM client
+    virtual int sizeOfFAUSTFLOAT() { return sizeof(FAUSTFLOAT); }
 };
 
 struct UI : public UIReal<FAUSTFLOAT> {
@@ -402,23 +479,23 @@ struct UI : public UIReal<FAUSTFLOAT> {
 
 #endif
 /**************************  END  UI.h **************************/
-/************************** BEGIN PathBuilder.h **************************/
-/************************************************************************
+/************************** BEGIN PathBuilder.h **************************
  FAUST Architecture File
- Copyright (C) 2003-2017 GRAME, Centre National de Creation Musicale
+ Copyright (C) 2003-2022 GRAME, Centre National de Creation Musicale
  ---------------------------------------------------------------------
- This Architecture section is free software; you can redistribute it
- and/or modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 3 of
- the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Lesser General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
@@ -447,6 +524,18 @@ class PathBuilder
     PathBuilder() {}
     virtual ~PathBuilder() {}
 
+    std::string replaceCharList(std::string str, const std::vector<char>& ch1, char ch2)
+    {
+        std::vector<char>::const_iterator beg = ch1.begin();
+        std::vector<char>::const_iterator end = ch1.end();
+        for (size_t i = 0; i < str.length(); ++i) {
+            if (std::find(beg, end, str[i]) != end) {
+                str[i] = ch2;
+            }
+        }
+        return str;
+    }
+
     std::string buildPath(const std::string& label)
     {
         std::string res = "/";
@@ -455,14 +544,10 @@ class PathBuilder
             res += "/";
         }
         res += label;
-        std::replace(res.begin(), res.end(), ' ', '_');
+        std::vector<char> rep = {' ', '#', '*', ',', '/', '?',
+                                 '[', ']', '{', '}', '(', ')'};
+        replaceCharList(res, rep, '_');
         return res;
-    }
-
-    std::string buildLabel(std::string label)
-    {
-        std::replace(label.begin(), label.end(), ' ', '_');
-        return label;
     }
 
     void pushLabel(const std::string& label) { fControlsLevel.push_back(label); }
@@ -471,80 +556,81 @@ class PathBuilder
 
 #endif  // FAUST_PATHBUILDER_H
 /**************************  END  PathBuilder.h **************************/
-/************************** BEGIN ValueConverter.h **************************/
-/************************************************************************
+/************************** BEGIN ValueConverter.h ********************
  FAUST Architecture File
- Copyright (C) 2003-2017 GRAME, Centre National de Creation Musicale
+ Copyright (C) 2003-2022 GRAME, Centre National de Creation Musicale
  ---------------------------------------------------------------------
- This Architecture section is free software; you can redistribute it
- and/or modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 3 of
- the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Lesser General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
  EXCEPTION : As a special exception, you may create a larger work
  that contains this FAUST architecture section and distribute
  that work under terms of your choice, so long as this FAUST
  architecture section is not modified.
- ************************************************************************/
+ ********************************************************************/
 
 #ifndef __ValueConverter__
 #define __ValueConverter__
 
 /***************************************************************************************
-                                                                ValueConverter.h
-                            (GRAME, Copyright 2015-2019)
+ ValueConverter.h
+ (GRAME, Copyright 2015-2019)
 
-Set of conversion objects used to map user interface values (for example a gui slider
-delivering values between 0 and 1) to faust values (for example a vslider between
-20 and 20000) using a log scale.
+ Set of conversion objects used to map user interface values (for example a gui slider
+ delivering values between 0 and 1) to faust values (for example a vslider between
+ 20 and 20000) using a log scale.
 
--- Utilities
+ -- Utilities
 
-Range(lo,hi) : clip a value x between lo and hi
-Interpolator(lo,hi,v1,v2) : Maps a value x between lo and hi to a value y between v1 and
+ Range(lo,hi) : clip a value x between lo and hi
+ Interpolator(lo,hi,v1,v2) : Maps a value x between lo and hi to a value y between v1 and
 v2 Interpolator3pt(lo,mi,hi,v1,vm,v2) : Map values between lo mid hi to values between v1
 vm v2
 
--- Value Converters
+ -- Value Converters
 
-ValueConverter::ui2faust(x)
-ValueConverter::faust2ui(x)
+ ValueConverter::ui2faust(x)
+ ValueConverter::faust2ui(x)
 
--- ValueConverters used for sliders depending of the scale
+ -- ValueConverters used for sliders depending of the scale
 
-LinearValueConverter(umin, umax, fmin, fmax)
-LinearValueConverter2(lo, mi, hi, v1, vm, v2) using 2 segments
-LogValueConverter(umin, umax, fmin, fmax)
-ExpValueConverter(umin, umax, fmin, fmax)
+ LinearValueConverter(umin, umax, fmin, fmax)
+ LinearValueConverter2(lo, mi, hi, v1, vm, v2) using 2 segments
+ LogValueConverter(umin, umax, fmin, fmax)
+ ExpValueConverter(umin, umax, fmin, fmax)
 
--- ValueConverters used for accelerometers based on 3 points
+ -- ValueConverters used for accelerometers based on 3 points
 
-AccUpConverter(amin, amid, amax, fmin, fmid, fmax)		-- curve 0
-AccDownConverter(amin, amid, amax, fmin, fmid, fmax)	-- curve 1
-AccUpDownConverter(amin, amid, amax, fmin, fmid, fmax)	-- curve 2
-AccDownUpConverter(amin, amid, amax, fmin, fmid, fmax)	-- curve 3
+ AccUpConverter(amin, amid, amax, fmin, fmid, fmax)        -- curve 0
+ AccDownConverter(amin, amid, amax, fmin, fmid, fmax)      -- curve 1
+ AccUpDownConverter(amin, amid, amax, fmin, fmid, fmax)    -- curve 2
+ AccDownUpConverter(amin, amid, amax, fmin, fmid, fmax)    -- curve 3
 
--- lists of ZoneControl are used to implement accelerometers metadata for each axes
+ -- lists of ZoneControl are used to implement accelerometers metadata for each axes
 
-ZoneControl(zone, valueConverter) : a zone with an accelerometer data converter
+ ZoneControl(zone, valueConverter) : a zone with an accelerometer data converter
 
--- ZoneReader are used to implement screencolor metadata
+ -- ZoneReader are used to implement screencolor metadata
 
-ZoneReader(zone, valueConverter) : a zone with a data converter
+ ZoneReader(zone, valueConverter) : a zone with a data converter
 
 ****************************************************************************************/
 
+#include <assert.h>
+#include <float.h>
+
 #include <algorithm>  // std::max
-#include <cassert>
-#include <cfloat>
 #include <cmath>
 #include <vector>
 
@@ -552,10 +638,10 @@ ZoneReader(zone, valueConverter) : a zone with a data converter
 // Interpolator(lo,hi,v1,v2)
 // Maps a value x between lo and hi to a value y between v1 and v2
 // y = v1 + (x-lo)/(hi-lo)*(v2-v1)
-// y = v1 + (x-lo) * coef   		with coef = (v2-v1)/(hi-lo)
+// y = v1 + (x-lo) * coef           with coef = (v2-v1)/(hi-lo)
 // y = v1 + x*coef - lo*coef
 // y = v1 - lo*coef + x*coef
-// y = offset + x*coef				with offset = v1 - lo*coef
+// y = offset + x*coef              with offset = v1 - lo*coef
 //--------------------------------------------------------------------------------------
 class Interpolator
 {
@@ -632,12 +718,12 @@ class Interpolator3pt
 //--------------------------------------------------------------------------------------
 // Abstract ValueConverter class. Converts values between UI and Faust representations
 //--------------------------------------------------------------------------------------
-class ValueConverter
+class ValueConverter  // Identity by default
 {
    public:
     virtual ~ValueConverter() {}
-    virtual double ui2faust(double x) = 0;
-    virtual double faust2ui(double x) = 0;
+    virtual double ui2faust(double x) { return x; };
+    virtual double faust2ui(double x) { return x; };
 };
 
 //--------------------------------------------------------------------------------------
@@ -844,8 +930,8 @@ class AccUpDownConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin,
-                       double /*fmid*/, double fmax)
+    AccUpDownConverter(double amin, double amid, double amax, double fmin, double fmid,
+                       double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -856,7 +942,7 @@ class AccUpDownConverter : public UpdatableValueConverter
     virtual double faust2ui(double x) { return fF2A(x); }
 
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
-                                  double /*fmid*/, double fmax)
+                                  double fmid, double fmax)
     {
         //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f
         //%f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
@@ -881,8 +967,8 @@ class AccDownUpConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin,
-                       double /*fmid*/, double fmax)
+    AccDownUpConverter(double amin, double amid, double amax, double fmin, double fmid,
+                       double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -893,7 +979,7 @@ class AccDownUpConverter : public UpdatableValueConverter
     virtual double faust2ui(double x) { return fF2A(x); }
 
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
-                                  double /*fmid*/, double fmax)
+                                  double fmid, double fmax)
     {
         //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f
         //%f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
@@ -919,18 +1005,17 @@ class ZoneControl
     ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
     virtual ~ZoneControl() {}
 
-    virtual void update(double /*v*/) const {}
+    virtual void update(double v) const {}
 
-    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/,
-                                  double /*amax*/, double /*min*/, double /*init*/,
-                                  double /*max*/)
+    virtual void setMappingValues(int curve, double amin, double amid, double amax,
+                                  double min, double init, double max)
     {
     }
-    virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
+    virtual void getMappingValues(double& amin, double& amid, double& amax) {}
 
     FAUSTFLOAT* getZone() { return fZone; }
 
-    virtual void setActive(bool /*on_off*/) {}
+    virtual void setActive(bool on_off) {}
     virtual bool getActive() { return false; }
 
     virtual int getCurve() { return -1; }
@@ -954,7 +1039,10 @@ class ConverterZoneControl : public ZoneControl
         delete fValueConverter;
     }  // Assuming fValueConverter is not kept elsewhere...
 
-    virtual void update(double v) const { *fZone = fValueConverter->ui2faust(v); }
+    virtual void update(double v) const
+    {
+        *fZone = FAUSTFLOAT(fValueConverter->ui2faust(v));
+    }
 
     ValueConverter* getConverter() { return fValueConverter; }
 };
@@ -986,15 +1074,14 @@ class CurveZoneControl : public ZoneControl
     }
     virtual ~CurveZoneControl()
     {
-        std::vector<UpdatableValueConverter*>::iterator it;
-        for (it = fValueConverters.begin(); it != fValueConverters.end(); it++) {
-            delete (*it);
+        for (const auto& it : fValueConverters) {
+            delete it;
         }
     }
     void update(double v) const
     {
         if (fValueConverters[fCurve]->getActive())
-            *fZone = fValueConverters[fCurve]->ui2faust(v);
+            *fZone = FAUSTFLOAT(fValueConverters[fCurve]->ui2faust(v));
     }
 
     void setMappingValues(int curve, double amin, double amid, double amax, double min,
@@ -1011,9 +1098,8 @@ class CurveZoneControl : public ZoneControl
 
     void setActive(bool on_off)
     {
-        std::vector<UpdatableValueConverter*>::iterator it;
-        for (it = fValueConverters.begin(); it != fValueConverters.end(); it++) {
-            (*it)->setActive(on_off);
+        for (const auto& it : fValueConverters) {
+            it->setActive(on_off);
         }
     }
 
@@ -1040,6 +1126,8 @@ class ZoneReader
 #endif
 /**************************  END  ValueConverter.h **************************/
 
+typedef unsigned int uint;
+
 class APIUI
     : public PathBuilder
     , public Meta
@@ -1055,22 +1143,24 @@ class APIUI
         kHBargraph,
         kVBargraph
     };
+    enum Type { kAcc = 0, kGyr = 1, kNoType };
 
    protected:
-    enum { kLin = 0, kLog = 1, kExp = 2 };
+    enum Mapping { kLin = 0, kLog = 1, kExp = 2 };
 
-    int fNumParameters;
-    std::vector<std::string> fPaths;
-    std::vector<std::string> fLabels;
-    std::map<std::string, int> fPathMap;
-    std::map<std::string, int> fLabelMap;
-    std::vector<ValueConverter*> fConversion;
-    std::vector<FAUSTFLOAT*> fZone;
-    std::vector<FAUSTFLOAT> fInit;
-    std::vector<FAUSTFLOAT> fMin;
-    std::vector<FAUSTFLOAT> fMax;
-    std::vector<FAUSTFLOAT> fStep;
-    std::vector<ItemType> fItemType;
+    struct Item {
+        std::string fPath;
+        std::string fLabel;
+        ValueConverter* fConversion;
+        FAUSTFLOAT* fZone;
+        FAUSTFLOAT fInit;
+        FAUSTFLOAT fMin;
+        FAUSTFLOAT fMax;
+        FAUSTFLOAT fStep;
+        ItemType fItemType;
+    };
+    std::vector<Item> fItems;
+
     std::vector<std::map<std::string, std::string> > fMetaData;
     std::vector<ZoneControl*> fAcc[3];
     std::vector<ZoneControl*> fGyr[3];
@@ -1097,33 +1187,29 @@ class APIUI
                               ItemType type)
     {
         std::string path = buildPath(label);
-        fPathMap[path] = fLabelMap[label] = fNumParameters++;
-        fPaths.push_back(path);
-        fLabels.push_back(label);
-        fZone.push_back(zone);
-        fInit.push_back(init);
-        fMin.push_back(min);
-        fMax.push_back(max);
-        fStep.push_back(step);
-        fItemType.push_back(type);
 
         // handle scale metadata
+        ValueConverter* converter = nullptr;
         switch (fCurrentScale) {
         case kLin:
-            fConversion.push_back(new LinearValueConverter(0, 1, min, max));
+            converter = new LinearValueConverter(0, 1, min, max);
             break;
         case kLog:
-            fConversion.push_back(new LogValueConverter(0, 1, min, max));
+            converter = new LogValueConverter(0, 1, min, max);
             break;
         case kExp:
-            fConversion.push_back(new ExpValueConverter(0, 1, min, max));
+            converter = new ExpValueConverter(0, 1, min, max);
             break;
         }
         fCurrentScale = kLin;
 
+        fItems.push_back({path, label, converter, zone, init, min, max, step, type});
+
         if (fCurrentAcc.size() > 0 && fCurrentGyr.size() > 0) {
-            std::cerr << "warning : 'acc' and 'gyr' metadata used for the same " << label
-                      << " parameter !!\n";
+            fprintf(
+                stderr,
+                "warning : 'acc' and 'gyr' metadata used for the same %s parameter !!\n",
+                label);
         }
 
         // handle acc metadata "...[acc : <axe> <curve> <amin> <amid> <amax>]..."
@@ -1138,7 +1224,7 @@ class APIUI
                 fAcc[axe].push_back(
                     new CurveZoneControl(zone, curve, amin, amid, amax, min, init, max));
             } else {
-                std::cerr << "incorrect acc metadata : " << fCurrentAcc << std::endl;
+                fprintf(stderr, "incorrect acc metadata : %s \n", fCurrentAcc.c_str());
             }
             fCurrentAcc = "";
         }
@@ -1155,31 +1241,31 @@ class APIUI
                 fGyr[axe].push_back(
                     new CurveZoneControl(zone, curve, amin, amid, amax, min, init, max));
             } else {
-                std::cerr << "incorrect gyr metadata : " << fCurrentGyr << std::endl;
+                fprintf(stderr, "incorrect gyr metadata : %s \n", fCurrentGyr.c_str());
             }
             fCurrentGyr = "";
         }
 
         // handle screencolor metadata "...[screencolor:red|green|blue|white]..."
         if (fCurrentColor.size() > 0) {
-            if ((fCurrentColor == "red") && (fRedReader == 0)) {
+            if ((fCurrentColor == "red") && (fRedReader == nullptr)) {
                 fRedReader        = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "green") && (fGreenReader == 0)) {
+            } else if ((fCurrentColor == "green") && (fGreenReader == nullptr)) {
                 fGreenReader      = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "blue") && (fBlueReader == 0)) {
+            } else if ((fCurrentColor == "blue") && (fBlueReader == nullptr)) {
                 fBlueReader       = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
-            } else if ((fCurrentColor == "white") && (fRedReader == 0)
-                       && (fGreenReader == 0) && (fBlueReader == 0)) {
+            } else if ((fCurrentColor == "white") && (fRedReader == nullptr)
+                       && (fGreenReader == nullptr) && (fBlueReader == nullptr)) {
                 fRedReader        = new ZoneReader(zone, min, max);
                 fGreenReader      = new ZoneReader(zone, min, max);
                 fBlueReader       = new ZoneReader(zone, min, max);
                 fHasScreenControl = true;
             } else {
-                std::cerr << "incorrect screencolor metadata : " << fCurrentColor
-                          << std::endl;
+                fprintf(stderr, "incorrect screencolor metadata : %s \n",
+                        fCurrentColor.c_str());
             }
         }
         fCurrentColor = "";
@@ -1190,7 +1276,7 @@ class APIUI
 
     int getZoneIndex(std::vector<ZoneControl*>* table, int p, int val)
     {
-        FAUSTFLOAT* zone = fZone[p];
+        FAUSTFLOAT* zone = fItems[uint(p)].fZone;
         for (size_t i = 0; i < table[val].size(); i++) {
             if (zone == table[val][i]->getZone())
                 return int(i);
@@ -1207,11 +1293,11 @@ class APIUI
 
         // Deactivates everywhere..
         if (id1 != -1)
-            table[0][id1]->setActive(false);
+            table[0][uint(id1)]->setActive(false);
         if (id2 != -1)
-            table[1][id2]->setActive(false);
+            table[1][uint(id2)]->setActive(false);
         if (id3 != -1)
-            table[2][id3]->setActive(false);
+            table[2][uint(id3)]->setActive(false);
 
         if (val == -1) {  // Means: no more mapping...
             // So stay all deactivated...
@@ -1219,14 +1305,16 @@ class APIUI
             int id4 = getZoneIndex(table, p, val);
             if (id4 != -1) {
                 // Reactivate the one we edit...
-                table[val][id4]->setMappingValues(curve, amin, amid, amax, fMin[p],
-                                                  fInit[p], fMax[p]);
-                table[val][id4]->setActive(true);
+                table[val][uint(id4)]->setMappingValues(
+                    curve, amin, amid, amax, fItems[uint(p)].fMin, fItems[uint(p)].fInit,
+                    fItems[uint(p)].fMax);
+                table[val][uint(id4)]->setActive(true);
             } else {
                 // Allocate a new CurveZoneControl which is 'active' by default
-                FAUSTFLOAT* zone = fZone[p];
-                table[val].push_back(new CurveZoneControl(zone, curve, amin, amid, amax,
-                                                          fMin[p], fInit[p], fMax[p]));
+                FAUSTFLOAT* zone = fItems[uint(p)].fZone;
+                table[val].push_back(new CurveZoneControl(
+                    zone, curve, amin, amid, amax, fItems[uint(p)].fMin,
+                    fItems[uint(p)].fInit, fItems[uint(p)].fMax));
             }
         }
     }
@@ -1240,16 +1328,16 @@ class APIUI
 
         if (id1 != -1) {
             val   = 0;
-            curve = table[val][id1]->getCurve();
-            table[val][id1]->getMappingValues(amin, amid, amax);
+            curve = table[val][uint(id1)]->getCurve();
+            table[val][uint(id1)]->getMappingValues(amin, amid, amax);
         } else if (id2 != -1) {
             val   = 1;
-            curve = table[val][id2]->getCurve();
-            table[val][id2]->getMappingValues(amin, amid, amax);
+            curve = table[val][uint(id2)]->getCurve();
+            table[val][uint(id2)]->getMappingValues(amin, amid, amax);
         } else if (id3 != -1) {
             val   = 2;
-            curve = table[val][id3]->getCurve();
-            table[val][id3]->getMappingValues(amin, amid, amax);
+            curve = table[val][uint(id3)]->getCurve();
+            table[val][uint(id3)]->getMappingValues(amin, amid, amax);
         } else {
             val   = -1;  // No mapping
             curve = 0;
@@ -1260,26 +1348,23 @@ class APIUI
     }
 
    public:
-    enum Type { kAcc = 0, kGyr = 1, kNoType };
-
     APIUI()
-        : fNumParameters(0)
-        , fHasScreenControl(false)
-        , fRedReader(0)
-        , fGreenReader(0)
-        , fBlueReader(0)
+        : fHasScreenControl(false)
+        , fRedReader(nullptr)
+        , fGreenReader(nullptr)
+        , fBlueReader(nullptr)
         , fCurrentScale(kLin)
     {
     }
 
     virtual ~APIUI()
     {
-        for (auto& it : fConversion)
-            delete it;
+        for (const auto& it : fItems)
+            delete it.fConversion;
         for (int i = 0; i < 3; i++) {
-            for (auto& it : fAcc[i])
+            for (const auto& it : fAcc[i])
                 delete it;
-            for (auto& it : fGyr[i])
+            for (const auto& it : fGyr[i])
                 delete it;
         }
         delete fRedReader;
@@ -1329,25 +1414,25 @@ class APIUI
     virtual void addHorizontalBargraph(const char* label, FAUSTFLOAT* zone,
                                        FAUSTFLOAT min, FAUSTFLOAT max)
     {
-        addParameter(label, zone, min, min, max, (max - min) / 1000.0, kHBargraph);
+        addParameter(label, zone, min, min, max, (max - min) / 1000.0f, kHBargraph);
     }
 
     virtual void addVerticalBargraph(const char* label, FAUSTFLOAT* zone, FAUSTFLOAT min,
                                      FAUSTFLOAT max)
     {
-        addParameter(label, zone, min, min, max, (max - min) / 1000.0, kVBargraph);
+        addParameter(label, zone, min, min, max, (max - min) / 1000.0f, kVBargraph);
     }
 
     // -- soundfiles
 
-    virtual void addSoundfile(const char* /*label*/, const char* /*filename*/,
-                              Soundfile** /*sf_zone*/)
+    virtual void addSoundfile(const char* label, const char* filename,
+                              Soundfile** sf_zone)
     {
     }
 
     // -- metadata declarations
 
-    virtual void declare(FAUSTFLOAT* /*zone*/, const char* key, const char* val)
+    virtual void declare(FAUSTFLOAT* zone, const char* key, const char* val)
     {
         // Keep metadata
         fCurrentMetadata[key] = val;
@@ -1373,28 +1458,37 @@ class APIUI
         }
     }
 
-    virtual void declare(const char* /*key*/, const char* /*val*/) {}
+    virtual void declare(const char* key, const char* val) {}
 
     //-------------------------------------------------------------------------------
     // Simple API part
     //-------------------------------------------------------------------------------
-    int getParamsCount() { return fNumParameters; }
+    int getParamsCount() { return int(fItems.size()); }
+
     int getParamIndex(const char* path)
     {
-        if (fPathMap.find(path) != fPathMap.end()) {
-            return fPathMap[path];
-        } else if (fLabelMap.find(path) != fLabelMap.end()) {
-            return fLabelMap[path];
-        } else {
-            return -1;
+        auto it1 = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
+            return it.fPath == std::string(path);
+        });
+        if (it1 != fItems.end()) {
+            return int(it1 - fItems.begin());
         }
+
+        auto it2 = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
+            return it.fLabel == std::string(path);
+        });
+        if (it2 != fItems.end()) {
+            return int(it2 - fItems.begin());
+        }
+
+        return -1;
     }
-    const char* getParamAddress(int p) { return fPaths[p].c_str(); }
-    const char* getParamLabel(int p) { return fLabels[p].c_str(); }
+    const char* getParamAddress(int p) { return fItems[uint(p)].fPath.c_str(); }
+    const char* getParamLabel(int p) { return fItems[uint(p)].fLabel.c_str(); }
     std::map<const char*, const char*> getMetadata(int p)
     {
         std::map<const char*, const char*> res;
-        std::map<std::string, std::string> metadata = fMetaData[p];
+        std::map<std::string, std::string> metadata = fMetaData[uint(p)];
         for (const auto& it : metadata) {
             res[it.first.c_str()] = it.second.c_str();
         }
@@ -1403,26 +1497,56 @@ class APIUI
 
     const char* getMetadata(int p, const char* key)
     {
-        return (fMetaData[p].find(key) != fMetaData[p].end()) ? fMetaData[p][key].c_str()
-                                                              : "";
+        return (fMetaData[uint(p)].find(key) != fMetaData[uint(p)].end())
+                   ? fMetaData[uint(p)][key].c_str()
+                   : "";
     }
-    FAUSTFLOAT getParamMin(int p) { return fMin[p]; }
-    FAUSTFLOAT getParamMax(int p) { return fMax[p]; }
-    FAUSTFLOAT getParamStep(int p) { return fStep[p]; }
-    FAUSTFLOAT getParamInit(int p) { return fInit[p]; }
+    FAUSTFLOAT getParamMin(int p) { return fItems[uint(p)].fMin; }
+    FAUSTFLOAT getParamMax(int p) { return fItems[uint(p)].fMax; }
+    FAUSTFLOAT getParamStep(int p) { return fItems[uint(p)].fStep; }
+    FAUSTFLOAT getParamInit(int p) { return fItems[uint(p)].fInit; }
 
-    FAUSTFLOAT* getParamZone(int p) { return fZone[p]; }
-    FAUSTFLOAT getParamValue(int p) { return *fZone[p]; }
-    void setParamValue(int p, FAUSTFLOAT v) { *fZone[p] = v; }
+    FAUSTFLOAT* getParamZone(int p) { return fItems[uint(p)].fZone; }
 
-    double getParamRatio(int p) { return fConversion[p]->faust2ui(*fZone[p]); }
-    void setParamRatio(int p, double r) { *fZone[p] = fConversion[p]->ui2faust(r); }
+    FAUSTFLOAT getParamValue(int p) { return *fItems[uint(p)].fZone; }
+    FAUSTFLOAT getParamValue(const char* path)
+    {
+        int index = getParamIndex(path);
+        return (index >= 0) ? getParamValue(index) : FAUSTFLOAT(0);
+    }
 
-    double value2ratio(int p, double r) { return fConversion[p]->faust2ui(r); }
-    double ratio2value(int p, double r) { return fConversion[p]->ui2faust(r); }
+    void setParamValue(int p, FAUSTFLOAT v) { *fItems[uint(p)].fZone = v; }
+    void setParamValue(const char* path, FAUSTFLOAT v)
+    {
+        int index = getParamIndex(path);
+        if (index >= 0) {
+            setParamValue(index, v);
+        } else {
+            fprintf(stderr, "setParamValue : '%s' not found\n",
+                    (path == nullptr ? "NULL" : path));
+        }
+    }
+
+    double getParamRatio(int p)
+    {
+        return fItems[uint(p)].fConversion->faust2ui(*fItems[uint(p)].fZone);
+    }
+    void setParamRatio(int p, double r)
+    {
+        *fItems[uint(p)].fZone = FAUSTFLOAT(fItems[uint(p)].fConversion->ui2faust(r));
+    }
+
+    double value2ratio(int p, double r)
+    {
+        return fItems[uint(p)].fConversion->faust2ui(r);
+    }
+    double ratio2value(int p, double r)
+    {
+        return fItems[uint(p)].fConversion->ui2faust(r);
+    }
 
     /**
-     * Return the control type (kAcc, kGyr, or -1) for a given parameter
+     * Return the control type (kAcc, kGyr, or -1) for a given parameter.
      *
      * @param p - the UI parameter index
      *
@@ -1444,13 +1568,13 @@ class APIUI
 
     /**
      * Return the Item type (kButton = 0, kCheckButton, kVSlider, kHSlider, kNumEntry,
-     * kHBargraph, kVBargraph) for a given parameter
+     * kHBargraph, kVBargraph) for a given parameter.
      *
      * @param p - the UI parameter index
      *
      * @return the Item type
      */
-    ItemType getParamItemType(int p) { return fItemType[p]; }
+    ItemType getParamItemType(int p) { return fItems[uint(p)].fItemType; }
 
     /**
      * Set a new value coming from an accelerometer, propagate it to all relevant
@@ -1555,7 +1679,7 @@ class APIUI
     }
 
     /**
-     * Get the number of FAUSTFLOAT* zones controlled with the accelerometer
+     * Get the number of FAUSTFLOAT* zones controlled with the accelerometer.
      *
      * @param acc - 0 for X accelerometer, 1 for Y accelerometer, 2 for Z accelerometer
      * @return the number of zones
@@ -1564,7 +1688,7 @@ class APIUI
     int getAccCount(int acc) { return (acc >= 0 && acc < 3) ? int(fAcc[acc].size()) : 0; }
 
     /**
-     * Get the number of FAUSTFLOAT* zones controlled with the gyroscope
+     * Get the number of FAUSTFLOAT* zones controlled with the gyroscope.
      *
      * @param gyr - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope
      * @param the number of zones
@@ -1596,204 +1720,187 @@ class APIUI
 //----------------------------------------------------------------------------
 //  FAUST Generated Code
 //----------------------------------------------------------------------------
+// clang-format off
 
 #ifndef FAUSTFLOAT
 #define FAUSTFLOAT float
-#endif
+#endif 
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <math.h>
 
-#ifndef FAUSTCLASS
+#ifndef FAUSTCLASS 
 #define FAUSTCLASS limiterdsp
 #endif
 
-#ifdef __APPLE__
+#ifdef __APPLE__ 
 #define exp10f __exp10f
-#define exp10  __exp10
+#define exp10 __exp10
 #endif
 
-class limiterdsp : public dsp
-{
-   private:
-    int fSampleRate;
-    float fConst0;
-    float fConst1;
-    float fConst2;
-    float fConst3;
-    int iRec5[2];
-    FAUSTFLOAT fHslider0;
-    int IOTA;
-    float fVec0[32];
-    float fRec4[2];
-    int iRec2[2];
-    float fRec1[2];
-    float fConst4;
-    float fConst5;
-    float fRec0[2];
-    int iConst6;
+#if defined(_WIN32)
+#define RESTRICT __restrict
+#else
+#define RESTRICT __restrict__
+#endif
 
-   public:
-    void metadata(Meta* m)
-    {
-        m->declare("analyzers.lib/name", "Faust Analyzer Library");
-        m->declare("analyzers.lib/version", "0.1");
-        m->declare("basics.lib/name", "Faust Basic Element Library");
-        m->declare("basics.lib/version", "0.1");
-        m->declare("compressors.lib/limiter_lad_N:author", "Dario Sanfilippo");
-        m->declare(
-            "compressors.lib/limiter_lad_N:copyright",
-            "Copyright (C) 2020 Dario Sanfilippo       <sanfilippo.dario@gmail.com>");
-        m->declare("compressors.lib/limiter_lad_N:license", "GPLv3 license");
-        m->declare("compressors.lib/limiter_lad_mono:author", "Dario Sanfilippo");
-        m->declare(
-            "compressors.lib/limiter_lad_mono:copyright",
-            "Copyright (C) 2020 Dario Sanfilippo       <sanfilippo.dario@gmail.com>");
-        m->declare("compressors.lib/limiter_lad_mono:license", "GPLv3 license");
-        m->declare("compressors.lib/name", "Faust Compressor Effect Library");
-        m->declare("compressors.lib/version", "0.0");
-        m->declare("filename", "limiterdsp.dsp");
-        m->declare("maths.lib/author", "GRAME");
-        m->declare("maths.lib/copyright", "GRAME");
-        m->declare("maths.lib/license", "LGPL with exception");
-        m->declare("maths.lib/name", "Faust Math Library");
-        m->declare("maths.lib/version", "2.3");
-        m->declare("name", "limiterdsp");
-        m->declare("platform.lib/name", "Generic Platform Library");
-        m->declare("platform.lib/version", "0.1");
-        m->declare("routes.lib/name", "Faust Signal Routing Library");
-        m->declare("routes.lib/version", "0.2");
-        m->declare("signals.lib/name", "Faust Signal Routing Library");
-        m->declare("signals.lib/version", "0.0");
-    }
 
-    virtual int getNumInputs() { return 1; }
-    virtual int getNumOutputs() { return 1; }
-    virtual int getInputRate(int channel)
-    {
-        int rate;
-        switch ((channel)) {
-        case 0: {
-            rate = 1;
-            break;
-        }
-        default: {
-            rate = -1;
-            break;
-        }
-        }
-        return rate;
-    }
-    virtual int getOutputRate(int channel)
-    {
-        int rate;
-        switch ((channel)) {
-        case 0: {
-            rate = 1;
-            break;
-        }
-        default: {
-            rate = -1;
-            break;
-        }
-        }
-        return rate;
-    }
+class limiterdsp : public dsp {
+	
+ private:
+	
+	int fSampleRate;
+	float fConst1;
+	float fConst2;
+	float fConst3;
+	int iRec5[2];
+	FAUSTFLOAT fHslider0;
+	int IOTA0;
+	float fVec0[32];
+	float fRec4[2];
+	int iRec2[2];
+	float fRec1[2];
+	float fConst4;
+	float fConst5;
+	float fRec0[2];
+	int iConst6;
+	
+ public:
+	
+	void metadata(Meta* m) { 
+		m->declare("analyzers.lib/name", "Faust Analyzer Library");
+		m->declare("analyzers.lib/version", "0.1");
+		m->declare("basics.lib/name", "Faust Basic Element Library");
+		m->declare("basics.lib/peakhold:author", "Jonatan Liljedahl, revised by Romain Michon");
+		m->declare("basics.lib/peakholder:author", "Jonatan Liljedahl");
+		m->declare("basics.lib/sweep:author", "Jonatan Liljedahl");
+		m->declare("basics.lib/version", "0.5");
+		m->declare("compile_options", "-a faust2header.cpp -lang cpp -i -inpl -cn limiterdsp -es 1 -mcd 16 -single -ftz 0");
+		m->declare("compressors.lib/limiter_lad_N:author", "Dario Sanfilippo");
+		m->declare("compressors.lib/limiter_lad_N:copyright", "Copyright (C) 2020 Dario Sanfilippo       <sanfilippo.dario@gmail.com>");
+		m->declare("compressors.lib/limiter_lad_N:license", "GPLv3 license");
+		m->declare("compressors.lib/limiter_lad_mono:author", "Dario Sanfilippo");
+		m->declare("compressors.lib/limiter_lad_mono:copyright", "Copyright (C) 2020 Dario Sanfilippo       <sanfilippo.dario@gmail.com>");
+		m->declare("compressors.lib/limiter_lad_mono:license", "GPLv3 license");
+		m->declare("compressors.lib/name", "Faust Compressor Effect Library");
+		m->declare("compressors.lib/version", "0.2");
+		m->declare("filename", "limiterdsp.dsp");
+		m->declare("maths.lib/author", "GRAME");
+		m->declare("maths.lib/copyright", "GRAME");
+		m->declare("maths.lib/license", "LGPL with exception");
+		m->declare("maths.lib/name", "Faust Math Library");
+		m->declare("maths.lib/version", "2.5");
+		m->declare("name", "limiterdsp");
+		m->declare("platform.lib/name", "Generic Platform Library");
+		m->declare("platform.lib/version", "0.2");
+		m->declare("routes.lib/name", "Faust Signal Routing Library");
+		m->declare("routes.lib/version", "0.2");
+		m->declare("signals.lib/name", "Faust Signal Routing Library");
+		m->declare("signals.lib/version", "0.1");
+	}
 
-    static void classInit(int /*sample_rate*/) {}
+	virtual int getNumInputs() {
+		return 1;
+	}
+	virtual int getNumOutputs() {
+		return 1;
+	}
+	
+	static void classInit(int sample_rate) {
+	}
+	
+	virtual void instanceConstants(int sample_rate) {
+		fSampleRate = sample_rate;
+		float fConst0 = std::min<float>(192000.0f, std::max<float>(1.0f, float(fSampleRate)));
+		fConst1 = std::exp(0.0f - 100000.0f / fConst0);
+		fConst2 = 1.0f - fConst1;
+		fConst3 = 0.100000001f * fConst0;
+		fConst4 = std::exp(0.0f - 4.0f / fConst0);
+		fConst5 = 1.0f - fConst4;
+		iConst6 = int(9.99999975e-05f * fConst0);
+	}
+	
+	virtual void instanceResetUserInterface() {
+		fHslider0 = FAUSTFLOAT(2.0f);
+	}
+	
+	virtual void instanceClear() {
+		for (int l0 = 0; l0 < 2; l0 = l0 + 1) {
+			iRec5[l0] = 0;
+		}
+		IOTA0 = 0;
+		for (int l1 = 0; l1 < 32; l1 = l1 + 1) {
+			fVec0[l1] = 0.0f;
+		}
+		for (int l2 = 0; l2 < 2; l2 = l2 + 1) {
+			fRec4[l2] = 0.0f;
+		}
+		for (int l3 = 0; l3 < 2; l3 = l3 + 1) {
+			iRec2[l3] = 0;
+		}
+		for (int l4 = 0; l4 < 2; l4 = l4 + 1) {
+			fRec1[l4] = 0.0f;
+		}
+		for (int l5 = 0; l5 < 2; l5 = l5 + 1) {
+			fRec0[l5] = 0.0f;
+		}
+	}
+	
+	virtual void init(int sample_rate) {
+		classInit(sample_rate);
+		instanceInit(sample_rate);
+	}
+	virtual void instanceInit(int sample_rate) {
+		instanceConstants(sample_rate);
+		instanceResetUserInterface();
+		instanceClear();
+	}
+	
+	virtual limiterdsp* clone() {
+		return new limiterdsp();
+	}
+	
+	virtual int getSampleRate() {
+		return fSampleRate;
+	}
+	
+	virtual void buildUserInterface(UI* ui_interface) {
+		ui_interface->openVerticalBox("limiterdsp");
+		ui_interface->declare(&fHslider0, "0", "");
+		ui_interface->addHorizontalSlider("NumClientsAssumed", &fHslider0, FAUSTFLOAT(2.0f), FAUSTFLOAT(1.0f), FAUSTFLOAT(64.0f), FAUSTFLOAT(1.0f));
+		ui_interface->closeBox();
+	}
+	
+	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
+		FAUSTFLOAT* input0 = inputs[0];
+		FAUSTFLOAT* output0 = outputs[0];
+		float fSlow0 = 1.0f / std::sqrt(float(fHslider0));
+		for (int i0 = 0; i0 < count; i0 = i0 + 1) {
+			float fTemp0 = float(input0[i0]);
+			iRec5[0] = (iRec5[1] + 1) % int(std::max<float>(1.0f, fConst3 * float(iRec2[1])));
+			float fTemp1 = fSlow0 * fTemp0;
+			fVec0[IOTA0 & 31] = fTemp1;
+			float fTemp2 = std::fabs(fTemp1);
+			fRec4[0] = std::max<float>(float(iRec5[0] > 0) * fRec4[1], fTemp2);
+			iRec2[0] = fRec4[0] >= fTemp2;
+			float fRec3 = fRec4[0];
+			fRec1[0] = fConst2 * fRec3 + fConst1 * fRec1[1];
+			float fTemp3 = std::fabs(fRec1[0]);
+			fRec0[0] = std::max<float>(fTemp3, fConst4 * fRec0[1] + fConst5 * fTemp3);
+			output0[i0] = FAUSTFLOAT(std::min<float>(1.0f, 0.5f / std::max<float>(fRec0[0], 1.1920929e-07f)) * fVec0[(IOTA0 - iConst6) & 31]);
+			iRec5[1] = iRec5[0];
+			IOTA0 = IOTA0 + 1;
+			fRec4[1] = fRec4[0];
+			iRec2[1] = iRec2[0];
+			fRec1[1] = fRec1[0];
+			fRec0[1] = fRec0[0];
+		}
+	}
 
-    virtual void instanceConstants(int sample_rate)
-    {
-        fSampleRate = sample_rate;
-        fConst0 = std::min<float>(192000.0f, std::max<float>(1.0f, float(fSampleRate)));
-        fConst1 = std::exp((0.0f - (100000.0f / fConst0)));
-        fConst2 = (1.0f - fConst1);
-        fConst3 = (0.100000001f * fConst0);
-        fConst4 = std::exp((0.0f - (4.0f / fConst0)));
-        fConst5 = (1.0f - fConst4);
-        iConst6 = int((9.99999975e-05f * fConst0));
-    }
-
-    virtual void instanceResetUserInterface() { fHslider0 = FAUSTFLOAT(2.0f); }
-
-    virtual void instanceClear()
-    {
-        for (int l0 = 0; (l0 < 2); l0 = (l0 + 1)) {
-            iRec5[l0] = 0;
-        }
-        IOTA = 0;
-        for (int l1 = 0; (l1 < 32); l1 = (l1 + 1)) {
-            fVec0[l1] = 0.0f;
-        }
-        for (int l2 = 0; (l2 < 2); l2 = (l2 + 1)) {
-            fRec4[l2] = 0.0f;
-        }
-        for (int l3 = 0; (l3 < 2); l3 = (l3 + 1)) {
-            iRec2[l3] = 0;
-        }
-        for (int l4 = 0; (l4 < 2); l4 = (l4 + 1)) {
-            fRec1[l4] = 0.0f;
-        }
-        for (int l5 = 0; (l5 < 2); l5 = (l5 + 1)) {
-            fRec0[l5] = 0.0f;
-        }
-    }
-
-    virtual void init(int sample_rate)
-    {
-        classInit(sample_rate);
-        instanceInit(sample_rate);
-    }
-    virtual void instanceInit(int sample_rate)
-    {
-        instanceConstants(sample_rate);
-        instanceResetUserInterface();
-        instanceClear();
-    }
-
-    virtual limiterdsp* clone() { return new limiterdsp(); }
-
-    virtual int getSampleRate() { return fSampleRate; }
-
-    virtual void buildUserInterface(UI* ui_interface)
-    {
-        ui_interface->openVerticalBox("limiterdsp");
-        ui_interface->declare(&fHslider0, "0", "");
-        ui_interface->addHorizontalSlider("NumClientsAssumed", &fHslider0, 2.0f, 1.0f,
-                                          64.0f, 1.0f);
-        ui_interface->closeBox();
-    }
-
-    virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs)
-    {
-        FAUSTFLOAT* input0  = inputs[0];
-        FAUSTFLOAT* output0 = outputs[0];
-        float fSlow0        = (1.0f / std::sqrt(float(fHslider0)));
-        for (int i = 0; (i < count); i = (i + 1)) {
-            float fTemp0       = float(input0[i]);
-            iRec5[0]           = ((iRec5[1] + 1)
-                        % int(std::max<float>(1.0f, (fConst3 * float(iRec2[1])))));
-            float fTemp1       = (fSlow0 * fTemp0);
-            fVec0[(IOTA & 31)] = fTemp1;
-            float fTemp2       = std::fabs(fTemp1);
-            fRec4[0]     = std::max<float>((float((iRec5[0] > 0)) * fRec4[1]), fTemp2);
-            iRec2[0]     = (fRec4[0] >= fTemp2);
-            float fRec3  = fRec4[0];
-            fRec1[0]     = ((fConst1 * fRec1[1]) + (fConst2 * fRec3));
-            float fTemp3 = std::fabs(fRec1[0]);
-            fRec0[0] =
-                std::max<float>(fTemp3, ((fConst4 * fRec0[1]) + (fConst5 * fTemp3)));
-            output0[i] = FAUSTFLOAT(
-                (std::min<float>(1.0f, (0.5f / std::max<float>(fRec0[0], 1.1920929e-07f)))
-                 * fVec0[((IOTA - iConst6) & 31)]));
-            iRec5[1] = iRec5[0];
-            IOTA     = (IOTA + 1);
-            fRec4[1] = fRec4[0];
-            iRec2[1] = iRec2[0];
-            fRec1[1] = fRec1[0];
-            fRec0[1] = fRec0[0];
-        }
-    }
 };
+
+// clang-format on
 
 #endif
