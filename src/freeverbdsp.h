@@ -1732,7 +1732,7 @@ class APIUI
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <math.h>
+#include <cmath>
 
 #ifndef FAUSTCLASS 
 #define FAUSTCLASS freeverbdsp
