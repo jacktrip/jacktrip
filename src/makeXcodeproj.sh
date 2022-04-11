@@ -1,1 +1,1 @@
-qmake -spec macx-xcode ../jacktrip.pro
+qmake - spec macx - xcode../ jacktrip.pro
