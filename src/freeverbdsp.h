@@ -348,7 +348,6 @@ architecture section is not modified.
 #define API_UI_H
 
 #include <cstdio>
-
 #include <map>
 #include <sstream>
 #include <string>
@@ -531,7 +530,7 @@ class PathBuilder
     {
         std::vector<char>::const_iterator beg = ch1.begin();
         std::vector<char>::const_iterator end = ch1.end();
-        for (char & i : str) {
+        for (char& i : str) {
             if (std::find(beg, end, i) != end) {
                 i = ch2;
             }
@@ -630,10 +629,9 @@ vm v2
 
 ****************************************************************************************/
 
+#include <algorithm>  // std::max
 #include <cassert>
 #include <cfloat>
-
-#include <algorithm>  // std::max
 #include <cmath>
 #include <vector>
 
