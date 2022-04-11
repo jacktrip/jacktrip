@@ -529,7 +529,7 @@ class PathBuilder
         std::vector<char>::const_iterator beg = ch1.begin();
         std::vector<char>::const_iterator end = ch1.end();
         for (char & i : str) {
-            if (std::find(beg, end, str[i]) != end) {
+            if (std::find(beg, end, i) != end) {
                 str[i] = ch2;
             }
         }
