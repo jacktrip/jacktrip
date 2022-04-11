@@ -36,9 +36,9 @@
  * \license MIT
  */
 
-#include "Limiter.h"
-
 #include <iostream>
+
+#include "Limiter.h"
 
 #include "jacktrip_types.h"
 

@@ -35,9 +35,9 @@
  * \date July 2008
  */
 
-#include "Compressor.h"
-
 #include <iostream>
+
+#include "Compressor.h"
 
 //*******************************************************************************
 void Compressor::compute(int nframes, float** inputs, float** outputs)
