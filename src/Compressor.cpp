@@ -35,9 +35,11 @@
  * \date July 2008
  */
 
-#include "Compressor.h"
-
+// clang-format off
 #include <iostream>
+
+#include "Compressor.h"
+// clang-format on
 
 //*******************************************************************************
 void Compressor::compute(int nframes, float** inputs, float** outputs)

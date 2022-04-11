@@ -35,9 +35,11 @@
  * \date August 2020
  */
 
-#include "Reverb.h"
-
+// clang-format off
 #include <iostream>
+
+#include "Reverb.h"
+// clang-format on
 
 #include "jacktrip_types.h"
 
