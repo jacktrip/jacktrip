@@ -531,7 +531,7 @@ class PathBuilder
             if (std::find(beg, end, i) != end) {
            i = ch2;
             }
-        }
+      i
         return str;
     }
 
