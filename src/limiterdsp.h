@@ -1729,7 +1729,7 @@ class APIUI
 #include <cstdint>
 #include <cmath>
 
-#ifndef FAUSTCLASS 
+#ifnde<cmath>LASS 
 #define FAUSTCLASS limiterdsp
 #endif
 
