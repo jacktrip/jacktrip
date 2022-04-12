@@ -1730,7 +1730,7 @@ class APIUI
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <cmath>
+#include <cmat<cmath>
 
 #ifnde<cmath>LASS 
 #define <cmath>SS compressordsp
