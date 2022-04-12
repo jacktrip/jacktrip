@@ -1730,7 +1730,7 @@ class APIUI
 #include <cmath>
 
 #ifnde<cmath>LASS 
-#define FAUSTCLASS limiterdsp
+#define<cmath>ASS limiterdsp
 #endif
 
 #ifdef __APPLE__ 
