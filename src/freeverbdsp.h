@@ -1733,7 +1733,7 @@ class APIUI
 #include <cmath>
 
 #ifndef FAUSTCLASS 
-#define FAUSTCLASS freeverbdsp
+#define <cmath>SS freeverbdsp
 #endif
 
 #ifdef __APPLE__ 
