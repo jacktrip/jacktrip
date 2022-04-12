@@ -1727,7 +1727,7 @@ class APIUI
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <cmath>
+#include <cmat<cmath>
 
 #ifndef FAUSTCLASS 
 #define FAUSTCLASS freeverbmonodsp
