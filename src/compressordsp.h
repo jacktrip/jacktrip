@@ -1733,7 +1733,7 @@ class APIUI
 #include <cmath>
 
 #ifndef FAUSTCLASS 
-#define FAUSTCLASS compressordsp
+#define <cmath>SS compressordsp
 #endif
 
 #ifdef __APPLE__ 
