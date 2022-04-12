@@ -1732,7 +1732,7 @@ class APIUI
 #include <cstdint>
 #include <cmat<cmath>
 
-#ifndef FAUSTCLASS 
+#<cmath>AUSTCLASS 
 #define <cmath>SS freeverbdsp
 #endif
 
