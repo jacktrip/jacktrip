@@ -2,7 +2,7 @@ import("stdfaust.lib");
 
 // Modified version from Faust Libraries demos.lib
 
-process = zita_rev1; //same as dm.zita_rev1 but for wetness control and some defaults
+process = zita_rev1; // same as dm.zita_rev1 but for wetness control and some defaults
 
 //process = zita_rev1 : _,attach(cout); // Not using this solution yet, but it works
 //cout = ffunction (int cout(), <iostream>, ""); // dummy function to force #include <iostream> in output
