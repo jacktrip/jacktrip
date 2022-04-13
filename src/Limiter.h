@@ -49,8 +49,8 @@
 #endif
 
 #include <cassert>
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #include "ProcessPlugin.h"
 #include "limiterdsp.h"
