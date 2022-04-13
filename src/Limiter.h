@@ -50,6 +50,7 @@
 
 #include <cassert>
 #include <vector>
+#include <iostream>
 
 #include "ProcessPlugin.h"
 #include "limiterdsp.h"

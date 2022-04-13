@@ -41,6 +41,8 @@
 #ifndef __REVERB_H__
 #define __REVERB_H__
 
+#include <iostream>
+
 //#define SINE_TEST
 
 #include "ProcessPlugin.h"

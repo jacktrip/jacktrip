@@ -42,6 +42,7 @@
 #define __COMPRESSOR_H__
 
 #include <vector>
+#include <iostream>
 
 #include "CompressorPresets.h"
 #include "ProcessPlugin.h"
