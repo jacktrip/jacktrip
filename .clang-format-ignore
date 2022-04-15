@@ -1,1 +1,3 @@
 externals/*
+faust-src/faust2header.cpp
+

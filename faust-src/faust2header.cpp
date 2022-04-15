@@ -14,9 +14,8 @@
 //----------------------------------------------------------------------------
 //  FAUST Generated Code
 //----------------------------------------------------------------------------
-// clang-format off
+
 <<includeIntrinsic>>
 
-    <<includeclass>>
+<<includeclass>>
 
-    // clang-format on
