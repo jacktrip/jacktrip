@@ -37,8 +37,6 @@
 
 #include "Reverb.h"
 
-#include <iostream>
-
 #include "jacktrip_types.h"
 
 //*******************************************************************************

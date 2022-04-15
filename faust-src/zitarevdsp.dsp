@@ -4,6 +4,9 @@ import("stdfaust.lib");
 
 process = zita_rev1; // same as dm.zita_rev1 but for wetness control and some defaults
 
+//process = zita_rev1 : _,attach(cout); // Not using this solution yet, but it works
+//cout = ffunction (int cout(), <iostream>, ""); // dummy function to force #include <iostream> in output
+
 //----------------------------------`(dm.)zita_rev1`------------------------------
 // Example GUI for `zita_rev1_stereo` (mostly following the Linux `zita-rev1` GUI).
 //

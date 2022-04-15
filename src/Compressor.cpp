@@ -37,8 +37,6 @@
 
 #include "Compressor.h"
 
-#include <iostream>
-
 //*******************************************************************************
 void Compressor::compute(int nframes, float** inputs, float** outputs)
 {

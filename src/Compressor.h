@@ -41,6 +41,7 @@
 #ifndef __COMPRESSOR_H__
 #define __COMPRESSOR_H__
 
+#include <iostream>
 #include <vector>
 
 #include "CompressorPresets.h"
