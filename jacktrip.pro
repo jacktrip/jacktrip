@@ -31,6 +31,7 @@ nogui {
     QT += networkauth
     QT += qml
     QT += quick
+    QT += svg
   }
 }
 
