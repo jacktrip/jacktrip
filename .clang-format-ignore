@@ -1,1 +1,4 @@
 externals/*
+faust-src/faust2header.cpp
+src/*dsp.h
+
