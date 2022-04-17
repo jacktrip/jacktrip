@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file Compressor.h
+ * \file MaMe.h
  * \author Julius Smith, starting from Limiter.h
  * \date August 2020
  */
@@ -44,19 +44,19 @@
 #include <iostream>
 #include <vector>
 
-#include "CompressorPresets.h"
+#include "MaMePresets.h"
 #include "ProcessPlugin.h"
-#include "compressordsp.h"
+#include "master_me_jacktripdsp.h"
 
 /** \brief A Compressor reduces the output dynamic range when the
  *         signal level exceeds the threshold.
  */
-class Compressor : public ProcessPlugin
+class MaMe : public ProcessPlugin
 {
    public:
     /// \brief The class constructor sets the number of audio channels and default
     /// parameters.
-    Compressor(int numchans,  // xtor
+    MaMe(int numchans,  // xtor
                bool verboseIn = false, float ratioIn = 2.0f, float thresholdDBIn = -24.0f,
                float attackMSIn = 15.0f, float releaseMSIn = 40.0f,
                float makeUpGainDBIn = 2.0f)
@@ -68,44 +68,44 @@ class Compressor : public ProcessPlugin
         , makeUpGainDB(makeUpGainDBIn)
     {
         setVerbose(verboseIn);
-        // presets.push_back(std::make_unique<CompressorPreset>(ratio,thresholdDB,attackMS,releaseMS,makeUpGainDB));
+        // presets.push_back(std::make_unique<MaMePreset>(ratio,thresholdDB,attackMS,releaseMS,makeUpGainDB));
         for (int i = 0; i < mNumChannels; i++) {
-            compressorP.push_back(new compressordsp);
-            compressorUIP.push_back(new APIUI);  // #included in compressordsp.h
-            compressorP[i]->buildUserInterface(compressorUIP[i]);
+            mameP.push_back(new master_me_jacktripdsp);
+            mameUIP.push_back(new APIUI);  // #included in mamedsp.h
+            mameP[i]->buildUserInterface(mameUIP[i]);
         }
     }
 
-    Compressor(int numchans,  // xtor
-               bool verboseIn = false, CompressorPreset preset = CompressorPresets::voice)
-        : Compressor(numchans, verboseIn, preset.ratio, preset.thresholdDB,
+    MaMe(int numchans,  // xtor
+               bool verboseIn = false, MaMePreset preset = MaMePresets::voice)
+        : MaMe(numchans, verboseIn, preset.ratio, preset.thresholdDB,
                      preset.attackMS, preset.releaseMS, preset.makeUpGainDB)
     {
     }
     /// \brief The class destructor
-    virtual ~Compressor()
+    virtual ~MaMe()
     {
         for (int i = 0; i < mNumChannels; i++) {
-            delete compressorP[i];
-            delete compressorUIP[i];
+            delete mameP[i];
+            delete mameUIP[i];
         }
-        compressorP.clear();
-        compressorUIP.clear();
+        mameP.clear();
+        mameUIP.clear();
     }
 
     //  void setParamAllChannels(std::string& pName, float p) {
     void setParamAllChannels(const char pName[], float p)
     {
         for (int i = 0; i < mNumChannels; i++) {
-            int ndx = compressorUIP[i]->getParamIndex(pName);
+            int ndx = mameUIP[i]->getParamIndex(pName);
             if (ndx >= 0) {
-                compressorUIP[i]->setParamValue(ndx, p);
+                mameUIP[i]->setParamValue(ndx, p);
                 if (verbose) {
-                    std::cout << "Compressor.h: parameter " << pName << " set to " << p
+                    std::cout << "MaMe.h: parameter " << pName << " set to " << p
                               << " on audio channel " << i << "\n";
                 }
             } else {
-                std::cerr << "*** Compressor.h: Could not find parameter named " << pName
+                std::cerr << "*** MaMe.h: Could not find parameter named " << pName
                           << "\n";
             }
         }
@@ -120,7 +120,7 @@ class Compressor : public ProcessPlugin
         }
         fs = float(fSamplingFreq);
         for (int i = 0; i < mNumChannels; i++) {
-            compressorP[i]->init(
+            mameP[i]->init(
                 fs);  // compression filter parameters depend on sampling rate
         }
         setParamAllChannels("Ratio", ratio);
@@ -134,13 +134,13 @@ class Compressor : public ProcessPlugin
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Compressor"; }
+    const char* getName() const override { return "MaMe"; }
 
    private:
     float fs;
     int mNumChannels;
-    std::vector<compressordsp*> compressorP;
-    std::vector<APIUI*> compressorUIP;
+    std::vector<master_me_jacktripdsp*> mameP;
+    std::vector<APIUI*> mameUIP;
     float ratio;
     float thresholdDB;
     float attackMS;

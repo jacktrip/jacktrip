@@ -30,26 +30,26 @@
 //*****************************************************************
 
 /**
- * \file Compressor.cpp
+ * \file MaMe.cpp
  * \author Julius Smith, based on LoopBack.h
  * \date July 2008
  */
 
-#include "Compressor.h"
+#include "MaMe.h"
 
 //*******************************************************************************
-void Compressor::compute(int nframes, float** inputs, float** outputs)
+void MaMe::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
-        std::cerr << "*** Compressor " << this << ": init never called! Doing it now.\n";
+        std::cerr << "*** MaMe " << this << ": init never called! Doing it now.\n";
         if (fSamplingFreq <= 0) {
             fSamplingFreq = 48000;
-            std::cout << "Compressor " << this
+            std::cout << "MaMe " << this
                       << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
         }
         init(fSamplingFreq);
     }
     for (int i = 0; i < mNumChannels; i++) {
-        compressorP[i]->compute(nframes, &inputs[i], &outputs[i]);
+        mameP[i]->compute(nframes, &inputs[i], &outputs[i]);
     }
 }
