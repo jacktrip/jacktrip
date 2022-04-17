@@ -218,6 +218,7 @@ HEADERS += src/DataProtocol.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
+           src/master_me_jacktripdsp.h \
            src/SslServer.h \
            src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
