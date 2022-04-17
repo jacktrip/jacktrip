@@ -57,9 +57,8 @@ class MaMe : public ProcessPlugin
     /// \brief The class constructor sets the number of audio channels and default
     /// parameters.
     MaMe(int numchans,  // xtor
-               bool verboseIn = false, float ratioIn = 2.0f, float thresholdDBIn = -24.0f,
-               float attackMSIn = 15.0f, float releaseMSIn = 40.0f,
-               float makeUpGainDBIn = 2.0f)
+         bool verboseIn = false, float ratioIn = 2.0f, float thresholdDBIn = -24.0f,
+         float attackMSIn = 15.0f, float releaseMSIn = 40.0f, float makeUpGainDBIn = 2.0f)
         : mNumChannels(numchans)
         , ratio(ratioIn)
         , thresholdDB(thresholdDBIn)
@@ -77,9 +76,9 @@ class MaMe : public ProcessPlugin
     }
 
     MaMe(int numchans,  // xtor
-               bool verboseIn = false, MaMePreset preset = MaMePresets::voice)
-        : MaMe(numchans, verboseIn, preset.ratio, preset.thresholdDB,
-                     preset.attackMS, preset.releaseMS, preset.makeUpGainDB)
+         bool verboseIn = false, MaMePreset preset = MaMePresets::voice)
+        : MaMe(numchans, verboseIn, preset.ratio, preset.thresholdDB, preset.attackMS,
+               preset.releaseMS, preset.makeUpGainDB)
     {
     }
     /// \brief The class destructor
@@ -120,8 +119,7 @@ class MaMe : public ProcessPlugin
         }
         fs = float(fSamplingFreq);
         for (int i = 0; i < mNumChannels; i++) {
-            mameP[i]->init(
-                fs);  // compression filter parameters depend on sampling rate
+            mameP[i]->init(fs);  // compression filter parameters depend on sampling rate
         }
         setParamAllChannels("Ratio", ratio);
         setParamAllChannels("Threshold", thresholdDB);
