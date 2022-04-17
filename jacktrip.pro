@@ -207,6 +207,8 @@ HEADERS += src/DataProtocol.h \
            src/JackTripWorker.h \
            src/JitterBuffer.h \
            src/LoopBack.h \
+           src/MaMe.h \
+           src/MaMePresets.h \
            src/PacketHeader.h \
            src/ProcessPlugin.h \
            src/RingBuffer.h \
@@ -251,6 +253,7 @@ SOURCES += src/DataProtocol.cpp \
            src/JackTripWorker.cpp \
            src/JitterBuffer.cpp \
            src/LoopBack.cpp \
+           src/MaMe.cpp \
            src/PacketHeader.cpp \
            src/RingBuffer.cpp \
            src/Settings.cpp \
