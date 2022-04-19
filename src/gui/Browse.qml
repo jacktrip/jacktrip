@@ -50,6 +50,7 @@ Item {
             height: 16
             x: 16
             width: parent.width - (2 * x)
+            color: "#FAFBFB"
         }
     }
 
