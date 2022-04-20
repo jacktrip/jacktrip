@@ -269,6 +269,22 @@ void VirtualStudio::login()
     m_authenticator->grant();
 }
 
+void VirtualStudio::logout()
+{
+    m_authenticator->setToken(QLatin1String(""));
+    m_authenticator->setRefreshToken(QLatin1String(""));
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.remove(QStringLiteral("RefreshToken"));
+    settings.remove(QStringLiteral("UserId"));
+    settings.endGroup();
+
+    m_refreshToken.clear();
+    m_userId.clear();
+    emit hasRefreshTokenChanged();
+}
+
 void VirtualStudio::refreshStudios()
 {
     getServerList();

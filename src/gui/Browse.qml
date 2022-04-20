@@ -50,6 +50,7 @@ Item {
             height: 16
             x: 16
             width: parent.width - (2 * x)
+            color: "#FAFBFB"
         }
     }
 
@@ -63,6 +64,7 @@ Item {
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         delegate: Studio {
+            x: 16
             serverLocation: location
             flagImage: flag
             studioName: name
@@ -108,8 +110,9 @@ Item {
             id: refreshButton
             background: Rectangle {
                 radius: 6
-                color: refreshButton.down ? "#4E979797" : (refreshButton.hovered ? "#34979797" : "#1A979797")
-                border { width: 0.3; color: "#34979797" }
+                color: refreshButton.down ? "#F1F2F2" : (refreshButton.hovered ? "#EBEDED" : "#F6F8F8")
+                border.width: refreshButton.down ? 1 : 0.3
+                border.color: refreshButton.down ? "#DDDFDF" : "#34979797"
             }
             onClicked: { refreshing = true; virtualstudio.refreshStudios() }
             anchors.verticalCenter: parent.verticalCenter
@@ -125,8 +128,9 @@ Item {
             id: aboutButton
             background: Rectangle {
                 radius: 6
-                color: aboutButton.down ? "#4E979797" : (aboutButton.hovered ? "#34979797" : "#1A979797")
-                border { width: 0.3; color: "#34979797" }
+                color: aboutButton.down ? "#F1F2F2" : (aboutButton.hovered ? "#EBEDED" : "#F6F8F8")
+                border.width: aboutButton.down ? 1 : 0.3
+                border.color: aboutButton.down ? "#DDDFDF" : "#34979797"
             }
             onClicked: { virtualstudio.showAbout() }
             anchors.verticalCenter: parent.verticalCenter
@@ -142,8 +146,9 @@ Item {
             id: settingsButton
             background: Rectangle {
                 radius: 6
-                color: settingsButton.down ? "#4E979797" : (settingsButton.hovered ? "#34979797" : "#1A979797")
-                border { width: 0.3; color: "#34979797" }
+                color: settingsButton.down ? "#F1F2F2" : (settingsButton.hovered ? "#EBEDED" : "#F6F8F8")
+                border.width: settingsButton.down ? 1 : 0.3
+                border.color: settingsButton.down ? "#DDDFDF" : "#34979797"
             }
             onClicked: window.state = "settings"
             anchors.verticalCenter: parent.verticalCenter

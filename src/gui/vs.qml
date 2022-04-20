@@ -64,12 +64,12 @@ Rectangle {
         id: startScreen
     }
 
-    Login {
-        id: loginScreen
-    }
-
     Browse {
         id: browseScreen
+    }
+    
+    Login {
+        id: loginScreen
     }
 
     Settings {
