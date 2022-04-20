@@ -3,6 +3,11 @@ import QtQuick.Controls 2.12
 
 Item {
     width: 696; height: 577
+    
+    Rectangle {
+        width: parent.width; height: parent.height
+        color: "#FAFBFB"
+    }
 
     property bool failTextVisible: false
     
@@ -57,9 +62,17 @@ Item {
         id: loginButton
         background: Rectangle {
             radius: 6
-            color: loginButton.down ? "#4E979797" : (loginButton.hovered ? "#34979797" : "#1A979797")
-            border.width: 0.3
-            border.color: "#34979797"
+            color: loginButton.down ? "#E5E6E6" : (loginButton.hovered ? "#EBECEC" : "#F0F1F1")
+            border.width: loginButton.down ? 1 : 0
+            border.color: "#A4A7A7"
+            layer.enabled: !loginButton.down
+            layer.effect: DropShadow {
+                horizontalOffset: 1
+                verticalOffset: 1
+                radius: 8.0
+                samples: 17
+                color: "#80A1A1A1"
+            }
         }
         onClicked: { failTextVisible = false; virtualstudio.login() }
         anchors.horizontalCenter: parent.horizontalCenter
@@ -80,9 +93,17 @@ Item {
         id: backButton
         background: Rectangle {
             radius: 6
-            color: backButton.down ? "#4E979797" : (backButton.hovered ? "#34979797" : "#1A979797")
-            border.width: 0.3
-            border.color: "#34979797"
+            color: backButton.down ? "#E5E6E6" : (backButton.hovered ? "#EBECEC" : "#F0F1F1")
+            border.width: backButton.down ? 1 : 0
+            border.color: "#A4A7A7"
+            layer.enabled: !backButton.down
+            layer.effect: DropShadow {
+                horizontalOffset: 1
+                verticalOffset: 1
+                radius: 8.0
+                samples: 17
+                color: "#80A1A1A1"
+            }
         }
         onClicked: { window.state = "start" }
         anchors.horizontalCenter: parent.horizontalCenter

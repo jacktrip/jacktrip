@@ -3,7 +3,7 @@ import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.15
 
 Rectangle {
-    x: 16; width: 664; height: 83
+    width: 664; height: 83
     radius: 6
     color: "#F6F8F8"
     border.width: 0.3
@@ -124,7 +124,10 @@ Rectangle {
         y: topMargin; width: 40; height: width
         background: Rectangle {
             radius: width / 2
-            color: connected ? "#FCB6B6" : "#C4F4BE"
+            color: connected ? (joinButton.down ? "#F6B2B2" : (joinButton.hovered ? "#F1AEAE" : "#FCB6B6")) :
+                (joinButton.down ? "#C0EFBA" : (joinButton.hovered ? "#BBE9B5" :"#C4F4BE"))
+            border.width: joinButton.down ? 1 : 0
+            border.color: connected ? "#F92755" : "#5CB752"
         }
         visible: connected || canConnect || canStart
         onClicked: {
@@ -145,7 +148,7 @@ Rectangle {
     Text {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56
-        text: connected ? "Leave" : "Join"
+        text: connected ? "Leave" : available ? "Join" : "Start"
         font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
         visible: connected || canConnect || canStart
     }
@@ -155,7 +158,9 @@ Rectangle {
         x: parent.width - 65; y: topMargin; width: 40; height: width
         background: Rectangle {
             radius: width / 2
-            color: "#EAEBEB"
+            color: (manageButton.hovered && !manageButton.pressed) ? "#DFE0E0" : "#EAEBEB"
+            border.width:  manageButton.down ? 1 : 0
+            border.color: "#949494"
         }
         onClicked: { 
             if (!connected) {

@@ -98,6 +98,7 @@ class VirtualStudio : public QObject
     void toStandard();
     void toVirtualStudio();
     void login();
+    void logout();
     void refreshStudios();
     void refreshDevices();
     void revertSettings();

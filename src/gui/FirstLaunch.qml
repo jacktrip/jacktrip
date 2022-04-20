@@ -31,9 +31,17 @@ Item {
         id: vsButton
         background: Rectangle {
             radius: 10
-            color: vsButton.down ? "#4E979797" : (vsButton.hovered ? "#34979797" : "#1A979797")
-            border.width: 0.3
-            border.color: "#34979797"
+            color: vsButton.down ? "#E7E8E8" : "#F2F3F3"
+            border.width: vsButton.down ? 1 : 0.3
+            border.color: vsButton.down ? "#B0B5B5" : "#EAEBEB"
+            layer.enabled: vsButton.hovered && !vsButton.down
+            layer.effect: DropShadow {
+                horizontalOffset: 1
+                verticalOffset: 1
+                radius: 8.0
+                samples: 17
+                color: "#80A1A1A1"
+            }
         }
         onClicked: { window.state = "login"; virtualstudio.toVirtualStudio(); }
         x: 83; y: 290; width: 234; height: 197
@@ -64,9 +72,17 @@ Item {
         id: standardButton
         background: Rectangle {
             radius: 10
-            color: standardButton.down ? "#4E979797" : (standardButton.hovered ? "#34979797" : "#1A979797")
-            border.width: 0.3
-            border.color: "#34979797"
+            color: standardButton.down ? "#E7E8E8" : "#F2F3F3"
+            border.width: standardButton.down ? 1 : 0.3
+            border.color: standardButton.down ? "#B0B5B5" : "#EAEBEB"
+            layer.enabled: standardButton.hovered && !standardButton.down
+            layer.effect: DropShadow {
+                horizontalOffset: 1
+                verticalOffset: 1
+                radius: 8.0
+                samples: 17
+                color: "#80A1A1A1"
+            }
         }
         onClicked: { window.state = "login"; virtualstudio.toStandard(); }
         x: 380; y: 290; width: 234; height: 197
