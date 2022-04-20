@@ -32,15 +32,15 @@ jobs:
         include:
           - name: Linux-x64-qmake-gcc-static
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-18.04
             system-rtaudio: false
             bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
             weakjack: false
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
-            static-qt-version: 5.15.2 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v23' # required for static qt; update this to force rebuilding static Qt
+            static-qt-version: 5.12.11 # if set, it will enable static Qt build
+            qt-static-cache-key: 'v24' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -50,7 +50,7 @@ jobs:
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-18.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -67,7 +67,7 @@ jobs:
             nogui: true
             weakjack: false
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v23' # we use the same key as the main Linux build
+            qt-static-cache-key: 'v24' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
@@ -104,8 +104,8 @@ jobs:
             bundled-rtaudio: false
             nogui: false
             weakjack: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            static-qt-version: 5.12.11
+            qt-static-cache-key: 'v08'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -145,7 +145,7 @@ jobs:
             nogui: false
             weakjack: true
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v06'
+            qt-static-cache-key: 'v07'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
