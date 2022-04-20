@@ -55,7 +55,7 @@ jobs:
             novs: false
             weakjack: true
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            qt-static-cache-key: 'v08'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -198,7 +198,8 @@ jobs:
         shell: cmd
         run: |
           mkdir %QT_STATIC_BUILD_PATH%
-          call "%QT_SRC_PATH%/configure.bat" -static-runtime -opengl desktop -platform win32-g++ -prefix "%QT_STATIC_BUILD_PATH%" -openssl OPENSSL_PREFIX="C:\Program Files\OpenSSL-Win64" %QT_STATIC_OPTIONS%
+          set OPENSSL_DIR="C:\Program Files\OpenSSL-Win64"
+          call "%QT_SRC_PATH%/configure.bat" -static-runtime -opengl desktop -platform win32-g++ -prefix "%QT_STATIC_BUILD_PATH%" -openssl-linked OPENSSL_INCDIR="%OPENSSL_DIR%\include" OPENSSL_LIBDIR="%OPENSSL_DIR%\lib\VC\static" OPENSSL_LIBS="-lWs2_32 -lGdi32 -lAdvapi32 -lCrypt32 -lUser32" OPENSSL_LIBS_DEBUG="-llibssl64MDd -llibcrypto64MDd" OPENSSL_LIBS_RELEASE="-llibssl64MD -llibcrypto64MD" %QT_STATIC_OPTIONS%
           echo "building Qt"
           mingw32-make -j4
           echo "installing Qt"
