@@ -1,6 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-//import QtGraphicalEffects 1.15
+import QtGraphicalEffects 1.12
 
 Item {
     width: 696; height: 577
