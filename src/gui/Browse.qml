@@ -28,7 +28,7 @@ Item {
         Rectangle {
             color: "transparent"
             height: 72; x: 16; width: ListView.view.width - (2 * x)
-            required property string section
+            property string section
             Text {
                 //anchors.bottom: parent.bottom
                 y: 12
@@ -93,7 +93,7 @@ Item {
             // Customize scroll properties on different platforms
             if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
                 Qt.platform.os == "unix" || Qt.platform.os == "windows") {
-                var scrollBar = Qt.createQmlObject('import QtQuick.Controls 2.15; ScrollBar{}',
+                var scrollBar = Qt.createQmlObject('import QtQuick.Controls 2.12; ScrollBar{}',
                                                    studioListView,
                                                    "dynamicSnippet1");
                 scrollBar.policy = ScrollBar.AlwaysOn;
