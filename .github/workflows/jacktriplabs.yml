@@ -55,7 +55,7 @@ jobs:
             novs: false
             weakjack: true
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            qt-static-cache-key: 'v08'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
