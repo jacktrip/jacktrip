@@ -218,8 +218,8 @@ void Regulator::printParams(){
 
 Regulator::~Regulator()
 {
-    delete mXfrBuffer;
-    delete mZeros;
+    delete[] mXfrBuffer;
+    delete[] mZeros;
     for (int i = 0; i < mNumChannels; i++)
         delete mChanData[i];
 }
