@@ -222,6 +222,9 @@ Regulator::~Regulator()
     delete[] mZeros;
     for (int i = 0; i < mNumChannels; i++)
         delete mChanData[i];
+    for (auto& slot : mSlots) {
+        delete[] slot;
+    };
 }
 
 void Regulator::setFPPratio()
