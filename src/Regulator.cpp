@@ -159,13 +159,6 @@ Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qL
     mPartialPacketCnt    = 0;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
-#ifdef GUIBS3
-    // hg for GUI
-    hg = new HerlperGUI(qApp->activeWindow());
-    connect(hg, SIGNAL(moved(double)), this, SLOT(changeGlobal(double)));
-    connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
-    connect(hg, SIGNAL(moved_3(int)), this, SLOT(changeGlobal_3(int)));
-#endif
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
     changeGlobal((double)qLen);
@@ -194,21 +187,10 @@ void Regulator::changeGlobal_3(int x)
     printParams();
 }
 
-void Regulator::printParams()
-{
-//    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-//             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
-#ifdef GUIBS3
-    updateGUI((int)mMsecTolerance, mNumSlots);
-#endif
+void Regulator::printParams(){
+    //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
+    //             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
 };
-
-#ifdef GUIBS3
-void Regulator::updateGUI(double msTol, int nSlots)
-{
-    hg->updateDisplay(msTol, nSlots, 0);  // need to remove last param
-}
-#endif
 
 Regulator::~Regulator()
 {
@@ -680,49 +662,3 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     //        int32_t autoq_rate;
     return true;
 }
-/*
-QString Regulator::getStats(uint32_t statCount, uint32_t lostCount)
-{
-    // formatting floats in columns looks better with std::stringstream than with
-    // QTextStream
-    QString tmp;
-    if (!statCount) {
-        tmp = QString("Regulator: inter-packet intervals msec\n");
-        tmp += "                 (window of last ";
-        tmp += QString::number(pullStat->window);
-        tmp += " packets)\n";
-        tmp +=
-                "secs   avgStdDev (mean       min       max     stdDev) "
-                "PLC(under over  skipped) lost\n";
-    } else {
-        uint32_t lost  = lostCount - mLastLostCount;
-        mLastLostCount = lostCount;
-#define PDBL(x)  << setw(10) << (QString("%1").arg(pushStat->x, 0, 'f', 2)).toStdString()
-#define PDBL2(x) << setw(10) << (QString("%1").arg(pullStat->x, 0, 'f', 2)).toStdString()
-        std::stringstream logger;
-        logger << setw(2)
-               << statCount
-                  PDBL(longTermStdDev) PDBL(lastMean) PDBL(lastMin) PDBL(lastMax)
-PDBL(lastStdDev)
-               << setw(8) << pushStat->lastPlcSkipped
-          #ifndef GUIBS3
-                  // comment out this next line for GUI because...
-               << endl
-                  // ...print all stats in one line when running in GUI because can't
-handle extra crlf
-                  // and... to actually see the two lines, need to run it in terminal
-          #endif
-                  ;
-        tmp = QString::fromStdString(logger.str());
-        std::stringstream logger2;
-        logger2 << setw(2)
-                << "" PDBL2(longTermStdDev) PDBL2(lastMean) PDBL2(lastMin) PDBL2(lastMax)
-                   PDBL2(lastStdDev)
-                << setw(8) << pullStat->lastPlcUnderruns << setw(8)
-                << pullStat->lastPlcOverruns << setw(8) << pullStat->lastPlcSkipped
-                << setw(8) << lost << endl;
-        tmp += QString::fromStdString(logger2.str());
-    }
-    return tmp;
-}
-*/
