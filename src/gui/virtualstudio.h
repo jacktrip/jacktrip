@@ -146,6 +146,7 @@ class VirtualStudio : public QObject
     void stopStudio();
 
     bool m_showFirstRun = false;
+    bool m_checkSsl     = true;
     QString m_refreshToken;
     QString m_userId;
     VsQuickView m_view;

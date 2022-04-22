@@ -41,6 +41,7 @@
 #include <QMessageBox>
 #include <QQmlContext>
 #include <QQmlEngine>
+#include <QSslSocket>
 #include <algorithm>
 #include <iostream>
 
@@ -122,6 +123,19 @@ void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
 
 void VirtualStudio::show()
 {
+    if (m_checkSsl) {
+        // Check our available SSL version
+        QString sslVersion = QSslSocket::sslLibraryVersionString();
+        std::cout << "SSL Library: " << sslVersion.toStdString() << std::endl;
+        if (sslVersion.isEmpty()) {
+            QMessageBox msgBox;
+            msgBox.setText(QStringLiteral("OpenSSL was not found. You will not be able to connect to the Virtual Studio server."));
+            msgBox.setWindowTitle(QStringLiteral("SSL Error"));
+            msgBox.exec();
+        }
+        m_checkSsl = false;
+    }
+
     if (!m_showFirstRun) {
         toVirtualStudio();
     }
