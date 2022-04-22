@@ -51,14 +51,6 @@
 #include "AudioInterface.h"
 #include "RingBuffer.h"
 
-//#define GUIBS3
-#ifdef GUIBS3
-#include <QWidget>
-
-#include "herlpergui.h"
-#include "ui_herlpergui.h"
-#endif
-
 class BurgAlgorithm
 {
    public:
@@ -123,16 +115,8 @@ class StdDev
     int longTermCnt;
 };
 
-#ifdef GUIBS3
-class Regulator
-    : public QObject
-    , public RingBuffer
-{
-    Q_OBJECT;
-#else
 class Regulator : public RingBuffer
 {
-#endif
    public:
     Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
@@ -201,11 +185,6 @@ class Regulator : public RingBuffer
     int mFPPratioDenominator;
     int mPartialPacketCnt;
     bool mAuto;
-#ifdef GUIBS3
-    HerlperGUI* hg;
-    void updateGUI(double msTol, int nSlots, int lostWin);
-   public slots:
-#endif
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);
