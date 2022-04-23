@@ -109,7 +109,7 @@ constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet u
 constexpr double AutoInitDur = 6000.0;  // msec init phase
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
-constexpr int WindowDivisor    = 8;    // for faster auto tracking
+constexpr int WindowDivisor = 8;  // for faster auto tracking
 //*******************************************************************************
 Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
