@@ -88,7 +88,7 @@ class StdDev
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
     void tick();
-    double calcAuto();
+    double calcAuto(double autoHeadroom);
     double lastTime;
     int mId;
     int plcUnderruns;

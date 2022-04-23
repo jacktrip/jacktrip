@@ -300,7 +300,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             }
         }
         pushStat->tick();
-        double adjustAuto = pushStat->calcAuto();
+        double adjustAuto = pushStat->calcAuto(mAutoHeadroom);
         //        qDebug() << adjustAuto;
         if (mAuto && (pushStat->lastTime > AutoInitDur))
             mMsecTolerance = adjustAuto;
@@ -636,12 +636,12 @@ void StdDev::reset()
     plcUnderruns = 0;
 };
 
-double StdDev::calcAuto()
+double StdDev::calcAuto(double autoHeadroom)
 {
     //    qDebug() << longTermStdDev << longTermMax << AutoMax << window << longTermCnt;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
-    return AutoHeadroom + longTermStdDev
+    return autoHeadroom + longTermStdDev
            + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
 };
 
