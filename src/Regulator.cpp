@@ -184,13 +184,6 @@ Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     mModCycle            = 1;
     mModSeqNumPeer       = 1;
     mPeerFPP             = mFPP;  // use local until first packet arrives
-#ifdef GUIBS3
-    // hg for GUI
-    hg = new HerlperGUI(qApp->activeWindow());
-    connect(hg, SIGNAL(moved(double)), this, SLOT(changeGlobal(double)));
-    connect(hg, SIGNAL(moved_2(int)), this, SLOT(changeGlobal_2(int)));
-    connect(hg, SIGNAL(moved_3(int)), this, SLOT(changeGlobal_3(int)));
-#endif
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
 }
@@ -218,21 +211,10 @@ void Regulator::changeGlobal_3(int x)
     printParams();
 }
 
-void Regulator::printParams()
-{
-//    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-//             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
-#ifdef GUIBS3
-    updateGUI((int)mMsecTolerance, mNumSlots);
-#endif
+void Regulator::printParams(){
+    //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
+    //             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
 };
-
-#ifdef GUIBS3
-void Regulator::updateGUI(double msTol, int nSlots)
-{
-    hg->updateDisplay(msTol, nSlots, 0);  // need to remove last param
-}
-#endif
 
 Regulator::~Regulator()
 {
