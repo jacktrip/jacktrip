@@ -104,11 +104,12 @@ constexpr int HIST            = 6;    // at FPP32
 constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
-constexpr double AutoHeadroom = 2.0;  // msec padding for auto adjusting mMsecTolerance
+constexpr double AutoHeadroom = 4.0;  // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 6000.0;  // msec init phase
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
+constexpr int WindowDivisor    = 8;    // for faster auto tracking
 //*******************************************************************************
 Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -607,7 +608,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 //*******************************************************************************
 StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), window(w)
 {
-    window /= 8;
+    window /= WindowDivisor;
     reset();
     longTermStdDev    = 0.0;
     longTermStdDevAcc = 0.0;
