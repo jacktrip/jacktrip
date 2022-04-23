@@ -186,6 +186,7 @@ class Regulator : public RingBuffer
     int mModCycle;
     bool mAuto;
     int mModSeqNumPeer;
+    double mAutoHeadroom;
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);

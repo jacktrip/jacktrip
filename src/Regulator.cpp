@@ -100,11 +100,12 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST            = 6;    // at FPP32
-constexpr int ModSeqNumInit   = 256;  // bounds on seqnums, 65536 is max in packet header
-constexpr int NumSlotsMax     = 128;  // mNumSlots looped for recent arrivals
-constexpr int LostWindowMax   = 32;   // mLostWindow looped for recent arrivals
-constexpr double AutoHeadroom = 4.0;  // msec padding for auto adjusting mMsecTolerance
+constexpr int HIST          = 6;    // at FPP32
+constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
+constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
+constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
+constexpr double DefaultAutoHeadroom =
+    4.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 6000.0;  // msec init phase
 constexpr double AutoInitValFactor =
@@ -185,6 +186,7 @@ Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     mModCycle            = 1;
     mModSeqNumPeer       = 1;
     mPeerFPP             = mFPP;  // use local until first packet arrives
+    mAutoHeadroom        = DefaultAutoHeadroom;
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
 }
@@ -251,15 +253,17 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
         if (!mFPPratioIsSet) {  // first peer packet
             mPeerFPP = len / (mNumChannels * mBitResolutionMode);
             // bufstrategy 1 autoq mode overloads qLen with negative val
-            // found an interesting relationship between mPeerFPP and initial
-            // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
-            // conversion of bufsize directly to msec
+            // creates this ugly code
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
-                // default is -500 from
-                mMsecTolerance = (mMsecTolerance == -500.0)
-                                     ? (mPeerFPP * AutoInitValFactor)
-                                     : -mMsecTolerance;
+                // default is -500 from bufstrategy 1 autoq mode
+                if (mMsecTolerance != -500.0)
+                    // use it to set headroom
+                    mAutoHeadroom = -mMsecTolerance;
+                // found an interesting relationship between mPeerFPP and initial
+                // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
+                // conversion of bufsize directly to msec
+                mMsecTolerance = (mPeerFPP * AutoInitValFactor);
             };
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
