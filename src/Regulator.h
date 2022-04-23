@@ -115,8 +115,6 @@ class StdDev
     QElapsedTimer* mTimer;
     std::vector<double> data;
     double mean;
-    double var;
-    //    double varRunning;
     int window;
     double acc;
     double min;
@@ -136,7 +134,7 @@ class Regulator : public RingBuffer
 {
 #endif
    public:
-    Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
+    Regulator(int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
     void shimFPP(const int8_t* buf, int len, int seq_num);
@@ -169,7 +167,6 @@ class Regulator : public RingBuffer
     int mAudioBitRes;
     int mFPP;
     int mPeerFPP;
-    int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;
     int mHist;

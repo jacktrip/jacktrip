@@ -110,12 +110,11 @@ constexpr double AutoInitDur = 6000.0;  // msec init phase
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 //*******************************************************************************
-Regulator::Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen)
+Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
     , mNumChannels(channels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
-    , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
 {
@@ -640,8 +639,7 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
 
 void StdDev::reset()
 {
-    mean = 0.0;
-    //        varRunning = 0.0;
+    mean         = 0.0;
     acc          = 0.0;
     min          = 999999.0;
     max          = 0.0;
