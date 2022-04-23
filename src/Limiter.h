@@ -49,6 +49,7 @@
 #endif
 
 #include <cassert>
+#include <iostream>
 #include <vector>
 
 #include "ProcessPlugin.h"
