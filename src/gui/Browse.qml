@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 
 Item {
     width: 696; height: 577
@@ -93,7 +93,7 @@ Item {
             // Customize scroll properties on different platforms
             if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
                 Qt.platform.os == "unix" || Qt.platform.os == "windows") {
-                var scrollBar = Qt.createQmlObject('import QtQuick.Controls 2.15; ScrollBar{}',
+                var scrollBar = Qt.createQmlObject('import QtQuick.Controls 2.12; ScrollBar{}',
                                                    studioListView,
                                                    "dynamicSnippet1");
                 scrollBar.policy = ScrollBar.AlwaysOn;
@@ -110,9 +110,9 @@ Item {
             id: refreshButton
             background: Rectangle {
                 radius: 6
-                color: refreshButton.down ? "#F1F2F2" : (refreshButton.hovered ? "#EBEDED" : "#F6F8F8")
-                border.width: refreshButton.down ? 1 : 0.3
-                border.color: refreshButton.down ? "#DDDFDF" : "#34979797"
+                color: refreshButton.down ? "#DEE0E0" : (refreshButton.hovered ? "#D3D4D4" : "#EAECEC")
+                border.width: 1
+                border.color: refreshButton.down || refreshButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { refreshing = true; virtualstudio.refreshStudios() }
             anchors.verticalCenter: parent.verticalCenter
@@ -128,9 +128,9 @@ Item {
             id: aboutButton
             background: Rectangle {
                 radius: 6
-                color: aboutButton.down ? "#F1F2F2" : (aboutButton.hovered ? "#EBEDED" : "#F6F8F8")
-                border.width: aboutButton.down ? 1 : 0.3
-                border.color: aboutButton.down ? "#DDDFDF" : "#34979797"
+                color: aboutButton.down ? "#DEE0E0" : (aboutButton.hovered ? "#D3D4D4" : "#EAECEC")
+                border.width: 1
+                border.color: aboutButton.down || aboutButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { virtualstudio.showAbout() }
             anchors.verticalCenter: parent.verticalCenter
@@ -146,9 +146,9 @@ Item {
             id: settingsButton
             background: Rectangle {
                 radius: 6
-                color: settingsButton.down ? "#F1F2F2" : (settingsButton.hovered ? "#EBEDED" : "#F6F8F8")
-                border.width: settingsButton.down ? 1 : 0.3
-                border.color: settingsButton.down ? "#DDDFDF" : "#34979797"
+                color: settingsButton.down ? "#DEE0E0" : (settingsButton.hovered ? "#D3D4D4" : "#EAECEC")
+                border.width: 1
+                border.color: settingsButton.down || settingsButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: window.state = "settings"
             anchors.verticalCenter: parent.verticalCenter

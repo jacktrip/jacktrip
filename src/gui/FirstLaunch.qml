@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtGraphicalEffects 1.15
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtGraphicalEffects 1.12
 
 Item {
     width: 696; height: 577
@@ -32,7 +32,7 @@ Item {
         background: Rectangle {
             radius: 10
             color: vsButton.down ? "#E7E8E8" : "#F2F3F3"
-            border.width: vsButton.down ? 1 : 0.3
+            border.width: 1
             border.color: vsButton.down ? "#B0B5B5" : "#EAEBEB"
             layer.enabled: vsButton.hovered && !vsButton.down
             layer.effect: DropShadow {
@@ -73,7 +73,7 @@ Item {
         background: Rectangle {
             radius: 10
             color: standardButton.down ? "#E7E8E8" : "#F2F3F3"
-            border.width: standardButton.down ? 1 : 0.3
+            border.width: 1
             border.color: standardButton.down ? "#B0B5B5" : "#EAEBEB"
             layer.enabled: standardButton.hovered && !standardButton.down
             layer.effect: DropShadow {

@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 
 Item {
     width: 696; height: 577
@@ -70,9 +70,9 @@ Item {
         id: refreshButton
         background: Rectangle {
             radius: 6
-            color: refreshButton.down ? "#F1F2F2" : (refreshButton.hovered ? "#EBEDED" : "#F6F8F8")
-            border.width: refreshButton.down ? 1 : 0.3
-            border.color: refreshButton.down ? "#DDDFDF" : "#34979797"
+            color: refreshButton.down ? "#DEE0E0" : (refreshButton.hovered ? "#D3D4D4" : "#EAECEC")
+            border.width: 1
+            border.color: refreshButton.down || refreshButton.hovered ? "#BABCBC" : "#34979797"
         }
         onClicked: { virtualstudio.refreshDevices() }
         x: parent.width - 232; y: 200; width: 216; height: 30
@@ -119,9 +119,9 @@ Item {
         id: modeButton
         background: Rectangle {
             radius: 6
-            color: modeButton.down ? "#F1F2F2" : (modeButton.hovered ? "#EBEDED" : "#F6F8F8")
-            border.width: modeButton.down ? 1 : 0.3
-            border.color: modeButton.down ? "#DDDFDF" : "#34979797"
+            color: modeButton.down ? "#DEE0E0" : (modeButton.hovered ? "#D3D4D4" : "#EAECEC")
+            border.width: 1
+            border.color: modeButton.down || modeButton.hovered ? "#BABCBC" : "#34979797"
         }
         onClicked: { window.state = "login"; virtualstudio.toStandard(); }
         x: parent.width - 232; y: separator.y + 16; width: 216; height: 30
@@ -155,9 +155,9 @@ Item {
         id: logoutButton
         background: Rectangle {
             radius: 6
-            color: logoutButton.down ? "#F1F2F2" : (logoutButton.hovered ? "#EBEDED" : "#F6F8F8")
-            border.width: logoutButton.down ? 1 : 0.3
-            border.color: logoutButton.down ? "#DDDFDF" : "#34979797"
+            color: logoutButton.down ? "#DEE0E0" : (logoutButton.hovered ? "#D3D4D4" : "#EAECEC")
+            border.width: 1
+            border.color: logoutButton.down || logoutButton.hovered ? "#BABCBC" : "#34979797"
         }
         onClicked: { window.state = "login"; virtualstudio.logout() }
         x: parent.width - 16 - buttonWidth; y: modeButton.y + 46; width: buttonWidth; height: 30
@@ -176,9 +176,9 @@ Item {
             id: cancelButton
             background: Rectangle {
                 radius: 6
-                color: cancelButton.down ? "#F1F2F2" : (cancelButton.hovered ? "#EBEDED" : "#F6F8F8")
-                border.width: cancelButton.down ? 1 : 0.3
-                border.color: cancelButton.down ? "#DDDFDF" : "#34979797"
+                color: cancelButton.down ? "#DEE0E0" : (cancelButton.hovered ? "#D3D4D4" : "#EAECEC")
+                border.width: 1
+                border.color: cancelButton.down || cancelButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { window.state = "browse"; virtualstudio.revertSettings() }
             anchors.verticalCenter: parent.verticalCenter
@@ -195,9 +195,9 @@ Item {
             id: okButton
             background: Rectangle {
                 radius: 6
-                color: okButton.down ? "#F1F2F2" : (okButton.hovered ? "#EBEDED" : "#F6F8F8")
-                border.width: okButton.down ? 1 : 0.3
-                border.color: okButton.down ? "#DDDFDF" : "#34979797"
+                color: okButton.down ? "#DEE0E0" : (okButton.hovered ? "#D3D4D4" : "#EAECEC")
+                border.width: 1
+                border.color: okButton.down || okButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { window.state = "browse"; virtualstudio.applySettings() }
             anchors.verticalCenter: parent.verticalCenter
