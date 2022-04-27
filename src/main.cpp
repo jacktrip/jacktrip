@@ -205,6 +205,9 @@ bool isRunFromCmd()
             if (size >= 7 && strncmp(pname + size - 7, "cmd.exe", 7) == 0) {
                 return true;
             }
+            if (size >= 6 && strncmp(pname + size - 6, "wt.exe", 6) == 0) {
+                return true;
+            }
         } else {
             CloseHandle(h);
         }
