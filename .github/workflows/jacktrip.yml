@@ -145,7 +145,7 @@ jobs:
             nogui: false
             weakjack: true
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v04'
+            qt-static-cache-key: 'v05'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -275,7 +275,7 @@ jobs:
         shell: bash
         run: |
           choco install jack --version=1.9.17 --no-progress
-          choco install openssl --no-progress
+          vcpkg install openssl --triplet="${{ matrix.vcpkg-triplet }}"
           if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             choco install pkgconfiglite --no-progress
             # check out an older version of rtaudio library, see issue #408
@@ -347,7 +347,7 @@ jobs:
         shell: cmd
         run: |
           mkdir %QT_STATIC_BUILD_PATH%
-          call "%QT_SRC_PATH%/configure.bat" -static-runtime -opengl desktop -platform win32-g++ -prefix "%QT_STATIC_BUILD_PATH%" -openssl OPENSSL_PREFIX="C:\Program Files\OpenSSL-Win64" %QT_STATIC_OPTIONS%
+          call "%QT_SRC_PATH%/configure.bat" -static-runtime -opengl desktop -platform win32-g++ -prefix "%QT_STATIC_BUILD_PATH%" -openssl -openssl-linked -I "%VCPKG_INSTALLATION_ROOT%\installed\%VCPKG_TRIPLET%\include" -L "%VCPKG_INSTALLATION_ROOT%\installed\%VCPKG_TRIPLET%\lib"  OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32" %QT_STATIC_OPTIONS%
           echo "building Qt"
           mingw32-make -j4
           echo "installing Qt"
