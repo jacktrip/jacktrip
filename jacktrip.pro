@@ -63,7 +63,7 @@ INCLUDEPATH += faust-src-lair/stk
   weakjack {
     message(Building with weak linking of JACK)
     INCLUDEPATH += externals/weakjack
-    DEFINES += USE_WEAK_JACK
+    DEFINES += USE_WEAK_JACK NDEBUG
   } else {
     nojack {
       message(Building NONJACK)
@@ -158,7 +158,7 @@ win32 {
     weakjack {
       message(Building with weak linking of JACK)
       INCLUDEPATH += externals/weakjack
-      DEFINES += USE_WEAK_JACK
+      DEFINES += USE_WEAK_JACK NDEBUG
     } else {
       LIBS += "C:\Program Files\JACK2\lib\libjack64.lib"
       LIBS += "C:\Program Files\JACK2\lib\libjackserver64.lib"
@@ -170,7 +170,7 @@ win32 {
       weakjack {
         message(Building with weak linking of JACK)
         INCLUDEPATH += externals/weakjack
-        DEFINES += USE_WEAK_JACK
+        DEFINES += USE_WEAK_JACK NDEBUG
       } else {
         LIBS += "C:\Program Files (x86)\Jack\lib\libjack64.lib"
         LIBS += "C:\Program Files (x86)\Jack\lib\libjackserver64.lib"
