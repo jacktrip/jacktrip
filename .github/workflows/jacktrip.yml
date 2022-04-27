@@ -355,6 +355,8 @@ jobs:
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
+        env:
+          VCPKG_TRIPLET: ${{ matrix.vcpkg-triplet }}
       - name: set Qt environment variables # needed to find qmake depending on the way qt was installed
         shell: bash
         if: matrix.build-system == 'qmake'
