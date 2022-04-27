@@ -343,7 +343,7 @@ jobs:
           echo "installing Qt"
           make install
       - name: install openssl for Windows static builds
-        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os == 'Windows'
+        if: matrix.static-qt-version && runner.os == 'Windows'
         shell: bash
         run: |
           if [[ -n "${{ matrix.vcpkg-triplet }}" ]]; then 
