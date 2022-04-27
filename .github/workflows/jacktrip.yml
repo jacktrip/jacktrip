@@ -144,6 +144,7 @@ jobs:
             bundled-rtaudio: true
             nogui: false
             weakjack: true
+            vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.2
             qt-static-cache-key: 'v05'
             jacktrip-path: release/jacktrip.exe
