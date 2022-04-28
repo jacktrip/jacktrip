@@ -110,6 +110,7 @@ constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet u
 constexpr double AutoInitDur = 6000.0;  // msec init phase
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
+// tweak
 constexpr int WindowDivisor = 8;  // for faster auto tracking
 //*******************************************************************************
 Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
@@ -141,6 +142,9 @@ Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
         mHist = 2;  // min packets for prediction, needs at least 2
     else if (mHist > 6)
         mHist = 6;  // max packets, keep a lid on CPU load
+
+    mHist = 5;  // temp tweak, hardwired for 128
+
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
     mBytes     = mFPP * mNumChannels * mBitResolutionMode;
@@ -257,6 +261,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from bufstrategy 1 autoq mode
+                // tweak
                 if (mMsecTolerance != -500.0)
                     // use it to set headroom
                     mAutoHeadroom = -mMsecTolerance;
@@ -536,6 +541,10 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
 
     // BURG RECURSION
     for (size_t k = 0; k < m; k++) {
+        // tweak
+        if ((k % 10) == 0)
+            QThread::usleep(1);
+
         // COMPUTE MU
         long double mu = 0.0;
         for (size_t n = 0; n <= N - k - 1; n++) {
