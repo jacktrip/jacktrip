@@ -56,6 +56,10 @@
 #include "RtAudio.h"
 #endif
 
+#ifdef _WIN32
+#include <wingdi.h>
+#endif
+
 VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     : QObject(parent), m_showFirstRun(firstRun)
 {
@@ -70,6 +74,16 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
 
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
+
+    // Check if we need to adjust our font scaling
+#if defined(__APPLE__)
+    m_fontScale = 4.0 / 3.0;
+#elif defined(_WIN32)
+    // Checx if we have text scaling enabled on Windows
+    HDC desktopDC = GetDC(NULL);
+    int verticalDPI = GetDeviceCaps(desktopDC, LOGPIXELSY);
+    m_fontScale = 96.0 / (float)verticalDPI;
+#endif
 
 #ifdef USE_WEAK_JACK
     // Check if Jack is available
@@ -246,11 +260,7 @@ QString VirtualStudio::connectionState()
 
 float VirtualStudio::fontScale()
 {
-#ifdef __APPLE__
-    return 4.0 / 3.0;
-#else
-    return 1;
-#endif
+    return m_fontScale;
 }
 
 void VirtualStudio::toStandard()

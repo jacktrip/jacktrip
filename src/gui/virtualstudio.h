@@ -168,6 +168,7 @@ class VirtualStudio : public QObject
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
+    float m_fontScale        = 1;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
