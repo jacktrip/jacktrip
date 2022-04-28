@@ -80,9 +80,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_fontScale = 4.0 / 3.0;
 #elif defined(_WIN32)
     // Checx if we have text scaling enabled on Windows
-    HDC desktopDC = GetDC(NULL);
+    HDC desktopDC   = GetDC(NULL);
     int verticalDPI = GetDeviceCaps(desktopDC, LOGPIXELSY);
-    m_fontScale = 96.0 / (float)verticalDPI;
+    m_fontScale     = 96.0 / (float)verticalDPI;
 #endif
 
 #ifdef USE_WEAK_JACK
