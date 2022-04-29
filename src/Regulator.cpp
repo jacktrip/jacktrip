@@ -549,8 +549,8 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     for (size_t k = 0; k < m; k++) {
         // tweak
         if ((k % 10) == 0)
-            //            QThread::usleep(1);
-            QThread::usleep(10);
+            QThread::usleep(1);
+        //            QThread::usleep(10);
         //            QThread::yieldCurrentThread();
 
         // COMPUTE MU
