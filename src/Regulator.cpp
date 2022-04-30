@@ -111,8 +111,8 @@ constexpr double AutoInitDur = 6000.0;  // msec init phase
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 // tweak
-constexpr int WindowDivisor = 8;  // for faster auto tracking
-constexpr int MaxFPP          = 256;   // for now, long HIST is good but compute bound
+constexpr int WindowDivisor = 8;    // for faster auto tracking
+constexpr int MaxFPP        = 256;  // for now, long HIST is good but compute bound
 //*******************************************************************************
 Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
