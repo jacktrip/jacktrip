@@ -112,6 +112,7 @@ constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 // tweak
 constexpr int WindowDivisor = 8;  // for faster auto tracking
+constexpr int MaxFPP          = 256;   // for now, long HIST is good but compute bound
 //*******************************************************************************
 Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -121,6 +122,11 @@ Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
 {
+    if (mFPP > MaxFPP) {
+        std::cerr << "*** Regulator.cpp: local FPP = " << mFPP
+                  << " larger than max FPP = " << MaxFPP << "\n";
+        exit(1);
+    }
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
