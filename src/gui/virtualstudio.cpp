@@ -115,8 +115,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        QVariant::fromValue(m_servers));
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     // TODO: refactor the qml code so that the window is resizable
-    m_view.setMinimumSize(QSize(696, 577));
-    m_view.setMaximumSize(QSize(696, 577));
+    m_view.setMinimumSize(QSize(594, 519));
+    //m_view.setMaximumSize(QSize(696, 577));
+    m_view.resize(696, 577);
 
     // Connect our timers
     connect(&m_startTimer, &QTimer::timeout, this, &VirtualStudio::checkForHostname);
