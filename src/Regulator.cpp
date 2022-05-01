@@ -124,7 +124,7 @@ Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     , mAuto(false)
 {
     if (mNumChannels > MaxChans) {
-        std::cerr << "*** Regulator.cpp: local FPP = " << mNumChannels
+        std::cerr << "*** Regulator.cpp: receive channels = " << mNumChannels
                   << " larger than max channels = " << MaxChans << "\n";
         exit(1);
     }
