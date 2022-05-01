@@ -2,7 +2,8 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 Item {
-    width: 696; height: 577
+    width: parent.width; height: parent.height
+    clip: true
     
     Rectangle {
         width: parent.width; height: parent.height
@@ -25,7 +26,7 @@ Item {
     
     Text {
         id: jackLabel
-        x:leftMargin; y: 100; width: 632
+        x:leftMargin; y: 100; width: parent.width - leftMargin - 16
         text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         wrapMode: Text.WordWrap
@@ -37,7 +38,7 @@ Item {
         model: inputComboModel
         currentIndex: virtualstudio.inputDevice
         onActivated: { virtualstudio.inputDevice = currentIndex }
-        x: 234; y: 100; width: 446; height: 36
+        x: 234; y: 100; width: parent.width - x - 16; height: 36
         visible: virtualstudio.audioBackend != "JACK"
     }
     
@@ -140,13 +141,13 @@ Item {
     }
     
     Text {
-        x: leftMargin; y: 465
+        x: leftMargin; y: parent.height - 112
         text: "Audio Backend: " + virtualstudio.audioBackend
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
     }
     
     Text {
-        x: leftMargin; y: 502
+        x: leftMargin; y: parent.height - 75
         text: "JackTrip version " + virtualstudio.versionString
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
     }

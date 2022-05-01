@@ -2,7 +2,8 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 Item {
-    width: 696; height: 577
+    width: parent.width; height: parent.height
+    clip: true
     
     property bool connecting: false
     
@@ -24,6 +25,7 @@ Item {
     
     Studio {
         x: parent.leftMargin; y: 96
+        width: parent.width - (2 * x)
         connected: true
         serverLocation: serverModel[virtualstudio.currentStudio].location
         flagImage: serverModel[virtualstudio.currentStudio].flag

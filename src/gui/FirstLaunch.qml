@@ -3,7 +3,8 @@ import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
 
 Item {
-    width: 696; height: 577
+    width: parent.width; height: parent.height
+    clip: true
     
     Image {
         source: "logo.svg"
@@ -44,7 +45,7 @@ Item {
             }
         }
         onClicked: { window.state = "login"; virtualstudio.toVirtualStudio(); }
-        x: 83; y: 290; width: 234; height: 197
+        x: parent.width / 2 - 265; y: 290; width: 234; height: 197
         Image {
             source: "jacktrip.png"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -85,7 +86,7 @@ Item {
             }
         }
         onClicked: { window.state = "login"; virtualstudio.toStandard(); }
-        x: 380; y: 290; width: 234; height: 197
+        x: parent.width / 2 + 32; y: 290; width: 234; height: 197
         Image {
             source: "jacktrip.png"
             anchors.horizontalCenter: parent.horizontalCenter

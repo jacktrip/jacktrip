@@ -2,7 +2,8 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 Item {
-    width: 696; height: 577
+    width: parent.width; height: parent.height
+    clip: true
     
     property bool refreshing: false
     
@@ -65,6 +66,7 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         delegate: Studio {
             x: 16
+            width: studioListView.width - (2 * x)
             serverLocation: location
             flagImage: flag
             studioName: name
@@ -152,7 +154,7 @@ Item {
             }
             onClicked: window.state = "settings"
             anchors.verticalCenter: parent.verticalCenter
-            x: 577; width: 103; height: 25
+            x: parent.width - 119; width: buttonWidth; height: 25
             Text {
                 text: "Settings"
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }

@@ -6,6 +6,7 @@ Rectangle {
     height: 577
     color: "#FAFBFB"
     state: virtualstudio.showFirstRun ? "start" : "login"
+    anchors.fill: parent
 
     id: window
     states: [

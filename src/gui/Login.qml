@@ -3,7 +3,8 @@ import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
 
 Item {
-    width: 696; height: 577
+    width: parent.width; height: parent.height
+    clip: true
     
     Rectangle {
         width: parent.width; height: parent.height
@@ -22,13 +23,13 @@ Item {
     Image {
         id: loginLogo
         source: "logo.svg"
-        x: 198; y: 110; width: 42; height: 76
+        x: parent.width / 2 - 150; y: 110; width: 42; height: 76
     }
 
     Image {
         source: "jacktrip.png"
         anchors.bottom: loginLogo.bottom
-        x: 260; width: 238; height: 56
+        x: parent.width / 2 - 88; width: 238; height: 56
     }
 
     Text {
