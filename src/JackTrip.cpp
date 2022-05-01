@@ -377,19 +377,14 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
-            qDebug() << "experimental buffer strategy 3 -- regulator with PLC";
-
-            {
+            qDebug() << "experimental buffer strategy 3 -- Regulator with PLC";
+            if (mNumAudioChansOut > 1) {
                 std::cerr << "*** JackTrip.cpp: receive channels = " << mNumAudioChansOut
                           << "\n";
-            }
-            if (mNumAudioChansOut > 1) {
-                //                throw std::invalid_argument(
-                //                        "JackTrip.cpp calling Regulator with
-                //                        mNumAudioChansOut > 1");
-                stop(QStringLiteral(
-                    "JackTrip.cpp calling Regulator with mNumAudioChansOut > 1"));
-                serverStart(true);
+                // this is bad...
+                throw std::invalid_argument(
+                    "JackTrip.cpp calling Regulator with mNumAudioChansOut > 1");
+                // how to reject here? and if server, send exit packet to client
             }
 
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
