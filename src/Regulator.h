@@ -118,7 +118,7 @@ class StdDev
 class Regulator : public RingBuffer
 {
    public:
-    Regulator(int channels, int bit_res, int FPP, int qLen);
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
     void shimFPP(const int8_t* buf, int len, int seq_num);

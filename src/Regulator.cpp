@@ -115,19 +115,22 @@ constexpr int WindowDivisor = 8;    // for faster auto tracking
 constexpr int MaxChans      = 1;    // stereo is compute bound with long HIST
 constexpr int MaxFPP        = 256;  // long HIST sounds good but limited to lower FPP
 //*******************************************************************************
-Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
-    , mNumChannels(channels)
+    , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
 {
-    if (mNumChannels > MaxChans) {
-        std::cerr << "*** Regulator.cpp: receive channels = " << mNumChannels
-                  << " larger than max channels = " << MaxChans << "\n";
-        exit(1);
-    }
+    // catch settings that are compute bound using long HIST
+    // hub client rcvChannels is set from client's settings parameters
+    // hub server rcvChannels is set from connecting client, not from hub parameters
+    //    if (mNumChannels > MaxChans) {
+    //        std::cerr << "*** Regulator.cpp: receive channels = " << mNumChannels
+    //                  << " larger than max channels = " << MaxChans << "\n";
+    //        exit(1);
+    //    }
     if (mFPP > MaxFPP) {
         std::cerr << "*** Regulator.cpp: local FPP = " << mFPP
                   << " larger than max FPP = " << MaxFPP << "\n";
