@@ -112,7 +112,8 @@ constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 // tweak
 constexpr int WindowDivisor = 8;    // for faster auto tracking
-constexpr int MaxFPP        = 256;  // for now, long HIST is good but compute bound
+constexpr int MaxChans      = 1;    // stereo is compute bound with long HIST
+constexpr int MaxFPP        = 256;  // long HIST sounds good but limited to lower FPP
 //*******************************************************************************
 Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -122,6 +123,11 @@ Regulator::Regulator(int channels, int bit_res, int FPP, int qLen)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
 {
+    if (mNumChannels > MaxChans) {
+        std::cerr << "*** Regulator.cpp: local FPP = " << mNumChannels
+                  << " larger than max channels = " << MaxChans << "\n";
+        exit(1);
+    }
     if (mFPP > MaxFPP) {
         std::cerr << "*** Regulator.cpp: local FPP = " << mFPP
                   << " larger than max FPP = " << MaxFPP << "\n";
