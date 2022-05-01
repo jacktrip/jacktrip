@@ -380,15 +380,17 @@ void JackTrip::setupRingBuffers()
             qDebug() << "experimental buffer strategy 3 -- regulator with PLC";
 
             {
-                std::cerr << "*** Regulator.cpp: receive channels = " << mNumAudioChansOut
+                std::cerr << "*** JackTrip.cpp: receive channels = " << mNumAudioChansOut
                           << "\n";
             }
-            if (mNumAudioChansOut > 1)
+            if (mNumAudioChansOut > 1) {
                 //                throw std::invalid_argument(
                 //                        "JackTrip.cpp calling Regulator with
                 //                        mNumAudioChansOut > 1");
                 stop(QStringLiteral(
                     "JackTrip.cpp calling Regulator with mNumAudioChansOut > 1"));
+                serverStart(true);
+            }
 
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
