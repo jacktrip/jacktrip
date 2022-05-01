@@ -378,6 +378,12 @@ void JackTrip::setupRingBuffers()
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
             qDebug() << "experimental buffer strategy 3 -- regulator with PLC";
+
+            {
+                std::cerr << "*** Regulator.cpp: receive channels = " << mNumAudioChansOut
+                          << "\n";
+            }
+
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
