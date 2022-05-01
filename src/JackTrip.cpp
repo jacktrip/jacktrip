@@ -386,7 +386,11 @@ void JackTrip::setupRingBuffers()
                           << "\n";
             }
             if (mNumAudioChansOut > 1)
-                throw std::invalid_argument("mNumAudioChansOut>1");
+                //                throw std::invalid_argument(
+                //                        "JackTrip.cpp calling Regulator with
+                //                        mNumAudioChansOut > 1");
+                stop(QStringLiteral(
+                    "JackTrip.cpp calling Regulator with mNumAudioChansOut > 1"));
 
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
