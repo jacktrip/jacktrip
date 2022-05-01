@@ -380,6 +380,12 @@ void JackTrip::setupRingBuffers()
             qDebug() << "experimental buffer strategy 3 -- regulator with PLC";
             mSendRingBuffer =
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
+
+            {
+                std::cerr << "*** Regulator.cpp: receive channels = " << mNumAudioChansOut
+                          << "\n";
+            }
+
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
