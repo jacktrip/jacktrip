@@ -385,6 +385,8 @@ void JackTrip::setupRingBuffers()
                 std::cerr << "*** Regulator.cpp: receive channels = " << mNumAudioChansOut
                           << "\n";
             }
+            if (mNumAudioChansOut > 1)
+                throw std::invalid_argument("mNumAudioChansOut>1");
 
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
