@@ -116,7 +116,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     // TODO: refactor the qml code so that the window is resizable
     m_view.setMinimumSize(QSize(594, 519));
-    //m_view.setMaximumSize(QSize(696, 577));
+    // m_view.setMaximumSize(QSize(696, 577));
     m_view.resize(696, 577);
 
     // Connect our timers
@@ -255,6 +255,11 @@ QString VirtualStudio::connectionState()
 float VirtualStudio::fontScale()
 {
     return m_fontScale;
+}
+
+float VirtualStudio::uiScale()
+{
+    return m_uiScale;
 }
 
 void VirtualStudio::toStandard()

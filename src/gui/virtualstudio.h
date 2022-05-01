@@ -71,6 +71,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
+    Q_PROPERTY(float uiScale READ uiScale NOTIFY uiScaleChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -93,6 +94,7 @@ class VirtualStudio : public QObject
     int currentStudio();
     QString connectionState();
     float fontScale();
+    float uiScale();
 
    public slots:
     void toStandard();
@@ -124,6 +126,7 @@ class VirtualStudio : public QObject
     void bufferSizeChanged();
     void currentStudioChanged();
     void connectionStateChanged();
+    void uiScaleChanged();
     void signalExit();
 
    private slots:
@@ -169,6 +172,7 @@ class VirtualStudio : public QObject
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
     float m_fontScale        = 1;
+    float m_uiScale          = 1;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;

@@ -28,17 +28,17 @@ Item {
         id: sectionHeading
         Rectangle {
             color: "transparent"
-            height: 72; x: 16; width: ListView.view.width - (2 * x)
+            height: 72 * virtualstudio.uiScale; x: 16 * virtualstudio.uiScale; width: ListView.view.width - (2 * x)
             required property string section
             Text {
                 //anchors.bottom: parent.bottom
-                y: 12
+                y: 12 * virtualstudio.uiScale
                 text: parent.section
-                font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale; weight: Font.Bold }
+                font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
             }
             Image {
                 source: "logo.svg"
-                width: 32; height: 59
+                width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
                 anchors.right: parent.right
                 visible: parent.section == virtualstudio.logoSection ? true : false
             }
@@ -48,8 +48,8 @@ Item {
     Component {
         id: footer
         Rectangle {
-            height: 16
-            x: 16
+            height: 16 * virtualstudio.uiScale
+            x: 16 * virtualstudio.uiScale
             width: parent.width - (2 * x)
             color: "#FAFBFB"
         }
@@ -57,15 +57,15 @@ Item {
 
     ListView {
         id: studioListView
-        x:0; y: 0; width: parent.width - (2 * x); height: parent.height - 36
-        spacing: 16
+        x:0; y: 0; width: parent.width - (2 * x); height: parent.height - 36 * virtualstudio.uiScale
+        spacing: 16 * virtualstudio.uiScale
         header: footer
         footer: footer
         model: serverModel
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         delegate: Studio {
-            x: 16
+            x: 16 * virtualstudio.uiScale
             width: studioListView.width - (2 * x)
             serverLocation: location
             flagImage: flag
@@ -105,23 +105,24 @@ Item {
     }
     
     Rectangle {
-        x: 0; y: parent.height - 36; width: parent.width; height: 36
+        x: 0; y: parent.height - 36 * virtualstudio.uiScale; width: parent.width; height: 36 * virtualstudio.uiScale
         border.color: "#33979797"
         
         Button {
             id: refreshButton
             background: Rectangle {
-                radius: 6
+                radius: 6 * virtualstudio.uiScale
                 color: refreshButton.down ? "#DEE0E0" : (refreshButton.hovered ? "#D3D4D4" : "#EAECEC")
                 border.width: 1
                 border.color: refreshButton.down || refreshButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { refreshing = true; virtualstudio.refreshStudios() }
             anchors.verticalCenter: parent.verticalCenter
-            x: 16; width: buttonWidth; height: buttonHeight
+            x: 16 * virtualstudio.uiScale
+            width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "Refresh List"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
@@ -129,17 +130,18 @@ Item {
         Button {
             id: aboutButton
             background: Rectangle {
-                radius: 6
+                radius: 6 * virtualstudio.uiScale
                 color: aboutButton.down ? "#DEE0E0" : (aboutButton.hovered ? "#D3D4D4" : "#EAECEC")
                 border.width: 1
                 border.color: aboutButton.down || aboutButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { virtualstudio.showAbout() }
             anchors.verticalCenter: parent.verticalCenter
-            x: parent.width - 230; width: buttonWidth; height: buttonHeight
+            x: parent.width - (230 * virtualstudio.uiScale)
+            width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "About"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
@@ -147,17 +149,18 @@ Item {
         Button {
             id: settingsButton
             background: Rectangle {
-                radius: 6
+                radius: 6 * virtualstudio.uiScale
                 color: settingsButton.down ? "#DEE0E0" : (settingsButton.hovered ? "#D3D4D4" : "#EAECEC")
                 border.width: 1
                 border.color: settingsButton.down || settingsButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: window.state = "settings"
             anchors.verticalCenter: parent.verticalCenter
-            x: parent.width - 119; width: buttonWidth; height: 25
+            x: parent.width - (119 * virtualstudio.uiScale)
+            width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "Settings"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
