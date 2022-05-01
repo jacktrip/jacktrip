@@ -20,14 +20,14 @@ Item {
     Text {
         x: 16; y: 32
         text: "Settings"
-        font { family: "Poppins"; weight: Font.Bold; pointSize: fontBig * virtualstudio.fontScale }
+        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale }
     }
     
     Text {
         id: jackLabel
         x:leftMargin; y: 100; width: 632
         text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         wrapMode: Text.WordWrap
         visible: virtualstudio.audioBackend == "JACK"
     }
@@ -54,7 +54,7 @@ Item {
         anchors.verticalCenter: inputCombo.verticalCenter
         x: leftMargin
         text: "Input Device"
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         visible: virtualstudio.audioBackend != "JACK"
     }
     
@@ -62,7 +62,7 @@ Item {
         anchors.verticalCenter: outputCombo.verticalCenter
         x: leftMargin
         text: "Output Device"
-        font { family: "Poppins"; pointSize: 13 * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale }
         visible: virtualstudio.audioBackend != "JACK"
     }
 
@@ -79,7 +79,7 @@ Item {
         visible: virtualstudio.audioBackend != "JACK"
         Text {
             text: "Refresh Device List"
-            font { family: "Poppins"; pointSize: 11 * virtualstudio.fontScale }
+            font { family: "Poppins"; pixelSize: 11 * virtualstudio.fontScale }
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
         }
     }
@@ -104,7 +104,7 @@ Item {
         anchors.verticalCenter: bufferCombo.verticalCenter
         x: 48
         text: "Buffer Size"
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         visible: virtualstudio.audioBackend != "JACK"
     }
     
@@ -127,7 +127,7 @@ Item {
         x: parent.width - 232; y: separator.y + 16; width: 216; height: 30
         Text {
             text: "Switch to Standard Mode"
-            font { family: "Poppins"; pointSize: fontSmall * virtualstudio.fontScale }
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale }
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
         }
     }
@@ -136,19 +136,19 @@ Item {
         anchors.verticalCenter: modeButton.verticalCenter
         x: leftMargin
         text: "Change Mode"
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
     }
     
     Text {
         x: leftMargin; y: 465
         text: "Audio Backend: " + virtualstudio.audioBackend
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
     }
     
     Text {
         x: leftMargin; y: 502
         text: "JackTrip version " + virtualstudio.versionString
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
     }
 
     Button {
@@ -163,7 +163,7 @@ Item {
         x: parent.width - 16 - buttonWidth; y: modeButton.y + 46; width: buttonWidth; height: 30
         Text {
             text: "Log Out"
-            font { family: "Poppins"; pointSize: fontSmall * virtualstudio.fontScale }
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale }
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
         }
     }
@@ -186,7 +186,7 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
             Text {
                 text: "Cancel"
-                font { family: "Poppins"; pointSize: fontSmall * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
@@ -204,7 +204,7 @@ Item {
             x: parent.width - 119; width: buttonWidth; height: buttonHeight
             Text {
                 text: "OK"
-                font { family: "Poppins"; pointSize: fontSmall * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }

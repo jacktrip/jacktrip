@@ -34,7 +34,7 @@ Item {
     Text {
         text: "Virtual Studio"
         font.family: "Poppins"
-        font.pointSize: 28 * virtualstudio.fontScale
+        font.pixelSize: 28 * virtualstudio.fontScale
         anchors.horizontalCenter: parent.horizontalCenter
         y: 208
     }
@@ -43,7 +43,7 @@ Item {
         id: loggingInText
         text: "Logging in..."
         font.family: "Poppins"
-        font.pointSize: 18 * virtualstudio.fontScale
+        font.pixelSize: 18 * virtualstudio.fontScale
         anchors.horizontalCenter: parent.horizontalCenter
         y: 282
         visible: virtualstudio.hasRefreshToken
@@ -53,7 +53,7 @@ Item {
         id: authFailedText
         text: "Log in failed. Please try again."
         font.family: "Poppins"
-        font.pointSize: 16 * virtualstudio.fontScale
+        font.pixelSize: 16 * virtualstudio.fontScale
         anchors.horizontalCenter: parent.horizontalCenter
         y: 272
         visible: failTextVisible
@@ -81,7 +81,7 @@ Item {
         Text {
             text: "Sign In"
             font.family: "Poppins"
-            font.pointSize: 18 * virtualstudio.fontScale
+            font.pixelSize: 18 * virtualstudio.fontScale
             font.weight: Font.Bold
             color: "#DB0A0A"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -112,7 +112,7 @@ Item {
         Text {
             text: "Back"
             font.family: "Poppins"
-            font.pointSize: 18 * virtualstudio.fontScale
+            font.pixelSize: 18 * virtualstudio.fontScale
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
         }

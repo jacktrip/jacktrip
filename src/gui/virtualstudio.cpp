@@ -75,15 +75,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
 
-    // Check if we need to adjust our font scaling
-#if defined(__APPLE__)
+    // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
-#elif defined(_WIN32)
-    // Checx if we have text scaling enabled on Windows
-    HDC desktopDC   = GetDC(NULL);
-    int verticalDPI = GetDeviceCaps(desktopDC, LOGPIXELSY);
-    m_fontScale     = 96.0 / (float)verticalDPI;
-#endif
 
 #ifdef USE_WEAK_JACK
     // Check if Jack is available

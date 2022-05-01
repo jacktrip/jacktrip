@@ -96,7 +96,7 @@ Rectangle {
     Text {
         x: leftMargin; y: 11; width: manageable ? parent.width - 233 : parent.width - 156
         text: studioName
-        font { family: "Poppins"; weight: Font.Bold; pointSize: fontBig * virtualstudio.fontScale }
+        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale }
         elide: Text.ElideRight
     }
     
@@ -115,7 +115,7 @@ Rectangle {
         anchors.verticalCenter: publicRect.verticalCenter
         x: 103
         text: publicStudio ? "Public hub studio in " + serverLocation : "Private hub studio in " + serverLocation
-        font { family: "Poppins"; pointSize: fontSmall * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale }
     }
     
     Button {
@@ -149,7 +149,7 @@ Rectangle {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56
         text: connected ? "Leave" : available ? "Join" : "Start"
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         visible: connected || canConnect || canStart
     }
     
@@ -181,7 +181,7 @@ Rectangle {
         anchors.horizontalCenter: manageButton.horizontalCenter
         y: 56
         text: "Manage"
-        font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         visible: manageable
     }
 }

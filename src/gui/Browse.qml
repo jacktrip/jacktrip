@@ -33,7 +33,7 @@ Item {
                 //anchors.bottom: parent.bottom
                 y: 12
                 text: parent.section
-                font { family: "Poppins"; pointSize: 28 * virtualstudio.fontScale; weight: Font.Bold }
+                font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale; weight: Font.Bold }
             }
             Image {
                 source: "logo.svg"
@@ -119,7 +119,7 @@ Item {
             x: 16; width: buttonWidth; height: buttonHeight
             Text {
                 text: "Refresh List"
-                font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
                 anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
@@ -137,7 +137,7 @@ Item {
             x: parent.width - 230; width: buttonWidth; height: buttonHeight
             Text {
                 text: "About"
-                font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
@@ -155,7 +155,7 @@ Item {
             x: 577; width: 103; height: 25
             Text {
                 text: "Settings"
-                font { family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }

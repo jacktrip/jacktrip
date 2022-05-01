@@ -19,7 +19,7 @@ Item {
         id: heading
         text: virtualstudio.connectionState
         x: leftMargin; y: 34
-        font { family: "Poppins"; weight: Font.Bold; pointSize: fontBig * virtualstudio.fontScale }
+        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale }
     }
     
     Studio {
@@ -50,7 +50,7 @@ Item {
         x: 120
         text: virtualstudio.audioBackend == "JACK" ? 
             virtualstudio.audioBackend : inputComboModel[virtualstudio.inputDevice]
-        font {family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         anchors.verticalCenter: mic.verticalCenter
     }
     
@@ -58,7 +58,7 @@ Item {
         x: 120
         text: virtualstudio.audioBackend == "JACK" ? 
             virtualstudio.audioBackend : outputComboModel[virtualstudio.outputDevice]
-        font {family: "Poppins"; pointSize: fontMedium * virtualstudio.fontScale }
+        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale }
         anchors.verticalCenter: headphones.verticalCenter
     }
     
