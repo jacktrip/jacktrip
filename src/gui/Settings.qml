@@ -184,12 +184,6 @@ Item {
     }
     
     Text {
-        x: leftMargin * virtualstudio.uiScale; y: parent.height - (112 * virtualstudio.uiScale)
-        text: "Audio Backend: " + virtualstudio.audioBackend
-        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-    }
-    
-    Text {
         x: leftMargin * virtualstudio.uiScale; y: parent.height - (75 * virtualstudio.uiScale)
         text: "JackTrip version " + virtualstudio.versionString
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
