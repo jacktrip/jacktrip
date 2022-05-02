@@ -79,13 +79,13 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
-    
+
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
-    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1; 
-    m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
-    m_outputDevice   = settings.value(QStringLiteral("OutputDevice"), "").toString();
-    m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
+    m_useRtAudio   = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
+    m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
+    m_outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
+    m_bufferSize   = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     settings.endGroup();
     m_previousBuffer = m_bufferSize;
     refreshDevices();
@@ -93,7 +93,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_previousOutput = m_outputDevice;
 #else
     m_selectableBackend = false;
-    
+
     // Set our combo box models to an empty list to avoid a reference error
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputComboModel"),
@@ -107,7 +107,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Check if Jack is available
     if (have_libjack() != 0) {
 #ifdef RT_AUDIO
-        m_useRtAudio = true;
+        m_useRtAudio        = true;
         m_selectableBackend = false;
 #else
         // TODO: Handle this more gracefully, even if it's an unlikely scenario
@@ -118,7 +118,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 #ifdef RT_AUDIO
     m_previousUseRtAudio = m_useRtAudio;
 #endif
-    
+
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("bufferComboModel"), QVariant::fromValue(m_bufferOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
@@ -126,7 +126,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("backendComboModel"), QVariant::fromValue(QStringList() << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
+        QStringLiteral("backendComboModel"),
+        QVariant::fromValue(QStringList()
+                            << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     // TODO: refactor the qml code so that the window is resizable
     m_view.setMinimumSize(QSize(594, 519));

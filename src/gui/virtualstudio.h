@@ -62,7 +62,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString logoSection READ logoSection NOTIFY logoSectionChanged)
     Q_PROPERTY(bool selectableBackend READ selectableBackend CONSTANT)
-    Q_PROPERTY(QString audioBackend READ audioBackend WRITE setAudioBackend NOTIFY audioBackendChanged)
+    Q_PROPERTY(QString audioBackend READ audioBackend WRITE setAudioBackend NOTIFY
+                   audioBackendChanged)
     Q_PROPERTY(
         int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
     Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
