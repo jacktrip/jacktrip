@@ -67,7 +67,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     m_refreshToken = settings.value(QStringLiteral("RefreshToken"), "").toString();
     m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
+    m_uiScale      = settings.value(QStringLiteral("UiScale"), 1).toFloat();
     settings.endGroup();
+    m_previousUiScale = m_uiScale;
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -77,47 +79,59 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
+    
+#ifdef RT_AUDIO
+    settings.beginGroup(QStringLiteral("Audio"));
+    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1; 
+    m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
+    m_outputDevice   = settings.value(QStringLiteral("OutputDevice"), "").toString();
+    m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
+    settings.endGroup();
+    m_previousBuffer = m_bufferSize;
+    refreshDevices();
+    m_previousInput  = m_inputDevice;
+    m_previousOutput = m_outputDevice;
+#else
+    m_selectableBackend = false;
+    
+    // Set our combo box models to an empty list to avoid a reference error
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputComboModel"),
+        QVariant::fromValue(QStringList(QLatin1String(""))));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputComboModel"),
+        QVariant::fromValue(QStringList(QLatin1String(""))));
+#endif
 
 #ifdef USE_WEAK_JACK
     // Check if Jack is available
     if (have_libjack() != 0) {
 #ifdef RT_AUDIO
         m_useRtAudio = true;
-        settings.beginGroup(QStringLiteral("Audio"));
-        m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
-        m_outputDevice   = settings.value(QStringLiteral("OutputDevice"), "").toString();
-        m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
-        m_previousBuffer = m_bufferSize;
-        settings.endGroup();
-        refreshDevices();
-        m_previousInput  = m_inputDevice;
-        m_previousOutput = m_outputDevice;
+        m_selectableBackend = false;
 #else
         // TODO: Handle this more gracefully, even if it's an unlikely scenario
         qFatal("JACK not found and not built with RtAudio support.");
 #endif  // RT_AUDIO
-    } else {
-        // Set our combo box models to an empty list to avoid a reference error
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputComboModel"),
-            QVariant::fromValue(QStringList(QLatin1String(""))));
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputComboModel"),
-            QVariant::fromValue(QStringList(QLatin1String(""))));
     }
 #endif  // USE_WEAK_JACK
-
+#ifdef RT_AUDIO
+    m_previousUseRtAudio = m_useRtAudio;
+#endif
+    
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("bufferComboModel"), QVariant::fromValue(m_bufferOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("backendComboModel"), QVariant::fromValue(QStringList() << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     // TODO: refactor the qml code so that the window is resizable
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
-    m_view.resize(696, 577);
+    m_view.resize(696 * m_uiScale, 577 * m_uiScale);
 
     // Connect our timers
     connect(&m_startTimer, &QTimer::timeout, this, &VirtualStudio::checkForHostname);
@@ -172,9 +186,23 @@ QString VirtualStudio::logoSection()
     return m_logoSection;
 }
 
+bool VirtualStudio::selectableBackend()
+{
+    return m_selectableBackend;
+}
+
 QString VirtualStudio::audioBackend()
 {
     return m_useRtAudio ? QStringLiteral("RtAudio") : QStringLiteral("JACK");
+}
+
+void VirtualStudio::setAudioBackend(const QString& backend)
+{
+    if (!m_selectableBackend) {
+        return;
+    }
+    m_useRtAudio = (backend == QStringLiteral("RtAudio"));
+    emit audioBackendChanged();
 }
 
 int VirtualStudio::inputDevice()
@@ -262,6 +290,12 @@ float VirtualStudio::uiScale()
     return m_uiScale;
 }
 
+void VirtualStudio::setUiScale(float scale)
+{
+    m_uiScale = scale;
+    emit uiScaleChanged();
+}
+
 void VirtualStudio::toStandard()
 {
     if (!m_standardWindow.isNull()) {
@@ -317,9 +351,6 @@ void VirtualStudio::refreshStudios()
 
 void VirtualStudio::refreshDevices()
 {
-    if (!m_useRtAudio) {
-        return;
-    }
 #ifdef RT_AUDIO
     getDeviceList(&m_inputDeviceList, true);
     getDeviceList(&m_outputDeviceList, false);
@@ -343,39 +374,41 @@ void VirtualStudio::refreshDevices()
 
 void VirtualStudio::revertSettings()
 {
-    if (!m_useRtAudio) {
-        return;
-    }
+    m_uiScale = m_previousUiScale;
+    emit uiScaleChanged();
 #ifdef RT_AUDIO
     // Restore our previous settings
     m_inputDevice  = m_previousInput;
     m_outputDevice = m_previousOutput;
     m_bufferSize   = m_previousBuffer;
+    m_useRtAudio   = m_previousUseRtAudio;
     emit inputDeviceChanged();
     emit outputDeviceChanged();
     emit bufferSizeChanged();
+    emit audioBackendChanged();
 #endif
 }
 
 void VirtualStudio::applySettings()
 {
-    if (!m_useRtAudio) {
-        return;
-    }
-#ifdef RT_AUDIO
+    m_previousUiScale = m_uiScale;
+    emit newScale();
     QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("UiScale"), m_uiScale);
+    settings.endGroup();
+#ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("Backend"), m_useRtAudio ? 1 : 0);
     settings.setValue(QStringLiteral("BufferSize"), m_bufferSize);
     settings.setValue(QStringLiteral("InputDevice"), m_inputDevice);
     settings.setValue(QStringLiteral("OutputDevice"), m_outputDevice);
     settings.endGroup();
 
-    m_previousBuffer = m_bufferSize;
-    m_previousInput  = m_inputDevice;
-    m_previousOutput = m_outputDevice;
-    emit inputDeviceChanged();
-    emit outputDeviceChanged();
-    emit bufferSizeChanged();
+    m_previousUseRtAudio = m_useRtAudio;
+    m_previousBuffer     = m_bufferSize;
+    m_previousInput      = m_inputDevice;
+    m_previousOutput     = m_outputDevice;
 #endif
 }
 

@@ -61,7 +61,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString logoSection READ logoSection NOTIFY logoSectionChanged)
-    Q_PROPERTY(QString audioBackend READ audioBackend CONSTANT)
+    Q_PROPERTY(bool selectableBackend READ selectableBackend CONSTANT)
+    Q_PROPERTY(QString audioBackend READ audioBackend WRITE setAudioBackend NOTIFY audioBackendChanged)
     Q_PROPERTY(
         int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
     Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
@@ -71,7 +72,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
-    Q_PROPERTY(float uiScale READ uiScale NOTIFY uiScaleChanged)
+    Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -84,7 +85,9 @@ class VirtualStudio : public QObject
     bool hasRefreshToken();
     QString versionString();
     QString logoSection();
+    bool selectableBackend();
     QString audioBackend();
+    void setAudioBackend(const QString& backend);
     int inputDevice();
     void setInputDevice(int device);
     int outputDevice();
@@ -95,6 +98,7 @@ class VirtualStudio : public QObject
     QString connectionState();
     float fontScale();
     float uiScale();
+    void setUiScale(float scale);
 
    public slots:
     void toStandard();
@@ -121,12 +125,14 @@ class VirtualStudio : public QObject
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
+    void audioBackendChanged();
     void inputDeviceChanged();
     void outputDeviceChanged();
     void bufferSizeChanged();
     void currentStudioChanged();
     void connectionStateChanged();
     void uiScaleChanged();
+    void newScale();
     void signalExit();
 
    private slots:
@@ -159,6 +165,7 @@ class VirtualStudio : public QObject
     QList<QObject*> m_servers;
     QStringList m_subscribedServers;
     QString m_logoSection     = QStringLiteral("Your Studios");
+    bool m_selectableBackend  = true;
     bool m_useRtAudio         = false;
     int m_currentStudio       = 0;
     QString m_connectionState = QStringLiteral("Connecting...");
@@ -172,7 +179,8 @@ class VirtualStudio : public QObject
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
     float m_fontScale        = 1;
-    float m_uiScale          = 1;
+    float m_uiScale;
+    float m_previousUiScale;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
@@ -183,6 +191,7 @@ class VirtualStudio : public QObject
     QString m_previousInput;
     QString m_previousOutput;
     quint16 m_previousBuffer;
+    bool m_previousUseRtAudio = false;
 #endif
     QStringList m_bufferOptions = {"16", "32", "64", "128", "256", "512", "1024"};
 
