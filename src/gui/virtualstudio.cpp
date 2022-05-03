@@ -307,6 +307,8 @@ void VirtualStudio::toStandard()
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
 
+    m_getServersTimer->stop();
+
     if (m_showFirstRun) {
         m_showFirstRun = false;
         emit showFirstRunChanged();
@@ -871,6 +873,13 @@ void VirtualStudio::getServerList(bool firstLoad)
             QStringLiteral("serverModel"), QVariant::fromValue(m_servers));
         if (firstLoad) {
             emit authSucceeded();
+
+            m_getServersTimer = new QTimer();
+            m_getServersTimer->setInterval(10000); // Refresh every 10 seconds
+            connect(m_getServersTimer, &QTimer::timeout, this, [=](){
+                getServerList();
+            });
+            m_getServersTimer->start(); // Start timer
         } else {
             emit refreshFinished();
         }
@@ -977,6 +986,8 @@ void VirtualStudio::stopStudio()
 
 VirtualStudio::~VirtualStudio()
 {
+    m_getServersTimer->stop();
+
     for (int i = 0; i < m_servers.count(); i++) {
         delete m_servers.at(i);
     }
