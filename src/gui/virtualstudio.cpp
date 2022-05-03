@@ -877,8 +877,8 @@ void VirtualStudio::getServerList(bool firstLoad)
             m_getServersTimer = new QTimer();
             m_getServersTimer->setInterval(10000);  // Refresh every 10 seconds
             connect(m_getServersTimer, &QTimer::timeout, this, [=]() {
-                 getServerList();
-             });
+                getServerList();
+            });
             m_getServersTimer->start();  // Start timer
         } else {
             emit refreshFinished();
