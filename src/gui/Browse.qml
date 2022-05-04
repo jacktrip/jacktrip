@@ -10,7 +10,18 @@ Item {
     property int buttonHeight: 25
     property int buttonWidth: 103
     property int fontMedium: 11
+    
+    property int scrollY: 0
 
+    function refresh() {
+        scrollY = studioListView.contentY;
+        var currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY);
+        if (currentIndex == -1) {
+            currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY + (16 * virtualstudio.uiScale));
+        }
+        virtualstudio.refreshStudios(currentIndex)
+    }
+    
     Rectangle {
         z: 1
         width: parent.width; height: parent.height
@@ -90,7 +101,7 @@ Item {
                 studioListView.returnToBounds();
             }
         }
-
+        
         Component.onCompleted: {
             // Customize scroll properties on different platforms
             if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
@@ -116,7 +127,7 @@ Item {
                 border.width: 1
                 border.color: refreshButton.down || refreshButton.hovered ? "#BABCBC" : "#34979797"
             }
-            onClicked: { refreshing = true; virtualstudio.refreshStudios() }
+            onClicked: { refreshing = true; refresh() }
             anchors.verticalCenter: parent.verticalCenter
             x: 16 * virtualstudio.uiScale
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
@@ -170,5 +181,14 @@ Item {
         target: virtualstudio
         // Need to do this to avoid layout issues with our section header.
         function onNewScale() { studioListView.positionViewAtEnd(); studioListView.positionViewAtBeginning() }
+        function onRefreshFinished(index) {
+            refreshing = false;
+            if (index == -1) {
+                studioListView.contentY = scrollY
+            } else {
+                studioListView.positionViewAtIndex(index, ListView.Beginning);
+            }
+        }
+        function onPeriodicRefresh() { refresh() }
     }
 }

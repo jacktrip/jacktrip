@@ -176,6 +176,24 @@ Item {
         }
     }
     
+    Button {
+        id: darkButton
+        background: Rectangle {
+            radius: 6 * virtualstudio.uiScale
+            color: darkButton.down ? "#DEE0E0" : (darkButton.hovered ? "#D3D4D4" : "#EAECEC")
+            border.width: 1
+            border.color: darkButton.down || darkButton.hovered ? "#BABCBC" : "#34979797"
+        }
+        x: parent.width -(464 * virtualstudio.uiScale)
+        width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+        anchors.verticalCenter: modeButton.verticalCenter
+        Text {
+            text: "Switch to Dark Mode"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+        }
+    }
+    
     Text {
         anchors.verticalCenter: modeButton.verticalCenter
         x: leftMargin * virtualstudio.uiScale

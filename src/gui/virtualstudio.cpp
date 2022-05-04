@@ -138,6 +138,15 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Connect our timers
     connect(&m_startTimer, &QTimer::timeout, this, &VirtualStudio::checkForHostname);
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);
+    connect(&m_refreshTimer, &QTimer::timeout, this, [=]() {
+        m_refreshMutex.lock();
+        if (m_allowRefresh) {
+            m_refreshMutex.unlock();
+            emit periodicRefresh();
+        } else {
+            m_refreshMutex.unlock();
+        }
+    });
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -298,6 +307,15 @@ void VirtualStudio::setUiScale(float scale)
     emit uiScaleChanged();
 }
 
+bool VirtualStudio::psiBuild()
+{
+#ifdef PSI
+    return true;
+#else
+    return false;
+#endif
+}
+
 void VirtualStudio::toStandard()
 {
     if (!m_standardWindow.isNull()) {
@@ -306,6 +324,7 @@ void VirtualStudio::toStandard()
     }
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
+    m_refreshTimer.stop();
 
     if (m_showFirstRun) {
         m_showFirstRun = false;
@@ -346,9 +365,9 @@ void VirtualStudio::logout()
     emit hasRefreshTokenChanged();
 }
 
-void VirtualStudio::refreshStudios()
+void VirtualStudio::refreshStudios(int index)
 {
-    getServerList();
+    getServerList(false, index);
 }
 
 void VirtualStudio::refreshDevices()
@@ -416,6 +435,12 @@ void VirtualStudio::applySettings()
 
 void VirtualStudio::connectToStudio(int studioIndex)
 {
+    {
+        QMutexLocker locker(&m_refreshMutex);
+        m_allowRefresh = false;
+    }
+    m_refreshTimer.stop();
+
     m_currentStudio          = studioIndex;
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     emit currentStudioChanged();
@@ -584,6 +609,13 @@ void VirtualStudio::disconnect()
             m_onConnectedScreen = false;
         }
     }
+
+    // Restart our studio refresh timer.
+    if (!m_isExiting) {
+        QMutexLocker locker(&m_refreshMutex);
+        m_allowRefresh = true;
+        m_refreshTimer.start();
+    }
 }
 
 void VirtualStudio::manageStudio(int studioIndex)
@@ -606,6 +638,7 @@ void VirtualStudio::showAbout()
 
 void VirtualStudio::exit()
 {
+    m_refreshTimer.stop();
     if (m_onConnectedScreen) {
         m_isExiting = true;
         disconnect();
@@ -770,8 +803,23 @@ void VirtualStudio::setupAuthenticator()
     }
 }
 
-void VirtualStudio::getServerList(bool firstLoad)
+void VirtualStudio::getServerList(bool firstLoad, int index)
 {
+    {
+        QMutexLocker locker(&m_refreshMutex);
+        if (!m_allowRefresh) {
+            return;
+        } else {
+            m_allowRefresh = false;
+        }
+    }
+
+    // Get the serverId of the server at the top of our screen if we know it
+    QString topServerId;
+    if (index >= 0 && index < m_servers.count()) {
+        topServerId = static_cast<VsServerInfo*>(m_servers.at(index))->id();
+    }
+
     QNetworkReply* reply =
         m_authenticator->get(QStringLiteral("https://app.jacktrip.org/api/servers"));
     connect(reply, &QNetworkReply::finished, this, [=]() {
@@ -815,7 +863,6 @@ void VirtualStudio::getServerList(bool firstLoad)
                         servers.at(i)[QStringLiteral("public")].toBool());
                     serverInfo->setRegion(
                         servers.at(i)[QStringLiteral("region")].toString());
-
                     serverInfo->setPeriod(
                         servers.at(i)[QStringLiteral("period")].toInt());
                     serverInfo->setSampleRate(
@@ -869,11 +916,25 @@ void VirtualStudio::getServerList(bool firstLoad)
         m_servers.append(pubServers);
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("serverModel"), QVariant::fromValue(m_servers));
+        int index = -1;
+        if (!topServerId.isEmpty()) {
+            for (int i = 0; i < m_servers.count(); i++) {
+                if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == topServerId) {
+                    index = i;
+                    break;
+                }
+            }
+        }
         if (firstLoad) {
             emit authSucceeded();
+            m_refreshTimer.setInterval(10000);
+            m_refreshTimer.start();
         } else {
-            emit refreshFinished();
+            emit refreshFinished(index);
         }
+        QMutexLocker locker(&m_refreshMutex);
+        m_allowRefresh = true;
+
         reply->deleteLater();
     });
 }

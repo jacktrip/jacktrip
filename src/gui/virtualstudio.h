@@ -39,6 +39,7 @@
 #define VIRTUALSTUDIO_H
 
 #include <QList>
+#include <QMutex>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
@@ -75,6 +76,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
 
+    Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
+
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
     ~VirtualStudio() override;
@@ -100,13 +103,14 @@ class VirtualStudio : public QObject
     float fontScale();
     float uiScale();
     void setUiScale(float scale);
+    bool psiBuild();
 
    public slots:
     void toStandard();
     void toVirtualStudio();
     void login();
     void logout();
-    void refreshStudios();
+    void refreshStudios(int index);
     void refreshDevices();
     void revertSettings();
     void applySettings();
@@ -122,7 +126,7 @@ class VirtualStudio : public QObject
     void authFailed();
     void connected();
     void disconnected();
-    void refreshFinished();
+    void refreshFinished(int index);
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
@@ -135,6 +139,7 @@ class VirtualStudio : public QObject
     void uiScaleChanged();
     void newScale();
     void signalExit();
+    void periodicRefresh();
 
    private slots:
     void slotAuthSucceded();
@@ -147,7 +152,7 @@ class VirtualStudio : public QObject
 
    private:
     void setupAuthenticator();
-    void getServerList(bool firstLoad = false);
+    void getServerList(bool firstLoad = false, int index = -1);
     void getUserId();
     void getSubscriptions();
 #ifdef RT_AUDIO
@@ -176,6 +181,10 @@ class VirtualStudio : public QObject
     bool m_startedStudio = false;
     bool m_retryPeriod;
     bool m_jackTripRunning = false;
+
+    QTimer m_refreshTimer;
+    QMutex m_refreshMutex;
+    bool m_allowRefresh = true;
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
