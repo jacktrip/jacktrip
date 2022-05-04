@@ -807,10 +807,10 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
 {
     {
         QMutexLocker locker(&m_refreshMutex);
-        if (!m_allowRefresh) {
+        if (!m_allowRefresh || m_refreshInProgress) {
             return;
         } else {
-            m_allowRefresh = false;
+            m_refreshInProgress = true;
         }
     }
 
@@ -834,6 +834,8 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         QJsonDocument serverList = QJsonDocument::fromJson(response);
         if (!serverList.isArray()) {
             std::cout << "Error: Not an array" << std::endl;
+            QMutexLocker locker(&m_refreshMutex);
+            m_refreshInProgress = false;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -914,6 +916,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         // Check that we haven't tried connecting to a server between the
         // request going out and the response.
         if (!m_allowRefresh) {
+            m_refreshInProgress = false;
             return;
         }
         m_servers.clear();
@@ -938,7 +941,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         } else {
             emit refreshFinished(index);
         }
-        m_allowRefresh = true;
+        m_refreshInProgress = false;
 
         reply->deleteLater();
     });

@@ -184,7 +184,8 @@ class VirtualStudio : public QObject
 
     QTimer m_refreshTimer;
     QMutex m_refreshMutex;
-    bool m_allowRefresh = true;
+    bool m_allowRefresh      = true;
+    bool m_refreshInProgress = false;
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
