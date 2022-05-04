@@ -360,6 +360,8 @@ void VirtualStudio::logout()
     settings.remove(QStringLiteral("UserId"));
     settings.endGroup();
 
+    m_refreshTimer.stop();
+
     m_refreshToken.clear();
     m_userId.clear();
     emit hasRefreshTokenChanged();
