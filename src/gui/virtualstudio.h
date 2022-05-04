@@ -178,6 +178,7 @@ class VirtualStudio : public QObject
     QScopedPointer<JackTrip> m_jackTrip;
     QTimer m_startTimer;
     QTimer m_retryPeriodTimer;
+    QTimer* m_getServersTimer;
     bool m_startedStudio = false;
     bool m_retryPeriod;
     bool m_jackTripRunning = false;

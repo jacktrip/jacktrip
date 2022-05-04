@@ -62,11 +62,13 @@ Item {
             y: 73 * virtualstudio.uiScale
         }
         Text {
-            text: "Simply connect to a JackTrip Virtual Studio"
+            text: "• Connect to Virtual Studios<br>• Broadcast on JackTrip Radio<br>• Apply FX with Soundscapes"
+            textFormat: Text.StyledText
             font.family: "Poppins"
-            font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
-            y:130 * virtualstudio.uiScale; width: 190 * virtualstudio.uiScale
+            y:120 * virtualstudio.uiScale; width: 230 * virtualstudio.uiScale
+            padding: 0
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
         }
@@ -98,18 +100,20 @@ Item {
             width: 180 * virtualstudio.uiScale; height: 42 * virtualstudio.uiScale;
         }
         Text {
-            text: "Standard"
+            text: "Original"
             font.family: "Poppins"
             font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
             y: 73 * virtualstudio.uiScale
         }
         Text {
-            text: "A more flexible, customizable JackTrip"
+            text: "• Connect via IP address<br>• Run a local hub server<br>• The original JackTrip experience"
+            textFormat: Text.StyledText
             font.family: "Poppins"
-            font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
-            y:130 * virtualstudio.uiScale; width: 190 * virtualstudio.uiScale
+            y:120 * virtualstudio.uiScale; width: 230 * virtualstudio.uiScale
+            padding: 0
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
         }
