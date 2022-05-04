@@ -910,6 +910,12 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
             emit logoSectionChanged();
         }
 
+        QMutexLocker locker(&m_refreshMutex);
+        // Check that we haven't tried connecting to a server between the
+        // request going out and the response.
+        if (!m_allowRefresh) {
+            return;
+        }
         m_servers.clear();
         m_servers.append(yourServers);
         m_servers.append(subServers);
@@ -932,7 +938,6 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         } else {
             emit refreshFinished(index);
         }
-        QMutexLocker locker(&m_refreshMutex);
         m_allowRefresh = true;
 
         reply->deleteLater();
