@@ -146,7 +146,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v05'
+            qt-static-cache-key: 'v06'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
