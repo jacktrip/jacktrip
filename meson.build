@@ -80,6 +80,7 @@ if get_option('nogui') == true
 	defines += '-DNO_GUI'
 	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 elif get_option('novs') == true
+	defines += '-DNO_VS'
 	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',

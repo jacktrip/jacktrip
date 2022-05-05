@@ -66,7 +66,7 @@ jobs:
             bundled-rtaudio: false
             nogui: true
             weakjack: false
-            static-qt-version: 5.15.2
+            static-qt-version: 5.12.11
             qt-static-cache-key: 'v23' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
