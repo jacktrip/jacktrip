@@ -52,7 +52,7 @@
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
 #else
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <sys/socket.h>  // for POSIX Sockets
 #include <unistd.h>
 #ifndef MANUAL_POLL

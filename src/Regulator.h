@@ -35,8 +35,7 @@
  * \date May 2021
  */
 
-// EXPERIMENTAL for testing in JackTrip v1.4.0
-// Initial references and starter code
+// Initial references and starter code to bring up Burg's recursion
 // http://www.emptyloop.com/technotes/A%20tutorial%20on%20Burg's%20method,%20algorithm%20and%20recursion.pdf
 // https://metacpan.org/source/SYP/Algorithm-Burg-0.001/README
 
@@ -50,14 +49,6 @@
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
-
-//#define GUIBS3
-#ifdef GUIBS3
-#include <QWidget>
-
-#include "herlpergui.h"
-#include "ui_herlpergui.h"
-#endif
 
 class BurgAlgorithm
 {
@@ -95,46 +86,39 @@ class ChanData
 class StdDev
 {
    public:
-    StdDev(QElapsedTimer* timer, int w, int id);
-    void reset();
-    double tick();
-    QElapsedTimer* mTimer;
-    std::vector<double> data;
-    double mean;
-    double var;
-    //    double varRunning;
-    int window;
+    StdDev(int id, QElapsedTimer* timer, int w);
+    void tick();
+    double calcAuto();
+    double lastTime;
     int mId;
-    double acc;
-    double min;
-    double max;
-    int ctr;
+    int plcUnderruns;
     double lastMean;
     double lastMin;
     double lastMax;
-    int plcUnderruns;
     int lastPlcUnderruns;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
     double longTermMax;
     double longTermMaxAcc;
-    double lastTime;
+
+   private:
+    void reset();
+    QElapsedTimer* mTimer;
+    std::vector<double> data;
+    double mean;
+    int window;
+    double acc;
+    double min;
+    double max;
+    int ctr;
     int longTermCnt;
 };
 
-#ifdef GUIBS3
-class Regulator
-    : public QObject
-    , public RingBuffer
-{
-    Q_OBJECT;
-#else
 class Regulator : public RingBuffer
 {
-#endif
    public:
-    Regulator(int sample_rate, int channels, int bit_res, int FPP, int qLen);
+    Regulator(int channels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
     void shimFPP(const int8_t* buf, int len, int seq_num);
@@ -159,14 +143,14 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-    void setFPPratio(int len);
+    void setFPPratio();
     bool mFPPratioIsSet;
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
-    int mSampleRate;
+    int mPeerFPP;
     uint32_t mLastLostCount;
     int mNumSlots;
     int mHist;
@@ -191,7 +175,6 @@ class Regulator : public RingBuffer
     QElapsedTimer mIncomingTimer;
     int mLastSeqNumIn;
     int mLastSeqNumOut;
-    double mPacketDurMsec;
     std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
     int mModSeqNum;
@@ -199,13 +182,10 @@ class Regulator : public RingBuffer
     int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
-    int mPartialPacketCnt;
+    int mAssemblyCnt;
+    int mModCycle;
     bool mAuto;
-#ifdef GUIBS3
-    HerlperGUI* hg;
-    void updateGUI(double msTol, int nSlots, int lostWin);
-   public slots:
-#endif
+    int mModSeqNumPeer;
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);
