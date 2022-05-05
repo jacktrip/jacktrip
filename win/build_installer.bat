@@ -44,13 +44,19 @@ set "WIXDEFINES="
 for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Core.dll') do set DYNAMIC_QT=%%a
 if defined DYNAMIC_QT (
 	echo Including Qt Files
-	%QTBINPATH%\windeployqt jacktrip.exe
+	for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Qml.dll') do set VS=%%a
+	if defined VS (
+		%QTBINPATH%\windeployqt --qmldir ..\..\src\gui jacktrip.exe
+		set WIXDEFINES=%WIXDEFINES% -dvs
+	) else (
+		%QTBINPATH%\windeployqt jacktrip.exe
+	)
 	copy "%QTLIBPATH%\libgcc_s_seh-1.dll" .\
 	copy "%QTLIBPATH%\libstdc++-6.dll" .\
 	copy "%QTLIBPATH%\libwinpthread-1.dll" .\
 	copy "%SSLPATH%\libcrypto-1_1-x64.dll" .\
 	copy "%SSLPATH%\libssl-1_1-x64.dll" .\
-	set WIXDEFINES=%WIXDEFINES% -ddynamic
+	set WIXDEFINES=!WIXDEFINES! -ddynamic
 )
 for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr librtaudio.dll') do set RTAUDIO=%%a
 if defined RTAUDIO (

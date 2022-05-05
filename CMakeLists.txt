@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 3.12)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 project(QJackTrip)
 
 set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
-add_compile_definitions(NO_JTVS)
+set(novs FALSE)
 add_compile_definitions(QT_OPENSOURCE)
 
 if (nogui)
   add_compile_definitions(NO_GUI)
+  set(novs TRUE)
 endif ()
 
 if (rtaudio)
@@ -20,6 +22,10 @@ if (weakjack)
   add_compile_definitions(USE_WEAK_JACK)
   include_directories("externals/weakjack")
 endif()
+
+if (novs)
+  add_compile_definitions(NO_VS)
+endif ()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set (ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig")
@@ -51,6 +57,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin
   endif ()
 endif ()
 
+set_property(SOURCE src/Regulator.h PROPERTY SKIP_AUTOGEN ON)
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
@@ -63,6 +70,10 @@ set(CMAKE_AUTORCC ON)
 # Find the QtWidgets library
 if (NOT nogui)
   find_package(Qt5Widgets CONFIG REQUIRED)
+  if (NOT novs)
+    find_package(Qt5Quick CONFIG REQUIRED)
+    find_package(Qt5NetworkAuth CONFIG REQUIRED)
+  endif ()
 endif ()
 find_package(Qt5Network CONFIG REQUIRED)
 
@@ -110,8 +121,18 @@ if (NOT nogui)
     src/gui/about.cpp
     src/gui/messageDialog.cpp
     src/gui/textbuf.cpp
-    src/gui/qjacktrip.qrc
   )
+  
+  if (NOT novs)
+    set (qjacktrip_SRC ${qjacktrip_SRC}
+      src/gui/virtualstudio.cpp
+      src/gui/vsServerInfo.cpp
+      src/gui/vsQuickView.cpp
+      src/gui/qjacktrip.qrc
+    )
+  else ()
+    set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
+  endif ()
 
   if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
@@ -128,9 +149,12 @@ add_compile_definitions(WAIRTOHUB)
 add_executable(jacktrip ${qjacktrip_SRC})
 
 # Set our libraries for our linker
-set (qjacktrip_LIBS Qt5::Widgets)
+set (qjacktrip_LIBS Qt5::Network)
 if (NOT nogui)
-  set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Network)
+  set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Widgets)
+  if (NOT novs)
+    set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Quick Qt5::NetworkAuth)
+  endif ()
 endif ()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

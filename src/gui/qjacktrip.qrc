@@ -4,4 +4,45 @@
     <file>about.png</file>
     <file>icon.png</file>
   </qresource>
+  <qresource prefix="vs">
+    <file>vs.qml</file>
+    <file>FirstLaunch.qml</file>
+    <file>Login.qml</file>
+    <file>Studio.qml</file>
+    <file>Browse.qml</file>
+    <file>Settings.qml</file>
+    <file>Connected.qml</file>
+    <file>logo.svg</file>
+    <file>wedge.svg</file>
+    <file>wedge_inactive.svg</file>
+    <file>private.svg</file>
+    <file>public.svg</file>
+    <file>join.svg</file>
+    <file>leave.svg</file>
+    <file>cog.svg</file>
+    <file>mic.svg</file>
+    <file>headphones.svg</file>
+    <file>jacktrip.png</file>
+    <file>flags/AE.svg</file>
+    <file>flags/AU.svg</file>
+    <file>flags/BE.svg</file>
+    <file>flags/BR.svg</file>
+    <file>flags/CA.svg</file>
+    <file>flags/CH.svg</file>
+    <file>flags/DE.svg</file>
+    <file>flags/FR.svg</file>
+    <file>flags/GB.svg</file>
+    <file>flags/HK.svg</file>
+    <file>flags/ID.svg</file>
+    <file>flags/IT.svg</file>
+    <file>flags/JP.svg</file>
+    <file>flags/RO.svg</file>
+    <file>flags/SE.svg</file>
+    <file>flags/SG.svg</file>
+    <file>flags/TW.svg</file>
+    <file>flags/US.svg</file>
+    <file>flags/ZA.svg</file>
+    <file>Poppins-Bold.ttf</file>
+    <file>Poppins-Regular.ttf</file>
+  </qresource>
 </RCC>

@@ -79,7 +79,8 @@ endif
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
 	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
-else
+elif get_option('novs') == true
+	defines += '-DNO_VS'
 	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
@@ -92,6 +93,26 @@ else
 		'src/gui/qjacktrip.h',
 		'src/gui/messageDialog.h',
 		'src/gui/textbuf.h']
+	qres = ['src/gui/qjacktrip_novs.qrc']
+else
+	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth'], include_type: 'system')
+	src += ['src/gui/qjacktrip.cpp',
+		'src/gui/about.cpp',
+		'src/gui/messageDialog.cpp',
+		'src/gui/textbuf.cpp',
+		'src/gui/virtualstudio.cpp',
+		'src/gui/vsServerInfo.cpp',
+		'src/gui/vsQuickView.cpp']
+	ui_h += ['src/gui/qjacktrip.ui',
+		'src/gui/messageDialog.ui',
+		'src/gui/about.ui']
+	moc_h += ['src/gui/about.h',
+		'src/gui/qjacktrip.h',
+		'src/gui/messageDialog.h',
+		'src/gui/textbuf.h',
+		'src/gui/virtualstudio.h',
+		'src/gui/vsServerInfo.h',
+		'src/gui/vsQuickView.h']
 	qres = ['src/gui/qjacktrip.qrc']
 endif
 deps += qt5_dep

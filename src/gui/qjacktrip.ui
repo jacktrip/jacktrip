@@ -309,6 +309,13 @@ To connect to a hub server you need to run as a hub client.</string>
            </spacer>
           </item>
           <item>
+           <widget class="QPushButton" name="vsModeButton">
+            <property name="text">
+             <string>Virtual Studio Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="aboutButton">
             <property name="text">
              <string>About</string>
@@ -1811,6 +1818,7 @@ and wetness is the essence of beauty.</string>
   <tabstop>keyBrowse</tabstop>
   <tabstop>credsEdit</tabstop>
   <tabstop>credsBrowse</tabstop>
+  <tabstop>vsModeButton</tabstop>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
   <tabstop>remoteNameEdit</tabstop>
