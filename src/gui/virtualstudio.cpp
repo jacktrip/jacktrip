@@ -829,7 +829,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
 
     QNetworkReply* reply =
         m_authenticator->get(QStringLiteral("https://app.jacktrip.org/api/servers"));
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [&, reply, topServerId, firstLoad]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
@@ -985,7 +985,7 @@ void VirtualStudio::getSubscriptions()
     QNetworkReply* reply = m_authenticator->get(
         QStringLiteral("https://app.jacktrip.org/api/users/%1/subscriptions")
             .arg(m_userId));
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
