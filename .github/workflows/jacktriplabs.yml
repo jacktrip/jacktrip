@@ -332,7 +332,7 @@ jobs:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: analyze build
-        if: github.event_name == 'pull_request' && matrix.static-analysis == true &&
+        if: github.event_name == 'pull_request' && matrix.static-analysis == true
         shell: bash
         run: |
           mkdir $CLANG_TIDY_PATH
