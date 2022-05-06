@@ -194,9 +194,6 @@ isEmpty(PREFIX) {
 target.path = $$PREFIX/bin/
 INSTALLS += target
 
-# for plugins
-INCLUDEPATH += faust-src-lair
-
 # Input
 HEADERS += src/DataProtocol.h \
            src/JackTrip.h \
