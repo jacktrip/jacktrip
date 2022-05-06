@@ -28,12 +28,12 @@ Item {
         x: parent.leftMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
         width: parent.width - (2 * x)
         connected: true
-        serverLocation: serverModel[virtualstudio.currentStudio].location
-        flagImage: serverModel[virtualstudio.currentStudio].flag
-        studioName: serverModel[virtualstudio.currentStudio].name
-        publicStudio: serverModel[virtualstudio.currentStudio].isPublic
-        manageable: serverModel[virtualstudio.currentStudio].isManageable
-        available: serverModel[virtualstudio.currentStudio].canConnect
+        serverLocation: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].location : "Germany - Berlin"
+        flagImage: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].flag : "flags/DE.svg"
+        studioName: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].name : "Test Studio"
+        publicStudio: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isPublic : false
+        manageable: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false
+        available: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].canConnect : false
     }
     
     Image {
