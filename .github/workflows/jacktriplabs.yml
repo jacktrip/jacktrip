@@ -71,7 +71,7 @@ jobs:
       QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
-      SHOULD_RUN: ${{ secrets.SHOULD_SIGN == 'true' }}
+      SHOULD_RUN: ${{ secrets.SHOULD_SIGN }} == true
       
     steps:
       - uses: actions/checkout@v2
@@ -352,7 +352,7 @@ jobs:
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
-      SHOULD_RUN: ${{ secrets.SHOULD_SIGN == 'true' }}
+      SHOULD_RUN: ${{ secrets.SHOULD_SIGN }} == true
       
     steps:
       - uses: actions/checkout@v2
@@ -511,7 +511,7 @@ jobs:
     name: 'deploy release'
     env:
       DOWNLOAD_PATH: ${{ github.workspace }}/Install
-      SHOULD_RUN: ${{ secrets.SHOULD_SIGN == 'true' }}
+      SHOULD_RUN: ${{ secrets.SHOULD_SIGN }} == true
     steps:
       - name: download artifacts
         uses: actions/download-artifact@v2
