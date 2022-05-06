@@ -173,7 +173,7 @@ class VirtualStudio : public QObject
     QString m_logoSection     = QStringLiteral("Your Studios");
     bool m_selectableBackend  = true;
     bool m_useRtAudio         = false;
-    int m_currentStudio       = 0;
+    int m_currentStudio       = -1;
     QString m_connectionState = QStringLiteral("Connecting...");
     QScopedPointer<JackTrip> m_jackTrip;
     QTimer m_startTimer;

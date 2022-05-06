@@ -130,7 +130,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QVariant::fromValue(QStringList()
                             << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
-    // TODO: refactor the qml code so that the window is resizable
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.resize(696 * m_uiScale, 577 * m_uiScale);
@@ -138,7 +137,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Connect our timers
     connect(&m_startTimer, &QTimer::timeout, this, &VirtualStudio::checkForHostname);
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);
-    connect(&m_refreshTimer, &QTimer::timeout, this, [=]() {
+    connect(&m_refreshTimer, &QTimer::timeout, this, [&]() {
         m_refreshMutex.lock();
         if (m_allowRefresh) {
             m_refreshMutex.unlock();
@@ -467,7 +466,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
                 QStringLiteral("https://app.jacktrip.org/api/servers/%1")
                     .arg(studioInfo->id()),
                 request.toJson());
-            connect(reply, &QNetworkReply::finished, this, [=]() {
+            connect(reply, &QNetworkReply::finished, this, [&, reply]() {
                 if (reply->error() != QNetworkReply::NoError) {
                     m_connectionState = QStringLiteral("Unable to Start Studio");
                     emit connectionStateChanged();
@@ -496,6 +495,10 @@ void VirtualStudio::connectToStudio(int studioIndex)
 
 void VirtualStudio::completeConnection()
 {
+    if (m_currentStudio < 0) {
+        return;
+    }
+    
     m_jackTripRunning = true;
     m_connectionState = QStringLiteral("Connecting...");
     emit connectionStateChanged();
@@ -694,8 +697,6 @@ void VirtualStudio::processFinished()
     emit connectionStateChanged();
     emit disconnected();
     m_onConnectedScreen = false;
-
-    // TODO; Fix up these next three functions.
 #ifdef __APPLE__
     m_noNap.enableNap();
 #endif
@@ -728,10 +729,14 @@ void VirtualStudio::receivedConnectionFromPeer()
 
 void VirtualStudio::checkForHostname()
 {
+    if (m_currentStudio < 0) {
+        return;
+    }
+    
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     QNetworkReply* reply     = m_authenticator->get(
             QStringLiteral("https://app.jacktrip.org/api/servers/%1").arg(studioInfo->id()));
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [&, reply, studioInfo]() {
         if (reply->error() != QNetworkReply::NoError) {
             m_connectionState = QStringLiteral("Unable to Start Studio");
             emit connectionStateChanged();
@@ -1031,6 +1036,10 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
 
 void VirtualStudio::stopStudio()
 {
+    if (m_currentStudio < 0) {
+        return;
+    }
+    
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     QJsonObject json         = {{QLatin1String("enabled"), false}};
     QJsonDocument request    = QJsonDocument(json);
