@@ -498,7 +498,7 @@ void VirtualStudio::completeConnection()
     if (m_currentStudio < 0) {
         return;
     }
-    
+
     m_jackTripRunning = true;
     m_connectionState = QStringLiteral("Connecting...");
     emit connectionStateChanged();
@@ -732,7 +732,7 @@ void VirtualStudio::checkForHostname()
     if (m_currentStudio < 0) {
         return;
     }
-    
+
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     QNetworkReply* reply     = m_authenticator->get(
             QStringLiteral("https://app.jacktrip.org/api/servers/%1").arg(studioInfo->id()));
@@ -1039,7 +1039,7 @@ void VirtualStudio::stopStudio()
     if (m_currentStudio < 0) {
         return;
     }
-    
+
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     QJsonObject json         = {{QLatin1String("enabled"), false}};
     QJsonDocument request    = QJsonDocument(json);
