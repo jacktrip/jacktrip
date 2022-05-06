@@ -52,9 +52,6 @@ nojack {
   DEFINES += NO_JACK
 }
 
-# for plugins
-INCLUDEPATH += faust-src-lair/stk
-
 !win32 {
   INCLUDEPATH+=/usr/local/include
 # wair needs stk, can be had from linux this way
