@@ -1,6 +1,6 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 
 Item {
     width: parent.width; height: parent.height
@@ -74,7 +74,7 @@ Item {
                 horizontalOffset: 1 * virtualstudio.uiScale
                 verticalOffset: 1 * virtualstudio.uiScale
                 radius: 8.0 * virtualstudio.uiScale
-                samples: 17
+//                samples: 17
                 color: "#80A1A1A1"
             }
         }
@@ -106,7 +106,7 @@ Item {
                 horizontalOffset: 1 * virtualstudio.uiScale
                 verticalOffset: 1 * virtualstudio.uiScale
                 radius: 8.0 * virtualstudio.uiScale
-                samples: 17
+//                samples: 17
                 color: "#80A1A1A1"
             }
         }

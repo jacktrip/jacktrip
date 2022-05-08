@@ -792,10 +792,10 @@ void VirtualStudio::setupAuthenticator()
         m_authenticator->setAccessTokenUrl(tokenUri);
 
         m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
-                                                        QVariantMap* parameters) {
+                                                        QMultiMap<QString, QVariant>* parameters) {
             if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
                 QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
-                (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
+                parameters->replace("code", QUrl::fromPercentEncoding(code));
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
                 parameters->insert(QStringLiteral("audience"),
                                    QStringLiteral("https://api.jacktrip.org"));

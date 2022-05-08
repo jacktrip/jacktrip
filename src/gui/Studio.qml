@@ -1,6 +1,6 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 
 Rectangle {
     width: 664; height: 83 * virtualstudio.uiScale
@@ -14,7 +14,7 @@ Rectangle {
         horizontalOffset: 1 * virtualstudio.uiScale
         verticalOffset: 1 * virtualstudio.uiScale
         radius: 8.0 * virtualstudio.uiScale
-        samples: 17
+//        samples: 17
         color: "#80A1A1A1"
     }
     
@@ -44,7 +44,7 @@ Rectangle {
         horizontalOffset: -1 * virtualstudio.uiScale
         verticalOffset: -1 * virtualstudio.uiScale
         radius: 8.0 * virtualstudio.uiScale
-        samples: 17
+//        samples: 17
         color: "#80A1A1A1"
         source: shadow
     }

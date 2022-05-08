@@ -9,7 +9,7 @@ else
   name_suffix = ''
 endif
 
-qt5 = import('qt5')
+qt6 = import('qt6')
 cmake = import('cmake')
 
 compiler = meson.get_compiler('cpp')
@@ -78,10 +78,10 @@ endif
 
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
-	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	qt6_dep = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
 elif get_option('novs') == true
 	defines += '-DNO_VS'
-	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+	qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp',
@@ -95,7 +95,7 @@ elif get_option('novs') == true
 		'src/gui/textbuf.h']
 	qres = ['src/gui/qjacktrip_novs.qrc']
 else
-	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth'], include_type: 'system')
+	qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth'], include_type: 'system')
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp',
@@ -115,9 +115,9 @@ else
 		'src/gui/vsQuickView.h']
 	qres = ['src/gui/qjacktrip.qrc']
 endif
-deps += qt5_dep
+deps += qt6_dep
 
-prepro_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
+prepro_files = qt6.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
 
 # TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
 # in QMake this can be checked with QT_EDITION == 'OpenSource'
