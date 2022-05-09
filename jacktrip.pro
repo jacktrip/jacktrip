@@ -61,8 +61,10 @@ INCLUDEPATH += faust-src-lair/stk
 
 # link static plugins
 !nogui {
-  linux-g++ | linux-g++-64 {
-    QTPLUGIN.platforms += qxcb
+  static {
+    linux-g++ | linux-g++-64 {
+      QTPLUGIN.platforms += qxcb
+    }
   }
 }
 
@@ -143,6 +145,13 @@ linux-g++ | linux-g++-64 {
     # QMake version 3.1
     # Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
     INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
+
+    # Attempt to fix libxcb-xinerama not being statically linked
+    !nogui {
+      static {
+        LIBS += -L/usr/lib/x86_64-linux-gnu/libxcb-xinerama.a
+      }
+    }
     
     # sets differences from original fedora version
     DEFINES += __UBUNTU__
@@ -158,7 +167,6 @@ linux-g++ {
 linux-g++-64 {
   message(Linux 64bit)
 }
-
 
 win32 {
   message(Building on win32)
