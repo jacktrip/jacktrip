@@ -16,6 +16,10 @@ CONFIG(debug, debug|release) {
     name_suffix = ''
 }
 
+static {
+  CONFIG += static
+}
+
 equals(QT_EDITION, "OpenSource") {
     DEFINES += QT_OPENSOURCE
 }
@@ -54,6 +58,13 @@ nojack {
 
 # for plugins
 INCLUDEPATH += faust-src-lair/stk
+
+# link static plugins
+!nogui {
+  linux-g++ | linux-g++-64 {
+    QTPLUGIN.platforms += qxcb
+  }
+}
 
 !win32 {
   INCLUDEPATH+=/usr/local/include
