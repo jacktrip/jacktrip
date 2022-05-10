@@ -63,7 +63,7 @@ INCLUDEPATH += faust-src-lair/stk
 !nogui {
   static {
     linux-g++ | linux-g++-64 {
-      QTPLUGIN.platforms += qxcb
+      QTPLUGIN.platforms += qxcb qwayland
     }
   }
 }
