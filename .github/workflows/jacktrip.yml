@@ -347,6 +347,10 @@ jobs:
           "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
           echo "QT Configure command"
           echo ""$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS"
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            ls /usr/lib/x86_64-linux-gnu
+            exit 2
+          fi
           # build
           echo "building Qt"
           make -j4
