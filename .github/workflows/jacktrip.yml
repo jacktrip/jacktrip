@@ -343,7 +343,7 @@ jobs:
           # configure
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
-            if [[ "${{ matrix.nogui }}" == true ]]; then 
+            if [[ "${{ matrix.nogui }}" != true ]]; then 
               QT_STATIC_OPTIONS="-xcb -xcb-xlib -bundled-xcb-xinput -L/usr/lib/x86_64-linux-gnu $QT_STATIC_OPTIONS"
             fi
           fi
