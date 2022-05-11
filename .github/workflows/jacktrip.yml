@@ -233,7 +233,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes libjack-dev
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
-            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-render-util0-dev libxcb-xinerama0-dev libxcomposite-dev libgtk-3-dev libxcb-util-dev libx11-dev libxfixes-dev libxcb-glx0-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev
+            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev libxcb-util-dev libx11-dev libxfixes-dev libxcb-glx0-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev
           else
             sudo add-apt-repository universe
             sudo apt-get update
@@ -344,7 +344,7 @@ jobs:
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
             if [[ "${{ matrix.nogui }}" != true ]]; then 
-              QT_STATIC_OPTIONS="-xcb -xcb-xlib -bundled-xcb-xinput -L/usr/lib/x86_64-linux-gnu $QT_STATIC_OPTIONS"
+              QT_STATIC_OPTIONS="-no-xinerama $QT_STATIC_OPTIONS"
             fi
           fi
           "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
@@ -388,7 +388,7 @@ jobs:
             CONFIG_STRING="static $CONFIG_STRING"
             export QML_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
             export QML2_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
-            export QT_QPA_PLATFORM_PLUGIN_PATH=$QT_SRC_PATH/qtbase/src/plugins/platforms
+            # export QT_QPA_PLATFORM_PLUGIN_PATH=$QT_SRC_PATH/qtbase/src/plugins/platforms
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             CONFIG_STRING="rtaudio $CONFIG_STRING"

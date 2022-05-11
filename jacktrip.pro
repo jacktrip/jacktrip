@@ -16,9 +16,9 @@ CONFIG(debug, debug|release) {
     name_suffix = ''
 }
 
-static {
-  CONFIG += static
-}
+# static {
+#  CONFIG += static
+# }
 
 equals(QT_EDITION, "OpenSource") {
     DEFINES += QT_OPENSOURCE
@@ -60,13 +60,13 @@ nojack {
 INCLUDEPATH += faust-src-lair/stk
 
 # link static plugins
-!nogui {
-  static {
-    linux-g++ | linux-g++-64 {
-      QTPLUGIN.platforms += qxcb qwayland
-    }
-  }
-}
+# !nogui {
+#  static {
+#    linux-g++ | linux-g++-64 {
+#      QTPLUGIN.platforms += qxcb
+#    }
+#  }
+# }
 
 !win32 {
   INCLUDEPATH+=/usr/local/include
@@ -145,13 +145,6 @@ linux-g++ | linux-g++-64 {
     # QMake version 3.1
     # Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
     INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
-
-    # Attempt to fix libxcb-xinerama not being statically linked
-    !nogui {
-      static {
-        LIBS += -L/usr/lib/x86_64-linux-gnu/libxcb-xinerama.a
-      }
-    }
     
     # sets differences from original fedora version
     DEFINES += __UBUNTU__
