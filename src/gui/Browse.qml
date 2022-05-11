@@ -40,7 +40,7 @@ Item {
         Rectangle {
             color: "transparent"
             height: 72 * virtualstudio.uiScale; x: 16 * virtualstudio.uiScale; width: ListView.view.width - (2 * x)
-            required property string section
+            property string section: "Studios"
             Text {
                 //anchors.bottom: parent.bottom
                 y: 12 * virtualstudio.uiScale
