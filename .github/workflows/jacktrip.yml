@@ -40,7 +40,7 @@ jobs:
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
             static-qt-version: 5.15.2 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v26' # required for static qt; update this to force rebuilding static Qt
+            qt-static-cache-key: 'v27' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -67,7 +67,7 @@ jobs:
             nogui: true
             weakjack: false
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v26' # we use the same key as the main Linux build
+            qt-static-cache-key: 'v27' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
