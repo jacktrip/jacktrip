@@ -382,7 +382,6 @@ jobs:
             CONFIG_STRING="static $CONFIG_STRING"
             export QML_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
             export QML2_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
-            # export QT_QPA_PLATFORM_PLUGIN_PATH=$QT_SRC_PATH/qtbase/src/plugins/platforms
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             CONFIG_STRING="rtaudio $CONFIG_STRING"
