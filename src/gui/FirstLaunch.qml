@@ -111,7 +111,7 @@ Item {
         width: 234 * virtualstudio.uiScale; height: 337.37 * virtualstudio.uiScale;
     }
     Text {
-        text: "• Connect via IP address<br>• Run a local hub server<br>• The original JackTrip experience"
+        text: "• Connect via IP address<br>• Run a local hub server<br>• The Classic JackTrip experience"
         textFormat: Text.StyledText
         font.family: "Poppins"
         font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
