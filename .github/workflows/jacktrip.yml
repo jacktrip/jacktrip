@@ -50,7 +50,7 @@ jobs:
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -61,7 +61,7 @@ jobs:
 
           - name: Linux-x64-qmake-gcc-static-nogui
             release-name: Linux-x64-nogui
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: true
@@ -73,7 +73,7 @@ jobs:
             build-system: qmake
 
           - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
