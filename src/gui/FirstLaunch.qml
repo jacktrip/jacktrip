@@ -16,7 +16,7 @@ Item {
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
         y: 168 * virtualstudio.uiScale
-        text: "Which JackTrip experience do you need?"
+        text: "Sign in with a Virtual Studio account?"
         font.family: "Poppins"
         font.pixelSize: 17 * virtualstudio.fontScale * virtualstudio.uiScale
     }
@@ -47,31 +47,33 @@ Item {
         }
         onClicked: { window.state = "login"; virtualstudio.toVirtualStudio(); }
         x: parent.width / 2 - (265 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale
-        width: 234 * virtualstudio.uiScale; height: 197 * virtualstudio.uiScale
-        Image {
-            source: "jacktrip.png"
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 29 * virtualstudio.uiScale
-            width: 180 * virtualstudio.uiScale; height: 42 * virtualstudio.uiScale;
-        }
+        width: 234 * virtualstudio.uiScale; height: 49 * virtualstudio.uiScale
         Text {
-            text: "Virtual Studio"
+            text: "Yes"
             font.family: "Poppins"
-            font.pixelSize: 17 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.weight: Font.Bold
+            color: "#DB0A0A"
             anchors.horizontalCenter: parent.horizontalCenter
-            y: 73 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
         }
-        Text {
-            text: "• Connect to Virtual Studios<br>• Broadcast on JackTrip Radio<br>• Apply FX with Soundscapes"
-            textFormat: Text.StyledText
-            font.family: "Poppins"
-            font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-            anchors.horizontalCenter: parent.horizontalCenter
-            y:120 * virtualstudio.uiScale; width: 230 * virtualstudio.uiScale
-            padding: 0
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignHCenter
-        }
+    }
+    Text {
+        text: "• Connect to Virtual Studios<br>• Broadcast on JackTrip Radio<br>• Apply FX with Soundscapes"
+        textFormat: Text.StyledText
+        font.family: "Poppins"
+        font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+        x: parent.width / 2 - (265 * virtualstudio.uiScale);
+        y: 355 * virtualstudio.uiScale;
+        width: 230 * virtualstudio.uiScale
+        padding: 0
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
+    }
+    Image {
+        source: "JTVS.png"
+        x: parent.width / 2 - (265 * virtualstudio.uiScale); y: 420 * virtualstudio.uiScale
+        width: 234 * virtualstudio.uiScale; height: 201.48 * virtualstudio.uiScale;
     }
 
     Button {
@@ -92,30 +94,32 @@ Item {
         }
         onClicked: { window.state = "login"; virtualstudio.toStandard(); }
         x: parent.width / 2 + (32 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale
-        width: 234 * virtualstudio.uiScale; height: 197 * virtualstudio.uiScale
-        Image {
-            source: "jacktrip.png"
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 29 * virtualstudio.uiScale
-            width: 180 * virtualstudio.uiScale; height: 42 * virtualstudio.uiScale;
-        }
+        width: 234 * virtualstudio.uiScale; height: 49 * virtualstudio.uiScale
         Text {
-            text: "Original"
+            text: "No"
             font.family: "Poppins"
-            font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.weight: Font.Bold
+            color: "#DB0A0A"
             anchors.horizontalCenter: parent.horizontalCenter
-            y: 73 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
         }
-        Text {
-            text: "• Connect via IP address<br>• Run a local hub server<br>• The original JackTrip experience"
-            textFormat: Text.StyledText
-            font.family: "Poppins"
-            font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-            anchors.horizontalCenter: parent.horizontalCenter
-            y:120 * virtualstudio.uiScale; width: 230 * virtualstudio.uiScale
-            padding: 0
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignHCenter
-        }
+    }
+    Image {
+        source: "JTOriginal.png"
+        x: parent.width / 2 + (32 * virtualstudio.uiScale); y: 420 * virtualstudio.uiScale
+        width: 234 * virtualstudio.uiScale; height: 337.37 * virtualstudio.uiScale;
+    }
+    Text {
+        text: "• Connect via IP address<br>• Run a local hub server<br>• The original JackTrip experience"
+        textFormat: Text.StyledText
+        font.family: "Poppins"
+        font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+        x: parent.width / 2 + (32 * virtualstudio.uiScale);
+        y: 355 * virtualstudio.uiScale;
+        width: 230 * virtualstudio.uiScale
+        padding: 0
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
     }
 }
