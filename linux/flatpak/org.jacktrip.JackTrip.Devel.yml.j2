@@ -6,9 +6,9 @@ command: jacktrip
 finish-args:
   # X11 + XShm access
   - --share=ipc
-  - --socket=x11
+  - --socket=fallback-x11
   # Wayland access (disabled because of missing window shadows)
-  # - --socket=wayland
+  - --socket=wayland
   # Needs network access
   - --share=network
   # Pipewire/Jack
