@@ -237,7 +237,7 @@ jobs:
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt6-default qt6-qmake qttools6-dev libqt6networkauth6-dev qtdeclarative6-dev libqt6svg6-dev
+            sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qt6-qmake qt6-tools-dev libqt6networkauth6-dev qt6-declarative-dev libqt6svg6-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
