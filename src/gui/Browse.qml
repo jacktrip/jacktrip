@@ -40,18 +40,20 @@ Item {
         Rectangle {
             color: "transparent"
             height: 72 * virtualstudio.uiScale; x: 16 * virtualstudio.uiScale; width: ListView.view.width - (2 * x)
-            required property string section
+            // required property string section: section (for 5.15)
             Text {
                 //anchors.bottom: parent.bottom
                 y: 12 * virtualstudio.uiScale
-                text: parent.section
+                // text: parent.section (for 5.15)
+                text: section
                 font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
             }
             Image {
                 source: "logo.svg"
                 width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
                 anchors.right: parent.right
-                visible: parent.section == virtualstudio.logoSection ? true : false
+                // visible: parent.section == virtualstudio.logoSection ? true : false (for 5.15)
+                visible: section == virtualstudio.logoSection ? true : false
             }
         }
     }
