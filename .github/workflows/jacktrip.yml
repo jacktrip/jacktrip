@@ -237,7 +237,7 @@ jobs:
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev
+            sudo apt-get install --yes qt6-default qt6-qmake qttools6-dev libqt6networkauth6-dev qtdeclarative6-dev libqt6svg6-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
@@ -263,8 +263,8 @@ jobs:
           tar -xf jack2.tar.gz
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
           if [[ -z "${{ matrix.static-qt-version }}" ]]; then 
-            brew install qt5
-            brew link qt5 --force
+            brew install qt6
+            brew link qt6 --force
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             brew install rt-audio
@@ -372,7 +372,7 @@ jobs:
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
           elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            echo "`brew --prefix qt5`/bin" >> $GITHUB_PATH
+            echo "`brew --prefix qt6`/bin" >> $GITHUB_PATH
           else
             echo "$Qt5_DIR/bin" >> $GITHUB_PATH
           fi
