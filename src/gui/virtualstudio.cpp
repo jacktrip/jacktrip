@@ -785,7 +785,7 @@ void VirtualStudio::setupAuthenticator()
         const QUrl authUri(QStringLiteral("https://auth.jacktrip.org/authorize"));
         const QString clientId = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
         const QUrl tokenUri(QStringLiteral("https://auth.jacktrip.org/oauth/token"));
-        const quint16 port = 42424;
+        const quint16 port = 0;
 
         m_authenticator->setAuthorizationUrl(authUri);
         m_authenticator->setClientIdentifier(clientId);
