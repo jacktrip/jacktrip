@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -42,13 +43,47 @@ Item {
             height: 72 * virtualstudio.uiScale; x: 16 * virtualstudio.uiScale; width: ListView.view.width - (2 * x)
             // required property string section: section (for 5.15)
             Text {
+                id: sectionText
                 //anchors.bottom: parent.bottom
                 y: 12 * virtualstudio.uiScale
                 // text: parent.section (for 5.15)
                 text: section
                 font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
             }
+            Button {
+                id: createButton
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: createButton.down ? "#E7E8E8" : "#F2F3F3"
+                    border.width: 1
+                    border.color: createButton.down ? "#B0B5B5" : "#EAEBEB"
+                    layer.enabled: createButton.hovered && !createButton.down
+                    layer.effect: DropShadow {
+                        horizontalOffset: 1 * virtualstudio.uiScale
+                        verticalOffset: 1 * virtualstudio.uiScale
+                        radius: 8.0 * virtualstudio.uiScale
+                        samples: 17
+                        color: "#80A1A1A1"
+                    }
+                }
+                onClicked: { virtualstudio.createStudio(); }
+                anchors.right: logo.left
+                anchors.rightMargin: 16
+                anchors.verticalCenter: sectionText.verticalCenter
+                width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                Text {
+                    text: "Create a Studio"
+                    font.family: "Poppins"
+                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.weight: Font.Bold
+                    color: "#DB0A0A"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                visible: section == virtualstudio.logoSection ? true : false
+            }
             Image {
+                id: logo
                 source: "logo.svg"
                 width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
                 anchors.right: parent.right
