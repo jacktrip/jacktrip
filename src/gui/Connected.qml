@@ -57,6 +57,7 @@ Item {
             virtualstudio.audioBackend : inputComboModel[virtualstudio.inputDevice]
         font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         anchors.verticalCenter: mic.verticalCenter
+        visible: virtualstudio.audioBackend == "JACK"
     }
     
     Text {
@@ -65,6 +66,29 @@ Item {
             virtualstudio.audioBackend : outputComboModel[virtualstudio.outputDevice]
         font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         anchors.verticalCenter: headphones.verticalCenter
+        visible: virtualstudio.audioBackend == "JACK"
+    }
+
+    ComboBox {
+        id: inputCombo
+        model: inputComboModel
+        currentIndex: virtualstudio.inputDevice
+        onActivated: { virtualstudio.inputDevice = currentIndex; virtualstudio.applySettings() }
+        x: 120 * virtualstudio.uiScale
+        anchors.verticalCenter: mic.verticalCenter
+        width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
+        visible: virtualstudio.audioBackend != "JACK"
+    }
+    
+    ComboBox {
+        id: outputCombo
+        model: outputComboModel
+        currentIndex: virtualstudio.outputDevice
+        onActivated: { virtualstudio.outputDevice = currentIndex }
+        x: 120 * virtualstudio.uiScale
+        anchors.verticalCenter: headphones.verticalCenter
+        width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
+        visible: virtualstudio.audioBackend != "JACK"
     }
     
     //43 822
