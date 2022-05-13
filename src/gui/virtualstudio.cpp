@@ -637,8 +637,7 @@ void VirtualStudio::manageStudio(int studioIndex)
 
 void VirtualStudio::createStudio()
 {
-    QUrl url =
-        QUrl(QStringLiteral("https://app.jacktrip.org/studios/create"));
+    QUrl url = QUrl(QStringLiteral("https://app.jacktrip.org/studios/create"));
     QDesktopServices::openUrl(url);
 }
 
