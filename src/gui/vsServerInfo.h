@@ -57,6 +57,7 @@ class VsServerInfo : public QObject
     Q_PROPERTY(quint16 period READ period CONSTANT)
     Q_PROPERTY(quint32 sampleRate READ sampleRate CONSTANT)
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
+    Q_PROPERTY(QString status READ status CONSTANT)
 
    public:
     enum serverSectionT { YOUR_STUDIOS, SUBSCRIBED_STUDIOS, PUBLIC_STUDIOS };
@@ -91,6 +92,8 @@ class VsServerInfo : public QObject
     void setQueueBuffer(quint16 queueBuffer);
     QString id();
     void setId(const QString& id);
+    QString status();
+    void setStatus(const QString& status);
 
    signals:
     void canConnectChanged();
@@ -107,6 +110,7 @@ class VsServerInfo : public QObject
     quint32 m_sampleRate;
     quint16 m_queueBuffer;
     QString m_id;
+    QString m_status;
 
     /* Remaining JSON fields
     "loopback": true,
