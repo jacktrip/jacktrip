@@ -118,6 +118,7 @@ class VirtualStudio : public QObject
     void completeConnection();
     void disconnect();
     void manageStudio(int studioIndex);
+    void createStudio();
     void showAbout();
     void exit();
 
