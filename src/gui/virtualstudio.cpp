@@ -872,6 +872,8 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                     serverInfo->setName(servers.at(i)[QStringLiteral("name")].toString());
                     serverInfo->setHost(
                         servers.at(i)[QStringLiteral("serverHost")].toString());
+                    serverInfo->setStatus(
+                        servers.at(i)[QStringLiteral("status")].toString());
                     serverInfo->setPort(
                         servers.at(i)[QStringLiteral("serverPort")].toInt());
                     serverInfo->setIsPublic(

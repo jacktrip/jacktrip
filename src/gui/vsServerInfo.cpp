@@ -75,9 +75,14 @@ QString VsServerInfo::host()
     return m_host;
 }
 
+QString VsServerInfo::status()
+{
+    return m_status;
+}
+
 bool VsServerInfo::canConnect()
 {
-    return !m_host.isEmpty();
+    return !m_host.isEmpty() && m_status == "Ready";
 }
 
 bool VsServerInfo::canStart()
@@ -92,6 +97,12 @@ bool VsServerInfo::canStart()
 void VsServerInfo::setHost(const QString& host)
 {
     m_host = host;
+    emit canConnectChanged();
+}
+
+void VsServerInfo::setStatus(const QString& status)
+{
+    m_status = status;
     emit canConnectChanged();
 }
 
