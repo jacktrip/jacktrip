@@ -231,38 +231,38 @@ Item {
         border.color: "#33979797"
 
         Button {
-            id: backButton
+            id: cancelButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: backButton.down ? "#DEE0E0" : (backButton.hovered ? "#D3D4D4" : "#EAECEC")
+                color: cancelButton.down ? "#DEE0E0" : (cancelButton.hovered ? "#D3D4D4" : "#EAECEC")
                 border.width: 1
-                border.color: backButton.down || backButton.hovered ? "#BABCBC" : "#34979797"
+                border.color: cancelButton.down || cancelButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { window.state = "browse"; virtualstudio.revertSettings() }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
-                text: "Back"
+                text: "Cancel"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
         }
 
         Button {
-            id: okButton
+            id: saveButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: okButton.down ? "#DEE0E0" : (okButton.hovered ? "#D3D4D4" : "#EAECEC")
+                color: saveButton.down ? "#DEE0E0" : (saveButton.hovered ? "#D3D4D4" : "#EAECEC")
                 border.width: 1
-                border.color: okButton.down || okButton.hovered ? "#BABCBC" : "#34979797"
+                border.color: saveButton.down || saveButton.hovered ? "#BABCBC" : "#34979797"
             }
             onClicked: { window.state = "browse"; virtualstudio.applySettings() }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (119 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
-                text: "OK"
+                text: "Save"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             }
