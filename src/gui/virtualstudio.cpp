@@ -68,6 +68,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_refreshToken = settings.value(QStringLiteral("RefreshToken"), "").toString();
     m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
     m_uiScale      = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_darkMode     = settings.value(QStringLiteral("DarkMode"), false).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
@@ -304,6 +305,21 @@ void VirtualStudio::setUiScale(float scale)
 {
     m_uiScale = scale;
     emit uiScaleChanged();
+}
+
+bool VirtualStudio::darkMode()
+{
+    return m_darkMode;
+}
+
+void VirtualStudio::setDarkMode(bool dark)
+{
+    m_darkMode = dark;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("DarkMode"), m_darkMode);
+    settings.endGroup();
+    emit darkModeChanged();
 }
 
 bool VirtualStudio::psiBuild()

@@ -75,6 +75,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
+    Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
 
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
 
@@ -103,6 +104,8 @@ class VirtualStudio : public QObject
     float fontScale();
     float uiScale();
     void setUiScale(float scale);
+    bool darkMode();
+    void setDarkMode(bool dark);
     bool psiBuild();
 
    public slots:
@@ -139,6 +142,7 @@ class VirtualStudio : public QObject
     void connectionStateChanged();
     void uiScaleChanged();
     void newScale();
+    void darkModeChanged();
     void signalExit();
     void periodicRefresh();
 
@@ -193,6 +197,7 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
+    bool m_darkMode = false;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
