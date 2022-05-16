@@ -1,11 +1,13 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
     clip: true
     
     property bool connecting: false
+    property bool devicesChanged: false
     
     property int leftMargin: 16
     property int fontBig: 28
@@ -73,10 +75,10 @@ Item {
         id: inputCombo
         model: inputComboModel
         currentIndex: virtualstudio.inputDevice
-        onActivated: { virtualstudio.inputDevice = currentIndex; virtualstudio.applySettings() }
+        onActivated: { virtualstudio.inputDevice = currentIndex; devicesChanged = true }
         x: 120 * virtualstudio.uiScale
         anchors.verticalCenter: mic.verticalCenter
-        width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
+        width: parent.width - 2 * x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
         visible: virtualstudio.audioBackend != "JACK"
     }
     
@@ -84,11 +86,56 @@ Item {
         id: outputCombo
         model: outputComboModel
         currentIndex: virtualstudio.outputDevice
-        onActivated: { virtualstudio.outputDevice = currentIndex }
+        onActivated: { virtualstudio.outputDevice = currentIndex; devicesChanged = true }
         x: 120 * virtualstudio.uiScale
         anchors.verticalCenter: headphones.verticalCenter
-        width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
+        width: parent.width - 2 * x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
         visible: virtualstudio.audioBackend != "JACK"
+    }
+
+    Button {
+        id: saveButton
+        background: Rectangle {
+            radius: 6 * virtualstudio.uiScale
+            color: saveButton.down ? "#E7E8E8" : "#F2F3F3"
+            border.width: 1
+            border.color: saveButton.down ? "#B0B5B5" : "#EAEBEB"
+            layer.enabled: saveButton.hovered && !saveButton.down
+            layer.effect: DropShadow {
+                horizontalOffset: 1 * virtualstudio.uiScale
+                verticalOffset: 1 * virtualstudio.uiScale
+                radius: 8.0 * virtualstudio.uiScale
+                samples: 17
+                color: "#80A1A1A1"
+            }
+        }
+        onClicked: { devicesChanged = false }
+        anchors.right: outputCombo.right
+        anchors.topMargin: 16
+        anchors.top: outputCombo.bottom
+        width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+        Text {
+            text: "Save Changes"
+            font.family: "Poppins"
+            font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.weight: Font.Bold
+            color: "#DB0A0A"
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+        }
+        visible: devicesChanged == true
+    }
+
+    Text {
+        anchors.left: outputCombo.left
+        anchors.right: saveButton.left
+        anchors.rightMargin: 16
+        anchors.verticalCenter: saveButton.verticalCenter
+        text: "Saving will reconnect you to this Studio."
+        color: "#DB0A0A"
+        font {family: "Poppins"; pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale }
+        visible: devicesChanged == true
+        wrapMode: Text.WordWrap
     }
     
     //43 822
