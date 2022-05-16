@@ -111,21 +111,6 @@ Item {
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
         }
     }
-    
-    // Image {
-    //     id: mic
-    //     source: "mic.svg"
-    //     x: 80 * virtualstudio.uiScale; y: 250 * virtualstudio.uiScale
-    //     width: 18 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
-    // }
-    
-    // Image {
-    //     id: headphones
-    //     source: "headphones.svg"
-    //     anchors.horizontalCenter: mic.horizontalCenter
-    //     y: 329 * virtualstudio.uiScale
-    //     width: 24 * virtualstudio.uiScale; height: 26 * virtualstudio.uiScale
-    // }
 
     Button {
         id: saveButton
