@@ -290,6 +290,26 @@ QString VirtualStudio::connectionState()
     return m_connectionState;
 }
 
+bool VirtualStudio::showInactive()
+{
+    return m_showInactive;
+}
+
+void VirtualStudio::setShowInactive(bool val)
+{
+    m_showInactive = val;
+}
+
+bool VirtualStudio::showSelfHosted()
+{
+    return m_showSelfHosted;
+}
+
+void VirtualStudio::setShowSelfHosted(bool val)
+{
+    m_showSelfHosted = val;
+}
+
 float VirtualStudio::fontScale()
 {
     return m_fontScale;
@@ -635,6 +655,18 @@ void VirtualStudio::manageStudio(int studioIndex)
     QDesktopServices::openUrl(url);
 }
 
+void VirtualStudio::toggleInactiveFilter()
+{
+    setShowInactive(!m_showInactive);
+    getServerList(false);
+}
+
+void VirtualStudio::toggleSelfHostedFilter()
+{
+    setShowSelfHosted(!m_showSelfHosted);
+    getServerList(false);
+}
+
 void VirtualStudio::createStudio()
 {
     QUrl url = QUrl(QStringLiteral("https://app.jacktrip.org/studios/create"));
@@ -866,9 +898,17 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                 VsServerInfo* serverInfo = new VsServerInfo(this);
                 serverInfo->setIsManageable(
                     servers.at(i)[QStringLiteral("admin")].toBool());
-                QString status = servers.at(i)[QStringLiteral("status")].toString();
-                // Only include active servers, or servers that we can manage.
-                if (status == QLatin1String("Ready") || serverInfo->isManageable()) {
+                QString status     = servers.at(i)[QStringLiteral("status")].toString();
+                bool activeStudio  = status == QLatin1String("Ready");
+                bool managedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
+                // Only iterate through servers that we want to show
+                if (!m_showSelfHosted && !managedStudio) {
+                    continue;
+                }
+                if (!m_showInactive && !activeStudio) {
+                    continue;
+                }
+                if (m_showInactive || activeStudio || serverInfo->isManageable()) {
                     serverInfo->setName(servers.at(i)[QStringLiteral("name")].toString());
                     serverInfo->setHost(
                         servers.at(i)[QStringLiteral("serverHost")].toString());
@@ -924,6 +964,9 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
             } else {
                 m_logoSection = QStringLiteral("Subscribed Studios");
             }
+            emit logoSectionChanged();
+        } else {
+            m_logoSection = QStringLiteral("Your Studios");
             emit logoSectionChanged();
         }
 

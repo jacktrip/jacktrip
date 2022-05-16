@@ -100,6 +100,10 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int currentStudio();
     QString connectionState();
+    bool showInactive();
+    void setShowInactive(bool val);
+    bool showSelfHosted();
+    void setShowSelfHosted(bool val);
     float fontScale();
     float uiScale();
     void setUiScale(float scale);
@@ -118,6 +122,8 @@ class VirtualStudio : public QObject
     void completeConnection();
     void disconnect();
     void manageStudio(int studioIndex);
+    void toggleInactiveFilter();
+    void toggleSelfHostedFilter();
     void createStudio();
     void showAbout();
     void exit();
@@ -190,6 +196,8 @@ class VirtualStudio : public QObject
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
+    bool m_showInactive      = false;
+    bool m_showSelfHosted    = false;
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
