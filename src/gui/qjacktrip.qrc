@@ -12,6 +12,7 @@
     <file>Browse.qml</file>
     <file>Settings.qml</file>
     <file>Connected.qml</file>
+    <file>Setup.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
     <file>wedge_inactive.svg</file>

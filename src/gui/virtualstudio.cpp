@@ -431,6 +431,10 @@ void VirtualStudio::applySettings()
     m_previousBuffer     = m_bufferSize;
     m_previousInput      = m_inputDevice;
     m_previousOutput     = m_outputDevice;
+
+    // make sure device change signals are emitting
+    emit inputDeviceChanged();
+    emit outputDeviceChanged();
 #endif
 }
 
