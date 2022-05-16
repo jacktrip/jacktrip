@@ -808,7 +808,14 @@ void VirtualStudio::setupAuthenticator()
             }
         });
 
-        m_authenticator->setReplyHandler(new QOAuthHttpServerReplyHandler(port, this));
+        QOAuthHttpServerReplyHandler *replyHandler = new QOAuthHttpServerReplyHandler(port, this);
+        replyHandler->setCallbackText(QStringLiteral(
+            "<div id=\"container\" style=\"width:100%; max-width:1200px; height: auto; margin: 100px auto; text-align:center;\">\n"
+                "<img src=\"https://files.jacktrip.org/logos/jacktrip_icon.svg\" alt=\"JackTrip\">\n"
+                "<h1 style=\"font-size: 30px; font-weight: 600; padding-top:20px;\">Virtual Studio Login Successful</h1>\n"
+                "<p style=\"font-size: 21px; font-weight:300;\">You may close this window and return to the JackTrip application.</p>\n"
+            "</div>\n"));
+        m_authenticator->setReplyHandler(replyHandler);
         connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::granted, this,
                 &VirtualStudio::slotAuthSucceded);
         connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::requestFailed,
