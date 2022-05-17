@@ -33,7 +33,7 @@ Item {
         model: backendComboModel
         currentIndex: virtualstudio.audioBackend == "JACK" ? 0 : 1
         onActivated: { virtualstudio.audioBackend = currentText }
-        x: 234 * virtualstudio.uiScale; y: 200 * virtualstudio.uiScale
+        x: 234 * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
         width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
         visible: virtualstudio.selectableBackend
     }
@@ -49,7 +49,7 @@ Item {
     
     Text {
         id: jackLabel
-        x: leftMargin * virtualstudio.uiScale; y: 200 * virtualstudio.uiScale
+        x: leftMargin * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
         width: parent.width - x - (16 * virtualstudio.uiScale)
         text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -62,7 +62,7 @@ Item {
         model: inputComboModel
         currentIndex: virtualstudio.inputDevice
         onActivated: { virtualstudio.inputDevice = currentIndex }
-        x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 248 : 200)
+        x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 198 : 150)
         width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
         visible: virtualstudio.audioBackend != "JACK"
     }
@@ -78,6 +78,7 @@ Item {
     }
     
     Text {
+        id: inputLabel
         anchors.verticalCenter: inputCombo.verticalCenter
         x: leftMargin * virtualstudio.uiScale
         text: "Input Device"
@@ -86,6 +87,7 @@ Item {
     }
     
     Text {
+        id: outputLabel
         anchors.verticalCenter: outputCombo.verticalCenter
         x: leftMargin * virtualstudio.uiScale
         text: "Output Device"
@@ -112,6 +114,20 @@ Item {
         }
     }
 
+    Text {
+        anchors.left: outputLabel.left
+        anchors.right: outputCombo.right
+        anchors.leftMargin: 16 * virtualstudio.uiScale
+        anchors.rightMargin: 16 * virtualstudio.uiScale
+        y: inputCombo.y + (160 * virtualstudio.uiScale)
+        text: "JackTrip on Windows requires use of an audio device with ASIO drivers. If you do not see your device, you may need to install drivers from your manufacturer."
+        horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
+        color: "#DB0A0A"
+        font { family: "Poppins"; pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale }
+        visible: Qt.platform.os == "windows" && virtualstudio.audioBackend != "JACK"
+    }
+
     Button {
         id: saveButton
         background: Rectangle {
@@ -135,7 +151,7 @@ Item {
         anchors.bottom: parent.bottom
         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
         Text {
-            text: "Save Changes"
+            text: "Save Settings"
             font.family: "Poppins"
             font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
             font.weight: Font.Bold
