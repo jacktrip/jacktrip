@@ -101,9 +101,9 @@ class VirtualStudio : public QObject
     int currentStudio();
     QString connectionState();
     bool showInactive();
-    void setShowInactive(bool val);
+    void setShowInactive(bool inactive);
     bool showSelfHosted();
-    void setShowSelfHosted(bool val);
+    void setShowSelfHosted(bool selfHosted);
     float fontScale();
     float uiScale();
     void setUiScale(float scale);

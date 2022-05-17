@@ -138,7 +138,7 @@ Item {
                         CheckBox {
                             id: inactiveCheckbox
                             text: qsTr("Show my inactive Studios")
-                            onClicked: { virtualstudio.toggleInactiveFilter(); }
+                            onClicked: { virtualstudio.toggleInactiveFilter(); refreshing = true; refresh() }
                             indicator: Rectangle {
                                 implicitWidth: 16 * virtualstudio.uiScale
                                 implicitHeight: 16 * virtualstudio.uiScale
@@ -169,7 +169,7 @@ Item {
                         CheckBox {
                             id: selfHostedCheckbox
                             text: qsTr("Show self-hosted Studios")
-                            onClicked: { virtualstudio.toggleSelfHostedFilter(); }
+                            onClicked: { virtualstudio.toggleSelfHostedFilter(); refreshing = true; refresh() }
                             indicator: Rectangle {
                                 implicitWidth: 16 * virtualstudio.uiScale
                                 implicitHeight: 16 * virtualstudio.uiScale

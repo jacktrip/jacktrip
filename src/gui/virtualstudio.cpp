@@ -65,9 +65,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
-    m_refreshToken = settings.value(QStringLiteral("RefreshToken"), "").toString();
-    m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
-    m_uiScale      = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_refreshToken   = settings.value(QStringLiteral("RefreshToken"), "").toString();
+    m_userId         = settings.value(QStringLiteral("UserId"), "").toString();
+    m_uiScale        = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_showInactive   = settings.value(QStringLiteral("ShowInactive"), false).toBool();
+    m_showSelfHosted = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
@@ -295,9 +297,13 @@ bool VirtualStudio::showInactive()
     return m_showInactive;
 }
 
-void VirtualStudio::setShowInactive(bool val)
+void VirtualStudio::setShowInactive(bool inactive)
 {
-    m_showInactive = val;
+    m_showInactive = inactive;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("ShowInactive"), m_showInactive);
+    settings.endGroup();
 }
 
 bool VirtualStudio::showSelfHosted()
@@ -305,9 +311,13 @@ bool VirtualStudio::showSelfHosted()
     return m_showSelfHosted;
 }
 
-void VirtualStudio::setShowSelfHosted(bool val)
+void VirtualStudio::setShowSelfHosted(bool selfHosted)
 {
-    m_showSelfHosted = val;
+    m_showSelfHosted = selfHosted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("ShowSelfHosted"), m_showSelfHosted);
+    settings.endGroup();
 }
 
 float VirtualStudio::fontScale()
@@ -658,13 +668,11 @@ void VirtualStudio::manageStudio(int studioIndex)
 void VirtualStudio::toggleInactiveFilter()
 {
     setShowInactive(!m_showInactive);
-    getServerList(false);
 }
 
 void VirtualStudio::toggleSelfHostedFilter()
 {
     setShowSelfHosted(!m_showSelfHosted);
-    getServerList(false);
 }
 
 void VirtualStudio::createStudio()
@@ -898,11 +906,11 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                 VsServerInfo* serverInfo = new VsServerInfo(this);
                 serverInfo->setIsManageable(
                     servers.at(i)[QStringLiteral("admin")].toBool());
-                QString status     = servers.at(i)[QStringLiteral("status")].toString();
-                bool activeStudio  = status == QLatin1String("Ready");
-                bool managedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
+                QString status    = servers.at(i)[QStringLiteral("status")].toString();
+                bool activeStudio = status == QLatin1String("Ready");
+                bool hostedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
                 // Only iterate through servers that we want to show
-                if (!m_showSelfHosted && !managedStudio) {
+                if (!m_showSelfHosted && !hostedStudio) {
                     continue;
                 }
                 if (!m_showInactive && !activeStudio) {
