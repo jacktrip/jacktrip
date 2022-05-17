@@ -238,7 +238,8 @@ HEADERS += src/gui/about.h \
   !novs {
     HEADERS += src/gui/virtualstudio.h \
                src/gui/vsServerInfo.h \
-               src/gui/vsQuickView.h
+               src/gui/vsQuickView.h \
+               src/gui/AutoUpdater.h
   }
 }
 
@@ -282,7 +283,8 @@ SOURCES += src/gui/messageDialog.cpp \
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
                src/gui/vsServerInfo.cpp \
-               src/gui/vsQuickView.cpp
+               src/gui/vsQuickView.cpp \
+               src/gui/AutoUpdater.cpp
   }
 }
 
@@ -290,6 +292,28 @@ SOURCES += src/gui/messageDialog.cpp \
   macx {
     HEADERS += src/gui/NoNap.h
     OBJECTIVE_SOURCES += src/gui/NoNap.mm
+
+    SPARKLE_PATH = $$PWD/externals/sparkle
+    exists($$SPARKLE_PATH) {
+      message("Sparkle detected")
+
+      # allow linker to find sparkle framework if we bundle it in
+      LIBS += -F$$SPARKLE_PATH
+      LIBS += -framework Sparkle -framework AppKit
+      # necessary for Sparkle to compile
+      QMAKE_LFLAGS += -F $$SPARKLE_PATH
+      QMAKE_OBJECTIVE_CFLAGS += -F $$SPARKLE_PATH
+
+      HEADERS += src/gui/SparkleAutoUpdater.h src/gui/CocoaInitializer.h
+      OBJECTIVE_SOURCES += src/gui/SparkleAutoUpdater.mm src/gui/CocoaInitializer.mm
+
+      # Copy Sparkle into the app bundle
+      sparkle.path = Contents/Frameworks
+      sparkle.files = $$SPARKLE_PATH/Sparkle.framework
+      QMAKE_BUNDLE_DATA += sparkle
+    } else {
+      message("Sparkle not detected")
+    }
   }
 
   FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui

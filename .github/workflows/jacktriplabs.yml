@@ -66,6 +66,7 @@ jobs:
             novs: false
             weakjack: true
             static-qt-version: 5.15.2
+            sparkle-version: 2.1.0
             qt-static-cache-key: 'v09'
             jacktrip-path: jacktrip
             binary-path: binary # don't upload the binary itself since we upload the bundle
@@ -149,6 +150,12 @@ jobs:
           fi
           if [[ "${{ matrix.build-system }}" == "meson" ]]; then
             brew install meson help2man
+          fi
+          if [[ ! -z "${{ matrix.sparkle-version }}" ]]; then
+            curl -L -o Sparkle-${{ matrix.sparkle-version }}.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/${{ matrix.sparkle-version }}/Sparkle-${{ matrix.sparkle-version }}.tar.xz
+            mkdir -p externals/sparkle
+            sudo tar -C ./externals/sparkle -xpof Sparkle-${{ matrix.sparkle-version }}.tar.xz
+            rm Sparkle-${{ matrix.sparkle-version }}.tar.xz
           fi
       - name: install dependencies for Windows
         if: runner.os == 'Windows'

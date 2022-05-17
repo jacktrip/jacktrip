@@ -27,7 +27,7 @@
 		<string>MacOSX</string>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>16</string>
+	<string>%VERSION%</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
@@ -50,5 +50,9 @@
 	<string>Copyright © 2020 Juan-Pablo Caceres, Chris Chafe, Aaron Wyatt, et al. All rights reserved.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires microphone access to allow the jack server to capture audio.</string>
+	<key>SUPublicEDKey</key>
+	<string>o6oP4BmclQwUudSyjErGL4U6I43mzU7Oc9QlKJ32Qio=</string>
+	<key>SUFeedURL</key>
+	<string>https://files.jacktrip.org/nwang-test/SampleAppcast.xml</string>
 </dict>
 </plist>

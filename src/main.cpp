@@ -45,6 +45,11 @@
 #include "gui/virtualstudio.h"
 #endif
 
+#ifdef Q_OS_MAC
+#include "gui/CocoaInitializer.h"
+#include "gui/SparkleAutoUpdater.h"
+#endif
+
 #include "gui/qjacktrip.h"
 #else
 #include <QCoreApplication>
@@ -229,6 +234,15 @@ int main(int argc, char* argv[])
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> vs;
 #endif
+
+    AutoUpdater* updater = 0;
+#ifdef Q_OS_MAC
+    CocoaInitializer initializer;
+    updater = new SparkleAutoUpdater("https://files.jacktrip.org/nwang-test/SampleAppcast.xml");
+#endif
+    if (updater) {
+        updater->checkForUpdates();
+    }
 
     if (qobject_cast<QApplication*>(app.data())) {
         // Start the GUI if there are no command line options.
