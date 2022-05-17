@@ -74,6 +74,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
+    Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup NOTIFY showDeviceSetupChanged)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
 
@@ -106,6 +107,8 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    bool showDeviceSetup();
+    void setShowDeviceSetup(bool show);
     bool psiBuild();
 
    public slots:
@@ -121,6 +124,7 @@ class VirtualStudio : public QObject
     void completeConnection();
     void disconnect();
     void manageStudio(int studioIndex);
+    void toggleShowDeviceSetup();
     void createStudio();
     void showAbout();
     void exit();
@@ -140,6 +144,7 @@ class VirtualStudio : public QObject
     void bufferSizeChanged();
     void currentStudioChanged();
     void connectionStateChanged();
+    void showDeviceSetupChanged();
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
@@ -194,6 +199,7 @@ class VirtualStudio : public QObject
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
+    bool m_showDeviceSetup   = true;
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;

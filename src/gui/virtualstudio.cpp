@@ -69,6 +69,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
     m_uiScale      = settings.value(QStringLiteral("UiScale"), 1).toFloat();
     m_darkMode     = settings.value(QStringLiteral("DarkMode"), false).toBool();
+    m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
@@ -291,6 +292,16 @@ QString VirtualStudio::connectionState()
     return m_connectionState;
 }
 
+bool VirtualStudio::showDeviceSetup()
+{
+    return m_showDeviceSetup;
+}
+
+void VirtualStudio::setShowDeviceSetup(bool show)
+{
+    m_showDeviceSetup = show;
+}
+
 float VirtualStudio::fontScale()
 {
     return m_fontScale;
@@ -434,6 +445,7 @@ void VirtualStudio::applySettings()
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
+    settings.setValue(QStringLiteral("ShowDeviceSetup"), m_showDeviceSetup);
     settings.endGroup();
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
@@ -447,6 +459,9 @@ void VirtualStudio::applySettings()
     m_previousBuffer     = m_bufferSize;
     m_previousInput      = m_inputDevice;
     m_previousOutput     = m_outputDevice;
+
+    emit inputDeviceChanged();
+    emit outputDeviceChanged();
 #endif
 }
 
@@ -651,6 +666,11 @@ void VirtualStudio::manageStudio(int studioIndex)
     QDesktopServices::openUrl(url);
 }
 
+void VirtualStudio::toggleShowDeviceSetup()
+{
+    setShowDeviceSetup(!m_showDeviceSetup);
+}
+
 void VirtualStudio::createStudio()
 {
     QUrl url = QUrl(QStringLiteral("https://app.jacktrip.org/studios/create"));
@@ -824,7 +844,19 @@ void VirtualStudio::setupAuthenticator()
             }
         });
 
-        m_authenticator->setReplyHandler(new QOAuthHttpServerReplyHandler(port, this));
+        QOAuthHttpServerReplyHandler* replyHandler =
+            new QOAuthHttpServerReplyHandler(port, this);
+        replyHandler->setCallbackText(QStringLiteral(
+            "<div id=\"container\" style=\"width:100%; max-width:1200px; height: auto; "
+            "margin: 100px auto; text-align:center;\">\n"
+            "<img src=\"https://files.jacktrip.org/logos/jacktrip_icon.svg\" "
+            "alt=\"JackTrip\">\n"
+            "<h1 style=\"font-size: 30px; font-weight: 600; padding-top:20px;\">Virtual "
+            "Studio Login Successful</h1>\n"
+            "<p style=\"font-size: 21px; font-weight:300;\">You may close this window "
+            "and return to the JackTrip application.</p>\n"
+            "</div>\n"));
+        m_authenticator->setReplyHandler(replyHandler);
         connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::granted, this,
                 &VirtualStudio::slotAuthSucceded);
         connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::requestFailed,

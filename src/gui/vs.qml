@@ -17,6 +17,7 @@ Rectangle {
             name: "start"
             PropertyChanges { target: startScreen; x: 0 }
             PropertyChanges { target: loginScreen; x: window.width; failTextVisible: loginScreen.failTextVisible }
+            PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
@@ -26,6 +27,17 @@ Rectangle {
             name: "login"
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: loginScreen; x: 0; failTextVisible: false }
+            PropertyChanges { target: setupScreen; x: window.width; showContents: false }
+            PropertyChanges { target: browseScreen; x: window.width }
+            PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: connectedScreen; x: window.width }
+        },
+
+        State {
+            name: "setup"
+            PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: startScreen; x: -startScreen.width }
+            PropertyChanges { target: setupScreen; x: 0 }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
@@ -35,6 +47,7 @@ Rectangle {
             name: "browse"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
+            PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: 0 }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
@@ -44,6 +57,7 @@ Rectangle {
             name: "settings"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
+            PropertyChanges { target: setupScreen; x: -2*setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
             PropertyChanges { target: connectedScreen; x: window.width }
@@ -53,6 +67,7 @@ Rectangle {
             name: "connected"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
+            PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: 0 }
@@ -83,9 +98,13 @@ Rectangle {
         id: connectedScreen
     }
 
+    Setup {
+        id: setupScreen
+    }
+
     Connections {
         target: virtualstudio
-        function onAuthSucceeded() { window.state = "browse" }
+        function onAuthSucceeded() { if (virtualstudio.showDeviceSetup) { window.state = "setup" } else { window.state = "browse"; setupScreen.showContents = false }}
         function onAuthFailed() { loginScreen.failTextVisible = true }
         //function onConnected() { }
         function onDisconnected() { window.state = "browse" }
