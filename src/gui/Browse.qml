@@ -67,7 +67,7 @@ Item {
                     }
                 }
                 onClicked: { virtualstudio.createStudio(); }
-                anchors.right: logo.left
+                anchors.right: filterButton.left
                 anchors.rightMargin: 16
                 anchors.verticalCenter: sectionText.verticalCenter
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
@@ -82,13 +82,123 @@ Item {
                 }
                 visible: section == virtualstudio.logoSection ? true : false
             }
-            Image {
-                id: logo
-                source: "logo.svg"
-                width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
+            Button {
+                id: filterButton
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: filterButton.down ? "#E7E8E8" : "#F2F3F3"
+                    border.width: 1
+                    border.color: filterButton.down ? "#B0B5B5" : "#EAEBEB"
+                    layer.enabled: filterButton.hovered && !filterButton.down
+                    layer.effect: DropShadow {
+                        horizontalOffset: 1 * virtualstudio.uiScale
+                        verticalOffset: 1 * virtualstudio.uiScale
+                        radius: 8.0 * virtualstudio.uiScale
+                        samples: 17
+                        color: "#80A1A1A1"
+                    }
+                }
+                onClicked: { filterMenu.open(); }
                 anchors.right: parent.right
-                // visible: parent.section == virtualstudio.logoSection ? true : false (for 5.15)
+                anchors.verticalCenter: sectionText.verticalCenter
+                width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                Text {
+                    text: "Filter Studios"
+                    font.family: "Poppins"
+                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
                 visible: section == virtualstudio.logoSection ? true : false
+
+                Popup {
+                    id: filterMenu
+                    y: Math.round(parent.height + 8)
+                    rightMargin: 16 * virtualstudio.uiScale
+                    width: 210 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
+                    modal: false
+                    focus: false
+                    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+                    background: Rectangle {
+                        radius: 6 * virtualstudio.uiScale
+                        color: "#F6F8F8"
+                        border.width: 1
+                        border.color: "#34979797"
+                        layer.enabled: true
+                        layer.effect: DropShadow {
+                            horizontalOffset: 1 * virtualstudio.uiScale
+                            verticalOffset: 1 * virtualstudio.uiScale
+                            radius: 8.0 * virtualstudio.uiScale
+                            samples: 17
+                            color: "#80A1A1A1"
+                        }
+                    }
+                    contentItem: Column {
+                        anchors.fill: parent
+                        CheckBox {
+                            id: inactiveCheckbox
+                            text: qsTr("Show my inactive Studios")
+                            onClicked: { virtualstudio.toggleInactiveFilter(); refreshing = true; refresh() }
+                            indicator: Rectangle {
+                                implicitWidth: 16 * virtualstudio.uiScale
+                                implicitHeight: 16 * virtualstudio.uiScale
+                                x: inactiveCheckbox.leftPadding
+                                y: parent.height / 2 - height / 2
+                                radius: 3 * virtualstudio.uiScale
+                                border.color: inactiveCheckbox.down ? "#007AFF" : "#0062cc"
+
+                                Rectangle {
+                                    width: 10 * virtualstudio.uiScale
+                                    height: 10 * virtualstudio.uiScale
+                                    x: 3 * virtualstudio.uiScale
+                                    y: 3 * virtualstudio.uiScale
+                                    radius: 2 * virtualstudio.uiScale
+                                    color: inactiveCheckbox.down ? "#007AFF" : "#0062cc"
+                                    visible: inactiveCheckbox.checked
+                                }
+                            }
+                            contentItem: Text {
+                                text: inactiveCheckbox.text
+                                font.family: "Poppins"
+                                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                leftPadding: inactiveCheckbox.indicator.width + inactiveCheckbox.spacing
+                            }
+                        }
+                        CheckBox {
+                            id: selfHostedCheckbox
+                            text: qsTr("Show self-hosted Studios")
+                            onClicked: { virtualstudio.toggleSelfHostedFilter(); refreshing = true; refresh() }
+                            indicator: Rectangle {
+                                implicitWidth: 16 * virtualstudio.uiScale
+                                implicitHeight: 16 * virtualstudio.uiScale
+                                x: selfHostedCheckbox.leftPadding
+                                y: parent.height / 2 - height / 2
+                                radius: 3 * virtualstudio.uiScale
+                                border.color: selfHostedCheckbox.down ? "#007AFF" : "#0062cc"
+
+                                Rectangle {
+                                    width: 10 * virtualstudio.uiScale
+                                    height: 10 * virtualstudio.uiScale
+                                    x: 3 * virtualstudio.uiScale
+                                    y: 3 * virtualstudio.uiScale
+                                    radius: 2 * virtualstudio.uiScale
+                                    color: selfHostedCheckbox.down ? "#007AFF" : "#0062cc"
+                                    visible: selfHostedCheckbox.checked
+                                }
+                            }
+                            contentItem: Text {
+                                text: selfHostedCheckbox.text
+                                font.family: "Poppins"
+                                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                leftPadding: selfHostedCheckbox.indicator.width + selfHostedCheckbox.spacing
+                            }
+                        }
+                    }
+                }
             }
         }
     }
