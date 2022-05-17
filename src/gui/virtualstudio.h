@@ -195,7 +195,7 @@ class VirtualStudio : public QObject
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
-    bool m_showDeviceSetup = true;
+    bool m_showDeviceSetup   = true;
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;

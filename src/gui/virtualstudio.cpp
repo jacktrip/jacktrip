@@ -65,10 +65,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
-    m_refreshToken      = settings.value(QStringLiteral("RefreshToken"), "").toString();
-    m_userId            = settings.value(QStringLiteral("UserId"), "").toString();
-    m_uiScale           = settings.value(QStringLiteral("UiScale"), 1).toFloat();
-    m_showDeviceSetup   = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
+    m_refreshToken    = settings.value(QStringLiteral("RefreshToken"), "").toString();
+    m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
+    m_uiScale         = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
