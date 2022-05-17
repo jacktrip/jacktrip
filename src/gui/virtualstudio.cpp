@@ -65,9 +65,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
-    m_refreshToken = settings.value(QStringLiteral("RefreshToken"), "").toString();
-    m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
-    m_uiScale      = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_refreshToken      = settings.value(QStringLiteral("RefreshToken"), "").toString();
+    m_userId            = settings.value(QStringLiteral("UserId"), "").toString();
+    m_uiScale           = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_showDeviceSetup   = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
@@ -290,6 +291,16 @@ QString VirtualStudio::connectionState()
     return m_connectionState;
 }
 
+bool VirtualStudio::showDeviceSetup()
+{
+    return m_showDeviceSetup;
+}
+
+void VirtualStudio::setShowDeviceSetup(bool show)
+{
+    m_showDeviceSetup = show;
+}
+
 float VirtualStudio::fontScale()
 {
     return m_fontScale;
@@ -418,6 +429,7 @@ void VirtualStudio::applySettings()
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
+    settings.setValue(QStringLiteral("ShowDeviceSetup"), m_showDeviceSetup);
     settings.endGroup();
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
@@ -432,7 +444,6 @@ void VirtualStudio::applySettings()
     m_previousInput      = m_inputDevice;
     m_previousOutput     = m_outputDevice;
 
-    // make sure device change signals are emitting
     emit inputDeviceChanged();
     emit outputDeviceChanged();
 #endif
@@ -637,6 +648,11 @@ void VirtualStudio::manageStudio(int studioIndex)
         QUrl(QStringLiteral("https://app.jacktrip.org/studios/%1")
                  .arg(static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     QDesktopServices::openUrl(url);
+}
+
+void VirtualStudio::toggleShowDeviceSetup()
+{
+    setShowDeviceSetup(!m_showDeviceSetup);
 }
 
 void VirtualStudio::createStudio()

@@ -101,7 +101,7 @@ Rectangle {
 
     Connections {
         target: virtualstudio
-        function onAuthSucceeded() { window.state = "setup" }
+        function onAuthSucceeded() { if (virtualstudio.showDeviceSetup) { window.state = "setup" } else { window.state = "browse"; setupScreen.showContents = false }}
         function onAuthFailed() { loginScreen.failTextVisible = true }
         //function onConnected() { }
         function onDisconnected() { window.state = "browse" }

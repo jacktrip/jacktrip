@@ -130,8 +130,8 @@ Item {
         }
         onClicked: { window.state = "browse"; virtualstudio.applySettings() }
         anchors.right: parent.right
-        anchors.rightMargin: 16
-        anchors.bottomMargin: 16
+        anchors.rightMargin: 16 * virtualstudio.uiScale
+        anchors.bottomMargin: 16 * virtualstudio.uiScale
         anchors.bottom: parent.bottom
         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
         Text {
@@ -142,6 +142,42 @@ Item {
             color: "#DB0A0A"
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
+        }
+    }
+
+    CheckBox {
+        id: showAgainCheckbox
+        checked: virtualstudio.showDeviceSetup
+        text: qsTr("Ask again next time")
+        anchors.right: saveButton.left
+        anchors.rightMargin: 16 * virtualstudio.uiScale
+        anchors.verticalCenter: saveButton.verticalCenter
+        onClicked: { virtualstudio.toggleShowDeviceSetup() }
+        indicator: Rectangle {
+            implicitWidth: 16 * virtualstudio.uiScale
+            implicitHeight: 16 * virtualstudio.uiScale
+            x: showAgainCheckbox.leftPadding
+            y: parent.height / 2 - height / 2
+            radius: 3 * virtualstudio.uiScale
+            border.color: showAgainCheckbox.down ? "#007AFF" : "#0062cc"
+
+            Rectangle {
+                width: 10 * virtualstudio.uiScale
+                height: 10 * virtualstudio.uiScale
+                x: 3 * virtualstudio.uiScale
+                y: 3 * virtualstudio.uiScale
+                radius: 2 * virtualstudio.uiScale
+                color: showAgainCheckbox.down ? "#007AFF" : "#0062cc"
+                visible: showAgainCheckbox.checked
+            }
+        }
+        contentItem: Text {
+            text: showAgainCheckbox.text
+            font.family: "Poppins"
+            font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            leftPadding: showAgainCheckbox.indicator.width + showAgainCheckbox.spacing
         }
     }
 }
