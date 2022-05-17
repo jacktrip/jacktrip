@@ -62,6 +62,8 @@
 #include <psapi.h>
 #include <tlhelp32.h>
 #include <windows.h>
+#include "mainwindow.h"
+#include <winsparkle.h>
 #endif
 
 QCoreApplication* createApplication(int& argc, char* argv[])
@@ -238,6 +240,9 @@ int main(int argc, char* argv[])
         if (!isRunFromCmd()) {
             FreeConsole();
         }
+        MainWindow w;
+        w.show();
+
 #endif  // _WIN32
         app->setOrganizationName(QStringLiteral("jacktrip"));
         app->setOrganizationDomain(QStringLiteral("jacktrip.org"));

@@ -10,10 +10,12 @@ CONFIG(debug, debug|release) {
     TARGET = jacktrip_debug
     application_id = 'org.jacktrip.JackTrip.Devel'
     name_suffix = ' (Development Snapshot)'
+    winsparkle_dir=Debug
   } else {
     TARGET = jacktrip
     application_id = 'org.jacktrip.JackTrip'
     name_suffix = ''
+    winsparkle_dir=Release
 }
 
 equals(QT_EDITION, "OpenSource") {
@@ -181,6 +183,19 @@ win32 {
   DEFINES += _WIN32_WINNT=0x0600 #needed for inet_pton
   DEFINES += WIN32_LEAN_AND_MEAN
   RC_FILE = win/qjacktrip.rc
+
+  WINSPARKLE_PATH = $$PWD/externals/winsparkle
+  exists($$WINSPARKLE_PATH) {
+    message("Winsparkle detected")
+
+    INCLUDEPATH += $$WINSPARKLE_PATH/include
+    LIBS += -L$WINSPARKLE_PATH/$$winsparkle_dir -lWinSparkle
+    SOURCES += src/mainwindow.cpp
+    HEADERS += src/mainwindow.h
+    FORMS += mainwindow.ui
+  } else {
+    message("Winsparkle not detected")
+  }
 }
 
 DESTDIR = .

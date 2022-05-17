@@ -83,6 +83,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.2
+            winsparkle-version: 0.7.0
             qt-static-cache-key: 'v09'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
@@ -171,6 +172,14 @@ jobs:
             python -m pip install --upgrade pip
             pip install meson ninja
             mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
+          fi
+          if [[ ! -z "${{ matrix.winsparkle-version }}" ]]; then
+            curl -L -o WinSparkle-${{ matrix.winsparkle-version }}.tar.xz https://github.com/vslavik/winsparkle/releases/download/v${{ matrix.winsparkle-version }}/WinSparkle-${{ matrix.winsparkle-version }}.zip
+            mkdir -p externals/winsparkle
+            unzip WinSparkle-${{ matrix.winsparkle-version }}.zip -d ./externals/winsparkle
+            mv ./externals/winsparkle/${{ matrix.winsparkle-version }}/* ./externals/winsparkle/
+            rm -rf ./externals/winsparkle/${{ matrix.winsparkle-version }}
+            rm WinSparkle-${{ matrix.winsparkle-version }}.zip
           fi
       - name: cache Qt
         id: cache-qt
