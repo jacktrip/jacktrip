@@ -21,6 +21,24 @@ Item {
     property bool showContents: true
 
     visible: showContents
+
+    property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
+    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
+    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
+    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
+    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
+    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
+    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+    property string saveButtonShadow: "#80A1A1A1"
+    property string saveButtonBackgroundColour: "#F2F3F3"
+    property string saveButtonPressedColour: "#E7E8E8"
+    property string saveButtonStroke: "#EAEBEB"
+    property string saveButtonPressedStroke: "#B0B5B5"
+    property string warningText: "#DB0A0A"
+    property string saveButtonText: "#DB0A0A"
+    property string checkboxStroke: "#0062cc"
+    property string checkboxPressedStroke: "#007AFF"
     
     Text {
         x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
@@ -99,9 +117,9 @@ Item {
         id: refreshButton
         background: Rectangle {
             radius: 6 * virtualstudio.uiScale
-            color: refreshButton.down ? "#DEE0E0" : (refreshButton.hovered ? "#D3D4D4" : "#EAECEC")
+            color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
             border.width: 1
-            border.color: refreshButton.down || refreshButton.hovered ? "#BABCBC" : "#34979797"
+            border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
         }
         onClicked: { virtualstudio.refreshDevices() }
         x: parent.width - (232 * virtualstudio.uiScale); y: inputCombo.y + (100 * virtualstudio.uiScale)
@@ -123,7 +141,7 @@ Item {
         text: "JackTrip on Windows requires use of an audio device with ASIO drivers. If you do not see your device, you may need to install drivers from your manufacturer."
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
-        color: "#DB0A0A"
+        color: warningText
         font { family: "Poppins"; pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: Qt.platform.os == "windows" && virtualstudio.audioBackend != "JACK"
     }
@@ -132,16 +150,16 @@ Item {
         id: saveButton
         background: Rectangle {
             radius: 6 * virtualstudio.uiScale
-            color: saveButton.down ? "#E7E8E8" : "#F2F3F3"
+            color: saveButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
             border.width: 1
-            border.color: saveButton.down ? "#B0B5B5" : "#EAEBEB"
+            border.color: saveButton.down ? saveButtonPressedStroke : saveButtonStroke
             layer.enabled: saveButton.hovered && !saveButton.down
             layer.effect: DropShadow {
                 horizontalOffset: 1 * virtualstudio.uiScale
                 verticalOffset: 1 * virtualstudio.uiScale
                 radius: 8.0 * virtualstudio.uiScale
                 samples: 17
-                color: "#80A1A1A1"
+                color: saveButtonShadow
             }
         }
         onClicked: { window.state = "browse"; virtualstudio.applySettings() }
@@ -155,7 +173,7 @@ Item {
             font.family: "Poppins"
             font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
             font.weight: Font.Bold
-            color: "#DB0A0A"
+            color: saveButtonText
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -175,7 +193,7 @@ Item {
             x: showAgainCheckbox.leftPadding
             y: parent.height / 2 - height / 2
             radius: 3 * virtualstudio.uiScale
-            border.color: showAgainCheckbox.down ? "#007AFF" : "#0062cc"
+            border.color: showAgainCheckbox.down ? checkboxPressedStroke : checkboxStroke
 
             Rectangle {
                 width: 10 * virtualstudio.uiScale
@@ -183,7 +201,7 @@ Item {
                 x: 3 * virtualstudio.uiScale
                 y: 3 * virtualstudio.uiScale
                 radius: 2 * virtualstudio.uiScale
-                color: showAgainCheckbox.down ? "#007AFF" : "#0062cc"
+                color: showAgainCheckbox.down ? checkboxPressedStroke : checkboxStroke
                 visible: showAgainCheckbox.checked
             }
         }
