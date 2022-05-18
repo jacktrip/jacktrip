@@ -1,10 +1,12 @@
 #include "dblsqd/feed.h"
 
-namespace dblsqd {
+namespace dblsqd
+{
 
 /*!
   \class Feed
- * \brief The Feed class provides methods for accessing DBLSQD Feeds and downloading Releases.
+ * \brief The Feed class provides methods for accessing DBLSQD Feeds and downloading
+ Releases.
  *
  * A Feed is a representation of an Application’s Releases.
  * This class can retrieve Feeds via HTTP(S) and offers convenience methods for
@@ -23,11 +25,11 @@ namespace dblsqd {
  * \sa setUrl()
  */
 Feed::Feed(QString baseUrl, QString channel, QString os, QString arch, QString type)
-    : feedReply(NULL),
-      downloadReply(NULL),
-      downloadFile(NULL),
-      redirects(0),
-      _ready(false)
+    : feedReply(NULL)
+    , downloadReply(NULL)
+    , downloadFile(NULL)
+    , redirects(0)
+    , _ready(false)
 {
     if (!baseUrl.isEmpty()) {
         this->setUrl(baseUrl, channel, os, arch, type);
@@ -39,7 +41,8 @@ Feed::Feed(QString baseUrl, QString channel, QString os, QString arch, QString t
  *
  * This method can be used to manually set the Feed URL.
  */
-void Feed::setUrl(QUrl url) {
+void Feed::setUrl(QUrl url)
+{
     this->url = url;
 }
 
@@ -50,7 +53,9 @@ void Feed::setUrl(QUrl url) {
  * provided by the DBSLQD CLI Tool. It should include the full schema and does not require
  * a trailing "/".
  */
-void Feed::setUrl(QString baseUrl, QString channel, QString os, QString arch, QString type) {
+void Feed::setUrl(QString baseUrl, QString channel, QString os, QString arch,
+                  QString type)
+{
     QStringList urlParts;
     urlParts << baseUrl;
     urlParts << channel;
@@ -73,7 +78,7 @@ void Feed::setUrl(QString baseUrl, QString channel, QString os, QString arch, QS
         urlParts << arch;
     } else {
         QString autoArch = QSysInfo::buildCpuArchitecture();
-        if (autoArch== "i386" || autoArch == "i586" || autoArch == "i586") {
+        if (autoArch == "i386" || autoArch == "i586" || autoArch == "i586") {
             autoArch = "x86";
         }
         urlParts << autoArch;
@@ -89,7 +94,8 @@ void Feed::setUrl(QString baseUrl, QString channel, QString os, QString arch, QS
 /*!
  * \brief Returns the Feed URL.
  */
-QUrl Feed::getUrl() {
+QUrl Feed::getUrl()
+{
     return QUrl(url);
 }
 
@@ -100,21 +106,25 @@ QUrl Feed::getUrl() {
  * If called before ready() was emitted, an empty list is returned.
  * \sa getReleases()
  */
-QList<Release> Feed::getReleases() {
+QList<Release> Feed::getReleases()
+{
     return releases;
 }
 
 /*!
- * \brief Returns a list of all Releases in the Feed that are newer than the given Release.
+ * \brief Returns a list of all Releases in the Feed that are newer than the given
+ * Release.
  *
  * The list is sorted in descending order by version number/release date.
  * If called before ready() was emitted, an empty list is returned.
  * \sa getReleases()
  */
-QList<Release> Feed::getUpdates(Release currentRelease) {
+QList<Release> Feed::getUpdates(Release currentRelease)
+{
     QList<Release> updates;
     for (int i = 0; i < releases.size(); i++) {
-        if (currentRelease < releases.at(i)) updates << releases.at(i);
+        if (currentRelease < releases.at(i))
+            updates << releases.at(i);
     }
     return updates;
 }
@@ -125,7 +135,8 @@ QList<Release> Feed::getUpdates(Release currentRelease) {
  * If called before downloadFinished() was emitted, this might return a NULL
  * pointer.
  */
-QTemporaryFile* Feed::getDownloadFile() {
+QTemporaryFile* Feed::getDownloadFile()
+{
     return downloadFile;
 }
 
@@ -135,10 +146,10 @@ QTemporaryFile* Feed::getDownloadFile() {
  * A ready Feed might not contain any release information.
  * If downloading the Feed failed, false is returned.
  */
-bool Feed::isReady() {
+bool Feed::isReady()
+{
     return _ready;
 }
-
 
 /*
  * Async API functions
@@ -146,9 +157,11 @@ bool Feed::isReady() {
 /*!
  * \brief Retrieves and parses data from the Feed.
  *
- * A Feed URL must have been set before with setUrl(). Emits ready() or loadError() on completion.
+ * A Feed URL must have been set before with setUrl(). Emits ready() or loadError() on
+ * completion.
  */
-void Feed::load() {
+void Feed::load()
+{
     if (feedReply != NULL && !feedReply->isFinished()) {
         return;
     }
@@ -162,7 +175,8 @@ void Feed::load() {
  * \brief Starts the download of a given Release.
  * \sa downloadFinished() downloadError() downloadProgress()
  */
-void Feed::downloadRelease(Release release) {
+void Feed::downloadRelease(Release release)
+{
     redirects = 0;
     makeDownloadRequest(release.getDownloadUrl());
     this->release = release;
@@ -171,7 +185,8 @@ void Feed::downloadRelease(Release release) {
 /*
  * Private methods
  */
-void Feed::makeDownloadRequest(QUrl url) {
+void Feed::makeDownloadRequest(QUrl url)
+{
     if (downloadReply != NULL && !downloadReply->isFinished()) {
         disconnect(downloadReply);
         downloadReply->abort();
@@ -185,12 +200,12 @@ void Feed::makeDownloadRequest(QUrl url) {
     }
 
     QNetworkRequest request(url);
-    downloadReply= nam.get(request);
-    connect(downloadReply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(handleDownloadProgress(qint64,qint64)));
+    downloadReply = nam.get(request);
+    connect(downloadReply, SIGNAL(downloadProgress(qint64, qint64)), this,
+            SLOT(handleDownloadProgress(qint64, qint64)));
     connect(downloadReply, SIGNAL(readyRead()), this, SLOT(handleDownloadReadyRead()));
     connect(downloadReply, SIGNAL(finished()), this, SLOT(handleDownloadFinished()));
 }
-
 
 /*
  * Signals
@@ -223,19 +238,19 @@ void Feed::makeDownloadRequest(QUrl url) {
  * \sa downloadFinished() downloadRelease()
  */
 
-
 /*
  * Private Slots
  */
-void Feed::handleFeedFinished() {
+void Feed::handleFeedFinished()
+{
     if (feedReply->error() != QNetworkReply::NoError) {
         emit loadError(feedReply->errorString());
         return;
     }
 
     releases.clear();
-    QByteArray json = feedReply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QByteArray json         = feedReply->readAll();
+    QJsonDocument doc       = QJsonDocument::fromJson(json);
     QJsonArray releasesInfo = doc.object().value("releases").toArray();
     for (int i = 0; i < releasesInfo.size(); i++) {
         releases << Release(releasesInfo.at(i).toObject());
@@ -247,11 +262,13 @@ void Feed::handleFeedFinished() {
     emit ready();
 }
 
-void Feed::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal) {
+void Feed::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
     emit downloadProgress(bytesReceived, bytesTotal);
 }
 
-void Feed::handleDownloadReadyRead() {
+void Feed::handleDownloadReadyRead()
+{
     if (downloadFile == NULL) {
         QString fileName = downloadReply->url().fileName();
         int extensionPos = fileName.indexOf(QRegExp("(?:\\.tar)?\\.[a-zA-Z0-9]+$"));
@@ -264,18 +281,21 @@ void Feed::handleDownloadReadyRead() {
     downloadFile->write(downloadReply->readAll());
 }
 
-void Feed::handleDownloadFinished() {
+void Feed::handleDownloadFinished()
+{
     if (downloadReply->error() != QNetworkReply::NoError) {
         emit downloadError(downloadReply->errorString());
         return;
-    } else if (!downloadReply->attribute(QNetworkRequest::RedirectionTargetAttribute).isNull()) {
+    } else if (!downloadReply->attribute(QNetworkRequest::RedirectionTargetAttribute)
+                    .isNull()) {
         if (redirects >= 8) {
             emit downloadError(tr("Too many redirects."));
             return;
         }
-        QUrl redirectionTarget = downloadReply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+        QUrl redirectionTarget =
+            downloadReply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
         QUrl redirectedUrl = downloadReply->url().resolved(redirectionTarget);
-        redirects ++;
+        redirects++;
         makeDownloadRequest(redirectedUrl);
         return;
     } else if (downloadFile == NULL) {
@@ -288,8 +308,7 @@ void Feed::handleDownloadFinished() {
     QCryptographicHash fileHash(QCryptographicHash::Sha256);
     fileHash.addData(downloadFile->readAll());
     QString hashResult = fileHash.result().toHex();
-    if (hashResult.toLower() != release.getDownloadSHA256().toLower())
-    {
+    if (hashResult.toLower() != release.getDownloadSHA256().toLower()) {
         emit downloadError(tr("Could not verify download integrity."));
         return;
     }
@@ -297,4 +316,4 @@ void Feed::handleDownloadFinished() {
     emit downloadFinished();
 }
 
-} // namespace dblsqd
+}  // namespace dblsqd

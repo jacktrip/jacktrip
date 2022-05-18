@@ -1,6 +1,7 @@
 #include "dblsqd/semver.h"
 
-namespace  dblsqd {
+namespace dblsqd
+{
 
 /*!
  * \class SemVer
@@ -15,19 +16,19 @@ SemVer::SemVer(QString version) : original(version), valid(false)
 {
     QRegExp rx(getRegExp());
     if (rx.indexIn(version) > -1) {
-        this->major = rx.cap(1).toInt();
-        this->minor = rx.cap(2).toInt();
-        this->patch = rx.cap(3).toInt();
+        this->major      = rx.cap(1).toInt();
+        this->minor      = rx.cap(2).toInt();
+        this->patch      = rx.cap(3).toInt();
         this->prerelease = rx.cap(4);
-        this->build = rx.cap(5);
-        this->valid = true;
+        this->build      = rx.cap(5);
+        this->valid      = true;
     } else {
-        this->major = 0;
-        this->minor = 0;
-        this->patch = 0;
+        this->major      = 0;
+        this->minor      = 0;
+        this->patch      = 0;
         this->prerelease = "";
-        this->build = "";
-        this->valid = false;
+        this->build      = "";
+        this->valid      = false;
     }
 }
 
@@ -35,7 +36,8 @@ SemVer::SemVer(QString version) : original(version), valid(false)
  * \brief Returns true if this version is valid according to the SemVer
  * specification. Otherwise returns false.
  */
-bool SemVer::isValid() const {
+bool SemVer::isValid() const
+{
     return this->valid;
 }
 
@@ -49,7 +51,8 @@ bool SemVer::isValid() const {
  * SemVer.
  * \sa isValid()
  */
-bool SemVer::operator<(const SemVer &other) {
+bool SemVer::operator<(const SemVer& other)
+{
     if (!this->isValid() || !other.isValid()) {
         return false;
     }
@@ -72,11 +75,13 @@ bool SemVer::operator<(const SemVer &other) {
     }
 }
 
-QString SemVer::getRegExp() {
+QString SemVer::getRegExp()
+{
     QString v = "(0|[1-9]\\d*)";
-    QString p = "(?:-((?:0|[1-9A-Za-z][0-9A-Za-z]*)(?:\\.(?:0|[1-9A-Za-z][0-9A-Za-z]*))*))?";
+    QString p =
+        "(?:-((?:0|[1-9A-Za-z][0-9A-Za-z]*)(?:\\.(?:0|[1-9A-Za-z][0-9A-Za-z]*))*))?";
     QString b = "(?:\\+((?:[0-9A-Za-z]*)(?:\\.(?:[0-9A-Za-z][0-9A-Za-z]*))*))?";
     return "^" + v + "." + v + "." + v + p + b + "$";
 }
 
-} //namespace dblsqd
+}  // namespace dblsqd

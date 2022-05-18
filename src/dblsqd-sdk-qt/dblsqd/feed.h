@@ -3,39 +3,44 @@
 
 #include <QtCore>
 #include <QtNetwork>
+
 #include "dblsqd/release.h"
 
-namespace dblsqd {
+namespace dblsqd
+{
 
 class Feed : public QObject
 {
     Q_OBJECT
 
-public:
-    Feed(QString baseUrl = "", QString channel = "release", QString os = QString(), QString arch = QString(), QString type = QString());
+   public:
+    Feed(QString baseUrl = "", QString channel = "release", QString os = QString(),
+         QString arch = QString(), QString type = QString());
 
     void setUrl(QUrl url);
-    void setUrl(QString baseUrl, QString channel = "release", QString os = QString(), QString arch = QString(), QString type = QString());
+    void setUrl(QString baseUrl, QString channel = "release", QString os = QString(),
+                QString arch = QString(), QString type = QString());
     QUrl getUrl();
 
-    //Async API
+    // Async API
     void load();
     void downloadRelease(Release release);
 
-    //Sync API
-    QList<Release> getUpdates(Release currentRelease = Release(QCoreApplication::applicationVersion()));
+    // Sync API
+    QList<Release> getUpdates(
+        Release currentRelease = Release(QCoreApplication::applicationVersion()));
     QList<Release> getReleases();
     QTemporaryFile* getDownloadFile();
     bool isReady();
 
-signals:
+   signals:
     void ready();
     void loadError(QString message);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void downloadFinished();
     void downloadError(QString message);
 
-private:
+   private:
     QUrl url;
 
     QList<Release> releases;
@@ -50,13 +55,13 @@ private:
     uint redirects;
     bool _ready;
 
-private slots:
+   private slots:
     void handleFeedFinished();
     void handleDownloadProgress(qint64, qint64);
     void handleDownloadReadyRead();
     void handleDownloadFinished();
 };
 
-} // namespace dblsqd
+}  // namespace dblsqd
 
-#endif // DBLSQD_FEED_H
+#endif  // DBLSQD_FEED_H

@@ -1,7 +1,9 @@
 #include "dblsqd/update_dialog.h"
+
 #include "ui_update_dialog.h"
 
-namespace dblsqd {
+namespace dblsqd
+{
 
 /*!
  * \class UpdateDialog
@@ -24,7 +26,8 @@ namespace dblsqd {
 
 /*!
  * \enum UpdateDialog::Type
- * \brief This flag determines the if and when the UpdateDialog is displayed automatically.
+ * \brief This flag determines the if and when the UpdateDialog is displayed
+ * automatically.
  *
  * *OnUpdateAvailable*: Automatically display the dialog as soon as the Feed
  * has been downloaded and parsed and if there is a newer version than the
@@ -60,22 +63,23 @@ namespace dblsqd {
  * object, you may also pass it to this constructor.
  *
  */
-UpdateDialog::UpdateDialog(Feed* feed, int type, QWidget* parent, QSettings* settings) :
-    QDialog(parent),
-    ui(new Ui::UpdateDialog),
-    feed(feed),
-    type(type),
-    settings(settings),
-    accepted(false),
-    isDownloadFinished(false),
-    acceptedInstallButton(NULL)
+UpdateDialog::UpdateDialog(Feed* feed, int type, QWidget* parent, QSettings* settings)
+    : QDialog(parent)
+    , ui(new Ui::UpdateDialog)
+    , feed(feed)
+    , type(type)
+    , settings(settings)
+    , accepted(false)
+    , isDownloadFinished(false)
+    , acceptedInstallButton(NULL)
 {
     ui->setupUi(this);
 
-    QPalette palette = this->palette();
-    QString textColor = palette.color(QPalette::Text).name();
+    QPalette palette        = this->palette();
+    QString textColor       = palette.color(QPalette::Text).name();
     QString backgroundColor = palette.color(QPalette::Base).name();
-    QString labelChangelogStyle = QString("color: %1; background: %2").arg(textColor, backgroundColor);
+    QString labelChangelogStyle =
+        QString("color: %1; background: %2").arg(textColor, backgroundColor);
     ui->labelChangelog->setStyleSheet(labelChangelogStyle);
 
     ui->buttonCancel->addAction(ui->actionCancel);
@@ -83,24 +87,25 @@ UpdateDialog::UpdateDialog(Feed* feed, int type, QWidget* parent, QSettings* set
     ui->buttonCancel->setDefaultAction(ui->actionCancel);
 
     _openExternalLinks = true;
-    connect(ui->labelChangelog, SIGNAL(linkActivated(QString)), this, SLOT(onLinkActivated(QString)));
+    connect(ui->labelChangelog, SIGNAL(linkActivated(QString)), this,
+            SLOT(onLinkActivated(QString)));
 
-    switch(type) {
-        case OnUpdateAvailable: {
-            connect(this, SIGNAL(ready()), this, SLOT(showIfUpdatesAvailable()));
-            break;
-        }
-        case OnLastWindowClosed: {
-            QGuiApplication* app = (QGuiApplication*) QApplication::instance();
-            app->setQuitOnLastWindowClosed(false);
-            connect(app, SIGNAL(lastWindowClosed()), this, SLOT(showIfUpdatesAvailableOrQuit()));
-            break;
-        }
-        case Manual: {
-            //don’t do anything
-        }
+    switch (type) {
+    case OnUpdateAvailable: {
+        connect(this, SIGNAL(ready()), this, SLOT(showIfUpdatesAvailable()));
+        break;
     }
-
+    case OnLastWindowClosed: {
+        QGuiApplication* app = (QGuiApplication*)QApplication::instance();
+        app->setQuitOnLastWindowClosed(false);
+        connect(app, SIGNAL(lastWindowClosed()), this,
+                SLOT(showIfUpdatesAvailableOrQuit()));
+        break;
+    }
+    case Manual: {
+        // don’t do anything
+    }
+    }
 
     if (feed->isReady()) {
         handleFeedReady();
@@ -116,19 +121,20 @@ UpdateDialog::~UpdateDialog()
     delete ui;
 }
 
-
 /*
  * Setters
  */
 /*!
  * \brief Sets the icon displayed in the update window.
  */
-void UpdateDialog::setIcon(QPixmap pixmap) {
+void UpdateDialog::setIcon(QPixmap pixmap)
+{
     ui->labelIcon->setPixmap(QPixmap(pixmap));
     ui->labelIcon->setHidden(false);
 }
 
-void UpdateDialog::setIcon(QString fileName) {
+void UpdateDialog::setIcon(QString fileName)
+{
     ui->labelIcon->setPixmap(QPixmap(fileName));
     ui->labelIcon->setHidden(false);
 }
@@ -138,7 +144,8 @@ void UpdateDialog::setIcon(QString fileName) {
  * Defaults to QApplication::applicationVersion() if not set.
  * \param version
  */
-void UpdateDialog::setMinVersion(QString version) {
+void UpdateDialog::setMinVersion(QString version)
+{
     _minVersion = version;
     setupChangelogUi();
 }
@@ -147,20 +154,23 @@ void UpdateDialog::setMinVersion(QString version) {
  * \brief Sets the maximum version to be displayed in the changelog
  * \param version
  */
-void UpdateDialog::setMaxVersion(QString version) {
+void UpdateDialog::setMaxVersion(QString version)
+{
     _maxVersion = version;
     setupChangelogUi();
 }
 
 /*!
- * \brief Convenience method for setting minimum and maximum version to be displayed in the changelog.
- * maximumVersion is set to QApplication::applicationVersion()
+ * \brief Convenience method for setting minimum and maximum version to be displayed in
+ * the changelog. maximumVersion is set to QApplication::applicationVersion()
+ *
  * \param previousVersion
  */
-void UpdateDialog::setPreviousVersion(QString previousVersion) {
+void UpdateDialog::setPreviousVersion(QString previousVersion)
+{
     _previousVersion = previousVersion;
-    _minVersion = previousVersion;
-    _maxVersion = QApplication::applicationVersion();
+    _minVersion      = previousVersion;
+    _maxVersion      = QApplication::applicationVersion();
     setupChangelogUi();
 }
 
@@ -172,7 +182,8 @@ void UpdateDialog::setPreviousVersion(QString previousVersion) {
  * downloading an update that was started by clicking the button has finished,
  * installButtonClicked(QAbstractButton* button, QString filePath) is emitted.
  */
-void UpdateDialog::addInstallButton(QAbstractButton *button) {
+void UpdateDialog::addInstallButton(QAbstractButton* button)
+{
     installButtons.append(button);
     ui->buttonContainer->layout()->addWidget(button);
     if (isVisible() && ui->buttonCancel->isVisible()) {
@@ -183,25 +194,25 @@ void UpdateDialog::addInstallButton(QAbstractButton *button) {
 /*!
  * \propget UpdateExternalLinks
  *
- * Determines if links in the changelog should be opened automatically by QDesktopServices::openUrl()
- * when a user clicks on them.
+ * Determines if links in the changelog should be opened automatically by
+ * QDesktopServices::openUrl() when a user clicks on them.
  * If set to false, the linkActivated() signal is emitted instead.
  *
  * The default value is true.
 
  */
-bool UpdateDialog::openExternalLinks() {
+bool UpdateDialog::openExternalLinks()
+{
     return _openExternalLinks;
 }
 
 /*!
  * \propset UpdateDialog::openExternalLinks
  */
-void UpdateDialog::setOpenExternalLinks(bool open) {
+void UpdateDialog::setOpenExternalLinks(bool open)
+{
     _openExternalLinks = open;
 }
-
-
 
 /*
  * Public Slots
@@ -212,7 +223,8 @@ void UpdateDialog::setOpenExternalLinks(bool open) {
  * Closes the dialog if no other action (such as
  * downloading or installing a Release) is required first.
  */
-void UpdateDialog::onButtonInstall() {
+void UpdateDialog::onButtonInstall()
+{
     accepted = true;
     if (isDownloadFinished) {
         startUpdate();
@@ -223,12 +235,13 @@ void UpdateDialog::onButtonInstall() {
     }
 }
 
-void UpdateDialog::onButtonCustomInstall() {
+void UpdateDialog::onButtonCustomInstall()
+{
     accepted = true;
     if (isDownloadFinished) {
-        emit installButtonClicked((QAbstractButton*) sender(), updateFilePath);
+        emit installButtonClicked((QAbstractButton*)sender(), updateFilePath);
     } else if (!latestRelease.getVersion().isEmpty()) {
-        acceptedInstallButton = (QAbstractButton*) sender();
+        acceptedInstallButton = (QAbstractButton*)sender();
         startDownload();
     } else {
         done(QDialog::Accepted);
@@ -242,38 +255,42 @@ void UpdateDialog::onButtonCustomInstall() {
  * automatically when using Type::OnUpdateAvailable or
  * Type::OnLastWindowClosed.
  */
-void UpdateDialog::skip() {
+void UpdateDialog::skip()
+{
     if (!updateFilePath.isEmpty()) {
         QFile::remove(updateFilePath);
-
     }
     setSettingsValue("skipRelease", latestRelease.getVersion(), settings);
     done(QDialog::Rejected);
 }
 
-
 /*!
  * \brief Shows the dialog if there are available updates.
  */
-void UpdateDialog::showIfUpdatesAvailable() {
+void UpdateDialog::showIfUpdatesAvailable()
+{
     QString latestVersion = latestRelease.getVersion();
-    bool skipRelease = (settingsValue("skipRelease", "", settings).toString() == latestVersion);
+    bool skipRelease =
+        (settingsValue("skipRelease", "", settings).toString() == latestVersion);
     if (!latestVersion.isEmpty() && !skipRelease) {
         show();
     }
 }
 
 /*!
-  * \brief Shows the dialog if there are updates available or quits the application.
-  */
-void UpdateDialog::showIfUpdatesAvailableOrQuit() {
+ * \brief Shows the dialog if there are updates available or quits the application.
+ */
+void UpdateDialog::showIfUpdatesAvailableOrQuit()
+{
     if (type == OnLastWindowClosed) {
-        QGuiApplication* app = (QGuiApplication*) QApplication::instance();
+        QGuiApplication* app = (QGuiApplication*)QApplication::instance();
         app->setQuitOnLastWindowClosed(true);
-        disconnect(app, SIGNAL(lastWindowClosed()), this, SLOT(showIfUpdatesAvailableOrQuit()));
+        disconnect(app, SIGNAL(lastWindowClosed()), this,
+                   SLOT(showIfUpdatesAvailableOrQuit()));
     }
     QString latestVersion = latestRelease.getVersion();
-    bool skipRelease = (settingsValue("skipRelease", "", settings).toString() == latestVersion);
+    bool skipRelease =
+        (settingsValue("skipRelease", "", settings).toString() == latestVersion);
     if (!latestVersion.isEmpty() && !skipRelease) {
         show();
     } else {
@@ -281,31 +298,38 @@ void UpdateDialog::showIfUpdatesAvailableOrQuit() {
     }
 }
 
-
 /*
  * Static settings helpers
  */
-QVariant UpdateDialog::settingsValue(QString key, QVariant defaultValue, QSettings* settings) {
+QVariant UpdateDialog::settingsValue(QString key, QVariant defaultValue,
+                                     QSettings* settings)
+{
     return settings->value("DBLSQD/" + key, defaultValue);
 }
 
-void UpdateDialog::setSettingsValue(QString key, QVariant value, QSettings* settings) {
+void UpdateDialog::setSettingsValue(QString key, QVariant value, QSettings* settings)
+{
     settings->setValue("DBLSQD/" + key, value);
 }
 
-void UpdateDialog::removeSetting(QString key, QSettings* settings) {
+void UpdateDialog::removeSetting(QString key, QSettings* settings)
+{
     settings->remove("DBLSQD/" + key);
 }
 
-void UpdateDialog::setDefaultSettingsValue(QString key, QVariant value, QSettings *settings) {
-    if (settings->contains("DBLSQD/" + key)) return;
+void UpdateDialog::setDefaultSettingsValue(QString key, QVariant value,
+                                           QSettings* settings)
+{
+    if (settings->contains("DBLSQD/" + key))
+        return;
     setSettingsValue(key, value, settings);
 }
 
 /*!
  * \brief Enables or disables automatic downloads.
  */
-void UpdateDialog::enableAutoDownload(bool enabled, QSettings* settings) {
+void UpdateDialog::enableAutoDownload(bool enabled, QSettings* settings)
+{
     setSettingsValue("autoDownload", enabled, settings);
 }
 
@@ -314,7 +338,8 @@ void UpdateDialog::enableAutoDownload(bool enabled, QSettings* settings) {
  *
  * If defaultValue is provided, it is stored if no other value has previously been set.
  */
-bool UpdateDialog::autoDownloadEnabled(QVariant defaultValue, QSettings* settings) {
+bool UpdateDialog::autoDownloadEnabled(QVariant defaultValue, QSettings* settings)
+{
     if (defaultValue.isValid()) {
         setDefaultSettingsValue("autoDownload", defaultValue, settings);
     } else {
@@ -326,7 +351,8 @@ bool UpdateDialog::autoDownloadEnabled(QVariant defaultValue, QSettings* setting
 /*!
  * \overload
  */
-bool UpdateDialog::autoDownloadEnabled(QSettings *settings) {
+bool UpdateDialog::autoDownloadEnabled(QSettings* settings)
+{
     return settingsValue("autoDownload", false, settings).toBool();
 }
 
@@ -334,36 +360,31 @@ bool UpdateDialog::autoDownloadEnabled(QSettings *settings) {
  * Helpers
  */
 
-void UpdateDialog::adjustDialogSize() {
+void UpdateDialog::adjustDialogSize()
+{
     adjustSize();
 
-    /*HACK: Qt seems to incorrectly calculate window geometry on Windows.
-            This code avoids warning messages logged by the application
-            in that case.*/
-    #if defined(Q_OS_WIN) || defined(Q_WS_WIN)
-        QSize dialogSize = size();
-        resize(dialogSize.width(), dialogSize.height() + 3);
-     #endif
+/*HACK: Qt seems to incorrectly calculate window geometry on Windows.
+        This code avoids warning messages logged by the application
+        in that case.*/
+#if defined(Q_OS_WIN) || defined(Q_WS_WIN)
+    QSize dialogSize = size();
+    resize(dialogSize.width(), dialogSize.height() + 3);
+#endif
 }
 
-void UpdateDialog::resetUi() {
+void UpdateDialog::resetUi()
+{
     QList<QWidget*> hiddenWidgets;
     for (int i = 0; i < installButtons.size(); i++) {
         hiddenWidgets << installButtons.at(i);
     }
-    hiddenWidgets << ui->headerContainer
-                  << ui->labelIcon
-                  << ui->headerContainerLoading
-                  << ui->headerContainerNoUpdates
-                  << ui->headerContainerChangelog
-                  << ui->scrollAreaChangelog
-                  << ui->progressBar
-                  << ui->checkAutoDownload
-                  << ui->buttonCancel
-                  << ui->buttonCancelLoading
-                  << ui->buttonConfirm
+    hiddenWidgets << ui->headerContainer << ui->labelIcon << ui->headerContainerLoading
+                  << ui->headerContainerNoUpdates << ui->headerContainerChangelog
+                  << ui->scrollAreaChangelog << ui->progressBar << ui->checkAutoDownload
+                  << ui->buttonCancel << ui->buttonCancelLoading << ui->buttonConfirm
                   << ui->buttonInstall;
-    for (int i = 0; i < hiddenWidgets.size(); i ++) {
+    for (int i = 0; i < hiddenWidgets.size(); i++) {
         hiddenWidgets.at(i)->hide();
         hiddenWidgets.at(i)->disconnect();
     }
@@ -371,7 +392,8 @@ void UpdateDialog::resetUi() {
     adjustDialogSize();
 }
 
-void UpdateDialog::setupLoadingUi() {
+void UpdateDialog::setupLoadingUi()
+{
     resetUi();
     ui->headerContainerLoading->show();
     ui->progressBar->show();
@@ -383,22 +405,19 @@ void UpdateDialog::setupLoadingUi() {
     adjustDialogSize();
 }
 
-void UpdateDialog::setupUpdateUi() {
+void UpdateDialog::setupUpdateUi()
+{
     resetUi();
 
     QList<QWidget*> showWidgets;
-    showWidgets << ui->headerContainer
-                << ui->scrollAreaChangelog
-                << ui->checkAutoDownload
-                << ui->buttonCancel
-                << ui->buttonInstall;
+    showWidgets << ui->headerContainer << ui->scrollAreaChangelog << ui->checkAutoDownload
+                << ui->buttonCancel << ui->buttonInstall;
     for (int i = 0; i < showWidgets.size(); i++) {
         showWidgets.at(i)->show();
     }
 
     QList<QLabel*> labels;
-    labels << ui->labelHeadline
-           << ui->labelInfo;
+    labels << ui->labelHeadline << ui->labelInfo;
     for (int i = 0; i < labels.size(); i++) {
         QString text = labels.at(i)->text();
         replaceAppVars(text);
@@ -408,7 +427,7 @@ void UpdateDialog::setupUpdateUi() {
 
     ui->checkAutoDownload->setChecked(autoDownloadEnabled(settings));
 
-    //Adapt buttons if release has been downloaded already
+    // Adapt buttons if release has been downloaded already
     if (isDownloadFinished) {
         ui->progressBar->show();
         ui->progressBar->setMaximum(1);
@@ -416,15 +435,18 @@ void UpdateDialog::setupUpdateUi() {
     }
 
     connect(feed, SIGNAL(downloadFinished()), this, SLOT(handleDownloadFinished()));
-    connect(feed, SIGNAL(downloadError(QString)), this, SLOT(handleDownloadError(QString)));
-    connect(feed, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(updateProgressBar(qint64,qint64)));
+    connect(feed, SIGNAL(downloadError(QString)), this,
+            SLOT(handleDownloadError(QString)));
+    connect(feed, SIGNAL(downloadProgress(qint64 qint64)), this,
+            SLOT(updateProgressBar(qint64, qint64)));
 
     connect(ui->buttonConfirm, SIGNAL(clicked()), this, SLOT(accept()));
     connect(ui->actionCancel, SIGNAL(triggered()), this, SLOT(reject()));
     connect(ui->actionSkip, SIGNAL(triggered()), this, SLOT(skip()));
-    connect(ui->checkAutoDownload, SIGNAL(toggled(bool)), this, SLOT(autoDownloadCheckboxToggled(bool)));
+    connect(ui->checkAutoDownload, SIGNAL(toggled(bool)), this,
+            SLOT(autoDownloadCheckboxToggled(bool)));
 
-    //Install buttons
+    // Install buttons
     if (installButtons.isEmpty()) {
         ui->buttonInstall->setFocus();
         connect(ui->buttonInstall, SIGNAL(clicked()), this, SLOT(onButtonInstall()));
@@ -432,7 +454,8 @@ void UpdateDialog::setupUpdateUi() {
         ui->buttonInstall->hide();
         for (int i = 0; i < installButtons.size(); i++) {
             installButtons.at(i)->show();
-            connect(installButtons.at(i), SIGNAL(clicked(bool)), this, SLOT(onButtonCustomInstall()));
+            connect(installButtons.at(i), SIGNAL(clicked(bool)), this,
+                    SLOT(onButtonCustomInstall()));
         }
         installButtons.last()->setFocus();
     }
@@ -440,19 +463,18 @@ void UpdateDialog::setupUpdateUi() {
     adjustDialogSize();
 }
 
-void UpdateDialog::setupChangelogUi() {
+void UpdateDialog::setupChangelogUi()
+{
     resetUi();
 
     QList<QWidget*> showWidgets;
-    showWidgets << ui->headerContainerChangelog
-                << ui->buttonConfirm
+    showWidgets << ui->headerContainerChangelog << ui->buttonConfirm
                 << ui->scrollAreaChangelog;
     for (int i = 0; i < showWidgets.size(); i++) {
         showWidgets.at(i)->show();
     }
     QList<QLabel*> labels;
-    labels << ui->labelHeadlineChangelog
-           << ui->labelInfoChangelog;
+    labels << ui->labelHeadlineChangelog << ui->labelInfoChangelog;
     for (int i = 0; i < labels.size(); i++) {
         QString text = labels.at(i)->text();
         replaceAppVars(text);
@@ -464,11 +486,11 @@ void UpdateDialog::setupChangelogUi() {
     adjustDialogSize();
 }
 
-void UpdateDialog::setupNoUpdatesUi() {
+void UpdateDialog::setupNoUpdatesUi()
+{
     resetUi();
     QList<QWidget*> showWidgets;
-    showWidgets << ui->headerContainerNoUpdates
-                << ui->buttonConfirm;
+    showWidgets << ui->headerContainerNoUpdates << ui->buttonConfirm;
     for (int i = 0; i < showWidgets.size(); i++) {
         showWidgets.at(i)->show();
     }
@@ -482,38 +504,39 @@ void UpdateDialog::setupNoUpdatesUi() {
     adjustDialogSize();
 }
 
-void UpdateDialog::disableButtons(bool disable) {
+void UpdateDialog::disableButtons(bool disable)
+{
     QList<QWidget*> buttons;
     for (int i = 0; i < installButtons.size(); i++) {
         buttons << installButtons.at(i);
     }
-    buttons << ui->buttonCancel
-            << ui->buttonCancelLoading
-            << ui->buttonConfirm
-            << ui->buttonConfirm
-            << ui->buttonInstall
-            << ui->checkAutoDownload;
+    buttons << ui->buttonCancel << ui->buttonCancelLoading << ui->buttonConfirm
+            << ui->buttonConfirm << ui->buttonInstall << ui->checkAutoDownload;
     for (int i = 0; i < buttons.size(); i++) {
         buttons.at(i)->setDisabled(disable);
     }
 }
 
-void UpdateDialog::replaceAppVars(QString &string) {
+void UpdateDialog::replaceAppVars(QString& string)
+{
     string.replace("%APPNAME%", QCoreApplication::applicationName());
     string.replace("%CURRENT_VERSION%", QCoreApplication::applicationVersion());
     string.replace("%UPDATE_VERSION%", latestRelease.getVersion());
 }
 
-QString UpdateDialog::generateChangelogDocument() {
+QString UpdateDialog::generateChangelogDocument()
+{
     QString changelog;
     QList<Release> changelogReleases;
     if (_minVersion.isEmpty() && _maxVersion.isEmpty()) {
         changelogReleases = updates;
     } else {
-        Release minRelease(_minVersion.isEmpty() ? QApplication::applicationVersion() : _minVersion);
+        Release minRelease(_minVersion.isEmpty() ? QApplication::applicationVersion()
+                                                 : _minVersion);
         Release maxRelease(_maxVersion);
         for (int i = 0; i < releases.size(); i++) {
-            if (minRelease < releases.at(i) && (_maxVersion.isEmpty() || releases.at(i) <= maxRelease)) {
+            if (minRelease < releases.at(i)
+                && (_maxVersion.isEmpty() || releases.at(i) <= maxRelease)) {
                 changelogReleases << releases.at(i);
             }
         }
@@ -523,18 +546,21 @@ QString UpdateDialog::generateChangelogDocument() {
         if (i > 0) {
             h2Style.append("margin-top: 1em;");
         }
-        changelog.append("<h2 style=\"" + h2Style + "\">" + changelogReleases.at(i).getVersion() + "</h2>");
+        changelog.append("<h2 style=\"" + h2Style + "\">"
+                         + changelogReleases.at(i).getVersion() + "</h2>");
         changelog.append("<p>" + changelogReleases.at(i).getChangelog() + "</p>");
     }
     return changelog;
 }
 
-void UpdateDialog::startDownload() {
+void UpdateDialog::startDownload()
+{
     feed->downloadRelease(latestRelease);
     disableButtons(true);
 }
 
-void UpdateDialog::startUpdate() {
+void UpdateDialog::startUpdate()
+{
     if (QDesktopServices::openUrl(QUrl::fromLocalFile(updateFilePath))) {
         done(QDialog::Accepted);
         QApplication::quit();
@@ -543,20 +569,20 @@ void UpdateDialog::startUpdate() {
     }
 }
 
-
 /*
  * Private Slots
  */
 
-
-void UpdateDialog::autoDownloadCheckboxToggled(bool enabled) {
+void UpdateDialog::autoDownloadCheckboxToggled(bool enabled)
+{
     enableAutoDownload(enabled, settings);
 }
 
-void UpdateDialog::handleFeedReady() {
-    //Retrieve update information
+void UpdateDialog::handleFeedReady()
+{
+    // Retrieve update information
     Release currentRelease(QApplication::applicationVersion());
-    updates = feed->getUpdates(currentRelease);
+    updates  = feed->getUpdates(currentRelease);
     releases = feed->getReleases();
     if (!updates.isEmpty()) {
         latestRelease = updates.first();
@@ -568,11 +594,13 @@ void UpdateDialog::handleFeedReady() {
         return;
     }
 
-    //Check if an update has been downloaded previously
+    // Check if an update has been downloaded previously
     updateFilePath = settingsValue("updateFilePath", "", settings).toString();
     if (!updateFilePath.isEmpty() && QFile::exists(updateFilePath)) {
-        QString updateFileVersion = settingsValue("updateFileVersion", "", settings).toString();
-        if (updateFileVersion != latestRelease.getVersion() || updateFileVersion == QApplication::applicationVersion()) {
+        QString updateFileVersion =
+            settingsValue("updateFileVersion", "", settings).toString();
+        if (updateFileVersion != latestRelease.getVersion()
+            || updateFileVersion == QApplication::applicationVersion()) {
             QFile::remove(updateFilePath);
             removeSetting("updateFilePath");
             removeSetting("updateFileVersion");
@@ -582,29 +610,31 @@ void UpdateDialog::handleFeedReady() {
         }
     }
 
-    //Check if there are any updates
+    // Check if there are any updates
     if (updates.isEmpty()) {
         setupNoUpdatesUi();
         return;
     }
 
-    //Automatic downloads
+    // Automatic downloads
     QString latestVersion = latestRelease.getVersion();
-    bool skipRelease = (settingsValue("skipRelease", "", settings).toString() == latestVersion);
+    bool skipRelease =
+        (settingsValue("skipRelease", "", settings).toString() == latestVersion);
     bool autoDownload = autoDownloadEnabled(settings) && (!skipRelease);
     if (autoDownload && !isDownloadFinished) {
         startDownload();
     }
 
-    //Setup UI
+    // Setup UI
     setupUpdateUi();
     emit ready();
 }
 
-void UpdateDialog::handleDownloadFinished() {
+void UpdateDialog::handleDownloadFinished()
+{
     QTemporaryFile* file = feed->getDownloadFile();
-    isDownloadFinished = true;
-    updateFilePath = file->fileName();
+    isDownloadFinished   = true;
+    updateFilePath       = file->fileName();
     file->setAutoRemove(false);
     file->close();
     file->deleteLater();
@@ -623,7 +653,8 @@ void UpdateDialog::handleDownloadFinished() {
     }
 }
 
-void UpdateDialog::handleDownloadError(QString message) {
+void UpdateDialog::handleDownloadError(QString message)
+{
     QMessageBox* messageBox = new QMessageBox(this);
     messageBox->setIcon(QMessageBox::Warning);
     messageBox->setText("There was an error while downloading the update.");
@@ -632,21 +663,21 @@ void UpdateDialog::handleDownloadError(QString message) {
     done(QDialog::Rejected);
 }
 
-void UpdateDialog::updateProgressBar(qint64 bytesReceived, qint64 bytesTotal) {
+void UpdateDialog::updateProgressBar(qint64 bytesReceived, qint64 bytesTotal)
+{
     ui->progressBar->show();
     ui->progressBar->setMaximum(bytesTotal / 1024);
     ui->progressBar->setValue(bytesReceived / 1024);
 }
 
-void UpdateDialog::onLinkActivated(QString link) {
+void UpdateDialog::onLinkActivated(QString link)
+{
     if (_openExternalLinks) {
         QDesktopServices::openUrl(link);
     } else {
         emit linkActivated(link);
     }
 }
-
-
 
 /*
  * Signals
@@ -660,4 +691,4 @@ void UpdateDialog::onLinkActivated(QString link) {
  * This signal is emitted when a custom install button was clicked.
  */
 
-} // namespace dblsqd
+}  // namespace dblsqd

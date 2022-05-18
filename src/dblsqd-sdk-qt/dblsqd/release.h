@@ -1,21 +1,23 @@
 #ifndef DBLSQD_RELEASE_H
 #define DBLSQD_RELEASE_H
 
-#include <QtCore>
 #include <QUrl>
+#include <QtCore>
+
 #include "dblsqd/semver.h"
 
-namespace  dblsqd {
+namespace dblsqd
+{
 
 class Release
 {
-public:
+   public:
     Release(QJsonObject releaseInfo);
     Release(QString version = QString(), QDateTime date = QDateTime());
 
-    friend bool operator<(const Release &one, const Release &other);
-    friend bool operator==(const Release &one, const Release &other);
-    friend bool operator<=(const Release &one, const Release &other);
+    friend bool operator<(const Release& one, const Release& other);
+    friend bool operator==(const Release& one, const Release& other);
+    friend bool operator<=(const Release& one, const Release& other);
 
     QString getVersion() const;
     QString getChangelog() const;
@@ -26,7 +28,7 @@ public:
     QString getDownloadDSA() const;
     qint64 getDownloadSize() const;
 
-private:
+   private:
     QString version;
     QDateTime date;
     QString changelog;
@@ -37,6 +39,6 @@ private:
     QString downloadDSA;
 };
 
-} // namespace dblsqd
+}  // namespace dblsqd
 
-#endif // DBLSQD_RELEASE_H
+#endif  // DBLSQD_RELEASE_H

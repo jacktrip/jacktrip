@@ -4,19 +4,20 @@
 #include <QObject>
 #include <QRegExp>
 
-namespace  dblsqd {
+namespace dblsqd
+{
 
 class SemVer
 {
-public:
+   public:
     SemVer(QString version);
 
-    bool operator<(const SemVer &other);
+    bool operator<(const SemVer& other);
 
     bool isValid() const;
     QString toString();
 
-private:
+   private:
     QString original;
     int major;
     int minor;
@@ -28,6 +29,6 @@ private:
     static QString getRegExp();
 };
 
-} // namespace dblsqd
+}  // namespace dblsqd
 
-#endif // DBLSQD_SEMVER_H
+#endif  // DBLSQD_SEMVER_H

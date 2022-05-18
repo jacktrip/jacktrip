@@ -1,23 +1,26 @@
 #ifndef DBLSQD_UPDATE_DIALOG_H
 #define DBLSQD_UPDATE_DIALOG_H
 
-#include "dblsqd/feed.h"
-#include "ui_update_dialog.h"
-#include <QSettings>
-#include <QTemporaryFile>
+#include <QDesktopServices>
 #include <QFile>
 #include <QMessageBox>
-#include <QDesktopServices>
+#include <QSettings>
+#include <QTemporaryFile>
 
-namespace dblsqd {
+#include "dblsqd/feed.h"
+#include "ui_update_dialog.h"
+
+namespace dblsqd
+{
 
 class UpdateDialog : public QDialog
 {
     Q_OBJECT
 
-public:
-    enum Type {OnUpdateAvailable, OnLastWindowClosed, Manual, ManualChangelog};
-    explicit UpdateDialog(Feed* feed, int = OnUpdateAvailable, QWidget* parent = 0, QSettings* settings = new QSettings());
+   public:
+    enum Type { OnUpdateAvailable, OnLastWindowClosed, Manual, ManualChangelog };
+    explicit UpdateDialog(Feed* feed, int = OnUpdateAvailable, QWidget* parent = 0,
+                          QSettings* settings = new QSettings());
     ~UpdateDialog();
 
     void setIcon(QString fileName);
@@ -28,26 +31,27 @@ public:
     void setMaxVersion(QString version);
     void setPreviousVersion(QString version);
 
-    static bool autoDownloadEnabled(QVariant defaultValue, QSettings* settings = new QSettings);
-    static bool autoDownloadEnabled(QSettings *settings = new QSettings());
+    static bool autoDownloadEnabled(QVariant defaultValue,
+                                    QSettings* settings = new QSettings);
+    static bool autoDownloadEnabled(QSettings* settings = new QSettings());
     static void enableAutoDownload(bool enabled, QSettings* settings = new QSettings);
 
     void setOpenExternalLinks(bool open);
     bool openExternalLinks();
 
-signals:
+   signals:
     void ready();
     void installButtonClicked(QAbstractButton* button, QString filePath);
     void linkActivated(QString link);
 
-public slots:
+   public slots:
     void onButtonInstall();
     void onButtonCustomInstall();
     void skip();
     void showIfUpdatesAvailable();
     void showIfUpdatesAvailableOrQuit();
 
-private:
+   private:
     Ui::UpdateDialog* ui;
     Feed* feed;
     int type;
@@ -80,12 +84,15 @@ private:
     QString _maxVersion;
     QString _previousVersion;
 
-    static void setSettingsValue(QString key, QVariant value, QSettings* settings = new QSettings());
-    static QVariant settingsValue(QString key, QVariant defaultValue = QVariant(), QSettings* settings = new QSettings());
+    static void setSettingsValue(QString key, QVariant value,
+                                 QSettings* settings = new QSettings());
+    static QVariant settingsValue(QString key, QVariant defaultValue = QVariant(),
+                                  QSettings* settings = new QSettings());
     static void removeSetting(QString key, QSettings* settings = new QSettings());
-    static void setDefaultSettingsValue(QString key, QVariant value, QSettings* settings = new QSettings());
+    static void setDefaultSettingsValue(QString key, QVariant value,
+                                        QSettings* settings = new QSettings());
 
-private slots:
+   private slots:
     void handleFeedReady();
     void handleDownloadFinished();
     void handleDownloadError(QString);
@@ -94,6 +101,6 @@ private slots:
     void onLinkActivated(QString link);
 };
 
-} //namespace dblsqd
+}  // namespace dblsqd
 
-#endif // DBLSQD_UPDATE_DIALOG_H
+#endif  // DBLSQD_UPDATE_DIALOG_H
