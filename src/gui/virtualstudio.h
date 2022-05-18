@@ -80,7 +80,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
-    Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup NOTIFY showDeviceSetupChanged)
+    Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup WRITE setShowDeviceSetup NOTIFY
+                   showDeviceSetupChanged)
 
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
 
