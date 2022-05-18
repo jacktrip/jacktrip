@@ -72,8 +72,10 @@ class VirtualStudio : public QObject
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
-    Q_PROPERTY(bool showInactive READ showInactive WRITE setShowInactive NOTIFY showInactiveChanged)
-    Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY showSelfHostedChanged)
+    Q_PROPERTY(bool showInactive READ showInactive WRITE setShowInactive NOTIFY
+                   showInactiveChanged)
+    Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
+                   showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
