@@ -72,6 +72,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_showInactive    = settings.value(QStringLiteral("ShowInactive"), false).toBool();
     m_showSelfHosted  = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
     m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
+    m_showWarnings    = settings.value(QStringLiteral("ShowWarnings"), true).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
@@ -330,6 +331,21 @@ bool VirtualStudio::showDeviceSetup()
 void VirtualStudio::setShowDeviceSetup(bool show)
 {
     m_showDeviceSetup = show;
+}
+
+bool VirtualStudio::showWarnings()
+{
+    return m_showWarnings;
+}
+
+void VirtualStudio::setShowWarnings(bool show)
+{
+    m_showWarnings = show;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("ShowWarnings"), m_showWarnings);
+    settings.endGroup();
+    emit showWarningsChanged();
 }
 
 float VirtualStudio::fontScale()
