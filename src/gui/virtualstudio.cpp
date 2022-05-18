@@ -65,10 +65,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
-    m_refreshToken = settings.value(QStringLiteral("RefreshToken"), "").toString();
-    m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
-    m_uiScale      = settings.value(QStringLiteral("UiScale"), 1).toFloat();
-    m_darkMode     = settings.value(QStringLiteral("DarkMode"), false).toBool();
+    m_refreshToken    = settings.value(QStringLiteral("RefreshToken"), "").toString();
+    m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
+    m_uiScale         = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_darkMode        = settings.value(QStringLiteral("DarkMode"), false).toBool();
     m_showInactive    = settings.value(QStringLiteral("ShowInactive"), false).toBool();
     m_showSelfHosted  = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
     m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
