@@ -184,7 +184,7 @@ Item {
         anchors.right: saveButton.left
         anchors.rightMargin: 16 * virtualstudio.uiScale
         anchors.verticalCenter: saveButton.verticalCenter
-        onClicked: { virtualstudio.toggleShowDeviceSetup() }
+        onClicked: { virtualstudio.showDeviceSetup = showAgainCheckbox.checkState == Qt.Checked }
         indicator: Rectangle {
             implicitWidth: 16 * virtualstudio.uiScale
             implicitHeight: 16 * virtualstudio.uiScale

@@ -153,7 +153,11 @@ Item {
                         CheckBox {
                             id: inactiveCheckbox
                             text: qsTr("Show my inactive Studios")
-                            onClicked: { virtualstudio.toggleInactiveFilter(); refreshing = true; refresh() }
+                            checkState: virtualstudio.showInactive ? Qt.Checked : Qt.Unchecked
+                            onClicked: { virtualstudio.showInactive = inactiveCheckbox.checkState == Qt.Checked;
+                                refreshing = true;
+                                refresh();
+                            }
                             indicator: Rectangle {
                                 implicitWidth: 16 * virtualstudio.uiScale
                                 implicitHeight: 16 * virtualstudio.uiScale
@@ -184,14 +188,18 @@ Item {
                         CheckBox {
                             id: selfHostedCheckbox
                             text: qsTr("Show self-hosted Studios")
-                            onClicked: { virtualstudio.toggleSelfHostedFilter(); refreshing = true; refresh() }
+                            checkState: virtualstudio.showSelfHosted ? Qt.Checked : Qt.Unchecked
+                            onClicked: { virtualstudio.showSelfHosted = selfHostedCheckbox.checkState == Qt.Checked;
+                                refreshing = true;
+                                refresh();
+                            }
                             indicator: Rectangle {
                                 implicitWidth: 16 * virtualstudio.uiScale
                                 implicitHeight: 16 * virtualstudio.uiScale
                                 x: selfHostedCheckbox.leftPadding
                                 y: parent.height / 2 - height / 2
                                 radius: 3 * virtualstudio.uiScale
-                                border.color: selfHostedCheckbox.down ? "#007AFF" : "#0062cc"
+                                border.color: selfHostedCheckbox.down ? "#007AFF" : "#0062CC"
 
                                 Rectangle {
                                     width: 10 * virtualstudio.uiScale
@@ -199,7 +207,7 @@ Item {
                                     x: 3 * virtualstudio.uiScale
                                     y: 3 * virtualstudio.uiScale
                                     radius: 2 * virtualstudio.uiScale
-                                    color: selfHostedCheckbox.down ? "#007AFF" : "#0062cc"
+                                    color: selfHostedCheckbox.down ? "#007AFF" : "#0062CC"
                                     visible: selfHostedCheckbox.checked
                                 }
                             }

@@ -696,21 +696,6 @@ void VirtualStudio::manageStudio(int studioIndex)
     QDesktopServices::openUrl(url);
 }
 
-void VirtualStudio::toggleInactiveFilter()
-{
-    setShowInactive(!m_showInactive);
-}
-
-void VirtualStudio::toggleSelfHostedFilter()
-{
-    setShowSelfHosted(!m_showSelfHosted);
-}
-
-void VirtualStudio::toggleShowDeviceSetup()
-{
-    setShowDeviceSetup(!m_showDeviceSetup);
-}
-
 void VirtualStudio::createStudio()
 {
     QUrl url = QUrl(QStringLiteral("https://app.jacktrip.org/studios/create"));

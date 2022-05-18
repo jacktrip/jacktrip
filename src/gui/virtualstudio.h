@@ -72,11 +72,13 @@ class VirtualStudio : public QObject
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
+    Q_PROPERTY(bool showInactive READ showInactive WRITE setShowInactive NOTIFY showInactiveChanged)
+    Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
-    Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup NOTIFY showDeviceSetupChanged)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
+    Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup NOTIFY showDeviceSetupChanged)
 
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
 
@@ -128,9 +130,6 @@ class VirtualStudio : public QObject
     void completeConnection();
     void disconnect();
     void manageStudio(int studioIndex);
-    void toggleInactiveFilter();
-    void toggleSelfHostedFilter();
-    void toggleShowDeviceSetup();
     void createStudio();
     void showAbout();
     void exit();
@@ -149,6 +148,8 @@ class VirtualStudio : public QObject
     void outputDeviceChanged();
     void bufferSizeChanged();
     void currentStudioChanged();
+    void showInactiveChanged();
+    void showSelfHostedChanged();
     void connectionStateChanged();
     void showDeviceSetupChanged();
     void uiScaleChanged();
