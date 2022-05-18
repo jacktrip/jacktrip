@@ -5,6 +5,11 @@ import QtGraphicalEffects 1.12
 Item {
     width: parent.width; height: parent.height
     clip: true
+
+    Rectangle {
+        width: parent.width; height: parent.height
+        color: backgroundColour
+    }
     
     property bool refreshing: false
     
