@@ -20,6 +20,10 @@ equals(QT_EDITION, "OpenSource") {
     DEFINES += QT_OPENSOURCE
 }
 
+#DBLSQD
+include(src/dblsqd-sdk-qt/dblsqd-sdk-qt.pri)
+#/DBLSQD
+
 nogui {
   DEFINES += NO_GUI
   QT -= gui
