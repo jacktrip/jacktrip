@@ -5,11 +5,6 @@ import QtGraphicalEffects 1.12
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
-    Rectangle {
-        width: parent.width; height: parent.height
-        color: "#FAFBFB"
-    }
 
     property int fontBig: 28
     property int fontMedium: 13
@@ -18,9 +13,6 @@ Item {
     property int leftMargin: 48
     property int buttonWidth: 103
     property int buttonHeight: 25
-    property bool showContents: true
-
-    visible: showContents
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
@@ -44,6 +36,7 @@ Item {
         x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
         text: "Choose your audio devices"
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
+        color: textColour
     }
     
     ComboBox {
@@ -63,6 +56,7 @@ Item {
         text: "Audio Backend"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: virtualstudio.selectableBackend
+        color: textColour
     }
     
     Text {
@@ -73,6 +67,7 @@ Item {
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         wrapMode: Text.WordWrap
         visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend
+        color: textColour
     }
     
     ComboBox {
@@ -102,6 +97,7 @@ Item {
         text: "Input Device"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: virtualstudio.audioBackend != "JACK"
+        color: textColour
     }
     
     Text {
@@ -111,6 +107,7 @@ Item {
         text: "Output Device"
         font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: virtualstudio.audioBackend != "JACK"
+        color: textColour
     }
 
     Button {
@@ -129,6 +126,7 @@ Item {
             text: "Refresh Device List"
             font { family: "Poppins"; pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale }
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+            color: textColour
         }
     }
 
@@ -212,6 +210,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             leftPadding: showAgainCheckbox.indicator.width + showAgainCheckbox.spacing
+            color: textColour
         }
     }
 }
