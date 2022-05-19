@@ -377,11 +377,7 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
-            mSendRingBuffer =
-                new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
-
-            qDebug() << "experimental buffer strategy 3 -- Regulator with PLC";
-
+            qDebug() << "experimental buffer strategy 3 -- regulator with PLC";
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
@@ -1117,6 +1113,7 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)  // udpTimeout unused
             mEndTime = udpTimeout;
         }
         mTimeoutTimer.setInterval(mSleepTime);
+        mTimeoutTimer.disconnect();
         connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::udpTimerTick);
         mTimeoutTimer.start();
     }
@@ -1211,6 +1208,7 @@ int JackTrip::clientPingToServerStart()
         mElapsedTime = 0;
         mEndTime     = 5000;  // Timeout after 5 seconds.
         mTimeoutTimer.setInterval(mSleepTime);
+        mTimeoutTimer.disconnect();
         connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
         mTimeoutTimer.start();
     }

@@ -114,10 +114,15 @@ if [ ! -z "$DYNAMIC_QT" ]; then
             exit 1
         fi
     fi
+    VS=$(otool -L ../builddir/jacktrip | grep QtQml)
+    QMLDIR=""
+    if [ ! -z "VS" ]; then
+        QMLDIR=" -qmldir=../src/gui"
+    fi
     if [ ! -z "$CERTIFICATE" ]; then
-        $DEPLOY_CMD "$APPNAME.app" -codesign="$CERTIFICATE"
+        $DEPLOY_CMD "$APPNAME.app"$QMLDIR -codesign="$CERTIFICATE"
     else
-        $DEPLOY_CMD "$APPNAME.app"
+        $DEPLOY_CMD "$APPNAME.app"$QMLDIR
     fi
 fi
 

@@ -236,10 +236,16 @@ void Regulator::printParams(){
 
 Regulator::~Regulator()
 {
-    delete mXfrBuffer;
-    delete mZeros;
+    delete[] mXfrBuffer;
+    delete[] mZeros;
+    delete[] mAssembledPacket;
+    delete pushStat;
+    delete pullStat;
     for (int i = 0; i < mNumChannels; i++)
         delete mChanData[i];
+    for (auto& slot : mSlots) {
+        delete[] slot;
+    };
 }
 
 void Regulator::setFPPratio()

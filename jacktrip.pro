@@ -26,6 +26,14 @@ nogui {
 } else {
   QT += gui
   QT += widgets
+  novs {
+    DEFINES += NO_VS
+  } else {
+    QT += networkauth
+    QT += qml
+    QT += quick
+    QT += svg
+  }
 }
 
 QT += network
@@ -43,9 +51,6 @@ rtaudio|bundled_rtaudio {
 nojack {
   DEFINES += NO_JACK
 }
-
-# for plugins
-INCLUDEPATH += faust-src-lair/stk
 
 !win32 {
   INCLUDEPATH+=/usr/local/include
@@ -189,9 +194,6 @@ isEmpty(PREFIX) {
 target.path = $$PREFIX/bin/
 INSTALLS += target
 
-# for plugins
-INCLUDEPATH += faust-src-lair
-
 # Input
 HEADERS += src/DataProtocol.h \
            src/JackTrip.h \
@@ -233,6 +235,11 @@ HEADERS += src/gui/about.h \
            src/gui/messageDialog.h \
            src/gui/qjacktrip.h \
            src/gui/textbuf.h
+  !novs {
+    HEADERS += src/gui/virtualstudio.h \
+               src/gui/vsServerInfo.h \
+               src/gui/vsQuickView.h
+  }
 }
 
 rtaudio|bundled_rtaudio {
@@ -272,6 +279,11 @@ SOURCES += src/gui/messageDialog.cpp \
            src/gui/qjacktrip.cpp \
            src/gui/about.cpp \
            src/gui/textbuf.cpp
+  !novs {
+    SOURCES += src/gui/virtualstudio.cpp \
+               src/gui/vsServerInfo.cpp \
+               src/gui/vsQuickView.cpp
+  }
 }
 
 !nogui {
@@ -281,7 +293,11 @@ SOURCES += src/gui/messageDialog.cpp \
   }
 
   FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
-  RESOURCES += src/gui/qjacktrip.qrc
+  novs {
+    RESOURCES += src/gui/qjacktrip_novs.qrc
+  } else {
+    RESOURCES += src/gui/qjacktrip.qrc
+  }
 }
 
 rtaudio|bundled_rtaudio {
