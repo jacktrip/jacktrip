@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="qjacktrip">
+    <file>about@2x.png</file>
+    <file>about.png</file>
+    <file>icon.png</file>
+  </qresource>
+</RCC>

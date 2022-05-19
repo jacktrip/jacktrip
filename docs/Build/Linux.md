@@ -16,7 +16,7 @@ Optional:
 
 ### Fedora
 ```sh
-dnf install qt5-devel
+dnf install qt5-qtbase-devel qt5-qtnetworkauth-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
 dnf install "pkgconfig(jack)" alsa-lib-devel git help2man

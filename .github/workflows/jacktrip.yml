@@ -40,7 +40,7 @@ jobs:
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
             static-qt-version: 5.12.11 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v22' # required for static qt; update this to force rebuilding static Qt
+            qt-static-cache-key: 'v25' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -50,7 +50,7 @@ jobs:
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-18.04
+            runs-on: ubuntu-20.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -61,13 +61,13 @@ jobs:
 
           - name: Linux-x64-qmake-gcc-static-nogui
             release-name: Linux-x64-nogui
-            runs-on: ubuntu-18.04
+            runs-on: ubuntu-20.04
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: true
             weakjack: false
             static-qt-version: 5.12.11
-            qt-static-cache-key: 'v22' # we use the same key as the main Linux build
+            qt-static-cache-key: 'v24' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
@@ -104,8 +104,8 @@ jobs:
             bundled-rtaudio: false
             nogui: false
             weakjack: true
-            static-qt-version: 5.12.11
-            qt-static-cache-key: 'v05'
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v06'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -144,8 +144,9 @@ jobs:
             bundled-rtaudio: true
             nogui: false
             weakjack: true
+            vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.2
-            qt-static-cache-key: 'v04'
+            qt-static-cache-key: 'v06'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -159,6 +160,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-dynamic
             qt-arch: 'win64_mingw81'
+            qt-cache-key: 'v01'
             # jacktrip-path: release/jacktrip.exe
             # binary-path: binary
             build-system: qmake
@@ -171,6 +173,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
+            qt-cache-key: 'v01'
             # jacktrip-path: jacktrip.exe
             # binary-path: binary
             build-system: meson
@@ -183,6 +186,7 @@ jobs:
             nogui: false
             weakjack: true
             qt-arch: 'win64_msvc2019_64'
+            qt-cache-key: 'v01'
             # jacktrip-path: jacktrip.exe
             # binary-path: binary
             build-system: meson
@@ -194,7 +198,7 @@ jobs:
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
-      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtsvg -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
+      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       
@@ -229,9 +233,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes libjack-dev
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
-            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-render-util0-dev libxcb-xinerama0-dev libxcomposite-dev libgtk-3-dev
+            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
           else
-            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev
+            sudo add-apt-repository universe
+            sudo apt-get update
+            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
@@ -275,7 +281,9 @@ jobs:
         shell: bash
         run: |
           choco install jack --version=1.9.17 --no-progress
-          choco install openssl --no-progress
+          if [[ "${{ matrix.build-system }}" == "qmake" && -n "${{ matrix.static-qt-version }}" && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
+            vcpkg install openssl --triplet="${{ matrix.vcpkg-triplet }}"
+          fi
           if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             choco install pkgconfiglite --no-progress
             # check out an older version of rtaudio library, see issue #408
@@ -299,7 +307,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ../Qt
-          key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}
+          key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
       - name: install Qt
         uses: jurplel/install-qt-action@v2
         if: runner.os == 'Windows' && !matrix.static-qt-version
@@ -307,6 +315,7 @@ jobs:
           version: ${{ env.QT_VERSION }}
           arch: ${{ matrix.qt-arch }}
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          modules: 'qtnetworkauth'
       - name: cache static Qt
         id: cache-static-qt
         if: matrix.static-qt-version
@@ -336,6 +345,8 @@ jobs:
             QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
           fi
           "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
+          echo "QT Configure command"
+          echo ""$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS"
           # build
           echo "building Qt"
           make -j4
@@ -347,11 +358,13 @@ jobs:
         shell: cmd
         run: |
           mkdir %QT_STATIC_BUILD_PATH%
-          call "%QT_SRC_PATH%/configure.bat" -static-runtime -opengl desktop -platform win32-g++ -prefix "%QT_STATIC_BUILD_PATH%" -openssl OPENSSL_PREFIX="C:\Program Files\OpenSSL-Win64" %QT_STATIC_OPTIONS%
+          call "%QT_SRC_PATH%/configure.bat" -static-runtime -opengl desktop -platform win32-g++ -prefix "%QT_STATIC_BUILD_PATH%" -openssl -openssl-linked -I "%VCPKG_INSTALLATION_ROOT%\installed\%VCPKG_TRIPLET%\include" -L "%VCPKG_INSTALLATION_ROOT%\installed\%VCPKG_TRIPLET%\lib"  OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32" %QT_STATIC_OPTIONS%
           echo "building Qt"
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
+        env:
+          VCPKG_TRIPLET: ${{ matrix.vcpkg-triplet }}
       - name: set Qt environment variables # needed to find qmake depending on the way qt was installed
         shell: bash
         if: matrix.build-system == 'qmake'
@@ -370,6 +383,8 @@ jobs:
           CONFIG_STRING="noclean"
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             CONFIG_STRING="static $CONFIG_STRING"
+            export QML_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
+            export QML2_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             CONFIG_STRING="rtaudio $CONFIG_STRING"
@@ -379,6 +394,9 @@ jobs:
           fi
           if [[ "${{ matrix.nogui }}" == true ]]; then 
             CONFIG_STRING="nogui $CONFIG_STRING"
+          fi
+          if [[ "${{ matrix.novs }}" == true ]]; then 
+            CONFIG_STRING="novs $CONFIG_STRING"
           fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="weakjack $CONFIG_STRING"
@@ -430,7 +448,8 @@ jobs:
             CONFIG="-i $CONFIG"
           fi
           cd macos
-          ./assemble_app.sh $CONFIG
+          echo $CONFIG | xargs ./assemble_app.sh
+          echo "Assemble complete"
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
             zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application.zip *.app
