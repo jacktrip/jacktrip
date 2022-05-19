@@ -381,17 +381,6 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_input_slot_size, gDefaultOutputQueueLength);
 
             qDebug() << "experimental buffer strategy 3 -- Regulator with PLC";
-            //            if (mNumAudioChansOut > 1) {
-            //                std::cerr << "*** JackTrip.cpp: receive channels = " <<
-            //                mNumAudioChansOut
-            //                          << "\n";
-            //                // this is bad...
-            //                throw std::invalid_argument(
-            //                    "JackTrip.cpp calling Regulator with mNumAudioChansOut >
-            //                    1");
-            //                // how to reject here? and if server, send exit packet to
-            //                client
-            //            }
 
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
