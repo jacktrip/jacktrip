@@ -420,7 +420,7 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
 
             ba.predict(cd->mCoeffs, cd->mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
-            for (int i = 0; i < (cd->trainSamps - 1); i++)
+            for (int i = 0; i < (cd->trainSamps - 2); i++)
                 cd->mPrediction[i] = cd->mTail[i + cd->trainSamps];
         }
         // cross fade last prediction with mTruth
