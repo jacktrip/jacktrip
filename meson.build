@@ -85,14 +85,23 @@ elif get_option('novs') == true
 	src += ['src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp',
-		'src/gui/textbuf.cpp']
+		'src/gui/textbuf.cpp',
+		'src/dblsqd/feed.cpp',
+		'src/dblsqd/release.cpp',
+		'src/dblsqd/semver.cpp',
+		'src/dblsqd/update_dialog.cpp']
 	ui_h += ['src/gui/qjacktrip.ui',
 		'src/gui/messageDialog.ui',
-		'src/gui/about.ui']
+		'src/gui/about.ui',
+		'src/dblsqd/update_dialog.ui']
 	moc_h += ['src/gui/about.h',
 		'src/gui/qjacktrip.h',
 		'src/gui/messageDialog.h',
-		'src/gui/textbuf.h']
+		'src/gui/textbuf.h',
+		'src/dblsqd/feed.h',
+		'src/dblsqd/release.h',
+		'src/dblsqd/semver.h',
+		'src/dblsqd/update_dialog.h']
 	qres = ['src/gui/qjacktrip_novs.qrc']
 else
 	qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth'], include_type: 'system')
@@ -100,16 +109,25 @@ else
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp',
 		'src/gui/textbuf.cpp',
+		'src/dblsqd/feed.cpp',
+		'src/dblsqd/release.cpp',
+		'src/dblsqd/semver.cpp',
+		'src/dblsqd/update_dialog.cpp',
 		'src/gui/virtualstudio.cpp',
 		'src/gui/vsServerInfo.cpp',
 		'src/gui/vsQuickView.cpp']
 	ui_h += ['src/gui/qjacktrip.ui',
 		'src/gui/messageDialog.ui',
-		'src/gui/about.ui']
+		'src/gui/about.ui',
+		'src/dblsqd/update_dialog.ui']
 	moc_h += ['src/gui/about.h',
 		'src/gui/qjacktrip.h',
 		'src/gui/messageDialog.h',
 		'src/gui/textbuf.h',
+		'src/dblsqd/feed.h',
+		'src/dblsqd/release.h',
+		'src/dblsqd/semver.h',
+		'src/dblsqd/update_dialog.h',
 		'src/gui/virtualstudio.h',
 		'src/gui/vsServerInfo.h',
 		'src/gui/vsQuickView.h']

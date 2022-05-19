@@ -4,7 +4,7 @@
 #include <QUrl>
 #include <QtCore>
 
-#include "dblsqd/semver.h"
+#include "semver.h"
 
 namespace dblsqd
 {

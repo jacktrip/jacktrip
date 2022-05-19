@@ -1,4 +1,4 @@
-#include "dblsqd/feed.h"
+#include "feed.h"
 
 namespace dblsqd
 {

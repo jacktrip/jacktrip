@@ -7,7 +7,7 @@
 #include <QSettings>
 #include <QTemporaryFile>
 
-#include "dblsqd/feed.h"
+#include "feed.h"
 #include "ui_update_dialog.h"
 
 namespace dblsqd

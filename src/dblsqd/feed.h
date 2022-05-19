@@ -4,7 +4,7 @@
 #include <QtCore>
 #include <QtNetwork>
 
-#include "dblsqd/release.h"
+#include "release.h"
 
 namespace dblsqd
 {

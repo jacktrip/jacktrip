@@ -1,4 +1,4 @@
-#include "dblsqd/semver.h"
+#include "semver.h"
 
 namespace dblsqd
 {

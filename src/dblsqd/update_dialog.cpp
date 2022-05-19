@@ -1,4 +1,4 @@
-#include "dblsqd/update_dialog.h"
+#include "update_dialog.h"
 
 #include "ui_update_dialog.h"
 
@@ -437,7 +437,7 @@ void UpdateDialog::setupUpdateUi()
     connect(feed, SIGNAL(downloadFinished()), this, SLOT(handleDownloadFinished()));
     connect(feed, SIGNAL(downloadError(QString)), this,
             SLOT(handleDownloadError(QString)));
-    connect(feed, SIGNAL(downloadProgress(qint64 qint64)), this,
+    connect(feed, SIGNAL(downloadProgress(qint64, qint64)), this,
             SLOT(updateProgressBar(qint64, qint64)));
 
     connect(ui->buttonConfirm, SIGNAL(clicked()), this, SLOT(accept()));

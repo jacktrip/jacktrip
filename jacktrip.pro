@@ -20,10 +20,6 @@ equals(QT_EDITION, "OpenSource") {
     DEFINES += QT_OPENSOURCE
 }
 
-#DBLSQD
-include(src/dblsqd-sdk-qt/dblsqd-sdk-qt.pri)
-#/DBLSQD
-
 nogui {
   DEFINES += NO_GUI
   QT -= gui
@@ -238,7 +234,11 @@ HEADERS += src/JackAudioInterface.h \
 HEADERS += src/gui/about.h \
            src/gui/messageDialog.h \
            src/gui/qjacktrip.h \
-           src/gui/textbuf.h
+           src/gui/textbuf.h \
+           src/dblsqd/feed.h \
+           src/dblsqd/release.h \
+           src/dblsqd/semver.h \
+           src/dblsqd/update_dialog.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
                src/gui/vsServerInfo.h \
@@ -282,7 +282,11 @@ SOURCES += src/JackAudioInterface.cpp \
 SOURCES += src/gui/messageDialog.cpp \
            src/gui/qjacktrip.cpp \
            src/gui/about.cpp \
-           src/gui/textbuf.cpp
+           src/gui/textbuf.cpp \
+           src/dblsqd/feed.cpp \
+           src/dblsqd/release.cpp \
+           src/dblsqd/semver.cpp \
+           src/dblsqd/update_dialog.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
                src/gui/vsServerInfo.cpp \
@@ -296,7 +300,7 @@ SOURCES += src/gui/messageDialog.cpp \
     OBJECTIVE_SOURCES += src/gui/NoNap.mm
   }
 
-  FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
+  FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui src/dblsqd/update_dialog.ui
   novs {
     RESOURCES += src/gui/qjacktrip_novs.qrc
   } else {
