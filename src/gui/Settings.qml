@@ -170,7 +170,7 @@ Item {
         x: parent.width - (232 * virtualstudio.uiScale); y: scaleSlider.y + (40 * virtualstudio.uiScale)
         width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
         Text {
-            text: "Switch to Standard Mode"
+            text: "Switch to Classic Mode"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
         }
