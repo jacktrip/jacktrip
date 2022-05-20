@@ -39,8 +39,11 @@
 #include <QApplication>
 #include <QCommandLineParser>
 
+#ifndef NO_UPDATER
 #include "dblsqd/feed.h"
 #include "dblsqd/update_dialog.h"
+#endif
+
 #ifndef NO_VS
 #include <QQuickView>
 #include <QSettings>
@@ -282,7 +285,9 @@ int main(int argc, char* argv[])
 #else
         window->show();
 #endif  // NO_VS
-        // Set auto-update feed
+
+#ifndef NO_UPDATER
+        // Setup auto-update feed
         dblsqd::Feed* feed = 0;
         QString baseUrl    = "https://files.jacktrip.org/app-releases";
         QString channel    = "stable";
@@ -300,6 +305,7 @@ int main(int argc, char* argv[])
             dblsqd::UpdateDialog* updateDialog = new dblsqd::UpdateDialog(feed);
             updateDialog->setIcon(":/qjacktrip/icon.png");
         }
+#endif  // NO_UPDATER
     } else {
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.

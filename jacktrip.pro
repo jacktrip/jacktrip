@@ -17,7 +17,7 @@ CONFIG(debug, debug|release) {
 }
 
 equals(QT_EDITION, "OpenSource") {
-    DEFINES += QT_OPENSOURCE
+  DEFINES += QT_OPENSOURCE
 }
 
 nogui {
@@ -33,6 +33,9 @@ nogui {
     QT += qml
     QT += quick
     QT += svg
+  }
+  noupdater {
+    DEFINES += NO_UPDATER
   }
 }
 
@@ -145,7 +148,6 @@ linux-g++-64 {
   message(Linux 64bit)
 }
 
-
 win32 {
   message(Building on win32)
 #cc  CONFIG += x86 console
@@ -189,7 +191,7 @@ QMAKE_CLEAN += -r ./jacktrip ./jacktrip_debug ./release/* ./debug/* ./$${applica
 # isEmpty(PREFIX) will allow path to be changed during the command line
 # call to qmake, e.g. qmake PREFIX=/usr
 isEmpty(PREFIX) {
- PREFIX = /usr/local
+  PREFIX = /usr/local
 }
 target.path = $$PREFIX/bin/
 INSTALLS += target
@@ -225,29 +227,31 @@ HEADERS += src/DataProtocol.h \
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
-HEADERS += src/JackAudioInterface.h \
-           src/JMess.h \
-           src/Patcher.h
+  HEADERS += src/JackAudioInterface.h \
+             src/JMess.h \
+             src/Patcher.h
 }
 
 !nogui {
-HEADERS += src/gui/about.h \
-           src/gui/messageDialog.h \
-           src/gui/qjacktrip.h \
-           src/gui/textbuf.h \
-           src/dblsqd/feed.h \
-           src/dblsqd/release.h \
-           src/dblsqd/semver.h \
-           src/dblsqd/update_dialog.h
+  HEADERS += src/gui/about.h \
+             src/gui/messageDialog.h \
+             src/gui/qjacktrip.h \
+             src/gui/textbuf.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h
   }
+  !noupdater {
+    HEADERS += src/dblsqd/feed.h \
+               src/dblsqd/release.h \
+               src/dblsqd/semver.h \
+               src/dblsqd/update_dialog.h
+  }
 }
 
 rtaudio|bundled_rtaudio {
-    HEADERS += src/RtAudioInterface.h
+  HEADERS += src/RtAudioInterface.h
 }
 
 SOURCES += src/DataProtocol.cpp \
@@ -273,24 +277,26 @@ SOURCES += src/DataProtocol.cpp \
 #(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {
-SOURCES += src/JackAudioInterface.cpp \
-           src/JMess.cpp \
-           src/Patcher.cpp
+  SOURCES += src/JackAudioInterface.cpp \
+             src/JMess.cpp \
+             src/Patcher.cpp
 }
 
 !nogui {
-SOURCES += src/gui/messageDialog.cpp \
-           src/gui/qjacktrip.cpp \
-           src/gui/about.cpp \
-           src/gui/textbuf.cpp \
-           src/dblsqd/feed.cpp \
-           src/dblsqd/release.cpp \
-           src/dblsqd/semver.cpp \
-           src/dblsqd/update_dialog.cpp
+  SOURCES += src/gui/messageDialog.cpp \
+             src/gui/qjacktrip.cpp \
+             src/gui/about.cpp \
+             src/gui/textbuf.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp
+  }
+  !noupdater {
+    SOURCES += src/dblsqd/feed.cpp \
+               src/dblsqd/release.cpp \
+               src/dblsqd/semver.cpp \
+               src/dblsqd/update_dialog.cpp
   }
 }
 
@@ -299,17 +305,19 @@ SOURCES += src/gui/messageDialog.cpp \
     HEADERS += src/gui/NoNap.h
     OBJECTIVE_SOURCES += src/gui/NoNap.mm
   }
-
-  FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui src/dblsqd/update_dialog.ui
+  FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
   novs {
     RESOURCES += src/gui/qjacktrip_novs.qrc
   } else {
     RESOURCES += src/gui/qjacktrip.qrc
   }
+  !noupdater {
+    FORMS += src/dblsqd/update_dialog.ui
+  }
 }
 
 rtaudio|bundled_rtaudio {
-    SOURCES += src/RtAudioInterface.cpp
+  SOURCES += src/RtAudioInterface.cpp
 }
 
 weakjack {
