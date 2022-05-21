@@ -91,10 +91,12 @@ class StdDev
     double calcAuto(double autoHeadroom);
     double lastTime;
     int mId;
+    int plcOverruns;
     int plcUnderruns;
     double lastMean;
     double lastMin;
     double lastMax;
+    int lastPlcOverruns;
     int lastPlcUnderruns;
     double lastStdDev;
     double longTermStdDev;

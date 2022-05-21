@@ -372,9 +372,10 @@ void Regulator::pullPacket(int8_t* buf)
     }
 
 PACKETOK : {
-    if (mSkip)
+    if (mSkip) {
         processPacket(true);
-    else
+        pullStat->plcOverruns += mSkip;
+    } else
         processPacket(false);
     pullStat->tick();
     goto OUTPUT;
@@ -661,6 +662,7 @@ void StdDev::reset()
     min          = 999999.0;
     max          = 0.0;
     ctr          = 0;
+    plcOverruns  = 0;
     plcUnderruns = 0;
 };
 
@@ -694,15 +696,15 @@ void StdDev::tick()
             var += (tmp * tmp);
         }
         var /= (double)window;
-        double stdDev = sqrt(var);
+        double stdDevTmp = sqrt(var);
         if (longTermCnt) {
-            longTermStdDevAcc += stdDev;
+            longTermStdDevAcc += stdDevTmp;
             longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
             longTermMaxAcc += max;
             longTermMax = longTermMaxAcc / (double)longTermCnt;
             if (gVerboseFlag)
                 cout << setw(10) << mean << setw(10) << lastMin << setw(10) << max
-                     << setw(10) << stdDev << setw(10) << longTermStdDev << " " << mId
+                     << setw(10) << stdDevTmp << setw(10) << longTermStdDev << " " << mId
                      << endl;
         } else if (gVerboseFlag)
             cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
@@ -710,10 +712,12 @@ void StdDev::tick()
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
-        lastMean   = mean;
-        lastMin    = min;
-        lastMax    = max;
-        lastStdDev = stdDev;
+        lastMean         = mean;
+        lastMin          = min;
+        lastMax          = max;
+        lastPlcOverruns  = plcOverruns;
+        lastPlcUnderruns = plcUnderruns;
+        lastStdDev       = stdDevTmp;
         reset();
     }
 }
@@ -735,7 +739,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     }
 
     // hijack  of  struct IOStat {
-    stat->underruns = pullStat->lastPlcUnderruns;
+    stat->underruns = pullStat->lastPlcUnderruns + pullStat->lastPlcOverruns;
 #define FLOATFACTOR 1000.0
     stat->overflows          = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew               = FLOATFACTOR * pushStat->lastMean;
