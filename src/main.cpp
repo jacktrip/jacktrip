@@ -256,6 +256,10 @@ int main(int argc, char* argv[])
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+        QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
+                                    .toString()
+                                    .toLower();
+        printf("%s\n", updateChannel.toStdString().c_str());
 #endif  // NO_VS
         window.reset(new QJackTrip(argc));
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
