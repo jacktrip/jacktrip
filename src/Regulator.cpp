@@ -39,41 +39,25 @@
 // server and client can have different FPP (tested from FPP 16 to 1024)
 // stress tested by repeatedly starting & stopping across range of FPP's
 // server and client can have different in / out channel count
-// auto mode -- use -q auto
-// or for manual setting of initial mMsecTolerance -- use -q auto<msec>
-// gathers data for 6 sec and then goes full auto
+// large FPP, for example 512, should not be run with --udprt as PLC audio callback
+// completion gets delayed auto mode -- use -q auto3 or for manual setting of initial
+// mMsecTolerance -- use -q auto<msec> gathers data for 6 sec and then goes full auto
 
 // example WAN test
 // ./jacktrip -S --udprt -p1 --bufstrategy 3 -q auto
 // PIPEWIRE_LATENCY=32/48000 ./jacktrip -C <SERV> --udprt --bufstrategy 3 -q auto
+
+// latest
+// ./jacktrip -S -p1 --bufstrategy 3 -q auto3 -u --receivechannels 1 --sendchannels 1
+// --udprt  -I 1
+// ./jacktrip -C <SERV> --receivechannels 1 -u --sendchannels 1 --bufstrategy 3 -q auto3
+// -I 1 --udprt
 
 // example WAN test
 // at 48000 / 32 = 2.667 ms total roundtrip latency
 // local loopback test with 4 terminals running and a jmess file
 // jacktrip -S --udprt --nojackportsconnect -q1 --bufstrategy 3
 // jacktrip -C localhost --udprt --nojackportsconnect -q1  --bufstrategy 3
-// use jack_iodelay
-// use jmess -c delay.xml
-/* delay.xml
-<jmess>
-  <connection>
-    <output>localhost:receive_1</output>
-    <input>jack_delay:in</input>
-  </connection>
-  <connection>
-    <output>jack_delay:out</output>
-    <input>localhost:send_1</input>
-  </connection>
-  <connection>
-    <output>__1:receive_1</output>
-    <input>__1:send_2</input>
-  </connection>
-  <connection>
-    <output>__1:receive_1</output>
-    <input>__1:send_1</input>
-  </connection>
-</jmess>
-*/
 
 // tested outgoing loss impairments with (replace lo with relevant network interface)
 // sudo tc qdisc add dev lo root netem loss 5%
@@ -100,20 +84,19 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST          = 20;   // at FPP32
+constexpr int HIST          = 4;    // at FPP 16-128, see below for > 128
 constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
     1.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
-constexpr double AutoInitDur = 6000.0;  // msec init phase
+constexpr double AutoInitDur = 6000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 // tweak
-constexpr int WindowDivisor = 8;    // for faster auto tracking
-constexpr int MaxChans      = 1;    // stereo is compute bound with long HIST
-constexpr int MaxFPP        = 256;  // long HIST sounds good but limited to lower FPP
+constexpr int WindowDivisor = 8;     // for faster auto tracking
+constexpr int MaxFPP        = 1024;  // tested up to this FPP
 //*******************************************************************************
 Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
     : RingBuffer(0, 0)
@@ -150,9 +133,9 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mHist        = HIST;  // at FPP 32
-    int fppRatio = mFPP / 32;
-    mHist /= fppRatio;
+    mHist = HIST;  // at FPP 32
+    if (mFPP > 128)
+        mHist = 2;
     if (mHist < 2)
         mHist = 2;  // min packets for prediction, needs at least 2
 
@@ -202,6 +185,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
     mModSeqNumPeer       = 1;
     mPeerFPP             = mFPP;  // use local until first packet arrives
     mAutoHeadroom        = DefaultAutoHeadroom;
+    mFPPdurMsec          = 1000.0 * mFPP / 48000.0;
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
 }
@@ -300,7 +284,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             pushPacket(buf, seq_num);
         } else {
             seq_num %= mModSeqNumPeer;
-            if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower
+            if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower, , (local/peer)/1
                 int tmp = (seq_num % mFPPratioNumerator) * mBytesPeerPacket;
                 memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
                 if ((seq_num % mFPPratioNumerator) == mModCycle) {
@@ -311,7 +295,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                     mAssemblyCnt = 0;
                 } else
                     mAssemblyCnt++;
-            } else if (mFPPratioDenominator > 1) {  // 1/2, 1/4 peer FPP is higher
+            } else if (mFPPratioDenominator
+                       > 1) {  // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
                 seq_num *= mFPPratioDenominator;
                 for (int i = 0; i < mFPPratioDenominator; i++) {
                     int tmp = i * mBytes;
@@ -322,7 +307,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             }
         }
         pushStat->tick();
-        double adjustAuto = pushStat->calcAuto(mAutoHeadroom);
+        double adjustAuto = pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec);
         //        qDebug() << adjustAuto;
         if (mAuto && (pushStat->lastTime > AutoInitDur))
             mMsecTolerance = adjustAuto;
@@ -398,11 +383,18 @@ OUTPUT:
 //*******************************************************************************
 void Regulator::processPacket(bool glitch)
 {
+    if ((glitch) && (mFPPratioDenominator > 1)) {
+        glitch = !(mLastSeqNumOut % mFPPratioDenominator);
+    }
+    double tmp = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     for (int ch = 0; ch < mNumChannels; ch++)
         processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
     mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
+
+    // if (glitch) qDebug() << ((double)mIncomingTimer.nsecsElapsed() / 1000000.0)-tmp <<
+    // pullStat->plcOverruns;
 }
 
 //*******************************************************************************
@@ -559,12 +551,6 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
 
     // BURG RECURSION
     for (size_t k = 0; k < m; k++) {
-        // tweak
-        if ((k % 10) == 0)
-            QThread::usleep(1);
-        //            QThread::usleep(10);
-        //            QThread::yieldCurrentThread();
-
         // COMPUTE MU
         long double mu = 0.0;
         for (size_t n = 0; n <= N - k - 1; n++) {
@@ -666,13 +652,16 @@ void StdDev::reset()
     plcUnderruns = 0;
 };
 
-double StdDev::calcAuto(double autoHeadroom)
+double StdDev::calcAuto(double autoHeadroom, double localFPPdur)
 {
     //    qDebug() << longTermStdDev << longTermMax << AutoMax << window << longTermCnt;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
-    return autoHeadroom + longTermStdDev
-           + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
+    double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
+    if (tmp < localFPPdur)
+        tmp = localFPPdur;  // might also check peerFPP...
+    tmp += autoHeadroom;
+    return tmp;
 };
 
 void StdDev::tick()

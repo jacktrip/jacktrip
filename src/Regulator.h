@@ -88,7 +88,7 @@ class StdDev
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
     void tick();
-    double calcAuto(double autoHeadroom);
+    double calcAuto(double autoHeadroom, double localFPPdur);
     double lastTime;
     int mId;
     int plcOverruns;
@@ -189,6 +189,7 @@ class Regulator : public RingBuffer
     bool mAuto;
     int mModSeqNumPeer;
     double mAutoHeadroom;
+    double mFPPdurMsec;
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);
