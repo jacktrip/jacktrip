@@ -38,6 +38,12 @@
 #ifndef NO_GUI
 #include <QApplication>
 #include <QCommandLineParser>
+
+#ifndef NO_UPDATER
+#include "dblsqd/feed.h"
+#include "dblsqd/update_dialog.h"
+#endif
+
 #ifndef NO_VS
 #include <QQuickView>
 #include <QSettings>
@@ -226,6 +232,7 @@ int main(int argc, char* argv[])
     QScopedPointer<UdpHubListener> udpHub;
 #ifndef NO_GUI
     QSharedPointer<QJackTrip> window;
+
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> vs;
 #endif
@@ -242,6 +249,7 @@ int main(int argc, char* argv[])
         app->setOrganizationName(QStringLiteral("jacktrip"));
         app->setOrganizationDomain(QStringLiteral("jacktrip.org"));
         app->setApplicationName(QStringLiteral("JackTrip"));
+        app->setApplicationVersion(gVersion);
 
         QCommandLineParser parser;
         QCommandLineOption verboseOption(QStringList() << QStringLiteral("V")
@@ -277,6 +285,27 @@ int main(int argc, char* argv[])
 #else
         window->show();
 #endif  // NO_VS
+
+#ifndef NO_UPDATER
+        // Setup auto-update feed
+        dblsqd::Feed* feed = 0;
+        QString baseUrl    = "https://files.jacktrip.org/app-releases";
+        QString channel    = "stable";
+#ifdef Q_OS_WIN
+        feed = new dblsqd::Feed();
+        feed->setUrl(
+            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, channel, "win")));
+#endif
+#ifdef Q_OS_MACOS
+        feed = new dblsqd::Feed();
+        feed->setUrl(
+            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, channel, "mac")));
+#endif
+        if (feed) {
+            dblsqd::UpdateDialog* updateDialog = new dblsqd::UpdateDialog(feed);
+            updateDialog->setIcon(":/qjacktrip/icon.png");
+        }
+#endif  // NO_UPDATER
     } else {
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.
