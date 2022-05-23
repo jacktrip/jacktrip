@@ -267,7 +267,6 @@ int main(int argc, char* argv[])
         QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
                                     .toString()
                                     .toLower();
-        printf("%s\n", updateChannel.toStdString().c_str());
 #endif  // NO_VS
         window.reset(new QJackTrip(argc));
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
@@ -294,16 +293,15 @@ int main(int argc, char* argv[])
         // Setup auto-update feed
         dblsqd::Feed* feed = 0;
         QString baseUrl    = "https://files.jacktrip.org/app-releases";
-        QString channel    = "stable";
 #ifdef Q_OS_WIN
         feed = new dblsqd::Feed();
         feed->setUrl(
-            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, channel, "win")));
+            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, updateChannel, "win")));
 #endif
 #ifdef Q_OS_MACOS
         feed = new dblsqd::Feed();
         feed->setUrl(
-            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, channel, "mac")));
+            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, updateChannel, "mac")));
 #endif
         if (feed) {
             dblsqd::UpdateDialog* updateDialog = new dblsqd::UpdateDialog(feed);
