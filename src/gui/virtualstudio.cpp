@@ -64,6 +64,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     : QObject(parent), m_showFirstRun(firstRun)
 {
     QSettings settings;
+    m_updateChannel =
+        settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower();
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     m_refreshToken    = settings.value(QStringLiteral("RefreshToken"), "").toString();
     m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
@@ -125,6 +127,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("bufferComboModel"), QVariant::fromValue(m_bufferOptions));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("updateChannelComboModel"),
+        QVariant::fromValue(m_updateChannelOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
@@ -292,6 +297,19 @@ int VirtualStudio::currentStudio()
 QString VirtualStudio::connectionState()
 {
     return m_connectionState;
+}
+
+QString VirtualStudio::updateChannel()
+{
+    return m_updateChannel;
+}
+
+void VirtualStudio::setUpdateChannel(const QString& channel)
+{
+    m_updateChannel = channel;
+    QSettings settings;
+    settings.setValue(QStringLiteral("UpdateChannel"), m_updateChannel);
+    emit updateChannelChanged();
 }
 
 bool VirtualStudio::showInactive()
