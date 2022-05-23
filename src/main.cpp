@@ -264,6 +264,9 @@ int main(int argc, char* argv[])
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+        QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
+                                    .toString()
+                                    .toLower();
 #endif  // NO_VS
         window.reset(new QJackTrip(argc));
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
@@ -290,16 +293,15 @@ int main(int argc, char* argv[])
         // Setup auto-update feed
         dblsqd::Feed* feed = 0;
         QString baseUrl    = "https://files.jacktrip.org/app-releases";
-        QString channel    = "stable";
 #ifdef Q_OS_WIN
         feed = new dblsqd::Feed();
         feed->setUrl(
-            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, channel, "win")));
+            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, updateChannel, "win")));
 #endif
 #ifdef Q_OS_MACOS
         feed = new dblsqd::Feed();
         feed->setUrl(
-            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, channel, "mac")));
+            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, updateChannel, "mac")));
 #endif
         if (feed) {
             dblsqd::UpdateDialog* updateDialog = new dblsqd::UpdateDialog(feed);
