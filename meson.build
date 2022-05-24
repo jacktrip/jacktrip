@@ -1,5 +1,5 @@
 project('jacktrip', ['cpp','c'],
-		default_options: ['cpp_std=c++17','warning_level=2'])
+		default_options: ['cpp_std=c++17','warning_level=2','optimization=2'])
 
 if get_option('profile') == 'development'
   application_id = 'org.jacktrip.JackTrip.Devel'
