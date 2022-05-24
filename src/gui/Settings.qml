@@ -46,7 +46,7 @@ Item {
     
     Text {
         id: backendLabel
-         anchors.verticalCenter: backendCombo.verticalCenter
+        anchors.verticalCenter: backendCombo.verticalCenter
         x: leftMargin * virtualstudio.uiScale
         text: "Audio Backend"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -221,6 +221,23 @@ Item {
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         color: textColour
     }
+
+    ComboBox {
+        id: updateChannelCombo
+        x: parent.width - (232 * virtualstudio.uiScale); y: modeButton.y + (40 * virtualstudio.uiScale)
+        width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+        model: updateChannelComboModel
+        currentIndex: virtualstudio.updateChannel == "stable" ? 0 : 1
+        onActivated: { virtualstudio.updateChannel = currentIndex == 0 ? "stable": "edge" }
+        font.family: "Poppins"
+    }
+
+    Text {
+        anchors.verticalCenter: updateChannelCombo.verticalCenter
+        x: 48 * virtualstudio.uiScale
+        text: "Update Channel"
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+    }
     
     Text {
         x: leftMargin * virtualstudio.uiScale; y: parent.height - (75 * virtualstudio.uiScale)
@@ -238,7 +255,7 @@ Item {
             border.color: logoutButton.down ? buttonPressedStroke : (logoutButton.hovered ? buttonHoverStroke : buttonStroke)
         }
         onClicked: { window.state = "login"; virtualstudio.logout() }
-        x: parent.width - ((16 + buttonWidth) * virtualstudio.uiScale); y: modeButton.y + (46 * virtualstudio.uiScale)
+        x: parent.width - ((16 + buttonWidth) * virtualstudio.uiScale); y: updateChannelCombo.y + (46 * virtualstudio.uiScale)
         width: buttonWidth * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
         Text {
             text: "Log Out"

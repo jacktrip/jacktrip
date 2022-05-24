@@ -88,13 +88,15 @@ class StdDev
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
     void tick();
-    double calcAuto();
+    double calcAuto(double autoHeadroom, double localFPPdur);
     double lastTime;
     int mId;
+    int plcOverruns;
     int plcUnderruns;
     double lastMean;
     double lastMin;
     double lastMax;
+    int lastPlcOverruns;
     int lastPlcUnderruns;
     double lastStdDev;
     double longTermStdDev;
@@ -118,7 +120,7 @@ class StdDev
 class Regulator : public RingBuffer
 {
    public:
-    Regulator(int channels, int bit_res, int FPP, int qLen);
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen);
     virtual ~Regulator();
 
     void shimFPP(const int8_t* buf, int len, int seq_num);
@@ -186,6 +188,8 @@ class Regulator : public RingBuffer
     int mModCycle;
     bool mAuto;
     int mModSeqNumPeer;
+    double mAutoHeadroom;
+    double mFPPdurMsec;
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);

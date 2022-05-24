@@ -77,6 +77,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
+                   updateChannelChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
@@ -109,6 +111,8 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int currentStudio();
     QString connectionState();
+    QString updateChannel();
+    void setUpdateChannel(const QString& channel);
     bool showInactive();
     void setShowInactive(bool inactive);
     bool showSelfHosted();
@@ -158,6 +162,7 @@ class VirtualStudio : public QObject
     void showInactiveChanged();
     void showSelfHostedChanged();
     void connectionStateChanged();
+    void updateChannelChanged();
     void showDeviceSetupChanged();
     void showWarningsChanged();
     void uiScaleChanged();
@@ -187,6 +192,7 @@ class VirtualStudio : public QObject
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
+    QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
     VsQuickView m_view;
@@ -234,7 +240,8 @@ class VirtualStudio : public QObject
     quint16 m_previousBuffer;
     bool m_previousUseRtAudio = false;
 #endif
-    QStringList m_bufferOptions = {"16", "32", "64", "128", "256", "512", "1024"};
+    QStringList m_bufferOptions        = {"16", "32", "64", "128", "256", "512", "1024"};
+    QStringList m_updateChannelOptions = {"Stable", "Edge"};
 
 #ifdef __APPLE__
     NoNap m_noNap;

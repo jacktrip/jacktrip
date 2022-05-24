@@ -20,7 +20,7 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
 === "MacOS"
 
     ```bash
-    brew install meson qt5 rt-audio help2man
+    brew install meson qt5 rtaudio help2man
     ```
     
     You also need to install Jack, unless you want to disable jack support
