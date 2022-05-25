@@ -47,10 +47,16 @@
 // ./jacktrip -S --udprt -p1 --bufstrategy 3 -q auto
 // PIPEWIRE_LATENCY=32/48000 ./jacktrip -C <SERV> --udprt --bufstrategy 3 -q auto
 
-// latest
+// (mono : mono : mono)
 // ./jacktrip -S -p1 --bufstrategy 3 -q auto3 -u --receivechannels 1 --sendchannels 1
 // --udprt  -I 1
 // ./jacktrip -C <SERV> --receivechannels 1 -u --sendchannels 1 --bufstrategy 3 -q auto3
+// -I 1 --udprt
+
+// latest (mono <: stereo : stereo)
+// ./jacktrip -S -p1 --bufstrategy 3 -q auto3 -u --receivechannels 1 --sendchannels 2
+// --udprt  -I 1
+// ./jacktrip -C <SERV> --receivechannels 2 -u --sendchannels 1 --bufstrategy 3 -q auto3
 // -I 1 --udprt
 
 // example WAN test
