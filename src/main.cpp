@@ -292,7 +292,8 @@ int main(int argc, char* argv[])
 #ifndef NO_UPDATER
         // Setup auto-update feed
         dblsqd::Feed* feed = 0;
-        QString baseUrl    = "https://files.jacktrip.org/app-releases";
+        QString baseUrl =
+            "https://raw.githubusercontent.com/jacktrip/jacktrip/dev/releases";
 #ifdef Q_OS_WIN
         feed = new dblsqd::Feed();
         feed->setUrl(
