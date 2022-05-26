@@ -89,15 +89,16 @@ class StdDev
     StdDev(int id, QElapsedTimer* timer, int w);
     void tick();
     double calcAuto(double autoHeadroom, double localFPPdur);
-    double lastTime;
     int mId;
     int plcOverruns;
     int plcUnderruns;
+    double lastTime;
     double lastMean;
     double lastMin;
     double lastMax;
     int lastPlcOverruns;
     int lastPlcUnderruns;
+    double lastPLCdspElapsed;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
