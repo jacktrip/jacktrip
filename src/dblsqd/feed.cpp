@@ -271,6 +271,18 @@ void Feed::handleDownloadReadyRead()
 {
     if (downloadFile == NULL) {
         QString fileName = downloadReply->url().fileName();
+        // Workaround for dblsqd to extract filename via query params from a
+        // Github-formatted redirect URL
+        QUrl url     = downloadReply->url();
+        QString host = url.host();
+        if (host.contains("github", Qt::CaseInsensitive) && url.hasQuery()) {
+            QString query = url.query();
+            QRegExp rx("filename%3D(.*)&");
+            if (rx.indexIn(query) > -1) {
+                fileName = rx.cap(1);
+            }
+        }
+        // End workaround
         int extensionPos = fileName.indexOf(QRegExp("(?:\\.tar)?\\.[a-zA-Z0-9]+$"));
         if (extensionPos > -1) {
             fileName.insert(extensionPos, "-XXXXXX");
