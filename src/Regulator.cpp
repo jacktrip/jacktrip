@@ -140,7 +140,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
         break;
     }
     mHist = HIST;  // at FPP 32
-    if ((mNumChannels > 1) &&(mFPP > 64))
+    if ((mNumChannels > 1) && (mFPP > 64))
         mHist = 3;
     if (mFPP > 128)
         mHist = 2;
