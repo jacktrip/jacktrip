@@ -47,10 +47,16 @@
 // ./jacktrip -S --udprt -p1 --bufstrategy 3 -q auto
 // PIPEWIRE_LATENCY=32/48000 ./jacktrip -C <SERV> --udprt --bufstrategy 3 -q auto
 
-// latest
+// (mono : mono : mono)
 // ./jacktrip -S -p1 --bufstrategy 3 -q auto3 -u --receivechannels 1 --sendchannels 1
 // --udprt  -I 1
 // ./jacktrip -C <SERV> --receivechannels 1 -u --sendchannels 1 --bufstrategy 3 -q auto3
+// -I 1 --udprt
+
+// latest (mono <: stereo : stereo)
+// ./jacktrip -S -p1 --bufstrategy 3 -q auto3 -u --receivechannels 1 --sendchannels 2
+// --udprt  -I 1
+// ./jacktrip -C <SERV> --receivechannels 2 -u --sendchannels 1 --bufstrategy 3 -q auto3
 // -I 1 --udprt
 
 // example WAN test
@@ -134,6 +140,8 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
         break;
     }
     mHist = HIST;  // at FPP 32
+    if ((mNumChannels > 1) && (mFPP > 64))
+        mHist = 3;
     if (mFPP > 128)
         mHist = 2;
     if (mHist < 2)
@@ -383,18 +391,23 @@ OUTPUT:
 //*******************************************************************************
 void Regulator::processPacket(bool glitch)
 {
+    double tmp = 0.0;
     if ((glitch) && (mFPPratioDenominator > 1)) {
         glitch = !(mLastSeqNumOut % mFPPratioDenominator);
     }
-    double tmp = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    if (glitch)
+        tmp = (double)mIncomingTimer.nsecsElapsed();
     for (int ch = 0; ch < mNumChannels; ch++)
         processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
     mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 
-    // if (glitch) qDebug() << ((double)mIncomingTimer.nsecsElapsed() / 1000000.0)-tmp <<
-    // pullStat->plcOverruns;
+    if (glitch) {
+        double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
+        tmp2 /= 1000000.0;
+        pullStat->lastPLCdspElapsed = tmp2;
+    }
 }
 
 //*******************************************************************************
@@ -417,7 +430,8 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
             // LINEAR PREDICT DATA
             cd->mTail = cd->mTrain;
 
-            ba.predict(cd->mCoeffs, cd->mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
+            ba.predict(cd->mCoeffs,
+                       cd->mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
 
             for (int i = 0; i < (cd->trainSamps - 2); i++)
                 cd->mPrediction[i] = cd->mTail[i + cd->trainSamps];
@@ -520,8 +534,8 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     size_t N = x.size() - 1;
     size_t m = coeffs.size();
 
-    //        if (x.size() < m) qDebug() << "time_series should have more elements than
-    //        the AR order is";
+    //        if (x.size() < m) qDebug() << "time_series should have more elements
+    //        than the AR order is";
 
     // INITIALIZE Ak
     //    vector<long double> Ak(m + 1, 0.0);
@@ -638,23 +652,25 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
     lastTime          = 0.0;
+    lastPLCdspElapsed = 0.0;
     data.resize(w, 0.0);
 }
 
 void StdDev::reset()
 {
-    mean         = 0.0;
-    acc          = 0.0;
-    min          = 999999.0;
-    max          = 0.0;
     ctr          = 0;
     plcOverruns  = 0;
     plcUnderruns = 0;
+    mean         = 0.0;
+    acc          = 0.0;
+    min          = 999999.0;
+    max          = -999999.0;
 };
 
 double StdDev::calcAuto(double autoHeadroom, double localFPPdur)
 {
-    //    qDebug() << longTermStdDev << longTermMax << AutoMax << window << longTermCnt;
+    //    qDebug() << longTermStdDev << longTermMax << AutoMax << window <<
+    //    longTermCnt;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
@@ -730,10 +746,11 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     // hijack  of  struct IOStat {
     stat->underruns = pullStat->lastPlcUnderruns + pullStat->lastPlcOverruns;
 #define FLOATFACTOR 1000.0
-    stat->overflows          = FLOATFACTOR * pushStat->longTermStdDev;
-    stat->skew               = FLOATFACTOR * pushStat->lastMean;
-    stat->skew_raw           = FLOATFACTOR * pushStat->lastMin;
-    stat->level              = FLOATFACTOR * pushStat->longTermMax;  // was lastMax
+    stat->overflows = FLOATFACTOR * pushStat->longTermStdDev;
+    stat->skew      = FLOATFACTOR * pushStat->lastMean;
+    stat->skew_raw  = FLOATFACTOR * pushStat->lastMin;
+    stat->level     = FLOATFACTOR * pushStat->lastMax;
+    //    stat->level              = FLOATFACTOR * pushStat->longTermMax;
     stat->buf_dec_overflows  = FLOATFACTOR * pushStat->lastStdDev;
     stat->autoq_corr         = FLOATFACTOR * mMsecTolerance;
     stat->buf_dec_pktloss    = FLOATFACTOR * pullStat->longTermStdDev;
@@ -741,7 +758,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
     stat->broadcast_skew     = FLOATFACTOR * pullStat->lastMax;
     stat->broadcast_delta    = FLOATFACTOR * pullStat->lastStdDev;
-    // unused
-    //        int32_t autoq_rate;
+    stat->autoq_rate         = FLOATFACTOR * pullStat->lastPLCdspElapsed;
+    // none are unused
     return true;
 }

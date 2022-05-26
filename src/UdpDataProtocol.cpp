@@ -647,7 +647,7 @@ void UdpDataProtocol::run()
                                         newer_seq_num);
             } else {
                 waitTime += 10;
-                emit signalWaitingTooLong(waitTime);
+//                emit signalWaitingTooLong(waitTime);
             }
         }
 #ifdef __linux__
