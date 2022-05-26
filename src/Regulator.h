@@ -128,7 +128,7 @@ class Regulator : public RingBuffer
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
-    // instread of
+    // instead of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, [[maybe_unused]] int len,
                                        [[maybe_unused]] int seq_num)

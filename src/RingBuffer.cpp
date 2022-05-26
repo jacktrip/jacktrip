@@ -69,7 +69,7 @@ RingBuffer::RingBuffer(int SlotSize, int NumSlots)
     }
 
     // Advance write position to half of the RingBuffer
-    // Udpate Full Slots accordingly
+    // Update Full Slots accordingly
     mFullSlots        = (NumSlots / 2);
     mLevelDownRate    = 0.01;
     mStatUnit         = 1;
@@ -150,7 +150,7 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
 bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen)
 {
     if (len != mSlotSize && 0 != len) {
-        // RingBuffer does not suppport mixed buf sizes
+        // RingBuffer does not support mixed buf sizes
         return false;
     }
     QMutexLocker locker(&mMutex);  // lock the mutex
@@ -168,7 +168,7 @@ bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int los
     /// \todo It may be better here to insert the slot anyways,
     /// instead of not writing anything
     if (mFullSlots == mNumSlots) {
-        // std::cout << "OUPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
+        // std::cout << "OUTPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
         overflowReset();
         return true;
     }

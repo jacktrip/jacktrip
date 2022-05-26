@@ -47,7 +47,7 @@ while getopts ":inhc:d:u:p:a:b:" opt; do
       h)
         echo "JackTrip App Bundle assembly script."
         echo "Copyright (C) 2020-2021 Aaron Wyatt et al."
-        echo "Relased under the GNU GPLv3 License."
+        echo "Released under the GNU GPLv3 License."
         echo
         echo "Usage: ./assemble-app.sh [options] [appname] [bundlename]"
         echo

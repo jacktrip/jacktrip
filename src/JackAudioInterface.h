@@ -165,7 +165,7 @@ class JackAudioInterface : public AudioInterface
      *
      * <tt>jack_set_process_callback</tt> needs a static member function pointer. A normal
      * member function won't work because a <b><i>this</i></b> pointer is passed under the
-     * scenes. That's why we need to cast the member funcion processCallback to the static
+     * scenes. That's why we need to cast the member function processCallback to the static
      * function wrapperProcessCallback. The callback is then set as:\n
      * <tt>jack_set_process_callback(mClient, JackAudioInterface::wrapperProcessCallback,
      *                              this)</tt>

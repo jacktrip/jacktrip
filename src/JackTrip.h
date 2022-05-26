@@ -597,8 +597,8 @@ class JackTrip : public QObject
     /// \brief Starts for the CLIENT mode
     void clientStart();
     /// \brief Starts for the SERVER mode
-    /// \param timout Set the server to timeout after 2 seconds if no client connections
-    /// are received. Usefull for the multithreaded server \return 0 on success, -1 on
+    /// \param timeout Set the server to timeout after 2 seconds if no client connections
+    /// are received. Useful for the multithreaded server \return 0 on success, -1 on
     /// error
     int serverStart(bool timeout = false, int udpTimeout = gTimeOutMultiThreadedServer);
     /// \brief Stats for the Client to Ping Server

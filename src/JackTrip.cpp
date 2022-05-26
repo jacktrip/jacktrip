@@ -168,8 +168,8 @@ void JackTrip::setupAudio(
 {
     // Check if mAudioInterface has already been created or not
     if (mAudioInterface
-        != NULL) {  // if it has been created, disconnet it from JACK and delete it
-        cout << "WARINING: JackAudio interface was setup already:" << endl;
+        != NULL) {  // if it has been created, disconnect it from JACK and delete it
+        cout << "WARNING: JackAudio interface was setup already:" << endl;
         cout << "It will be erased and setup again." << endl;
         cout << gPrintSeparator << endl;
         closeAudio();
@@ -520,7 +520,7 @@ void JackTrip::startProcess(
                          "clientPingToServerStart"
                       << std::endl;
         if (clientPingToServerStart()
-            == -1) {  // if error on server start (-1) we return inmediatly
+            == -1) {  // if error on server start (-1) we return immediately
             stop(QStringLiteral(
                 "Peer Address has to be set if you run in CLIENTTOPINGSERVER mode"));
             return;
@@ -534,7 +534,7 @@ void JackTrip::startProcess(
                 << "  JackTrip:startProcess case SERVERPINGSERVER before serverStart"
                 << std::endl;
         if (serverStart(true)
-            == -1) {  // if error on server start (-1) we return inmediatly
+            == -1) {  // if error on server start (-1) we return immediately
             stop();
             return;
         }
@@ -823,7 +823,7 @@ void JackTrip::receivedDataTCP()
     mTcpClient.close();  // Close the socket
     // cout << "TCP Socket Closed!" << endl;
 
-    // If we sent authentication data, check if our authentication attempt was succesfull
+    // If we sent authentication data, check if our authentication attempt was successful
     if (mUseAuth && udp_port > 65535) {
         QString error_message;
         if (udp_port == Auth::WRONGCREDS) {
@@ -851,7 +851,7 @@ void JackTrip::receivedDataTCP()
     }
 
     if (gVerboseFlag)
-        cout << "Connection Succesfull!" << endl;
+        cout << "Connection Successful!" << endl;
 
     // Set with the received UDP port
     // ------------------------------
@@ -964,7 +964,7 @@ void JackTrip::receivedDataUDP()
     //     We reply to the same port the peer sent the packets from
     //     This way we can go through NAT
     //     Because of the NAT traversal scheme, the portn need to be
-    //     "symetric", e.g.:
+    //     "symmetric", e.g.:
     //     from Client to Server : src = 4474, dest = 4464
     //     from Server to Client : src = 4464, dest = 4474
     // no -- all are the same -- 4464
@@ -1296,7 +1296,7 @@ active address local_addr.sin_port = htons(bind_port); //set bind port
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 #endif
 #if defined ( __APPLE__ )
-  // This option is not avialable on Linux, and without it MAC OS X
+  // This option is not available on Linux, and without it MAC OS X
   // has problems rebinding a socket
   ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif

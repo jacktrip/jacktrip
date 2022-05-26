@@ -518,7 +518,7 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v2
         with:
-          path: ${{ env.DOWNLOAD_PATH }} # no "name" paramter - download all artifacts
+          path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
       - name: upload to the release page
         uses: softprops/action-gh-release@v1
         with:

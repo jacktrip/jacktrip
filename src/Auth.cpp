@@ -112,7 +112,7 @@ void Auth::loadAuthFile(const QString& filename)
                 continue;
             }
 
-            // Check that our password hash is useable.
+            // Check that our password hash is usable.
             bool invalid = false;
             if (lineParts.at(1).startsWith(QLatin1String("$6$"))) {
                 QStringList hashParts = lineParts.at(1).split(QStringLiteral("$"));
@@ -185,7 +185,7 @@ bool Auth::checkTime(const QString& username)
 
 char Auth::char64(int value)
 {
-    // Returns a base 64 enconding using the following characters:
+    // Returns a base 64 encoding using the following characters:
     // ./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
     if (value < 0 || value >= 64) {
         return 0;

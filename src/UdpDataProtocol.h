@@ -61,7 +61,7 @@
  * The SENDER and RECEIVER socket can share the same port/address pair (for compatibility
  * with the JamLink boxes). This is achieved setting
  * the resusable property in the socket for address and port. You have to
- * externaly check if the port is already binded if you want to avoid re-binding to the
+ * externally check if the port is already binded if you want to avoid re-binding to the
  * same port.
  */
 class UdpDataProtocol : public DataProtocol
@@ -98,9 +98,9 @@ class UdpDataProtocol : public DataProtocol
 
     /** \brief Receives a packet. It blocks until a packet is received
      *
-     * This function makes sure we recieve a complete packet
+     * This function makes sure we receive a complete packet
      * of size n
-     * \param buf Buffer to store the recieved packet
+     * \param buf Buffer to store the received packet
      * \param n size of packet to receive
      * \return number of bytes read, -1 on error
      */
@@ -141,7 +141,7 @@ class UdpDataProtocol : public DataProtocol
     /** \brief Implements the Thread Loop. To start the thread, call start()
      * ( DO NOT CALL run() )
      *
-     * This function creats and binds all the socket and start the connection loop thread.
+     * This function creates and binds all the socket and start the connection loop thread.
      */
     virtual void run();
 
@@ -180,14 +180,14 @@ class UdpDataProtocol : public DataProtocol
      */
     void waitForReady(int timeout_msec);
 
-    /** \brief Redundancy algorythm at the receiving end
+    /** \brief Redundancy algorithm at the receiving end
      */
     virtual void receivePacketRedundancy(int8_t* full_redundant_packet,
                                          int full_redundant_packet_size,
                                          int full_packet_size, uint16_t& current_seq_num,
                                          uint16_t& last_seq_num, uint16_t& newer_seq_num);
 
-    /** \brief Redundancy algorythm at the sender's end
+    /** \brief Redundancy algorithm at the sender's end
      */
     virtual void sendPacketRedundancy(int8_t* full_redundant_packet,
                                       int full_redundant_packet_size,

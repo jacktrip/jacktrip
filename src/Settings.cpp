@@ -1015,7 +1015,7 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setSampleRate(mSampleRate);
     }
 
-    // Change defualt device ID
+    // Change default device ID
     if (mChangeDefaultID) {
         jackTrip->setDeviceID(mDeviceID);
     }
