@@ -95,7 +95,7 @@ constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet
 constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
-    1.0;                           // msec padding for auto adjusting mMsecTolerance
+    3.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 6000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
@@ -271,9 +271,15 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 mAuto = true;
                 // default is -500 from bufstrategy 1 autoq mode
                 // tweak
-                if (mMsecTolerance != -500.0)
+                if (mMsecTolerance != -500.0) {
                     // use it to set headroom
                     mAutoHeadroom = -mMsecTolerance;
+                    qDebug() << "PLC is in auto mode and has been set with"
+                             << mAutoHeadroom << "ms headroom";
+                    if (mAutoHeadroom > 50.0)
+                        qDebug() << "That's a very large value and should be less than, "
+                                    "for example, 50ms";
+                }
                 // found an interesting relationship between mPeerFPP and initial
                 // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
                 // conversion of bufsize directly to msec
