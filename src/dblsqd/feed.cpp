@@ -277,7 +277,8 @@ void Feed::handleDownloadReadyRead()
         QString host = url.host();
         if (host.contains("github", Qt::CaseInsensitive) && url.hasQuery()) {
             QString query = url.query();
-            QRegExp rx("filename%3D(.*)&");
+            QRegExp rx("filename%3D(.*)(&|$)");
+            rx.setMinimal(true);
             if (rx.indexIn(query) > -1) {
                 fileName = rx.cap(1);
             }
