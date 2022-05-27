@@ -34,10 +34,20 @@
             <ComponentRef Id='ProgramMenuDir' />
         </Feature>
 
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch JackTrip" />
+        <Property Id="WixShellExecTarget" Value="[#jacktrip.exe]" />
+        <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+
         <WixVariable Id='WixUIDialogBmp' Value='dialog.bmp' />
         <WixVariable Id='WixUILicenseRtf' Value='license.rtf' />
         <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
-        <UIRef Id='WixUI_InstallDir' />
+        <UI>
+            <UIRef Id='WixUI_InstallDir' />
+            <Publish Dialog="ExitDialog"
+                Control="Finish" 
+                Event="DoAction" 
+                Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+        </UI>
         <Icon Id='jacktrip.exe' SourceFile='jacktrip.exe' />
     </Product>
 </Wix>
