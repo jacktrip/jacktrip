@@ -141,7 +141,8 @@ class UdpDataProtocol : public DataProtocol
     /** \brief Implements the Thread Loop. To start the thread, call start()
      * ( DO NOT CALL run() )
      *
-     * This function creates and binds all the socket and start the connection loop thread.
+     * This function creates and binds all the socket and start the connection loop
+     * thread.
      */
     virtual void run();
 
