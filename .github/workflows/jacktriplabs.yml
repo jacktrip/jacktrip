@@ -1,4 +1,4 @@
-name: build
+name: JackTrip Labs
 on:
   push:
     branches:

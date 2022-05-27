@@ -339,17 +339,6 @@ Item {
             visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend
             color: textColour
         }
-
-        Text {
-            id: windowsWarningLabel
-            x: leftMargin * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
-            width: parent.width - x - (16 * virtualstudio.uiScale)
-            text: "JackTrip on Windows requires use of an audio device that provides ASIO drivers. If you do not see your device, you may need to install drivers from your manufacturer."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            wrapMode: Text.WordWrap
-            visible: virtualstudio.audioBackend != "JACK" && Qt.platform.os == "windows"
-            color: warningText
-        }
         
         ComboBox {
             id: inputCombo
