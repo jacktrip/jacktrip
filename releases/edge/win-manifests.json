@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
 	"releases": [
 		{
+			"version": "1.6.0-rc.3",
+			"changelog": "Release candidate 3 for 1.6.0",
+			"download": {
+				"date": "2022-05-27T00:00:00Z",
+				"url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.3/JackTrip-v1.6.0-rc.3-Windows-x64-installer.msi",
+				"downloadSize": 43118592,
+				"sha256": "dceaf670a67cf1541007db82c5ce937b25370a7140e48192b94470f575fc4988"
+			}
+		},
+		{
 			"version": "1.6.0-rc.2",
 			"changelog": "Release candidate 2 for 1.6.0",
 			"download": {
