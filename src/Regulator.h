@@ -136,8 +136,8 @@ class Regulator : public RingBuffer
                                                 [[maybe_unused]] int seq_num, int lostLen)
     {
         shimFPP(ptrToSlot, len, seq_num);
-        if (mbBroadcastQueueLength)
-            mbReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
+        if (m_b_BroadcastQueueLength)
+            m_b_ReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
         return (true);
     }
 
@@ -146,8 +146,8 @@ class Regulator : public RingBuffer
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
     {
-        mbReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
-        mbReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot);
+        m_b_ReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
+        m_b_ReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot);
     }
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
@@ -204,7 +204,7 @@ class Regulator : public RingBuffer
     void changeGlobal_3(int);
     void printParams();
     /// Pointer for the Receive RingBuffer
-    RingBuffer* mbReceiveRingBuffer;
-    int mbBroadcastQueueLength;
+    RingBuffer* m_b_ReceiveRingBuffer;
+    int m_b_BroadcastQueueLength;
 };
 #endif  //__REGULATOR_H__

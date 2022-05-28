@@ -112,7 +112,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
     , mFPP(FPP)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
-    , mbBroadcastQueueLength(bqLen)
+    , m_b_BroadcastQueueLength(bqLen)
 {
     // catch settings that are compute bound using long HIST
     // hub client rcvChannels is set from client's settings parameters
@@ -198,11 +198,11 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
     mFPPdurMsec          = 1000.0 * mFPP / 48000.0;
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
-    if (mbBroadcastQueueLength) {
-        mbReceiveRingBuffer = new JitterBuffer(
-            mFPP, qLen, 48000, 1, mbBroadcastQueueLength, mNumChannels, mAudioBitRes);
+    if (m_b_BroadcastQueueLength) {
+        m_b_ReceiveRingBuffer = new JitterBuffer(
+            mFPP, qLen, 48000, 1, m_b_BroadcastQueueLength, mNumChannels, mAudioBitRes);
         qDebug() << "Broadcast started in Regulator with packet queue of"
-                 << mbBroadcastQueueLength;
+                 << m_b_BroadcastQueueLength;
         // have not implemented the mJackTrip->queueLengthChanged functionality
     }
 }
@@ -247,8 +247,8 @@ Regulator::~Regulator()
     for (auto& slot : mSlots) {
         delete[] slot;
     };
-    if (mbBroadcastQueueLength)
-        delete mbReceiveRingBuffer;
+    if (m_b_BroadcastQueueLength)
+        delete m_b_ReceiveRingBuffer;
 }
 
 void Regulator::setFPPratio()
