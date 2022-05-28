@@ -136,7 +136,8 @@ class Regulator : public RingBuffer
                                                 [[maybe_unused]] int seq_num, int lostLen)
     {
         shimFPP(ptrToSlot, len, seq_num);
-        if (mbBroadcastQueueLength) mbReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
+        if (mbBroadcastQueueLength)
+            mbReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
         return (true);
     }
 
