@@ -377,7 +377,8 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
-            qDebug() << "experimental buffer strategy 3 -- Regulator with PLC";
+            cout << "Using experimental buffer strategy " << mBufferStrategy
+                 << "-- Regulator with PLC" << endl;
 
             mReceiveRingBuffer =
                 new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
