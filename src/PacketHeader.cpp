@@ -297,7 +297,7 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
         // one channel"
         //	      << endl;
         // std::exit(1);
-        // std::cerr << "WARINING: JamLink only support ONE channel. Run JackTrip using
+        // std::cerr << "WARNING: JamLink only support ONE channel. Run JackTrip using
         // only one channel" << endl; throw std::logic_error("JamLink only support ONE
         // channel. Run JackTrip using only one channel");
         emit signalError(QStringLiteral(
@@ -307,7 +307,7 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
     // Sampling Rate
     int rate_type = mJackTrip->getSampleRateType();
     if (rate_type != AudioInterface::SR48) {
-        // std::cerr << "WARINING: JamLink only support 48kHz for communication with
+        // std::cerr << "WARNING: JamLink only support 48kHz for communication with
         // JackTrip at the moment." << endl; throw std::logic_error("ERROR: JamLink only
         // support 48kHz for communication with JackTrip at the moment.");
         emit signalError(
@@ -318,7 +318,7 @@ void JamLinkHeader::fillHeaderCommonFromAudio()
     // Check Buffer Size
     int buf_size = mJackTrip->getBufferSizeInSamples();
     if (buf_size != 64) {
-        // std::cerr << "WARINING: JamLink only support 64 buffer size for communication
+        // std::cerr << "WARNING: JamLink only support 64 buffer size for communication
         // with JackTrip at the moment." << endl; throw std::logic_error("ERROR: JamLink
         // only support 64 buffer size for communication with JackTrip at the moment.");
         emit signalError(QStringLiteral(

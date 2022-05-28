@@ -150,7 +150,7 @@ void JMess::connectTUB(int /*nChans*/)
             }
 
             // SC to jacktrip
-            tmp += 4;  // increase tmp for port offest
+            tmp += 4;  // increase tmp for port offset
             qDebug() << "connect " << serverAudio << HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT
                      << tmp << "with " << client << ":send_" << l;
 

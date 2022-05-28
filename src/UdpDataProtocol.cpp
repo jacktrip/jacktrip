@@ -217,7 +217,7 @@ int UdpDataProtocol::bindSocket()
 
     err = WSAStartup(wVersionRequested, &wsaData);
     if (err != 0) {
-        // Tell the user that we couldn't find a useable
+        // Tell the user that we couldn't find a usable
         // winsock.dll.
 
         return INVALID_SOCKET;
@@ -226,7 +226,7 @@ int UdpDataProtocol::bindSocket()
     // Confirm that the Windows Sockets DLL supports 1.1. or higher
 
     if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
-        // Tell the user that we couldn't find a useable
+        // Tell the user that we couldn't find a usable
         // winsock.dll.
         WSACleanup();
         return INVALID_SOCKET;
@@ -267,7 +267,7 @@ int UdpDataProtocol::bindSocket()
 #elif defined(__linux__)
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 #else
-    // This option is not avialable on Linux, and without it MAC OS X
+    // This option is not available on Linux, and without it MAC OS X
     // has problems rebinding a socket
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
@@ -690,7 +690,7 @@ void UdpDataProtocol::waitForReady(int timeout_msec)
     int loop_resolution_usec = 100;    // usecs to wait on each loop
     int emit_resolution_usec = 10000;  // 10 milliseconds
     int timeout_usec         = timeout_msec * 1000;
-    int elapsed_time_usec    = 0;  // Ellapsed time in milliseconds
+    int elapsed_time_usec    = 0;  // Elapsed time in milliseconds
 
     while (!datagramAvailable() && (elapsed_time_usec <= timeout_usec) && !mStopped) {
         //    if (mStopped) { return false; }
@@ -879,7 +879,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
     // Move older packets to end of array of redundant packets
     std::memmove(full_redundant_packet + full_packet_size, full_redundant_packet,
                  full_packet_size * (mUdpRedundancyFactor - 1));
-    // Copy new packet to the begining of array
+    // Copy new packet to the beginning of array
     std::memcpy(full_redundant_packet, mFullPacket, full_packet_size);
 
     // 10% (or other number) packet lost simulation.
@@ -929,7 +929,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
   etc...
 
   Then, the receiving end checks if the firs packet in the list is the one it should use,
-  otherwise it continure reding the mUdpRedundancyFactor packets until it finds the one that
+  otherwise it continue reading the mUdpRedundancyFactor packets until it finds the one that
   should come next (this can better perfected by just jumping until the correct packet).
   If it has more than one packet that it hasn't yet received, it sends it to the soundcard
   one by one.

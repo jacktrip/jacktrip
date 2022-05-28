@@ -152,10 +152,10 @@ class JackTripWorker : public QObject
     UdpHubListener* mUdpHubListener;  ///< Hub Listener Socket
     // QHostAddress mClientAddress; ///< Client Address
     QString mClientAddress;
-    uint16_t mServerPort;  ///< Server Ephemeral Incomming Port to use with Client
+    uint16_t mServerPort;  ///< Server Ephemeral Incoming Port to use with Client
     bool m_connectDefaultAudioPorts = false;
 
-    /// Client Outgoing Port. By convention, the receving port will be <tt>mClientPort
+    /// Client Outgoing Port. By convention, the receiving port will be <tt>mClientPort
     /// -1</tt>
     uint16_t mClientPort;
 

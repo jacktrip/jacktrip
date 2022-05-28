@@ -48,7 +48,7 @@
 #include "jacktrip_types.h"
 class JackTrip;  // Forward Declaration
 
-/// \brief Abstract Header Struct, Header Stucts should subclass it
+/// \brief Abstract Header Struct, Header Structs should subclass it
 struct HeaderStruct {
 };
 

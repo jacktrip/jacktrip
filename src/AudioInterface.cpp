@@ -160,7 +160,7 @@ void AudioInterface::setup()
     mAudioInputPacket  = new int8_t[size_audio_input];
     mAudioOutputPacket = new int8_t[size_audio_output];
 
-    // Initialize and asign memory for ProcessPlugins Buffers
+    // Initialize and assign memory for ProcessPlugins Buffers
 #ifdef WAIR  // WAIR
     if (mNumNetRevChans) {
         mInProcessBuffer.resize(mNumNetRevChans);

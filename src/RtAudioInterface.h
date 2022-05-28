@@ -60,7 +60,7 @@ class RtAudioInterface : public AudioInterface
     /// \brief The class destructor
     virtual ~RtAudioInterface();
 
-    /// \brief List all avialable audio interfaces, with its properties
+    /// \brief List all available audio interfaces, with its properties
     virtual void listAllInterfaces();
     static void printDevices();
     virtual int getDeviceIdFromName(std::string deviceName, bool isInput);
