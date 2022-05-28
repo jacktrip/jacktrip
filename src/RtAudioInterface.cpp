@@ -155,7 +155,7 @@ void RtAudioInterface::setup()
 
     try {
         // IMPORTANT NOTE: It's VERY important to remember to pass this
-        // as the user data in the process callback, otherwise memeber won't
+        // as the user data in the process callback, otherwise member won't
         // be accessible
         mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                              &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
@@ -268,7 +268,7 @@ void RtAudioInterface::printDeviceInfo(unsigned int deviceId)
         cout << "  --Default Output Device--" << endl;
     }
     if (info.isDefaultInput) {
-        cout << "  --Default Intput Device--" << endl;
+        cout << "  --Default Input Device--" << endl;
     }
     if (info.probed) {
         cout << "  --Probed Successful--" << endl;

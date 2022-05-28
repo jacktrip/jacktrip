@@ -130,7 +130,7 @@ UdpHubListener::~UdpHubListener()
 }
 
 //*******************************************************************************
-// Now that the first handshake is with TCP server, if the addreess/peer port of
+// Now that the first handshake is with TCP server, if the address/peer port of
 // the client is already on the thread pool, it means that a new connection is
 // requested (the old was disconnected). So we have to remove that thread from
 // the pool and then connect again.
@@ -153,7 +153,7 @@ void UdpHubListener::start()
 
     if (mRequireAuth) {
         cout << "JackTrip HUB SERVER: Enabling authentication" << endl;
-        // Check that SSL is avaialable
+        // Check that SSL is available
         bool error = false;
         QString error_message;
         if (!QSslSocket::supportsSsl()) {
@@ -316,7 +316,7 @@ void UdpHubListener::receivedClientInfo(QSslSocket* clientConnection)
 
     // Create a new JackTripWorker, but don't check if this is coming from an existing ip
     // or port yet. We need to wait until we receive the port value from the UDP header to
-    // accomodate NAT.
+    // accommodate NAT.
     // -----------------------------
     int id = getJackTripWorker(PeerAddress.toString(), peer_udp_port, clientName);
 

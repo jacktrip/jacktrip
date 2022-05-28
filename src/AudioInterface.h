@@ -109,9 +109,9 @@ class AudioInterface
     /** \brief Process callback. Subclass should call this callback after obtaining the
     in_buffer and out_buffer pointers.
     * \param in_buffer Array of input audio samplers for each channel. The user
-    * is reponsible to check that each channel has n_frames samplers
+    * is responsible to check that each channel has n_frames samplers
     * \param in_buffer Array of output audio samplers for each channel. The user
-    * is reponsible to check that each channel has n_frames samplers
+    * is responsible to check that each channel has n_frames samplers
     */
     virtual void broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
                                    unsigned int n_frames);

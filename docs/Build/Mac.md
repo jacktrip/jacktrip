@@ -72,7 +72,7 @@ To build using QtCreator:
   * Open jacktrip.pro using QtCreator
   * Choose a correctly configured Kit
 
-QtCreator places the `jacktrip` executabe by default in a folder
+QtCreator places the `jacktrip` executable by default in a folder
 with a name like `build-jacktrip-Desktop_x86_darwin_generic_mach_o_64bit-Release/`.
 
 ## Installation

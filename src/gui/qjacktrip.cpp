@@ -479,7 +479,7 @@ void QJackTrip::processError(const QString& errorMessage)
 {
     QMessageBox msgBox;
     if (errorMessage == QLatin1String("Peer Stopped")) {
-        // Report the other end quitting as a regular occurance rather than an error.
+        // Report the other end quitting as a regular occurrence rather than an error.
         msgBox.setText(errorMessage);
         msgBox.setWindowTitle(QStringLiteral("Disconnected"));
     } else {

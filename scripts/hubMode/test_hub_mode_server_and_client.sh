@@ -48,7 +48,7 @@ if [ $JACKD != 0 ]
 # killall jackd
     if [ "$(ps -aux | grep -c jackd)" != 1 ]; then killall jackd; fi;
 # if jackd is or has been running with another driver
-# much experimenation shows it literally takes this long
+# much experimentation shows it literally takes this long
     sleep 17
 # to flush old connections before starting the dummy driver
 

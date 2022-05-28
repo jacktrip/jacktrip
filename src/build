@@ -4,7 +4,7 @@ if [[ -t 1 ]]; then
 	echo -e "\033[1;31mIMPORTANT\033[0m"
 	echo "The build script is now located in the root jacktrip folder and should"
 	echo "be run from there in future. (This script will eventually be removed and"
-	echo "is included for compatability during the transition.)"
+	echo "is included for compatibility during the transition.)"
 	echo
 	echo "In future, after cloning the repository with git use the following commands:"
 	echo -e "\033[1m$ cd jacktrip"

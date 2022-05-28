@@ -47,7 +47,7 @@ Meson shows you also the options of subprojects like RtAudio.
 ## Build
 
 Meson builds in a separate directory. It doesn't touch anything of your project.
-This way you can have seperate debug and release build directories for example. 
+This way you can have separate debug and release build directories for example. 
 
 Prepare your build directory:
 ```bash

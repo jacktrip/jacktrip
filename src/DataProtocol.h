@@ -153,7 +153,7 @@ class DataProtocol : public QThread
      */
     virtual void setPeerAddress(const char* peerHostOrIP) = 0;
 
-    /** \brief Set the peer incomming (receiving) port number
+    /** \brief Set the peer incoming (receiving) port number
      * \param port Port number
      * \todo implement here instead of in the subclass UDP
      */
