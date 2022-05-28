@@ -203,6 +203,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
             mFPP, qLen, 48000, 1, mbBroadcastQueueLength, mNumChannels, mAudioBitRes);
         qDebug() << "Broadcast started in Regulator with packet queue of"
                  << mbBroadcastQueueLength;
+        // have not implemented the mJackTrip->queueLengthChanged functionality
     }
 }
 
