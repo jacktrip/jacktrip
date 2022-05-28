@@ -64,6 +64,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     : QObject(parent), m_showFirstRun(firstRun)
 {
     QSettings settings;
+    m_updateChannel =
+        settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower();
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     m_refreshToken    = settings.value(QStringLiteral("RefreshToken"), "").toString();
     m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
@@ -72,6 +74,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_showInactive    = settings.value(QStringLiteral("ShowInactive"), false).toBool();
     m_showSelfHosted  = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
     m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
+    m_showWarnings    = settings.value(QStringLiteral("ShowWarnings"), true).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
@@ -125,6 +128,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("bufferComboModel"), QVariant::fromValue(m_bufferOptions));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("updateChannelComboModel"),
+        QVariant::fromValue(m_updateChannelOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
@@ -294,6 +300,19 @@ QString VirtualStudio::connectionState()
     return m_connectionState;
 }
 
+QString VirtualStudio::updateChannel()
+{
+    return m_updateChannel;
+}
+
+void VirtualStudio::setUpdateChannel(const QString& channel)
+{
+    m_updateChannel = channel;
+    QSettings settings;
+    settings.setValue(QStringLiteral("UpdateChannel"), m_updateChannel);
+    emit updateChannelChanged();
+}
+
 bool VirtualStudio::showInactive()
 {
     return m_showInactive;
@@ -330,6 +349,21 @@ bool VirtualStudio::showDeviceSetup()
 void VirtualStudio::setShowDeviceSetup(bool show)
 {
     m_showDeviceSetup = show;
+}
+
+bool VirtualStudio::showWarnings()
+{
+    return m_showWarnings;
+}
+
+void VirtualStudio::setShowWarnings(bool show)
+{
+    m_showWarnings = show;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("ShowWarnings"), m_showWarnings);
+    settings.endGroup();
+    emit showWarningsChanged();
 }
 
 float VirtualStudio::fontScale()

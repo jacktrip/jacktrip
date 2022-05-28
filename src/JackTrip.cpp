@@ -377,7 +377,8 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if (mBufferStrategy == 3) {
-            qDebug() << "experimental buffer strategy 3 -- regulator with PLC";
+            qDebug() << "experimental buffer strategy 3 -- Regulator with PLC";
+
             mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
                                                mAudioBufferSize, mBufferQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
@@ -648,8 +649,7 @@ void JackTrip::onStatTimer()
             << now.toLocal8Bit().constData() << " "
             << getPeerAddress().toLocal8Bit().constData()
             << " send: " << send_io_stat.underruns << "/" << send_io_stat.overflows
-            << " Pull underruns: "
-            << recv_io_stat.underruns  // pullStat->lastPlcUnderruns;
+            << " Glitches: " << recv_io_stat.underruns  // pullStat->lastPlcUnderruns;
 #define INVFLOATFACTOR 0.001
             << "\nPUSH -- SD avg/last: " << setw(5)
             << INVFLOATFACTOR * recv_io_stat.overflows  // pushStat->longTermStdDev;
@@ -677,7 +677,8 @@ void JackTrip::onStatTimer()
             //                     pkt_stat.lost << "/"
             //                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
             << " \n tot: " << pkt_stat.tot << " \t tol: " << setw(5)
-            << INVFLOATFACTOR * recv_io_stat.autoq_corr
+            << INVFLOATFACTOR * recv_io_stat.autoq_corr << " \t dsp (last): " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.autoq_rate
             //                     << " sync: " << recv_io_stat.level << "/"
             //                     << recv_io_stat.buf_inc_underrun << "/"
             //                     << recv_io_stat.buf_inc_compensate << "/"

@@ -1,0 +1,35 @@
+{
+    "app_name": "JackTrip",
+	"releases": [
+		{
+			"version": "1.6.0-rc.3",
+			"changelog": "Release candidate 3 for 1.6.0",
+			"download": {
+				"date": "2022-05-27T00:00:00Z",
+				"url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-rc.3-macOS-x64-installer.pkg",
+				"downloadSize": 11460230,
+				"sha256": "c9614964974d61c062d905f01c7d30ab04a697562ecfba6264392aebe7161051"
+			}
+		},
+		{
+			"version": "1.6.0-rc.2",
+			"changelog": "Release candidate 2 for 1.6.0",
+			"download": {
+				"date": "2022-05-26T00:00:00Z",
+				"url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-rc.2-macOS-x64-signed-installer.pkg",
+				"downloadSize": 11460155,
+				"sha256": "ad508680115f73036da3a5328ddf0841b86620406406e0ffaa4b982e24a27771"
+			}
+		},
+		{
+			"version": "1.6.0-rc.1",
+			"changelog": "Release candidate 1 for 1.6.0",
+			"download": {
+				"date": "2022-05-23T00:00:00Z",
+				"url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.1/JackTrip-v1.6.0-rc.1-macOS-x64-installer.pkg",
+				"downloadSize": 11076221,
+				"sha256": "071cda0ce59361e474a04db00beec41e92d2d823dab71e3fab179faf89f6fd7e"
+			}
+		}
+	]
+}

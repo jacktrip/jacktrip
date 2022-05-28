@@ -1,3 +1,12 @@
+- Version: "1.6.0"
+  Date: 2022-05-30
+  Description:
+  - (added) Virtual Studio integration; previous GUI is now called "Classic Mode"
+  - (added) dblsqd for auto-updates
+  - (updated) buffer strategy 3 - multiple updates and fixes, still experimental
+  - (added) JackTrip Labs signing scripts
+  - (fixed) OpenSSL in the build script
+  - (updated) code cleanup and maintenance
 - Version: "1.5.3"
   Date: 2022-03-28
   Description:
