@@ -234,9 +234,10 @@ Item {
 
     Text {
         anchors.verticalCenter: updateChannelCombo.verticalCenter
-        x: 48 * virtualstudio.uiScale
+        x: leftMargin * virtualstudio.uiScale
         text: "Update Channel"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+        color: textColour
     }
     
     Text {
