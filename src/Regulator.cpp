@@ -84,6 +84,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "JitterBuffer.h"
 #include "jacktrip_globals.h"
 using std::cout;
 using std::endl;
@@ -196,6 +197,13 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
     mFPPdurMsec          = 1000.0 * mFPP / 48000.0;
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
+
+    unsigned int bSampleRate  = 48000;
+    int bbufferStrategy       = 1;
+    int bbroadcastQueueLength = 150;
+    mbReceiveRingBuffer =
+        new JitterBuffer(mFPP, qLen, bSampleRate, bbufferStrategy, bbroadcastQueueLength,
+                         mNumChannels, mAudioBitRes);
 }
 
 void Regulator::changeGlobal(double x)

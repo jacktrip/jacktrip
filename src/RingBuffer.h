@@ -94,6 +94,12 @@ class RingBuffer
      */
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen);
 
+    /** \brief Same as insertSlotNonBlocking but seq_num for Regulator
+     * \param ptrToSlot Pointer to slot to insert into the RingBuffer
+     */
+    virtual bool insertSlotNonBlockingRegulator(const int8_t* ptrToSlot, int len,
+                                                int seq_num, int lostLen);
+
     /** \brief Same as readSlotBlocking but non-blocking (asynchronous)
      * \param ptrToReadSlot Pointer to read slot from the RingBuffer
      */

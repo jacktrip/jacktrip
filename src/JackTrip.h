@@ -399,6 +399,12 @@ class JackTrip : public QObject
     {
         return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
     }
+    virtual bool writeAudioBufferRegulator(const int8_t* ptrToSlot, int len, int seq,
+                                           int lostLen)
+    {
+        return mReceiveRingBuffer->insertSlotNonBlockingRegulator(ptrToSlot, len, seq,
+                                                                  lostLen);
+    }
     uint32_t getBufferSizeInSamples() const
     {
         return mAudioBufferSize; /*return mAudioInterface->getBufferSizeInSamples();*/
