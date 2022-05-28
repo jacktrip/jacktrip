@@ -794,6 +794,7 @@ void VirtualStudio::processFinished()
 
     m_jackTripRunning = false;
     m_connectionState = QStringLiteral("Disconnected");
+    m_jackTrip.reset();
     emit connectionStateChanged();
     emit disconnected();
     m_onConnectedScreen = false;
