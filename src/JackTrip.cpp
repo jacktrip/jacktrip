@@ -379,8 +379,9 @@ void JackTrip::setupRingBuffers()
         } else if (mBufferStrategy == 3) {
             qDebug() << "experimental buffer strategy 3 -- Regulator with PLC";
 
-            mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
-                                               mAudioBufferSize, mBufferQueueLength);
+            mReceiveRingBuffer =
+                new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
+                              mBufferQueueLength, mBroadcastQueueLength);
             // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
