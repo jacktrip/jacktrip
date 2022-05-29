@@ -15,6 +15,7 @@ Item {
     property int buttonHeight: 25
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
+    property string imageLightnessValue: virtualstudio.darkMode ? 1 : 0
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
@@ -31,84 +32,6 @@ Item {
     property string saveButtonText: "#DB0A0A"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
-    
-    Text {
-        x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
-        text: "Choose your audio devices"
-        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-        color: textColour
-    }
-    
-    ComboBox {
-        id: backendCombo
-        model: backendComboModel
-        currentIndex: virtualstudio.audioBackend == "JACK" ? 0 : 1
-        onActivated: { virtualstudio.audioBackend = currentText }
-        x: 234 * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
-        width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-        visible: virtualstudio.selectableBackend
-    }
-    
-    Text {
-        id: backendLabel
-         anchors.verticalCenter: backendCombo.verticalCenter
-        x: leftMargin * virtualstudio.uiScale
-        text: "Audio Backend"
-        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        visible: virtualstudio.selectableBackend
-        color: textColour
-    }
-    
-    Text {
-        id: jackLabel
-        x: leftMargin * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
-        width: parent.width - x - (16 * virtualstudio.uiScale)
-        text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
-        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        wrapMode: Text.WordWrap
-        visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend
-        color: textColour
-    }
-    
-    ComboBox {
-        id: inputCombo
-        model: inputComboModel
-        currentIndex: virtualstudio.inputDevice
-        onActivated: { virtualstudio.inputDevice = currentIndex }
-        x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 198 : 150)
-        width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-        visible: virtualstudio.audioBackend != "JACK"
-    }
-    
-    ComboBox {
-        id: outputCombo
-        model: outputComboModel
-        currentIndex: virtualstudio.outputDevice
-        onActivated: { virtualstudio.outputDevice = currentIndex }
-        x: backendCombo.x; y: inputCombo.y + (48 * virtualstudio.uiScale)
-        width: backendCombo.width; height: backendCombo.height
-        visible: virtualstudio.audioBackend != "JACK"
-    }
-    
-    Text {
-        id: inputLabel
-        anchors.verticalCenter: inputCombo.verticalCenter
-        x: leftMargin * virtualstudio.uiScale
-        text: "Input Device"
-        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        visible: virtualstudio.audioBackend != "JACK"
-        color: textColour
-    }
-    
-    Text {
-        id: outputLabel
-        anchors.verticalCenter: outputCombo.verticalCenter
-        x: leftMargin * virtualstudio.uiScale
-        text: "Output Device"
-        font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
-        visible: virtualstudio.audioBackend != "JACK"
-        color: textColour
-    }
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : "acknowledged"
@@ -125,6 +48,14 @@ Item {
             height: 128
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Colorize {
+            anchors.fill: ethernetWarningLogo
+            source: ethernetWarningLogo
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
         
         Text {
@@ -253,6 +184,14 @@ Item {
             height: 128
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Colorize {
+            anchors.fill: headphoneWarningLogo
+            source: headphoneWarningLogo
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
         
         Text {
