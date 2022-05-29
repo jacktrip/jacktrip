@@ -187,7 +187,7 @@ Item {
         x: parent.width - (232 * virtualstudio.uiScale); y: scaleSlider.y + (40 * virtualstudio.uiScale)
         width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
         Text {
-            text: "Switch to Classic Mode"
+            text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             color: textColour
@@ -230,6 +230,7 @@ Item {
         currentIndex: virtualstudio.updateChannel == "stable" ? 0 : 1
         onActivated: { virtualstudio.updateChannel = currentIndex == 0 ? "stable": "edge" }
         font.family: "Poppins"
+        visible: !virtualstudio.noUpdater
     }
 
     Text {
@@ -238,6 +239,7 @@ Item {
         text: "Update Channel"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         color: textColour
+        visible: !virtualstudio.noUpdater
     }
     
     Text {
@@ -256,7 +258,8 @@ Item {
             border.color: logoutButton.down ? buttonPressedStroke : (logoutButton.hovered ? buttonHoverStroke : buttonStroke)
         }
         onClicked: { window.state = "login"; virtualstudio.logout() }
-        x: parent.width - ((16 + buttonWidth) * virtualstudio.uiScale); y: updateChannelCombo.y + (46 * virtualstudio.uiScale)
+        x: parent.width - ((16 + buttonWidth) * virtualstudio.uiScale)
+        y: virtualstudio.noUpdater ? modeButton.y + (46 * virtualstudio.uiScale) : updateChannelCombo.y + (46 * virtualstudio.uiScale)
         width: buttonWidth * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
         Text {
             text: "Log Out"

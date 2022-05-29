@@ -705,6 +705,7 @@ void QJackTrip::resetOptions()
     m_ui->realTimeCheckBox->setChecked(true);
     m_ui->ioStatsCheckBox->setChecked(false);
     m_ui->ioStatsSpinBox->setValue(1);
+    m_ui->verboseCheckBox->setChecked(false);
 
     saveSettings();
 }

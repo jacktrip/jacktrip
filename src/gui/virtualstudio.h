@@ -86,7 +86,7 @@ class VirtualStudio : public QObject
                    showDeviceSetupChanged)
     Q_PROPERTY(bool showWarnings READ showWarnings WRITE setShowWarnings NOTIFY
                    showWarningsChanged)
-
+    Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
 
    public:
@@ -126,6 +126,7 @@ class VirtualStudio : public QObject
     void setShowDeviceSetup(bool show);
     bool showWarnings();
     void setShowWarnings(bool show);
+    bool noUpdater();
     bool psiBuild();
 
    public slots:

@@ -833,6 +833,9 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           <property name="minimum">
            <number>2</number>
           </property>
+          <property name="maximum">
+           <number>999</number>
+          </property>
           <property name="value">
            <number>4</number>
           </property>
@@ -1476,6 +1479,12 @@ for better quality at the expense of latency.</string>
           </property>
           <property name="toolTip">
            <string>Set the broadcast queue buffer length, in packet size.</string>
+          </property>
+          <property name="minimum">
+           <number>2</number>
+          </property>
+          <property name="maximum">
+           <number>999</number>
           </property>
           <property name="value">
            <number>8</number>

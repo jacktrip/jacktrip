@@ -397,6 +397,15 @@ void VirtualStudio::setDarkMode(bool dark)
     emit darkModeChanged();
 }
 
+bool VirtualStudio::noUpdater()
+{
+#ifdef NO_UPDATER
+    return true;
+#else
+    return false;
+#endif
+}
+
 bool VirtualStudio::psiBuild()
 {
 #ifdef PSI
