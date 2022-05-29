@@ -123,7 +123,7 @@ Item {
         width: 234 * virtualstudio.uiScale; height: 337.37 * virtualstudio.uiScale;
     }
     Text {
-        text: virtualstudio.psibuild ? "• Connect via IP address<br>• Run a local hub server<br>• The Standard JackTrip experience" :
+        text: virtualstudio.psiBuild ? "• Connect via IP address<br>• Run a local hub server<br>• The Standard JackTrip experience" :
               "• Connect via IP address<br>• Run a local hub server<br>• The Classic JackTrip experience"
         textFormat: Text.StyledText
         font.family: "Poppins"
