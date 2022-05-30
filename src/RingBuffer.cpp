@@ -184,6 +184,15 @@ bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int los
 }
 
 //*******************************************************************************
+bool RingBuffer::insertSlotNonBlockingRegulator([[maybe_unused]] const int8_t* ptrToSlot,
+                                                [[maybe_unused]] int len,
+                                                [[maybe_unused]] int seq_num,
+                                                [[maybe_unused]] int lostLen)
+{
+    return true;
+}
+
+//*******************************************************************************
 void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
     QMutexLocker locker(&mMutex);  // lock the mutex

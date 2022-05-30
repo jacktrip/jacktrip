@@ -84,6 +84,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "JitterBuffer.h"
 #include "jacktrip_globals.h"
 using std::cout;
 using std::endl;
@@ -104,13 +105,14 @@ constexpr double AutoInitValFactor =
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
     : RingBuffer(0, 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
+    , m_b_BroadcastQueueLength(bqLen)
 {
     // catch settings that are compute bound using long HIST
     // hub client rcvChannels is set from client's settings parameters
@@ -196,6 +198,13 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen)
     mFPPdurMsec          = 1000.0 * mFPP / 48000.0;
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
+    if (m_b_BroadcastQueueLength) {
+        m_b_ReceiveRingBuffer = new JitterBuffer(
+            mFPP, qLen, 48000, 1, m_b_BroadcastQueueLength, mNumChannels, mAudioBitRes);
+        qDebug() << "Broadcast started in Regulator with packet queue of"
+                 << m_b_BroadcastQueueLength;
+        // have not implemented the mJackTrip->queueLengthChanged functionality
+    }
 }
 
 void Regulator::changeGlobal(double x)
@@ -238,6 +247,8 @@ Regulator::~Regulator()
     for (auto& slot : mSlots) {
         delete[] slot;
     };
+    if (m_b_BroadcastQueueLength)
+        delete m_b_ReceiveRingBuffer;
 }
 
 void Regulator::setFPPratio()

@@ -121,7 +121,7 @@ class StdDev
 class Regulator : public RingBuffer
 {
    public:
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen);
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen);
     virtual ~Regulator();
 
     void shimFPP(const int8_t* buf, int len, int seq_num);
@@ -131,16 +131,24 @@ class Regulator : public RingBuffer
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instead of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, [[maybe_unused]] int len,
-                                       [[maybe_unused]] int seq_num)
+    virtual bool insertSlotNonBlockingRegulator(const int8_t* ptrToSlot,
+                                                [[maybe_unused]] int len,
+                                                [[maybe_unused]] int seq_num, int lostLen)
     {
         shimFPP(ptrToSlot, len, seq_num);
+        if (m_b_BroadcastQueueLength)
+            m_b_ReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
         return (true);
     }
 
     void pullPacket(int8_t* buf);
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
+    virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
+    {
+        m_b_ReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
+        m_b_ReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot);
+    }
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
@@ -195,5 +203,8 @@ class Regulator : public RingBuffer
     void changeGlobal_2(int);
     void changeGlobal_3(int);
     void printParams();
+    /// Pointer for the Receive RingBuffer
+    RingBuffer* m_b_ReceiveRingBuffer;
+    int m_b_BroadcastQueueLength;
 };
 #endif  //__REGULATOR_H__
