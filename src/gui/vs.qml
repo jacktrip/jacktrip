@@ -2,9 +2,12 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 Rectangle {
+    property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
+    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    
     width: 696
     height: 577
-    color: "#FAFBFB"
+    color: backgroundColour
     state: virtualstudio.showFirstRun ? "start" : "login"
     anchors.fill: parent
 
@@ -24,7 +27,7 @@ Rectangle {
             name: "login"
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: loginScreen; x: 0; failTextVisible: false }
-            PropertyChanges { target: setupScreen; x: window.width; showContents: false }
+            PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
@@ -54,7 +57,7 @@ Rectangle {
             name: "settings"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
-            PropertyChanges { target: setupScreen; x: -2*setupScreen.width }
+            PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
             PropertyChanges { target: connectedScreen; x: window.width }
@@ -78,6 +81,10 @@ Rectangle {
     FirstLaunch {
         id: startScreen
     }
+    
+    Setup {
+        id: setupScreen
+    }
 
     Browse {
         id: browseScreen
@@ -95,13 +102,15 @@ Rectangle {
         id: connectedScreen
     }
 
-    Setup {
-        id: setupScreen
-    }
-
     Connections {
         target: virtualstudio
-        function onAuthSucceeded() { if (virtualstudio.showDeviceSetup) { window.state = "setup" } else { window.state = "browse"; setupScreen.showContents = false }}
+        function onAuthSucceeded() { 
+            if (virtualstudio.showDeviceSetup) {
+                window.state = "setup";
+            } else {
+                window.state = "browse";
+            }
+        }
         function onAuthFailed() { loginScreen.failTextVisible = true }
         //function onConnected() { }
         function onDisconnected() { window.state = "browse" }

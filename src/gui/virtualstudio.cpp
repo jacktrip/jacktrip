@@ -70,6 +70,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_refreshToken    = settings.value(QStringLiteral("RefreshToken"), "").toString();
     m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
     m_uiScale         = settings.value(QStringLiteral("UiScale"), 1).toFloat();
+    m_darkMode        = settings.value(QStringLiteral("DarkMode"), false).toBool();
     m_showInactive    = settings.value(QStringLiteral("ShowInactive"), false).toBool();
     m_showSelfHosted  = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
     m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
@@ -379,6 +380,30 @@ void VirtualStudio::setUiScale(float scale)
 {
     m_uiScale = scale;
     emit uiScaleChanged();
+}
+
+bool VirtualStudio::darkMode()
+{
+    return m_darkMode;
+}
+
+void VirtualStudio::setDarkMode(bool dark)
+{
+    m_darkMode = dark;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("DarkMode"), m_darkMode);
+    settings.endGroup();
+    emit darkModeChanged();
+}
+
+bool VirtualStudio::noUpdater()
+{
+#ifdef NO_UPDATER
+    return true;
+#else
+    return false;
+#endif
 }
 
 bool VirtualStudio::psiBuild()
@@ -712,21 +737,6 @@ void VirtualStudio::manageStudio(int studioIndex)
         QUrl(QStringLiteral("https://app.jacktrip.org/studios/%1")
                  .arg(static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     QDesktopServices::openUrl(url);
-}
-
-void VirtualStudio::toggleInactiveFilter()
-{
-    setShowInactive(!m_showInactive);
-}
-
-void VirtualStudio::toggleSelfHostedFilter()
-{
-    setShowSelfHosted(!m_showSelfHosted);
-}
-
-void VirtualStudio::toggleShowDeviceSetup()
-{
-    setShowDeviceSetup(!m_showDeviceSetup);
 }
 
 void VirtualStudio::createStudio()

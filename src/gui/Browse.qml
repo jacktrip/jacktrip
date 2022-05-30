@@ -5,6 +5,11 @@ import QtGraphicalEffects 1.12
 Item {
     width: parent.width; height: parent.height
     clip: true
+
+    Rectangle {
+        width: parent.width; height: parent.height
+        color: backgroundColour
+    }
     
     property bool refreshing: false
     
@@ -13,7 +18,16 @@ Item {
     property int fontMedium: 11
     
     property int scrollY: 0
-
+    
+    property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
+    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
+    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
+    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
+    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
+    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
+    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+    
     function refresh() {
         scrollY = studioListView.contentY;
         var currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY);
@@ -49,6 +63,7 @@ Item {
                 // text: parent.section (for 5.15)
                 text: section
                 font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
+                color: textColour
             }
             Button {
                 id: createButton
@@ -138,7 +153,11 @@ Item {
                         CheckBox {
                             id: inactiveCheckbox
                             text: qsTr("Show my inactive Studios")
-                            onClicked: { virtualstudio.toggleInactiveFilter(); refreshing = true; refresh() }
+                            checkState: virtualstudio.showInactive ? Qt.Checked : Qt.Unchecked
+                            onClicked: { virtualstudio.showInactive = inactiveCheckbox.checkState == Qt.Checked;
+                                refreshing = true;
+                                refresh();
+                            }
                             indicator: Rectangle {
                                 implicitWidth: 16 * virtualstudio.uiScale
                                 implicitHeight: 16 * virtualstudio.uiScale
@@ -169,14 +188,18 @@ Item {
                         CheckBox {
                             id: selfHostedCheckbox
                             text: qsTr("Show self-hosted Studios")
-                            onClicked: { virtualstudio.toggleSelfHostedFilter(); refreshing = true; refresh() }
+                            checkState: virtualstudio.showSelfHosted ? Qt.Checked : Qt.Unchecked
+                            onClicked: { virtualstudio.showSelfHosted = selfHostedCheckbox.checkState == Qt.Checked;
+                                refreshing = true;
+                                refresh();
+                            }
                             indicator: Rectangle {
                                 implicitWidth: 16 * virtualstudio.uiScale
                                 implicitHeight: 16 * virtualstudio.uiScale
                                 x: selfHostedCheckbox.leftPadding
                                 y: parent.height / 2 - height / 2
                                 radius: 3 * virtualstudio.uiScale
-                                border.color: selfHostedCheckbox.down ? "#007AFF" : "#0062cc"
+                                border.color: selfHostedCheckbox.down ? "#007AFF" : "#0062CC"
 
                                 Rectangle {
                                     width: 10 * virtualstudio.uiScale
@@ -184,7 +207,7 @@ Item {
                                     x: 3 * virtualstudio.uiScale
                                     y: 3 * virtualstudio.uiScale
                                     radius: 2 * virtualstudio.uiScale
-                                    color: selfHostedCheckbox.down ? "#007AFF" : "#0062cc"
+                                    color: selfHostedCheckbox.down ? "#007AFF" : "#0062CC"
                                     visible: selfHostedCheckbox.checked
                                 }
                             }
@@ -209,7 +232,7 @@ Item {
             height: 16 * virtualstudio.uiScale
             x: 16 * virtualstudio.uiScale
             width: parent.width - (2 * x)
-            color: "#FAFBFB"
+            color: backgroundColour
         }
     }
 
@@ -265,14 +288,15 @@ Item {
     Rectangle {
         x: 0; y: parent.height - 36 * virtualstudio.uiScale; width: parent.width; height: 36 * virtualstudio.uiScale
         border.color: "#33979797"
+        color: backgroundColour
         
         Button {
             id: refreshButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: refreshButton.down ? "#DEE0E0" : (refreshButton.hovered ? "#D3D4D4" : "#EAECEC")
+                color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
-                border.color: refreshButton.down || refreshButton.hovered ? "#BABCBC" : "#34979797"
+                border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { refreshing = true; refresh() }
             anchors.verticalCenter: parent.verticalCenter
@@ -282,6 +306,7 @@ Item {
                 text: "Refresh List"
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
             }
         }
         
@@ -289,9 +314,9 @@ Item {
             id: aboutButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: aboutButton.down ? "#DEE0E0" : (aboutButton.hovered ? "#D3D4D4" : "#EAECEC")
+                color: aboutButton.down ? buttonPressedColour : (aboutButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
-                border.color: aboutButton.down || aboutButton.hovered ? "#BABCBC" : "#34979797"
+                border.color: aboutButton.down ? buttonPressedStroke : (aboutButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.showAbout() }
             anchors.verticalCenter: parent.verticalCenter
@@ -301,6 +326,7 @@ Item {
                 text: "About"
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
             }
         }
         
@@ -308,9 +334,9 @@ Item {
             id: settingsButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: settingsButton.down ? "#DEE0E0" : (settingsButton.hovered ? "#D3D4D4" : "#EAECEC")
+                color: settingsButton.down ? buttonPressedColour : (settingsButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
-                border.color: settingsButton.down || settingsButton.hovered ? "#BABCBC" : "#34979797"
+                border.color: settingsButton.down ? buttonPressedStroke : (settingsButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: window.state = "settings"
             anchors.verticalCenter: parent.verticalCenter
@@ -320,6 +346,7 @@ Item {
                 text: "Settings"
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
             }
         }
     }

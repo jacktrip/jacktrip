@@ -6,6 +6,15 @@ Item {
     width: parent.width; height: parent.height
     clip: true
     
+    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
+    property string buttonColour: virtualstudio.darkMode ? "#565252" : "#F0F1F1"
+    property string buttonHoverColour: virtualstudio.darkMode ? "#6F6C6C" : "#F0F1F1"
+    property string buttonPressedColour: virtualstudio.darkMode ? "#494646" : "#D8D9D9"
+    property string buttonStroke: virtualstudio.darkMode ? "#636060" : "#DEDFDF"
+    property string buttonHoverStroke: virtualstudio.darkMode ? "#777575" : "#DEDFDF"
+    property string buttonPressedStroke: virtualstudio.darkMode ? "#6F6C6C" : "#B0B5B5"
+    
     Image {
         source: "logo.svg"
         anchors.horizontalCenter: parent.horizontalCenter
@@ -19,6 +28,7 @@ Item {
         text: "Sign in with a Virtual Studio account?"
         font.family: "Poppins"
         font.pixelSize: 17 * virtualstudio.fontScale * virtualstudio.uiScale
+        color: textColour
     }
 
     Text {
@@ -27,22 +37,23 @@ Item {
         text: "You'll be able to change your mind later"
         font.family: "Poppins"
         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+        color: textColour
     }
 
     Button {
         id: vsButton
         background: Rectangle {
             radius: 10 * virtualstudio.uiScale
-            color: vsButton.down ? "#E7E8E8" : "#F2F3F3"
+            color: vsButton.down ? buttonPressedColour : (vsButton.hovered ? buttonHoverColour : buttonColour)
             border.width: 1
-            border.color: vsButton.down ? "#B0B5B5" : "#EAEBEB"
+            border.color: vsButton.down ? buttonPressedStroke : (vsButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: vsButton.hovered && !vsButton.down
             layer.effect: DropShadow {
                 horizontalOffset: 1 * virtualstudio.uiScale
                 verticalOffset: 1 * virtualstudio.uiScale
                 radius: 8.0 * virtualstudio.uiScale
                 samples: 17
-                color: "#80A1A1A1"
+                color: shadowColour
             }
         }
         onClicked: { window.state = "login"; virtualstudio.toVirtualStudio(); }
@@ -69,6 +80,7 @@ Item {
         padding: 0
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
+        color: textColour
     }
     Image {
         source: "JTVS.png"
@@ -80,16 +92,16 @@ Item {
         id: standardButton
         background: Rectangle {
             radius: 10 * virtualstudio.uiScale
-            color: standardButton.down ? "#E7E8E8" : "#F2F3F3"
+            color: standardButton.down ? buttonPressedColour : (standardButton.hovered ? buttonHoverColour : buttonColour)
             border.width: 1
-            border.color: standardButton.down ? "#B0B5B5" : "#EAEBEB"
+            border.color: standardButton.down ? buttonPressedStroke : (standardButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: standardButton.hovered && !standardButton.down
             layer.effect: DropShadow {
                 horizontalOffset: 1 * virtualstudio.uiScale
                 verticalOffset: 1 * virtualstudio.uiScale
                 radius: 8.0 * virtualstudio.uiScale
                 samples: 17
-                color: "#80A1A1A1"
+                color: shadowColour
             }
         }
         onClicked: { window.state = "login"; virtualstudio.toStandard(); }
@@ -111,7 +123,8 @@ Item {
         width: 234 * virtualstudio.uiScale; height: 337.37 * virtualstudio.uiScale;
     }
     Text {
-        text: "• Connect via IP address<br>• Run a local hub server<br>• The Classic JackTrip experience"
+        text: virtualstudio.psiBuild ? "• Connect via IP address<br>• Run a local hub server<br>• The Standard JackTrip experience" :
+              "• Connect via IP address<br>• Run a local hub server<br>• The Classic JackTrip experience"
         textFormat: Text.StyledText
         font.family: "Poppins"
         font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
@@ -121,5 +134,6 @@ Item {
         padding: 0
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
+        color: textColour
     }
 }

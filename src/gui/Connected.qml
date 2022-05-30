@@ -10,6 +10,8 @@ Item {
     property int leftMargin: 16
     property int fontBig: 28
     property int fontMedium: 18
+    
+    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
 
     Image {
         x: parent.width - (49 * virtualstudio.uiScale); y: 16 * virtualstudio.uiScale
@@ -22,6 +24,7 @@ Item {
         text: virtualstudio.connectionState
         x: leftMargin * virtualstudio.uiScale; y: 34 * virtualstudio.uiScale
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
+        color: textColour
     }
     
     Studio {
@@ -57,6 +60,7 @@ Item {
             virtualstudio.audioBackend : inputComboModel[virtualstudio.inputDevice]
         font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         anchors.verticalCenter: mic.verticalCenter
+        color: textColour
     }
     
     Text {
@@ -65,6 +69,7 @@ Item {
             virtualstudio.audioBackend : outputComboModel[virtualstudio.outputDevice]
         font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         anchors.verticalCenter: headphones.verticalCenter
+        color: textColour
     }
     
     //43 822

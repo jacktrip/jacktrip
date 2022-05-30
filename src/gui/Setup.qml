@@ -5,11 +5,6 @@ import QtGraphicalEffects 1.12
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
-    Rectangle {
-        width: parent.width; height: parent.height
-        color: "#FAFBFB"
-    }
 
     property int fontBig: 28
     property int fontMedium: 13
@@ -18,11 +13,9 @@ Item {
     property int leftMargin: 48
     property int buttonWidth: 103
     property int buttonHeight: 25
-    property bool showContents: true
-
-    visible: showContents
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
+    property string imageLightnessValue: virtualstudio.darkMode ? 1 : 0
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
@@ -55,6 +48,14 @@ Item {
             height: 128
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Colorize {
+            anchors.fill: ethernetWarningLogo
+            source: ethernetWarningLogo
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
         
         Text {
@@ -183,6 +184,14 @@ Item {
             height: 128
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Colorize {
+            anchors.fill: headphoneWarningLogo
+            source: headphoneWarningLogo
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
         
         Text {
@@ -481,6 +490,7 @@ Item {
                     visible: showAgainCheckbox.checked
                 }
             }
+
             contentItem: Text {
                 text: showAgainCheckbox.text
                 font.family: "Poppins"

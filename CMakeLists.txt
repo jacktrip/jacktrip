@@ -7,6 +7,7 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs FALSE)
+add_compile_definitions(NO_UPDATER)
 add_compile_definitions(QT_OPENSOURCE)
 
 if (nogui)

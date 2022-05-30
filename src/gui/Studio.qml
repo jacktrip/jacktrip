@@ -5,9 +5,9 @@ import QtGraphicalEffects 1.12
 Rectangle {
     width: 664; height: 83 * virtualstudio.uiScale
     radius: 6 * virtualstudio.uiScale
-    color: "#F6F8F8"
+    color: backgroundColour
     border.width: 0.3
-    border.color: "#34979797"
+    border.color: "#40979797"
 
     layer.enabled: true
     layer.effect: DropShadow {
@@ -15,7 +15,7 @@ Rectangle {
         verticalOffset: 1 * virtualstudio.uiScale
         radius: 8.0 * virtualstudio.uiScale
         samples: 17
-        color: "#80A1A1A1"
+        color: shadowColour
     }
     
     property string serverLocation: "Germany - Berlin"
@@ -32,6 +32,18 @@ Rectangle {
     property real fontBig: 18
     property real fontMedium: 11
     property real fontSmall: 8
+    
+    property string backgroundColour: virtualstudio.darkMode ? "#494646" : "#F4F6F6"
+    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
+    property string joinColour: virtualstudio.darkMode ? (connected ? "#FCB6B6" : "#E2EBE0") : (connected ? "#FCB6B6" : "#C4F4BE")
+    property string joinHoverColour: virtualstudio.darkMode ? (connected ? "#D49696" : "#BAC7B8") : (connected ? "#E3A4A4" : "#B0DCAB")
+    property string joinPressedColour: virtualstudio.darkMode ? (connected ? "#F2AEAE" : "#D8E2D6") : (connected ? "#EFADAD" : "#BAE8B5")
+    property string joinStroke: virtualstudio.darkMode ? (connected ? "#A65959" : "#748F70") : (connected ? "#C95E5E" : "#5DB752")
+    property string manageColour: virtualstudio.darkMode ? "#F0F1F1" : "#EAEBEB"
+    property string manageHoverColour: virtualstudio.darkMode ? "#CCCDCD" : "#D3D3D3"
+    property string managePressedColour: virtualstudio.darkMode ? "#E4E5E5" : "#EAEBEB"
+    property string manageStroke: virtualstudio.darkMode ? "#8B8D8D" : "#949494"
 
     Rectangle {
         id: shadow
@@ -45,7 +57,7 @@ Rectangle {
         verticalOffset: -1 * virtualstudio.uiScale
         radius: 8.0 * virtualstudio.uiScale
         samples: 17
-        color: "#80A1A1A1"
+        color: shadowColour
         source: shadow
     }
     
@@ -100,8 +112,9 @@ Rectangle {
         x: leftMargin * virtualstudio.uiScale; y: 11 * virtualstudio.uiScale;
         width: manageable ? parent.width - (233 * virtualstudio.uiScale) : parent.width - (156 * virtualstudio.uiScale)
         text: studioName
-        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale}
+        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
         elide: Text.ElideRight
+        color: textColour
     }
     
     Rectangle {
@@ -123,6 +136,7 @@ Rectangle {
         text: publicStudio ? "Public hub studio in " + serverLocation : "Private hub studio in " + serverLocation
         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
         elide: Text.ElideRight
+        color: textColour
     }
     
     Button {
@@ -131,10 +145,9 @@ Rectangle {
         y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
-            color: connected ? (joinButton.down ? "#F6B2B2" : (joinButton.hovered ? "#F1AEAE" : "#FCB6B6")) :
-                (joinButton.down ? "#C0EFBA" : (joinButton.hovered ? "#BBE9B5" :"#C4F4BE"))
+            color: joinButton.down ? joinPressedColour : (joinButton.hovered ? joinHoverColour : joinColour)
             border.width: joinButton.down ? 1 : 0
-            border.color: connected ? "#F92755" : "#5CB752"
+            border.color: joinStroke
         }
         visible: connected || canConnect || canStart
         onClicked: {
@@ -158,6 +171,7 @@ Rectangle {
         text: connected ? "Leave" : available ? "Join" : "Start"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
         visible: connected || canConnect || canStart
+        color: textColour
     }
     
     Button {
@@ -166,9 +180,9 @@ Rectangle {
         width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
-            color: (manageButton.hovered && !manageButton.pressed) ? "#DFE0E0" : "#EAEBEB"
+            color: manageButton.down ? managePressedColour : (manageButton.hovered ? manageHoverColour : manageColour)
             border.width:  manageButton.down ? 1 : 0
-            border.color: "#949494"
+            border.color: manageStroke
         }
         onClicked: { 
             if (!connected) {
@@ -191,5 +205,6 @@ Rectangle {
         text: "Manage"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: manageable
+        color: textColour
     }
 }
