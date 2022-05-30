@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
 	"releases": [
 		{
+			"version": "1.6.0-rc.4",
+			"changelog": "Release candidate 4 for 1.6.0",
+			"download": {
+				"date": "2022-05-29T00:00:00Z",
+				"url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.4/JackTrip-v1.6.0-rc.4-macOS-x64-installer.pkg",
+				"downloadSize": 11460550,
+				"sha256": "38d817f3e8cc61b707392ce74cee8ab46da9c8eb2086ea2b3f0c79496caf70a8"
+			}
+		},
+		{
 			"version": "1.6.0-rc.3",
 			"changelog": "Release candidate 3 for 1.6.0",
 			"download": {
