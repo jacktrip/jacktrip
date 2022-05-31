@@ -627,7 +627,7 @@ void VirtualStudio::completeConnection()
             if (m_outputDevice == QLatin1String("(default)")) {
                 m_jackTrip->setOutputDevice("");
             } else {
-                m_jackTrip->setOutputDevice(m_inputDevice.toStdString());
+                m_jackTrip->setOutputDevice(m_outputDevice.toStdString());
             }
         }
 #endif
