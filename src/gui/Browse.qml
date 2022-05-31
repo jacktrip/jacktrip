@@ -354,7 +354,11 @@ Item {
     Connections {
         target: virtualstudio
         // Need to do this to avoid layout issues with our section header.
-        function onNewScale() { studioListView.positionViewAtEnd(); studioListView.positionViewAtBeginning() }
+        function onNewScale() { 
+            studioListView.positionViewAtEnd();
+            studioListView.positionViewAtBeginning();
+            scrollY = studioListView.contentY;
+        }
         function onRefreshFinished(index) {
             refreshing = false;
             if (index == -1) {
