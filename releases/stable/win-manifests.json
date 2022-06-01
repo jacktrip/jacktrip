@@ -1,4 +1,15 @@
 {
     "app_name": "JackTrip",
-	"releases": []
+    "releases": [
+        {
+            "version": "1.6.0",
+            "changelog": "Full integration with JackTrip Virtual Studio. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.0",
+            "download": {
+                "date": "2022-06-01T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0/JackTrip-v1.6.0-Windows-x64-installer.msi",
+                "downloadSize": 43364352,
+                "sha256": "9562ab654202bfc432e05caa3bd2bf1d0b52c50581b0a567f0546983fe46c078"
+            }
+        }
+    ]
 }

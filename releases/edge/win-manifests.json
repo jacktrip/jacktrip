@@ -1,55 +1,65 @@
 {
     "app_name": "JackTrip",
-	"releases": [
-		{
-			"version": "1.6.0-rc.5",
-			"changelog": "Release candidate 5 for 1.6.0",
-			"download": {
-				"date": "2022-05-30T00:00:00Z",
-				"url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.5/JackTrip-v1.6.0-rc.5-Windows-x64-installer.msi",
-				"downloadSize": 43364352,
-				"sha256": "d84e6e5d21cf31f5dd48e9dcc0c1a44fe7a37d977f94b6ff63d5e381745e5a44"
-			}
-		},
-		{
-			"version": "1.6.0-rc.4",
-			"changelog": "Release candidate 4 for 1.6.0",
-			"download": {
-				"date": "2022-05-29T00:00:00Z",
-				"url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.4/JackTrip-v1.6.0-rc.4-Windows-x64-installer.msi",
-				"downloadSize": 43126784,
-				"sha256": "cdb0ef906cf0d6047289838bf013b31a626cdd74dd4f75d6c1c4c3adbc9cd41d"
-			}
-		},
-		{
-			"version": "1.6.0-rc.3",
-			"changelog": "Release candidate 3 for 1.6.0",
-			"download": {
-				"date": "2022-05-27T00:00:00Z",
-				"url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-rc.3-Windows-x64-installer.msi",
-				"downloadSize": 43118592,
-				"sha256": "dceaf670a67cf1541007db82c5ce937b25370a7140e48192b94470f575fc4988"
-			}
-		},
-		{
-			"version": "1.6.0-rc.2",
-			"changelog": "Release candidate 2 for 1.6.0",
-			"download": {
-				"date": "2022-05-26T00:00:00Z",
-				"url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-rc.2-Windows-x64-signed-installer.msi",
-				"downloadSize": 43114496,
-				"sha256": "b1a7adc8dc0fb47f59515790e8531dd10838d799bacb4b5653192ed621bca208"
-			}
-		},
-		{
-			"version": "1.6.0-rc.1",
-			"changelog": "Release candidate 1 for 1.6.0",
-			"download": {
-				"date": "2022-05-23T00:00:00Z",
-				"url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.1/JackTrip-v1.6.0-rc.1-Windows-x64-installer.msi",
-				"downloadSize": 43081728,
-				"sha256": "240f8b495ec5057228be922da80829a3718b474bafc2ba2d77750643abd1005c"
-			}
-		}
-	]
+    "releases": [
+        {
+            "version": "1.6.0",
+            "changelog": "Full integration with JackTrip Virtual Studio. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.0",
+            "download": {
+                "date": "2022-06-01T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0/JackTrip-v1.6.0-Windows-x64-installer.msi",
+                "downloadSize": 43364352,
+                "sha256": "9562ab654202bfc432e05caa3bd2bf1d0b52c50581b0a567f0546983fe46c078"
+            }
+        },
+        {
+            "version": "1.6.0-rc.5",
+            "changelog": "Release candidate 5 for 1.6.0",
+            "download": {
+                "date": "2022-05-30T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.5/JackTrip-v1.6.0-rc.5-Windows-x64-installer.msi",
+                "downloadSize": 43364352,
+                "sha256": "d84e6e5d21cf31f5dd48e9dcc0c1a44fe7a37d977f94b6ff63d5e381745e5a44"
+            }
+        },
+        {
+            "version": "1.6.0-rc.4",
+            "changelog": "Release candidate 4 for 1.6.0",
+            "download": {
+                "date": "2022-05-29T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.4/JackTrip-v1.6.0-rc.4-Windows-x64-installer.msi",
+                "downloadSize": 43126784,
+                "sha256": "cdb0ef906cf0d6047289838bf013b31a626cdd74dd4f75d6c1c4c3adbc9cd41d"
+            }
+        },
+        {
+            "version": "1.6.0-rc.3",
+            "changelog": "Release candidate 3 for 1.6.0",
+            "download": {
+                "date": "2022-05-27T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-rc.3-Windows-x64-installer.msi",
+                "downloadSize": 43118592,
+                "sha256": "dceaf670a67cf1541007db82c5ce937b25370a7140e48192b94470f575fc4988"
+            }
+        },
+        {
+            "version": "1.6.0-rc.2",
+            "changelog": "Release candidate 2 for 1.6.0",
+            "download": {
+                "date": "2022-05-26T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-rc.2-Windows-x64-signed-installer.msi",
+                "downloadSize": 43114496,
+                "sha256": "b1a7adc8dc0fb47f59515790e8531dd10838d799bacb4b5653192ed621bca208"
+            }
+        },
+        {
+            "version": "1.6.0-rc.1",
+            "changelog": "Release candidate 1 for 1.6.0",
+            "download": {
+                "date": "2022-05-23T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0-rc.1/JackTrip-v1.6.0-rc.1-Windows-x64-installer.msi",
+                "downloadSize": 43081728,
+                "sha256": "240f8b495ec5057228be922da80829a3718b474bafc2ba2d77750643abd1005c"
+            }
+        }
+    ]
 }
