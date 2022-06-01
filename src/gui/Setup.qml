@@ -15,7 +15,7 @@ Item {
     property int buttonHeight: 25
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property string imageLightnessValue: virtualstudio.darkMode ? 1 : 0
+    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
