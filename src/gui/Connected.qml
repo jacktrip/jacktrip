@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -12,6 +13,7 @@ Item {
     property int fontMedium: 18
     
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
 
     Image {
         x: parent.width - (49 * virtualstudio.uiScale); y: 16 * virtualstudio.uiScale
@@ -45,6 +47,14 @@ Item {
         x: 80 * virtualstudio.uiScale; y: 250 * virtualstudio.uiScale
         width: 18 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
     }
+
+    Colorize {
+        anchors.fill: mic
+        source: mic
+        hue: 0
+        saturation: 0
+        lightness: imageLightnessValue
+    }
     
     Image {
         id: headphones
@@ -52,6 +62,14 @@ Item {
         anchors.horizontalCenter: mic.horizontalCenter
         y: 329 * virtualstudio.uiScale
         width: 24 * virtualstudio.uiScale; height: 26 * virtualstudio.uiScale
+    }
+
+    Colorize {
+        anchors.fill: headphones
+        source: headphones
+        hue: 0
+        saturation: 0
+        lightness: imageLightnessValue
     }
     
     Text {
