@@ -882,6 +882,17 @@ void VirtualStudio::endRetryPeriod()
     m_retryPeriodTimer.stop();
 }
 
+void VirtualStudio::launchBrowser(const QUrl& url)
+{
+    std::cout << "Launching Browser" << std::endl;
+    bool success = QDesktopServices::openUrl(url);
+    if (success) {
+        std::cout << "Success" << std::endl;
+    } else {
+        std::cout << "Unable to open URL" << std::endl;
+    }
+}
+
 void VirtualStudio::setupAuthenticator()
 {
     if (m_authenticator.isNull()) {
@@ -890,8 +901,8 @@ void VirtualStudio::setupAuthenticator()
         m_authenticator->setScope(
             QStringLiteral("openid profile email offline_access read:servers"));
         connect(m_authenticator.data(),
-                &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
-                &QDesktopServices::openUrl);
+                &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this,
+                &VirtualStudio::launchBrowser);
 
         const QUrl authUri(QStringLiteral("https://auth.jacktrip.org/authorize"));
         const QString clientId = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");

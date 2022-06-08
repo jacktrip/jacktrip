@@ -180,6 +180,7 @@ class VirtualStudio : public QObject
     void receivedConnectionFromPeer();
     void checkForHostname();
     void endRetryPeriod();
+    void launchBrowser(const QUrl &url);
 
    private:
     void setupAuthenticator();
