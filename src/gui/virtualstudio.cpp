@@ -77,6 +77,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_showWarnings    = settings.value(QStringLiteral("ShowWarnings"), true).toBool();
     m_apiPrefix       = settings.value(QStringLiteral("ApiPrefix"), "").toString();
     m_apiSecret       = settings.value(QStringLiteral("ApiSecret"), "").toString();
+    m_appUUID         = settings.value(QStringLiteral("AppUUID"), "").toString();
+    m_appID           = settings.value(QStringLiteral("AppID"), "").toString();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
@@ -452,6 +454,8 @@ void VirtualStudio::login()
 
 void VirtualStudio::logout()
 {
+    deleteJTDevice();
+
     m_authenticator->setToken(QLatin1String(""));
     m_authenticator->setRefreshToken(QLatin1String(""));
 
@@ -461,12 +465,16 @@ void VirtualStudio::logout()
     settings.remove(QStringLiteral("UserId"));
     settings.remove(QStringLiteral("ApiPrefix"));
     settings.remove(QStringLiteral("ApiSecret"));
+    settings.remove(QStringLiteral("AppUUID"));
     settings.endGroup();
 
     m_refreshTimer.stop();
 
     m_refreshToken.clear();
     m_userId.clear();
+    m_apiPrefix.clear();
+    m_apiSecret.clear();
+    m_appUUID.clear();
     emit hasRefreshTokenChanged();
 }
 
@@ -771,6 +779,10 @@ void VirtualStudio::slotAuthSucceded()
     m_refreshToken = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
 
+    if (m_appUUID == "") {
+        m_appUUID = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
+    }
+
     if (m_apiPrefix == "" || m_apiSecret == "") {
         m_apiPrefix = randomString(7);
         m_apiSecret = randomString(22);
@@ -782,6 +794,7 @@ void VirtualStudio::slotAuthSucceded()
     settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
     settings.setValue(QStringLiteral("ApiPrefix"), m_apiPrefix);
     settings.setValue(QStringLiteral("ApiSecret"), m_apiSecret);
+    settings.setValue(QStringLiteral("AppUUID"), m_appUUID);
     settings.endGroup();
 
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
@@ -904,10 +917,7 @@ void VirtualStudio::setupAuthenticator()
             QStringLiteral("openid profile email offline_access read:servers"));
         connect(m_authenticator.data(),
                 &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
-                [=](QUrl url) {
-            std::cout << "URL: " << url.toDisplayString() << std::endl;
-            QDesktopServices::openUrl(url);
-        });
+                &QDesktopServices::openUrl);
 
         const QUrl authUri(QStringLiteral("https://auth.jacktrip.org/authorize"));
         const QString clientId = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
@@ -949,95 +959,127 @@ void VirtualStudio::setupAuthenticator()
     }
 }
 
-QString VirtualStudio::randomString(/*int stringLength*/) {
+QString VirtualStudio::randomString(int stringLength) {
   QString str = "";
-//   static bool seeded = false;
-//   QString allow_symbols("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+  static bool seeded = false;
+  QString allow_symbols("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
-//   if (!seeded) 
-//   {
-//     qsrand(QTime::currentTime().msec());
-//     seeded = true;
-//   }
+  if (!seeded) 
+  {
+    qsrand(QTime::currentTime().msec());
+    seeded = true;
+  }
 
-//   for (int i = 0; i < stringLength; ++i) {
-//     str.append(allow_symbols.at(qrand() % (allow_symbols.length())));
-//   }
+  for (int i = 0; i < stringLength; ++i) {
+    str.append(allow_symbols.at(qrand() % (allow_symbols.length())));
+  }
 
   return str;
 }
 
 void VirtualStudio::registerJTAsDevice() {
-    // {
-    //   "period": 128, ??? (set by studio = buffer size)
-    //   "queueBuffer": 0, ??? (set by studio = net queue)
-    //   "devicePort": 4464,
-    //   "reverb": 0,
-    //   "limiter": false,
-    //   "compressor": false,
-    //   "quality": 2,
-    //   "captureBoost": false,
-    //   "captureMute": false,
-    //   "playbackBoost": false,
-    //   "playbackMute": false,
-    //   "captureVolume": 100,
-    //   "playbackVolume": 100,
-    //   "monitorMute": false,
-    //   "monitorVolume": 0,
-    //   "name": "JackTrip App",
-    //   "alsaName": "jacktripapp",
-    //   "overlay": "jacktrip_app",
-    //   "mac": <DEVICE_MAC>,
-    //   "version": <APP_VERSION>,
-    //   "apiPrefix": "abcd", generate
-    //   "apiSecret": "xyz123" generate
-    // }
+    /* 
+        REGISTER JT APP AS A DEVICE ON VIRTUAL STUDIO
+
+        Defaults:
+        period - 128 - set by studio = buffer size
+        queueBuffer - 0 - set by studio = net queue
+        devicePort - 4464
+        reverb - 0 - off
+        limiter - false
+        compressor - false
+        quality - 2 - high
+        captureBoost - false
+        captureMute - false - unused right now
+        captureVolume - 100 - unused right now
+        playbackBoost - false
+        playbackMute - false - unused right now
+        playbackVolume - 100 - unused right now
+        monitorMute - false - unsure if we should enable
+        monitorVolume - 0 - unsure if we should enable
+        name - "JackTrip App"
+        alsaName - "jacktripapp"
+        overlay - "jacktrip_app"
+        mac - UUID tied to app session
+        version - app version - will need to update in heartbeat
+        apiPrefix - random 7 character string tied to app session
+        apiSecret - random 22 character string tied to app session
+    */
 
     QJsonObject json         = {
-    //   {QLatin1String("period"), 128},
-    //   {QLatin1String("queueBuffer"), 0},
-    //   {QLatin1String("devicePort"), 4464},
-    //   {QLatin1String("reverb"), 0},
-    //   {QLatin1String("limiter"), false},
-    //   {QLatin1String("compressor"), false},
-    //   {QLatin1String("quality"), 2},
-    //   {QLatin1String("captureBoost"), false},
-    //   {QLatin1String("captureMute"), false},
-    //   {QLatin1String("captureVolume"), 100},
-    //   {QLatin1String("playbackBoost"), false},
-    //   {QLatin1String("playbackMute"), false},
-    //   {QLatin1String("playbackVolume"), 100},
-    //   {QLatin1String("monitorMute"), false},
-    //   {QLatin1String("monitorVolume"), 100},
-    //   {QLatin1String("name"), "JackTrip App"},
-    //   {QLatin1String("alsaName"), "jacktripapp"},
-    //   {QLatin1String("overlay"), "jacktrip_app"},
-    //   {QLatin1String("mac"), get_device_mac},
-    //   {QLatin1String("version"), versionString()},
-    //   {QLatin1String("apiPrefix"), m_apiPrefix},
-    //   {QLatin1String("apiSecret"), m_apiSecret},
+      {QLatin1String("period"), 128},
+      {QLatin1String("queueBuffer"), 0},
+      {QLatin1String("devicePort"), 4464},
+      {QLatin1String("reverb"), 0},
+      {QLatin1String("limiter"), false},
+      {QLatin1String("compressor"), false},
+      {QLatin1String("quality"), 2},
+      {QLatin1String("captureBoost"), false},
+      {QLatin1String("captureMute"), false},
+      {QLatin1String("captureVolume"), 100},
+      {QLatin1String("playbackBoost"), false},
+      {QLatin1String("playbackMute"), false},
+      {QLatin1String("playbackVolume"), 100},
+      {QLatin1String("monitorMute"), false},
+      {QLatin1String("monitorVolume"), 100},
+      {QLatin1String("name"), "JackTrip App"},
+      {QLatin1String("alsaName"), "jacktripapp"},
+      {QLatin1String("overlay"), "jacktrip_app"},
+      {QLatin1String("mac"), m_appUUID},
+      {QLatin1String("version"), versionString()},
+      {QLatin1String("apiPrefix"), m_apiPrefix},
+      {QLatin1String("apiSecret"), m_apiSecret},
     };
     QJsonDocument request    = QJsonDocument(json);
 
-    // QNetworkReply* reply =
-    //     m_authenticator->post(QStringLiteral("https://app.jacktrip.org/api/devices"), request.toJson());
-    // connect(reply, &QNetworkReply::finished, this, [=]() {
-    //     if (reply->error() != QNetworkReply::NoError) {
-    //         std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-    //         emit authFailed();
-    //         reply->deleteLater();
-    //         return;
-    //     }
+    std::cout << request.toJson(QJsonDocument::Compact).toStdString() << std::endl;
 
-    //     reply->deleteLater();
-    // });
+    QNetworkReply* reply =
+        m_authenticator->post(QStringLiteral("https://app.jacktrip.org/api/devices"), request.toJson());
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            emit authFailed();
+            reply->deleteLater();
+            return;
+        } else {
+            QByteArray response    = reply->readAll();
+            QJsonDocument deviceState = QJsonDocument::fromJson(response);
 
-    QString text = "";
-    foreach(QNetworkInterface interface, QNetworkInterface::allInterfaces())
-    {
-        // text += "Interface:"+interface.hardwareAddress()+"\n";
-    }
-    std::cout << text.constData() << std::endl;
+            std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString() << std::endl;
+
+            m_appID                = deviceState.object()[QStringLiteral("id")].toString();
+            
+            QSettings settings;
+            settings.beginGroup(QStringLiteral("VirtualStudio"));
+            settings.setValue(QStringLiteral("AppID"), m_appID);
+            settings.endGroup();
+        }
+
+        reply->deleteLater();
+    });
+}
+
+void VirtualStudio::deleteJTDevice() {
+    QNetworkReply* reply =
+        m_authenticator->deleteResource(QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            emit authFailed();
+            reply->deleteLater();
+            return;
+        } else {
+            m_appID.clear();
+            
+            QSettings settings;
+            settings.beginGroup(QStringLiteral("VirtualStudio"));
+            settings.remove(QStringLiteral("AppID"));
+            settings.endGroup();
+        }
+
+        reply->deleteLater();
+    });
 }
 
 void VirtualStudio::getServerList(bool firstLoad, int index)

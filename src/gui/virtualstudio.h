@@ -44,6 +44,7 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QtNetworkAuth>
+#include <QUuid>
 
 #include "../JackTrip.h"
 #include "vsQuickView.h"
@@ -183,9 +184,9 @@ class VirtualStudio : public QObject
 
    private:
     void setupAuthenticator();
-    // QString randomString(int stringLength);
-    QString randomString();
+    QString randomString(int stringLength);
     void registerJTAsDevice();
+    void deleteJTDevice();
     void getServerList(bool firstLoad = false, int index = -1);
     void getUserId();
     void getSubscriptions();
@@ -201,6 +202,8 @@ class VirtualStudio : public QObject
     QString m_userId;
     QString m_apiPrefix;
     QString m_apiSecret;
+    QString m_appUUID;
+    QString m_appID;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
