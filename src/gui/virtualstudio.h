@@ -183,6 +183,9 @@ class VirtualStudio : public QObject
 
    private:
     void setupAuthenticator();
+    // QString randomString(int stringLength);
+    QString randomString();
+    void registerJTAsDevice();
     void getServerList(bool firstLoad = false, int index = -1);
     void getUserId();
     void getSubscriptions();
@@ -196,6 +199,8 @@ class VirtualStudio : public QObject
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
+    QString m_apiPrefix;
+    QString m_apiSecret;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
