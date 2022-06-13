@@ -66,12 +66,6 @@ void VsWebSocket::openSocket()
   req.setRawHeader(QByteArray("APIPrefix"), m_apiPrefix.toUtf8());
   req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
 
-  qDebug() << req.url().toString();
-  const QList<QByteArray>& rawHeaderList(req.rawHeaderList());
-  foreach (QByteArray rawHeader, rawHeaderList) {
-    qDebug() << req.rawHeader(rawHeader);
-  }
-
   m_webSocket.open(req);
 }
 
