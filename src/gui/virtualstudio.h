@@ -187,6 +187,7 @@ class VirtualStudio : public QObject
     QString randomString(int stringLength);
     void registerJTAsDevice();
     void deleteJTDevice();
+    void sendHeartbeat();
     void getServerList(bool firstLoad = false, int index = -1);
     void getUserId();
     void getSubscriptions();
