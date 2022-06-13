@@ -976,18 +976,18 @@ void VirtualStudio::setupAuthenticator()
 
 QString VirtualStudio::randomString(int stringLength)
 {
-    QString str = "";
+    QString str        = "";
     static bool seeded = false;
-    QString allow_symbols("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+    QString allow_symbols(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
-    if (!seeded) 
-    {
-    qsrand(QTime::currentTime().msec());
-    seeded = true;
+    if (!seeded) {
+        qsrand(QTime::currentTime().msec());
+        seeded = true;
     }
 
     for (int i = 0; i < stringLength; ++i) {
-    str.append(allow_symbols.at(qrand() % (allow_symbols.length())));
+        str.append(allow_symbols.at(qrand() % (allow_symbols.length())));
     }
 
     return str;
