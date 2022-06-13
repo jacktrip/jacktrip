@@ -712,6 +712,9 @@ void VirtualStudio::disconnect()
     m_retryPeriodTimer.stop();
     m_retryPeriod = false;
 
+    // Disconnect via API
+    setStudioOnAppDevice("");
+
     if (m_jackTripRunning) {
         if (m_startedStudio) {
             VsServerInfo* studioInfo =
@@ -783,6 +786,10 @@ void VirtualStudio::exit()
     m_heartbeatTimer.stop();
     if (m_onConnectedScreen) {
         m_isExiting = true;
+
+        // // Disconnect via API
+        // setStudioOnAppDevice("");
+
         disconnect();
     } else {
         emit signalExit();
@@ -873,13 +880,39 @@ void VirtualStudio::processError(const QString& errorMessage)
 
 void VirtualStudio::receivedConnectionFromPeer()
 {
+    // Connect via API
+    VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
+    setStudioOnAppDevice(studioInfo->id());
+
     m_connectionState = QStringLiteral("Connected");
     emit connectionStateChanged();
     std::cout << "Received connection" << std::endl;
     emit connected();
 }
 
-// here is where we'll put the api call to set studio for app
+// Sets the server ID of our app device on the API
+void VirtualStudio::setStudioOnAppDevice(QString studioId)
+{
+    std::cout << "in set studio" << std::endl;
+    QJsonObject json = {
+        {QLatin1String("serverId"), studioId},
+    };
+    QJsonDocument request = QJsonDocument(json);
+    QNetworkReply* reply = m_authenticator->put(
+        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID), request.toJson());
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            emit authFailed();
+            reply->deleteLater();
+            return;
+        }
+
+        std::cout << "in set studio response" << std::endl;
+
+        reply->deleteLater();
+    });
+}
 
 void VirtualStudio::checkForHostname()
 {

@@ -180,6 +180,7 @@ class VirtualStudio : public QObject
     void processFinished();
     void processError(const QString& errorMessage);
     void receivedConnectionFromPeer();
+    void setStudioOnAppDevice(QString studioId);
     void checkForHostname();
     void endRetryPeriod();
 
