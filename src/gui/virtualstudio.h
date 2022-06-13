@@ -43,8 +43,8 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
-#include <QtNetworkAuth>
 #include <QUuid>
+#include <QtNetworkAuth>
 
 #include "../JackTrip.h"
 #include "vsQuickView.h"

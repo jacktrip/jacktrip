@@ -165,9 +165,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         // m_heartbeatMutex.lock();
         // if (m_allowHeartbeat) {
         //     m_heartbeatMutex.unlock();
-            // heartbeat send
-            std::cout << "Send heartbeat" << std::endl;
-            sendHeartbeat();
+        // heartbeat send
+        std::cout << "Send heartbeat" << std::endl;
+        sendHeartbeat();
         // } else {
         //     m_heartbeatMutex.unlock();
         // }
@@ -974,25 +974,27 @@ void VirtualStudio::setupAuthenticator()
     }
 }
 
-QString VirtualStudio::randomString(int stringLength) {
-  QString str = "";
-  static bool seeded = false;
-  QString allow_symbols("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+QString VirtualStudio::randomString(int stringLength)
+{
+    QString str = "";
+    static bool seeded = false;
+    QString allow_symbols("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
-  if (!seeded) 
-  {
+    if (!seeded) 
+    {
     qsrand(QTime::currentTime().msec());
     seeded = true;
-  }
+    }
 
-  for (int i = 0; i < stringLength; ++i) {
+    for (int i = 0; i < stringLength; ++i) {
     str.append(allow_symbols.at(qrand() % (allow_symbols.length())));
-  }
+    }
 
-  return str;
+    return str;
 }
 
-void VirtualStudio::registerJTAsDevice() {
+void VirtualStudio::registerJTAsDevice()
+{
     /* 
         REGISTER JT APP AS A DEVICE ON VIRTUAL STUDIO
 
@@ -1022,35 +1024,35 @@ void VirtualStudio::registerJTAsDevice() {
     */
 
     QJsonObject json         = {
-      {QLatin1String("period"), 128},
-      {QLatin1String("queueBuffer"), 0},
-      {QLatin1String("devicePort"), 4464},
-      {QLatin1String("reverb"), 0},
-      {QLatin1String("limiter"), false},
-      {QLatin1String("compressor"), false},
-      {QLatin1String("quality"), 2},
-      {QLatin1String("captureBoost"), false},
-      {QLatin1String("captureMute"), false},
-      {QLatin1String("captureVolume"), 100},
-      {QLatin1String("playbackBoost"), false},
-      {QLatin1String("playbackMute"), false},
-      {QLatin1String("playbackVolume"), 100},
-      {QLatin1String("monitorMute"), false},
-      {QLatin1String("monitorVolume"), 100},
-      {QLatin1String("name"), "JackTrip App"},
-      {QLatin1String("alsaName"), "jacktripapp"},
-      {QLatin1String("overlay"), "jacktrip_app"},
-      {QLatin1String("mac"), m_appUUID},
-      {QLatin1String("version"), versionString()},
-      {QLatin1String("apiPrefix"), m_apiPrefix},
-      {QLatin1String("apiSecret"), m_apiSecret},
+        {QLatin1String("period"), 128},
+        {QLatin1String("queueBuffer"), 0},
+        {QLatin1String("devicePort"), 4464},
+        {QLatin1String("reverb"), 0},
+        {QLatin1String("limiter"), false},
+        {QLatin1String("compressor"), false},
+        {QLatin1String("quality"), 2},
+        {QLatin1String("captureBoost"), false},
+        {QLatin1String("captureMute"), false},
+        {QLatin1String("captureVolume"), 100},
+        {QLatin1String("playbackBoost"), false},
+        {QLatin1String("playbackMute"), false},
+        {QLatin1String("playbackVolume"), 100},
+        {QLatin1String("monitorMute"), false},
+        {QLatin1String("monitorVolume"), 100},
+        {QLatin1String("name"), "JackTrip App"},
+        {QLatin1String("alsaName"), "jacktripapp"},
+        {QLatin1String("overlay"), "jacktrip_app"},
+        {QLatin1String("mac"), m_appUUID},
+        {QLatin1String("version"), versionString()},
+        {QLatin1String("apiPrefix"), m_apiPrefix},
+        {QLatin1String("apiSecret"), m_apiSecret},
     };
-    QJsonDocument request    = QJsonDocument(json);
+    QJsonDocument request = QJsonDocument(json);
 
     std::cout << request.toJson(QJsonDocument::Compact).toStdString() << std::endl;
 
-    QNetworkReply* reply =
-        m_authenticator->post(QStringLiteral("https://app.jacktrip.org/api/devices"), request.toJson());
+    QNetworkReply* reply = m_authenticator->post(
+        QStringLiteral("https://app.jacktrip.org/api/devices"), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -1061,9 +1063,10 @@ void VirtualStudio::registerJTAsDevice() {
             QByteArray response    = reply->readAll();
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
 
-            std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString() << std::endl;
+            std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString()
+                << std::endl;
 
-            m_appID                = deviceState.object()[QStringLiteral("id")].toString();
+            m_appID = deviceState.object()[QStringLiteral("id")].toString();
             
             QSettings settings;
             settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -1075,9 +1078,10 @@ void VirtualStudio::registerJTAsDevice() {
     });
 }
 
-void VirtualStudio::deleteJTDevice() {
-    QNetworkReply* reply =
-        m_authenticator->deleteResource(QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
+void VirtualStudio::deleteJTDevice()
+{
+    QNetworkReply* reply = m_authenticator->deleteResource(
+        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -1086,7 +1090,7 @@ void VirtualStudio::deleteJTDevice() {
             return;
         } else {
             m_appID.clear();
-            
+
             QSettings settings;
             settings.beginGroup(QStringLiteral("VirtualStudio"));
             settings.remove(QStringLiteral("AppID"));
@@ -1097,29 +1101,31 @@ void VirtualStudio::deleteJTDevice() {
     });
 }
 
-void VirtualStudio::sendHeartbeat() {
+void VirtualStudio::sendHeartbeat()
+{
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
     std::cout << now.toStdString() << std::endl;
 
     QJsonObject json         = {
-    //   {QLatin1String("pkts_recv"), 0},
-    //   {QLatin1String("pkts_sent"), 0},
-    //   {QLatin1String("min_rtt"), 0},
-    //   {QLatin1String("max_rtt"), 0},
-    //   {QLatin1String("avg_rtt"), 0},
-    //   {QLatin1String("stddev_rtt"), 0},
-      {QLatin1String("stats_updated_at"), now},
-    //   {QLatin1String("cloudId"), cloud_id_string},
-      {QLatin1String("mac"), m_appUUID},
-      {QLatin1String("version"), versionString()},
-      {QLatin1String("type"), "jacktrip_app"},
-      {QLatin1String("apiPrefix"), m_apiPrefix},
-      {QLatin1String("apiSecret"), m_apiSecret},
+        //   {QLatin1String("pkts_recv"), 0},
+        //   {QLatin1String("pkts_sent"), 0},
+        //   {QLatin1String("min_rtt"), 0},
+        //   {QLatin1String("max_rtt"), 0},
+        //   {QLatin1String("avg_rtt"), 0},
+        //   {QLatin1String("stddev_rtt"), 0},
+        {QLatin1String("stats_updated_at"), now},
+        //   {QLatin1String("cloudId"), cloud_id_string},
+        {QLatin1String("mac"), m_appUUID},
+        {QLatin1String("version"), versionString()},
+        {QLatin1String("type"), "jacktrip_app"},
+        {QLatin1String("apiPrefix"), m_apiPrefix},
+        {QLatin1String("apiSecret"), m_apiSecret},
     };
-    QJsonDocument request    = QJsonDocument(json);
+    QJsonDocument request = QJsonDocument(json);
 
-    QNetworkReply* reply =
-        m_authenticator->post(QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat").arg(m_appID), request.toJson());
+    QNetworkReply* reply = m_authenticator->post(
+        QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat").arg(m_appID),
+        request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -1127,10 +1133,11 @@ void VirtualStudio::sendHeartbeat() {
             reply->deleteLater();
             return;
         } else {
-            QByteArray response    = reply->readAll();
+            QByteArray response       = reply->readAll();
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
 
-            std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString() << std::endl;
+            std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString()
+                << std::endl;
         }
 
         reply->deleteLater();
