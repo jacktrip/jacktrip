@@ -160,6 +160,17 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             m_refreshMutex.unlock();
         }
     });
+
+    connect(&m_heartbeatTimer, &QTimer::timeout, this, [&]() {
+        // m_heartbeatMutex.lock();
+        // if (m_allowHeartbeat) {
+        //     m_heartbeatMutex.unlock();
+            // heartbeat send
+            std::cout << "Send heartbeat" << std::endl;
+        // } else {
+        //     m_heartbeatMutex.unlock();
+        // }
+    });
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -428,6 +439,7 @@ void VirtualStudio::toStandard()
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
     m_refreshTimer.stop();
+    m_heartbeatTimer.stop();
 
     if (m_showFirstRun) {
         m_showFirstRun = false;
@@ -469,6 +481,7 @@ void VirtualStudio::logout()
     settings.endGroup();
 
     m_refreshTimer.stop();
+    m_heartbeatTimer.stop();
 
     m_refreshToken.clear();
     m_userId.clear();
@@ -766,6 +779,7 @@ void VirtualStudio::showAbout()
 void VirtualStudio::exit()
 {
     m_refreshTimer.stop();
+    m_heartbeatTimer.stop();
     if (m_onConnectedScreen) {
         m_isExiting = true;
         disconnect();
@@ -1230,6 +1244,8 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
             emit authSucceeded();
             m_refreshTimer.setInterval(10000);
             m_refreshTimer.start();
+            m_heartbeatTimer.setInterval(10000);
+            m_heartbeatTimer.start();
         } else {
             emit refreshFinished(index);
         }

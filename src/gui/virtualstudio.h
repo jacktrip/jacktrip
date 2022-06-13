@@ -227,6 +227,10 @@ class VirtualStudio : public QObject
     bool m_allowRefresh      = true;
     bool m_refreshInProgress = false;
 
+    QTimer m_heartbeatTimer;
+    // QMutex m_heartbeatMutex;
+    // bool m_allowHearbeat     = true;
+
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
     bool m_showInactive      = false;
