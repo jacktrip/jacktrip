@@ -33,6 +33,7 @@ nogui {
     QT += qml
     QT += quick
     QT += svg
+    QT += websockets
   }
   noupdater {
     DEFINES += NO_UPDATER

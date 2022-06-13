@@ -42,6 +42,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QSslSocket>
+#include <QDebug>
 #include <algorithm>
 #include <iostream>
 
@@ -166,7 +167,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         // if (m_allowHeartbeat) {
         //     m_heartbeatMutex.unlock();
         // heartbeat send
-        std::cout << "Send heartbeat" << std::endl;
         sendHeartbeat();
         // } else {
         //     m_heartbeatMutex.unlock();
@@ -879,6 +879,8 @@ void VirtualStudio::receivedConnectionFromPeer()
     emit connected();
 }
 
+// here is where we'll put the api call to set studio for app
+
 void VirtualStudio::checkForHostname()
 {
     if (m_currentStudio < 0) {
@@ -1049,8 +1051,6 @@ void VirtualStudio::registerJTAsDevice()
     };
     QJsonDocument request = QJsonDocument(json);
 
-    std::cout << request.toJson(QJsonDocument::Compact).toStdString() << std::endl;
-
     QNetworkReply* reply = m_authenticator->post(
         QStringLiteral("https://app.jacktrip.org/api/devices"), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
@@ -1062,9 +1062,6 @@ void VirtualStudio::registerJTAsDevice()
         } else {
             QByteArray response       = reply->readAll();
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
-
-            std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString()
-                      << std::endl;
 
             m_appID = deviceState.object()[QStringLiteral("id")].toString();
 
@@ -1103,8 +1100,15 @@ void VirtualStudio::deleteJTDevice()
 
 void VirtualStudio::sendHeartbeat()
 {
+    if (m_heartbeatWebSocket == nullptr) {
+        // Set up heartbeat websocket
+        m_heartbeatWebSocket = new VsWebSocket(
+            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat").arg(m_appID)),
+            m_authenticator->token(), m_apiPrefix, m_apiSecret);
+        m_heartbeatWebSocket->openSocket();
+    }
+
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-    std::cout << now.toStdString() << std::endl;
 
     QJsonObject json = {
         //   {QLatin1String("pkts_recv"), 0},
@@ -1123,25 +1127,33 @@ void VirtualStudio::sendHeartbeat()
     };
     QJsonDocument request = QJsonDocument(json);
 
-    QNetworkReply* reply = m_authenticator->post(
-        QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat").arg(m_appID),
-        request.toJson());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
-            reply->deleteLater();
-            return;
-        } else {
-            QByteArray response       = reply->readAll();
-            QJsonDocument deviceState = QJsonDocument::fromJson(response);
-
-            std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString()
-                      << std::endl;
+    if (m_heartbeatWebSocket->isValid()) {
+        // Send heartbeat via websocket
+        m_heartbeatWebSocket->sendMessage(request.toJson());
+    } else {
+        // Attempt to open socket for next time
+        if (!m_heartbeatWebSocket->isConnected()) {
+            m_heartbeatWebSocket->openSocket();
         }
 
-        reply->deleteLater();
-    });
+        // Send heartbeat via endpoint
+        QNetworkReply* reply = m_authenticator->post(
+            QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat").arg(m_appID),
+            request.toJson());
+        connect(reply, &QNetworkReply::finished, this, [=]() {
+            if (reply->error() != QNetworkReply::NoError) {
+                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                emit authFailed();
+                reply->deleteLater();
+                return;
+            } else {
+                QByteArray response       = reply->readAll();
+                QJsonDocument deviceState = QJsonDocument::fromJson(response);
+            }
+
+            reply->deleteLater();
+        });
+    }
 }
 
 void VirtualStudio::getServerList(bool firstLoad, int index)
