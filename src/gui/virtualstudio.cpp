@@ -995,7 +995,7 @@ QString VirtualStudio::randomString(int stringLength)
 
 void VirtualStudio::registerJTAsDevice()
 {
-    /* 
+    /*
         REGISTER JT APP AS A DEVICE ON VIRTUAL STUDIO
 
         Defaults:
@@ -1023,7 +1023,7 @@ void VirtualStudio::registerJTAsDevice()
         apiSecret - random 22 character string tied to app session
     */
 
-    QJsonObject json         = {
+    QJsonObject json = {
         {QLatin1String("period"), 128},
         {QLatin1String("queueBuffer"), 0},
         {QLatin1String("devicePort"), 4464},
@@ -1060,14 +1060,14 @@ void VirtualStudio::registerJTAsDevice()
             reply->deleteLater();
             return;
         } else {
-            QByteArray response    = reply->readAll();
+            QByteArray response       = reply->readAll();
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
 
             std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString()
-                << std::endl;
+                      << std::endl;
 
             m_appID = deviceState.object()[QStringLiteral("id")].toString();
-            
+
             QSettings settings;
             settings.beginGroup(QStringLiteral("VirtualStudio"));
             settings.setValue(QStringLiteral("AppID"), m_appID);
@@ -1106,7 +1106,7 @@ void VirtualStudio::sendHeartbeat()
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
     std::cout << now.toStdString() << std::endl;
 
-    QJsonObject json         = {
+    QJsonObject json = {
         //   {QLatin1String("pkts_recv"), 0},
         //   {QLatin1String("pkts_sent"), 0},
         //   {QLatin1String("min_rtt"), 0},
@@ -1137,7 +1137,7 @@ void VirtualStudio::sendHeartbeat()
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
 
             std::cout << deviceState.toJson(QJsonDocument::Compact).toStdString()
-                << std::endl;
+                      << std::endl;
         }
 
         reply->deleteLater();
