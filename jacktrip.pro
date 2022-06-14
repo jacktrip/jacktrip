@@ -241,7 +241,8 @@ HEADERS += src/DataProtocol.h \
   !novs {
     HEADERS += src/gui/virtualstudio.h \
                src/gui/vsServerInfo.h \
-               src/gui/vsQuickView.h
+               src/gui/vsQuickView.h \
+               src/gui/vsWebSocket.h
   }
   !noupdater {
     HEADERS += src/dblsqd/feed.h \
@@ -291,7 +292,8 @@ SOURCES += src/DataProtocol.cpp \
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
                src/gui/vsServerInfo.cpp \
-               src/gui/vsQuickView.cpp
+               src/gui/vsQuickView.cpp \
+               src/gui/vsWebSocket.cpp
   }
   !noupdater {
     SOURCES += src/dblsqd/feed.cpp \
