@@ -237,7 +237,7 @@ jobs:
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev
+            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
