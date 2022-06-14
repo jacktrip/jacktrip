@@ -39,17 +39,26 @@
 #define VSQUICKVIEW_H
 
 #include <QQuickView>
+#ifdef Q_OS_MACOS
+#include <QAction>
+#include <QMenu>
+#include <QMenuBar>
+#include <QObject>
+#endif
 
 class VsQuickView : public QQuickView
 {
     Q_OBJECT
 
-   public:
-    VsQuickView(QWindow* parent = nullptr) : QQuickView(parent) {}
-    bool event(QEvent* event) override;
+    public:
+      VsQuickView(QWindow* parent = nullptr);
+      bool event(QEvent* event) override;
 
-   signals:
-    void windowClose();
+    signals:
+      void windowClose();
+
+    private slots:
+      void closeWindow(); 
 };
 
 #endif  // VSQUICKVIEW_H

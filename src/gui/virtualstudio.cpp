@@ -782,13 +782,14 @@ void VirtualStudio::showAbout()
 
 void VirtualStudio::exit()
 {
+    std::cout << "in exit" << std::endl;
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
     if (m_onConnectedScreen) {
         m_isExiting = true;
 
-        // // Disconnect via API
-        // setStudioOnAppDevice("");
+        // Disconnect via API
+        setStudioOnAppDevice("");
 
         disconnect();
     } else {
