@@ -36,19 +36,21 @@
  */
 
 #include "vsQuickView.h"
+
 #include <iostream>
 
-VsQuickView::VsQuickView(QWindow* parent) : QQuickView(parent) {
+VsQuickView::VsQuickView(QWindow* parent) : QQuickView(parent)
+{
 #ifdef Q_OS_MACOS
-    auto *quit = new QAction("&Quit", this);
-    
-    QMenuBar *menuBar = new QMenuBar(nullptr);
-    QMenu *appName = menuBar->addMenu("&JackTrip");
+    auto* quit = new QAction("&Quit", this);
+
+    QMenuBar* menuBar = new QMenuBar(nullptr);
+    QMenu* appName    = menuBar->addMenu("&JackTrip");
     appName->addAction(quit);
 
     connect(quit, &QAction::triggered, this, &VsQuickView::closeWindow);
 #endif
-} 
+}
 
 bool VsQuickView::event(QEvent* event)
 {
@@ -56,7 +58,6 @@ bool VsQuickView::event(QEvent* event)
     // qDebug() << "Got an event of type" << type;
 
     if (event->type() == QEvent::Close || event->type() == QEvent::Quit) {
-        std::cout << "In close" << std::endl;
         emit windowClose();
         event->ignore();
     }
@@ -65,5 +66,5 @@ bool VsQuickView::event(QEvent* event)
 
 void VsQuickView::closeWindow()
 {
-  emit windowClose();
+    emit windowClose();
 }

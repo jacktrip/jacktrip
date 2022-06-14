@@ -50,15 +50,15 @@ class VsQuickView : public QQuickView
 {
     Q_OBJECT
 
-    public:
-      VsQuickView(QWindow* parent = nullptr);
-      bool event(QEvent* event) override;
+   public:
+    VsQuickView(QWindow* parent = nullptr);
+    bool event(QEvent* event) override;
 
-    signals:
-      void windowClose();
+   signals:
+    void windowClose();
 
-    private slots:
-      void closeWindow(); 
+   private slots:
+    void closeWindow();
 };
 
 #endif  // VSQUICKVIEW_H

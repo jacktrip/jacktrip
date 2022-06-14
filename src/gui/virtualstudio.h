@@ -233,7 +233,7 @@ class VirtualStudio : public QObject
     QTimer m_heartbeatTimer;
     // QMutex m_heartbeatMutex;
     // bool m_allowHearbeat     = true;
-    VsWebSocket *m_heartbeatWebSocket = NULL;
+    VsWebSocket* m_heartbeatWebSocket = NULL;
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;

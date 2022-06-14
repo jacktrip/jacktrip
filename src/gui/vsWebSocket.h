@@ -38,41 +38,42 @@
 #ifndef VSWEBSOCKET_H
 #define VSWEBSOCKET_H
 
-#include <QSslError>
 #include <QList>
+#include <QObject>
+#include <QSslError>
 #include <QString>
 #include <QUrl>
-#include <QObject>
 #include <QtWebSockets>
 
 class VsWebSocket : public QObject
 {
     Q_OBJECT
 
-    public:
-        // Constructor
-        explicit VsWebSocket(const QUrl &url, QString token, QString apiPrefix, QString apiSecret, QObject* parent = nullptr);
-        
-        // Public functions
-        void openSocket();
-        void sendMessage(const QByteArray &message);
-        bool isConnected();
-        bool isValid();
-    
-    private slots:
-        void onConnected();
-        void onClosed();
-        void onError(QAbstractSocket::SocketError error);
-        void onSslErrors(const QList<QSslError> &errors);
+   public:
+    // Constructor
+    explicit VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
+                         QString apiSecret, QObject* parent = nullptr);
 
-    private:
-        QWebSocket m_webSocket;
-        QUrl m_url;
-        bool m_connected = false;
-        bool m_error = false;
-        QString m_token;
-        QString m_apiPrefix;
-        QString m_apiSecret;
+    // Public functions
+    void openSocket();
+    void sendMessage(const QByteArray& message);
+    bool isConnected();
+    bool isValid();
+
+   private slots:
+    void onConnected();
+    void onClosed();
+    void onError(QAbstractSocket::SocketError error);
+    void onSslErrors(const QList<QSslError>& errors);
+
+   private:
+    QWebSocket m_webSocket;
+    QUrl m_url;
+    bool m_connected = false;
+    bool m_error     = false;
+    QString m_token;
+    QString m_apiPrefix;
+    QString m_apiSecret;
 };
 
 #endif  // VSWEBSOCKET_H

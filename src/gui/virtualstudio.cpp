@@ -37,12 +37,12 @@
 
 #include "virtualstudio.h"
 
+#include <QDebug>
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QSslSocket>
-#include <QDebug>
 #include <algorithm>
 #include <iostream>
 
@@ -782,7 +782,6 @@ void VirtualStudio::showAbout()
 
 void VirtualStudio::exit()
 {
-    std::cout << "in exit" << std::endl;
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
     if (m_onConnectedScreen) {
@@ -894,13 +893,13 @@ void VirtualStudio::receivedConnectionFromPeer()
 // Sets the server ID of our app device on the API
 void VirtualStudio::setStudioOnAppDevice(QString studioId)
 {
-    std::cout << "in set studio" << std::endl;
     QJsonObject json = {
         {QLatin1String("serverId"), studioId},
     };
     QJsonDocument request = QJsonDocument(json);
-    QNetworkReply* reply = m_authenticator->put(
-        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID), request.toJson());
+    QNetworkReply* reply  = m_authenticator->put(
+         QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID),
+         request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -908,8 +907,6 @@ void VirtualStudio::setStudioOnAppDevice(QString studioId)
             reply->deleteLater();
             return;
         }
-
-        std::cout << "in set studio response" << std::endl;
 
         reply->deleteLater();
     });
@@ -1137,7 +1134,8 @@ void VirtualStudio::sendHeartbeat()
     if (m_heartbeatWebSocket == nullptr) {
         // Set up heartbeat websocket
         m_heartbeatWebSocket = new VsWebSocket(
-            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat").arg(m_appID)),
+            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
+                     .arg(m_appID)),
             m_authenticator->token(), m_apiPrefix, m_apiSecret);
         m_heartbeatWebSocket->openSocket();
     }
@@ -1172,7 +1170,8 @@ void VirtualStudio::sendHeartbeat()
 
         // Send heartbeat via endpoint
         QNetworkReply* reply = m_authenticator->post(
-            QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat").arg(m_appID),
+            QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat")
+                .arg(m_appID),
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [=]() {
             if (reply->error() != QNetworkReply::NoError) {

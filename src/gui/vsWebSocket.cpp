@@ -37,18 +37,17 @@
 
 #include "vsWebSocket.h"
 
+#include <QDebug>
 #include <iostream>
 
-#include <QDebug>
-
-
 // Constructor
-VsWebSocket::VsWebSocket(const QUrl &url, QString token, QString apiPrefix, QString apiSecret, QObject* parent) :
-    QObject(parent),
-    m_url(url),
-    m_token(token),
-    m_apiPrefix(apiPrefix),
-    m_apiSecret(apiSecret)
+VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
+                         QString apiSecret, QObject* parent)
+    : QObject(parent)
+    , m_url(url)
+    , m_token(token)
+    , m_apiPrefix(apiPrefix)
+    , m_apiSecret(apiSecret)
 {
     connect(&m_webSocket, &QWebSocket::connected, this, &VsWebSocket::onConnected);
     connect(&m_webSocket, &QWebSocket::disconnected, this, &VsWebSocket::onClosed);
@@ -56,32 +55,32 @@ VsWebSocket::VsWebSocket(const QUrl &url, QString token, QString apiPrefix, QStr
 
 void VsWebSocket::openSocket()
 {
-  QNetworkRequest req = QNetworkRequest(QUrl(m_url));
-  QString authVal = "Bearer ";
-  authVal.append(m_token);
-  req.setRawHeader(QByteArray("Upgrade"), QByteArray("websocket"));
-  req.setRawHeader(QByteArray("Connection"), QByteArray("Upgrade"));
-  req.setRawHeader(QByteArray("Authorization"), authVal.toUtf8());
-  req.setRawHeader(QByteArray("Origin"), QByteArray("https://app.jacktrip.org"));
-  req.setRawHeader(QByteArray("APIPrefix"), m_apiPrefix.toUtf8());
-  req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
+    QNetworkRequest req = QNetworkRequest(QUrl(m_url));
+    QString authVal     = "Bearer ";
+    authVal.append(m_token);
+    req.setRawHeader(QByteArray("Upgrade"), QByteArray("websocket"));
+    req.setRawHeader(QByteArray("Connection"), QByteArray("Upgrade"));
+    req.setRawHeader(QByteArray("Authorization"), authVal.toUtf8());
+    req.setRawHeader(QByteArray("Origin"), QByteArray("https://app.jacktrip.org"));
+    req.setRawHeader(QByteArray("APIPrefix"), m_apiPrefix.toUtf8());
+    req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
 
-  m_webSocket.open(req);
+    m_webSocket.open(req);
 }
 
 // Fires when connected to websocket
 void VsWebSocket::onConnected()
 {
-  m_connected = true;
+    m_connected = true;
 }
 
 // Fires when disconnected from websocket
 void VsWebSocket::onClosed()
 {
-  // std::cout << "Disconnected from websocket" << std::endl;
-  // std::cout << m_webSocket.closeReason().toStdString() << std::endl;
-  // qDebug() << "Close code:" << m_webSocket.closeCode();
-  m_connected = false;
+    // std::cout << "Disconnected from websocket" << std::endl;
+    // std::cout << m_webSocket.closeReason().toStdString() << std::endl;
+    // qDebug() << "Close code:" << m_webSocket.closeCode();
+    m_connected = false;
 }
 
 void VsWebSocket::onError(QAbstractSocket::SocketError error)
@@ -89,24 +88,24 @@ void VsWebSocket::onError(QAbstractSocket::SocketError error)
     qDebug() << error;
 }
 
-void VsWebSocket::onSslErrors(const QList<QSslError> &errors)
+void VsWebSocket::onSslErrors(const QList<QSslError>& errors)
 {
     for (int i = 0; i < errors.size(); ++i) {
         qDebug() << errors.at(i);
     }
 }
 
-void VsWebSocket::sendMessage(const QByteArray &message)
+void VsWebSocket::sendMessage(const QByteArray& message)
 {
-  m_webSocket.sendBinaryMessage(message);
+    m_webSocket.sendBinaryMessage(message);
 }
 
 bool VsWebSocket::isConnected()
 {
-  return m_connected;
+    return m_connected;
 }
 
 bool VsWebSocket::isValid()
 {
-  return !m_error && m_connected;
+    return !m_error && m_connected;
 }
