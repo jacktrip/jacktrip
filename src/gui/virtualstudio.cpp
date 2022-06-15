@@ -1072,13 +1072,21 @@ void VirtualStudio::registerJTAsDevice()
         {QLatin1String("playbackVolume"), 100},
         {QLatin1String("monitorMute"), false},
         {QLatin1String("monitorVolume"), 100},
-        {QLatin1String("name"), "JackTrip App"},
         {QLatin1String("alsaName"), "jacktripapp"},
         {QLatin1String("overlay"), "jacktrip_app"},
         {QLatin1String("mac"), m_appUUID},
         {QLatin1String("version"), versionString()},
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
+#ifndef defined(Q_OS_MACOS) || defined(Q_OS_WIN)
+        {QLatin1String("name"), "JackTrip App"},
+#endif  // not Q_OS_MACOS OR Q_OS_WIN
+#ifdef Q_OS_MACOS
+        {QLatin1String("name"), "JackTrip App (macOS)"},
+#endif  // Q_OS_MACOS
+#ifdef Q_OS_WIN
+        {QLatin1String("name"), "JackTrip App (Windows)"},
+#endif  // Q_OS_WIN
     };
     QJsonDocument request = QJsonDocument(json);
 
