@@ -163,14 +163,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     });
 
     connect(&m_heartbeatTimer, &QTimer::timeout, this, [&]() {
-        // m_heartbeatMutex.lock();
-        // if (m_allowHeartbeat) {
-        //     m_heartbeatMutex.unlock();
-        // heartbeat send
         sendHeartbeat();
-        // } else {
-        //     m_heartbeatMutex.unlock();
-        // }
     });
 }
 
@@ -1151,14 +1144,7 @@ void VirtualStudio::sendHeartbeat()
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 
     QJsonObject json = {
-        //   {QLatin1String("pkts_recv"), 0},
-        //   {QLatin1String("pkts_sent"), 0},
-        //   {QLatin1String("min_rtt"), 0},
-        //   {QLatin1String("max_rtt"), 0},
-        //   {QLatin1String("avg_rtt"), 0},
-        //   {QLatin1String("stddev_rtt"), 0},
         {QLatin1String("stats_updated_at"), now},
-        //   {QLatin1String("cloudId"), cloud_id_string},
         {QLatin1String("mac"), m_appUUID},
         {QLatin1String("version"), versionString()},
         {QLatin1String("type"), "jacktrip_app"},

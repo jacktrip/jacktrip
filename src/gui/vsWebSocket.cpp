@@ -77,9 +77,6 @@ void VsWebSocket::onConnected()
 // Fires when disconnected from websocket
 void VsWebSocket::onClosed()
 {
-    // std::cout << "Disconnected from websocket" << std::endl;
-    // std::cout << m_webSocket.closeReason().toStdString() << std::endl;
-    // qDebug() << "Close code:" << m_webSocket.closeCode();
     m_connected = false;
 }
 
