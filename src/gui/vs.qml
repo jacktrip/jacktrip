@@ -105,6 +105,7 @@ Rectangle {
     Connections {
         target: virtualstudio
         function onAuthSucceeded() { 
+            console.log("in auth succeeded");
             if (virtualstudio.showDeviceSetup) {
                 window.state = "setup";
             } else {
