@@ -272,6 +272,31 @@ int UdpDataProtocol::bindSocket()
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
 
+#if defined(_WIN32)
+    // TODO: these don't seem to work on windows. we likely need to use qWAVE or qos2
+#elif defined(__APPLE__)
+    // set service type "Interactive Voice"
+    // TODO: this is supposed to be the right thing to do on OSX, but doesn't seem to do
+    // anything
+    const int val = NET_SERVICE_TYPE_VO;
+    ::setsockopt(sock_fd, SOL_SOCKET, SO_NET_SERVICE_TYPE, &val, sizeof(val));
+#else
+    // Set ToS to DSCP Expedited Forwarding (EF), recommended for Audio
+    // See RFC2474 https://datatracker.ietf.org/doc/html/rfc2474
+    // See also
+    // https://www.slashroot.in/understanding-differentiated-services-tos-field-internet-protocol-header
+    const char tos = 0xB8;  // 10111000
+    if (mIPv6) {
+        ::setsockopt(sock_fd, IPPROTO_IPV6, IPV6_TCLASS, &tos, sizeof(tos));
+    } else {
+        ::setsockopt(sock_fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos));
+    }
+
+    // Set 802.1q QoS priority
+    int priority = 6;
+    ::setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(priority));
+#endif
+
     // Bind the Socket
     if (mIPv6) {
         if ((::bind(sock_fd, (struct sockaddr*)&local_addr6, sizeof(local_addr6))) < 0) {
