@@ -437,6 +437,22 @@ void VirtualStudio::toVirtualStudio()
         // Attempt to refresh our virtual studio auth token
         setupAuthenticator();
 
+        // Something about this is required for refreshing auth tokens:
+        // https://bugreports.qt.io/browse/QTBUG-84866
+        m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
+                                                        QVariantMap* parameters) {
+            if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
+                QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
+                (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
+            } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
+                parameters->insert(QStringLiteral("audience"),
+                                   QStringLiteral("https://api.jacktrip.org"));
+            }
+            if (!parameters->contains("client_id")) {
+                parameters->insert("client_id", "cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
+            }
+        });
+
         m_authenticator->setRefreshToken(m_refreshToken);
         m_authenticator->refreshAccessToken();
     }
@@ -764,7 +780,6 @@ void VirtualStudio::exit()
 
 void VirtualStudio::slotAuthSucceded()
 {
-    qDebug() << "In slotAuthSucceded";
     m_refreshToken = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
     QSettings settings;
@@ -783,7 +798,6 @@ void VirtualStudio::slotAuthSucceded()
 
 void VirtualStudio::slotAuthFailed()
 {
-    qDebug() << "In slotAuthFailed";
     emit authFailed();
 }
 
@@ -948,7 +962,6 @@ void VirtualStudio::setupAuthenticator()
 
 void VirtualStudio::getServerList(bool firstLoad, int index)
 {
-    qDebug() << "in get server list";
     {
         QMutexLocker locker(&m_refreshMutex);
         if (!m_allowRefresh || m_refreshInProgress) {
@@ -985,7 +998,6 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
             return;
         }
         QJsonArray servers = serverList.array();
-        qDebug() << "got servers";
         // Divide our servers by category initially so that they're easier to sort
         QList<QObject*> yourServers;
         QList<QObject*> subServers;
@@ -1092,7 +1104,6 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
             }
         }
         if (firstLoad) {
-            qDebug() << "emitting auth succeeded";
             emit authSucceeded();
             m_refreshTimer.setInterval(10000);
             m_refreshTimer.start();
@@ -1126,7 +1137,6 @@ void VirtualStudio::getUserId()
         settings.setValue(QStringLiteral("UserId"), m_userId);
         settings.endGroup();
         getSubscriptions();
-        qDebug() << "got userID";
         reply->deleteLater();
     });
 }
@@ -1158,7 +1168,6 @@ void VirtualStudio::getSubscriptions()
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
         getServerList(true);
-        qDebug() << "got subscriptions";
         reply->deleteLater();
     });
 }
