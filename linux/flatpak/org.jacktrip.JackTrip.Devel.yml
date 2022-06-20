@@ -1,6 +1,6 @@
 app-id: org.jacktrip.JackTrip.Devel
 runtime: org.kde.Platform
-runtime-version: '5.15'
+runtime-version: '5.15-21.08'
 sdk: org.kde.Sdk
 command: jacktrip
 finish-args:
@@ -9,12 +9,12 @@ finish-args:
   - --socket=x11
   # Wayland access
   # - --socket=wayland
+  # OpenGL
+  - --device=dri
   # Needs network access
   - --share=network
   # Pipewire/Jack
   - --filesystem=xdg-run/pipewire-0
-  # For setting realtime priority for network thread?
-  - --socket=system-bus
 cleanup:
   - /lib/python3.8
   - /share/man
