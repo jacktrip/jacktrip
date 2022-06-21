@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.1",
+            "changelog": "Bugfixes around UDP timeout and 'Logging In' screen navigation. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.1",
+            "download": {
+                "date": "2022-06-21T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.1/JackTrip-v1.6.1-Windows-x64-installer.msi",
+                "downloadSize": 43368448,
+                "sha256": "8eac390617488d849c0356e3305c96a59bbe46a8174d02b0321bb1dc86774b87"
+            }
+        },
+        {
             "version": "1.6.0",
             "changelog": "Full integration with JackTrip Virtual Studio. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.0",
             "download": {
