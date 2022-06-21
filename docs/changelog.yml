@@ -1,3 +1,11 @@
+- Version: "1.6.1"
+  Date: 2022-06-20
+  Description:
+  - (added) ToS IP header to use DSCP Expedited Forwarding
+  - (fixed) Ubuntu deoendencies
+  - (fixed) timeout of client restored
+  - (fixed) bufstrategy 3 history minimum
+  - (fixed) perpetual logging in screen
 - Version: "1.6.0"
   Date: 2022-05-30
   Description:
