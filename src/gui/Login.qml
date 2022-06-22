@@ -136,6 +136,6 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             color: backButton.down ? buttonTextPressed : (backButton.hovered ? buttonTextHover : buttonTextColour)
         }
-        visible: !virtualstudio.hasRefreshToken
+        visible: true
     }
 }

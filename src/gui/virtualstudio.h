@@ -183,6 +183,7 @@ class VirtualStudio : public QObject
     void setStudioOnAppDevice(QString studioId);
     void checkForHostname();
     void endRetryPeriod();
+    void launchBrowser(const QUrl& url);
 
    private:
     void setupAuthenticator();
