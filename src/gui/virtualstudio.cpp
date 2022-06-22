@@ -82,6 +82,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_appID           = settings.value(QStringLiteral("AppID"), "").toString();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
+    m_device = new VsDevice(m_appID, m_authenticator->token(), m_apiPrefix, m_apiSecret);
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -1135,10 +1136,15 @@ void VirtualStudio::sendHeartbeat()
     if (m_heartbeatWebSocket == nullptr) {
         // Set up heartbeat websocket
         m_heartbeatWebSocket = new VsWebSocket(
-            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
+            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1")
                      .arg(m_appID)),
             m_authenticator->token(), m_apiPrefix, m_apiSecret);
+    }
+
+    if (m_connectionState == QStringLiteral("Connected")) {
         m_heartbeatWebSocket->openSocket();
+    } else {
+        m_heartbeatWebSocket->closeSocket();
     }
 
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
@@ -1154,13 +1160,11 @@ void VirtualStudio::sendHeartbeat()
     QJsonDocument request = QJsonDocument(json);
 
     if (m_heartbeatWebSocket->isValid()) {
+        qDebug() << "woooo";
         // Send heartbeat via websocket
         m_heartbeatWebSocket->sendMessage(request.toJson());
     } else {
-        // Attempt to open socket for next time
-        if (!m_heartbeatWebSocket->isConnected()) {
-            m_heartbeatWebSocket->openSocket();
-        }
+        qDebug() << "aaayyy";
 
         // Send heartbeat via endpoint
         QNetworkReply* reply = m_authenticator->post(

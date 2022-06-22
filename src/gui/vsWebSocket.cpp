@@ -55,6 +55,10 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
 
 void VsWebSocket::openSocket()
 {
+    if (m_connected) {
+        return;
+    }
+
     QNetworkRequest req = QNetworkRequest(QUrl(m_url));
     QString authVal     = "Bearer ";
     authVal.append(m_token);
@@ -68,16 +72,32 @@ void VsWebSocket::openSocket()
     m_webSocket.open(req);
 }
 
+void VsWebSocket::closeSocket()
+{
+    if (m_connected && m_webSocket.isValid()) {
+        m_webSocket.close();
+    }
+}
+
 // Fires when connected to websocket
 void VsWebSocket::onConnected()
 {
     m_connected = true;
+    connect(&m_webSocket, &QWebSocket::textMessageReceived,
+            this, &VsWebSocket::onTextMessageReceived);
 }
 
 // Fires when disconnected from websocket
 void VsWebSocket::onClosed()
 {
     m_connected = false;
+}
+
+// Fires when a message from the websocket is received
+void VsWebSocket::onTextMessageReceived(const QString& message)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
+    qDebug() << "Message received" << doc;
 }
 
 void VsWebSocket::onError(QAbstractSocket::SocketError error)

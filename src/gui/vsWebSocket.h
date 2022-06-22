@@ -56,6 +56,7 @@ class VsWebSocket : public QObject
 
     // Public functions
     void openSocket();
+    void closeSocket();
     void sendMessage(const QByteArray& message);
     bool isConnected();
     bool isValid();
@@ -63,6 +64,7 @@ class VsWebSocket : public QObject
    private slots:
     void onConnected();
     void onClosed();
+    void onTextMessageReceived(const QString& message);
     void onError(QAbstractSocket::SocketError error);
     void onSslErrors(const QList<QSslError>& errors);
 
