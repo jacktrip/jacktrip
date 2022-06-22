@@ -181,15 +181,12 @@ class VirtualStudio : public QObject
     void processFinished();
     void processError(const QString& errorMessage);
     void receivedConnectionFromPeer();
-    void setStudioOnAppDevice(QString studioId);
     void checkForHostname();
     void endRetryPeriod();
 
    private:
     void setupAuthenticator();
-    QString randomString(int stringLength);
-    void registerJTAsDevice();
-    void deleteJTDevice();
+
     void sendHeartbeat();
     void getServerList(bool firstLoad = false, int index = -1);
     void getUserId();
@@ -204,10 +201,6 @@ class VirtualStudio : public QObject
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
-    QString m_apiPrefix;
-    QString m_apiSecret;
-    QString m_appUUID;
-    QString m_appID;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
