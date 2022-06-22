@@ -1200,6 +1200,13 @@ void VirtualStudio::sendHeartbeat()
         // Attempt to open socket for next time
         if (!m_heartbeatWebSocket->isConnected()) {
             m_heartbeatWebSocket->openSocket();
+        } else {
+            // Recreate websocket as there has been an error
+            m_heartbeatWebSocket = new VsWebSocket(
+                QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
+                         .arg(m_appID)),
+                m_authenticator->token(), m_apiPrefix, m_apiSecret);
+            m_heartbeatWebSocket->openSocket();
         }
 
         // Send heartbeat via endpoint

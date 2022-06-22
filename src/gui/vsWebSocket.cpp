@@ -51,6 +51,10 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
 {
     connect(&m_webSocket, &QWebSocket::connected, this, &VsWebSocket::onConnected);
     connect(&m_webSocket, &QWebSocket::disconnected, this, &VsWebSocket::onClosed);
+    connect(&m_webSocket, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),
+            this, &VsWebSocket::onSslErrors);
+    connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+            this, &VsWebSocket::onError);
 }
 
 void VsWebSocket::openSocket()
@@ -82,14 +86,17 @@ void VsWebSocket::onClosed()
 
 void VsWebSocket::onError(QAbstractSocket::SocketError error)
 {
-    qDebug() << error;
+    // qDebug() << error;
+    m_error = true;
 }
 
 void VsWebSocket::onSslErrors(const QList<QSslError>& errors)
 {
     for (int i = 0; i < errors.size(); ++i) {
-        qDebug() << errors.at(i);
+        // qDebug() << errors.at(i);
     }
+
+    m_error = true;
 }
 
 void VsWebSocket::sendMessage(const QByteArray& message)
