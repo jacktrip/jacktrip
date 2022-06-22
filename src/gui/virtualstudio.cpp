@@ -794,15 +794,7 @@ void VirtualStudio::slotAuthSucceded()
     m_refreshToken = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
 
-    if (m_appUUID == "") {
-        m_appUUID = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
-    }
-
-    if (m_apiPrefix == "" || m_apiSecret == "") {
-        m_apiPrefix = randomString(7);
-        m_apiSecret = randomString(22);
-        registerJTAsDevice();
-    }
+    checkForJTDevice();
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -1032,10 +1024,8 @@ void VirtualStudio::registerJTAsDevice()
         limiter - false
         compressor - false
         quality - 2 - high
-        captureBoost - false
         captureMute - false - unused right now
         captureVolume - 100 - unused right now
-        playbackBoost - false
         playbackMute - false - unused right now
         playbackVolume - 100 - unused right now
         monitorMute - false - unsure if we should enable
@@ -1050,17 +1040,15 @@ void VirtualStudio::registerJTAsDevice()
     */
 
     QJsonObject json = {
-        {QLatin1String("period"), 128},
+        {QLatin1String("period"), m_bufferOptions[bufferSize()].toInt()},
         {QLatin1String("queueBuffer"), 0},
         {QLatin1String("devicePort"), 4464},
         {QLatin1String("reverb"), 0},
         {QLatin1String("limiter"), false},
         {QLatin1String("compressor"), false},
         {QLatin1String("quality"), 2},
-        {QLatin1String("captureBoost"), false},
         {QLatin1String("captureMute"), false},
         {QLatin1String("captureVolume"), 100},
-        {QLatin1String("playbackBoost"), false},
         {QLatin1String("playbackMute"), false},
         {QLatin1String("playbackVolume"), 100},
         {QLatin1String("monitorMute"), false},
@@ -1102,6 +1090,59 @@ void VirtualStudio::registerJTAsDevice()
             settings.setValue(QStringLiteral("AppID"), m_appID);
             settings.endGroup();
         }
+
+        reply->deleteLater();
+    });
+}
+
+void VirtualStudio::checkForJTDevice()
+{
+    if (m_appUUID == "") {
+        m_appUUID = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
+    }
+
+    // check if device exists
+    QNetworkReply* reply = m_authenticator->get(
+        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
+        connect(reply, &QNetworkReply::finished, this, [=]() {
+        // Got error
+        if (reply->error() != QNetworkReply::NoError) {
+            QVariant statusCode = reply->attribute( QNetworkRequest::HttpStatusCodeAttribute );
+            if ( !statusCode.isValid() )
+            {
+                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                emit authFailed();
+                reply->deleteLater();
+                return;
+            }
+
+            int status = statusCode.toInt();
+            // Device does not exist
+            if ( status >= 400 && status < 500 )
+            {
+                std::cout << "Device not found. Creating new device." << std::endl;
+
+                if (m_apiPrefix == "" || m_apiSecret == "") {
+                    m_apiPrefix = randomString(7);
+                    m_apiSecret = randomString(22);
+                }
+
+                registerJTAsDevice();
+            } else {
+                // Other error status. Won't create device.
+                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                emit authFailed();
+                reply->deleteLater();
+                return;
+            }
+        }
+
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("VirtualStudio"));
+        settings.setValue(QStringLiteral("AppUUID"), m_appUUID);
+        settings.setValue(QStringLiteral("ApiPrefix"), m_apiPrefix);
+        settings.setValue(QStringLiteral("ApiSecret"), m_apiSecret);
+        settings.endGroup();
 
         reply->deleteLater();
     });
