@@ -1104,12 +1104,12 @@ void VirtualStudio::checkForJTDevice()
     // check if device exists
     QNetworkReply* reply = m_authenticator->get(
         QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
-        connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
-            QVariant statusCode = reply->attribute( QNetworkRequest::HttpStatusCodeAttribute );
-            if ( !statusCode.isValid() )
-            {
+            QVariant statusCode =
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+            if (!statusCode.isValid()) {
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
                 emit authFailed();
                 reply->deleteLater();
@@ -1118,8 +1118,7 @@ void VirtualStudio::checkForJTDevice()
 
             int status = statusCode.toInt();
             // Device does not exist
-            if ( status >= 400 && status < 500 )
-            {
+            if (status >= 400 && status < 500) {
                 std::cout << "Device not found. Creating new device." << std::endl;
 
                 if (m_apiPrefix == "" || m_apiSecret == "") {
