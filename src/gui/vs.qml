@@ -104,15 +104,19 @@ Rectangle {
 
     Connections {
         target: virtualstudio
-        function onAuthSucceeded() { 
+        onAuthSucceeded: { 
             if (virtualstudio.showDeviceSetup) {
                 window.state = "setup";
             } else {
                 window.state = "browse";
             }
         }
-        function onAuthFailed() { loginScreen.failTextVisible = true }
-        //function onConnected() { }
-        function onDisconnected() { window.state = "browse" }
+        onAuthFailed: {
+            loginScreen.failTextVisible = true;
+        }
+        // onConnected: { }
+        onDisconnected: {
+            window.state = "browse";
+        }
     }
 }

@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.1",
+            "changelog": "Bugfixes around UDP timeout and 'Logging In' screen navigation. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.1",
+            "download": {
+                "date": "2022-06-21T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.1/JackTrip-v1.6.1-macOS-x64-installer.pkg",
+                "downloadSize": 11476305,
+                "sha256": "eaf05c842d6b3ae799208a40b37da1cdb13e3700dcbbd97443c80cad81f4d2ac"
+            }
+        },
+        {
             "version": "1.6.0",
             "changelog": "Full integration with JackTrip Virtual Studio. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.0",
             "download": {

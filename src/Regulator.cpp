@@ -91,7 +91,7 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST          = 4;    // at FPP 16-128, see below for > 128
+constexpr int HIST          = 4;    // for mono at FPP 16-128, see below for > mono, > 128
 constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
@@ -141,13 +141,17 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mHist = HIST;  // at FPP 32
-    if ((mNumChannels > 1) && (mFPP > 64))
-        mHist = 3;
-    if (mFPP > 128)
-        mHist = 2;
-    if (mHist < 2)
-        mHist = 2;  // min packets for prediction, needs at least 2
+    mHist = HIST;  //    HIST (default) is 4
+                   //    as FPP decreases the rate of PLC triggers potentially goes up
+                   //    and load increases so don't use an inverse relation
+
+    //    crossfaded prediction is a full packet ahead of predicted
+    //    packet, so the size of mPrediction needs to account for 2 full packets (2*FPP)
+    //    but trainSamps = (HIST * FPP) and mPrediction.resize(trainSamps - 1, 0.0) so if
+    //    hist = 2, then it exceeds the size
+
+    if (((mNumChannels > 1) && (mFPP > 64)) || (mFPP > 128))
+        mHist = 3;  // min packets for prediction, needs at least 3
 
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";

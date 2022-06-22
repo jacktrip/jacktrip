@@ -443,6 +443,22 @@ void VirtualStudio::toVirtualStudio()
         // Attempt to refresh our virtual studio auth token
         setupAuthenticator();
 
+        // Something about this is required for refreshing auth tokens:
+        // https://bugreports.qt.io/browse/QTBUG-84866
+        m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
+                                                        QVariantMap* parameters) {
+            if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
+                QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
+                (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
+            } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
+                parameters->insert(QStringLiteral("audience"),
+                                   QStringLiteral("https://api.jacktrip.org"));
+            }
+            if (!parameters->contains("client_id")) {
+                parameters->insert("client_id", "cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
+            }
+        });
+
         m_authenticator->setRefreshToken(m_refreshToken);
         m_authenticator->refreshAccessToken();
     }
@@ -882,6 +898,17 @@ void VirtualStudio::endRetryPeriod()
     m_retryPeriodTimer.stop();
 }
 
+void VirtualStudio::launchBrowser(const QUrl& url)
+{
+    std::cout << "Launching Browser" << std::endl;
+    bool success = QDesktopServices::openUrl(url);
+    if (success) {
+        std::cout << "Success" << std::endl;
+    } else {
+        std::cout << "Unable to open URL" << std::endl;
+    }
+}
+
 void VirtualStudio::setupAuthenticator()
 {
     if (m_authenticator.isNull()) {
@@ -890,8 +917,8 @@ void VirtualStudio::setupAuthenticator()
         m_authenticator->setScope(
             QStringLiteral("openid profile email offline_access read:servers"));
         connect(m_authenticator.data(),
-                &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
-                &QDesktopServices::openUrl);
+                &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this,
+                &VirtualStudio::launchBrowser);
 
         const QUrl authUri(QStringLiteral("https://auth.jacktrip.org/authorize"));
         const QString clientId = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
@@ -978,7 +1005,6 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
             return;
         }
         QJsonArray servers = serverList.array();
-
         // Divide our servers by category initially so that they're easier to sort
         QList<QObject*> yourServers;
         QList<QObject*> subServers;
@@ -1120,7 +1146,6 @@ void VirtualStudio::getUserId()
         settings.setValue(QStringLiteral("UserId"), m_userId);
         settings.endGroup();
         getSubscriptions();
-
         reply->deleteLater();
     });
 }
@@ -1152,7 +1177,6 @@ void VirtualStudio::getSubscriptions()
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
         getServerList(true);
-
         reply->deleteLater();
     });
 }
