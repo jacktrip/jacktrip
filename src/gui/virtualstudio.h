@@ -47,10 +47,10 @@
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
+#include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
 #include "vsWebSocket.h"
-#include "vsDevice.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -227,7 +227,7 @@ class VirtualStudio : public QObject
 
     QTimer m_heartbeatTimer;
     VsWebSocket* m_heartbeatWebSocket = NULL;
-    VsDevice* m_device = NULL;
+    VsDevice* m_device                = NULL;
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;

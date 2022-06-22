@@ -42,22 +42,24 @@
 
 // Constructor
 VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
-    : QObject(parent)
-    , m_authenticator(authenticator)
+    : QObject(parent), m_authenticator(authenticator)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
-    m_apiPrefix       = settings.value(QStringLiteral("ApiPrefix"), "").toString();
-    m_apiSecret       = settings.value(QStringLiteral("ApiSecret"), "").toString();
-    m_appUUID         = settings.value(QStringLiteral("AppUUID"), "").toString();
-    m_appID           = settings.value(QStringLiteral("AppID"), "").toString();
+    m_apiPrefix = settings.value(QStringLiteral("ApiPrefix"), "").toString();
+    m_apiSecret = settings.value(QStringLiteral("ApiSecret"), "").toString();
+    m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
+    m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
 
-    qDebug() << "Device init";
+    connect(&m_webSocket, &QWebSocket::connected, this, &VsDevice::onWSSConnected);
+    connect(&m_webSocket, &QWebSocket::disconnected, this, &VsDevice::onWSSClosed);
+    connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+            this, &VsDevice::onWSSError);
 }
 
 void VsDevice::registerApp()
 {
-        if (m_appUUID == "") {
+    if (m_appUUID == "") {
         m_appUUID = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
     }
 
@@ -72,7 +74,7 @@ void VsDevice::registerApp()
             if (!statusCode.isValid()) {
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
                 // TODO: Fix me
-                //emit authFailed();
+                // emit authFailed();
                 reply->deleteLater();
                 return;
             }
@@ -89,14 +91,16 @@ void VsDevice::registerApp()
 
                 registerJTAsDevice();
             } else {
-                m_deviceState = QJsonDocument::fromJson(reply->readAll());
                 // Other error status. Won't create device.
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
                 // TODO: Fix me
-                //emit authFailed();
+                // emit authFailed();
                 reply->deleteLater();
                 return;
             }
+        } else {
+            QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
+            reconcileState(response);
         }
 
         QSettings settings;
@@ -122,7 +126,7 @@ void VsDevice::removeApp()
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             // TODO: Fix me
-            //emit authFailed();
+            // emit authFailed();
             reply->deleteLater();
             return;
         } else {
@@ -144,47 +148,75 @@ void VsDevice::removeApp()
     });
 }
 
+void VsDevice::establishWSSConnection()
+{
+    QNetworkRequest req = QNetworkRequest(
+        QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1").arg(m_appID)));
+    QString authVal = "Bearer ";
+    authVal.append(m_authenticator->token());
+    req.setRawHeader(QByteArray("Upgrade"), QByteArray("websocket"));
+    req.setRawHeader(QByteArray("Connection"), QByteArray("Upgrade"));
+    req.setRawHeader(QByteArray("Authorization"), authVal.toUtf8());
+    req.setRawHeader(QByteArray("Origin"), QByteArray("https://app.jacktrip.org"));
+    req.setRawHeader(QByteArray("APIPrefix"), m_apiPrefix.toUtf8());
+    req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
+    m_webSocket.open(req);
+}
+
+void VsDevice::onWSSConnected()
+{
+    connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
+            &VsDevice::onTextMessageReceived);
+}
+
+void VsDevice::onWSSClosed()
+{
+    qDebug() << "in onWSSClosed";
+}
+
+void VsDevice::onWSSError(QAbstractSocket::SocketError error)
+{
+    qDebug() << "in onWSSError";
+    qDebug() << error;
+}
+
+void VsDevice::onTextMessageReceived(const QString& message)
+{
+    QJsonDocument newState = QJsonDocument::fromJson(message.toUtf8());
+    reconcileState(newState);
+}
+
 void VsDevice::sendHeartbeat()
 {
-    printf("sendHeartbeat called\n\n");
-
-    if (m_webSocket == nullptr) {
-        // Set up heartbeat websocket
-        m_webSocket = new VsWebSocket(
-            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1")
-                     .arg(m_appID)),
-            m_authenticator->token(), m_apiPrefix, m_apiSecret);
+    qDebug() << "Current state: " << m_deviceState;
+    QString serverId = m_deviceState[QStringLiteral("serverId")].toString();
+    if (serverId == "") {
+        // When the device is not connected to a server, use the standard API
+        m_webSocket.close();
+    } else {
+        // When the device is connected to a server, use the underlying wss connection
+        if (!m_webSocket.isValid()) {
+            establishWSSConnection();
+        }
     }
-
-    // TODO: Fix me
-    //if (m_connectionState == QStringLiteral("Connected")) {
-    //    m_webSocket->openSocket();
-    //} else {
-    //    m_webSocket->closeSocket();
-    //}
 
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 
     QJsonObject json = {
         {QLatin1String("stats_updated_at"), now},
         {QLatin1String("mac"), m_appUUID},
-        // TODO: Fix me
-        //{QLatin1String("version"), versionString()},
-        {QLatin1String("version"), "1.6.0"},
+        {QLatin1String("version"), QLatin1String(gVersion)},
         {QLatin1String("type"), "jacktrip_app"},
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
     };
     QJsonDocument request = QJsonDocument(json);
 
-    if (m_webSocket->isValid()) {
-        qDebug() << "woooo";
+    if (m_webSocket.isValid()) {
         // Send heartbeat via websocket
-        m_webSocket->sendMessage(request.toJson());
+        m_webSocket.sendBinaryMessage(request.toJson());
     } else {
-        qDebug() << "aaayyy";
-
-        // Send heartbeat via endpoint
+        // Send heartbeat via POST API
         QNetworkReply* reply = m_authenticator->post(
             QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat")
                 .arg(m_appID),
@@ -197,8 +229,8 @@ void VsDevice::sendHeartbeat()
                 reply->deleteLater();
                 return;
             } else {
-                QByteArray response       = reply->readAll();
-                QJsonDocument deviceState = QJsonDocument::fromJson(response);
+                QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
+                reconcileState(response);
             }
 
             reply->deleteLater();
@@ -208,9 +240,14 @@ void VsDevice::sendHeartbeat()
 
 void VsDevice::setServerId(QString serverId)
 {
+    // TODO: Nullify serverHost, authToken when serverID == ""
     QJsonObject json = {
         {QLatin1String("serverId"), serverId},
     };
+    if (serverId == "") {
+        json.insert("serverHost", "");
+        json.insert("authToken", "");
+    }
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_authenticator->put(
          QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID),
@@ -223,19 +260,22 @@ void VsDevice::setServerId(QString serverId)
             reply->deleteLater();
             return;
         } else {
-            m_deviceState = QJsonDocument::fromJson(reply->readAll());
+            QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
+            reconcileState(response);
         }
         reply->deleteLater();
     });
 }
 
-JackTrip* VsDevice::initializeJackTrip(bool useRtAudio, std::string input, std::string output, quint16 bufferSize, VsServerInfo* studioInfo)
+JackTrip* VsDevice::initializeJackTrip(bool useRtAudio, std::string input,
+                                       std::string output, quint16 bufferSize,
+                                       VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, 2, 2,
 #ifdef WAIR  // wair
-                                    0,
+                                  0,
 #endif  // endwhere
-                                    4, 1));
+                                  4, 1));
     m_jackTrip->setConnectDefaultAudioPorts(true);
 #ifdef RT_AUDIO
     if (useRtAudio) {
@@ -253,9 +293,9 @@ JackTrip* VsDevice::initializeJackTrip(bool useRtAudio, std::string input, std::
     m_jackTrip->setPeerHandshakePort(studioInfo->port());
 
     QObject::connect(m_jackTrip.data(), &JackTrip::signalProcessesStopped, this,
-                    &VsDevice::terminateJackTrip, Qt::QueuedConnection);
+                     &VsDevice::terminateJackTrip, Qt::QueuedConnection);
     QObject::connect(m_jackTrip.data(), &JackTrip::signalError, this,
-                    &VsDevice::terminateJackTrip, Qt::QueuedConnection);
+                     &VsDevice::terminateJackTrip, Qt::QueuedConnection);
 
     return m_jackTrip.data();
 }
@@ -266,9 +306,19 @@ void VsDevice::stopJackTrip()
         m_jackTrip->stop();
     }
     m_jackTrip.reset();
-    QString serverId = m_deviceState.object()[QStringLiteral("serverId")].toString();
+    QString serverId = m_deviceState[QStringLiteral("serverId")].toString();
     if (serverId != "") {
         setServerId("");
+    }
+}
+
+void VsDevice::reconcileState(QJsonDocument newState)
+{
+    // TODO: Leave server and do other things when old != new
+    // qDebug() << "in reconcileState with new: " << newState;
+    QJsonObject newObject = newState.object();
+    for (auto it = newObject.constBegin(); it != newObject.constEnd(); it++) {
+        m_deviceState.insert(it.key(), it.value());
     }
 }
 
@@ -324,9 +374,7 @@ void VsDevice::registerJTAsDevice()
         {QLatin1String("alsaName"), "jacktripapp"},
         {QLatin1String("overlay"), "jacktrip_app"},
         {QLatin1String("mac"), m_appUUID},
-        // TODO: Fix me
-        //{QLatin1String("version"), versionString()},
-        {QLatin1String("version"), "1.6.0"},
+        {QLatin1String("version"), QLatin1String(gVersion)},
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
 #ifndef defined(Q_OS_MACOS) || defined(Q_OS_WIN)
@@ -347,13 +395,14 @@ void VsDevice::registerJTAsDevice()
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             // TODO: Fix me
-            //emit authFailed();
+            // emit authFailed();
             reply->deleteLater();
             return;
         } else {
-            m_deviceState = QJsonDocument::fromJson(reply->readAll());
-            m_appID = m_deviceState.object()[QStringLiteral("id")].toString();
+            QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
+            reconcileState(response);
 
+            m_appID = response.object()[QStringLiteral("id")].toString();
             QSettings settings;
             settings.beginGroup(QStringLiteral("VirtualStudio"));
             settings.setValue(QStringLiteral("AppID"), m_appID);

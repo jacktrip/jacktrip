@@ -644,21 +644,22 @@ void VirtualStudio::completeConnection()
             output = "";
         }
 
-        JackTrip* jackTrip = m_device->initializeJackTrip(m_useRtAudio, input, output, m_bufferSize, studioInfo);
+        JackTrip* jackTrip = m_device->initializeJackTrip(m_useRtAudio, input, output,
+                                                          m_bufferSize, studioInfo);
 
         qDebug() << "yay";
         qDebug() << jackTrip;
         qDebug() << "woo";
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
-                        &VirtualStudio::processFinished, Qt::QueuedConnection);
+                         &VirtualStudio::processFinished, Qt::QueuedConnection);
         QObject::connect(jackTrip, &JackTrip::signalError, this,
-                        &VirtualStudio::processError, Qt::QueuedConnection);
-        QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer,
-                        this, &VirtualStudio::receivedConnectionFromPeer,
-                        Qt::QueuedConnection);
+                         &VirtualStudio::processError, Qt::QueuedConnection);
+        QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
+                         &VirtualStudio::receivedConnectionFromPeer,
+                         Qt::QueuedConnection);
 
-#ifdef WAIRTOHUB                      // WAIR
+#ifdef WAIRTOHUB                    // WAIR
         jackTrip->startProcess(0);  // for WAIR compatibility, ID in jack client name
 #else
         jackTrip->startProcess();

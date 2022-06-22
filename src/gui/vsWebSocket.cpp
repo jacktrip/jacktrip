@@ -87,8 +87,8 @@ void VsWebSocket::closeSocket()
 void VsWebSocket::onConnected()
 {
     m_connected = true;
-    connect(&m_webSocket, &QWebSocket::textMessageReceived,
-            this, &VsWebSocket::onTextMessageReceived);
+    connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
+            &VsWebSocket::onTextMessageReceived);
 }
 
 // Fires when disconnected from websocket
