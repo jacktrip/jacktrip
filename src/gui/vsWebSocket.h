@@ -61,10 +61,12 @@ class VsWebSocket : public QObject
     bool isConnected();
     bool isValid();
 
+   signals:
+    void textMessageReceived(const QString& message);
+
    private slots:
     void onConnected();
     void onClosed();
-    void onTextMessageReceived(const QString& message);
     void onError(QAbstractSocket::SocketError error);
     void onSslErrors(const QList<QSslError>& errors);
 

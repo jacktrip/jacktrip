@@ -40,12 +40,14 @@
 
 #include <QObject>
 #include <QString>
+#include <QUuid>
 #include <QtNetworkAuth>
 #include <QtWebSockets>
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
 #include "vsServerInfo.h"
+#include "vsWebSocket.h"
 
 class VsDevice : public QObject
 {
@@ -61,30 +63,28 @@ class VsDevice : public QObject
     void removeApp();
     void sendHeartbeat();
     void setServerId(QString studioID);
-    JackTrip* initializeJackTrip(bool useRtAudio, std::string input, std::string output,
-                                 quint16 bufferSize, VsServerInfo* studioInfo);
+    JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
+                           quint16 bufferSize, VsServerInfo* studioInfo);
+    void startJackTrip();
     void stopJackTrip();
-    void reconcileState(QJsonDocument newState);
+    void reconcileAgentConfig(QJsonDocument newState);
 
    private slots:
     void terminateJackTrip();
-    void onWSSConnected();
-    void onWSSClosed();
-    void onWSSError(QAbstractSocket::SocketError error);
     void onTextMessageReceived(const QString& message);
 
    private:
-    QString randomString(int stringLength);
     void registerJTAsDevice();
-    void establishWSSConnection();
+    bool enabled();
+    QString randomString(int stringLength);
 
     QString m_appID;
     QString m_appUUID;
     QString m_token;
     QString m_apiPrefix;
     QString m_apiSecret;
-    QJsonObject m_deviceState;
-    QWebSocket m_webSocket;
+    QJsonObject m_deviceAgentConfig;
+    VsWebSocket* m_webSocket = NULL;
     QScopedPointer<JackTrip> m_jackTrip;
     QOAuth2AuthorizationCodeFlow* m_authenticator;
 };

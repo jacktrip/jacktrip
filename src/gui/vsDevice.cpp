@@ -38,7 +38,6 @@
 #include "vsDevice.h"
 
 #include <QDebug>
-#include <iostream>
 
 // Constructor
 VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
@@ -51,12 +50,10 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
 
-    connect(&m_webSocket, &QWebSocket::connected, this, &VsDevice::onWSSConnected);
-    connect(&m_webSocket, &QWebSocket::disconnected, this, &VsDevice::onWSSClosed);
-    connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
-            this, &VsDevice::onWSSError);
+    sendHeartbeat();
 }
 
+// registerApp idempotently registers an emulated device belonging to the current user
 void VsDevice::registerApp()
 {
     if (m_appUUID == "") {
@@ -98,9 +95,6 @@ void VsDevice::registerApp()
                 reply->deleteLater();
                 return;
             }
-        } else {
-            QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
-            reconcileState(response);
         }
 
         QSettings settings;
@@ -114,6 +108,7 @@ void VsDevice::registerApp()
     });
 }
 
+// removeApp deletes the emulated device
 void VsDevice::removeApp()
 {
     if (m_appID == "") {
@@ -148,56 +143,26 @@ void VsDevice::removeApp()
     });
 }
 
-void VsDevice::establishWSSConnection()
-{
-    QNetworkRequest req = QNetworkRequest(
-        QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1").arg(m_appID)));
-    QString authVal = "Bearer ";
-    authVal.append(m_authenticator->token());
-    req.setRawHeader(QByteArray("Upgrade"), QByteArray("websocket"));
-    req.setRawHeader(QByteArray("Connection"), QByteArray("Upgrade"));
-    req.setRawHeader(QByteArray("Authorization"), authVal.toUtf8());
-    req.setRawHeader(QByteArray("Origin"), QByteArray("https://app.jacktrip.org"));
-    req.setRawHeader(QByteArray("APIPrefix"), m_apiPrefix.toUtf8());
-    req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
-    m_webSocket.open(req);
-}
-
-void VsDevice::onWSSConnected()
-{
-    connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
-            &VsDevice::onTextMessageReceived);
-}
-
-void VsDevice::onWSSClosed()
-{
-    qDebug() << "in onWSSClosed";
-}
-
-void VsDevice::onWSSError(QAbstractSocket::SocketError error)
-{
-    qDebug() << "in onWSSError";
-    qDebug() << error;
-}
-
-void VsDevice::onTextMessageReceived(const QString& message)
-{
-    QJsonDocument newState = QJsonDocument::fromJson(message.toUtf8());
-    reconcileState(newState);
-}
-
+// sendHeartbeat is reponsible for sending liveness heartbeats to the API
 void VsDevice::sendHeartbeat()
 {
-    qDebug() << "Current state: " << m_deviceState;
-    QString serverId = m_deviceState[QStringLiteral("serverId")].toString();
-    if (serverId == "") {
-        // When the device is not connected to a server, use the standard API
-        m_webSocket.close();
-    } else {
+    if (m_webSocket == nullptr) {
+        m_webSocket = new VsWebSocket(
+            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
+                     .arg(m_appID)),
+            m_authenticator->token(), m_apiPrefix, m_apiSecret);
+        connect(m_webSocket, &VsWebSocket::textMessageReceived, this,
+                &VsDevice::onTextMessageReceived);
+    }
+
+    if (enabled()) {
         // When the device is connected to a server, use the underlying wss connection
-        if (!m_webSocket.isValid()) {
-            establishWSSConnection();
+        if (!m_webSocket->isValid()) {
+            m_webSocket->openSocket();
         }
+    } else {
+        // When the device is not connected to a server, use the standard API
+        m_webSocket->closeSocket();
     }
 
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
@@ -212,9 +177,9 @@ void VsDevice::sendHeartbeat()
     };
     QJsonDocument request = QJsonDocument(json);
 
-    if (m_webSocket.isValid()) {
+    if (m_webSocket->isValid()) {
         // Send heartbeat via websocket
-        m_webSocket.sendBinaryMessage(request.toJson());
+        m_webSocket->sendMessage(request.toJson());
     } else {
         // Send heartbeat via POST API
         QNetworkReply* reply = m_authenticator->post(
@@ -230,7 +195,7 @@ void VsDevice::sendHeartbeat()
                 return;
             } else {
                 QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
-                reconcileState(response);
+                reconcileAgentConfig(response);
             }
 
             reply->deleteLater();
@@ -238,16 +203,12 @@ void VsDevice::sendHeartbeat()
     }
 }
 
+// setServerId updates the emulated device with the provided serverId
 void VsDevice::setServerId(QString serverId)
 {
-    // TODO: Nullify serverHost, authToken when serverID == ""
     QJsonObject json = {
         {QLatin1String("serverId"), serverId},
     };
-    if (serverId == "") {
-        json.insert("serverHost", "");
-        json.insert("authToken", "");
-    }
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_authenticator->put(
          QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID),
@@ -259,17 +220,14 @@ void VsDevice::setServerId(QString serverId)
             // emit authFailed();
             reply->deleteLater();
             return;
-        } else {
-            QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
-            reconcileState(response);
         }
         reply->deleteLater();
     });
 }
 
-JackTrip* VsDevice::initializeJackTrip(bool useRtAudio, std::string input,
-                                       std::string output, quint16 bufferSize,
-                                       VsServerInfo* studioInfo)
+// initJackTrip spawns a new jacktrip process with the desired settings
+JackTrip* VsDevice::initJackTrip(bool useRtAudio, std::string input, std::string output,
+                                 quint16 bufferSize, VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, 2, 2,
 #ifdef WAIR  // wair
@@ -300,33 +258,61 @@ JackTrip* VsDevice::initializeJackTrip(bool useRtAudio, std::string input,
     return m_jackTrip.data();
 }
 
+// startJackTrip starts the current jacktrip process if applicable
+void VsDevice::startJackTrip()
+{
+    if (!m_jackTrip.isNull()) {
+#ifdef WAIRTOHUB                      // WAIR
+        m_jackTrip->startProcess(0);  // for WAIR compatibility, ID in jack client name
+#else
+        m_jackTrip->startProcess();
+#endif  // endwhere
+    }
+}
+
+// stopJackTrip stops the current jacktrip process if applicable
 void VsDevice::stopJackTrip()
 {
     if (!m_jackTrip.isNull()) {
+        setServerId("");
         m_jackTrip->stop();
     }
-    m_jackTrip.reset();
-    QString serverId = m_deviceState[QStringLiteral("serverId")].toString();
-    if (serverId != "") {
-        setServerId("");
-    }
 }
 
-void VsDevice::reconcileState(QJsonDocument newState)
+// reconcileAgentConfig updates the internal DeviceAgentConfig structure
+void VsDevice::reconcileAgentConfig(QJsonDocument newState)
 {
-    // TODO: Leave server and do other things when old != new
-    // qDebug() << "in reconcileState with new: " << newState;
+    // Only sync if the incoming type matches DeviceAgentConfig:
+    // https://github.com/jacktrip/jacktrip-agent/blob/fd3940c293daf16d8467c62b39a30779d21a0a22/pkg/client/devices.go#L87
     QJsonObject newObject = newState.object();
+    if (!newObject.contains("enabled")) {
+        return;
+    }
     for (auto it = newObject.constBegin(); it != newObject.constEnd(); it++) {
-        m_deviceState.insert(it.key(), it.value());
+        m_deviceAgentConfig.insert(it.key(), it.value());
+    }
+    if (!enabled() && !m_jackTrip.isNull()) {
+        stopJackTrip();
     }
 }
 
+// terminateJackTrip is a slot intended to be triggered on jacktrip process signals
 void VsDevice::terminateJackTrip()
 {
+    if (!enabled()) {
+        setServerId("");
+    }
     m_jackTrip.reset();
 }
 
+// onTextMessageReceived is a slot intended to be triggered by new incoming WSS messages
+void VsDevice::onTextMessageReceived(const QString& message)
+{
+    QJsonDocument newState = QJsonDocument::fromJson(message.toUtf8());
+    reconcileAgentConfig(newState);
+}
+
+// registerJTAsDevice creates the emulated device belonging to the current user
 void VsDevice::registerJTAsDevice()
 {
     /*
@@ -400,7 +386,6 @@ void VsDevice::registerJTAsDevice()
             return;
         } else {
             QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
-            reconcileState(response);
 
             m_appID = response.object()[QStringLiteral("id")].toString();
             QSettings settings;
@@ -413,6 +398,13 @@ void VsDevice::registerJTAsDevice()
     });
 }
 
+// enabled returns whether or not the client is connected to a studio
+bool VsDevice::enabled()
+{
+    return m_deviceAgentConfig[QStringLiteral("enabled")].toBool();
+}
+
+// randomString generates a random sequence of characters
 QString VsDevice::randomString(int stringLength)
 {
     QString str        = "";

@@ -78,7 +78,7 @@ void VsWebSocket::openSocket()
 
 void VsWebSocket::closeSocket()
 {
-    if (m_connected && m_webSocket.isValid()) {
+    if (m_connected) {
         m_webSocket.close();
     }
 }
@@ -87,21 +87,15 @@ void VsWebSocket::closeSocket()
 void VsWebSocket::onConnected()
 {
     m_connected = true;
+    m_error     = false;
     connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
-            &VsWebSocket::onTextMessageReceived);
+            &VsWebSocket::textMessageReceived);
 }
 
 // Fires when disconnected from websocket
 void VsWebSocket::onClosed()
 {
     m_connected = false;
-}
-
-// Fires when a message from the websocket is received
-void VsWebSocket::onTextMessageReceived(const QString& message)
-{
-    QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
-    qDebug() << "Message received" << doc;
 }
 
 void VsWebSocket::onError(QAbstractSocket::SocketError error)
@@ -115,7 +109,6 @@ void VsWebSocket::onSslErrors(const QList<QSslError>& errors)
     for (int i = 0; i < errors.size(); ++i) {
         // qDebug() << errors.at(i);
     }
-
     m_error = true;
 }
 

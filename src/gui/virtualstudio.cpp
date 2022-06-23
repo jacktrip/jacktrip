@@ -644,12 +644,8 @@ void VirtualStudio::completeConnection()
             output = "";
         }
 
-        JackTrip* jackTrip = m_device->initializeJackTrip(m_useRtAudio, input, output,
-                                                          m_bufferSize, studioInfo);
-
-        qDebug() << "yay";
-        qDebug() << jackTrip;
-        qDebug() << "woo";
+        JackTrip* jackTrip =
+            m_device->initJackTrip(m_useRtAudio, input, output, m_bufferSize, studioInfo);
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
@@ -659,12 +655,7 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
-#ifdef WAIRTOHUB                    // WAIR
-        jackTrip->startProcess(0);  // for WAIR compatibility, ID in jack client name
-#else
-        jackTrip->startProcess();
-#endif  // endwhere
-
+        m_device->startJackTrip();
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
         m_connectionState = QStringLiteral("JackTrip Error");
@@ -817,7 +808,6 @@ void VirtualStudio::processFinished()
 
     m_jackTripRunning = false;
     m_connectionState = QStringLiteral("Disconnected");
-    m_jackTrip.reset();
     emit connectionStateChanged();
     emit disconnected();
     m_onConnectedScreen = false;
@@ -1115,7 +1105,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
             emit authSucceeded();
             m_refreshTimer.setInterval(10000);
             m_refreshTimer.start();
-            m_heartbeatTimer.setInterval(10000);
+            m_heartbeatTimer.setInterval(5000);
             m_heartbeatTimer.start();
         } else {
             emit refreshFinished(index);
