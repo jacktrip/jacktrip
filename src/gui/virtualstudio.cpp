@@ -1229,10 +1229,12 @@ void VirtualStudio::sendHeartbeat()
             m_heartbeatWebSocket->openSocket();
         } else {
             // Recreate websocket as there has been an error
-            m_heartbeatWebSocket = new VsWebSocket(
+            VsWebSocket* tempWebSocket = new VsWebSocket(
                 QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
                          .arg(m_appID)),
                 m_authenticator->token(), m_apiPrefix, m_apiSecret);
+            delete m_heartbeatWebSocket;
+            m_heartbeatWebSocket = tempWebSocket;
             m_heartbeatWebSocket->openSocket();
         }
 
