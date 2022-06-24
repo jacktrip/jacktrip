@@ -295,6 +295,11 @@ int VirtualStudio::currentStudio()
     return m_currentStudio;
 }
 
+QJsonObject VirtualStudio::regions()
+{
+    return m_regions;
+}
+
 QString VirtualStudio::connectionState()
 {
     return m_connectionState;
@@ -794,6 +799,10 @@ void VirtualStudio::slotAuthSucceded()
     } else {
         getSubscriptions();
     }
+
+    if (m_regions.isEmpty()) {
+        getRegions();
+    }
 }
 
 void VirtualStudio::slotAuthFailed()
@@ -1168,6 +1177,24 @@ void VirtualStudio::getSubscriptions()
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
         getServerList(true);
+        reply->deleteLater();
+    });
+}
+
+void VirtualStudio::getRegions()
+{
+    QNetworkReply* reply = m_authenticator->get(
+        QStringLiteral("https://app.jacktrip.org/api/users/%1/regions").arg(m_userId));
+    connect(reply, &QNetworkReply::finished, this, [&, reply]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            emit authFailed();
+            reply->deleteLater();
+            return;
+        }
+
+        m_regions = QJsonDocument::fromJson(reply->readAll()).object();
+        emit regionsChanged();
         reply->deleteLater();
     });
 }
