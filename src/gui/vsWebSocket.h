@@ -56,8 +56,8 @@ class VsWebSocket : public QObject
 
     // Public functions
     void openSocket();
+    void closeSocket();
     void sendMessage(const QByteArray& message);
-    bool isConnected();
     bool isValid();
 
    private slots:
