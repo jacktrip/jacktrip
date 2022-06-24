@@ -43,6 +43,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QSslSocket>
+#include <QWebEngineProfile>
 #include <algorithm>
 #include <iostream>
 
@@ -90,8 +91,21 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
 
     // Allow custom URL schemes to open the app
-    m_urlHandler = new VsUrlHandler();
+    qDebug() << "setting schemeHandler for jacktrip";
+    QWebEngineUrlScheme scheme("jacktrip");
+    scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
+    scheme.setFlags(QWebEngineUrlScheme::SecureScheme |
+                    QWebEngineUrlScheme::LocalScheme |
+                    QWebEngineUrlScheme::LocalAccessAllowed);
+    // scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
+    // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+    QWebEngineUrlScheme::registerScheme(scheme);
+    m_schemeHandler = new VsSchemeHandler(this);
+    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("jacktrip", m_schemeHandler);
+
+    // Allow custom URL schemes from within the app
     qDebug() << "setting urlHandler for jacktrip";
+    m_urlHandler = new VsUrlHandler();
     QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
 
     // Set our font scaling to convert points to pixels

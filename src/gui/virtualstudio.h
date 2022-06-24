@@ -51,6 +51,7 @@
 #include "vsServerInfo.h"
 #include "vsWebSocket.h"
 #include "vsUrlHandler.h"
+#include "vsSchemeHandler.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -212,6 +213,7 @@ class VirtualStudio : public QObject
     QString m_appID;
     VsQuickView m_view;
     VsUrlHandler* m_urlHandler;
+    VsSchemeHandler* m_schemeHandler;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
 

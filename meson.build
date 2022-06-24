@@ -108,16 +108,18 @@ else
 			'src/gui/vsServerInfo.cpp',
 			'src/gui/vsQuickView.cpp',
 			'src/gui/vsWebSocket.cpp',
-			'src/gui/vsUrlHandler.cpp'
+			'src/gui/vsUrlHandler.cpp',
+			'src/gui/vsSchemeHandler.cpp'
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
 			'src/gui/vsServerInfo.h',
 			'src/gui/vsQuickView.h',
 			'src/gui/vsWebSocket.h',
-			'src/gui/vsUrlHandler.h'
+			'src/gui/vsUrlHandler.h',
+			'src/gui/vsSchemeHandler.h'
 		]
-		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets', 'WebEngineCore', 'WebEngineWidgets'], include_type: 'system')
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 
