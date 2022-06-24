@@ -89,6 +89,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
 
+    // Allow custom URL schemes to open the app
+    m_urlHandler = new VsUrlHandler();
+    qDebug() << "setting urlHandler for jacktrip";
+    QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
+
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
 
@@ -1521,4 +1526,6 @@ VirtualStudio::~VirtualStudio()
     for (int i = 0; i < m_servers.count(); i++) {
         delete m_servers.at(i);
     }
+
+    QDesktopServices::unsetUrlHandler("jacktrip");
 }

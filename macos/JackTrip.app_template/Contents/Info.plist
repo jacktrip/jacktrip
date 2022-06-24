@@ -16,6 +16,10 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>%BUNDLENAME%</string>
+	<key>CFBundleURLSchemes</key>
+	<array>
+		<string>jacktrip</string>
+	</array>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
