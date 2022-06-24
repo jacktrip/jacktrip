@@ -58,7 +58,6 @@ class VsWebSocket : public QObject
     void openSocket();
     void closeSocket();
     void sendMessage(const QByteArray& message);
-    bool isConnected();
     bool isValid();
 
    signals:

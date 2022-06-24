@@ -55,6 +55,8 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
             this, &VsWebSocket::onSslErrors);
     connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
             this, &VsWebSocket::onError);
+    connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
+            &VsWebSocket::textMessageReceived);
 }
 
 void VsWebSocket::openSocket()
@@ -88,8 +90,6 @@ void VsWebSocket::onConnected()
 {
     m_connected = true;
     m_error     = false;
-    connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
-            &VsWebSocket::textMessageReceived);
 }
 
 // Fires when disconnected from websocket
@@ -115,11 +115,6 @@ void VsWebSocket::onSslErrors(const QList<QSslError>& errors)
 void VsWebSocket::sendMessage(const QByteArray& message)
 {
     m_webSocket.sendBinaryMessage(message);
-}
-
-bool VsWebSocket::isConnected()
-{
-    return m_connected;
 }
 
 bool VsWebSocket::isValid()
