@@ -59,6 +59,10 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
 
 void VsWebSocket::openSocket()
 {
+    if (m_connected) {
+        return;
+    }
+
     QNetworkRequest req = QNetworkRequest(QUrl(m_url));
     QString authVal     = "Bearer ";
     authVal.append(m_token);
@@ -72,10 +76,18 @@ void VsWebSocket::openSocket()
     m_webSocket.open(req);
 }
 
+void VsWebSocket::closeSocket()
+{
+    if (m_connected) {
+        m_webSocket.close();
+    }
+}
+
 // Fires when connected to websocket
 void VsWebSocket::onConnected()
 {
     m_connected = true;
+    m_error     = false;
 }
 
 // Fires when disconnected from websocket
@@ -95,18 +107,12 @@ void VsWebSocket::onSslErrors(const QList<QSslError>& errors)
     for (int i = 0; i < errors.size(); ++i) {
         // qDebug() << errors.at(i);
     }
-
     m_error = true;
 }
 
 void VsWebSocket::sendMessage(const QByteArray& message)
 {
     m_webSocket.sendBinaryMessage(message);
-}
-
-bool VsWebSocket::isConnected()
-{
-    return m_connected;
 }
 
 bool VsWebSocket::isValid()

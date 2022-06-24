@@ -1205,7 +1205,14 @@ void VirtualStudio::sendHeartbeat()
             QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
                      .arg(m_appID)),
             m_authenticator->token(), m_apiPrefix, m_apiSecret);
-        m_heartbeatWebSocket->openSocket();
+    }
+
+    if (m_connectionState == QStringLiteral("Connected")) {
+        if (!m_heartbeatWebSocket->isValid()) {
+            m_heartbeatWebSocket->openSocket();
+        }
+    } else {
+        m_heartbeatWebSocket->closeSocket();
     }
 
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
@@ -1224,20 +1231,6 @@ void VirtualStudio::sendHeartbeat()
         // Send heartbeat via websocket
         m_heartbeatWebSocket->sendMessage(request.toJson());
     } else {
-        // Attempt to open socket for next time
-        if (!m_heartbeatWebSocket->isConnected()) {
-            m_heartbeatWebSocket->openSocket();
-        } else {
-            // Recreate websocket as there has been an error
-            VsWebSocket* tempWebSocket = new VsWebSocket(
-                QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
-                         .arg(m_appID)),
-                m_authenticator->token(), m_apiPrefix, m_apiSecret);
-            delete m_heartbeatWebSocket;
-            m_heartbeatWebSocket = tempWebSocket;
-            m_heartbeatWebSocket->openSocket();
-        }
-
         // Send heartbeat via endpoint
         QNetworkReply* reply = m_authenticator->post(
             QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat")
