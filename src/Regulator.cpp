@@ -253,6 +253,7 @@ Regulator::~Regulator()
     };
     if (m_b_BroadcastQueueLength)
         delete m_b_ReceiveRingBuffer;
+    qDebug() << "~Regulator" ;
 }
 
 void Regulator::setFPPratio()
@@ -346,7 +347,6 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
-    QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
@@ -359,7 +359,6 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 //*******************************************************************************
 void Regulator::pullPacket(int8_t* buf)
 {
-    QMutexLocker locker(&mMutex);
     mSkip = 0;
     if ((mLastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;

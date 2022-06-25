@@ -135,6 +135,7 @@ class Regulator : public RingBuffer
                                                 [[maybe_unused]] int len,
                                                 [[maybe_unused]] int seq_num, int lostLen)
     {
+        QMutexLocker locker(&mMutex);
         shimFPP(ptrToSlot, len, seq_num);
         if (m_b_BroadcastQueueLength)
             m_b_ReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
@@ -143,9 +144,13 @@ class Regulator : public RingBuffer
 
     void pullPacket(int8_t* buf);
 
-    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) {
+        QMutexLocker locker(&mMutex);
+        pullPacket(ptrToReadSlot);
+    }
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
     {
+        QMutexLocker locker(&mMutex);
         m_b_ReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
         m_b_ReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot);
     }

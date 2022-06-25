@@ -308,7 +308,7 @@ void JackTrip::setupDataProtocol()
     // Create DataProtocol Objects
     switch (mDataProtocol) {
     case UDP:
-        std::cout << "Using UDP Protocol" << std::endl;
+        std::cout << "Using UDP Protocol " << mSenderBindPort << " " << mSenderPeerPort << std::endl;
         QThread::usleep(100);
         mDataProtocolSender =
             new UdpDataProtocol(this, DataProtocol::SENDER,
