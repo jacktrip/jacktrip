@@ -248,7 +248,7 @@ Item {
         delegate: Studio {
             x: 16 * virtualstudio.uiScale
             width: studioListView.width - (2 * x)
-            serverLocation: virtualstudio.regions[location] ? virtualstudio.regions[location].label : "Unknown"
+            serverLocation: virtualstudio.regions[location] ? "in " + virtualstudio.regions[location].label : ""
             flagImage: flag
             studioName: name
             publicStudio: isPublic

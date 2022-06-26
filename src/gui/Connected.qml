@@ -33,7 +33,7 @@ Item {
         x: parent.leftMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
         width: parent.width - (2 * x)
         connected: true
-        serverLocation: virtualstudio.currentStudio >= 0 && virtualstudio.regions[serverModel[virtualstudio.currentStudio].location] ? virtualstudio.regions[serverModel[virtualstudio.currentStudio].location].label : "Unknown"
+        serverLocation: virtualstudio.currentStudio >= 0 && virtualstudio.regions[serverModel[virtualstudio.currentStudio].location] ? "in " + virtualstudio.regions[serverModel[virtualstudio.currentStudio].location].label : ""
         flagImage: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].flag : "flags/DE.svg"
         studioName: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].name : "Test Studio"
         publicStudio: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isPublic : false
