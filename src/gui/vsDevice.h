@@ -30,53 +30,63 @@
 //*****************************************************************
 
 /**
- * \file vsWebSocket.h
+ * \file vsDevice.h
  * \author Matt Horton
  * \date June 2022
  */
 
-#ifndef VSWEBSOCKET_H
-#define VSWEBSOCKET_H
+#ifndef VSDEVICE_H
+#define VSDEVICE_H
 
-#include <QList>
 #include <QObject>
-#include <QSslError>
 #include <QString>
-#include <QUrl>
+#include <QUuid>
+#include <QtNetworkAuth>
 #include <QtWebSockets>
 
-class VsWebSocket : public QObject
+#include "../JackTrip.h"
+#include "../jacktrip_globals.h"
+#include "vsServerInfo.h"
+#include "vsWebSocket.h"
+
+class VsDevice : public QObject
 {
     Q_OBJECT
 
    public:
     // Constructor
-    explicit VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
-                         QString apiSecret, QObject* parent = nullptr);
+    explicit VsDevice(QOAuth2AuthorizationCodeFlow* authenticator,
+                      QObject* parent = nullptr);
 
     // Public functions
-    void openSocket();
-    void closeSocket();
-    void sendMessage(const QByteArray& message);
-    bool isValid();
-
-   signals:
-    void textMessageReceived(const QString& message);
+    void registerApp();
+    void removeApp();
+    void sendHeartbeat();
+    void setServerId(QString studioID);
+    JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
+                           int bufferSize, VsServerInfo* studioInfo);
+    void startJackTrip();
+    void stopJackTrip();
+    void reconcileAgentConfig(QJsonDocument newState);
 
    private slots:
-    void onConnected();
-    void onClosed();
-    void onError(QAbstractSocket::SocketError error);
-    void onSslErrors(const QList<QSslError>& errors);
+    void terminateJackTrip();
+    void onTextMessageReceived(const QString& message);
 
    private:
-    QWebSocket m_webSocket;
-    QUrl m_url;
-    bool m_connected = false;
-    bool m_error     = false;
+    void registerJTAsDevice();
+    bool enabled();
+    QString randomString(int stringLength);
+
+    QString m_appID;
+    QString m_appUUID;
     QString m_token;
     QString m_apiPrefix;
     QString m_apiSecret;
+    QJsonObject m_deviceAgentConfig;
+    VsWebSocket* m_webSocket = NULL;
+    QScopedPointer<JackTrip> m_jackTrip;
+    QOAuth2AuthorizationCodeFlow* m_authenticator;
 };
 
-#endif  // VSWEBSOCKET_H
+#endif  // VSDEVICE_H

@@ -55,6 +55,8 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
             this, &VsWebSocket::onSslErrors);
     connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
             this, &VsWebSocket::onError);
+    connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
+            &VsWebSocket::textMessageReceived);
 }
 
 void VsWebSocket::openSocket()
