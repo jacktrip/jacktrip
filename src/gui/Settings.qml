@@ -269,6 +269,26 @@ Item {
         }
     }
 
+    Button {
+        id: testUrlButton
+        background: Rectangle {
+            radius: 6 * virtualstudio.uiScale
+            color: logoutButton.down ? buttonPressedColour : (logoutButton.hovered ? buttonHoverColour : buttonColour)
+            border.width: 1
+            border.color: logoutButton.down ? buttonPressedStroke : (logoutButton.hovered ? buttonHoverStroke : buttonStroke)
+        }
+        onClicked: { virtualstudio.testUrlScheme() }
+        x: parent.width - ((16 + buttonWidth) * virtualstudio.uiScale)
+        y: logoutButton.y + (46 * virtualstudio.uiScale)
+        width: buttonWidth * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+        Text {
+            text: "Test URL Scheme"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+            color: textColour
+        }
+    }
+
     Rectangle {
         x: 0; y: parent.height - (36 * virtualstudio.uiScale)
         width: parent.width; height: (36 * virtualstudio.uiScale)

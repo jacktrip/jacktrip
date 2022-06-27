@@ -92,14 +92,14 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Allow custom URL schemes to open the app
     qDebug() << "setting schemeHandler for jacktrip";
-    QWebEngineUrlScheme scheme("jacktrip");
-    scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
-    scheme.setFlags(QWebEngineUrlScheme::SecureScheme |
-                    QWebEngineUrlScheme::LocalScheme |
-                    QWebEngineUrlScheme::LocalAccessAllowed);
-    // scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
-    // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
-    QWebEngineUrlScheme::registerScheme(scheme);
+    // QWebEngineUrlScheme scheme("jacktrip");
+    // scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
+    // scheme.setFlags(QWebEngineUrlScheme::SecureScheme |
+    //                 QWebEngineUrlScheme::LocalScheme |
+    //                 QWebEngineUrlScheme::LocalAccessAllowed);
+    // // scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
+    // // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+    // QWebEngineUrlScheme::registerScheme(scheme);
     m_schemeHandler = new VsSchemeHandler(this);
     QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("jacktrip", m_schemeHandler);
 
@@ -822,6 +822,11 @@ void VirtualStudio::exit()
     } else {
         emit signalExit();
     }
+}
+
+void VirtualStudio::testUrlScheme()
+{
+    QDesktopServices::openUrl(QUrl("jacktrip://join", QUrl::TolerantMode));
 }
 
 void VirtualStudio::slotAuthSucceded()

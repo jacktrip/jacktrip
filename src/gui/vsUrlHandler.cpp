@@ -42,6 +42,6 @@
 
 void VsUrlHandler::handleUrl(const QUrl &url)
 {
-    qDebug() << "got URL";
+    qDebug() << "got URL in url handler";
     qDebug() << url.toString();
 }

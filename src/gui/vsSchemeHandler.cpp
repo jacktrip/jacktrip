@@ -50,4 +50,6 @@ void VsSchemeHandler::requestStarted(QWebEngineUrlRequestJob *request)
 {
     qDebug() << "got URL";
     qDebug() << request->requestUrl().toString();
+
+    request->fail(QWebEngineUrlRequestJob::NoError);
 }

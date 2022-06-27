@@ -149,6 +149,7 @@ class VirtualStudio : public QObject
     void createStudio();
     void showAbout();
     void exit();
+    void testUrlScheme();
 
    signals:
     void authSucceeded();
