@@ -133,7 +133,7 @@ Rectangle {
         anchors.verticalCenter: publicRect.verticalCenter
         x: (leftMargin + 22) * virtualstudio.uiScale
         width: manageable ? parent.width - (255 * virtualstudio.uiScale) : parent.width - (178 * virtualstudio.uiScale)
-        text: publicStudio ? "Public hub studio in " + serverLocation : "Private hub studio in " + serverLocation
+        text: publicStudio ? "Public hub studio " + serverLocation : "Private hub studio " + serverLocation
         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
         elide: Text.ElideRight
         color: textColour
