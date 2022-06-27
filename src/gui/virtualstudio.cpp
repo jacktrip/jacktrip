@@ -635,17 +635,24 @@ void VirtualStudio::completeConnection()
     emit connectionStateChanged();
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     try {
-        std::string input = m_inputDevice.toStdString();
-        if (m_inputDevice == QLatin1String("(default)")) {
-            input = "";
+        std::string input  = "";
+        std::string output = "";
+        int buffer_size    = 0;
+#ifdef RT_AUDIO
+        if (m_useRtAudio) {
+            input = m_inputDevice.toStdString();
+            if (m_inputDevice == QLatin1String("(default)")) {
+                input = "";
+            }
+            output = m_outputDevice.toStdString();
+            if (m_outputDevice == QLatin1String("(default)")) {
+                output = "";
+            }
+            buffer_size = m_bufferSize;
         }
-        std::string output = m_outputDevice.toStdString();
-        if (m_outputDevice == QLatin1String("(default)")) {
-            output = "";
-        }
-
+#endif
         JackTrip* jackTrip =
-            m_device->initJackTrip(m_useRtAudio, input, output, m_bufferSize, studioInfo);
+            m_device->initJackTrip(m_useRtAudio, input, output, buffer_size, studioInfo);
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
