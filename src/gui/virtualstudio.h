@@ -48,10 +48,10 @@
 
 #include "../JackTrip.h"
 #include "vsQuickView.h"
-#include "vsServerInfo.h"
-#include "vsWebSocket.h"
-#include "vsUrlHandler.h"
 #include "vsSchemeHandler.h"
+#include "vsServerInfo.h"
+#include "vsUrlHandler.h"
+#include "vsWebSocket.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"

@@ -101,7 +101,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
     // QWebEngineUrlScheme::registerScheme(scheme);
     m_schemeHandler = new VsSchemeHandler(this);
-    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("jacktrip", m_schemeHandler);
+    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("jacktrip",
+                                                                 m_schemeHandler);
 
     // Allow custom URL schemes from within the app
     qDebug() << "setting urlHandler for jacktrip";

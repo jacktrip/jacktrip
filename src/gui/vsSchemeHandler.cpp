@@ -40,13 +40,13 @@
 #include <QDebug>
 #include <iostream>
 
-VsSchemeHandler::VsSchemeHandler(QObject *parent)
+VsSchemeHandler::VsSchemeHandler(QObject* parent)
 {
-  this->setParent(parent);
-  qDebug() << "schemehandler created";
+    this->setParent(parent);
+    qDebug() << "schemehandler created";
 }
 
-void VsSchemeHandler::requestStarted(QWebEngineUrlRequestJob *request)
+void VsSchemeHandler::requestStarted(QWebEngineUrlRequestJob* request)
 {
     qDebug() << "got URL";
     qDebug() << request->requestUrl().toString();

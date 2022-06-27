@@ -45,9 +45,9 @@
 #endif
 
 #ifndef NO_VS
+#include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
-#include <QQmlEngine>
 #include <QWebEngineProfile>
 
 #include "gui/virtualstudio.h"
@@ -102,13 +102,12 @@ QCoreApplication* createApplication(int& argc, char* argv[])
 #ifndef NO_VS
     QWebEngineUrlScheme scheme("jacktrip");
     scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
-    scheme.setFlags(QWebEngineUrlScheme::SecureScheme |
-                    QWebEngineUrlScheme::LocalScheme |
-                    QWebEngineUrlScheme::LocalAccessAllowed);
+    scheme.setFlags(QWebEngineUrlScheme::SecureScheme | QWebEngineUrlScheme::LocalScheme
+                    | QWebEngineUrlScheme::LocalAccessAllowed);
     // scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
     // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
     QWebEngineUrlScheme::registerScheme(scheme);
-#endif // NO_VS
+#endif  // NO_VS
 
     // If we have command line arguments and aren't forcing the GUI run on the command
     // line.

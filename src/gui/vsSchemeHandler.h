@@ -48,12 +48,12 @@ class VsSchemeHandler : public QWebEngineUrlSchemeHandler
 {
     Q_OBJECT
 
-    public:
-      // Constructor
-      VsSchemeHandler(QObject *parent = nullptr);
+   public:
+    // Constructor
+    VsSchemeHandler(QObject* parent = nullptr);
 
-      // Public functions
-      void requestStarted(QWebEngineUrlRequestJob *request)  override;
+    // Public functions
+    void requestStarted(QWebEngineUrlRequestJob* request) override;
 };
 
 #endif  // VSSCHEMEHANDLER_H

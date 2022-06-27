@@ -38,18 +38,18 @@
 #ifndef VSURLHANDLER_H
 #define VSURLHANDLER_H
 
+#include <QDesktopServices>
 #include <QObject>
 #include <QSslError>
 #include <QString>
 #include <QUrl>
-#include <QDesktopServices>
 
 class VsUrlHandler : public QObject
 {
     Q_OBJECT
 
-    public slots:
-        void handleUrl(const QUrl &url);
+   public slots:
+    void handleUrl(const QUrl& url);
 };
 
 #endif  // VSURLHANDLER_H

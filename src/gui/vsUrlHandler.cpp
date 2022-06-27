@@ -40,7 +40,7 @@
 #include <QDebug>
 #include <iostream>
 
-void VsUrlHandler::handleUrl(const QUrl &url)
+void VsUrlHandler::handleUrl(const QUrl& url)
 {
     qDebug() << "got URL in url handler";
     qDebug() << url.toString();
