@@ -147,9 +147,6 @@ QString VsServerInfo::flag()
 
 QString VsServerInfo::location()
 {
-    if (m_region.split(QStringLiteral("-")).count() > 2) {
-        return m_region.section(QStringLiteral("-"), 2);
-    }
     return m_region;
 }
 
