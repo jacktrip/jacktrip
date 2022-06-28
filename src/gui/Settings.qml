@@ -35,6 +35,7 @@ Item {
         width: parent.width
 
         background: Rectangle {
+            border.color: "#33979797"
             color: backgroundColour
             width: parent.width
         }
@@ -57,12 +58,13 @@ Item {
         id: drawer
         width: 0.2 * parent.width
         height: parent.height - header.height
-        y: header.height
+        y: header.height-1
         modal: false
         interactive: false
         visible: window.state == "settings"
 
         background: Rectangle {
+            border.color: "#33979797"
             color: backgroundColour
         }
 
@@ -79,42 +81,49 @@ Item {
             Button {
                 id: audioBtn
                 text: "Audio"
+                width: parent.width
                 contentItem: Label {
                     text: audioBtn.text
-                    font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
+                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     color: textColour
                 }
                 background: Rectangle {
-                    color: backgroundColour
+                    width: parent.width
+                    color: audioBtn.down ? buttonPressedColour : (audioBtn.hovered || settingsGroupView == "Audio" ? buttonHoverColour : backgroundColour)
                 }
             }
             Button {
                 id: appearanceBtn
                 text: "Appearance"
+                width: parent.width
                 contentItem: Label {
                     text: appearanceBtn.text
-                    font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
-                    verticalAlignment: Text.AlignVCenter
-                    color: textColour
-                }
-                background: Rectangle {
-                    color: backgroundColour
-                }
-            }
-            Button {
-                id: profileBtn
-                text: "Profile"
-                contentItem: Label {
-                    text: profileBtn.text
-                    font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
+                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     color: textColour
                 }
                 background: Rectangle {
-                    color: backgroundColour
+                    width: parent.width
+                    color: appearanceBtn.down ? buttonPressedColour : (appearanceBtn.hovered || settingsGroupView == "Appearance" ? buttonHoverColour : backgroundColour)
+                }
+            }
+            Button {
+                id: profileBtn
+                text: "Profile"
+                width: parent.width
+                contentItem: Label {
+                    text: profileBtn.text
+                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: textColour
+                }
+                background: Rectangle {
+                    width: parent.width
+                    color: profileBtn.down ? buttonPressedColour : (profileBtn.hovered || settingsGroupView == "Profile" ? buttonHoverColour : backgroundColour)
                 }
             }
         }
@@ -131,6 +140,7 @@ Item {
                 font { family: "Poppins"; pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale}
                 color: textColour
                 opacity: 0.8
+                width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
@@ -263,7 +273,7 @@ Item {
         }
 
         Rectangle {
-            x: 0; y: parent.height - (36 * virtualstudio.uiScale)
+            x: -1; y: parent.height - (36 * virtualstudio.uiScale)
             width: parent.width; height: (36 * virtualstudio.uiScale)
             border.color: "#33979797"
             color: backgroundColour
@@ -344,7 +354,7 @@ Item {
                 border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { window.state = "login"; virtualstudio.toStandard(); }
-            x: parent.width - (232 * virtualstudio.uiScale); y: scaleSlider.y + (40 * virtualstudio.uiScale)
+            x: parent.width - (232 * virtualstudio.uiScale); y: scaleSlider.y + (56 * virtualstudio.uiScale)
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
                 text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
@@ -371,7 +381,7 @@ Item {
                 border.color: darkButton.down ? buttonPressedStroke : (darkButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.darkMode = !virtualstudio.darkMode; }
-            x: parent.width - (232 * virtualstudio.uiScale); y: modeButton.y + (40 * virtualstudio.uiScale)
+            x: parent.width - (232 * virtualstudio.uiScale); y: modeButton.y + (56 * virtualstudio.uiScale)
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
                 text: virtualstudio.darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
@@ -391,8 +401,8 @@ Item {
 
         ComboBox {
             id: updateChannelCombo
-            x: parent.width - (232 * virtualstudio.uiScale); y: darkButton.y + (40 * virtualstudio.uiScale)
-            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            x: 234 * virtualstudio.uiScale; y: darkButton.y + (56 * virtualstudio.uiScale)
+            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             model: updateChannelComboModel
             currentIndex: virtualstudio.updateChannel == "stable" ? 0 : 1
             onActivated: { virtualstudio.updateChannel = currentIndex == 0 ? "stable": "edge" }
