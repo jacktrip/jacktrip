@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.15
 
 Item {
     width: parent.width; height: parent.height
@@ -40,17 +39,13 @@ Item {
             width: parent.width
         }
 
-        RowLayout {
-            anchors.fill: parent
-            Label {
-                text: "Settings"
-                elide: Label.ElideRight
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                Layout.fillWidth: true
-                font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
-            }
+        contentItem: Label {
+            text: "Settings"
+            elide: Label.ElideRight
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
         }
     }
 
