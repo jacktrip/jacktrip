@@ -3,6 +3,9 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 project(QJackTrip)
 
+message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build. "
+	"https://jacktrip.github.io/jacktrip/Build/Meson_build/")
+
 set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
