@@ -73,6 +73,7 @@ class VirtualStudio : public QObject
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
+    Q_PROPERTY(QJsonObject userMetadata READ userMetadata NOTIFY userMetadataChanged)
     Q_PROPERTY(bool showInactive READ showInactive WRITE setShowInactive NOTIFY
                    showInactiveChanged)
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
@@ -112,6 +113,7 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int currentStudio();
     QJsonObject regions();
+    QJsonObject userMetadata();
     QString connectionState();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
@@ -145,6 +147,7 @@ class VirtualStudio : public QObject
     void disconnect();
     void manageStudio(int studioIndex);
     void createStudio();
+    void editProfile();
     void showAbout();
     void exit();
 
@@ -163,6 +166,7 @@ class VirtualStudio : public QObject
     void bufferSizeChanged();
     void currentStudioChanged();
     void regionsChanged();
+    void userMetadataChanged();
     void showInactiveChanged();
     void showSelfHostedChanged();
     void connectionStateChanged();
@@ -191,6 +195,7 @@ class VirtualStudio : public QObject
     void getUserId();
     void getSubscriptions();
     void getRegions();
+    void getUserMetadata();
 #ifdef RT_AUDIO
     void getDeviceList(QStringList* list, bool isInput);
 #endif
@@ -208,6 +213,7 @@ class VirtualStudio : public QObject
     QList<QObject*> m_servers;
     QStringList m_subscribedServers;
     QJsonObject m_regions;
+    QJsonObject m_userMetadata;
     QString m_logoSection     = QStringLiteral("Your Studios");
     bool m_selectableBackend  = true;
     bool m_useRtAudio         = false;
