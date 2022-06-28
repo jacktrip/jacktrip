@@ -48,7 +48,7 @@
 
 #include "../JackTrip.h"
 #include "vsQuickView.h"
-#include "vsSchemeHandler.h"
+// #include "vsSchemeHandler.h"
 #include "vsServerInfo.h"
 #include "vsUrlHandler.h"
 #include "vsWebSocket.h"
@@ -214,7 +214,7 @@ class VirtualStudio : public QObject
     QString m_appID;
     VsQuickView m_view;
     VsUrlHandler* m_urlHandler;
-    VsSchemeHandler* m_schemeHandler;
+    // VsSchemeHandler* m_schemeHandler;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
 

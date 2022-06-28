@@ -34,8 +34,6 @@ nogui {
     QT += quick
     QT += svg
     QT += websockets
-    QT += webenginecore
-    QT += webenginewidgets
   }
   noupdater {
     DEFINES += NO_UPDATER
@@ -245,8 +243,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
-               src/gui/vsUrlHandler.h \
-               src/gui/vsSchemeHandler.h
+               src/gui/vsUrlHandler.h
   }
   !noupdater {
     HEADERS += src/dblsqd/feed.h \
@@ -298,8 +295,7 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
-               src/gui/vsUrlHandler.cpp \
-               src/gui/vsSchemeHandler.cpp
+               src/gui/vsUrlHandler.cpp
   }
   !noupdater {
     SOURCES += src/dblsqd/feed.cpp \

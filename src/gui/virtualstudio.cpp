@@ -43,7 +43,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QSslSocket>
-#include <QWebEngineProfile>
+// #include <QWebEngineProfile>
 #include <algorithm>
 #include <iostream>
 
@@ -91,7 +91,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
 
     // Allow custom URL schemes to open the app
-    qDebug() << "setting schemeHandler for jacktrip";
+    // qDebug() << "setting schemeHandler for jacktrip";
     // QWebEngineUrlScheme scheme("jacktrip");
     // scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
     // scheme.setFlags(QWebEngineUrlScheme::SecureScheme |
@@ -100,9 +100,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // // scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
     // // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
     // QWebEngineUrlScheme::registerScheme(scheme);
-    m_schemeHandler = new VsSchemeHandler(this);
-    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("jacktrip",
-                                                                 m_schemeHandler);
+    // m_schemeHandler = new VsSchemeHandler(this);
+    // QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("jacktrip",
+    //  m_schemeHandler);
 
     // Allow custom URL schemes from within the app
     qDebug() << "setting urlHandler for jacktrip";
