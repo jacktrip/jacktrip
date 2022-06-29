@@ -300,6 +300,16 @@ int VirtualStudio::currentStudio()
     return m_currentStudio;
 }
 
+QJsonObject VirtualStudio::regions()
+{
+    return m_regions;
+}
+
+QJsonObject VirtualStudio::userMetadata()
+{
+    return m_userMetadata;
+}
+
 QString VirtualStudio::connectionState()
 {
     return m_connectionState;
@@ -750,6 +760,12 @@ void VirtualStudio::createStudio()
     QDesktopServices::openUrl(url);
 }
 
+void VirtualStudio::editProfile()
+{
+    QUrl url = QUrl(QStringLiteral("https://app.jacktrip.org/profile"));
+    QDesktopServices::openUrl(url);
+}
+
 void VirtualStudio::showAbout()
 {
     About about;
@@ -788,6 +804,13 @@ void VirtualStudio::slotAuthSucceded()
         getUserId();
     } else {
         getSubscriptions();
+    }
+
+    if (m_regions.isEmpty()) {
+        getRegions();
+    }
+    if (m_userMetadata.isEmpty()) {
+        getUserMetadata();
     }
 }
 
@@ -1175,6 +1198,42 @@ void VirtualStudio::getSubscriptions()
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
         getServerList(true);
+        reply->deleteLater();
+    });
+}
+
+void VirtualStudio::getRegions()
+{
+    QNetworkReply* reply = m_authenticator->get(
+        QStringLiteral("https://app.jacktrip.org/api/users/%1/regions").arg(m_userId));
+    connect(reply, &QNetworkReply::finished, this, [&, reply]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            emit authFailed();
+            reply->deleteLater();
+            return;
+        }
+
+        m_regions = QJsonDocument::fromJson(reply->readAll()).object();
+        emit regionsChanged();
+        reply->deleteLater();
+    });
+}
+
+void VirtualStudio::getUserMetadata()
+{
+    QNetworkReply* reply = m_authenticator->get(
+        QStringLiteral("https://app.jacktrip.org/api/users/%1").arg(m_userId));
+    connect(reply, &QNetworkReply::finished, this, [&, reply]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            emit authFailed();
+            reply->deleteLater();
+            return;
+        }
+
+        m_userMetadata = QJsonDocument::fromJson(reply->readAll()).object();
+        emit userMetadataChanged();
         reply->deleteLater();
     });
 }
