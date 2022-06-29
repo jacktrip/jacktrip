@@ -108,6 +108,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     qDebug() << "setting urlHandler for jacktrip";
     m_urlHandler = new VsUrlHandler();
     QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
+    connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, this, [&]() {
+        m_logoSection = QStringLiteral("It Worked!");
+    });
 
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;

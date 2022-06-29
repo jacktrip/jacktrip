@@ -47,8 +47,11 @@
 class VsUrlHandler : public QObject
 {
     Q_OBJECT
+  
+  signals:
+    void joinUrlClicked();
 
-   public slots:
+  public slots:
     void handleUrl(const QUrl& url);
 };
 
