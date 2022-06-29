@@ -280,7 +280,7 @@ Item {
         onClicked: { virtualstudio.testUrlScheme() }
         x: parent.width - ((16 + buttonWidth) * virtualstudio.uiScale)
         y: logoutButton.y + (46 * virtualstudio.uiScale)
-        width: buttonWidth * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+        width: buttonWidth + 32 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
         Text {
             text: "Test URL Scheme"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }

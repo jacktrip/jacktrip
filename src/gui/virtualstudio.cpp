@@ -109,7 +109,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_urlHandler = new VsUrlHandler();
     QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
     connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, this, [&]() {
-        m_logoSection = QStringLiteral("It Worked!");
+        qDebug() << "In handler";
+        setDebugText(QStringLiteral("It Worked!"));
     });
 
     // Set our font scaling to convert points to pixels
@@ -445,6 +446,17 @@ bool VirtualStudio::psiBuild()
 #else
     return false;
 #endif
+}
+
+QString VirtualStudio::debugText()
+{
+    return m_debugText;
+}
+
+void VirtualStudio::setDebugText(QString text)
+{
+    m_debugText = text;
+    emit debugTextChanged();
 }
 
 void VirtualStudio::toStandard()

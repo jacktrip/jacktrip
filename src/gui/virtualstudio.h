@@ -92,6 +92,8 @@ class VirtualStudio : public QObject
                    showWarningsChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
+    Q_PROPERTY(
+        QString debugText READ debugText WRITE setDebugText NOTIFY debugTextChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -132,6 +134,8 @@ class VirtualStudio : public QObject
     void setShowWarnings(bool show);
     bool noUpdater();
     bool psiBuild();
+    QString debugText();
+    void setDebugText(QString text);
 
    public slots:
     void toStandard();
@@ -176,6 +180,7 @@ class VirtualStudio : public QObject
     void darkModeChanged();
     void signalExit();
     void periodicRefresh();
+    void debugTextChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -249,7 +254,8 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
-    bool m_darkMode = false;
+    bool m_darkMode     = false;
+    QString m_debugText = "";
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
