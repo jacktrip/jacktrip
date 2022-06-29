@@ -266,53 +266,6 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
-
-        Rectangle {
-            x: -1; y: parent.height - (36 * virtualstudio.uiScale)
-            width: parent.width; height: (36 * virtualstudio.uiScale)
-            border.color: "#33979797"
-            color: backgroundColour
-
-            Button {
-                id: cancelButton
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: cancelButton.down ? buttonPressedColour : (cancelButton.hovered ? buttonHoverColour : buttonColour)
-                    border.width: 1
-                    border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
-                }
-                onClicked: { window.state = "browse"; virtualstudio.revertSettings() }
-                anchors.verticalCenter: parent.verticalCenter
-                x: parent.width - (230 * virtualstudio.uiScale)
-                width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
-                Text {
-                    text: "Cancel"
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                    color: textColour
-                }
-            }
-
-            Button {
-                id: saveButton
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: saveButton.down ? buttonPressedColour : (saveButton.hovered ? buttonHoverColour : buttonColour)
-                    border.width: 1
-                    border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
-                }
-                onClicked: { window.state = "browse"; virtualstudio.applySettings() }
-                anchors.verticalCenter: parent.verticalCenter
-                x: parent.width - (119 * virtualstudio.uiScale)
-                width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
-                Text {
-                    text: "Save"
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                    color: textColour
-                }
-            }
-        }
     }
 
     Rectangle {
@@ -485,6 +438,53 @@ Item {
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
                 text: "Log Out"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+    }
+
+    Rectangle {
+        x: -1; y: parent.height - (36 * virtualstudio.uiScale)
+        width: parent.width; height: (36 * virtualstudio.uiScale)
+        border.color: "#33979797"
+        color: backgroundColour
+
+        Button {
+            id: cancelButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: cancelButton.down ? buttonPressedColour : (cancelButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { window.state = "browse"; virtualstudio.revertSettings() }
+            anchors.verticalCenter: parent.verticalCenter
+            x: parent.width - (230 * virtualstudio.uiScale)
+            width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
+            Text {
+                text: "Cancel"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+
+        Button {
+            id: saveButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: saveButton.down ? buttonPressedColour : (saveButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { window.state = "browse"; virtualstudio.applySettings() }
+            anchors.verticalCenter: parent.verticalCenter
+            x: parent.width - (119 * virtualstudio.uiScale)
+            width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
+            Text {
+                text: "Save"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
