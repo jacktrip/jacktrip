@@ -37,6 +37,7 @@
 
 #include "vsQuickView.h"
 
+#include <QDesktopServices>
 #include <iostream>
 
 VsQuickView::VsQuickView(QWindow* parent) : QQuickView(parent)
@@ -58,6 +59,14 @@ bool VsQuickView::event(QEvent* event)
         emit windowClose();
         event->ignore();
     }
+#ifdef Q_OS_MACOS
+    else if (event->type() == QEvent::FileOpen) {
+        QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
+        qDebug() << "Open url" << openEvent->url();
+
+        QDesktopServices::openUrl(openEvent->url());
+    }
+#endif
     return QQuickView::event(event);
 }
 
