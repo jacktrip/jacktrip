@@ -68,21 +68,8 @@ Rectangle {
     }
 
     Image {
-        id: wedge
         source: available ? "wedge.svg" : "wedge_inactive.svg"
         x: 6; y: 0; width: 52 * virtualstudio.uiScale; height: 83 * virtualstudio.uiScale
-    }
-
-    Image {
-        id: banner
-        source: flagImage
-        x: 6; y: 0; width: 52 * virtualstudio.uiScale; height: 83 * virtualstudio.uiScale
-        fillMode: Image.PreserveAspectCrop
-        layer.enabled: true
-        layer.effect: OpacityMask {
-            maskSource: wedge
-        }
-        visible: flagImage.startsWith("http")
     }
 
     Image {
