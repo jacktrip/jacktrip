@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
         set.setValue("Default", "URL:JackTrip Protocol");
         set.setValue("DefaultIcon/Default", path);
         set.setValue("URL Protocol", "");
-        set.setValue("shell/open/command/Default", QString("\"%1\"").arg(path) + " \"%1\"");
+        set.setValue("shell/open/command/Default", QString("\"%1\"").arg(path) + " --gui \"%1\"");
         set.endGroup();
 #endif  // _WIN32
 #endif  // NO_VS
