@@ -218,6 +218,7 @@ HEADERS += src/DataProtocol.h \
            src/RingBufferWavetable.h \
            src/Settings.h \
            src/UdpDataProtocol.h \
+           src/IcmpDataProtocol.h \
            src/UdpHubListener.h \
            src/AudioInterface.h \
            src/compressordsp.h \
@@ -272,6 +273,7 @@ SOURCES += src/DataProtocol.cpp \
            src/RingBuffer.cpp \
            src/Settings.cpp \
            src/UdpDataProtocol.cpp \
+           src/IcmpDataProtocol.cpp \
            src/UdpHubListener.cpp \
            src/AudioInterface.cpp \
            src/main.cpp \

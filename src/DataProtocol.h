@@ -98,6 +98,7 @@ class DataProtocol : public QThread
     enum packetHeaderTypeT {
         DEFAULT,  ///< Default application header
         JAMLINK,  ///< Header to use with Jamlinks
+        ICMP,     ///< Header to use with ICMP
         EMPTY     ///< Empty Header
     };
 

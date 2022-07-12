@@ -87,6 +87,7 @@ set(qjacktrip_SRC
   src/JackTripWorker.cpp
   src/DataProtocol.cpp
   src/UdpDataProtocol.cpp
+  src/IcmpDataProtocol.cpp
   src/AudioInterface.cpp
   src/JackAudioInterface.cpp
   src/JMess.cpp
