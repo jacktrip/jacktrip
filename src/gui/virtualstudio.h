@@ -218,7 +218,7 @@ class VirtualStudio : public QObject
     QString m_appUUID;
     QString m_appID;
     VsQuickView m_view;
-    VsUrlHandler* m_urlHandler;
+    // VsUrlHandler* m_urlHandler;
     // VsSchemeHandler* m_schemeHandler;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;

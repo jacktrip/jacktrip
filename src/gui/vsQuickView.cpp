@@ -59,14 +59,14 @@ bool VsQuickView::event(QEvent* event)
         emit windowClose();
         event->ignore();
     }
-#ifdef Q_OS_MACOS
+// #ifdef Q_OS_MACOS
     else if (event->type() == QEvent::FileOpen) {
         QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
         qDebug() << "Open url" << openEvent->url();
 
         QDesktopServices::openUrl(openEvent->url());
     }
-#endif
+// #endif
     return QQuickView::event(event);
 }
 

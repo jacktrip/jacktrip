@@ -51,6 +51,8 @@
 // #include <QWebEngineProfile>
 
 #include "gui/virtualstudio.h"
+#include "gui/vsUrlHandler.h"
+#include <QDebug>
 #endif
 
 #include "gui/qjacktrip.h"
@@ -77,6 +79,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
     // Check for some specific, GUI related command line options.
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
+        std::cout << argv[i] << std::endl;
         if (strcmp(argv[i], "--gui") == 0) {
             forceGui = true;
         } else if (strcmp(argv[i], "--test-gui") == 0) {
@@ -279,6 +282,18 @@ int main(int argc, char* argv[])
         QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
                                     .toString()
                                     .toLower();
+#ifdef _WIN32
+        // Set url scheme in registry
+        QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
+
+        QSettings set("HKEY_CURRENT_USER\\Software\\Classes", QSettings::NativeFormat);
+        set.beginGroup("jacktrip");
+        set.setValue("Default", "URL:JackTrip Protocol");
+        set.setValue("DefaultIcon/Default", path);
+        set.setValue("URL Protocol", "");
+        set.setValue("shell/open/command/Default", QString("\"%1\"").arg(path) + " \"%1\"");
+        set.endGroup();
+#endif  // _WIN32
 #endif  // NO_VS
         window.reset(new QJackTrip(argc));
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
@@ -289,6 +304,14 @@ int main(int argc, char* argv[])
                          &QCoreApplication::quit, Qt::QueuedConnection);
         vs->setStandardWindow(window);
         window->setVs(vs);
+
+        qDebug() << "setting urlHandler for jacktrip";
+        VsUrlHandler* m_urlHandler = new VsUrlHandler();
+        QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
+        QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(), [&]() {
+            qDebug() << "In handler";
+            vs->setDebugText(QStringLiteral("It Worked!"));
+        });
 
         if (uiMode == QJackTrip::UNSET) {
             vs->show();

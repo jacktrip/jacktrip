@@ -105,13 +105,13 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     //  m_schemeHandler);
 
     // Allow custom URL schemes from within the app
-    qDebug() << "setting urlHandler for jacktrip";
-    m_urlHandler = new VsUrlHandler();
-    QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
-    connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, this, [&]() {
-        qDebug() << "In handler";
-        setDebugText(QStringLiteral("It Worked!"));
-    });
+    // qDebug() << "setting urlHandler for jacktrip";
+    // m_urlHandler = new VsUrlHandler();
+    // QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
+    // connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, this, [&]() {
+    //     qDebug() << "In handler";
+    //     setDebugText(QStringLiteral("It Worked!"));
+    // });
 
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
@@ -842,6 +842,7 @@ void VirtualStudio::exit()
 
 void VirtualStudio::testUrlScheme()
 {
+    qDebug() << "testing url scheme";
     QDesktopServices::openUrl(QUrl("jacktrip://join", QUrl::TolerantMode));
 }
 
