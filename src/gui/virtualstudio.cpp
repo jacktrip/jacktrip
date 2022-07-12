@@ -87,18 +87,20 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
 
-#ifdef RT_AUDIO
+    // audio/devices settings
     settings.beginGroup(QStringLiteral("Audio"));
-    m_useRtAudio   = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
-    m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
-    m_outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
-    m_bufferSize   = settings.value(QStringLiteral("BufferSize"), 128).toInt();
-    settings.endGroup();
+#ifdef RT_AUDIO
+    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
+    m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
+    m_outputDevice   = settings.value(QStringLiteral("OutputDevice"), "").toString();
+    m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     m_previousBuffer = m_bufferSize;
     refreshDevices();
     m_previousInput  = m_inputDevice;
     m_previousOutput = m_outputDevice;
 #else
+    m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 0).toInt();
+    settings.endGroup();
     m_selectableBackend = false;
 
     // Set our combo box models to an empty list to avoid a reference error
@@ -128,6 +130,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("bufferComboModel"), QVariant::fromValue(m_bufferOptions));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("bufferStrategyComboModel"),
+        QVariant::fromValue(m_bufferStrategyOptions));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("updateChannelComboModel"),
         QVariant::fromValue(m_updateChannelOptions));
@@ -288,6 +293,22 @@ void VirtualStudio::setBufferSize([[maybe_unused]] int index)
 #ifdef RT_AUDIO
     m_bufferSize = m_bufferOptions.at(index).toInt();
 #endif
+}
+
+int VirtualStudio::bufferStrategy()
+{
+    return m_bufferStrategy;
+}
+
+void VirtualStudio::setBufferStrategy(int index)
+{
+    m_bufferStrategy =
+        index >= 0 ? index
+                   : m_bufferStrategyOptions.indexOf(QStringLiteral("Minimal Latency"));
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("BufferStrategy"), m_bufferStrategy);
+    settings.endGroup();
 }
 
 int VirtualStudio::currentStudio()
@@ -657,7 +678,8 @@ void VirtualStudio::completeConnection()
             }
         }
 #endif
-        m_jackTrip->setBufferStrategy(1);
+        // increment m_bufferStrategy by 1 for array-index mapping
+        m_jackTrip->setBufferStrategy(m_bufferStrategy + 1);
         m_jackTrip->setBufferQueueLength(-500);
         m_jackTrip->setPeerAddress(studioInfo->host());
         m_jackTrip->setPeerPorts(studioInfo->port());

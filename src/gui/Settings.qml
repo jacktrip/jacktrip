@@ -266,6 +266,27 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
+
+        ComboBox {
+            id: bufferStrategyCombo
+            x: backendCombo.x; y: bufferCombo.y + (48 * virtualstudio.uiScale)
+            width: backendCombo.width; height: backendCombo.height
+            model: bufferStrategyComboModel
+            currentIndex: virtualstudio.bufferStrategy
+            onActivated: { virtualstudio.bufferStrategy = currentIndex }
+            font.family: "Poppins"
+            visible: virtualstudio.audioBackend != "JACK"
+        }
+
+        Text {
+            anchors.verticalCenter: bufferStrategyCombo.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Buffer Strategy"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.audioBackend != "JACK"
+            color: textColour
+        }
+
     }
 
     Rectangle {
