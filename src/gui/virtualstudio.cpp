@@ -1060,6 +1060,8 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                         servers.at(i)[QStringLiteral("sampleRate")].toInt());
                     serverInfo->setQueueBuffer(
                         servers.at(i)[QStringLiteral("queueBuffer")].toInt());
+                    serverInfo->setBannerURL(
+                        servers.at(i)[QStringLiteral("bannerURL")].toString());
                     serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
                     if (servers.at(i)[QStringLiteral("owner")].toBool()) {
                         yourServers.append(serverInfo);
