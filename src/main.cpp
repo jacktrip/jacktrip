@@ -153,7 +153,11 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
     std::cerr << msg.toStdString() << std::endl;
 #ifndef NO_VS
     // Writes to file in order to debug bundles and executables
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
     *ts << msg << Qt::endl;
+#else
+    *ts << msg << std::endl;
+#endif
 #endif
 }
 
@@ -250,6 +254,7 @@ int main(int argc, char* argv[])
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
+    QString deeplink = "";
 #ifndef NO_GUI
     QSharedPointer<QJackTrip> window;
 
@@ -285,6 +290,15 @@ int main(int argc, char* argv[])
         }
 
 #ifndef NO_VS
+        // Parse command line for deep link
+        QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
+        deeplinkOption.setValueName("deeplink");
+        parser.addOption(deeplinkOption);
+        parser.parse(app->arguments());
+        if (parser.isSet(deeplinkOption)) {
+            deeplink = parser.value(deeplinkOption);
+        }
+
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
@@ -301,11 +315,13 @@ int main(int argc, char* argv[])
         set.setValue("DefaultIcon/Default", path);
         set.setValue("URL Protocol", "");
         set.setValue("shell/open/command/Default",
-                     QString("\"%1\"").arg(path) + " --gui \"%1\"");
+                     QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
         set.endGroup();
 #endif  // _WIN32
-#endif  // NO_VS
+        window.reset(new QJackTrip(argc, !deeplink.isEmpty()));
+#else
         window.reset(new QJackTrip(argc));
+#endif  // NO_VS
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
 #ifndef NO_VS
@@ -315,13 +331,14 @@ int main(int argc, char* argv[])
         vs->setStandardWindow(window);
         window->setVs(vs);
 
-        qDebug() << "setting urlHandler for jacktrip";
         VsUrlHandler* m_urlHandler = new VsUrlHandler();
         QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(), [&]() {
             qDebug() << "In handler";
             vs->setDebugText(QStringLiteral("It Worked!"));
         });
+        // Open with any command line-passed url
+        QDesktopServices::openUrl(QUrl(deeplink));
 
         if (uiMode == QJackTrip::UNSET) {
             vs->show();
@@ -339,7 +356,7 @@ int main(int argc, char* argv[])
             logDir.mkpath(logPath);
         }
         QString fileLoc(logPath.append("/log.txt"));
-        qDebug() << "log location" << fileLoc;
+        qDebug() << "Log file location:" << fileLoc;
         outFile.setFileName(fileLoc);
         if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
             qDebug() << "File open failed:" << outFile.errorString();
