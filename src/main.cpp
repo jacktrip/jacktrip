@@ -156,7 +156,7 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     *ts << msg << Qt::endl;
 #else
-    *ts << msg << std::endl;
+    *ts << msg << endl;
 #endif
 #endif
 }
