@@ -30,26 +30,40 @@
 //*****************************************************************
 
 /**
- * \file vsSchemeHandler.cpp
- * \author Matt Horton
- * \date June 2022
+ * \file JTApplication.h
+ * \author Matt Hortoon
+ * \date July 2022
  */
 
-#include "vsSchemeHandler.h"
+#ifndef JTAPPLICATION_H
+#define JTAPPLICATION_H
 
+#include <QApplication>
+#include <QDesktopServices>
+#include <QObject>
 #include <QDebug>
-#include <iostream>
+#include <QEvent>
+#include <QFileOpenEvent>
 
-VsSchemeHandler::VsSchemeHandler(QObject* parent)
+class JTApplication : public QApplication
 {
-    this->setParent(parent);
-    qDebug() << "schemehandler created";
-}
+  Q_OBJECT
 
-void VsSchemeHandler::requestStarted(QWebEngineUrlRequestJob* request)
-{
-    qDebug() << "got URL";
-    qDebug() << request->requestUrl().toString();
+  public:
+    JTApplication(int &argc, char **argv) : QApplication(argc, argv)
+    {
+    }
 
-    request->fail(QWebEngineUrlRequestJob::NoError);
-}
+    bool event(QEvent* event) override
+    {
+      if (event->type() == QEvent::FileOpen) {
+        QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
+        qDebug() << "Open url" << openEvent->url();
+
+        QDesktopServices::openUrl(openEvent->url());
+      }
+      return QApplication::event(event);
+    }
+};
+
+#endif  // JTAPPLICATION_H

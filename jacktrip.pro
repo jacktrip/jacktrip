@@ -243,7 +243,8 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
-               src/gui/vsUrlHandler.h
+               src/gui/vsUrlHandler.h \
+               src/JTApplication.h
   }
   !noupdater {
     HEADERS += src/dblsqd/feed.h \

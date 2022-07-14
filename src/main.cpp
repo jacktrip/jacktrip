@@ -48,10 +48,10 @@
 #include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
-// #include <QWebEngineProfile>
 
 #include "gui/virtualstudio.h"
 #include "gui/vsUrlHandler.h"
+#include "JTApplication.h"
 #include <QDebug>
 #endif
 
@@ -73,6 +73,11 @@
 #include <tlhelp32.h>
 #include <windows.h>
 #endif
+
+#ifndef NO_VS
+static QTextStream *ts;
+static QFile outFile;
+#endif // NO_VS
 
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
@@ -102,16 +107,6 @@ QCoreApplication* createApplication(int& argc, char* argv[])
         }
     }
 
-#ifndef NO_VS
-    // QWebEngineUrlScheme scheme("jacktrip");
-    // scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
-    // scheme.setFlags(QWebEngineUrlScheme::SecureScheme | QWebEngineUrlScheme::LocalScheme
-    //                 | QWebEngineUrlScheme::LocalAccessAllowed);
-    // // scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
-    // // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
-    // QWebEngineUrlScheme::registerScheme(scheme);
-#endif  // NO_VS
-
     // If we have command line arguments and aren't forcing the GUI run on the command
     // line.
     if (argc == 1 || forceGui) {
@@ -136,9 +131,15 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             std::exit(1);
         }
 #endif
+#ifdef Q_OS_MACOS
+        // Turn on high DPI support.
+        JTApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        return new JTApplication(argc, argv);
+#else
         // Turn on high DPI support.
         QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         return new QApplication(argc, argv);
+#endif // Q_OS_MACOS
 #endif  // NO_GUI
     } else {
         return new QCoreApplication(argc, argv);
@@ -150,6 +151,10 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
                       const QString& msg)
 {
     std::cerr << msg.toStdString() << std::endl;
+#ifndef NO_VS
+    // Writes to file in order to debug bundles and executables
+    *ts << msg << Qt::endl;
+#endif
 }
 
 #ifndef _WIN32
@@ -252,7 +257,11 @@ int main(int argc, char* argv[])
     QSharedPointer<VirtualStudio> vs;
 #endif
 
+#ifdef Q_OS_MACOS
+    if (qobject_cast<JTApplication*>(app.data())) {
+#else
     if (qobject_cast<QApplication*>(app.data())) {
+#endif        
         // Start the GUI if there are no command line options.
 #ifdef _WIN32
         // Remove the console that appears if we're on windows and not running from a
@@ -320,6 +329,21 @@ int main(int argc, char* argv[])
         } else {
             window->show();
         }
+
+        // Log to file
+        QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+        QDir logDir;
+        if (!logDir.exists(logPath)){
+            logDir.mkpath(logPath);
+        }
+        QString fileLoc(logPath.append("/log.txt"));
+        qDebug() << "log location" << fileLoc;
+        outFile.setFileName(fileLoc);
+        if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)){
+            qDebug() << "File open failed:" << outFile.errorString();
+        }
+        ts = new QTextStream(&outFile);
+        qInstallMessageHandler(qtMessageHandler);
 #else
         window->show();
 #endif  // NO_VS

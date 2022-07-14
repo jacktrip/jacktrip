@@ -115,7 +115,8 @@ else
 			'src/gui/vsServerInfo.h',
 			'src/gui/vsQuickView.h',
 			'src/gui/vsWebSocket.h',
-			'src/gui/vsUrlHandler.h'
+			'src/gui/vsUrlHandler.h',
+			'src/JTApplication.h'
 		]
 		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
 		qres = ['src/gui/qjacktrip.qrc']

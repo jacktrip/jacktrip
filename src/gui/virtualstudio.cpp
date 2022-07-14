@@ -43,7 +43,6 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QSslSocket>
-// #include <QWebEngineProfile>
 #include <algorithm>
 #include <iostream>
 
@@ -89,29 +88,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
 
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
-
-    // Allow custom URL schemes to open the app
-    // qDebug() << "setting schemeHandler for jacktrip";
-    // QWebEngineUrlScheme scheme("jacktrip");
-    // scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
-    // scheme.setFlags(QWebEngineUrlScheme::SecureScheme |
-    //                 QWebEngineUrlScheme::LocalScheme |
-    //                 QWebEngineUrlScheme::LocalAccessAllowed);
-    // // scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
-    // // scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
-    // QWebEngineUrlScheme::registerScheme(scheme);
-    // m_schemeHandler = new VsSchemeHandler(this);
-    // QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("jacktrip",
-    //  m_schemeHandler);
-
-    // Allow custom URL schemes from within the app
-    // qDebug() << "setting urlHandler for jacktrip";
-    // m_urlHandler = new VsUrlHandler();
-    // QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
-    // connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, this, [&]() {
-    //     qDebug() << "In handler";
-    //     setDebugText(QStringLiteral("It Worked!"));
-    // });
 
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
