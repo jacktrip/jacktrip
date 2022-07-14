@@ -36,6 +36,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
+            novs: false
             weakjack: false
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
@@ -54,6 +55,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -65,6 +67,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: true
+            novs: true
             weakjack: false
             static-qt-version: 5.12.11
             qt-static-cache-key: 'v24' # we use the same key as the main Linux build
@@ -77,6 +80,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -103,6 +107,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             static-qt-version: 5.15.2
             qt-static-cache-key: 'v07'
@@ -117,6 +122,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -129,6 +135,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -143,6 +150,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.2
@@ -157,6 +165,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-dynamic
             qt-arch: 'win64_mingw81'
@@ -170,6 +179,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
@@ -184,6 +194,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             qt-arch: 'win64_msvc2019_64'
             qt-cache-key: 'v01'

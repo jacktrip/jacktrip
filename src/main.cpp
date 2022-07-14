@@ -155,14 +155,16 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
                       const QString& msg)
 {
     std::cerr << msg.toStdString() << std::endl;
+#ifndef NO_GUI
 #ifndef NO_VS
     // Writes to file in order to debug bundles and executables
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     *ts << msg << Qt::endl;
 #else
     *ts << msg << endl;
-#endif
-#endif
+#endif  // QT_VERSION > 5.14.0
+#endif  // NO_VS
+#endif  // NO_GUI
 }
 
 #ifndef _WIN32
