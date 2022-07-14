@@ -34,7 +34,7 @@ nogui {
     QT += quick
     QT += svg
   }
-  noupdater | linux-g++ | linux-g++-64 {
+  noupdater|linux-g++|linux-g++-64 {
     DEFINES += NO_UPDATER
   }
 }
