@@ -45,14 +45,14 @@
 #endif
 
 #ifndef NO_VS
+#include <QDebug>
 #include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
 
+#include "JTApplication.h"
 #include "gui/virtualstudio.h"
 #include "gui/vsUrlHandler.h"
-#include "JTApplication.h"
-#include <QDebug>
 #endif
 
 #include "gui/qjacktrip.h"
@@ -75,9 +75,9 @@
 #endif
 
 #ifndef NO_VS
-static QTextStream *ts;
+static QTextStream* ts;
 static QFile outFile;
-#endif // NO_VS
+#endif  // NO_VS
 
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
@@ -139,7 +139,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
         // Turn on high DPI support.
         QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         return new QApplication(argc, argv);
-#endif // Q_OS_MACOS
+#endif  // Q_OS_MACOS
 #endif  // NO_GUI
     } else {
         return new QCoreApplication(argc, argv);
@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
     if (qobject_cast<JTApplication*>(app.data())) {
 #else
     if (qobject_cast<QApplication*>(app.data())) {
-#endif        
+#endif
         // Start the GUI if there are no command line options.
 #ifdef _WIN32
         // Remove the console that appears if we're on windows and not running from a
@@ -300,7 +300,8 @@ int main(int argc, char* argv[])
         set.setValue("Default", "URL:JackTrip Protocol");
         set.setValue("DefaultIcon/Default", path);
         set.setValue("URL Protocol", "");
-        set.setValue("shell/open/command/Default", QString("\"%1\"").arg(path) + " --gui \"%1\"");
+        set.setValue("shell/open/command/Default",
+                     QString("\"%1\"").arg(path) + " --gui \"%1\"");
         set.endGroup();
 #endif  // _WIN32
 #endif  // NO_VS
@@ -331,15 +332,16 @@ int main(int argc, char* argv[])
         }
 
         // Log to file
-        QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+        QString logPath(
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
         QDir logDir;
-        if (!logDir.exists(logPath)){
+        if (!logDir.exists(logPath)) {
             logDir.mkpath(logPath);
         }
         QString fileLoc(logPath.append("/log.txt"));
         qDebug() << "log location" << fileLoc;
         outFile.setFileName(fileLoc);
-        if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)){
+        if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
             qDebug() << "File open failed:" << outFile.errorString();
         }
         ts = new QTextStream(&outFile);

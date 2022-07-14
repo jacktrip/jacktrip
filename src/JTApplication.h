@@ -39,30 +39,28 @@
 #define JTAPPLICATION_H
 
 #include <QApplication>
-#include <QDesktopServices>
-#include <QObject>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QEvent>
 #include <QFileOpenEvent>
+#include <QObject>
 
 class JTApplication : public QApplication
 {
-  Q_OBJECT
+    Q_OBJECT
 
-  public:
-    JTApplication(int &argc, char **argv) : QApplication(argc, argv)
-    {
-    }
+   public:
+    JTApplication(int& argc, char** argv) : QApplication(argc, argv) {}
 
     bool event(QEvent* event) override
     {
-      if (event->type() == QEvent::FileOpen) {
-        QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
-        qDebug() << "Open url" << openEvent->url();
+        if (event->type() == QEvent::FileOpen) {
+            QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
+            qDebug() << "Open url" << openEvent->url();
 
-        QDesktopServices::openUrl(openEvent->url());
-      }
-      return QApplication::event(event);
+            QDesktopServices::openUrl(openEvent->url());
+        }
+        return QApplication::event(event);
     }
 };
 
