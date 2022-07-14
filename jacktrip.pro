@@ -243,7 +243,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsQuickView.h
   }
   !noupdater {
-    linux-g++ | linux-g++-64 {
+    !(linux-g++ | !linux-g++-64) {
       HEADERS += src/dblsqd/feed.h \
                src/dblsqd/release.h \
                src/dblsqd/semver.h \
