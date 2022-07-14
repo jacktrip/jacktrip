@@ -153,7 +153,7 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
     std::cerr << msg.toStdString() << std::endl;
 #ifndef NO_VS
     // Writes to file in order to debug bundles and executables
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     *ts << msg << Qt::endl;
 #else
     *ts << msg << std::endl;
