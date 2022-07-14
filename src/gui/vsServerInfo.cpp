@@ -205,4 +205,14 @@ void VsServerInfo::setId(const QString& id)
     m_id = id;
 }
 
+QString VsServerInfo::sessionId()
+{
+    return m_sessionId;
+}
+
+void VsServerInfo::setSessionId(const QString& sessionId)
+{
+    m_sessionId = sessionId;
+}
+
 VsServerInfo::~VsServerInfo() = default;

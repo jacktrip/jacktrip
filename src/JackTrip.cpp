@@ -45,7 +45,6 @@
 #include "Regulator.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
-#include "IcmpDataProtocol.h"
 #include "jacktrip_globals.h"
 #ifdef RT_AUDIO
 #include "RtAudioInterface.h"
@@ -336,18 +335,10 @@ void JackTrip::setupDataProtocol()
     case SCTP:
         throw std::invalid_argument("SCTP Protocol is not implemented");
         break;
-    case ICMP:
-        throw std::invalid_argument("ICMP Protocol should not be used for audio packet transmission");
-        break;
     default:
         throw std::invalid_argument("Protocol not defined or unimplemented");
         break;
     }
-
-    mIcmpProtocolSender =
-        new IcmpDataProtocol(this, DataProtocol::SENDER);
-    mIcmpProtocolReceiver =
-        new IcmpDataProtocol(this, DataProtocol::RECEIVER);
 
     // JackTrip's inputs send to the network
     mDataProtocolSender->setAudioPacketSize(getTotalAudioInputPacketSizeInBytes());
@@ -486,7 +477,6 @@ void JackTrip::startProcess(
     // fixme
     createHeader(mPacketHeaderType);
 
-    createIcmpHeader();
     setupDataProtocol();
     setupRingBuffers();
     // Connect Signals and Slots
@@ -1367,12 +1357,6 @@ void JackTrip::createHeader(const DataProtocol::packetHeaderTypeT headertype)
         throw std::invalid_argument("Undefined Header Type");
         break;
     }
-}
-
-void JackTrip::createIcmpHeader()
-{
-    delete mIcmpPacketHeader;
-    mIcmpPacketHeader = new IcmpHeader(this);
 }
 
 //*******************************************************************************

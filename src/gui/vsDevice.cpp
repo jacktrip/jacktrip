@@ -36,7 +36,7 @@
  */
 
 #include "vsDevice.h"
-
+#include <QCryptographicHash>
 #include <QDebug>
 
 // Constructor
@@ -296,6 +296,31 @@ void VsDevice::reconcileAgentConfig(QJsonDocument newState)
     }
 }
 
+// initPinger intializes the pinger used to generate network latency statistics for Virtual Studio
+VsPinger* VsDevice::initPinger(VsServerInfo* studioInfo)
+{
+    QString id = studioInfo->id();
+    QString sessionId = studioInfo->sessionId();
+    QString token = VsDevice::authToken(id, sessionId);
+    QString host = studioInfo->sessionId();
+    host.append(QString::fromStdString(".jacktrip.cloud"));
+
+    m_pinger = new VsPinger(QString::fromStdString("wss"),
+                host, QString::fromStdString("/ping"), token);
+}
+
+// startPinger starts the Virtual Studio pinger
+void VsDevice::startPinger()
+{
+    m_pinger->start();
+}
+
+// stopPinger stops the Virtual Studio pinger
+void VsDevice::stopPinger()
+{
+    m_pinger->stop();
+}
+
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals
 void VsDevice::terminateJackTrip()
 {
@@ -422,4 +447,20 @@ QString VsDevice::randomString(int stringLength)
     }
 
     return str;
+}
+
+// authToken generates the authentication header token needed to communicate with vs-agent
+QString VsDevice::authToken(const QString& id, const QString& sessionId)
+{
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    QString data = QString::fromStdString("jktp-");
+    data.append(id);
+    data.append(QString::fromStdString("-"));
+    data.append(sessionId);
+
+    hash.addData(data.toUtf8());
+
+    QByteArray result = hash.result();
+    QString token = QString(result.toHex());
+    return token;
 }

@@ -673,6 +673,8 @@ void VirtualStudio::completeConnection()
                          Qt::QueuedConnection);
 
         m_device->startJackTrip();
+        m_device->initPinger(studioInfo);
+        m_device->startPinger();
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
         m_connectionState = QStringLiteral("JackTrip Error");
@@ -1066,6 +1068,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                     serverInfo->setQueueBuffer(
                         servers.at(i)[QStringLiteral("queueBuffer")].toInt());
                     serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
+                    serverInfo->setSessionId(servers.at(i)[QStringLiteral("sessionId")].toString());
                     if (servers.at(i)[QStringLiteral("owner")].toBool()) {
                         yourServers.append(serverInfo);
                         serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);

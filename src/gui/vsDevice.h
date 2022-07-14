@@ -48,6 +48,7 @@
 #include "../jacktrip_globals.h"
 #include "vsServerInfo.h"
 #include "vsWebSocket.h"
+#include "../vsPinger.h"
 
 class VsDevice : public QObject
 {
@@ -69,6 +70,10 @@ class VsDevice : public QObject
     void stopJackTrip();
     void reconcileAgentConfig(QJsonDocument newState);
 
+    VsPinger* initPinger(VsServerInfo* studioInfo);
+    void startPinger();
+    void stopPinger();
+
    private slots:
     void terminateJackTrip();
     void onTextMessageReceived(const QString& message);
@@ -77,6 +82,9 @@ class VsDevice : public QObject
     void registerJTAsDevice();
     bool enabled();
     QString randomString(int stringLength);
+    QString authToken(const QString& id, const QString& sessionId);
+
+    VsPinger* m_pinger = NULL;
 
     QString m_appID;
     QString m_appUUID;

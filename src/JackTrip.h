@@ -77,8 +77,7 @@ class JackTrip : public QObject
     enum dataProtocolT {
         UDP,  ///< Use UDP (User Datagram Protocol)
         TCP,  ///< <B>NOT IMPLEMENTED</B>: Use TCP (Transmission Control Protocol)
-        SCTP, ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
-        ICMP  ///< Use ICMP (Internet Control Message Protocol)
+        SCTP  ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
     };
 
     /// \brief Enum for the JackTrip mode
@@ -376,11 +375,8 @@ class JackTrip : public QObject
     //@{
     /// \todo Document all these functions
     virtual void createHeader(const DataProtocol::packetHeaderTypeT headertype);
-    virtual void createIcmpHeader();
     void putHeaderInIncomingPacket(int8_t* full_packet, int8_t* audio_packet);
     void putHeaderInOutgoingPacket(int8_t* full_packet, int8_t* audio_packet);
-    void putHeaderInIncomingIcmpPacket(int8_t* full_packet);
-    void putHeaderInOutgoingIcmpPacket(int8_t* full_packet);
     int getSendPacketSizeInBytes() const;
     int getReceivePacketSizeInBytes() const;
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
@@ -649,15 +645,8 @@ class JackTrip : public QObject
     /// Pointer to Abstract Type DataProtocol that receives packets
     DataProtocol* mDataProtocolReceiver;
 
-    // Pointer to Abstract Type DataProtocol that sends ICMP messages
-    DataProtocol* mIcmpProtocolSender;
-
-    // Pointer to Abstract Type DataProtocol that receives ICMP messages
-    DataProtocol* mIcmpProtocolReceiver;
-
     AudioInterface* mAudioInterface;  ///< Interface to Jack Client
     PacketHeader* mPacketHeader;      ///< Pointer to Packet Header
-    PacketHeader* mIcmpPacketHeader;  ///< Pointer to ICMP Packet Header
     underrunModeT mUnderRunMode;      ///< underrunModeT Mode
     bool mStopOnTimeout;              ///< Stop on 10 second timeout
 
