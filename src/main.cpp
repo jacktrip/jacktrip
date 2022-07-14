@@ -81,7 +81,7 @@
 static QTextStream* ts;
 static QFile outFile;
 #endif  // NO_VS
-#endif // NO_VS
+#endif  // NO_VS
 
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
