@@ -76,10 +76,12 @@
 #include <windows.h>
 #endif
 
+#ifndef NO_GUI
 #ifndef NO_VS
 static QTextStream* ts;
 static QFile outFile;
 #endif  // NO_VS
+#endif // NO_VS
 
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
