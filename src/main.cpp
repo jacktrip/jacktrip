@@ -46,9 +46,11 @@
 
 #ifndef NO_VS
 #include <QDebug>
+#include <QFile>
 #include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
+#include <QTextStream>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
