@@ -341,8 +341,8 @@ int main(int argc, char* argv[])
                 case QLocalSocket::ServerNotFoundError:
                 case QLocalSocket::SocketTimeoutError:
                 case QLocalSocket::ConnectionRefusedError:
-                    instanceServer = new QLocalServer(app.data())
-                                         instanceServer->listen("jacktripExists");
+                    instanceServer = new QLocalServer(app.data());
+                    instanceServer->listen("jacktripExists");
                     QObject::connect(
                         instanceServer, &QLocalServer::newConnection, app.data(),
                         [&]() {
