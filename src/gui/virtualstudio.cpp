@@ -197,8 +197,8 @@ void VirtualStudio::show()
 
 void VirtualStudio::raiseToTop()
 {
-    m_view.show();                                         // Restore from systray
-    m_view.setWindowState(Qt::WindowState::WindowActive);  // Raise to top
+    m_view.show();             // Restore from systray
+    m_view.requestActivate();  // Raise to top
 }
 
 bool VirtualStudio::showFirstRun()

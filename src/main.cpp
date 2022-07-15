@@ -47,6 +47,8 @@
 #ifndef NO_VS
 #include <QDebug>
 #include <QFile>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
@@ -267,8 +269,8 @@ int main(int argc, char* argv[])
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> vs;
 #ifdef _WIN32
-    QLocalServer* instanceServer;
-    QLocalSocket* instanceCheckSocket;
+    QSharedPointer<QLocalServer> instanceServer;
+    QSharedPointer<QLocalSocket> instanceCheckSocket;
 #endif
 #endif
 
@@ -328,25 +330,37 @@ int main(int argc, char* argv[])
                      QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
         set.endGroup();
 
-        // Check for existing instance
-        instanceCheckSocket = new QLocalSocket(app.data());
+        // Create socket
+        instanceCheckSocket =
+            QSharedPointer<QLocalSocket>::create(new QLocalSocket(app.data()));
         // End process if instance exists
-        QObject::connect(instanceCheckSocket, &QLocalSocket::connected, app.data(),
-                         &QCoreApplication::quit, Qt::QueuedConnection);
+        QObject::connect(
+            instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
+            [&]() {
+                qDebug() << "connected to socket server";
+                QCoreApplication::quit();
+            },
+            Qt::QueuedConnection);
         // Create instanceServer to prevent new instances from being created
         QObject::connect(
-            instanceCheckSocket, &QLocalSocket::errorOccurred, app.data(),
+            instanceCheckSocket.data(), &QLocalSocket::errorOccurred, app.data(),
             [&](QLocalSocket::LocalSocketError socketError) {
                 switch (socketError) {
                 case QLocalSocket::ServerNotFoundError:
                 case QLocalSocket::SocketTimeoutError:
                 case QLocalSocket::ConnectionRefusedError:
-                    instanceServer = new QLocalServer(app.data());
+                    qDebug() << "creating jacktripExists socket";
+                    qDebug() << instanceCheckSocket->errorString();
+                    instanceServer = QSharedPointer<QLocalServer>::create(
+                        new QLocalServer(app.data()));
+                    instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
                     instanceServer->listen("jacktripExists");
                     QObject::connect(
-                        instanceServer, &QLocalServer::newConnection, app.data(),
+                        instanceServer.data(), &QLocalServer::newConnection, app.data(),
                         [&]() {
-                            // This is the first instance. Bring it to the top.
+                            // This is the first instance. Bring it to the
+                            // top.
+                            qDebug() << "raising to top";
                             vs->raiseToTop();
                         },
                         Qt::QueuedConnection);
@@ -356,8 +370,9 @@ int main(int argc, char* argv[])
                 default:
                     qDebug() << instanceCheckSocket->errorString();
                 }
-            },
-            Qt::QueuedConnection);
+            });
+        // Check for existing instance
+        qDebug() << "connecting to jacktripExists socket";
         instanceCheckSocket->connectToServer("jacktripExists");
 
 #endif  // _WIN32
