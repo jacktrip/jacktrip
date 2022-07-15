@@ -159,9 +159,6 @@ class DataProtocol : public QThread
      */
     virtual void setPeerPort(int port) = 0;
 
-    // virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
-    //				     uint16_t& port) = 0;
-
 #if defined(_WIN32)
     virtual void setSocket(SOCKET& socket) = 0;
 #else

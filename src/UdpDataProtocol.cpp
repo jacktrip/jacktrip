@@ -50,7 +50,10 @@
 #include "jacktrip_globals.h"
 #ifdef _WIN32
 //#include <winsock.h>
+#include <stdio.h>
 #include <winsock2.h>  //cc need SD_SEND
+#pragma comment(lib, "ws2_32.lib")
+#define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR, 12)
 #else
 #include <fcntl.h>
 #include <sys/socket.h>  // for POSIX Sockets
@@ -259,6 +262,14 @@ int UdpDataProtocol::bindSocket()
         local_addr.sin_port = htons(mBindPort);  // set local port
     }
 
+    // Prevent WSAECONNRESET errors that occur on Windows due to async UDP port setup
+#if defined(_WIN32)
+    BOOL bNewBehavior     = FALSE;
+    DWORD dwBytesReturned = 0;
+    WSAIoctl(sock_fd, SIO_UDP_CONNRESET, &bNewBehavior, sizeof bNewBehavior, NULL, 0,
+             &dwBytesReturned, NULL, NULL);
+#endif
+
     // Set socket to be reusable, this is platform dependent
     int one = 1;
 #if defined(_WIN32)
@@ -364,27 +375,6 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
     }
     return n_bytes;
     //#endif
-}
-
-//*******************************************************************************
-void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
-                                                    uint16_t& port)
-{
-    while (!datagramAvailable()) {
-        msleep(100);
-    }
-    char buf[1];
-
-    struct sockaddr_storage addr;
-    std::memset(&addr, 0, sizeof(addr));
-    socklen_t sa_len = sizeof(addr);
-    ::recvfrom(mSocket, buf, 1, 0, (struct sockaddr*)&addr, &sa_len);
-    peerHostAddress.setAddress((struct sockaddr*)&addr);
-    if (mIPv6) {
-        port = ((struct sockaddr_in6*)&addr)->sin6_port;
-    } else {
-        port = ((struct sockaddr_in*)&addr)->sin_port;
-    }
 }
 
 //*******************************************************************************
