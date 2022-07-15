@@ -334,13 +334,8 @@ int main(int argc, char* argv[])
         instanceCheckSocket =
             QSharedPointer<QLocalSocket>::create(new QLocalSocket(app.data()));
         // End process if instance exists
-        QObject::connect(
-            instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
-            [&]() {
-                qDebug() << "connected to socket server";
-                QCoreApplication::quit();
-            },
-            Qt::QueuedConnection);
+        QObject::connect(instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
+                         &QCoreApplication::quit, Qt::QueuedConnection);
         // Create instanceServer to prevent new instances from being created
         QObject::connect(
             instanceCheckSocket.data(), &QLocalSocket::errorOccurred, app.data(),
@@ -349,8 +344,6 @@ int main(int argc, char* argv[])
                 case QLocalSocket::ServerNotFoundError:
                 case QLocalSocket::SocketTimeoutError:
                 case QLocalSocket::ConnectionRefusedError:
-                    qDebug() << "creating jacktripExists socket";
-                    qDebug() << instanceCheckSocket->errorString();
                     instanceServer = QSharedPointer<QLocalServer>::create(
                         new QLocalServer(app.data()));
                     instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
@@ -360,7 +353,6 @@ int main(int argc, char* argv[])
                         [&]() {
                             // This is the first instance. Bring it to the
                             // top.
-                            qDebug() << "raising to top";
                             vs->raiseToTop();
                         },
                         Qt::QueuedConnection);
@@ -372,7 +364,6 @@ int main(int argc, char* argv[])
                 }
             });
         // Check for existing instance
-        qDebug() << "connecting to jacktripExists socket";
         instanceCheckSocket->connectToServer("jacktripExists");
 
 #endif  // _WIN32
