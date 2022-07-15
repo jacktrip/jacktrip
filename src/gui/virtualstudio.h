@@ -100,6 +100,7 @@ class VirtualStudio : public QObject
 
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
+    void raiseToTop();
 
     bool showFirstRun();
     bool hasRefreshToken();

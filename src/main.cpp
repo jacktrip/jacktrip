@@ -266,6 +266,10 @@ int main(int argc, char* argv[])
 
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> vs;
+#ifdef _WIN32
+    QLocalServer* instanceServer;
+    QLocalSocket* instanceCheckSocket;
+#endif
 #endif
 
 #ifdef Q_OS_MACOS
@@ -323,6 +327,39 @@ int main(int argc, char* argv[])
         set.setValue("shell/open/command/Default",
                      QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
         set.endGroup();
+
+        // Check for existing instance
+        instanceCheckSocket = new QLocalSocket(app.data());
+        // End process if instance exists
+        QObject::connect(instanceCheckSocket, &QLocalSocket::connected, app.data(),
+                         &QCoreApplication::quit, Qt::QueuedConnection);
+        // Create instanceServer to prevent new instances from being created
+        QObject::connect(
+            instanceCheckSocket, &QLocalSocket::errorOccurred, app.data(),
+            [&](QLocalSocket::LocalSocketError socketError) {
+                switch (socketError) {
+                case QLocalSocket::ServerNotFoundError:
+                case QLocalSocket::SocketTimeoutError:
+                case QLocalSocket::ConnectionRefusedError:
+                    instanceServer = new QLocalServer(app.data())
+                                         instanceServer->listen("jacktripExists");
+                    QObject::connect(
+                        instanceServer, &QLocalServer::newConnection, app.data(),
+                        [&]() {
+                            // This is the first instance. Bring it to the top.
+                            vs->raiseToTop();
+                        },
+                        Qt::QueuedConnection);
+                    break;
+                case QLocalSocket::PeerClosedError:
+                    break;
+                default:
+                    qDebug() << instanceCheckSocket->errorString();
+                }
+            },
+            Qt::QueuedConnection);
+        instanceCheckSocket->connectToServer("jacktripExists");
+
 #endif  // _WIN32
         window.reset(new QJackTrip(argc, !deeplink.isEmpty()));
 #else
