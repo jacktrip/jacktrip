@@ -117,6 +117,14 @@ class UdpDataProtocol : public DataProtocol
      */
     virtual int sendPacket(const char* buf, const size_t n);
 
+    /** \brief Obtains the peer address from the first UDP packet received. This address
+     * is used by the SERVER mode to connect back to the client.
+     * \param peerHostAddress QHostAddress to store the peer address
+     * \param port Receiving port
+     */
+    // virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+    //                                            uint16_t& port);
+
     /** \brief Sets the bind port number
      */
     void setBindPort(int port) { mBindPort = port; }

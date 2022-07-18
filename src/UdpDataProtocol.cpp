@@ -378,6 +378,27 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
 }
 
 //*******************************************************************************
+// void UdpDataProtocol::getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+//                                                     uint16_t& port)
+// {
+//     while (!datagramAvailable()) {
+//         msleep(100);
+//     }
+//     char buf[1];
+
+//     struct sockaddr_storage addr;
+//     std::memset(&addr, 0, sizeof(addr));
+//     socklen_t sa_len = sizeof(addr);
+//     ::recvfrom(mSocket, buf, 1, 0, (struct sockaddr*)&addr, &sa_len);
+//     peerHostAddress.setAddress((struct sockaddr*)&addr);
+//     if (mIPv6) {
+//         port = ((struct sockaddr_in6*)&addr)->sin6_port;
+//     } else {
+//         port = ((struct sockaddr_in*)&addr)->sin_port;
+//     }
+// }
+
+//*******************************************************************************
 void UdpDataProtocol::run()
 {
     if (gVerboseFlag)
