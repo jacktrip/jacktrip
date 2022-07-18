@@ -122,8 +122,8 @@ class UdpDataProtocol : public DataProtocol
      * \param peerHostAddress QHostAddress to store the peer address
      * \param port Receiving port
      */
-    virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
-                                               uint16_t& port);
+    // virtual void getPeerAddressFromFirstPacket(QHostAddress& peerHostAddress,
+    //                                            uint16_t& port);
 
     /** \brief Sets the bind port number
      */
