@@ -48,6 +48,8 @@
 
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
+#include <opus.h>
+#include <opus_custom.h>
 #ifdef _WIN32
 //#include <winsock.h>
 #include <winsock2.h>  //cc need SD_SEND
@@ -94,6 +96,23 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     std::memset(&mPeerAddr6, 0, sizeof(mPeerAddr6));
     mPeerAddr.sin_port   = htons(mPeerPort);
     mPeerAddr6.sin6_port = htons(mPeerPort);
+
+    // initialize opus codec
+    int chans = 0;
+    OpusCustomMode *opus_mode = opus_custom_mode_create(48000, 128, NULL );
+    OpusCustomEncoder *mOpusEncoder = NULL;
+    OpusCustomDecoder *mOpusDecoder = NULL;
+    if (mRunMode == RECEIVER) {
+        chans = mJackTrip->getNumOutputChannels();
+        if (chans >= 1) {
+            mOpusDecoder = opus_custom_decoder_create( opus_mode, chans, NULL );
+        }
+    } else {
+        chans = mJackTrip->getNumInputChannels();
+        if (chans >= 1) {
+            mOpusEncoder = opus_custom_encoder_create( opus_mode, chans, NULL );
+        }
+    }
 
     if (mRunMode == RECEIVER) {
         QObject::connect(this, &UdpDataProtocol::signalWaitingTooLong, jacktrip,
@@ -886,6 +905,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
                                            int full_packet_size)
 {
     mJackTrip->readAudioBuffer(mAudioPacket);
+    cout << full_redundant_packet_size << " " << getAudioPacketSizeInBites() / mChans / mSmplSize << endl;
     int8_t* src = mAudioPacket;
     if (1 < mChans) {
         // Convert internal interleaved layout to non-interleaved

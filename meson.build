@@ -76,6 +76,12 @@ else
 	endif
 endif
 
+opus_dep = dependency('opus', required: get_option('opus'))
+if opus_dep.found() == true
+	defines += '-DOPUS'
+	deps += opus_dep
+endif
+
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
 	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')

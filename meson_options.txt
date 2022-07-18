@@ -1,5 +1,6 @@
 option('wair', type : 'boolean', value : 'false', description: 'WAIR')
 option('rtaudio', type : 'feature', value : 'auto', description: 'Build with RtAudio Backend')
+option('opus', type : 'feature', value : 'auto', description: 'Build with OPUS codec')
 option('jack', type : 'feature', value : 'auto', description: 'Build with JACK Backend')
 option('weakjack', type : 'boolean', value : 'false', description: 'Weak link JACK library')
 option('nogui', type : 'boolean', value : 'false', description: 'Build without graphical user interface')

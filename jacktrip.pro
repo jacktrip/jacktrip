@@ -50,6 +50,13 @@ rtaudio|bundled_rtaudio {
   message(Building with RtAudio)
   DEFINES += RT_AUDIO
 }
+
+# configuration with Opus
+opus {
+  message(Building with Opus)
+  DEFINES += OPUS
+}
+
 # Configuration without Jack
 nojack {
   DEFINES += NO_JACK
@@ -73,6 +80,12 @@ nojack {
       PKGCONFIG += jack
     }
   }
+}
+
+opus {
+  # pkg-config is required for building with system-provided rtaudio
+  CONFIG += link_pkgconfig
+  PKGCONFIG += opus
 }
 
 bundled_rtaudio {
