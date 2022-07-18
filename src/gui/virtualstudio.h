@@ -135,6 +135,7 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString debugText();
+    void joinStudio(const QUrl& url);
     void setDebugText(QString text);
 
    public slots:

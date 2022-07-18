@@ -441,6 +441,24 @@ void VirtualStudio::setDebugText(QString text)
     emit debugTextChanged();
 }
 
+void VirtualStudio::joinStudio(const QUrl& url)
+{
+    if (url.scheme() != "jacktrip" || url.path().length() <= 1) {
+        return;
+    }
+    QString targetId = url.path().remove(0, 1);
+    // qDebug() << "target is" << targetId;
+
+    getServerList(true);
+    int i = 0;
+    for (i = 0; i < m_servers.count(); i++) {
+        if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == targetId) {
+            // qDebug() << "found at index" << i;
+            connectToStudio(i);
+        }
+    }
+}
+
 void VirtualStudio::toStandard()
 {
     if (!m_standardWindow.isNull()) {
@@ -825,7 +843,8 @@ void VirtualStudio::exit()
 void VirtualStudio::testUrlScheme()
 {
     qDebug() << "testing url scheme";
-    QDesktopServices::openUrl(QUrl("jacktrip://join", QUrl::TolerantMode));
+    QDesktopServices::openUrl(
+        QUrl("jacktrip://join/745646a0-704b-4ba9-895d-e5f6752dad08", QUrl::TolerantMode));
 }
 
 void VirtualStudio::slotAuthSucceded()

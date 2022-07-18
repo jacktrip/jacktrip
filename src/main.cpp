@@ -382,10 +382,12 @@ int main(int argc, char* argv[])
 
         VsUrlHandler* m_urlHandler = new VsUrlHandler();
         QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
-        QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(), [&]() {
-            qDebug() << "In handler";
-            vs->setDebugText(QStringLiteral("It Worked!"));
-        });
+        QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
+                         [&](const QUrl& url) {
+                             qDebug() << "url found is " << url;
+                             vs->setDebugText(QStringLiteral("It Worked!"));
+                             vs->joinStudio(url);
+                         });
         // Open with any command line-passed url
         QDesktopServices::openUrl(QUrl(deeplink));
 
