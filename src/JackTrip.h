@@ -644,7 +644,6 @@ class JackTrip : public QObject
     DataProtocol* mDataProtocolSender;
     /// Pointer to Abstract Type DataProtocol that receives packets
     DataProtocol* mDataProtocolReceiver;
-
     AudioInterface* mAudioInterface;  ///< Interface to Jack Client
     PacketHeader* mPacketHeader;      ///< Pointer to Packet Header
     underrunModeT mUnderRunMode;      ///< underrunModeT Mode

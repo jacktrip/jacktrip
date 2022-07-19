@@ -476,7 +476,6 @@ void JackTrip::startProcess(
     // cc redundant with instance creator  createHeader(mPacketHeaderType); next line
     // fixme
     createHeader(mPacketHeaderType);
-
     setupDataProtocol();
     setupRingBuffers();
     // Connect Signals and Slots

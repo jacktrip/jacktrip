@@ -35,13 +35,13 @@
  * \date July 2022
  */
 
+#include <QAbstractSocket>
+#include <QDateTime>
+#include <QMutex>
 #include <QObject>
 #include <QTimer>
-#include <QDateTime>
-#include <QWebSocket>
-#include <QAbstractSocket>
 #include <QUrl>
-#include <QMutex>
+#include <QWebSocket>
 #include <atomic>
 #include <stdexcept>
 #include <vector>
@@ -53,27 +53,30 @@ class VsPing : public QObject
 {
     Q_OBJECT;
 
-  public:
-
+   public:
     VsPing(uint32_t pingNum, uint32_t timeout_msec);
     uint32_t pingNumber() { return mPingNumber; }
 
-    void setSentTimestamp(QDateTime time) { mSent = time; }
     QDateTime sentTimestamp() { return mSent; }
-
-    void setReceivedTimestamp(QDateTime time) { mReceived = time; } 
     QDateTime receivedTimestamp() { return mReceived; }
+    bool receivedReply() { return mReceivedReply; }
+    bool timedOut() { return mTimedOut; }
 
-  private:
+    void send();
+    void receive();
+
+   private:
     uint32_t mPingNumber;
     QDateTime mSent;
     QDateTime mReceived;
 
     QTimer mTimer;
-  
-  public slots:
+    bool mTimedOut      = false;
+    bool mReceivedReply = false;
+
+   public slots:
     void onTimeout();
 
-  signals:
+   signals:
     void timeout(uint32_t pingNum);
 };

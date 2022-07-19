@@ -37,10 +37,10 @@
 
 #include "vsPinger.h"
 
+#include <QDateTime>
 #include <QHostInfo>
 #include <QString>
 #include <QTimer>
-#include <QDateTime>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -55,7 +55,8 @@ using std::endl;
 // because some functions (like exit()) get confused with QT functions
 
 //*******************************************************************************
-VsPinger::VsPinger(QString scheme, QString host, QString path, QString token) : mToken(token)
+VsPinger::VsPinger(QString scheme, QString host, QString path, QString token)
+    : mToken(token)
 {
     mURL.setScheme(scheme);
     mURL.setHost(host);
@@ -63,9 +64,11 @@ VsPinger::VsPinger(QString scheme, QString host, QString path, QString token) : 
 
     mTimer.setTimerType(Qt::PreciseTimer);
 
-    connect(&mSocket, &QWebSocket::binaryMessageReceived, this, &VsPinger::receivePingMessage);
+    connect(&mSocket, &QWebSocket::binaryMessageReceived, this,
+            &VsPinger::receivePingMessage);
     connect(&mSocket, &QWebSocket::connected, this, &VsPinger::connected);
-    connect(&mSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this, &VsPinger::onError);
+    connect(&mSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+            this, &VsPinger::onError);
     connect(&mTimer, &QTimer::timeout, this, &VsPinger::onPingTimer);
 }
 
@@ -74,7 +77,7 @@ void VsPinger::start()
 {
     mTimer.setInterval(mPingInterval);
 
-    QString authVal     = "Bearer ";
+    QString authVal = "Bearer ";
     authVal.append(mToken);
 
     QNetworkRequest req = QNetworkRequest(QUrl(mURL));
@@ -95,7 +98,7 @@ void VsPinger::stop()
 }
 
 //*******************************************************************************
-void VsPinger::sendPingMessage(const QByteArray &message)
+void VsPinger::sendPingMessage(const QByteArray& message)
 {
     mSocket.sendBinaryMessage(message);
 }
@@ -103,12 +106,90 @@ void VsPinger::sendPingMessage(const QByteArray &message)
 //*******************************************************************************
 void VsPinger::updateStats()
 {
+    PingStat stat;
+    stat.packetsReceived = 0;
+    stat.packetsSent     = 0;
+
+    uint32_t count = 0;
+
+    std::vector<uint32_t> vec_expired;
+    std::vector<qint64> vec_rtt;
+    std::map<uint32_t, VsPing*>::reverse_iterator it;
+    for (it = mPings.rbegin(); it != mPings.rend(); ++it) {
+        VsPing* ping = it->second;
+
+        // Only include in statistics pings that have timed out or been received.
+        // All others are pending and are not considered in statistics
+        if (ping->timedOut() || ping->receivedReply()) {
+            stat.packetsSent++;
+            if (ping->receivedReply()) {
+                stat.packetsReceived++;
+            }
+
+            QDateTime sent     = ping->sentTimestamp();
+            QDateTime received = ping->receivedTimestamp();
+            qint64 diff        = sent.msecsTo(received);
+            vec_rtt.push_back(diff);
+
+            count++;
+        } else {
+            continue;
+        }
+
+        // mark this ping as ready to delete, since it will no longer be used in stats
+        if (count > mPingNumPerInterval) {
+            vec_expired.push_back(ping->pingNumber());
+        }
+    }
+
+    // Update RTT stats
+    double min_rtt    = std::numeric_limits<qint64>::max();
+    double max_rtt    = std::numeric_limits<qint64>::min();
+    double avg_rtt    = 0;
+    double stddev_rtt = 0;
+    for (std::vector<qint64>::iterator it_rtt = vec_rtt.begin(); it_rtt != vec_rtt.end();
+         it_rtt++) {
+        double rtt = (double)*it_rtt;
+        if (rtt < min_rtt) {
+            min_rtt = rtt;
+        }
+        if (rtt > max_rtt) {
+            max_rtt = rtt;
+        }
+
+        avg_rtt += rtt / vec_rtt.size();
+    }
+
+    for (std::vector<qint64>::iterator it_rtt = vec_rtt.begin(); it_rtt != vec_rtt.end();
+         it_rtt++) {
+        double rtt = (double)*it_rtt;
+        stddev_rtt += (rtt - avg_rtt) * (rtt - avg_rtt);
+    }
+    stddev_rtt /= vec_rtt.size();
+
+    stat.maxRtt    = max_rtt;
+    stat.minRtt    = min_rtt;
+    stat.avgRtt    = avg_rtt;
+    stat.stdDevRtt = stddev_rtt;
+
+    // Deleted pings marked as expired by freeing the Ping object and clearing the map
+    // item
+    for (std::vector<uint32_t>::iterator it_expired = vec_expired.begin();
+         it_expired != vec_expired.end(); it_expired++) {
+        uint32_t expiredPingNum = *it_expired;
+        delete mPings.at(expiredPingNum);
+        mPings.erase(expiredPingNum);
+    }
+
+    // Update mStats
+    mStats = stat;
+    return;
 }
 
 //*******************************************************************************
-bool VsPinger::getPingStats(VsPinger::PingStat* stat)
+VsPinger::PingStat VsPinger::getPingStats()
 {
-    return true;
+    return mStats;
 }
 
 //*******************************************************************************
@@ -131,11 +212,11 @@ void VsPinger::onPingTimer()
     updateStats();
 
     QByteArray bytes = QByteArray::number(mPingCount);
-    QDateTime now = QDateTime::currentDateTime();
+    QDateTime now    = QDateTime::currentDateTime();
     this->sendPingMessage(bytes);
 
-    VsPing *ping = new VsPing(mPingCount, mPingInterval);
-    ping->setSentTimestamp(now);
+    VsPing* ping = new VsPing(mPingCount, mPingInterval);
+    ping->send();
     mPings[mPingCount] = ping;
 
     connect(ping, &VsPing::timeout, this, &VsPinger::onPingTimeout);
@@ -148,27 +229,39 @@ void VsPinger::onPingTimer()
 void VsPinger::onPingTimeout(uint32_t pingNum)
 {
     std::map<uint32_t, VsPing*>::iterator it = mPings.find(pingNum);
-
     if (it == mPings.end()) {
         return;
     }
 
-    delete (*it).second;
     updateStats();
 }
 
 //*******************************************************************************
-void VsPinger::receivePingMessage(const QByteArray &message)
+void VsPinger::receivePingMessage(const QByteArray& message)
 {
-    QDateTime now = QDateTime::currentDateTime();
+    QDateTime now    = QDateTime::currentDateTime();
     uint32_t pingNum = message.toUInt();
-    std::map<uint32_t, VsPing*>::iterator it = mPings.find(pingNum);
 
+    // locate the appropriate corresponding ping message
+    std::map<uint32_t, VsPing*>::iterator it = mPings.find(pingNum);
     if (it == mPings.end()) {
         return;
     }
 
-    (*it).second->setReceivedTimestamp(now);
-    mLastPacketReceived = pingNum;
+    VsPing* ping = (*it).second;
+
+    // do not apply to pings that have timed out
+    if (!ping->timedOut()) {
+        // update ping data
+        ping->receive();
+
+        // update vsPinger
+        mHasReceivedPing    = true;
+        mLastPacketReceived = pingNum;
+        if (pingNum > mLargestPingNumReceived) {
+            mLargestPingNumReceived = pingNum;
+        }
+    }
+
     updateStats();
 }

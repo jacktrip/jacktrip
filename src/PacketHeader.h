@@ -101,17 +101,6 @@ struct JamLinkHeaderStuct : public HeaderStruct {
     uint32_t TimeStamp;  ///< Time Stamp
 };
 
-
-/// \brief ICMP Header Struct
-struct IcmpHeaderStruct : public HeaderStruct {
-  public:
-    // watch out for alignment...
-    uint8_t Type;       ///< ICMP Message type
-    uint8_t Code;       ///< ICMP Message subtype
-    uint16_t CheckSum;  ///< Internet checksum (RFC 1071) for error checking
-    uint32_t RestOfHeader; ///< Rest of ICMP Header, function depends on type and code
-};
-
 //#######################################################################
 //####################### PacketHeader ##################################
 //#######################################################################
@@ -285,66 +274,7 @@ class JamLinkHeader : public PacketHeader
 };
 
 //#######################################################################
-//####################### IcmpHeader ####################################
-//#######################################################################
-
-/** \brief ICMP Header
- */
-class IcmpHeader : public PacketHeader
-{
-    Q_OBJECT
-
-   public:
-    IcmpHeader(JackTrip* jacktrip);
-    virtual ~IcmpHeader() {}
-
-    virtual void fillHeaderCommonFromAudio() override {}
-    virtual void parseHeader() override {}
-    virtual bool checkPeerSettings(int8_t* /*full_packet*/) override { return true; }
-    virtual void increaseSequenceNumber() override {}
-    virtual int getHeaderSizeInBytes() const override { return 0; }
-
-    virtual uint64_t getPeerTimeStamp(int8_t* /*full_packet*/) const override
-    {
-        return 0;
-    }
-    virtual uint16_t getPeerSequenceNumber(int8_t* /*full_packet*/) const override
-    {
-        return 0;
-    }
-    virtual uint16_t getPeerBufferSize(int8_t* /*full_packet*/) const override
-    {
-        return 0;
-    }
-    virtual uint8_t getPeerSamplingRate(int8_t* /*full_packet*/) const override
-    {
-        return 0;
-    }
-    virtual uint8_t getPeerBitResolution(int8_t* /*full_packet*/) const override
-    {
-        return 0;
-    }
-    uint8_t getPeerNumIncomingChannels(int8_t* /*full_packet*/) const override
-    {
-        return 0;
-    }
-    uint8_t getPeerNumOutgoingChannels(int8_t* /*full_packet*/) const override
-    {
-        return 0;
-    }
-
-    virtual void putHeaderInPacket(int8_t* full_packet) override
-    {
-        putHeaderInPacketBaseClass(full_packet, mHeader);
-    }
-
-   private:
-    IcmpHeaderStruct mHeader;  ///< ICMP Header Struct
-};
-
-
-//#######################################################################
-//####################### EmptyHeader ###################################
+//####################### EmptyHeader #################################
 //#######################################################################
 
 /** \brief Empty Header to use with systems that don't include a header.

@@ -600,7 +600,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
             QString expiration =
                 QDateTime::currentDateTimeUtc().addSecs(60 * 60).toString(Qt::ISODate);
             QJsonObject json      = {{QLatin1String("enabled"), true},
-                                {QLatin1String("expiresAt"), expiration}};
+                                  {QLatin1String("expiresAt"), expiration}};
             QJsonDocument request = QJsonDocument(json);
 
             QNetworkReply* reply = m_authenticator->put(
@@ -1068,7 +1068,8 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                     serverInfo->setQueueBuffer(
                         servers.at(i)[QStringLiteral("queueBuffer")].toInt());
                     serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
-                    serverInfo->setSessionId(servers.at(i)[QStringLiteral("sessionId")].toString());
+                    serverInfo->setSessionId(
+                        servers.at(i)[QStringLiteral("sessionId")].toString());
                     if (servers.at(i)[QStringLiteral("owner")].toBool()) {
                         yourServers.append(serverInfo);
                         serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);

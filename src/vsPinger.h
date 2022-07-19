@@ -35,13 +35,13 @@
  * \date July 2022
  */
 
+#include <QAbstractSocket>
+#include <QDateTime>
+#include <QMutex>
 #include <QObject>
 #include <QTimer>
-#include <QDateTime>
-#include <QWebSocket>
-#include <QAbstractSocket>
 #include <QUrl>
-#include <QMutex>
+#include <QWebSocket>
 #include <atomic>
 #include <stdexcept>
 #include <vector>
@@ -56,7 +56,7 @@ class VsPinger : public QObject
 {
     Q_OBJECT;
 
-  public:
+   public:
     /** \brief The class constructor
      * \param scheme The protocol scheme for the pinger
      * \param host The hostname of the server
@@ -75,49 +75,39 @@ class VsPinger : public QObject
         double stdDevRtt;
     };
 
-    bool getPingStats(PingStat*);
-    bool resetPingStats(PingStat*) { return false; }
+    PingStat getPingStats();
 
-  private:
-    
+   private:
     QWebSocket mSocket;
     QUrl mURL;
     QString mToken;
     bool mStarted = false;
 
-
     QTimer mTimer;
-    uint32_t mPingCount = 0;
+    uint32_t mPingCount                = 0;
     const uint32_t mPingNumPerInterval = 5;
-    const uint32_t mPingInterval = 1000;
-    const uint32_t mPingTimeout = 1000;
-
-
-    // struct PingData {
-    //     QDateTime sent;
-    //     QDateTime received;
-    // };
+    const uint32_t mPingInterval       = 1000;
+    const uint32_t mPingTimeout        = 1000;
 
     std::map<uint32_t, VsPing*> mPings;
 
-    // std::map<uint32_t, QTimer> mPingTimers;
-
     uint32_t mLastPacketSent;
     uint32_t mLastPacketReceived;
+    uint32_t mLargestPingNumReceived =
+        0;  // is 0 if no ping has been received, otherwise, is the largest ping number
+            // received
+    bool mHasReceivedPing = false;  // used for edge case where we have't received a ping
+                                    // yet (mLargestPingNumReceived = 0)
 
+    PingStat mStats;
 
-    QMutex mPingStatMutex;
-    std::vector<double> mRttVector;
-    uint32_t mReceivedCount;
-    uint32_t mSentCount;
-
-    void sendPingMessage(const QByteArray &message);
+    void sendPingMessage(const QByteArray& message);
     void updateStats();
-  
-  private slots:
+
+   private slots:
     void onError(QAbstractSocket::SocketError error);
     void connected();
     void onPingTimer();
     void onPingTimeout(uint32_t pingNum);
-    void receivePingMessage(const QByteArray &message);
+    void receivePingMessage(const QByteArray& message);
 };

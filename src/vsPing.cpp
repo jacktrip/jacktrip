@@ -35,17 +35,17 @@
  * \date July 2022
  */
 
-#include "vsPinger.h"
-
+#include <QDateTime>
 #include <QHostInfo>
 #include <QString>
 #include <QTimer>
-#include <QDateTime>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
+
+#include "vsPinger.h"
 
 using std::cout;
 using std::endl;
@@ -55,8 +55,8 @@ using std::endl;
 // because some functions (like exit()) get confused with QT functions
 
 //*******************************************************************************
-VsPing::VsPing(uint32_t pingNum, uint32_t timeout_msec) : mPingNumber(pingNum) {
-
+VsPing::VsPing(uint32_t pingNum, uint32_t timeout_msec) : mPingNumber(pingNum)
+{
     connect(&mTimer, &QTimer::timeout, this, &VsPing::onTimeout);
 
     mTimer.setTimerType(Qt::PreciseTimer);
@@ -65,8 +65,26 @@ VsPing::VsPing(uint32_t pingNum, uint32_t timeout_msec) : mPingNumber(pingNum) {
     mTimer.start();
 }
 
-void VsPing::onTimeout() {
-    emit timeout(mPingNumber);
+void VsPing::send()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    mSent         = now;
 }
 
+void VsPing::receive()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    if (!mTimedOut) {
+        mTimer.stop();
+        mReceivedReply = true;
+        mReceived      = now;
+    }
+}
 
+void VsPing::onTimeout()
+{
+    if (!mReceivedReply) {
+        mTimedOut = true;
+        emit timeout(mPingNumber);
+    }
+}

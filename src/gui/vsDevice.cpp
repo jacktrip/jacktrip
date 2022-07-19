@@ -36,6 +36,7 @@
  */
 
 #include "vsDevice.h"
+
 #include <QCryptographicHash>
 #include <QDebug>
 
@@ -175,6 +176,21 @@ void VsDevice::sendHeartbeat()
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
     };
+
+    // Add stats to heartbeat body
+    if (m_pinger != nullptr) {
+        VsPinger::PingStat stats = m_pinger->getPingStats();
+
+        // API server expects RTTs to be in nanoseconds, so we must convert
+        // from milliseconds to nanoseconds
+        json.insert(QLatin1String("pkts_sent"), (int)stats.packetsSent);
+        json.insert(QLatin1String("pkts_recv"), (int)stats.packetsReceived);
+        json.insert(QLatin1String("min_rtt"), stats.minRtt * 1000000);
+        json.insert(QLatin1String("max_rtt"), stats.maxRtt * 1000000);
+        json.insert(QLatin1String("avg_rtt"), stats.avgRtt * 1000000);
+        json.insert(QLatin1String("stddev_rtt"), stats.stdDevRtt * 1000000);
+    }
+
     QJsonDocument request = QJsonDocument(json);
 
     if (m_webSocket->isValid()) {
@@ -296,17 +312,18 @@ void VsDevice::reconcileAgentConfig(QJsonDocument newState)
     }
 }
 
-// initPinger intializes the pinger used to generate network latency statistics for Virtual Studio
+// initPinger intializes the pinger used to generate network latency statistics for
+// Virtual Studio
 VsPinger* VsDevice::initPinger(VsServerInfo* studioInfo)
 {
-    QString id = studioInfo->id();
+    QString id        = studioInfo->id();
     QString sessionId = studioInfo->sessionId();
-    QString token = VsDevice::authToken(id, sessionId);
-    QString host = studioInfo->sessionId();
+    QString token     = VsDevice::authToken(id, sessionId);
+    QString host      = studioInfo->sessionId();
     host.append(QString::fromStdString(".jacktrip.cloud"));
 
-    m_pinger = new VsPinger(QString::fromStdString("wss"),
-                host, QString::fromStdString("/ping"), token);
+    m_pinger = new VsPinger(QString::fromStdString("wss"), host,
+                            QString::fromStdString("/ping"), token);
 }
 
 // startPinger starts the Virtual Studio pinger
@@ -461,6 +478,6 @@ QString VsDevice::authToken(const QString& id, const QString& sessionId)
     hash.addData(data.toUtf8());
 
     QByteArray result = hash.result();
-    QString token = QString(result.toHex());
+    QString token     = QString(result.toHex());
     return token;
 }
