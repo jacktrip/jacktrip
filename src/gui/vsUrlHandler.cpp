@@ -44,5 +44,5 @@ void VsUrlHandler::handleUrl(const QUrl& url)
 {
     qDebug() << "got URL in url handler";
     qDebug() << url.toString();
-    emit joinUrlClicked();
+    emit joinUrlClicked(url);
 }

@@ -114,7 +114,9 @@ Rectangle {
         onAuthFailed: {
             loginScreen.failTextVisible = true;
         }
-        // onConnected: { }
+        onConnected: {
+            window.state = "connected";
+        }
         onDisconnected: {
             window.state = "browse";
         }
