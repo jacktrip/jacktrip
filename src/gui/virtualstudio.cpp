@@ -441,22 +441,33 @@ void VirtualStudio::setDebugText(QString text)
     emit debugTextChanged();
 }
 
+QString VirtualStudio::failedMessage()
+{
+    return m_failedMessage;
+}
+
 void VirtualStudio::joinStudio(const QUrl& url)
 {
+    m_failedMessage = "";
     if (url.scheme() != "jacktrip" || url.path().length() <= 1) {
+        m_failedMessage = "Invalid join request received: " + url.toString();
+        emit failedMessageChanged();
+        emit failed();
         return;
     }
     QString targetId = url.path().remove(0, 1);
-    // qDebug() << "target is" << targetId;
 
-    getServerList(true);
+    getServerList(false);
     int i = 0;
     for (i = 0; i < m_servers.count(); i++) {
         if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == targetId) {
-            // qDebug() << "found at index" << i;
             connectToStudio(i);
+            return;
         }
     }
+    m_failedMessage = "Unable to find studio " + targetId;
+    emit failedMessageChanged();
+    emit failed();
 }
 
 void VirtualStudio::toStandard()

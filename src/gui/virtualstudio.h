@@ -93,6 +93,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(
         QString debugText READ debugText WRITE setDebugText NOTIFY debugTextChanged)
+    Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -135,6 +136,7 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString debugText();
+    QString failedMessage();
     void joinStudio(const QUrl& url);
     void setDebugText(QString text);
 
@@ -159,6 +161,7 @@ class VirtualStudio : public QObject
    signals:
     void authSucceeded();
     void authFailed();
+    void failed();
     void connected();
     void disconnected();
     void refreshFinished(int index);
@@ -182,6 +185,7 @@ class VirtualStudio : public QObject
     void signalExit();
     void periodicRefresh();
     void debugTextChanged();
+    void failedMessageChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -253,8 +257,9 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
-    bool m_darkMode     = false;
-    QString m_debugText = "";
+    bool m_darkMode         = false;
+    QString m_debugText     = "";
+    QString m_failedMessage = "";
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
