@@ -35,16 +35,15 @@
  * \date July 2022
  */
 
+#ifndef VSPING_H
+#define VSPING_H
+
 #include <QAbstractSocket>
 #include <QDateTime>
-#include <QMutex>
 #include <QObject>
 #include <QTimer>
-#include <QUrl>
-#include <QWebSocket>
-#include <atomic>
+#include <QtWebSockets>
 #include <stdexcept>
-#include <vector>
 
 /** \brief A helper class for VsPinger
  *
@@ -54,7 +53,7 @@ class VsPing : public QObject
     Q_OBJECT;
 
    public:
-    VsPing(uint32_t pingNum, uint32_t timeout_msec);
+    explicit VsPing(uint32_t pingNum, uint32_t timeout_msec);
     uint32_t pingNumber() { return mPingNumber; }
 
     QDateTime sentTimestamp() { return mSent; }
@@ -80,3 +79,5 @@ class VsPing : public QObject
    signals:
     void timeout(uint32_t pingNum);
 };
+
+#endif  // VSPING_H

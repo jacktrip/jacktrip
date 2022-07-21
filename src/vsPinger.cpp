@@ -37,15 +37,7 @@
 
 #include "vsPinger.h"
 
-#include <QDateTime>
-#include <QHostInfo>
-#include <QString>
-#include <QTimer>
-#include <cerrno>
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
-#include <stdexcept>
 
 using std::cout;
 using std::endl;
@@ -55,8 +47,7 @@ using std::endl;
 // because some functions (like exit()) get confused with QT functions
 
 //*******************************************************************************
-VsPinger::VsPinger(QString scheme, QString host, QString path, QString token)
-    : mToken(token)
+VsPinger::VsPinger(QString scheme, QString host, QString path)
 {
     mURL.setScheme(scheme);
     mURL.setHost(host);
@@ -98,9 +89,25 @@ void VsPinger::stop()
 }
 
 //*******************************************************************************
+void VsPinger::setToken(QString token)
+{
+    mToken      = token;
+    mAuthorized = true;
+};
+
+//*******************************************************************************
+void VsPinger::clearToken()
+{
+    mToken      = QString();
+    mAuthorized = false;
+}
+
+//*******************************************************************************
 void VsPinger::sendPingMessage(const QByteArray& message)
 {
-    mSocket.sendBinaryMessage(message);
+    if (mAuthorized) {
+        mSocket.sendBinaryMessage(message);
+    }
 }
 
 //*******************************************************************************
@@ -118,9 +125,13 @@ void VsPinger::updateStats()
     for (it = mPings.rbegin(); it != mPings.rend(); ++it) {
         VsPing* ping = it->second;
 
-        // Only include in statistics pings that have timed out or been received.
-        // All others are pending and are not considered in statistics
-        if (ping->timedOut() || ping->receivedReply()) {
+        // mark this ping as ready to delete, since it will no longer be used in stats
+        if (count >= mPingNumPerInterval) {
+            vec_expired.push_back(ping->pingNumber());
+            count++;
+        } else if (ping->timedOut() || ping->receivedReply()) {
+            // Only include in statistics pings that have timed out or been received.
+            // All others are pending and are not considered in statistics
             stat.packetsSent++;
             if (ping->receivedReply()) {
                 stat.packetsReceived++;
@@ -132,13 +143,6 @@ void VsPinger::updateStats()
             vec_rtt.push_back(diff);
 
             count++;
-        } else {
-            continue;
-        }
-
-        // mark this ping as ready to delete, since it will no longer be used in stats
-        if (count > mPingNumPerInterval) {
-            vec_expired.push_back(ping->pingNumber());
         }
     }
 
@@ -166,6 +170,7 @@ void VsPinger::updateStats()
         stddev_rtt += (rtt - avg_rtt) * (rtt - avg_rtt);
     }
     stddev_rtt /= vec_rtt.size();
+    stddev_rtt = sqrt(stddev_rtt);
 
     stat.maxRtt    = max_rtt;
     stat.minRtt    = min_rtt;

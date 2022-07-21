@@ -600,7 +600,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
             QString expiration =
                 QDateTime::currentDateTimeUtc().addSecs(60 * 60).toString(Qt::ISODate);
             QJsonObject json      = {{QLatin1String("enabled"), true},
-                                  {QLatin1String("expiresAt"), expiration}};
+                                {QLatin1String("expiresAt"), expiration}};
             QJsonDocument request = QJsonDocument(json);
 
             QNetworkReply* reply = m_authenticator->put(
@@ -673,8 +673,7 @@ void VirtualStudio::completeConnection()
                          Qt::QueuedConnection);
 
         m_device->startJackTrip();
-        m_device->initPinger(studioInfo);
-        m_device->startPinger();
+        m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
         m_connectionState = QStringLiteral("JackTrip Error");

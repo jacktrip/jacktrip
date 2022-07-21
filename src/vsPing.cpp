@@ -35,17 +35,9 @@
  * \date July 2022
  */
 
-#include <QDateTime>
-#include <QHostInfo>
-#include <QString>
-#include <QTimer>
-#include <cerrno>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <stdexcept>
+#include "vsPing.h"
 
-#include "vsPinger.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

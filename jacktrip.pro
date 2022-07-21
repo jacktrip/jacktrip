@@ -218,8 +218,6 @@ HEADERS += src/DataProtocol.h \
            src/RingBufferWavetable.h \
            src/Settings.h \
            src/UdpDataProtocol.h \
-           src/vsPinger.h \
-           src/vsPing.h \
            src/UdpHubListener.h \
            src/AudioInterface.h \
            src/compressordsp.h \
@@ -245,7 +243,9 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsDevice.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
-               src/gui/vsWebSocket.h
+               src/gui/vsWebSocket.h \
+               src/vsPinger.h \
+               src/vsPing.h
   }
   !noupdater {
     HEADERS += src/dblsqd/feed.h \
@@ -274,8 +274,6 @@ SOURCES += src/DataProtocol.cpp \
            src/RingBuffer.cpp \
            src/Settings.cpp \
            src/UdpDataProtocol.cpp \
-           src/vsPinger.cpp \
-           src/vsPing.cpp \
            src/UdpHubListener.cpp \
            src/AudioInterface.cpp \
            src/main.cpp \
@@ -299,7 +297,9 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsDevice.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
-               src/gui/vsWebSocket.cpp
+               src/gui/vsWebSocket.cpp \
+               src/vsPinger.cpp \
+               src/vsPing.cpp \
   }
   !noupdater {
     SOURCES += src/dblsqd/feed.cpp \

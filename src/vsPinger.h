@@ -35,14 +35,15 @@
  * \date July 2022
  */
 
+#ifndef VSPINGER_H
+#define VSPINGER_H
+
 #include <QAbstractSocket>
 #include <QDateTime>
-#include <QMutex>
 #include <QObject>
 #include <QTimer>
 #include <QUrl>
-#include <QWebSocket>
-#include <atomic>
+#include <QtWebSockets>
 #include <stdexcept>
 #include <vector>
 
@@ -62,9 +63,12 @@ class VsPinger : public QObject
      * \param host The hostname of the server
      * \param path The path to ping the server on
      */
-    VsPinger(QString scheme, QString host, QString path, QString token);
+    explicit VsPinger(QString scheme, QString host, QString path);
     void start();
     void stop();
+    bool active() { return mStarted; };
+    void setToken(QString token);
+    void clearToken();
 
     struct PingStat {
         uint32_t packetsReceived;
@@ -81,7 +85,8 @@ class VsPinger : public QObject
     QWebSocket mSocket;
     QUrl mURL;
     QString mToken;
-    bool mStarted = false;
+    bool mAuthorized = false;
+    bool mStarted    = false;
 
     QTimer mTimer;
     uint32_t mPingCount                = 0;
@@ -111,3 +116,5 @@ class VsPinger : public QObject
     void onPingTimeout(uint32_t pingNum);
     void receivePingMessage(const QByteArray& message);
 };
+
+#endif  // VSPINGER_H

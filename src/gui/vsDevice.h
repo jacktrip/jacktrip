@@ -70,8 +70,7 @@ class VsDevice : public QObject
     void stopJackTrip();
     void reconcileAgentConfig(QJsonDocument newState);
 
-    VsPinger* initPinger(VsServerInfo* studioInfo);
-    void startPinger();
+    VsPinger* startPinger(VsServerInfo* studioInfo);
     void stopPinger();
 
    private slots:
@@ -82,7 +81,6 @@ class VsDevice : public QObject
     void registerJTAsDevice();
     bool enabled();
     QString randomString(int stringLength);
-    QString authToken(const QString& id, const QString& sessionId);
 
     VsPinger* m_pinger = NULL;
 
