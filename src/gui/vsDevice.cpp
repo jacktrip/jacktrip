@@ -37,7 +37,6 @@
 
 #include "vsDevice.h"
 
-#include <QCryptographicHash>
 #include <QDebug>
 
 // Constructor
@@ -319,13 +318,14 @@ void VsDevice::reconcileAgentConfig(QJsonDocument newState)
 // Virtual Studio
 VsPinger* VsDevice::startPinger(VsServerInfo* studioInfo)
 {
-    QString id        = studioInfo->id();
-    QString sessionId = studioInfo->sessionId();
-    QString host      = studioInfo->sessionId();
+    QString id   = studioInfo->id();
+    QString host = studioInfo->sessionId();
     host.append(QString::fromStdString(".jacktrip.cloud"));
 
     m_pinger = new VsPinger(QString::fromStdString("wss"), host,
                             QString::fromStdString("/ping"));
+
+    return m_pinger;
 }
 
 // stopPinger stops the Virtual Studio pinger

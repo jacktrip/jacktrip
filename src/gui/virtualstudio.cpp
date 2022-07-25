@@ -717,6 +717,8 @@ void VirtualStudio::disconnect()
                 stopStudio();
             }
         }
+
+        m_device->stopPinger();
         m_device->stopJackTrip();
     } else if (m_startedStudio) {
         m_startTimer.stop();
@@ -781,6 +783,7 @@ void VirtualStudio::exit()
         m_isExiting = true;
 
         if (m_device != nullptr) {
+            m_device->stopPinger();
             m_device->stopJackTrip();
         }
 
