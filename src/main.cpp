@@ -385,7 +385,7 @@ int main(int argc, char* argv[])
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
                          [&](const QUrl& url) {
                              qDebug() << "url found is " << url;
-                             vs->setDebugText(QStringLiteral("It Worked!"));
+                             vs->setDebugText(url.toString());
                              vs->joinStudio(url);
                          });
         // Open with any command line-passed url
