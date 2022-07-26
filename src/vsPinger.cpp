@@ -56,8 +56,8 @@ VsPinger::VsPinger(QString scheme, QString host, QString path)
     mTimer.setTimerType(Qt::PreciseTimer);
 
     connect(&mSocket, &QWebSocket::binaryMessageReceived, this,
-            &VsPinger::receivePingMessage);
-    connect(&mSocket, &QWebSocket::connected, this, &VsPinger::connected);
+            &VsPinger::onReceivePingMessage);
+    connect(&mSocket, &QWebSocket::connected, this, &VsPinger::onConnected);
     connect(&mSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
             this, &VsPinger::onError);
     connect(&mTimer, &QTimer::timeout, this, &VsPinger::onPingTimer);
@@ -66,6 +66,12 @@ VsPinger::VsPinger(QString scheme, QString host, QString path)
 //*******************************************************************************
 void VsPinger::start()
 {
+    // fail to start if no token is supplied
+    if (mToken.toStdString() == "") {
+        std::cout << "Error: auth token is not set" << std::endl;
+        return;
+    }
+
     mTimer.setInterval(mPingInterval);
 
     QString authVal = "Bearer ";
@@ -84,6 +90,7 @@ void VsPinger::start()
 void VsPinger::stop()
 {
     mStarted = false;
+    mError   = false;
     mTimer.stop();
     mSocket.close(QWebSocketProtocol::CloseCodeNormal, NULL);
 }
@@ -91,13 +98,23 @@ void VsPinger::stop()
 //*******************************************************************************
 void VsPinger::setToken(QString token)
 {
+    if (mStarted) {
+        std::cout << "Error: cannot set token while pinger is active." << std::endl;
+        return;
+    }
+
     mToken      = token;
     mAuthorized = true;
 };
 
 //*******************************************************************************
-void VsPinger::clearToken()
+void VsPinger::unsetToken()
 {
+    if (mStarted) {
+        std::cout << "Error: cannot unset token while pinger is active." << std::endl;
+        return;
+    }
+
     mToken      = QString();
     mAuthorized = false;
 }
@@ -105,7 +122,7 @@ void VsPinger::clearToken()
 //*******************************************************************************
 void VsPinger::sendPingMessage(const QByteArray& message)
 {
-    if (mAuthorized) {
+    if (mAuthorized && !mError) {
         mSocket.sendBinaryMessage(message);
     }
 }
@@ -201,13 +218,15 @@ VsPinger::PingStat VsPinger::getPingStats()
 void VsPinger::onError(QAbstractSocket::SocketError error)
 {
     cout << "WebSocket Error: " << error << endl;
+    mError   = true;
     mStarted = false;
     mTimer.stop();
 }
 
 //*******************************************************************************
-void VsPinger::connected()
+void VsPinger::onConnected()
 {
+    // start the ping timer after the connection is established
     mTimer.start();
 }
 
@@ -242,7 +261,7 @@ void VsPinger::onPingTimeout(uint32_t pingNum)
 }
 
 //*******************************************************************************
-void VsPinger::receivePingMessage(const QByteArray& message)
+void VsPinger::onReceivePingMessage(const QByteArray& message)
 {
     QDateTime now    = QDateTime::currentDateTime();
     uint32_t pingNum = message.toUInt();

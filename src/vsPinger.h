@@ -68,7 +68,7 @@ class VsPinger : public QObject
     void stop();
     bool active() { return mStarted; };
     void setToken(QString token);
-    void clearToken();
+    void unsetToken();
 
     struct PingStat {
         uint32_t packetsReceived;
@@ -87,6 +87,7 @@ class VsPinger : public QObject
     QString mToken;
     bool mAuthorized = false;
     bool mStarted    = false;
+    bool mError      = false;
 
     QTimer mTimer;
     uint32_t mPingCount                = 0;
@@ -111,10 +112,10 @@ class VsPinger : public QObject
 
    private slots:
     void onError(QAbstractSocket::SocketError error);
-    void connected();
+    void onConnected();
     void onPingTimer();
     void onPingTimeout(uint32_t pingNum);
-    void receivePingMessage(const QByteArray& message);
+    void onReceivePingMessage(const QByteArray& message);
 };
 
 #endif  // VSPINGER_H

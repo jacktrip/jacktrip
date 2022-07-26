@@ -331,7 +331,10 @@ VsPinger* VsDevice::startPinger(VsServerInfo* studioInfo)
 // stopPinger stops the Virtual Studio pinger
 void VsDevice::stopPinger()
 {
-    m_pinger->stop();
+    if (m_pinger != nullptr) {
+        m_pinger->stop();
+        m_pinger->unsetToken();
+    }
 }
 
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals
