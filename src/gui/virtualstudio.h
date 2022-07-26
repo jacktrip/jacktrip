@@ -129,6 +129,8 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    QUrl studioToJoin();
+    void setStudioToJoin(const QUrl& url);
     bool showDeviceSetup();
     void setShowDeviceSetup(bool show);
     bool showWarnings();
@@ -137,7 +139,6 @@ class VirtualStudio : public QObject
     bool psiBuild();
     QString debugText();
     QString failedMessage();
-    void joinStudio(const QUrl& url);
     void setDebugText(QString text);
 
    public slots:
@@ -182,6 +183,7 @@ class VirtualStudio : public QObject
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
+    void studioToJoinChanged();
     void signalExit();
     void periodicRefresh();
     void debugTextChanged();
@@ -197,6 +199,7 @@ class VirtualStudio : public QObject
     void checkForHostname();
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
+    void joinStudio();
 
    private:
     void setupAuthenticator();
@@ -260,6 +263,8 @@ class VirtualStudio : public QObject
     bool m_darkMode         = false;
     QString m_debugText     = "";
     QString m_failedMessage = "";
+    QUrl m_studioToJoin;
+    bool m_authSucceeded = false;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;

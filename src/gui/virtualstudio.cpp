@@ -165,6 +165,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(&m_heartbeatTimer, &QTimer::timeout, this, [&]() {
         sendHeartbeat();
     });
+
+    // Connect joinStudio callbacks
+    connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -412,6 +415,17 @@ void VirtualStudio::setDarkMode(bool dark)
     emit darkModeChanged();
 }
 
+QUrl VirtualStudio::studioToJoin()
+{
+    return m_studioToJoin;
+}
+
+void VirtualStudio::setStudioToJoin(const QUrl& url)
+{
+    m_studioToJoin = url;
+    emit studioToJoinChanged();
+}
+
 bool VirtualStudio::noUpdater()
 {
 #ifdef NO_UPDATER
@@ -446,18 +460,26 @@ QString VirtualStudio::failedMessage()
     return m_failedMessage;
 }
 
-void VirtualStudio::joinStudio(const QUrl& url)
+void VirtualStudio::joinStudio()
 {
+    if (!m_authSucceeded || m_studioToJoin.isEmpty()) {
+        return;
+    }
+
+    QString scheme = m_studioToJoin.scheme();
+    QString path = m_studioToJoin.path();
+    QString url = m_studioToJoin.toString();
+    m_studioToJoin.clear();
+
     m_failedMessage = "";
-    if (url.scheme() != "jacktrip" || url.path().length() <= 1) {
-        m_failedMessage = "Invalid join request received: " + url.toString();
+    if (scheme != "jacktrip" || path.length() <= 1) {
+        m_failedMessage = "Invalid join request received: " + url;
         emit failedMessageChanged();
         emit failed();
         return;
     }
-    QString targetId = url.path().remove(0, 1);
+    QString targetId = path.remove(0, 1);
 
-    getServerList(false);
     int i = 0;
     for (i = 0; i < m_servers.count(); i++) {
         if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == targetId) {
@@ -860,6 +882,7 @@ void VirtualStudio::testUrlScheme()
 
 void VirtualStudio::slotAuthSucceded()
 {
+    m_authSucceeded = true;
     m_refreshToken = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
 
@@ -880,10 +903,15 @@ void VirtualStudio::slotAuthSucceded()
     } else {
         getSubscriptions();
     }
+
+    if (!m_studioToJoin.isEmpty()) {
+        joinStudio();
+    }
 }
 
 void VirtualStudio::slotAuthFailed()
 {
+    m_authSucceeded = false;
     emit authFailed();
 }
 

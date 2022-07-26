@@ -386,7 +386,7 @@ int main(int argc, char* argv[])
                          [&](const QUrl& url) {
                              qDebug() << "url found is " << url;
                              vs->setDebugText(QStringLiteral("It Worked!"));
-                             vs->joinStudio(url);
+                             vs->setStudioToJoin(url);
                          });
         // Open with any command line-passed url
         QDesktopServices::openUrl(QUrl(deeplink));
