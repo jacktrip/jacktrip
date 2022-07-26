@@ -338,11 +338,13 @@ int main(int argc, char* argv[])
             instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
             [&]() {
                 // pass deeplink to existing instance before quitting
+                qDebug() << "deeplink" << deeplink;
                 if (!deeplink.isEmpty()) {
+                    qDebug() << "sending deeplink:" << deeplink;
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
                     instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
-                    instanceCheckSocket->disconnectFromServer();
+                    instanceCheckSocket->disconnectFromServer(); // remove next
                 }
                 emit QCoreApplication::quit();
             },
@@ -364,25 +366,29 @@ int main(int argc, char* argv[])
                         [&]() {
                             // This is the first instance. Bring it to the
                             // top.
+                            qDebug() << "raising to top";
                             vs->raiseToTop();
+                            while (instanceServer->hasPendingConnections()) {
+                                // Receive URL from 2nd instance
+                                QLocalSocket* connectedSocket =
+                                    instanceServer->nextPendingConnection();
+                                QDataStream in(connectedSocket);
 
-                            // Receive URL from 2nd instance
-                            QLocalSocket* connectedSocket =
-                                instanceServer->nextPendingConnection();
-                            QDataStream in(connectedSocket);
+                                if (connectedSocket->bytesAvailable()
+                                    < (int)sizeof(quint16)) {
+                                    qDebug() << "no bytes available";
+                                    break;
+                                }
 
-                            if (connectedSocket->bytesAvailable()
-                                < (int)sizeof(quint16)) {
-                                return;
-                            }
+                                QString urlString;
+                                in >> urlString;
+                                QUrl url(urlString);
+                                qDebug() << "receieved url string:" << urlString;
 
-                            QString urlString;
-                            in >> urlString;
-                            QUrl url(urlString);
-
-                            // Join studio using received URL
-                            if (url.scheme() == "jacktrip" && url.host() == "join") {
-                                vs->setStudioToJoin(url);
+                                // Join studio using received URL
+                                if (url.scheme() == "jacktrip" && url.host() == "join") {
+                                    vs->setStudioToJoin(url);
+                                }
                             }
                         },
                         Qt::QueuedConnection);
@@ -415,6 +421,8 @@ int main(int argc, char* argv[])
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
                          [&](const QUrl& url) {
                              qDebug() << "url found is " << url;
+                             qDebug() << "url scheme is" << url.scheme();
+                             qDebug() << "url host is" << url.host();
                              vs->setDebugText(url.toString());
                              if (url.scheme() == "jacktrip" && url.host() == "join") {
                                  vs->setStudioToJoin(url);
