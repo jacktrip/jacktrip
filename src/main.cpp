@@ -420,8 +420,8 @@ int main(int argc, char* argv[])
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
                          [&](const QUrl& url) {
                              qDebug() << "url found is " << url;
-                             qDeubg() << "url scheme is" << url.scheme();
-                             qDeubg() << "url host is" << url.host();
+                             qDebug() << "url scheme is" << url.scheme();
+                             qDebug() << "url host is" << url.host();
                              vs->setDebugText(url.toString());
                              if (url.scheme() == "jacktrip" && url.host() == "join") {
                                  vs->joinStudio(url);
