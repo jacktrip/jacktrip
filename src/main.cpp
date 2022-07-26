@@ -338,6 +338,7 @@ int main(int argc, char* argv[])
             instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
             [&]() {
                 // pass deeplink to existing instance before quitting
+                qDebug() << "deeplink" << deeplink;
                 if (!deeplink.isEmpty()) {
                     qDebug() << "sending deeplink:" << deeplink;
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
@@ -375,6 +376,7 @@ int main(int argc, char* argv[])
 
                             if (connectedSocket->bytesAvailable()
                                 < (int)sizeof(quint16)) {
+                                qDebug() << "no bytes available";
                                 return;
                             }
 
@@ -418,6 +420,8 @@ int main(int argc, char* argv[])
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
                          [&](const QUrl& url) {
                              qDebug() << "url found is " << url;
+                             qDeubg() << "url scheme is" << url.scheme();
+                             qDeubg() << "url host is" << url.host();
                              vs->setDebugText(url.toString());
                              if (url.scheme() == "jacktrip" && url.host() == "join") {
                                  vs->joinStudio(url);
