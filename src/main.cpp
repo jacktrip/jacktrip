@@ -382,7 +382,7 @@ int main(int argc, char* argv[])
 
                             // Join studio using received URL
                             if (url.scheme() == "jacktrip" && url.host() == "join") {
-                                vs->joinStudio(url);
+                                vs->setStudioToJoin(url);
                             }
                         },
                         Qt::QueuedConnection);

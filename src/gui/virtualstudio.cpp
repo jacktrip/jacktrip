@@ -462,13 +462,13 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    if (!m_authSucceeded || m_studioToJoin.isEmpty()) {
+    if (!m_authenticated || m_studioToJoin.isEmpty()) {
         return;
     }
 
     QString scheme = m_studioToJoin.scheme();
-    QString path = m_studioToJoin.path();
-    QString url = m_studioToJoin.toString();
+    QString path   = m_studioToJoin.path();
+    QString url    = m_studioToJoin.toString();
     m_studioToJoin.clear();
 
     m_failedMessage = "";
@@ -882,8 +882,8 @@ void VirtualStudio::testUrlScheme()
 
 void VirtualStudio::slotAuthSucceded()
 {
-    m_authSucceeded = true;
-    m_refreshToken = m_authenticator->refreshToken();
+    m_authenticated = true;
+    m_refreshToken  = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
 
     checkForJTDevice();
@@ -911,7 +911,7 @@ void VirtualStudio::slotAuthSucceded()
 
 void VirtualStudio::slotAuthFailed()
 {
-    m_authSucceeded = false;
+    m_authenticated = false;
     emit authFailed();
 }
 

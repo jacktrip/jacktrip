@@ -264,7 +264,7 @@ class VirtualStudio : public QObject
     QString m_debugText     = "";
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
-    bool m_authSucceeded = false;
+    bool m_authenticated = false;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
