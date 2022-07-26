@@ -339,6 +339,7 @@ int main(int argc, char* argv[])
             [&]() {
                 // pass deeplink to existing instance before quitting
                 if (!deeplink.isEmpty()) {
+                    qDebug() << "sending deeplink:" << deeplink;
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
                     instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
@@ -364,6 +365,7 @@ int main(int argc, char* argv[])
                         [&]() {
                             // This is the first instance. Bring it to the
                             // top.
+                            qDebug() << "raising to top";
                             vs->raiseToTop();
 
                             // Receive URL from 2nd instance
@@ -379,6 +381,7 @@ int main(int argc, char* argv[])
                             QString urlString;
                             in >> urlString;
                             QUrl url(urlString);
+                            qDebug() << "receieved url string:" << urlString;
 
                             // Join studio using received URL
                             if (url.scheme() == "jacktrip" && url.host() == "join") {
