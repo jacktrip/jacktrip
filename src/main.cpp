@@ -344,7 +344,7 @@ int main(int argc, char* argv[])
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
                     instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
-                    instanceCheckSocket->disconnectFromServer(); // remove next
+                    instanceCheckSocket->disconnectFromServer();  // remove next
                 }
                 emit QCoreApplication::quit();
             },
