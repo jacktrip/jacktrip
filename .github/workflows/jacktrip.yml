@@ -144,64 +144,64 @@ jobs:
             build-system: meson
             meson-library-type: both
             
-          # - name: Windows-x64-qmake-gcc-static-bundled_rtaudio
-          #   release-name: Windows-x64
-          #   runs-on: windows-2019
-          #   system-rtaudio: false
-          #   bundled-rtaudio: true
-          #   nogui: false
-          #   novs: false
-          #   weakjack: true
-          #   vcpkg-triplet: x64-mingw-static
-          #   static-qt-version: 5.15.2
-          #   qt-static-cache-key: 'v07'
-          #   jacktrip-path: release/jacktrip.exe
-          #   binary-path: binary
-          #   installer-path: installer
-          #   build-system: qmake
+          - name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            release-name: Windows-x64
+            runs-on: windows-2019
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            novs: false
+            weakjack: true
+            vcpkg-triplet: x64-mingw-static
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v07'
+            jacktrip-path: release/jacktrip.exe
+            binary-path: binary
+            installer-path: installer
+            build-system: qmake
 
-          # - name: Windows-x64-qmake-gcc-shared
-          #   runs-on: windows-2019
-          #   system-rtaudio: true
-          #   bundled-rtaudio: false
-          #   nogui: false
-          #   novs: false
-          #   weakjack: true
-          #   vcpkg-triplet: x64-mingw-dynamic
-          #   qt-arch: 'win64_mingw81'
-          #   qt-cache-key: 'v01'
-          #   # jacktrip-path: release/jacktrip.exe
-          #   # binary-path: binary
-          #   build-system: qmake
+          - name: Windows-x64-qmake-gcc-shared
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            novs: false
+            weakjack: true
+            vcpkg-triplet: x64-mingw-dynamic
+            qt-arch: 'win64_mingw81'
+            qt-cache-key: 'v01'
+            # jacktrip-path: release/jacktrip.exe
+            # binary-path: binary
+            build-system: qmake
 
-          # - name: Windows-x64-meson-msvc-shared
-          #   runs-on: windows-2019
-          #   system-rtaudio: true
-          #   bundled-rtaudio: false
-          #   nogui: false
-          #   novs: false
-          #   weakjack: true
-          #   vcpkg-triplet: x64-windows
-          #   qt-arch: 'win64_msvc2019_64'
-          #   qt-cache-key: 'v01'
-          #   # jacktrip-path: jacktrip.exe
-          #   # binary-path: binary
-          #   build-system: meson
-          #   meson-library-type: shared
+          - name: Windows-x64-meson-msvc-shared
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            novs: false
+            weakjack: true
+            vcpkg-triplet: x64-windows
+            qt-arch: 'win64_msvc2019_64'
+            qt-cache-key: 'v01'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
 
-          # - name: Windows-x64-meson-msvc-shared-bundled_rtaudio
-          #   runs-on: windows-2019
-          #   system-rtaudio: false
-          #   bundled-rtaudio: true
-          #   nogui: false
-          #   novs: false
-          #   weakjack: true
-          #   qt-arch: 'win64_msvc2019_64'
-          #   qt-cache-key: 'v01'
-          #   # jacktrip-path: jacktrip.exe
-          #   # binary-path: binary
-          #   build-system: meson
-          #   meson-library-type: both
+          - name: Windows-x64-meson-msvc-shared-bundled_rtaudio
+            runs-on: windows-2019
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            novs: false
+            weakjack: true
+            qt-arch: 'win64_msvc2019_64'
+            qt-cache-key: 'v01'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: both
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
