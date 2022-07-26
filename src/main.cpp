@@ -334,8 +334,19 @@ int main(int argc, char* argv[])
         instanceCheckSocket =
             QSharedPointer<QLocalSocket>::create(new QLocalSocket(app.data()));
         // End process if instance exists
-        QObject::connect(instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
-                         &QCoreApplication::quit, Qt::QueuedConnection);
+        QObject::connect(
+            instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
+            [&]() {
+                // pass deeplink to existing instance before quitting
+                if (!deeplink.isEmpty()) {
+                    QByteArray baDeeplink = deeplink.toLocal8Bit();
+                    instanceCheckSocket->writeData(baDeeplink.data(),
+                                                   qstrlen(baDeeplink.data()));
+                    instanceCheckSocket->flush();
+                }
+                emit QCoreApplication::quit();
+            },
+            Qt::QueuedConnection);
         // Create instanceServer to prevent new instances from being created
         QObject::connect(
             instanceCheckSocket.data(), &QLocalSocket::errorOccurred, app.data(),
@@ -354,6 +365,25 @@ int main(int argc, char* argv[])
                             // This is the first instance. Bring it to the
                             // top.
                             vs->raiseToTop();
+
+                            // Receive URL from 2nd instance
+                            QLocalSocket* connectedSocket =
+                                instanceServer->nextPendingConnection();
+                            QDataStream in(connectedSocket);
+
+                            if (connectedSocket->bytesAvailable()
+                                < (int)sizeof(quint16)) {
+                                return;
+                            }
+
+                            QString urlString;
+                            in >> urlString;
+                            QUrl url(urlString);
+
+                            // Join studio using received URL
+                            if (url.scheme() == "jacktrip" && url.host() == "join") {
+                                vs->joinStudio(url);
+                            }
                         },
                         Qt::QueuedConnection);
                     break;
@@ -386,7 +416,9 @@ int main(int argc, char* argv[])
                          [&](const QUrl& url) {
                              qDebug() << "url found is " << url;
                              vs->setDebugText(url.toString());
-                             vs->joinStudio(url);
+                             if (url.scheme() == "jacktrip" && url.host() == "join") {
+                                 vs->joinStudio(url);
+                             }
                          });
         // Open with any command line-passed url
         QDesktopServices::openUrl(QUrl(deeplink));
