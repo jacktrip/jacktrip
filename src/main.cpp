@@ -344,7 +344,7 @@ int main(int argc, char* argv[])
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
                     instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
-                    instanceCheckSocket->disconnectFromServer();
+                    instanceCheckSocket->disconnectFromServer(); // remove next
                 }
                 emit QCoreApplication::quit();
             },
@@ -369,25 +369,27 @@ int main(int argc, char* argv[])
                             qDebug() << "raising to top";
                             vs->raiseToTop();
 
-                            // Receive URL from 2nd instance
-                            QLocalSocket* connectedSocket =
-                                instanceServer->nextPendingConnection();
-                            QDataStream in(connectedSocket);
+                            while (instanceServer->hasPendingConnections()) {
+                                // Receive URL from 2nd instance
+                                QLocalSocket* connectedSocket =
+                                    instanceServer->nextPendingConnection();
+                                QDataStream in(connectedSocket);
 
-                            if (connectedSocket->bytesAvailable()
-                                < (int)sizeof(quint16)) {
-                                qDebug() << "no bytes available";
-                                return;
-                            }
+                                if (connectedSocket->bytesAvailable()
+                                    < (int)sizeof(quint16)) {
+                                    qDebug() << "no bytes available";
+                                    break;
+                                }
 
-                            QString urlString;
-                            in >> urlString;
-                            QUrl url(urlString);
-                            qDebug() << "receieved url string:" << urlString;
+                                QString urlString;
+                                in >> urlString;
+                                QUrl url(urlString);
+                                qDebug() << "receieved url string:" << urlString;
 
-                            // Join studio using received URL
-                            if (url.scheme() == "jacktrip" && url.host() == "join") {
-                                vs->joinStudio(url);
+                                // Join studio using received URL
+                                if (url.scheme() == "jacktrip" && url.host() == "join") {
+                                    vs->joinStudio(url);
+                                }
                             }
                         },
                         Qt::QueuedConnection);
