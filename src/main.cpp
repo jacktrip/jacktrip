@@ -340,9 +340,9 @@ int main(int argc, char* argv[])
                 // pass deeplink to existing instance before quitting
                 if (!deeplink.isEmpty()) {
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
-                    instanceCheckSocket->writeData(baDeeplink.data(),
-                                                   qstrlen(baDeeplink.data()));
+                    instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
+                    instanceCheckSocket->disconnectFromServer();
                 }
                 emit QCoreApplication::quit();
             },
