@@ -382,6 +382,14 @@ void VirtualStudio::setShowWarnings(bool show)
     settings.setValue(QStringLiteral("ShowWarnings"), m_showWarnings);
     settings.endGroup();
     emit showWarningsChanged();
+    // attempt to join studio if requested
+    if (!m_studioToJoin.isEmpty()) {
+        // device setup view proceeds warning view
+        // if device setup is shown, do not immediately join
+        if (!m_showDeviceSetup) {
+            joinStudio();
+        }
+    }
 }
 
 float VirtualStudio::fontScale()
@@ -639,6 +647,13 @@ void VirtualStudio::applySettings()
     emit inputDeviceChanged();
     emit outputDeviceChanged();
 #endif
+
+    // attempt to join studio if requested
+    // this function is called after the device setup view
+    // which can display upon opening the app from join link
+    if (!m_studioToJoin.isEmpty()) {
+        joinStudio();
+    }
 }
 
 void VirtualStudio::connectToStudio(int studioIndex)
@@ -904,8 +919,13 @@ void VirtualStudio::slotAuthSucceded()
         getSubscriptions();
     }
 
+    // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
-        joinStudio();
+        // FTUX shows warnings and device setup views
+        // if any of these enabled, do not immediately join
+        if (!m_showWarnings && !m_showDeviceSetup) {
+            joinStudio();
+        }
     }
 }
 
