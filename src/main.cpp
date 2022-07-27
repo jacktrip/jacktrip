@@ -343,9 +343,13 @@ int main(int argc, char* argv[])
                 if (!deeplink.isEmpty()) {
                     qDebug() << "sending deeplink:" << deeplink;
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
-                    instanceCheckSocket->write(baDeeplink);
+                    qint64 writeBytes     = instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
                     instanceCheckSocket->disconnectFromServer();  // remove next
+
+                    if (writeBytes < 0) {
+                        qDebug() << "sending deeplink failed";
+                    }
                 }
                 qDebug() << "quitting";
                 std::cout << "quitting" << std::endl;
