@@ -339,13 +339,16 @@ int main(int argc, char* argv[])
             [&]() {
                 // pass deeplink to existing instance before quitting
                 qDebug() << "deeplink" << deeplink;
+                std::cout << "deeplink: " << deeplink.toStdString() << std::endl;
                 if (!deeplink.isEmpty()) {
                     qDebug() << "sending deeplink:" << deeplink;
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
                     instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
-                    instanceCheckSocket->disconnectFromServer(); // remove next
+                    instanceCheckSocket->disconnectFromServer();  // remove next
                 }
+                qDebug() << "quitting";
+                std::cout << "quitting" << std::endl;
                 emit QCoreApplication::quit();
             },
             Qt::QueuedConnection);
