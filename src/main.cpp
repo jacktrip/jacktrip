@@ -342,13 +342,8 @@ int main(int argc, char* argv[])
                 std::cout << "deeplink: " << deeplink.toStdString() << std::endl;
                 if (!deeplink.isEmpty()) {
                     qDebug() << "sending deeplink:" << deeplink;
-                    QByteArray block;
-                    QDataStream out(&block, QIODevice::WriteOnly);
-                    out.setVersion(QDataStream::Qt_5_12);
-
-                    out << deeplink;
-                    // QByteArray baDeeplink = deeplink.toLocal8Bit();
-                    instanceCheckSocket->write(block);
+                    QByteArray baDeeplink = deeplink.toLocal8Bit();
+                    instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
                     instanceCheckSocket->disconnectFromServer();  // remove next
                 }
@@ -380,7 +375,16 @@ int main(int argc, char* argv[])
                                 // Receive URL from 2nd instance
                                 QLocalSocket* connectedSocket =
                                     instanceServer->nextPendingConnection();
-                                QDataStream in(connectedSocket);
+
+                                if (!connectedSocket->waitForConnected()) {
+                                    qDebug() << "Never connected";
+                                    return;
+                                }
+
+                                if (!connectedSocket->waitForReadyRead()) {
+                                    qDebug() << "Never ready to read";
+                                    return;
+                                }
 
                                 if (connectedSocket->bytesAvailable()
                                     < (int)sizeof(quint16)) {
@@ -388,8 +392,8 @@ int main(int argc, char* argv[])
                                     break;
                                 }
 
-                                QString urlString;
-                                in >> urlString;
+                                QByteArray in(connectedSocket->readAll());
+                                QString urlString(in);
                                 QUrl url(urlString);
                                 qDebug() << "receieved url string:" << urlString;
 
