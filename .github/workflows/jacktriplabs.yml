@@ -59,7 +59,7 @@ jobs:
         include:
           - name: macOS-x64-qmake-clang-static
             release-name: macOS-x64
-            runs-on: macos-10.15
+            runs-on: macos-11
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
@@ -362,7 +362,7 @@ jobs:
           - name: Sign macOS artifacts
             release-name: macOS-x64
             build-job-name: macOS-x64-qmake-clang-static
-            runs-on: macos-10.15
+            runs-on: macos-11
             binary-path: binary
             bundle-path: bundle
             installer-path: installer
