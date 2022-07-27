@@ -342,8 +342,13 @@ int main(int argc, char* argv[])
                 std::cout << "deeplink: " << deeplink.toStdString() << std::endl;
                 if (!deeplink.isEmpty()) {
                     qDebug() << "sending deeplink:" << deeplink;
-                    QByteArray baDeeplink = deeplink.toLocal8Bit();
-                    instanceCheckSocket->write(baDeeplink);
+                    QByteArray block;
+                    QDataStream out(&block, QIODevice::WriteOnly);
+                    out.setVersion(QDataStream::Qt_5_12)
+
+                    out << deeplink;
+                    // QByteArray baDeeplink = deeplink.toLocal8Bit();
+                    instanceCheckSocket->write(block);
                     instanceCheckSocket->flush();
                     instanceCheckSocket->disconnectFromServer();  // remove next
                 }
