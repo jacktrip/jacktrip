@@ -371,7 +371,6 @@ int main(int argc, char* argv[])
                             // top.
                             qDebug() << "raising to top";
                             vs->raiseToTop();
-
                             while (instanceServer->hasPendingConnections()) {
                                 // Receive URL from 2nd instance
                                 QLocalSocket* connectedSocket =
@@ -391,7 +390,7 @@ int main(int argc, char* argv[])
 
                                 // Join studio using received URL
                                 if (url.scheme() == "jacktrip" && url.host() == "join") {
-                                    vs->joinStudio(url);
+                                    vs->setStudioToJoin(url);
                                 }
                             }
                         },
@@ -429,7 +428,7 @@ int main(int argc, char* argv[])
                              qDebug() << "url host is" << url.host();
                              vs->setDebugText(url.toString());
                              if (url.scheme() == "jacktrip" && url.host() == "join") {
-                                 vs->joinStudio(url);
+                                 vs->setStudioToJoin(url);
                              }
                          });
         // Open with any command line-passed url

@@ -161,6 +161,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(&m_heartbeatTimer, &QTimer::timeout, this, [&]() {
         sendHeartbeat();
     });
+
+    // Connect joinStudio callbacks
+    connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -385,6 +388,14 @@ void VirtualStudio::setShowWarnings(bool show)
     settings.setValue(QStringLiteral("ShowWarnings"), m_showWarnings);
     settings.endGroup();
     emit showWarningsChanged();
+    // attempt to join studio if requested
+    if (!m_studioToJoin.isEmpty()) {
+        // device setup view proceeds warning view
+        // if device setup is shown, do not immediately join
+        if (!m_showDeviceSetup) {
+            joinStudio();
+        }
+    }
 }
 
 float VirtualStudio::fontScale()
@@ -416,6 +427,17 @@ void VirtualStudio::setDarkMode(bool dark)
     settings.setValue(QStringLiteral("DarkMode"), m_darkMode);
     settings.endGroup();
     emit darkModeChanged();
+}
+
+QUrl VirtualStudio::studioToJoin()
+{
+    return m_studioToJoin;
+}
+
+void VirtualStudio::setStudioToJoin(const QUrl& url)
+{
+    m_studioToJoin = url;
+    emit studioToJoinChanged();
 }
 
 bool VirtualStudio::noUpdater()
@@ -452,18 +474,26 @@ QString VirtualStudio::failedMessage()
     return m_failedMessage;
 }
 
-void VirtualStudio::joinStudio(const QUrl& url)
+void VirtualStudio::joinStudio()
 {
+    if (!m_authenticated || m_studioToJoin.isEmpty()) {
+        return;
+    }
+
+    QString scheme = m_studioToJoin.scheme();
+    QString path   = m_studioToJoin.path();
+    QString url    = m_studioToJoin.toString();
+    m_studioToJoin.clear();
+
     m_failedMessage = "";
-    if (url.scheme() != "jacktrip" || url.path().length() <= 1) {
-        m_failedMessage = "Invalid join request received: " + url.toString();
+    if (scheme != "jacktrip" || path.length() <= 1) {
+        m_failedMessage = "Invalid join request received: " + url;
         emit failedMessageChanged();
         emit failed();
         return;
     }
-    QString targetId = url.path().remove(0, 1);
+    QString targetId = path.remove(0, 1);
 
-    getServerList(false);
     int i = 0;
     for (i = 0; i < m_servers.count(); i++) {
         if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == targetId) {
@@ -619,6 +649,13 @@ void VirtualStudio::applySettings()
     emit inputDeviceChanged();
     emit outputDeviceChanged();
 #endif
+
+    // attempt to join studio if requested
+    // this function is called after the device setup view
+    // which can display upon opening the app from join link
+    if (!m_studioToJoin.isEmpty()) {
+        joinStudio();
+    }
 }
 
 void VirtualStudio::connectToStudio(int studioIndex)
@@ -848,7 +885,8 @@ void VirtualStudio::testUrlScheme()
 
 void VirtualStudio::slotAuthSucceded()
 {
-    m_refreshToken = m_authenticator->refreshToken();
+    m_authenticated = true;
+    m_refreshToken  = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
 
     m_device = new VsDevice(m_authenticator.data());
@@ -869,10 +907,20 @@ void VirtualStudio::slotAuthSucceded()
     if (m_userMetadata.isEmpty()) {
         getUserMetadata();
     }
+
+    // attempt to join studio if requested
+    if (!m_studioToJoin.isEmpty()) {
+        // FTUX shows warnings and device setup views
+        // if any of these enabled, do not immediately join
+        if (!m_showWarnings && !m_showDeviceSetup) {
+            joinStudio();
+        }
+    }
 }
 
 void VirtualStudio::slotAuthFailed()
 {
+    m_authenticated = false;
     emit authFailed();
 }
 
