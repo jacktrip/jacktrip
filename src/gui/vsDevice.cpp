@@ -175,6 +175,24 @@ void VsDevice::sendHeartbeat()
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
     };
+
+    // Add stats to heartbeat body
+    if (m_pinger != nullptr) {
+        VsPinger::PingStat stats = m_pinger->getPingStats();
+
+        // API server expects RTTs to be in int64 nanoseconds, so we must convert
+        // from milliseconds to nanoseconds
+
+        int ns_per_ms = 1000000;
+
+        json.insert(QLatin1String("pkts_sent"), (int)stats.packetsSent);
+        json.insert(QLatin1String("pkts_recv"), (int)stats.packetsReceived);
+        json.insert(QLatin1String("min_rtt"), (qint64)(stats.minRtt * ns_per_ms));
+        json.insert(QLatin1String("max_rtt"), (qint64)(stats.maxRtt * ns_per_ms));
+        json.insert(QLatin1String("avg_rtt"), (qint64)(stats.avgRtt * ns_per_ms));
+        json.insert(QLatin1String("stddev_rtt"), (qint64)(stats.stdDevRtt * ns_per_ms));
+    }
+
     QJsonDocument request = QJsonDocument(json);
 
     if (m_webSocket->isValid()) {
@@ -296,6 +314,29 @@ void VsDevice::reconcileAgentConfig(QJsonDocument newState)
     }
 }
 
+// initPinger intializes the pinger used to generate network latency statistics for
+// Virtual Studio
+VsPinger* VsDevice::startPinger(VsServerInfo* studioInfo)
+{
+    QString id   = studioInfo->id();
+    QString host = studioInfo->sessionId();
+    host.append(QString::fromStdString(".jacktrip.cloud"));
+
+    m_pinger = new VsPinger(QString::fromStdString("wss"), host,
+                            QString::fromStdString("/ping"));
+
+    return m_pinger;
+}
+
+// stopPinger stops the Virtual Studio pinger
+void VsDevice::stopPinger()
+{
+    if (m_pinger != nullptr) {
+        m_pinger->stop();
+        m_pinger->unsetToken();
+    }
+}
+
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals
 void VsDevice::terminateJackTrip()
 {
@@ -309,6 +350,15 @@ void VsDevice::terminateJackTrip()
 void VsDevice::onTextMessageReceived(const QString& message)
 {
     QJsonDocument newState = QJsonDocument::fromJson(message.toUtf8());
+
+    // We have a heartbeat from which we can read the studio auth token
+    // Use it to set up and start the pinger connection
+    QString token = newState["authToken"].toString();
+    if (m_pinger != nullptr && !m_pinger->active()) {
+        m_pinger->setToken(token);
+        m_pinger->start();
+    }
+
     reconcileAgentConfig(newState);
 }
 
