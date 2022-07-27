@@ -43,10 +43,10 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
-#include <QUuid>
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
+#include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
 #include "vsUrlHandler.h"
@@ -75,6 +75,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
+    Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
+    Q_PROPERTY(QJsonObject userMetadata READ userMetadata NOTIFY userMetadataChanged)
     Q_PROPERTY(bool showInactive READ showInactive WRITE setShowInactive NOTIFY
                    showInactiveChanged)
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
@@ -117,6 +119,8 @@ class VirtualStudio : public QObject
     int bufferSize();
     void setBufferSize(int index);
     int currentStudio();
+    QJsonObject regions();
+    QJsonObject userMetadata();
     QString connectionState();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
@@ -155,6 +159,7 @@ class VirtualStudio : public QObject
     void disconnect();
     void manageStudio(int studioIndex);
     void createStudio();
+    void editProfile();
     void showAbout();
     void exit();
     void testUrlScheme();
@@ -174,6 +179,8 @@ class VirtualStudio : public QObject
     void outputDeviceChanged();
     void bufferSizeChanged();
     void currentStudioChanged();
+    void regionsChanged();
+    void userMetadataChanged();
     void showInactiveChanged();
     void showSelfHostedChanged();
     void connectionStateChanged();
@@ -195,7 +202,6 @@ class VirtualStudio : public QObject
     void processFinished();
     void processError(const QString& errorMessage);
     void receivedConnectionFromPeer();
-    void setStudioOnAppDevice(QString studioId);
     void checkForHostname();
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
@@ -203,14 +209,13 @@ class VirtualStudio : public QObject
 
    private:
     void setupAuthenticator();
-    QString randomString(int stringLength);
-    void registerJTAsDevice();
-    void checkForJTDevice();
-    void deleteJTDevice();
+
     void sendHeartbeat();
     void getServerList(bool firstLoad = false, int index = -1);
     void getUserId();
     void getSubscriptions();
+    void getRegions();
+    void getUserMetadata();
 #ifdef RT_AUDIO
     void getDeviceList(QStringList* list, bool isInput);
 #endif
@@ -221,16 +226,14 @@ class VirtualStudio : public QObject
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
-    QString m_apiPrefix;
-    QString m_apiSecret;
-    QString m_appUUID;
-    QString m_appID;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
 
     QList<QObject*> m_servers;
     QStringList m_subscribedServers;
+    QJsonObject m_regions;
+    QJsonObject m_userMetadata;
     QString m_logoSection     = QStringLiteral("Your Studios");
     bool m_selectableBackend  = true;
     bool m_useRtAudio         = false;
@@ -250,6 +253,7 @@ class VirtualStudio : public QObject
 
     QTimer m_heartbeatTimer;
     VsWebSocket* m_heartbeatWebSocket = NULL;
+    VsDevice* m_device                = NULL;
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;

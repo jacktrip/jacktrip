@@ -92,6 +92,8 @@ class VsServerInfo : public QObject
     void setQueueBuffer(quint16 queueBuffer);
     QString id();
     void setId(const QString& id);
+    QString sessionId();
+    void setSessionId(const QString& sessionId);
     QString status();
     void setStatus(const QString& status);
 
@@ -110,6 +112,7 @@ class VsServerInfo : public QObject
     quint32 m_sampleRate;
     quint16 m_queueBuffer;
     QString m_id;
+    QString m_sessionId;
     QString m_status;
 
     /* Remaining JSON fields
@@ -126,7 +129,6 @@ class VsServerInfo : public QObject
     "owner": true,
     "ownerId": "string",
     "status": "Ready",
-    "sessionId": "1636042722abcdefg",
     "subStatus": "Active",
     "createdAt": "2021-09-07T17:15:38Z",
     "expiresAt": "2021-09-07T17:15:38Z",
