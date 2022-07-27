@@ -147,9 +147,6 @@ QString VsServerInfo::flag()
 
 QString VsServerInfo::location()
 {
-    if (m_region.split(QStringLiteral("-")).count() > 2) {
-        return m_region.section(QStringLiteral("-"), 2);
-    }
     return m_region;
 }
 
@@ -206,6 +203,16 @@ QString VsServerInfo::id()
 void VsServerInfo::setId(const QString& id)
 {
     m_id = id;
+}
+
+QString VsServerInfo::sessionId()
+{
+    return m_sessionId;
+}
+
+void VsServerInfo::setSessionId(const QString& sessionId)
+{
+    m_sessionId = sessionId;
 }
 
 VsServerInfo::~VsServerInfo() = default;

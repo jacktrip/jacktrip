@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -30,53 +30,54 @@
 //*****************************************************************
 
 /**
- * \file vsWebSocket.h
- * \author Matt Horton
- * \date June 2022
+ * \file vsPing.h
+ * \author Dominick Hing
+ * \date July 2022
  */
 
-#ifndef VSWEBSOCKET_H
-#define VSWEBSOCKET_H
+#ifndef VSPING_H
+#define VSPING_H
 
-#include <QList>
+#include <QAbstractSocket>
+#include <QDateTime>
 #include <QObject>
-#include <QSslError>
-#include <QString>
-#include <QUrl>
+#include <QTimer>
 #include <QtWebSockets>
+#include <stdexcept>
 
-class VsWebSocket : public QObject
+/** \brief A helper class for VsPinger
+ *
+ */
+class VsPing : public QObject
 {
-    Q_OBJECT
+    Q_OBJECT;
 
    public:
-    // Constructor
-    explicit VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
-                         QString apiSecret, QObject* parent = nullptr);
+    explicit VsPing(uint32_t pingNum, uint32_t timeout_msec);
+    uint32_t pingNumber() { return mPingNumber; }
 
-    // Public functions
-    void openSocket();
-    void closeSocket();
-    void sendMessage(const QByteArray& message);
-    bool isValid();
+    QDateTime sentTimestamp() { return mSent; }
+    QDateTime receivedTimestamp() { return mReceived; }
+    bool receivedReply() { return mReceivedReply; }
+    bool timedOut() { return mTimedOut; }
 
-   signals:
-    void textMessageReceived(const QString& message);
-
-   private slots:
-    void onConnected();
-    void onClosed();
-    void onError(QAbstractSocket::SocketError error);
-    void onSslErrors(const QList<QSslError>& errors);
+    void send();
+    void receive();
 
    private:
-    QWebSocket m_webSocket;
-    QUrl m_url;
-    bool m_connected = false;
-    bool m_error     = false;
-    QString m_token;
-    QString m_apiPrefix;
-    QString m_apiSecret;
+    uint32_t mPingNumber;
+    QDateTime mSent;
+    QDateTime mReceived;
+
+    QTimer mTimer;
+    bool mTimedOut      = false;
+    bool mReceivedReply = false;
+
+   public slots:
+    void onTimeout();
+
+   signals:
+    void timeout(uint32_t pingNum);
 };
 
-#endif  // VSWEBSOCKET_H
+#endif  // VSPING_H

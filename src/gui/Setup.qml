@@ -392,7 +392,7 @@ Item {
             anchors.verticalCenter: outputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Output Device"
-            font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
@@ -411,7 +411,7 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
             Text {
                 text: "Refresh Device List"
-                font { family: "Poppins"; pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
             }
@@ -427,7 +427,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             color: warningText
-            font { family: "Poppins"; pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: Qt.platform.os == "windows" && virtualstudio.audioBackend != "JACK"
         }
 
@@ -456,7 +456,7 @@ Item {
             Text {
                 text: "Save Settings"
                 font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
                 color: saveButtonText
                 anchors.horizontalCenter: parent.horizontalCenter

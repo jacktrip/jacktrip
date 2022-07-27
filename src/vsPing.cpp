@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -30,53 +30,53 @@
 //*****************************************************************
 
 /**
- * \file vsWebSocket.h
- * \author Matt Horton
- * \date June 2022
+ * \file vsPinger.cpp
+ * \author Dominick Hing
+ * \date July 2022
  */
 
-#ifndef VSWEBSOCKET_H
-#define VSWEBSOCKET_H
+#include "vsPing.h"
 
-#include <QList>
-#include <QObject>
-#include <QSslError>
-#include <QString>
-#include <QUrl>
-#include <QtWebSockets>
+#include <iostream>
 
-class VsWebSocket : public QObject
+using std::cout;
+using std::endl;
+
+// NOTE: It's better not to use
+// using namespace std;
+// because some functions (like exit()) get confused with QT functions
+
+//*******************************************************************************
+VsPing::VsPing(uint32_t pingNum, uint32_t timeout_msec) : mPingNumber(pingNum)
 {
-    Q_OBJECT
+    connect(&mTimer, &QTimer::timeout, this, &VsPing::onTimeout);
 
-   public:
-    // Constructor
-    explicit VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
-                         QString apiSecret, QObject* parent = nullptr);
+    mTimer.setTimerType(Qt::PreciseTimer);
+    mTimer.setSingleShot(true);
+    mTimer.setInterval(timeout_msec);
+    mTimer.start();
+}
 
-    // Public functions
-    void openSocket();
-    void closeSocket();
-    void sendMessage(const QByteArray& message);
-    bool isValid();
+void VsPing::send()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    mSent         = now;
+}
 
-   signals:
-    void textMessageReceived(const QString& message);
+void VsPing::receive()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    if (!mTimedOut) {
+        mTimer.stop();
+        mReceivedReply = true;
+        mReceived      = now;
+    }
+}
 
-   private slots:
-    void onConnected();
-    void onClosed();
-    void onError(QAbstractSocket::SocketError error);
-    void onSslErrors(const QList<QSslError>& errors);
-
-   private:
-    QWebSocket m_webSocket;
-    QUrl m_url;
-    bool m_connected = false;
-    bool m_error     = false;
-    QString m_token;
-    QString m_apiPrefix;
-    QString m_apiSecret;
-};
-
-#endif  // VSWEBSOCKET_H
+void VsPing::onTimeout()
+{
+    if (!mReceivedReply) {
+        mTimedOut = true;
+        emit timeout(mPingNumber);
+    }
+}

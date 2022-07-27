@@ -240,9 +240,12 @@ HEADERS += src/DataProtocol.h \
              src/gui/textbuf.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
+               src/gui/vsDevice.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
+               src/vsPinger.h \
+               src/vsPing.h \
                src/gui/vsUrlHandler.h \
                src/JTApplication.h
   }
@@ -293,9 +296,12 @@ SOURCES += src/DataProtocol.cpp \
              src/gui/textbuf.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
+               src/gui/vsDevice.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
+               src/vsPinger.cpp \
+               src/vsPing.cpp \
                src/gui/vsUrlHandler.cpp
   }
   !noupdater {
