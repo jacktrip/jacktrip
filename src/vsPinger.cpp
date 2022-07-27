@@ -177,7 +177,7 @@ void VsPinger::updateStats()
     double max_rtt    = std::numeric_limits<qint64>::min();
     double avg_rtt    = 0;
     double stddev_rtt = 0;
-    
+
     // avoid edge case due to min_rtt and max_rtt being at the numeric limits
     // when vector size is 0
     if (vec_rtt.size() == 0) {
