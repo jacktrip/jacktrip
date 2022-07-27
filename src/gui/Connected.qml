@@ -89,6 +89,16 @@ Item {
         anchors.verticalCenter: headphones.verticalCenter
         color: textColour
     }
-    
+
+    NetworkStats {
+        x: parent.leftMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale + 300 * virtualstudio.uiScale
+        width: parent.width - (2 * x)
+        packetsSent: virtualstudio.networkStats.pkts_sent
+        packetsReceived: virtualstudio.networkStats.pkts_recv
+        minRtt: virtualstudio.networkStats.min_rtt
+        maxRtt: virtualstudio.networkStats.max_rtt
+        avgRtt: virtualstudio.networkStats.avg_rtt
+        stdDevRtt: virtualstudio.networkStats.stddev_rtt
+    }
     //43 822
 }

@@ -182,7 +182,6 @@ void VsDevice::sendHeartbeat()
 
         // API server expects RTTs to be in int64 nanoseconds, so we must convert
         // from milliseconds to nanoseconds
-
         int ns_per_ms = 1000000;
 
         json.insert(QLatin1String("pkts_sent"), (int)stats.packetsSent);
@@ -191,6 +190,16 @@ void VsDevice::sendHeartbeat()
         json.insert(QLatin1String("max_rtt"), (qint64)(stats.maxRtt * ns_per_ms));
         json.insert(QLatin1String("avg_rtt"), (qint64)(stats.avgRtt * ns_per_ms));
         json.insert(QLatin1String("stddev_rtt"), (qint64)(stats.stdDevRtt * ns_per_ms));
+
+        // For the internal application UI, ms will suffice. No conversion needed
+        QJsonObject pingStats = {};
+        pingStats.insert(QLatin1String("pkts_sent"), (int)stats.packetsSent);
+        pingStats.insert(QLatin1String("pkts_recv"), (int)stats.packetsReceived);
+        pingStats.insert(QLatin1String("min_rtt"), ((int)(10 * stats.minRtt)) / 10.0);
+        pingStats.insert(QLatin1String("max_rtt"), ((int)(10 * stats.maxRtt)) / 10.0);
+        pingStats.insert(QLatin1String("avg_rtt"), ((int)(10 * stats.avgRtt)) / 10.0);
+        pingStats.insert(QLatin1String("stddev_rtt"), ((int)(10 * stats.stdDevRtt)) / 10.0);
+        emit updateNetworkStats(pingStats);
     }
 
     QJsonDocument request = QJsonDocument(json);

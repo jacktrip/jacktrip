@@ -11,6 +11,7 @@
     <file>Studio.qml</file>
     <file>Browse.qml</file>
     <file>Settings.qml</file>
+    <file>NetworkStats.qml</file>
     <file>Connected.qml</file>
     <file>Setup.qml</file>
     <file>logo.svg</file>

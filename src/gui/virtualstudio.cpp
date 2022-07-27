@@ -315,6 +315,11 @@ QString VirtualStudio::connectionState()
     return m_connectionState;
 }
 
+QJsonObject VirtualStudio::networkStats()
+{
+    return m_networkStats;
+}
+
 QString VirtualStudio::updateChannel()
 {
     return m_updateChannel;
@@ -816,6 +821,8 @@ void VirtualStudio::slotAuthSucceded()
     if (m_userMetadata.isEmpty()) {
         getUserMetadata();
     }
+
+    connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
 }
 
 void VirtualStudio::slotAuthFailed()
@@ -825,6 +832,9 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
+    // reset network statistics
+    m_networkStats = QJsonObject();
+
     if (m_isExiting) {
         emit signalExit();
         return;
@@ -932,6 +942,20 @@ void VirtualStudio::launchBrowser(const QUrl& url)
     } else {
         std::cout << "Unable to open URL" << std::endl;
     }
+}
+
+void VirtualStudio::updatedStats(const QJsonObject& stats)
+{
+    
+    QJsonObject newStats;
+    for (int i = 0; i < stats.keys().size(); i++) {
+        QString key = stats.keys().at(i);
+        newStats.insert(key, stats[key].toDouble());
+    }
+
+    m_networkStats = newStats;
+    emit networkStatsChanged();
+    return;
 }
 
 void VirtualStudio::setupAuthenticator()
