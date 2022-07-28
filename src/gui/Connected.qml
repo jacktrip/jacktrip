@@ -105,7 +105,7 @@ Item {
     Text {
         id: networkStatsHeader
         x: 120 * virtualstudio.uiScale
-        text: "Network Quality"
+        text: "Network"
         font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         anchors.verticalCenter: network.verticalCenter
         color: textColour
