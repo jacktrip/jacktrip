@@ -11,6 +11,7 @@ Item {
     property int leftMargin: 16
     property int fontBig: 28
     property int fontMedium: 18
+    property int fontSmall: 11
 
     property int smallTextPadding: 8
     
@@ -77,6 +78,14 @@ Item {
     Colorize {
         anchors.fill: headphones
         source: headphones
+        hue: 0
+        saturation: 0
+        lightness: imageLightnessValue
+    }
+
+    Colorize {
+        anchors.fill: network
+        source: network
         hue: 0
         saturation: 0
         lightness: imageLightnessValue
