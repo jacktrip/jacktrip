@@ -198,7 +198,8 @@ void VsDevice::sendHeartbeat()
         pingStats.insert(QLatin1String("minRtt"), ((int)(10 * stats.minRtt)) / 10.0);
         pingStats.insert(QLatin1String("maxRtt"), ((int)(10 * stats.maxRtt)) / 10.0);
         pingStats.insert(QLatin1String("avgRtt"), ((int)(10 * stats.avgRtt)) / 10.0);
-        pingStats.insert(QLatin1String("stdDevRtt"), ((int)(10 * stats.stdDevRtt)) / 10.0);
+        pingStats.insert(QLatin1String("stdDevRtt"),
+                         ((int)(10 * stats.stdDevRtt)) / 10.0);
         emit updateNetworkStats(pingStats);
     }
 
