@@ -196,5 +196,4 @@ Item {
         anchors.top: netstat1.bottom
         color: textColour
     }
-    //43 822
 }
