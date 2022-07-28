@@ -946,7 +946,6 @@ void VirtualStudio::launchBrowser(const QUrl& url)
 
 void VirtualStudio::updatedStats(const QJsonObject& stats)
 {
-
     QJsonObject newStats;
     for (int i = 0; i < stats.keys().size(); i++) {
         QString key = stats.keys().at(i);
