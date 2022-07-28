@@ -588,6 +588,9 @@ void VirtualStudio::connectToStudio(int studioIndex)
     }
     m_refreshTimer.stop();
 
+    m_networkStats = QJsonObject();
+    emit networkStatsChanged();
+
     m_currentStudio          = studioIndex;
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     emit currentStudioChanged();
