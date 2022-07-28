@@ -120,7 +120,7 @@ Item {
 
         let texts = ["Measuring stats ...", "", ""];
 
-        if (minRtt === 0 || maxRtt === 0) {
+        if (!minRtt || !maxRtt) {
             return texts;
         }
 
