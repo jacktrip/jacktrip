@@ -193,12 +193,12 @@ void VsDevice::sendHeartbeat()
 
         // For the internal application UI, ms will suffice. No conversion needed
         QJsonObject pingStats = {};
-        pingStats.insert(QLatin1String("pkts_sent"), (int)stats.packetsSent);
-        pingStats.insert(QLatin1String("pkts_recv"), (int)stats.packetsReceived);
-        pingStats.insert(QLatin1String("min_rtt"), ((int)(10 * stats.minRtt)) / 10.0);
-        pingStats.insert(QLatin1String("max_rtt"), ((int)(10 * stats.maxRtt)) / 10.0);
-        pingStats.insert(QLatin1String("avg_rtt"), ((int)(10 * stats.avgRtt)) / 10.0);
-        pingStats.insert(QLatin1String("stddev_rtt"), ((int)(10 * stats.stdDevRtt)) / 10.0);
+        pingStats.insert(QLatin1String("packetsSent"), (int)stats.packetsSent);
+        pingStats.insert(QLatin1String("packetsReceived"), (int)stats.packetsReceived);
+        pingStats.insert(QLatin1String("minRtt"), ((int)(10 * stats.minRtt)) / 10.0);
+        pingStats.insert(QLatin1String("maxRtt"), ((int)(10 * stats.maxRtt)) / 10.0);
+        pingStats.insert(QLatin1String("avgRtt"), ((int)(10 * stats.avgRtt)) / 10.0);
+        pingStats.insert(QLatin1String("stdDevRtt"), ((int)(10 * stats.stdDevRtt)) / 10.0);
         emit updateNetworkStats(pingStats);
     }
 

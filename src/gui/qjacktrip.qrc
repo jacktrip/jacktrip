@@ -11,7 +11,6 @@
     <file>Studio.qml</file>
     <file>Browse.qml</file>
     <file>Settings.qml</file>
-    <file>NetworkStats.qml</file>
     <file>Connected.qml</file>
     <file>Setup.qml</file>
     <file>logo.svg</file>
@@ -25,6 +24,7 @@
     <file>mic.svg</file>
     <file>ethernet.png</file>
     <file>headphones.svg</file>
+    <file>network.svg</file>
     <file>jacktrip.png</file>
     <file>jacktrip white.png</file>
     <file>JTOriginal.png</file>
