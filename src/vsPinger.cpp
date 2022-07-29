@@ -158,7 +158,7 @@ void VsPinger::updateStats()
             QDateTime received = ping->receivedTimestamp();
             qint64 diff        = sent.msecsTo(received);
 
-            // don't include case where dif = 0 in stats, mark as expired instead 
+            // don't include case where dif = 0 in stats, mark as expired instead
             if (diff != 0) {
                 vec_rtt.push_back(diff);
             } else {

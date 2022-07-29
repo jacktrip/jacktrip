@@ -72,11 +72,11 @@ class VsPinger : public QObject
 
     struct PingStat {
         uint32_t packetsReceived = 0;
-        uint32_t packetsSent = 0;
-        double minRtt = 0.0;
-        double maxRtt = 0.0;
-        double avgRtt = 0.0;
-        double stdDevRtt = 0.0;
+        uint32_t packetsSent     = 0;
+        double minRtt            = 0.0;
+        double maxRtt            = 0.0;
+        double avgRtt            = 0.0;
+        double stdDevRtt         = 0.0;
     };
 
     PingStat getPingStats();
