@@ -157,7 +157,13 @@ void VsPinger::updateStats()
             QDateTime sent     = ping->sentTimestamp();
             QDateTime received = ping->receivedTimestamp();
             qint64 diff        = sent.msecsTo(received);
-            vec_rtt.push_back(diff);
+
+            // don't include case where dif = 0 in stats, mark as expired instead 
+            if (diff != 0) {
+                vec_rtt.push_back(diff);
+            } else {
+                vec_expired.push_back(ping->pingNumber());
+            }
 
             count++;
         }
@@ -173,10 +179,10 @@ void VsPinger::updateStats()
     }
 
     // Update RTT stats
-    double min_rtt    = std::numeric_limits<qint64>::max();
-    double max_rtt    = std::numeric_limits<qint64>::min();
-    double avg_rtt    = 0;
-    double stddev_rtt = 0;
+    double min_rtt    = 0.0;
+    double max_rtt    = 0.0;
+    double avg_rtt    = 0.0;
+    double stddev_rtt = 0.0;
 
     // avoid edge case due to min_rtt and max_rtt being at the numeric limits
     // when vector size is 0
@@ -194,10 +200,10 @@ void VsPinger::updateStats()
     for (std::vector<qint64>::iterator it_rtt = vec_rtt.begin(); it_rtt != vec_rtt.end();
          it_rtt++) {
         double rtt = (double)*it_rtt;
-        if (rtt < min_rtt) {
+        if (rtt < min_rtt || min_rtt == 0.0) {
             min_rtt = rtt;
         }
-        if (rtt > max_rtt) {
+        if (rtt > max_rtt || max_rtt == 0.0) {
             max_rtt = rtt;
         }
 
