@@ -73,6 +73,9 @@ class VsDevice : public QObject
     VsPinger* startPinger(VsServerInfo* studioInfo);
     void stopPinger();
 
+   signals:
+    void updateNetworkStats(QJsonObject stats);
+
    private slots:
     void terminateJackTrip();
     void onTextMessageReceived(const QString& message);

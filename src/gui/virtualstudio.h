@@ -82,6 +82,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
@@ -120,6 +121,7 @@ class VirtualStudio : public QObject
     QJsonObject regions();
     QJsonObject userMetadata();
     QString connectionState();
+    QJsonObject networkStats();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -179,6 +181,7 @@ class VirtualStudio : public QObject
     void showInactiveChanged();
     void showSelfHostedChanged();
     void connectionStateChanged();
+    void networkStatsChanged();
     void updateChannelChanged();
     void showDeviceSetupChanged();
     void showWarningsChanged();
@@ -200,6 +203,7 @@ class VirtualStudio : public QObject
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
     void joinStudio();
+    void updatedStats(const QJsonObject& stats);
 
    private:
     void setupAuthenticator();
@@ -244,6 +248,8 @@ class VirtualStudio : public QObject
     QMutex m_refreshMutex;
     bool m_allowRefresh      = true;
     bool m_refreshInProgress = false;
+
+    QJsonObject m_networkStats;
 
     QTimer m_heartbeatTimer;
     VsWebSocket* m_heartbeatWebSocket = NULL;
