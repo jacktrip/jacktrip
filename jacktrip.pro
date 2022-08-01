@@ -299,7 +299,7 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
                src/vsPinger.cpp \
-               src/vsPing.cpp \
+               src/vsPing.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \
