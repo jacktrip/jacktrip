@@ -32,7 +32,7 @@ jobs:
         include:
           - name: Linux-x64-qmake-gcc-static
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
-            runs-on: ubuntu-18.04
+            runs-on: ubuntu-20.04
             system-rtaudio: false
             bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
