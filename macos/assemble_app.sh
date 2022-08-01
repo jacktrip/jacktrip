@@ -100,7 +100,7 @@ sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
-DYNAMIC_QT=$(otool -L ../builddir/jacktrip | grep QtCore)
+DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
 if [ ! -z "$DYNAMIC_QT" ]; then
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
@@ -114,7 +114,7 @@ if [ ! -z "$DYNAMIC_QT" ]; then
             exit 1
         fi
     fi
-    VS=$(otool -L ../builddir/jacktrip | grep QtQml)
+    VS=$(otool -L $BINARY | grep QtQml)
     QMLDIR=""
     if [ ! -z "VS" ]; then
         QMLDIR=" -qmldir=../src/gui"

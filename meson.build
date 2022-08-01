@@ -109,9 +109,9 @@ else
 			'src/gui/vsServerInfo.cpp',
 			'src/gui/vsQuickView.cpp',
 			'src/gui/vsWebSocket.cpp',
+			'src/gui/vsUrlHandler.cpp',
 			'src/vsPinger.cpp',
 			'src/vsPing.cpp'
-
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
@@ -120,7 +120,9 @@ else
 			'src/gui/vsQuickView.h',
 			'src/gui/vsWebSocket.h',
 			'src/vsPinger.h',
-			'src/vsPing.h'
+			'src/vsPing.h',
+			'src/gui/vsUrlHandler.h',
+			'src/JTApplication.h'
 		]
 		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
 		qres = ['src/gui/qjacktrip.qrc']

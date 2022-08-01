@@ -245,7 +245,9 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
                src/vsPinger.h \
-               src/vsPing.h
+               src/vsPing.h \
+               src/gui/vsUrlHandler.h \
+               src/JTApplication.h
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
@@ -299,7 +301,8 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
                src/vsPinger.cpp \
-               src/vsPing.cpp
+               src/vsPing.cpp \
+               src/gui/vsUrlHandler.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \

@@ -161,6 +161,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(&m_heartbeatTimer, &QTimer::timeout, this, [&]() {
         sendHeartbeat();
     });
+
+    // Connect joinStudio callbacks
+    connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -189,6 +192,12 @@ void VirtualStudio::show()
         toVirtualStudio();
     }
     m_view.show();
+}
+
+void VirtualStudio::raiseToTop()
+{
+    m_view.show();             // Restore from systray
+    m_view.requestActivate();  // Raise to top
 }
 
 bool VirtualStudio::showFirstRun()
@@ -384,6 +393,14 @@ void VirtualStudio::setShowWarnings(bool show)
     settings.setValue(QStringLiteral("ShowWarnings"), m_showWarnings);
     settings.endGroup();
     emit showWarningsChanged();
+    // attempt to join studio if requested
+    if (!m_studioToJoin.isEmpty()) {
+        // device setup view proceeds warning view
+        // if device setup is shown, do not immediately join
+        if (!m_showDeviceSetup) {
+            joinStudio();
+        }
+    }
 }
 
 float VirtualStudio::fontScale()
@@ -417,6 +434,17 @@ void VirtualStudio::setDarkMode(bool dark)
     emit darkModeChanged();
 }
 
+QUrl VirtualStudio::studioToJoin()
+{
+    return m_studioToJoin;
+}
+
+void VirtualStudio::setStudioToJoin(const QUrl& url)
+{
+    m_studioToJoin = url;
+    emit studioToJoinChanged();
+}
+
 bool VirtualStudio::noUpdater()
 {
 #ifdef NO_UPDATER
@@ -433,6 +461,43 @@ bool VirtualStudio::psiBuild()
 #else
     return false;
 #endif
+}
+
+QString VirtualStudio::failedMessage()
+{
+    return m_failedMessage;
+}
+
+void VirtualStudio::joinStudio()
+{
+    if (!m_authenticated || m_studioToJoin.isEmpty()) {
+        return;
+    }
+
+    QString scheme = m_studioToJoin.scheme();
+    QString path   = m_studioToJoin.path();
+    QString url    = m_studioToJoin.toString();
+    m_studioToJoin.clear();
+
+    m_failedMessage = "";
+    if (scheme != "jacktrip" || path.length() <= 1) {
+        m_failedMessage = "Invalid join request received: " + url;
+        emit failedMessageChanged();
+        emit failed();
+        return;
+    }
+    QString targetId = path.remove(0, 1);
+
+    int i = 0;
+    for (i = 0; i < m_servers.count(); i++) {
+        if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == targetId) {
+            connectToStudio(i);
+            return;
+        }
+    }
+    m_failedMessage = "Unable to find studio " + targetId;
+    emit failedMessageChanged();
+    emit failed();
 }
 
 void VirtualStudio::toStandard()
@@ -578,6 +643,13 @@ void VirtualStudio::applySettings()
     emit inputDeviceChanged();
     emit outputDeviceChanged();
 #endif
+
+    // attempt to join studio if requested
+    // this function is called after the device setup view
+    // which can display upon opening the app from join link
+    if (!m_studioToJoin.isEmpty()) {
+        joinStudio();
+    }
 }
 
 void VirtualStudio::connectToStudio(int studioIndex)
@@ -803,7 +875,8 @@ void VirtualStudio::exit()
 
 void VirtualStudio::slotAuthSucceded()
 {
-    m_refreshToken = m_authenticator->refreshToken();
+    m_authenticated = true;
+    m_refreshToken  = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
 
     m_device = new VsDevice(m_authenticator.data());
@@ -825,11 +898,20 @@ void VirtualStudio::slotAuthSucceded()
         getUserMetadata();
     }
 
+    // attempt to join studio if requested
+    if (!m_studioToJoin.isEmpty()) {
+        // FTUX shows warnings and device setup views
+        // if any of these enabled, do not immediately join
+        if (!m_showWarnings && !m_showDeviceSetup) {
+            joinStudio();
+        }
+    }
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
 }
 
 void VirtualStudio::slotAuthFailed()
 {
+    m_authenticated = false;
     emit authFailed();
 }
 
@@ -1320,4 +1402,6 @@ VirtualStudio::~VirtualStudio()
     for (int i = 0; i < m_servers.count(); i++) {
         delete m_servers.at(i);
     }
+
+    QDesktopServices::unsetUrlHandler("jacktrip");
 }
