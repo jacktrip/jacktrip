@@ -60,18 +60,18 @@ Rectangle {
         color: shadowColour
         source: shadow
     }
-    
+
     Rectangle {
         width: 12 * virtualstudio.uiScale; height: parent.height
         radius: width / 2
         color: available ? "#0C1424" : "#B3B3B3"
     }
-    
+
     Image {
         source: available ? "wedge.svg" : "wedge_inactive.svg"
         x: 6; y: 0; width: 52 * virtualstudio.uiScale; height: 83 * virtualstudio.uiScale
     }
-    
+
     Image {
         source: "logo.svg"
         x: 8; y: 11; width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale

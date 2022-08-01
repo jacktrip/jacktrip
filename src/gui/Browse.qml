@@ -258,7 +258,7 @@ Item {
             x: 16 * virtualstudio.uiScale
             width: studioListView.width - (2 * x)
             serverLocation: virtualstudio.regions[location] ? "in " + virtualstudio.regions[location].label : ""
-            flagImage: flag
+            flagImage: bannerURL ? bannerURL : flag
             studioName: name
             publicStudio: isPublic
             manageable: isManageable

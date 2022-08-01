@@ -1152,6 +1152,8 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                         servers.at(i)[QStringLiteral("sampleRate")].toInt());
                     serverInfo->setQueueBuffer(
                         servers.at(i)[QStringLiteral("queueBuffer")].toInt());
+                    serverInfo->setBannerURL(
+                        servers.at(i)[QStringLiteral("bannerURL")].toString());
                     serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
                     serverInfo->setSessionId(
                         servers.at(i)[QStringLiteral("sessionId")].toString());
