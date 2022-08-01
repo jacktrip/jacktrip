@@ -338,10 +338,7 @@ int main(int argc, char* argv[])
             instanceCheckSocket.data(), &QLocalSocket::connected, app.data(),
             [&]() {
                 // pass deeplink to existing instance before quitting
-                qDebug() << "deeplink" << deeplink;
-                std::cout << "deeplink: " << deeplink.toStdString() << std::endl;
                 if (!deeplink.isEmpty()) {
-                    qDebug() << "sending deeplink:" << deeplink;
                     QByteArray baDeeplink = deeplink.toLocal8Bit();
                     qint64 writeBytes     = instanceCheckSocket->write(baDeeplink);
                     instanceCheckSocket->flush();
@@ -351,8 +348,6 @@ int main(int argc, char* argv[])
                         qDebug() << "sending deeplink failed";
                     }
                 }
-                qDebug() << "quitting";
-                std::cout << "quitting" << std::endl;
                 emit QCoreApplication::quit();
             },
             Qt::QueuedConnection);
@@ -373,7 +368,6 @@ int main(int argc, char* argv[])
                         [&]() {
                             // This is the first instance. Bring it to the
                             // top.
-                            qDebug() << "raising to top";
                             vs->raiseToTop();
                             while (instanceServer->hasPendingConnections()) {
                                 // Receive URL from 2nd instance
@@ -381,7 +375,7 @@ int main(int argc, char* argv[])
                                     instanceServer->nextPendingConnection();
 
                                 if (!connectedSocket->waitForConnected()) {
-                                    qDebug() << "Never connected";
+                                    qDebug() << "Never received connection";
                                     return;
                                 }
 
@@ -399,7 +393,6 @@ int main(int argc, char* argv[])
                                 QByteArray in(connectedSocket->readAll());
                                 QString urlString(in);
                                 QUrl url(urlString);
-                                qDebug() << "receieved url string:" << urlString;
 
                                 // Join studio using received URL
                                 if (url.scheme() == "jacktrip" && url.host() == "join") {
@@ -436,10 +429,6 @@ int main(int argc, char* argv[])
         QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
                          [&](const QUrl& url) {
-                             qDebug() << "url found is " << url;
-                             qDebug() << "url scheme is" << url.scheme();
-                             qDebug() << "url host is" << url.host();
-                             vs->setDebugText(url.toString());
                              if (url.scheme() == "jacktrip" && url.host() == "join") {
                                  vs->setStudioToJoin(url);
                              }
@@ -466,7 +455,7 @@ int main(int argc, char* argv[])
         qDebug() << "Log file location:" << fileLoc;
         outFile.setFileName(fileLoc);
         if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
-            qDebug() << "File open failed:" << outFile.errorString();
+            qDebug() << "Log file open failed:" << outFile.errorString();
         }
         ts = new QTextStream(&outFile);
         qInstallMessageHandler(qtMessageHandler);

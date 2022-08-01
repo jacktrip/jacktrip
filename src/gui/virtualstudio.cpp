@@ -458,17 +458,6 @@ bool VirtualStudio::psiBuild()
 #endif
 }
 
-QString VirtualStudio::debugText()
-{
-    return m_debugText;
-}
-
-void VirtualStudio::setDebugText(QString text)
-{
-    m_debugText = text;
-    emit debugTextChanged();
-}
-
 QString VirtualStudio::failedMessage()
 {
     return m_failedMessage;
@@ -874,13 +863,6 @@ void VirtualStudio::exit()
     } else {
         emit signalExit();
     }
-}
-
-void VirtualStudio::testUrlScheme()
-{
-    qDebug() << "testing url scheme";
-    QDesktopServices::openUrl(
-        QUrl("jacktrip://join/745646a0-704b-4ba9-895d-e5f6752dad08", QUrl::TolerantMode));
 }
 
 void VirtualStudio::slotAuthSucceded()

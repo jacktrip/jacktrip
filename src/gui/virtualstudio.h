@@ -93,8 +93,6 @@ class VirtualStudio : public QObject
                    showWarningsChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
-    Q_PROPERTY(
-        QString debugText READ debugText WRITE setDebugText NOTIFY debugTextChanged)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
 
    public:
@@ -141,9 +139,7 @@ class VirtualStudio : public QObject
     void setShowWarnings(bool show);
     bool noUpdater();
     bool psiBuild();
-    QString debugText();
     QString failedMessage();
-    void setDebugText(QString text);
 
    public slots:
     void toStandard();
@@ -162,7 +158,6 @@ class VirtualStudio : public QObject
     void editProfile();
     void showAbout();
     void exit();
-    void testUrlScheme();
 
    signals:
     void authSucceeded();
@@ -193,7 +188,6 @@ class VirtualStudio : public QObject
     void studioToJoinChanged();
     void signalExit();
     void periodicRefresh();
-    void debugTextChanged();
     void failedMessageChanged();
 
    private slots:
@@ -265,7 +259,6 @@ class VirtualStudio : public QObject
     float m_uiScale;
     float m_previousUiScale;
     bool m_darkMode         = false;
-    QString m_debugText     = "";
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
     bool m_authenticated = false;

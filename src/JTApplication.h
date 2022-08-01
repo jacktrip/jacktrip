@@ -56,7 +56,6 @@ class JTApplication : public QApplication
     {
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
-            qDebug() << "Open url" << openEvent->url();
 
             QDesktopServices::openUrl(openEvent->url());
         }
