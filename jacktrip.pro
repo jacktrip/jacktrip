@@ -35,7 +35,7 @@ nogui {
     QT += svg
     QT += websockets
   }
-  noupdater {
+  noupdater|linux-g++|linux-g++-64 {
     DEFINES += NO_UPDATER
   }
 }
@@ -247,11 +247,11 @@ HEADERS += src/DataProtocol.h \
                src/vsPinger.h \
                src/vsPing.h
   }
-  !noupdater {
+  !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
-               src/dblsqd/release.h \
-               src/dblsqd/semver.h \
-               src/dblsqd/update_dialog.h
+            src/dblsqd/release.h \
+            src/dblsqd/semver.h \
+            src/dblsqd/update_dialog.h
   }
 }
 
@@ -301,11 +301,11 @@ SOURCES += src/DataProtocol.cpp \
                src/vsPinger.cpp \
                src/vsPing.cpp \
   }
-  !noupdater {
+  !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \
-               src/dblsqd/release.cpp \
-               src/dblsqd/semver.cpp \
-               src/dblsqd/update_dialog.cpp
+              src/dblsqd/release.cpp \
+              src/dblsqd/semver.cpp \
+              src/dblsqd/update_dialog.cpp
   }
 }
 
@@ -320,7 +320,7 @@ SOURCES += src/DataProtocol.cpp \
   } else {
     RESOURCES += src/gui/qjacktrip.qrc
   }
-  !noupdater {
+  !noupdater:!linux-g++:!linux-g++-64 {
     FORMS += src/dblsqd/update_dialog.ui
   }
 }

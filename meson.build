@@ -126,7 +126,7 @@ else
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 
-	if get_option('noupdater') == true
+	if get_option('noupdater') == true or host_machine.system() == 'linux'
 		defines += '-DNO_UPDATER'
 	else
 		src += [

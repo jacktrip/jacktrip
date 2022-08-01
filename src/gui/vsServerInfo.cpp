@@ -195,6 +195,16 @@ void VsServerInfo::setQueueBuffer(quint16 queueBuffer)
     m_queueBuffer = queueBuffer;
 }
 
+QString VsServerInfo::bannerURL()
+{
+    return m_bannerURL;
+}
+
+void VsServerInfo::setBannerURL(const QString& bannerURL)
+{
+    m_bannerURL = bannerURL;
+}
+
 QString VsServerInfo::id()
 {
     return m_id;
