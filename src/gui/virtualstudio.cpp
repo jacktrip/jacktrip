@@ -878,12 +878,14 @@ void VirtualStudio::slotAuthSucceded()
     m_authenticated = true;
     m_refreshToken  = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
+    QSettings settings;
+    settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
+    settings.endGroup();
 
     m_device = new VsDevice(m_authenticator.data());
     m_device->registerApp();
-
-    QSettings settings;
-    settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
 
     if (m_userId.isEmpty()) {
         getUserId();
