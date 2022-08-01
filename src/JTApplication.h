@@ -30,35 +30,37 @@
 //*****************************************************************
 
 /**
- * \file vsQuickView.h
- * \author Aaron Wyatt
- * \date March 2022
+ * \file JTApplication.h
+ * \author Matt Hortoon
+ * \date July 2022
  */
 
-#ifndef VSQUICKVIEW_H
-#define VSQUICKVIEW_H
+#ifndef JTAPPLICATION_H
+#define JTAPPLICATION_H
 
-#include <QQuickView>
-#ifdef Q_OS_MACOS
-#include <QAction>
-#include <QMenu>
-#include <QMenuBar>
+#include <QApplication>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QEvent>
+#include <QFileOpenEvent>
 #include <QObject>
-#endif
 
-class VsQuickView : public QQuickView
+class JTApplication : public QApplication
 {
     Q_OBJECT
 
    public:
-    VsQuickView(QWindow* parent = nullptr);
-    bool event(QEvent* event) override;
+    JTApplication(int& argc, char** argv) : QApplication(argc, argv) {}
 
-   signals:
-    void windowClose();
+    bool event(QEvent* event) override
+    {
+        if (event->type() == QEvent::FileOpen) {
+            QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
 
-   private slots:
-    void closeWindow();
+            QDesktopServices::openUrl(openEvent->url());
+        }
+        return QApplication::event(event);
+    }
 };
 
-#endif  // VSQUICKVIEW_H
+#endif  // JTAPPLICATION_H

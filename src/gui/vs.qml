@@ -21,6 +21,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
         },
 
         State {
@@ -31,6 +32,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
         },
 
         State {
@@ -41,6 +43,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
         },
 
         State {
@@ -51,6 +54,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: 0 }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
         },
 
         State {
@@ -61,6 +65,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
         },
 
         State {
@@ -71,6 +76,18 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: 0 }
+            PropertyChanges { target: failedScreen; x: window.width }
+        },
+
+        State {
+            name: "failed"
+            PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: startScreen; x: -startScreen.width }
+            PropertyChanges { target: setupScreen; x: -setupScreen.width }
+            PropertyChanges { target: browseScreen; x: -browseScreen.width }
+            PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: 0 }
         }
     ]
 
@@ -102,6 +119,10 @@ Rectangle {
         id: connectedScreen
     }
 
+    Failed {
+        id: failedScreen
+    }
+
     Connections {
         target: virtualstudio
         onAuthSucceeded: { 
@@ -114,7 +135,12 @@ Rectangle {
         onAuthFailed: {
             loginScreen.failTextVisible = true;
         }
-        // onConnected: { }
+        onConnected: {
+            window.state = "connected";
+        }
+        onFailed: {
+            window.state = "failed";
+        }
         onDisconnected: {
             window.state = "browse";
         }

@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -30,35 +30,54 @@
 //*****************************************************************
 
 /**
- * \file vsQuickView.h
- * \author Aaron Wyatt
- * \date March 2022
+ * \file vsPing.h
+ * \author Dominick Hing
+ * \date July 2022
  */
 
-#ifndef VSQUICKVIEW_H
-#define VSQUICKVIEW_H
+#ifndef VSPING_H
+#define VSPING_H
 
-#include <QQuickView>
-#ifdef Q_OS_MACOS
-#include <QAction>
-#include <QMenu>
-#include <QMenuBar>
+#include <QAbstractSocket>
+#include <QDateTime>
 #include <QObject>
-#endif
+#include <QTimer>
+#include <QtWebSockets>
+#include <stdexcept>
 
-class VsQuickView : public QQuickView
+/** \brief A helper class for VsPinger
+ *
+ */
+class VsPing : public QObject
 {
-    Q_OBJECT
+    Q_OBJECT;
 
    public:
-    VsQuickView(QWindow* parent = nullptr);
-    bool event(QEvent* event) override;
+    explicit VsPing(uint32_t pingNum, uint32_t timeout_msec);
+    uint32_t pingNumber() { return mPingNumber; }
+
+    QDateTime sentTimestamp() { return mSent; }
+    QDateTime receivedTimestamp() { return mReceived; }
+    bool receivedReply() { return mReceivedReply; }
+    bool timedOut() { return mTimedOut; }
+
+    void send();
+    void receive();
+
+   private:
+    uint32_t mPingNumber;
+    QDateTime mSent;
+    QDateTime mReceived;
+
+    QTimer mTimer;
+    bool mTimedOut      = false;
+    bool mReceivedReply = false;
+
+   public slots:
+    void onTimeout();
 
    signals:
-    void windowClose();
-
-   private slots:
-    void closeWindow();
+    void timeout(uint32_t pingNum);
 };
 
-#endif  // VSQUICKVIEW_H
+#endif  // VSPING_H

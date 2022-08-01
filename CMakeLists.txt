@@ -133,6 +133,8 @@ if (NOT nogui)
       src/gui/vsServerInfo.cpp
       src/gui/vsQuickView.cpp
       src/gui/qjacktrip.qrc
+      src/vsPinger.cpp
+      src/vsPing.cpp
     )
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)

@@ -32,10 +32,11 @@ jobs:
         include:
           - name: Linux-x64-qmake-gcc-static
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
-            runs-on: ubuntu-18.04
+            runs-on: ubuntu-20.04
             system-rtaudio: false
             bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
+            novs: false
             weakjack: false
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
@@ -54,6 +55,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -65,6 +67,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: true
+            novs: true
             weakjack: false
             static-qt-version: 5.12.12
             qt-static-cache-key: 'v27' # we use the same key as the main Linux build
@@ -77,6 +80,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -99,10 +103,11 @@ jobs:
 
           - name: macOS-x64-qmake-clang-static
             release-name: macOS-x64
-            runs-on: macos-10.15
+            runs-on: macos-11
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             static-qt-version: 5.15.2
             qt-static-cache-key: 'v07'
@@ -113,10 +118,11 @@ jobs:
             build-system: qmake
 
           - name: macOS-x64-qmake-clang-shared-bundled_rtaudio
-            runs-on: macos-10.15
+            runs-on: macos-11
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -125,10 +131,11 @@ jobs:
             build-system: qmake
 
           - name: macOS-x64-meson-clang-shared-bundled_rtaudio
-            runs-on: macos-10.15
+            runs-on: macos-11
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -143,6 +150,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.2
@@ -157,6 +165,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-dynamic
             qt-arch: 'win64_mingw81'
@@ -170,6 +179,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
@@ -184,6 +194,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             qt-arch: 'win64_msvc2019_64'
             qt-cache-key: 'v01'
@@ -198,7 +209,7 @@ jobs:
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
-      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
+      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebview -skip qtxmlpatterns' # common for all platforms
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       
@@ -237,7 +248,7 @@ jobs:
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev
+            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev

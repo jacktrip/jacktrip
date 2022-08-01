@@ -46,8 +46,11 @@
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
+#include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
+#include "vsUrlHandler.h"
+#include "vsWebSocket.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -79,6 +82,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
@@ -90,6 +94,7 @@ class VirtualStudio : public QObject
                    showWarningsChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
+    Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -97,6 +102,7 @@ class VirtualStudio : public QObject
 
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
+    void raiseToTop();
 
     bool showFirstRun();
     bool hasRefreshToken();
@@ -115,6 +121,7 @@ class VirtualStudio : public QObject
     QJsonObject regions();
     QJsonObject userMetadata();
     QString connectionState();
+    QJsonObject networkStats();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -126,12 +133,15 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    QUrl studioToJoin();
+    void setStudioToJoin(const QUrl& url);
     bool showDeviceSetup();
     void setShowDeviceSetup(bool show);
     bool showWarnings();
     void setShowWarnings(bool show);
     bool noUpdater();
     bool psiBuild();
+    QString failedMessage();
 
    public slots:
     void toStandard();
@@ -154,6 +164,7 @@ class VirtualStudio : public QObject
    signals:
     void authSucceeded();
     void authFailed();
+    void failed();
     void connected();
     void disconnected();
     void refreshFinished(int index);
@@ -170,14 +181,17 @@ class VirtualStudio : public QObject
     void showInactiveChanged();
     void showSelfHostedChanged();
     void connectionStateChanged();
+    void networkStatsChanged();
     void updateChannelChanged();
     void showDeviceSetupChanged();
     void showWarningsChanged();
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
+    void studioToJoinChanged();
     void signalExit();
     void periodicRefresh();
+    void failedMessageChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -188,9 +202,13 @@ class VirtualStudio : public QObject
     void checkForHostname();
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
+    void joinStudio();
+    void updatedStats(const QJsonObject& stats);
 
    private:
     void setupAuthenticator();
+
+    void sendHeartbeat();
     void getServerList(bool firstLoad = false, int index = -1);
     void getUserId();
     void getSubscriptions();
@@ -231,6 +249,12 @@ class VirtualStudio : public QObject
     bool m_allowRefresh      = true;
     bool m_refreshInProgress = false;
 
+    QJsonObject m_networkStats;
+
+    QTimer m_heartbeatTimer;
+    VsWebSocket* m_heartbeatWebSocket = NULL;
+    VsDevice* m_device                = NULL;
+
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
     bool m_showInactive      = false;
@@ -240,7 +264,10 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
-    bool m_darkMode = false;
+    bool m_darkMode         = false;
+    QString m_failedMessage = "";
+    QUrl m_studioToJoin;
+    bool m_authenticated = false;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
