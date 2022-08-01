@@ -55,8 +55,13 @@
 #include "../Limiter.h"
 #include "../Reverb.h"
 
+#ifndef NO_VS
+QJackTrip::QJackTrip(int argc, bool launchedByDeeplink, QWidget* parent)
+    : QMainWindow(parent)
+#else
 QJackTrip::QJackTrip(int argc, QWidget* parent)
     : QMainWindow(parent)
+#endif
 #ifdef PSI
     , m_ui(new Ui::QJackTrip)
 #else
@@ -281,7 +286,7 @@ QJackTrip::QJackTrip(int argc, QWidget* parent)
 
     // One of our arguments will always be --gui, so if that's the only one
     // then we don't need to show the warning message.
-    if ((!gVerboseFlag && m_argc > 2) || m_argc > 3) {
+    if (((!gVerboseFlag && m_argc > 2) || m_argc > 3) && !launchedByDeeplink) {
         QMessageBox msgBox;
         msgBox.setText(
             "The GUI version of JackTrip currently ignores any command line "

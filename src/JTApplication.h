@@ -30,39 +30,37 @@
 //*****************************************************************
 
 /**
- * \file vsQuickView.cpp
- * \author Aaron Wyatt
- * \date March 2022
+ * \file JTApplication.h
+ * \author Matt Hortoon
+ * \date July 2022
  */
 
-#include "vsQuickView.h"
+#ifndef JTAPPLICATION_H
+#define JTAPPLICATION_H
 
+#include <QApplication>
+#include <QDebug>
 #include <QDesktopServices>
-#include <iostream>
+#include <QEvent>
+#include <QFileOpenEvent>
+#include <QObject>
 
-VsQuickView::VsQuickView(QWindow* parent) : QQuickView(parent)
+class JTApplication : public QApplication
 {
-#ifdef Q_OS_MACOS
-    auto* quit = new QAction("&Quit", this);
+    Q_OBJECT
 
-    QMenuBar* menuBar = new QMenuBar(nullptr);
-    QMenu* appName    = menuBar->addMenu("&JackTrip");
-    appName->addAction(quit);
+   public:
+    JTApplication(int& argc, char** argv) : QApplication(argc, argv) {}
 
-    connect(quit, &QAction::triggered, this, &VsQuickView::closeWindow);
-#endif
-}
+    bool event(QEvent* event) override
+    {
+        if (event->type() == QEvent::FileOpen) {
+            QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
 
-bool VsQuickView::event(QEvent* event)
-{
-    if (event->type() == QEvent::Close || event->type() == QEvent::Quit) {
-        emit windowClose();
-        event->ignore();
+            QDesktopServices::openUrl(openEvent->url());
+        }
+        return QApplication::event(event);
     }
-    return QQuickView::event(event);
-}
+};
 
-void VsQuickView::closeWindow()
-{
-    emit windowClose();
-}
+#endif  // JTAPPLICATION_H

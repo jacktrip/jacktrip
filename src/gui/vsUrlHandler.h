@@ -30,39 +30,29 @@
 //*****************************************************************
 
 /**
- * \file vsQuickView.cpp
- * \author Aaron Wyatt
- * \date March 2022
+ * \file vsUrlHandler.h
+ * \author Matt Horton
+ * \date June 2022
  */
 
-#include "vsQuickView.h"
+#ifndef VSURLHANDLER_H
+#define VSURLHANDLER_H
 
 #include <QDesktopServices>
-#include <iostream>
+#include <QObject>
+#include <QSslError>
+#include <QString>
+#include <QUrl>
 
-VsQuickView::VsQuickView(QWindow* parent) : QQuickView(parent)
+class VsUrlHandler : public QObject
 {
-#ifdef Q_OS_MACOS
-    auto* quit = new QAction("&Quit", this);
+    Q_OBJECT
 
-    QMenuBar* menuBar = new QMenuBar(nullptr);
-    QMenu* appName    = menuBar->addMenu("&JackTrip");
-    appName->addAction(quit);
+   signals:
+    void joinUrlClicked(const QUrl& url);
 
-    connect(quit, &QAction::triggered, this, &VsQuickView::closeWindow);
-#endif
-}
+   public slots:
+    void handleUrl(const QUrl& url);
+};
 
-bool VsQuickView::event(QEvent* event)
-{
-    if (event->type() == QEvent::Close || event->type() == QEvent::Quit) {
-        emit windowClose();
-        event->ignore();
-    }
-    return QQuickView::event(event);
-}
-
-void VsQuickView::closeWindow()
-{
-    emit windowClose();
-}
+#endif  // VSURLHANDLER_H

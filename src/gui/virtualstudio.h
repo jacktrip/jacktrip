@@ -49,6 +49,7 @@
 #include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
+#include "vsUrlHandler.h"
 #include "vsWebSocket.h"
 
 #ifdef __APPLE__
@@ -93,6 +94,7 @@ class VirtualStudio : public QObject
                    showWarningsChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
+    Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -100,6 +102,7 @@ class VirtualStudio : public QObject
 
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
+    void raiseToTop();
 
     bool showFirstRun();
     bool hasRefreshToken();
@@ -130,12 +133,15 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    QUrl studioToJoin();
+    void setStudioToJoin(const QUrl& url);
     bool showDeviceSetup();
     void setShowDeviceSetup(bool show);
     bool showWarnings();
     void setShowWarnings(bool show);
     bool noUpdater();
     bool psiBuild();
+    QString failedMessage();
 
    public slots:
     void toStandard();
@@ -158,6 +164,7 @@ class VirtualStudio : public QObject
    signals:
     void authSucceeded();
     void authFailed();
+    void failed();
     void connected();
     void disconnected();
     void refreshFinished(int index);
@@ -181,8 +188,10 @@ class VirtualStudio : public QObject
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
+    void studioToJoinChanged();
     void signalExit();
     void periodicRefresh();
+    void failedMessageChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -193,6 +202,7 @@ class VirtualStudio : public QObject
     void checkForHostname();
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
+    void joinStudio();
     void updatedStats(const QJsonObject& stats);
 
    private:
@@ -254,7 +264,10 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
-    bool m_darkMode = false;
+    bool m_darkMode         = false;
+    QString m_failedMessage = "";
+    QUrl m_studioToJoin;
+    bool m_authenticated = false;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
