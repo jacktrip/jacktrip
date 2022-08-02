@@ -157,24 +157,53 @@ void VsPinger::updateStats()
             QDateTime sent     = ping->sentTimestamp();
             QDateTime received = ping->receivedTimestamp();
             qint64 diff        = sent.msecsTo(received);
-            vec_rtt.push_back(diff);
+
+            // don't include case where dif = 0 in stats, mark as expired instead
+            if (diff != 0) {
+                vec_rtt.push_back(diff);
+            } else {
+                vec_expired.push_back(ping->pingNumber());
+            }
 
             count++;
         }
     }
 
+    // Deleted pings marked as expired by freeing the Ping object
+    // and clearing the map item
+    for (std::vector<uint32_t>::iterator it_expired = vec_expired.begin();
+         it_expired != vec_expired.end(); it_expired++) {
+        uint32_t expiredPingNum = *it_expired;
+        delete mPings.at(expiredPingNum);
+        mPings.erase(expiredPingNum);
+    }
+
     // Update RTT stats
-    double min_rtt    = std::numeric_limits<qint64>::max();
-    double max_rtt    = std::numeric_limits<qint64>::min();
-    double avg_rtt    = 0;
-    double stddev_rtt = 0;
+    double min_rtt    = 0.0;
+    double max_rtt    = 0.0;
+    double avg_rtt    = 0.0;
+    double stddev_rtt = 0.0;
+
+    // avoid edge case due to min_rtt and max_rtt being at the numeric limits
+    // when vector size is 0
+    if (vec_rtt.size() == 0) {
+        stat.maxRtt    = 0;
+        stat.minRtt    = 0;
+        stat.avgRtt    = 0;
+        stat.stdDevRtt = 0;
+
+        // Update mStats
+        mStats = stat;
+        return;
+    }
+
     for (std::vector<qint64>::iterator it_rtt = vec_rtt.begin(); it_rtt != vec_rtt.end();
          it_rtt++) {
         double rtt = (double)*it_rtt;
-        if (rtt < min_rtt) {
+        if (rtt < min_rtt || min_rtt == 0.0) {
             min_rtt = rtt;
         }
-        if (rtt > max_rtt) {
+        if (rtt > max_rtt || max_rtt == 0.0) {
             max_rtt = rtt;
         }
 
@@ -193,15 +222,6 @@ void VsPinger::updateStats()
     stat.minRtt    = min_rtt;
     stat.avgRtt    = avg_rtt;
     stat.stdDevRtt = stddev_rtt;
-
-    // Deleted pings marked as expired by freeing the Ping object and clearing the map
-    // item
-    for (std::vector<uint32_t>::iterator it_expired = vec_expired.begin();
-         it_expired != vec_expired.end(); it_expired++) {
-        uint32_t expiredPingNum = *it_expired;
-        delete mPings.at(expiredPingNum);
-        mPings.erase(expiredPingNum);
-    }
 
     // Update mStats
     mStats = stat;

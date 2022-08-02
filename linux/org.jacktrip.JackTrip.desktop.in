@@ -7,4 +7,3 @@ Exec=/bin/bash -c "if [-z "%u"]; then jacktrip & echo "hey"; else echo "hey hey"
 Icon=@icon@
 Terminal=false
 StartupWMClass=@wmclass@
-MimeType=application/jacktrip;

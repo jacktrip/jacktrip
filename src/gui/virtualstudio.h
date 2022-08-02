@@ -82,6 +82,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
@@ -93,8 +94,6 @@ class VirtualStudio : public QObject
                    showWarningsChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
-    Q_PROPERTY(
-        QString debugText READ debugText WRITE setDebugText NOTIFY debugTextChanged)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
 
    public:
@@ -122,6 +121,7 @@ class VirtualStudio : public QObject
     QJsonObject regions();
     QJsonObject userMetadata();
     QString connectionState();
+    QJsonObject networkStats();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -141,9 +141,7 @@ class VirtualStudio : public QObject
     void setShowWarnings(bool show);
     bool noUpdater();
     bool psiBuild();
-    QString debugText();
     QString failedMessage();
-    void setDebugText(QString text);
 
    public slots:
     void toStandard();
@@ -162,7 +160,6 @@ class VirtualStudio : public QObject
     void editProfile();
     void showAbout();
     void exit();
-    void testUrlScheme();
 
    signals:
     void authSucceeded();
@@ -184,6 +181,7 @@ class VirtualStudio : public QObject
     void showInactiveChanged();
     void showSelfHostedChanged();
     void connectionStateChanged();
+    void networkStatsChanged();
     void updateChannelChanged();
     void showDeviceSetupChanged();
     void showWarningsChanged();
@@ -193,7 +191,6 @@ class VirtualStudio : public QObject
     void studioToJoinChanged();
     void signalExit();
     void periodicRefresh();
-    void debugTextChanged();
     void failedMessageChanged();
 
    private slots:
@@ -206,6 +203,7 @@ class VirtualStudio : public QObject
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
     void joinStudio();
+    void updatedStats(const QJsonObject& stats);
 
    private:
     void setupAuthenticator();
@@ -251,6 +249,8 @@ class VirtualStudio : public QObject
     bool m_allowRefresh      = true;
     bool m_refreshInProgress = false;
 
+    QJsonObject m_networkStats;
+
     QTimer m_heartbeatTimer;
     VsWebSocket* m_heartbeatWebSocket = NULL;
     VsDevice* m_device                = NULL;
@@ -265,7 +265,6 @@ class VirtualStudio : public QObject
     float m_uiScale;
     float m_previousUiScale;
     bool m_darkMode         = false;
-    QString m_debugText     = "";
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
     bool m_authenticated = false;

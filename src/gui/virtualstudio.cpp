@@ -324,6 +324,11 @@ QString VirtualStudio::connectionState()
     return m_connectionState;
 }
 
+QJsonObject VirtualStudio::networkStats()
+{
+    return m_networkStats;
+}
+
 QString VirtualStudio::updateChannel()
 {
     return m_updateChannel;
@@ -456,17 +461,6 @@ bool VirtualStudio::psiBuild()
 #else
     return false;
 #endif
-}
-
-QString VirtualStudio::debugText()
-{
-    return m_debugText;
-}
-
-void VirtualStudio::setDebugText(QString text)
-{
-    m_debugText = text;
-    emit debugTextChanged();
 }
 
 QString VirtualStudio::failedMessage()
@@ -665,6 +659,9 @@ void VirtualStudio::connectToStudio(int studioIndex)
         m_allowRefresh = false;
     }
     m_refreshTimer.stop();
+
+    m_networkStats = QJsonObject();
+    emit networkStatsChanged();
 
     m_currentStudio          = studioIndex;
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
@@ -876,24 +873,19 @@ void VirtualStudio::exit()
     }
 }
 
-void VirtualStudio::testUrlScheme()
-{
-    qDebug() << "testing url scheme";
-    QDesktopServices::openUrl(
-        QUrl("jacktrip://join/745646a0-704b-4ba9-895d-e5f6752dad08", QUrl::TolerantMode));
-}
-
 void VirtualStudio::slotAuthSucceded()
 {
     m_authenticated = true;
     m_refreshToken  = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
+    QSettings settings;
+    settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
+    settings.endGroup();
 
     m_device = new VsDevice(m_authenticator.data());
     m_device->registerApp();
-
-    QSettings settings;
-    settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
 
     if (m_userId.isEmpty()) {
         getUserId();
@@ -916,6 +908,7 @@ void VirtualStudio::slotAuthSucceded()
             joinStudio();
         }
     }
+    connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
 }
 
 void VirtualStudio::slotAuthFailed()
@@ -926,6 +919,9 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
+    // reset network statistics
+    m_networkStats = QJsonObject();
+
     if (m_isExiting) {
         emit signalExit();
         return;
@@ -1033,6 +1029,19 @@ void VirtualStudio::launchBrowser(const QUrl& url)
     } else {
         std::cout << "Unable to open URL" << std::endl;
     }
+}
+
+void VirtualStudio::updatedStats(const QJsonObject& stats)
+{
+    QJsonObject newStats;
+    for (int i = 0; i < stats.keys().size(); i++) {
+        QString key = stats.keys().at(i);
+        newStats.insert(key, stats[key].toDouble());
+    }
+
+    m_networkStats = newStats;
+    emit networkStatsChanged();
+    return;
 }
 
 void VirtualStudio::setupAuthenticator()
@@ -1170,6 +1179,8 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
                         servers.at(i)[QStringLiteral("sampleRate")].toInt());
                     serverInfo->setQueueBuffer(
                         servers.at(i)[QStringLiteral("queueBuffer")].toInt());
+                    serverInfo->setBannerURL(
+                        servers.at(i)[QStringLiteral("bannerURL")].toString());
                     serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
                     serverInfo->setSessionId(
                         servers.at(i)[QStringLiteral("sessionId")].toString());

@@ -3,6 +3,9 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 project(QJackTrip)
 
+message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build. "
+	"https://jacktrip.github.io/jacktrip/Build/Meson_build/")
+
 set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
@@ -87,8 +90,6 @@ set(qjacktrip_SRC
   src/JackTripWorker.cpp
   src/DataProtocol.cpp
   src/UdpDataProtocol.cpp
-  src/vsPinger.cpp
-  src/vsPing.cpp
   src/AudioInterface.cpp
   src/JackAudioInterface.cpp
   src/JMess.cpp
@@ -132,6 +133,8 @@ if (NOT nogui)
       src/gui/vsServerInfo.cpp
       src/gui/vsQuickView.cpp
       src/gui/qjacktrip.qrc
+      src/vsPinger.cpp
+      src/vsPing.cpp
     )
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)

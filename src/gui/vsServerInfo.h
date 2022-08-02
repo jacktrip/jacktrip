@@ -52,6 +52,7 @@ class VsServerInfo : public QObject
     // Q_PROPERTY(quint16 port READ port CONSTANT)
     Q_PROPERTY(bool isPublic READ isPublic CONSTANT)
     Q_PROPERTY(QString flag READ flag CONSTANT)
+    Q_PROPERTY(QString bannerURL READ bannerURL CONSTANT)
     Q_PROPERTY(QString location READ location CONSTANT)
     Q_PROPERTY(bool isManageable READ isManageable CONSTANT)
     Q_PROPERTY(quint16 period READ period CONSTANT)
@@ -90,6 +91,8 @@ class VsServerInfo : public QObject
     void setSampleRate(quint32 sampleRate);
     quint16 queueBuffer();
     void setQueueBuffer(quint16 queueBuffer);
+    QString bannerURL();
+    void setBannerURL(const QString& bannerURL);
     QString id();
     void setId(const QString& id);
     QString sessionId();
@@ -111,6 +114,7 @@ class VsServerInfo : public QObject
     quint16 m_period;
     quint32 m_sampleRate;
     quint16 m_queueBuffer;
+    QString m_bannerURL;
     QString m_id;
     QString m_sessionId;
     QString m_status;

@@ -49,15 +49,6 @@ Item {
             preventStealing: true
         }
     }
-
-    Text {
-        id: debugTextComponent
-        //anchors.bottom: parent.bottom
-        x: 16; y: 16; z: 2
-        text: virtualstudio.debugText
-        font { family: "Poppins"; pixelSize: 12 * virtualstudio.fontScale * virtualstudio.uiScale }
-        color: textColour
-    }
     
     Component {
         id: sectionHeading
@@ -258,7 +249,7 @@ Item {
             x: 16 * virtualstudio.uiScale
             width: studioListView.width - (2 * x)
             serverLocation: virtualstudio.regions[location] ? "in " + virtualstudio.regions[location].label : ""
-            flagImage: flag
+            flagImage: bannerURL ? bannerURL : flag
             studioName: name
             publicStudio: isPublic
             manageable: isManageable
