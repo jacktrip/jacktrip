@@ -283,6 +283,8 @@ JackTrip* VsDevice::initJackTrip(bool useRtAudio, std::string input, std::string
     QObject::connect(m_jackTrip.data(), &JackTrip::signalError, this,
                      &VsDevice::terminateJackTrip, Qt::QueuedConnection);
 
+    m_jackTrip->appendProcessPluginToNetwork(new VuMeter(m_jackTrip->getNumInputChannels()));
+
     return m_jackTrip.data();
 }
 
