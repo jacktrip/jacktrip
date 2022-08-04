@@ -356,9 +356,9 @@ int main(int argc, char* argv[])
         // Create instanceServer to prevent new instances from being created
         QObject::connect(
 #ifdef Q_OS_LINUX            
-            instanceCheckSocket.data(), &QLocalSocket::errorOccurred, app.data(),
-#else
             instanceCheckSocket.data(), &QLocalSocket::error, app.data(),
+#else
+            instanceCheckSocket.data(), &QLocalSocket::errorOccurred, app.data(),
 #endif
             [&](QLocalSocket::LocalSocketError socketError) {
                 switch (socketError) {
