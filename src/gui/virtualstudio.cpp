@@ -164,7 +164,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Connect joinStudio callbacks
     connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
-    connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -1261,6 +1260,11 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         } else {
             emit refreshFinished(index);
         }
+
+        if (!m_studioToJoin.isEmpty()) {
+            joinStudio();
+        }
+
         m_refreshInProgress = false;
 
         reply->deleteLater();
