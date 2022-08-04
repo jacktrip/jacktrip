@@ -471,9 +471,9 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    qDebug << "joining studio";
+    qDebug() << "joining studio";
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.count() == 0) {
-        qDebug << "join skipped";
+        qDebug() << "join skipped";
         return;
     }
 
