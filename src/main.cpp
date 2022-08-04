@@ -355,12 +355,12 @@ int main(int argc, char* argv[])
             Qt::QueuedConnection);
         // Create instanceServer to prevent new instances from being created
 #ifdef Q_OS_LINUX
-    auto errorFunc = &QLocalSocket::error;
+    std::function<void(QLocalSocket::LocalSocketError)> errorFunc = QLocalSocket::error;
 #else
-    auto errorFunc = &QLocalSocket::errorOccurred;
+    std::function<void(QLocalSocket::LocalSocketError)> errorFunc = QLocalSocket::errorOccurred;
 #endif
         QObject::connect(  
-            instanceCheckSocket.data(), errorFunc, app.data(),
+            instanceCheckSocket.data(), &errorFunc, app.data(),
             [&](QLocalSocket::LocalSocketError socketError) {
                 switch (socketError) {
                 case QLocalSocket::ServerNotFoundError:
