@@ -39,10 +39,10 @@
 #ifndef __VUMETER_H__
 #define __VUMETER_H__
 
+#include <QObject>
+#include <QTimer>
 #include <iostream>
 #include <vector>
-#include <QTimer>
-#include <QObject>
 
 #include "ProcessPlugin.h"
 #include "vumeterdsp.h"
@@ -55,7 +55,8 @@ class VuMeter : public ProcessPlugin
 
    public:
     /// \brief The class constructor sets the number of channels to measure
-    VuMeter(int numchans, bool verboseFlag = false) : mNumChannels(numchans) {
+    VuMeter(int numchans, bool verboseFlag = false) : mNumChannels(numchans)
+    {
         setVerbose(verboseFlag);
         for (int i = 0; i < mNumChannels; i++) {
             vumeterP.push_back(new vumeterdsp);
@@ -80,10 +81,13 @@ class VuMeter : public ProcessPlugin
     std::vector<APIUI*> vumeterUIP;
 
     QTimer mTimer;
+    QVector<float> mValues;
 
-  signals:
-    void onComputedVolumeMeasurements();
+   private slots:
     void onTick();
+
+   signals:
+    void onComputedVolumeMeasurements(QVector<float> values);
 };
 
 #endif

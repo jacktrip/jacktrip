@@ -44,6 +44,7 @@
 #include <QSslSocket>
 #include <QString>
 #include <QTimer>
+#include <QVector>
 #include <QUdpSocket>
 #include <stdexcept>
 
@@ -574,7 +575,8 @@ class JackTrip : public QObject
     void receivedDataUDP();
     void udpTimerTick();
     void tcpTimerTick();
-    void receivedVolumeMeasurements();
+    void receivedInputVolumeMeasurements(QVector<float> values);
+    void receivedOutputVolumeMeasurements(QVector<float> values);
 
    signals:
     // void signalUdpTimeOut();
@@ -588,6 +590,9 @@ class JackTrip : public QObject
     void signalUdpWaitingTooLong();
     void signalQueueLengthChanged(int queueLength);
     void signalAudioStarted();
+
+    void signalUpdatedInputAudioVuLevels(QVector<float> levels);
+    void signalUpdatedOutputAudioVuLevels(QVector<float> levels);
 
    public:
     /// \brief Set the AudioInteface object
@@ -626,12 +631,14 @@ class JackTrip : public QObject
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
-    int mNumAudioChansIn;    ///< Number of Audio Input Channels
-    int mNumAudioChansOut;   ///< Number of Audio Output Channels
-#ifdef WAIR                  // WAIR
-    int mNumNetRevChans;     ///< Number of Network Audio Channels (net comb filters)
-#endif                       // endwhere
-    int mBufferQueueLength;  ///< Audio Buffer from network queue length
+    int mNumAudioChansIn;               ///< Number of Audio Input Channels
+    int mNumAudioChansOut;              ///< Number of Audio Output Channels
+    QVector<float>mVuMeterValuesIn;     ///< Values for Audio Input VU meters
+    QVector<float>mVuMeterValuesOut;    ///< Values for Audio Output VU meters
+#ifdef WAIR                             // WAIR
+    int mNumNetRevChans;                ///< Number of Network Audio Channels (net comb filters)
+#endif                                  // endwhere
+    int mBufferQueueLength;             ///< Audio Buffer from network queue length
     int mBufferStrategy;
     int mBroadcastQueueLength;
     uint32_t mSampleRate;                             ///< Sample Rate

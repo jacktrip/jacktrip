@@ -329,6 +329,16 @@ QJsonObject VirtualStudio::networkStats()
     return m_networkStats;
 }
 
+QVector<float> VirtualStudio::inputVuMeterLevels()
+{
+    return m_inputVuMeterValues;
+}
+
+QVector<float> VirtualStudio::outputVuMeterLevels()
+{
+    return m_outputVuMeterValues;
+}
+
 QString VirtualStudio::updateChannel()
 {
     return m_updateChannel;
@@ -1042,6 +1052,24 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
     m_networkStats = newStats;
     emit networkStatsChanged();
     return;
+}
+
+void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
+{
+    for (unsigned int i = 0; i < m_jackTrip->getNumInputChannels(); i++) {
+        m_inputVuMeterValues[i] = values[i];
+    }
+
+    emit inputVuMeterLevelsChanged(m_inputVuMeterValues);
+}
+
+void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
+{
+    for (unsigned int i = 0; i < m_jackTrip->getNumOutputChannels(); i++) {
+        m_outputVuMeterValues[i] = values[i];
+    }
+
+    emit outputVuMeterLevelsChanged(m_outputVuMeterValues);
 }
 
 void VirtualStudio::setupAuthenticator()

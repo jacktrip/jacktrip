@@ -56,9 +56,13 @@ void VuMeter::init(int samplingRate) {
         // vumeterUIP[i]->setParamValue(ndx, mNumClients);
     }
 
+    mValues.resize(mNumChannels);
+    int timeout_ms = 10;
+
     connect(&mTimer, &QTimer::timeout, this, &VuMeter::onTick);
     mTimer.setTimerType(Qt::PreciseTimer);
-    mTimer.setSingleShot(true);
+    mTimer.setInterval(timeout_ms);
+    mTimer.setSingleShot(false);
     mTimer.start();
 
     inited = true;
@@ -106,6 +110,7 @@ void VuMeter::compute(int nframes, float** inputs, float** _ )
         vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
         vumeter_channel_ptrs.push_back(chanBufPtr);
 
+        mValues[i] = *chanBufPtr; // use the first value as the VU meter value
 
 // #ifdef SINE_TEST
 //         limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
@@ -115,4 +120,10 @@ void VuMeter::compute(int nframes, float** inputs, float** _ )
 // #endif
     }
 
+}
+
+
+//*******************************************************************************
+void VuMeter::onTick() {
+    emit onComputedVolumeMeasurements(mValues);
 }
