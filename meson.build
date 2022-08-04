@@ -20,6 +20,7 @@ incdirs = []
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
+	'src/ProcessPlugin.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -42,6 +43,8 @@ src = [	'src/DataProtocol.cpp',
 
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
+	'src/ProcessPlugin.h',
+	'src/VuMeter.h',
 	'src/JackTripWorker.h',
 	'src/PacketHeader.h',
 	'src/Settings.h',

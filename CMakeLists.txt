@@ -100,6 +100,7 @@ set(qjacktrip_SRC
   src/Regulator.cpp
   src/Compressor.cpp
   src/Limiter.cpp
+  src/VuMeter.cpp
   src/Reverb.cpp
   src/AudioTester.cpp
   src/Patcher.cpp

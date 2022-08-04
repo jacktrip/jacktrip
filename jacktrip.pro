@@ -269,6 +269,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Limiter.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
+           src/VuMeter.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
