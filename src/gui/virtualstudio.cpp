@@ -1263,6 +1263,10 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
 
         m_refreshInProgress = false;
 
+        if (!m_studioToJoin.isEmpty()) {
+            joinStudio();
+        }
+
         reply->deleteLater();
     });
 }
