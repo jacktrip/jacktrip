@@ -164,6 +164,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Connect joinStudio callbacks
     connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
+    connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -470,7 +471,7 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    if (!m_authenticated || m_studioToJoin.isEmpty()) {
+    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.count == 0) {
         return;
     }
 
