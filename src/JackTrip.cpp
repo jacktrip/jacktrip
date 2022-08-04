@@ -591,6 +591,12 @@ void JackTrip::completeConnection()
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
     }
+
+    VuMeter* meterPlugin = new VuMeter(mNumAudioChansIn);
+    mAudioInterface->appendProcessPluginToNetwork(meterPlugin);
+    connect(meterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
+            &JackTrip::receivedVolumeMeasurements);
+
     mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
 
@@ -1036,6 +1042,8 @@ void JackTrip::tcpTimerTick()
         stop(QStringLiteral("Initial TCP Connection Timed Out"));
     }
 }
+
+void JackTrip::receivedVolumeMeasurements() {}
 
 //*******************************************************************************
 void JackTrip::stop(const QString& errorMessage)

@@ -37,12 +37,42 @@
  */
 
 #include "VuMeter.h"
+#include <QVector>
 
 #include "jacktrip_types.h"
 
 //*******************************************************************************
-void VuMeter::compute(int nframes, float** inputs, float** outputs_UNUSED)
+void VuMeter::init(int samplingRate) {
+    ProcessPlugin::init(samplingRate);
+    if (samplingRate != fSamplingFreq) {
+        std::cerr << "Sampling rate not set by superclass!\n";
+        std::exit(1);
+    }
+
+    fs = float(fSamplingFreq);
+    for (int i = 0; i < mNumChannels; i++) {
+        vumeterP[i]->init(fs);
+        // int ndx = vumeterUIP[i]->getParamIndex("NumClientsAssumed");
+        // vumeterUIP[i]->setParamValue(ndx, mNumClients);
+    }
+
+    connect(&mTimer, &QTimer::timeout, this, &VuMeter::onTick);
+    mTimer.setTimerType(Qt::PreciseTimer);
+    mTimer.setSingleShot(true);
+    mTimer.start();
+
+    inited = true;
+}
+
+//*******************************************************************************
+void VuMeter::compute(int nframes, float** inputs, float** _ )
 {
+    // Note that the second parameter is unused. This is because all of the ProcessPlugins
+    // require the same function signature for the compute() function and is normally used
+    // for the faust plugin output. However, this plugin is not supposed to modify the
+    // signal itself like the other plugins (e.g. Limiter) do, so we don't want to write to
+    // this buffer. We just need to report the VU meter output
+
     if (not inited) {
         std::cerr << "*** VuMeter " << this << ": init never called! Doing it now.\n";
         if (fSamplingFreq <= 0) {
@@ -53,27 +83,28 @@ void VuMeter::compute(int nframes, float** inputs, float** outputs_UNUSED)
         init(fSamplingFreq);
     }
 
-    QVarLengthArray<float*> arr;
-    arr.resize(mNumChannels);
-    float **outputs = arr.data();
+    /* Creates and allocates a buffer of floats to use for VU meter outputs.
+       This is the memory space where the results will be written to. */
+    int numValues = nframes * mNumChannels;
+    QVector<float> vumeter_buffer(numValues);
+
+    /* Convenience variable to store the location of each channel's memory space */
+    QVector<float*> vumeter_channel_ptrs(mNumChannels);
 
 // #ifdef SINE_TEST
 //     float sineTestOut[nframes];
 //     float* faustSigs[1]{sineTestOut};
 // #endif
 
-    // std::cout << "Here!" << std::endl;
-    // std::cout << "   " << &outputs << std::endl;
-    // std::cout << "   " << &outputs[0] << std::endl;
-    // std::cout << "   " << *(&outputs[0]) << std::endl;
-
     for (int i = 0; i < mNumChannels; i++) {
         // if (warningAmp > 0.0) {
         //     checkAmplitudes(nframes,
         //                     inputs[i]);  // we presently do one check across all channels
         // }
-        // std::cout << "   " << &outputs[i] << std::endl;
-        vumeterP[i]->compute(nframes, &inputs[i], &outputs[i]);
+
+        float *chanBufPtr = vumeter_buffer.data() + i * nframes;
+        vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
+        vumeter_channel_ptrs.push_back(chanBufPtr);
 
 
 // #ifdef SINE_TEST
@@ -84,10 +115,4 @@ void VuMeter::compute(int nframes, float** inputs, float** outputs_UNUSED)
 // #endif
     }
 
-    // std::cout << "Computed Levels: ";
-    // for (int i = 0; i < mNumChannels; i++) {
-    //     std::cout << *buffer[i];
-    // }
-
-    // std::cout << std::endl;
 }

@@ -49,7 +49,6 @@
 #include "../vsPinger.h"
 #include "vsServerInfo.h"
 #include "vsWebSocket.h"
-#include "../VuMeter.h"
 
 class VsDevice : public QObject
 {

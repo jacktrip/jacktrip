@@ -41,6 +41,8 @@
 
 #include <iostream>
 #include <vector>
+#include <QTimer>
+#include <QObject>
 
 #include "ProcessPlugin.h"
 #include "vumeterdsp.h"
@@ -49,6 +51,8 @@
  */
 class VuMeter : public ProcessPlugin
 {
+    Q_OBJECT;
+
    public:
     /// \brief The class constructor sets the number of channels to measure
     VuMeter(int numchans, bool verboseFlag = false) : mNumChannels(numchans) {
@@ -63,23 +67,7 @@ class VuMeter : public ProcessPlugin
     /// \brief The class destructor
     virtual ~VuMeter() {}
 
-    void init(int samplingRate) override
-    {
-        ProcessPlugin::init(samplingRate);
-        if (samplingRate != fSamplingFreq) {
-            std::cerr << "Sampling rate not set by superclass!\n";
-            std::exit(1);
-        }
-
-        fs = float(fSamplingFreq);
-        for (int i = 0; i < mNumChannels; i++) {
-            vumeterP[i]->init(fs);
-            // int ndx = vumeterUIP[i]->getParamIndex("NumClientsAssumed");
-            // vumeterUIP[i]->setParamValue(ndx, mNumClients);
-        }
-
-        inited = true;
-    }
+    void init(int samplingRate) override;
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
@@ -90,6 +78,12 @@ class VuMeter : public ProcessPlugin
     int mNumChannels;
     std::vector<vumeterdsp*> vumeterP;
     std::vector<APIUI*> vumeterUIP;
+
+    QTimer mTimer;
+
+  signals:
+    void onComputedVolumeMeasurements();
+    void onTick();
 };
 
 #endif

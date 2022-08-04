@@ -57,6 +57,7 @@
 #include "AudioTester.h"
 #include "PacketHeader.h"
 #include "RingBuffer.h"
+#include "VuMeter.h"
 
 //#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
@@ -573,6 +574,7 @@ class JackTrip : public QObject
     void receivedDataUDP();
     void udpTimerTick();
     void tcpTimerTick();
+    void receivedVolumeMeasurements();
 
    signals:
     // void signalUdpTimeOut();
