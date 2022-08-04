@@ -1687,7 +1687,6 @@ class vumeterdsp : public dsp {
 	int IOTA0;
 	float fRec0[131072];
 	int iConst2;
-	FAUSTFLOAT fHbargraph0;
 	
  public:
 	
@@ -1763,9 +1762,6 @@ class vumeterdsp : public dsp {
 	
 	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("vumeter");
-		ui_interface->declare(&fHbargraph0, "2", "");
-		ui_interface->declare(&fHbargraph0, "unit", "dB");
-		ui_interface->addHorizontalBargraph("chan 0", &fHbargraph0, FAUSTFLOAT(-60.0f), FAUSTFLOAT(5.0f));
 		ui_interface->closeBox();
 	}
 	
@@ -1775,8 +1771,7 @@ class vumeterdsp : public dsp {
 		for (int i0 = 0; i0 < count; i0 = i0 + 1) {
 			float fTemp0 = float(input0[i0]);
 			fRec0[IOTA0 & 131071] = vumeterdsp_faustpower2_f(fTemp0) + fRec0[(IOTA0 - 1) & 131071];
-			fHbargraph0 = FAUSTFLOAT(20.0f * std::log10(std::max<float>(1.17549435e-38f, std::max<float>(0.000316227757f, std::sqrt(fConst1 * (fRec0[IOTA0 & 131071] - fRec0[(IOTA0 - iConst2) & 131071]))))));
-			output0[i0] = FAUSTFLOAT(fTemp0);
+			output0[i0] = FAUSTFLOAT(20.0f * std::log10(std::max<float>(1.17549435e-38f, std::max<float>(0.000316227757f, std::sqrt(fConst1 * (fRec0[IOTA0 & 131071] - fRec0[(IOTA0 - iConst2) & 131071]))))));
 			IOTA0 = IOTA0 + 1;
 		}
 	}

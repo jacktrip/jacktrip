@@ -9,9 +9,10 @@ declare description "VU Meter Faust Plugin for JackTrip";
 
 import("stdfaust.lib");
 
-process = hmeter(0)
+// process = hmeter(0)
+process = envelop
 with {
-	hmeter(i, x) = attach(x, envelop(x) : hbargraph("chan %i[2][unit:dB]", -60, +5));
+	// hmeter(i, x) = attach(x, envelop(x) : hbargraph("chan %i[2][unit:dB]", -60, +5)) : envelop;
     envelop = ba.slidingRMS(ma.SR * 0.4) : max(ba.db2linear(-70)) : ba.linear2db;
 };
 
