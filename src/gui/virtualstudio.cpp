@@ -471,7 +471,7 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.count == 0) {
+    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.count() == 0) {
         return;
     }
 
