@@ -272,6 +272,7 @@ JackTrip* VsDevice::initJackTrip(bool useRtAudio, std::string input, std::string
         m_jackTrip->setOutputDevice(output);
     }
 #endif
+    m_jackTrip->setRemoteClientName(m_appID);
     m_jackTrip->setBufferStrategy(1);
     m_jackTrip->setBufferQueueLength(-500);
     m_jackTrip->setPeerAddress(studioInfo->host());
