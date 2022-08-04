@@ -268,7 +268,7 @@ int main(int argc, char* argv[])
 
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> vs;
-#ifdef _WIN32
+#ifndef Q_OS_MACOS
     QSharedPointer<QLocalServer> instanceServer;
     QSharedPointer<QLocalSocket> instanceCheckSocket;
 #endif
@@ -329,7 +329,9 @@ int main(int argc, char* argv[])
         set.setValue("shell/open/command/Default",
                      QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
         set.endGroup();
+#endif // _WIN32
 
+#ifndef Q_OS_MACOS
         // Create socket
         instanceCheckSocket =
             QSharedPointer<QLocalSocket>::create(new QLocalSocket(app.data()));
@@ -411,7 +413,7 @@ int main(int argc, char* argv[])
         // Check for existing instance
         instanceCheckSocket->connectToServer("jacktripExists");
 
-#endif  // _WIN32
+#endif  // !Q_OS_MACOS
         window.reset(new QJackTrip(argc, !deeplink.isEmpty()));
 #else
         window.reset(new QJackTrip(argc));
