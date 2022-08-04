@@ -329,7 +329,7 @@ int main(int argc, char* argv[])
         set.setValue("shell/open/command/Default",
                      QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
         set.endGroup();
-#endif // _WIN32
+#endif  // _WIN32
 
 #ifndef Q_OS_MACOS
         // Create socket
@@ -354,13 +354,14 @@ int main(int argc, char* argv[])
             },
             Qt::QueuedConnection);
         // Create instanceServer to prevent new instances from being created
+        void (QLocalSocket::*errorFunc)(QLocalSocket::LocalSocketError);
 #ifdef Q_OS_LINUX
-    std::function<void(QLocalSocket::LocalSocketError)> errorFunc = QLocalSocket::error;
+        errorFunc = &QLocalSocket::error;
 #else
-    std::function<void(QLocalSocket::LocalSocketError)> errorFunc = QLocalSocket::errorOccurred;
+        errorFunc = &QLocalSocket::errorOccurred;
 #endif
-        QObject::connect(  
-            instanceCheckSocket.data(), &errorFunc, app.data(),
+        QObject::connect(
+            instanceCheckSocket.data(), errorFunc, app.data(),
             [&](QLocalSocket::LocalSocketError socketError) {
                 switch (socketError) {
                 case QLocalSocket::ServerNotFoundError:
