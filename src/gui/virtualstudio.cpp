@@ -475,11 +475,12 @@ QString VirtualStudio::failedMessage()
 void VirtualStudio::joinStudio()
 {
     qDebug() << "joining studio";
-    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.count() == 0) {
+    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
         // will come back to this function.
-        if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.count() == 0) {
+        if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
+            qDebug << "getting servers because we're auth'd, the studio to join exists, and server list is empty";
             getServerList(false);
         }
         qDebug() << "join skipped";
