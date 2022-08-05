@@ -474,16 +474,13 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    qDebug() << "joining studio";
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
         // will come back to this function.
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
-            qDebug() << "getting servers because we're auth'd, the studio to join exists, and server list is empty";
             getServerList(true);
         }
-        qDebug() << "join skipped";
         return;
     }
 
@@ -1126,19 +1123,15 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         }
     }
 
-    qDebug() << "in getServerList()";
-
     // Get the serverId of the server at the top of our screen if we know it
     QString topServerId;
     if (index >= 0 && index < m_servers.count()) {
         topServerId = static_cast<VsServerInfo*>(m_servers.at(index))->id();
     }
-    qDebug() << "past index check";
+
     QNetworkReply* reply =
         m_authenticator->get(QStringLiteral("https://app.jacktrip.org/api/servers"));
-    qDebug() << "past reply call";
     connect(reply, &QNetworkReply::finished, this, [&, reply, topServerId, firstLoad]() {
-        qDebug() << "in finished connect thread";
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
@@ -1281,7 +1274,6 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
 
         reply->deleteLater();
     });
-    qDebug() << "past connect setup";
 }
 
 void VirtualStudio::getUserId()
