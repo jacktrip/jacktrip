@@ -603,7 +603,6 @@ void JackTrip::completeConnection()
     connect(inputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this, &JackTrip::receivedInputVolumeMeasurements);
     mVuMeterValuesIn.resize(mNumAudioChansIn);
 
-
     mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
 

@@ -84,8 +84,6 @@ class VirtualStudio : public QObject
                    showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
-    // Q_PROPERTY(QVector<float> vuInput READ inputVuMeterLevels NOTIFY inputVuMeterLevelsChanged)
-    // Q_PROPERTY(QVector<float> vuOutput READ outputVuMeterLevels NOTIFY outputVuMeterLevelsChanged)
 
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
@@ -188,8 +186,6 @@ class VirtualStudio : public QObject
     void showSelfHostedChanged();
     void connectionStateChanged();
     void networkStatsChanged();
-    // void inputVuMeterLevelsChanged(QVector<float>);
-    // void outputVuMeterLevelsChanged(QVector<float>);
     void updateChannelChanged();
     void showDeviceSetupChanged();
     void showWarningsChanged();

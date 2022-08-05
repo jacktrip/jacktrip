@@ -775,11 +775,11 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalUpdatedOutputAudioVuLevels, this,
                          &VirtualStudio::updatedOutputVuMeasurements);
 
-        // m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
-        //                                             QVariant::fromValue(m_inputVuMeterValues));
+        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
+                                                    QVariant::fromValue(m_inputVuMeterValues));
 
-        // m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
-        //                                             QVariant::fromValue(m_outputVuMeterValues));
+        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
+                                                    QVariant::fromValue(m_outputVuMeterValues));
 
         m_device->startJackTrip();
         m_device->startPinger(studioInfo);
@@ -1075,7 +1075,6 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
 void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 {
-
     for (int i = 0; i < values.size(); i++) {
         m_inputVuMeterValues[i] = values[i];
     }
@@ -1086,10 +1085,6 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
 {   
-    // if (values.size() != m_outputVuMeterValues.size()) {
-    //     m_outputVuMeterValues.resize(values.size());
-    // }
-
     for (int i = 0; i < values.size(); i++) {
         m_outputVuMeterValues[i] = values[i];
     }
