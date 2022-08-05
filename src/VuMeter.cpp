@@ -110,7 +110,7 @@ void VuMeter::compute(int nframes, float** inputs, float** _ )
         vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
         vumeter_channel_ptrs.push_back(chanBufPtr);
 
-        mValues[i] = *chanBufPtr; // use the first value as the VU meter value
+        mValues[i] = *(chanBufPtr + nframes / 2); // use the first value as the VU meter value
 
 // #ifdef SINE_TEST
 //         limiterTestP[i]->compute(nframes, faustSigs, faustSigs);

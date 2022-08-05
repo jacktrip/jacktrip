@@ -14,9 +14,10 @@ Item {
     property int fontSmall: 10
     property int fontTiny: 8
 
-    property int bodyMargin: 45
+    property int bodyMargin: 60
     
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property string vuMeterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
 
     function getNetworkStatsText (networkStats) {
@@ -81,7 +82,7 @@ Item {
     }
     
     Studio {
-        x: parent.leftMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
+        x: leftHeaderMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
         width: parent.width - (2 * x)
         connected: true
         serverLocation: virtualstudio.currentStudio >= 0 && virtualstudio.regions[serverModel[virtualstudio.currentStudio].location] ? "in " + virtualstudio.regions[serverModel[virtualstudio.currentStudio].location].label : ""
@@ -127,6 +128,7 @@ Item {
 
         Text {
             id: inputDeviceName
+            width: parent.width - 100 * virtualstudio.uiScale
             anchors.top: inputDeviceHeader.bottom
             anchors.left: inputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?
@@ -143,41 +145,106 @@ Item {
         width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
 
-        Rectangle {
-            width: parent.width
-            height: parent.height
-            color: "blue"
-        }
-
         ListView {
             x: 0; y: 0
             width: parent.width
             height: parent.height
             model: inputVuMeterModel
+
             delegate: Item {
                 x: 0
                 width: parent.width
-                height: 20 * virtualstudio.uiScale
+                height: 24 * virtualstudio.uiScale
                 required property double modelData
-                
+
                 Rectangle {
-                    x: 0; y: 0
+                    id: meterBox
+                    x: 0; y:0; z:2
                     width: parent.width
-                    height: 16 * virtualstudio.uiScale
-                    color: "gray"
+                    height: 20 * virtualstudio.uiScale
+                    color: "transparent"
+                    border.color: "black"
+                    border.width: 1
+                    opacity: 1
                 }
 
                 Rectangle {
-                    x: 0; y: 0
-                    width: parent.width * (-1 * parent.modelData) / 70
-                    height: 16 * virtualstudio.uiScale
-                    color: "green"
+                    id: meterFill
+                    x: 0; y: 0; z:0
+                    width: parent.width
+                    height: 20 * virtualstudio.uiScale
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        
+                        GradientStop { position: 0.0; color: "green" }
+                        GradientStop { position: 0.75; color: "yellow" }
+                        GradientStop { position: 1.0; color: "red" }
+                    }
+
                 }
 
-                Text {
-                    x: 0; y: 0
-                    text: parent.modelData
-                    font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                Rectangle {
+                    id: meterBase
+                    x: 0; z: 1
+                    anchors.right: meterFill.right
+                    width: parent.width - parent.width * (parent.modelData + 70) / 70
+                    height: 20 * virtualstudio.uiScale
+                    color: vuMeterColor
+                }
+            }
+        }
+    }
+
+    Item {
+        id: outputDeviceVuMeters
+        x: parent.width / 2; y: 330 * virtualstudio.uiScale
+        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
+        height: 100 * virtualstudio.uiScale
+        
+        ListView {
+            x: 0; y: 0
+            width: parent.width
+            height: parent.height
+            model: outputVuMeterModel
+            
+            delegate: Item {
+                x: 0
+                width: parent.width
+                height: 24 * virtualstudio.uiScale
+                required property double modelData
+
+                Rectangle {
+                    id: meterBox
+                    x: 0; y:0; z:2
+                    width: parent.width
+                    height: 20 * virtualstudio.uiScale
+                    color: "transparent"
+                    border.color: "black"
+                    border.width: 1
+                    opacity: 1
+                }
+
+                Rectangle {
+                    id: meterFill
+                    x: 0; y: 0; z:0
+                    width: parent.width
+                    height: 20 * virtualstudio.uiScale
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        
+                        GradientStop { position: 0.0; color: "green" }
+                        GradientStop { position: 0.85; color: "yellow" }
+                        GradientStop { position: 1.0; color: "red" }
+                    }
+                }
+
+                Rectangle {
+                    id: meterBase
+                    x: 0; z: 1
+                    anchors.right: meterFill.right
+                    width: parent.width - parent.width * (parent.modelData + 70) / 70
+                    height: 20 * virtualstudio.uiScale
+                    color: vuMeterColor
                 }
             }
         }
@@ -218,6 +285,7 @@ Item {
 
         Text {
             id: outputDeviceName
+            width: parent.width - 100 * virtualstudio.uiScale
             anchors.top: outputDeviceHeader.bottom
             anchors.left: outputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?

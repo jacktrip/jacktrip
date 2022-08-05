@@ -1068,7 +1068,7 @@ void JackTrip::receivedOutputVolumeMeasurements(QVector<float> values) {
         mVuMeterValuesOut[i] = values[i];
     }
 
-    emit signalUpdatedOutputAudioVuLevels(mVuMeterValuesIn);
+    emit signalUpdatedOutputAudioVuLevels(mVuMeterValuesOut);
 }
 
 //*******************************************************************************

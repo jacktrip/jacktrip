@@ -136,6 +136,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
+
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
+                                                       QVariant::fromValue(m_inputVuMeterValues));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
+                                                       QVariant::fromValue(m_outputVuMeterValues));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -754,6 +759,9 @@ void VirtualStudio::completeConnection()
         JackTrip* jackTrip =
             m_device->initJackTrip(m_useRtAudio, input, output, buffer_size, studioInfo);
 
+        m_inputVuMeterValues.resize(jackTrip->getNumInputChannels());
+        m_outputVuMeterValues.resize(jackTrip->getNumOutputChannels());
+
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
         QObject::connect(jackTrip, &JackTrip::signalError, this,
@@ -761,6 +769,17 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
+
+        QObject::connect(jackTrip, &JackTrip::signalUpdatedInputAudioVuLevels, this,
+                         &VirtualStudio::updatedInputVuMeasurements);
+        QObject::connect(jackTrip, &JackTrip::signalUpdatedOutputAudioVuLevels, this,
+                         &VirtualStudio::updatedOutputVuMeasurements);
+
+        // m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
+        //                                             QVariant::fromValue(m_inputVuMeterValues));
+
+        // m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
+        //                                             QVariant::fromValue(m_outputVuMeterValues));
 
         m_device->startJackTrip();
         m_device->startPinger(studioInfo);
@@ -1056,20 +1075,27 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
 void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 {
-    for (unsigned int i = 0; i < m_jackTrip->getNumInputChannels(); i++) {
+
+    for (int i = 0; i < values.size(); i++) {
         m_inputVuMeterValues[i] = values[i];
     }
 
-    emit inputVuMeterLevelsChanged(m_inputVuMeterValues);
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
+                                                       QVariant::fromValue(m_inputVuMeterValues));
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
-{
-    for (unsigned int i = 0; i < m_jackTrip->getNumOutputChannels(); i++) {
+{   
+    // if (values.size() != m_outputVuMeterValues.size()) {
+    //     m_outputVuMeterValues.resize(values.size());
+    // }
+
+    for (int i = 0; i < values.size(); i++) {
         m_outputVuMeterValues[i] = values[i];
     }
-
-    emit outputVuMeterLevelsChanged(m_outputVuMeterValues);
+    
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
+                                                    QVariant::fromValue(m_outputVuMeterValues));
 }
 
 void VirtualStudio::setupAuthenticator()
