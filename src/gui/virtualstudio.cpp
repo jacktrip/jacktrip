@@ -164,6 +164,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Connect joinStudio callbacks
     connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
+    // QueuedConnection since refreshFinished is sometimes signaled from a network reply
+    // thread
+    connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
+            Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -470,7 +474,13 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    if (!m_authenticated || m_studioToJoin.isEmpty()) {
+    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
+        // No servers yet. Making sure we have them.
+        // getServerList emits refreshFinished which
+        // will come back to this function.
+        if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
+            getServerList(true);
+        }
         return;
     }
 
@@ -1251,6 +1261,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         }
         if (firstLoad) {
             emit authSucceeded();
+            emit refreshFinished(index);
             m_refreshTimer.setInterval(10000);
             m_refreshTimer.start();
             m_heartbeatTimer.setInterval(5000);
@@ -1258,6 +1269,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         } else {
             emit refreshFinished(index);
         }
+
         m_refreshInProgress = false;
 
         reply->deleteLater();
