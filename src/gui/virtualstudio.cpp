@@ -164,8 +164,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Connect joinStudio callbacks
     connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
-    // QueuedConnection since refreshFinished is sometimes signaled from a network reply thread
-    connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio, Qt::QueuedConnection);
+    // QueuedConnection since refreshFinished is sometimes signaled from a network reply
+    // thread
+    connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
+            Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -474,6 +476,12 @@ void VirtualStudio::joinStudio()
 {
     qDebug() << "joining studio";
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.count() == 0) {
+        // No servers yet. Making sure we have them.
+        // getServerList emits refreshFinished which
+        // will come back to this function.
+        if (m_servers.count() == 0) {
+            getServerList(false, 0)
+        }
         qDebug() << "join skipped";
         return;
     }
