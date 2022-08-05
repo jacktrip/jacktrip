@@ -481,7 +481,7 @@ void VirtualStudio::joinStudio()
         // will come back to this function.
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             qDebug() << "getting servers because we're auth'd, the studio to join exists, and server list is empty";
-            getServerList(false);
+            getServerList(true);
         }
         qDebug() << "join skipped";
         return;
@@ -1268,6 +1268,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         }
         if (firstLoad) {
             emit authSucceeded();
+            emit refreshFinished(index);
             m_refreshTimer.setInterval(10000);
             m_refreshTimer.start();
             m_heartbeatTimer.setInterval(5000);
