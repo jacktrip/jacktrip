@@ -12,6 +12,7 @@
   - (added) VS mode sets remote client name to app ID
   - (fixed) WebSocket connection behavior in Virtual Studio (VS) mode
   - (fixed) dblsqd errors in Linux builds
+  - (fixed) Windows datagramAvailable error
 - Version: "1.6.1"
   Date: 2022-06-20
   Description:
