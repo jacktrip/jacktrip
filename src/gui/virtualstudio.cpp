@@ -480,7 +480,7 @@ void VirtualStudio::joinStudio()
         // getServerList emits refreshFinished which
         // will come back to this function.
         if (m_servers.count() == 0) {
-            getServerList(false, 0);
+            getServerList(false);
         }
         qDebug() << "join skipped";
         return;
