@@ -164,6 +164,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Connect joinStudio callbacks
     connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
+    // QueuedConnection since refreshFinished is sometimes signaled from a network reply thread
+    connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio, Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -1262,10 +1264,6 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         }
 
         m_refreshInProgress = false;
-
-        if (!m_studioToJoin.isEmpty()) {
-            joinStudio();
-        }
 
         reply->deleteLater();
     });
