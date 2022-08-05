@@ -8,117 +8,16 @@ Item {
     
     property bool connecting: false
     
-    property int leftMargin: 16
+    property int leftHeaderMargin: 16
     property int fontBig: 28
-    property int fontMedium: 18
-    property int fontSmall: 11
+    property int fontMedium: 14
+    property int fontSmall: 10
+    property int fontTiny: 8
 
-    property int smallTextPadding: 8
+    property int bodyMargin: 45
     
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
-
-    Image {
-        x: parent.width - (49 * virtualstudio.uiScale); y: 16 * virtualstudio.uiScale
-        width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
-        source: "logo.svg"
-    }
-    
-    Text {
-        id: heading
-        text: virtualstudio.connectionState
-        x: leftMargin * virtualstudio.uiScale; y: 34 * virtualstudio.uiScale
-        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-        color: textColour
-    }
-    
-    Studio {
-        x: parent.leftMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
-        width: parent.width - (2 * x)
-        connected: true
-        serverLocation: virtualstudio.currentStudio >= 0 && virtualstudio.regions[serverModel[virtualstudio.currentStudio].location] ? "in " + virtualstudio.regions[serverModel[virtualstudio.currentStudio].location].label : ""
-        flagImage: virtualstudio.currentStudio >= 0 ? ( serverModel[virtualstudio.currentStudio].bannerURL ? serverModel[virtualstudio.currentStudio].bannerURL : serverModel[virtualstudio.currentStudio].flag ) : "flags/DE.svg"
-        studioName: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].name : "Test Studio"
-        publicStudio: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isPublic : false
-        manageable: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false
-        available: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].canConnect : false
-    }
-    
-    Image {
-        id: mic
-        source: "mic.svg"
-        x: 80 * virtualstudio.uiScale; y: 250 * virtualstudio.uiScale
-        width: 18 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
-    }
-
-    Colorize {
-        anchors.fill: mic
-        source: mic
-        hue: 0
-        saturation: 0
-        lightness: imageLightnessValue
-    }
-    
-    Image {
-        id: headphones
-        source: "headphones.svg"
-        anchors.horizontalCenter: mic.horizontalCenter
-        y: 329 * virtualstudio.uiScale
-        width: 24 * virtualstudio.uiScale; height: 26 * virtualstudio.uiScale
-    }
-
-    Image {
-        id: network
-        source: "network.svg"
-        anchors.horizontalCenter: mic.horizontalCenter
-        y: 408 * virtualstudio.uiScale
-        width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
-    }
-
-    Colorize {
-        anchors.fill: headphones
-        source: headphones
-        hue: 0
-        saturation: 0
-        lightness: imageLightnessValue
-    }
-
-    Colorize {
-        anchors.fill: network
-        source: network
-        hue: 0
-        saturation: 0
-        lightness: imageLightnessValue
-    }
-    
-    Text {
-        id: inputDeviceHeader
-        x: 120 * virtualstudio.uiScale
-        text: virtualstudio.audioBackend == "JACK" ? 
-            virtualstudio.audioBackend : inputComboModel[virtualstudio.inputDevice]
-        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        anchors.verticalCenter: mic.verticalCenter
-        color: textColour
-    }
-    
-    Text {
-        id: outputDeviceHeader
-        x: 120 * virtualstudio.uiScale
-        text: virtualstudio.audioBackend == "JACK" ? 
-            virtualstudio.audioBackend : outputComboModel[virtualstudio.outputDevice]
-        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        anchors.verticalCenter: headphones.verticalCenter
-        color: textColour
-    }
-
-    Text {
-        id: networkStatsHeader
-        x: 120 * virtualstudio.uiScale
-        text: "Network"
-        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        anchors.verticalCenter: network.verticalCenter
-        color: textColour
-    }
 
     function getNetworkStatsText (networkStats) {
         let packetsSent = networkStats.packetsSent;
@@ -167,33 +66,226 @@ Item {
         return texts;
     }
 
+    Image {
+        x: parent.width - (49 * virtualstudio.uiScale); y: 16 * virtualstudio.uiScale
+        width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
+        source: "logo.svg"
+    }
+    
     Text {
-        id: netstat0
-        text: getNetworkStatsText(virtualstudio.networkStats)[0]
-        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-        topPadding: smallTextPadding
-        anchors.left: inputDeviceHeader.left
-        anchors.top: networkStatsHeader.bottom
+        id: heading
+        text: virtualstudio.connectionState
+        x: leftHeaderMargin * virtualstudio.uiScale; y: 34 * virtualstudio.uiScale
+        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
         color: textColour
     }
-
-    Text {
-        id: netstat1
-        text: getNetworkStatsText(virtualstudio.networkStats)[1]
-        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-        topPadding: smallTextPadding
-        anchors.left: inputDeviceHeader.left
-        anchors.top: netstat0.bottom
-        color: textColour
+    
+    Studio {
+        x: parent.leftMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
+        width: parent.width - (2 * x)
+        connected: true
+        serverLocation: virtualstudio.currentStudio >= 0 && virtualstudio.regions[serverModel[virtualstudio.currentStudio].location] ? "in " + virtualstudio.regions[serverModel[virtualstudio.currentStudio].location].label : ""
+        flagImage: virtualstudio.currentStudio >= 0 ? ( serverModel[virtualstudio.currentStudio].bannerURL ? serverModel[virtualstudio.currentStudio].bannerURL : serverModel[virtualstudio.currentStudio].flag ) : "flags/DE.svg"
+        studioName: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].name : "Test Studio"
+        publicStudio: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isPublic : false
+        manageable: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false
+        available: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].canConnect : false
     }
 
-    Text {
-        id: netstat2
-        text: getNetworkStatsText(virtualstudio.networkStats)[2]
-        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-        topPadding: smallTextPadding
-        anchors.left: inputDeviceHeader.left
-        anchors.top: netstat1.bottom
-        color: textColour
+    Item {
+        id: inputDevice
+        x: bodyMargin * virtualstudio.uiScale; y: 250 * virtualstudio.uiScale
+        width: parent.width / 2 - x
+        height: 100 * virtualstudio.uiScale
+        clip: true
+
+        Image {
+            id: mic
+            source: "mic.svg"
+            x: 0; y: 0
+            width: 18 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+        }
+
+        Colorize {
+            anchors.fill: mic
+            source: mic
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
+        Text {
+            id: inputDeviceHeader
+            x: 64 * virtualstudio.uiScale
+            width: parent.width - 64 * virtualstudio.uiScale
+            text: "Input Device"
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            anchors.verticalCenter: mic.verticalCenter
+            color: textColour
+            elide: Text.ElideRight
+        }
+
+        Text {
+            id: inputDeviceName
+            anchors.top: inputDeviceHeader.bottom
+            anchors.left: inputDeviceHeader.left
+            text: virtualstudio.audioBackend == "JACK" ?
+                virtualstudio.audioBackend : inputComboModel[virtualstudio.inputDevice]
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            elide: Text.ElideRight
+        }
+    }
+
+    Item {
+        id: inputDeviceVuMeters
+        x: parent.width / 2; y: 250 * virtualstudio.uiScale
+        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
+        height: 100 * virtualstudio.uiScale
+
+        Rectangle {
+            width: parent.width
+            height: parent.height
+            color: "blue"
+        }
+
+        ListView {
+            x: 0; y: 0
+            width: parent.width
+            height: parent.height
+            model: inputVuMeterModel
+            delegate: Item {
+                x: 0
+                width: parent.width
+                height: 20 * virtualstudio.uiScale
+                required property double modelData
+                
+                Rectangle {
+                    x: 0; y: 0
+                    width: parent.width
+                    height: 16 * virtualstudio.uiScale
+                    color: "gray"
+                }
+
+                Rectangle {
+                    x: 0; y: 0
+                    width: parent.width * (-1 * parent.modelData) / 70
+                    height: 16 * virtualstudio.uiScale
+                    color: "green"
+                }
+
+                Text {
+                    x: 0; y: 0
+                    text: parent.modelData
+                    font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                }
+            }
+        }
+    }
+
+    Item {
+        id: outputDevice
+        x: bodyMargin * virtualstudio.uiScale; y: 330 * virtualstudio.uiScale
+        width: parent.width / 2 - x
+        height: 100 * virtualstudio.uiScale
+        clip: true
+
+        Image {
+            id: headphones
+            source: "headphones.svg"
+            x: 0; y: 0
+            width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+        }
+
+        Colorize {
+            anchors.fill: headphones
+            source: headphones
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
+        Text {
+            id: outputDeviceHeader
+            x: 64 * virtualstudio.uiScale
+            width: parent.width - 64 * virtualstudio.uiScale
+            text: "Output Device"
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            anchors.verticalCenter: headphones.verticalCenter
+            color: textColour
+            elide: Text.ElideRight
+        }
+
+        Text {
+            id: outputDeviceName
+            anchors.top: outputDeviceHeader.bottom
+            anchors.left: outputDeviceHeader.left
+            text: virtualstudio.audioBackend == "JACK" ?
+                virtualstudio.audioBackend : outputComboModel[virtualstudio.outputDevice]
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            elide: Text.ElideRight
+        }
+    }
+
+    Item {
+        id: networkStats
+        x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale
+        width: parent.width - 2 * x
+        height: 128
+
+        Image {
+            id: network
+            source: "network.svg"
+            x: 0; y: 0
+            width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+        }
+
+        Colorize {
+            anchors.fill: network
+            source: network
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
+        Text {
+            id: networkStatsHeader
+            text: "Network"
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            x: 64 * virtualstudio.uiScale
+            anchors.verticalCenter: network.verticalCenter
+            color: textColour
+        }
+
+        Text {
+            id: netstat0
+            x: parent.width / 2
+            text: getNetworkStatsText(virtualstudio.networkStats)[0]
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+            topPadding: 8 * virtualstudio.uiScale
+            anchors.verticalCenter: network.verticalCenter
+            color: textColour
+        }
+
+        Text {
+            id: netstat1
+            x: parent.width / 2
+            text: getNetworkStatsText(virtualstudio.networkStats)[1]
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+            topPadding: 8 * virtualstudio.uiScale
+            anchors.top: netstat0.bottom
+            color: textColour
+        }
+
+        Text {
+            id: netstat2
+            x: parent.width / 2
+            text: getNetworkStatsText(virtualstudio.networkStats)[2]
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+            topPadding: 8 * virtualstudio.uiScale
+            anchors.top: netstat1.bottom
+            color: textColour
+        }
     }
 }
