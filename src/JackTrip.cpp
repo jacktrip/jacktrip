@@ -591,7 +591,8 @@ void JackTrip::completeConnection()
 
     VuMeter* outputMeterPlugin = new VuMeter(mNumAudioChansOut);
     mAudioInterface->appendProcessPluginFromNetwork(outputMeterPlugin);
-    connect(outputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this, &JackTrip::receivedOutputVolumeMeasurements);
+    connect(outputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
+            &JackTrip::receivedOutputVolumeMeasurements);
     mVuMeterValuesOut.resize(mNumAudioChansOut);
 
     for (auto& i : mProcessPluginsToNetwork) {
@@ -600,7 +601,8 @@ void JackTrip::completeConnection()
 
     VuMeter* inputMeterPlugin = new VuMeter(mNumAudioChansIn);
     mAudioInterface->appendProcessPluginToNetwork(inputMeterPlugin);
-    connect(inputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this, &JackTrip::receivedInputVolumeMeasurements);
+    connect(inputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
+            &JackTrip::receivedInputVolumeMeasurements);
     mVuMeterValuesIn.resize(mNumAudioChansIn);
 
     mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
@@ -1050,8 +1052,8 @@ void JackTrip::tcpTimerTick()
 }
 
 //*******************************************************************************
-void JackTrip::receivedInputVolumeMeasurements(QVector<float> values) {
-
+void JackTrip::receivedInputVolumeMeasurements(QVector<float> values)
+{
     // Input VU meters
     for (int i = 0; i < mNumAudioChansIn; i++) {
         mVuMeterValuesIn[i] = values[i];
@@ -1060,8 +1062,8 @@ void JackTrip::receivedInputVolumeMeasurements(QVector<float> values) {
 }
 
 //*******************************************************************************
-void JackTrip::receivedOutputVolumeMeasurements(QVector<float> values) {
-
+void JackTrip::receivedOutputVolumeMeasurements(QVector<float> values)
+{
     // Output VU meters
     for (int i = 0; i < mNumAudioChansOut; i++) {
         mVuMeterValuesOut[i] = values[i];

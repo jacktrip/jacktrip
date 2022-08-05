@@ -37,12 +37,14 @@
  */
 
 #include "VuMeter.h"
+
 #include <QVector>
 
 #include "jacktrip_types.h"
 
 //*******************************************************************************
-void VuMeter::init(int samplingRate) {
+void VuMeter::init(int samplingRate)
+{
     ProcessPlugin::init(samplingRate);
     if (samplingRate != fSamplingFreq) {
         std::cerr << "Sampling rate not set by superclass!\n";
@@ -69,13 +71,13 @@ void VuMeter::init(int samplingRate) {
 }
 
 //*******************************************************************************
-void VuMeter::compute(int nframes, float** inputs, float** _ )
+void VuMeter::compute(int nframes, float** inputs, float** _)
 {
     // Note that the second parameter is unused. This is because all of the ProcessPlugins
     // require the same function signature for the compute() function and is normally used
     // for the faust plugin output. However, this plugin is not supposed to modify the
-    // signal itself like the other plugins (e.g. Limiter) do, so we don't want to write to
-    // this buffer. We just need to report the VU meter output
+    // signal itself like the other plugins (e.g. Limiter) do, so we don't want to write
+    // to this buffer. We just need to report the VU meter output
 
     if (not inited) {
         std::cerr << "*** VuMeter " << this << ": init never called! Doing it now.\n";
@@ -95,35 +97,36 @@ void VuMeter::compute(int nframes, float** inputs, float** _ )
     /* Convenience variable to store the location of each channel's memory space */
     QVector<float*> vumeter_channel_ptrs(mNumChannels);
 
-// #ifdef SINE_TEST
-//     float sineTestOut[nframes];
-//     float* faustSigs[1]{sineTestOut};
-// #endif
+    // #ifdef SINE_TEST
+    //     float sineTestOut[nframes];
+    //     float* faustSigs[1]{sineTestOut};
+    // #endif
 
     for (int i = 0; i < mNumChannels; i++) {
         // if (warningAmp > 0.0) {
         //     checkAmplitudes(nframes,
-        //                     inputs[i]);  // we presently do one check across all channels
+        //                     inputs[i]);  // we presently do one check across all
+        //                     channels
         // }
 
-        float *chanBufPtr = vumeter_buffer.data() + i * nframes;
+        float* chanBufPtr = vumeter_buffer.data() + i * nframes;
         vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
         vumeter_channel_ptrs.push_back(chanBufPtr);
 
-        mValues[i] = *(chanBufPtr + nframes / 2); // use the first value as the VU meter value
+        mValues[i] =
+            *(chanBufPtr + nframes / 2);  // use the first value as the VU meter value
 
-// #ifdef SINE_TEST
-//         limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
-//         for (int n = 0; n < nframes; n++) {
-//             outputs[i][n] = outputs[i][n] + sineTestOut[n];
-//         }
-// #endif
+        // #ifdef SINE_TEST
+        //         limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
+        //         for (int n = 0; n < nframes; n++) {
+        //             outputs[i][n] = outputs[i][n] + sineTestOut[n];
+        //         }
+        // #endif
     }
-
 }
 
-
 //*******************************************************************************
-void VuMeter::onTick() {
+void VuMeter::onTick()
+{
     emit onComputedVolumeMeasurements(mValues);
 }

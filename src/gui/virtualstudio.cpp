@@ -137,10 +137,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
 
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
-                                                       QVariant::fromValue(m_inputVuMeterValues));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
-                                                       QVariant::fromValue(m_outputVuMeterValues));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(m_inputVuMeterValues));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(m_outputVuMeterValues));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -775,11 +775,13 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalUpdatedOutputAudioVuLevels, this,
                          &VirtualStudio::updatedOutputVuMeasurements);
 
-        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
-                                                    QVariant::fromValue(m_inputVuMeterValues));
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("inputVuMeterModel"),
+            QVariant::fromValue(m_inputVuMeterValues));
 
-        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
-                                                    QVariant::fromValue(m_outputVuMeterValues));
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputVuMeterModel"),
+            QVariant::fromValue(m_outputVuMeterValues));
 
         m_device->startJackTrip();
         m_device->startPinger(studioInfo);
@@ -1079,18 +1081,18 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
         m_inputVuMeterValues[i] = values[i];
     }
 
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputVuMeterModel"),
-                                                       QVariant::fromValue(m_inputVuMeterValues));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(m_inputVuMeterValues));
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
-{   
+{
     for (int i = 0; i < values.size(); i++) {
         m_outputVuMeterValues[i] = values[i];
     }
-    
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputVuMeterModel"),
-                                                    QVariant::fromValue(m_outputVuMeterValues));
+
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(m_outputVuMeterValues));
 }
 
 void VirtualStudio::setupAuthenticator()
