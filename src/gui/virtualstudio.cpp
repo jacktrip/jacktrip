@@ -480,7 +480,7 @@ void VirtualStudio::joinStudio()
         // getServerList emits refreshFinished which
         // will come back to this function.
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
-            qDebug << "getting servers because we're auth'd, the studio to join exists, and server list is empty";
+            qDebug() << "getting servers because we're auth'd, the studio to join exists, and server list is empty";
             getServerList(false);
         }
         qDebug() << "join skipped";
