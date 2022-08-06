@@ -428,7 +428,7 @@ void VsDevice::registerJTAsDevice()
         {QLatin1String("name"), "JackTrip App (macOS)"},
 #elif defined(Q_OS_WIN)
         {QLatin1String("name"), "JackTrip App (Windows)"},
-#else 
+#else
         {QLatin1String("name"), "JackTrip App"},
 #endif  // Q_OS_WIN
     };
@@ -477,7 +477,8 @@ QString VsDevice::randomString(int stringLength)
     }
 
     for (int i = 0; i < stringLength; ++i) {
-        str.append(allow_symbols.at(QRandomGenerator::global()->generate() % (allow_symbols.length())));
+        str.append(allow_symbols.at(QRandomGenerator::global()->generate()
+                                    % (allow_symbols.length())));
     }
 
     return str;

@@ -137,7 +137,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             std::exit(1);
         }
 #endif
-#if defined(Q_OS_MACOS) && !defined(NO_VS) 
+#if defined(Q_OS_MACOS) && !defined(NO_VS)
         // Turn on high DPI support.
         JTApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         return new JTApplication(argc, argv);
@@ -354,8 +354,14 @@ int main(int argc, char* argv[])
             },
             Qt::QueuedConnection);
         // Create instanceServer to prevent new instances from being created
+        void (QLocalSocket::*errorFunc)(QLocalSocket::LocalSocktetError);
+#ifdef Q_OS_LINUX
+        errorFunc = &QLocalSocket::error;
+#else
+        errorFunc = &QLocalSocket::errorOccurred;
+#endif
         QObject::connect(
-            instanceCheckSocket.data(), &QLocalSocket::errorOccurred, app.data(),
+            instanceCheckSocket.data(), errorFunc, app.data(),
             [&](QLocalSocket::LocalSocketError socketError) {
                 switch (socketError) {
                 case QLocalSocket::ServerNotFoundError:
@@ -428,10 +434,12 @@ int main(int argc, char* argv[])
         window->setVs(vs);
 
         VsUrlHandler* m_urlHandler = new VsUrlHandler();
-        QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), m_urlHandler, "handleUrl");
+        QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), m_urlHandler,
+                                        "handleUrl");
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
                          [&](const QUrl& url) {
-                             if (url.scheme() == QLatin1String("jacktrip") && url.host() == QLatin1String("join")) {
+                             if (url.scheme() == QLatin1String("jacktrip")
+                                 && url.host() == QLatin1String("join")) {
                                  vs->setStudioToJoin(url);
                              }
                          });

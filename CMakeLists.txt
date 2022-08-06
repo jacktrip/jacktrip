@@ -61,7 +61,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(JACK REQUIRED IMPORTED_TARGET jack)
   if (weakjack)
-    # On mac, weakjack doesnt't find jack unless this is explicitly included.
+    # On mac, weakjack doesn't find jack unless this is explicitly included.
     include_directories(${JACK_INCLUDE_DIRS})
   endif ()
   if (rtaudio)
