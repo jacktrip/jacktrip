@@ -96,6 +96,7 @@ class VsDevice : public QObject
     VsWebSocket* m_webSocket = NULL;
     QScopedPointer<JackTrip> m_jackTrip;
     QOAuth2AuthorizationCodeFlow* m_authenticator;
+    QRandomGenerator m_randomizer;
 };
 
 #endif  // VSDEVICE_H

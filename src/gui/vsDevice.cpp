@@ -472,12 +472,12 @@ QString VsDevice::randomString(int stringLength)
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
     if (!seeded) {
-        QRandomGenerator::global()->seed((QTime::currentTime().msec()));
+        m_randomizer.seed((QTime::currentTime().msec()));
         seeded = true;
     }
 
     for (int i = 0; i < stringLength; ++i) {
-        str.append(allow_symbols.at(QRandomGenerator::global()->generate()
+        str.append(allow_symbols.at(m_randomizer.generate()
                                     % (allow_symbols.length())));
     }
 
