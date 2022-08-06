@@ -41,6 +41,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <QVector>
 #include <iostream>
 #include <vector>
 
@@ -72,7 +73,7 @@ class VuMeter : public ProcessPlugin
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { "VU Meter"; };
+    const char* getName() const override { return "VU Meter"; };
 
    private:
     float fs;
