@@ -477,8 +477,7 @@ QString VsDevice::randomString(int stringLength)
     }
 
     for (int i = 0; i < stringLength; ++i) {
-        str.append(allow_symbols.at(m_randomizer.generate()
-                                    % (allow_symbols.length())));
+        str.append(allow_symbols.at(m_randomizer.generate() % (allow_symbols.length())));
     }
 
     return str;
