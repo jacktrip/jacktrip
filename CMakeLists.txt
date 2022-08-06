@@ -3,14 +3,22 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 project(QJackTrip)
 
-message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build. "
-	"https://jacktrip.github.io/jacktrip/Build/Meson_build/")
-
 set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
-set(novs FALSE)
+set(novs TRUE)
+
+message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
+message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build."
+        "https://jacktrip.github.io/jacktrip/Build/Meson_build/")
+
+add_compile_definitions(PSI)
 add_compile_definitions(NO_UPDATER)
+#add_compile_definitions(BUILD_TYPE="psi-borg.org NO_VS binary")
+#string(TIMESTAMP BUILD_DATE "%Y%m%d")
+#set(BUILD_NUMBER "00")
+#add_compile_definitions(BUILD_ID="${BUILD_DATE}${BUILD_NUMBER}")
+#add_compile_definitions(NDEBUG)
 add_compile_definitions(QT_OPENSOURCE)
 
 if (nogui)
@@ -53,7 +61,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(JACK REQUIRED IMPORTED_TARGET jack)
   if (weakjack)
-    # On mac, weakjack doesn't find jack unless this is explicitly included.
+    # On mac, weakjack doesnt't find jack unless this is explicitly included.
     include_directories(${JACK_INCLUDE_DIRS})
   endif ()
   if (rtaudio)
@@ -61,7 +69,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin
   endif ()
 endif ()
 
-set_property(SOURCE src/Regulator.h PROPERTY SKIP_AUTOGEN ON)
+#set_property(SOURCE src/Regulator.h PROPERTY SKIP_AUTOGEN ON)
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
@@ -77,6 +85,7 @@ if (NOT nogui)
   if (NOT novs)
     find_package(Qt5Quick CONFIG REQUIRED)
     find_package(Qt5NetworkAuth CONFIG REQUIRED)
+    find_package(Qt5WebSockets CONFIG REQUIRED)
   endif ()
 endif ()
 find_package(Qt5Network CONFIG REQUIRED)
@@ -130,11 +139,14 @@ if (NOT nogui)
   if (NOT novs)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/gui/virtualstudio.cpp
-      src/gui/vsServerInfo.cpp
       src/gui/vsQuickView.cpp
+      src/gui/vsServerInfo.cpp
+      src/gui/vsPing.cpp
+      src/gui/vsPinger.cpp
+      src/gui/vsDevice.cpp
+      src/gui/vsUrlHandler.cpp
+      src/gui/vsWebSocket.cpp
       src/gui/qjacktrip.qrc
-      src/vsPinger.cpp
-      src/vsPing.cpp
     )
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
@@ -159,7 +171,7 @@ set (qjacktrip_LIBS Qt5::Network)
 if (NOT nogui)
   set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Widgets)
   if (NOT novs)
-    set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Quick Qt5::NetworkAuth)
+    set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Quick Qt5::NetworkAuth Qt5::WebSockets)
   endif ()
 endif ()
 

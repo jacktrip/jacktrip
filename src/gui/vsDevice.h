@@ -46,7 +46,7 @@
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
-#include "../vsPinger.h"
+#include "vsPinger.h"
 #include "vsServerInfo.h"
 #include "vsWebSocket.h"
 

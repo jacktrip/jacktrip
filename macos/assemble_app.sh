@@ -118,6 +118,8 @@ if [ ! -z "$DYNAMIC_QT" ]; then
     QMLDIR=""
     if [ ! -z "VS" ]; then
         QMLDIR=" -qmldir=../src/gui"
+    else
+        cp "Info_novs.plist" "$APPNAME.app/Contents/Info.plist" 
     fi
     if [ ! -z "$CERTIFICATE" ]; then
         $DEPLOY_CMD "$APPNAME.app"$QMLDIR -codesign="$CERTIFICATE"
