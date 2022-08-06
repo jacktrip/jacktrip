@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.2-rc.1",
+            "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2-rc1",
+            "download": {
+                "date": "2022-08-06T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.2-rc1/JackTrip-v1.6.2-rc1-Windows-x64-installer.msi",
+                "downloadSize": 43601920,
+                "sha256": "f1412de0b13ff7599353a10aec8f2b69e9831a37103187f8fa68334c8f8f09de"
+            }
+        },
+        {
             "version": "1.6.1",
             "changelog": "Bugfixes around UDP timeout and 'Logging In' screen navigation. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.1",
             "download": {
