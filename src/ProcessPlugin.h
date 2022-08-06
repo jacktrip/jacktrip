@@ -38,8 +38,8 @@
 #ifndef __PROCESSPLUGIN_H__
 #define __PROCESSPLUGIN_H__
 
-#include <QThread>
 #include <QObject>
+#include <QThread>
 
 /** \brief Interface for the process plugins to add to the JACK callback process in
  * JackAudioInterface

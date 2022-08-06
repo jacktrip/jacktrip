@@ -238,10 +238,7 @@ class JackTrip : public QObject
         mUnderRunMode = UnderRunMode;
     }
     /// \brief Sets whether to quit on timeout.
-    virtual void setStopOnTimeout(bool stopOnTimeout)
-    {
-        mStopOnTimeout = stopOnTimeout;
-    }
+    virtual void setStopOnTimeout(bool stopOnTimeout) { mStopOnTimeout = stopOnTimeout; }
     /// \brief Sets port numbers for the local and peer machine.
     /// Receive port is <tt>port</tt>
     virtual void setAllPorts(int port)
@@ -263,22 +260,10 @@ class JackTrip : public QObject
         mSenderPeerPort   = port;
         mReceiverPeerPort = port;
     }
-    void setPeerHandshakePort(int port)
-    {
-        mTcpServerPort = port;
-    }
-    void setUseAuth(bool auth)
-    {
-        mUseAuth = auth;
-    }
-    void setUsername(const QString& username)
-    {
-        mUsername = username;
-    }
-    void setPassword(const QString& password)
-    {
-        mPassword = password;
-    }
+    void setPeerHandshakePort(int port) { mTcpServerPort = port; }
+    void setUseAuth(bool auth) { mUseAuth = auth; }
+    void setUsername(const QString& username) { mUsername = username; }
+    void setPassword(const QString& password) { mPassword = password; }
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(const QString& clientName)
     {
@@ -289,20 +274,11 @@ class JackTrip : public QObject
         mRemoteClientName = remoteClientName;
     }
     /// \brief Set the number of audio input channels
-    virtual void setNumInputChannels(int num_chans)
-    {
-        mNumAudioChansIn = num_chans;
-    }
+    virtual void setNumInputChannels(int num_chans) { mNumAudioChansIn = num_chans; }
     /// \brief Set the number of audio output channels
-    virtual void setNumOutputChannels(int num_chans)
-    {
-        mNumAudioChansOut = num_chans;
-    }
+    virtual void setNumOutputChannels(int num_chans) { mNumAudioChansOut = num_chans; }
 
-    virtual void setIOStatTimeout(int timeout)
-    {
-        mIOStatTimeout = timeout;
-    }
+    virtual void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     virtual void setIOStatStream(QSharedPointer<std::ostream> statStream)
     {
         mIOStatStream = statStream;
@@ -314,27 +290,12 @@ class JackTrip : public QObject
         mConnectDefaultAudioPorts = connect;
     }
 
-    virtual int getReceiverBindPort() const
-    {
-        return mReceiverBindPort;
-    }
-    virtual int getSenderPeerPort() const
-    {
-        return mSenderPeerPort;
-    }
-    virtual int getSenderBindPort() const
-    {
-        return mSenderBindPort;
-    }
-    virtual int getReceiverPeerPort() const
-    {
-        return mReceiverPeerPort;
-    }
+    virtual int getReceiverBindPort() const { return mReceiverBindPort; }
+    virtual int getSenderPeerPort() const { return mSenderPeerPort; }
+    virtual int getSenderBindPort() const { return mSenderBindPort; }
+    virtual int getReceiverPeerPort() const { return mReceiverPeerPort; }
 
-    virtual DataProtocol* getDataProtocolSender() const
-    {
-        return mDataProtocolSender;
-    }
+    virtual DataProtocol* getDataProtocolSender() const { return mDataProtocolSender; }
     virtual DataProtocol* getDataProtocolReceiver() const
     {
         return mDataProtocolReceiver;
@@ -347,19 +308,10 @@ class JackTrip : public QObject
     {
         mDataProtocolReceiver = DataProtocolReceiver;
     }
-    virtual int getBufferStrategy() const noexcept
-    {
-        return mBufferStrategy;
-    }
+    virtual int getBufferStrategy() const noexcept { return mBufferStrategy; }
 
-    virtual RingBuffer* getSendRingBuffer() const
-    {
-        return mSendRingBuffer;
-    }
-    virtual RingBuffer* getReceiveRingBuffer() const
-    {
-        return mReceiveRingBuffer;
-    }
+    virtual RingBuffer* getSendRingBuffer() const { return mSendRingBuffer; }
+    virtual RingBuffer* getReceiveRingBuffer() const { return mReceiveRingBuffer; }
     virtual void setSendRingBuffer(RingBuffer* const SendRingBuffer)
     {
         mSendRingBuffer = SendRingBuffer;
@@ -391,35 +343,14 @@ class JackTrip : public QObject
     {
         mAudioInterface = AudioInterface;
     }
-    virtual void setLoopBack(bool b)
-    {
-        mLoopBack = b;
-    }
-    virtual void setAudioTesterP(QSharedPointer<AudioTester> atp)
-    {
-        mAudioTesterP = atp;
-    }
+    virtual void setLoopBack(bool b) { mLoopBack = b; }
+    virtual void setAudioTesterP(QSharedPointer<AudioTester> atp) { mAudioTesterP = atp; }
 
-    void setSampleRate(uint32_t sample_rate)
-    {
-        mSampleRate = sample_rate;
-    }
-    void setDeviceID(uint32_t device_id)
-    {
-        mDeviceID = device_id;
-    }
-    void setInputDevice(std::string device_name)
-    {
-        mInputDeviceName = device_name;
-    }
-    void setOutputDevice(std::string device_name)
-    {
-        mOutputDeviceName = device_name;
-    }
-    void setAudioBufferSizeInSamples(uint32_t buf_size)
-    {
-        mAudioBufferSize = buf_size;
-    }
+    void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
+    void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
+    void setInputDevice(std::string device_name) { mInputDeviceName = device_name; }
+    void setOutputDevice(std::string device_name) { mOutputDeviceName = device_name; }
+    void setAudioBufferSizeInSamples(uint32_t buf_size) { mAudioBufferSize = buf_size; }
 
     JackTrip::hubConnectionModeT getHubConnectionModeT() const
     {
@@ -430,25 +361,13 @@ class JackTrip : public QObject
         mHubConnectionModeT = connection_mode;
     }
 
-    JackTrip::jacktripModeT getJackTripMode() const
-    {
-        return mJackTripMode;
-    }
+    JackTrip::jacktripModeT getJackTripMode() const { return mJackTripMode; }
 
-    QString getPeerAddress() const
-    {
-        return mPeerAddress;
-    }
+    QString getPeerAddress() const { return mPeerAddress; }
 
-    bool receivedConnectionFromPeer()
-    {
-        return mReceivedConnection;
-    }
+    bool receivedConnectionFromPeer() { return mReceivedConnection; }
 
-    bool tcpConnectionError()
-    {
-        return mTcpConnectionError;
-    }
+    bool tcpConnectionError() { return mTcpConnectionError; }
 
     //@}
     //------------------------------------------------------------------------------------
@@ -531,14 +450,8 @@ class JackTrip : public QObject
     }
 #endif
     virtual bool checkPeerSettings(int8_t* full_packet);
-    void increaseSequenceNumber()
-    {
-        mPacketHeader->increaseSequenceNumber();
-    }
-    int getSequenceNumber() const
-    {
-        return mPacketHeader->getSequenceNumber();
-    }
+    void increaseSequenceNumber() { mPacketHeader->increaseSequenceNumber(); }
+    int getSequenceNumber() const { return mPacketHeader->getSequenceNumber(); }
 
     uint64_t getPeerTimeStamp(int8_t* full_packet) const
     {
@@ -583,10 +496,7 @@ class JackTrip : public QObject
     {
         return mAudioInterface->getSizeInBytesPerChannel();
     }
-    int getHeaderSizeInBytes() const
-    {
-        return mPacketHeader->getHeaderSizeInBytes();
-    }
+    int getHeaderSizeInBytes() const { return mPacketHeader->getHeaderSizeInBytes(); }
     int getTotalAudioInputPacketSizeInBytes() const
     {
 #ifdef WAIR  // WAIR
@@ -609,14 +519,8 @@ class JackTrip : public QObject
     //@}
     //------------------------------------------------------------------------------------
 
-    void printTextTest()
-    {
-        std::cout << "=== JackTrip PRINT ===" << std::endl;
-    }
-    void printTextTest2()
-    {
-        std::cout << "=== JackTrip PRINT2 ===" << std::endl;
-    }
+    void printTextTest() { std::cout << "=== JackTrip PRINT ===" << std::endl; }
+    void printTextTest2() { std::cout << "=== JackTrip PRINT2 ===" << std::endl; }
 
     void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
     {
@@ -624,25 +528,16 @@ class JackTrip : public QObject
         mSimulatedJitterRate = jitter;
         mSimulatedDelayRel   = delay_rel;
     }
-    void setBroadcast(int broadcast_queue)
-    {
-        mBroadcastQueueLength = broadcast_queue;
-    }
+    void setBroadcast(int broadcast_queue) { mBroadcastQueueLength = broadcast_queue; }
     void queueLengthChanged(int queueLength)
     {
         emit signalQueueLengthChanged(queueLength);
     }
-    void setUseRtUdpPriority(bool use)
-    {
-        mUseRtUdpPriority = use;
-    }
+    void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
 
    public slots:
     /// \brief Slot to stop all the processes and threads
-    virtual void slotStopProcesses()
-    {
-        this->stop();
-    }
+    virtual void slotStopProcesses() { this->stop(); }
     virtual void slotStopProcessesDueToError(const QString& errorMessage)
     {
         this->stop(errorMessage);
@@ -664,14 +559,8 @@ class JackTrip : public QObject
             emit signalNoUdpPacketsForSeconds();
         }
     }
-    void slotUdpWaitingTooLong()
-    {
-        emit signalUdpWaitingTooLong();
-    }
-    void slotPrintTest()
-    {
-        std::cout << "=== TESTING ===" << std::endl;
-    }
+    void slotUdpWaitingTooLong() { emit signalUdpWaitingTooLong(); }
+    void slotPrintTest() { std::cout << "=== TESTING ===" << std::endl; }
     void slotReceivedConnectionFromPeer()
     {
         mReceivedConnection = true;
@@ -730,16 +619,10 @@ class JackTrip : public QObject
     virtual int clientPingToServerStart();
     /// \brief Sets the client ID
     ///
-    void setID(int ID)
-    {
-        mID = ID;
-    }
+    void setID(int ID) { mID = ID; }
     /// \brief Gets the client ID
     ///
-    int getID()
-    {
-        return mID;
-    }
+    int getID() { return mID; }
 
    private:
     int mID = 0;
