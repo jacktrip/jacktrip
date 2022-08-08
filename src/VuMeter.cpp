@@ -71,7 +71,7 @@ void VuMeter::init(int samplingRate)
 }
 
 //*******************************************************************************
-void VuMeter::compute(int nframes, float** inputs, float** _)
+void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
 {
     // Note that the second parameter is unused. This is because all of the ProcessPlugins
     // require the same function signature for the compute() function and is normally used
