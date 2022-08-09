@@ -242,7 +242,7 @@ class VirtualStudio : public QObject
     bool m_selectableBackend  = true;
     bool m_useRtAudio         = false;
     int m_currentStudio       = -1;
-    QString m_connectionState = QStringLiteral("Connecting...");
+    QString m_connectionState = QStringLiteral("Waiting");
     QScopedPointer<JackTrip> m_jackTrip;
     QTimer m_startTimer;
     QTimer m_retryPeriodTimer;

@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.2-rc.1",
+            "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2-rc1",
+            "download": {
+                "date": "2022-08-06T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.2-rc1/JackTrip-v1.6.2-rc1-macOS-x64-installer.pkg",
+                "downloadSize": 11534071,
+                "sha256": "9a2200d157c4bb308b0b5ba5854ee5af17ae74991f7aa94fa5a0da19282cc571"
+            }
+        },
+        {
             "version": "1.6.1",
             "changelog": "Bugfixes around UDP timeout and 'Logging In' screen navigation. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.1",
             "download": {
