@@ -782,9 +782,10 @@ void VirtualStudio::completeConnection()
 
         m_device->startJackTrip();
 
-        /* This needs to be done after startJackTrip gets called, because sometimes the number of channels is
-        smaller than expected. See JackTrip::startProcess and JackTrip::setupAudio. This gets adjusted
-        when JackTrip starts up, and there's no way to know in advance if this will happen. */
+        /* This needs to be done after startJackTrip gets called, because sometimes the
+        number of channels is smaller than expected. See JackTrip::startProcess and
+        JackTrip::setupAudio. This gets adjusted when JackTrip starts up, and there's no
+        way to know in advance if this will happen. */
         m_inputVuMeterValues.resize(jackTrip->getNumInputChannels());
         m_outputVuMeterValues.resize(jackTrip->getNumOutputChannels());
 
