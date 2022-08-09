@@ -759,9 +759,6 @@ void VirtualStudio::completeConnection()
         JackTrip* jackTrip =
             m_device->initJackTrip(m_useRtAudio, input, output, buffer_size, studioInfo);
 
-        m_inputVuMeterValues.resize(jackTrip->getNumInputChannels());
-        m_outputVuMeterValues.resize(jackTrip->getNumOutputChannels());
-
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
         QObject::connect(jackTrip, &JackTrip::signalError, this,
@@ -784,6 +781,13 @@ void VirtualStudio::completeConnection()
             QVariant::fromValue(m_outputVuMeterValues));
 
         m_device->startJackTrip();
+
+        /* This needs to be done after startJackTrip gets called, because sometimes the number of channels is
+        smaller than expected. See JackTrip::startProcess and JackTrip::setupAudio. This gets adjusted
+        when JackTrip starts up, and there's no way to know in advance if this will happen. */
+        m_inputVuMeterValues.resize(jackTrip->getNumInputChannels());
+        m_outputVuMeterValues.resize(jackTrip->getNumOutputChannels());
+
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
