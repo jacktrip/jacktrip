@@ -20,6 +20,10 @@ Item {
     property string vuMeterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
 
+    property string vuMeterGreen: "#61C554"
+    property string vuMeterYellow: "#F5BF4F"
+    property string vuMeterRed: "#F21B1B"
+
     function getNetworkStatsText (networkStats) {
         let packetsSent = networkStats.packetsSent;
         let packetsReceived = networkStats.packetsReceived;
@@ -176,9 +180,10 @@ Item {
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
                         
-                        GradientStop { position: 0.0; color: "green" }
-                        GradientStop { position: 0.75; color: "yellow" }
-                        GradientStop { position: 1.0; color: "red" }
+                        GradientStop { position: 0.0; color: vuMeterGreen }
+                        GradientStop { position: 0.4; color: vuMeterGreen }
+                        GradientStop { position: 0.8; color: vuMeterYellow }
+                        GradientStop { position: 1.0; color: vuMeterRed }
                     }
 
                 }
@@ -232,9 +237,10 @@ Item {
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
                         
-                        GradientStop { position: 0.0; color: "green" }
-                        GradientStop { position: 0.85; color: "yellow" }
-                        GradientStop { position: 1.0; color: "red" }
+                        GradientStop { position: 0.0; color: vuMeterGreen }
+                        GradientStop { position: 0.4; color: vuMeterGreen }
+                        GradientStop { position: 0.8; color: vuMeterYellow }
+                        GradientStop { position: 1.0; color: vuMeterRed }
                     }
                 }
 
