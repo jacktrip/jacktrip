@@ -101,11 +101,11 @@ jobs:
           #   build-system: meson
           #   meson-library-type: static
 
-          - name: macOS-x64-qmake-clang-static
+          - name: macOS-x64-qmake-clang-static-bundled_rtaudio
             release-name: macOS-x64
             runs-on: macos-11
-            system-rtaudio: true
-            bundled-rtaudio: false
+            system-rtaudio: false
+            bundled-rtaudio: true
             nogui: false
             novs: false
             weakjack: true
