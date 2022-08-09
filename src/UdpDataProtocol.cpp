@@ -984,12 +984,14 @@ bool UdpDataProtocol::datagramAvailable()
     DWORD n     = 0;
     DWORD flags = MSG_PEEK;
     int ret     = WSARecv(mSocket, &buffer, 1, &n, &flags, NULL, NULL);
+    std::cout << "ret is " << ret << std::endl;
     if (ret == 0) {
         //True if no error,
         return true;
     } else {
         //or if our error is that our buffer is too small.
         int err = WSAGetLastError();
+        std::cout << "err is " << err << std::endl;
         return (err == WSAEMSGSIZE);
     }
 #else
