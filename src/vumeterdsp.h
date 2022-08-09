@@ -1855,7 +1855,7 @@ class vumeterdsp : public dsp
                            * std::log10(std::max<float>(
                                1.17549435e-38f,
                                std::max<float>(
-                                   0.000316227757f,
+                                   9.99999975e-05f,
                                    std::sqrt(fConst1
                                              * (fRec0[IOTA0 & 131071]
                                                 - fRec0[(IOTA0 - iConst2) & 131071]))))));

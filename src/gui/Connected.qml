@@ -187,7 +187,7 @@ Item {
                     id: meterBase
                     x: 0; z: 1
                     anchors.right: meterFill.right
-                    width: parent.width - parent.width * (parent.modelData + 70) / 70
+                    width: parent.width - parent.width * (parent.modelData + 80) / 80
                     height: 20 * virtualstudio.uiScale
                     color: vuMeterColor
                 }
@@ -242,7 +242,7 @@ Item {
                     id: meterBase
                     x: 0; z: 1
                     anchors.right: meterFill.right
-                    width: parent.width - parent.width * (parent.modelData + 70) / 70
+                    width: parent.width - parent.width * (parent.modelData + 80) / 80
                     height: 20 * virtualstudio.uiScale
                     color: vuMeterColor
                 }

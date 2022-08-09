@@ -13,6 +13,6 @@ import("stdfaust.lib");
 process = envelop
 with {
 	// hmeter(i, x) = attach(x, envelop(x) : hbargraph("chan %i[2][unit:dB]", -60, +5)) : envelop;
-    envelop = ba.slidingRMS(ma.SR * 0.4) : max(ba.db2linear(-70)) : ba.linear2db;
+    envelop = ba.slidingRMS(ma.SR * 0.4) : max(ba.db2linear(-80)) : ba.linear2db;
 };
 
