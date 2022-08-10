@@ -144,119 +144,6 @@ Item {
     }
 
     Item {
-        id: inputDeviceVuMeters
-        x: parent.width / 2; y: 250 * virtualstudio.uiScale
-        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
-        height: 100 * virtualstudio.uiScale
-
-        ListView {
-            x: 0; y: 0
-            width: parent.width
-            height: parent.height
-            model: inputVuMeterModel
-
-            delegate: Item {
-                x: 0
-                width: parent.width
-                height: 24 * virtualstudio.uiScale
-                required property double modelData
-
-                Rectangle {
-                    id: meterBox
-                    x: 0; y:0; z:2
-                    width: parent.width
-                    height: 20 * virtualstudio.uiScale
-                    color: "transparent"
-                    border.color: "black"
-                    border.width: 1
-                    opacity: 1
-                }
-
-                Rectangle {
-                    id: meterFill
-                    x: 0; y: 0; z:0
-                    width: parent.width
-                    height: 20 * virtualstudio.uiScale
-                    gradient: Gradient {
-                        orientation: Gradient.Horizontal
-                        
-                        GradientStop { position: 0.0; color: vuMeterGreen }
-                        GradientStop { position: 0.4; color: vuMeterGreen }
-                        GradientStop { position: 0.8; color: vuMeterYellow }
-                        GradientStop { position: 1.0; color: vuMeterRed }
-                    }
-
-                }
-
-                Rectangle {
-                    id: meterBase
-                    x: 0; z: 1
-                    anchors.right: meterFill.right
-                    width: parent.width - parent.width * (parent.modelData + 80) / 80
-                    height: 20 * virtualstudio.uiScale
-                    color: vuMeterColor
-                }
-            }
-        }
-    }
-
-    Item {
-        id: outputDeviceVuMeters
-        x: parent.width / 2; y: 330 * virtualstudio.uiScale
-        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
-        height: 100 * virtualstudio.uiScale
-        
-        ListView {
-            x: 0; y: 0
-            width: parent.width
-            height: parent.height
-            model: outputVuMeterModel
-            
-            delegate: Item {
-                x: 0
-                width: parent.width
-                height: 24 * virtualstudio.uiScale
-                required property double modelData
-
-                Rectangle {
-                    id: meterBox
-                    x: 0; y:0; z:2
-                    width: parent.width
-                    height: 20 * virtualstudio.uiScale
-                    color: "transparent"
-                    border.color: "black"
-                    border.width: 1
-                    opacity: 1
-                }
-
-                Rectangle {
-                    id: meterFill
-                    x: 0; y: 0; z:0
-                    width: parent.width
-                    height: 20 * virtualstudio.uiScale
-                    gradient: Gradient {
-                        orientation: Gradient.Horizontal
-                        
-                        GradientStop { position: 0.0; color: vuMeterGreen }
-                        GradientStop { position: 0.4; color: vuMeterGreen }
-                        GradientStop { position: 0.8; color: vuMeterYellow }
-                        GradientStop { position: 1.0; color: vuMeterRed }
-                    }
-                }
-
-                Rectangle {
-                    id: meterBase
-                    x: 0; z: 1
-                    anchors.right: meterFill.right
-                    width: parent.width - parent.width * (parent.modelData + 80) / 80
-                    height: 20 * virtualstudio.uiScale
-                    color: vuMeterColor
-                }
-            }
-        }
-    }
-
-    Item {
         id: outputDevice
         x: bodyMargin * virtualstudio.uiScale; y: 330 * virtualstudio.uiScale
         width: parent.width / 2 - x
@@ -300,6 +187,22 @@ Item {
             color: textColour
             elide: Text.ElideRight
         }
+    }
+
+    Meter {
+        id: inputDeviceVuMeters
+        x: parent.width / 2; y: 250 * virtualstudio.uiScale
+        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
+        height: 100 * virtualstudio.uiScale
+        model: inputVuMeterModel
+    }
+
+    Meter {
+        id: outputDeviceVuMeters
+        x: parent.width / 2; y: 330 * virtualstudio.uiScale
+        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
+        height: 100 * virtualstudio.uiScale
+        model: outputVuMeterModel
     }
 
     Item {
