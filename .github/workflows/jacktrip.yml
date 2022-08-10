@@ -117,10 +117,10 @@ jobs:
             installer-path: installer
             build-system: qmake
 
-          - name: macOS-x64-qmake-clang-shared-bundled_rtaudio
+          - name: macOS-x64-qmake-clang-shared
             runs-on: macos-11
-            system-rtaudio: false
-            bundled-rtaudio: true
+            system-rtaudio: true
+            bundled-rtaudio: false
             nogui: false
             novs: false
             weakjack: true
