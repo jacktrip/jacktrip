@@ -46,7 +46,7 @@
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
-#include "../vsPinger.h"
+#include "vsPinger.h"
 #include "vsServerInfo.h"
 #include "vsWebSocket.h"
 
@@ -96,6 +96,7 @@ class VsDevice : public QObject
     VsWebSocket* m_webSocket = NULL;
     QScopedPointer<JackTrip> m_jackTrip;
     QOAuth2AuthorizationCodeFlow* m_authenticator;
+    QRandomGenerator m_randomizer;
 };
 
 #endif  // VSDEVICE_H

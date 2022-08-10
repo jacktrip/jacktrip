@@ -244,8 +244,8 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
-               src/vsPinger.h \
-               src/vsPing.h \
+               src/gui/vsPinger.h \
+               src/gui/vsPing.h \
                src/gui/vsUrlHandler.h \
                src/JTApplication.h
   }
@@ -300,8 +300,8 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
-               src/vsPinger.cpp \
-               src/vsPing.cpp \
+               src/gui/vsPinger.cpp \
+               src/gui/vsPing.cpp \
                src/gui/vsUrlHandler.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {

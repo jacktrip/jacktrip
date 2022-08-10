@@ -424,14 +424,12 @@ void VsDevice::registerJTAsDevice()
         {QLatin1String("version"), QLatin1String(gVersion)},
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
-#ifndef defined(Q_OS_MACOS) || defined(Q_OS_WIN)
-        {QLatin1String("name"), "JackTrip App"},
-#endif  // not Q_OS_MACOS OR Q_OS_WIN
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
         {QLatin1String("name"), "JackTrip App (macOS)"},
-#endif  // Q_OS_MACOS
-#ifdef Q_OS_WIN
+#elif defined(Q_OS_WIN)
         {QLatin1String("name"), "JackTrip App (Windows)"},
+#else
+        {QLatin1String("name"), "JackTrip App"},
 #endif  // Q_OS_WIN
     };
     QJsonDocument request = QJsonDocument(json);
@@ -474,12 +472,12 @@ QString VsDevice::randomString(int stringLength)
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
     if (!seeded) {
-        qsrand(QTime::currentTime().msec());
+        m_randomizer.seed((QTime::currentTime().msec()));
         seeded = true;
     }
 
     for (int i = 0; i < stringLength; ++i) {
-        str.append(allow_symbols.at(qrand() % (allow_symbols.length())));
+        str.append(allow_symbols.at(m_randomizer.generate() % (allow_symbols.length())));
     }
 
     return str;

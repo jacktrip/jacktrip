@@ -96,11 +96,18 @@ cp -f $BINARY "$APPNAME.app/Contents/MacOS/"
 # copy licenses
 cp -f ../LICENSE.md "$APPNAME.app/Contents/Resources/"
 cp -Rf ../LICENSES "$APPNAME.app/Contents/Resources/"
+
+DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
+DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
+
+if [ ! -z "$DYNAMIC_QT" ] && [ -z "$DYNAMIC_VS" ]; then
+    cp "Info_novs.plist" "$APPNAME.app/Contents/Info.plist" 
+fi
+
 sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
-DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
 if [ ! -z "$DYNAMIC_QT" ]; then
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
@@ -114,9 +121,8 @@ if [ ! -z "$DYNAMIC_QT" ]; then
             exit 1
         fi
     fi
-    VS=$(otool -L $BINARY | grep QtQml)
     QMLDIR=""
-    if [ ! -z "VS" ]; then
+    if [ ! -z "$DYNAMIC_VS" ]; then
         QMLDIR=" -qmldir=../src/gui"
     fi
     if [ ! -z "$CERTIFICATE" ]; then

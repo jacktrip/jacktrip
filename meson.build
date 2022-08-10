@@ -110,8 +110,8 @@ else
 			'src/gui/vsQuickView.cpp',
 			'src/gui/vsWebSocket.cpp',
 			'src/gui/vsUrlHandler.cpp',
-			'src/vsPinger.cpp',
-			'src/vsPing.cpp'
+			'src/gui/vsPinger.cpp',
+			'src/gui/vsPing.cpp'
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
@@ -119,8 +119,8 @@ else
 			'src/gui/vsServerInfo.h',
 			'src/gui/vsQuickView.h',
 			'src/gui/vsWebSocket.h',
-			'src/vsPinger.h',
-			'src/vsPing.h',
+			'src/gui/vsPinger.h',
+			'src/gui/vsPing.h',
 			'src/gui/vsUrlHandler.h',
 			'src/JTApplication.h'
 		]

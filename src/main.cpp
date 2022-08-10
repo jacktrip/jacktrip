@@ -83,7 +83,7 @@
 static QTextStream* ts;
 static QFile outFile;
 #endif  // NO_VS
-#endif  // NO_VS
+#endif  // NO_GUI
 
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
@@ -137,7 +137,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             std::exit(1);
         }
 #endif
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) && !defined(NO_VS)
         // Turn on high DPI support.
         JTApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         return new JTApplication(argc, argv);
@@ -262,19 +262,19 @@ int main(int argc, char* argv[])
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
-    QString deeplink = "";
 #ifndef NO_GUI
     QSharedPointer<QJackTrip> window;
 
 #ifndef NO_VS
+    QString deeplink = QLatin1String("");
     QSharedPointer<VirtualStudio> vs;
-#ifndef Q_OS_MACOS
+#ifdef _WIN32
     QSharedPointer<QLocalServer> instanceServer;
     QSharedPointer<QLocalSocket> instanceCheckSocket;
 #endif
 #endif
 
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) && !defined(NO_VS)
     if (qobject_cast<JTApplication*>(app.data())) {
 #else
     if (qobject_cast<QApplication*>(app.data())) {
@@ -304,7 +304,7 @@ int main(int argc, char* argv[])
 #ifndef NO_VS
         // Parse command line for deep link
         QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
-        deeplinkOption.setValueName("deeplink");
+        deeplinkOption.setValueName(QStringLiteral("deeplink"));
         parser.addOption(deeplinkOption);
         parser.parse(app->arguments());
         if (parser.isSet(deeplinkOption)) {
@@ -314,9 +314,11 @@ int main(int argc, char* argv[])
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+#ifndef __unix__
         QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
                                     .toString()
                                     .toLower();
+#endif
 #ifdef _WIN32
         // Set url scheme in registry
         QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
@@ -329,9 +331,7 @@ int main(int argc, char* argv[])
         set.setValue("shell/open/command/Default",
                      QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
         set.endGroup();
-#endif  // _WIN32
 
-#ifndef Q_OS_MACOS
         // Create socket
         instanceCheckSocket =
             QSharedPointer<QLocalSocket>::create(new QLocalSocket(app.data()));
@@ -419,7 +419,7 @@ int main(int argc, char* argv[])
         // Check for existing instance
         instanceCheckSocket->connectToServer("jacktripExists");
 
-#endif  // !Q_OS_MACOS
+#endif  // _WIN32
         window.reset(new QJackTrip(argc, !deeplink.isEmpty()));
 #else
         window.reset(new QJackTrip(argc));
@@ -434,10 +434,12 @@ int main(int argc, char* argv[])
         window->setVs(vs);
 
         VsUrlHandler* m_urlHandler = new VsUrlHandler();
-        QDesktopServices::setUrlHandler("jacktrip", m_urlHandler, "handleUrl");
+        QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), m_urlHandler,
+                                        "handleUrl");
         QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
                          [&](const QUrl& url) {
-                             if (url.scheme() == "jacktrip" && url.host() == "join") {
+                             if (url.scheme() == QLatin1String("jacktrip")
+                                 && url.host() == QLatin1String("join")) {
                                  vs->setStudioToJoin(url);
                              }
                          });
