@@ -1092,6 +1092,8 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
 void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 {
+    assert(values.size() == m_inputVuMeterValues.size());
+    
     for (int i = 0; i < values.size(); i++) {
         m_inputVuMeterValues[i] = values[i];
     }
@@ -1102,6 +1104,8 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
 {
+    assert(values.size() == m_outputVuMeterValues.size());
+
     for (int i = 0; i < values.size(); i++) {
         m_outputVuMeterValues[i] = values[i];
     }
