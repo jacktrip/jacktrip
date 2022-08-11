@@ -67,7 +67,12 @@ class VuMeter : public ProcessPlugin
     }
 
     /// \brief The class destructor
-    virtual ~VuMeter() {}
+    virtual ~VuMeter() {
+        for (int i = 0; i < mNumChannels; i++) {
+            delete vumeterP[i];
+        }
+        vumeterP.clear();
+    }
 
     void init(int samplingRate) override;
     int getNumInputs() override { return (mNumChannels); }

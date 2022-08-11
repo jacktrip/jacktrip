@@ -97,31 +97,13 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
     /* Convenience variable to store the location of each channel's memory space */
     QVector<float*> vumeter_channel_ptrs(mNumChannels);
 
-    // #ifdef SINE_TEST
-    //     float sineTestOut[nframes];
-    //     float* faustSigs[1]{sineTestOut};
-    // #endif
-
     for (int i = 0; i < mNumChannels; i++) {
-        // if (warningAmp > 0.0) {
-        //     checkAmplitudes(nframes,
-        //                     inputs[i]);  // we presently do one check across all
-        //                     channels
-        // }
-
         float* chanBufPtr = vumeter_buffer.data() + i * nframes;
         vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
         vumeter_channel_ptrs.push_back(chanBufPtr);
 
         mValues[i] =
             *(chanBufPtr + nframes / 2);  // use the first value as the VU meter value
-
-        // #ifdef SINE_TEST
-        //         limiterTestP[i]->compute(nframes, faustSigs, faustSigs);
-        //         for (int n = 0; n < nframes; n++) {
-        //             outputs[i][n] = outputs[i][n] + sineTestOut[n];
-        //         }
-        // #endif
     }
 }
 
