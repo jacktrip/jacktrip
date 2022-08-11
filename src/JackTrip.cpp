@@ -60,7 +60,6 @@
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
-#include <cassert>
 using std::setw;
 
 using std::cout;
@@ -1055,8 +1054,6 @@ void JackTrip::tcpTimerTick()
 //*******************************************************************************
 void JackTrip::receivedInputVolumeMeasurements(QVector<float> values)
 {
-    assert(values.size() == mNumAudioChansIn);
-
     // Input VU meters
     for (int i = 0; i < mNumAudioChansIn; i++) {
         mVuMeterValuesIn[i] = values[i];
@@ -1067,8 +1064,6 @@ void JackTrip::receivedInputVolumeMeasurements(QVector<float> values)
 //*******************************************************************************
 void JackTrip::receivedOutputVolumeMeasurements(QVector<float> values)
 {
-    assert(values.size() == mNumAudioChansOut);
-    
     // Output VU meters
     for (int i = 0; i < mNumAudioChansOut; i++) {
         mVuMeterValuesOut[i] = values[i];
