@@ -195,7 +195,7 @@ Rectangle {
         Image {
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: "cog.svg"
+            source: "manage.svg"
         }
     }
     
