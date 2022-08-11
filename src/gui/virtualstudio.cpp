@@ -138,9 +138,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        QVariant::fromValue(m_servers));
 
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(m_inputVuMeterValues));
+        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(QVector<float>()));
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(m_outputVuMeterValues));
+        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(QVector<float>()));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -336,16 +336,6 @@ QString VirtualStudio::connectionState()
 QJsonObject VirtualStudio::networkStats()
 {
     return m_networkStats;
-}
-
-QVector<float> VirtualStudio::inputVuMeterLevels()
-{
-    return m_inputVuMeterValues;
-}
-
-QVector<float> VirtualStudio::outputVuMeterLevels()
-{
-    return m_outputVuMeterValues;
 }
 
 QString VirtualStudio::updateChannel()
@@ -782,22 +772,15 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalUpdatedOutputAudioVuLevels, this,
                          &VirtualStudio::updatedOutputVuMeasurements);
 
+        m_device->startJackTrip();
+
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("inputVuMeterModel"),
-            QVariant::fromValue(m_inputVuMeterValues));
+            QVariant::fromValue(QVector<float>(jackTrip->getNumInputChannels())));
 
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("outputVuMeterModel"),
-            QVariant::fromValue(m_outputVuMeterValues));
-
-        m_device->startJackTrip();
-
-        /* This needs to be done after startJackTrip gets called, because sometimes the
-        number of channels is smaller than expected. See JackTrip::startProcess and
-        JackTrip::setupAudio. This gets adjusted when JackTrip starts up, and there's no
-        way to know in advance if this will happen. */
-        m_inputVuMeterValues.resize(jackTrip->getNumInputChannels());
-        m_outputVuMeterValues.resize(jackTrip->getNumOutputChannels());
+            QVariant::fromValue(QVector<float>(jackTrip->getNumOutputChannels())));
 
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
@@ -1092,26 +1075,14 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
 void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 {
-    assert(values.size() == m_inputVuMeterValues.size());
-    
-    for (int i = 0; i < values.size(); i++) {
-        m_inputVuMeterValues[i] = values[i];
-    }
-
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(m_inputVuMeterValues));
+        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(values));
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
 {
-    assert(values.size() == m_outputVuMeterValues.size());
-
-    for (int i = 0; i < values.size(); i++) {
-        m_outputVuMeterValues[i] = values[i];
-    }
-
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(m_outputVuMeterValues));
+        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(values));
 }
 
 void VirtualStudio::setupAuthenticator()
