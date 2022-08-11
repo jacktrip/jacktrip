@@ -67,7 +67,8 @@ class VuMeter : public ProcessPlugin
     }
 
     /// \brief The class destructor
-    virtual ~VuMeter() {
+    virtual ~VuMeter()
+    {
         for (int i = 0; i < mNumChannels; i++) {
             delete vumeterP[i];
         }
