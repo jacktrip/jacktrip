@@ -25,49 +25,34 @@ Item {
     property string vuMeterRed: "#F21B1B"
 
     function getNetworkStatsText (networkStats) {
-        let packetsSent = networkStats.packetsSent;
-        let packetsReceived = networkStats.packetsReceived;
         let minRtt = networkStats.minRtt;
         let maxRtt = networkStats.maxRtt;
         let avgRtt = networkStats.avgRtt;
 
-        let texts = ["Measuring stats ...", "", ""];
+        let texts = ["Measuring stats ...", ""];
 
         if (!minRtt || !maxRtt) {
             return texts;
         }
 
         texts[0] = "<b>" + minRtt + " ms - " + maxRtt + " ms</b>, avg " + avgRtt + " ms round-trip time";
-        texts[1] = (100 - (packetsReceived * 100 / packetsSent)) + "% packet loss";
 
         let quality = "poor";
         if (avgRtt <= 25) {
 
-            if (maxRtt <= 30 && packetsSent === packetsReceived) {
+            if (maxRtt <= 30) {
                 quality = "excellent";
             } else {
                 quality = "good";
             }
 
         } else if (avgRtt <= 30) {
-
-            if (packetsSent === packetsReceived) {
-                quality = "good";
-            } else {
-                quality = "fair";
-            }
-
+            quality = "good";
         } else if (avgRtt <= 35) {
-
-            if (packetsSent === packetsReceived) {
-                quality = "fair";
-            } else {
-                quality = "low";
-            }
-
+            quality = "fair";
         }
 
-        texts[2] = "Your connection quality is <b>" + quality + "</b>."
+        texts[1] = "Your connection quality is <b>" + quality + "</b>."
         return texts;
     }
 
@@ -252,16 +237,6 @@ Item {
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             topPadding: 8 * virtualstudio.uiScale
             anchors.top: netstat0.bottom
-            color: textColour
-        }
-
-        Text {
-            id: netstat2
-            x: parent.width / 2
-            text: getNetworkStatsText(virtualstudio.networkStats)[2]
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            topPadding: 8 * virtualstudio.uiScale
-            anchors.top: netstat1.bottom
             color: textColour
         }
     }
