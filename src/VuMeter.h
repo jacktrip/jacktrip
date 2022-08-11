@@ -85,7 +85,6 @@ class VuMeter : public ProcessPlugin
     float fs;
     int mNumChannels;
     std::vector<vumeterdsp*> vumeterP;
-    std::vector<APIUI*> vumeterUIP;
 
     QTimer mTimer;
     QVector<float> mValues;

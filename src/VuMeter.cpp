@@ -94,16 +94,10 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
     int numValues = nframes * mNumChannels;
     QVector<float> vumeter_buffer(numValues);
 
-    /* Convenience variable to store the location of each channel's memory space */
-    QVector<float*> vumeter_channel_ptrs(mNumChannels);
-
     for (int i = 0; i < mNumChannels; i++) {
         float* chanBufPtr = vumeter_buffer.data() + i * nframes;
         vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
-        vumeter_channel_ptrs.push_back(chanBufPtr);
-
-        mValues[i] =
-            *(chanBufPtr + nframes / 2);  // use the first value as the VU meter value
+        mValues[i] = *(chanBufPtr);  // use the first value as the VU meter value
     }
 }
 
