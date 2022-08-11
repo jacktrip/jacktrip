@@ -10,7 +10,7 @@ Item {
     
     property int leftHeaderMargin: 16
     property int fontBig: 28
-    property int fontMedium: 14
+    property int fontMedium: 12
     property int fontSmall: 10
     property int fontTiny: 8
 
@@ -85,7 +85,7 @@ Item {
     Item {
         id: inputDevice
         x: bodyMargin * virtualstudio.uiScale; y: 250 * virtualstudio.uiScale
-        width: parent.width / 2 - x
+        width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
         clip: true
 
@@ -108,7 +108,7 @@ Item {
             id: inputDeviceHeader
             x: 64 * virtualstudio.uiScale
             width: parent.width - 64 * virtualstudio.uiScale
-            text: "Input Device"
+            text: "<b>Input Device</b>"
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             anchors.verticalCenter: mic.verticalCenter
             color: textColour
@@ -131,7 +131,7 @@ Item {
     Item {
         id: outputDevice
         x: bodyMargin * virtualstudio.uiScale; y: 330 * virtualstudio.uiScale
-        width: parent.width / 2 - x
+        width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
         clip: true
 
@@ -154,7 +154,7 @@ Item {
             id: outputDeviceHeader
             x: 64 * virtualstudio.uiScale
             width: parent.width - 64 * virtualstudio.uiScale
-            text: "Output Device"
+            text: "<b>Output Device</b>"
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             anchors.verticalCenter: headphones.verticalCenter
             color: textColour
@@ -176,25 +176,25 @@ Item {
 
     Meter {
         id: inputDeviceVuMeters
-        x: parent.width / 2; y: 250 * virtualstudio.uiScale
-        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
+        x: inputDevice.x + inputDevice.width; y: 250 * virtualstudio.uiScale
+        width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
         model: inputVuMeterModel
     }
 
     Meter {
         id: outputDeviceVuMeters
-        x: parent.width / 2; y: 330 * virtualstudio.uiScale
-        width: parent.width / 2 - bodyMargin * virtualstudio.uiScale
+        x: outputDevice.x + outputDevice.width; y: 330 * virtualstudio.uiScale
+        width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
         model: outputVuMeterModel
     }
 
     Item {
-        id: networkStats
+        id: networkStatsHeader
         x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale
-        width: parent.width - 2 * x
-        height: 128
+        width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
+        height: 128 * virtualstudio.uiScale
 
         Image {
             id: network
@@ -212,27 +212,32 @@ Item {
         }
 
         Text {
-            id: networkStatsHeader
-            text: "Network"
+            id: networkStatsHeaderText
+            text: "<b>Network</b>"
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             x: 64 * virtualstudio.uiScale
             anchors.verticalCenter: network.verticalCenter
             color: textColour
         }
+    }
+
+    Item {
+        id: networkStatsText
+        x: networkStatsHeader.x + networkStatsHeader.width; y: 410 * virtualstudio.uiScale
+        width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
+        height: 128 * virtualstudio.uiScale
 
         Text {
             id: netstat0
-            x: parent.width / 2
+            x: 0; y: 0
             text: getNetworkStatsText(virtualstudio.networkStats)[0]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            topPadding: 8 * virtualstudio.uiScale
-            anchors.verticalCenter: network.verticalCenter
             color: textColour
         }
 
         Text {
             id: netstat1
-            x: parent.width / 2
+            x: 0
             text: getNetworkStatsText(virtualstudio.networkStats)[1]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             topPadding: 8 * virtualstudio.uiScale
