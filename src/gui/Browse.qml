@@ -334,6 +334,7 @@ Item {
         Button {
             id: settingsButton
             text: "Settings"
+            palette.buttonText: textColour
             icon {
                 source: "cog.svg";
                 color: textColour;
