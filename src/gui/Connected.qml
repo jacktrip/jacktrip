@@ -121,8 +121,6 @@ Item {
     }
 
     function getNetworkStatsText (networkStats) {
-        let packetsSent = networkStats.packetsSent;
-        let packetsReceived = networkStats.packetsReceived;
         let minRtt = networkStats.minRtt;
         let maxRtt = networkStats.maxRtt;
         let avgRtt = networkStats.avgRtt;
@@ -138,28 +136,16 @@ Item {
         let quality = "poor";
         if (avgRtt <= 25) {
 
-            if (maxRtt <= 30 && packetsSent === packetsReceived) {
+            if (maxRtt <= 30) {
                 quality = "excellent";
             } else {
                 quality = "good";
             }
 
         } else if (avgRtt <= 30) {
-
-            if (packetsSent === packetsReceived) {
-                quality = "good";
-            } else {
-                quality = "fair";
-            }
-
+            quality = "good";
         } else if (avgRtt <= 35) {
-
-            if (packetsSent === packetsReceived) {
-                quality = "fair";
-            } else {
-                quality = "low";
-            }
-
+            quality = "fair";
         }
 
         texts[1] = "Your connection quality is <b>" + quality + "</b>."
