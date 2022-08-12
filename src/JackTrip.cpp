@@ -589,21 +589,29 @@ void JackTrip::completeConnection()
         mAudioInterface->appendProcessPluginFromNetwork(i);
     }
 
-    VuMeter* outputMeterPlugin = new VuMeter(mNumAudioChansOut);
-    mAudioInterface->appendProcessPluginFromNetwork(outputMeterPlugin);
-    connect(outputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
-            &JackTrip::receivedOutputVolumeMeasurements);
-    mVuMeterValuesOut.resize(mNumAudioChansOut);
+#ifndef NO_GUI
+    if (mJackTripMode == CLIENT || mJackTripMode == CLIENTTOPINGSERVER) {
+        VuMeter* outputMeterPlugin = new VuMeter(mNumAudioChansOut);
+        mAudioInterface->appendProcessPluginFromNetwork(outputMeterPlugin);
+        connect(outputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
+                &JackTrip::receivedOutputVolumeMeasurements);
+        mVuMeterValuesOut.resize(mNumAudioChansOut);
+    }
+#endif  // NO_GUI
 
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
     }
 
-    VuMeter* inputMeterPlugin = new VuMeter(mNumAudioChansIn);
-    mAudioInterface->appendProcessPluginToNetwork(inputMeterPlugin);
-    connect(inputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
-            &JackTrip::receivedInputVolumeMeasurements);
-    mVuMeterValuesIn.resize(mNumAudioChansIn);
+#ifndef NO_GUI
+    if (mJackTripMode == CLIENT || mJackTripMode == CLIENTTOPINGSERVER) {
+        VuMeter* inputMeterPlugin = new VuMeter(mNumAudioChansIn);
+        mAudioInterface->appendProcessPluginToNetwork(inputMeterPlugin);
+        connect(inputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
+                &JackTrip::receivedInputVolumeMeasurements);
+        mVuMeterValuesIn.resize(mNumAudioChansIn);
+    }
+#endif  // NO_GUI
 
     mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
@@ -1052,6 +1060,7 @@ void JackTrip::tcpTimerTick()
 }
 
 //*******************************************************************************
+#ifndef NO_GUI
 void JackTrip::receivedInputVolumeMeasurements(QVector<float> values)
 {
     // Input VU meters
@@ -1060,8 +1069,9 @@ void JackTrip::receivedInputVolumeMeasurements(QVector<float> values)
     }
     emit signalUpdatedInputAudioVuLevels(mVuMeterValuesIn);
 }
-
+#endif
 //*******************************************************************************
+#ifndef NO_GUI
 void JackTrip::receivedOutputVolumeMeasurements(QVector<float> values)
 {
     // Output VU meters
@@ -1071,6 +1081,7 @@ void JackTrip::receivedOutputVolumeMeasurements(QVector<float> values)
 
     emit signalUpdatedOutputAudioVuLevels(mVuMeterValuesOut);
 }
+#endif
 
 //*******************************************************************************
 void JackTrip::stop(const QString& errorMessage)

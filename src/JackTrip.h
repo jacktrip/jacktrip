@@ -58,7 +58,10 @@
 #include "AudioTester.h"
 #include "PacketHeader.h"
 #include "RingBuffer.h"
+
+#ifndef NO_GUI
 #include "VuMeter.h"
+#endif  // NO_GUI
 
 //#include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
@@ -575,8 +578,10 @@ class JackTrip : public QObject
     void receivedDataUDP();
     void udpTimerTick();
     void tcpTimerTick();
+#ifndef NO_GUI
     void receivedInputVolumeMeasurements(QVector<float> values);
     void receivedOutputVolumeMeasurements(QVector<float> values);
+#endif  // NO_GUI
 
    signals:
     // void signalUdpTimeOut();
@@ -591,8 +596,10 @@ class JackTrip : public QObject
     void signalQueueLengthChanged(int queueLength);
     void signalAudioStarted();
 
+#ifndef NO_GUI
     void signalUpdatedInputAudioVuLevels(QVector<float> levels);
     void signalUpdatedOutputAudioVuLevels(QVector<float> levels);
+#endif  // NO_GUI
 
    public:
     /// \brief Set the AudioInteface object
@@ -631,10 +638,12 @@ class JackTrip : public QObject
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
-    int mNumAudioChansIn;              ///< Number of Audio Input Channels
-    int mNumAudioChansOut;             ///< Number of Audio Output Channels
+    int mNumAudioChansIn;   ///< Number of Audio Input Channels
+    int mNumAudioChansOut;  ///< Number of Audio Output Channels
+#ifndef NO_GUI
     QVector<float> mVuMeterValuesIn;   ///< Values for Audio Input VU meters
     QVector<float> mVuMeterValuesOut;  ///< Values for Audio Output VU meters
+#endif                                 // NO_GUI
 #ifdef WAIR                            // WAIR
     int mNumNetRevChans;     ///< Number of Network Audio Channels (net comb filters)
 #endif                       // endwhere
