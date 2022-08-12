@@ -1050,14 +1050,14 @@ void JackTrip::stop(const QString& errorMessage)
     mHasShutdown = true;
     std::cout << "Stopping JackTrip..." << std::endl;
 
-    if (mDataProtocolSender != nullptr){
+    if (mDataProtocolSender != nullptr) {
         // Stop The Sender
         mDataProtocolSender->stop();
         mDataProtocolSender->wait();
     }
 
-    if (mDataProtocolReceiver != nullptr){
-         // Stop The Receiver
+    if (mDataProtocolReceiver != nullptr) {
+        // Stop The Receiver
         mDataProtocolReceiver->stop();
         mDataProtocolReceiver->wait();
     }
