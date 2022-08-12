@@ -275,7 +275,7 @@ class VirtualStudio : public QObject
     QUrl m_studioToJoin;
     bool m_authenticated = false;
 
-    bool inputClipped = false;
+    bool inputClipped  = false;
     bool outputClipped = false;
 
 #ifdef RT_AUDIO
