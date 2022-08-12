@@ -963,7 +963,7 @@ void VirtualStudio::processError(const QString& errorMessage)
         QMessageBox msgBox;
         if (errorMessage == QLatin1String("Peer Stopped")) {
             // Report the other end quitting as a regular occurance rather than an error.
-            msgBox.setText(errorMessage);
+            msgBox.setText("The Studio has been stopped.");
             msgBox.setWindowTitle(QStringLiteral("Disconnected"));
         } else {
             msgBox.setText(QStringLiteral("Error: ").append(errorMessage));
