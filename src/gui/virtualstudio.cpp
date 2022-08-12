@@ -96,13 +96,13 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_outputClipTimer.setSingleShot(true);
     m_outputClipTimer.setInterval(3000);
 
-    m_inputClipTimer.callOnTimeout([&](){
+    m_inputClipTimer.callOnTimeout([&]() {
         m_inputClipped = false;
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputClipped"), QVariant::fromValue(false));
+        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
+                                                           QVariant::fromValue(false));
     });
 
-    m_outputClipTimer.callOnTimeout([&](){
+    m_outputClipTimer.callOnTimeout([&]() {
         m_outputClipped = false;
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("outputClipped"), QVariant::fromValue(false));
@@ -161,10 +161,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("inputVuMeterModel"), QVariant::fromValue(QVector<float>()));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("outputVuMeterModel"), QVariant::fromValue(QVector<float>()));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputClipped"), QVariant::fromValue(false));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputClipped"), QVariant::fromValue(false));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
+                                                       QVariant::fromValue(false));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
+                                                       QVariant::fromValue(false));
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
@@ -1109,7 +1109,7 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
             m_inputClipTimer.start();
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputClipped"), QVariant::fromValue(true));
-            
+
             break;
         }
     }
@@ -1126,7 +1126,7 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
             m_outputClipTimer.start();
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("outputClipped"), QVariant::fromValue(true));
-            
+
             break;
         }
     }
