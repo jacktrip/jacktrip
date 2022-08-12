@@ -97,13 +97,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_outputClipTimer.setInterval(3000);
 
     m_inputClipTimer.callOnTimeout([&]() {
-        m_inputClipped = false;
         m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
                                                            QVariant::fromValue(false));
     });
 
     m_outputClipTimer.callOnTimeout([&]() {
-        m_outputClipped = false;
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("outputClipped"), QVariant::fromValue(false));
     });
@@ -1105,7 +1103,6 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 
     for (int i = 0; i < values.size(); i++) {
         if (values[i] >= 0.0) {
-            m_inputClipped = true;
             m_inputClipTimer.start();
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputClipped"), QVariant::fromValue(true));
@@ -1122,7 +1119,6 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
 
     for (int i = 0; i < values.size(); i++) {
         if (values[i] >= 0.0) {
-            m_outputClipped = true;
             m_outputClipTimer.start();
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("outputClipped"), QVariant::fromValue(true));

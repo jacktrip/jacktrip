@@ -275,9 +275,6 @@ class VirtualStudio : public QObject
     QUrl m_studioToJoin;
     bool m_authenticated = false;
 
-    bool m_inputClipped  = false;
-    bool m_outputClipped = false;
-
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
