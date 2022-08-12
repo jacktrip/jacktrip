@@ -180,7 +180,7 @@ Item {
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
         model: inputVuMeterModel
-        clipped: false
+        clipped: inputClipped
     }
 
     Meter {
@@ -189,7 +189,7 @@ Item {
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
         model: outputVuMeterModel
-        clipped: false
+        clipped: outputClipped
     }
 
     Item {

@@ -88,6 +88,26 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
 
+    // Initialize timers needed for clip indicators
+    m_inputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_inputClipTimer.setSingleShot(true);
+    m_inputClipTimer.setInterval(3000);
+    m_outputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_outputClipTimer.setSingleShot(true);
+    m_outputClipTimer.setInterval(3000);
+
+    m_inputClipTimer.callOnTimeout([&](){
+        m_inputClipped = false;
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("inputClipped"), QVariant::fromValue(false));
+    });
+
+    m_outputClipTimer.callOnTimeout([&](){
+        m_outputClipped = false;
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputClipped"), QVariant::fromValue(false));
+    });
+
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
     m_useRtAudio   = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
@@ -141,6 +161,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("inputVuMeterModel"), QVariant::fromValue(QVector<float>()));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("outputVuMeterModel"), QVariant::fromValue(QVector<float>()));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputClipped"), QVariant::fromValue(false));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputClipped"), QVariant::fromValue(false));
+
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -1080,8 +1105,11 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 
     for (int i = 0; i < values.size(); i++) {
         if (values[i] >= 0.0) {
-            inputClipped = true;
-            std::cout << "Clipping detected on input (" << values[i] << ")" << std::endl;
+            m_inputClipped = true;
+            m_inputClipTimer.start();
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("inputClipped"), QVariant::fromValue(true));
+            
             break;
         }
     }
@@ -1094,8 +1122,11 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
 
     for (int i = 0; i < values.size(); i++) {
         if (values[i] >= 0.0) {
-            outputClipped = true;
-            std::cout << "Clipping detected on output (" << values[i] << ")" << std::endl;
+            m_outputClipped = true;
+            m_outputClipTimer.start();
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("outputClipped"), QVariant::fromValue(true));
+            
             break;
         }
     }

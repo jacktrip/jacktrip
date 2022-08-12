@@ -275,8 +275,11 @@ class VirtualStudio : public QObject
     QUrl m_studioToJoin;
     bool m_authenticated = false;
 
-    bool inputClipped  = false;
-    bool outputClipped = false;
+    bool m_inputClipped  = false;
+    bool m_outputClipped = false;
+
+    QTimer m_inputClipTimer;
+    QTimer m_outputClipTimer;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
