@@ -10,6 +10,8 @@ Item {
     property int bins: 15
 
     property int innerMargin: 2 * virtualstudio.uiScale
+    property int clipWidth: 10 * virtualstudio.uiScale
+    required property bool clipped
 
     property string vuMeterColor: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
 
@@ -36,8 +38,9 @@ Item {
     }
 
     ListView {
+        id: meters
         x: 0; y: 0
-        width: parent.width
+        width: parent.width - clipWidth
         height: parent.height
         model: parent.model
 
@@ -201,5 +204,14 @@ Item {
                 radius: boxRadius
             }
         }
+    }
+
+    Rectangle {
+        id: clipIndicator
+        x: meters.x + meters.width; y: 0
+        width: Math.min(clipWidth, ((parent.width - clipWidth) / bins) - innerMargin)
+        height: 24 * virtualstudio.uiScale
+        radius: 4 * virtualstudio.uiScale
+        color: clipped ? vuMeterRed : vuMeterColor
     }
 }

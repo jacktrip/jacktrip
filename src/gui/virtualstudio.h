@@ -275,8 +275,8 @@ class VirtualStudio : public QObject
     QUrl m_studioToJoin;
     bool m_authenticated = false;
 
-    QVector<float> m_inputVuMeterValues;   ///< Values for Audio Input VU meters
-    QVector<float> m_outputVuMeterValues;  ///< Values for Audio Output VU meters
+    bool inputClipped = false;
+    bool outputClipped = false;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;

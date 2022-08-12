@@ -85,6 +85,7 @@ class VuMeter : public ProcessPlugin
     float fs;
     int mNumChannels;
     std::vector<vumeterdsp*> vumeterP;
+    bool hasProcessedAudio = false;
 
     QTimer mTimer;
     QVector<float> mValues;

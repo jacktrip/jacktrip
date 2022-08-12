@@ -1077,12 +1077,28 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
 {
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputVuMeterModel"), QVariant::fromValue(values));
+
+    for (int i=0; i < values.size(); i++) {
+        if (values[i] >= 0.0) {
+            inputClipped = true;
+            std::cout << "Clipping detected on input (" << values[i] << ")" << std::endl;
+            break;
+        }
+    }
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
 {
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("outputVuMeterModel"), QVariant::fromValue(values));
+
+    for (int i=0; i < values.size(); i++) {
+        if (values[i] >= 0.0) {
+            outputClipped = true;
+            std::cout << "Clipping detected on output (" << values[i] << ")" << std::endl;
+            break;
+        }
+    }
 }
 
 void VirtualStudio::setupAuthenticator()

@@ -99,10 +99,14 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
         vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
         mValues[i] = *(chanBufPtr);  // use the first value as the VU meter value
     }
+
+    hasProcessedAudio = true;
 }
 
 //*******************************************************************************
 void VuMeter::onTick()
 {
-    emit onComputedVolumeMeasurements(mValues);
+    if (hasProcessedAudio) {
+        emit onComputedVolumeMeasurements(mValues);
+    }
 }
