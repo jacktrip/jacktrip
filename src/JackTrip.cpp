@@ -589,29 +589,9 @@ void JackTrip::completeConnection()
         mAudioInterface->appendProcessPluginFromNetwork(i);
     }
 
-#ifndef NO_GUI
-    if (mJackTripMode == CLIENT || mJackTripMode == CLIENTTOPINGSERVER) {
-        VuMeter* outputMeterPlugin = new VuMeter(mNumAudioChansOut);
-        mAudioInterface->appendProcessPluginFromNetwork(outputMeterPlugin);
-        connect(outputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
-                &JackTrip::receivedOutputVolumeMeasurements);
-        mVuMeterValuesOut.resize(mNumAudioChansOut);
-    }
-#endif  // NO_GUI
-
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
     }
-
-#ifndef NO_GUI
-    if (mJackTripMode == CLIENT || mJackTripMode == CLIENTTOPINGSERVER) {
-        VuMeter* inputMeterPlugin = new VuMeter(mNumAudioChansIn);
-        mAudioInterface->appendProcessPluginToNetwork(inputMeterPlugin);
-        connect(inputMeterPlugin, &VuMeter::onComputedVolumeMeasurements, this,
-                &JackTrip::receivedInputVolumeMeasurements);
-        mVuMeterValuesIn.resize(mNumAudioChansIn);
-    }
-#endif  // NO_GUI
 
     mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
@@ -1058,30 +1038,6 @@ void JackTrip::tcpTimerTick()
         stop(QStringLiteral("Initial TCP Connection Timed Out"));
     }
 }
-
-//*******************************************************************************
-#ifndef NO_GUI
-void JackTrip::receivedInputVolumeMeasurements(QVector<float> values)
-{
-    // Input VU meters
-    for (int i = 0; i < mNumAudioChansIn; i++) {
-        mVuMeterValuesIn[i] = values[i];
-    }
-    emit signalUpdatedInputAudioVuLevels(mVuMeterValuesIn);
-}
-#endif
-//*******************************************************************************
-#ifndef NO_GUI
-void JackTrip::receivedOutputVolumeMeasurements(QVector<float> values)
-{
-    // Output VU meters
-    for (int i = 0; i < mNumAudioChansOut; i++) {
-        mVuMeterValuesOut[i] = values[i];
-    }
-
-    emit signalUpdatedOutputAudioVuLevels(mVuMeterValuesOut);
-}
-#endif
 
 //*******************************************************************************
 void JackTrip::stop(const QString& errorMessage)

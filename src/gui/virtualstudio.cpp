@@ -790,10 +790,15 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
-        QObject::connect(jackTrip, &JackTrip::signalUpdatedInputAudioVuLevels, this,
-                         &VirtualStudio::updatedInputVuMeasurements);
-        QObject::connect(jackTrip, &JackTrip::signalUpdatedOutputAudioVuLevels, this,
-                         &VirtualStudio::updatedOutputVuMeasurements);
+        VuMeter* m_outputVuMeter = new VuMeter(jackTrip->getNumOutputChannels());
+        jackTrip->appendProcessPluginFromNetwork(m_outputVuMeter);
+        connect(m_outputVuMeter, &VuMeter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedOutputVuMeasurements);
+
+        VuMeter* m_inputVuMeter = new VuMeter(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputVuMeter);
+        connect(m_inputVuMeter, &VuMeter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedInputVuMeasurements);
 
         m_device->startJackTrip();
 
@@ -1490,6 +1495,9 @@ VirtualStudio::~VirtualStudio()
     for (int i = 0; i < m_servers.count(); i++) {
         delete m_servers.at(i);
     }
+
+    delete m_inputVuMeter;
+    delete m_outputVuMeter;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }

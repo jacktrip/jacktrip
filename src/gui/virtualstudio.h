@@ -47,6 +47,7 @@
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
+#include "../VuMeter.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
@@ -275,6 +276,8 @@ class VirtualStudio : public QObject
     QUrl m_studioToJoin;
     bool m_authenticated = false;
 
+    VuMeter* m_inputVuMeter;
+    VuMeter* m_outputVuMeter;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
