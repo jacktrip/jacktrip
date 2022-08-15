@@ -163,7 +163,7 @@ void RtAudioInterface::setup()
         setBufferSize(bufferFrames);
     } catch (RtAudioError& e) {
         std::cout << '\n' << e.getMessage() << '\n' << std::endl;
-        exit(0);
+        throw std::runtime_error(e.getMessage());
     }
 
     // Setup parent class
