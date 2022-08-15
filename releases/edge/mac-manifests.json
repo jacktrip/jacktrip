@@ -3,7 +3,7 @@
     "releases": [
         {
             "version": "1.6.2-rc.3",
-            "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2-rc1",
+            "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2-rc3",
             "download": {
                 "date": "2022-08-15T00:00:00Z",
                 "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.2-rc3/JackTrip-v1.6.2-rc3-macOS-x64-installer.pkg",
@@ -13,7 +13,7 @@
         },
         {
             "version": "1.6.2-rc.2",
-            "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2-rc1",
+            "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2-rc2",
             "download": {
                 "date": "2022-08-09T00:00:00Z",
                 "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.2-rc2/JackTrip-v1.6.2-rc2-macOS-x64-installer.pkg",
