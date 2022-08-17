@@ -315,7 +315,7 @@ jobs:
       - name: cache Qt
         id: cache-qt
         if: matrix.qt-arch && !matrix.static-qt-version
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ../Qt
           key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
@@ -330,7 +330,7 @@ jobs:
       - name: cache static Qt
         id: cache-static-qt
         if: matrix.static-qt-version
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ${{ env.QT_STATIC_BUILD_PATH }}
           key: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ matrix.qt-static-cache-key }}
