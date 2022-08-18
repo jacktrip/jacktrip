@@ -58,9 +58,15 @@ void VuMeter::init(int samplingRate)
         // vumeterUIP[i]->setParamValue(ndx, mNumClients);
     }
 
+    /* Set meter values to the default floor */
     mValues.resize(mNumChannels);
-    int timeout_ms = 10;
+    QVector<float>::iterator it;
+    for (it = mValues.begin(); it != mValues.end(); ++it) {
+        *it = -80.0;
+    }
 
+    /* Start timer */
+    int timeout_ms = 100;
     connect(&mTimer, &QTimer::timeout, this, &VuMeter::onTick);
     mTimer.setTimerType(Qt::PreciseTimer);
     mTimer.setInterval(timeout_ms);
@@ -89,17 +95,30 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
         init(fSamplingFreq);
     }
 
-    /* Creates and allocates a buffer of floats to use for VU meter outputs.
-       This is the memory space where the results will be written to. */
-    int numValues = nframes * mNumChannels;
-    QVector<float> vumeter_buffer(numValues);
-
     for (int i = 0; i < mNumChannels; i++) {
-        float* chanBufPtr = vumeter_buffer.data() + i * nframes;
-        vumeterP[i]->compute(nframes, &inputs[i], &chanBufPtr);
-        mValues[i] = *(chanBufPtr);  // use the first value as the VU meter value
+
+        /* Run the signal through Faust to  */
+        QVector<float>meterBuf(nframes);
+        float *meterBufPtr = meterBuf.data();
+        float **output = &meterBufPtr;
+        vumeterP[i]->compute(nframes, &inputs[i], output);
+
+        /* Use the existing value of mValues[i] as
+           the threshold - this will be reset to the default floor of -80dB
+           on each timeout */
+        float max = mValues[i];
+        QVector<float>::iterator it;
+        for (it = meterBuf.begin(); it != meterBuf.end(); ++it) {
+            if (*it > max) {
+                max = *it;
+            }
+        }
+
+        /* Update mValues */
+        mValues[i] = max;
     }
 
+    /* Set processed audio flag */
     hasProcessedAudio = true;
 }
 
@@ -107,6 +126,14 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
 void VuMeter::onTick()
 {
     if (hasProcessedAudio) {
+
+        /* Send the measurements to whatever other component requests it */
         emit onComputedVolumeMeasurements(mValues);
+
+        /* Set meter values to the default floor */
+        QVector<float>::iterator it;
+        for (it = mValues.begin(); it != mValues.end(); ++it) {
+            *it = -80.0;
+        }
     }
 }

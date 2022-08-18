@@ -5,7 +5,7 @@ import QtGraphicalEffects 1.12
 Item {
     required property var model
 
-    property int min: -80
+    property int min: -64
     property int max: 0
     property int bins: 15
 

@@ -1729,6 +1729,7 @@ class APIUI
 #define FAUSTFLOAT float
 #endif
 
+/* link with : "" */
 #include <math.h>
 
 #include <algorithm>
@@ -1750,19 +1751,10 @@ class APIUI
 #define RESTRICT __restrict__
 #endif
 
-static float vumeterdsp_faustpower2_f(float value)
-{
-    return value * value;
-}
-
 class vumeterdsp : public dsp
 {
    private:
     int fSampleRate;
-    float fConst1;
-    int IOTA0;
-    float fRec0[131072];
-    int iConst2;
 
    public:
     void metadata(Meta* m)
@@ -1775,16 +1767,6 @@ class vumeterdsp : public dsp
                    "-single -ftz 0");
         m->declare("description", "VU Meter Faust Plugin for JackTrip");
         m->declare("filename", "vumeterdsp.dsp");
-        m->declare("filters.lib/integrator:author", "Julius O. Smith III");
-        m->declare(
-            "filters.lib/integrator:copyright",
-            "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>");
-        m->declare("filters.lib/integrator:license", "MIT-style STK-4.3 license");
-        m->declare(
-            "filters.lib/lowpass0_highpass1",
-            "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>");
-        m->declare("filters.lib/name", "Faust Filters Library");
-        m->declare("filters.lib/version", "0.3");
         m->declare("license", "MIT Style STK-4.2");
         m->declare("maths.lib/author", "GRAME");
         m->declare("maths.lib/copyright", "GRAME");
@@ -1792,8 +1774,6 @@ class vumeterdsp : public dsp
         m->declare("maths.lib/name", "Faust Math Library");
         m->declare("maths.lib/version", "2.5");
         m->declare("name", "vumeter");
-        m->declare("platform.lib/name", "Generic Platform Library");
-        m->declare("platform.lib/version", "0.2");
         m->declare("version", "1.0");
     }
 
@@ -1802,24 +1782,11 @@ class vumeterdsp : public dsp
 
     static void classInit(int /*sample_rate*/) {}
 
-    virtual void instanceConstants(int sample_rate)
-    {
-        fSampleRate = sample_rate;
-        float fConst0 =
-            std::min<float>(192000.0f, std::max<float>(1.0f, float(fSampleRate)));
-        fConst1 = 2.5f / fConst0;
-        iConst2 = int(std::max<float>(0.0f, 0.400000006f * fConst0));
-    }
+    virtual void instanceConstants(int sample_rate) { fSampleRate = sample_rate; }
 
     virtual void instanceResetUserInterface() {}
 
-    virtual void instanceClear()
-    {
-        IOTA0 = 0;
-        for (int l0 = 0; l0 < 131072; l0 = l0 + 1) {
-            fRec0[l0] = 0.0f;
-        }
-    }
+    virtual void instanceClear() {}
 
     virtual void init(int sample_rate)
     {
@@ -1849,18 +1816,15 @@ class vumeterdsp : public dsp
         FAUSTFLOAT* output0 = outputs[0];
         for (int i0 = 0; i0 < count; i0 = i0 + 1) {
             float fTemp0 = float(input0[i0]);
-            fRec0[IOTA0 & 131071] =
-                vumeterdsp_faustpower2_f(fTemp0) + fRec0[(IOTA0 - 1) & 131071];
-            output0[i0] =
-                FAUSTFLOAT(20.0f
-                           * std::log10(std::max<float>(
-                               1.17549435e-38f,
-                               std::max<float>(
-                                   9.99999975e-05f,
-                                   std::sqrt(fConst1
-                                             * (fRec0[IOTA0 & 131071]
-                                                - fRec0[(IOTA0 - iConst2) & 131071]))))));
-            IOTA0 = IOTA0 + 1;
+            float fTemp1 =
+                20.0f
+                * std::log10(std::max<float>(1.17549435e-38f,
+                                             std::max<float>(9.99999975e-05f, fTemp0)));
+            float fTemp2 = 100.0f * float(copysignf(float(fTemp1), 1.0f));
+            output0[i0]  = FAUSTFLOAT(float(copysignf(
+                 float(0.00999999978f
+                      * float(int(fTemp2) + (fTemp2 - std::floor(fTemp2) >= 0.5f))),
+                 float(fTemp1))));
         }
     }
 };

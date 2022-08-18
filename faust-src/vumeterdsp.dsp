@@ -9,10 +9,11 @@ declare description "VU Meter Faust Plugin for JackTrip";
 
 import("stdfaust.lib");
 
-// process = hmeter(0)
-process = envelop
+process = peakMeter
 with {
-	// hmeter(i, x) = attach(x, envelop(x) : hbargraph("chan %i[2][unit:dB]", -60, +5)) : envelop;
-    envelop = ba.slidingRMS(ma.SR * 0.4) : max(ba.db2linear(-80)) : ba.linear2db;
-};
 
+    round(n, x) = x
+        <: (ma.copysign(_, 1) : _ * (10 ^ n) <: int(_) , ma.frac : _, (_ >= 0.5) :> + : _ / (10 ^ n) ), _
+        : ma.copysign(_, _);
+    peakMeter = _ : max(ba.db2linear(-80), _) : ba.linear2db(_) : round(2, _);
+};
