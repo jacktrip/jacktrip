@@ -254,8 +254,11 @@ void VsDevice::setServerId(QString serverId)
 }
 
 // initJackTrip spawns a new jacktrip process with the desired settings
-JackTrip* VsDevice::initJackTrip(bool useRtAudio, std::string input, std::string output,
-                                 int bufferSize, VsServerInfo* studioInfo)
+JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
+                                 [[maybe_unused]] std::string input,
+                                 [[maybe_unused]] std::string output,
+                                 [[maybe_unused]] int bufferSize,
+                                 VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, 2, 2,
 #ifdef WAIR  // wair
