@@ -172,20 +172,15 @@ jobs:
             pip install meson ninja
             mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
           fi
-      - name: cache Qt
-        id: cache-qt
-        if: matrix.qt-arch && !matrix.static-qt-version
-        uses: actions/cache@v3
-        with:
-          path: ../Qt
-          key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}
       - name: install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         if: runner.os == 'Windows' && !matrix.static-qt-version
         with:
           version: ${{ env.QT_VERSION }}
           arch: ${{ matrix.qt-arch }}
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cache: true
+          cache-key-prefix: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
+          modules: 'qtnetworkauth'
       - name: cache static Qt
         id: cache-static-qt
         if: matrix.static-qt-version
