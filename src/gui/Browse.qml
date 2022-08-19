@@ -15,6 +15,7 @@ Item {
     
     property int buttonHeight: 25
     property int buttonWidth: 103
+    property int extraSettingsButtonWidth: 16
     property int fontMedium: 11
     
     property int scrollY: 0
@@ -320,7 +321,7 @@ Item {
             }
             onClicked: { virtualstudio.showAbout() }
             anchors.verticalCenter: parent.verticalCenter
-            x: parent.width - (230 * virtualstudio.uiScale)
+            x: parent.width - ((230 + extraSettingsButtonWidth) * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "About"
@@ -332,6 +333,12 @@ Item {
         
         Button {
             id: settingsButton
+            text: "Settings"
+            palette.buttonText: textColour
+            icon {
+                source: "cog.svg";
+                color: textColour;
+            }
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: settingsButton.down ? buttonPressedColour : (settingsButton.hovered ? buttonHoverColour : buttonColour)
@@ -339,15 +346,17 @@ Item {
                 border.color: settingsButton.down ? buttonPressedStroke : (settingsButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: window.state = "settings"
-            anchors.verticalCenter: parent.verticalCenter
-            x: parent.width - (119 * virtualstudio.uiScale)
-            width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
-            Text {
-                text: "Settings"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+            display: AbstractButton.TextBesideIcon
+            font {
+                family: "Poppins"; 
+                pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale;
             }
+            leftPadding: 0
+            rightPadding: 4
+            spacing: 0
+            anchors.verticalCenter: parent.verticalCenter
+            x: parent.width - ((119 + extraSettingsButtonWidth) * virtualstudio.uiScale)
+            width: (buttonWidth + extraSettingsButtonWidth) * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
         }
     }
     

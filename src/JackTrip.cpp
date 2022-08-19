@@ -1052,13 +1052,17 @@ void JackTrip::stop(const QString& errorMessage)
     mHasShutdown = true;
     std::cout << "Stopping JackTrip..." << std::endl;
 
-    // Stop The Sender
-    mDataProtocolSender->stop();
-    mDataProtocolSender->wait();
+    if (mDataProtocolSender != nullptr) {
+        // Stop The Sender
+        mDataProtocolSender->stop();
+        mDataProtocolSender->wait();
+    }
 
-    // Stop The Receiver
-    mDataProtocolReceiver->stop();
-    mDataProtocolReceiver->wait();
+    if (mDataProtocolReceiver != nullptr) {
+        // Stop The Receiver
+        mDataProtocolReceiver->stop();
+        mDataProtocolReceiver->wait();
+    }
 
     // Stop the audio processes
     // mAudioInterface->stopProcess();

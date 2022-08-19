@@ -94,7 +94,7 @@ jobs:
       QT_VERSION: '5.15.2' # for shared qt installer using install-qt-action
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
-      QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
+      QT_STATIC_BUILD_PATH: ${{ github.workspace }}/qt-static # note: don't use '..' here as this is used with the cache action, which doesn't support '.' and '..' in paths
       QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebview -skip qtxmlpatterns' # common for all platforms
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
@@ -120,10 +120,18 @@ jobs:
           fi
           echo "::set-output name=version::$VERSION"
           echo "::set-output name=name::$NAME"
+          echo "::set-output name=stamp::$(date '+%Y-%m-%d')" # set timestamp for cache
       - name: setup python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
+      - name: cache vcpkg on Windows
+        if: runner.os == 'Windows' && matrix.vcpkg-triplet
+        uses: actions/cache@v3
+        with:
+          path: ~/AppData/Local/vcpkg/archives
+          key: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}-${{ steps.set-version.outputs.stamp }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
         env:
@@ -172,24 +180,19 @@ jobs:
             pip install meson ninja
             mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
           fi
-      - name: cache Qt
-        id: cache-qt
-        if: matrix.qt-arch && !matrix.static-qt-version
-        uses: actions/cache@v1
-        with:
-          path: ../Qt
-          key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}
       - name: install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         if: runner.os == 'Windows' && !matrix.static-qt-version
         with:
           version: ${{ env.QT_VERSION }}
           arch: ${{ matrix.qt-arch }}
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cache: true
+          cache-key-prefix: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
+          modules: 'qtnetworkauth'
       - name: cache static Qt
         id: cache-static-qt
         if: matrix.static-qt-version
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ${{ env.QT_STATIC_BUILD_PATH }}
           key: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ matrix.qt-static-cache-key }}

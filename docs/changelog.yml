@@ -3,6 +3,7 @@
   Description:
   - (updated) Static Qt version for Linux builds
   - (upated) cleaner, easier to read VS settings
+  - (updated) icons for 'Manage' and 'Settings' in VS mode
   - (added) human-readable locations in VS mode
   - (added) warning that cmake is not officially supported
   - (added) VS mode is treated as a device by VS web
@@ -13,6 +14,9 @@
   - (fixed) WebSocket connection behavior in Virtual Studio (VS) mode
   - (fixed) dblsqd errors in Linux builds
   - (fixed) Windows datagramAvailable error
+  - (fixed) High Sierra compatibility in static builds
+  - (fixed) Doesn't crash if RtAudio sample rate isn't supported
+  - (fixed) Fractional UI scaling on Windows
 - Version: "1.6.1"
   Date: 2022-06-20
   Description:

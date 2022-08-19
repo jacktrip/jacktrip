@@ -816,14 +816,7 @@ void VirtualStudio::completeConnection()
         m_connectionState = QStringLiteral("JackTrip Error");
         emit connectionStateChanged();
 
-        QMessageBox msgBox;
-        msgBox.setText(QStringLiteral("Error: ").append(e.what()));
-        msgBox.setWindowTitle(QStringLiteral("Doh!"));
-        msgBox.exec();
-
-        m_jackTripRunning = false;
-        emit disconnected();
-        m_onConnectedScreen = false;
+        processError(QString::fromUtf8(e.what()));
         return;
     }
 
@@ -1010,7 +1003,7 @@ void VirtualStudio::processError(const QString& errorMessage)
         QMessageBox msgBox;
         if (errorMessage == QLatin1String("Peer Stopped")) {
             // Report the other end quitting as a regular occurance rather than an error.
-            msgBox.setText(errorMessage);
+            msgBox.setText("The Studio has been stopped.");
             msgBox.setWindowTitle(QStringLiteral("Disconnected"));
         } else {
             msgBox.setText(QStringLiteral("Error: ").append(errorMessage));

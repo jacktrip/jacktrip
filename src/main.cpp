@@ -140,10 +140,20 @@ QCoreApplication* createApplication(int& argc, char* argv[])
 #if defined(Q_OS_MACOS) && !defined(NO_VS)
         // Turn on high DPI support.
         JTApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        // Fix for display scaling like 125% or 150% on Windows
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+        QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+            Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif  // QT_VERSION
         return new JTApplication(argc, argv);
 #else
         // Turn on high DPI support.
         QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        // Fix for display scaling like 125% or 150% on Windows
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+        QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+            Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif  // QT_VERSION
         return new QApplication(argc, argv);
 #endif  // Q_OS_MACOS
 #endif  // NO_GUI
