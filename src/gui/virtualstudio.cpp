@@ -1101,7 +1101,6 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDeci
 
     // Always output 2 meter readings to the UI
     for (int i = 0; i < 2; i++) {
-
         // Determine decibel reading
         float dB = m_meterMin;
         if (i < valuesInDecibels.size()) {
@@ -1119,7 +1118,7 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDeci
             m_inputClipTimer.start();
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputClipped"), QVariant::fromValue(true));
-                detectedClip = true;
+            detectedClip = true;
         }
     }
 
@@ -1134,7 +1133,6 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDec
 
     // Always output 2 meter readings to the UI
     for (int i = 0; i < 2; i++) {
-
         // Determine decibel reading
         float dB = m_meterMin;
         if (i < valuesInDecibels.size()) {
