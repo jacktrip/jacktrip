@@ -96,11 +96,10 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
     }
 
     for (int i = 0; i < mNumChannels; i++) {
-
         /* Run the signal through Faust to  */
-        QVector<float>meterBuf(nframes);
-        float *meterBufPtr = meterBuf.data();
-        float **output = &meterBufPtr;
+        QVector<float> meterBuf(nframes);
+        float* meterBufPtr = meterBuf.data();
+        float** output     = &meterBufPtr;
         vumeterP[i]->compute(nframes, &inputs[i], output);
 
         /* Use the existing value of mValues[i] as
@@ -123,10 +122,27 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
 }
 
 //*******************************************************************************
+void VuMeter::updateNumChannels(int nChansIn, int nChansOut)
+{
+    if (outgoingPluginToNetwork) {
+        mNumChannels = nChansIn;
+    } else {
+        mNumChannels = nChansOut;
+    }
+
+    mValues.resize(mNumChannels);
+    QVector<float>::iterator it;
+    for (it = mValues.begin(); it != mValues.end(); ++it) {
+        *it = -80.0;
+    }
+
+    return;
+}
+
+//*******************************************************************************
 void VuMeter::onTick()
 {
     if (hasProcessedAudio) {
-
         /* Send the measurements to whatever other component requests it */
         emit onComputedVolumeMeasurements(mValues);
 

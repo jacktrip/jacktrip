@@ -82,13 +82,28 @@ class ProcessPlugin : public QObject
     virtual bool getInited() { return inited; }
     virtual void setVerbose(bool v) { verbose = v; }
 
+    virtual void setOutgoingToNetwork(bool toNetwork)
+    {
+        outgoingPluginToNetwork = toNetwork;
+    }
+
     /// \brief Compute process
     virtual void compute(int nframes, float** inputs, float** outputs) = 0;
 
+    /**
+     * @brief This function may optionally be used by plugins. This is useful
+     * if the number of audio channels in the parent audio interface has changed
+     * after the plugin instance was instantiated, to tell the plugin to modify its
+     * functionality.
+     */
+    virtual void updateNumChannels(int /*nChansIn*/, int /*nChansOut*/) { return; };
+
    protected:
-    int fSamplingFreq;  ///< Faust Data member, Sampling Rate
-    bool inited  = false;
-    bool verbose = false;
+    int fSamplingFreq;  //< Faust Data member, Sampling Rate
+    bool inited                  = false;
+    bool verbose                 = false;
+    bool outgoingPluginToNetwork = false;  //< Tells the plugin if it processes audio
+                                           // going into or out of the network
 };
 
 #endif

@@ -81,6 +81,8 @@ class VuMeter : public ProcessPlugin
     void compute(int nframes, float** inputs, float** outputs) override;
     const char* getName() const override { return "VU Meter"; };
 
+    void updateNumChannels(int nChansIn, int nChansOut) override;
+
    private:
     float fs;
     int mNumChannels;
