@@ -209,8 +209,8 @@ class VirtualStudio : public QObject
     void launchBrowser(const QUrl& url);
     void joinStudio();
     void updatedStats(const QJsonObject& stats);
-    void updatedInputVuMeasurements(const QVector<float> values);
-    void updatedOutputVuMeasurements(const QVector<float> values);
+    void updatedInputVuMeasurements(const QVector<float> valuesInDecibels);
+    void updatedOutputVuMeasurements(const QVector<float> valuesInDecibels);
 
    private:
     void setupAuthenticator();
@@ -280,6 +280,9 @@ class VirtualStudio : public QObject
     VuMeter* m_outputVuMeter;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
+
+    float m_meterMax = 0.0;
+    float m_meterMin = -64.0;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;

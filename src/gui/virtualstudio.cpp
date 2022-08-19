@@ -1094,36 +1094,70 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
     return;
 }
 
-void VirtualStudio::updatedInputVuMeasurements(const QVector<float> values)
+void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDecibels)
 {
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(values));
+    QJsonArray uiValues;
+    bool detectedClip = false;
 
-    for (int i = 0; i < values.size(); i++) {
-        if (values[i] >= 0.0) {
+    // Always output 2 meter readings to the UI
+    for (int i = 0; i < 2; i++) {
+
+        // Determine decibel reading
+        float dB = m_meterMin;
+        if (i < valuesInDecibels.size()) {
+            dB = std::max(m_meterMin, valuesInDecibels[i]);
+        }
+
+        // Produce a normalized value from 0 to 1
+        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+
+        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
+        uiValues.push_back(object);
+
+        // Signal a clip if we haven't done so already
+        if (dB >= -0.05 && !detectedClip) {
             m_inputClipTimer.start();
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputClipped"), QVariant::fromValue(true));
-
-            break;
+                detectedClip = true;
         }
     }
+
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(uiValues));
 }
 
-void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> values)
+void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDecibels)
 {
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(values));
+    QJsonArray uiValues;
+    bool detectedClip = false;
 
-    for (int i = 0; i < values.size(); i++) {
-        if (values[i] >= 0.0) {
+    // Always output 2 meter readings to the UI
+    for (int i = 0; i < 2; i++) {
+
+        // Determine decibel reading
+        float dB = m_meterMin;
+        if (i < valuesInDecibels.size()) {
+            dB = std::max(m_meterMin, valuesInDecibels[i]);
+        }
+
+        // Produce a normalized value from 0 to 1
+        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+
+        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
+        uiValues.push_back(object);
+
+        // Signal a clip if we haven't done so already
+        if (dB >= -0.05 && !detectedClip) {
             m_outputClipTimer.start();
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("outputClipped"), QVariant::fromValue(true));
-
-            break;
+            detectedClip = true;
         }
     }
+
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(uiValues));
 }
 
 void VirtualStudio::setupAuthenticator()

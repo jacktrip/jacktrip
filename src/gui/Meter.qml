@@ -4,9 +4,6 @@ import QtGraphicalEffects 1.12
 
 Item {
     required property var model
-
-    property int min: -64
-    property int max: 0
     property int bins: 15
 
     property int innerMargin: 2 * virtualstudio.uiScale
@@ -22,7 +19,7 @@ Item {
     function getBoxColor (idx, level) {
 
         // Case where the meter should be filled
-        if (level > ((max - min) / bins) * idx + min) {
+        if (level > (idx / bins)) {
             let fillColor = vuMeterGreen;
             if (idx > 8 && idx <= 11) {
                 fillColor = vuMeterYellow;
@@ -48,7 +45,7 @@ Item {
             x: 0;
             width: parent.width
             height: 14 * virtualstudio.uiScale
-            required property double modelData
+            required property var modelData
 
             property int boxHeight: 10 * virtualstudio.uiScale
             property int boxWidth: (width / bins) - innerMargin
@@ -60,7 +57,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(0, parent.modelData)
+                color: getBoxColor(0, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -70,7 +67,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(1, parent.modelData)
+                color: getBoxColor(1, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -80,7 +77,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(2, parent.modelData)
+                color: getBoxColor(2, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -90,7 +87,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(3, parent.modelData)
+                color: getBoxColor(3, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -100,7 +97,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(4, parent.modelData)
+                color: getBoxColor(4, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -110,7 +107,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(5, parent.modelData)
+                color: getBoxColor(5, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -120,7 +117,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(6, parent.modelData)
+                color: getBoxColor(6, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -130,7 +127,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(7, parent.modelData)
+                color: getBoxColor(7, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -140,7 +137,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(8, parent.modelData)
+                color: getBoxColor(8, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -150,7 +147,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(9, parent.modelData)
+                color: getBoxColor(9, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -160,7 +157,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(10, parent.modelData)
+                color: getBoxColor(10, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -170,7 +167,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(11, parent.modelData)
+                color: getBoxColor(11, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -180,7 +177,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(12, parent.modelData)
+                color: getBoxColor(12, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -190,7 +187,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(13, parent.modelData)
+                color: getBoxColor(13, parent.modelData.level)
                 radius: boxRadius
             }
 
@@ -200,7 +197,7 @@ Item {
                 y: 0;
                 width: boxWidth
                 height: boxHeight
-                color: getBoxColor(14, parent.modelData)
+                color: getBoxColor(14, parent.modelData.level)
                 radius: boxRadius
             }
         }
