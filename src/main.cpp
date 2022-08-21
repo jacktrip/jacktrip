@@ -90,7 +90,6 @@ QCoreApplication* createApplication(int& argc, char* argv[])
     // Check for some specific, GUI related command line options.
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
-        std::cout << argv[i] << std::endl;
         if (strcmp(argv[i], "--gui") == 0) {
             forceGui = true;
         } else if (strcmp(argv[i], "--test-gui") == 0) {
