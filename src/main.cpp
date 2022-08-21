@@ -506,7 +506,6 @@ int main(int argc, char* argv[])
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
-        qInstallMessageHandler(qtMessageHandler);
         try {
             Settings settings;
             settings.parseInput(argc, argv);

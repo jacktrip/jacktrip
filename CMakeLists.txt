@@ -147,6 +147,8 @@ if (NOT nogui)
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
       src/gui/qjacktrip.qrc
+      # Need to include this for AUTOMOC to do its thing
+      src/JTApplication.h
     )
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
