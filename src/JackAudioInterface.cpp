@@ -153,9 +153,7 @@ void JackAudioInterface::setupClient()
     }
 
     // Set function to call if Jack shuts down
-    jack_on_shutdown(mClient, this->jackShutdown, 0);
-    // Repeat since don't go through jack_on_shutdown
-    jack_on_info_shutdown(mClient, this->jackInfoShutdown, 0);
+    jack_on_info_shutdown(mClient, this->jackShutdown, 0);
 
     // Create input and output channels
     createChannels();
@@ -269,22 +267,12 @@ int JackAudioInterface::stopProcess() const
 }
 
 //*******************************************************************************
-void JackAudioInterface::jackShutdown(void*)
-{
-    // std::cout << "The Jack Server was shut down!" << std::endl;
-    JackTrip::sJackStopped = true;
-    std::cout << "The Jack Server was shut down!" << std::endl;
-    // throw std::runtime_error("The Jack Server was shut down!");
-    // std::cout << "Exiting program..." << std::endl;
-    // std::exit(1);
-}
-
-//*******************************************************************************
-void JackAudioInterface::jackInfoShutdown(jack_status_t code, const char* reason,
+void JackAudioInterface::jackShutdown(jack_status_t code, const char* reason,
                                           void* arg)
 {
     std::cout << reason << std::endl;
-    JackAudioInterface::jackShutdown(arg);
+    JackTrip::sJackStopped = true;
+    std::cout << "The Jack Server was shut down!" << std::endl;
 }
 
 //*******************************************************************************

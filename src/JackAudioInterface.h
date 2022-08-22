@@ -142,13 +142,9 @@ class JackAudioInterface : public AudioInterface
     /// \brief Creates input and output channels in the Jack client
     void createChannels();
     /** \brief JACK calls this shutdown_callback if the server ever shuts down or
-     * decides to disconnect the client.
-     */
-    static void jackShutdown(void*);
-    /** \brief JACK calls this shutdown_callback if the server ever shuts down or
      * decides to disconnect the client and has a message to deliver.
      */
-    static void jackInfoShutdown(jack_status_t code, const char* reason, void* arg);
+    static void jackShutdown(jack_status_t code, const char* reason, void* arg);
     /** \brief Set the process callback of the member function processCallback.
      * This process will be called by the JACK server whenever there is work to be done.
      */
