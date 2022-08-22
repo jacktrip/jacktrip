@@ -267,8 +267,7 @@ int JackAudioInterface::stopProcess() const
 }
 
 //*******************************************************************************
-void JackAudioInterface::jackShutdown(jack_status_t code, const char* reason,
-                                          void* arg)
+void JackAudioInterface::jackShutdown(jack_status_t code, const char* reason, void* arg)
 {
     std::cout << reason << std::endl;
     JackTrip::sJackStopped = true;
