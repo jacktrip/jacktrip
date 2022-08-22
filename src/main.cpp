@@ -90,7 +90,6 @@ QCoreApplication* createApplication(int& argc, char* argv[])
     // Check for some specific, GUI related command line options.
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
-        std::cout << argv[i] << std::endl;
         if (strcmp(argv[i], "--gui") == 0) {
             forceGui = true;
         } else if (strcmp(argv[i], "--test-gui") == 0) {
@@ -507,7 +506,6 @@ int main(int argc, char* argv[])
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
-        qInstallMessageHandler(qtMessageHandler);
         try {
             Settings settings;
             settings.parseInput(argc, argv);
