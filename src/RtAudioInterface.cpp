@@ -314,6 +314,8 @@ void RtAudioInterface::RtAudioErrorCallback(RtAudioError::Type type,
     if ((type != RtAudioError::WARNING) && (type != RtAudioError::DEBUG_WARNING)) {
         std::cout << '\n' << errorText << '\n' << std::endl;
         throw std::runtime_error(errorText);
+    } else {
+        std::cout << '\n' << errorText << '\n' << std::endl;
     }
 }
 
