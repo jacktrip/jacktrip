@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.3",
+            "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
+            "download": {
+                "date": "2022-08-23T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.3/JackTrip-v1.6.3-Windows-x64-installer.msi",
+                "downloadSize": 43606016,
+                "sha256": "83a4def2a8c8fde24d147d39e70f60ee144e9425828f34eda2340c23ce72b1da"
+            }
+        },
+        {
             "version": "1.6.2",
             "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2",
             "download": {

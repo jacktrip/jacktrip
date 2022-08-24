@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.3",
+            "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
+            "download": {
+                "date": "2022-08-23T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.3/JackTrip-v1.6.3-macOS-x64-installer.pkg",
+                "downloadSize": 11533023,
+                "sha256": "0b597c62544e9813949f859cc7b7c13bef893f6896f96b34a19889faf4855116"
+            }
+        },
+        {
             "version": "1.6.2",
             "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2",
             "download": {
