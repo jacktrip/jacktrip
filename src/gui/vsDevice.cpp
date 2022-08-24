@@ -49,8 +49,6 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
     m_apiSecret = settings.value(QStringLiteral("ApiSecret"), "").toString();
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
-
-    sendHeartbeat();
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
@@ -95,6 +93,8 @@ void VsDevice::registerApp()
                 reply->deleteLater();
                 return;
             }
+        } else if (m_apiPrefix != "" && m_apiSecret != "") {
+            sendHeartbeat();
         }
 
         QSettings settings;
@@ -454,6 +454,8 @@ void VsDevice::registerJTAsDevice()
             settings.beginGroup(QStringLiteral("VirtualStudio"));
             settings.setValue(QStringLiteral("AppID"), m_appID);
             settings.endGroup();
+
+            sendHeartbeat();
         }
 
         reply->deleteLater();
