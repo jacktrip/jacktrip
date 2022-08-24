@@ -47,7 +47,7 @@
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
-#include "../VuMeter.h"
+#include "../Meter.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
@@ -125,8 +125,8 @@ class VirtualStudio : public QObject
     QJsonObject userMetadata();
     QString connectionState();
     QJsonObject networkStats();
-    QVector<float> inputVuMeterLevels();
-    QVector<float> outputVuMeterLevels();
+    QVector<float> inputMeterLevels();
+    QVector<float> outputMeterLevels();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -276,8 +276,8 @@ class VirtualStudio : public QObject
     QUrl m_studioToJoin;
     bool m_authenticated = false;
 
-    VuMeter* m_inputVuMeter;
-    VuMeter* m_outputVuMeter;
+    Meter* m_inputMeter;
+    Meter* m_outputMeter;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 

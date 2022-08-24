@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file VuMeter.h
+ * \file Meter.h
  * \author Dominick Hing
  * \date August 2022
  * \license MIT
@@ -48,15 +48,15 @@
 #include "ProcessPlugin.h"
 #include "vumeterdsp.h"
 
-/** \brief The VuMeter class measures the live audio loudness level
+/** \brief The Meter class measures the live audio loudness level
  */
-class VuMeter : public ProcessPlugin
+class Meter : public ProcessPlugin
 {
     Q_OBJECT;
 
    public:
     /// \brief The class constructor sets the number of channels to measure
-    VuMeter(int numchans, bool verboseFlag = false) : mNumChannels(numchans)
+    Meter(int numchans, bool verboseFlag = false) : mNumChannels(numchans)
     {
         setVerbose(verboseFlag);
         for (int i = 0; i < mNumChannels; i++) {
@@ -67,7 +67,7 @@ class VuMeter : public ProcessPlugin
     }
 
     /// \brief The class destructor
-    virtual ~VuMeter()
+    virtual ~Meter()
     {
         for (int i = 0; i < mNumChannels; i++) {
             delete vumeterP[i];

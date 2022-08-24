@@ -30,20 +30,20 @@
 //*****************************************************************
 
 /**
- * \file VuMeter.cpp
+ * \file Meter.cpp
  * \author Dominick Hing
  * \date August 2022
  * \license MIT
  */
 
-#include "VuMeter.h"
+#include "Meter.h"
 
 #include <QVector>
 
 #include "jacktrip_types.h"
 
 //*******************************************************************************
-void VuMeter::init(int samplingRate)
+void Meter::init(int samplingRate)
 {
     ProcessPlugin::init(samplingRate);
     if (samplingRate != fSamplingFreq) {
@@ -65,7 +65,7 @@ void VuMeter::init(int samplingRate)
 
     /* Start timer */
     int timeout_ms = 100;
-    connect(&mTimer, &QTimer::timeout, this, &VuMeter::onTick);
+    connect(&mTimer, &QTimer::timeout, this, &Meter::onTick);
     mTimer.setTimerType(Qt::PreciseTimer);
     mTimer.setInterval(timeout_ms);
     mTimer.setSingleShot(false);
@@ -75,7 +75,7 @@ void VuMeter::init(int samplingRate)
 }
 
 //*******************************************************************************
-void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
+void Meter::compute(int nframes, float** inputs, float** /*_*/)
 {
     // Note that the second parameter is unused. This is because all of the ProcessPlugins
     // require the same function signature for the compute() function and is normally used
@@ -84,10 +84,10 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
     // to this buffer. We just need to report the VU meter output
 
     if (not inited) {
-        std::cerr << "*** VuMeter " << this << ": init never called! Doing it now.\n";
+        std::cerr << "*** Meter " << this << ": init never called! Doing it now.\n";
         if (fSamplingFreq <= 0) {
             fSamplingFreq = 48000;
-            std::cout << "VuMeter " << this
+            std::cout << "Meter " << this
                       << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
         }
         init(fSamplingFreq);
@@ -120,7 +120,7 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
 }
 
 //*******************************************************************************
-void VuMeter::updateNumChannels(int nChansIn, int nChansOut)
+void Meter::updateNumChannels(int nChansIn, int nChansOut)
 {
     if (outgoingPluginToNetwork) {
         mNumChannels = nChansIn;
@@ -136,7 +136,7 @@ void VuMeter::updateNumChannels(int nChansIn, int nChansOut)
 }
 
 //*******************************************************************************
-void VuMeter::onTick()
+void Meter::onTick()
 {
     if (hasProcessedAudio) {
         /* Send the measurements to whatever other component requests it */

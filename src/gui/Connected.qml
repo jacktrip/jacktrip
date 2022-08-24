@@ -175,20 +175,20 @@ Item {
     }
 
     Meter {
-        id: inputDeviceVuMeters
+        id: inputDeviceMeters
         x: inputDevice.x + inputDevice.width; y: 250 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
-        model: inputVuMeterModel
+        model: inputMeterModel
         clipped: inputClipped
     }
 
     Meter {
-        id: outputDeviceVuMeters
+        id: outputDeviceMeters
         x: outputDevice.x + outputDevice.width; y: 330 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
-        model: outputVuMeterModel
+        model: outputMeterModel
         clipped: outputClipped
     }
 

@@ -156,9 +156,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        QVariant::fromValue(m_servers));
 
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(QVector<float>()));
+        QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(QVector<float>()));
+        QStringLiteral("outputMeterModel"), QVariant::fromValue(QVector<float>()));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
                                                        QVariant::fromValue(false));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
@@ -790,24 +790,24 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
-        VuMeter* m_outputVuMeter = new VuMeter(jackTrip->getNumOutputChannels());
-        jackTrip->appendProcessPluginFromNetwork(m_outputVuMeter);
-        connect(m_outputVuMeter, &VuMeter::onComputedVolumeMeasurements, this,
+        Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
+        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedOutputVuMeasurements);
 
-        VuMeter* m_inputVuMeter = new VuMeter(jackTrip->getNumInputChannels());
-        jackTrip->appendProcessPluginToNetwork(m_inputVuMeter);
-        connect(m_inputVuMeter, &VuMeter::onComputedVolumeMeasurements, this,
+        Meter* m_inputMeter = new Meter(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputMeter);
+        connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
 
         m_device->startJackTrip();
 
         m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputVuMeterModel"),
+            QStringLiteral("inputMeterModel"),
             QVariant::fromValue(QVector<float>(jackTrip->getNumInputChannels())));
 
         m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputVuMeterModel"),
+            QStringLiteral("outputMeterModel"),
             QVariant::fromValue(QVector<float>(jackTrip->getNumOutputChannels())));
 
         m_device->startPinger(studioInfo);
@@ -1123,7 +1123,7 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDeci
     }
 
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputVuMeterModel"), QVariant::fromValue(uiValues));
+        QStringLiteral("inputMeterModel"), QVariant::fromValue(uiValues));
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDecibels)
@@ -1155,7 +1155,7 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDec
     }
 
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputVuMeterModel"), QVariant::fromValue(uiValues));
+        QStringLiteral("outputMeterModel"), QVariant::fromValue(uiValues));
 }
 
 void VirtualStudio::setupAuthenticator()
@@ -1521,8 +1521,8 @@ VirtualStudio::~VirtualStudio()
         delete m_servers.at(i);
     }
 
-    delete m_inputVuMeter;
-    delete m_outputVuMeter;
+    delete m_inputMeter;
+    delete m_outputMeter;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }
