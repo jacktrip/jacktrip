@@ -86,6 +86,7 @@ class VuMeter : public ProcessPlugin
    private:
     float fs;
     int mNumChannels;
+    float threshold = -80.0;
     std::vector<vumeterdsp*> vumeterP;
     bool hasProcessedAudio = false;
 

@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file Limiter.cpp
+ * \file VuMeter.cpp
  * \author Dominick Hing
  * \date August 2022
  * \license MIT
@@ -54,15 +54,13 @@ void VuMeter::init(int samplingRate)
     fs = float(fSamplingFreq);
     for (int i = 0; i < mNumChannels; i++) {
         vumeterP[i]->init(fs);
-        // int ndx = vumeterUIP[i]->getParamIndex("NumClientsAssumed");
-        // vumeterUIP[i]->setParamValue(ndx, mNumClients);
     }
 
     /* Set meter values to the default floor */
     mValues.resize(mNumChannels);
     QVector<float>::iterator it;
     for (it = mValues.begin(); it != mValues.end(); ++it) {
-        *it = -80.0;
+        *it = threshold;
     }
 
     /* Start timer */
@@ -89,17 +87,17 @@ void VuMeter::compute(int nframes, float** inputs, float** /*_*/)
         std::cerr << "*** VuMeter " << this << ": init never called! Doing it now.\n";
         if (fSamplingFreq <= 0) {
             fSamplingFreq = 48000;
-            std::cout << "Limiter " << this
+            std::cout << "VuMeter " << this
                       << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
         }
         init(fSamplingFreq);
     }
 
+    QVector<float> meterBuf(nframes);
+    float* meterBufPtr = meterBuf.data();
+    float** output     = &meterBufPtr;
     for (int i = 0; i < mNumChannels; i++) {
-        /* Run the signal through Faust to  */
-        QVector<float> meterBuf(nframes);
-        float* meterBufPtr = meterBuf.data();
-        float** output     = &meterBufPtr;
+        /* Run the signal through Faust  */
         vumeterP[i]->compute(nframes, &inputs[i], output);
 
         /* Use the existing value of mValues[i] as
@@ -133,10 +131,8 @@ void VuMeter::updateNumChannels(int nChansIn, int nChansOut)
     mValues.resize(mNumChannels);
     QVector<float>::iterator it;
     for (it = mValues.begin(); it != mValues.end(); ++it) {
-        *it = -80.0;
+        *it = threshold;
     }
-
-    return;
 }
 
 //*******************************************************************************
@@ -149,7 +145,7 @@ void VuMeter::onTick()
         /* Set meter values to the default floor */
         QVector<float>::iterator it;
         for (it = mValues.begin(); it != mValues.end(); ++it) {
-            *it = -80.0;
+            *it = threshold;
         }
     }
 }
