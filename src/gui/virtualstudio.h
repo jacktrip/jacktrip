@@ -208,7 +208,8 @@ class VirtualStudio : public QObject
     void setupAuthenticator();
 
     void sendHeartbeat();
-    void getServerList(bool firstLoad = false, bool signalRefresh = false, int index = -1);
+    void getServerList(bool firstLoad = false, bool signalRefresh = false,
+                       int index = -1);
     void getUserId();
     void getSubscriptions();
     void getRegions();
