@@ -188,7 +188,6 @@ class VirtualStudio : public QObject
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
-    void studioToJoinChanged();
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
@@ -209,7 +208,7 @@ class VirtualStudio : public QObject
     void setupAuthenticator();
 
     void sendHeartbeat();
-    void getServerList(bool firstLoad = false, int index = -1);
+    void getServerList(bool firstLoad = false, bool signalRefresh = false, int index = -1);
     void getUserId();
     void getSubscriptions();
     void getRegions();

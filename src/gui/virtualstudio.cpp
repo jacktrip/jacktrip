@@ -162,8 +162,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         sendHeartbeat();
     });
 
-    // Connect joinStudio callbacks
-    connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
     // QueuedConnection since refreshFinished is sometimes signaled from a network reply
     // thread
     connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
@@ -446,7 +444,6 @@ QUrl VirtualStudio::studioToJoin()
 void VirtualStudio::setStudioToJoin(const QUrl& url)
 {
     m_studioToJoin = url;
-    emit studioToJoinChanged();
 }
 
 bool VirtualStudio::noUpdater()
@@ -479,7 +476,7 @@ void VirtualStudio::joinStudio()
         // getServerList emits refreshFinished which
         // will come back to this function.
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
-            getServerList(true);
+            getServerList(true, true);
         }
         return;
     }
@@ -585,7 +582,7 @@ void VirtualStudio::logout()
 
 void VirtualStudio::refreshStudios(int index)
 {
-    getServerList(false, index);
+    getServerList(false, false, index);
 }
 
 void VirtualStudio::refreshDevices()
@@ -1105,7 +1102,7 @@ void VirtualStudio::sendHeartbeat()
     }
 }
 
-void VirtualStudio::getServerList(bool firstLoad, int index)
+void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
 {
     {
         QMutexLocker locker(&m_refreshMutex);
@@ -1124,7 +1121,7 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
 
     QNetworkReply* reply =
         m_authenticator->get(QStringLiteral("https://app.jacktrip.org/api/servers"));
-    connect(reply, &QNetworkReply::finished, this, [&, reply, topServerId, firstLoad]() {
+    connect(reply, &QNetworkReply::finished, this, [&, reply, topServerId, firstLoad, signalRefresh]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
@@ -1254,12 +1251,13 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
         }
         if (firstLoad) {
             emit authSucceeded();
-            emit refreshFinished(index);
             m_refreshTimer.setInterval(10000);
             m_refreshTimer.start();
             m_heartbeatTimer.setInterval(5000);
             m_heartbeatTimer.start();
-        } else {
+        }
+        
+        if (signalRefresh) {
             emit refreshFinished(index);
         }
 
@@ -1320,7 +1318,7 @@ void VirtualStudio::getSubscriptions()
             m_subscribedServers.append(
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
-        getServerList(true);
+        getServerList(true, false);
         reply->deleteLater();
     });
 }
