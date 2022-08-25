@@ -448,8 +448,11 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          ls $BUILD_PATH/linux
-          desktop-file-validate $BUILD_PATH/org.jacktrip.JackTrip.desktop
+          DESKTOP_FILE_PATH=$BUILD_PATH/org.jacktrip.JackTrip.desktop
+          if [[ "${{ matrix.build-system }}" == meson ]]; then 
+            DESKTOP_FILE_PATH=$BUILD_PATH/linux/org.jacktrip.JackTrip.desktop
+          fi
+          desktop-file-validate $DESKTOP_FILE_PATH
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
