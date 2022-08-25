@@ -1,15 +1,15 @@
 /* ------------------------------------------------------------
 author: "Dominick Hing"
 license: "MIT Style STK-4.2"
-name: "vumeter"
+name: "meter"
 version: "1.0"
 Code generated with Faust 2.40.0 (https://faust.grame.fr)
-Compilation options: -a faust2header.cpp -lang cpp -i -inpl -cn vumeterdsp -es 1 -mcd 16
+Compilation options: -a faust2header.cpp -lang cpp -i -inpl -cn meterdsp -es 1 -mcd 16
 -single -ftz 0
 ------------------------------------------------------------ */
 
-#ifndef __vumeterdsp_H__
-#define __vumeterdsp_H__
+#ifndef __METERDSP_H__
+#define __METERDSP_H__
 
 // NOTE: ANY INCLUDE-GUARD HERE MUST BE DERIVED FROM THE CLASS NAME
 //
@@ -1737,7 +1737,7 @@ class APIUI
 #include <cstdint>
 
 #ifndef FAUSTCLASS
-#define FAUSTCLASS vumeterdsp
+#define FAUSTCLASS meterdsp
 #endif
 
 #ifdef __APPLE__
@@ -1751,7 +1751,7 @@ class APIUI
 #define RESTRICT __restrict__
 #endif
 
-class vumeterdsp : public dsp
+class meterdsp : public dsp
 {
    private:
     int fSampleRate;
@@ -1763,17 +1763,17 @@ class vumeterdsp : public dsp
         m->declare("basics.lib/name", "Faust Basic Element Library");
         m->declare("basics.lib/version", "0.5");
         m->declare("compile_options",
-                   "-a faust2header.cpp -lang cpp -i -inpl -cn vumeterdsp -es 1 -mcd 16 "
+                   "-a faust2header.cpp -lang cpp -i -inpl -cn meterdsp -es 1 -mcd 16 "
                    "-single -ftz 0");
         m->declare("description", "VU Meter Faust Plugin for JackTrip");
-        m->declare("filename", "vumeterdsp.dsp");
+        m->declare("filename", "meterdsp.dsp");
         m->declare("license", "MIT Style STK-4.2");
         m->declare("maths.lib/author", "GRAME");
         m->declare("maths.lib/copyright", "GRAME");
         m->declare("maths.lib/license", "LGPL with exception");
         m->declare("maths.lib/name", "Faust Math Library");
         m->declare("maths.lib/version", "2.5");
-        m->declare("name", "vumeter");
+        m->declare("name", "meter");
         m->declare("version", "1.0");
     }
 
@@ -1800,13 +1800,13 @@ class vumeterdsp : public dsp
         instanceClear();
     }
 
-    virtual vumeterdsp* clone() { return new vumeterdsp(); }
+    virtual meterdsp* clone() { return new meterdsp(); }
 
     virtual int getSampleRate() { return fSampleRate; }
 
     virtual void buildUserInterface(UI* ui_interface)
     {
-        ui_interface->openVerticalBox("vumeter");
+        ui_interface->openVerticalBox("meter");
         ui_interface->closeBox();
     }
 

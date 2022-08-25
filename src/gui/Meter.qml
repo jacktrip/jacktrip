@@ -10,27 +10,27 @@ Item {
     property int clipWidth: 10 * virtualstudio.uiScale
     required property bool clipped
 
-    property string vuMeterColor: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
+    property string meterColor: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
 
-    property string vuMeterGreen: "#61C554"
-    property string vuMeterYellow: "#F5BF4F"
-    property string vuMeterRed: "#F21B1B"
+    property string meterGreen: "#61C554"
+    property string meterYellow: "#F5BF4F"
+    property string meterRed: "#F21B1B"
 
     function getBoxColor (idx, level) {
 
         // Case where the meter should be filled
         if (level > (idx / bins)) {
-            let fillColor = vuMeterGreen;
+            let fillColor = meterGreen;
             if (idx > 8 && idx <= 11) {
-                fillColor = vuMeterYellow;
+                fillColor = meterYellow;
             } else if (idx > 11) {
-                fillColor = vuMeterRed;
+                fillColor = meterRed;
             }
             return fillColor;
 
         // Case where the meter should not be filled
         } else {
-            return vuMeterColor
+            return meterColor
         }
     }
 
@@ -209,6 +209,6 @@ Item {
         width: Math.min(clipWidth, ((parent.width - clipWidth) / bins) - innerMargin)
         height: 24 * virtualstudio.uiScale
         radius: 4 * virtualstudio.uiScale
-        color: clipped ? vuMeterRed : vuMeterColor
+        color: clipped ? meterRed : meterColor
     }
 }

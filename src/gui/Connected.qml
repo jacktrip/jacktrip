@@ -17,12 +17,12 @@ Item {
     property int bodyMargin: 60
     
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    property string vuMeterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
+    property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
 
-    property string vuMeterGreen: "#61C554"
-    property string vuMeterYellow: "#F5BF4F"
-    property string vuMeterRed: "#F21B1B"
+    property string meterGreen: "#61C554"
+    property string meterYellow: "#F5BF4F"
+    property string meterRed: "#F21B1B"
 
     function getNetworkStatsText (networkStats) {
         let minRtt = networkStats.minRtt;

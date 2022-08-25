@@ -1,11 +1,11 @@
 
-declare name "vumeter";
+declare name "meter";
 declare version "1.0";
 declare author "Dominick Hing";
 declare license "MIT Style STK-4.2";
 declare description "VU Meter Faust Plugin for JackTrip";
 
-// Originally modified from https://github.com/grame-cncm/faust/blob/master-dev/examples/analysis/vumeter.dsp
+// Originally modified from https://github.com/grame-cncm/faust/blob/master-dev/examples/analysis/meter.dsp
 
 import("stdfaust.lib");
 

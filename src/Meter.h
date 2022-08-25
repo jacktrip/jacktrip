@@ -36,8 +36,8 @@
  * \license MIT
  */
 
-#ifndef __VUMETER_H__
-#define __VUMETER_H__
+#ifndef __METER_H__
+#define __METER_H__
 
 #include <QObject>
 #include <QTimer>
@@ -46,7 +46,7 @@
 #include <vector>
 
 #include "ProcessPlugin.h"
-#include "vumeterdsp.h"
+#include "meterdsp.h"
 
 /** \brief The Meter class measures the live audio loudness level
  */
@@ -60,9 +60,9 @@ class Meter : public ProcessPlugin
     {
         setVerbose(verboseFlag);
         for (int i = 0; i < mNumChannels; i++) {
-            vumeterP.push_back(new vumeterdsp);
-            // vumeterUIP.push_back(new APIUI);
-            // vumeterP[i]->buildUserInterface(vumeterUIP[i]);
+            meterP.push_back(new meterdsp);
+            // meterUIP.push_back(new APIUI);
+            // meterP[i]->buildUserInterface(meterUIP[i]);
         }
     }
 
@@ -70,9 +70,9 @@ class Meter : public ProcessPlugin
     virtual ~Meter()
     {
         for (int i = 0; i < mNumChannels; i++) {
-            delete vumeterP[i];
+            delete meterP[i];
         }
-        vumeterP.clear();
+        meterP.clear();
     }
 
     void init(int samplingRate) override;
@@ -87,7 +87,7 @@ class Meter : public ProcessPlugin
     float fs;
     int mNumChannels;
     float threshold = -80.0;
-    std::vector<vumeterdsp*> vumeterP;
+    std::vector<meterdsp*> meterP;
     bool hasProcessedAudio = false;
 
     QTimer mTimer;

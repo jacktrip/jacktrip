@@ -53,7 +53,7 @@ void Meter::init(int samplingRate)
 
     fs = float(fSamplingFreq);
     for (int i = 0; i < mNumChannels; i++) {
-        vumeterP[i]->init(fs);
+        meterP[i]->init(fs);
     }
 
     /* Set meter values to the default floor */
@@ -98,7 +98,7 @@ void Meter::compute(int nframes, float** inputs, float** /*_*/)
     float** output     = &meterBufPtr;
     for (int i = 0; i < mNumChannels; i++) {
         /* Run the signal through Faust  */
-        vumeterP[i]->compute(nframes, &inputs[i], output);
+        meterP[i]->compute(nframes, &inputs[i], output);
 
         /* Use the existing value of mValues[i] as
            the threshold - this will be reset to the default floor of -80dB
