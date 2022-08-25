@@ -441,6 +441,11 @@ jobs:
           meson --buildtype release $CONFIG_STRING $BUILD_PATH
           cd $BUILD_PATH
           meson compile
+      - name: validate desktop file
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          desktop-file-validate $BUILD_PATH/org.jacktrip.JackTrip.desktop
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
