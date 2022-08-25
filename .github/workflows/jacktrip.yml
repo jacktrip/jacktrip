@@ -269,7 +269,7 @@ jobs:
             python -m pip install --upgrade pip
             pip install meson ninja pyyaml Jinja2
           fi
-          fi [[ "${{ matrix.nogui }}" == true ]]; then
+          if [[ "${{ matrix.nogui }}" == true ]]; then 
             sudo apt-get install --yes desktop-file-utils
           fi
       - name: install dependencies for macOS
