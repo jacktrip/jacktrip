@@ -1122,8 +1122,8 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDeci
         }
     }
 
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"), QVariant::fromValue(uiValues));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputMeterModel"),
+                                                       QVariant::fromValue(uiValues));
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDecibels)
@@ -1154,8 +1154,8 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDec
         }
     }
 
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputMeterModel"), QVariant::fromValue(uiValues));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
+                                                       QVariant::fromValue(uiValues));
 }
 
 void VirtualStudio::setupAuthenticator()
