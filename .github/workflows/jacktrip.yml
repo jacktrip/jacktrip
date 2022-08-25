@@ -380,7 +380,7 @@ jobs:
           VCPKG_TRIPLET: ${{ matrix.vcpkg-triplet }}
       - name: set Qt environment variables # needed to find qmake depending on the way qt was installed
         shell: bash
-        if: matrix.build-system == 'qmake'
+        if: matrix.build-system == 'qmake' && !matrix.nogui
         run: |
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
@@ -445,6 +445,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
+          ls $BUILD_PATH
           desktop-file-validate $BUILD_PATH/org.jacktrip.JackTrip.desktop
       - name: compress the binary
         shell: bash
