@@ -382,6 +382,11 @@ void Regulator::pullPacket(int8_t* buf)
                 goto PACKETOK;
             }
         }
+        if (mLastSeqNumOut == mLastSeqNumIn) {
+            //            std::cout << "mLastSeqNumIn: " << mLastSeqNumIn <<
+            //            "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
+            goto ZERO_OUTPUT;
+        }
         goto UNDERRUN;
     }
 
