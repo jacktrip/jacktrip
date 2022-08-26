@@ -269,6 +269,9 @@ jobs:
             python -m pip install --upgrade pip
             pip install meson ninja pyyaml Jinja2
           fi
+          if [[ "${{ matrix.nogui }}" == false ]]; then 
+            sudo apt-get install --yes desktop-file-utils
+          fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
         env:
@@ -441,6 +444,15 @@ jobs:
           meson --buildtype release $CONFIG_STRING $BUILD_PATH
           cd $BUILD_PATH
           meson compile
+      - name: validate desktop file
+        if: runner.os == 'Linux' && !matrix.nogui
+        shell: bash
+        run: |
+          DESKTOP_FILE_PATH=$BUILD_PATH/org.jacktrip.JackTrip.desktop
+          if [[ "${{ matrix.build-system }}" == meson ]]; then 
+            DESKTOP_FILE_PATH=$BUILD_PATH/linux/org.jacktrip.JackTrip.desktop
+          fi
+          desktop-file-validate $DESKTOP_FILE_PATH
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
