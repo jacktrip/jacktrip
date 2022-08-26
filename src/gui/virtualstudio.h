@@ -43,9 +43,11 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
+#include <QVector>
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
+#include "../Meter.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
@@ -83,6 +85,7 @@ class VirtualStudio : public QObject
                    showSelfHostedChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
+
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
@@ -122,6 +125,8 @@ class VirtualStudio : public QObject
     QJsonObject userMetadata();
     QString connectionState();
     QJsonObject networkStats();
+    QVector<float> inputMeterLevels();
+    QVector<float> outputMeterLevels();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -204,6 +209,8 @@ class VirtualStudio : public QObject
     void launchBrowser(const QUrl& url);
     void joinStudio();
     void updatedStats(const QJsonObject& stats);
+    void updatedInputVuMeasurements(const QVector<float> valuesInDecibels);
+    void updatedOutputVuMeasurements(const QVector<float> valuesInDecibels);
 
    private:
     void setupAuthenticator();
@@ -268,6 +275,14 @@ class VirtualStudio : public QObject
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
     bool m_authenticated = false;
+
+    Meter* m_inputMeter;
+    Meter* m_outputMeter;
+    QTimer m_inputClipTimer;
+    QTimer m_outputClipTimer;
+
+    float m_meterMax = 0.0;
+    float m_meterMin = -64.0;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;

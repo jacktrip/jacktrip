@@ -588,9 +588,11 @@ void JackTrip::completeConnection()
     for (auto& i : mProcessPluginsFromNetwork) {
         mAudioInterface->appendProcessPluginFromNetwork(i);
     }
+
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
     }
+
     mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
 

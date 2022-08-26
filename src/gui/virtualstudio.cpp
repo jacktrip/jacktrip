@@ -88,6 +88,24 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
 
+    // Initialize timers needed for clip indicators
+    m_inputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_inputClipTimer.setSingleShot(true);
+    m_inputClipTimer.setInterval(3000);
+    m_outputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_outputClipTimer.setSingleShot(true);
+    m_outputClipTimer.setInterval(3000);
+
+    m_inputClipTimer.callOnTimeout([&]() {
+        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
+                                                           QVariant::fromValue(false));
+    });
+
+    m_outputClipTimer.callOnTimeout([&]() {
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputClipped"), QVariant::fromValue(false));
+    });
+
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
     m_useRtAudio   = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
@@ -136,6 +154,16 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
+
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputMeterModel"), QVariant::fromValue(QVector<float>()));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
+                                                       QVariant::fromValue(false));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
+                                                       QVariant::fromValue(false));
+
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -762,7 +790,26 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
+        Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
+        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedOutputVuMeasurements);
+
+        Meter* m_inputMeter = new Meter(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputMeter);
+        connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedInputVuMeasurements);
+
         m_device->startJackTrip();
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("inputMeterModel"),
+            QVariant::fromValue(QVector<float>(jackTrip->getNumInputChannels())));
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputMeterModel"),
+            QVariant::fromValue(QVector<float>(jackTrip->getNumOutputChannels())));
+
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
@@ -1045,6 +1092,70 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
     m_networkStats = newStats;
     emit networkStatsChanged();
     return;
+}
+
+void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDecibels)
+{
+    QJsonArray uiValues;
+    bool detectedClip = false;
+
+    // Always output 2 meter readings to the UI
+    for (int i = 0; i < 2; i++) {
+        // Determine decibel reading
+        float dB = m_meterMin;
+        if (i < valuesInDecibels.size()) {
+            dB = std::max(m_meterMin, valuesInDecibels[i]);
+        }
+
+        // Produce a normalized value from 0 to 1
+        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+
+        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
+        uiValues.push_back(object);
+
+        // Signal a clip if we haven't done so already
+        if (dB >= -0.05 && !detectedClip) {
+            m_inputClipTimer.start();
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("inputClipped"), QVariant::fromValue(true));
+            detectedClip = true;
+        }
+    }
+
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputMeterModel"),
+                                                       QVariant::fromValue(uiValues));
+}
+
+void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDecibels)
+{
+    QJsonArray uiValues;
+    bool detectedClip = false;
+
+    // Always output 2 meter readings to the UI
+    for (int i = 0; i < 2; i++) {
+        // Determine decibel reading
+        float dB = m_meterMin;
+        if (i < valuesInDecibels.size()) {
+            dB = std::max(m_meterMin, valuesInDecibels[i]);
+        }
+
+        // Produce a normalized value from 0 to 1
+        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+
+        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
+        uiValues.push_back(object);
+
+        // Signal a clip if we haven't done so already
+        if (dB >= -0.05 && !detectedClip) {
+            m_outputClipTimer.start();
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("outputClipped"), QVariant::fromValue(true));
+            detectedClip = true;
+        }
+    }
+
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
+                                                       QVariant::fromValue(uiValues));
 }
 
 void VirtualStudio::setupAuthenticator()
@@ -1409,6 +1520,9 @@ VirtualStudio::~VirtualStudio()
     for (int i = 0; i < m_servers.count(); i++) {
         delete m_servers.at(i);
     }
+
+    delete m_inputMeter;
+    delete m_outputMeter;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }

@@ -682,9 +682,13 @@ void AudioInterface::initPlugins()
         std::cout << "Initializing Faust plugins (have " << nPlugins
                   << ") at sampling rate " << mSampleRate << "\n";
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsFromNetwork)) {
+            plugin->setOutgoingToNetwork(false);
+            plugin->updateNumChannels(mNumInChans, mNumOutChans);
             plugin->init(mSampleRate);
         }
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsToNetwork)) {
+            plugin->setOutgoingToNetwork(true);
+            plugin->updateNumChannels(mNumInChans, mNumOutChans);
             plugin->init(mSampleRate);
         }
     }
