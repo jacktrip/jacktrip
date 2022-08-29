@@ -84,6 +84,8 @@ class RtAudioInterface : public AudioInterface
     static int wrapperRtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double streamTime,
                                       RtAudioStreamStatus status, void* userData);
+    static void RtAudioErrorCallback(RtAudioError::Type type,
+                                     const std::string& errorText);
     void printDeviceInfo(unsigned int deviceId);
 
     int mNumInChans;   ///< Number of Input Channels

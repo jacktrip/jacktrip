@@ -159,7 +159,7 @@ void RtAudioInterface::setup()
         // be accessible
         mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                              &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                             this, &options);
+                             this, &options, &RtAudioInterface::RtAudioErrorCallback);
         setBufferSize(bufferFrames);
     } catch (RtAudioError& e) {
         std::cout << '\n' << e.getMessage() << '\n' << std::endl;
@@ -305,6 +305,16 @@ int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuff
 {
     return static_cast<RtAudioInterface*>(userData)->RtAudioCallback(
         outputBuffer, inputBuffer, nFrames, streamTime, status);
+}
+
+//*******************************************************************************
+void RtAudioInterface::RtAudioErrorCallback(RtAudioError::Type type,
+                                            const std::string& errorText)
+{
+    if ((type != RtAudioError::WARNING) && (type != RtAudioError::DEBUG_WARNING)) {
+        std::cout << '\n' << errorText << '\n' << std::endl;
+        throw std::runtime_error(errorText);
+    }
 }
 
 //*******************************************************************************
