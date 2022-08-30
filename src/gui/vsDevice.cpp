@@ -293,6 +293,7 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
 // startJackTrip starts the current jacktrip process if applicable
 void VsDevice::startJackTrip()
 {
+    qDebug() << "startJacktrip()";
     if (!m_jackTrip.isNull()) {
 #ifdef WAIRTOHUB                      // WAIR
         m_jackTrip->startProcess(0);  // for WAIR compatibility, ID in jack client name
@@ -300,6 +301,7 @@ void VsDevice::startJackTrip()
         m_jackTrip->startProcess();
 #endif  // endwhere
     }
+    qDebug() << "startJacktrip() finished";
 }
 
 // stopJackTrip stops the current jacktrip process if applicable
