@@ -85,6 +85,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
 
+    connect(this, &VirtualStudio::studioIndexJoinChanged, this,
+            &VirtualStudio::connectToStudio);
+
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
 
@@ -464,6 +467,15 @@ void VirtualStudio::setDarkMode(bool dark)
     emit darkModeChanged();
 }
 
+int VirtualStudio::studioIndexJoinClicked() {
+    return m_studioIndexJoinClicked;
+}
+
+void VirtualStudio::setStudioIndexJoinClicked(int index) {
+    m_studioIndexJoinClicked = index;
+    emit studioIndexJoinChanged(index);
+}
+
 QUrl VirtualStudio::studioToJoin()
 {
     return m_studioToJoin;
@@ -689,6 +701,10 @@ void VirtualStudio::applySettings()
 
 void VirtualStudio::connectToStudio(int studioIndex)
 {
+    if (studioIndex == -1) {
+        return;
+    }
+
     {
         QMutexLocker locker(&m_refreshMutex);
         m_allowRefresh = false;
@@ -743,6 +759,8 @@ void VirtualStudio::connectToStudio(int studioIndex)
             emit connectionStateChanged();
             m_startedStudio = false;
         }
+
+        setStudioIndexJoinClicked(-1);
     } else {
         m_startedStudio = false;
         completeConnection();
@@ -828,6 +846,8 @@ void VirtualStudio::completeConnection()
         processError(QString::fromUtf8(e.what()));
         return;
     }
+
+    setStudioIndexJoinClicked(-1);
 
 #ifdef __APPLE__
     m_noNap.disableNap();
