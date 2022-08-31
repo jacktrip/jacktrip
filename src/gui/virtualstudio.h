@@ -91,8 +91,6 @@ class VirtualStudio : public QObject
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
-    Q_PROPERTY(int studioIndexJoinClicked READ studioIndexJoinClicked WRITE
-                   setStudioIndexJoinClicked NOTIFY studioIndexJoinChanged)
     Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup WRITE setShowDeviceSetup NOTIFY
                    showDeviceSetupChanged)
     Q_PROPERTY(bool showWarnings READ showWarnings WRITE setShowWarnings NOTIFY
@@ -140,8 +138,6 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
-    int studioIndexJoinClicked();
-    void setStudioIndexJoinClicked(int index);
     QUrl studioToJoin();
     void setStudioToJoin(const QUrl& url);
     bool showDeviceSetup();
@@ -197,7 +193,6 @@ class VirtualStudio : public QObject
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
-    void studioIndexJoinChanged(int index);
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
@@ -276,9 +271,8 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
-    bool m_darkMode              = false;
-    QString m_failedMessage      = "";
-    int m_studioIndexJoinClicked = -1;
+    bool m_darkMode         = false;
+    QString m_failedMessage = "";
     QUrl m_studioToJoin;
     bool m_authenticated = false;
 

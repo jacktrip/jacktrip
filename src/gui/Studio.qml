@@ -155,8 +155,7 @@ Rectangle {
                 console.log("should be going to connected");
                 window.state = "connected";
                 console.log("actually connecting");
-                // virtualstudio.connectToStudio(index);
-                virtualstudio.studioIndexJoinClicked = index;
+                virtualstudio.connectToStudio(index);
             } else {
                 virtualstudio.disconnect();
             }
