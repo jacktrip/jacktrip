@@ -1218,7 +1218,8 @@ void VirtualStudio::setupAuthenticator()
 
 void VirtualStudio::sendHeartbeat()
 {
-    if (m_device != nullptr && m_connectionState != "Connecting...") {
+    if (m_device != nullptr && m_connectionState != "Connecting..."
+        && m_connectionState != "Preparing audio...") {
         m_device->sendHeartbeat();
     }
 }
