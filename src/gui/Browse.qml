@@ -35,7 +35,7 @@ Item {
         if (currentIndex == -1) {
             currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY + (16 * virtualstudio.uiScale));
         }
-        virtualstudio.refreshStudios(currentIndex)
+        virtualstudio.refreshStudios(currentIndex, true)
     }
     
     Rectangle {
