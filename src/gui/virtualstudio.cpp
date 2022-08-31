@@ -808,6 +808,12 @@ void VirtualStudio::completeConnection()
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
         qDebug() << "Starting Jacktrip";
+        if (m_useRtAudio) {
+            // This is a hack. RtAudio::openStream blocks the UI thread.
+            // But I am not comfortable changing how all of JackTrip consumes
+            // RtAudio to fix a VS mode bug.
+            delay(805);
+        }
         m_device->startJackTrip();
         qDebug() << "Jacktrip started";
 

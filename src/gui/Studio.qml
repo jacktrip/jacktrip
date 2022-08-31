@@ -150,21 +150,13 @@ Rectangle {
             border.color: joinStroke
         }
         visible: connected || canConnect || canStart
-        // This is a hack, but RtAudio::openStream blocks the UI thread.
-        // But I am not comfortable changing how all of JackTrip consumes
-        // RtAudio to fix a VS mode bug.
-        Timer {
-            id: connectTimer
-            interval: 805; running: false; repeat: false
-            onTriggered: virtualstudio.connectToStudio(index)
-        }
         onClicked: {
             if (!connected) {
                 console.log("should be going to connected");
                 window.state = "connected";
                 console.log("actually connecting");
 
-                connectTimer.start();
+                virtualstudio.connectToStudio(index)
             } else {
                 virtualstudio.disconnect();
             }
