@@ -152,11 +152,8 @@ Rectangle {
         visible: connected || canConnect || canStart
         onClicked: {
             if (!connected) {
-                console.log("should be going to connected");
                 window.state = "connected";
-                console.log("actually connecting");
-
-                virtualstudio.connectToStudio(index)
+                virtualstudio.connectToStudio(index);
             } else {
                 virtualstudio.disconnect();
             }

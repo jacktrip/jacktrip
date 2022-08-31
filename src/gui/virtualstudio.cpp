@@ -754,7 +754,7 @@ void VirtualStudio::completeConnection()
     if (m_currentStudio < 0) {
         return;
     }
-    qDebug() << "completing connection";
+
     m_jackTripRunning = true;
     m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
@@ -764,7 +764,6 @@ void VirtualStudio::completeConnection()
         std::string output = "";
         int buffer_size    = 0;
 #ifdef RT_AUDIO
-        qDebug() << "setting input/output devices from RtAudio";
         if (m_useRtAudio) {
             input = m_inputDevice.toStdString();
             if (m_inputDevice == QLatin1String("(default)")) {
@@ -776,13 +775,9 @@ void VirtualStudio::completeConnection()
             }
             buffer_size = m_bufferSize;
         }
-        qDebug() << "input/output devices set from RtAudio";
 #endif
-        qDebug() << "Initing JackTrip";
         JackTrip* jackTrip =
             m_device->initJackTrip(m_useRtAudio, input, output, buffer_size, studioInfo);
-        qDebug() << "JackTrip initialized";
-        qDebug() << "Setting up slots";
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
@@ -791,9 +786,7 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
-        qDebug() << "Slots done";
 
-        qDebug() << "Adding meter plugin";
         Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
         connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
@@ -803,19 +796,18 @@ void VirtualStudio::completeConnection()
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
-        qDebug() << "Meter added";
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
-        qDebug() << "Starting Jacktrip";
+#ifdef RT_AUDIO
         if (m_useRtAudio) {
             // This is a hack. RtAudio::openStream blocks the UI thread.
             // But I am not comfortable changing how all of JackTrip consumes
             // RtAudio to fix a VS mode bug.
             delay(805);
         }
+#endif
         m_device->startJackTrip();
-        qDebug() << "Jacktrip started";
 
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("inputMeterModel"),

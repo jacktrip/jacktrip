@@ -166,7 +166,6 @@ void JackTrip::setupAudio(
 #endif  // endwhere
 )
 {
-    std::cout << "in setup audio" << std::endl;
     // Check if mAudioInterface has already been created or not
     if (mAudioInterface
         != NULL) {  // if it has been created, disconnect it from JACK and delete it
@@ -230,48 +229,36 @@ void JackTrip::setupAudio(
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        std::cout << "starting RtAudio prep" << std::endl;
-        std::cout << "starting RtAudioInterface init" << std::endl;
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
-        std::cout << "finished RtAudioInterface init" << std::endl;
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
         mAudioInterface->setOutputDevice(mOutputDeviceName);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
-        std::cout << "starting RtAudio setup()" << std::endl;
         mAudioInterface->setup();
-        std::cout << "finsihed RtAudio setup()" << std::endl;
         // Setup might have reduced number of channels
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
-        std::cout << "finsihed RtAudio prep" << std::endl;
 #endif
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef RT_AUDIO
-        std::cout << "starting RtAudio prep" << std::endl;
-        std::cout << "starting RtAudioInterface init" << std::endl;
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
-        std::cout << "finished RtAudioInterface init" << std::endl;
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
         mAudioInterface->setOutputDevice(mOutputDeviceName);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
-        std::cout << "starting RtAudio setup()" << std::endl;
         mAudioInterface->setup();
-        std::cout << "finsihed RtAudio setup()" << std::endl;
         // Setup might have reduced number of channels
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
-        std::cout << "finsihed RtAudio prep" << std::endl;
 #endif
     }
 
@@ -300,7 +287,6 @@ void JackTrip::setupAudio(
          << endl;
     std::cout << gPrintSeparator << std::endl;
     QThread::usleep(100);
-    std::cout << "finishing setup audio" << std::endl;
 }
 
 //*******************************************************************************
