@@ -37,11 +37,32 @@
 
 #include "vsQuickView.h"
 
+#include <QDesktopServices>
+#include <iostream>
+
+VsQuickView::VsQuickView(QWindow* parent) : QQuickView(parent)
+{
+#ifdef Q_OS_MACOS
+    auto* quit = new QAction("&Quit", this);
+
+    QMenuBar* menuBar = new QMenuBar(nullptr);
+    QMenu* appName    = menuBar->addMenu("&JackTrip");
+    appName->addAction(quit);
+
+    connect(quit, &QAction::triggered, this, &VsQuickView::closeWindow);
+#endif
+}
+
 bool VsQuickView::event(QEvent* event)
 {
-    if (event->type() == QEvent::Close) {
+    if (event->type() == QEvent::Close || event->type() == QEvent::Quit) {
         emit windowClose();
         event->ignore();
     }
     return QQuickView::event(event);
+}
+
+void VsQuickView::closeWindow()
+{
+    emit windowClose();
 }

@@ -30,35 +30,53 @@
 //*****************************************************************
 
 /**
- * \file vsQuickView.h
- * \author Aaron Wyatt
- * \date March 2022
+ * \file vsWebSocket.h
+ * \author Matt Horton
+ * \date June 2022
  */
 
-#ifndef VSQUICKVIEW_H
-#define VSQUICKVIEW_H
+#ifndef VSWEBSOCKET_H
+#define VSWEBSOCKET_H
 
-#include <QQuickView>
-#ifdef Q_OS_MACOS
-#include <QAction>
-#include <QMenu>
-#include <QMenuBar>
+#include <QList>
 #include <QObject>
-#endif
+#include <QSslError>
+#include <QString>
+#include <QUrl>
+#include <QtWebSockets>
 
-class VsQuickView : public QQuickView
+class VsWebSocket : public QObject
 {
     Q_OBJECT
 
    public:
-    VsQuickView(QWindow* parent = nullptr);
-    bool event(QEvent* event) override;
+    // Constructor
+    explicit VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
+                         QString apiSecret, QObject* parent = nullptr);
+
+    // Public functions
+    void openSocket();
+    void closeSocket();
+    void sendMessage(const QByteArray& message);
+    bool isValid();
 
    signals:
-    void windowClose();
+    void textMessageReceived(const QString& message);
 
    private slots:
-    void closeWindow();
+    void onConnected();
+    void onClosed();
+    void onError(QAbstractSocket::SocketError error);
+    void onSslErrors(const QList<QSslError>& errors);
+
+   private:
+    QWebSocket m_webSocket;
+    QUrl m_url;
+    bool m_connected = false;
+    bool m_error     = false;
+    QString m_token;
+    QString m_apiPrefix;
+    QString m_apiSecret;
 };
 
-#endif  // VSQUICKVIEW_H
+#endif  // VSWEBSOCKET_H

@@ -1,3 +1,28 @@
+- Version: "1.6.3"
+  Date: 2022-08-23
+  Description:
+  - (fixed) Segfault when creating a hub server via cmd line
+  - (fixed) Linux desktop file is no longer invalid
+  - (fixed) Command line arguments no longer print to console
+- Version: "1.6.2"
+  Date: 2022-08-05
+  Description:
+  - (updated) Static Qt version for Linux builds
+  - (upated) cleaner, easier to read VS settings
+  - (updated) icons for 'Manage' and 'Settings' in VS mode
+  - (added) human-readable locations in VS mode
+  - (added) warning that cmake is not officially supported
+  - (added) VS mode is treated as a device by VS web
+  - (added) Network statistics in Virtual Studio mode
+  - (added) URL scheme support to join a Studio from the VS web join button
+  - (added) banner images on Studios in VS mode
+  - (added) VS mode sets remote client name to app ID
+  - (fixed) WebSocket connection behavior in Virtual Studio (VS) mode
+  - (fixed) dblsqd errors in Linux builds
+  - (fixed) Windows datagramAvailable error
+  - (fixed) High Sierra compatibility in static builds
+  - (fixed) Doesn't crash if RtAudio sample rate isn't supported
+  - (fixed) Fractional UI scaling on Windows
 - Version: "1.6.1"
   Date: 2022-06-20
   Description:

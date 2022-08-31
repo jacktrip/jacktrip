@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -30,35 +30,53 @@
 //*****************************************************************
 
 /**
- * \file vsQuickView.h
- * \author Aaron Wyatt
- * \date March 2022
+ * \file vsPinger.cpp
+ * \author Dominick Hing
+ * \date July 2022
  */
 
-#ifndef VSQUICKVIEW_H
-#define VSQUICKVIEW_H
+#include "vsPing.h"
 
-#include <QQuickView>
-#ifdef Q_OS_MACOS
-#include <QAction>
-#include <QMenu>
-#include <QMenuBar>
-#include <QObject>
-#endif
+#include <iostream>
 
-class VsQuickView : public QQuickView
+using std::cout;
+using std::endl;
+
+// NOTE: It's better not to use
+// using namespace std;
+// because some functions (like exit()) get confused with QT functions
+
+//*******************************************************************************
+VsPing::VsPing(uint32_t pingNum, uint32_t timeout_msec) : mPingNumber(pingNum)
 {
-    Q_OBJECT
+    connect(&mTimer, &QTimer::timeout, this, &VsPing::onTimeout);
 
-   public:
-    VsQuickView(QWindow* parent = nullptr);
-    bool event(QEvent* event) override;
+    mTimer.setTimerType(Qt::PreciseTimer);
+    mTimer.setSingleShot(true);
+    mTimer.setInterval(timeout_msec);
+    mTimer.start();
+}
 
-   signals:
-    void windowClose();
+void VsPing::send()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    mSent         = now;
+}
 
-   private slots:
-    void closeWindow();
-};
+void VsPing::receive()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    if (!mTimedOut) {
+        mTimer.stop();
+        mReceivedReply = true;
+        mReceived      = now;
+    }
+}
 
-#endif  // VSQUICKVIEW_H
+void VsPing::onTimeout()
+{
+    if (!mReceivedReply) {
+        mTimedOut = true;
+        emit timeout(mPingNumber);
+    }
+}

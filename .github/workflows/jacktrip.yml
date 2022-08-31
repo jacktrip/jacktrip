@@ -32,10 +32,11 @@ jobs:
         include:
           - name: Linux-x64-qmake-gcc-static
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
-            runs-on: ubuntu-18.04
+            runs-on: ubuntu-20.04
             system-rtaudio: false
             bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
+            novs: false
             weakjack: false
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
@@ -54,6 +55,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -65,6 +67,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: true
+            novs: true
             weakjack: false
             static-qt-version: 5.12.12
             qt-static-cache-key: 'v27' # we use the same key as the main Linux build
@@ -77,6 +80,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -97,12 +101,13 @@ jobs:
           #   build-system: meson
           #   meson-library-type: static
 
-          - name: macOS-x64-qmake-clang-static
+          - name: macOS-x64-qmake-clang-static-bundled_rtaudio
             release-name: macOS-x64
-            runs-on: macos-10.15
-            system-rtaudio: true
-            bundled-rtaudio: false
+            runs-on: macos-11
+            system-rtaudio: false
+            bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             static-qt-version: 5.15.2
             qt-static-cache-key: 'v07'
@@ -112,11 +117,12 @@ jobs:
             installer-path: installer
             build-system: qmake
 
-          - name: macOS-x64-qmake-clang-shared-bundled_rtaudio
-            runs-on: macos-10.15
-            system-rtaudio: false
-            bundled-rtaudio: true
+          - name: macOS-x64-qmake-clang-shared
+            runs-on: macos-11
+            system-rtaudio: true
+            bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -125,10 +131,11 @@ jobs:
             build-system: qmake
 
           - name: macOS-x64-meson-clang-shared-bundled_rtaudio
-            runs-on: macos-10.15
+            runs-on: macos-11
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -143,6 +150,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.2
@@ -157,6 +165,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-dynamic
             qt-arch: 'win64_mingw81'
@@ -170,6 +179,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
+            novs: false
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
@@ -184,6 +194,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
+            novs: false
             weakjack: true
             qt-arch: 'win64_msvc2019_64'
             qt-cache-key: 'v01'
@@ -197,8 +208,8 @@ jobs:
       QT_VERSION: '5.15.2' # for shared qt installer using install-qt-action
       DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
-      QT_STATIC_BUILD_PATH: ${{ github.workspace }}/../qt-static
-      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview -skip qtxmlpatterns' # common for all platforms
+      QT_STATIC_BUILD_PATH: ${{ github.workspace }}/qt-static # note: don't use '..' here as this is used with the cache action, which doesn't support '.' and '..' in paths
+      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebview -skip qtxmlpatterns' # common for all platforms
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       
@@ -223,10 +234,18 @@ jobs:
           fi
           echo "::set-output name=version::$VERSION"
           echo "::set-output name=name::$NAME"
+          echo "::set-output name=stamp::$(date '+%Y-%m-%d')" # set timestamp for cache
       - name: setup python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
+      - name: cache vcpkg on Windows
+        if: runner.os == 'Windows' && matrix.vcpkg-triplet
+        uses: actions/cache@v3
+        with:
+          path: ~/AppData/Local/vcpkg/archives
+          key: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}-${{ steps.set-version.outputs.stamp }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
@@ -237,7 +256,7 @@ jobs:
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev
+            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
@@ -249,6 +268,9 @@ jobs:
             sudo apt-get install --yes help2man clang-tidy
             python -m pip install --upgrade pip
             pip install meson ninja pyyaml Jinja2
+          fi
+          if [[ "${{ matrix.nogui }}" == false ]]; then 
+            sudo apt-get install --yes desktop-file-utils
           fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
@@ -286,10 +308,11 @@ jobs:
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             choco install pkgconfiglite --no-progress
-            # check out an older version of rtaudio library, see issue #408
+            # check out version only 5.2.0 of rtaudio library, as 6.0 will take time to migrate to
+            # done by checking out specific commit of vcpkg
             cd $VCPKG_INSTALLATION_ROOT
-            git fetch origin f60125a3a1f527f1bbeeff6ccfdde43634a64235
-            git checkout f60125a3a1f527f1bbeeff6ccfdde43634a64235 -- ports/rtaudio
+            git fetch origin 8fd0679a9d64251cf634b5f58edc01a42a121097
+            git checkout 8fd0679a9d64251cf634b5f58edc01a42a121097 -- ports/rtaudio
             vcpkg install rtaudio[asio] --triplet="${{ matrix.vcpkg-triplet }}"
             echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\${{ matrix.vcpkg-triplet }}\lib\pkgconfig" >> $GITHUB_ENV
           fi
@@ -301,25 +324,19 @@ jobs:
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows' && matrix.build-system == 'meson' # MSVC used only by meson
-      - name: cache Qt
-        id: cache-qt
-        if: matrix.qt-arch && !matrix.static-qt-version
-        uses: actions/cache@v1
-        with:
-          path: ../Qt
-          key: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
       - name: install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         if: runner.os == 'Windows' && !matrix.static-qt-version
         with:
           version: ${{ env.QT_VERSION }}
           arch: ${{ matrix.qt-arch }}
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cache: true
+          cache-key-prefix: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
           modules: 'qtnetworkauth'
       - name: cache static Qt
         id: cache-static-qt
         if: matrix.static-qt-version
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ${{ env.QT_STATIC_BUILD_PATH }}
           key: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ matrix.qt-static-cache-key }}
@@ -428,6 +445,15 @@ jobs:
           meson --buildtype release $CONFIG_STRING $BUILD_PATH
           cd $BUILD_PATH
           meson compile
+      - name: validate desktop file
+        if: runner.os == 'Linux' && !matrix.nogui
+        shell: bash
+        run: |
+          DESKTOP_FILE_PATH=$BUILD_PATH/org.jacktrip.JackTrip.desktop
+          if [[ "${{ matrix.build-system }}" == meson ]]; then 
+            DESKTOP_FILE_PATH=$BUILD_PATH/linux/org.jacktrip.JackTrip.desktop
+          fi
+          desktop-file-validate $DESKTOP_FILE_PATH
       - name: compress the binary
         shell: bash
         if: matrix.binary-path

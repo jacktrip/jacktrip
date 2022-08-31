@@ -20,6 +20,7 @@ incdirs = []
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
+	'src/ProcessPlugin.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -34,6 +35,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/AudioInterface.cpp',
 	'src/Compressor.cpp',
 	'src/Limiter.cpp',
+	'src/Meter.cpp',
 	'src/Reverb.cpp',
 	'src/main.cpp',
 	'src/SslServer.cpp',
@@ -41,6 +43,8 @@ src = [	'src/DataProtocol.cpp',
 
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
+	'src/ProcessPlugin.h',
+	'src/Meter.h',
 	'src/JackTripWorker.h',
 	'src/PacketHeader.h',
 	'src/Settings.h',
@@ -105,19 +109,30 @@ else
 	else
 		src += [
 			'src/gui/virtualstudio.cpp',
+			'src/gui/vsDevice.cpp',
 			'src/gui/vsServerInfo.cpp',
-			'src/gui/vsQuickView.cpp'
+			'src/gui/vsQuickView.cpp',
+			'src/gui/vsWebSocket.cpp',
+			'src/gui/vsUrlHandler.cpp',
+			'src/gui/vsPinger.cpp',
+			'src/gui/vsPing.cpp'
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
+			'src/gui/vsDevice.h',
 			'src/gui/vsServerInfo.h',
-			'src/gui/vsQuickView.h'
+			'src/gui/vsQuickView.h',
+			'src/gui/vsWebSocket.h',
+			'src/gui/vsPinger.h',
+			'src/gui/vsPing.h',
+			'src/gui/vsUrlHandler.h',
+			'src/JTApplication.h'
 		]
-		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth'], include_type: 'system')
+		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 
-	if get_option('noupdater') == true
+	if get_option('noupdater') == true or host_machine.system() == 'linux'
 		defines += '-DNO_UPDATER'
 	else
 		src += [

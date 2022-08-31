@@ -33,8 +33,9 @@ nogui {
     QT += qml
     QT += quick
     QT += svg
+    QT += websockets
   }
-  noupdater {
+  noupdater|linux-g++|linux-g++-64 {
     DEFINES += NO_UPDATER
   }
 }
@@ -205,6 +206,7 @@ HEADERS += src/DataProtocol.h \
            src/Limiter.h \
            src/Regulator.h \
            src/Reverb.h \
+           src/Meter.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
@@ -222,6 +224,7 @@ HEADERS += src/DataProtocol.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
+           src/meterdsp.h \
            src/SslServer.h \
            src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
@@ -239,14 +242,20 @@ HEADERS += src/DataProtocol.h \
              src/gui/textbuf.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
+               src/gui/vsDevice.h \
                src/gui/vsServerInfo.h \
-               src/gui/vsQuickView.h
+               src/gui/vsQuickView.h \
+               src/gui/vsWebSocket.h \
+               src/gui/vsPinger.h \
+               src/gui/vsPing.h \
+               src/gui/vsUrlHandler.h \
+               src/JTApplication.h
   }
-  !noupdater {
+  !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
-               src/dblsqd/release.h \
-               src/dblsqd/semver.h \
-               src/dblsqd/update_dialog.h
+            src/dblsqd/release.h \
+            src/dblsqd/semver.h \
+            src/dblsqd/update_dialog.h
   }
 }
 
@@ -260,6 +269,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Limiter.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
+           src/Meter.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
@@ -289,14 +299,19 @@ SOURCES += src/DataProtocol.cpp \
              src/gui/textbuf.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
+               src/gui/vsDevice.cpp \
                src/gui/vsServerInfo.cpp \
-               src/gui/vsQuickView.cpp
+               src/gui/vsQuickView.cpp \
+               src/gui/vsWebSocket.cpp \
+               src/gui/vsPinger.cpp \
+               src/gui/vsPing.cpp \
+               src/gui/vsUrlHandler.cpp
   }
-  !noupdater {
+  !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \
-               src/dblsqd/release.cpp \
-               src/dblsqd/semver.cpp \
-               src/dblsqd/update_dialog.cpp
+              src/dblsqd/release.cpp \
+              src/dblsqd/semver.cpp \
+              src/dblsqd/update_dialog.cpp
   }
 }
 
@@ -311,7 +326,7 @@ SOURCES += src/DataProtocol.cpp \
   } else {
     RESOURCES += src/gui/qjacktrip.qrc
   }
-  !noupdater {
+  !noupdater:!linux-g++:!linux-g++-64 {
     FORMS += src/dblsqd/update_dialog.ui
   }
 }

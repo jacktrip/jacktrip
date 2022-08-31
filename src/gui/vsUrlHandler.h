@@ -30,35 +30,29 @@
 //*****************************************************************
 
 /**
- * \file vsQuickView.h
- * \author Aaron Wyatt
- * \date March 2022
+ * \file vsUrlHandler.h
+ * \author Matt Horton
+ * \date June 2022
  */
 
-#ifndef VSQUICKVIEW_H
-#define VSQUICKVIEW_H
+#ifndef VSURLHANDLER_H
+#define VSURLHANDLER_H
 
-#include <QQuickView>
-#ifdef Q_OS_MACOS
-#include <QAction>
-#include <QMenu>
-#include <QMenuBar>
+#include <QDesktopServices>
 #include <QObject>
-#endif
+#include <QSslError>
+#include <QString>
+#include <QUrl>
 
-class VsQuickView : public QQuickView
+class VsUrlHandler : public QObject
 {
     Q_OBJECT
 
-   public:
-    VsQuickView(QWindow* parent = nullptr);
-    bool event(QEvent* event) override;
-
    signals:
-    void windowClose();
+    void joinUrlClicked(const QUrl& url);
 
-   private slots:
-    void closeWindow();
+   public slots:
+    void handleUrl(const QUrl& url);
 };
 
-#endif  // VSQUICKVIEW_H
+#endif  // VSURLHANDLER_H

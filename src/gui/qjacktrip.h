@@ -67,7 +67,8 @@ class QJackTrip : public QMainWindow
     Q_OBJECT
 
    public:
-    explicit QJackTrip(int argc = 0, QWidget* parent = nullptr);
+    explicit QJackTrip(int argc = 0, bool suppressCommandlineWarning = false,
+                       QWidget* parent = nullptr);
     ~QJackTrip() override;
 
     void closeEvent(QCloseEvent* event) override;

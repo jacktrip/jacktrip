@@ -195,6 +195,16 @@ void VsServerInfo::setQueueBuffer(quint16 queueBuffer)
     m_queueBuffer = queueBuffer;
 }
 
+QString VsServerInfo::bannerURL()
+{
+    return m_bannerURL;
+}
+
+void VsServerInfo::setBannerURL(const QString& bannerURL)
+{
+    m_bannerURL = bannerURL;
+}
+
 QString VsServerInfo::id()
 {
     return m_id;
@@ -203,6 +213,16 @@ QString VsServerInfo::id()
 void VsServerInfo::setId(const QString& id)
 {
     m_id = id;
+}
+
+QString VsServerInfo::sessionId()
+{
+    return m_sessionId;
+}
+
+void VsServerInfo::setSessionId(const QString& sessionId)
+{
+    m_sessionId = sessionId;
 }
 
 VsServerInfo::~VsServerInfo() = default;
