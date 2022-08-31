@@ -608,9 +608,9 @@ void VirtualStudio::logout()
     emit hasRefreshTokenChanged();
 }
 
-void VirtualStudio::refreshStudios(int index)
+void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
-    getServerList(false, false, index);
+    getServerList(false, signalRefresh, index);
 }
 
 void VirtualStudio::refreshDevices()

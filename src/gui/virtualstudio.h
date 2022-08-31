@@ -153,7 +153,7 @@ class VirtualStudio : public QObject
     void toVirtualStudio();
     void login();
     void logout();
-    void refreshStudios(int index);
+    void refreshStudios(int index, bool signalRefresh = false);
     void refreshDevices();
     void revertSettings();
     void applySettings();
