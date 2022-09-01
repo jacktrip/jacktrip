@@ -62,6 +62,8 @@ Item {
                 //anchors.bottom: parent.bottom
                 y: 12 * virtualstudio.uiScale
                 // text: parent.section (for 5.15)
+                width: parent.width - 332 * virtualstudio.uiScale
+                fontSizeMode: Text.HorizontalFit
                 text: section
                 font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
                 color: textColour
