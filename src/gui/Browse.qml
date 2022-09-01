@@ -67,6 +67,7 @@ Item {
                 text: section
                 font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
                 color: textColour
+                verticalAlignment: Text.AlignBottom
             }
             Button {
                 id: createButton
