@@ -110,8 +110,9 @@ Rectangle {
     
     Text {
         x: leftMargin * virtualstudio.uiScale; y: 11 * virtualstudio.uiScale;
-        width: manageable ? parent.width - (233 * virtualstudio.uiScale) : parent.width - (156 * virtualstudio.uiScale)
+        width: manageable ? parent.width - (310 * virtualstudio.uiScale) : parent.width - (233 * virtualstudio.uiScale)
         text: studioName
+        fontSizeMode: Text.HorizontalFit
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
         elide: Text.ElideRight
         color: textColour
@@ -141,7 +142,7 @@ Rectangle {
     
     Button {
         id: joinButton
-        x: manageable ? parent.width - (142 * virtualstudio.uiScale) : parent.width - (65 * virtualstudio.uiScale)
+        x: manageable ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
         y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
@@ -171,6 +172,36 @@ Rectangle {
         text: connected ? "Leave" : available ? "Join" : "Start"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
         visible: connected || canConnect || canStart
+        color: textColour
+    }
+
+    Button {
+        id: inviteButton
+        x: manageable ? parent.width - (142 * virtualstudio.uiScale) : parent.width - (65 * virtualstudio.uiScale)
+        y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
+        background: Rectangle {
+            radius: width / 2
+            color: manageButton.down ? managePressedColour : (manageButton.hovered ? manageHoverColour : manageColour)
+            border.width:  manageButton.down ? 1 : 0
+            border.color: manageStroke
+        }
+        onClicked: { 
+            console.log('invite clicked');
+        }
+        visible: connected || canConnect
+        Image {
+            width: 20 * virtualstudio.uiScale; height: width
+            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+            source: "share.svg"
+        }
+    }
+    
+    Text {
+        anchors.horizontalCenter: inviteButton.horizontalCenter
+        y: 56 * virtualstudio.uiScale
+        text: "Invite"
+        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+        visible: connected || canConnect
         color: textColour
     }
     
