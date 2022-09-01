@@ -28,6 +28,8 @@ Rectangle {
     
     property int leftMargin: 81
     property int topMargin: 13
+    property int bottomToolTipMargin: 8
+    property int rightToolTipMargin: 4
     
     property real fontBig: 18
     property real fontMedium: 11
@@ -35,7 +37,8 @@ Rectangle {
     
     property string backgroundColour: virtualstudio.darkMode ? "#494646" : "#F4F6F6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
+    property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
+    property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string joinColour: virtualstudio.darkMode ? (connected ? "#FCB6B6" : "#E2EBE0") : (connected ? "#FCB6B6" : "#C4F4BE")
     property string joinHoverColour: virtualstudio.darkMode ? (connected ? "#D49696" : "#BAC7B8") : (connected ? "#E3A4A4" : "#B0DCAB")
     property string joinPressedColour: virtualstudio.darkMode ? (connected ? "#F2AEAE" : "#D8E2D6") : (connected ? "#EFADAD" : "#BAE8B5")
@@ -181,18 +184,51 @@ Rectangle {
         y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
-            color: manageButton.down ? managePressedColour : (manageButton.hovered ? manageHoverColour : manageColour)
-            border.width:  manageButton.down ? 1 : 0
+            color: inviteButton.down ? managePressedColour : (inviteButton.hovered ? manageHoverColour : manageColour)
+            border.width:  inviteButton.down ? 1 : 0
             border.color: manageStroke
         }
         onClicked: { 
             console.log('invite clicked');
+            virtualstudio.showToast = true;
         }
         visible: connected || canConnect
         Image {
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: "share.svg"
+        }
+        ToolTip {
+            parent: inviteButton
+            visible: inviteButton.hovered
+            bottomPadding: bottomToolTipMargin * virtualstudio.uiScale
+            rightPadding: rightToolTipMargin * virtualstudio.uiScale
+            delay: 100
+            contentItem: Rectangle {
+                color: toolTipBackgroundColour
+                radius: 3
+                anchors.fill: parent
+                anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    horizontalOffset: 1 * virtualstudio.uiScale
+                    verticalOffset: 1 * virtualstudio.uiScale
+                    radius: 10.0 * virtualstudio.uiScale
+                    samples: 21
+                    color: shadowColour
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                    text: qsTr("Copy invite link for Studio")
+                    color: textColour
+                }
+            }
+            background: Rectangle {
+                color: "transparent"
+            }
         }
     }
     
