@@ -1,3 +1,14 @@
+- Version: "1.6.4"
+  Date: 2022-09-01
+  Description:
+  - (added) Volume meters when connected to a Studio in VS mode
+  - (added) Validation of Linux desktop file in build steps
+  - (updated) PLC workers now zero out the last good packet from stalled clients
+  - (fixed) Crashing when unplugging a device while connected and using JACK
+  - (fixed) Launching from URL skipped setup
+  - (fixed) UI hanging when connecting to Studios in VS mode
+  - (fixed) "Refresh list" button disabling ui interaction in VS mode
+  - (fixed) Network stats not displaying on first connect after login (VS mode)
 - Version: "1.6.3"
   Date: 2022-08-23
   Description:
@@ -8,7 +19,7 @@
   Date: 2022-08-05
   Description:
   - (updated) Static Qt version for Linux builds
-  - (upated) cleaner, easier to read VS settings
+  - (updated) cleaner, easier to read VS settings
   - (updated) icons for 'Manage' and 'Settings' in VS mode
   - (added) human-readable locations in VS mode
   - (added) warning that cmake is not officially supported
