@@ -365,7 +365,7 @@ jobs:
         include:
           - name: Sign macOS artifacts
             release-name: macOS-x64
-            build-job-name: macOS-x64-qmake-clang-static
+            build-job-name: macOS-x64-qmake-clang-static-bundled_rtaudio
             runs-on: macos-11
             binary-path: binary
             bundle-path: bundle
