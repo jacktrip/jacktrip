@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.4-rc.1",
+            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4-rc1",
+            "download": {
+                "date": "2022-09-01T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4-rc1/JackTrip-v1.6.4-rc1-macOS-x64-installer.pkg",
+                "downloadSize": 11548759,
+                "sha256": "6e8af76766b164e40e7a44842a14e640cb3c0fac7b9b7067f9c75048d3354496"
+            }
+        },
+        {
             "version": "1.6.3",
             "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
             "download": {
