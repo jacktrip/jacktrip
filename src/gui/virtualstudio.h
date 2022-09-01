@@ -38,6 +38,7 @@
 #ifndef VIRTUALSTUDIO_H
 #define VIRTUALSTUDIO_H
 
+#include <QEventLoop>
 #include <QList>
 #include <QMutex>
 #include <QScopedPointer>
@@ -294,6 +295,14 @@ class VirtualStudio : public QObject
     QString m_previousOutput;
     quint16 m_previousBuffer;
     bool m_previousUseRtAudio = false;
+    inline void delay(int millisecondsWait)
+    {
+        QEventLoop loop;
+        QTimer t;
+        t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
+        t.start(millisecondsWait);
+        loop.exec();
+    }
 #endif
     QStringList m_bufferOptions        = {"16", "32", "64", "128", "256", "512", "1024"};
     QStringList m_updateChannelOptions = {"Stable", "Edge"};

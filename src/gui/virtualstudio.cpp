@@ -756,7 +756,7 @@ void VirtualStudio::completeConnection()
     }
 
     m_jackTripRunning = true;
-    m_connectionState = QStringLiteral("Connecting...");
+    m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     try {
@@ -797,6 +797,16 @@ void VirtualStudio::completeConnection()
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
 
+        m_connectionState = QStringLiteral("Connecting...");
+        emit connectionStateChanged();
+#ifdef RT_AUDIO
+        if (m_useRtAudio) {
+            // This is a hack. RtAudio::openStream blocks the UI thread.
+            // But I am not comfortable changing how all of JackTrip consumes
+            // RtAudio to fix a VS mode bug.
+            delay(805);
+        }
+#endif
         m_device->startJackTrip();
 
         m_view.engine()->rootContext()->setContextProperty(
@@ -1208,7 +1218,8 @@ void VirtualStudio::setupAuthenticator()
 
 void VirtualStudio::sendHeartbeat()
 {
-    if (m_device != nullptr && m_connectionState != "Connecting...") {
+    if (m_device != nullptr && m_connectionState != "Connecting..."
+        && m_connectionState != "Preparing audio...") {
         m_device->sendHeartbeat();
     }
 }
