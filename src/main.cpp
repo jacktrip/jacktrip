@@ -56,6 +56,7 @@
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
+#include "gui/vsQmlClipboard.h"
 #include "gui/vsUrlHandler.h"
 #endif
 
@@ -311,6 +312,9 @@ int main(int argc, char* argv[])
         }
 
 #ifndef NO_VS
+        // Register clipboard Qml type
+        qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
+
         // Parse command line for deep link
         QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
         deeplinkOption.setValueName(QStringLiteral("deeplink"));
