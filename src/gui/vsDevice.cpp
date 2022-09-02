@@ -258,6 +258,7 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
                                  [[maybe_unused]] std::string input,
                                  [[maybe_unused]] std::string output,
                                  [[maybe_unused]] int bufferSize,
+                                 [[maybe_unused]] int bufferStrategy,
                                  VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, 2, 2,
@@ -276,7 +277,8 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
     }
 #endif
     m_jackTrip->setRemoteClientName(m_appID);
-    m_jackTrip->setBufferStrategy(1);
+    // increment m_bufferStrategy by 1 for array-index mapping
+    m_jackTrip->setBufferStrategy(bufferStrategy + 1);
     m_jackTrip->setBufferQueueLength(-500);
     m_jackTrip->setPeerAddress(studioInfo->host());
     m_jackTrip->setPeerPorts(studioInfo->port());

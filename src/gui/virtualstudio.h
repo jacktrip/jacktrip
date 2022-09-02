@@ -77,6 +77,8 @@ class VirtualStudio : public QObject
                    outputDeviceChanged)
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
+    Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
+                   bufferStrategyChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
     Q_PROPERTY(QJsonObject userMetadata READ userMetadata NOTIFY userMetadataChanged)
@@ -121,6 +123,8 @@ class VirtualStudio : public QObject
     void setOutputDevice(int device);
     int bufferSize();
     void setBufferSize(int index);
+    int bufferStrategy();
+    void setBufferStrategy(int index);
     int currentStudio();
     QJsonObject regions();
     QJsonObject userMetadata();
@@ -181,6 +185,7 @@ class VirtualStudio : public QObject
     void inputDeviceChanged();
     void outputDeviceChanged();
     void bufferSizeChanged();
+    void bufferStrategyChanged();
     void currentStudioChanged();
     void regionsChanged();
     void userMetadataChanged();
@@ -272,6 +277,7 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
+    int m_bufferStrategy    = 0;
     bool m_darkMode         = false;
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
@@ -304,8 +310,10 @@ class VirtualStudio : public QObject
         loop.exec();
     }
 #endif
-    QStringList m_bufferOptions        = {"16", "32", "64", "128", "256", "512", "1024"};
-    QStringList m_updateChannelOptions = {"Stable", "Edge"};
+    QStringList m_bufferOptions         = {"16", "32", "64", "128", "256", "512", "1024"};
+    QStringList m_bufferStrategyOptions = {"Minimal Latency", "Stable Latency",
+                                           "Loss Concealment"};
+    QStringList m_updateChannelOptions  = {"Stable", "Edge"};
 
 #ifdef __APPLE__
     NoNap m_noNap;

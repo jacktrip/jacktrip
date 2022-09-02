@@ -106,6 +106,22 @@ Item {
                 }
             }
             Button {
+                id: advancedBtn
+                text: "Advanced"
+                width: parent.width
+                contentItem: Label {
+                    text: advancedBtn.text
+                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: textColour
+                }
+                background: Rectangle {
+                    width: parent.width
+                    color: advancedBtn.down ? buttonPressedColour : (advancedBtn.hovered || settingsGroupView == "Advanced" ? buttonHoverColour : backgroundColour)
+                }
+            }
+            Button {
                 id: profileBtn
                 text: "Profile"
                 width: parent.width
@@ -294,33 +310,6 @@ Item {
         }
         
         Button {
-            id: modeButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: modeButton.down ? buttonPressedColour : (modeButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
-            onClicked: { window.state = "login"; virtualstudio.toStandard(); }
-            x: parent.width - (232 * virtualstudio.uiScale); y: scaleSlider.y + (56 * virtualstudio.uiScale)
-            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
-        }
-
-        Text {
-            anchors.verticalCenter: modeButton.verticalCenter
-            x: leftMargin * virtualstudio.uiScale
-            text: "Display Mode"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-        
-        Button {
             id: darkButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
@@ -346,10 +335,47 @@ Item {
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
+    }
+
+    Rectangle {
+        id: advancedSettingsView
+        width: 0.8 * parent.width
+        height: parent.height - header.height
+        x: 0.2 * window.width
+        y: header.height
+        color: backgroundColour
+        visible: settingsGroupView == "Advanced"
+
+        Button {
+            id: modeButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: modeButton.down ? buttonPressedColour : (modeButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { window.state = "login"; virtualstudio.toStandard(); }
+            x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
+            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            Text {
+                text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: modeButton.verticalCenter
+            x: leftMargin * virtualstudio.uiScale
+            text: "Display Mode"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
 
         ComboBox {
             id: updateChannelCombo
-            x: 234 * virtualstudio.uiScale; y: darkButton.y + (56 * virtualstudio.uiScale)
+            x: 234 * virtualstudio.uiScale; y: modeButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             model: updateChannelComboModel
             currentIndex: virtualstudio.updateChannel == "stable" ? 0 : 1
@@ -365,6 +391,26 @@ Item {
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             visible: !virtualstudio.noUpdater
+        }
+
+        ComboBox {
+            id: bufferStrategyCombo
+            x: updateChannelCombo.x; y: updateChannelCombo.y + (48 * virtualstudio.uiScale)
+            width: updateChannelCombo.width; height: updateChannelCombo.height
+            model: bufferStrategyComboModel
+            currentIndex: virtualstudio.bufferStrategy
+            onActivated: { virtualstudio.bufferStrategy = currentIndex }
+            font.family: "Poppins"
+            visible: virtualstudio.audioBackend != "JACK"
+        }
+
+        Text {
+            anchors.verticalCenter: bufferStrategyCombo.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Buffer Strategy"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.audioBackend != "JACK"
+            color: textColour
         }
     }
 
