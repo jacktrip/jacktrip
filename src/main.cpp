@@ -56,8 +56,8 @@
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
-#include "gui/vsUrlHandler.h"
 #include "gui/vsQmlClipboard.h"
+#include "gui/vsUrlHandler.h"
 #endif
 
 #include "gui/qjacktrip.h"
