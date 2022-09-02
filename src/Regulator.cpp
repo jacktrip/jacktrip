@@ -382,11 +382,19 @@ void Regulator::pullPacket(int8_t* buf)
                 goto PACKETOK;
             }
         }
-        if (mLastSeqNumOut == mLastSeqNumIn) {
-            //            std::cout << "mLastSeqNumIn: " << mLastSeqNumIn <<
-            //            "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
+        // make this a global value? -- same threshold as
+        // UdpDataProtocol::printUdpWaitedTooLong
+        double wait_time = 30;  // msec
+        if ((mLastSeqNumOut == mLastSeqNumIn)
+            && ((now - mIncomingTiming[mLastSeqNumOut]) > wait_time)) {
+            //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
+            //                        << "mLastSeqNumIn: " << mLastSeqNumIn <<
+            //                        "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
             goto ZERO_OUTPUT;
-        }
+        }  // "good underrun", not a stuck client
+        //                    std::cout << "within window -- mLastSeqNumIn: " <<
+        //                    mLastSeqNumIn <<
+        //                    "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
         goto UNDERRUN;
     }
 
