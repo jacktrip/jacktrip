@@ -259,7 +259,7 @@ Item {
             manageable: isManageable
             available: canConnect
             connected: false
-            studioId: id ? id : "test"
+            studioId: id ? id : ""
         }
         
         section {property: "type"; criteria: ViewSection.FullString; delegate: sectionHeading }
