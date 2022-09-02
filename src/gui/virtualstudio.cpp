@@ -497,22 +497,6 @@ QString VirtualStudio::failedMessage()
     return m_failedMessage;
 }
 
-bool VirtualStudio::showToast()
-{
-    return m_showToast;
-}
-
-void VirtualStudio::setShowToast(bool show)
-{
-    m_showToast = show;
-
-    if (show == true) {
-        delay(100);
-        qDebug() << "setting back to false";
-        m_showToast = false;
-    }
-}
-
 void VirtualStudio::joinStudio()
 {
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {

@@ -99,7 +99,6 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
-    Q_PROPERTY(bool showToast READ showToast WRITE setShowToast NOTIFY showToastChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -149,8 +148,6 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString failedMessage();
-    bool showToast();
-    void setShowToast(bool show);
 
    public slots:
     void toStandard();
@@ -200,7 +197,6 @@ class VirtualStudio : public QObject
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
-    void showToastChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -280,7 +276,6 @@ class VirtualStudio : public QObject
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
     bool m_authenticated = false;
-    bool m_showToast = false;
 
     Meter* m_inputMeter;
     Meter* m_outputMeter;
