@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
+import VS 1.0
 
 Rectangle {
     width: 664; height: 83 * virtualstudio.uiScale
@@ -21,6 +22,7 @@ Rectangle {
     property string serverLocation: "Germany - Berlin"
     property string flagImage: "flags/DE.svg"
     property string studioName: "Test Studio"
+    property string studioId: ""
     property bool publicStudio: false
     property bool manageable: false
     property bool available: true
@@ -49,6 +51,10 @@ Rectangle {
     property string manageHoverColour: virtualstudio.darkMode ? "#CCCDCD" : "#D3D3D3"
     property string managePressedColour: virtualstudio.darkMode ? "#E4E5E5" : "#EAEBEB"
     property string manageStroke: virtualstudio.darkMode ? "#8B8D8D" : "#949494"
+
+    Clipboard {
+        id: clipboard
+    }
 
     Rectangle {
         id: shadow
@@ -120,6 +126,7 @@ Rectangle {
         fontSizeMode: Text.HorizontalFit
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
         elide: Text.ElideRight
+        verticalAlignment: Text.AlignVCenter
         color: textColour
     }
     
@@ -197,9 +204,10 @@ Rectangle {
         }
         onClicked: { 
             inviteCopied = true;
+            clipboard.setText(qsTr("https://app.jacktrip.org/studio/" + studioId + "?invited=true"));
             copiedResetTimer.restart()
         }
-        visible: connected || canConnect
+        visible: true
         Image {
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
@@ -244,7 +252,7 @@ Rectangle {
         y: 56 * virtualstudio.uiScale
         text: "Invite"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        visible: connected || canConnect
+        visible: true
         color: textColour
     }
     

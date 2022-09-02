@@ -59,6 +59,7 @@ class VsServerInfo : public QObject
     Q_PROPERTY(quint32 sampleRate READ sampleRate CONSTANT)
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
     Q_PROPERTY(QString status READ status CONSTANT)
+    Q_PROPERTY(QString id READ id CONSTANT)
 
    public:
     enum serverSectionT { YOUR_STUDIOS, SUBSCRIBED_STUDIOS, PUBLIC_STUDIOS };

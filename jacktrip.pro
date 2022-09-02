@@ -249,6 +249,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsPinger.h \
                src/gui/vsPing.h \
                src/gui/vsUrlHandler.h \
+               src/gui/vsQmlClipboard.h \
                src/JTApplication.h
   }
   !noupdater:!linux-g++:!linux-g++-64 {
