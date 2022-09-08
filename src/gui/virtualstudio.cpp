@@ -420,6 +420,17 @@ void VirtualStudio::setShowSelfHosted(bool selfHosted)
     settings.endGroup();
 }
 
+bool VirtualStudio::showCreateStudio()
+{
+    return m_showCreateStudio;
+}
+
+void VirtualStudio::setShowCreateStudio(bool createStudio)
+{
+    m_showCreateStudio = createStudio;
+    emit showCreateStudioChanged();
+}
+
 bool VirtualStudio::showDeviceSetup()
 {
     return m_showDeviceSetup;
@@ -1288,6 +1299,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             QList<QObject*> yourServers;
             QList<QObject*> subServers;
             QList<QObject*> pubServers;
+            int skippedStudios = 0;
 
             for (int i = 0; i < servers.count(); i++) {
                 if (servers.at(i)[QStringLiteral("type")].toString().contains(
@@ -1300,9 +1312,11 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                     bool hostedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
                     // Only iterate through servers that we want to show
                     if (!m_showSelfHosted && !hostedStudio) {
+                        skippedStudios++;
                         continue;
                     }
                     if (!m_showInactive && !activeStudio) {
+                        skippedStudios++;
                         continue;
                     }
                     if (activeStudio || (serverInfo->isManageable() && m_showInactive)) {
@@ -1363,6 +1377,15 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             if (yourServers.isEmpty()) {
                 if (subServers.isEmpty()) {
                     m_logoSection = QStringLiteral("Public Studios");
+
+                    if (pubServers.isEmpty() && skippedStudios == 0) {
+                        // This is a new user
+                        setShowCreateStudio(true);
+                    } else {
+                        // This is not a new user.
+                        // Set to false in case the studio created since refreshing.
+                        setShowCreateStudio(false);
+                    }
                 } else {
                     m_logoSection = QStringLiteral("Subscribed Studios");
                 }

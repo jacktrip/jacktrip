@@ -86,6 +86,8 @@ class VirtualStudio : public QObject
                    showInactiveChanged)
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
+    Q_PROPERTY(bool showCreateStudio READ showCreateStudio WRITE setShowCreateStudio NOTIFY
+                   showCreateStudioChanged)                   
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
 
@@ -138,6 +140,8 @@ class VirtualStudio : public QObject
     void setShowInactive(bool inactive);
     bool showSelfHosted();
     void setShowSelfHosted(bool selfHosted);
+    bool showCreateStudio();
+    void setShowCreateStudio(bool createStudio);
     float fontScale();
     float uiScale();
     void setUiScale(float scale);
@@ -191,6 +195,7 @@ class VirtualStudio : public QObject
     void userMetadataChanged();
     void showInactiveChanged();
     void showSelfHostedChanged();
+    void showCreateStudioChanged();
     void connectionStateChanged();
     void networkStatsChanged();
     void updateChannelChanged();
@@ -272,6 +277,7 @@ class VirtualStudio : public QObject
     bool m_isExiting         = false;
     bool m_showInactive      = false;
     bool m_showSelfHosted    = false;
+    bool m_showCreateStudio  = false;
     bool m_showDeviceSetup   = true;
     bool m_showWarnings      = true;
     float m_fontScale        = 1;
