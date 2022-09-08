@@ -3,7 +3,12 @@
   Description:
   - (added) Volume meters when connected to a Studio in VS mode
   - (added) Validation of Linux desktop file in build steps
+  - (added) a copy invite link button to VS mode Studios
+  - (added) an advanced setting for buffer strategy in VS mode
   - (updated) PLC workers now zero out the last good packet from stalled clients
+  - (updated) PLC distinguish stuck clients
+  - (updated) Fedora meson dependencies
+  - (fixed) UI is usable when Studio list in empty in VS mode
   - (fixed) Crashing when unplugging a device while connected and using JACK
   - (fixed) Launching from URL skipped setup
   - (fixed) UI hanging when connecting to Studios in VS mode
