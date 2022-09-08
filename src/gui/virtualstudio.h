@@ -86,8 +86,8 @@ class VirtualStudio : public QObject
                    showInactiveChanged)
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
-    Q_PROPERTY(bool showCreateStudio READ showCreateStudio WRITE setShowCreateStudio NOTIFY
-                   showCreateStudioChanged)                   
+    Q_PROPERTY(bool showCreateStudio READ showCreateStudio WRITE setShowCreateStudio
+                   NOTIFY showCreateStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
 
