@@ -16,6 +16,10 @@ Item {
     property int buttonHeight: 25
     property int buttonWidth: 103
     property int extraSettingsButtonWidth: 16
+    property int emptyListMessageWidth: 450
+    property int createMessageTopMargin: 16
+    property int createButtonTopMargin: 48
+    property int fontBig: 28
     property int fontMedium: 11
     
     property int scrollY: 0
@@ -52,185 +56,6 @@ Item {
     }
     
     Component {
-        id: sectionHeading
-        Rectangle {
-            color: "transparent"
-            height: 72 * virtualstudio.uiScale; x: 16 * virtualstudio.uiScale; width: ListView.view.width - (2 * x)
-            // required property string section: section (for 5.15)
-            Text {
-                id: sectionText
-                //anchors.bottom: parent.bottom
-                y: 12 * virtualstudio.uiScale
-                // text: parent.section (for 5.15)
-                width: parent.width - 332 * virtualstudio.uiScale
-                fontSizeMode: Text.HorizontalFit
-                text: section
-                font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
-                color: textColour
-                verticalAlignment: Text.AlignBottom
-            }
-            Button {
-                id: createButton
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: createButton.down ? "#E7E8E8" : "#F2F3F3"
-                    border.width: 1
-                    border.color: createButton.down ? "#B0B5B5" : "#EAEBEB"
-                    layer.enabled: createButton.hovered && !createButton.down
-                    layer.effect: DropShadow {
-                        horizontalOffset: 1 * virtualstudio.uiScale
-                        verticalOffset: 1 * virtualstudio.uiScale
-                        radius: 8.0 * virtualstudio.uiScale
-                        samples: 17
-                        color: "#80A1A1A1"
-                    }
-                }
-                onClicked: { virtualstudio.createStudio(); }
-                anchors.right: filterButton.left
-                anchors.rightMargin: 16
-                anchors.verticalCenter: sectionText.verticalCenter
-                width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                Text {
-                    text: "Create a Studio"
-                    font.family: "Poppins"
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                    font.weight: Font.Bold
-                    color: "#DB0A0A"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-                visible: section == virtualstudio.logoSection ? true : false
-            }
-            Button {
-                id: filterButton
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: filterButton.down ? "#E7E8E8" : "#F2F3F3"
-                    border.width: 1
-                    border.color: filterButton.down ? "#B0B5B5" : "#EAEBEB"
-                    layer.enabled: filterButton.hovered && !filterButton.down
-                    layer.effect: DropShadow {
-                        horizontalOffset: 1 * virtualstudio.uiScale
-                        verticalOffset: 1 * virtualstudio.uiScale
-                        radius: 8.0 * virtualstudio.uiScale
-                        samples: 17
-                        color: "#80A1A1A1"
-                    }
-                }
-                onClicked: { filterMenu.open(); }
-                anchors.right: parent.right
-                anchors.verticalCenter: sectionText.verticalCenter
-                width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                Text {
-                    text: "Filter Studios"
-                    font.family: "Poppins"
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-                visible: section == virtualstudio.logoSection ? true : false
-
-                Popup {
-                    id: filterMenu
-                    y: Math.round(parent.height + 8)
-                    rightMargin: 16 * virtualstudio.uiScale
-                    width: 210 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
-                    modal: false
-                    focus: false
-                    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-                    background: Rectangle {
-                        radius: 6 * virtualstudio.uiScale
-                        color: "#F6F8F8"
-                        border.width: 1
-                        border.color: "#34979797"
-                        layer.enabled: true
-                        layer.effect: DropShadow {
-                            horizontalOffset: 1 * virtualstudio.uiScale
-                            verticalOffset: 1 * virtualstudio.uiScale
-                            radius: 8.0 * virtualstudio.uiScale
-                            samples: 17
-                            color: "#80A1A1A1"
-                        }
-                    }
-                    contentItem: Column {
-                        anchors.fill: parent
-                        CheckBox {
-                            id: inactiveCheckbox
-                            text: qsTr("Show my inactive Studios")
-                            checkState: virtualstudio.showInactive ? Qt.Checked : Qt.Unchecked
-                            onClicked: { virtualstudio.showInactive = inactiveCheckbox.checkState == Qt.Checked;
-                                refreshing = true;
-                                refresh();
-                            }
-                            indicator: Rectangle {
-                                implicitWidth: 16 * virtualstudio.uiScale
-                                implicitHeight: 16 * virtualstudio.uiScale
-                                x: inactiveCheckbox.leftPadding
-                                y: parent.height / 2 - height / 2
-                                radius: 3 * virtualstudio.uiScale
-                                border.color: inactiveCheckbox.down ? "#007AFF" : "#0062cc"
-
-                                Rectangle {
-                                    width: 10 * virtualstudio.uiScale
-                                    height: 10 * virtualstudio.uiScale
-                                    x: 3 * virtualstudio.uiScale
-                                    y: 3 * virtualstudio.uiScale
-                                    radius: 2 * virtualstudio.uiScale
-                                    color: inactiveCheckbox.down ? "#007AFF" : "#0062cc"
-                                    visible: inactiveCheckbox.checked
-                                }
-                            }
-                            contentItem: Text {
-                                text: inactiveCheckbox.text
-                                font.family: "Poppins"
-                                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                                leftPadding: inactiveCheckbox.indicator.width + inactiveCheckbox.spacing
-                            }
-                        }
-                        CheckBox {
-                            id: selfHostedCheckbox
-                            text: qsTr("Show self-hosted Studios")
-                            checkState: virtualstudio.showSelfHosted ? Qt.Checked : Qt.Unchecked
-                            onClicked: { virtualstudio.showSelfHosted = selfHostedCheckbox.checkState == Qt.Checked;
-                                refreshing = true;
-                                refresh();
-                            }
-                            indicator: Rectangle {
-                                implicitWidth: 16 * virtualstudio.uiScale
-                                implicitHeight: 16 * virtualstudio.uiScale
-                                x: selfHostedCheckbox.leftPadding
-                                y: parent.height / 2 - height / 2
-                                radius: 3 * virtualstudio.uiScale
-                                border.color: selfHostedCheckbox.down ? "#007AFF" : "#0062CC"
-
-                                Rectangle {
-                                    width: 10 * virtualstudio.uiScale
-                                    height: 10 * virtualstudio.uiScale
-                                    x: 3 * virtualstudio.uiScale
-                                    y: 3 * virtualstudio.uiScale
-                                    radius: 2 * virtualstudio.uiScale
-                                    color: selfHostedCheckbox.down ? "#007AFF" : "#0062CC"
-                                    visible: selfHostedCheckbox.checked
-                                }
-                            }
-                            contentItem: Text {
-                                text: selfHostedCheckbox.text
-                                font.family: "Poppins"
-                                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                                leftPadding: selfHostedCheckbox.indicator.width + selfHostedCheckbox.spacing
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    Component {
         id: footer
         Rectangle {
             height: 16 * virtualstudio.uiScale
@@ -262,7 +87,99 @@ Item {
             studioId: id ? id : ""
         }
         
-        section {property: "type"; criteria: ViewSection.FullString; delegate: sectionHeading }
+        section {property: "type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
+
+        // Show sectionHeading if there are no Studios in list
+        SectionHeading {
+            id: emptyListSectionHeading
+            listIsEmpty: true
+            visible: parent.count == 0 && !virtualstudio.showCreateStudio
+        }
+
+        Text {
+            id: emptyListMessage
+            visible: parent.count == 0 && !virtualstudio.showCreateStudio
+            text: "No studios found that match your filter criteria"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: emptyListMessageWidth
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: emptyListSectionHeading.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Rectangle {
+            id: newUserEmptyList
+            anchors.fill: parent
+            color: "transparent"
+            visible: parent.count == 0 && virtualstudio.showCreateStudio
+
+            Rectangle {
+                color: "transparent"
+                width: emptyListMessageWidth
+                height: createButton.height + createStudioMessage.height + welcomeMessage.height + createButtonTopMargin + createMessageTopMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+
+                Text {
+                    id: welcomeMessage
+                    text: "Welcome"
+                    font { family: "Poppins"; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
+                    color: textColour
+                    width: emptyListMessageWidth
+                    wrapMode: Text.Wrap
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: parent.top
+                }
+
+                Text {
+                    id: createStudioMessage
+                    text: "JackTrip works by connecting your computer's audio to a Virtual Studio. Create your first Studio to get started!"
+                    font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
+                    width: emptyListMessageWidth
+                    wrapMode: Text.Wrap
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: welcomeMessage.bottom
+                    anchors.topMargin: createMessageTopMargin
+                }
+
+                Button {
+                    id: createButton
+                    background: Rectangle {
+                        radius: 6 * virtualstudio.uiScale
+                        color: createButton.down ? "#E7E8E8" : "#F2F3F3"
+                        border.width: 1
+                        border.color: createButton.down ? "#B0B5B5" : "#EAEBEB"
+                        layer.enabled: createButton.hovered && !createButton.down
+                        layer.effect: DropShadow {
+                            horizontalOffset: 1 * virtualstudio.uiScale
+                            verticalOffset: 1 * virtualstudio.uiScale
+                            radius: 8.0 * virtualstudio.uiScale
+                            samples: 17
+                            color: "#80A1A1A1"
+                        }
+                    }
+                    onClicked: { virtualstudio.createStudio(); }
+                    anchors.top: createStudioMessage.bottom
+                    anchors.topMargin: createButtonTopMargin
+                    anchors.horizontalCenter: createStudioMessage.horizontalCenter
+                    width: 210 * virtualstudio.uiScale; height: 45 * virtualstudio.uiScale
+                    Text {
+                        text: "Create a Studio"
+                        font.family: "Poppins"
+                        font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+                        font.weight: Font.Bold
+                        color: "#DB0A0A"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }
+        }
 
         // Disable momentum scroll
         MouseArea {
