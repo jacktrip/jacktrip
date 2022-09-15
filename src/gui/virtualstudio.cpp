@@ -1343,6 +1343,8 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                         serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
                         serverInfo->setSessionId(
                             servers.at(i)[QStringLiteral("sessionId")].toString());
+                        serverInfo->setInviteKey(
+                            servers.at(i)[QStringLiteral("inviteKey")].toString());
                         if (servers.at(i)[QStringLiteral("owner")].toBool()) {
                             yourServers.append(serverInfo);
                             serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);

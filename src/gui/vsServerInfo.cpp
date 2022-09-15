@@ -225,4 +225,14 @@ void VsServerInfo::setSessionId(const QString& sessionId)
     m_sessionId = sessionId;
 }
 
+QString VsServerInfo::inviteKey()
+{
+    return m_inviteKey;
+}
+
+void VsServerInfo::setInviteKey(const QString& inviteKey)
+{
+    m_inviteKey = inviteKey;
+}
+
 VsServerInfo::~VsServerInfo() = default;
