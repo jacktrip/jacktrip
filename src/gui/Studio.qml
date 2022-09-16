@@ -206,9 +206,9 @@ Rectangle {
         onClicked: { 
             inviteCopied = true;
             if (!inviteKey) {
-                clipboard.setText(qsTr("https://app.jacktrip.org/studio/" + studioId + "?invited=true"));
+                clipboard.setText(qsTr("https://app.jacktrip.org/studios/" + studioId + "?invited=true"));
             } else {
-                clipboard.setText(qsTr("https://app.jacktrip.org/studio/" + studioId + "?invited=" + inviteKey));
+                clipboard.setText(qsTr("https://app.jacktrip.org/studios/" + studioId + "?invited=" + inviteKey));
             }
             copiedResetTimer.restart()
         }
