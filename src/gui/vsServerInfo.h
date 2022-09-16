@@ -60,6 +60,7 @@ class VsServerInfo : public QObject
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
     Q_PROPERTY(QString status READ status CONSTANT)
     Q_PROPERTY(QString id READ id CONSTANT)
+    Q_PROPERTY(QString inviteKey READ inviteKey CONSTANT)
 
    public:
     enum serverSectionT { YOUR_STUDIOS, SUBSCRIBED_STUDIOS, PUBLIC_STUDIOS };
@@ -100,6 +101,8 @@ class VsServerInfo : public QObject
     void setSessionId(const QString& sessionId);
     QString status();
     void setStatus(const QString& status);
+    QString inviteKey();
+    void setInviteKey(const QString& inviteKey);
 
    signals:
     void canConnectChanged();
@@ -119,6 +122,7 @@ class VsServerInfo : public QObject
     QString m_id;
     QString m_sessionId;
     QString m_status;
+    QString m_inviteKey;
 
     /* Remaining JSON fields
     "loopback": true,
@@ -138,6 +142,7 @@ class VsServerInfo : public QObject
     "createdAt": "2021-09-07T17:15:38Z",
     "expiresAt": "2021-09-07T17:15:38Z",
     "updatedAt": "2021-09-07T17:15:38Z"
+    "inviteKey": "invitestring",
     */
 };
 

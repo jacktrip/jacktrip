@@ -23,6 +23,7 @@ Rectangle {
     property string flagImage: "flags/DE.svg"
     property string studioName: "Test Studio"
     property string studioId: ""
+    property string inviteKeyString: ""
     property bool publicStudio: false
     property bool manageable: false
     property bool available: true
@@ -204,7 +205,11 @@ Rectangle {
         }
         onClicked: { 
             inviteCopied = true;
-            clipboard.setText(qsTr("https://app.jacktrip.org/studio/" + studioId + "?invited=true"));
+            if (!inviteKeyString) {
+                clipboard.setText(qsTr("https://app.jacktrip.org/studios/" + studioId + "?invited=true"));
+            } else {
+                clipboard.setText(qsTr("https://app.jacktrip.org/studios/" + studioId + "?invited=" + inviteKeyString));
+            }
             copiedResetTimer.restart()
         }
         visible: true
