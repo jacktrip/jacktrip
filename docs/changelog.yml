@@ -1,5 +1,5 @@
 - Version: "1.6.4"
-  Date: 2022-09-01
+  Date: 2022-09-16
   Description:
   - (added) Volume meters when connected to a Studio in VS mode
   - (added) Validation of Linux desktop file in build steps
