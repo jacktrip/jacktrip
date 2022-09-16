@@ -1333,11 +1333,15 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                     bool hostedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
                     // Only iterate through servers that we want to show
                     if (!m_showSelfHosted && !hostedStudio) {
-                        skippedStudios++;
+                        if (activeStudio || (serverInfo->isManageable())) {
+                            skippedStudios++;
+                        }
                         continue;
                     }
                     if (!m_showInactive && !activeStudio) {
-                        skippedStudios++;
+                        if (serverInfo->isManageable()) {
+                            skippedStudios++;
+                        }
                         continue;
                     }
                     if (activeStudio || (serverInfo->isManageable() && m_showInactive)) {
