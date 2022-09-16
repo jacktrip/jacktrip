@@ -459,6 +459,8 @@ void VirtualStudio::setShowWarnings(bool show)
         // device setup view proceeds warning view
         // if device setup is shown, do not immediately join
         if (!m_showDeviceSetup) {
+            // We're done waiting to be on the browse page
+            m_shouldJoin = true;
             joinStudio();
         }
     }
@@ -528,6 +530,16 @@ QString VirtualStudio::failedMessage()
     return m_failedMessage;
 }
 
+bool VirtualStudio::shouldJoin()
+{
+    return m_shouldJoin;
+}
+
+void VirtualStudio::setShouldJoin(bool join)
+{
+    m_shouldJoin = join;
+}
+
 void VirtualStudio::joinStudio()
 {
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
@@ -537,6 +549,12 @@ void VirtualStudio::joinStudio()
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
         }
+        return;
+    }
+
+    if (!m_shouldJoin) {
+        // Not time to join yet.
+        // Waiting until joinStudio is called and m_shouldJoin is true.
         return;
     }
 
@@ -714,6 +732,8 @@ void VirtualStudio::applySettings()
     // this function is called after the device setup view
     // which can display upon opening the app from join link
     if (!m_studioToJoin.isEmpty()) {
+        // We're done waiting to be on the browse page
+        m_shouldJoin = true;
         joinStudio();
     }
 }
@@ -992,7 +1012,8 @@ void VirtualStudio::slotAuthSucceded()
     if (!m_studioToJoin.isEmpty()) {
         // FTUX shows warnings and device setup views
         // if any of these enabled, do not immediately join
-        if (!m_showWarnings && !m_showDeviceSetup) {
+        if (!m_showDeviceSetup) {
+            // Don't need to set m_shouldJoin because it's default true
             joinStudio();
         }
     }

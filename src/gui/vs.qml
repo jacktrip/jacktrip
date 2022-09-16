@@ -127,8 +127,10 @@ Rectangle {
         target: virtualstudio
         onAuthSucceeded: { 
             if (virtualstudio.showDeviceSetup) {
+                virtualstudio.shouldJoin = false;
                 window.state = "setup";
             } else {
+                virtualstudio.shouldJoin = true;
                 window.state = "browse";
             }
         }
