@@ -85,7 +85,7 @@ Item {
             available: canConnect
             connected: false
             studioId: id ? id : ""
-            inviteKey: inviteKey
+            inviteKeyString: inviteKey ? inviteKey : ""
         }
         
         section {property: "type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
