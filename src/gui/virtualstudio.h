@@ -103,6 +103,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
+    Q_PROPERTY(bool shouldJoin READ shouldJoin WRITE setShouldJoin NOTIFY shouldJoinChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -156,6 +157,8 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString failedMessage();
+    bool shouldJoin();
+    void setShouldJoin(bool join);
 
    public slots:
     void toStandard();
@@ -207,6 +210,7 @@ class VirtualStudio : public QObject
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
+    void shouldJoinChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -239,6 +243,7 @@ class VirtualStudio : public QObject
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
+    bool m_shouldJoin   = true;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
