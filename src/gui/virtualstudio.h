@@ -103,7 +103,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
-    Q_PROPERTY(bool shouldJoin READ shouldJoin WRITE setShouldJoin NOTIFY shouldJoinChanged)
+    Q_PROPERTY(
+        bool shouldJoin READ shouldJoin WRITE setShouldJoin NOTIFY shouldJoinChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
