@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.4",
+            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
+            "download": {
+                "date": "2022-09-16T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4/JackTrip-v1.6.4-Windows-x64-installer.msi",
+                "downloadSize": 43663360,
+                "sha256": "58dcbba584e1cc82373b8aa159800ad360eec7933ce9462e413ca347f09f3c26"
+            }
+        },
+        {
             "version": "1.6.3",
             "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
             "download": {
