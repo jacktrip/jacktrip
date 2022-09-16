@@ -49,8 +49,6 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
     m_apiSecret = settings.value(QStringLiteral("ApiSecret"), "").toString();
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
-
-    sendHeartbeat();
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
@@ -95,6 +93,8 @@ void VsDevice::registerApp()
                 reply->deleteLater();
                 return;
             }
+        } else if (m_apiPrefix != "" && m_apiSecret != "") {
+            sendHeartbeat();
         }
 
         QSettings settings;
@@ -258,6 +258,7 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
                                  [[maybe_unused]] std::string input,
                                  [[maybe_unused]] std::string output,
                                  [[maybe_unused]] int bufferSize,
+                                 [[maybe_unused]] int bufferStrategy,
                                  VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, 2, 2,
@@ -276,7 +277,8 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
     }
 #endif
     m_jackTrip->setRemoteClientName(m_appID);
-    m_jackTrip->setBufferStrategy(1);
+    // increment m_bufferStrategy by 1 for array-index mapping
+    m_jackTrip->setBufferStrategy(bufferStrategy + 1);
     m_jackTrip->setBufferQueueLength(-500);
     m_jackTrip->setPeerAddress(studioInfo->host());
     m_jackTrip->setPeerPorts(studioInfo->port());
@@ -454,6 +456,8 @@ void VsDevice::registerJTAsDevice()
             settings.beginGroup(QStringLiteral("VirtualStudio"));
             settings.setValue(QStringLiteral("AppID"), m_appID);
             settings.endGroup();
+
+            sendHeartbeat();
         }
 
         reply->deleteLater();

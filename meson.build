@@ -20,6 +20,7 @@ incdirs = []
 
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
+	'src/ProcessPlugin.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -34,6 +35,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/AudioInterface.cpp',
 	'src/Compressor.cpp',
 	'src/Limiter.cpp',
+	'src/Meter.cpp',
 	'src/Reverb.cpp',
 	'src/main.cpp',
 	'src/SslServer.cpp',
@@ -41,6 +43,8 @@ src = [	'src/DataProtocol.cpp',
 
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
+	'src/ProcessPlugin.h',
+	'src/Meter.h',
 	'src/JackTripWorker.h',
 	'src/PacketHeader.h',
 	'src/Settings.h',
@@ -122,6 +126,7 @@ else
 			'src/gui/vsPinger.h',
 			'src/gui/vsPing.h',
 			'src/gui/vsUrlHandler.h',
+			'src/gui/vsQmlClipboard.h',
 			'src/JTApplication.h'
 		]
 		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')

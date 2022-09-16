@@ -38,14 +38,17 @@
 #ifndef VIRTUALSTUDIO_H
 #define VIRTUALSTUDIO_H
 
+#include <QEventLoop>
 #include <QList>
 #include <QMutex>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
+#include <QVector>
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
+#include "../Meter.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
@@ -74,6 +77,8 @@ class VirtualStudio : public QObject
                    outputDeviceChanged)
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
+    Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
+                   bufferStrategyChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
     Q_PROPERTY(QJsonObject userMetadata READ userMetadata NOTIFY userMetadataChanged)
@@ -81,8 +86,11 @@ class VirtualStudio : public QObject
                    showInactiveChanged)
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
+    Q_PROPERTY(bool showCreateStudio READ showCreateStudio WRITE setShowCreateStudio
+                   NOTIFY showCreateStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
+
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
@@ -95,6 +103,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
+    Q_PROPERTY(
+        bool shouldJoin READ shouldJoin WRITE setShouldJoin NOTIFY shouldJoinChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -117,17 +127,23 @@ class VirtualStudio : public QObject
     void setOutputDevice(int device);
     int bufferSize();
     void setBufferSize(int index);
+    int bufferStrategy();
+    void setBufferStrategy(int index);
     int currentStudio();
     QJsonObject regions();
     QJsonObject userMetadata();
     QString connectionState();
     QJsonObject networkStats();
+    QVector<float> inputMeterLevels();
+    QVector<float> outputMeterLevels();
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
     void setShowInactive(bool inactive);
     bool showSelfHosted();
     void setShowSelfHosted(bool selfHosted);
+    bool showCreateStudio();
+    void setShowCreateStudio(bool createStudio);
     float fontScale();
     float uiScale();
     void setUiScale(float scale);
@@ -142,13 +158,15 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString failedMessage();
+    bool shouldJoin();
+    void setShouldJoin(bool join);
 
    public slots:
     void toStandard();
     void toVirtualStudio();
     void login();
     void logout();
-    void refreshStudios(int index);
+    void refreshStudios(int index, bool signalRefresh = false);
     void refreshDevices();
     void revertSettings();
     void applySettings();
@@ -175,11 +193,13 @@ class VirtualStudio : public QObject
     void inputDeviceChanged();
     void outputDeviceChanged();
     void bufferSizeChanged();
+    void bufferStrategyChanged();
     void currentStudioChanged();
     void regionsChanged();
     void userMetadataChanged();
     void showInactiveChanged();
     void showSelfHostedChanged();
+    void showCreateStudioChanged();
     void connectionStateChanged();
     void networkStatsChanged();
     void updateChannelChanged();
@@ -188,10 +208,10 @@ class VirtualStudio : public QObject
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
-    void studioToJoinChanged();
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
+    void shouldJoinChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -204,12 +224,15 @@ class VirtualStudio : public QObject
     void launchBrowser(const QUrl& url);
     void joinStudio();
     void updatedStats(const QJsonObject& stats);
+    void updatedInputVuMeasurements(const QVector<float> valuesInDecibels);
+    void updatedOutputVuMeasurements(const QVector<float> valuesInDecibels);
 
    private:
     void setupAuthenticator();
 
     void sendHeartbeat();
-    void getServerList(bool firstLoad = false, int index = -1);
+    void getServerList(bool firstLoad = false, bool signalRefresh = false,
+                       int index = -1);
     void getUserId();
     void getSubscriptions();
     void getRegions();
@@ -221,6 +244,7 @@ class VirtualStudio : public QObject
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
+    bool m_shouldJoin   = true;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
@@ -259,15 +283,25 @@ class VirtualStudio : public QObject
     bool m_isExiting         = false;
     bool m_showInactive      = false;
     bool m_showSelfHosted    = false;
+    bool m_showCreateStudio  = false;
     bool m_showDeviceSetup   = true;
     bool m_showWarnings      = true;
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
+    int m_bufferStrategy    = 0;
     bool m_darkMode         = false;
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
     bool m_authenticated = false;
+
+    Meter* m_inputMeter;
+    Meter* m_outputMeter;
+    QTimer m_inputClipTimer;
+    QTimer m_outputClipTimer;
+
+    float m_meterMax = 0.0;
+    float m_meterMin = -64.0;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
@@ -279,9 +313,19 @@ class VirtualStudio : public QObject
     QString m_previousOutput;
     quint16 m_previousBuffer;
     bool m_previousUseRtAudio = false;
+    inline void delay(int millisecondsWait)
+    {
+        QEventLoop loop;
+        QTimer t;
+        t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
+        t.start(millisecondsWait);
+        loop.exec();
+    }
 #endif
-    QStringList m_bufferOptions        = {"16", "32", "64", "128", "256", "512", "1024"};
-    QStringList m_updateChannelOptions = {"Stable", "Edge"};
+    QStringList m_bufferOptions         = {"16", "32", "64", "128", "256", "512", "1024"};
+    QStringList m_bufferStrategyOptions = {"Minimal Latency", "Stable Latency",
+                                           "Loss Concealment"};
+    QStringList m_updateChannelOptions  = {"Stable", "Edge"};
 
 #ifdef __APPLE__
     NoNap m_noNap;

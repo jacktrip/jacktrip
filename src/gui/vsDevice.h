@@ -65,7 +65,7 @@ class VsDevice : public QObject
     void sendHeartbeat();
     void setServerId(QString studioID);
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
-                           int bufferSize, VsServerInfo* studioInfo);
+                           int bufferSize, int bufferStrategy, VsServerInfo* studioInfo);
     void startJackTrip();
     void stopJackTrip();
     void reconcileAgentConfig(QJsonDocument newState);

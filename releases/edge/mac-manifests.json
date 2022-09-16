@@ -2,6 +2,36 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.4-rc.2",
+            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4-rc2",
+            "download": {
+                "date": "2022-09-08T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4-rc2/JackTrip-v1.6.4-rc2-macOS-x64-installer.pkg",
+                "downloadSize": 11554117,
+                "sha256": "c849c22583883027f94141b3878cebc85295c0a617640449d4f66862982f75c0"
+            }
+        },
+        {
+            "version": "1.6.4-rc.1",
+            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4-rc1",
+            "download": {
+                "date": "2022-09-01T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4-rc1/JackTrip-v1.6.4-rc1-macOS-x64-installer.pkg",
+                "downloadSize": 11548759,
+                "sha256": "6e8af76766b164e40e7a44842a14e640cb3c0fac7b9b7067f9c75048d3354496"
+            }
+        },
+        {
+            "version": "1.6.3",
+            "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
+            "download": {
+                "date": "2022-08-23T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.3/JackTrip-v1.6.3-macOS-x64-installer.pkg",
+                "downloadSize": 11533023,
+                "sha256": "0b597c62544e9813949f859cc7b7c13bef893f6896f96b34a19889faf4855116"
+            }
+        },
+        {
             "version": "1.6.2",
             "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2",
             "download": {

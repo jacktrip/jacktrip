@@ -11,9 +11,11 @@
     <file>Studio.qml</file>
     <file>Browse.qml</file>
     <file>Settings.qml</file>
+    <file>Meter.qml</file>
     <file>Connected.qml</file>
     <file>Failed.qml</file>
     <file>Setup.qml</file>
+    <file>SectionHeading.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
     <file>wedge_inactive.svg</file>
@@ -22,6 +24,7 @@
     <file>join.svg</file>
     <file>leave.svg</file>
     <file>manage.svg</file>
+    <file>share.svg</file>
     <file>cog.svg</file>
     <file>mic.svg</file>
     <file>ethernet.png</file>

@@ -269,6 +269,9 @@ jobs:
             python -m pip install --upgrade pip
             pip install meson ninja pyyaml Jinja2
           fi
+          if [[ "${{ matrix.nogui }}" == false ]]; then 
+            sudo apt-get install --yes desktop-file-utils
+          fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
         env:
@@ -305,10 +308,11 @@ jobs:
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             choco install pkgconfiglite --no-progress
-            # check out an older version of rtaudio library, see issue #408
+            # check out version only 5.2.0 of rtaudio library, as 6.0 will take time to migrate to
+            # done by checking out specific commit of vcpkg
             cd $VCPKG_INSTALLATION_ROOT
-            git fetch origin f60125a3a1f527f1bbeeff6ccfdde43634a64235
-            git checkout f60125a3a1f527f1bbeeff6ccfdde43634a64235 -- ports/rtaudio
+            git fetch origin 8fd0679a9d64251cf634b5f58edc01a42a121097
+            git checkout 8fd0679a9d64251cf634b5f58edc01a42a121097 -- ports/rtaudio
             vcpkg install rtaudio[asio] --triplet="${{ matrix.vcpkg-triplet }}"
             echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\${{ matrix.vcpkg-triplet }}\lib\pkgconfig" >> $GITHUB_ENV
           fi
@@ -441,6 +445,15 @@ jobs:
           meson --buildtype release $CONFIG_STRING $BUILD_PATH
           cd $BUILD_PATH
           meson compile
+      - name: validate desktop file
+        if: runner.os == 'Linux' && !matrix.nogui
+        shell: bash
+        run: |
+          DESKTOP_FILE_PATH=$BUILD_PATH/org.jacktrip.JackTrip.desktop
+          if [[ "${{ matrix.build-system }}" == meson ]]; then 
+            DESKTOP_FILE_PATH=$BUILD_PATH/linux/org.jacktrip.JackTrip.desktop
+          fi
+          desktop-file-validate $DESKTOP_FILE_PATH
       - name: compress the binary
         shell: bash
         if: matrix.binary-path

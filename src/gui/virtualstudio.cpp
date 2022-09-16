@@ -88,13 +88,30 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
 
-#ifdef RT_AUDIO
+    // Initialize timers needed for clip indicators
+    m_inputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_inputClipTimer.setSingleShot(true);
+    m_inputClipTimer.setInterval(3000);
+    m_outputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_outputClipTimer.setSingleShot(true);
+    m_outputClipTimer.setInterval(3000);
+
+    m_inputClipTimer.callOnTimeout([&]() {
+        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
+                                                           QVariant::fromValue(false));
+    });
+
+    m_outputClipTimer.callOnTimeout([&]() {
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputClipped"), QVariant::fromValue(false));
+    });
+
     settings.beginGroup(QStringLiteral("Audio"));
-    m_useRtAudio   = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
-    m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
-    m_outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
-    m_bufferSize   = settings.value(QStringLiteral("BufferSize"), 128).toInt();
-    settings.endGroup();
+#ifdef RT_AUDIO
+    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
+    m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
+    m_outputDevice   = settings.value(QStringLiteral("OutputDevice"), "").toString();
+    m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     m_previousBuffer = m_bufferSize;
     refreshDevices();
     m_previousInput  = m_inputDevice;
@@ -110,6 +127,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("outputComboModel"),
         QVariant::fromValue(QStringList(QLatin1String(""))));
 #endif
+    m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 0).toInt();
+    settings.endGroup();
 
 #ifdef USE_WEAK_JACK
     // Check if Jack is available
@@ -130,12 +149,25 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("bufferComboModel"), QVariant::fromValue(m_bufferOptions));
     m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("bufferStrategyComboModel"),
+        QVariant::fromValue(m_bufferStrategyOptions));
+    m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("updateChannelComboModel"),
         QVariant::fromValue(m_updateChannelOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
+
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputMeterModel"), QVariant::fromValue(QVector<float>()));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
+                                                       QVariant::fromValue(false));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
+                                                       QVariant::fromValue(false));
+
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -162,8 +194,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         sendHeartbeat();
     });
 
-    // Connect joinStudio callbacks
-    connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio);
     // QueuedConnection since refreshFinished is sometimes signaled from a network reply
     // thread
     connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
@@ -308,6 +338,22 @@ void VirtualStudio::setBufferSize([[maybe_unused]] int index)
 #endif
 }
 
+int VirtualStudio::bufferStrategy()
+{
+    return m_bufferStrategy;
+}
+
+void VirtualStudio::setBufferStrategy(int index)
+{
+    m_bufferStrategy =
+        index >= 0 ? index
+                   : m_bufferStrategyOptions.indexOf(QStringLiteral("Minimal Latency"));
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("BufferStrategy"), m_bufferStrategy);
+    settings.endGroup();
+}
+
 int VirtualStudio::currentStudio()
 {
     return m_currentStudio;
@@ -374,6 +420,17 @@ void VirtualStudio::setShowSelfHosted(bool selfHosted)
     settings.endGroup();
 }
 
+bool VirtualStudio::showCreateStudio()
+{
+    return m_showCreateStudio;
+}
+
+void VirtualStudio::setShowCreateStudio(bool createStudio)
+{
+    m_showCreateStudio = createStudio;
+    emit showCreateStudioChanged();
+}
+
 bool VirtualStudio::showDeviceSetup()
 {
     return m_showDeviceSetup;
@@ -402,6 +459,8 @@ void VirtualStudio::setShowWarnings(bool show)
         // device setup view proceeds warning view
         // if device setup is shown, do not immediately join
         if (!m_showDeviceSetup) {
+            // We're done waiting to be on the browse page
+            m_shouldJoin = true;
             joinStudio();
         }
     }
@@ -446,7 +505,6 @@ QUrl VirtualStudio::studioToJoin()
 void VirtualStudio::setStudioToJoin(const QUrl& url)
 {
     m_studioToJoin = url;
-    emit studioToJoinChanged();
 }
 
 bool VirtualStudio::noUpdater()
@@ -472,6 +530,16 @@ QString VirtualStudio::failedMessage()
     return m_failedMessage;
 }
 
+bool VirtualStudio::shouldJoin()
+{
+    return m_shouldJoin;
+}
+
+void VirtualStudio::setShouldJoin(bool join)
+{
+    m_shouldJoin = join;
+}
+
 void VirtualStudio::joinStudio()
 {
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
@@ -479,8 +547,14 @@ void VirtualStudio::joinStudio()
         // getServerList emits refreshFinished which
         // will come back to this function.
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
-            getServerList(true);
+            getServerList(true, true);
         }
+        return;
+    }
+
+    if (!m_shouldJoin) {
+        // Not time to join yet.
+        // Waiting until joinStudio is called and m_shouldJoin is true.
         return;
     }
 
@@ -583,9 +657,9 @@ void VirtualStudio::logout()
     emit hasRefreshTokenChanged();
 }
 
-void VirtualStudio::refreshStudios(int index)
+void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
-    getServerList(false, index);
+    getServerList(false, signalRefresh, index);
 }
 
 void VirtualStudio::refreshDevices()
@@ -658,6 +732,8 @@ void VirtualStudio::applySettings()
     // this function is called after the device setup view
     // which can display upon opening the app from join link
     if (!m_studioToJoin.isEmpty()) {
+        // We're done waiting to be on the browse page
+        m_shouldJoin = true;
         joinStudio();
     }
 }
@@ -731,7 +807,7 @@ void VirtualStudio::completeConnection()
     }
 
     m_jackTripRunning = true;
-    m_connectionState = QStringLiteral("Connecting...");
+    m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     try {
@@ -751,8 +827,8 @@ void VirtualStudio::completeConnection()
             buffer_size = m_bufferSize;
         }
 #endif
-        JackTrip* jackTrip =
-            m_device->initJackTrip(m_useRtAudio, input, output, buffer_size, studioInfo);
+        JackTrip* jackTrip = m_device->initJackTrip(
+            m_useRtAudio, input, output, buffer_size, m_bufferStrategy, studioInfo);
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
@@ -762,7 +838,36 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
+        Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
+        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedOutputVuMeasurements);
+
+        Meter* m_inputMeter = new Meter(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputMeter);
+        connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedInputVuMeasurements);
+
+        m_connectionState = QStringLiteral("Connecting...");
+        emit connectionStateChanged();
+#ifdef RT_AUDIO
+        if (m_useRtAudio) {
+            // This is a hack. RtAudio::openStream blocks the UI thread.
+            // But I am not comfortable changing how all of JackTrip consumes
+            // RtAudio to fix a VS mode bug.
+            delay(805);
+        }
+#endif
         m_device->startJackTrip();
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("inputMeterModel"),
+            QVariant::fromValue(QVector<float>(jackTrip->getNumInputChannels())));
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputMeterModel"),
+            QVariant::fromValue(QVector<float>(jackTrip->getNumOutputChannels())));
+
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
@@ -907,7 +1012,8 @@ void VirtualStudio::slotAuthSucceded()
     if (!m_studioToJoin.isEmpty()) {
         // FTUX shows warnings and device setup views
         // if any of these enabled, do not immediately join
-        if (!m_showWarnings && !m_showDeviceSetup) {
+        if (!m_showDeviceSetup) {
+            // Don't need to set m_shouldJoin because it's default true
             joinStudio();
         }
     }
@@ -1047,6 +1153,70 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
     return;
 }
 
+void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDecibels)
+{
+    QJsonArray uiValues;
+    bool detectedClip = false;
+
+    // Always output 2 meter readings to the UI
+    for (int i = 0; i < 2; i++) {
+        // Determine decibel reading
+        float dB = m_meterMin;
+        if (i < valuesInDecibels.size()) {
+            dB = std::max(m_meterMin, valuesInDecibels[i]);
+        }
+
+        // Produce a normalized value from 0 to 1
+        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+
+        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
+        uiValues.push_back(object);
+
+        // Signal a clip if we haven't done so already
+        if (dB >= -0.05 && !detectedClip) {
+            m_inputClipTimer.start();
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("inputClipped"), QVariant::fromValue(true));
+            detectedClip = true;
+        }
+    }
+
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputMeterModel"),
+                                                       QVariant::fromValue(uiValues));
+}
+
+void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDecibels)
+{
+    QJsonArray uiValues;
+    bool detectedClip = false;
+
+    // Always output 2 meter readings to the UI
+    for (int i = 0; i < 2; i++) {
+        // Determine decibel reading
+        float dB = m_meterMin;
+        if (i < valuesInDecibels.size()) {
+            dB = std::max(m_meterMin, valuesInDecibels[i]);
+        }
+
+        // Produce a normalized value from 0 to 1
+        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+
+        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
+        uiValues.push_back(object);
+
+        // Signal a clip if we haven't done so already
+        if (dB >= -0.05 && !detectedClip) {
+            m_outputClipTimer.start();
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("outputClipped"), QVariant::fromValue(true));
+            detectedClip = true;
+        }
+    }
+
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
+                                                       QVariant::fromValue(uiValues));
+}
+
 void VirtualStudio::setupAuthenticator()
 {
     if (m_authenticator.isNull()) {
@@ -1100,12 +1270,13 @@ void VirtualStudio::setupAuthenticator()
 
 void VirtualStudio::sendHeartbeat()
 {
-    if (m_device != nullptr && m_connectionState != "Connecting...") {
+    if (m_device != nullptr && m_connectionState != "Connecting..."
+        && m_connectionState != "Preparing audio...") {
         m_device->sendHeartbeat();
     }
 }
 
-void VirtualStudio::getServerList(bool firstLoad, int index)
+void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
 {
     {
         QMutexLocker locker(&m_refreshMutex);
@@ -1124,149 +1295,172 @@ void VirtualStudio::getServerList(bool firstLoad, int index)
 
     QNetworkReply* reply =
         m_authenticator->get(QStringLiteral("https://app.jacktrip.org/api/servers"));
-    connect(reply, &QNetworkReply::finished, this, [&, reply, topServerId, firstLoad]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
-            reply->deleteLater();
-            return;
-        }
+    connect(
+        reply, &QNetworkReply::finished, this,
+        [&, reply, topServerId, firstLoad, signalRefresh]() {
+            if (reply->error() != QNetworkReply::NoError) {
+                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                emit authFailed();
+                reply->deleteLater();
+                return;
+            }
 
-        QByteArray response      = reply->readAll();
-        QJsonDocument serverList = QJsonDocument::fromJson(response);
-        if (!serverList.isArray()) {
-            std::cout << "Error: Not an array" << std::endl;
-            QMutexLocker locker(&m_refreshMutex);
-            m_refreshInProgress = false;
-            emit authFailed();
-            reply->deleteLater();
-            return;
-        }
-        QJsonArray servers = serverList.array();
-        // Divide our servers by category initially so that they're easier to sort
-        QList<QObject*> yourServers;
-        QList<QObject*> subServers;
-        QList<QObject*> pubServers;
+            QByteArray response      = reply->readAll();
+            QJsonDocument serverList = QJsonDocument::fromJson(response);
+            if (!serverList.isArray()) {
+                std::cout << "Error: Not an array" << std::endl;
+                QMutexLocker locker(&m_refreshMutex);
+                m_refreshInProgress = false;
+                emit authFailed();
+                reply->deleteLater();
+                return;
+            }
+            QJsonArray servers = serverList.array();
+            // Divide our servers by category initially so that they're easier to sort
+            QList<QObject*> yourServers;
+            QList<QObject*> subServers;
+            QList<QObject*> pubServers;
+            int skippedStudios = 0;
 
-        for (int i = 0; i < servers.count(); i++) {
-            if (servers.at(i)[QStringLiteral("type")].toString().contains(
-                    QStringLiteral("JackTrip"))) {
-                VsServerInfo* serverInfo = new VsServerInfo(this);
-                serverInfo->setIsManageable(
-                    servers.at(i)[QStringLiteral("admin")].toBool());
-                QString status    = servers.at(i)[QStringLiteral("status")].toString();
-                bool activeStudio = status == QLatin1String("Ready");
-                bool hostedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
-                // Only iterate through servers that we want to show
-                if (!m_showSelfHosted && !hostedStudio) {
-                    continue;
-                }
-                if (!m_showInactive && !activeStudio) {
-                    continue;
-                }
-                if (activeStudio || (serverInfo->isManageable() && m_showInactive)) {
-                    serverInfo->setName(servers.at(i)[QStringLiteral("name")].toString());
-                    serverInfo->setHost(
-                        servers.at(i)[QStringLiteral("serverHost")].toString());
-                    serverInfo->setStatus(
-                        servers.at(i)[QStringLiteral("status")].toString());
-                    serverInfo->setPort(
-                        servers.at(i)[QStringLiteral("serverPort")].toInt());
-                    serverInfo->setIsPublic(
-                        servers.at(i)[QStringLiteral("public")].toBool());
-                    serverInfo->setRegion(
-                        servers.at(i)[QStringLiteral("region")].toString());
-                    serverInfo->setPeriod(
-                        servers.at(i)[QStringLiteral("period")].toInt());
-                    serverInfo->setSampleRate(
-                        servers.at(i)[QStringLiteral("sampleRate")].toInt());
-                    serverInfo->setQueueBuffer(
-                        servers.at(i)[QStringLiteral("queueBuffer")].toInt());
-                    serverInfo->setBannerURL(
-                        servers.at(i)[QStringLiteral("bannerURL")].toString());
-                    serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
-                    serverInfo->setSessionId(
-                        servers.at(i)[QStringLiteral("sessionId")].toString());
-                    if (servers.at(i)[QStringLiteral("owner")].toBool()) {
-                        yourServers.append(serverInfo);
-                        serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);
-                    } else if (m_subscribedServers.contains(serverInfo->id())) {
-                        subServers.append(serverInfo);
-                        serverInfo->setSection(VsServerInfo::SUBSCRIBED_STUDIOS);
-                    } else {
-                        pubServers.append(serverInfo);
+            for (int i = 0; i < servers.count(); i++) {
+                if (servers.at(i)[QStringLiteral("type")].toString().contains(
+                        QStringLiteral("JackTrip"))) {
+                    VsServerInfo* serverInfo = new VsServerInfo(this);
+                    serverInfo->setIsManageable(
+                        servers.at(i)[QStringLiteral("admin")].toBool());
+                    QString status = servers.at(i)[QStringLiteral("status")].toString();
+                    bool activeStudio = status == QLatin1String("Ready");
+                    bool hostedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
+                    // Only iterate through servers that we want to show
+                    if (!m_showSelfHosted && !hostedStudio) {
+                        if (activeStudio || (serverInfo->isManageable())) {
+                            skippedStudios++;
+                        }
+                        continue;
+                    }
+                    if (!m_showInactive && !activeStudio) {
+                        if (serverInfo->isManageable()) {
+                            skippedStudios++;
+                        }
+                        continue;
+                    }
+                    if (activeStudio || (serverInfo->isManageable() && m_showInactive)) {
+                        serverInfo->setName(
+                            servers.at(i)[QStringLiteral("name")].toString());
+                        serverInfo->setHost(
+                            servers.at(i)[QStringLiteral("serverHost")].toString());
+                        serverInfo->setStatus(
+                            servers.at(i)[QStringLiteral("status")].toString());
+                        serverInfo->setPort(
+                            servers.at(i)[QStringLiteral("serverPort")].toInt());
+                        serverInfo->setIsPublic(
+                            servers.at(i)[QStringLiteral("public")].toBool());
+                        serverInfo->setRegion(
+                            servers.at(i)[QStringLiteral("region")].toString());
+                        serverInfo->setPeriod(
+                            servers.at(i)[QStringLiteral("period")].toInt());
+                        serverInfo->setSampleRate(
+                            servers.at(i)[QStringLiteral("sampleRate")].toInt());
+                        serverInfo->setQueueBuffer(
+                            servers.at(i)[QStringLiteral("queueBuffer")].toInt());
+                        serverInfo->setBannerURL(
+                            servers.at(i)[QStringLiteral("bannerURL")].toString());
+                        serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
+                        serverInfo->setSessionId(
+                            servers.at(i)[QStringLiteral("sessionId")].toString());
+                        serverInfo->setInviteKey(
+                            servers.at(i)[QStringLiteral("inviteKey")].toString());
+                        if (servers.at(i)[QStringLiteral("owner")].toBool()) {
+                            yourServers.append(serverInfo);
+                            serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);
+                        } else if (m_subscribedServers.contains(serverInfo->id())) {
+                            subServers.append(serverInfo);
+                            serverInfo->setSection(VsServerInfo::SUBSCRIBED_STUDIOS);
+                        } else {
+                            pubServers.append(serverInfo);
+                        }
                     }
                 }
             }
-        }
 
-        std::sort(yourServers.begin(), yourServers.end(),
-                  [](QObject* first, QObject* second) {
-                      return static_cast<VsServerInfo*>(first)->name()
-                             < static_cast<VsServerInfo*>(second)->name();
-                  });
-        std::sort(subServers.begin(), subServers.end(),
-                  [](QObject* first, QObject* second) {
-                      return static_cast<VsServerInfo*>(first)->name()
-                             < static_cast<VsServerInfo*>(second)->name();
-                  });
-        std::sort(pubServers.begin(), pubServers.end(),
-                  [](QObject* first, QObject* second) {
-                      return static_cast<VsServerInfo*>(first)->name()
-                             < static_cast<VsServerInfo*>(second)->name();
-                  });
+            std::sort(yourServers.begin(), yourServers.end(),
+                      [](QObject* first, QObject* second) {
+                          return static_cast<VsServerInfo*>(first)->name()
+                                 < static_cast<VsServerInfo*>(second)->name();
+                      });
+            std::sort(subServers.begin(), subServers.end(),
+                      [](QObject* first, QObject* second) {
+                          return static_cast<VsServerInfo*>(first)->name()
+                                 < static_cast<VsServerInfo*>(second)->name();
+                      });
+            std::sort(pubServers.begin(), pubServers.end(),
+                      [](QObject* first, QObject* second) {
+                          return static_cast<VsServerInfo*>(first)->name()
+                                 < static_cast<VsServerInfo*>(second)->name();
+                      });
 
-        // If we don't have any owned servers, move the JackTrip logo to an appropriate
-        // section header.
-        if (yourServers.isEmpty()) {
-            if (subServers.isEmpty()) {
-                m_logoSection = QStringLiteral("Public Studios");
+            // If we don't have any owned servers, move the JackTrip logo to an
+            // appropriate section header.
+            if (yourServers.isEmpty()) {
+                if (subServers.isEmpty()) {
+                    m_logoSection = QStringLiteral("Public Studios");
+
+                    if (pubServers.isEmpty() && skippedStudios == 0) {
+                        // This is a new user
+                        setShowCreateStudio(true);
+                    } else {
+                        // This is not a new user.
+                        // Set to false in case the studio created since refreshing.
+                        setShowCreateStudio(false);
+                    }
+                } else {
+                    m_logoSection = QStringLiteral("Subscribed Studios");
+                }
+                emit logoSectionChanged();
             } else {
-                m_logoSection = QStringLiteral("Subscribed Studios");
+                m_logoSection = QStringLiteral("Your Studios");
+                emit logoSectionChanged();
             }
-            emit logoSectionChanged();
-        } else {
-            m_logoSection = QStringLiteral("Your Studios");
-            emit logoSectionChanged();
-        }
 
-        QMutexLocker locker(&m_refreshMutex);
-        // Check that we haven't tried connecting to a server between the
-        // request going out and the response.
-        if (!m_allowRefresh) {
-            m_refreshInProgress = false;
-            return;
-        }
-        m_servers.clear();
-        m_servers.append(yourServers);
-        m_servers.append(subServers);
-        m_servers.append(pubServers);
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("serverModel"), QVariant::fromValue(m_servers));
-        int index = -1;
-        if (!topServerId.isEmpty()) {
-            for (int i = 0; i < m_servers.count(); i++) {
-                if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == topServerId) {
-                    index = i;
-                    break;
+            QMutexLocker locker(&m_refreshMutex);
+            // Check that we haven't tried connecting to a server between the
+            // request going out and the response.
+            if (!m_allowRefresh) {
+                m_refreshInProgress = false;
+                return;
+            }
+            m_servers.clear();
+            m_servers.append(yourServers);
+            m_servers.append(subServers);
+            m_servers.append(pubServers);
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("serverModel"), QVariant::fromValue(m_servers));
+            int index = -1;
+            if (!topServerId.isEmpty()) {
+                for (int i = 0; i < m_servers.count(); i++) {
+                    if (static_cast<VsServerInfo*>(m_servers.at(i))->id()
+                        == topServerId) {
+                        index = i;
+                        break;
+                    }
                 }
             }
-        }
-        if (firstLoad) {
-            emit authSucceeded();
-            emit refreshFinished(index);
-            m_refreshTimer.setInterval(10000);
-            m_refreshTimer.start();
-            m_heartbeatTimer.setInterval(5000);
-            m_heartbeatTimer.start();
-        } else {
-            emit refreshFinished(index);
-        }
+            if (firstLoad) {
+                emit authSucceeded();
+                m_refreshTimer.setInterval(10000);
+                m_refreshTimer.start();
+                m_heartbeatTimer.setInterval(5000);
+                m_heartbeatTimer.start();
+            }
 
-        m_refreshInProgress = false;
+            if (signalRefresh) {
+                emit refreshFinished(index);
+            }
 
-        reply->deleteLater();
-    });
+            m_refreshInProgress = false;
+
+            reply->deleteLater();
+        });
 }
 
 void VirtualStudio::getUserId()
@@ -1320,7 +1514,7 @@ void VirtualStudio::getSubscriptions()
             m_subscribedServers.append(
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
-        getServerList(true);
+        getServerList(true, false);
         reply->deleteLater();
     });
 }
@@ -1409,6 +1603,9 @@ VirtualStudio::~VirtualStudio()
     for (int i = 0; i < m_servers.count(); i++) {
         delete m_servers.at(i);
     }
+
+    delete m_inputMeter;
+    delete m_outputMeter;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }

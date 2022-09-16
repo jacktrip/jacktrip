@@ -2,6 +2,36 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.4-rc.2",
+            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4-rc2",
+            "download": {
+                "date": "2022-09-08T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4-rc2/JackTrip-v1.6.4-rc2-Windows-x64-installer.msi",
+                "downloadSize": 43663360,
+                "sha256": "fc782f0f9547ff096eb99891745e5d80056090b05a179f0209bd7785b1b808a6"
+            }
+        },
+        {
+            "version": "1.6.4-rc.1",
+            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4-rc1",
+            "download": {
+                "date": "2022-09-01T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4-rc1/JackTrip-v1.6.4-rc1-Windows-x64-installer.msi",
+                "downloadSize": 43651072,
+                "sha256": "fbe0f883429119b4c878e0dff4bb2c79f2ac0d995b9c947f7eb8cc70fa59bc67"
+            }
+        },
+        {
+            "version": "1.6.3",
+            "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
+            "download": {
+                "date": "2022-08-23T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.3/JackTrip-v1.6.3-Windows-x64-installer.msi",
+                "downloadSize": 43606016,
+                "sha256": "83a4def2a8c8fde24d147d39e70f60ee144e9425828f34eda2340c23ce72b1da"
+            }
+        },
+        {
             "version": "1.6.2",
             "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2",
             "download": {

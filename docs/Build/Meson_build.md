@@ -8,7 +8,7 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
 === "Fedora"
 
     ```bash
-    dnf install meson qt5-qtbase-devel rtaudio-devel "pkgconfig(jack)" help2man
+    dnf install meson qt5-qtbase-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel rtaudio-devel "pkgconfig(jack)" help2man python3-jinja2 python3-pyyaml
     ```
 
 === "Debian/Ubuntu"

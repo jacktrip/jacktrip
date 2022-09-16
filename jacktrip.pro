@@ -206,6 +206,7 @@ HEADERS += src/DataProtocol.h \
            src/Limiter.h \
            src/Regulator.h \
            src/Reverb.h \
+           src/Meter.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
@@ -223,6 +224,7 @@ HEADERS += src/DataProtocol.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
+           src/meterdsp.h \
            src/SslServer.h \
            src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
@@ -247,6 +249,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsPinger.h \
                src/gui/vsPing.h \
                src/gui/vsUrlHandler.h \
+               src/gui/vsQmlClipboard.h \
                src/JTApplication.h
   }
   !noupdater:!linux-g++:!linux-g++-64 {
@@ -267,6 +270,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Limiter.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
+           src/Meter.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
