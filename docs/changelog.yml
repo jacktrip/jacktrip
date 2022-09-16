@@ -14,6 +14,7 @@
   - (fixed) UI hanging when connecting to Studios in VS mode
   - (fixed) "Refresh list" button disabling ui interaction in VS mode
   - (fixed) Network stats not displaying on first connect after login (VS mode)
+  - (fixed) VS mode won't join studios when on warning or device setup screens
 - Version: "1.6.3"
   Date: 2022-08-23
   Description:
