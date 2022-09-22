@@ -57,6 +57,10 @@ class RtAudioInterface : public AudioInterface
     RtAudioInterface(JackTrip* jacktrip, int NumInChans = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
                      audioBitResolutionT AudioBitResolution = BIT16);
+    /// \brief Overloaded class constructor with null JackTrip pointer
+    RtAudioInterface(int NumInChans                         = gDefaultNumInChannels,
+                     int NumOutChans                        = gDefaultNumOutChannels,
+                     audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief The class destructor
     virtual ~RtAudioInterface();
 

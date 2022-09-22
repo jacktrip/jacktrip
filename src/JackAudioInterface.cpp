@@ -84,6 +84,35 @@ JackAudioInterface::JackAudioInterface(
 }
 
 //*******************************************************************************
+JackAudioInterface::JackAudioInterface(
+    int NumInChans, int NumOutChans,
+#ifdef WAIR  // wair
+    int NumNetRevChans,
+#endif  // endwhere
+    AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
+    : AudioInterface(nullptr, NumInChans, NumOutChans,
+#ifdef WAIR  // wair
+                     NumNetRevChans,
+#endif  // endwhere
+                     AudioBitResolution)
+    , mNumInChans(NumInChans)
+    , mNumOutChans(NumOutChans)
+#ifdef WAIR  // WAIR
+    , mNumNetRevChans(NumNetRevChans)
+#endif  // endwhere
+    , mClient(NULL)
+    , mClientName(ClientName)
+    , mBroadcast(false)
+{
+    JackAudioInterface(
+        nullptr, NumInChans, NumOutChans,
+#ifdef WAIR  // wair
+        NumNetRevChans,
+#endif  // endwhere
+        AudioBitResolution, ClientName);
+}
+
+//*******************************************************************************
 JackAudioInterface::~JackAudioInterface() {}
 
 //*******************************************************************************

@@ -145,6 +145,7 @@ if (NOT nogui)
       src/gui/vsPing.cpp
       src/gui/vsPinger.cpp
       src/gui/vsDevice.cpp
+      src/gui/vsAudioInterface.cpp
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
       src/gui/qjacktrip.qrc
