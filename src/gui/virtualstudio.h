@@ -54,6 +54,7 @@
 #include "vsServerInfo.h"
 #include "vsUrlHandler.h"
 #include "vsWebSocket.h"
+#include "vsAudioInterface.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -297,11 +298,14 @@ class VirtualStudio : public QObject
 
     Meter* m_inputMeter;
     Meter* m_outputMeter;
+    Meter* m_inputTestMeter;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
+
+    VsAudioInterface* m_audioInterface = NULL;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;

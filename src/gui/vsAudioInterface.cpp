@@ -36,14 +36,24 @@
  */
 
 #include "vsAudioInterface.h"
-#include "../jacktrip_globals.h"
 #include "../Meter.h"
 
 #include <QDebug>
 
 // Constructor
-VsAudioInterface::VsAudioInterface(QObject* parent)
-    : QObject(parent)
+VsAudioInterface::VsAudioInterface(
+    int NumChansIn, int NumChansOut,
+    AudioInterface::audioBitResolutionT AudioBitResolution, QObject* parent)
+    : m_numAudioChansIn(NumChansIn)
+    , m_numAudioChansOut(NumChansOut)
+    , m_audioBitResolution(AudioBitResolution)
+    , QObject(parent)
+    , m_sampleRate(gDefaultSampleRate)
+    , m_deviceID(gDefaultDeviceID)
+    , m_audioBufferSize(gDefaultBufferSizeInSamples)
+    , m_audioInterfaceMode(VsAudioInterface::RTAUDIO)
+    , m_inputDeviceName("")
+    , m_outputDeviceName("")
 {}
 
 void VsAudioInterface::setupAudio() {
@@ -103,7 +113,7 @@ void VsAudioInterface::setupAudio() {
         m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
 #endif
 #endif
-    } else if (m_audioInterfaceMode == JackTrip::RTAUDIO) {
+    } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
 #ifdef RT_AUDIO
         m_audioInterface = new RtAudioInterface(m_numAudioChansIn, m_numAudioChansOut,
                                                m_audioBitResolution);
@@ -144,12 +154,22 @@ void VsAudioInterface::closeAudio()
     }
 }
 
-void VsAudioInterface::addPlugins(VirtualStudio* vs)
+void VsAudioInterface::addInputPlugin(ProcessPlugin* plugin)
 {
-  Meter* m_inputMeter = new Meter(m_audioInterface->getNumInputChannels());
-  m_audioInterface->appendProcessPluginToNetwork(m_inputMeter);
-  connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, vs,
-          &VirtualStudio::updatedInputVuMeasurements);
+  m_audioInterface->appendProcessPluginToNetwork(plugin);
+}
+
+int VsAudioInterface::getNumInputChannels()
+{
+  return m_audioInterface->getNumInputChannels();
+}
+
+void VsAudioInterface::startProcess()
+{
+  if (m_audioInterface != NULL) {
+    m_audioInterface->initPlugins();
+    m_audioInterface->startProcess();
+  }
 }
 
 // void VsAudioInterface::updateInputVolume(float multiplier) {

@@ -49,7 +49,7 @@
 #include "../RtAudioInterface.h"
 #endif
 
-#include "virtualstudio.h"
+#include "../jacktrip_globals.h"
 
 class VsAudioInterface : public QObject
 {
@@ -57,12 +57,16 @@ class VsAudioInterface : public QObject
 
    public:
     // Constructor
-    explicit VsAudioInterface(QObject* parent = nullptr);
+    explicit VsAudioInterface(
+      int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumInChannels,
+      AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16, QObject* parent = nullptr);
 
     // Public functions
     void setupAudio();
     void closeAudio();
-    void addPlugins(VirtualStudio* vs);
+    void startProcess();
+    void addInputPlugin(ProcessPlugin* plugin);
+    int getNumInputChannels();
 
     enum audiointerfaceModeT {
         JACK,    ///< Jack Mode
@@ -84,15 +88,17 @@ class VsAudioInterface : public QObject
     bool m_inMute = false;
     bool m_outMute = false;
 
+    // Needed in constructor
+    int m_numAudioChansIn;   ///< Number of Audio Input Channels
+    int m_numAudioChansOut;  ///< Number of Audio Output Channels
+    AudioInterface::audioBitResolutionT m_audioBitResolution;  ///< Audio Bit Resolutions
+
     AudioInterface* m_audioInterface;
     uint32_t m_sampleRate;                             ///< Sample Rate
     uint32_t m_deviceID;                               ///< RTAudio DeviceID
     std::string m_inputDeviceName, m_outputDeviceName;  ///< RTAudio device names
     uint32_t m_audioBufferSize;  ///< Audio buffer size to process on each callback
     VsAudioInterface::audiointerfaceModeT m_audioInterfaceMode;
-    int m_numAudioChansIn;   ///< Number of Audio Input Channels
-    int m_numAudioChansOut;  ///< Number of Audio Output Channels
-    AudioInterface::audioBitResolutionT m_audioBitResolution;  ///< Audio Bit Resolutions
 };
 
 #endif  // VSDAUDIOINTERFACE_H

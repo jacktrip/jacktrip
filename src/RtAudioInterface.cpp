@@ -56,7 +56,7 @@ RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOu
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution)
+    : AudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, false)
     , mRtAudio(NULL)
 {
     RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution);

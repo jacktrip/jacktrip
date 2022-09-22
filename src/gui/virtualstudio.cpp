@@ -995,6 +995,22 @@ void VirtualStudio::slotAuthSucceded()
     m_device = new VsDevice(m_authenticator.data());
     m_device->registerApp();
 
+    if (m_showDeviceSetup) {
+        m_audioInterface = new VsAudioInterface();
+        m_audioInterface->setupAudio();
+
+        m_inputTestMeter = new Meter(m_audioInterface->getNumInputChannels());
+        m_audioInterface->addInputPlugin(m_inputTestMeter);
+        connect(m_inputTestMeter, &Meter::onComputedVolumeMeasurements, this, 
+                &VirtualStudio::updatedInputVuMeasurements);
+
+        m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("inputMeterModel"),
+                QVariant::fromValue(QVector<float>(m_audioInterface->getNumInputChannels())));
+
+        m_audioInterface->startProcess();
+    }
+
     if (m_userId.isEmpty()) {
         getUserId();
     } else {
@@ -1606,6 +1622,7 @@ VirtualStudio::~VirtualStudio()
 
     delete m_inputMeter;
     delete m_outputMeter;
+    delete m_inputTestMeter;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }

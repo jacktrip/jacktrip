@@ -94,7 +94,7 @@ JackAudioInterface::JackAudioInterface(
 #ifdef WAIR  // wair
                      NumNetRevChans,
 #endif  // endwhere
-                     AudioBitResolution)
+                     AudioBitResolution, false)
     , mNumInChans(NumInChans)
     , mNumOutChans(NumOutChans)
 #ifdef WAIR  // WAIR

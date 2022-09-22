@@ -14,6 +14,8 @@ Item {
     property int buttonWidth: 103
     property int buttonHeight: 25
 
+    property int bodyMargin: 60
+
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
@@ -415,6 +417,15 @@ Item {
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
             }
+        }
+
+        Meter {
+            id: inputDeviceMeters
+            x: leftMargin * virtualstudio.uiScale; y: parent.height - 250 * virtualstudio.uiScale
+            width: parent.width - 2 * bodyMargin * virtualstudio.uiScale
+            height: 100 * virtualstudio.uiScale
+            model: inputMeterModel
+            clipped: inputClipped
         }
 
         Text {
