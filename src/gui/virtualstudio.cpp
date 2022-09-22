@@ -728,6 +728,10 @@ void VirtualStudio::applySettings()
     emit outputDeviceChanged();
 #endif
 
+    if (m_audioInterface != NULL) {
+        m_audioInterface->closeAudio();
+    }
+
     // attempt to join studio if requested
     // this function is called after the device setup view
     // which can display upon opening the app from join link
