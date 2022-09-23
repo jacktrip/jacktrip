@@ -189,6 +189,7 @@ jobs:
             qt-cache-key: 'v01-32'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
+            installer-path: installer
             build-system: qmake
 
           - name: Windows-x64-meson-msvc-shared
