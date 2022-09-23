@@ -184,7 +184,7 @@ jobs:
             weakjack: true
             noupdater: true
             vcpkg-triplet: x86-mingw-static
-            static-qt-version: 5.15.2
+            static-qt-version: 5.12.12
             qt-static-cache-key: 'v07-32'
             add-to-path: '/c/msys64/mingw32/bin' # $PATH will be prepended with this 
             jacktrip-path: release/jacktrip.exe
