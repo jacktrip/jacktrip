@@ -185,6 +185,7 @@ jobs:
             qmake-config-options: '-config x86'
             vcpkg-triplet: x86-mingw-dynamic
             qt-arch: 'win32_mingw81'
+            add-to-path: '/c/msys64/mingw32/bin' # $PATH will be prepended with this 
             qt-cache-key: 'v01-32'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
@@ -336,6 +337,9 @@ jobs:
             python -m pip install --upgrade pip
             pip install meson ninja
             mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
+          fi
+          if [[ -n "${{ matrix.add-to-path }}" ]]; then 
+            echo "${{ matrix.add-to-path }}" >> $GITHUB_PATH
           fi
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
