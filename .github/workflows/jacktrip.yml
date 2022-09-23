@@ -374,6 +374,8 @@ jobs:
           tar -xf qt.tar.xz
           # move qt to a known location
           mv qt-everywhere* $QT_SRC_PATH
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: build static Qt on Linux / macOS
         if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os != 'Windows'
         run: |
