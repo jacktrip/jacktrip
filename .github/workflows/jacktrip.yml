@@ -174,8 +174,25 @@ jobs:
             # binary-path: binary
             build-system: qmake
 
-          - name: Windows-x86-qmake-gcc-shared-bundled_rtaudio
+          - name: Windows-x86-qmake-gcc-static-bundled_rtaudio
             release-name: Windows-x86
+            runs-on: windows-2019
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            novs: false
+            weakjack: true
+            vcpkg-triplet: x86-mingw-static
+            static-qt-version: 5.15.2
+            qt-static-cache-key: 'v07-32'
+            add-to-path: '/c/msys64/mingw32/bin' # $PATH will be prepended with this 
+            jacktrip-path: release/jacktrip.exe
+            binary-path: binary
+            installer-path: installer
+            build-system: qmake
+
+          - name: Windows-x86-qmake-gcc-shared-bundled_rtaudio
+            release-name: Windows-x86-no_qt
             runs-on: windows-2019
             system-rtaudio: false
             bundled-rtaudio: true
