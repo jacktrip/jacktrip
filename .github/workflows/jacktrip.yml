@@ -182,6 +182,7 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
+            qmake-config-options: '-config noupdater'
             vcpkg-triplet: x86-mingw-static
             static-qt-version: 5.15.2
             qt-static-cache-key: 'v07-32'
@@ -199,7 +200,7 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            qmake-config-options: '-config x86'
+            qmake-config-options: '-config noupdater'
             vcpkg-triplet: x86-mingw-dynamic
             qt-arch: 'win32_mingw81'
             add-to-path: '/c/msys64/mingw32/bin' # $PATH will be prepended with this 
