@@ -435,7 +435,7 @@ jobs:
             CONFIG_STRING="weakjack $CONFIG_STRING"
           fi
           if [[ -n "${{ matrix.qmake-config-options }}" ]]; then 
-            CONFIG_STRING="static ${{ matrix.qmake-config-options }}"
+            CONFIG_STRING="$CONFIG_STRING ${{ matrix.qmake-config-options }}"
           fi
           ./build $CONFIG_STRING
       - name: build JackTrip with Meson
