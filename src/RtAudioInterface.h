@@ -71,6 +71,7 @@ class RtAudioInterface : public AudioInterface
     virtual void setup();
     virtual int startProcess() const;
     virtual int stopProcess() const;
+    virtual int stopStream() const;
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
 

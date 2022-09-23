@@ -270,7 +270,7 @@ void VirtualStudio::setAudioBackend(const QString& backend)
         return;
     }
     m_useRtAudio = (backend == QStringLiteral("RtAudio"));
-    emit audioBackendChanged();
+    emit audioBackendChanged(m_useRtAudio);
 }
 
 int VirtualStudio::inputDevice()
@@ -291,6 +291,7 @@ void VirtualStudio::setInputDevice([[maybe_unused]] int device)
     }
 #ifdef RT_AUDIO
     m_inputDevice = m_inputDeviceList.at(device);
+    emit inputDeviceSelected(m_inputDevice);
 #endif
 }
 
@@ -312,6 +313,7 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] int device)
     }
 #ifdef RT_AUDIO
     m_outputDevice = m_outputDeviceList.at(device);
+    emit outputDeviceSelected(m_outputDevice);
 #endif
 }
 
@@ -680,8 +682,8 @@ void VirtualStudio::refreshDevices()
         m_outputDevice = QStringLiteral("(default)");
     }
 
-    emit inputDeviceChanged();
-    emit outputDeviceChanged();
+    emit inputDeviceChanged(m_inputDevice);
+    emit outputDeviceChanged(m_outputDevice);
 #endif
 }
 
@@ -695,10 +697,10 @@ void VirtualStudio::revertSettings()
     m_outputDevice = m_previousOutput;
     m_bufferSize   = m_previousBuffer;
     m_useRtAudio   = m_previousUseRtAudio;
-    emit inputDeviceChanged();
-    emit outputDeviceChanged();
+    emit inputDeviceChanged(m_inputDevice);
+    emit outputDeviceChanged(m_outputDevice);
     emit bufferSizeChanged();
-    emit audioBackendChanged();
+    emit audioBackendChanged(m_useRtAudio);
 #endif
 }
 
@@ -724,8 +726,8 @@ void VirtualStudio::applySettings()
     m_previousInput      = m_inputDevice;
     m_previousOutput     = m_outputDevice;
 
-    emit inputDeviceChanged();
-    emit outputDeviceChanged();
+    emit inputDeviceChanged(m_inputDevice);
+    emit outputDeviceChanged(m_outputDevice);
 #endif
 
     if (m_audioInterface != NULL) {
@@ -1001,7 +1003,16 @@ void VirtualStudio::slotAuthSucceded()
 
     if (m_showDeviceSetup) {
         m_audioInterface = new VsAudioInterface();
+        m_audioInterface->setInputDevice(m_inputDevice);
+        m_audioInterface->setOutputDevice(m_outputDevice);
+        m_audioInterface->setAudioInterfaceMode(m_useRtAudio);
         m_audioInterface->setupAudio();
+
+        connect(this, &VirtualStudio::inputDeviceChanged, m_audioInterface, &VsAudioInterface::setInputDevice);
+        connect(this, &VirtualStudio::inputDeviceSelected, m_audioInterface, &VsAudioInterface::setInputDevice);
+        connect(this, &VirtualStudio::outputDeviceChanged, m_audioInterface, &VsAudioInterface::setOutputDevice);
+        connect(this, &VirtualStudio::outputDeviceSelected, m_audioInterface, &VsAudioInterface::setOutputDevice);
+        connect(this, &VirtualStudio::audioBackendChanged, m_audioInterface, &VsAudioInterface::setAudioInterfaceMode);
 
         m_inputTestMeter = new Meter(m_audioInterface->getNumInputChannels());
         m_audioInterface->addInputPlugin(m_inputTestMeter);

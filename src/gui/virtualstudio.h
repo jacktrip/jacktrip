@@ -192,9 +192,11 @@ class VirtualStudio : public QObject
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
-    void audioBackendChanged();
-    void inputDeviceChanged();
-    void outputDeviceChanged();
+    void audioBackendChanged(bool useRtAudio);
+    void inputDeviceChanged(QString device);
+    void outputDeviceChanged(QString device);
+    void inputDeviceSelected(QString device);
+    void outputDeviceSelected(QString device);
     void bufferSizeChanged();
     void bufferStrategyChanged();
     void currentStudioChanged();

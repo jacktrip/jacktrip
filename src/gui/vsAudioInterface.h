@@ -60,6 +60,7 @@ class VsAudioInterface : public QObject
     explicit VsAudioInterface(
       int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumInChannels,
       AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16, QObject* parent = nullptr);
+    ~VsAudioInterface();
 
     // Public functions
     void setupAudio();
@@ -72,14 +73,23 @@ class VsAudioInterface : public QObject
         JACK,    ///< Jack Mode
         RTAUDIO  ///< RtAudio Mode
     };
+  
+   public slots:
+    void setInputDevice(QString deviceName);
+    void setOutputDevice(QString deviceName);
+    void setAudioInterfaceMode(bool useRtAudio);
 
    signals:
     void updateInputVolume(float multiplier);
     void updateOutputVolume(float multiplier);
     void updateInputMute(bool mute);
     void updateOutputMute(bool mute);
+    void settingsUpdated();
+    void modeUpdated();
 
    private slots:
+    void refreshAudioStream();
+    void replaceProcess();
 
    private:
 
@@ -87,6 +97,7 @@ class VsAudioInterface : public QObject
     float m_outMultiplier = 1.0;
     bool m_inMute = false;
     bool m_outMute = false;
+    bool m_audioActive = false;
 
     // Needed in constructor
     int m_numAudioChansIn;   ///< Number of Audio Input Channels
