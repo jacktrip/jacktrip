@@ -1,20 +1,40 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Controls.Styles 1.4
 import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
+    // width: 696; height: 577
     clip: true
+
+    // property var virtualstudio: {
+    //     "uiScale": 1,
+    //     "fontScale": 1,
+    //     "showWarnings": false,
+    //     "audioBackend": "RtAudio",
+    //     "selectableBackend": true,
+    //     "inputDevice": 0,
+    //     "outputDevice": 0,
+    //     "showDeviceSetup": true,
+    //     "darkMode": true
+    // }
+    // property var backendComboModel: ["JACK", "RtAudio"]
+    // property var inputComboModel: ["(default)", "Built-In Mic", "Elgato Wave XLR"]
+    // property var outputComboModel: ["(default)", "Headphones", "Elgato Wave XLR"]
+    // property bool inputClipped: false
+    // property var inputMeterModel: [0.0,0.0]
 
     property int fontBig: 28
     property int fontMedium: 13
     property int fontSmall: 11
+    property int fontExtraSmall: 8
     
-    property int leftMargin: 48
     property int buttonWidth: 103
     property int buttonHeight: 25
 
-    property int bodyMargin: 60
+    property int leftMargin: 48
+    property int rightMargin: 16
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
@@ -37,6 +57,13 @@ Item {
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : "acknowledged"
+
+    // Rectangle
+    // {
+    //     id: background
+    //     anchors.fill: parent
+    //     color: backgroundColour
+    // }
 
     Item {
         id: ethernetWarningItem
@@ -322,6 +349,7 @@ Item {
         visible: warningScreen == "acknowledged"
     
         Text {
+            id: pageTitle
             x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
             text: "Choose your audio devices"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -333,8 +361,10 @@ Item {
             model: backendComboModel
             currentIndex: virtualstudio.audioBackend == "JACK" ? 0 : 1
             onActivated: { virtualstudio.audioBackend = currentText }
-            x: 234 * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: pageTitle.y + 96 * virtualstudio.uiScale
+            width: parent.width - (234 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.selectableBackend
         }
         
@@ -358,24 +388,48 @@ Item {
             visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend
             color: textColour
         }
+
+        ComboBox {
+            id: outputCombo
+            model: outputComboModel
+            currentIndex: virtualstudio.outputDevice
+            onActivated: { virtualstudio.outputDevice = currentIndex }
+            x: backendCombo.x; y: backendCombo.y + virtualstudio.uiScale * (virtualstudio.selectableBackend ? 48 : 0)
+            width: backendCombo.width; height: backendCombo.height
+            visible: virtualstudio.audioBackend != "JACK"
+        }
+
+         Text {
+            id: outputLabel
+            anchors.verticalCenter: outputCombo.verticalCenter
+            x: leftMargin * virtualstudio.uiScale
+            text: "Output Device"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.audioBackend != "JACK"
+            color: textColour
+        }
+
+        Slider {
+            id: outputSlider
+            from: 0
+            value: .5
+            to: 1
+            padding: 0
+            y: outputCombo.y + 48 * virtualstudio.uiScale
+            anchors.left: outputCombo.left
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+        }
         
         ComboBox {
             id: inputCombo
             model: inputComboModel
             currentIndex: virtualstudio.inputDevice
             onActivated: { virtualstudio.inputDevice = currentIndex }
-            x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 198 : 150)
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-            visible: virtualstudio.audioBackend != "JACK"
-        }
-        
-        ComboBox {
-            id: outputCombo
-            model: outputComboModel
-            currentIndex: virtualstudio.outputDevice
-            onActivated: { virtualstudio.outputDevice = currentIndex }
-            x: backendCombo.x; y: inputCombo.y + (48 * virtualstudio.uiScale)
-            width: backendCombo.width; height: backendCombo.height
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: outputSlider.y + (48 * virtualstudio.uiScale)
+            width: parent.width - (234 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
         }
         
@@ -388,15 +442,28 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
-        
-        Text {
-            id: outputLabel
-            anchors.verticalCenter: outputCombo.verticalCenter
-            x: leftMargin * virtualstudio.uiScale
-            text: "Output Device"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
-            color: textColour
+
+        Meter {
+            id: inputDeviceMeters
+            anchors.left: backendCombo.left
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: inputCombo.y + 72 * virtualstudio.uiScale
+            height: 100 * virtualstudio.uiScale
+            model: inputMeterModel
+            clipped: inputClipped
+        }
+
+        Slider {
+            id: inputSlider
+            from: 0
+            value: .5
+            to: 1
+            padding: 0
+            y: inputDeviceMeters.y + 48 * virtualstudio.uiScale
+            anchors.left: inputDeviceMeters.left
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
         }
 
         Button {
@@ -408,37 +475,33 @@ Item {
                 border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.refreshDevices() }
-            x: parent.width - (232 * virtualstudio.uiScale); y: inputCombo.y + (100 * virtualstudio.uiScale)
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.top: inputSlider.bottom
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
             Text {
-                text: "Refresh Device List"
+                text: "Refresh Devices"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
             }
         }
 
-        Meter {
-            id: inputDeviceMeters
-            x: leftMargin * virtualstudio.uiScale; y: parent.height - 250 * virtualstudio.uiScale
-            width: parent.width - 2 * bodyMargin * virtualstudio.uiScale
-            height: 100 * virtualstudio.uiScale
-            model: inputMeterModel
-            clipped: inputClipped
-        }
 
         Text {
             anchors.left: outputLabel.left
             anchors.right: outputCombo.right
             anchors.leftMargin: 16 * virtualstudio.uiScale
             anchors.rightMargin: 16 * virtualstudio.uiScale
-            y: inputCombo.y + (160 * virtualstudio.uiScale)
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 60 * virtualstudio.uiScale
             text: "JackTrip on Windows requires use of an audio device with ASIO drivers. If you do not see your device, you may need to install drivers from your manufacturer."
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             color: warningText
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: Qt.platform.os == "windows" && virtualstudio.audioBackend != "JACK"
         }
 
@@ -460,8 +523,8 @@ Item {
             }
             onClicked: { window.state = "browse"; virtualstudio.applySettings() }
             anchors.right: parent.right
-            anchors.rightMargin: 16 * virtualstudio.uiScale
-            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            anchors.bottomMargin: rightMargin * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
