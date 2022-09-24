@@ -51,11 +51,11 @@ if defined DYNAMIC_QT (
 	) else (
 		%QTBINPATH%\windeployqt jacktrip.exe
 	)
-	copy "%QTLIBPATH%\libgcc_s_seh-1.dll" .\
+	copy "%QTLIBPATH%\libgcc_s_dw2-1.dll" .\
 	copy "%QTLIBPATH%\libstdc++-6.dll" .\
 	copy "%QTLIBPATH%\libwinpthread-1.dll" .\
-	copy "%SSLPATH%\libcrypto-1_1-x64.dll" .\
-	copy "%SSLPATH%\libssl-1_1-x64.dll" .\
+	copy "%SSLPATH%\libcrypto-1_1.dll" .\
+	copy "%SSLPATH%\libssl-1_1.dll" .\
 	set WIXDEFINES=!WIXDEFINES! -ddynamic
 )
 for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr librtaudio.dll') do set RTAUDIO=%%a

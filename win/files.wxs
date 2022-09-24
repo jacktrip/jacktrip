@@ -31,19 +31,19 @@
                 <File Id="fil526FA994C1850220CFA7BD7FCD995C32" KeyPath="yes" Source="SourceDir\D3Dcompiler_47.dll" />
             </Component>
             <Component Id="cmpB60B52D038613C3F20F84A0E1C83D4D4" Guid="62E3CBE5-9787-4A5C-B6CD-B867781773EE">
-                <File Id="fil09D765981E2E493119D2DBD2DA179B9D" KeyPath="yes" Source="SourceDir\libcrypto-1_1-x64.dll" />
+                <File Id="fil09D765981E2E493119D2DBD2DA179B9D" KeyPath="yes" Source="SourceDir\libcrypto-1_1.dll" />
             </Component>
             <Component Id="cmp5DDCF0CE56D406D1B8B1F93E988AED6B" Guid="4346C308-2912-4CAF-B01B-1FB85781DAD0">
                 <File Id="fil0F4CD3729AF07C1C460E292E0F081D0A" KeyPath="yes" Source="SourceDir\libEGL.dll" />
             </Component>
             <Component Id="cmpDEFDDDBEBEA7255D07EE4400F2CDA2FF" Guid="904EB309-B381-443D-A064-4C2669E8E66E">
-                <File Id="fil2ECEB8B8BE6121A2C5659BA0F64D92FC" KeyPath="yes" Source="SourceDir\libgcc_s_seh-1.dll" />
+                <File Id="fil2ECEB8B8BE6121A2C5659BA0F64D92FC" KeyPath="yes" Source="SourceDir\libgcc_s_dw2-1.dll" />
             </Component>
             <Component Id="cmpB0CFEB9FF932521D6A75B6BE6F8D644F" Guid="73A8C873-FBDB-4BC5-BB74-2F82619DC3EC">
                 <File Id="fil736048FE57EC840EA5DCE88625C38E8D" KeyPath="yes" Source="SourceDir\libGLESv2.dll" />
             </Component>
             <Component Id="cmp809509D62BD9EA848EF243F03D83758F" Guid="FE4AFCE9-7DE1-4A82-A96E-42C8B93E04C7">
-                <File Id="filCE00A8B273087E758109FEC2AC699195" KeyPath="yes" Source="SourceDir\libssl-1_1-x64.dll" />
+                <File Id="filCE00A8B273087E758109FEC2AC699195" KeyPath="yes" Source="SourceDir\libssl-1_1.dll" />
             </Component>
             <Component Id="cmp57DDA83E372188A5B760684B961DE685" Guid="96741680-04B3-4A4A-8D55-08C48D6B2201">
                 <File Id="filF57E66845C852C7C1EFFE6996027BE3C" KeyPath="yes" Source="SourceDir\libstdc++-6.dll" />
