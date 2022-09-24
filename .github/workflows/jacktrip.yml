@@ -321,6 +321,9 @@ jobs:
             pip install meson ninja
             mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
           fi
+          if [[ -n "${{ matrix.add-to-path }}" ]]; then 
+            echo "${{ matrix.add-to-path }}" >> $GITHUB_PATH
+          fi
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows' && matrix.build-system == 'meson' # MSVC used only by meson
