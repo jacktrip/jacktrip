@@ -1003,9 +1003,11 @@ void VirtualStudio::slotAuthSucceded()
 
     if (m_showDeviceSetup) {
         m_audioInterface = new VsAudioInterface();
+#ifdef RT_AUDIO
         m_audioInterface->setInputDevice(m_inputDevice);
         m_audioInterface->setOutputDevice(m_outputDevice);
         m_audioInterface->setAudioInterfaceMode(m_useRtAudio);
+#endif
         m_audioInterface->setupAudio();
 
         connect(this, &VirtualStudio::inputDeviceChanged, m_audioInterface,
