@@ -162,6 +162,9 @@ void VsAudioInterface::closeAudio()
         }
         delete m_audioInterface;
         m_audioInterface = NULL;
+        m_numAudioChansIn = gDefaultNumInChannels;
+        m_numAudioChansOut = gDefaultNumOutChannels;
+        m_deviceID = gDefaultDeviceID;
     }
 }
 
@@ -173,6 +176,7 @@ void VsAudioInterface::refreshAudioStream()
       m_audioInterface->stopStream();
       m_audioActive = false;
       m_audioInterface->startProcess();
+      m_audioInterface->connectDefaultPorts();
       m_audioActive = true;
 #endif          //__NON_JACK__
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
@@ -210,11 +214,19 @@ void VsAudioInterface::replaceProcess()
 {
   closeAudio();
   setupAudio();
+  setupMeters();
+  startProcess();
+}
+
+void VsAudioInterface::processMeterMeasurements(QVector<float> values)
+{
+  emit newVolumeMeterMeasurements(values);
 }
 
 void VsAudioInterface::addInputPlugin(ProcessPlugin* plugin)
 {
   m_audioInterface->appendProcessPluginToNetwork(plugin);
+  m_plugins.append(plugin);
 }
 
 void VsAudioInterface::setInputDevice(QString deviceName)
@@ -250,11 +262,22 @@ int VsAudioInterface::getNumInputChannels()
   return m_audioInterface->getNumInputChannels();
 }
 
+void VsAudioInterface::setupMeters()
+{
+  m_inputMeter = new Meter(getNumInputChannels());
+  addInputPlugin(m_inputMeter);
+  connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this, 
+                &VsAudioInterface::processMeterMeasurements);
+}
+
 void VsAudioInterface::startProcess()
 {
   if (m_audioInterface != NULL && !m_audioActive) {
     m_audioInterface->initPlugins();
     m_audioInterface->startProcess();
+    if (m_audioInterfaceMode == VsAudioInterface::JACK) {
+      m_audioInterface->connectDefaultPorts();
+    }
     m_audioActive = true;
   }
 }

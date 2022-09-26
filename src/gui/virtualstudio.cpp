@@ -1013,11 +1013,9 @@ void VirtualStudio::slotAuthSucceded()
         connect(this, &VirtualStudio::outputDeviceChanged, m_audioInterface, &VsAudioInterface::setOutputDevice);
         connect(this, &VirtualStudio::outputDeviceSelected, m_audioInterface, &VsAudioInterface::setOutputDevice);
         connect(this, &VirtualStudio::audioBackendChanged, m_audioInterface, &VsAudioInterface::setAudioInterfaceMode);
+        connect(m_audioInterface, &VsAudioInterface::newVolumeMeterMeasurements, this, &VirtualStudio::updatedInputVuMeasurements);
 
-        m_inputTestMeter = new Meter(m_audioInterface->getNumInputChannels());
-        m_audioInterface->addInputPlugin(m_inputTestMeter);
-        connect(m_inputTestMeter, &Meter::onComputedVolumeMeasurements, this, 
-                &VirtualStudio::updatedInputVuMeasurements);
+        m_audioInterface->setupMeters();
 
         m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputMeterModel"),

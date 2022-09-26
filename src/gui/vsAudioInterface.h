@@ -50,6 +50,7 @@
 #endif
 
 #include "../jacktrip_globals.h"
+#include "../Meter.h"
 
 class VsAudioInterface : public QObject
 {
@@ -58,7 +59,7 @@ class VsAudioInterface : public QObject
    public:
     // Constructor
     explicit VsAudioInterface(
-      int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumInChannels,
+      int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumOutChannels,
       AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16, QObject* parent = nullptr);
     ~VsAudioInterface();
 
@@ -68,6 +69,7 @@ class VsAudioInterface : public QObject
     void startProcess();
     void addInputPlugin(ProcessPlugin* plugin);
     int getNumInputChannels();
+    void setupMeters();
 
     enum audiointerfaceModeT {
         JACK,    ///< Jack Mode
@@ -86,10 +88,12 @@ class VsAudioInterface : public QObject
     void updateOutputMute(bool mute);
     void settingsUpdated();
     void modeUpdated();
+    void newVolumeMeterMeasurements(QVector<float> values);
 
    private slots:
     void refreshAudioStream();
     void replaceProcess();
+    void processMeterMeasurements(QVector<float> values);
 
    private:
 
@@ -110,6 +114,8 @@ class VsAudioInterface : public QObject
     std::string m_inputDeviceName, m_outputDeviceName;  ///< RTAudio device names
     uint32_t m_audioBufferSize;  ///< Audio buffer size to process on each callback
     VsAudioInterface::audiointerfaceModeT m_audioInterfaceMode;
+    QVector<ProcessPlugin*> m_plugins;
+    Meter* m_inputMeter;
 };
 
 #endif  // VSDAUDIOINTERFACE_H
