@@ -49,12 +49,12 @@
 
 #include "../JackTrip.h"
 #include "../Meter.h"
+#include "vsAudioInterface.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
 #include "vsUrlHandler.h"
 #include "vsWebSocket.h"
-#include "vsAudioInterface.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"

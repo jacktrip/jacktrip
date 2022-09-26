@@ -36,14 +36,15 @@
  */
 
 #include "vsAudioInterface.h"
-#include "../Meter.h"
 
 #include <QDebug>
 
+#include "../Meter.h"
+
 // Constructor
-VsAudioInterface::VsAudioInterface(
-    int NumChansIn, int NumChansOut,
-    AudioInterface::audioBitResolutionT AudioBitResolution, QObject* parent)
+VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
+                                   AudioInterface::audioBitResolutionT AudioBitResolution,
+                                   QObject* parent)
     : m_numAudioChansIn(NumChansIn)
     , m_numAudioChansOut(NumChansOut)
     , m_audioBitResolution(AudioBitResolution)
@@ -55,22 +56,25 @@ VsAudioInterface::VsAudioInterface(
     , m_inputDeviceName("")
     , m_outputDeviceName("")
 {
-  connect(this, &VsAudioInterface::settingsUpdated, this, &VsAudioInterface::refreshAudioStream);
-  connect(this, &VsAudioInterface::modeUpdated, this, &VsAudioInterface::replaceProcess);
+    connect(this, &VsAudioInterface::settingsUpdated, this,
+            &VsAudioInterface::refreshAudioStream);
+    connect(this, &VsAudioInterface::modeUpdated, this,
+            &VsAudioInterface::replaceProcess);
 }
 
 VsAudioInterface::~VsAudioInterface()
 {
-  closeAudio();
+    closeAudio();
 }
 
-void VsAudioInterface::setupAudio() {
-  // Check if m_audioInterface has already been created or not
+void VsAudioInterface::setupAudio()
+{
+    // Check if m_audioInterface has already been created or not
     if (m_audioInterface
         != NULL) {  // if it has been created, disconnect it from JACK and delete it
-        std::cout << "WARNING: JackAudio interface was setup already:" <<  std::endl;
-        std::cout << "It will be erased and setup again." <<  std::endl;
-        std::cout << gPrintSeparator <<  std::endl;
+        std::cout << "WARNING: JackAudio interface was setup already:" << std::endl;
+        std::cout << "It will be erased and setup again." << std::endl;
+        std::cout << gPrintSeparator << std::endl;
         closeAudio();
     }
 
@@ -80,8 +84,8 @@ void VsAudioInterface::setupAudio() {
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
-        m_audioInterface =
-            new JackAudioInterface(m_numAudioChansIn, m_numAudioChansOut, m_audioBitResolution);
+        m_audioInterface = new JackAudioInterface(m_numAudioChansIn, m_numAudioChansOut,
+                                                  m_audioBitResolution);
 
         m_audioInterface->setClientName(QStringLiteral("JackTrip"));
 
@@ -105,9 +109,10 @@ void VsAudioInterface::setupAudio() {
 #endif          //__NON_JACK__
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
-        std::cout << "Warning: using non jack version, RtAudio will be used instead" <<  std::endl;
+        std::cout << "Warning: using non jack version, RtAudio will be used instead"
+                  << std::endl;
         m_audioInterface = new RtAudioInterface(m_numAudioChansIn, m_numAudioChansOut,
-                                               m_audioBitResolution);
+                                                m_audioBitResolution);
         m_audioInterface->setSampleRate(m_sampleRate);
         m_audioInterface->setDeviceID(m_deviceID);
         m_audioInterface->setInputDevice(m_inputDeviceName);
@@ -124,7 +129,7 @@ void VsAudioInterface::setupAudio() {
     } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
 #ifdef RT_AUDIO
         m_audioInterface = new RtAudioInterface(m_numAudioChansIn, m_numAudioChansOut,
-                                               m_audioBitResolution);
+                                                m_audioBitResolution);
         m_audioInterface->setSampleRate(m_sampleRate);
         m_audioInterface->setDeviceID(m_deviceID);
         m_audioInterface->setInputDevice(m_inputDeviceName);
@@ -148,7 +153,7 @@ void VsAudioInterface::setupAudio() {
               << std::endl;
     std::cout << gPrintSeparator << std::endl;
     std::cout << "The Number of Channels is: " << m_audioInterface->getNumInputChannels()
-         << std::endl;
+              << std::endl;
     std::cout << gPrintSeparator << std::endl;
     QThread::usleep(100);
 }
@@ -157,129 +162,129 @@ void VsAudioInterface::closeAudio()
 {
     if (m_audioInterface != NULL) {
         if (m_audioActive) {
-          m_audioInterface->stopProcess();
-          m_audioActive = false;
+            m_audioInterface->stopProcess();
+            m_audioActive = false;
         }
         delete m_audioInterface;
-        m_audioInterface = NULL;
-        m_numAudioChansIn = gDefaultNumInChannels;
+        m_audioInterface   = NULL;
+        m_numAudioChansIn  = gDefaultNumInChannels;
         m_numAudioChansOut = gDefaultNumOutChannels;
-        m_deviceID = gDefaultDeviceID;
+        m_deviceID         = gDefaultDeviceID;
     }
 }
 
 void VsAudioInterface::refreshAudioStream()
 {
-  if (m_audioInterface != NULL && m_audioActive) {
-    if (m_audioInterfaceMode == VsAudioInterface::JACK) {
+    if (m_audioInterface != NULL && m_audioActive) {
+        if (m_audioInterfaceMode == VsAudioInterface::JACK) {
 #ifndef NO_JACK
-      m_audioInterface->stopStream();
-      m_audioActive = false;
-      m_audioInterface->startProcess();
-      m_audioInterface->connectDefaultPorts();
-      m_audioActive = true;
+            m_audioInterface->stopStream();
+            m_audioActive = false;
+            m_audioInterface->startProcess();
+            m_audioInterface->connectDefaultPorts();
+            m_audioActive = true;
 #endif          //__NON_JACK__
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
-      m_audioInterface->stopProcess();
-      m_audioInterface->setInputDevice(m_inputDeviceName);
-      m_audioInterface->setOutputDevice(m_outputDeviceName);
-      m_audioInterface->setup();
-      // Setup might have reduced number of channels
-      m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-      m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-      // Setup might have changed buffer size
-      m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
-      m_audioInterface->startProcess();
+            m_audioInterface->stopProcess();
+            m_audioInterface->setInputDevice(m_inputDeviceName);
+            m_audioInterface->setOutputDevice(m_outputDeviceName);
+            m_audioInterface->setup();
+            // Setup might have reduced number of channels
+            m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
+            m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
+            // Setup might have changed buffer size
+            m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+            m_audioInterface->startProcess();
 #endif
 #endif
-    } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
+        } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
 #ifdef RT_AUDIO
-      m_audioInterface->stopProcess();
-      m_audioInterface->setInputDevice(m_inputDeviceName);
-      m_audioInterface->setOutputDevice(m_outputDeviceName);
-      m_audioInterface->setup();
-      // Setup might have reduced number of channels
-      m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-      m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-      // Setup might have changed buffer size
-      m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
-      m_audioInterface->startProcess();
+            m_audioInterface->stopProcess();
+            m_audioInterface->setInputDevice(m_inputDeviceName);
+            m_audioInterface->setOutputDevice(m_outputDeviceName);
+            m_audioInterface->setup();
+            // Setup might have reduced number of channels
+            m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
+            m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
+            // Setup might have changed buffer size
+            m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+            m_audioInterface->startProcess();
 #endif
-      }
-  }
+        }
+    }
 }
 
 void VsAudioInterface::replaceProcess()
 {
-  closeAudio();
-  setupAudio();
-  setupMeters();
-  startProcess();
+    closeAudio();
+    setupAudio();
+    setupMeters();
+    startProcess();
 }
 
 void VsAudioInterface::processMeterMeasurements(QVector<float> values)
 {
-  emit newVolumeMeterMeasurements(values);
+    emit newVolumeMeterMeasurements(values);
 }
 
 void VsAudioInterface::addInputPlugin(ProcessPlugin* plugin)
 {
-  m_audioInterface->appendProcessPluginToNetwork(plugin);
-  m_plugins.append(plugin);
+    m_audioInterface->appendProcessPluginToNetwork(plugin);
+    m_plugins.append(plugin);
 }
 
 void VsAudioInterface::setInputDevice(QString deviceName)
 {
-  m_inputDeviceName = deviceName.toStdString();
-  if (m_audioInterface != NULL) {
-    m_audioInterface->setInputDevice(m_inputDeviceName);
-  }
-  emit settingsUpdated();
+    m_inputDeviceName = deviceName.toStdString();
+    if (m_audioInterface != NULL) {
+        m_audioInterface->setInputDevice(m_inputDeviceName);
+    }
+    emit settingsUpdated();
 }
 
 void VsAudioInterface::setOutputDevice(QString deviceName)
 {
-  m_outputDeviceName = deviceName.toStdString();
-  if (m_audioInterface != NULL) {
-    m_audioInterface->setOutputDevice(m_outputDeviceName);
-  }
-  emit settingsUpdated();
+    m_outputDeviceName = deviceName.toStdString();
+    if (m_audioInterface != NULL) {
+        m_audioInterface->setOutputDevice(m_outputDeviceName);
+    }
+    emit settingsUpdated();
 }
 
 void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio)
 {
-  if (useRtAudio) {
-    m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
-  } else {
-    m_audioInterfaceMode = VsAudioInterface::JACK;
-  }
-  emit modeUpdated();
+    if (useRtAudio) {
+        m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
+    } else {
+        m_audioInterfaceMode = VsAudioInterface::JACK;
+    }
+    emit modeUpdated();
 }
 
 int VsAudioInterface::getNumInputChannels()
 {
-  return m_audioInterface->getNumInputChannels();
+    return m_audioInterface->getNumInputChannels();
 }
 
 void VsAudioInterface::setupMeters()
 {
-  m_inputMeter = new Meter(getNumInputChannels());
-  addInputPlugin(m_inputMeter);
-  connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this, 
-                &VsAudioInterface::processMeterMeasurements);
+    m_inputMeter = new Meter(getNumInputChannels());
+    addInputPlugin(m_inputMeter);
+    connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
+            &VsAudioInterface::processMeterMeasurements);
 }
 
 void VsAudioInterface::startProcess()
 {
-  if (m_audioInterface != NULL && !m_audioActive) {
-    m_audioInterface->initPlugins();
-    m_audioInterface->startProcess();
-    if (m_audioInterfaceMode == VsAudioInterface::JACK) {
-      m_audioInterface->connectDefaultPorts();
+    if (m_audioInterface != NULL && !m_audioActive) {
+        m_audioInterface->initPlugins();
+        m_audioInterface->startProcess();
+        if (m_audioInterfaceMode == VsAudioInterface::JACK) {
+            m_audioInterface->connectDefaultPorts();
+        }
+        m_audioActive = true;
     }
-    m_audioActive = true;
-  }
 }
 
 // void VsAudioInterface::updateInputVolume(float multiplier) {
@@ -297,4 +302,3 @@ void VsAudioInterface::startProcess()
 // void VsAudioInterface::updateOutputMute(bool mute) {
 //   m_outMute = mute;
 // }
-

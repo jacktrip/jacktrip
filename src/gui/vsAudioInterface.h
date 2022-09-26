@@ -49,8 +49,8 @@
 #include "../RtAudioInterface.h"
 #endif
 
-#include "../jacktrip_globals.h"
 #include "../Meter.h"
+#include "../jacktrip_globals.h"
 
 class VsAudioInterface : public QObject
 {
@@ -59,8 +59,9 @@ class VsAudioInterface : public QObject
    public:
     // Constructor
     explicit VsAudioInterface(
-      int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumOutChannels,
-      AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16, QObject* parent = nullptr);
+        int NumChansIn = gDefaultNumInChannels, int NumChansOut = gDefaultNumOutChannels,
+        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+        QObject* parent                                        = nullptr);
     ~VsAudioInterface();
 
     // Public functions
@@ -75,7 +76,7 @@ class VsAudioInterface : public QObject
         JACK,    ///< Jack Mode
         RTAUDIO  ///< RtAudio Mode
     };
-  
+
    public slots:
     void setInputDevice(QString deviceName);
     void setOutputDevice(QString deviceName);
@@ -96,12 +97,11 @@ class VsAudioInterface : public QObject
     void processMeterMeasurements(QVector<float> values);
 
    private:
-
-    float m_inMultiplier = 1.0;
+    float m_inMultiplier  = 1.0;
     float m_outMultiplier = 1.0;
-    bool m_inMute = false;
-    bool m_outMute = false;
-    bool m_audioActive = false;
+    bool m_inMute         = false;
+    bool m_outMute        = false;
+    bool m_audioActive    = false;
 
     // Needed in constructor
     int m_numAudioChansIn;   ///< Number of Audio Input Channels
@@ -109,8 +109,8 @@ class VsAudioInterface : public QObject
     AudioInterface::audioBitResolutionT m_audioBitResolution;  ///< Audio Bit Resolutions
 
     AudioInterface* m_audioInterface;
-    uint32_t m_sampleRate;                             ///< Sample Rate
-    uint32_t m_deviceID;                               ///< RTAudio DeviceID
+    uint32_t m_sampleRate;                              ///< Sample Rate
+    uint32_t m_deviceID;                                ///< RTAudio DeviceID
     std::string m_inputDeviceName, m_outputDeviceName;  ///< RTAudio device names
     uint32_t m_audioBufferSize;  ///< Audio buffer size to process on each callback
     VsAudioInterface::audiointerfaceModeT m_audioInterfaceMode;

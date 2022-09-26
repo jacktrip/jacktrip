@@ -104,12 +104,11 @@ JackAudioInterface::JackAudioInterface(
     , mClientName(ClientName)
     , mBroadcast(false)
 {
-    JackAudioInterface(
-        nullptr, NumInChans, NumOutChans,
+    JackAudioInterface(nullptr, NumInChans, NumOutChans,
 #ifdef WAIR  // wair
-        NumNetRevChans,
+                       NumNetRevChans,
 #endif  // endwhere
-        AudioBitResolution, ClientName);
+                       AudioBitResolution, ClientName);
 }
 
 //*******************************************************************************

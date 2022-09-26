@@ -1008,18 +1008,24 @@ void VirtualStudio::slotAuthSucceded()
         m_audioInterface->setAudioInterfaceMode(m_useRtAudio);
         m_audioInterface->setupAudio();
 
-        connect(this, &VirtualStudio::inputDeviceChanged, m_audioInterface, &VsAudioInterface::setInputDevice);
-        connect(this, &VirtualStudio::inputDeviceSelected, m_audioInterface, &VsAudioInterface::setInputDevice);
-        connect(this, &VirtualStudio::outputDeviceChanged, m_audioInterface, &VsAudioInterface::setOutputDevice);
-        connect(this, &VirtualStudio::outputDeviceSelected, m_audioInterface, &VsAudioInterface::setOutputDevice);
-        connect(this, &VirtualStudio::audioBackendChanged, m_audioInterface, &VsAudioInterface::setAudioInterfaceMode);
-        connect(m_audioInterface, &VsAudioInterface::newVolumeMeterMeasurements, this, &VirtualStudio::updatedInputVuMeasurements);
+        connect(this, &VirtualStudio::inputDeviceChanged, m_audioInterface,
+                &VsAudioInterface::setInputDevice);
+        connect(this, &VirtualStudio::inputDeviceSelected, m_audioInterface,
+                &VsAudioInterface::setInputDevice);
+        connect(this, &VirtualStudio::outputDeviceChanged, m_audioInterface,
+                &VsAudioInterface::setOutputDevice);
+        connect(this, &VirtualStudio::outputDeviceSelected, m_audioInterface,
+                &VsAudioInterface::setOutputDevice);
+        connect(this, &VirtualStudio::audioBackendChanged, m_audioInterface,
+                &VsAudioInterface::setAudioInterfaceMode);
+        connect(m_audioInterface, &VsAudioInterface::newVolumeMeterMeasurements, this,
+                &VirtualStudio::updatedInputVuMeasurements);
 
         m_audioInterface->setupMeters();
 
         m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputMeterModel"),
-                QVariant::fromValue(QVector<float>(m_audioInterface->getNumInputChannels())));
+            QStringLiteral("inputMeterModel"),
+            QVariant::fromValue(QVector<float>(m_audioInterface->getNumInputChannels())));
 
         m_audioInterface->startProcess();
     }
