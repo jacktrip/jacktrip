@@ -70,8 +70,8 @@ void Volume::compute(int nframes, float** inputs, float** outputs)
     }
 
     // for (int i = 0; i < mNumChannels; i++) {
-        /* Run the signal through Faust  */
-        // meterP[i]->compute(nframes, &inputs[i], &outputs[i]);
+    /* Run the signal through Faust  */
+    // meterP[i]->compute(nframes, &inputs[i], &outputs[i]);
     // }
 
     /* Set processed audio flag */
@@ -90,10 +90,10 @@ void Volume::updateNumChannels(int nChansIn, int nChansOut)
 
 void Volume::volumeUpdated(float multiplier)
 {
-  mVolMultiplier = multiplier;
+    mVolMultiplier = multiplier;
 }
 
 void Volume::muteUpdated(bool muted)
 {
-  isMuted = muted;
+    isMuted = muted;
 }

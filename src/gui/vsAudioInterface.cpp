@@ -279,8 +279,8 @@ int VsAudioInterface::getNumOutputChannels()
 void VsAudioInterface::setupPlugins()
 {
     // Create plugins
-    m_inputMeter = new Meter(getNumInputChannels());
-    m_inputVolumePlugin = new Volume(getNumInputChannels());
+    m_inputMeter         = new Meter(getNumInputChannels());
+    m_inputVolumePlugin  = new Volume(getNumInputChannels());
     m_outputVolumePlugin = new Volume(getNumOutputChannels());
 
     // Add plugins to chains
@@ -333,22 +333,26 @@ bool VsAudioInterface::outputMuted()
     return m_outMuted;
 }
 
-void VsAudioInterface::setInputVolume(float multiplier) {
-  m_inMultiplier = multiplier;
-  emit updatedInputVolume(multiplier);
+void VsAudioInterface::setInputVolume(float multiplier)
+{
+    m_inMultiplier = multiplier;
+    emit updatedInputVolume(multiplier);
 }
 
-void VsAudioInterface::setOutputVolume(float multiplier) {
-  m_outMultiplier = multiplier;
-  emit updatedOutputVolume(multiplier);
+void VsAudioInterface::setOutputVolume(float multiplier)
+{
+    m_outMultiplier = multiplier;
+    emit updatedOutputVolume(multiplier);
 }
 
-void VsAudioInterface::setInputMuted(bool muted) {
-  m_inMuted = muted;
-  emit updatedInputMuted(muted);
+void VsAudioInterface::setInputMuted(bool muted)
+{
+    m_inMuted = muted;
+    emit updatedInputMuted(muted);
 }
 
-void VsAudioInterface::setOutputMuted(bool muted) {
-  m_outMuted = muted;
-  emit updatedOutputMuted(muted);
+void VsAudioInterface::setOutputMuted(bool muted)
+{
+    m_outMuted = muted;
+    emit updatedOutputMuted(muted);
 }

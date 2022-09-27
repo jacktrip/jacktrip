@@ -61,7 +61,7 @@ class Volume : public ProcessPlugin
     }
 
     /// \brief The class destructor
-    virtual ~Volume(){}
+    virtual ~Volume() {}
 
     void init(int samplingRate) override;
     int getNumInputs() override { return (mNumChannels); }
@@ -79,9 +79,8 @@ class Volume : public ProcessPlugin
     float fs;
     int mNumChannels;
     bool hasProcessedAudio = false;
-    float mVolMultiplier = 1.0;
-    bool isMuted = false;
-    
+    float mVolMultiplier   = 1.0;
+    bool isMuted           = false;
 };
 
 #endif

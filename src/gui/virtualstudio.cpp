@@ -118,7 +118,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_previousOutput = m_outputDevice;
 #else
     m_selectableBackend = false;
-    m_audioInterface = new VsAudioInterface();
+    m_audioInterface    = new VsAudioInterface();
 
     // Set our combo box models to an empty list to avoid a reference error
     m_view.engine()->rootContext()->setContextProperty(
@@ -1007,8 +1007,8 @@ void VirtualStudio::slotAuthSucceded()
     if (m_showDeviceSetup) {
         if (not m_audioInterface) {
             m_audioInterface = new VsAudioInterface();
-            m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audioInterface"),
-                                                       m_audioInterface);
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("audioInterface"), m_audioInterface);
         }
 #ifdef RT_AUDIO
         m_audioInterface->setInputDevice(m_inputDevice);

@@ -56,8 +56,8 @@
 class VsAudioInterface : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(float inputVolume READ inputVolume WRITE setInputVolume NOTIFY
-                   updatedInputVolume)
+    Q_PROPERTY(
+        float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
     Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
                    updatedOutputVolume)
 
@@ -97,7 +97,6 @@ class VsAudioInterface : public QObject
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
 
-
    signals:
     void updatedInputVolume(float multiplier);
     void updatedOutputVolume(float multiplier);
@@ -115,8 +114,8 @@ class VsAudioInterface : public QObject
    private:
     float m_inMultiplier  = 0.7;
     float m_outMultiplier = 1.0;
-    bool m_inMuted         = false;
-    bool m_outMuted        = false;
+    bool m_inMuted        = false;
+    bool m_outMuted       = false;
     bool m_audioActive    = false;
 
     // Needed in constructor
