@@ -118,6 +118,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_previousOutput = m_outputDevice;
 #else
     m_selectableBackend = false;
+    m_audioInterface = new VsAudioInterface();
 
     // Set our combo box models to an empty list to avoid a reference error
     m_view.engine()->rootContext()->setContextProperty(
@@ -158,6 +159,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audioInterface"),
+                                                       m_audioInterface);
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
@@ -1002,7 +1005,11 @@ void VirtualStudio::slotAuthSucceded()
     m_device->registerApp();
 
     if (m_showDeviceSetup) {
-        m_audioInterface = new VsAudioInterface();
+        if (not m_audioInterface) {
+            m_audioInterface = new VsAudioInterface();
+            m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audioInterface"),
+                                                       m_audioInterface);
+        }
 #ifdef RT_AUDIO
         m_audioInterface->setInputDevice(m_inputDevice);
         m_audioInterface->setOutputDevice(m_outputDevice);
@@ -1023,7 +1030,7 @@ void VirtualStudio::slotAuthSucceded()
         connect(m_audioInterface, &VsAudioInterface::newVolumeMeterMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
 
-        m_audioInterface->setupMeters();
+        m_audioInterface->setupPlugins();
 
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("inputMeterModel"),

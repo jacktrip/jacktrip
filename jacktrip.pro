@@ -207,6 +207,7 @@ HEADERS += src/DataProtocol.h \
            src/Regulator.h \
            src/Reverb.h \
            src/Meter.h \
+           src/Volume.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
@@ -272,6 +273,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
+           src/Volume.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \

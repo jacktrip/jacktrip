@@ -411,9 +411,10 @@ Item {
 
         Slider {
             id: outputSlider
-            from: 0
-            value: .5
-            to: 1
+            from: 0.0
+            value: audioInterface ? audioInterface.outputVolume : 0.5
+            onMoved: { audioInterface.outputVolume = value }
+            to: 1.0
             padding: 0
             y: outputCombo.y + 48 * virtualstudio.uiScale
             anchors.left: outputCombo.left
@@ -456,9 +457,10 @@ Item {
 
         Slider {
             id: inputSlider
-            from: 0
-            value: .5
-            to: 1
+            from: 0.0
+            value: audioInterface ? audioInterface.inputVolume : 0.5
+            onMoved: { audioInterface.inputVolume = value }
+            to: 1.0
             padding: 0
             y: inputDeviceMeters.y + 48 * virtualstudio.uiScale
             anchors.left: inputDeviceMeters.left

@@ -219,7 +219,7 @@ void VsAudioInterface::replaceProcess()
 {
     closeAudio();
     setupAudio();
-    setupMeters();
+    setupPlugins();
     startProcess();
 }
 
@@ -231,7 +231,11 @@ void VsAudioInterface::processMeterMeasurements(QVector<float> values)
 void VsAudioInterface::addInputPlugin(ProcessPlugin* plugin)
 {
     m_audioInterface->appendProcessPluginToNetwork(plugin);
-    m_plugins.append(plugin);
+}
+
+void VsAudioInterface::addOutputPlugin(ProcessPlugin* plugin)
+{
+    m_audioInterface->appendProcessPluginFromNetwork(plugin);
 }
 
 void VsAudioInterface::setInputDevice(QString deviceName)
@@ -267,12 +271,34 @@ int VsAudioInterface::getNumInputChannels()
     return m_audioInterface->getNumInputChannels();
 }
 
-void VsAudioInterface::setupMeters()
+int VsAudioInterface::getNumOutputChannels()
 {
+    return m_audioInterface->getNumOutputChannels();
+}
+
+void VsAudioInterface::setupPlugins()
+{
+    // Create plugins
     m_inputMeter = new Meter(getNumInputChannels());
+    m_inputVolumePlugin = new Volume(getNumInputChannels());
+    m_outputVolumePlugin = new Volume(getNumOutputChannels());
+
+    // Add plugins to chains
+    addInputPlugin(m_inputVolumePlugin);
+    addInputPlugin(m_outputVolumePlugin);
     addInputPlugin(m_inputMeter);
+
+    // Connect plugins for communication with UI
     connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
             &VsAudioInterface::processMeterMeasurements);
+    connect(this, &VsAudioInterface::updatedInputVolume, m_inputVolumePlugin,
+            &Volume::volumeUpdated);
+    connect(this, &VsAudioInterface::updatedOutputVolume, m_outputVolumePlugin,
+            &Volume::volumeUpdated);
+    connect(this, &VsAudioInterface::updatedInputMuted, m_inputVolumePlugin,
+            &Volume::muteUpdated);
+    connect(this, &VsAudioInterface::updatedOutputMuted, m_outputVolumePlugin,
+            &Volume::muteUpdated);
 }
 
 void VsAudioInterface::startProcess()
@@ -287,18 +313,42 @@ void VsAudioInterface::startProcess()
     }
 }
 
-// void VsAudioInterface::updateInputVolume(float multiplier) {
-//   m_inMultiplier = multiplier;
-// }
+float VsAudioInterface::inputVolume()
+{
+    return m_inMultiplier;
+}
 
-// void VsAudioInterface::updateOutputVolume(float multiplier) {
-//   m_outMultiplier = multiplier;
-// }
+float VsAudioInterface::outputVolume()
+{
+    return m_outMultiplier;
+}
 
-// void VsAudioInterface::updateInputMute(bool mute) {
-//   m_inMute = mute;
-// }
+bool VsAudioInterface::inputMuted()
+{
+    return m_inMuted;
+}
 
-// void VsAudioInterface::updateOutputMute(bool mute) {
-//   m_outMute = mute;
-// }
+bool VsAudioInterface::outputMuted()
+{
+    return m_outMuted;
+}
+
+void VsAudioInterface::setInputVolume(float multiplier) {
+  m_inMultiplier = multiplier;
+  emit updatedInputVolume(multiplier);
+}
+
+void VsAudioInterface::setOutputVolume(float multiplier) {
+  m_outMultiplier = multiplier;
+  emit updatedOutputVolume(multiplier);
+}
+
+void VsAudioInterface::setInputMuted(bool muted) {
+  m_inMuted = muted;
+  emit updatedInputMuted(muted);
+}
+
+void VsAudioInterface::setOutputMuted(bool muted) {
+  m_outMuted = muted;
+  emit updatedOutputMuted(muted);
+}

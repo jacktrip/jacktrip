@@ -50,11 +50,16 @@
 #endif
 
 #include "../Meter.h"
+#include "../Volume.h"
 #include "../jacktrip_globals.h"
 
 class VsAudioInterface : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(float inputVolume READ inputVolume WRITE setInputVolume NOTIFY
+                   updatedInputVolume)
+    Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
+                   updatedOutputVolume)
 
    public:
     // Constructor
@@ -69,8 +74,14 @@ class VsAudioInterface : public QObject
     void closeAudio();
     void startProcess();
     void addInputPlugin(ProcessPlugin* plugin);
+    void addOutputPlugin(ProcessPlugin* plugin);
     int getNumInputChannels();
-    void setupMeters();
+    int getNumOutputChannels();
+    void setupPlugins();
+    float inputVolume();
+    float outputVolume();
+    bool inputMuted();
+    bool outputMuted();
 
     enum audiointerfaceModeT {
         JACK,    ///< Jack Mode
@@ -81,12 +92,17 @@ class VsAudioInterface : public QObject
     void setInputDevice(QString deviceName);
     void setOutputDevice(QString deviceName);
     void setAudioInterfaceMode(bool useRtAudio);
+    void setInputVolume(float multiplier);
+    void setOutputVolume(float multiplier);
+    void setInputMuted(bool muted);
+    void setOutputMuted(bool muted);
+
 
    signals:
-    void updateInputVolume(float multiplier);
-    void updateOutputVolume(float multiplier);
-    void updateInputMute(bool mute);
-    void updateOutputMute(bool mute);
+    void updatedInputVolume(float multiplier);
+    void updatedOutputVolume(float multiplier);
+    void updatedInputMuted(bool muted);
+    void updatedOutputMuted(bool muted);
     void settingsUpdated();
     void modeUpdated();
     void newVolumeMeterMeasurements(QVector<float> values);
@@ -97,10 +113,10 @@ class VsAudioInterface : public QObject
     void processMeterMeasurements(QVector<float> values);
 
    private:
-    float m_inMultiplier  = 1.0;
+    float m_inMultiplier  = 0.7;
     float m_outMultiplier = 1.0;
-    bool m_inMute         = false;
-    bool m_outMute        = false;
+    bool m_inMuted         = false;
+    bool m_outMuted        = false;
     bool m_audioActive    = false;
 
     // Needed in constructor
@@ -114,8 +130,9 @@ class VsAudioInterface : public QObject
     std::string m_inputDeviceName, m_outputDeviceName;  ///< RTAudio device names
     uint32_t m_audioBufferSize;  ///< Audio buffer size to process on each callback
     VsAudioInterface::audiointerfaceModeT m_audioInterfaceMode;
-    QVector<ProcessPlugin*> m_plugins;
     Meter* m_inputMeter;
+    Volume* m_inputVolumePlugin;
+    Volume* m_outputVolumePlugin;
 };
 
 #endif  // VSDAUDIOINTERFACE_H
