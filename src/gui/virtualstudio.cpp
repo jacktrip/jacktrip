@@ -735,8 +735,6 @@ void VirtualStudio::applySettings()
 
     if (m_audioInterface != NULL) {
         m_audioInterface->closeAudio();
-        delete m_audioInterface;
-        m_audioInterface = NULL;
     }
 
     // attempt to join studio if requested

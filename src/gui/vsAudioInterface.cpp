@@ -38,6 +38,7 @@
 #include "vsAudioInterface.h"
 
 #include <QDebug>
+#include <QSettings>
 
 #include "../Meter.h"
 
@@ -56,6 +57,14 @@ VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
     , m_audioBufferSize(gDefaultBufferSizeInSamples)
     , m_audioInterfaceMode(VsAudioInterface::RTAUDIO)
 {
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
+    m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+    m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+    m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+    settings.endGroup();
+
     connect(this, &VsAudioInterface::settingsUpdated, this,
             &VsAudioInterface::refreshAudioStream);
     connect(this, &VsAudioInterface::modeUpdated, this,
@@ -336,23 +345,39 @@ bool VsAudioInterface::outputMuted()
 void VsAudioInterface::setInputVolume(float multiplier)
 {
     m_inMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("InMultiplier"), m_inMultiplier);
+    settings.endGroup();
     emit updatedInputVolume(multiplier);
 }
 
 void VsAudioInterface::setOutputVolume(float multiplier)
 {
     m_outMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("OutMultiplier"), m_outMultiplier);
+    settings.endGroup();
     emit updatedOutputVolume(multiplier);
 }
 
 void VsAudioInterface::setInputMuted(bool muted)
 {
     m_inMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("InMuted"), m_inMuted ? 1 : 0);
+    settings.endGroup();
     emit updatedInputMuted(muted);
 }
 
 void VsAudioInterface::setOutputMuted(bool muted)
 {
     m_outMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("OutMuted"), m_outMuted ? 1 : 0);
+    settings.endGroup();
     emit updatedOutputMuted(muted);
 }

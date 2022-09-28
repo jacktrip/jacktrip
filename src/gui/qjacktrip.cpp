@@ -316,7 +316,7 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
 #ifdef RT_AUDIO
 #ifdef PSI
         bool usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
-#endif // PSI
+#endif  // PSI
         m_ui->backendComboBox->setCurrentIndex(1);
         m_ui->backendComboBox->setEnabled(false);
         m_ui->backendLabel->setEnabled(false);
