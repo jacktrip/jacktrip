@@ -46,6 +46,7 @@
 #include <vector>
 
 #include "ProcessPlugin.h"
+#include "volumedsp.h"
 
 /** \brief The Volume plugin adjusts the level of the signal via multiplication
  */
@@ -58,10 +59,23 @@ class Volume : public ProcessPlugin
     Volume(int numchans, bool verboseFlag = false) : mNumChannels(numchans)
     {
         setVerbose(verboseFlag);
+        for (int i = 0; i < mNumChannels; i++) {
+            volumeP.push_back(new volumedsp);
+            volumeUIP.push_back(new APIUI);  // #included in volumedsp.h
+            volumeP[i]->buildUserInterface(volumeUIP[i]);
+        }
     }
 
     /// \brief The class destructor
-    virtual ~Volume() {}
+    virtual ~Volume()
+    {
+        for (int i = 0; i < mNumChannels; i++) {
+            delete volumeP[i];
+            delete volumeUIP[i];
+        }
+        volumeP.clear();
+        volumeUIP.clear();
+    }
 
     void init(int samplingRate) override;
     int getNumInputs() override { return (mNumChannels); }
@@ -76,11 +90,12 @@ class Volume : public ProcessPlugin
     void muteUpdated(bool muted);
 
    private:
+    std::vector<volumedsp*> volumeP;
+    std::vector<APIUI*> volumeUIP;
     float fs;
     int mNumChannels;
-    bool hasProcessedAudio = false;
-    float mVolMultiplier   = 1.0;
-    bool isMuted           = false;
+    float mVolMultiplier = 1.0;
+    bool isMuted         = false;
 };
 
 #endif

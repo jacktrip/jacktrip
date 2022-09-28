@@ -50,9 +50,15 @@ void Volume::init(int samplingRate)
         std::cerr << "Sampling rate not set by superclass!\n";
         std::exit(1);
     }
-
     fs = float(fSamplingFreq);
 
+    for (int i = 0; i < mNumChannels; i++) {
+        volumeP[i]->init(fs);  // compression filter parameters depend on sampling rate
+        int ndx = volumeUIP[i]->getParamIndex("Volume");
+        volumeUIP[i]->setParamValue(ndx, mVolMultiplier);
+        ndx = volumeUIP[i]->getParamIndex("Mute");
+        volumeUIP[i]->setParamValue(ndx, isMuted ? 1 : 0);
+    }
     inited = true;
 }
 
@@ -69,13 +75,10 @@ void Volume::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
 
-    // for (int i = 0; i < mNumChannels; i++) {
-    /* Run the signal through Faust  */
-    // meterP[i]->compute(nframes, &inputs[i], &outputs[i]);
-    // }
-
-    /* Set processed audio flag */
-    hasProcessedAudio = true;
+    for (int i = 0; i < mNumChannels; i++) {
+        /* Run the signal through Faust  */
+        volumeP[i]->compute(nframes, &inputs[i], &outputs[i]);
+    }
 }
 
 //*******************************************************************************
@@ -91,9 +94,17 @@ void Volume::updateNumChannels(int nChansIn, int nChansOut)
 void Volume::volumeUpdated(float multiplier)
 {
     mVolMultiplier = multiplier;
+    for (int i = 0; i < mNumChannels; i++) {
+        int ndx = volumeUIP[i]->getParamIndex("Volume");
+        volumeUIP[i]->setParamValue(ndx, multiplier);
+    }
 }
 
 void Volume::muteUpdated(bool muted)
 {
     isMuted = muted;
+    for (int i = 0; i < mNumChannels; i++) {
+        int ndx = volumeUIP[i]->getParamIndex("Mute");
+        volumeUIP[i]->setParamValue(ndx, isMuted ? 1 : 0);
+    }
 }

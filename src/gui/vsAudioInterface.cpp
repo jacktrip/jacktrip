@@ -45,16 +45,16 @@
 VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
                                    AudioInterface::audioBitResolutionT AudioBitResolution,
                                    QObject* parent)
-    : m_numAudioChansIn(NumChansIn)
+    : QObject(parent)
+    , m_numAudioChansIn(NumChansIn)
     , m_numAudioChansOut(NumChansOut)
     , m_audioBitResolution(AudioBitResolution)
-    , QObject(parent)
     , m_sampleRate(gDefaultSampleRate)
     , m_deviceID(gDefaultDeviceID)
-    , m_audioBufferSize(gDefaultBufferSizeInSamples)
-    , m_audioInterfaceMode(VsAudioInterface::RTAUDIO)
     , m_inputDeviceName("")
     , m_outputDeviceName("")
+    , m_audioBufferSize(gDefaultBufferSizeInSamples)
+    , m_audioInterfaceMode(VsAudioInterface::RTAUDIO)
 {
     connect(this, &VsAudioInterface::settingsUpdated, this,
             &VsAudioInterface::refreshAudioStream);
@@ -285,7 +285,7 @@ void VsAudioInterface::setupPlugins()
 
     // Add plugins to chains
     addInputPlugin(m_inputVolumePlugin);
-    addInputPlugin(m_outputVolumePlugin);
+    addOutputPlugin(m_outputVolumePlugin);
     addInputPlugin(m_inputMeter);
 
     // Connect plugins for communication with UI
