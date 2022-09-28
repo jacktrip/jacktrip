@@ -314,7 +314,9 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     // Check if Jack is actually available
     if (have_libjack() != 0) {
 #ifdef RT_AUDIO
+#ifdef PSI
         bool usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
+#endif // PSI
         m_ui->backendComboBox->setCurrentIndex(1);
         m_ui->backendComboBox->setEnabled(false);
         m_ui->backendLabel->setEnabled(false);
