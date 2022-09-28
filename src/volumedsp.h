@@ -1133,7 +1133,7 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin, double fmid,
+    AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
                        double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
@@ -1145,7 +1145,7 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter
     virtual double faust2ui(double x) { return fF2A(x); }
 
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
-                                  double fmid, double fmax)
+                                  double /*fmid*/, double fmax)
     {
         //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f
         //%f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
@@ -1170,7 +1170,7 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin, double fmid,
+    AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
                        double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
@@ -1182,7 +1182,7 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter
     virtual double faust2ui(double x) { return fF2A(x); }
 
     virtual void setMappingValues(double amin, double amid, double amax, double fmin,
-                                  double fmid, double fmax)
+                                  double /*fmid*/, double fmax)
     {
         //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f
         //%f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
@@ -1208,17 +1208,17 @@ class FAUST_API ZoneControl
     ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
     virtual ~ZoneControl() {}
 
-    virtual void update(double v) const {}
+    virtual void update(double /*v*/) const {}
 
-    virtual void setMappingValues(int curve, double amin, double amid, double amax,
-                                  double min, double init, double max)
+    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/,
+                                  double /*min*/, double /*init*/, double /*max*/)
     {
     }
-    virtual void getMappingValues(double& amin, double& amid, double& amax) {}
+    virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
 
     FAUSTFLOAT* getZone() { return fZone; }
 
-    virtual void setActive(bool on_off) {}
+    virtual void setActive(bool /*on_off*/) {}
     virtual bool getActive() { return false; }
 
     virtual int getCurve() { return -1; }
@@ -1692,7 +1692,7 @@ class APIUI
         }
     }
 
-    virtual void declare(const char* key, const char* val) {}
+    virtual void declare(const char* /*key*/, const char* /*val*/) {}
 
     //-------------------------------------------------------------------------------
     // Simple API part
@@ -1998,7 +1998,7 @@ class volumedsp : public dsp
         m->declare("version", "1.0");
     }
 
-    virtual int getNumInputs() { return 2; }
+    virtual int getNumInputs() { return 1; }
     virtual int getNumOutputs() { return 1; }
 
     static void classInit(int /*sample_rate*/) {}
@@ -2044,14 +2044,12 @@ class volumedsp : public dsp
     virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs)
     {
         FAUSTFLOAT* input0  = inputs[0];
-        FAUSTFLOAT* input1  = inputs[1];
         FAUSTFLOAT* output0 = outputs[0];
         float fSlow0        = float(fHslider0);
         float fSlow1        = float(fCheckbox0);
         for (int i0 = 0; i0 < count; i0 = i0 + 1) {
             float fTemp0 = float(input0[i0]);
-            float fTemp1 = float(input1[i0]);
-            output0[i0]  = FAUSTFLOAT(fSlow0 * fTemp0 * ((fTemp1 + 1.0f) - fSlow1));
+            output0[i0]  = FAUSTFLOAT(fSlow0 * fTemp0 * ((fTemp0 + 1.0f) - fSlow1));
         }
     }
 };
