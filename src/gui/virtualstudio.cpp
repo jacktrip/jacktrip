@@ -938,7 +938,7 @@ void VirtualStudio::completeConnection()
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
-        
+
         // Grab previous levels
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
