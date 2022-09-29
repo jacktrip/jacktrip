@@ -15,13 +15,22 @@ Item {
     property int fontTiny: 8
 
     property int bodyMargin: 60
+    property int bottomToolTipMargin: 8
+    property int rightToolTipMargin: 4
     
+    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
+    property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
+    property real muteButtonMutedLightnessValue: 0.36
+    property real muteButtonMutedSaturationValue: 0.84
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
     property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
+    property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
+    property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
+    property string toolTipTextColour: textColour
 
     property string meterGreen: "#61C554"
     property string meterYellow: "#F5BF4F"
@@ -201,7 +210,8 @@ Item {
             to: 1.0
             padding: 0
             y: inputDeviceMeters.y + 36 * virtualstudio.uiScale
-            anchors.left: inputDeviceMeters.left
+            anchors.left: inputMute.right
+            anchors.leftMargin: 8 * virtualstudio.uiScale
             anchors.right: inputDeviceMeters.right
             handle: Rectangle {
                 x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
@@ -211,6 +221,65 @@ Item {
                 radius: 13 * virtualstudio.uiScale
                 color: inputSlider.pressed ? sliderPressedColour : sliderColour
                 border.color: buttonStroke
+            }
+        }
+
+        Button {
+            id: inputMute
+            width: 24 * virtualstudio.uiScale
+            height: 24
+            anchors.left: inputDeviceMeters.left
+            anchors.verticalCenter: inputDeviceMeters.verticalCenter
+            background: Rectangle {
+                color: buttonColour
+                width: 24 * virtualstudio.uiScale
+                radius: 4 * virtualstudio.uiScale
+            }
+            onClicked: { virtualstudio.inputMuted = !virtualstudio.inputMuted }
+            Image {
+                id: micMute
+                width: 11.57 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
+                anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+                source: virtualstudio.inputMuted ? "micoff.svg" : "mic.svg"
+            }
+            Colorize {
+                anchors.fill: micMute
+                source: micMute
+                hue: 0
+                saturation: virtualstudio.inputMuted ? muteButtonMutedSaturationValue : 0
+                lightness: virtualstudio.inputMuted ? muteButtonMutedLightnessValue : muteButtonLightnessValue
+            }
+            ToolTip {
+                parent: inputMute
+                visible: inputMute.hovered
+                bottomPadding: bottomToolTipMargin * virtualstudio.uiScale
+                rightPadding: rightToolTipMargin * virtualstudio.uiScale
+                delay: 100
+                contentItem: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 3
+                    anchors.fill: parent
+                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                    layer.enabled: true
+                    layer.effect: DropShadow {
+                        horizontalOffset: 1 * virtualstudio.uiScale
+                        verticalOffset: 1 * virtualstudio.uiScale
+                        radius: 10.0 * virtualstudio.uiScale
+                        samples: 21
+                        color: shadowColour
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        text: virtualstudio.inputMuted ?  qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
+                        color: toolTipTextColour
+                    }
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
             }
         }
     }

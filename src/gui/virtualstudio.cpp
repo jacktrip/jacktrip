@@ -911,6 +911,7 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
+        // Setup output volume
         m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputVolumePlugin);
         connect(this, &VirtualStudio::updatedOutputVolume, m_outputVolumePlugin,
@@ -918,6 +919,7 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedOutputMuted, m_outputVolumePlugin,
                 &Volume::muteUpdated);
 
+        // Setup input volume
         m_inputVolumePlugin = new Volume(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputVolumePlugin);
         connect(this, &VirtualStudio::updatedInputVolume, m_inputVolumePlugin,
@@ -925,15 +927,29 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
                 &Volume::muteUpdated);
 
+        // Setup output meter
         Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
         connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedOutputVuMeasurements);
 
+        // Setup input meter
         Meter* m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
+        
+        // Grab previous levels
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("Audio"));
+        m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
+        m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+        m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+        m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+        emit updatedInputVolume(m_inMultiplier);
+        emit updatedOutputVolume(m_outMultiplier);
+        emit updatedInputMuted(m_inMuted);
+        emit updatedOutputMuted(m_outMuted);
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();

@@ -111,6 +111,8 @@ class VirtualStudio : public QObject
         float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
     Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
                    updatedOutputVolume)
+    Q_PROPERTY(
+        bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)                   
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
