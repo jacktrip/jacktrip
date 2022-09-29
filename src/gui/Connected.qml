@@ -194,6 +194,32 @@ Item {
         clipped: outputClipped
     }
 
+    Slider {
+        id: inputSlider
+        from: 0.0
+        value: virtualstudio ? virtualstudio.inputVolume : 0.5
+        onMoved: { virtualstudio.inputVolume = value }
+        to: 1.0
+        padding: 0
+        y: inputDeviceMeters.y + 48 * virtualstudio.uiScale
+        anchors.left: inputDeviceMeters.left
+        anchors.right: parent.right
+        anchors.rightMargin: rightMargin * virtualstudio.uiScale
+    }
+
+    Slider {
+        id: outputSlider
+        from: 0.0
+        value: virtualstudio ? virtualstudio.outputVolume : 0.5
+        onMoved: { virtualstudio.outputVolume = value }
+        to: 1.0
+        padding: 0
+        y: outputCombo.y + 48 * virtualstudio.uiScale
+        anchors.left: outputCombo.left
+        anchors.right: parent.right
+        anchors.rightMargin: rightMargin * virtualstudio.uiScale
+    }
+
     Item {
         id: networkStatsHeader
         x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale

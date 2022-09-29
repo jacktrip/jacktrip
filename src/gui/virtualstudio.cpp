@@ -107,6 +107,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     });
 
     settings.beginGroup(QStringLiteral("Audio"));
+    m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
+    m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+    m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+    m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
 #ifdef RT_AUDIO
     m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
     m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
@@ -318,6 +322,66 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] int device)
     m_outputDevice = m_outputDeviceList.at(device);
     emit outputDeviceSelected(m_outputDevice);
 #endif
+}
+
+float VirtualStudio::inputVolume()
+{
+    return m_inMultiplier;
+}
+
+float VirtualStudio::outputVolume()
+{
+    return m_outMultiplier;
+}
+
+bool VirtualStudio::inputMuted()
+{
+    return m_inMuted;
+}
+
+bool VirtualStudio::outputMuted()
+{
+    return m_outMuted;
+}
+
+void VirtualStudio::setInputVolume(float multiplier)
+{
+    m_inMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("InMultiplier"), m_inMultiplier);
+    settings.endGroup();
+    emit updatedInputVolume(multiplier);
+}
+
+void VirtualStudio::setOutputVolume(float multiplier)
+{
+    m_outMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("OutMultiplier"), m_outMultiplier);
+    settings.endGroup();
+    emit updatedOutputVolume(multiplier);
+}
+
+void VirtualStudio::setInputMuted(bool muted)
+{
+    m_inMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("InMuted"), m_inMuted ? 1 : 0);
+    settings.endGroup();
+    emit updatedInputMuted(muted);
+}
+
+void VirtualStudio::setOutputMuted(bool muted)
+{
+    m_outMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("OutMuted"), m_outMuted ? 1 : 0);
+    settings.endGroup();
+    emit updatedOutputMuted(muted);
 }
 
 int VirtualStudio::bufferSize()
@@ -846,6 +910,20 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
+
+        m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
+        jackTrip->appendProcessPluginFromNetwork(m_outputVolumePlugin);
+        connect(this, &VirtualStudio::updatedOutputVolume, m_outputVolumePlugin,
+                &Volume::volumeUpdated);
+        connect(this, &VirtualStudio::updatedOutputMuted, m_outputVolumePlugin,
+                &Volume::muteUpdated);
+
+        m_inputVolumePlugin = new Volume(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputVolumePlugin);
+        connect(this, &VirtualStudio::updatedInputVolume, m_inputVolumePlugin,
+                &Volume::volumeUpdated);
+        connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
+                &Volume::muteUpdated);
 
         Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputMeter);

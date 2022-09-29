@@ -49,6 +49,7 @@
 
 #include "../JackTrip.h"
 #include "../Meter.h"
+#include "../Volume.h"
 #include "vsAudioInterface.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
@@ -106,6 +107,10 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
     Q_PROPERTY(
         bool shouldJoin READ shouldJoin WRITE setShouldJoin NOTIFY shouldJoinChanged)
+    Q_PROPERTY(
+        float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
+    Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
+                   updatedOutputVolume)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -161,6 +166,10 @@ class VirtualStudio : public QObject
     QString failedMessage();
     bool shouldJoin();
     void setShouldJoin(bool join);
+    float inputVolume();
+    float outputVolume();
+    bool inputMuted();
+    bool outputMuted();
 
    public slots:
     void toStandard();
@@ -180,6 +189,10 @@ class VirtualStudio : public QObject
     void showAbout();
     void updatedInputVuMeasurements(const QVector<float> valuesInDecibels);
     void updatedOutputVuMeasurements(const QVector<float> valuesInDecibels);
+    void setInputVolume(float multiplier);
+    void setOutputVolume(float multiplier);
+    void setInputMuted(bool muted);
+    void setOutputMuted(bool muted);
     void exit();
 
    signals:
@@ -217,6 +230,10 @@ class VirtualStudio : public QObject
     void periodicRefresh();
     void failedMessageChanged();
     void shouldJoinChanged();
+    void updatedInputVolume(float multiplier);
+    void updatedOutputVolume(float multiplier);
+    void updatedInputMuted(bool muted);
+    void updatedOutputMuted(bool muted);
 
    private slots:
     void slotAuthSucceded();
@@ -301,11 +318,18 @@ class VirtualStudio : public QObject
     Meter* m_inputMeter;
     Meter* m_outputMeter;
     Meter* m_inputTestMeter;
+    Volume* m_inputVolumePlugin;
+    Volume* m_outputVolumePlugin;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
+
+    float m_inMultiplier  = 0.7;
+    float m_outMultiplier = 1.0;
+    bool m_inMuted        = false;
+    bool m_outMuted       = false;
 
     VsAudioInterface* m_audioInterface = NULL;
 
