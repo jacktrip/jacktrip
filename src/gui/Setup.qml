@@ -5,25 +5,7 @@ import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
-    // width: 696; height: 577
     clip: true
-
-    // property var virtualstudio: {
-    //     "uiScale": 1,
-    //     "fontScale": 1,
-    //     "showWarnings": false,
-    //     "audioBackend": "RtAudio",
-    //     "selectableBackend": true,
-    //     "inputDevice": 0,
-    //     "outputDevice": 0,
-    //     "showDeviceSetup": true,
-    //     "darkMode": true
-    // }
-    // property var backendComboModel: ["JACK", "RtAudio"]
-    // property var inputComboModel: ["(default)", "Built-In Mic", "Elgato Wave XLR"]
-    // property var outputComboModel: ["(default)", "Headphones", "Elgato Wave XLR"]
-    // property bool inputClipped: false
-    // property var inputMeterModel: [0.0,0.0]
 
     property int fontBig: 28
     property int fontMedium: 13
@@ -45,6 +27,8 @@ Item {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
+    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
     property string saveButtonShadow: "#80A1A1A1"
     property string saveButtonBackgroundColour: "#F2F3F3"
     property string saveButtonPressedColour: "#E7E8E8"
@@ -57,13 +41,6 @@ Item {
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : "acknowledged"
-
-    // Rectangle
-    // {
-    //     id: background
-    //     anchors.fill: parent
-    //     color: backgroundColour
-    // }
 
     Item {
         id: ethernetWarningItem
@@ -420,6 +397,15 @@ Item {
             anchors.left: outputCombo.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            handle: Rectangle {
+                x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
+                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: outputSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
         }
         
         ComboBox {
@@ -466,6 +452,15 @@ Item {
             anchors.left: inputDeviceMeters.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            handle: Rectangle {
+                x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
+                y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: inputSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
         }
 
         Button {
