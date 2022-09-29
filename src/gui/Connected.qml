@@ -19,12 +19,13 @@ Item {
     property int rightToolTipMargin: 4
     
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
+    property string muteButtonMutedColor: "#FCB6B6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
-    property real muteButtonMutedLightnessValue: 0.36
-    property real muteButtonMutedSaturationValue: 0.84
+    property real muteButtonMutedLightnessValue: 0.24
+    property real muteButtonMutedSaturationValue: 0.73
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
     property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
@@ -231,7 +232,7 @@ Item {
             anchors.left: inputDeviceMeters.left
             anchors.verticalCenter: inputDeviceMeters.verticalCenter
             background: Rectangle {
-                color: buttonColour
+                color: virtualstudio.inputMuted ? muteButtonMutedColor : buttonColour
                 width: 24 * virtualstudio.uiScale
                 radius: 4 * virtualstudio.uiScale
             }
