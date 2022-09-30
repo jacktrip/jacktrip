@@ -209,11 +209,13 @@ Item {
             value: virtualstudio ? virtualstudio.inputVolume : 0.5
             onMoved: { virtualstudio.inputVolume = value }
             to: 1.0
+            enabled: !virtualstudio.inputMuted
             padding: 0
             y: inputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: inputMute.right
             anchors.leftMargin: 8 * virtualstudio.uiScale
             anchors.right: inputDeviceMeters.right
+            opacity: virtualstudio.inputMuted ? 0.3 : 1
             handle: Rectangle {
                 x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
                 y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
@@ -222,6 +224,7 @@ Item {
                 radius: 13 * virtualstudio.uiScale
                 color: inputSlider.pressed ? sliderPressedColour : sliderColour
                 border.color: buttonStroke
+                opacity: virtualstudio.inputMuted ? 0.3 : 1
             }
         }
 

@@ -376,13 +376,12 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
         }
 
-         Text {
+        Text {
             id: outputLabel
-            anchors.verticalCenter: outputCombo.verticalCenter
+            anchors.verticalCenter: virtualstudio.audioBackend != "JACK" ? outputCombo.verticalCenter : outputSlider.verticalCenter
             x: leftMargin * virtualstudio.uiScale
-            text: "Output Device"
+            text: virtualstudio.audioBackend != "JACK" ? "Output Device" : "Output Volume"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
 
@@ -393,7 +392,7 @@ Item {
             onMoved: { audioInterface.outputVolume = value }
             to: 1.0
             padding: 0
-            y: outputCombo.y + 48 * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + 48 * virtualstudio.uiScale : backendCombo.y + virtualstudio.uiScale * (virtualstudio.selectableBackend ? 60 : 0)
             anchors.left: outputCombo.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
@@ -422,11 +421,11 @@ Item {
         
         Text {
             id: inputLabel
-            anchors.verticalCenter: inputCombo.verticalCenter
+            anchors.top: virtualstudio.audioBackend != "JACK" ? inputCombo.top : inputDeviceMeters.top
+            anchors.topMargin: virtualstudio.audioBackend != "JACK" ? (inputCombo.height - inputLabel.height)/2 : 0
             x: leftMargin * virtualstudio.uiScale
-            text: "Input Device"
+            text: virtualstudio.audioBackend != "JACK" ? "Input Device" : "Input Volume"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
 
@@ -435,7 +434,7 @@ Item {
             anchors.left: backendCombo.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: inputCombo.y + 72 * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ? inputCombo.y + 72 * virtualstudio.uiScale : outputSlider.y + (72 * virtualstudio.uiScale)
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped
