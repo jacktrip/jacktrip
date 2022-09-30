@@ -251,7 +251,7 @@ Item {
                 source: micMute
                 hue: 0
                 saturation: virtualstudio.inputMuted ? muteButtonMutedSaturationValue : 0
-                lightness: virtualstudio.inputMuted ? muteButtonMutedLightnessValue : muteButtonLightnessValue
+                lightness: virtualstudio.inputMuted ? (inputMute.hovered ? muteButtonMutedLightnessValue + .1 : muteButtonMutedLightnessValue) : (inputMute.hovered ? muteButtonLightnessValue - .1 : muteButtonLightnessValue)
             }
             ToolTip {
                 parent: inputMute
