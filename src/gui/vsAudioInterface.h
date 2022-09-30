@@ -105,6 +105,7 @@ class VsAudioInterface : public QObject
     void settingsUpdated();
     void modeUpdated();
     void newVolumeMeterMeasurements(QVector<float> values);
+    void errorToProcess(const QString& errorMessage);
 
    private slots:
     void refreshAudioStream();

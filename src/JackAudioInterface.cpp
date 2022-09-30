@@ -80,6 +80,7 @@ JackAudioInterface::JackAudioInterface(
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)
+    , mJackTrip(jacktrip)
 {
 }
 
@@ -103,6 +104,7 @@ JackAudioInterface::JackAudioInterface(
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)
+    , mJackTrip(nullptr)
 {
     JackAudioInterface(nullptr, NumInChans, NumOutChans,
 #ifdef WAIR  // wair
@@ -139,6 +141,9 @@ void JackAudioInterface::setupClient()
     // was  jack_options_t options = JackNoStartServer;
     // and then jack_options_t options = JackLoadName;
     jack_options_t options = JackNullOption;  // from jackSimpleClient example
+    if (mJackTrip == nullptr) {
+        options = JackNoStartServer;
+    }
     jack_status_t status;
 
     // Try to connect to the server

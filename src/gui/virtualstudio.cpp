@@ -1123,6 +1123,8 @@ void VirtualStudio::slotAuthSucceded()
                 &VsAudioInterface::setAudioInterfaceMode);
         connect(m_audioInterface, &VsAudioInterface::newVolumeMeterMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
+        connect(m_audioInterface, &VsAudioInterface::errorToProcess, this,
+                &VirtualStudio::processError);
 
         m_audioInterface->setupPlugins();
 
@@ -1196,19 +1198,29 @@ void VirtualStudio::processFinished()
 
 void VirtualStudio::processError(const QString& errorMessage)
 {
+    bool shouldSwitchToRtAudio = false;
     if (!m_retryPeriod) {
         QMessageBox msgBox;
         if (errorMessage == QLatin1String("Peer Stopped")) {
             // Report the other end quitting as a regular occurance rather than an error.
             msgBox.setText("The Studio has been stopped.");
             msgBox.setWindowTitle(QStringLiteral("Disconnected"));
+        } else if (errorMessage == QLatin1String("Maybe the JACK server is not running?")) {
+            // Report the other end quitting as a regular occurance rather than an error.
+            msgBox.setText("The JACK server is not running. Switching back to RtAudio.");
+            msgBox.setWindowTitle(QStringLiteral("No JACK server"));
+            shouldSwitchToRtAudio = true;
         } else {
             msgBox.setText(QStringLiteral("Error: ").append(errorMessage));
             msgBox.setWindowTitle(QStringLiteral("Doh!"));
         }
         msgBox.exec();
     }
-    processFinished();
+    if (shouldSwitchToRtAudio) {
+        setAudioBackend("RtAudio");
+    } else {
+        processFinished();
+    }
 }
 
 void VirtualStudio::receivedConnectionFromPeer()
