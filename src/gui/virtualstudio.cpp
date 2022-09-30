@@ -1205,7 +1205,8 @@ void VirtualStudio::processError(const QString& errorMessage)
             // Report the other end quitting as a regular occurance rather than an error.
             msgBox.setText("The Studio has been stopped.");
             msgBox.setWindowTitle(QStringLiteral("Disconnected"));
-        } else if (errorMessage == QLatin1String("Maybe the JACK server is not running?")) {
+        } else if (errorMessage
+                   == QLatin1String("Maybe the JACK server is not running?")) {
             // Report the other end quitting as a regular occurance rather than an error.
             msgBox.setText("The JACK server is not running. Switching back to RtAudio.");
             msgBox.setWindowTitle(QStringLiteral("No JACK server"));
