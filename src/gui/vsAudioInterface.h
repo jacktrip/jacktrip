@@ -118,6 +118,7 @@ class VsAudioInterface : public QObject
     bool m_inMuted        = false;
     bool m_outMuted       = false;
     bool m_audioActive    = false;
+    bool m_hasBeenActive = false;
 
     // Needed in constructor
     int m_numAudioChansIn;   ///< Number of Audio Input Channels

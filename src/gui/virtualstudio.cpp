@@ -122,7 +122,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_previousOutput = m_outputDevice;
 #else
     m_selectableBackend = false;
-    m_audioInterface    = new VsAudioInterface();
+    m_vsAudioInterface    = new VsAudioInterface();
 
     // Set our combo box models to an empty list to avoid a reference error
     m_view.engine()->rootContext()->setContextProperty(
@@ -164,7 +164,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audioInterface"),
-                                                       m_audioInterface);
+                                                       m_vsAudioInterface);
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
@@ -797,8 +797,8 @@ void VirtualStudio::applySettings()
     emit outputDeviceChanged(m_outputDevice);
 #endif
 
-    if (m_audioInterface != NULL) {
-        m_audioInterface->closeAudio();
+    if (m_vsAudioInterface != NULL) {
+        m_vsAudioInterface->closeAudio();
     }
 
     // attempt to join studio if requested
@@ -1099,40 +1099,40 @@ void VirtualStudio::slotAuthSucceded()
     m_device->registerApp();
 
     if (m_showDeviceSetup) {
-        if (not m_audioInterface) {
-            m_audioInterface = new VsAudioInterface();
+        if (m_vsAudioInterface == NULL || m_vsAudioInterface == nullptr) {
+            m_vsAudioInterface = new VsAudioInterface();
             m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("audioInterface"), m_audioInterface);
+                QStringLiteral("audioInterface"), m_vsAudioInterface);
         }
 #ifdef RT_AUDIO
-        m_audioInterface->setInputDevice(m_inputDevice);
-        m_audioInterface->setOutputDevice(m_outputDevice);
-        m_audioInterface->setAudioInterfaceMode(m_useRtAudio);
+        m_vsAudioInterface->setInputDevice(m_inputDevice);
+        m_vsAudioInterface->setOutputDevice(m_outputDevice);
+        m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
 #endif
-        m_audioInterface->setupAudio();
+        m_vsAudioInterface->setupAudio();
 
-        connect(this, &VirtualStudio::inputDeviceChanged, m_audioInterface,
+        connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface,
                 &VsAudioInterface::setInputDevice);
-        connect(this, &VirtualStudio::inputDeviceSelected, m_audioInterface,
+        connect(this, &VirtualStudio::inputDeviceSelected, m_vsAudioInterface,
                 &VsAudioInterface::setInputDevice);
-        connect(this, &VirtualStudio::outputDeviceChanged, m_audioInterface,
+        connect(this, &VirtualStudio::outputDeviceChanged, m_vsAudioInterface,
                 &VsAudioInterface::setOutputDevice);
-        connect(this, &VirtualStudio::outputDeviceSelected, m_audioInterface,
+        connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface,
                 &VsAudioInterface::setOutputDevice);
-        connect(this, &VirtualStudio::audioBackendChanged, m_audioInterface,
+        connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface,
                 &VsAudioInterface::setAudioInterfaceMode);
-        connect(m_audioInterface, &VsAudioInterface::newVolumeMeterMeasurements, this,
+        connect(m_vsAudioInterface, &VsAudioInterface::newVolumeMeterMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
-        connect(m_audioInterface, &VsAudioInterface::errorToProcess, this,
+        connect(m_vsAudioInterface, &VsAudioInterface::errorToProcess, this,
                 &VirtualStudio::processError);
 
-        m_audioInterface->setupPlugins();
+        m_vsAudioInterface->setupPlugins();
 
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(QVector<float>(m_audioInterface->getNumInputChannels())));
+            QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
 
-        m_audioInterface->startProcess();
+        m_vsAudioInterface->startProcess();
     }
 
     if (m_userId.isEmpty()) {
@@ -1758,7 +1758,7 @@ VirtualStudio::~VirtualStudio()
     delete m_inputMeter;
     delete m_outputMeter;
     delete m_inputTestMeter;
-    delete m_audioInterface;
+    delete m_vsAudioInterface;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }

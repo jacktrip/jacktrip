@@ -194,7 +194,7 @@ void VsAudioInterface::closeAudio()
 
 void VsAudioInterface::refreshAudioStream()
 {
-    if (m_audioInterface != NULL && m_audioActive) {
+    if (m_audioInterface != NULL && m_audioActive && m_hasBeenActive) {
         if (m_audioInterfaceMode == VsAudioInterface::JACK) {
 #ifndef NO_JACK
             m_audioInterface->stopStream();
@@ -236,10 +236,12 @@ void VsAudioInterface::refreshAudioStream()
 
 void VsAudioInterface::replaceProcess()
 {
-    closeAudio();
-    setupAudio();
-    setupPlugins();
-    startProcess();
+    if (m_hasBeenActive) {
+        closeAudio();
+        setupAudio();
+        setupPlugins();
+        startProcess();
+    }
 }
 
 void VsAudioInterface::processMeterMeasurements(QVector<float> values)
@@ -260,19 +262,31 @@ void VsAudioInterface::addOutputPlugin(ProcessPlugin* plugin)
 void VsAudioInterface::setInputDevice(QString deviceName)
 {
     m_inputDeviceName = deviceName.toStdString();
+    if (m_inputDeviceName == "(default)") {
+        m_inputDeviceName = "";
+    }
+
     if (m_audioInterface != NULL) {
         m_audioInterface->setInputDevice(m_inputDeviceName);
+        if (m_audioActive) {
+            emit settingsUpdated();
+        }
     }
-    emit settingsUpdated();
 }
 
 void VsAudioInterface::setOutputDevice(QString deviceName)
 {
     m_outputDeviceName = deviceName.toStdString();
+    if (m_outputDeviceName == "(default)") {
+        m_outputDeviceName = "";
+    }
+
     if (m_audioInterface != NULL) {
         m_audioInterface->setOutputDevice(m_outputDeviceName);
+        if (m_audioActive) {
+            emit settingsUpdated();
+        }
     }
-    emit settingsUpdated();
 }
 
 void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio)
@@ -282,7 +296,9 @@ void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio)
     } else {
         m_audioInterfaceMode = VsAudioInterface::JACK;
     }
-    emit modeUpdated();
+    if (m_audioInterface != NULL || m_hasBeenActive) {
+        emit modeUpdated();
+    }
 }
 
 int VsAudioInterface::getNumInputChannels()
@@ -333,6 +349,7 @@ void VsAudioInterface::startProcess()
             emit errorToProcess(QString::fromUtf8(e.what()));
         }
         m_audioActive = true;
+        m_hasBeenActive = true;
     }
 }
 
