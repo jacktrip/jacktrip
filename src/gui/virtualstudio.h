@@ -328,7 +328,7 @@ class VirtualStudio : public QObject
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
 
-    float m_inMultiplier  = 0.7;
+    float m_inMultiplier  = 1.0;
     float m_outMultiplier = 1.0;
     bool m_inMuted        = false;
     bool m_outMuted       = false;
