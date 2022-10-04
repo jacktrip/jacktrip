@@ -281,7 +281,7 @@ class VirtualStudio : public QObject
 
     bool m_onConnectedScreen = false;
     bool m_isExiting         = false;
-    bool m_showInactive      = false;
+    bool m_showInactive      = true;
     bool m_showSelfHosted    = false;
     bool m_showCreateStudio  = false;
     bool m_showDeviceSetup   = true;

@@ -72,7 +72,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
     m_uiScale         = settings.value(QStringLiteral("UiScale"), 1).toFloat();
     m_darkMode        = settings.value(QStringLiteral("DarkMode"), false).toBool();
-    m_showInactive    = settings.value(QStringLiteral("ShowInactive"), false).toBool();
+    m_showInactive    = settings.value(QStringLiteral("ShowInactive"), true).toBool();
     m_showSelfHosted  = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
     m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
     m_showWarnings    = settings.value(QStringLiteral("ShowWarnings"), true).toBool();
@@ -647,6 +647,10 @@ void VirtualStudio::logout()
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.remove(QStringLiteral("RefreshToken"));
     settings.remove(QStringLiteral("UserId"));
+    settings.remove(QStringLiteral("ShowInactive"));
+    settings.remove(QStringLiteral("ShowSelfHosted"));
+    settings.remove(QStringLiteral("ShowDeviceSetup"));
+    settings.remove(QStringLiteral("ShowWarnings"));
     settings.endGroup();
 
     m_refreshTimer.stop();
