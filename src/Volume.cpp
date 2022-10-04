@@ -93,10 +93,13 @@ void Volume::updateNumChannels(int nChansIn, int nChansOut)
 
 void Volume::volumeUpdated(float multiplier)
 {
-    mVolMultiplier = multiplier;
+    // maps 0.0-1.0 to a -40 dB to 0 dB range
+    // update if volumedsp.dsp and/or volumedsp.h
+    // change their ranges
+    mVolMultiplier = 40.0*multiplier - 40.0;
     for (int i = 0; i < mNumChannels; i++) {
         int ndx = volumeUIP[i]->getParamIndex("Volume");
-        volumeUIP[i]->setParamValue(ndx, multiplier);
+        volumeUIP[i]->setParamValue(ndx, mVolMultiplier);
     }
 }
 

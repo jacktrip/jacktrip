@@ -94,7 +94,7 @@ class Volume : public ProcessPlugin
     std::vector<APIUI*> volumeUIP;
     float fs;
     int mNumChannels;
-    float mVolMultiplier = 1.0;
+    float mVolMultiplier = 0.0;
     bool isMuted         = false;
 };
 
