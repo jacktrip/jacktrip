@@ -40,6 +40,7 @@
 
 #include <QDebug>
 #include <QObject>
+#include <QSharedPointer>
 #include <QString>
 
 #ifndef NO_JACK
@@ -118,14 +119,14 @@ class VsAudioInterface : public QObject
     bool m_inMuted        = false;
     bool m_outMuted       = false;
     bool m_audioActive    = false;
-    bool m_hasBeenActive = false;
+    bool m_hasBeenActive  = false;
 
     // Needed in constructor
     int m_numAudioChansIn;   ///< Number of Audio Input Channels
     int m_numAudioChansOut;  ///< Number of Audio Output Channels
     AudioInterface::audioBitResolutionT m_audioBitResolution;  ///< Audio Bit Resolutions
 
-    AudioInterface* m_audioInterface;
+    QSharedPointer<AudioInterface> m_audioInterface;
     uint32_t m_sampleRate;                              ///< Sample Rate
     uint32_t m_deviceID;                                ///< RTAudio DeviceID
     std::string m_inputDeviceName, m_outputDeviceName;  ///< RTAudio device names

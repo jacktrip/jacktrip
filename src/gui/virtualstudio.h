@@ -333,7 +333,7 @@ class VirtualStudio : public QObject
     bool m_inMuted        = false;
     bool m_outMuted       = false;
 
-    VsAudioInterface* m_vsAudioInterface = NULL;
+    QSharedPointer<VsAudioInterface> m_vsAudioInterface;
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
