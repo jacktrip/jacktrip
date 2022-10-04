@@ -74,7 +74,7 @@ VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
     settings.endGroup();
 
     connect(this, &VsAudioInterface::settingsUpdated, this,
-            &VsAudioInterface::refreshAudioStream);
+            &VsAudioInterface::replaceProcess);
     connect(this, &VsAudioInterface::modeUpdated, this,
             &VsAudioInterface::replaceProcess);
 }
@@ -195,48 +195,6 @@ void VsAudioInterface::closeAudio()
         m_numAudioChansIn  = gDefaultNumInChannels;
         m_numAudioChansOut = gDefaultNumOutChannels;
         m_deviceID         = gDefaultDeviceID;
-    }
-}
-
-void VsAudioInterface::refreshAudioStream()
-{
-    if (!m_audioInterface.isNull() && m_audioActive && m_hasBeenActive) {
-        if (m_audioInterfaceMode == VsAudioInterface::JACK) {
-#ifndef NO_JACK
-            m_audioInterface->stopStream();
-            m_audioActive = false;
-            m_audioInterface->startProcess();
-            m_audioInterface->connectDefaultPorts();
-            m_audioActive = true;
-#endif          //__NON_JACK__
-#ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
-#ifdef RT_AUDIO
-            m_audioInterface->stopProcess();
-            m_audioInterface->setInputDevice(m_inputDeviceName);
-            m_audioInterface->setOutputDevice(m_outputDeviceName);
-            m_audioInterface->setup();
-            // Setup might have reduced number of channels
-            m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-            m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-            // Setup might have changed buffer size
-            m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
-            m_audioInterface->startProcess();
-#endif
-#endif
-        } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
-#ifdef RT_AUDIO
-            m_audioInterface->stopProcess();
-            m_audioInterface->setInputDevice(m_inputDeviceName);
-            m_audioInterface->setOutputDevice(m_outputDeviceName);
-            m_audioInterface->setup();
-            // Setup might have reduced number of channels
-            m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-            m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-            // Setup might have changed buffer size
-            m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
-            m_audioInterface->startProcess();
-#endif
-        }
     }
 }
 

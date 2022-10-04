@@ -109,7 +109,7 @@ class VsAudioInterface : public QObject
     void errorToProcess(const QString& errorMessage);
 
    private slots:
-    void refreshAudioStream();
+    // void refreshAudioStream();
     void replaceProcess();
     void processMeterMeasurements(QVector<float> values);
 

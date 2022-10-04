@@ -107,9 +107,6 @@ class AudioInterface
     /// \brief Stops the process-callback thread
     /// \return 0 on success, otherwise a non-zero error code
     virtual int stopProcess() const = 0;
-    /// \brief Stops the audio stream without stopping the whole audio thread
-    /// \return 0 on success, otherwise a non-zero error code
-    virtual int stopStream() const = 0;
     /** \brief Process callback. Subclass should call this callback after obtaining the
     in_buffer and out_buffer pointers.
     * \param in_buffer Array of input audio samplers for each channel. The user

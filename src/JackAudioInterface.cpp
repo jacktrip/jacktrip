@@ -300,18 +300,6 @@ int JackAudioInterface::stopProcess() const
 }
 
 //*******************************************************************************
-int JackAudioInterface::stopStream() const
-{
-    QMutexLocker locker(&sJackMutex);
-    int code = (jack_deactivate(mClient));
-    if (code != 0) {
-        std::cerr << "Cannot deactivate JACK client" << std::endl;
-        return (code);
-    }
-    return (0);
-}
-
-//*******************************************************************************
 void JackAudioInterface::jackShutdown(jack_status_t /*code*/, const char* reason,
                                       void* /*arg*/)
 {

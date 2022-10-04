@@ -102,9 +102,6 @@ class JackAudioInterface : public AudioInterface
      * \return 0 on success, otherwise a non-zero error code
      */
     virtual int stopProcess() const;
-    /// \brief Stops the audio stream without stopping the whole audio thread
-    /// \return 0 on success, otherwise a non-zero error code
-    virtual int stopStream() const;
     /// \brief Connect the default ports, capture to sends, and receives to playback
     void connectDefaultPorts();
 
