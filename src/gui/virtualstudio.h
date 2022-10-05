@@ -49,6 +49,7 @@
 
 #include "../JackTrip.h"
 #include "../Meter.h"
+#include "vsConstants.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
@@ -96,6 +97,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
+    Q_PROPERTY(bool testMode READ testMode WRITE setTestMode NOTIFY testModeChanged)
     Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup WRITE setShowDeviceSetup NOTIFY
                    showDeviceSetupChanged)
     Q_PROPERTY(bool showWarnings READ showWarnings WRITE setShowWarnings NOTIFY
@@ -149,6 +151,8 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    bool testMode();
+    void setTestMode(bool test);
     QUrl studioToJoin();
     void setStudioToJoin(const QUrl& url);
     bool showDeviceSetup();
@@ -208,6 +212,7 @@ class VirtualStudio : public QObject
     void uiScaleChanged();
     void newScale();
     void darkModeChanged();
+    void testModeChanged();
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
@@ -290,7 +295,9 @@ class VirtualStudio : public QObject
     float m_uiScale;
     float m_previousUiScale;
     int m_bufferStrategy    = 0;
+    QString m_apiHost       = PROD_API_HOST;
     bool m_darkMode         = false;
+    bool m_testMode         = false;
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
     bool m_authenticated = false;

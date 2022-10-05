@@ -46,6 +46,7 @@
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
+#include "vsConstants.h"
 #include "vsPinger.h"
 #include "vsServerInfo.h"
 #include "vsWebSocket.h"
@@ -92,6 +93,7 @@ class VsDevice : public QObject
     QString m_token;
     QString m_apiPrefix;
     QString m_apiSecret;
+    QString m_apiHost = PROD_API_HOST;
     QJsonObject m_deviceAgentConfig;
     VsWebSocket* m_webSocket = NULL;
     QScopedPointer<JackTrip> m_jackTrip;

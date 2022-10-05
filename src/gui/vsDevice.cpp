@@ -46,9 +46,15 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     m_apiPrefix = settings.value(QStringLiteral("ApiPrefix"), "").toString();
-    m_apiSecret = settings.value(QStringLiteral("ApiSecret"), "").toString();
-    m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
-    m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
+    m_apiSecret   = settings.value(QStringLiteral("ApiSecret"), "").toString();
+    m_appUUID     = settings.value(QStringLiteral("AppUUID"), "").toString();
+    m_appID       = settings.value(QStringLiteral("AppID"), "").toString();
+    bool testMode = settings.value(QStringLiteral("TestMode"), false).toBool();
+    settings.endGroup();
+
+    if (testMode) {
+        m_apiHost = TEST_API_HOST;
+    }
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
@@ -60,7 +66,7 @@ void VsDevice::registerApp()
 
     // check if device exists
     QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
+        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
@@ -116,7 +122,7 @@ void VsDevice::removeApp()
     }
 
     QNetworkReply* reply = m_authenticator->deleteResource(
-        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
+        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -148,8 +154,7 @@ void VsDevice::sendHeartbeat()
 {
     if (m_webSocket == nullptr) {
         m_webSocket = new VsWebSocket(
-            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
-                     .arg(m_appID)),
+            QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat").arg(m_apiHost, m_appID)),
             m_authenticator->token(), m_apiPrefix, m_apiSecret);
         connect(m_webSocket, &VsWebSocket::textMessageReceived, this,
                 &VsDevice::onTextMessageReceived);
@@ -211,8 +216,7 @@ void VsDevice::sendHeartbeat()
     } else {
         // Send heartbeat via POST API
         QNetworkReply* reply = m_authenticator->post(
-            QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat")
-                .arg(m_appID),
+            QStringLiteral("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, m_appID),
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [=]() {
             if (reply->error() != QNetworkReply::NoError) {
@@ -239,7 +243,7 @@ void VsDevice::setServerId(QString serverId)
     };
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_authenticator->put(
-         QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID),
+         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
          request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
@@ -440,7 +444,7 @@ void VsDevice::registerJTAsDevice()
     QJsonDocument request = QJsonDocument(json);
 
     QNetworkReply* reply = m_authenticator->post(
-        QStringLiteral("https://app.jacktrip.org/api/devices"), request.toJson());
+        QStringLiteral("https://%1/api/devices").arg(m_apiHost), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
