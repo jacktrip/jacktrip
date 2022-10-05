@@ -1008,7 +1008,7 @@ void VirtualStudio::slotAuthSucceded()
     if (m_regions.isEmpty()) {
         getRegions();
     }
-    if (m_userMetadata.isEmpty()) {
+    if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
         getUserMetadata();
     }
 
@@ -1488,6 +1488,11 @@ void VirtualStudio::getUserId()
         settings.setValue(QStringLiteral("UserId"), m_userId);
         settings.endGroup();
         getSubscriptions();
+
+        if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
+            getUserMetadata();
+        }
+
         reply->deleteLater();
     });
 }
