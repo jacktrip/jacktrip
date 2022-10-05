@@ -40,9 +40,10 @@
 
 #include <QString>
 
+const QString AUTH_AUTHORIZE_URI = QStringLiteral("https://auth.jacktrip.org/authorize");
+const QString AUTH_TOKEN_URI = QStringLiteral("https://auth.jacktrip.org/oauth/token");
 const QString AUTH_AUDIENCE  = QStringLiteral("https://api.jacktrip.org");
 const QString AUTH_CLIENT_ID = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
-const QString WSS_ORIGIN     = QStringLiteral("http://jacktrip.local");
 const QString PROD_API_HOST  = QStringLiteral("app.jacktrip.org");
 const QString TEST_API_HOST  = QStringLiteral("test.jacktrip.org");
 

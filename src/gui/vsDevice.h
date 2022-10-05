@@ -57,7 +57,7 @@ class VsDevice : public QObject
 
    public:
     // Constructor
-    explicit VsDevice(QOAuth2AuthorizationCodeFlow* authenticator,
+    explicit VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
                       QObject* parent = nullptr);
 
     // Public functions

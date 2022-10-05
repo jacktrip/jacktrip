@@ -40,18 +40,20 @@
 #include <QDebug>
 
 // Constructor
-VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
+VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
+                   QObject* parent)
     : QObject(parent), m_authenticator(authenticator)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     m_apiPrefix = settings.value(QStringLiteral("ApiPrefix"), "").toString();
-    m_apiSecret   = settings.value(QStringLiteral("ApiSecret"), "").toString();
-    m_appUUID     = settings.value(QStringLiteral("AppUUID"), "").toString();
-    m_appID       = settings.value(QStringLiteral("AppID"), "").toString();
-    bool testMode = settings.value(QStringLiteral("TestMode"), false).toBool();
+    m_apiSecret = settings.value(QStringLiteral("ApiSecret"), "").toString();
+    m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
+    m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
     settings.endGroup();
 
+    // Determine which API host to use
+    m_apiHost = PROD_API_HOST;
     if (testMode) {
         m_apiHost = TEST_API_HOST;
     }
@@ -153,9 +155,10 @@ void VsDevice::removeApp()
 void VsDevice::sendHeartbeat()
 {
     if (m_webSocket == nullptr) {
-        m_webSocket = new VsWebSocket(
-            QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat").arg(m_apiHost, m_appID)),
-            m_authenticator->token(), m_apiPrefix, m_apiSecret);
+        m_webSocket =
+            new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat")
+                                     .arg(m_apiHost, m_appID)),
+                            m_authenticator->token(), m_apiPrefix, m_apiSecret);
         connect(m_webSocket, &VsWebSocket::textMessageReceived, this,
                 &VsDevice::onTextMessageReceived);
     }
