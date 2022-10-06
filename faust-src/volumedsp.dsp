@@ -7,6 +7,8 @@ declare description "Volume Control Faust Plugin for JackTrip, based on Faust ex
 
 import("stdfaust.lib");
 mute = checkbox("[1] Mute");
-gain = hslider("[0] Volume", 0, -40, 0, 0.1) : ba.db2linear : si.smoo : _;
-gainVMute = _ * gain, 0 : select2(mute) : _;
-process = _ <: vgroup("Volume Control", _ : gainVMute);
+gain(v) = v : ba.db2linear : si.smoo : _;
+gainVMute(v) = _ * gain(v), 0 : select2(mute) : _;
+zeroCutoff(v) = _ * gain(v), 0 : select2(v == -40) : _;
+volume = hslider("[0] Volume", 0, -40, 0, 0.1);
+process = _ <: vgroup("Volume Control", _ : gainVMute(volume) : zeroCutoff(volume));
