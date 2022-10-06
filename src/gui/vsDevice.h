@@ -43,6 +43,7 @@
 #include <QUuid>
 #include <QtNetworkAuth>
 #include <QtWebSockets>
+#include <QTimer>
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
@@ -75,10 +76,17 @@ class VsDevice : public QObject
 
    signals:
     void updateNetworkStats(QJsonObject stats);
+    void updatedVolumeFromServer(float multiplier);
+    void updatedMuteFromServer(bool muted);
+   
+   public slots:
+    void updateVolume(float multiplier);
+    void updateMute(bool muted);
 
    private slots:
     void terminateJackTrip();
     void onTextMessageReceived(const QString& message);
+    void sendLevels();
 
    private:
     void registerJTAsDevice();
@@ -97,6 +105,9 @@ class VsDevice : public QObject
     QScopedPointer<JackTrip> m_jackTrip;
     QOAuth2AuthorizationCodeFlow* m_authenticator;
     QRandomGenerator m_randomizer;
+    float m_captureVolume = 1.0;
+    bool m_captureMute = false;
+    QTimer* m_sendVolumeTimer;
 };
 
 #endif  // VSDEVICE_H

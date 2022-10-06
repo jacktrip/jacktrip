@@ -49,6 +49,10 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
     m_apiSecret = settings.value(QStringLiteral("ApiSecret"), "").toString();
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
+
+    m_sendVolumeTimer = new QTimer(this);
+    m_sendVolumeTimer->setSingleShot(true);
+    connect(m_sendVolumeTimer, &QTimer::timeout, this, &VsDevice::sendLevels);
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
@@ -253,6 +257,29 @@ void VsDevice::setServerId(QString serverId)
     });
 }
 
+void VsDevice::sendLevels()
+{
+    // Add latest volume and mute values to heartbeat body
+    QJsonObject json = {
+        {QLatin1String("captureVolume"), (int)(m_captureVolume * 100)},
+        {QLatin1String("captureMute"), m_captureMute},
+    };
+    QJsonDocument request = QJsonDocument(json);
+    QNetworkReply* reply  = m_authenticator->put(
+         QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID),
+         request.toJson());
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            // TODO: Fix me
+            // emit authFailed();
+            reply->deleteLater();
+            return;
+        }
+        reply->deleteLater();
+    });
+}
+
 // initJackTrip spawns a new jacktrip process with the desired settings
 JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
                                  [[maybe_unused]] std::string input,
@@ -353,6 +380,34 @@ void VsDevice::stopPinger()
     }
 }
 
+// updateVolume sets VsDevice's capture volume to the provided float
+void VsDevice::updateVolume(float multiplier)
+{
+    if (multiplier == m_captureVolume) {
+        return;
+    }
+    m_captureVolume = multiplier;
+
+    if (m_sendVolumeTimer)
+    {
+        m_sendVolumeTimer->start(200);
+    }
+}
+
+// updateMute sets VsDevice's capture mute to the provided boolean
+void VsDevice::updateMute(bool muted)
+{
+    if (muted == m_captureMute) {
+        return;
+    }
+    m_captureMute = muted;
+
+    if (m_sendVolumeTimer)
+    {
+        m_sendVolumeTimer->start(200);
+    }
+}
+
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals
 void VsDevice::terminateJackTrip()
 {
@@ -373,6 +428,19 @@ void VsDevice::onTextMessageReceived(const QString& message)
     if (m_pinger != nullptr && !m_pinger->active()) {
         m_pinger->setToken(token);
         m_pinger->start();
+    }
+
+    bool newMute = newState["captureMute"].toBool();
+    float newCaptureVolume = (float)(newState["captureVolume"].toDouble() / 100.0);
+
+    if (newCaptureVolume != m_captureVolume) {
+        m_captureVolume = newCaptureVolume;
+        emit updatedVolumeFromServer(m_captureVolume);
+    }
+
+    if (newMute != m_captureMute) {
+        m_captureMute = newMute;
+        emit updatedMuteFromServer(m_captureMute);
     }
 
     reconcileAgentConfig(newState);

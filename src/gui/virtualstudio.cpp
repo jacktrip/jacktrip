@@ -1159,6 +1159,10 @@ void VirtualStudio::slotAuthSucceded()
         }
     }
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
+    connect(m_device, &VsDevice::updatedVolumeFromServer, this, &VirtualStudio::setInputVolume);
+    connect(m_device, &VsDevice::updatedMuteFromServer, this, &VirtualStudio::setInputMuted);
+    connect(this, &VirtualStudio::updatedInputVolume, m_device, &VsDevice::updateVolume);
+    connect(this, &VirtualStudio::updatedInputMuted, m_device, &VsDevice::updateMute);
 }
 
 void VirtualStudio::slotAuthFailed()
