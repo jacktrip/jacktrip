@@ -1880,11 +1880,11 @@ class volumedsp : public dsp {
  private:
 	
 	FAUSTFLOAT fHslider0;
+	FAUSTFLOAT fCheckbox0;
 	int fSampleRate;
 	float fConst0;
 	float fConst1;
 	float fRec0[2];
-	FAUSTFLOAT fCheckbox0;
 	
  public:
 	
@@ -1968,13 +1968,13 @@ class volumedsp : public dsp {
 		FAUSTFLOAT* output0 = outputs[0];
 		float fSlow0 = float(fHslider0);
 		int iSlow1 = fSlow0 == -40.0f;
-		float fSlow2 = fConst0 * std::pow(10.0f, 0.0500000007f * fSlow0);
-		int iSlow3 = int(float(fCheckbox0));
+		int iSlow2 = int(float(fCheckbox0));
+		float fSlow3 = fConst0 * std::pow(10.0f, 0.0500000007f * fSlow0);
 		for (int i0 = 0; i0 < count; i0 = i0 + 1) {
 			float fTemp0 = float(input0[i0]);
-			fRec0[0] = fSlow2 + fConst1 * fRec0[1];
+			fRec0[0] = fSlow3 + fConst1 * fRec0[1];
 			float fThen0 = fTemp0 * fRec0[0];
-			float fThen1 = fRec0[0] * ((iSlow3) ? 0.0f : fThen0);
+			float fThen1 = ((iSlow2) ? 0.0f : fThen0);
 			output0[i0] = FAUSTFLOAT(((iSlow1) ? 0.0f : fThen1));
 			fRec0[1] = fRec0[0];
 		}
