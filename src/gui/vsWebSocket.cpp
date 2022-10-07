@@ -98,7 +98,7 @@ void VsWebSocket::onClosed()
     m_connected = false;
 }
 
-void VsWebSocket::onError(QAbstractSocket::SocketError error)
+void VsWebSocket::onError(QAbstractSocket::SocketError /*error*/)
 {
     // qDebug() << error;
     m_error = true;

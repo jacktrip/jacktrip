@@ -3,13 +3,13 @@ author: "Dominick Hing"
 license: "MIT Style STK-4.2"
 name: "meter"
 version: "1.0"
-Code generated with Faust 2.40.0 (https://faust.grame.fr)
+Code generated with Faust 2.41.1 (https://faust.grame.fr)
 Compilation options: -a faust2header.cpp -lang cpp -i -inpl -cn meterdsp -es 1 -mcd 16
 -single -ftz 0
 ------------------------------------------------------------ */
 
-#ifndef __METERDSP_H__
-#define __METERDSP_H__
+#ifndef __meterdsp_H__
+#define __meterdsp_H__
 
 // NOTE: ANY INCLUDE-GUARD HERE MUST BE DERIVED FROM THE CLASS NAME
 //
@@ -48,18 +48,71 @@ Compilation options: -a faust2header.cpp -lang cpp -i -inpl -cn meterdsp -es 1 -
 #include <string>
 #include <vector>
 
+/************************************************************************
+ ************************************************************************
+    FAUST compiler
+    Copyright (C) 2003-2018 GRAME, Centre National de Creation Musicale
+    ---------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ ************************************************************************
+ ************************************************************************/
+
+#ifndef __export__
+#define __export__
+
+#define FAUSTVERSION "2.41.1"
+
+// Use FAUST_API for code that is part of the external API but is also compiled in faust
+// and libfaust Use LIBFAUST_API for code that is compiled in faust and libfaust
+
+#ifdef _WIN32
+#pragma warning(disable : 4251)
+#ifdef FAUST_EXE
+#define FAUST_API
+#define LIBFAUST_API
+#elif FAUST_LIB
+#define FAUST_API    __declspec(dllexport)
+#define LIBFAUST_API __declspec(dllexport)
+#else
+#define FAUST_API
+#define LIBFAUST_API
+#endif
+#else
+#ifdef FAUST_EXE
+#define FAUST_API
+#define LIBFAUST_API
+#else
+#define FAUST_API    __attribute__((visibility("default")))
+#define LIBFAUST_API __attribute__((visibility("default")))
+#endif
+#endif
+
+#endif
+
 #ifndef FAUSTFLOAT
 #define FAUSTFLOAT float
 #endif
 
-struct UI;
-struct Meta;
+struct FAUST_API UI;
+struct FAUST_API Meta;
 
 /**
  * DSP memory manager.
  */
 
-struct dsp_memory_manager {
+struct FAUST_API dsp_memory_manager {
     virtual ~dsp_memory_manager() {}
 
     /**
@@ -99,7 +152,7 @@ struct dsp_memory_manager {
  * Signal processor definition.
  */
 
-class dsp
+class FAUST_API dsp
 {
    public:
     dsp() {}
@@ -200,7 +253,7 @@ class dsp
  * Generic DSP decorator.
  */
 
-class decorator_dsp : public dsp
+class FAUST_API decorator_dsp : public dsp
 {
    protected:
     dsp* fDSP;
@@ -243,7 +296,7 @@ class decorator_dsp : public dsp
  * to create DSP instances from a compiled DSP program.
  */
 
-class dsp_factory
+class FAUST_API dsp_factory
 {
    protected:
     // So that to force sub-classes to use deleteDSPFactory(dsp_factory* factory);
@@ -269,7 +322,7 @@ class dsp_factory
 #include <xmmintrin.h>
 #endif
 
-class ScopedNoDenormals
+class FAUST_API ScopedNoDenormals
 {
    private:
     intptr_t fpsr;
@@ -385,7 +438,7 @@ architecture section is not modified.
  The base class of Meta handler to be used in dsp::metadata(Meta* m) method to retrieve
  (key, value) metadata.
  */
-struct Meta {
+struct FAUST_API Meta {
     virtual ~Meta() {}
     virtual void declare(const char* key, const char* value) = 0;
 };
@@ -433,7 +486,7 @@ struct Meta {
 struct Soundfile;
 
 template<typename REAL>
-struct UIReal {
+struct FAUST_API UIReal {
     UIReal() {}
     virtual ~UIReal() {}
 
@@ -464,8 +517,8 @@ struct UIReal {
 
     // -- soundfiles
 
-    virtual void addSoundfile(const char* label, const char* filename,
-                              Soundfile** sf_zone) = 0;
+    virtual void addSoundfile(const char* /*label*/, const char* /*filename*/,
+                              Soundfile** /*sf_zone*/) = 0;
 
     // -- metadata declarations
 
@@ -475,7 +528,7 @@ struct UIReal {
     virtual int sizeOfFAUSTFLOAT() { return sizeof(FAUSTFLOAT); }
 };
 
-struct UI : public UIReal<FAUSTFLOAT> {
+struct FAUST_API UI : public UIReal<FAUSTFLOAT> {
     UI() {}
     virtual ~UI() {}
 };
@@ -506,10 +559,13 @@ struct UI : public UIReal<FAUSTFLOAT> {
  architecture section is not modified.
  ************************************************************************/
 
-#ifndef FAUST_PATHBUILDER_H
-#define FAUST_PATHBUILDER_H
+#ifndef __PathBuilder__
+#define __PathBuilder__
 
 #include <algorithm>
+#include <map>
+#include <regex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -518,46 +574,190 @@ struct UI : public UIReal<FAUSTFLOAT> {
  * Helper class to build complete hierarchical path for UI items.
  ******************************************************************************/
 
-class PathBuilder
+class FAUST_API PathBuilder
 {
    protected:
     std::vector<std::string> fControlsLevel;
+    std::vector<std::string> fFullPaths;
+    std::map<std::string, std::string> fFull2Short;  // filled by computeShortNames()
+
+    /**
+     * @brief check if a character is acceptable for an ID
+     *
+     * @param c
+     * @return true is the character is acceptable for an ID
+     */
+    bool isIDChar(char c) const
+    {
+        return ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'))
+               || ((c >= '0') && (c <= '9'));
+    }
+
+    /**
+     * @brief remove all "/0x00" parts
+     *
+     * @param src
+     * @return modified string
+     */
+    std::string remove0x00(const std::string& src) const
+    {
+        return std::regex_replace(src, std::regex("/0x00"), "");
+    }
+
+    /**
+     * @brief replace all non ID char with '_' (one '_' may replace several non ID char)
+     *
+     * @param src
+     * @return modified string
+     */
+    std::string str2ID(const std::string& src) const
+    {
+        std::string dst;
+        bool need_underscore = false;
+        for (char c : src) {
+            if (isIDChar(c) || (c == '/')) {
+                if (need_underscore) {
+                    dst.push_back('_');
+                    need_underscore = false;
+                }
+                dst.push_back(c);
+            } else {
+                need_underscore = true;
+            }
+        }
+        return dst;
+    }
+
+    /**
+     * @brief Keep only the last n slash-parts
+     *
+     * @param src
+     * @param n : 1 indicates the last slash-part
+     * @return modified string
+     */
+    std::string cut(const std::string& src, int n) const
+    {
+        std::string rdst;
+        for (int i = int(src.length()) - 1; i >= 0; i--) {
+            char c = src[i];
+            if (c != '/') {
+                rdst.push_back(c);
+            } else if (n == 1) {
+                std::string dst;
+                for (int j = int(rdst.length()) - 1; j >= 0; j--) {
+                    dst.push_back(rdst[j]);
+                }
+                return dst;
+            } else {
+                n--;
+                rdst.push_back(c);
+            }
+        }
+        return src;
+    }
+
+    void addFullPath(const std::string& label) { fFullPaths.push_back(buildPath(label)); }
+
+    /**
+     * @brief Compute the mapping between full path and short names
+     */
+    void computeShortNames()
+    {
+        std::vector<std::string>
+            uniquePaths;  // all full paths transformed but made unique with a prefix
+        std::map<std::string, std::string>
+            unique2full;  // all full paths transformed but made unique with a prefix
+        char num_buffer[16];
+        int pnum = 0;
+
+        for (const auto& s : fFullPaths) {
+            sprintf(num_buffer, "%d", pnum++);
+            std::string u = "/P" + std::string(num_buffer) + str2ID(remove0x00(s));
+            uniquePaths.push_back(u);
+            unique2full[u] = s;  // remember the full path associated to a unique path
+        }
+
+        std::map<std::string, int> uniquePath2level;  // map path to level
+        for (const auto& s : uniquePaths)
+            uniquePath2level[s] = 1;  // we init all levels to 1
+        bool have_collisions = true;
+
+        while (have_collisions) {
+            // compute collision list
+            std::set<std::string> collisionSet;
+            std::map<std::string, std::string> short2full;
+            have_collisions = false;
+            for (const auto& it : uniquePath2level) {
+                std::string u         = it.first;
+                int n                 = it.second;
+                std::string shortName = cut(u, n);
+                auto p                = short2full.find(shortName);
+                if (p == short2full.end()) {
+                    // no collision
+                    short2full[shortName] = u;
+                } else {
+                    // we have a collision, add the two paths to the collision set
+                    have_collisions = true;
+                    collisionSet.insert(u);
+                    collisionSet.insert(p->second);
+                }
+            }
+            for (const auto& s : collisionSet)
+                uniquePath2level[s]++;  // increase level of colliding path
+        }
+
+        for (const auto& it : uniquePath2level) {
+            std::string u               = it.first;
+            int n                       = it.second;
+            std::string shortName       = replaceCharList(cut(u, n), {'/'}, '_');
+            fFull2Short[unique2full[u]] = shortName;
+        }
+    }
+
+    std::string replaceCharList(const std::string& str, const std::vector<char>& ch1,
+                                char ch2)
+    {
+        auto beg        = ch1.begin();
+        auto end        = ch1.end();
+        std::string res = str;
+        for (size_t i = 0; i < str.length(); ++i) {
+            if (std::find(beg, end, str[i]) != end)
+                res[i] = ch2;
+        }
+        return res;
+    }
 
    public:
     PathBuilder() {}
     virtual ~PathBuilder() {}
 
-    std::string replaceCharList(std::string str, const std::vector<char>& ch1, char ch2)
+    // Return true for the first level of groups
+    bool pushLabel(const std::string& label)
     {
-        std::vector<char>::const_iterator beg = ch1.begin();
-        std::vector<char>::const_iterator end = ch1.end();
-        for (size_t i = 0; i < str.length(); ++i) {
-            if (std::find(beg, end, str[i]) != end) {
-                str[i] = ch2;
-            }
-        }
-        return str;
+        fControlsLevel.push_back(label);
+        return fControlsLevel.size() == 1;
+    }
+
+    // Return true for the last level of groups
+    bool popLabel()
+    {
+        fControlsLevel.pop_back();
+        return fControlsLevel.size() == 0;
     }
 
     std::string buildPath(const std::string& label)
     {
         std::string res = "/";
         for (size_t i = 0; i < fControlsLevel.size(); i++) {
-            res += fControlsLevel[i];
-            res += "/";
+            res = res + fControlsLevel[i] + "/";
         }
         res += label;
-        std::vector<char> rep = {' ', '#', '*', ',', '/', '?',
-                                 '[', ']', '{', '}', '(', ')'};
-        replaceCharList(res, rep, '_');
-        return res;
+        return replaceCharList(
+            res, {' ', '#', '*', ',', '?', '[', ']', '{', '}', '(', ')'}, '_');
     }
-
-    void pushLabel(const std::string& label) { fControlsLevel.push_back(label); }
-    void popLabel() { fControlsLevel.pop_back(); }
 };
 
-#endif  // FAUST_PATHBUILDER_H
+#endif  // __PathBuilder__
 /**************************  END  PathBuilder.h **************************/
 /************************** BEGIN ValueConverter.h ********************
  FAUST Architecture File
@@ -646,7 +846,7 @@ vm v2
 // y = v1 - lo*coef + x*coef
 // y = offset + x*coef              with offset = v1 - lo*coef
 //--------------------------------------------------------------------------------------
-class Interpolator
+class FAUST_API Interpolator
 {
    private:
     //--------------------------------------------------------------------------------------
@@ -697,7 +897,7 @@ class Interpolator
 // Interpolator3pt(lo,mi,hi,v1,vm,v2)
 // Map values between lo mid hi to values between v1 vm v2
 //--------------------------------------------------------------------------------------
-class Interpolator3pt
+class FAUST_API Interpolator3pt
 {
    private:
     Interpolator fSegment1;
@@ -721,7 +921,7 @@ class Interpolator3pt
 //--------------------------------------------------------------------------------------
 // Abstract ValueConverter class. Converts values between UI and Faust representations
 //--------------------------------------------------------------------------------------
-class ValueConverter  // Identity by default
+class FAUST_API ValueConverter
 {
    public:
     virtual ~ValueConverter() {}
@@ -733,7 +933,7 @@ class ValueConverter  // Identity by default
 // A converter than can be updated
 //--------------------------------------------------------------------------------------
 
-class UpdatableValueConverter : public ValueConverter
+class FAUST_API UpdatableValueConverter : public ValueConverter
 {
    protected:
     bool fActive;
@@ -753,7 +953,7 @@ class UpdatableValueConverter : public ValueConverter
 //--------------------------------------------------------------------------------------
 // Linear conversion between ui and Faust values
 //--------------------------------------------------------------------------------------
-class LinearValueConverter : public ValueConverter
+class FAUST_API LinearValueConverter : public ValueConverter
 {
    private:
     Interpolator fUI2F;
@@ -773,7 +973,7 @@ class LinearValueConverter : public ValueConverter
 //--------------------------------------------------------------------------------------
 // Two segments linear conversion between ui and Faust values
 //--------------------------------------------------------------------------------------
-class LinearValueConverter2 : public UpdatableValueConverter
+class FAUST_API LinearValueConverter2 : public UpdatableValueConverter
 {
    private:
     Interpolator3pt fUI2F;
@@ -809,7 +1009,7 @@ class LinearValueConverter2 : public UpdatableValueConverter
 //--------------------------------------------------------------------------------------
 // Logarithmic conversion between ui and Faust values
 //--------------------------------------------------------------------------------------
-class LogValueConverter : public LinearValueConverter
+class FAUST_API LogValueConverter : public LinearValueConverter
 {
    public:
     LogValueConverter(double umin, double umax, double fmin, double fmax)
@@ -831,7 +1031,7 @@ class LogValueConverter : public LinearValueConverter
 //--------------------------------------------------------------------------------------
 // Exponential conversion between ui and Faust values
 //--------------------------------------------------------------------------------------
-class ExpValueConverter : public LinearValueConverter
+class FAUST_API ExpValueConverter : public LinearValueConverter
 {
    public:
     ExpValueConverter(double umin, double umax, double fmin, double fmax)
@@ -854,7 +1054,7 @@ class ExpValueConverter : public LinearValueConverter
 // Convert accelerometer or gyroscope values to Faust values
 // Using an Up curve (curve 0)
 //--------------------------------------------------------------------------------------
-class AccUpConverter : public UpdatableValueConverter
+class FAUST_API AccUpConverter : public UpdatableValueConverter
 {
    private:
     Interpolator3pt fA2F;
@@ -890,7 +1090,7 @@ class AccUpConverter : public UpdatableValueConverter
 // Convert accelerometer or gyroscope values to Faust values
 // Using a Down curve (curve 1)
 //--------------------------------------------------------------------------------------
-class AccDownConverter : public UpdatableValueConverter
+class FAUST_API AccDownConverter : public UpdatableValueConverter
 {
    private:
     Interpolator3pt fA2F;
@@ -926,15 +1126,15 @@ class AccDownConverter : public UpdatableValueConverter
 // Convert accelerometer or gyroscope values to Faust values
 // Using an Up-Down curve (curve 2)
 //--------------------------------------------------------------------------------------
-class AccUpDownConverter : public UpdatableValueConverter
+class FAUST_API AccUpDownConverter : public UpdatableValueConverter
 {
    private:
     Interpolator3pt fA2F;
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin,
-                       double /*fmid*/, double fmax)
+    AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
+                       double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -963,15 +1163,15 @@ class AccUpDownConverter : public UpdatableValueConverter
 // Convert accelerometer or gyroscope values to Faust values
 // Using a Down-Up curve (curve 3)
 //--------------------------------------------------------------------------------------
-class AccDownUpConverter : public UpdatableValueConverter
+class FAUST_API AccDownUpConverter : public UpdatableValueConverter
 {
    private:
     Interpolator3pt fA2F;
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin,
-                       double /*fmid*/, double fmax)
+    AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
+                       double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -999,7 +1199,7 @@ class AccDownUpConverter : public UpdatableValueConverter
 //--------------------------------------------------------------------------------------
 // Base class for ZoneControl
 //--------------------------------------------------------------------------------------
-class ZoneControl
+class FAUST_API ZoneControl
 {
    protected:
     FAUSTFLOAT* fZone;
@@ -1010,9 +1210,8 @@ class ZoneControl
 
     virtual void update(double /*v*/) const {}
 
-    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/,
-                                  double /*amax*/, double /*min*/, double /*init*/,
-                                  double /*max*/)
+    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/,
+                                  double /*min*/, double /*init*/, double /*max*/)
     {
     }
     virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
@@ -1028,7 +1227,7 @@ class ZoneControl
 //--------------------------------------------------------------------------------------
 //  Useful to implement accelerometers metadata as a list of ZoneControl for each axes
 //--------------------------------------------------------------------------------------
-class ConverterZoneControl : public ZoneControl
+class FAUST_API ConverterZoneControl : public ZoneControl
 {
    protected:
     ValueConverter* fValueConverter;
@@ -1055,7 +1254,7 @@ class ConverterZoneControl : public ZoneControl
 // Association of a zone and a four value converter, each one for each possible curve.
 // Useful to implement accelerometers metadata as a list of ZoneControl for each axes
 //--------------------------------------------------------------------------------------
-class CurveZoneControl : public ZoneControl
+class FAUST_API CurveZoneControl : public ZoneControl
 {
    private:
     std::vector<UpdatableValueConverter*> fValueConverters;
@@ -1110,7 +1309,7 @@ class CurveZoneControl : public ZoneControl
     int getCurve() { return fCurve; }
 };
 
-class ZoneReader
+class FAUST_API ZoneReader
 {
    private:
     FAUSTFLOAT* fZone;
@@ -1153,8 +1352,9 @@ class APIUI
     enum Mapping { kLin = 0, kLog = 1, kExp = 2 };
 
     struct Item {
-        std::string fPath;
         std::string fLabel;
+        std::string fShortname;
+        std::string fPath;
         ValueConverter* fConversion;
         FAUSTFLOAT* fZone;
         FAUSTFLOAT fInit;
@@ -1162,6 +1362,23 @@ class APIUI
         FAUSTFLOAT fMax;
         FAUSTFLOAT fStep;
         ItemType fItemType;
+
+        Item(const std::string& label, const std::string& short_name,
+             const std::string& path, ValueConverter* conversion, FAUSTFLOAT* zone,
+             FAUSTFLOAT init, FAUSTFLOAT min, FAUSTFLOAT max, FAUSTFLOAT step,
+             ItemType item_type)
+            : fLabel(label)
+            , fShortname(short_name)
+            , fPath(path)
+            , fConversion(conversion)
+            , fZone(zone)
+            , fInit(init)
+            , fMin(min)
+            , fMax(max)
+            , fStep(step)
+            , fItemType(item_type)
+        {
+        }
     };
     std::vector<Item> fItems;
 
@@ -1191,6 +1408,7 @@ class APIUI
                               ItemType type)
     {
         std::string path = buildPath(label);
+        fFullPaths.push_back(path);
 
         // handle scale metadata
         ValueConverter* converter = nullptr;
@@ -1207,7 +1425,8 @@ class APIUI
         }
         fCurrentScale = kLin;
 
-        fItems.push_back({path, label, converter, zone, init, min, max, step, type});
+        fItems.push_back(
+            Item(label, "", path, converter, zone, init, min, max, step, type));
 
         if (fCurrentAcc.size() > 0 && fCurrentGyr.size() > 0) {
             fprintf(
@@ -1381,7 +1600,18 @@ class APIUI
     virtual void openTabBox(const char* label) { pushLabel(label); }
     virtual void openHorizontalBox(const char* label) { pushLabel(label); }
     virtual void openVerticalBox(const char* label) { pushLabel(label); }
-    virtual void closeBox() { popLabel(); }
+    virtual void closeBox()
+    {
+        if (popLabel()) {
+            // Shortnames can be computed when all fullnames are known
+            computeShortNames();
+            // Fill 'shortname' field for each item
+            for (const auto& it : fFull2Short) {
+                int index                = getParamIndex(it.first.c_str());
+                fItems[index].fShortname = it.second;
+            }
+        }
+    }
 
     // -- active widgets
 
@@ -1469,26 +1699,19 @@ class APIUI
     //-------------------------------------------------------------------------------
     int getParamsCount() { return int(fItems.size()); }
 
-    int getParamIndex(const char* path)
+    int getParamIndex(const char* path_aux)
     {
-        auto it1 = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
-            return it.fPath == std::string(path);
-        });
-        if (it1 != fItems.end()) {
-            return int(it1 - fItems.begin());
-        }
-
-        auto it2 = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
-            return it.fLabel == std::string(path);
-        });
-        if (it2 != fItems.end()) {
-            return int(it2 - fItems.begin());
-        }
-
-        return -1;
+        std::string path = std::string(path_aux);
+        auto it          = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
+            return (it.fLabel == path) || (it.fShortname == path) || (it.fPath == path);
+                 });
+        return (it != fItems.end()) ? int(it - fItems.begin()) : -1;
     }
-    const char* getParamAddress(int p) { return fItems[uint(p)].fPath.c_str(); }
+
     const char* getParamLabel(int p) { return fItems[uint(p)].fLabel.c_str(); }
+    const char* getParamShortname(int p) { return fItems[uint(p)].fShortname.c_str(); }
+    const char* getParamAddress(int p) { return fItems[uint(p)].fPath.c_str(); }
+
     std::map<const char*, const char*> getMetadata(int p)
     {
         std::map<const char*, const char*> res;
@@ -1516,7 +1739,13 @@ class APIUI
     FAUSTFLOAT getParamValue(const char* path)
     {
         int index = getParamIndex(path);
-        return (index >= 0) ? getParamValue(index) : FAUSTFLOAT(0);
+        if (index >= 0) {
+            return getParamValue(index);
+        } else {
+            fprintf(stderr, "getParamValue : '%s' not found\n",
+                    (path == nullptr ? "NULL" : path));
+            return FAUSTFLOAT(0);
+        }
     }
 
     void setParamValue(int p, FAUSTFLOAT v) { *fItems[uint(p)].fZone = v; }
@@ -1618,7 +1847,7 @@ class APIUI
      * given UI parameter.
      *
      * @param p - the UI parameter index
-     * @param acc - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope (-1 means "no
+     * @param gyr - 0 for X gyroscope, 1 for Y gyroscope, 2 for Z gyroscope (-1 means "no
      * mapping")
      * @param curve - between 0 and 3
      * @param amin - mapping 'min' point
@@ -1761,7 +1990,7 @@ class meterdsp : public dsp
     {
         m->declare("author", "Dominick Hing");
         m->declare("basics.lib/name", "Faust Basic Element Library");
-        m->declare("basics.lib/version", "0.5");
+        m->declare("basics.lib/version", "0.8");
         m->declare("compile_options",
                    "-a faust2header.cpp -lang cpp -i -inpl -cn meterdsp -es 1 -mcd 16 "
                    "-single -ftz 0");

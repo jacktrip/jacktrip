@@ -51,7 +51,8 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutCha
 #ifdef WAIR  // wair
                                int NumNetRevChans,
 #endif  // endwhere
-                               audioBitResolutionT AudioBitResolution)
+                               audioBitResolutionT AudioBitResolution,
+                               bool processWithNetwork)
     : mJackTrip(jacktrip)
     , mNumInChans(NumInChans)
     , mNumOutChans(NumOutChans)
@@ -67,6 +68,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutCha
     , mAudioInputPacket(NULL)
     , mAudioOutputPacket(NULL)
     , mLoopBack(false)
+    , mProcessWithNetwork(processWithNetwork)
     , mProcessingAudio(false)
 {
 #ifndef WAIR
@@ -239,7 +241,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 #endif  // endwhere
 
     // ==== RECEIVE AUDIO CHANNELS FROM NETWORK ====
-    computeProcessFromNetwork(out_buffer, n_frames);
+    if (mProcessWithNetwork) {
+        computeProcessFromNetwork(out_buffer, n_frames);
+    }
     // =============================================
 
     // out_buffer is from the network and goes "out" to local audio
@@ -321,10 +325,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                 mInBufCopy,
                 n_frames);  // writes last channel of mInBufCopy with test impulse
         }
-        computeProcessToNetwork(mInBufCopy, n_frames);
+        if (mProcessWithNetwork) {
+            computeProcessToNetwork(mInBufCopy, n_frames);
+        }
     } else {  // copy saved if no plugins and no audio testing in progress:
-        computeProcessToNetwork(
-            in_buffer, n_frames);  // send processed input audio to network - OUTGOING
+        if (mProcessWithNetwork) {
+            computeProcessToNetwork(
+                in_buffer, n_frames);  // send processed input audio to network - OUTGOING
+        }
     }
 
 #ifdef WAIR  // WAIR

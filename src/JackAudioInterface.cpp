@@ -80,7 +80,37 @@ JackAudioInterface::JackAudioInterface(
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)
+    , mJackTrip(jacktrip)
 {
+}
+
+//*******************************************************************************
+JackAudioInterface::JackAudioInterface(
+    int NumInChans, int NumOutChans,
+#ifdef WAIR  // wair
+    int NumNetRevChans,
+#endif  // endwhere
+    AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
+    : AudioInterface(nullptr, NumInChans, NumOutChans,
+#ifdef WAIR  // wair
+                     NumNetRevChans,
+#endif  // endwhere
+                     AudioBitResolution, false)
+    , mNumInChans(NumInChans)
+    , mNumOutChans(NumOutChans)
+#ifdef WAIR  // WAIR
+    , mNumNetRevChans(NumNetRevChans)
+#endif  // endwhere
+    , mClient(NULL)
+    , mClientName(ClientName)
+    , mBroadcast(false)
+    , mJackTrip(nullptr)
+{
+    JackAudioInterface(nullptr, NumInChans, NumOutChans,
+#ifdef WAIR  // wair
+                       NumNetRevChans,
+#endif  // endwhere
+                       AudioBitResolution, ClientName);
 }
 
 //*******************************************************************************
@@ -111,6 +141,9 @@ void JackAudioInterface::setupClient()
     // was  jack_options_t options = JackNoStartServer;
     // and then jack_options_t options = JackLoadName;
     jack_options_t options = JackNullOption;  // from jackSimpleClient example
+    if (mJackTrip == nullptr) {
+        options = JackNoStartServer;
+    }
     jack_status_t status;
 
     // Try to connect to the server
@@ -267,7 +300,8 @@ int JackAudioInterface::stopProcess() const
 }
 
 //*******************************************************************************
-void JackAudioInterface::jackShutdown(jack_status_t code, const char* reason, void* arg)
+void JackAudioInterface::jackShutdown(jack_status_t /*code*/, const char* reason,
+                                      void* /*arg*/)
 {
     std::cout << reason << std::endl;
     JackTrip::sJackStopped = true;

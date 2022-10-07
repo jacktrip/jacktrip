@@ -87,7 +87,8 @@ class AudioInterface
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
-        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16);
+        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+        bool processWithNetwork                                = true);
     /// \brief The class destructor
     virtual ~AudioInterface();
 
@@ -255,6 +256,7 @@ class AudioInterface
     int8_t* mAudioOutputPacket;  ///< Packet containing all the channels to send to the
                                  ///< RingBuffer
     bool mLoopBack;
+    bool mProcessWithNetwork;  ///< whether or not to send/receive data via the network
     AudioTester* mAudioTesterP{nullptr};
 
    protected:

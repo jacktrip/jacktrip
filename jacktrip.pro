@@ -207,6 +207,7 @@ HEADERS += src/DataProtocol.h \
            src/Regulator.h \
            src/Reverb.h \
            src/Meter.h \
+           src/Volume.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
@@ -225,6 +226,7 @@ HEADERS += src/DataProtocol.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
            src/meterdsp.h \
+           src/volumedsp.h \
            src/SslServer.h \
            src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
@@ -243,6 +245,7 @@ HEADERS += src/DataProtocol.h \
   !novs {
     HEADERS += src/gui/virtualstudio.h \
                src/gui/vsDevice.h \
+               src/gui/vsAudioInterface.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
@@ -271,6 +274,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
+           src/Volume.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \
@@ -301,6 +305,7 @@ SOURCES += src/DataProtocol.cpp \
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
                src/gui/vsDevice.cpp \
+               src/gui/vsAudioInterface.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
