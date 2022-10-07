@@ -21,6 +21,7 @@ Rectangle {
     
     property string serverLocation: "Germany - Berlin"
     property string flagImage: "flags/DE.svg"
+    property string hostname: "app.jacktrip.org"
     property string studioName: "Test Studio"
     property string studioId: ""
     property string inviteKeyString: ""
@@ -205,10 +206,13 @@ Rectangle {
         }
         onClicked: { 
             inviteCopied = true;
+            if (virtualstudio.testMode) {
+                hostname = "test.jacktrip.org";
+            }
             if (!inviteKeyString) {
-                clipboard.setText(qsTr("https://app.jacktrip.org/studios/" + studioId + "?invited=true"));
+                clipboard.setText(qsTr("https://" + hostname + "/studios/" + studioId + "?invited=true"));
             } else {
-                clipboard.setText(qsTr("https://app.jacktrip.org/studios/" + studioId + "?invited=" + inviteKeyString));
+                clipboard.setText(qsTr("https://" + hostname + "/studios/" + studioId + "?invited=" + inviteKeyString));
             }
             copiedResetTimer.restart()
         }
