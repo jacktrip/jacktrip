@@ -80,6 +80,14 @@ class JackAudioInterface : public AudioInterface
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
         const QString& ClientName = QStringLiteral("JackTrip"));
+    /// \brief Overloaded class constructor with null JackTrip pointer
+    JackAudioInterface(
+        int NumInChans, int NumOutChans,
+#ifdef WAIR  // wair
+        int NumNetRevChans,
+#endif  // endwhere
+        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+        const QString& ClientName = QStringLiteral("JackTrip"));
     /// \brief The class destructor
     virtual ~JackAudioInterface();
 
@@ -195,6 +203,7 @@ class JackAudioInterface : public AudioInterface
     bool mBroadcast;
     QVector<ProcessPlugin*> mProcessPlugins;  ///< Vector of ProcesPlugin<EM>s</EM>
     static QMutex sJackMutex;  ///< Mutex to make thread safe jack functions that are not
+    JackTrip* mJackTrip;       ///< JackTrip Mediator Class pointer
 };
 
 #endif

@@ -108,6 +108,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     });
 
     settings.beginGroup(QStringLiteral("Audio"));
+    m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
+    m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+    m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+    m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
 #ifdef RT_AUDIO
     m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
     m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
@@ -119,6 +123,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_previousOutput = m_outputDevice;
 #else
     m_selectableBackend = false;
+    m_vsAudioInterface.reset(new VsAudioInterface());
 
     // Set our combo box models to an empty list to avoid a reference error
     m_view.engine()->rootContext()->setContextProperty(
@@ -159,6 +164,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audioInterface"),
+                                                       m_vsAudioInterface.data());
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
@@ -271,7 +278,7 @@ void VirtualStudio::setAudioBackend(const QString& backend)
         return;
     }
     m_useRtAudio = (backend == QStringLiteral("RtAudio"));
-    emit audioBackendChanged();
+    emit audioBackendChanged(m_useRtAudio);
 }
 
 int VirtualStudio::inputDevice()
@@ -292,6 +299,7 @@ void VirtualStudio::setInputDevice([[maybe_unused]] int device)
     }
 #ifdef RT_AUDIO
     m_inputDevice = m_inputDeviceList.at(device);
+    emit inputDeviceSelected(m_inputDevice);
 #endif
 }
 
@@ -313,7 +321,68 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] int device)
     }
 #ifdef RT_AUDIO
     m_outputDevice = m_outputDeviceList.at(device);
+    emit outputDeviceSelected(m_outputDevice);
 #endif
+}
+
+float VirtualStudio::inputVolume()
+{
+    return m_inMultiplier;
+}
+
+float VirtualStudio::outputVolume()
+{
+    return m_outMultiplier;
+}
+
+bool VirtualStudio::inputMuted()
+{
+    return m_inMuted;
+}
+
+bool VirtualStudio::outputMuted()
+{
+    return m_outMuted;
+}
+
+void VirtualStudio::setInputVolume(float multiplier)
+{
+    m_inMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("InMultiplier"), m_inMultiplier);
+    settings.endGroup();
+    emit updatedInputVolume(multiplier);
+}
+
+void VirtualStudio::setOutputVolume(float multiplier)
+{
+    m_outMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("OutMultiplier"), m_outMultiplier);
+    settings.endGroup();
+    emit updatedOutputVolume(multiplier);
+}
+
+void VirtualStudio::setInputMuted(bool muted)
+{
+    m_inMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("InMuted"), m_inMuted ? 1 : 0);
+    settings.endGroup();
+    emit updatedInputMuted(muted);
+}
+
+void VirtualStudio::setOutputMuted(bool muted)
+{
+    m_outMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("OutMuted"), m_outMuted ? 1 : 0);
+    settings.endGroup();
+    emit updatedOutputMuted(muted);
 }
 
 int VirtualStudio::bufferSize()
@@ -678,6 +747,7 @@ void VirtualStudio::logout()
     m_heartbeatTimer.stop();
 
     m_refreshToken.clear();
+    m_userMetadata = QJsonObject();
     m_userId.clear();
     emit hasRefreshTokenChanged();
 }
@@ -705,8 +775,8 @@ void VirtualStudio::refreshDevices()
         m_outputDevice = QStringLiteral("(default)");
     }
 
-    emit inputDeviceChanged();
-    emit outputDeviceChanged();
+    emit inputDeviceChanged(m_inputDevice);
+    emit outputDeviceChanged(m_outputDevice);
 #endif
 }
 
@@ -720,10 +790,10 @@ void VirtualStudio::revertSettings()
     m_outputDevice = m_previousOutput;
     m_bufferSize   = m_previousBuffer;
     m_useRtAudio   = m_previousUseRtAudio;
-    emit inputDeviceChanged();
-    emit outputDeviceChanged();
+    emit inputDeviceChanged(m_inputDevice);
+    emit outputDeviceChanged(m_outputDevice);
     emit bufferSizeChanged();
-    emit audioBackendChanged();
+    emit audioBackendChanged(m_useRtAudio);
 #endif
 }
 
@@ -749,9 +819,13 @@ void VirtualStudio::applySettings()
     m_previousInput      = m_inputDevice;
     m_previousOutput     = m_outputDevice;
 
-    emit inputDeviceChanged();
-    emit outputDeviceChanged();
+    emit inputDeviceChanged(m_inputDevice);
+    emit outputDeviceChanged(m_outputDevice);
 #endif
+
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->closeAudio();
+    }
 
     // attempt to join studio if requested
     // this function is called after the device setup view
@@ -863,15 +937,45 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
+        // Setup output volume
+        m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
+        jackTrip->appendProcessPluginFromNetwork(m_outputVolumePlugin);
+        connect(this, &VirtualStudio::updatedOutputVolume, m_outputVolumePlugin,
+                &Volume::volumeUpdated);
+        connect(this, &VirtualStudio::updatedOutputMuted, m_outputVolumePlugin,
+                &Volume::muteUpdated);
+
+        // Setup input volume
+        m_inputVolumePlugin = new Volume(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputVolumePlugin);
+        connect(this, &VirtualStudio::updatedInputVolume, m_inputVolumePlugin,
+                &Volume::volumeUpdated);
+        connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
+                &Volume::muteUpdated);
+
+        // Setup output meter
         Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
         connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedOutputVuMeasurements);
 
+        // Setup input meter
         Meter* m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
+
+        // Grab previous levels
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("Audio"));
+        m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
+        m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+        m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+        m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+        emit updatedInputVolume(m_inMultiplier);
+        emit updatedOutputVolume(m_outMultiplier);
+        emit updatedInputMuted(m_inMuted);
+        emit updatedOutputMuted(m_outMuted);
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
@@ -1026,6 +1130,44 @@ void VirtualStudio::slotAuthSucceded()
     m_device = new VsDevice(m_authenticator.data(), m_testMode);
     m_device->registerApp();
 
+    if (m_showDeviceSetup) {
+        if (m_vsAudioInterface.isNull()) {
+            m_vsAudioInterface.reset(new VsAudioInterface());
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("audioInterface"), m_vsAudioInterface.data());
+        }
+#ifdef RT_AUDIO
+        m_vsAudioInterface->setInputDevice(m_inputDevice);
+        m_vsAudioInterface->setOutputDevice(m_outputDevice);
+        m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
+#endif
+        m_vsAudioInterface->setupAudio();
+
+        connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
+                &VsAudioInterface::setInputDevice);
+        connect(this, &VirtualStudio::inputDeviceSelected, m_vsAudioInterface.data(),
+                &VsAudioInterface::setInputDevice);
+        connect(this, &VirtualStudio::outputDeviceChanged, m_vsAudioInterface.data(),
+                &VsAudioInterface::setOutputDevice);
+        connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
+                &VsAudioInterface::setOutputDevice);
+        connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
+                &VsAudioInterface::setAudioInterfaceMode);
+        connect(m_vsAudioInterface.data(), &VsAudioInterface::newVolumeMeterMeasurements,
+                this, &VirtualStudio::updatedInputVuMeasurements);
+        connect(m_vsAudioInterface.data(), &VsAudioInterface::errorToProcess, this,
+                &VirtualStudio::processError);
+
+        m_vsAudioInterface->setupPlugins();
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("inputMeterModel"),
+            QVariant::fromValue(
+                QVector<float>(m_vsAudioInterface->getNumInputChannels())));
+
+        m_vsAudioInterface->startProcess();
+    }
+
     if (m_userId.isEmpty()) {
         getUserId();
     } else {
@@ -1089,19 +1231,30 @@ void VirtualStudio::processFinished()
 
 void VirtualStudio::processError(const QString& errorMessage)
 {
+    bool shouldSwitchToRtAudio = false;
     if (!m_retryPeriod) {
         QMessageBox msgBox;
         if (errorMessage == QLatin1String("Peer Stopped")) {
             // Report the other end quitting as a regular occurance rather than an error.
             msgBox.setText("The Studio has been stopped.");
             msgBox.setWindowTitle(QStringLiteral("Disconnected"));
+        } else if (errorMessage
+                   == QLatin1String("Maybe the JACK server is not running?")) {
+            // Report the other end quitting as a regular occurance rather than an error.
+            msgBox.setText("The JACK server is not running. Switching back to RtAudio.");
+            msgBox.setWindowTitle(QStringLiteral("No JACK server"));
+            shouldSwitchToRtAudio = true;
         } else {
             msgBox.setText(QStringLiteral("Error: ").append(errorMessage));
             msgBox.setWindowTitle(QStringLiteral("Doh!"));
         }
         msgBox.exec();
     }
-    processFinished();
+    if (shouldSwitchToRtAudio) {
+        setAudioBackend("RtAudio");
+    } else {
+        processFinished();
+    }
 }
 
 void VirtualStudio::receivedConnectionFromPeer()
@@ -1638,6 +1791,7 @@ VirtualStudio::~VirtualStudio()
 
     delete m_inputMeter;
     delete m_outputMeter;
+    delete m_inputTestMeter;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }

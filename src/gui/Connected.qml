@@ -15,10 +15,23 @@ Item {
     property int fontTiny: 8
 
     property int bodyMargin: 60
+    property int bottomToolTipMargin: 8
+    property int rightToolTipMargin: 4
     
+    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
+    property string muteButtonMutedColor: "#FCB6B6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
+    property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
+    property real muteButtonMutedLightnessValue: 0.24
+    property real muteButtonMutedSaturationValue: 0.73
+    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
+    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
+    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
+    property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
+    property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
+    property string toolTipTextColour: textColour
 
     property string meterGreen: "#61C554"
     property string meterYellow: "#F5BF4F"
@@ -86,7 +99,7 @@ Item {
 
     Item {
         id: inputDevice
-        x: bodyMargin * virtualstudio.uiScale; y: 250 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
         clip: true
@@ -132,7 +145,7 @@ Item {
 
     Item {
         id: outputDevice
-        x: bodyMargin * virtualstudio.uiScale; y: 330 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 320 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
         clip: true
@@ -176,22 +189,139 @@ Item {
         }
     }
 
-    Meter {
-        id: inputDeviceMeters
-        x: inputDevice.x + inputDevice.width; y: 250 * virtualstudio.uiScale
+    Item {
+        id: inputControls
+        x: inputDevice.x + inputDevice.width; y: 230 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
-        height: 100 * virtualstudio.uiScale
-        model: inputMeterModel
-        clipped: inputClipped
+
+        Meter {
+            id: inputDeviceMeters
+            x: 0; y: 0
+            width: parent.width
+            height: 100 * virtualstudio.uiScale
+            model: inputMeterModel
+            clipped: inputClipped
+        }
+
+        Slider {
+            id: inputSlider
+            from: 0.0
+            value: virtualstudio ? virtualstudio.inputVolume : 0.5
+            onMoved: { virtualstudio.inputVolume = value }
+            to: 1.0
+            enabled: !virtualstudio.inputMuted
+            padding: 0
+            y: inputDeviceMeters.y + 36 * virtualstudio.uiScale
+            anchors.left: inputMute.right
+            anchors.leftMargin: 8 * virtualstudio.uiScale
+            anchors.right: inputDeviceMeters.right
+            opacity: virtualstudio.inputMuted ? 0.3 : 1
+            handle: Rectangle {
+                x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
+                y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: inputSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+                opacity: virtualstudio.inputMuted ? 0.3 : 1
+            }
+        }
+
+        Button {
+            id: inputMute
+            width: 24 * virtualstudio.uiScale
+            height: 24
+            anchors.left: inputDeviceMeters.left
+            anchors.verticalCenter: inputDeviceMeters.verticalCenter
+            background: Rectangle {
+                color: virtualstudio.inputMuted ? muteButtonMutedColor : buttonColour
+                width: 24 * virtualstudio.uiScale
+                radius: 4 * virtualstudio.uiScale
+            }
+            onClicked: { virtualstudio.inputMuted = !virtualstudio.inputMuted }
+            Image {
+                id: micMute
+                width: 11.57 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
+                anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+                source: virtualstudio.inputMuted ? "micoff.svg" : "mic.svg"
+            }
+            Colorize {
+                anchors.fill: micMute
+                source: micMute
+                hue: 0
+                saturation: virtualstudio.inputMuted ? muteButtonMutedSaturationValue : 0
+                lightness: virtualstudio.inputMuted ? (inputMute.hovered ? muteButtonMutedLightnessValue + .1 : muteButtonMutedLightnessValue) : (inputMute.hovered ? muteButtonLightnessValue - .1 : muteButtonLightnessValue)
+            }
+            ToolTip {
+                parent: inputMute
+                visible: inputMute.hovered
+                bottomPadding: bottomToolTipMargin * virtualstudio.uiScale
+                rightPadding: rightToolTipMargin * virtualstudio.uiScale
+                delay: 100
+                contentItem: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 3
+                    anchors.fill: parent
+                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                    layer.enabled: true
+                    layer.effect: DropShadow {
+                        horizontalOffset: 1 * virtualstudio.uiScale
+                        verticalOffset: 1 * virtualstudio.uiScale
+                        radius: 10.0 * virtualstudio.uiScale
+                        samples: 21
+                        color: shadowColour
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        text: virtualstudio.inputMuted ?  qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
+                        color: toolTipTextColour
+                    }
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
+            }
+        }
     }
 
-    Meter {
-        id: outputDeviceMeters
-        x: outputDevice.x + outputDevice.width; y: 330 * virtualstudio.uiScale
+    Item {
+        id: outputControls
+        x: outputDevice.x + outputDevice.width; y: 320 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
-        height: 100 * virtualstudio.uiScale
-        model: outputMeterModel
-        clipped: outputClipped
+
+        Meter {
+            id: outputDeviceMeters
+            x: 0; y: 0
+            width: parent.width
+            height: 100 * virtualstudio.uiScale
+            model: outputMeterModel
+            clipped: outputClipped
+        }
+
+        Slider {
+            id: outputSlider
+            from: 0.0
+            value: virtualstudio ? virtualstudio.outputVolume : 0.5
+            onMoved: { virtualstudio.outputVolume = value }
+            to: 1.0
+            padding: 0
+            y: outputDeviceMeters.y + 36 * virtualstudio.uiScale
+            anchors.left: outputDeviceMeters.left
+            anchors.right: outputDeviceMeters.right
+            handle: Rectangle {
+                x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
+                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: outputSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+        }
     }
 
     Item {
