@@ -279,7 +279,13 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
     m_jackTrip->setRemoteClientName(m_appID);
     // increment m_bufferStrategy by 1 for array-index mapping
     m_jackTrip->setBufferStrategy(bufferStrategy + 1);
-    m_jackTrip->setBufferQueueLength(-500);
+    if (bufferStrategy == 2) {
+        // use -q auto3 for loss concealment
+        m_jackTrip->setBufferQueueLength(-3);
+    } else {
+        // use -q auto
+        m_jackTrip->setBufferQueueLength(-500);
+    }
     m_jackTrip->setPeerAddress(studioInfo->host());
     m_jackTrip->setPeerPorts(studioInfo->port());
     m_jackTrip->setPeerHandshakePort(studioInfo->port());
