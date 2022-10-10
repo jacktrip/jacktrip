@@ -728,6 +728,17 @@ void QJackTrip::start()
 
     // Start the appropriate JackTrip process.
     try {
+        AudioInterface::audioBitResolutionT resolution;
+        if (m_ui->resolutionComboBox->currentIndex() == 0) {
+            resolution = AudioInterface::BIT8;
+        } else if (m_ui->resolutionComboBox->currentIndex() == 1) {
+            resolution = AudioInterface::BIT16;
+        } else if (m_ui->resolutionComboBox->currentIndex() == 2) {
+            resolution = AudioInterface::BIT24;
+        } else {
+            resolution = AudioInterface::BIT32;
+        }
+
         if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
             m_udpHub.reset(new UdpHubListener(m_ui->localPortSpinBox->value(),
                                               m_ui->basePortSpinBox->value()));
@@ -751,6 +762,7 @@ void QJackTrip::start()
                 // Set buffers to zero when underrun
                 m_udpHub->setUnderRunMode(JackTrip::ZEROS);
             }
+            m_udpHub->setAudioBitResolution(resolution);
 
             if (!m_ui->jitterCheckBox->isChecked()) {
                 m_udpHub->setBufferStrategy(-1);
@@ -801,17 +813,6 @@ void QJackTrip::start()
                 jackTripMode = JackTrip::SERVER;
             } else {
                 jackTripMode = JackTrip::CLIENTTOPINGSERVER;
-            }
-
-            AudioInterface::audioBitResolutionT resolution;
-            if (m_ui->resolutionComboBox->currentIndex() == 0) {
-                resolution = AudioInterface::BIT8;
-            } else if (m_ui->resolutionComboBox->currentIndex() == 1) {
-                resolution = AudioInterface::BIT16;
-            } else if (m_ui->resolutionComboBox->currentIndex() == 2) {
-                resolution = AudioInterface::BIT24;
-            } else {
-                resolution = AudioInterface::BIT32;
             }
 
             m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP,
