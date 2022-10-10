@@ -178,6 +178,7 @@ class UdpHubListener : public QObject
     int mTotalRunningThreads;  ///< Number of Threads running in the pool
     QMutex mMutex;
     JackTrip::underrunModeT mUnderRunMode;
+    AudioInterface::audioBitResolutionT mAudioBitResolution;
     int mBufferQueueLength;
 
     QStringList mHubPatchDescriptions;
@@ -243,6 +244,10 @@ class UdpHubListener : public QObject
     void setUnderRunMode(JackTrip::underrunModeT UnderRunMode)
     {
         mUnderRunMode = UnderRunMode;
+    }
+    void setAudioBitResolution(AudioInterface::audioBitResolutionT AudioBitResolution)
+    {
+        mAudioBitResolution = AudioBitResolution;
     }
     void setBufferQueueLength(int BufferQueueLength)
     {
