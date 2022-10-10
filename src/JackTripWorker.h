@@ -70,11 +70,11 @@ class JackTripWorker : public QObject
 
    public:
     /// \brief The class constructor
-    JackTripWorker(UdpHubListener* udphublistener,
-                   int BufferQueueLength                = gDefaultQueueLength,
-                   JackTrip::underrunModeT UnderRunMode = JackTrip::WAVETABLE,
-                   AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-                   const QString& clientName            = QLatin1String(""));
+    JackTripWorker(
+        UdpHubListener* udphublistener, int BufferQueueLength = gDefaultQueueLength,
+        JackTrip::underrunModeT UnderRunMode                   = JackTrip::WAVETABLE,
+        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+        const QString& clientName                              = QLatin1String(""));
     /// \brief The class destructor
     ~JackTripWorker() = default;
 

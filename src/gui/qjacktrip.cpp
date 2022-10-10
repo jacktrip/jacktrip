@@ -69,6 +69,7 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     , m_realCerr(std::cerr.rdbuf())
     , m_jackTripRunning(false)
     , m_isExiting(false)
+    , m_exitSent(false)
     , m_hasIPv4Reply(false)
     , m_argc(argc)
     , m_hideWarning(false)
@@ -384,9 +385,11 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
 
 void QJackTrip::closeEvent(QCloseEvent* event)
 {
-    // Ignore the close event so that we can override the handling of it.
-    event->ignore();
-    exit();
+    if (!m_exitSent) {
+        // Ignore the close event so that we can override the handling of it.
+        event->ignore();
+        exit();
+    }
 }
 
 void QJackTrip::resizeEvent(QResizeEvent* event)
@@ -469,6 +472,7 @@ void QJackTrip::processFinished()
         m_jackTrip.reset();
     }
     if (m_isExiting) {
+        m_exitSent = true;
         emit signalExit();
     } else {
         enableUi(true);
@@ -734,7 +738,7 @@ void QJackTrip::start()
         } else {
             resolution = AudioInterface::BIT32;
         }
-        
+
         if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
             m_udpHub.reset(new UdpHubListener(m_ui->localPortSpinBox->value(),
                                               m_ui->basePortSpinBox->value()));
@@ -978,6 +982,7 @@ void QJackTrip::exit()
     if (m_jackTripRunning) {
         stop();
     } else {
+        m_exitSent = true;
         emit signalExit();
     }
 }
