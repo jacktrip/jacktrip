@@ -115,13 +115,15 @@ sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
 if [ ! -z "$DYNAMIC_QT" ]; then
+    QT_VERSION="qt$(echo "$DYNAMIC_QT" | sed -E '1!d;s/.*compatibility version ([0-9]+)\.[0-9]+\.[0-9]+.*/\1/g')"
+    echo "$QT_VERSION"
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
         # Attempt to find macdeployqt. Try macports location first, then brew.
-        if [ -x "/opt/local/libexec/qt5/bin/macdeployqt" ]; then
-            DEPLOY_CMD="/opt/local/libexec/qt5/bin/macdeployqt"
-        elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix qt5) ]; then
-            DEPLOY_CMD="$(brew --prefix qt5)/bin/macdeployqt"
+        if [ -x "/opt/local/libexec/$QT_VERSION/bin/macdeployqt" ]; then
+            DEPLOY_CMD="/opt/local/libexec/$QT_VERSION/bin/macdeployqt"
+        elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix $QT_VERSION) ]; then
+            DEPLOY_CMD="$(brew --prefix $QT_VERSION)/bin/macdeployqt"
         else
             echo "The Qt bin folder needs to be in your PATH for this script to work."
             exit 1
