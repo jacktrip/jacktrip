@@ -58,12 +58,14 @@ using std::endl;
 //*******************************************************************************
 JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLength,
                                JackTrip::underrunModeT UnderRunMode,
+                               AudioInterface::audioBitResolutionT AudioBitResolution,
                                const QString& clientName)
     : mAppendThreadID(false)
     , mSleepTime(100)
     , mUdpHubListener(udphublistener)
     , mBufferQueueLength(BufferQueueLength)
     , mUnderRunMode(UnderRunMode)
+    , mAudioBitResolution(AudioBitResolution)
     , mClientName(clientName)
 {
     // mNetks = new NetKS;
@@ -167,8 +169,9 @@ void JackTripWorker::start()
 
     mJackTrip->setConnectDefaultAudioPorts(m_connectDefaultAudioPorts);
 
-    // Set our underrun mode
+    // Set our underrun mode and bit resolution
     mJackTrip->setUnderRunMode(mUnderRunMode);
+    mJackTrip->setAudioBitResolution(mAudioBitResolution);
     if (mIOStatTimeout > 0) {
         mJackTrip->setIOStatTimeout(mIOStatTimeout);
         mJackTrip->setIOStatStream(mIOStatStream);

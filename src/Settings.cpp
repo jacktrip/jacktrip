@@ -915,6 +915,7 @@ UdpHubListener* Settings::getConfiguredHubServer()
         cout << gPrintSeparator << std::endl;
         udpHub->setUnderRunMode(mUnderrunMode);
     }
+    udpHub->setAudioBitResolution(mAudioBitResolution);
     udpHub->setBufferQueueLength(mBufferQueueLength);
 
     udpHub->setBufferStrategy(mBufferStrategy);

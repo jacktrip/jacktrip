@@ -522,8 +522,9 @@ int UdpHubListener::getJackTripWorker(const QString& address,
         if (mAppendThreadID) {
             clientName = clientName + QStringLiteral("_%1").arg(id + 1);
         }
-        mJTWorkers->replace(
-            id, new JackTripWorker(this, mBufferQueueLength, mUnderRunMode, clientName));
+        mJTWorkers->replace(id,
+                            new JackTripWorker(this, mBufferQueueLength, mUnderRunMode,
+                                               mAudioBitResolution, clientName));
         mJTWorkers->at(id)->setJackTrip(
             id, address, mBasePort + id,
             0,  // Set client port to 0 initially until we receive a UDP packet.
