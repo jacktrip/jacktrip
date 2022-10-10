@@ -36,7 +36,11 @@ for %%f in (..\LICENSE.md ..\LICENSES\MIT.txt ..\LICENSES\GPL-3.0.txt ..\LICENSE
 )
 echo }>>%LICENSEPATH%
 
-copy dialog.bmp deploy\
+if "%~1"=="/q" (
+    copy dialog_alt.bmp deploy\dialog.bmp
+) else (
+    copy dialog.bmp deploy\
+)
 if exist ..\builddir\release\jacktrip.exe (set JACKTRIP=..\builddir\release\jacktrip.exe) else (set JACKTRIP=..\builddir\jacktrip.exe)
 copy %JACKTRIP% deploy\
 cd deploy

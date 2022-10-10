@@ -7,18 +7,44 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs TRUE)
+set(psi FALSE)
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
 message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build."
         "https://jacktrip.github.io/jacktrip/Build/Meson_build/")
 
-add_compile_definitions(PSI)
+if (novs)
+  set(QRC_FILE "src/gui/qjacktrip_novs.qrc")
+else ()
+  set(QRC_FILE "src/gui/qjacktrip.qrc")
+endif ()
+
+if (psi)
+  add_compile_definitions(PSI)
+  if (novs)
+    add_compile_definitions(BUILD_TYPE="psi-borg.org NO_VS binary")
+  else ()
+    add_compile_definitions(BUILD_TYPE="psi-borg.org binary")
+  endif ()
+
+  file(READ "${QRC_FILE}" QRC_CONTENTS)
+  string(REPLACE "<file>about@2x.png" "<file alias=\"about@2x.png\">alt/about@2x.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file>about.png" "<file alias=\"about.png\">alt/about.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file>icon.png" "<file alias=\"icon.png\">alt/icon.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
+  string(TIMESTAMP BUILD_DATE "%Y%m%d")
+  set(BUILD_NUMBER "00")
+  add_compile_definitions(BUILD_ID="${BUILD_DATE}${BUILD_NUMBER}")
+  add_compile_definitions(NDEBUG)
+else ()
+  file(READ "${QRC_FILE}" QRC_CONTENTS)
+  string(REPLACE "<file alias=\"about@2x.png\">alt/about@2x.png" "<file>about@2x.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"about.png\">alt/about.png" "<file>about.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"icon.png\">alt/icon.png" "<file>icon.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
+endif ()
+
 add_compile_definitions(NO_UPDATER)
-#add_compile_definitions(BUILD_TYPE="psi-borg.org NO_VS binary")
-#string(TIMESTAMP BUILD_DATE "%Y%m%d")
-#set(BUILD_NUMBER "00")
-#add_compile_definitions(BUILD_ID="${BUILD_DATE}${BUILD_NUMBER}")
-#add_compile_definitions(NDEBUG)
 add_compile_definitions(QT_OPENSOURCE)
 
 if (nogui)
@@ -109,13 +135,12 @@ set(qjacktrip_SRC
   src/Regulator.cpp
   src/Compressor.cpp
   src/Limiter.cpp
-  src/Meter.cpp
-  src/Volume.cpp
   src/Reverb.cpp
   src/AudioTester.cpp
   src/Patcher.cpp
   src/SslServer.cpp
   src/Auth.cpp
+  src/ProcessPlugin.cpp
 )
 
 if (rtaudio)
@@ -150,14 +175,24 @@ if (NOT nogui)
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
       src/gui/qjacktrip.qrc
+      src/Meter.cpp
+      src/Volume.cpp
       # Need to include this for AUTOMOC to do its thing
       src/JTApplication.h
+      src/gui/vsQmlClipboard.h
     )
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
   endif ()
 
   if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    file(READ "win/qjacktrip.rc" RC_CONTENTS)
+    if (psi)
+      string(REPLACE "jacktrip.ico" "jacktrip_alt.ico" RC_CONTENTS "${RC_CONTENTS}")
+    else ()
+      string(REPLACE "jacktrip_alt.ico" "jacktrip.ico" RC_CONTENTS "${RC_CONTENTS}")
+    endif ()
+    file(WRITE "win/qjacktrip.rc" "${RC_CONTENTS}")
     set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/NoNap.mm)
