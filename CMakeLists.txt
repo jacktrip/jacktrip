@@ -8,7 +8,7 @@ set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs TRUE)
 set(psi TRUE)
-set(QtVersion "Qt6")
+set(QtVersion "Qt5")
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
 message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build."
