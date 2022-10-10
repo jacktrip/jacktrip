@@ -7,7 +7,8 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs TRUE)
-set(psi FALSE)
+set(psi TRUE)
+set(QtVersion "Qt6")
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
 message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build."
@@ -107,14 +108,14 @@ set(CMAKE_AUTORCC ON)
 
 # Find the QtWidgets library
 if (NOT nogui)
-  find_package(Qt5Widgets CONFIG REQUIRED)
+  find_package(${QtVersion}Widgets CONFIG REQUIRED)
   if (NOT novs)
-    find_package(Qt5Quick CONFIG REQUIRED)
-    find_package(Qt5NetworkAuth CONFIG REQUIRED)
-    find_package(Qt5WebSockets CONFIG REQUIRED)
+    find_package(${QtVersion}Quick CONFIG REQUIRED)
+    find_package(${QtVersion}NetworkAuth CONFIG REQUIRED)
+    find_package(${QtVersion}WebSockets CONFIG REQUIRED)
   endif ()
 endif ()
-find_package(Qt5Network CONFIG REQUIRED)
+find_package(${QtVersion}Network CONFIG REQUIRED)
 
 set(qjacktrip_SRC
   src/main.cpp
@@ -207,11 +208,11 @@ add_compile_definitions(WAIRTOHUB)
 add_executable(jacktrip ${qjacktrip_SRC})
 
 # Set our libraries for our linker
-set (qjacktrip_LIBS Qt5::Network)
+set (qjacktrip_LIBS ${QtVersion}::Network)
 if (NOT nogui)
-  set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Widgets)
+  set (qjacktrip_LIBS ${qjacktrip_LIBS} ${QtVersion}::Widgets)
   if (NOT novs)
-    set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Quick Qt5::NetworkAuth Qt5::WebSockets)
+    set (qjacktrip_LIBS ${qjacktrip_LIBS} ${QtVersion}::Quick ${QtVersion}::NetworkAuth ${QtVersion}::WebSockets)
   endif ()
 endif ()
 
