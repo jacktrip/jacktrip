@@ -154,7 +154,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
         QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
         // Fix for display scaling like 125% or 150% on Windows
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)) && !defined(NO_VS)
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif  // QT_VERSION
