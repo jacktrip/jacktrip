@@ -245,7 +245,7 @@ QByteArray Auth::generateSha512Hash(const QString& passwordString,
     for (n = passwd.length(); n > 64; n -= 64) {
         a.addData(bResult);
     }
-    a.addData(bResult.constData(), n);
+    a.addData(bResult.left(n));
 
     // Step 11
     n = passwd.length();
@@ -272,7 +272,7 @@ QByteArray Auth::generateSha512Hash(const QString& passwordString,
     for (n = passwd.length(); n > 64; n -= 64) {
         p.append(dp);
     }
-    p.append(dp.left(n));
+    p.append(dp.constData(), n);
 
     // Step 17
     // Reuse b as ds
