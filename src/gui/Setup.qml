@@ -484,6 +484,28 @@ Item {
             }
         }
 
+        Button {
+            id: testOutputAudioButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { virtualstudio.playOutputAudio() }
+            anchors.right: refreshButton.left
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.top: inputSlider.bottom
+            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            visible: virtualstudio.audioBackend != "JACK"
+            Text {
+                text: "Test Output Audio"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
 
         Text {
             anchors.left: outputLabel.left
