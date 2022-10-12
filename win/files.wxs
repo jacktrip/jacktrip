@@ -30,17 +30,19 @@
             <Component Id="cmpF83098612A5B11C5398DBA3894ED590A" Guid="6A0A67A9-3318-4CFB-BC07-5AF3FF7B7E87">
                 <File Id="fil526FA994C1850220CFA7BD7FCD995C32" KeyPath="yes" Source="SourceDir\D3Dcompiler_47.dll" />
             </Component>
-            <Component Id="cmpB60B52D038613C3F20F84A0E1C83D4D4" Guid="62E3CBE5-9787-4A5C-B6CD-B867781773EE">
-                <File Id="fil09D765981E2E493119D2DBD2DA179B9D" KeyPath="yes" Source="SourceDir\libcrypto-1_1-x64.dll" />
-            </Component>
+<?ifdef qt5?>
             <Component Id="cmp5DDCF0CE56D406D1B8B1F93E988AED6B" Guid="4346C308-2912-4CAF-B01B-1FB85781DAD0">
                 <File Id="fil0F4CD3729AF07C1C460E292E0F081D0A" KeyPath="yes" Source="SourceDir\libEGL.dll" />
             </Component>
-            <Component Id="cmpDEFDDDBEBEA7255D07EE4400F2CDA2FF" Guid="904EB309-B381-443D-A064-4C2669E8E66E">
-                <File Id="fil2ECEB8B8BE6121A2C5659BA0F64D92FC" KeyPath="yes" Source="SourceDir\libgcc_s_seh-1.dll" />
-            </Component>
             <Component Id="cmpB0CFEB9FF932521D6A75B6BE6F8D644F" Guid="73A8C873-FBDB-4BC5-BB74-2F82619DC3EC">
                 <File Id="fil736048FE57EC840EA5DCE88625C38E8D" KeyPath="yes" Source="SourceDir\libGLESv2.dll" />
+            </Component>
+<?endif?>
+            <Component Id="cmpB60B52D038613C3F20F84A0E1C83D4D4" Guid="62E3CBE5-9787-4A5C-B6CD-B867781773EE">
+                <File Id="fil09D765981E2E493119D2DBD2DA179B9D" KeyPath="yes" Source="SourceDir\libcrypto-1_1-x64.dll" />
+            </Component>
+            <Component Id="cmpDEFDDDBEBEA7255D07EE4400F2CDA2FF" Guid="904EB309-B381-443D-A064-4C2669E8E66E">
+                <File Id="fil2ECEB8B8BE6121A2C5659BA0F64D92FC" KeyPath="yes" Source="SourceDir\libgcc_s_seh-1.dll" />
             </Component>
             <Component Id="cmp809509D62BD9EA848EF243F03D83758F" Guid="FE4AFCE9-7DE1-4A82-A96E-42C8B93E04C7">
                 <File Id="filCE00A8B273087E758109FEC2AC699195" KeyPath="yes" Source="SourceDir\libssl-1_1-x64.dll" />
@@ -54,6 +56,7 @@
             <Component Id="cmpEA16414E09FD1D5068139520966B49EB" Guid="9B14A007-CA41-4C45-BE9E-0B1067DD5311">
                 <File Id="filFC8C908E3AD35E8090AFF39C9B0FB744" KeyPath="yes" Source="SourceDir\opengl32sw.dll" />
             </Component>
+<?ifdef qt5?>
             <Component Id="cmp01229088A6F1DEA1BE391E6E7CC3D3EE" Guid="9A610B9C-6322-4045-9C4B-910FFBA38502">
                 <File Id="filAD80F4724AAE3D8B0682F5982CC2548D" KeyPath="yes" Source="SourceDir\Qt5Core.dll" />
             </Component>
@@ -74,6 +77,24 @@
                     <File Id="fil94C33B546082B4DF43813FFB7569FBF6" KeyPath="yes" Source="SourceDir\bearer\qgenericbearer.dll" />
                 </Component>
             </Directory>
+<?endif?>
+<?ifdef qt6?>
+            <Component Id="cmp9147A534CD8EDAB4BA7FDEAEEFE9C511" Guid="{8D05F121-517E-4A1F-86FE-26A735F23F1C}">
+                <File Id="fil88DECE330C4A1F60E0198BE9EAD7F35B" KeyPath="yes" Source="SourceDir\Qt6Core.dll" />
+            </Component>
+            <Component Id="cmp52AB384603E096D6B6A1E1FC66B089D4" Guid="{FA746517-7C88-4473-9162-22E9A8CF6507}">
+                <File Id="fil93995D4EFFB081D1CEF92B0D38526E04" KeyPath="yes" Source="SourceDir\Qt6Gui.dll" />
+            </Component>
+            <Component Id="cmp0E8605D5C55843FCDFE809B5EE8DFDFA" Guid="{499C045E-88C6-43A6-B567-6C3438CA5FFD}">
+                <File Id="fil63F02A7FFBCDAAB6EAB6E65E642AC7B0" KeyPath="yes" Source="SourceDir\Qt6Network.dll" />
+            </Component>
+            <Component Id="cmp5D904885C8104A4049616BBAA95F34A3" Guid="{B47BE8F9-D9B5-4345-A232-F2EE8B6D4931}">
+                <File Id="fil30A776C0F63064A6AF65369FF23FDB8C" KeyPath="yes" Source="SourceDir\Qt6Svg.dll" />
+            </Component>
+            <Component Id="cmpCAE694BB34A9EC66AEA9D10D697F1EAA" Guid="{C1A11A59-3BF3-4562-92C6-304A80B93DAE}">
+                <File Id="fil43665A392379256FF1D68CF38B97EA38" KeyPath="yes" Source="SourceDir\Qt6Widgets.dll" />
+            </Component>
+<?endif qt6?>
             <Directory Id="dirB4D909CA5877E8EBEB32B83B2D15F595" Name="iconengines">
                 <Component Id="cmp1AAFF160C8E04AD945D74CA884667ABC" Guid="F9CAC368-2789-40F4-ADB8-0EDF377306DF">
                     <File Id="filB4B2363760DE489E24EBDBD0BC837FDE" KeyPath="yes" Source="SourceDir\iconengines\qsvgicon.dll" />
@@ -118,6 +139,19 @@
                     <File Id="fil84E6446D9ECFA487C5A2EC4752E07F04" KeyPath="yes" Source="SourceDir\styles\qwindowsvistastyle.dll" />
                 </Component>
             </Directory>
+<?ifdef qt6?>
+            <Directory Id="dir65521F18679A6D14A7BDE5A8612E8C69" Name="tls">
+                <Component Id="cmp83139013FA2C9A99CF2772FD54090FAA" Guid="{60DFDBBA-4832-44FD-B14A-C67EBD4D8119}">
+                    <File Id="fil737932C7578FEA0392CDEFB7540D7E44" KeyPath="yes" Source="SourceDir\tls\qcertonlybackend.dll" />
+                </Component>
+                <Component Id="cmp6E4460E3D6226693FEA5DBBF500895C7" Guid="{CBF26A3F-BA32-4017-BAEF-014AA3C51653}">
+                    <File Id="fil02E5C4A93CDAD6084E6372A2EE1F7ABA" KeyPath="yes" Source="SourceDir\tls\qopensslbackend.dll" />
+                </Component>
+                <Component Id="cmp53306F84AD30BD49CF0C1A68007F9531" Guid="{47907844-2DC3-4E99-B1C9-B9C716E59407}">
+                    <File Id="filD182E98DFB41D91EC2F2A531F6CAF918" KeyPath="yes" Source="SourceDir\tls\qschannelbackend.dll" />
+                </Component>
+            </Directory>
+<?endif qt6?>
             <Directory Id="dirF1C5FA08924D46D2A43D5134DF70C0A8" Name="translations">
                 <Component Id="cmpBCDC6995284E75B9A24E4646E6117744" Guid="51A3610B-4AE8-4020-926E-80B77B650E52">
                     <File Id="fil694FD3DFB9C088844BF9929014423509" KeyPath="yes" Source="SourceDir\translations\qt_ar.qm" />
@@ -188,8 +222,27 @@
                 <Component Id="cmpFDB70117D8E46EB188997470A3793B5D" Guid="EA2F54B9-EE49-4426-A2EF-EDDF3CAC83FD">
                     <File Id="fil9085627E4E33630ABCDB62A5CC05B794" KeyPath="yes" Source="SourceDir\translations\qt_zh_TW.qm" />
                 </Component>
-            </Directory>
+<?ifdef qt6?>
+                <Component Id="cmpF0099CF54A0669D87CC17418C3911422" Guid="{3405A05E-CB26-47D2-9C70-C52167AB8FDC}">
+                    <File Id="fil71B9851F396CBCC25B18299EDCBF5FF5" KeyPath="yes" Source="SourceDir\translations\qt_fa.qm" />
+                </Component>
+                <Component Id="cmpE89BF9966FD9EC39B16BC14B5586E0FA" Guid="{818D0415-1B0D-4C20-A21B-634467D7ABED}">
+                    <File Id="filB4B324E9728AE54A2B57A18E91814BC1" KeyPath="yes" Source="SourceDir\translations\qt_hr.qm" />
+                </Component>
+                <Component Id="cmp7F6AC80CE7E39EEDC9A962EAFADD113B" Guid="{E7491B72-07BC-4811-9AA2-9C90EA586475}">
+                    <File Id="filAB0862690AA36917007DE3C425A282CD" KeyPath="yes" Source="SourceDir\translations\qt_nl.qm" />
+                </Component>
+                <Component Id="cmp9EB4F508A604A4AD35BC558C456111DD" Guid="{035418D9-E833-45B1-B33E-15B8C6EA4E03}">
+                    <File Id="filA89B168478D587343A282C54242055A0" KeyPath="yes" Source="SourceDir\translations\qt_nn.qm" />
+                </Component>
+                <Component Id="cmp09D69EFDCF1B331A37D028C962FE6147" Guid="{BBD6ABD9-DDF9-4AC2-B8C1-FB4CB547B14F}">
+                    <File Id="fil3DBA8083389C96E9A47E27507D39EA05" KeyPath="yes" Source="SourceDir\translations\qt_pt_BR.qm" />
+                </Component>
+                <Component Id="cmpA23046CBC7F8B7E62AF4843CBB72DEC9" Guid="{FE5DC38D-3ABF-406D-8FB7-258119E76380}">
+                    <File Id="filCAF43146A9F7B1727B4975BB51D0A045" KeyPath="yes" Source="SourceDir\translations\qt_zh_CN.qm" />
+                </Component>
 <?endif?>
+            </Directory>
 <?ifdef vs?>
             <Component Id="cmp26187F331810660B2B23AB9501BE69AF" Guid="{B9D40CBB-9764-4DAA-9121-B74B8EADE326}">
                 <File Id="fil548462476B423A98BF378EB6B7FED697" KeyPath="yes" Source="SourceDir\Qt5NetworkAuth.dll" />
@@ -1345,6 +1398,7 @@
                 </Component>
             </Directory>
 <?endif?>
+<?endif?>
         </DirectoryRef>
     </Fragment>
     <Fragment>
@@ -1359,20 +1413,31 @@
 <?endif?>
 <?ifdef dynamic?>
             <ComponentRef Id="cmpF83098612A5B11C5398DBA3894ED590A" />
-            <ComponentRef Id="cmpB60B52D038613C3F20F84A0E1C83D4D4" />
+<?ifdef qt5?>
             <ComponentRef Id="cmp5DDCF0CE56D406D1B8B1F93E988AED6B" />
-            <ComponentRef Id="cmpDEFDDDBEBEA7255D07EE4400F2CDA2FF" />
             <ComponentRef Id="cmpB0CFEB9FF932521D6A75B6BE6F8D644F" />
+<?endif?>
+            <ComponentRef Id="cmpB60B52D038613C3F20F84A0E1C83D4D4" />
+            <ComponentRef Id="cmpDEFDDDBEBEA7255D07EE4400F2CDA2FF" />
             <ComponentRef Id="cmp809509D62BD9EA848EF243F03D83758F" />
             <ComponentRef Id="cmp57DDA83E372188A5B760684B961DE685" />
             <ComponentRef Id="cmpF76D0CD1138260DB167395B86D0011CF" />
             <ComponentRef Id="cmpEA16414E09FD1D5068139520966B49EB" />
+<?ifdef qt5?>
             <ComponentRef Id="cmp01229088A6F1DEA1BE391E6E7CC3D3EE" />
             <ComponentRef Id="cmp1658AEC83DA2CDD0D93D5BAAABBEAD46" />
             <ComponentRef Id="cmp2DE804C107C75B0C71470A93647D09B5" />
             <ComponentRef Id="cmp82912105030EA0D2D7550CF8AC5677F6" />
             <ComponentRef Id="cmp975651B71289ACA70B3EB154C08A27F0" />
             <ComponentRef Id="cmp3CE5AF7CB2F8B2689D2096769883BC56" />
+<?endif?>
+<?ifdef qt6?>
+            <ComponentRef Id="cmp9147A534CD8EDAB4BA7FDEAEEFE9C511" />
+            <ComponentRef Id="cmp52AB384603E096D6B6A1E1FC66B089D4" />
+            <ComponentRef Id="cmp0E8605D5C55843FCDFE809B5EE8DFDFA" />
+            <ComponentRef Id="cmp5D904885C8104A4049616BBAA95F34A3" />
+            <ComponentRef Id="cmpCAE694BB34A9EC66AEA9D10D697F1EAA" />
+<?endif?>
             <ComponentRef Id="cmp1AAFF160C8E04AD945D74CA884667ABC" />
             <ComponentRef Id="cmp02252B1C1976959CFEE7FA11B6E36C4C" />
             <ComponentRef Id="cmp62CBFF830BF239A4E376FAE29937AFAB" />
@@ -1385,6 +1450,11 @@
             <ComponentRef Id="cmpE6323C810986405043F219CECD6B6C10" />
             <ComponentRef Id="cmp9132FD413972F732967B8BC075BC2781" />
             <ComponentRef Id="cmp52840D209B2AC1DC45A29A6BA5A75FF8" />
+<?ifdef qt6?>
+            <ComponentRef Id="cmp83139013FA2C9A99CF2772FD54090FAA" />
+            <ComponentRef Id="cmp6E4460E3D6226693FEA5DBBF500895C7" />
+            <ComponentRef Id="cmp53306F84AD30BD49CF0C1A68007F9531" />
+<?endif?>
             <ComponentRef Id="cmpBCDC6995284E75B9A24E4646E6117744" />
             <ComponentRef Id="cmp3B3D2ADEE08668758CB9FDB1D243AA11" />
             <ComponentRef Id="cmpDAE87E8CC29C30A200A5D17D81DF1DE7" />
@@ -1408,6 +1478,13 @@
             <ComponentRef Id="cmp8DAF13208A863A841AEE7A46E79FB87C" />
             <ComponentRef Id="cmpA214B663A372012F5DCBA6A5CDAE421D" />
             <ComponentRef Id="cmpFDB70117D8E46EB188997470A3793B5D" />
+<?ifdef qt6?>
+            <ComponentRef Id="cmpF0099CF54A0669D87CC17418C3911422" />
+            <ComponentRef Id="cmpE89BF9966FD9EC39B16BC14B5586E0FA" />
+            <ComponentRef Id="cmp7F6AC80CE7E39EEDC9A962EAFADD113B" />
+            <ComponentRef Id="cmp9EB4F508A604A4AD35BC558C456111DD" />
+            <ComponentRef Id="cmp09D69EFDCF1B331A37D028C962FE6147" />
+            <ComponentRef Id="cmpA23046CBC7F8B7E62AF4843CBB72DEC9" />
 <?endif?>
 <?ifdef vs?>
             <ComponentRef Id="cmp26187F331810660B2B23AB9501BE69AF" />
@@ -1783,6 +1860,7 @@
             <ComponentRef Id="cmp80E63D0ACF59FD23F5B051FE5BD003DF" />
             <ComponentRef Id="cmp65C97B5A564AB844DB2F02FFA5B163A4" />
             <ComponentRef Id="cmp4A028D7062688CA7458F90092B47AAAC" />
+<?endif?>
 <?endif?>
         </ComponentGroup>
     </Fragment>

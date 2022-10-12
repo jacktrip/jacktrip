@@ -1,15 +1,19 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+set QTVERSION="5"
+
 if not defined QTBINPATH (
-	for /f "delims=" %%a in ('dir /b C:\Qt\5*') do set QTVERSION=%%a
-	for /f "delims=" %%a in ('dir /b C:\Qt\!QTVERSION!\min*') do set QTBINPATH=%%a
-	set QTBINPATH=C:\Qt\!QTVERSION!\!QTBINPATH!\bin
+	for /f "delims=" %%a in ('dir /b C:\Qt\%QTVERSION%.*') do set QTFULLVERSION=%%a
+	for /f "delims=" %%a in ('dir /b C:\Qt\!QTFULLVERSION!\mingw*') do set QTBINPATH=%%a
+	set QTBINPATH=C:\Qt\!QTFULLVERSION!\!QTBINPATH!\bin
 )
+echo Using Qt Version %QTFULLVERSION%
 if not defined QTLIBPATH (
-	for /f "delims=" %%a in ('dir /b C:\Qt\Tools\min*') do set QTLIBPATH=%%a
+	for /f "delims=" %%a in ('dir /b C:\Qt\Tools\mingw*') do set QTLIBPATH=%%a
 	set QTLIBPATH=C:\Qt\Tools\!QTLIBPATH!\bin
 )
+echo Using mingw libraries from %QTLIBPATH%
 if not defined WIXPATH (
 	for /f "delims=" %%a in ('dir /b "C:\Program Files (x86)\Wix Toolset*"') do set WIXPATH=%%a
 	set WIXPATH=C:\Program Files ^(x86^)\!WIXPATH!\bin
@@ -45,11 +49,15 @@ if exist ..\builddir\release\jacktrip.exe (set JACKTRIP=..\builddir\release\jack
 copy %JACKTRIP% deploy\
 cd deploy
 set "WIXDEFINES="
-for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Core.dll') do set DYNAMIC_QT=%%a
+for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt%QTVERSION%Core.dll') do set DYNAMIC_QT=%%a
 if defined DYNAMIC_QT (
 	echo Including Qt Files
-	for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt5Qml.dll') do set VS=%%a
+	for /f "tokens=*" %%a in ('%QTLIBPATH%\objdump -p jacktrip.exe ^| findstr Qt%QTVERSION%Qml.dll') do set VS=%%a
 	if defined VS (
+		if %QTVERSION%=="6" (
+			echo The installer is not designed to handle dynamic Virtual Studio builds using Qt6 yet.
+			exit /b 1
+		)
 		%QTBINPATH%\windeployqt --qmldir ..\..\src\gui jacktrip.exe
 		set WIXDEFINES=%WIXDEFINES% -dvs
 	) else (
@@ -68,6 +76,7 @@ if defined RTAUDIO (
 	copy %RTAUDIOLIB% .\
 	set WIXDEFINES=%WIXDEFINES% -drtaudio
 )
+set WIXDEFINES=%WIXDEFINES% -dqt%QTVERSION%
 
 copy ..\jacktrip.wxs .\
 copy ..\files.wxs .\
