@@ -7,7 +7,7 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs TRUE)
-set(psi TRUE)
+set(psi FALSE)
 set(QtVersion "5")
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
@@ -242,5 +242,16 @@ endif ()
 
 target_link_libraries(jacktrip ${qjacktrip_LIBS})
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  add_custom_command(
+    TARGET jacktrip POST_BUILD
+    COMMAND help2man --no-info --section=1 --output=jacktrip.1 ./jacktrip
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  )
+endif ()
+
 # Install the executable
 install(TARGETS jacktrip DESTINATION bin)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  install(FILES ${CMAKE_BINARY_DIR}/jacktrip.1 DESTINATION share/man/man1)
+endif ()
