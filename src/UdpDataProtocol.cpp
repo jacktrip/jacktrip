@@ -1023,7 +1023,6 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
 bool UdpDataProtocol::datagramAvailable()
 {
     //Currently using a simplified version of the way QUdpSocket checks for datagrams.
-    //TODO: Consider changing to use poll() or select().
     char c;
 #if defined(_WIN32)
     //Need to use the winsock version of the function for MSG_PEEK
