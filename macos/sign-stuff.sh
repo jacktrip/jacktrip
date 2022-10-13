@@ -18,7 +18,7 @@ if [ ! -z $2 ]; then
 	SCRIPT_BRANCH="$2"
 fi
 
-CHECK=$(echo "$1" | sed "s/-/./g") 
+CHECK=$(echo "$1" | sed "s/-/./g")
 MAJOR=$(echo $CHECK | cut -d. -f1)
 MINOR=$(echo $CHECK | cut -d. -f2)
 REVISION=$(echo $CHECK | cut -d. -f3)
