@@ -64,11 +64,14 @@ while getopts ":inhqc:d:u:p:t:b:" opt; do
         echo " -d <certname>      Name of the certificate to use for package signing. (No signing by default.)"
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
-        echo " -t <team id>       Team ID for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
         echo " -h                 Display this help screen and exit."
         echo
         echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
         echo "(These should be left as is for official builds.)"
+        echo
+        echo "The username, password, and team ID are saved in the keychain by notarytool."
+        echo "They only need to be supplied once, or in the eventh that you need to change them."
  
         exit 0
         ;;
