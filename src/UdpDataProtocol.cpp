@@ -626,7 +626,7 @@ void UdpDataProtocol::run()
         mRevivedCount            = 0;
         mStatCount               = 0;
 
-        //Set up our platform specific polling mechanism. (kqueue, epoll)
+        //Set up our platform specific polling mechanism. (kqueue, epoll, overlapped I/O)
 #if !defined (MANUAL_POLL)
 #if defined (__linux__)
         int epollfd = epoll_create1(0);
@@ -644,8 +644,8 @@ void UdpDataProtocol::run()
         
         eventArray[0] = WSACreateEvent();
         if (eventArray == WSA_INVALID_EVENT) {
-            emit signalError("Unable to set up networking");
-            cout << "ERROR: Unable to set up networking" << endl;
+            emit signalError("Unable to set up network event monitoring");
+            cout << "ERROR: Unable to set up network event monitoring" << endl;
             mStopped = true;
         }
         ZeroMemory(&socketOverlapped, sizeof(WSAOVERLAPPED));
@@ -709,6 +709,7 @@ void UdpDataProtocol::run()
                 waitTime += 10;
                 emit signalWaitingTooLong(waitTime);
             } else {
+                waitTime = 0;
                 WSAResetEvent(eventArray[index - WSA_WAIT_EVENT_0]);
                 WSAGetOverlappedResult(mSocket, &socketOverlapped, &bytesTransferred, FALSE, &flags);
                 if (bytesTransferred == mControlPacketSize) {
