@@ -112,7 +112,9 @@ void Meter::compute(int nframes, float** inputs, float** /*_*/)
         }
 
         /* Update mValues */
+        mValuesMutex.lock();
         mValues[i] = max;
+        mValuesMutex.unlock();
     }
 
     /* Set processed audio flag */
@@ -129,10 +131,12 @@ void Meter::updateNumChannels(int nChansIn, int nChansOut)
     }
 
     mValues.resize(mNumChannels);
+    mValuesMutex.lock();
     QVector<float>::iterator it;
     for (it = mValues.begin(); it != mValues.end(); ++it) {
         *it = threshold;
     }
+    mValuesMutex.unlock();
 }
 
 //*******************************************************************************
@@ -143,9 +147,11 @@ void Meter::onTick()
         emit onComputedVolumeMeasurements(mValues);
 
         /* Set meter values to the default floor */
+        mValuesMutex.lock();
         QVector<float>::iterator it;
         for (it = mValues.begin(); it != mValues.end(); ++it) {
             *it = threshold;
         }
+        mValuesMutex.unlock();
     }
 }

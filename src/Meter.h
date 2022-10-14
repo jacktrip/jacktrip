@@ -39,6 +39,7 @@
 #ifndef __METER_H__
 #define __METER_H__
 
+#include <QMutex>
 #include <QObject>
 #include <QTimer>
 #include <QVector>
@@ -90,6 +91,7 @@ class Meter : public ProcessPlugin
     std::vector<meterdsp*> meterP;
     bool hasProcessedAudio = false;
 
+    QMutex mValuesMutex;
     QTimer mTimer;
     QVector<float> mValues;
 
