@@ -331,11 +331,6 @@ int main(int argc, char* argv[])
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
-#ifndef __unix__
-        QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
-                                    .toString()
-                                    .toLower();
-#endif
 #ifdef _WIN32
         // Set url scheme in registry
         QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
@@ -491,6 +486,13 @@ int main(int argc, char* argv[])
 #endif  // NO_VS
 
 #ifndef NO_UPDATER
+#ifdef NO_VS
+        // This wasn't set up earlier in NO_VS mode. Create it here.
+        QSettings settings;
+#endif
+        QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
+                                    .toString()
+                                    .toLower();
         // Setup auto-update feed
         dblsqd::Feed* feed = 0;
         QString baseUrl =
