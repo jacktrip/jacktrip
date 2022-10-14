@@ -346,7 +346,7 @@ jobs:
         run: |
           QT_FULL_VERSION=${{ matrix.static-qt-version }}
           QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
-          QT_SRC_URL="https://download.qt.io/official_releases/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/qt-everywhere-src-$QT_FULL_VERSION.tar.xz"
+          QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/qt-everywhere-src-$QT_FULL_VERSION.tar.xz"
           echo "Downloading Qt source from $QT_SRC_URL"
           curl -L $QT_SRC_URL -o qt.tar.xz
           echo "Unpacking Qt source"
