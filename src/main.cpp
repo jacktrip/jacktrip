@@ -485,7 +485,7 @@ int main(int argc, char* argv[])
         window->show();
 #endif  // NO_VS
 
-#ifndef NO_UPDATER
+#if !defined(NO_UPDATER) && !defined(__unix__)
 #ifdef NO_VS
         // This wasn't set up earlier in NO_VS mode. Create it here.
         QSettings settings;
