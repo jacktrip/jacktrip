@@ -6,13 +6,20 @@ project(QJackTrip)
 set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
-set(novs TRUE)
+set(novs FALSE)
+set(noupdater FALSE)
 set(psi FALSE)
 set(QtVersion "5")
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
 message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build."
         "https://jacktrip.github.io/jacktrip/Build/Meson_build/")
+
+if (nogui)
+  add_compile_definitions(NO_GUI)
+  set(novs TRUE)
+  set(noupdater TRUE)
+endif ()
 
 if (novs)
   set(QRC_FILE "src/gui/qjacktrip_novs.qrc")
@@ -37,6 +44,8 @@ if (psi)
   set(BUILD_NUMBER "00")
   add_compile_definitions(BUILD_ID="${BUILD_DATE}${BUILD_NUMBER}")
   add_compile_definitions(NDEBUG)
+  set(novs TRUE)
+  set(noupdater TRUE)
 else ()
   file(READ "${QRC_FILE}" QRC_CONTENTS)
   string(REPLACE "<file alias=\"about@2x.png\">alt/about@2x.png" "<file>about@2x.png" QRC_CONTENTS "${QRC_CONTENTS}")
@@ -45,26 +54,15 @@ else ()
   file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
 endif ()
 
-add_compile_definitions(NO_UPDATER)
-add_compile_definitions(QT_OPENSOURCE)
-
-if (nogui)
-  add_compile_definitions(NO_GUI)
-  set(novs TRUE)
-endif ()
-
-if (rtaudio)
-  add_compile_definitions(RT_AUDIO)
-endif ()
-
-if (weakjack)
-  add_compile_definitions(USE_WEAK_JACK)
-  include_directories("externals/weakjack")
-endif()
-
 if (novs)
   add_compile_definitions(NO_VS)
 endif ()
+
+if (noupdater)
+  add_compile_definitions(NO_UPDATER)
+endif ()
+
+add_compile_definitions(QT_OPENSOURCE)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set (ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig")
@@ -150,12 +148,15 @@ set(qjacktrip_SRC
 )
 
 if (rtaudio)
+  add_compile_definitions(RT_AUDIO)
   set (qjacktrip_SRC ${qjacktrip_SRC}
     src/RtAudioInterface.cpp
   )
 endif ()
 
 if (weakjack)
+  add_compile_definitions(USE_WEAK_JACK)
+  include_directories("externals/weakjack")
   set (qjacktrip_SRC ${qjacktrip_SRC}
     externals/weakjack/weak_libjack.c
   )
@@ -189,6 +190,15 @@ if (NOT nogui)
     )
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
+  endif ()
+  
+  if (NOT noupdater)
+    set (qjacktrip_SRC ${qjacktrip_SRC}
+      src/dblsqd/feed.cpp
+      src/dblsqd/release.cpp
+      src/dblsqd/semver.cpp
+      src/dblsqd/update_dialog.cpp
+    )
   endif ()
 
   if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
