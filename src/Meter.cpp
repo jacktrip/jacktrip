@@ -122,6 +122,11 @@ void Meter::compute(int nframes, float** inputs, float** /*_*/)
 //*******************************************************************************
 void Meter::updateNumChannels(int nChansIn, int nChansOut)
 {
+    // this should only be called before init!
+    if (inited) {
+        return;
+    }
+
     if (outgoingPluginToNetwork) {
         mNumChannels = nChansIn;
     } else {
@@ -140,7 +145,9 @@ void Meter::onTick()
 {
     if (hasProcessedAudio) {
         /* Send the measurements to whatever other component requests it */
-        emit onComputedVolumeMeasurements(mValues);
+        QVector<float> valuesCopy(mValues);
+        valuesCopy.detach();
+        emit onComputedVolumeMeasurements(valuesCopy);
 
         /* Set meter values to the default floor */
         QVector<float>::iterator it;

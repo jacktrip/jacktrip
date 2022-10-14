@@ -1337,7 +1337,7 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
     return;
 }
 
-void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDecibels)
+void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDecibels)
 {
     QJsonArray uiValues;
     bool detectedClip = false;
@@ -1369,7 +1369,7 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float> valuesInDeci
                                                        QVariant::fromValue(uiValues));
 }
 
-void VirtualStudio::updatedOutputVuMeasurements(const QVector<float> valuesInDecibels)
+void VirtualStudio::updatedOutputVuMeasurements(const QVector<float>& valuesInDecibels)
 {
     QJsonArray uiValues;
     bool detectedClip = false;
