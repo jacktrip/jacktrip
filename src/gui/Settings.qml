@@ -489,6 +489,27 @@ Item {
                 color: textColour
             }
         }
+
+        Button {
+            id: testModeButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: testModeButton.down ? buttonPressedColour : (testModeButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; window.state = "login"; virtualstudio.logout() }
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: logoutButton.y + (48 * virtualstudio.uiScale)
+            width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            visible: virtualstudio.userMetadata.email ? ( virtualstudio.userMetadata.email.endsWith("@jacktrip.org") ? true : false ) : false
+            Text {
+                text: virtualstudio.testMode ? "Switch to Prod Mode" : "Switch to Test Mode"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
     }
 
     Rectangle {

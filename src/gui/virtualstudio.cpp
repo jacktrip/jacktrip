@@ -72,6 +72,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
     m_uiScale         = settings.value(QStringLiteral("UiScale"), 1).toFloat();
     m_darkMode        = settings.value(QStringLiteral("DarkMode"), false).toBool();
+    m_testMode        = settings.value(QStringLiteral("TestMode"), false).toBool();
     m_showInactive    = settings.value(QStringLiteral("ShowInactive"), true).toBool();
     m_showSelfHosted  = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
     m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
@@ -566,6 +567,27 @@ void VirtualStudio::setDarkMode(bool dark)
     emit darkModeChanged();
 }
 
+bool VirtualStudio::testMode()
+{
+    return m_testMode;
+}
+
+void VirtualStudio::setTestMode(bool test)
+{
+    QString userEmail = m_userMetadata[QStringLiteral("email")].toString();
+    if (m_userMetadata.isEmpty() || userEmail == ""
+        || !userEmail.endsWith("@jacktrip.org")) {
+        qDebug() << "Not allowed";
+        return;
+    }
+    m_testMode = test;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("TestMode"), m_testMode);
+    settings.endGroup();
+    emit testModeChanged();
+}
+
 QUrl VirtualStudio::studioToJoin()
 {
     return m_studioToJoin;
@@ -684,11 +706,10 @@ void VirtualStudio::toVirtualStudio()
                 QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
                 (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
-                parameters->insert(QStringLiteral("audience"),
-                                   QStringLiteral("https://api.jacktrip.org"));
+                parameters->insert(QStringLiteral("audience"), AUTH_AUDIENCE);
             }
             if (!parameters->contains("client_id")) {
-                parameters->insert("client_id", "cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
+                parameters->insert("client_id", AUTH_CLIENT_ID);
             }
         });
 
@@ -726,6 +747,7 @@ void VirtualStudio::logout()
     m_heartbeatTimer.stop();
 
     m_refreshToken.clear();
+    m_userMetadata = QJsonObject();
     m_userId.clear();
     emit hasRefreshTokenChanged();
 }
@@ -846,10 +868,10 @@ void VirtualStudio::connectToStudio(int studioIndex)
                                 {QLatin1String("expiresAt"), expiration}};
             QJsonDocument request = QJsonDocument(json);
 
-            QNetworkReply* reply = m_authenticator->put(
-                QStringLiteral("https://app.jacktrip.org/api/servers/%1")
-                    .arg(studioInfo->id()),
-                request.toJson());
+            QNetworkReply* reply =
+                m_authenticator->put(QStringLiteral("https://%1/api/servers/%2")
+                                         .arg(m_apiHost, studioInfo->id()),
+                                     request.toJson());
             connect(reply, &QNetworkReply::finished, this, [&, reply]() {
                 if (reply->error() != QNetworkReply::NoError) {
                     m_connectionState = QStringLiteral("Unable to Start Studio");
@@ -1046,21 +1068,21 @@ void VirtualStudio::manageStudio(int studioIndex)
         // We're here from a connected screen. Use our current studio.
         studioIndex = m_currentStudio;
     }
-    QUrl url =
-        QUrl(QStringLiteral("https://app.jacktrip.org/studios/%1")
-                 .arg(static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    QUrl url = QUrl(
+        QStringLiteral("https://%1/studios/%2")
+            .arg(m_apiHost, static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::createStudio()
 {
-    QUrl url = QUrl(QStringLiteral("https://app.jacktrip.org/studios/create"));
+    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_apiHost));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::editProfile()
 {
-    QUrl url = QUrl(QStringLiteral("https://app.jacktrip.org/profile"));
+    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_apiHost));
     QDesktopServices::openUrl(url);
 }
 
@@ -1090,6 +1112,12 @@ void VirtualStudio::exit()
 
 void VirtualStudio::slotAuthSucceded()
 {
+    // Determine which API host to use
+    m_apiHost = PROD_API_HOST;
+    if (m_testMode) {
+        m_apiHost = TEST_API_HOST;
+    }
+
     m_authenticated = true;
     m_refreshToken  = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
@@ -1099,7 +1127,7 @@ void VirtualStudio::slotAuthSucceded()
     settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
     settings.endGroup();
 
-    m_device = new VsDevice(m_authenticator.data());
+    m_device = new VsDevice(m_authenticator.data(), m_testMode);
     m_device->registerApp();
 
     if (m_showDeviceSetup) {
@@ -1249,7 +1277,7 @@ void VirtualStudio::checkForHostname()
 
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     QNetworkReply* reply     = m_authenticator->get(
-            QStringLiteral("https://app.jacktrip.org/api/servers/%1").arg(studioInfo->id()));
+            QStringLiteral("https://%1/api/servers/%2").arg(m_apiHost, studioInfo->id()));
     connect(reply, &QNetworkReply::finished, this, [&, reply, studioInfo]() {
         if (reply->error() != QNetworkReply::NoError) {
             m_connectionState = QStringLiteral("Unable to Start Studio");
@@ -1384,14 +1412,11 @@ void VirtualStudio::setupAuthenticator()
                 &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this,
                 &VirtualStudio::launchBrowser);
 
-        const QUrl authUri(QStringLiteral("https://auth.jacktrip.org/authorize"));
-        const QString clientId = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
-        const QUrl tokenUri(QStringLiteral("https://auth.jacktrip.org/oauth/token"));
         const quint16 port = 52424;
 
-        m_authenticator->setAuthorizationUrl(authUri);
-        m_authenticator->setClientIdentifier(clientId);
-        m_authenticator->setAccessTokenUrl(tokenUri);
+        m_authenticator->setAuthorizationUrl(AUTH_AUTHORIZE_URI);
+        m_authenticator->setClientIdentifier(AUTH_CLIENT_ID);
+        m_authenticator->setAccessTokenUrl(AUTH_TOKEN_URI);
 
         m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
                                                         QVariantMap* parameters) {
@@ -1450,7 +1475,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
     }
 
     QNetworkReply* reply =
-        m_authenticator->get(QStringLiteral("https://app.jacktrip.org/api/servers"));
+        m_authenticator->get(QStringLiteral("https://%1/api/servers").arg(m_apiHost));
     connect(
         reply, &QNetworkReply::finished, this,
         [&, reply, topServerId, firstLoad, signalRefresh]() {
@@ -1652,8 +1677,7 @@ void VirtualStudio::getUserId()
 void VirtualStudio::getSubscriptions()
 {
     QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://app.jacktrip.org/api/users/%1/subscriptions")
-            .arg(m_userId));
+        QStringLiteral("https://%1/api/users/%2/subscriptions").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -1683,7 +1707,7 @@ void VirtualStudio::getSubscriptions()
 void VirtualStudio::getRegions()
 {
     QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://app.jacktrip.org/api/users/%1/regions").arg(m_userId));
+        QStringLiteral("https://%1/api/users/%2/regions").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -1701,7 +1725,7 @@ void VirtualStudio::getRegions()
 void VirtualStudio::getUserMetadata()
 {
     QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://app.jacktrip.org/api/users/%1").arg(m_userId));
+        QStringLiteral("https://%1/api/users/%2").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -1749,7 +1773,7 @@ void VirtualStudio::stopStudio()
     QJsonDocument request    = QJsonDocument(json);
     studioInfo->setHost(QLatin1String(""));
     QNetworkReply* reply = m_authenticator->put(
-        QStringLiteral("https://app.jacktrip.org/api/servers/%1").arg(studioInfo->id()),
+        QStringLiteral("https://%1/api/servers/%2").arg(m_apiHost, studioInfo->id()),
         request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (m_isExiting && !m_jackTripRunning) {
