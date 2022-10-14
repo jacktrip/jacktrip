@@ -189,8 +189,8 @@ class VirtualStudio : public QObject
     void createStudio();
     void editProfile();
     void showAbout();
-    void updatedInputVuMeasurements(const QVector<float> valuesInDecibels);
-    void updatedOutputVuMeasurements(const QVector<float> valuesInDecibels);
+    void updatedInputVuMeasurements(const QVector<float>& valuesInDecibels);
+    void updatedOutputVuMeasurements(const QVector<float>& valuesInDecibels);
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
     void setInputMuted(bool muted);
