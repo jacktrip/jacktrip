@@ -277,14 +277,15 @@ void Feed::handleDownloadReadyRead()
         QString host = url.host();
         if (host.contains("github", Qt::CaseInsensitive) && url.hasQuery()) {
             QString query = url.query();
-            QRegExp rx("filename%3D(.*)(&|$)");
-            rx.setMinimal(true);
-            if (rx.indexIn(query) > -1) {
-                fileName = rx.cap(1);
+            QRegularExpression rx("filename%3D(.*?)(&|$)");
+            QRegularExpressionMatch match = rx.match(query);
+            if (match.hasMatch()) {
+                fileName = match.captured(1);
             }
         }
         // End workaround
-        int extensionPos = fileName.indexOf(QRegExp("(?:\\.tar)?\\.[a-zA-Z0-9]+$"));
+        int extensionPos =
+            fileName.indexOf(QRegularExpression("(?:\\.tar)?\\.[a-zA-Z0-9]+$"));
         if (extensionPos > -1) {
             fileName.insert(extensionPos, "-XXXXXX");
         }
