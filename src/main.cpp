@@ -487,7 +487,7 @@ int main(int argc, char* argv[])
 
 #if !defined(NO_UPDATER) && !defined(__unix__)
 #ifdef NO_VS
-        // This wasn't set up earlier in NO_VS mode. Create it here.
+        // This wasn't set up earlier in NO_VS builds. Create it here.
         QSettings settings;
 #endif
         QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
