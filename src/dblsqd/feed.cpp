@@ -284,7 +284,8 @@ void Feed::handleDownloadReadyRead()
             }
         }
         // End workaround
-        int extensionPos = fileName.indexOf(QRegularExpression("(?:\\.tar)?\\.[a-zA-Z0-9]+$"));
+        int extensionPos =
+            fileName.indexOf(QRegularExpression("(?:\\.tar)?\\.[a-zA-Z0-9]+$"));
         if (extensionPos > -1) {
             fileName.insert(extensionPos, "-XXXXXX");
         }
