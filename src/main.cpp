@@ -155,8 +155,13 @@ QCoreApplication* createApplication(int& argc, char* argv[])
 #endif
         // Fix for display scaling like 125% or 150% on Windows
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+#if defined(NO_VS) && defined(_WIN32)
+        QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+            Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor);
+#else
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif  // NO_VS
 #endif  // QT_VERSION
         return new QApplication(argc, argv);
 #endif  // Q_OS_MACOS
