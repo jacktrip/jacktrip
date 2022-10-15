@@ -72,7 +72,7 @@ class QJackTrip : public QMainWindow
     void showEvent(QShowEvent* event) override;
 
 #ifndef NO_VS
-    enum uiModeT{UNSET, VIRTUAL_STUDIO, STANDARD};
+    enum uiModeT { UNSET, VIRTUAL_STUDIO, STANDARD };
     void setVs(QSharedPointer<VirtualStudio> vs);
 #endif
 
