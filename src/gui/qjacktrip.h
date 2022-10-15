@@ -119,11 +119,7 @@ class QJackTrip : public QMainWindow
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
 
-#ifdef PSI
     QScopedPointer<Ui::QJackTrip> m_ui;
-#else
-    QScopedPointer<Ui::QJackTripVS> m_ui;
-#endif
     QScopedPointer<UdpHubListener> m_udpHub;
     QScopedPointer<JackTrip> m_jackTrip;
     QScopedPointer<QNetworkAccessManager> m_netManager;
