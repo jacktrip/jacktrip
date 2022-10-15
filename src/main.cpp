@@ -516,7 +516,7 @@ int main(int argc, char* argv[])
 #endif
         if (feed) {
             QScopedPointer<dblsqd::UpdateDialog> updateDialog(
-                new dblsqd::UpdateDialog(feed));
+                new dblsqd::UpdateDialog(feed.data()));
             updateDialog->setIcon(":/qjacktrip/icon.png");
         }
 #endif  // NO_UPDATER
