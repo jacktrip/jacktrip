@@ -507,16 +507,15 @@ int main(int argc, char* argv[])
         QString baseUrl = QStringLiteral("https://nuages.psi-borg.org/jacktrip");
 #endif  // PSI
         // Setup auto-update feed
-        QScopedPointer<dblsqd::Feed> feed(new dblsqd::Feed());
+        dblsqd::Feed* feed = new dblsqd::Feed();
 #ifdef Q_OS_WIN
         feed->setUrl(QUrl(QString("%1/%2-manifests.json").arg(baseUrl, "win")));
 #endif
 #ifdef Q_OS_MACOS
         feed->setUrl(QUrl(QString("%1/%2-manifests.json").arg(baseUrl, "mac")));
 #endif
-        if (!feed.isNull()) {
-            QScopedPointer<dblsqd::UpdateDialog> updateDialog(
-                new dblsqd::UpdateDialog(feed.data()));
+        if (feed) {
+            dblsqd::UpdateDialog* updateDialog = new dblsqd::UpdateDialog(feed);
             updateDialog->setIcon(":/qjacktrip/icon.png");
         }
 #endif  // NO_UPDATER
