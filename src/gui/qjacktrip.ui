@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QJackTripVS</class>
- <widget class="QMainWindow" name="QJackTripVS">
+ <class>QJackTrip</class>
+ <widget class="QMainWindow" name="QJackTrip">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>845</height>
+    <height>913</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -165,6 +165,280 @@ To connect to a hub server you need to run as a hub client.</string>
         <string>Basic options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
+        <item row="3" column="0" colspan="2">
+         <widget class="QGroupBox" name="autoPatchGroupBox">
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="0" column="0" rowspan="2" colspan="2">
+            <widget class="QLabel" name="autoPatchLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Hub auto&amp;patch mode</string>
+             </property>
+             <property name="buddy">
+              <cstring>autoPatchComboBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QComboBox" name="autoPatchComboBox">
+             <property name="toolTip">
+              <string>Select how you want audio to be routed by the hub server.</string>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>Server to clients</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Client loopback</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Client fan out/in but no loopback</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Full Mix</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>No auto patching</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="3">
+            <widget class="QCheckBox" name="upmixCheckBox">
+             <property name="toolTip">
+              <string>For clients that only send one channel of audio, relay their signal in stereo.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Upmix mono clients to stereo</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="3">
+            <widget class="QCheckBox" name="patchServerCheckBox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Include the server in the audio patching. This allows an ensemble member to
+play from this machine. (Available in client fan out/in and full mix modes.)</string>
+             </property>
+             <property name="text">
+              <string>&amp;Include server in patching</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QGroupBox" name="channelGroupBox">
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="3" column="0">
+            <widget class="QLabel" name="channelRecvLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&amp;Received from network:</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelRecvSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="channelRecvSpinBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Number of audio channels toaccept from the network.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="channelSendSpinBox">
+             <property name="toolTip">
+              <string>Number of audio channels to send to the network.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="channelSendLabel">
+             <property name="text">
+              <string>&amp;Sent to network:</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelSendSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QLabel" name="channelLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&amp;Number of channels</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelRecvSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="2">
+         <widget class="QCheckBox" name="timeoutCheckBox">
+          <property name="toolTip">
+           <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
+          </property>
+          <property name="text">
+           <string>&amp;Disconnect after 10 seconds of no network activity</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="2">
+         <widget class="QGroupBox" name="authGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="passwordEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your password. (This will not be shown or saved.)</string>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::Password</enum>
+             </property>
+             <property name="cursorPosition">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QCheckBox" name="authCheckBox">
+             <property name="toolTip">
+              <string>Supply a username and password to connect to the server.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Use Authentication</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="usernameEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>Enter your username for the server.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="passwordLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Password</string>
+             </property>
+             <property name="buddy">
+              <cstring>passwordEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="usernameLabel">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>&amp;Username</string>
+             </property>
+             <property name="buddy">
+              <cstring>usernameEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="authNotVSLabel">
+             <property name="text">
+              <string>(This is for JackTrip's inbuilt authentication system. To easily connect to a Virtual Studio server, use the Virtual Studio interface.)</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <spacer name="basicVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item row="7" column="0" colspan="2">
          <widget class="QGroupBox" name="requireAuthGroupBox">
           <property name="title">
@@ -311,7 +585,7 @@ To connect to a hub server you need to run as a hub client.</string>
           <item>
            <widget class="QPushButton" name="vsModeButton">
             <property name="text">
-             <string>Virtual Studio Mode</string>
+             <string>&amp;Virtual Studio Mode</string>
             </property>
            </widget>
           </item>
@@ -324,102 +598,6 @@ To connect to a hub server you need to run as a hub client.</string>
           </item>
          </layout>
         </item>
-        <item row="9" column="0">
-         <spacer name="basicVerticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QGroupBox" name="channelGroupBox">
-          <layout class="QGridLayout" name="gridLayout_9">
-           <item row="3" column="0">
-            <widget class="QLabel" name="channelRecvLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Received from network:</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QSpinBox" name="channelRecvSpinBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Number of audio channels toaccept from the network.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QSpinBox" name="channelSendSpinBox">
-             <property name="toolTip">
-              <string>Number of audio channels to send to the network.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="channelSendLabel">
-             <property name="text">
-              <string>&amp;Sent to network:</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelSendSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="channelLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Number of channels</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
         <item row="5" column="0" colspan="2">
          <widget class="QCheckBox" name="zeroCheckBox">
           <property name="toolTip">
@@ -428,100 +606,6 @@ To connect to a hub server you need to run as a hub client.</string>
           <property name="text">
            <string>Set buffer to &amp;zero when underrun occurs</string>
           </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="2">
-         <widget class="QCheckBox" name="timeoutCheckBox">
-          <property name="toolTip">
-           <string>Stop JackTrip if no network traffic has been received for 10 seconds.</string>
-          </property>
-          <property name="text">
-           <string>&amp;Disconnect after 10 seconds of no network activity</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QGroupBox" name="autoPatchGroupBox">
-          <property name="title">
-           <string/>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_10">
-           <item row="2" column="0" colspan="2">
-            <widget class="QCheckBox" name="upmixCheckBox">
-             <property name="toolTip">
-              <string>For clients that only send one channel of audio, relay their signal in stereo.</string>
-             </property>
-             <property name="text">
-              <string>&amp;Upmix mono clients to stereo</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QComboBox" name="autoPatchComboBox">
-             <property name="toolTip">
-              <string>Select how you want audio to be routed by the hub server.</string>
-             </property>
-             <property name="currentIndex">
-              <number>0</number>
-             </property>
-             <item>
-              <property name="text">
-               <string>Server to clients</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Client loopback</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Client fan out/in but no loopback</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Full Mix</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>No auto patching</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="autoPatchLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Hub auto&amp;patch mode</string>
-             </property>
-             <property name="buddy">
-              <cstring>autoPatchComboBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QCheckBox" name="patchServerCheckBox">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Include the server in the audio patching. This allows an ensemble member to
-play from this machine. (Available in client fan out/in and full mix modes.)</string>
-             </property>
-             <property name="text">
-              <string>&amp;Include server in patching</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </widget>
         </item>
        </layout>
@@ -534,6 +618,48 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
         <string>Advanced options</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
+        <item row="5" column="0">
+         <widget class="QLabel" name="queueLengthLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Queue Buffer Length</string>
+          </property>
+          <property name="buddy">
+           <cstring>queueLengthSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="clientNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client.</string>
+          </property>
+          <property name="maxLength">
+           <number>64</number>
+          </property>
+          <property name="placeholderText">
+           <string>JackTrip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0">
+         <spacer name="advancedVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item row="7" column="0">
          <widget class="QLabel" name="resolutionLabel">
           <property name="sizePolicy">
@@ -547,6 +673,16 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
           <property name="buddy">
            <cstring>resolutionComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="remoteNameEdit">
+          <property name="toolTip">
+           <string>Set the name of the Jack client as it will appear on the hub server.</string>
+          </property>
+          <property name="maxLength">
+           <number>64</number>
           </property>
          </widget>
         </item>
@@ -580,13 +716,99 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </item>
          </widget>
         </item>
-        <item row="1" column="1" colspan="2">
-         <widget class="QLineEdit" name="remoteNameEdit">
+        <item row="9" column="0" colspan="3">
+         <widget class="QCheckBox" name="realTimeCheckBox">
           <property name="toolTip">
-           <string>Set the name of the Jack client as it will appear on the hub server.</string>
+           <string>Use real time priority for the networking threads.</string>
           </property>
-          <property name="maxLength">
-           <number>64</number>
+          <property name="text">
+           <string>Enable real&amp;time priority for networking threads</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QSpinBox" name="ioStatsSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>Choose how often stats should be reported.</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1" colspan="2">
+         <widget class="QSpinBox" name="basePortSpinBox">
+          <property name="toolTip">
+           <string>Set the base UDP port to be used by connecting hub clients. The default is 61002.
+(You should manually set this if running multiple hub servers on the same machine.)</string>
+          </property>
+          <property name="minimum">
+           <number>1024</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>61002</number>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0" colspan="3">
+         <layout class="QHBoxLayout" name="useDefaultsLayout">
+          <item>
+           <spacer name="useDefaultsSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="commandLineButton">
+            <property name="toolTip">
+             <string>Show the equivalent command line for the current settings.</string>
+            </property>
+            <property name="text">
+             <string>Get Command &amp;Line</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="useDefaultsButton">
+            <property name="text">
+             <string>Use &amp;Defaults</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="remoteNameLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Remote Client &amp;Name</string>
+          </property>
+          <property name="buddy">
+           <cstring>remoteNameEdit</cstring>
           </property>
          </widget>
         </item>
@@ -606,22 +828,6 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="remoteNameLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Remote Client &amp;Name</string>
-          </property>
-          <property name="buddy">
-           <cstring>remoteNameEdit</cstring>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="0">
          <widget class="QLabel" name="remotePortLabel">
           <property name="sizePolicy">
@@ -635,6 +841,51 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
           <property name="buddy">
            <cstring>remotePortSpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="clientNameLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Custom Client &amp;Name</string>
+          </property>
+          <property name="buddy">
+           <cstring>clientNameEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="redundancyLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Redundancy</string>
+          </property>
+          <property name="buddy">
+           <cstring>redundancySpinBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="3">
+         <widget class="QCheckBox" name="connectAudioCheckBox">
+          <property name="toolTip">
+           <string>Connect the Jack client to the default system audio ports.</string>
+          </property>
+          <property name="text">
+           <string>&amp;Connect default audio ports</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -655,78 +906,36 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="13" column="0" colspan="3">
-         <widget class="QGroupBox" name="authGroupBox">
-          <property name="enabled">
-           <bool>true</bool>
+        <item row="3" column="1" colspan="2">
+         <widget class="QSpinBox" name="remotePortSpinBox">
+          <property name="toolTip">
+           <string>Set the remote port to use for the connection. The default is 4464.</string>
           </property>
-          <property name="title">
-           <string/>
+          <property name="minimum">
+           <number>1024</number>
           </property>
-          <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0" colspan="2">
-            <widget class="QCheckBox" name="authCheckBox">
-             <property name="toolTip">
-              <string>Supply a username and password to connect to the server.</string>
-             </property>
-             <property name="text">
-              <string>&amp;Use Authentication</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="passwordEdit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Enter your password. (This will not be shown or saved.)</string>
-             </property>
-             <property name="echoMode">
-              <enum>QLineEdit::Password</enum>
-             </property>
-             <property name="cursorPosition">
-              <number>0</number>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="usernameEdit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Enter your username for the server.</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="passwordLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>&amp;Password</string>
-             </property>
-             <property name="buddy">
-              <cstring>passwordEdit</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="usernameLabel">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>&amp;Username</string>
-             </property>
-             <property name="buddy">
-              <cstring>usernameEdit</cstring>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>4464</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="basePortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;UDP Base Port</string>
+          </property>
+          <property name="buddy">
+           <cstring>basePortSpinBox</cstring>
+          </property>
          </widget>
         </item>
         <item row="2" column="0">
@@ -745,64 +954,16 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="queueLengthLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+        <item row="6" column="1" colspan="2">
+         <widget class="QSpinBox" name="redundancySpinBox">
+          <property name="toolTip">
+           <string>Number of redundant packets to be sent to avoid glitches related to packet loss.</string>
           </property>
-          <property name="text">
-           <string>&amp;Queue Buffer Length</string>
+          <property name="minimum">
+           <number>1</number>
           </property>
-          <property name="buddy">
-           <cstring>queueLengthSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="14" column="0">
-         <spacer name="advancedVerticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="basePortLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;UDP Base Port</string>
-          </property>
-          <property name="buddy">
-           <cstring>basePortSpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="clientNameLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Custom Client &amp;Name</string>
-          </property>
-          <property name="buddy">
-           <cstring>clientNameEdit</cstring>
+          <property name="value">
+           <number>1</number>
           </property>
          </widget>
         </item>
@@ -841,157 +1002,6 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="6" column="1" colspan="2">
-         <widget class="QSpinBox" name="redundancySpinBox">
-          <property name="toolTip">
-           <string>Number of redundant packets to be sent to avoid glitches related to packet loss.</string>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="redundancyLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Redundancy</string>
-          </property>
-          <property name="buddy">
-           <cstring>redundancySpinBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="1">
-         <widget class="QSpinBox" name="ioStatsSpinBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>Choose how often stats should be reported.</string>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>120</number>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1" colspan="2">
-         <widget class="QSpinBox" name="remotePortSpinBox">
-          <property name="toolTip">
-           <string>Set the remote port to use for the connection. The default is 4464.</string>
-          </property>
-          <property name="minimum">
-           <number>1024</number>
-          </property>
-          <property name="maximum">
-           <number>65535</number>
-          </property>
-          <property name="value">
-           <number>4464</number>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0" colspan="3">
-         <widget class="QCheckBox" name="connectAudioCheckBox">
-          <property name="toolTip">
-           <string>Connect the Jack client to the default system audio ports.</string>
-          </property>
-          <property name="text">
-           <string>&amp;Connect default audio ports</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1" colspan="2">
-         <widget class="QLineEdit" name="clientNameEdit">
-          <property name="toolTip">
-           <string>Set the name of the Jack client.</string>
-          </property>
-          <property name="maxLength">
-           <number>64</number>
-          </property>
-          <property name="placeholderText">
-           <string>JackTrip</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1" colspan="2">
-         <widget class="QSpinBox" name="basePortSpinBox">
-          <property name="toolTip">
-           <string>Set the base UDP port to be used by connecting hub clients. The default is 61002.
-(You should manually set this if running multiple hub servers on the same machine.)</string>
-          </property>
-          <property name="minimum">
-           <number>1024</number>
-          </property>
-          <property name="maximum">
-           <number>65535</number>
-          </property>
-          <property name="value">
-           <number>61002</number>
-          </property>
-         </widget>
-        </item>
-        <item row="15" column="0" colspan="3">
-         <layout class="QHBoxLayout" name="useDefaultsLayout">
-          <item>
-           <spacer name="useDefaultsSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="commandLineButton">
-            <property name="toolTip">
-             <string>Show the equivalent command line for the current settings.</string>
-            </property>
-            <property name="text">
-             <string>Get Command &amp;Line</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="useDefaultsButton">
-            <property name="text">
-             <string>Use &amp;Defaults</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="9" column="0" colspan="3">
-         <widget class="QCheckBox" name="realTimeCheckBox">
-          <property name="toolTip">
-           <string>Use real time priority for the networking threads.</string>
-          </property>
-          <property name="text">
-           <string>Enable real&amp;time priority for networking threads</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="12" column="0" colspan="3">
          <widget class="QCheckBox" name="verboseCheckBox">
           <property name="toolTip">
@@ -1009,6 +1019,47 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
         <string>Audio Backend</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_11">
+        <item row="9" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="deviceManagementLayout">
+          <item>
+           <spacer name="backendTabSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="refreshDevicesButton">
+            <property name="text">
+             <string>&amp;Refresh Device List</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="backendComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the audio backend to use. JACK is the default and is well tested, but requires the JACK audio server to be installed.&lt;/p&gt;&lt;p&gt;RtAudio is still a work in progress, but it works with your operating system's native audio drivers and requires no additional software.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>JACK</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>RtAudio</string>
+           </property>
+          </item>
+         </widget>
+        </item>
         <item row="3" column="1">
          <widget class="QComboBox" name="inputDeviceComboBox">
           <property name="enabled">
@@ -1016,8 +1067,24 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="backendLabel">
+        <item row="6" column="1">
+         <spacer name="backendSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>444</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="inputDeviceLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -1025,10 +1092,10 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Audio &amp;Backend:</string>
+           <string>&amp;Input Device:</string>
           </property>
           <property name="buddy">
-           <cstring>backendComboBox</cstring>
+           <cstring>inputDeviceComboBox</cstring>
           </property>
          </widget>
         </item>
@@ -1078,6 +1145,41 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
             <string>1024</string>
            </property>
           </item>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="backendLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Audio &amp;Backend:</string>
+          </property>
+          <property name="buddy">
+           <cstring>backendComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="bufferSizeLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>&amp;Buffer Size:</string>
+          </property>
+          <property name="buddy">
+           <cstring>bufferSizeComboBox</cstring>
+          </property>
          </widget>
         </item>
         <item row="1" column="1">
@@ -1131,8 +1233,8 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </item>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="inputDeviceLabel">
+        <item row="1" column="0">
+         <widget class="QLabel" name="sampleRateLabel">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1143,49 +1245,12 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
            </sizepolicy>
           </property>
           <property name="text">
-           <string>&amp;Input Device:</string>
+           <string>&amp;Sampling Rate:</string>
           </property>
           <property name="buddy">
-           <cstring>inputDeviceComboBox</cstring>
+           <cstring>sampleRateComboBox</cstring>
           </property>
          </widget>
-        </item>
-        <item row="6" column="1">
-         <spacer name="backendSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>444</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="9" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="deviceManagementLayout">
-          <item>
-           <spacer name="backendTabSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="refreshDevicesButton">
-            <property name="text">
-             <string>&amp;Refresh Device List</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
         <item row="4" column="0">
          <widget class="QLabel" name="outputDeviceLabel">
@@ -1206,61 +1271,6 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="bufferSizeLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Buffer Size:</string>
-          </property>
-          <property name="buddy">
-           <cstring>bufferSizeComboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="backendComboBox">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the audio backend to use. JACK is the default and is well tested, but requires the JACK audio server to be installed.&lt;/p&gt;&lt;p&gt;RtAudio is still a work in progress, but it works with your operating system's native audio drivers and requires no additional software.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <item>
-           <property name="text">
-            <string>JACK</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>RtAudio</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="sampleRateLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&amp;Sampling Rate:</string>
-          </property>
-          <property name="buddy">
-           <cstring>sampleRateComboBox</cstring>
-          </property>
-         </widget>
-        </item>
         <item row="4" column="1">
          <widget class="QComboBox" name="outputDeviceComboBox">
           <property name="enabled">
@@ -1271,7 +1281,7 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
         <item row="5" column="0" colspan="2">
          <widget class="QLabel" name="backendWarningLabel">
           <property name="text">
-           <string>These settings are ignored in Hub Server mode which requires JACK to operate.</string>
+           <string>These settings are ignored in hub server mode which requires JACK to operate.</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -1827,6 +1837,9 @@ and wetness is the essence of beauty.</string>
   <tabstop>keyBrowse</tabstop>
   <tabstop>credsEdit</tabstop>
   <tabstop>credsBrowse</tabstop>
+  <tabstop>authCheckBox</tabstop>
+  <tabstop>usernameEdit</tabstop>
+  <tabstop>passwordEdit</tabstop>
   <tabstop>vsModeButton</tabstop>
   <tabstop>aboutButton</tabstop>
   <tabstop>clientNameEdit</tabstop>
@@ -1842,9 +1855,6 @@ and wetness is the essence of beauty.</string>
   <tabstop>ioStatsCheckBox</tabstop>
   <tabstop>ioStatsSpinBox</tabstop>
   <tabstop>verboseCheckBox</tabstop>
-  <tabstop>authCheckBox</tabstop>
-  <tabstop>usernameEdit</tabstop>
-  <tabstop>passwordEdit</tabstop>
   <tabstop>commandLineButton</tabstop>
   <tabstop>useDefaultsButton</tabstop>
   <tabstop>backendComboBox</tabstop>

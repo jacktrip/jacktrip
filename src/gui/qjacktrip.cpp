@@ -37,11 +37,7 @@
 #ifndef NO_VS
 #include "virtualstudio.h"
 #endif
-#ifdef PSI
-#include "ui_qjacktrip_novs.h"
-#else
 #include "ui_qjacktrip.h"
-#endif
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
 #endif
@@ -57,11 +53,7 @@
 
 QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     : QMainWindow(parent)
-#ifdef PSI
     , m_ui(new Ui::QJackTrip)
-#else
-    , m_ui(new Ui::QJackTripVS)
-#endif
     , m_netManager(new QNetworkAccessManager(this))
     , m_statsDialog(new MessageDialog(this, QStringLiteral("Stats")))
     , m_debugDialog(new MessageDialog(this, QStringLiteral("Debug"), 2))
@@ -108,7 +100,11 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
         About about(this);
         about.exec();
     });
-#ifndef NO_VS
+#ifdef NO_VS
+    m_ui->authNotVSLabel->setText(QStringLiteral(
+        "(This is for JackTrip's inbuilt authentication system. To easily "
+        "connect to a Virtual Studio server, download a Virtual Studio enabled build.)"));
+#else
     connect(m_ui->vsModeButton, &QPushButton::clicked, this,
             &QJackTrip::virtualStudioMode);
 #endif
@@ -422,6 +418,15 @@ void QJackTrip::resizeEvent(QResizeEvent* event)
     rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap,
                                 m_ui->authDisclaimerLabel->text());
     m_ui->authDisclaimerLabel->setMinimumHeight(rect.height());
+
+    width = m_ui->authGroupBox->contentsRect().width()
+            - m_ui->authGroupBox->contentsMargins().left()
+            - m_ui->authGroupBox->contentsMargins().right()
+            - m_ui->authGroupBox->layout()->contentsMargins().left()
+            - m_ui->authGroupBox->contentsMargins().right();
+    rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap,
+                                m_ui->authNotVSLabel->text());
+    m_ui->authNotVSLabel->setMinimumHeight(rect.height());
 }
 
 void QJackTrip::showEvent(QShowEvent* event)
