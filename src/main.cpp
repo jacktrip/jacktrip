@@ -501,10 +501,10 @@ int main(int argc, char* argv[])
                                     .toLower();
         QString baseUrl =
             QStringLiteral(
-                "https://raw.githubusercontent.com/jacktrip/jacktrip/dev/releases/%1/")
+                "https://raw.githubusercontent.com/jacktrip/jacktrip/dev/releases/%1")
                 .arg(updateChannel);
 #else
-        QString baseUrl = QStringLiteral("https://nuages.psi-borg.org/jacktrip/");
+        QString baseUrl = QStringLiteral("https://nuages.psi-borg.org/jacktrip");
 #endif  // PSI
         // Setup auto-update feed
         QScopedPointer<dblsqd::Feed> feed(new dblsqd::Feed());
@@ -514,7 +514,7 @@ int main(int argc, char* argv[])
 #ifdef Q_OS_MACOS
         feed->setUrl(QUrl(QString("%1/%2-manifests.json").arg(baseUrl, "mac")));
 #endif
-        if (feed) {
+        if (!feed.isNull()) {
             QScopedPointer<dblsqd::UpdateDialog> updateDialog(
                 new dblsqd::UpdateDialog(feed.data()));
             updateDialog->setIcon(":/qjacktrip/icon.png");
