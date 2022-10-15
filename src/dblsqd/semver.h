@@ -2,7 +2,7 @@
 #define DBLSQD_SEMVER_H
 
 #include <QObject>
-#include <QRegExp>
+#include <QRegularExpression>
 
 namespace dblsqd
 {

@@ -155,8 +155,13 @@ QCoreApplication* createApplication(int& argc, char* argv[])
 #endif
         // Fix for display scaling like 125% or 150% on Windows
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+#if defined(NO_VS) && defined(_WIN32)
+        QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+            Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor);
+#else
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif  // NO_VS
 #endif  // QT_VERSION
         return new QApplication(argc, argv);
 #endif  // Q_OS_MACOS
@@ -331,11 +336,6 @@ int main(int argc, char* argv[])
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
-#ifndef __unix__
-        QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
-                                    .toString()
-                                    .toLower();
-#endif
 #ifdef _WIN32
         // Set url scheme in registry
         QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
@@ -490,7 +490,14 @@ int main(int argc, char* argv[])
         window->show();
 #endif  // NO_VS
 
-#ifndef NO_UPDATER
+#if !defined(NO_UPDATER) && !defined(__unix__)
+#ifdef NO_VS
+        // This wasn't set up earlier in NO_VS builds. Create it here.
+        QSettings settings;
+#endif
+        QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
+                                    .toString()
+                                    .toLower();
         // Setup auto-update feed
         dblsqd::Feed* feed = 0;
         QString baseUrl =
