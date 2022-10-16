@@ -1036,6 +1036,9 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
           </item>
           <item>
            <widget class="QPushButton" name="refreshDevicesButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>&amp;Refresh Device List</string>
             </property>
