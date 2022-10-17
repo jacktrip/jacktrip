@@ -40,10 +40,10 @@
 
 #include <QObject>
 #include <QString>
+#include <QTimer>
 #include <QUuid>
 #include <QtNetworkAuth>
 #include <QtWebSockets>
-#include <QTimer>
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
@@ -78,7 +78,7 @@ class VsDevice : public QObject
     void updateNetworkStats(QJsonObject stats);
     void updatedVolumeFromServer(float multiplier);
     void updatedMuteFromServer(bool muted);
-   
+
    public slots:
     void updateVolume(float multiplier);
     void updateMute(bool muted);
@@ -106,7 +106,7 @@ class VsDevice : public QObject
     QOAuth2AuthorizationCodeFlow* m_authenticator;
     QRandomGenerator m_randomizer;
     float m_captureVolume = 1.0;
-    bool m_captureMute = false;
+    bool m_captureMute    = false;
     QTimer* m_sendVolumeTimer;
 };
 

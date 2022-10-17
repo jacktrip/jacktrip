@@ -388,8 +388,7 @@ void VsDevice::updateVolume(float multiplier)
     }
     m_captureVolume = multiplier;
 
-    if (m_sendVolumeTimer)
-    {
+    if (m_sendVolumeTimer) {
         m_sendVolumeTimer->start(200);
     }
 }
@@ -402,8 +401,7 @@ void VsDevice::updateMute(bool muted)
     }
     m_captureMute = muted;
 
-    if (m_sendVolumeTimer)
-    {
+    if (m_sendVolumeTimer) {
         m_sendVolumeTimer->start(200);
     }
 }
@@ -430,7 +428,7 @@ void VsDevice::onTextMessageReceived(const QString& message)
         m_pinger->start();
     }
 
-    bool newMute = newState["captureMute"].toBool();
+    bool newMute           = newState["captureMute"].toBool();
     float newCaptureVolume = (float)(newState["captureVolume"].toDouble() / 100.0);
 
     if (newCaptureVolume != m_captureVolume) {
