@@ -40,7 +40,8 @@
 #include <QDebug>
 
 // Constructor
-VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
+VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
+                   QObject* parent)
     : QObject(parent), m_authenticator(authenticator)
 {
     QSettings settings;
@@ -49,10 +50,17 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, QObject* parent)
     m_apiSecret = settings.value(QStringLiteral("ApiSecret"), "").toString();
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
+    settings.endGroup();
 
     m_sendVolumeTimer = new QTimer(this);
     m_sendVolumeTimer->setSingleShot(true);
     connect(m_sendVolumeTimer, &QTimer::timeout, this, &VsDevice::sendLevels);
+
+    // Determine which API host to use
+    m_apiHost = PROD_API_HOST;
+    if (testMode) {
+        m_apiHost = TEST_API_HOST;
+    }
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
@@ -64,7 +72,7 @@ void VsDevice::registerApp()
 
     // check if device exists
     QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
+        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
@@ -120,7 +128,7 @@ void VsDevice::removeApp()
     }
 
     QNetworkReply* reply = m_authenticator->deleteResource(
-        QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID));
+        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -151,10 +159,10 @@ void VsDevice::removeApp()
 void VsDevice::sendHeartbeat()
 {
     if (m_webSocket == nullptr) {
-        m_webSocket = new VsWebSocket(
-            QUrl(QStringLiteral("wss://app.jacktrip.org/api/devices/%1/heartbeat")
-                     .arg(m_appID)),
-            m_authenticator->token(), m_apiPrefix, m_apiSecret);
+        m_webSocket =
+            new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat")
+                                     .arg(m_apiHost, m_appID)),
+                            m_authenticator->token(), m_apiPrefix, m_apiSecret);
         connect(m_webSocket, &VsWebSocket::textMessageReceived, this,
                 &VsDevice::onTextMessageReceived);
     }
@@ -215,8 +223,7 @@ void VsDevice::sendHeartbeat()
     } else {
         // Send heartbeat via POST API
         QNetworkReply* reply = m_authenticator->post(
-            QStringLiteral("https://app.jacktrip.org/api/devices/%1/heartbeat")
-                .arg(m_appID),
+            QStringLiteral("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, m_appID),
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [=]() {
             if (reply->error() != QNetworkReply::NoError) {
@@ -243,7 +250,7 @@ void VsDevice::setServerId(QString serverId)
     };
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_authenticator->put(
-         QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID),
+         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
          request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
@@ -306,7 +313,13 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
     m_jackTrip->setRemoteClientName(m_appID);
     // increment m_bufferStrategy by 1 for array-index mapping
     m_jackTrip->setBufferStrategy(bufferStrategy + 1);
-    m_jackTrip->setBufferQueueLength(-500);
+    if (bufferStrategy == 2) {
+        // use -q auto3 for loss concealment
+        m_jackTrip->setBufferQueueLength(-3);
+    } else {
+        // use -q auto
+        m_jackTrip->setBufferQueueLength(-500);
+    }
     m_jackTrip->setPeerAddress(studioInfo->host());
     m_jackTrip->setPeerPorts(studioInfo->port());
     m_jackTrip->setPeerHandshakePort(studioInfo->port());
@@ -506,7 +519,7 @@ void VsDevice::registerJTAsDevice()
     QJsonDocument request = QJsonDocument(json);
 
     QNetworkReply* reply = m_authenticator->post(
-        QStringLiteral("https://app.jacktrip.org/api/devices"), request.toJson());
+        QStringLiteral("https://%1/api/devices").arg(m_apiHost), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;

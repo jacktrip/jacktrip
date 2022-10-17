@@ -137,6 +137,7 @@ class QJackTrip : public QMainWindow
     std::ostream m_realCerr;
     bool m_jackTripRunning;
     bool m_isExiting;
+    bool m_exitSent;
 
     QMutex m_requestMutex;
     QString m_IPv6Address;

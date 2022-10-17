@@ -14,13 +14,14 @@ namespace dblsqd
  */
 SemVer::SemVer(QString version) : original(version), valid(false)
 {
-    QRegExp rx(getRegExp());
-    if (rx.indexIn(version) > -1) {
-        this->major      = rx.cap(1).toInt();
-        this->minor      = rx.cap(2).toInt();
-        this->patch      = rx.cap(3).toInt();
-        this->prerelease = rx.cap(4);
-        this->build      = rx.cap(5);
+    QRegularExpression rx(getRegExp());
+    QRegularExpressionMatch match = rx.match(version);
+    if (match.hasMatch()) {
+        this->major      = match.captured(1).toInt();
+        this->minor      = match.captured(2).toInt();
+        this->patch      = match.captured(3).toInt();
+        this->prerelease = match.captured(4);
+        this->build      = match.captured(5);
         this->valid      = true;
     } else {
         this->major      = 0;
