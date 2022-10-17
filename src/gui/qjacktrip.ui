@@ -413,7 +413,7 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
            <item row="1" column="0" colspan="2">
             <widget class="QLabel" name="authNotVSLabel">
              <property name="text">
-              <string>(This is for JackTrip's inbuilt authentication system. To easily connect to a Virtual Studio server, use the Virtual Studio interface.)</string>
+              <string>(This is for JackTrip's inbuilt authentication system, not for the Virtual Studio. To connect to a Virtual Studio server, press the &quot;Virtual Studio Mode&quot; button below.)</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>

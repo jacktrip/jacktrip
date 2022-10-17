@@ -101,9 +101,10 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
         about.exec();
     });
 #ifdef NO_VS
-    m_ui->authNotVSLabel->setText(QStringLiteral(
-        "(This is for JackTrip's inbuilt authentication system. To easily "
-        "connect to a Virtual Studio server, download a Virtual Studio enabled build.)"));
+    m_ui->authNotVSLabel->setText(
+        QStringLiteral("(This is for JackTrip's inbuilt authentication system. To easily "
+                       "connect to a Virtual Studio server, download a Virtual Studio "
+                       "enabled version of JackTrip.)"));
 #else
     connect(m_ui->vsModeButton, &QPushButton::clicked, this,
             &QJackTrip::virtualStudioMode);
