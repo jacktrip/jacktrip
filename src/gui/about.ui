@@ -93,7 +93,7 @@ border: 4px solid black; </string>
         </size>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A system for high quality audio network performance over the internet.&lt;/p&gt;&lt;p&gt;Version %VERSION%%BUILD%&lt;/p&gt;&lt;p&gt;Copyright © 2008-2020 Juan-Pablo Caceres, Chris Chafe, et al. SoundWIRE group at CCRMA, Stanford University.&lt;/p&gt;&lt;p&gt;Graphical user interface component originally released as QJackTrip, Copyright © 2020 Aaron Wyatt.&lt;p&gt;%LICENSE%JackTrip source code is released under MIT and GPL licenses. See LICENSE.md file for more information.&lt;/p&gt;This is free software and is provided &amp;quot;as is&amp;quot;, without warranty of any kind.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A system for high quality audio network performance over the internet.&lt;/p&gt;&lt;p&gt;Version %VERSION%%BUILD%&lt;br/&gt;Using Qt %QTVERSION%&lt;/p&gt;&lt;p&gt;Copyright © 2008-2020 Juan-Pablo Caceres, Chris Chafe, et al. SoundWIRE group at CCRMA, Stanford University.&lt;/p&gt;&lt;p&gt;Graphical user interface component originally released as QJackTrip, Copyright © 2020 Aaron Wyatt.&lt;/p&gt;&lt;p&gt;%LICENSE%JackTrip source code is released under MIT and GPL licenses. See LICENSE.md file for more information.&lt;/p&gt;&lt;p&gt;This is free software and is provided &amp;quot;as is&amp;quot;, without warranty of any kind.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
