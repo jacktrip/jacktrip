@@ -273,7 +273,7 @@ void VsDevice::sendLevels()
     };
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_authenticator->put(
-         QStringLiteral("https://app.jacktrip.org/api/devices/%1").arg(m_appID),
+         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
          request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
