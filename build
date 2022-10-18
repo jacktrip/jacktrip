@@ -102,15 +102,9 @@ if [[ $platform == 'linux' ]]; then
   echo "Using qmake"
   QCMD=qmake
 fi
-QSPEC=linux-g++
 MCMD=make
 elif [[ $platform == 'macosx' ]]; then
   QCMD=qmake
-  QSPEC=macx-clang
-  arch=`arch`
-  if [[ "$arch" == 'arm64' ]]; then
-    QSPEC=macx-clang-arm64
-  fi  
   # if qmake is not in path, try homebrew qt5
   echo "path to qmake"
   echo "$(which qmake)"
@@ -128,12 +122,15 @@ elif [[ $platform == 'macosx' ]]; then
   MCMD=make
 elif [[ $platform == 'mingw' ]]; then
   QCMD=qmake
-  QSPEC=win32-g++
   MCMD=mingw32-make
 elif [[ $platform == 'unknown' ]]; then
   echo "Unregonized platform, exiting"
   exit
 fi
+
+# detect spec
+QSPEC=`$QCMD -query | grep QMAKE_SPEC`
+QSPEC=${QSPEC##QMAKE_SPEC:}
 
 # check for RtAudio
 if [[ $RTAUDIO == 1 ]]; then
