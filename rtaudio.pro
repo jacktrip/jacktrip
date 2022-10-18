@@ -15,7 +15,6 @@ linux-g++ | linux-g++-64 {
 }
 macx {
   QMAKE_CXXFLAGS += -D__MACOSX_CORE__
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9 # the same deployment target as in jacktrip.pro
 }
 win32 {
   QMAKE_CXXFLAGS += -D__WINDOWS_ASIO__ -D__WINDOWS_WASAPI__
