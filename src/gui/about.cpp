@@ -48,6 +48,8 @@ About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
 
     m_ui->aboutLabel->setText(
         m_ui->aboutLabel->text().replace(QLatin1String("%VERSION%"), gVersion));
+    m_ui->aboutLabel->setText(
+        m_ui->aboutLabel->text().replace(QLatin1String("%QTVERSION%"), qVersion()));
 #ifdef QT_OPENSOURCE
     m_ui->aboutLabel->setText(m_ui->aboutLabel->text().replace(
         QLatin1String("%LICENSE%"),
