@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 project(QJackTrip)
 
@@ -10,6 +10,10 @@ set(novs FALSE)
 set(noupdater FALSE)
 set(psi FALSE)
 set(QtVersion "5")
+
+if (${QtVersion} MATCHES "5")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+endif ()
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
 message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build."
