@@ -69,7 +69,7 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
 
     // Set server levels to stored versions
     QJsonObject json = {
-        {QLatin1String("captureVolume"), m_captureVolume},
+        {QLatin1String("captureVolume"), m_captureVolume * 100.0},
         {QLatin1String("captureMute"), m_captureMute},
     };
     QJsonDocument request = QJsonDocument(json);
@@ -93,7 +93,7 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
             QByteArray response       = reply->readAll();
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
             float deviceCaptureVol =
-                (float)deviceState.object()[QStringLiteral("captureVolume")].toDouble();
+                (float)(deviceState.object()[QStringLiteral("captureVolume")].toDouble() / 100.0);
             float deviceCaptureMute =
                 deviceState.object()[QStringLiteral("captureMute")].toBool();
 
