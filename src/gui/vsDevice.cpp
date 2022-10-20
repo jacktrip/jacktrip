@@ -51,6 +51,11 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
     settings.endGroup();
+    settings.beginGroup(QStringLiteral("Audio"));
+    m_captureVolume =
+        (float)settings.value(QStringLiteral("InMultiplier"), 1.0).toDouble();
+    m_captureMute = settings.value(QStringLiteral("InMuted"), false).toBool();
+    settings.endGroup();
 
     m_sendVolumeTimer = new QTimer(this);
     m_sendVolumeTimer->setSingleShot(true);
@@ -61,6 +66,52 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
     if (testMode) {
         m_apiHost = TEST_API_HOST;
     }
+
+    // Set server levels to stored versions
+    QJsonObject json = {
+        {QLatin1String("captureVolume"), m_captureVolume},
+        {QLatin1String("captureMute"), m_captureMute},
+    };
+    QJsonDocument request = QJsonDocument(json);
+
+    QNetworkReply* reply = m_authenticator->put(
+        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
+        request.toJson());
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        // Got error
+        if (reply->error() != QNetworkReply::NoError) {
+            QVariant statusCode =
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+            if (!statusCode.isValid()) {
+                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                // TODO: Fix me
+                // emit authFailed();
+                reply->deleteLater();
+                return;
+            }
+        } else {
+            QByteArray response       = reply->readAll();
+            QJsonDocument deviceState = QJsonDocument::fromJson(response);
+            float deviceCaptureVol =
+                (float)deviceState.object()[QStringLiteral("captureVolume")].toDouble();
+            float deviceCaptureMute =
+                deviceState.object()[QStringLiteral("captureMute")].toBool();
+
+            m_captureVolume = deviceCaptureVol;
+            emit updatedVolumeFromServer(m_captureVolume);
+
+            m_captureMute = deviceCaptureMute;
+            emit updatedMuteFromServer(m_captureMute);
+        }
+
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("Audio"));
+        settings.setValue(QStringLiteral("InMultiplier"), m_captureVolume);
+        settings.setValue(QStringLiteral("InMuted"), m_captureMute);
+        settings.endGroup();
+
+        reply->deleteLater();
+    });
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
