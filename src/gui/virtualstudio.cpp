@@ -1749,12 +1749,56 @@ void VirtualStudio::getUserMetadata()
 #ifdef RT_AUDIO
 void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
 {
-    RtAudio audio;
     list->clear();
     list->append(QStringLiteral("(default)"));
-
-    unsigned int devices = audio.getDeviceCount();
     RtAudio::DeviceInfo info;
+    unsigned int devices;
+
+#ifdef _WIN32 // Windows users
+    RtAudio audio_asio(api=RtAudio::WINDOWS_ASIO);
+    devices = audio_asio.getDeviceCount();
+    
+    for (unsigned int i = 0; i < devices; i++) {
+        info = audio_asio.getDeviceInfo(i);
+        if (info.probed == true) {
+            if (isInput && info.inputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            } else if (!isInput && info.outputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            }
+        }
+    }
+
+    RtAudio audio_wasapi(api=RtAudio::WINDOWS_WASAPI)
+    devices = audio_wasapi.getDeviceCount();
+    for (unsigned int i = 0; i < devices; i++) {
+        info = audio_wasapi.getDeviceInfo(i);
+        if (info.probed == true) {
+            if (isInput && info.inputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            } else if (!isInput && info.outputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            }
+        }
+    }
+
+    RtAudio audio_ds(api=RtAudio::WINDOWS_DS)
+    devices = audio_ds.getDeviceCount();
+    for (unsigned int i = 0; i < devices; i++) {
+        info = audio_ds.getDeviceInfo(i);
+        if (info.probed == true) {
+            if (isInput && info.inputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            } else if (!isInput && info.outputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            }
+        }
+    }
+
+#else // Other operating systems
+    RtAudio audio;
+    
+    devices = audio.getDeviceCount();
     for (unsigned int i = 0; i < devices; i++) {
         info = audio.getDeviceInfo(i);
         if (info.probed == true) {
@@ -1765,6 +1809,7 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
             }
         }
     }
+#endif // endif
 }
 #endif
 
