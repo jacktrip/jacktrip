@@ -93,7 +93,8 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
             QByteArray response       = reply->readAll();
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
             float deviceCaptureVol =
-                (float)(deviceState.object()[QStringLiteral("captureVolume")].toDouble() / 100.0);
+                (float)(deviceState.object()[QStringLiteral("captureVolume")].toDouble()
+                        / 100.0);
             float deviceCaptureMute =
                 deviceState.object()[QStringLiteral("captureMute")].toBool();
 
