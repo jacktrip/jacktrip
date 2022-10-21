@@ -6,7 +6,7 @@
             "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
             "download": {
                 "date": "2022-09-16T00:00:00Z",
-                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4/JackTrip-v1.6.4-Windows-x64-installer.msi",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.4-Windows-x64-installer.msi",
                 "downloadSize": 43663360,
                 "sha256": "58dcbba584e1cc82373b8aa159800ad360eec7933ce9462e413ca347f09f3c26"
             }
@@ -36,7 +36,7 @@
             "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
             "download": {
                 "date": "2022-08-23T00:00:00Z",
-                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.3/JackTrip-v1.6.3-Windows-x64-installer.msi",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.3-Windows-x64-installer.msi",
                 "downloadSize": 43606016,
                 "sha256": "83a4def2a8c8fde24d147d39e70f60ee144e9425828f34eda2340c23ce72b1da"
             }
@@ -46,7 +46,7 @@
             "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2",
             "download": {
                 "date": "2022-08-17T00:00:00Z",
-                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.2/JackTrip-v1.6.2-Windows-x64-installer.msi",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.2-Windows-x64-installer.msi",
                 "downloadSize": 43606016,
                 "sha256": "2bb06fe3624df447d56da0d72fef1f4328346fd92c6dffccf66ba37253ec5e62"
             }
@@ -86,7 +86,7 @@
             "changelog": "Bugfixes around UDP timeout and 'Logging In' screen navigation. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.1",
             "download": {
                 "date": "2022-06-21T00:00:00Z",
-                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.1/JackTrip-v1.6.1-Windows-x64-installer.msi",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.1-Windows-x64-installer.msi",
                 "downloadSize": 43368448,
                 "sha256": "8eac390617488d849c0356e3305c96a59bbe46a8174d02b0321bb1dc86774b87"
             }
@@ -96,7 +96,7 @@
             "changelog": "Full integration with JackTrip Virtual Studio. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.0",
             "download": {
                 "date": "2022-06-01T00:00:00Z",
-                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.0/JackTrip-v1.6.0-Windows-x64-installer.msi",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-Windows-x64-installer.msi",
                 "downloadSize": 43364352,
                 "sha256": "9562ab654202bfc432e05caa3bd2bf1d0b52c50581b0a567f0546983fe46c078"
             }
