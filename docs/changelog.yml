@@ -1,3 +1,23 @@
+- Version: "1.6.5"
+  Date: 2022-10-21
+  Description:
+  - (added) Input/output volume control and input mute in VS
+  - (added) Volume plugin
+  - (added) Linux manifests used for download links
+  - (added) VS Test mode for jacktrip.org users
+  - (added) Qt6 support for NO_VS builds
+  - (added) Show Qt version in About dialog
+  - (updated) VS - makes inactive, admin'd studios visible by default
+  - (updated) using -q auto3 for buffer length with plc
+  - (updated) updated notarization process to use notarytool
+  - (updated) link to Qt source as it has changed
+  - (updated) Classic GUI reverts some pre-VS changes
+  - (updated) QMake build scripts more in line with documentation
+  - (fixed) new user screen in VS mode
+  - (fixed) logout freezing jacktrip
+  - (fixed) NO_VS builds work without setting NO_UPDATER
+  - (fixed) volume meter-related crash
+
 - Version: "1.6.4"
   Date: 2022-09-16
   Description:
