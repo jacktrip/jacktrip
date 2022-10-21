@@ -1755,7 +1755,7 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
     unsigned int devices;
 
 #ifdef _WIN32  // Windows users
-    RtAudio audio_asio(api = RtAudio::WINDOWS_ASIO);
+    RtAudio audio_asio(RtAudio::WINDOWS_ASIO);
     devices = audio_asio.getDeviceCount();
 
     for (unsigned int i = 0; i < devices; i++) {
@@ -1769,7 +1769,7 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
         }
     }
 
-    RtAudio audio_wasapi(api = RtAudio::WINDOWS_WASAPI);
+    RtAudio audio_wasapi(RtAudio::WINDOWS_WASAPI);
     devices = audio_wasapi.getDeviceCount();
     for (unsigned int i = 0; i < devices; i++) {
         info = audio_wasapi.getDeviceInfo(i);
@@ -1782,7 +1782,7 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
         }
     }
 
-    RtAudio audio_ds(api = RtAudio::WINDOWS_DS);
+    RtAudio audio_ds(RtAudio::WINDOWS_DS);
     devices = audio_ds.getDeviceCount();
     for (unsigned int i = 0; i < devices; i++) {
         info = audio_ds.getDeviceInfo(i);
