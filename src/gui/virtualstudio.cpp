@@ -1762,9 +1762,11 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
         info = audio_asio.getDeviceInfo(i);
         if (info.probed == true) {
             if (isInput && info.inputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
+                list->append(QString::fromStdString("ASIO ")
+                             + QString::fromStdString(info.name));
             } else if (!isInput && info.outputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
+                list->append(QString::fromStdString("ASIO ")
+                             + QString::fromStdString(info.name));
             }
         }
     }
@@ -1775,9 +1777,11 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
         info = audio_wasapi.getDeviceInfo(i);
         if (info.probed == true) {
             if (isInput && info.inputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
+                list->append(QString::fromStdString("WASAPI ")
+                             + QString::fromStdString(info.name));
             } else if (!isInput && info.outputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
+                list->append(QString::fromStdString("WASAPI ")
+                             + QString::fromStdString(info.name));
             }
         }
     }
@@ -1788,9 +1792,11 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
         info = audio_ds.getDeviceInfo(i);
         if (info.probed == true) {
             if (isInput && info.inputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
+                list->append(QString::fromStdString("DS ")
+                             + QString::fromStdString(info.name));
             } else if (!isInput && info.outputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
+                list->append(QString::fromStdString("DS ")
+                             + QString::fromStdString(info.name));
             }
         }
     }
