@@ -12,10 +12,11 @@ NOTARIZE=false
 #PASSWORD=""
 #ASC_PROVIDER=""
 BINARY="../builddir/jacktrip"
+PSI=false
 
 OPTIND=1
 
-while getopts ":inhc:d:u:p:a:b:" opt; do
+while getopts ":inhqc:d:u:p:a:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
@@ -40,6 +41,9 @@ while getopts ":inhc:d:u:p:a:b:" opt; do
         ;;
       b)
         BINARY=$OPTARG
+        ;;
+      q)
+        PSI=true
         ;;
       \?)
         echo "Invalid option -$OPTARG ignored."
@@ -97,6 +101,8 @@ cp -f $BINARY "$APPNAME.app/Contents/MacOS/"
 cp -f ../LICENSE.md "$APPNAME.app/Contents/Resources/"
 cp -Rf ../LICENSES "$APPNAME.app/Contents/Resources/"
 
+[ $PSI = true ] && cp jacktrip_alt.icns "$APPNAME.app/Contents/Resources/jacktrip.icns"
+
 DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
 DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
 
@@ -109,13 +115,15 @@ sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
 if [ ! -z "$DYNAMIC_QT" ]; then
+    QT_VERSION="qt$(echo "$DYNAMIC_QT" | sed -E '1!d;s/.*compatibility version ([0-9]+)\.[0-9]+\.[0-9]+.*/\1/g')"
+    echo "$QT_VERSION"
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
         # Attempt to find macdeployqt. Try macports location first, then brew.
-        if [ -x "/opt/local/libexec/qt5/bin/macdeployqt" ]; then
-            DEPLOY_CMD="/opt/local/libexec/qt5/bin/macdeployqt"
-        elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix qt5) ]; then
-            DEPLOY_CMD="$(brew --prefix qt5)/bin/macdeployqt"
+        if [ -x "/opt/local/libexec/$QT_VERSION/bin/macdeployqt" ]; then
+            DEPLOY_CMD="/opt/local/libexec/$QT_VERSION/bin/macdeployqt"
+        elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix $QT_VERSION) ]; then
+            DEPLOY_CMD="$(brew --prefix $QT_VERSION)/bin/macdeployqt"
         else
             echo "The Qt bin folder needs to be in your PATH for this script to work."
             exit 1
@@ -136,6 +144,11 @@ fi
 
 # If you have Packages installed, you can build an installer for the newly created app bundle.
 [ -z $(which packagesbuild) ] && { echo "You need to have Packages installed to build a package."; exit 1; }
+
+if [ $PSI = true ]; then
+    cp "package/postinstall.sh" "package/postinstall.sh.bak"
+    sed -i '' "s/^open/#open/" "package/postinstall.sh"
+fi
 
 # Needed for notarization.
 [ ! -z "$CERTIFICATE" ] && codesign -f -s "$CERTIFICATE" --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
@@ -165,6 +178,7 @@ sed -i '' "s/%BUNDLENAME%/$APPNAME/" package/JackTrip.pkgproj
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" package/JackTrip.pkgproj
 
 packagesbuild package/JackTrip.pkgproj
+[ $PSI = true ] && mv "package/postinstall.sh.bak" "package/postinstall.sh"
 if pkgutil --check-signature package/build/JackTrip.pkg; then
     echo "Package already signed."
     SIGNED=true

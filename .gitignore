@@ -22,6 +22,9 @@ macos/*.app
 macos/package/build
 macos/package/*.pkgproj
 macos/package/*.txt
+macos/build_installer.sh
+macos/remove-creds.patch
+macos/sign-stuff-withcreds.sh
 
 # windows deploy files
 win/deploy

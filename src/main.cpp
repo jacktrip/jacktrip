@@ -491,26 +491,28 @@ int main(int argc, char* argv[])
 #endif  // NO_VS
 
 #if !defined(NO_UPDATER) && !defined(__unix__)
-#ifdef NO_VS
+#ifndef PSI
+#if defined(NO_VS)
         // This wasn't set up earlier in NO_VS builds. Create it here.
         QSettings settings;
 #endif
         QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
                                     .toString()
                                     .toLower();
-        // Setup auto-update feed
-        dblsqd::Feed* feed = 0;
         QString baseUrl =
-            "https://raw.githubusercontent.com/jacktrip/jacktrip/dev/releases";
+            QStringLiteral(
+                "https://raw.githubusercontent.com/jacktrip/jacktrip/dev/releases/%1")
+                .arg(updateChannel);
+#else
+        QString baseUrl = QStringLiteral("https://nuages.psi-borg.org/jacktrip");
+#endif  // PSI
+        // Setup auto-update feed
+        dblsqd::Feed* feed = new dblsqd::Feed();
 #ifdef Q_OS_WIN
-        feed = new dblsqd::Feed();
-        feed->setUrl(
-            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, updateChannel, "win")));
+        feed->setUrl(QUrl(QString("%1/%2-manifests.json").arg(baseUrl, "win")));
 #endif
 #ifdef Q_OS_MACOS
-        feed = new dblsqd::Feed();
-        feed->setUrl(
-            QUrl(QString("%1/%2/%3-manifests.json").arg(baseUrl, updateChannel, "mac")));
+        feed->setUrl(QUrl(QString("%1/%2-manifests.json").arg(baseUrl, "mac")));
 #endif
         if (feed) {
             dblsqd::UpdateDialog* updateDialog = new dblsqd::UpdateDialog(feed);
