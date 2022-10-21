@@ -6,7 +6,7 @@
             "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
             "download": {
                 "date": "2022-09-16T00:00:00Z",
-                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.4/JackTrip-v1.6.4-Linux-x64-binary.zip",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.4-Linux-x64-binary.zip",
                 "downloadSize": 22233485,
                 "sha256": "f1b9585e4eb72c07c735ee6f4dc94ad1d1a4c70474799eb1111bb5a39a99e295"
             }
