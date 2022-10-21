@@ -103,11 +103,7 @@ bundled_rtaudio {
 
 macx {
   message(Building on MAC OS X)
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
-  #QMAKE_MAC_SDK = macosx10.9
   CONFIG -= app_bundle
-  #CONFIG += x86 #ppc #### If you have both libraries installed, you
-  # can change between 32bits (x86) or 64bits(x86_64) Change this to go back to 32 bits (x86)
   LIBS += -framework CoreAudio -framework CoreFoundation
   !nogui {
     LIBS += -framework Foundation
@@ -208,6 +204,7 @@ HEADERS += src/DataProtocol.h \
            src/Reverb.h \
            src/Meter.h \
            src/Volume.h \
+           src/Tone.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
@@ -227,6 +224,7 @@ HEADERS += src/DataProtocol.h \
            src/freeverbdsp.h \
            src/meterdsp.h \
            src/volumedsp.h \
+           src/tonedsp.h \
            src/SslServer.h \
            src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
@@ -275,6 +273,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
            src/Volume.cpp \
+           src/Tone.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \

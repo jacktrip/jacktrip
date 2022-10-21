@@ -51,11 +51,7 @@
 
 namespace Ui
 {
-#ifdef PSI
 class QJackTrip;
-#else
-class QJackTripVS;
-#endif
 }  // namespace Ui
 
 #ifndef NO_VS
@@ -76,7 +72,7 @@ class QJackTrip : public QMainWindow
     void showEvent(QShowEvent* event) override;
 
 #ifndef NO_VS
-    enum uiModeT{UNSET, VIRTUAL_STUDIO, STANDARD};
+    enum uiModeT { UNSET, VIRTUAL_STUDIO, STANDARD };
     void setVs(QSharedPointer<VirtualStudio> vs);
 #endif
 
@@ -123,11 +119,7 @@ class QJackTrip : public QMainWindow
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
 
-#ifdef PSI
     QScopedPointer<Ui::QJackTrip> m_ui;
-#else
-    QScopedPointer<Ui::QJackTripVS> m_ui;
-#endif
     QScopedPointer<UdpHubListener> m_udpHub;
     QScopedPointer<JackTrip> m_jackTrip;
     QScopedPointer<QNetworkAccessManager> m_netManager;

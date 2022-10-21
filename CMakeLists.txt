@@ -187,6 +187,7 @@ if (NOT nogui)
       src/gui/qjacktrip.qrc
       src/Meter.cpp
       src/Volume.cpp
+      src/Tone.cpp
       # Need to include this for AUTOMOC to do its thing
       src/JTApplication.h
       src/gui/vsQmlClipboard.h

@@ -42,6 +42,7 @@
 #include <QSettings>
 
 #include "../Meter.h"
+#include "../Tone.h"
 
 // Constructor
 VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
@@ -281,8 +282,10 @@ void VsAudioInterface::setupPlugins()
     m_inputMeter         = new Meter(getNumInputChannels());
     m_inputVolumePlugin  = new Volume(getNumInputChannels());
     m_outputVolumePlugin = new Volume(getNumOutputChannels());
+    m_outputTonePlugin   = new Tone(getNumOutputChannels());
 
     // Add plugins to chains
+    addOutputPlugin(m_outputTonePlugin);
     addInputPlugin(m_inputVolumePlugin);
     addOutputPlugin(m_outputVolumePlugin);
     addInputPlugin(m_inputMeter);
@@ -298,6 +301,8 @@ void VsAudioInterface::setupPlugins()
             &Volume::muteUpdated);
     connect(this, &VsAudioInterface::updatedOutputMuted, m_outputVolumePlugin,
             &Volume::muteUpdated);
+    connect(this, &VsAudioInterface::triggerPlayback, m_outputTonePlugin,
+            &Tone::triggerPlayback);
 }
 
 void VsAudioInterface::startProcess()
