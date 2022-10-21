@@ -204,6 +204,7 @@ HEADERS += src/DataProtocol.h \
            src/Reverb.h \
            src/Meter.h \
            src/Volume.h \
+           src/Tone.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
@@ -223,6 +224,7 @@ HEADERS += src/DataProtocol.h \
            src/freeverbdsp.h \
            src/meterdsp.h \
            src/volumedsp.h \
+           src/tonedsp.h \
            src/SslServer.h \
            src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
@@ -271,6 +273,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
            src/Volume.cpp \
+           src/Tone.cpp \
            src/AudioTester.cpp \
            src/jacktrip_globals.cpp \
            src/JackTripWorker.cpp \

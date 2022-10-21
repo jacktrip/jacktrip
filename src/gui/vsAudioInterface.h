@@ -51,6 +51,7 @@
 #endif
 
 #include "../Meter.h"
+#include "../Tone.h"
 #include "../Volume.h"
 #include "../jacktrip_globals.h"
 
@@ -103,6 +104,7 @@ class VsAudioInterface : public QObject
     void updatedOutputVolume(float multiplier);
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
+    void triggerPlayback();
     void settingsUpdated();
     void modeUpdated();
     void newVolumeMeterMeasurements(QVector<float> values);
@@ -135,6 +137,7 @@ class VsAudioInterface : public QObject
     Meter* m_inputMeter;
     Volume* m_inputVolumePlugin;
     Volume* m_outputVolumePlugin;
+    Tone* m_outputTonePlugin;
 };
 
 #endif  // VSDAUDIOINTERFACE_H

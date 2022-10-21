@@ -111,6 +111,7 @@ set(qjacktrip_SRC
   src/Limiter.cpp
   src/Meter.cpp
   src/Volume.cpp
+  src/Tone.cpp
   src/Reverb.cpp
   src/AudioTester.cpp
   src/Patcher.cpp

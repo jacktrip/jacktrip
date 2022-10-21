@@ -10,7 +10,7 @@ Item {
     property int fontMedium: 13
     property int fontSmall: 11
     property int fontExtraSmall: 8
-    
+
     property int buttonWidth: 103
     property int buttonHeight: 25
 
@@ -62,7 +62,7 @@ Item {
             saturation: 0
             lightness: imageLightnessValue
         }
-        
+
         Text {
             id: ethernetWarningHeader
             text: "Connect via Wired Ethernet"
@@ -198,7 +198,7 @@ Item {
             saturation: 0
             lightness: imageLightnessValue
         }
-        
+
         Text {
             id: headphoneWarningHeader
             text: "Use Wired Headphones"
@@ -323,7 +323,7 @@ Item {
         id: setupItem
         width: parent.width; height: parent.height
         visible: warningScreen == "acknowledged"
-    
+
         Text {
             id: pageTitle
             x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
@@ -331,7 +331,7 @@ Item {
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
-        
+
         ComboBox {
             id: backendCombo
             model: backendComboModel
@@ -343,7 +343,7 @@ Item {
             width: parent.width - (234 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.selectableBackend
         }
-        
+
         Text {
             id: backendLabel
             anchors.verticalCenter: backendCombo.verticalCenter
@@ -353,7 +353,7 @@ Item {
             visible: virtualstudio.selectableBackend
             color: textColour
         }
-        
+
         Text {
             id: jackLabel
             x: leftMargin * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
@@ -405,7 +405,29 @@ Item {
                 border.color: buttonStroke
             }
         }
-        
+
+        Button {
+            id: testOutputAudioButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { virtualstudio.playOutputAudio() }
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: outputSlider.y + (48 * virtualstudio.uiScale)
+            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            visible: virtualstudio.audioBackend != "JACK"
+            Text {
+                text: "Test Output Audio"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+
         ComboBox {
             id: inputCombo
             model: inputComboModel
@@ -413,11 +435,11 @@ Item {
             onActivated: { virtualstudio.inputDevice = currentIndex }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: outputSlider.y + (48 * virtualstudio.uiScale)
+            y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - (234 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
         }
-        
+
         Text {
             id: inputLabel
             anchors.top: virtualstudio.audioBackend != "JACK" ? inputCombo.top : inputDeviceMeters.top
@@ -483,7 +505,6 @@ Item {
                 color: textColour
             }
         }
-
 
         Text {
             anchors.left: outputLabel.left

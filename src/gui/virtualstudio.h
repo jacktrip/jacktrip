@@ -184,6 +184,7 @@ class VirtualStudio : public QObject
     void logout();
     void refreshStudios(int index, bool signalRefresh = false);
     void refreshDevices();
+    void playOutputAudio();
     void revertSettings();
     void applySettings();
     void connectToStudio(int studioIndex);
@@ -216,6 +217,7 @@ class VirtualStudio : public QObject
     void outputDeviceChanged(QString device);
     void inputDeviceSelected(QString device);
     void outputDeviceSelected(QString device);
+    void triggerPlayOutputAudio();
     void bufferSizeChanged();
     void bufferStrategyChanged();
     void currentStudioChanged();
