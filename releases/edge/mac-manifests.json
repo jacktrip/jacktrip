@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.5-rc.1",
+            "changelog": "Adding volume controls, mute, early Qt6 support, and bug fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.5-rc1",
+            "download": {
+                "date": "2022-10-21T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.5-rc1/JackTrip-v1.6.5-rc1-macOS-x64-installer.pkg",
+                "downloadSize": 11481049,
+                "sha256": "cea18dd189d84eb9ca3be115819c597900e7bba7771185b61308518aa0e3d716"
+            }
+        },
+        {
             "version": "1.6.4",
             "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
             "download": {
