@@ -1769,8 +1769,8 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
         }
     }
 
-    RtAudio audio_wasapi(api = RtAudio::WINDOWS_WASAPI) devices =
-        audio_wasapi.getDeviceCount();
+    RtAudio audio_wasapi(api = RtAudio::WINDOWS_WASAPI);
+    devices = audio_wasapi.getDeviceCount();
     for (unsigned int i = 0; i < devices; i++) {
         info = audio_wasapi.getDeviceInfo(i);
         if (info.probed == true) {
@@ -1782,7 +1782,8 @@ void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
         }
     }
 
-    RtAudio audio_ds(api = RtAudio::WINDOWS_DS) devices = audio_ds.getDeviceCount();
+    RtAudio audio_ds(api = RtAudio::WINDOWS_DS);
+    devices = audio_ds.getDeviceCount();
     for (unsigned int i = 0; i < devices; i++) {
         info = audio_ds.getDeviceInfo(i);
         if (info.probed == true) {
