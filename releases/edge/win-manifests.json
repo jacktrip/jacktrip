@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.5-rc.1",
+            "changelog": "Adding volume controls, mute, early Qt6 support, and bug fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.5-rc1",
+            "download": {
+                "date": "2022-10-21T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.5-rc1/JackTrip-v1.6.5-rc1-Windows-x64-installer.msi",
+                "downloadSize": 44408832,
+                "sha256": "99404fa7bf1a07df76a1b1048c7a0e64a0d5f552e2ca5dfb12e7cbaac0c6fb24"
+            }
+        },
+        {
             "version": "1.6.4",
             "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
             "download": {
