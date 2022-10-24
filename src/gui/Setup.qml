@@ -417,7 +417,7 @@ Item {
             onClicked: { virtualstudio.playOutputAudio() }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: outputSlider.y + (48 * virtualstudio.uiScale)
+            y: outputSlider.y + (36 * virtualstudio.uiScale)
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
             Text {
@@ -494,7 +494,7 @@ Item {
             onClicked: { virtualstudio.refreshDevices() }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.topMargin: 18 * virtualstudio.uiScale
             anchors.top: inputSlider.bottom
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"

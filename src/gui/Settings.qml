@@ -214,11 +214,10 @@ Item {
             anchors.left: backendCombo.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: inputCombo.y + 48 * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : virtualstudio.uiScale * (virtualstudio.selectableBackend ? 148 : 100)
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped
-            visible: virtualstudio.audioBackend != "JACK"
         }
 
         ComboBox {
@@ -250,6 +249,26 @@ Item {
         }
 
         Button {
+            id: testOutputAudioButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { virtualstudio.playOutputAudio() }
+            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            x: parent.width - (232 * virtualstudio.uiScale)
+            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + (60 * virtualstudio.uiScale) : inputDeviceMeters.y + (48 * virtualstudio.uiScale)
+            Text {
+                text: "Test Output Audio"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+
+        Button {
             id: refreshButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
@@ -258,7 +277,7 @@ Item {
                 border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.refreshDevices() }
-            x: parent.width - (232 * virtualstudio.uiScale); y: outputCombo.y + (48 * virtualstudio.uiScale)
+            x: parent.width - (232 * virtualstudio.uiScale); y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
             Text {
@@ -269,31 +288,10 @@ Item {
             }
         }
 
-        Button {
-            id: testOutputAudioButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
-            onClicked: { virtualstudio.playOutputAudio() }
-            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            anchors.right: refreshButton.left
-            anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: outputCombo.y + (48 * virtualstudio.uiScale)
-            visible: virtualstudio.audioBackend != "JACK"
-            Text {
-                text: "Test Output Audio"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
-        }
-
         Rectangle {
             id: divider
-            x: leftMargin * virtualstudio.uiScale; y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            x: leftMargin * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ? refreshButton.y + (48 * virtualstudio.uiScale) : testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
             color: textColour
             visible: virtualstudio.audioBackend != "JACK"
