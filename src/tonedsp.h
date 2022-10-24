@@ -116,7 +116,7 @@ struct FAUST_API dsp_memory_manager {
      * Inform the Memory Manager with the number of expected memory zones.
      * @param count - the number of expected memory zones
      */
-    virtual void begin(size_t count) {}
+    virtual void begin(size_t /*count*/) {}
     
     /**
      * Give the Memory Manager information on a given memory zone.
@@ -124,7 +124,7 @@ struct FAUST_API dsp_memory_manager {
      * @param reads - the number of Read access to the zone used to compute one frame
      * @param writes - the number of Write access to the zone used to compute one frame
      */
-    virtual void info(size_t size, size_t reads, size_t writes) {}
+    virtual void info(size_t /*size*/, size_t /*reads*/, size_t /*writes*/) {}
     
     /**
      * Inform the Memory Manager that all memory zones have been described,
@@ -508,7 +508,7 @@ struct FAUST_API UIReal {
     
     // -- metadata declarations
     
-    virtual void declare(REAL* zone, const char* key, const char* val) {}
+    virtual void declare(REAL* /*zone*/, const char* /*key*/, const char* /*val*/) {}
     
     // To be used by LLVM client
     virtual int sizeOfFAUSTFLOAT() { return sizeof(FAUSTFLOAT); }
@@ -1103,7 +1103,7 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter {
 
     public:
 
-        AccUpDownConverter(double amin, double amid, double amax, double fmin, double fmid, double fmax) :
+        AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax) :
             fA2F(amin,amid,amax,fmin,fmax,fmin),
             fF2A(fmin,fmax,amin,amax)				// Special, pseudo inverse of a non monotonic function
         {}
@@ -1111,7 +1111,7 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter {
         virtual double ui2faust(double x) { return fA2F(x); }
         virtual double faust2ui(double x) { return fF2A(x); }
 
-        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double fmid, double fmax)
+        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax)
         {
             //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
             fA2F = Interpolator3pt(amin, amid, amax, fmin, fmax, fmin);
@@ -1137,7 +1137,7 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter {
 
     public:
 
-        AccDownUpConverter(double amin, double amid, double amax, double fmin, double fmid, double fmax) :
+        AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax) :
             fA2F(amin,amid,amax,fmax,fmin,fmax),
             fF2A(fmin,fmax,amin,amax)				// Special, pseudo inverse of a non monotonic function
         {}
@@ -1145,7 +1145,7 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter {
         virtual double ui2faust(double x) { return fA2F(x); }
         virtual double faust2ui(double x) { return fF2A(x); }
 
-        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double fmid, double fmax)
+        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax)
         {
             //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
             fA2F = Interpolator3pt(amin, amid, amax, fmax, fmin, fmax);
@@ -1172,14 +1172,14 @@ class FAUST_API ZoneControl {
         ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
         virtual ~ZoneControl() {}
 
-        virtual void update(double v) const {}
+        virtual void update(double /*v*/) const {}
 
-        virtual void setMappingValues(int curve, double amin, double amid, double amax, double min, double init, double max) {}
-        virtual void getMappingValues(double& amin, double& amid, double& amax) {}
+        virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/, double /*min*/, double /*init*/, double /*max*/) {}
+        virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
 
         FAUSTFLOAT* getZone() { return fZone; }
 
-        virtual void setActive(bool on_off) {}
+        virtual void setActive(bool /*on_off*/) {}
         virtual bool getActive() { return false; }
 
         virtual int getCurve() { return -1; }
@@ -1570,11 +1570,11 @@ class APIUI : public PathBuilder, public Meta, public UI
 
         // -- soundfiles
 
-        virtual void addSoundfile(const char* label, const char* filename, Soundfile** sf_zone) {}
+        virtual void addSoundfile(const char* /*label*/, const char* /*filename*/, Soundfile** /*sf_zone*/) {}
 
         // -- metadata declarations
 
-        virtual void declare(FAUSTFLOAT* zone, const char* key, const char* val)
+        virtual void declare(FAUSTFLOAT* /*zone*/, const char* key, const char* val)
         {
             // Keep metadata
             fCurrentMetadata[key] = val;
@@ -1600,7 +1600,7 @@ class APIUI : public PathBuilder, public Meta, public UI
             }
         }
 
-        virtual void declare(const char* key, const char* val)
+        virtual void declare(const char* /*key*/, const char* /*val*/)
         {}
 
         //-------------------------------------------------------------------------------
@@ -2013,7 +2013,7 @@ class tonedspSIG0 {
 		return 1;
 	}
 	
-	void instanceInittonedspSIG0(int sample_rate) {
+	void instanceInittonedspSIG0(int /*sample_rate*/) {
 		for (int l0 = 0; l0 < 2; l0 = l0 + 1) {
 			iVec0[l0] = 0;
 		}
@@ -2193,7 +2193,7 @@ class tonedsp : public dsp {
 		ui_interface->closeBox();
 	}
 	
-	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
+	virtual void compute(int count, FAUSTFLOAT** /*inputs*/, FAUSTFLOAT** outputs) {
 		FAUSTFLOAT* output0 = outputs[0];
 		float fSlow0 = float(fHslider0);
 		float fSlow1 = float(fHslider1);
