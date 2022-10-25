@@ -315,6 +315,8 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
+
+    // TODO: this function will probably need a lot more work. As-is I'm not sure this will work.
     if (outputBuffer != NULL) {
         mOutputBuffers.enqueue(outputBuffer);
     }
@@ -403,7 +405,7 @@ void RtAudioInterface::getDeviceList(QStringList* list, bool isInput)
 #ifdef _WIN32  // Windows users
 
     std::vector<RtAudio::Api> apis;
-    RtAudio::getCompiledApi(&apis);
+    RtAudio::getCompiledApi(apis);
 
     for (uint32_t i = 0; i < apis.size(); i++) {
         RtAudio audio(apis.at(i));
@@ -412,7 +414,7 @@ void RtAudioInterface::getDeviceList(QStringList* list, bool isInput)
             info = audio.getDeviceInfo(j);
             if (info.probed == true) {
                 // Don't include duplicate entries
-                if (list->contains(Qstring::fromStdString(info.name))) {
+                if (list->contains(QString::fromStdString(info.name))) {
                     continue;
                 }
 
