@@ -37,6 +37,7 @@
 
 #include "RtAudioInterface.h"
 
+#include <QString>
 #include <cstdlib>
 
 #include "JackTrip.h"
@@ -402,10 +403,11 @@ void RtAudioInterface::getDeviceList(QStringList* list, bool isInput)
 #ifdef _WIN32  // Windows users
 
     std::vector<RtAudio::Api> apis;
-    RtAudio::getCompiledApi(&pis);
+    RtAudio::getCompiledApi(&apis);
 
     for (uint32_t i = 0; i < apis.size(); i++) {
-        RtAudio audio(apis.at(i)) devices = audio.getDeviceCount();
+        RtAudio audio(apis.at(i));
+        devices = audio.getDeviceCount();
         for (unsigned int j = 0; j < devices; j++) {
             info = audio.getDeviceInfo(j);
             if (info.probed == true) {
