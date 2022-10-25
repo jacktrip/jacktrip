@@ -39,6 +39,7 @@
 #define __RTAUDIOINTERFACE_H__
 
 #include <RtAudio.h>
+#include <QQueue>
 
 #include "AudioInterface.h"
 #include "jacktrip_globals.h"
@@ -75,7 +76,7 @@ class RtAudioInterface : public AudioInterface
     virtual void connectDefaultPorts() {}
 
     static void getDeviceList(QStringList* list, bool isInput);
-    static void getDeviceInfoFromName(QString deviceName, int* index, QString* api, bool isInput);
+    static void getDeviceInfoFromName(std::string deviceName, int* index, std::string* api, bool isInput);
 
     //--------------SETTERS---------------------------------------------
     /// \brief This has no effect in RtAudio
@@ -101,8 +102,12 @@ class RtAudioInterface : public AudioInterface
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
-    RtAudio* mRtAudio;  ///< RtAudio class
+    RtAudio* mRtAudioIn;  ///< RtAudio class
+    RtAudio* mRtAudioOut; ///< RtAudio class
     unsigned int getDefaultDevice(bool isInput);
+
+    QQueue<void*> mInputBuffers;
+    QQueue<void*> mOutputBuffers;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__
