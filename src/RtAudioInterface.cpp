@@ -314,7 +314,6 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
-
     if (outputBuffer != NULL) {
         mOutputBuffers.enqueue(outputBuffer);
     }
@@ -325,7 +324,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
 
     while (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
         void* out = mOutputBuffers.dequeue();
-        void* in = mInputBuffers.dequeue();
+        void* in  = mInputBuffers.dequeue();
 
         sample_t* inputBuffer_sample  = (sample_t*)in;
         sample_t* outputBuffer_sample = (sample_t*)out;
@@ -343,7 +342,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
 
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     }
-    
+
     return 0;
 }
 
