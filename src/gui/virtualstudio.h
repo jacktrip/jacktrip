@@ -266,9 +266,6 @@ class VirtualStudio : public QObject
     void getSubscriptions();
     void getRegions();
     void getUserMetadata();
-#ifdef RT_AUDIO
-    void getDeviceList(QStringList* list, bool isInput);
-#endif
     void stopStudio();
 
     bool m_showFirstRun = false;

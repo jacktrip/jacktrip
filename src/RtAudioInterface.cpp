@@ -83,6 +83,8 @@ void RtAudioInterface::setup()
 
     int deviceId_input;
     int deviceId_output;
+
+    // MOVE THIS
     unsigned int n_devices = mRtAudio->getDeviceCount();
     if (n_devices < 1) {
         cout << "No audio devices found!" << endl;
@@ -348,4 +350,76 @@ int RtAudioInterface::stopProcess() const
         return (-1);
     }
     return 0;
+}
+
+//*******************************************************************************
+void RtAudioInterface::getDeviceList(QStringList* list, bool isInput)
+{
+    list->clear();
+    list->append(QStringLiteral("(default)"));
+    RtAudio::DeviceInfo info;
+    unsigned int devices;
+
+#ifdef _WIN32 // Windows users
+    
+    std::vector<RtAudio::Api> apis;
+    RtAudio::getCompiledApi(&pis);
+    
+    for (uint32_t i = 0; i < apis.size(); i++) {
+        RtAudio audio(apis.at(i))
+        devices = audio.getDeviceCount();
+        for (unsigned int j = 0; j < devices; j++) {
+            info = audio.getDeviceInfo(j);
+            if (info.probed == true) {
+
+                // Don't include duplicate entries
+                if (list->contains(Qstring::fromStdString(info.name))) {
+                    continue;
+                }
+
+                if (isInput && info.inputChannels > 0) {
+                    list->append(QString::fromStdString(info.name));
+                } else if (!isInput && info.outputChannels > 0) {
+                    list->append(QString::fromStdString(info.name));
+                }
+            }
+        }
+    }
+
+#else   // Other operating systems
+    RtAudio audio;
+
+    devices = audio.getDeviceCount();
+    for (unsigned int i = 0; i < devices; i++) {
+        info = audio.getDeviceInfo(i);
+        if (info.probed == true) {
+            if (isInput && info.inputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            } else if (!isInput && info.outputChannels > 0) {
+                list->append(QString::fromStdString(info.name));
+            }
+        }
+    }
+#endif  // endif
+}
+
+//*******************************************************************************
+void RtAudioInterface::getDeviceInfoFromName(QString deviceName, int* index, QString* api, bool isInput) {
+    std::vector<RtAudio::Api> apis;
+    RtAudio::getCompiledApi(apis);
+
+    for (uint32_t i = 0; i < apis.size(); i++) {
+        RtAudio audio (apis.at(i));
+        unsigned int devices = audio.getDeviceCount();
+        for (unsigned int j = 0; j < devices; j++) {
+            RtAudio::DeviceInfo info = audio.getDeviceInfo(j);
+            if (deviceName == QString::fromStdString(info.name)) {
+                if ((isInput && info.inputChannels > 0) || (!isInput && info.outputChannels > 0)) {
+                    *index = j;
+                    *api = QString::fromStdString(RtAudio::getApiName(audio.getCurrentApi()));
+                    break;
+                }
+            }
+        }
+    }
 }
