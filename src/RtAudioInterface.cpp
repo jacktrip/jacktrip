@@ -315,8 +315,8 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
-
-    // TODO: this function will probably need a lot more work. As-is I'm not sure this will work.
+    // TODO: this function will probably need a lot more work. As-is I'm not sure this
+    // will work.
     if (outputBuffer != NULL) {
         mOutputBuffers.enqueue(outputBuffer);
     }
