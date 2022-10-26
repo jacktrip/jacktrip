@@ -184,18 +184,24 @@ void VsAudioInterface::setupAudio()
 void VsAudioInterface::closeAudio()
 {
     if (!m_audioInterface.isNull()) {
+        std::cout << "   Closing Audio..." << std::endl;
         try {
             if (m_audioActive) {
+                std::cout << "   Stopping Process..." << std::endl;
                 m_audioInterface->stopProcess();
+                std::cout << "   Stopped Process..." << std::endl;
                 m_audioActive = false;
             }
         } catch (const std::exception& e) {
             emit errorToProcess(QString::fromUtf8(e.what()));
         }
+        std::cout << "   Clearing m_audioInterface..." << std::endl;
         m_audioInterface.clear();
+        std::cout << "   Cleared m_audioInterface..." << std::endl;
         m_numAudioChansIn  = gDefaultNumInChannels;
         m_numAudioChansOut = gDefaultNumOutChannels;
         m_deviceID         = gDefaultDeviceID;
+        std::cout << "   Closed Audio" << std::endl;
     }
 }
 
