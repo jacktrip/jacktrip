@@ -593,7 +593,7 @@ void JackTrip::completeConnection()
         mAudioInterface->appendProcessPluginToNetwork(i);
     }
 
-    mAudioInterface->initPlugins(true);   // mSampleRate known now, which plugins require
+    mAudioInterface->initPlugins(true);  // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
 
     if (mConnectDefaultAudioPorts) {

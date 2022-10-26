@@ -687,10 +687,9 @@ void AudioInterface::initPlugins(bool verbose)
 {
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size();
     if (nPlugins > 0) {
-
         if (verbose) {
             std::cout << "Initializing Faust plugins (have " << nPlugins
-                  << ") at sampling rate " << mSampleRate << "\n";
+                      << ") at sampling rate " << mSampleRate << "\n";
         }
 
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsFromNetwork)) {
