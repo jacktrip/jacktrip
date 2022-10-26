@@ -360,8 +360,16 @@ void RtAudioInterface::RtAudioErrorCallback(RtAudioError::Type type,
                                             const std::string& errorText)
 {
     if ((type != RtAudioError::WARNING) && (type != RtAudioError::DEBUG_WARNING)) {
-        std::cout << '\n' << errorText << '\n' << std::endl;
+        std::cout << "\n[RTAudio Error @RtAudioErrorCallback] " << errorText << '\n'
+                  << std::endl;
         throw std::runtime_error(errorText);
+    } else if (type == RtAudioError::WARNING) {
+        std::cout << "\n[RTAudio Warning @RtAudioErrorCallback] " << errorText << '\n'
+                  << std::endl;
+    } else if (type == RtAudioError::DEBUG_WARNING) {
+        std::cout << "\n[RTAudio Debug Warning @RtAudioErrorCallback] " << errorText
+                  << '\n'
+                  << std::endl;
     }
 }
 

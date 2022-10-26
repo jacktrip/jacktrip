@@ -111,7 +111,7 @@ void VsAudioInterface::setupAudio()
             if (gVerboseFlag)
                 std::cout << "  JackTrip:setupAudio before m_audioInterface->setup"
                           << std::endl;
-            m_audioInterface->setup(false);
+            m_audioInterface->setup(true);
             if (gVerboseFlag)
                 std::cout
                     << "  JackTrip:setupAudio before m_audioInterface->getSampleRate"
@@ -138,7 +138,7 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setInputDevice(m_inputDeviceName);
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-            m_audioInterface->setup(false);
+            m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
             m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
@@ -155,7 +155,7 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setInputDevice(m_inputDeviceName);
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-            m_audioInterface->setup(false);
+            m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
             m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
