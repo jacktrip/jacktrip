@@ -99,7 +99,7 @@ class AudioInterface
      * Packet Size, Bit Resolution, etc... Sub-classes should also call the parent
      * method to ensure correct inizialization.
      */
-    virtual void setup(bool verbose=true);
+    virtual void setup(bool verbose = true);
     /// \brief Tell the audio server that we are ready to roll. The
     /// process-callback will start running. This runs on its own thread.
     /// \return 0 on success, otherwise a non-zero error code
@@ -139,7 +139,7 @@ class AudioInterface
      * Initialize all ProcessPlugin modules.
      * The audio sampling rate (mSampleRate) must be set at this time.
      */
-    void initPlugins(bool verbose=true);
+    void initPlugins(bool verbose = true);
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
      * supported (audioBitResolutionT).

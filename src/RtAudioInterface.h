@@ -68,7 +68,7 @@ class RtAudioInterface : public AudioInterface
 
     /// \brief List all available audio interfaces, with its properties
     static void printDevices();
-    virtual void setup(bool verbose=true);
+    virtual void setup(bool verbose = true);
     virtual int startProcess() const;
     virtual int stopProcess() const;
     /// \brief This has no effect in RtAudio
