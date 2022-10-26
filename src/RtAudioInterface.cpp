@@ -313,7 +313,6 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
-
     // TODO: this function may need more changes. As-is I'm not sure this will work
     if (outputBuffer != NULL) {
         mOutputBuffers.enqueue(outputBuffer);
@@ -341,7 +340,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
             // Output Ports are WRITABLE
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
-        
+
         std::cout << "RtAudioCallback" << std::endl;
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     }
