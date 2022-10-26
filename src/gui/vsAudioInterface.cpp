@@ -202,10 +202,16 @@ void VsAudioInterface::closeAudio()
 void VsAudioInterface::replaceProcess()
 {
     if (m_hasBeenActive) {
+        std::cout << "Replacing Process..." << std::endl;
+        std::cout << "Closing Audio..." << std::endl;
         closeAudio();
+        std::cout << "Setup Audio..." << std::endl;
         setupAudio();
+        std::cout << "Setup Plugins..." << std::endl;
         setupPlugins();
+        std::cout << "Start Process..." << std::endl;
         startProcess();
+        std::cout << "Finished Replacing Process" << std::endl;
     }
 }
 
