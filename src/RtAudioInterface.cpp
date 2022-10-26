@@ -313,6 +313,8 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
+    std::cout << "RtAudioCallback" << std::endl;
+
     // TODO: this function may need more changes. As-is I'm not sure this will work
     if (outputBuffer != NULL) {
         mOutputBuffers.enqueue(outputBuffer);
@@ -320,9 +322,10 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
 
     if (inputBuffer != NULL) {
         mInputBuffers.enqueue(inputBuffer);
+        return 0;
     }
 
-    while (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
+    if (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
         void* out = mOutputBuffers.dequeue();
         void* in  = mInputBuffers.dequeue();
 
