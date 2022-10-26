@@ -92,7 +92,7 @@ class JackAudioInterface : public AudioInterface
     virtual ~JackAudioInterface();
 
     /// \brief Setup the client
-    virtual void setup();
+    virtual void setup(bool verbose=true);
     /** \brief Tell the JACK server that we are ready to roll. The
      * process-callback will start running. This runs on its own thread.
      * \return 0 on success, otherwise a non-zero error code

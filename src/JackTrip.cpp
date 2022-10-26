@@ -211,7 +211,7 @@ void JackTrip::setupAudio(
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before mAudioInterface->setup"
                       << std::endl;
-        mAudioInterface->setup();
+        mAudioInterface->setup(true);
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before mAudioInterface->getSampleRate"
                       << std::endl;
@@ -236,7 +236,7 @@ void JackTrip::setupAudio(
         mAudioInterface->setInputDevice(mInputDeviceName);
         mAudioInterface->setOutputDevice(mOutputDeviceName);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
-        mAudioInterface->setup();
+        mAudioInterface->setup(true);
         // Setup might have reduced number of channels
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
@@ -253,7 +253,7 @@ void JackTrip::setupAudio(
         mAudioInterface->setInputDevice(mInputDeviceName);
         mAudioInterface->setOutputDevice(mOutputDeviceName);
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
-        mAudioInterface->setup();
+        mAudioInterface->setup(true);
         // Setup might have reduced number of channels
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
@@ -593,7 +593,7 @@ void JackTrip::completeConnection()
         mAudioInterface->appendProcessPluginToNetwork(i);
     }
 
-    mAudioInterface->initPlugins();   // mSampleRate known now, which plugins require
+    mAudioInterface->initPlugins(true);   // mSampleRate known now, which plugins require
     mAudioInterface->startProcess();  // Tell JACK server we are ready for audio flow now
 
     if (mConnectDefaultAudioPorts) {

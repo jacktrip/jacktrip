@@ -145,7 +145,7 @@ AudioInterface::~AudioInterface()
 }
 
 //*******************************************************************************
-void AudioInterface::setup()
+void AudioInterface::setup(bool /*verbose*/)
 {
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
@@ -683,12 +683,16 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
     mProcessPluginsFromNetwork.append(plugin);
 }
 
-void AudioInterface::initPlugins()
+void AudioInterface::initPlugins(bool verbose)
 {
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size();
     if (nPlugins > 0) {
-        std::cout << "Initializing Faust plugins (have " << nPlugins
+
+        if (verbose) {
+            std::cout << "Initializing Faust plugins (have " << nPlugins
                   << ") at sampling rate " << mSampleRate << "\n";
+        }
+
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsFromNetwork)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(mNumInChans, mNumOutChans);

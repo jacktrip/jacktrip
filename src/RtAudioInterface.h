@@ -67,10 +67,8 @@ class RtAudioInterface : public AudioInterface
     virtual ~RtAudioInterface();
 
     /// \brief List all available audio interfaces, with its properties
-    virtual void listAllInterfaces();
     static void printDevices();
-    virtual int getDeviceIdFromName(std::string deviceName, bool isInput);
-    virtual void setup();
+    virtual void setup(bool verbose=true);
     virtual int startProcess() const;
     virtual int stopProcess() const;
     /// \brief This has no effect in RtAudio
@@ -96,7 +94,7 @@ class RtAudioInterface : public AudioInterface
                                       RtAudioStreamStatus status, void* userData);
     static void RtAudioErrorCallback(RtAudioError::Type type,
                                      const std::string& errorText);
-    void printDeviceInfo(unsigned int deviceId);
+    void printDeviceInfo(std::string api, unsigned int deviceId);
 
     int mNumInChans;   ///< Number of Input Channels
     int mNumOutChans;  ///<  Number of Output Channels
@@ -106,7 +104,7 @@ class RtAudioInterface : public AudioInterface
         mOutBuffer;        ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudioIn;   ///< RtAudio class
     RtAudio* mRtAudioOut;  ///< RtAudio class
-    unsigned int getDefaultDevice(bool isInput);
+    unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
 
     QQueue<void*> mInputBuffers;
     QQueue<void*> mOutputBuffers;

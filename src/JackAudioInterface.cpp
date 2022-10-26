@@ -117,10 +117,10 @@ JackAudioInterface::JackAudioInterface(
 JackAudioInterface::~JackAudioInterface() {}
 
 //*******************************************************************************
-void JackAudioInterface::setup()
+void JackAudioInterface::setup(bool verbose)
 {
     setupClient();
-    AudioInterface::setup();
+    AudioInterface::setup(verbose);
     setProcessCallback();
 }
 
