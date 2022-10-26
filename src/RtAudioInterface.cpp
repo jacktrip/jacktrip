@@ -216,16 +216,16 @@ void RtAudioInterface::setup(bool verbose)
 
         setBufferSize(bufferFrames);
     } catch (RtAudioError& e) {
-        std::cout << '\n[RTAudio Error @setup]' << e.getMessage() << '\n' << std::endl;
-        std::cout << 'mRtAudioIn' << std::endl;
-        std::cout << '   API: ' << RtAudio::getApiDisplayName(mRtAudioIn->getCurrentApi())
+        std::cout << "\n[RTAudio Error @setup] " << e.getMessage() << '\n' << std::endl;
+        std::cout << "mRtAudioIn" << std::endl;
+        std::cout << "   API: " << RtAudio::getApiDisplayName(mRtAudioIn->getCurrentApi())
                   << std::endl;
-        std::cout << '   Device: ' << mRtAudioIn->getDeviceInfo(index_in).name;
-        std::cout << 'mRtAudioOut' << std::endl;
-        std::cout << '   API: '
+        std::cout << "   Device: " << mRtAudioIn->getDeviceInfo(index_in).name;
+        std::cout << "mRtAudioOut" << std::endl;
+        std::cout << "   API: "
                   << RtAudio::getApiDisplayName(mRtAudioOut->getCurrentApi())
                   << std::endl;
-        std::cout << '   Device: ' << mRtAudioOut->getDeviceInfo(index_out).name;
+        std::cout << "   Device: " << mRtAudioOut->getDeviceInfo(index_out).name;
         throw std::runtime_error(e.getMessage());
     }
 
@@ -372,13 +372,13 @@ int RtAudioInterface::startProcess() const
         mRtAudioIn->startStream();
         mRtAudioOut->startStream();
     } catch (RtAudioError& e) {
-        std::cout << '\n[RTAudio Error @startProcess]' << e.getMessage() << '\n'
+        std::cout << "\n[RTAudio Error @startProcess] " << e.getMessage() << '\n'
                   << std::endl;
-        std::cout << 'mRtAudioIn' << std::endl;
-        std::cout << '   API: ' << RtAudio::getApiDisplayName(mRtAudioIn->getCurrentApi())
+        std::cout << "mRtAudioIn" << std::endl;
+        std::cout << "   API: " << RtAudio::getApiDisplayName(mRtAudioIn->getCurrentApi())
                   << std::endl;
-        std::cout << 'mRtAudioOut' << std::endl;
-        std::cout << '   API: '
+        std::cout << "mRtAudioOut" << std::endl;
+        std::cout << "   API: "
                   << RtAudio::getApiDisplayName(mRtAudioOut->getCurrentApi())
                   << std::endl;
         return (-1);
@@ -393,7 +393,7 @@ int RtAudioInterface::stopProcess() const
         mRtAudioIn->closeStream();
         mRtAudioOut->closeStream();
     } catch (RtAudioError& e) {
-        std::cout << '\n[RTAudio Error @stopProcess]' << e.getMessage() << '\n'
+        std::cout << "\n[RTAudio Error @stopProcess] " << e.getMessage() << '\n'
                   << std::endl;
         return (-1);
     }
