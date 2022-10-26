@@ -313,7 +313,6 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
-    std::cout << "RtAudioCallback" << std::endl;
 
     // TODO: this function may need more changes. As-is I'm not sure this will work
     if (outputBuffer != NULL) {
@@ -342,7 +341,8 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
             // Output Ports are WRITABLE
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
-
+        
+        std::cout << "RtAudioCallback" << std::endl;
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     }
 
@@ -401,8 +401,11 @@ int RtAudioInterface::startProcess() const
 int RtAudioInterface::stopProcess() const
 {
     try {
+        std::cout << "      Closing mRtAudioIn Stream..." << std::endl;
         mRtAudioIn->closeStream();
+        std::cout << "      Closing mRtAudioOut Stream..." << std::endl;
         mRtAudioOut->closeStream();
+        std::cout << "      Closinged streams" << std::endl;
     } catch (RtAudioError& e) {
         std::cout << "\n[RTAudio Error @stopProcess] " << e.getMessage() << '\n'
                   << std::endl;
