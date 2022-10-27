@@ -194,7 +194,7 @@ void RtAudioInterface::setup(bool verbose)
         cout << gPrintSeparator << endl;
     }
 
-    if (getInputDevice() == getOutputDevice()) {
+    if (api_in == api_out) {
         mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
         delete mRtAudioIn;
         delete mRtAudioOut;
