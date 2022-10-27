@@ -224,21 +224,25 @@ void RtAudioInterface::setup(bool verbose)
 
     try {
         // IMPORTANT NOTE: It's VERY important to remember to pass "this"
-        // as the user data in the process callback, otherwise member won't
+        // to the user data in the process callback, otherwise member won't
         // be accessible
         if (mRtAudio != NULL) {
+            mUserData = std::make_tuple(this, true, true);
             mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                                  &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                                 this, &options, &RtAudioInterface::RtAudioErrorCallback);
+                                 &mUserData, &options,
+                                 &RtAudioInterface::RtAudioErrorCallback);
         } else {
-            mRtAudioIn->openStream(NULL, &in_params, RTAUDIO_FLOAT32, sampleRate,
-                                   &bufferFrames,
-                                   &RtAudioInterface::wrapperRtAudioCallback, this,
-                                   &options, &RtAudioInterface::RtAudioErrorCallback);
-            mRtAudioOut->openStream(&out_params, NULL, RTAUDIO_FLOAT32, sampleRate,
-                                    &bufferFrames,
-                                    &RtAudioInterface::wrapperRtAudioCallback, this,
-                                    &options, &RtAudioInterface::RtAudioErrorCallback);
+            mUserDataIn  = std::make_tuple(this, true, false);
+            mUserDataOut = std::make_tuple(this, false, true);
+            mRtAudioIn->openStream(
+                NULL, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &RtAudioInterface::wrapperRtAudioCallback, &mUserDataIn, &options,
+                &RtAudioInterface::RtAudioErrorCallback);
+            mRtAudioOut->openStream(
+                &out_params, NULL, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &RtAudioInterface::wrapperRtAudioCallback, &mUserDataOut, &options,
+                &RtAudioInterface::RtAudioErrorCallback);
         }
 
         setBufferSize(bufferFrames);
@@ -327,22 +331,22 @@ void RtAudioInterface::printDeviceInfo(std::string api, unsigned int deviceIndex
 }
 
 //*******************************************************************************
-int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
-                                      unsigned int nFrames, double /*streamTime*/,
+int RtAudioInterface::RtAudioCallback(bool isOutput, bool isInput, void* outputBuffer,
+                                      void* inputBuffer, unsigned int nFrames,
+                                      double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
     // TODO: this function may need more changes. As-is I'm not sure this will work
-    std::cout << std::endl;
 
     sample_t* inputBuffer_sample  = NULL;
     sample_t* outputBuffer_sample = NULL;
 
-    if (mRtAudio != NULL) {
+    if (isInput && isOutput) {
         inputBuffer_sample  = (sample_t*)inputBuffer;
         outputBuffer_sample = (sample_t*)outputBuffer;
 
     } else {
-        if (outputBuffer != NULL) {
+        if (isOutput) {
             std::cout << "Enqueueing to mOutputBuffers: " << outputBuffer << std::endl;
             mOutputBuffers.enqueue(outputBuffer);
         } else {
@@ -350,13 +354,16 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                       << std::endl;
         }
 
-        if (inputBuffer != NULL) {
+        if (isInput) {
             std::cout << "Enqueueing to mInputBuffers: " << inputBuffer << std::endl;
             mInputBuffers.enqueue(inputBuffer);
             return 0;
         } else {
             std::cout << "Not enqueueing to mInputBuffers: " << inputBuffer << std::endl;
         }
+
+        std::cout << "mOutputBuffers.size(): " << mOutputBuffers.size() << std::endl;
+        std::cout << "mInputBuffers.size(): " << mInputBuffers.size() << std::endl;
 
         if (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
             void* out = mOutputBuffers.dequeue();
@@ -379,7 +386,6 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
 
-        std::cout << "RtAudioCallback" << std::endl;
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     }
 
@@ -391,8 +397,15 @@ int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuff
                                              unsigned int nFrames, double streamTime,
                                              RtAudioStreamStatus status, void* userData)
 {
-    return static_cast<RtAudioInterface*>(userData)->RtAudioCallback(
-        outputBuffer, inputBuffer, nFrames, streamTime, status);
+    std::tuple<RtAudioInterface*, bool, bool>* data =
+        (std::tuple<RtAudioInterface*, bool, bool>*)userData;
+
+    RtAudioInterface* interface = static_cast<RtAudioInterface*>(std::get<0>(*data));
+    bool isOutput               = std::get<1>(*data);
+    bool isInput                = std::get<2>(*data);
+
+    return interface->RtAudioCallback(isOutput, isInput, outputBuffer, inputBuffer,
+                                      nFrames, streamTime, status);
 }
 
 //*******************************************************************************

@@ -87,8 +87,9 @@ class RtAudioInterface : public AudioInterface
     //------------------------------------------------------------------
 
    private:
-    int RtAudioCallback(void* outputBuffer, void* inputBuffer, unsigned int nFrames,
-                        double streamTime, RtAudioStreamStatus status);
+    int RtAudioCallback(bool isOutput, bool isInput, void* outputBuffer,
+                        void* inputBuffer, unsigned int nFrames, double streamTime,
+                        RtAudioStreamStatus status);
     static int wrapperRtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double streamTime,
                                       RtAudioStreamStatus status, void* userData);
@@ -109,6 +110,10 @@ class RtAudioInterface : public AudioInterface
 
     QQueue<void*> mInputBuffers;
     QQueue<void*> mOutputBuffers;
+
+    std::tuple<RtAudioInterface*, bool, bool> mUserData;
+    std::tuple<RtAudioInterface*, bool, bool> mUserDataOut;
+    std::tuple<RtAudioInterface*, bool, bool> mUserDataIn;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__
