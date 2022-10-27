@@ -315,10 +315,12 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
 {
     // TODO: this function may need more changes. As-is I'm not sure this will work
     if (outputBuffer != NULL) {
+        std::cout << "Enqueueing to mOutputBuffers" << std::endl;
         mOutputBuffers.enqueue(outputBuffer);
     }
 
     if (inputBuffer != NULL) {
+        std::cout << "Enqueueing to mInputBuffers" << std::endl;
         mInputBuffers.enqueue(inputBuffer);
         return 0;
     }
