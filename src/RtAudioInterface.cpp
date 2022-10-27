@@ -313,16 +313,22 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
+    std::cout << std::endl;
+
     // TODO: this function may need more changes. As-is I'm not sure this will work
     if (outputBuffer != NULL) {
-        std::cout << "Enqueueing to mOutputBuffers" << std::endl;
+        std::cout << "Enqueueing to mOutputBuffers: " << outputBuffer << std::endl;
         mOutputBuffers.enqueue(outputBuffer);
+    } else {
+        std::cout << "Not enqueueing to mOutputBuffers: " << outputBuffer << std::endl;
     }
 
     if (inputBuffer != NULL) {
-        std::cout << "Enqueueing to mInputBuffers" << std::endl;
+        std::cout << "Enqueueing to mInputBuffers: " << inputBuffer << std::endl;
         mInputBuffers.enqueue(inputBuffer);
         return 0;
+    } else {
+        std::cout << "Not enqueueing to mInputBuffers: " << inputBuffer << std::endl;
     }
 
     if (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
