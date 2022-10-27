@@ -50,6 +50,7 @@ using std::endl;
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(jacktrip, NumInChans, NumOutChans, AudioBitResolution)
+    , mRtAudio(NULL)
     , mRtAudioIn(NULL)
     , mRtAudioOut(NULL)
 {
@@ -59,6 +60,7 @@ RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOu
 RtAudioInterface::RtAudioInterface(int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, false)
+    , mRtAudio(NULL)
     , mRtAudioIn(NULL)
     , mRtAudioOut(NULL)
 {
@@ -68,8 +70,17 @@ RtAudioInterface::RtAudioInterface(int NumInChans, int NumOutChans,
 //*******************************************************************************
 RtAudioInterface::~RtAudioInterface()
 {
-    delete mRtAudioIn;
-    delete mRtAudioOut;
+    if (mRtAudioIn != NULL) {
+        delete mRtAudioIn;
+    }
+
+    if (mRtAudioOut != NULL) {
+        delete mRtAudioOut;
+    }
+
+    if (mRtAudio != NULL) {
+        delete mRtAudio;
+    }
 }
 
 //*******************************************************************************
@@ -183,6 +194,15 @@ void RtAudioInterface::setup(bool verbose)
         cout << gPrintSeparator << endl;
     }
 
+    if (getInputDevice() == getOutputDevice()) {
+        mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
+        delete mRtAudioIn;
+        delete mRtAudioOut;
+
+        mRtAudioIn  = NULL;
+        mRtAudioOut = NULL;
+    }
+
     RtAudio::StreamParameters in_params, out_params;
     in_params.deviceId   = index_in;
     out_params.deviceId  = index_out;
@@ -206,26 +226,24 @@ void RtAudioInterface::setup(bool verbose)
         // IMPORTANT NOTE: It's VERY important to remember to pass "this"
         // as the user data in the process callback, otherwise member won't
         // be accessible
-
-        mRtAudioIn->openStream(NULL, &in_params, RTAUDIO_FLOAT32, sampleRate,
-                               &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                               this, &options, &RtAudioInterface::RtAudioErrorCallback);
-        mRtAudioOut->openStream(&out_params, NULL, RTAUDIO_FLOAT32, sampleRate,
-                                &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                                this, &options, &RtAudioInterface::RtAudioErrorCallback);
+        if (mRtAudio != NULL) {
+            mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
+                                 &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
+                                 this, &options, &RtAudioInterface::RtAudioErrorCallback);
+        } else {
+            mRtAudioIn->openStream(NULL, &in_params, RTAUDIO_FLOAT32, sampleRate,
+                                   &bufferFrames,
+                                   &RtAudioInterface::wrapperRtAudioCallback, this,
+                                   &options, &RtAudioInterface::RtAudioErrorCallback);
+            mRtAudioOut->openStream(&out_params, NULL, RTAUDIO_FLOAT32, sampleRate,
+                                    &bufferFrames,
+                                    &RtAudioInterface::wrapperRtAudioCallback, this,
+                                    &options, &RtAudioInterface::RtAudioErrorCallback);
+        }
 
         setBufferSize(bufferFrames);
     } catch (RtAudioError& e) {
         std::cout << "\n[RTAudio Error @setup] " << e.getMessage() << '\n' << std::endl;
-        std::cout << "mRtAudioIn" << std::endl;
-        std::cout << "   API: " << RtAudio::getApiDisplayName(mRtAudioIn->getCurrentApi())
-                  << std::endl;
-        std::cout << "   Device: " << mRtAudioIn->getDeviceInfo(index_in).name;
-        std::cout << "mRtAudioOut" << std::endl;
-        std::cout << "   API: "
-                  << RtAudio::getApiDisplayName(mRtAudioOut->getCurrentApi())
-                  << std::endl;
-        std::cout << "   Device: " << mRtAudioOut->getDeviceInfo(index_out).name;
         throw std::runtime_error(e.getMessage());
     }
 
@@ -313,31 +331,43 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
+    // TODO: this function may need more changes. As-is I'm not sure this will work
     std::cout << std::endl;
 
-    // TODO: this function may need more changes. As-is I'm not sure this will work
-    if (outputBuffer != NULL) {
-        std::cout << "Enqueueing to mOutputBuffers: " << outputBuffer << std::endl;
-        mOutputBuffers.enqueue(outputBuffer);
+    sample_t* inputBuffer_sample  = NULL;
+    sample_t* outputBuffer_sample = NULL;
+
+    if (mRtAudio != NULL) {
+        inputBuffer_sample  = (sample_t*)inputBuffer;
+        outputBuffer_sample = (sample_t*)outputBuffer;
+
     } else {
-        std::cout << "Not enqueueing to mOutputBuffers: " << outputBuffer << std::endl;
+        if (outputBuffer != NULL) {
+            std::cout << "Enqueueing to mOutputBuffers: " << outputBuffer << std::endl;
+            mOutputBuffers.enqueue(outputBuffer);
+        } else {
+            std::cout << "Not enqueueing to mOutputBuffers: " << outputBuffer
+                      << std::endl;
+        }
+
+        if (inputBuffer != NULL) {
+            std::cout << "Enqueueing to mInputBuffers: " << inputBuffer << std::endl;
+            mInputBuffers.enqueue(inputBuffer);
+            return 0;
+        } else {
+            std::cout << "Not enqueueing to mInputBuffers: " << inputBuffer << std::endl;
+        }
+
+        if (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
+            void* out = mOutputBuffers.dequeue();
+            void* in  = mInputBuffers.dequeue();
+
+            inputBuffer_sample  = (sample_t*)in;
+            outputBuffer_sample = (sample_t*)out;
+        }
     }
 
-    if (inputBuffer != NULL) {
-        std::cout << "Enqueueing to mInputBuffers: " << inputBuffer << std::endl;
-        mInputBuffers.enqueue(inputBuffer);
-        return 0;
-    } else {
-        std::cout << "Not enqueueing to mInputBuffers: " << inputBuffer << std::endl;
-    }
-
-    if (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
-        void* out = mOutputBuffers.dequeue();
-        void* in  = mInputBuffers.dequeue();
-
-        sample_t* inputBuffer_sample  = (sample_t*)in;
-        sample_t* outputBuffer_sample = (sample_t*)out;
-
+    if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
         // Get input and output buffers
         //-------------------------------------------------------------------
         for (int i = 0; i < mNumInChans; i++) {
@@ -387,17 +417,14 @@ void RtAudioInterface::RtAudioErrorCallback(RtAudioError::Type type,
 int RtAudioInterface::startProcess() const
 {
     try {
-        mRtAudioIn->startStream();
-        mRtAudioOut->startStream();
+        if (mRtAudio != NULL) {
+            mRtAudio->startStream();
+        } else {
+            mRtAudioIn->startStream();
+            mRtAudioOut->startStream();
+        }
     } catch (RtAudioError& e) {
         std::cout << "\n[RTAudio Error @startProcess] " << e.getMessage() << '\n'
-                  << std::endl;
-        std::cout << "mRtAudioIn" << std::endl;
-        std::cout << "   API: " << RtAudio::getApiDisplayName(mRtAudioIn->getCurrentApi())
-                  << std::endl;
-        std::cout << "mRtAudioOut" << std::endl;
-        std::cout << "   API: "
-                  << RtAudio::getApiDisplayName(mRtAudioOut->getCurrentApi())
                   << std::endl;
         return (-1);
     }
@@ -408,11 +435,16 @@ int RtAudioInterface::startProcess() const
 int RtAudioInterface::stopProcess() const
 {
     try {
-        std::cout << "      Closing mRtAudioIn Stream..." << std::endl;
-        mRtAudioIn->closeStream();
-        std::cout << "      Closing mRtAudioOut Stream..." << std::endl;
-        mRtAudioOut->closeStream();
-        std::cout << "      Closinged streams" << std::endl;
+        if (mRtAudio != NULL) {
+            std::cout << "      Closing mRtAudio Stream..." << std::endl;
+            mRtAudio->closeStream();
+        } else {
+            std::cout << "      Closing mRtAudioIn Stream..." << std::endl;
+            mRtAudioIn->closeStream();
+            std::cout << "      Closing mRtAudioOut Stream..." << std::endl;
+            mRtAudioOut->closeStream();
+        }
+        std::cout << "      Closed streams" << std::endl;
     } catch (RtAudioError& e) {
         std::cout << "\n[RTAudio Error @stopProcess] " << e.getMessage() << '\n'
                   << std::endl;

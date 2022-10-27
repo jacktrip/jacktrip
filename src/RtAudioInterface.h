@@ -102,6 +102,7 @@ class RtAudioInterface : public AudioInterface
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
         mOutBuffer;        ///< Vector of Output buffer/channel to write to JACK
+    RtAudio* mRtAudio;     ///< RtAudio class if the input and output device are the same
     RtAudio* mRtAudioIn;   ///< RtAudio class
     RtAudio* mRtAudioOut;  ///< RtAudio class
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
