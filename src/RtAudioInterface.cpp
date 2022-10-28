@@ -227,14 +227,17 @@ void RtAudioInterface::setup(bool verbose)
         // to the user data in the process callback, otherwise member won't
         // be accessible
         if (mRtAudio != NULL) {
-            mUserData = std::make_tuple(this, true, true);
+            mUserData = std::make_tuple(this, true, true, "Input/Output");
             mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                                  &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
                                  &mUserData, &options,
                                  &RtAudioInterface::RtAudioErrorCallback);
         } else {
-            mUserDataIn  = std::make_tuple(this, false, true);
-            mUserDataOut = std::make_tuple(this, true, false);
+            RtAudio::DeviceInfo infoOut = mRtAudioOut->getDeviceInfo(index_out);
+            RtAudio::DeviceInfo infoIn = mRtAudioIn->getDeviceInfo(index_in);
+
+            mUserDataIn  = std::make_tuple(this, false, true, infoIn.name);
+            mUserDataOut = std::make_tuple(this, true, false, infoOut.name);
             mRtAudioIn->openStream(
                 NULL, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, &mUserDataIn, &options,
@@ -334,7 +337,7 @@ void RtAudioInterface::printDeviceInfo(std::string api, unsigned int deviceIndex
 int RtAudioInterface::RtAudioCallback(bool isOutput, bool isInput, void* outputBuffer,
                                       void* inputBuffer, unsigned int nFrames,
                                       double /*streamTime*/,
-                                      RtAudioStreamStatus /*status*/)
+                                      RtAudioStreamStatus /*status*/, std::string deviceName)
 {
     // TODO: this function may need more changes. As-is I'm not sure this will work
 
@@ -342,28 +345,21 @@ int RtAudioInterface::RtAudioCallback(bool isOutput, bool isInput, void* outputB
     sample_t* outputBuffer_sample = NULL;
 
     if (isInput && isOutput) {
+        std::cout << "Processing RtAudio Input/Output Callback" << std::endl;
         inputBuffer_sample  = (sample_t*)inputBuffer;
         outputBuffer_sample = (sample_t*)outputBuffer;
 
     } else {
         if (isOutput) {
-            std::cout << "Enqueueing to mOutputBuffers: " << outputBuffer << std::endl;
+            std::cout << "Processing RTAudio Output Callback: " << deviceName << std::endl;
             mOutputBuffers.enqueue(outputBuffer);
-        } else {
-            std::cout << "Not enqueueing to mOutputBuffers: " << outputBuffer
-                      << std::endl;
         }
 
         if (isInput) {
-            std::cout << "Enqueueing to mInputBuffers: " << inputBuffer << std::endl;
+            std::cout << "Processing RtAudio Input Callback: " << deviceName << std::endl;
             mInputBuffers.enqueue(inputBuffer);
             return 0;
-        } else {
-            std::cout << "Not enqueueing to mInputBuffers: " << inputBuffer << std::endl;
         }
-
-        std::cout << "mOutputBuffers.size(): " << mOutputBuffers.size() << std::endl;
-        std::cout << "mInputBuffers.size(): " << mInputBuffers.size() << std::endl;
 
         if (!mInputBuffers.isEmpty() && !mOutputBuffers.isEmpty()) {
             void* out = mOutputBuffers.dequeue();
@@ -397,15 +393,16 @@ int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuff
                                              unsigned int nFrames, double streamTime,
                                              RtAudioStreamStatus status, void* userData)
 {
-    std::tuple<RtAudioInterface*, bool, bool>* data =
-        (std::tuple<RtAudioInterface*, bool, bool>*)userData;
+    std::tuple<RtAudioInterface*, bool, bool, std::string>* data =
+        (std::tuple<RtAudioInterface*, bool, bool, std::string>*)userData;
 
     RtAudioInterface* interface = static_cast<RtAudioInterface*>(std::get<0>(*data));
     bool isOutput               = std::get<1>(*data);
     bool isInput                = std::get<2>(*data);
+    std::string deviceName = std::get<3>(*data);
 
     return interface->RtAudioCallback(isOutput, isInput, outputBuffer, inputBuffer,
-                                      nFrames, streamTime, status);
+                                      nFrames, streamTime, status, deviceName);
 }
 
 //*******************************************************************************
