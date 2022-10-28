@@ -464,6 +464,9 @@ jobs:
           unzip ${{ env.BUILD_PATH }}/jacktrip.zip -x LICENSE* -d "${{ env.BUILD_PATH }}"
           rm ${{ env.BUILD_PATH }}/jacktrip.zip
 
+          # get keychain path
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
           CONFIG=
           if [[ -n "${{ matrix.installer-path }}" ]]; then 
             CONFIG="-i -n -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" JackTrip org.jacktrip.jacktrip $CONFIG"

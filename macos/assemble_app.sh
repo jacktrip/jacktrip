@@ -12,6 +12,7 @@ USERNAME=""
 PASSWORD=""
 TEAM_ID=""
 KEY_STORE="AC_PASSWORD"
+KEYCHAIN_PATH=""
 BINARY="../builddir/jacktrip"
 PSI=false
 
@@ -215,7 +216,10 @@ if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
     if [ ! -z "$TEAM_ID" ]; then
         TEAM=" --team-id $TEAM_ID"
     fi
-    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD"$TEAM
+    if [ ! -z "$KEYCHAIN_PATH" ]; then
+        KEYCHAIN="--keychain $KEYCHAIN_PATH"
+    fi
+    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD"$TEAM "$KEYCHAIN"
 fi
 
 echo "Sending notarization request"
