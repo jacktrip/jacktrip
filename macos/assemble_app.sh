@@ -219,11 +219,11 @@ if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
     # We have new credentials. Store them in the keychain so we can use them.
     TEAM=""
     if [ ! -z "$TEAM_ID" ]; then
-        TEAM="--team-id $TEAM_ID"
+        TEAM="--team-id \"${TEAM_ID}\""
         NOTARY_ARGS="$NOTARY_ARGS $TEAM"
     fi
     if [ ! -z "$KEYCHAIN_PATH" ]; then
-        KEYCHAIN="--keychain $KEYCHAIN_PATH"
+        KEYCHAIN="--keychain \"${KEYCHAIN_PATH}\""
         NOTARY_ARGS="$NOTARY_ARGS $KEYCHAIN"
     fi
     echo $NOTARY_ARGS | xargs xcrun notarytool store-credentials

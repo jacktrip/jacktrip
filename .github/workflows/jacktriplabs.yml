@@ -458,6 +458,7 @@ jobs:
           PACKAGE_CERT: ${{ secrets.INSTALLER_CERT_NAME }}
           USERNAME: app@jacktrip.org
           PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PWD}}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
           # Copy jacktrip binary where assemple_app.sh looks for it
           cp ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip ${{ env.BUILD_PATH }}/jacktrip.zip
@@ -469,7 +470,7 @@ jobs:
 
           CONFIG=
           if [[ -n "${{ matrix.installer-path }}" ]]; then 
-            CONFIG="-i -n -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" -k \"${KEYCHAIN_PATH}\" JackTrip org.jacktrip.jacktrip $CONFIG"
+            CONFIG="-i -n -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" -t \"${TEAM_ID}\" -k \"${KEYCHAIN_PATH}\" JackTrip org.jacktrip.jacktrip $CONFIG"
           fi
           cd macos
           echo $CONFIG | xargs ./assemble_app.sh
