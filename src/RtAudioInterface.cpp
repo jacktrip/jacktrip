@@ -233,8 +233,8 @@ void RtAudioInterface::setup(bool verbose)
                                  &mUserData, &options,
                                  &RtAudioInterface::RtAudioErrorCallback);
         } else {
-            mUserDataIn  = std::make_tuple(this, true, false);
-            mUserDataOut = std::make_tuple(this, false, true);
+            mUserDataIn  = std::make_tuple(this, false, true);
+            mUserDataOut = std::make_tuple(this, true, false);
             mRtAudioIn->openStream(
                 NULL, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, &mUserDataIn, &options,
