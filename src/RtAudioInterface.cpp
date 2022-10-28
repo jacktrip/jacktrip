@@ -234,7 +234,7 @@ void RtAudioInterface::setup(bool verbose)
                                  &RtAudioInterface::RtAudioErrorCallback);
         } else {
             RtAudio::DeviceInfo infoOut = mRtAudioOut->getDeviceInfo(index_out);
-            RtAudio::DeviceInfo infoIn = mRtAudioIn->getDeviceInfo(index_in);
+            RtAudio::DeviceInfo infoIn  = mRtAudioIn->getDeviceInfo(index_in);
 
             mUserDataIn  = std::make_tuple(this, false, true, infoIn.name);
             mUserDataOut = std::make_tuple(this, true, false, infoOut.name);
@@ -337,7 +337,8 @@ void RtAudioInterface::printDeviceInfo(std::string api, unsigned int deviceIndex
 int RtAudioInterface::RtAudioCallback(bool isOutput, bool isInput, void* outputBuffer,
                                       void* inputBuffer, unsigned int nFrames,
                                       double /*streamTime*/,
-                                      RtAudioStreamStatus /*status*/, std::string deviceName)
+                                      RtAudioStreamStatus /*status*/,
+                                      std::string deviceName)
 {
     // TODO: this function may need more changes. As-is I'm not sure this will work
 
@@ -351,7 +352,8 @@ int RtAudioInterface::RtAudioCallback(bool isOutput, bool isInput, void* outputB
 
     } else {
         if (isOutput) {
-            std::cout << "Processing RTAudio Output Callback: " << deviceName << std::endl;
+            std::cout << "Processing RTAudio Output Callback: " << deviceName
+                      << std::endl;
             mOutputBuffers.enqueue(outputBuffer);
         }
 
@@ -399,7 +401,7 @@ int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuff
     RtAudioInterface* interface = static_cast<RtAudioInterface*>(std::get<0>(*data));
     bool isOutput               = std::get<1>(*data);
     bool isInput                = std::get<2>(*data);
-    std::string deviceName = std::get<3>(*data);
+    std::string deviceName      = std::get<3>(*data);
 
     return interface->RtAudioCallback(isOutput, isInput, outputBuffer, inputBuffer,
                                       nFrames, streamTime, status, deviceName);
