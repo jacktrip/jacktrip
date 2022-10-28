@@ -215,15 +215,18 @@ if [ $SIGNED = false ] ; then
 fi
 
 if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
+    NOTARY_ARGS="\"${KEY_STORE}\" --apple-id \"${USERNAME}\" --password \"${PASSWORD}\""
     # We have new credentials. Store them in the keychain so we can use them.
     TEAM=""
     if [ ! -z "$TEAM_ID" ]; then
         TEAM="--team-id $TEAM_ID"
+        NOTARY_ARGS="$NOTARY_ARGS $TEAM"
     fi
     if [ ! -z "$KEYCHAIN_PATH" ]; then
         KEYCHAIN="--keychain $KEYCHAIN_PATH"
+        NOTARY_ARGS="$NOTARY_ARGS $KEYCHAIN"
     fi
-    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD" "$TEAM" "$KEYCHAIN"
+    echo $NOTARY_ARGS | xargs xcrun notarytool store-credentials
 fi
 
 echo "Sending notarization request"
