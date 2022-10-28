@@ -6,7 +6,7 @@ PACKAGE_CERT=""
 USERNAME=""
 PASSWORD=""
 # Only needed if you belong to more than one dev team
-TEAM_ID=""main
+TEAM_ID=""
 
 if [ -z $1 ]; then
 	echo "You need to provide a version number as an argument"
