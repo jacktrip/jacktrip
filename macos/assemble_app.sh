@@ -216,6 +216,7 @@ fi
 
 if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
     NOTARY_ARGS="\"${KEY_STORE}\" --apple-id \"${USERNAME}\" --password \"${PASSWORD}\""
+    echo $NOTARY_ARGS
     # We have new credentials. Store them in the keychain so we can use them.
     TEAM=""
     if [ ! -z "$TEAM_ID" ]; then
