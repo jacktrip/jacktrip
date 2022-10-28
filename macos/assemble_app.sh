@@ -18,7 +18,7 @@ PSI=false
 
 OPTIND=1
 
-while getopts ":inhqc:d:u:p:t:b:" opt; do
+while getopts ":inhqc:d:u:p:t:k:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
@@ -40,6 +40,9 @@ while getopts ":inhqc:d:u:p:t:b:" opt; do
         ;;
       t)
         TEAM_ID=$OPTARG
+        ;;
+      k)
+        KEYCHAIN_PATH=$OPTARG
         ;;
       b)
         BINARY=$OPTARG
@@ -66,13 +69,14 @@ while getopts ":inhqc:d:u:p:t:b:" opt; do
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
         echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -k <keychainpath>  Path to keychain database where notarization credentials are stored."
         echo " -h                 Display this help screen and exit."
         echo
         echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
         echo "(These should be left as is for official builds.)"
         echo
         echo "The username, password, and team ID are saved in the keychain by notarytool."
-        echo "They only need to be supplied once, or in the eventh that you need to change them."
+        echo "They only need to be supplied once, or in the event that you need to change them."
  
         exit 0
         ;;
@@ -217,9 +221,9 @@ if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
         TEAM=" --team-id $TEAM_ID"
     fi
     if [ ! -z "$KEYCHAIN_PATH" ]; then
-        KEYCHAIN="--keychain $KEYCHAIN_PATH"
+        KEYCHAIN=" --keychain $KEYCHAIN_PATH"
     fi
-    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD"$TEAM "$KEYCHAIN"
+    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD"$TEAM$KEYCHAIN
 fi
 
 echo "Sending notarization request"

@@ -469,7 +469,7 @@ jobs:
 
           CONFIG=
           if [[ -n "${{ matrix.installer-path }}" ]]; then 
-            CONFIG="-i -n -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" JackTrip org.jacktrip.jacktrip $CONFIG"
+            CONFIG="-i -n -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" -k \"${KEYCHAIN_PATH}\" JackTrip org.jacktrip.jacktrip $CONFIG"
           fi
           cd macos
           echo $CONFIG | xargs ./assemble_app.sh
