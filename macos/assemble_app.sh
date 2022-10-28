@@ -8,15 +8,16 @@ NOTARIZE=false
 #If you're lazy like I am, you can pre-populate these variables to save you stuffing about with command line options.
 #CERTIFICATE=""
 #PACKAGE_CERT=""
-#USERNAME=""
-#PASSWORD=""
-#ASC_PROVIDER=""
+USERNAME=""
+PASSWORD=""
+TEAM_ID=""
+KEY_STORE="AC_PASSWORD"
 BINARY="../builddir/jacktrip"
 PSI=false
 
 OPTIND=1
 
-while getopts ":inhqc:d:u:p:a:b:" opt; do
+while getopts ":inhqc:d:u:p:t:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
@@ -36,8 +37,8 @@ while getopts ":inhqc:d:u:p:a:b:" opt; do
       p)
         PASSWORD=$OPTARG
         ;;
-      a)
-        ASC_PROVIDER=$OPTARG
+      t)
+        TEAM_ID=$OPTARG
         ;;
       b)
         BINARY=$OPTARG
@@ -63,11 +64,14 @@ while getopts ":inhqc:d:u:p:a:b:" opt; do
         echo " -d <certname>      Name of the certificate to use for package signing. (No signing by default.)"
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
-        echo " -a <ascprovider>   ASC provider for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
         echo " -h                 Display this help screen and exit."
         echo
         echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
         echo "(These should be left as is for official builds.)"
+        echo
+        echo "The username, password, and team ID are saved in the keychain by notarytool."
+        echo "They only need to be supplied once, or in the eventh that you need to change them."
  
         exit 0
         ;;
@@ -116,7 +120,7 @@ sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
 if [ ! -z "$DYNAMIC_QT" ]; then
     QT_VERSION="qt$(echo "$DYNAMIC_QT" | sed -E '1!d;s/.*compatibility version ([0-9]+)\.[0-9]+\.[0-9]+.*/\1/g')"
-    echo "$QT_VERSION"
+    echo "Detected a Qt$QT_VERSION binary"
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
         # Attempt to find macdeployqt. Try macports location first, then brew.
@@ -199,39 +203,24 @@ fi
 
 [ $NOTARIZE = true ] || exit 0
 
-# Submit a notarization request to apple if we have the required credentials.
-if [ -z "$CERTIFICATE" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ $SIGNED = false ] ; then
-    echo "Not sending notarization request: incomplete credentials."
+# Submit a notarization request to apple if we've chosen to and signed our package.
+if [ $SIGNED = false ] ; then
+    echo "Not sending notarization request: package not signed."
     exit 1
 fi
 
-ASC=""
-if [ ! -z "$ASC_PROVIDER" ]; then
-    ASC=" --asc-provider $ASC_PROVIDER"
+if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
+    # We have new credentials. Store them in the keychain so we can use them.
+    TEAM=""
+    if [ ! -z "$TEAM_ID" ]; then
+        TEAM=" --team-id $TEAM_ID"
+    fi
+    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD"$TEAM
 fi
-CREDENTIALS="--username $USERNAME --password $PASSWORD$ASC"
 
 echo "Sending notarization request"
-UUID=$(xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" $CREDENTIALS --file "package/build/$APPNAME.pkg" | awk '/RequestUUID/{print $NF}')
-if [ -z "$UUID" ]; then
-    echo "Error sending notarization request"
-    exit 1
-fi
-echo "Package uploaded"
-echo "Request UUID is $UUID"
-echo "Awaiting response from Apple"
-STATUS="in progress"
-ELAPSED=0
-while [ "$STATUS" = "in progress" ]; do
-    sleep 60
-    ((ELAPSED++))
-    STATUS=$(xcrun altool --notarization-info "$UUID" $CREDENTIALS | awk '/Status:/{for(i = 2; i <= NF - 1; i++) printf $i" "; print $NF}')
-    echo "Waited $ELAPSED minute(s). Current status: $STATUS"
-done
-#read -n1 -rsp "Press any key to staple the notarization once it's been approved..."
-#echo
-
-if [ "$STATUS" = "success" ]; then
+xcrun notarytool submit "package/build/$APPNAME.pkg" --keychain-profile "$KEY_STORE" --wait
+if [ $? -eq 0 ]; then
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
     echo "Notarization failed"
