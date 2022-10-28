@@ -183,6 +183,12 @@ if host_machine.system() == 'darwin'
 	add_languages('objcpp')
 endif
 
+if host_machine.system() == 'darwin' and get_option('novs') == false
+	src += ['src/gui/vsMacPermissions.mm']
+	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation'])
+	deps += apple_av_dep
+endif
+
 jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
 help2man = find_program('help2man', required: false)

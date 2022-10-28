@@ -174,7 +174,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_permissions->getMicPermission();
 #else
     QObject* permissions = new QObject();
-    permissions->setMicPermission("hasMicPermission", true);
+    permissions->setProperty("hasMicPermission", true);
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("permissions"), QVariant::fromValue(permissions.data()));
 #endif

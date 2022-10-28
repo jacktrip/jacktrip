@@ -29,7 +29,7 @@
 */
 //*****************************************************************
 /**
- * \file VsMacPermissions.h
+ * \file vsMacPermissions.h
  * \author Matt Horton
  * \date Oct 2022
  */
