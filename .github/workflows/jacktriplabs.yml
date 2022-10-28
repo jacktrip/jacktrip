@@ -457,7 +457,7 @@ jobs:
           CERTIFICATE: ${{ secrets.APP_CERT_NAME }}
           PACKAGE_CERT: ${{ secrets.INSTALLER_CERT_NAME }}
           USERNAME: app@jacktrip.org
-          PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PWD}}
+          PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PWD }}
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
           # Copy jacktrip binary where assemple_app.sh looks for it
