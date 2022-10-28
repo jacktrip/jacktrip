@@ -108,6 +108,9 @@ macx {
   !nogui {
     LIBS += -framework Foundation
     CONFIG += objective_c
+    !novs {
+      LIBS += -framework AVFoundation
+    }
   }
 }
 
@@ -324,6 +327,10 @@ SOURCES += src/DataProtocol.cpp \
   macx {
     HEADERS += src/gui/NoNap.h
     OBJECTIVE_SOURCES += src/gui/NoNap.mm
+    !novs {
+      HEADERS += src/gui/vsMacPermissions.h
+      OBJECTIVE_SOURCES += src/gui/vsMacPermissions.mm
+    }
   }
   FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
   novs {

@@ -320,9 +320,23 @@ Item {
     }
 
     Item {
+        id: noMicItem
+        width: parent.width; height: parent.height
+        visible: warningScreen == "acknowledged" && permissions.hasMicPermission != true
+
+        Text {
+            id: noMicPageTitle
+            x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
+            text: permissions.hasMicPermission
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+    }
+
+    Item {
         id: setupItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "acknowledged"
+        visible: warningScreen == "acknowledged" && permissions.hasMicPermission == true
 
         Text {
             id: pageTitle
