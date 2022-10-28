@@ -169,14 +169,14 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Add permissions for Mac
 #ifdef __APPLE__
     m_permissions.reset(new VsMacPermissions());
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("permissions"),
-                                                       QVariant::fromValue(m_permissions.data()));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("permissions"), QVariant::fromValue(m_permissions.data()));
     m_permissions->getMicPermission();
 #else
-    QObject *permissions = new QObject();
+    QObject* permissions = new QObject();
     permissions->setMicPermission("hasMicPermission", true);
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("permissions"),
-                                                       QVariant::fromValue(permissions.data()));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("permissions"), QVariant::fromValue(permissions.data()));
 #endif
 
     m_view.engine()->rootContext()->setContextProperty(

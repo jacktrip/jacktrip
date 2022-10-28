@@ -34,13 +34,13 @@
  * \date Oct 2022
  */
 
-
 #ifndef __VSMACPERMISSIONS_H__
 #define __VSMACPERMISSIONS_H__
 
 #include <objc/objc.h>
-#include <QObject>
+
 #include <QDebug>
+#include <QObject>
 
 class VsMacPermissions : public QObject
 {
@@ -48,10 +48,8 @@ class VsMacPermissions : public QObject
     Q_PROPERTY(bool hasMicPermission READ hasMicPermission NOTIFY micPermissionUpdated)
 
    public:
-    VsMacPermissions()
-    {};
-    ~VsMacPermissions()
-    {};
+    VsMacPermissions(){};
+    ~VsMacPermissions(){};
 
     bool hasMicPermission();
     void getMicPermission();
