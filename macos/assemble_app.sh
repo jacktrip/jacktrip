@@ -228,11 +228,12 @@ if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
         NOTARY_ARGS="$NOTARY_ARGS $KEYCHAIN"
     fi
     echo $NOTARY_ARGS
+    echo "Storing credentials"
     echo $NOTARY_ARGS | xargs xcrun notarytool store-credentials
 fi
 
 echo "Sending notarization request"
-xcrun notarytool submit "package/build/$APPNAME.pkg" --keychain-profile "$KEY_STORE" --wait
+xcrun notarytool submit "package/build/$APPNAME.pkg" --keychain-profile "$KEY_STORE" --wait "$KEYCHAIN"
 if [ $? -eq 0 ]; then
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
