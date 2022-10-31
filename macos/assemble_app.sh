@@ -233,7 +233,7 @@ if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 fi
 
 echo "Sending notarization request"
-xcrun notarytool submit "package/build/$APPNAME.pkg" --verbose --keychain-profile "$KEY_STORE" --wait $KEYCHAIN
+xcrun notarytool submit "package/build/$APPNAME.pkg" --verbose --keychain-profile "$KEY_STORE" --wait --keychain $KEYCHAIN_PATH
 if [ $? -eq 0 ]; then
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
