@@ -473,7 +473,6 @@ jobs:
             CONFIG="-i -n -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" -t \"${TEAM_ID}\" -k \"${KEYCHAIN_PATH}\" JackTrip org.jacktrip.jacktrip $CONFIG"
           fi
           cd macos
-          echo $CONFIG > configargs.txt
           echo $CONFIG | xargs ./assemble_app.sh
           echo "Assemble complete"
           if [[ -n ${{ matrix.bundle-path }} ]]; then

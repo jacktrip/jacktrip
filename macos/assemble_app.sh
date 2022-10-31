@@ -216,7 +216,6 @@ fi
 
 if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
     NOTARY_ARGS="\"${KEY_STORE}\" --apple-id \"${USERNAME}\" --password \"${PASSWORD}\""
-    echo $NOTARY_ARGS > notaryargspre.txt
     # We have new credentials. Store them in the keychain so we can use them.
     TEAM=""
     if [ ! -z "$TEAM_ID" ]; then
@@ -227,13 +226,12 @@ if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
         KEYCHAIN="--keychain \"${KEYCHAIN_PATH}\""
         NOTARY_ARGS="$NOTARY_ARGS $KEYCHAIN"
     fi
-    echo $NOTARY_ARGS > notaryargs.txt
     echo "Storing credentials"
-    echo $NOTARY_ARGS | xargs xcrun notarytool store-credentials --verbose
+    echo $NOTARY_ARGS | xargs xcrun notarytool store-credentials
 fi
 
 echo "Sending notarization request"
-xcrun notarytool submit "package/build/$APPNAME.pkg" --verbose --keychain-profile "$KEY_STORE" --wait --keychain $KEYCHAIN_PATH
+xcrun notarytool submit "package/build/$APPNAME.pkg" --keychain-profile "$KEY_STORE" --wait --keychain $KEYCHAIN_PATH
 if [ $? -eq 0 ]; then
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
