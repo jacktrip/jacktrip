@@ -71,7 +71,7 @@ while getopts ":inhqc:d:u:p:t:b:" opt; do
         echo "(These should be left as is for official builds.)"
         echo
         echo "The username, password, and team ID are saved in the keychain by notarytool."
-        echo "They only need to be supplied once, or in the eventh that you need to change them."
+        echo "They only need to be supplied once, or in the event that you need to change them."
  
         exit 0
         ;;
