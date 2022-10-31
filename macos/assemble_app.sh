@@ -12,7 +12,7 @@ USERNAME=""
 PASSWORD=""
 TEAM_ID=""
 KEY_STORE="AC_PASSWORD"
-USE_DEFAULT_KEYCHAIN=false
+TEMP_KEYCHAIN=""
 BINARY="../builddir/jacktrip"
 PSI=false
 
@@ -27,7 +27,7 @@ while getopts ":inhqkc:d:u:p:t:b:" opt; do
         NOTARIZE=true
         ;;
       k)
-        USE_DEFAULT_KEYCHAIN=true
+        TEMP_KEYCHAIN="$(pwd)/notarytool_temp.db"
         ;;
       c)
         CERTIFICATE=$OPTARG
@@ -69,14 +69,15 @@ while getopts ":inhqkc:d:u:p:t:b:" opt; do
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
         echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
-        echo " -k                 Use the default keychain rather than the login keychain to store credentials."
+        echo " -k                 Use a temporary keychain to store notarization credentials."
         echo " -h                 Display this help screen and exit."
         echo
         echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
         echo "(These should be left as is for official builds.)"
         echo
-        echo "The username, password, and team ID are saved in the keychain by notarytool."
+        echo "The username, password, and team ID are saved in the login keychain by notarytool."
         echo "They only need to be supplied once, or in the event that you need to change them."
+        echo "(They need to be supplied every time if you opt to use a temporary keychain.)"
  
         exit 0
         ;;
@@ -134,7 +135,7 @@ if [ ! -z "$DYNAMIC_QT" ]; then
         elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix $QT_VERSION) ]; then
             DEPLOY_CMD="$(brew --prefix $QT_VERSION)/bin/macdeployqt"
         else
-            echo "The Qt bin folder needs to be in your PATH for this script to work."
+            echo "Error: The Qt bin folder needs to be in your PATH for this script to work."
             exit 1
         fi
     fi
@@ -152,7 +153,7 @@ fi
 [ $BUILD_INSTALLER = true ] || exit 0
 
 # If you have Packages installed, you can build an installer for the newly created app bundle.
-[ -z $(which packagesbuild) ] && { echo "You need to have Packages installed to build a package."; exit 1; }
+[ -z $(which packagesbuild) ] && { echo "Error: You need to have Packages installed to build a package."; exit 1; }
 
 if [ $PSI = true ]; then
     cp "package/postinstall.sh" "package/postinstall.sh.bak"
@@ -215,10 +216,17 @@ if [ $SIGNED = false ] ; then
 fi
 
 KEYCHAIN=""
-if [ $USE_DEFAULT_KEYCHAIN = true ]; then
-    echo "Using the default keychain"
-    DEFAULT_KEYCHAIN=$(security default-keychain | cut -d '"' -f2)
-    KEYCHAIN=" --keychain \"$DEFAULT_KEYCHAIN\""
+if [ ! -z $TEMP_KEYCHAIN ]; then
+    echo "Using a temporary keychain"
+    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+        echo "Error: You must provide a username and password when using a temporary keychain."
+        exit 1
+    fi
+    [ -e "$TEMP_KEYCHAIN" ] && rm "$TEMP_KEYCHAIN"
+    security create-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
+    security set-keychain-settings -lut 3600 "$TEMP_KEYCHAIN"
+    security unlock-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
+    KEYCHAIN=" --keychain \"$TEMP_KEYCHAIN\""
 fi
 
 if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
@@ -235,8 +243,10 @@ echo "Sending notarization request"
 ARGS="notarytool submit \"package/build/$APPNAME.pkg\" --keychain-profile \"$KEY_STORE\" --wait$KEYCHAIN"
 echo $ARGS | xargs xcrun
 if [ $? -eq 0 ]; then
+    [ ! -z "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
-    echo "Notarization failed"
+    [ ! -z "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
+    echo "Error: Notarization failed"
     exit 1
 fi
