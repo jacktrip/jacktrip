@@ -12,18 +12,22 @@ USERNAME=""
 PASSWORD=""
 TEAM_ID=""
 KEY_STORE="AC_PASSWORD"
+USE_DEFAULT_KEYCHAIN=false
 BINARY="../builddir/jacktrip"
 PSI=false
 
 OPTIND=1
 
-while getopts ":inhqc:d:u:p:t:b:" opt; do
+while getopts ":inhqkc:d:u:p:t:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
         ;;
       n)
         NOTARIZE=true
+        ;;
+      k)
+        USE_DEFAULT_KEYCHAIN=true
         ;;
       c)
         CERTIFICATE=$OPTARG
@@ -65,6 +69,7 @@ while getopts ":inhqc:d:u:p:t:b:" opt; do
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
         echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -k                 Use the default keychain rather than the login keychain to store credentials."
         echo " -h                 Display this help screen and exit."
         echo
         echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
@@ -209,17 +214,26 @@ if [ $SIGNED = false ] ; then
     exit 1
 fi
 
+KEYCHAIN=""
+if [ $USE_DEFAULT_KEYCHAIN = true ]; then
+    echo "Using the default keychain"
+    DEFAULT_KEYCHAIN=$(security default-keychain | cut -d '"' -f2)
+    KEYCHAIN=" --keychain \"$DEFAULT_KEYCHAIN\""
+fi
+
 if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
     # We have new credentials. Store them in the keychain so we can use them.
     TEAM=""
     if [ ! -z "$TEAM_ID" ]; then
-        TEAM=" --team-id $TEAM_ID"
+        TEAM=" --team-id \"$TEAM_ID\""
     fi
-    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD"$TEAM
+    ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\"$TEAM$KEYCHAIN"
+    echo $ARGS | xargs xcrun
 fi
 
 echo "Sending notarization request"
-xcrun notarytool submit "package/build/$APPNAME.pkg" --keychain-profile "$KEY_STORE" --wait
+ARGS="notarytool submit \"package/build/$APPNAME.pkg\" --keychain-profile \"$KEY_STORE\" --wait$KEYCHAIN"
+echo $ARGS | xargs xcrun
 if [ $? -eq 0 ]; then
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else

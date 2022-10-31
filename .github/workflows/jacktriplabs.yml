@@ -445,7 +445,6 @@ jobs:
           security create-keychain -p "$KEYCHAIN_PWD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security default-keychain -s $KEYCHAIN_PATH
-          security login-keychain -s $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PWD" $KEYCHAIN_PATH
 
           # import certificate to keychain
@@ -467,7 +466,7 @@ jobs:
 
           CONFIG=
           if [[ -n "${{ matrix.installer-path }}" ]]; then 
-            CONFIG="-i -n -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" JackTrip org.jacktrip.jacktrip $CONFIG"
+            CONFIG="-i -n -k -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" JackTrip org.jacktrip.jacktrip $CONFIG"
           fi
           cd macos
           echo $CONFIG | xargs ./assemble_app.sh
