@@ -533,7 +533,8 @@ jobs:
           name: ${{ env.CLANG_TIDY_NAME }}
           path: ${{ env.CLANG_TIDY_PATH }}/
       - name: Run tmate
-        uses: mxschmitt/action-tmate@v2
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
     needs: [sign, check-secrets]
