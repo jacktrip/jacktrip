@@ -227,7 +227,7 @@ if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
         KEYCHAIN="--keychain \"${KEYCHAIN_PATH}\""
         NOTARY_ARGS="$NOTARY_ARGS $KEYCHAIN"
     fi
-    echo $NOTARY_ARGS
+    echo $NOTARY_ARGS > notaryargs.txt
     echo "Storing credentials"
     echo $NOTARY_ARGS | xargs xcrun notarytool store-credentials --verbose
 fi
