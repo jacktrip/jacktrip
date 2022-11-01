@@ -66,9 +66,12 @@ while getopts ":inhqkc:d:u:p:t:b:" opt; do
         echo " -n                 Send a notarization request to Apple. (Only takes effect if building an installer.)"
         echo " -c <certname>      Name of the developer certificate to use for code signing. (No signing by default.)"
         echo " -d <certname>      Name of the certificate to use for package signing. (No signing by default.)"
+        echo
+        echo "Important: If supplying one of the next three options, you must supply all of them."
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
-        echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -t <teamid>        Team ID for notarization."
+        echo
         echo " -k                 Use a temporary keychain to store notarization credentials."
         echo " -h                 Display this help screen and exit."
         echo
@@ -210,18 +213,21 @@ fi
 [ $NOTARIZE = true ] || exit 0
 
 # Submit a notarization request to apple if we've chosen to and signed our package.
-if [ $SIGNED = false ] ; then
+if [ $SIGNED = false ]; then
     echo "Not sending notarization request: package not signed."
     exit 1
 fi
 
+if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ ! -z $TEMP_KEYCHAIN ]; then
+    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$TEAM_ID" ]; then
+        echo "Error: Missing credentials. Make sure you supply a username, password and team ID."
+        exit 1
+    fi
+fi 
+
 KEYCHAIN=""
 if [ ! -z $TEMP_KEYCHAIN ]; then
     echo "Using a temporary keychain"
-    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
-        echo "Error: You must provide a username and password when using a temporary keychain."
-        exit 1
-    fi
     [ -e "$TEMP_KEYCHAIN" ] && rm "$TEMP_KEYCHAIN"
     security create-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
     security set-keychain-settings -lut 3600 "$TEMP_KEYCHAIN"
@@ -229,13 +235,9 @@ if [ ! -z $TEMP_KEYCHAIN ]; then
     KEYCHAIN=" --keychain \"$TEMP_KEYCHAIN\""
 fi
 
-if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
+if [ ! -z "$USERNAME" ]; then
     # We have new credentials. Store them in the keychain so we can use them.
-    TEAM=""
-    if [ ! -z "$TEAM_ID" ]; then
-        TEAM=" --team-id \"$TEAM_ID\""
-    fi
-    ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\"$TEAM$KEYCHAIN"
+    ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\" --team-id \"$TEAM_ID\"$KEYCHAIN"
     echo $ARGS | xargs xcrun
 fi
 
