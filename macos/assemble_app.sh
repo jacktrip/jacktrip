@@ -66,9 +66,12 @@ while getopts ":inhqkc:d:u:p:t:b:" opt; do
         echo " -n                 Send a notarization request to Apple. (Only takes effect if building an installer.)"
         echo " -c <certname>      Name of the developer certificate to use for code signing. (No signing by default.)"
         echo " -d <certname>      Name of the certificate to use for package signing. (No signing by default.)"
+        echo
+        echo "Important: If supplying one of the next three options, you must supply all of them."
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
         echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
+        echo
         echo " -k                 Use the default keychain rather than the login keychain to store credentials."
         echo " -h                 Display this help screen and exit."
         echo
@@ -214,6 +217,13 @@ if [ $SIGNED = false ] ; then
     exit 1
 fi
 
+if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ $TEMP_KEYCHAIN = true ]; then
+    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$TEAM_ID" ]; then
+        echo "Error: Missing credentials. Make sure you supply a username, password and team ID."
+        exit 1
+    fi
+fi
+
 KEYCHAIN=""
 if [ $USE_DEFAULT_KEYCHAIN = true ]; then
     echo "Using the default keychain"
@@ -221,13 +231,9 @@ if [ $USE_DEFAULT_KEYCHAIN = true ]; then
     KEYCHAIN=" --keychain \"$DEFAULT_KEYCHAIN\""
 fi
 
-if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
+if [ ! -z "$USERNAME" ]; then
     # We have new credentials. Store them in the keychain so we can use them.
-    TEAM=""
-    if [ ! -z "$TEAM_ID" ]; then
-        TEAM=" --team-id \"$TEAM_ID\""
-    fi
-    ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\"$TEAM$KEYCHAIN"
+    ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\" --team-id \"$TEAM_ID\"$KEYCHAIN"
     echo $ARGS | xargs xcrun
 fi
 
