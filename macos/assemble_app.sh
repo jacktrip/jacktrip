@@ -13,12 +13,13 @@ PASSWORD=""
 TEAM_ID=""
 KEY_STORE="AC_PASSWORD"
 TEMP_KEYCHAIN=""
+USE_DEFAULT_KEYCHAIN=false
 BINARY="../builddir/jacktrip"
 PSI=false
 
 OPTIND=1
 
-while getopts ":inhqkc:d:u:p:t:b:" opt; do
+while getopts ":inhqklc:d:u:p:t:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
@@ -28,6 +29,9 @@ while getopts ":inhqkc:d:u:p:t:b:" opt; do
         ;;
       k)
         TEMP_KEYCHAIN="$(pwd)/notarytool_temp.db"
+        ;;
+      l)
+        USE_DEFAULT_KEYCHAIN=true
         ;;
       c)
         CERTIFICATE=$OPTARG
@@ -72,7 +76,8 @@ while getopts ":inhqkc:d:u:p:t:b:" opt; do
         echo " -p <password>      App specific password for installer notarization."
         echo " -t <teamid>        Team ID for notarization."
         echo
-        echo " -k                 Use a temporary keychain to store notarization credentials."
+        echo " -k                 Use a temporary keychain to store notarization credentials. (Overrides -l.)"
+        echo " -l                 Use the default keychain instead of the login keychain to store credentials."
         echo " -h                 Display this help screen and exit."
         echo
         echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
@@ -233,6 +238,10 @@ if [ ! -z "$TEMP_KEYCHAIN" ]; then
     security set-keychain-settings -lut 3600 "$TEMP_KEYCHAIN"
     security unlock-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
     KEYCHAIN=" --keychain \"$TEMP_KEYCHAIN\""
+elif [ $USE_DEFAULT_KEYCHAIN = true ]; then
+    echo "Using the default keychain"
+    DEFAULT_KEYCHAIN=$(security default-keychain | cut -d '"' -f2)
+    KEYCHAIN=" --keychain \"$DEFAULT_KEYCHAIN\""
 fi
 
 if [ ! -z "$USERNAME" ]; then
