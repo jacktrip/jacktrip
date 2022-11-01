@@ -70,7 +70,7 @@ while getopts ":inhqkc:d:u:p:t:b:" opt; do
         echo "Important: If supplying one of the next three options, you must supply all of them."
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
-        echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -t <teamid>        Team ID for notarization."
         echo
         echo " -k                 Use the default keychain rather than the login keychain to store credentials."
         echo " -h                 Display this help screen and exit."
