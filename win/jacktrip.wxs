@@ -7,14 +7,14 @@
 
         <Package Id='*' Keywords='Installer' Description='JackTrip Installer'
             Comments='Developed by SoundWIRE Group at CCRMA, Stanford' Manufacturer='JackTrip'
-            InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+            InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
         <Media Id='1' Cabinet='JackTrip.cab' EmbedCab='yes' DiskPrompt='Disk 1' />
         <Property Id='DiskPrompt' Value='JackTrip Installer File' />
         <MajorUpgrade AllowDowngrades="no" DowngradeErrorMessage="A newer version is already installed."
             AllowSameVersionUpgrades="no" />
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
-            <Directory Id='ProgramFilesFolder' Name='PFiles'>
+            <Directory Id='ProgramFiles64Folder' Name='PFiles'>
                 <Directory Id='INSTALLDIR' Name='JackTrip'>
                 </Directory>
             </Directory>

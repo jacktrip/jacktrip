@@ -1,43 +1,71 @@
 cmake_minimum_required(VERSION 3.12)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
-set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 project(QJackTrip)
 
 set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
-set(novs TRUE)
+set(novs FALSE)
+set(noupdater FALSE)
+set(psi FALSE)
+set(QtVersion "5")
+
+if (${QtVersion} MATCHES "5")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+  set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
+endif ()
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
 message(WARNING "The CMake build of JackTrip is currently NOT officially supported. Meson or QMake are recommended for a full featured build."
         "https://jacktrip.github.io/jacktrip/Build/Meson_build/")
 
-add_compile_definitions(PSI)
-add_compile_definitions(NO_UPDATER)
-#add_compile_definitions(BUILD_TYPE="psi-borg.org NO_VS binary")
-#string(TIMESTAMP BUILD_DATE "%Y%m%d")
-#set(BUILD_NUMBER "00")
-#add_compile_definitions(BUILD_ID="${BUILD_DATE}${BUILD_NUMBER}")
-#add_compile_definitions(NDEBUG)
-add_compile_definitions(QT_OPENSOURCE)
-
 if (nogui)
   add_compile_definitions(NO_GUI)
   set(novs TRUE)
+  set(noupdater TRUE)
 endif ()
 
-if (rtaudio)
-  add_compile_definitions(RT_AUDIO)
+if (novs)
+  set(QRC_FILE "src/gui/qjacktrip_novs.qrc")
+else ()
+  set(QRC_FILE "src/gui/qjacktrip.qrc")
 endif ()
 
-if (weakjack)
-  add_compile_definitions(USE_WEAK_JACK)
-  include_directories("externals/weakjack")
-endif()
+if (psi)
+  add_compile_definitions(PSI)
+  set(novs TRUE)
+  if (novs)
+    add_compile_definitions(BUILD_TYPE="psi-borg.org NO_VS binary")
+  else ()
+    add_compile_definitions(BUILD_TYPE="psi-borg.org binary")
+  endif ()
+
+  file(READ "${QRC_FILE}" QRC_CONTENTS)
+  string(REPLACE "<file>about@2x.png" "<file alias=\"about@2x.png\">alt/about@2x.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file>about.png" "<file alias=\"about.png\">alt/about.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file>icon.png" "<file alias=\"icon.png\">alt/icon.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
+  string(TIMESTAMP BUILD_DATE "%Y%m%d")
+  set(BUILD_NUMBER "00")
+  add_compile_definitions(BUILD_ID="${BUILD_DATE}${BUILD_NUMBER}")
+  add_compile_definitions(NDEBUG)
+else ()
+  file(READ "${QRC_FILE}" QRC_CONTENTS)
+  string(REPLACE "<file alias=\"about@2x.png\">alt/about@2x.png" "<file>about@2x.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"about.png\">alt/about.png" "<file>about.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"icon.png\">alt/icon.png" "<file>icon.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
+endif ()
 
 if (novs)
   add_compile_definitions(NO_VS)
 endif ()
+
+if (noupdater)
+  add_compile_definitions(NO_UPDATER)
+endif ()
+
+add_compile_definitions(QT_OPENSOURCE)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set (ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig")
@@ -50,12 +78,17 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     include_directories("C:/Program Files (x86)/Jack/includes")
     set (jacklib "C:/Program Files (x86)/Jack/lib/libjack64.lib")
   endif ()
-  set (CMAKE_PREFIX_PATH "C:/Qt/5.15.2/mingw81_64/lib/cmake")
+  file(GLOB QtDirs "C:/Qt/${QtVersion}.*.*/mingw*_64")
+  list(GET QtDirs 0 QtDir)
+  message(STATUS "Using Qt found at ${QtDir}")
+  set (CMAKE_PREFIX_PATH "${QtDir}")
   if (rtaudio)
     include_directories("C:/Program Files (x86)/RtAudio/include")
     set (rtaudiolib "C:/Program Files (x86)/RtAudio/lib/librtaudio.dll.a")
   endif ()
 endif ()
+
+string(PREPEND QtVersion "Qt")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   find_package(PkgConfig REQUIRED)
@@ -81,14 +114,14 @@ set(CMAKE_AUTORCC ON)
 
 # Find the QtWidgets library
 if (NOT nogui)
-  find_package(Qt5Widgets CONFIG REQUIRED)
+  find_package(${QtVersion}Widgets CONFIG REQUIRED)
   if (NOT novs)
-    find_package(Qt5Quick CONFIG REQUIRED)
-    find_package(Qt5NetworkAuth CONFIG REQUIRED)
-    find_package(Qt5WebSockets CONFIG REQUIRED)
+    find_package(${QtVersion}Quick CONFIG REQUIRED)
+    find_package(${QtVersion}NetworkAuth CONFIG REQUIRED)
+    find_package(${QtVersion}WebSockets CONFIG REQUIRED)
   endif ()
 endif ()
-find_package(Qt5Network CONFIG REQUIRED)
+find_package(${QtVersion}Network CONFIG REQUIRED)
 
 set(qjacktrip_SRC
   src/main.cpp
@@ -109,23 +142,24 @@ set(qjacktrip_SRC
   src/Regulator.cpp
   src/Compressor.cpp
   src/Limiter.cpp
-  src/Meter.cpp
-  src/Volume.cpp
-  src/Tone.cpp
   src/Reverb.cpp
   src/AudioTester.cpp
   src/Patcher.cpp
   src/SslServer.cpp
   src/Auth.cpp
+  src/ProcessPlugin.cpp
 )
 
 if (rtaudio)
+  add_compile_definitions(RT_AUDIO)
   set (qjacktrip_SRC ${qjacktrip_SRC}
     src/RtAudioInterface.cpp
   )
 endif ()
 
 if (weakjack)
+  add_compile_definitions(USE_WEAK_JACK)
+  include_directories("externals/weakjack")
   set (qjacktrip_SRC ${qjacktrip_SRC}
     externals/weakjack/weak_libjack.c
   )
@@ -151,14 +185,34 @@ if (NOT nogui)
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
       src/gui/qjacktrip.qrc
+      src/Meter.cpp
+      src/Volume.cpp
+      src/Tone.cpp
       # Need to include this for AUTOMOC to do its thing
       src/JTApplication.h
+      src/gui/vsQmlClipboard.h
     )
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
   endif ()
+  
+  if (NOT noupdater)
+    set (qjacktrip_SRC ${qjacktrip_SRC}
+      src/dblsqd/feed.cpp
+      src/dblsqd/release.cpp
+      src/dblsqd/semver.cpp
+      src/dblsqd/update_dialog.cpp
+    )
+  endif ()
 
   if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    file(READ "win/qjacktrip.rc" RC_CONTENTS)
+    if (psi)
+      string(REPLACE "jacktrip.ico" "jacktrip_alt.ico" RC_CONTENTS "${RC_CONTENTS}")
+    else ()
+      string(REPLACE "jacktrip_alt.ico" "jacktrip.ico" RC_CONTENTS "${RC_CONTENTS}")
+    endif ()
+    file(WRITE "win/qjacktrip.rc" "${RC_CONTENTS}")
     set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/NoNap.mm)
@@ -173,11 +227,11 @@ add_compile_definitions(WAIRTOHUB)
 add_executable(jacktrip ${qjacktrip_SRC})
 
 # Set our libraries for our linker
-set (qjacktrip_LIBS Qt5::Network)
+set (qjacktrip_LIBS ${QtVersion}::Network)
 if (NOT nogui)
-  set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Widgets)
+  set (qjacktrip_LIBS ${qjacktrip_LIBS} ${QtVersion}::Widgets)
   if (NOT novs)
-    set (qjacktrip_LIBS ${qjacktrip_LIBS} Qt5::Quick Qt5::NetworkAuth Qt5::WebSockets)
+    set (qjacktrip_LIBS ${qjacktrip_LIBS} ${QtVersion}::Quick ${QtVersion}::NetworkAuth ${QtVersion}::WebSockets)
   endif ()
 endif ()
 
@@ -202,5 +256,16 @@ endif ()
 
 target_link_libraries(jacktrip ${qjacktrip_LIBS})
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  add_custom_command(
+    TARGET jacktrip POST_BUILD
+    COMMAND help2man --no-info --section=1 --output=jacktrip.1 ./jacktrip
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  )
+endif ()
+
 # Install the executable
 install(TARGETS jacktrip DESTINATION bin)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  install(FILES ${CMAKE_BINARY_DIR}/jacktrip.1 DESTINATION share/man/man1)
+endif ()

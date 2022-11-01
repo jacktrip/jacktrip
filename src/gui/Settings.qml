@@ -4,7 +4,7 @@ import QtQuick.Controls 2.12
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
+
     Rectangle {
         width: parent.width; height: parent.height
         color: backgroundColour
@@ -13,12 +13,12 @@ Item {
     property int fontBig: 28
     property int fontMedium: 13
     property int fontSmall: 11
-    
+
     property int leftMargin: 48
     property int rightMargin: 16
     property int buttonWidth: 103
     property int buttonHeight: 25
-    
+
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -177,7 +177,7 @@ Item {
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.selectableBackend
         }
-        
+
         Text {
             id: backendLabel
             anchors.verticalCenter: backendCombo.verticalCenter
@@ -187,7 +187,7 @@ Item {
             visible: virtualstudio.selectableBackend
             color: textColour
         }
-        
+
         Text {
             id: jackLabel
             x: leftMargin * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
@@ -198,7 +198,7 @@ Item {
             visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend
             color: textColour
         }
-        
+
         ComboBox {
             id: inputCombo
             model: inputComboModel
@@ -208,17 +208,28 @@ Item {
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
         }
-        
+
+        Meter {
+            id: inputDeviceMeters
+            anchors.left: backendCombo.left
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : virtualstudio.uiScale * (virtualstudio.selectableBackend ? 148 : 100)
+            height: 100 * virtualstudio.uiScale
+            model: inputMeterModel
+            clipped: inputClipped
+        }
+
         ComboBox {
             id: outputCombo
             model: outputComboModel
             currentIndex: virtualstudio.outputDevice
             onActivated: { virtualstudio.outputDevice = currentIndex }
-            x: backendCombo.x; y: inputCombo.y + (48 * virtualstudio.uiScale)
+            x: backendCombo.x; y: inputDeviceMeters.y + (48 * virtualstudio.uiScale)
             width: backendCombo.width; height: backendCombo.height
             visible: virtualstudio.audioBackend != "JACK"
         }
-        
+
         Text {
             anchors.verticalCenter: inputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
@@ -227,7 +238,7 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
-        
+
         Text {
             anchors.verticalCenter: outputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
@@ -235,26 +246,6 @@ Item {
             font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
-        }
-
-        Button {
-            id: refreshButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
-            onClicked: { virtualstudio.refreshDevices() }
-            x: parent.width - (232 * virtualstudio.uiScale); y: outputCombo.y + (48 * virtualstudio.uiScale)
-            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            visible: virtualstudio.audioBackend != "JACK"
-            Text {
-                text: "Refresh Devices"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
         }
 
         Button {
@@ -267,10 +258,8 @@ Item {
             }
             onClicked: { virtualstudio.playOutputAudio() }
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            anchors.right: refreshButton.left
-            anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: outputCombo.y + (48 * virtualstudio.uiScale)
-            visible: virtualstudio.audioBackend != "JACK"
+            x: parent.width - (232 * virtualstudio.uiScale)
+            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + (60 * virtualstudio.uiScale) : inputDeviceMeters.y + (48 * virtualstudio.uiScale)
             Text {
                 text: "Test Output Audio"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -278,9 +267,31 @@ Item {
                 color: textColour
             }
         }
-        
+
+        Button {
+            id: refreshButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { virtualstudio.refreshDevices() }
+            x: parent.width - (232 * virtualstudio.uiScale); y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            visible: virtualstudio.audioBackend != "JACK"
+            Text {
+                text: "Refresh Devices"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+
         Rectangle {
-            x: leftMargin * virtualstudio.uiScale; y: inputCombo.y + (146 * virtualstudio.uiScale)
+            id: divider
+            x: leftMargin * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ? refreshButton.y + (48 * virtualstudio.uiScale) : testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
             color: textColour
             visible: virtualstudio.audioBackend != "JACK"
@@ -288,7 +299,7 @@ Item {
 
         ComboBox {
             id: bufferCombo
-            x: backendCombo.x; y: inputCombo.y + (162 * virtualstudio.uiScale)
+            x: backendCombo.x; y: divider.y + (24 * virtualstudio.uiScale)
             width: backendCombo.width; height: backendCombo.height
             model: bufferComboModel
             currentIndex: virtualstudio.bufferSize
@@ -323,7 +334,7 @@ Item {
             from: 1; to: 2; value: virtualstudio.uiScale
             onMoved: { virtualstudio.uiScale = value }
         }
-        
+
         Text {
             anchors.verticalCenter: scaleSlider.verticalCenter
             x: leftMargin * virtualstudio.uiScale
@@ -331,7 +342,7 @@ Item {
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
-        
+
         Button {
             id: darkButton
             background: Rectangle {
@@ -445,7 +456,7 @@ Item {
         y: header.height
         color: backgroundColour
         visible: settingsGroupView == "Profile"
-        
+
         Image {
             id: profilePicture
             width: 96; height: 96
