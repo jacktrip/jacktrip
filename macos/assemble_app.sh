@@ -217,7 +217,7 @@ if [ $SIGNED = false ] ; then
     exit 1
 fi
 
-if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ $TEMP_KEYCHAIN = true ]; then
+if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ $USE_DEFAULT_KEYCHAIN = true ]; then
     if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$TEAM_ID" ]; then
         echo "Error: Missing credentials. Make sure you supply a username, password and team ID."
         exit 1
