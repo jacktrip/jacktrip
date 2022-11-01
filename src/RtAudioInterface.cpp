@@ -345,7 +345,7 @@ int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuff
 {
     RtAudioInterface* interface = static_cast<RtAudioInterface*>(userData);
     return interface->RtAudioCallback(outputBuffer, inputBuffer, nFrames, streamTime,
-                                      status);1
+                                      status);
 }
 
 //*******************************************************************************
