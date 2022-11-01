@@ -218,7 +218,7 @@ if [ $SIGNED = false ]; then
     exit 1
 fi
 
-if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ ! -z $TEMP_KEYCHAIN ]; then
+if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ ! -z "$TEMP_KEYCHAIN" ]; then
     if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$TEAM_ID" ]; then
         echo "Error: Missing credentials. Make sure you supply a username, password and team ID."
         exit 1
@@ -226,7 +226,7 @@ if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ ! -z
 fi 
 
 KEYCHAIN=""
-if [ ! -z $TEMP_KEYCHAIN ]; then
+if [ ! -z "$TEMP_KEYCHAIN" ]; then
     echo "Using a temporary keychain"
     [ -e "$TEMP_KEYCHAIN" ] && rm "$TEMP_KEYCHAIN"
     security create-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
