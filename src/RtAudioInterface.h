@@ -87,9 +87,8 @@ class RtAudioInterface : public AudioInterface
     //------------------------------------------------------------------
 
    private:
-    int RtAudioCallback(bool isOutput, bool isInput, void* outputBuffer,
-                        void* inputBuffer, unsigned int nFrames, double streamTime,
-                        RtAudioStreamStatus status, std::string deviceName);
+    int RtAudioCallback(void* outputBuffer, void* inputBuffer, unsigned int nFrames,
+                        double streamTime, RtAudioStreamStatus status);
     static int wrapperRtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double streamTime,
                                       RtAudioStreamStatus status, void* userData);
@@ -102,18 +101,9 @@ class RtAudioInterface : public AudioInterface
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
-        mOutBuffer;        ///< Vector of Output buffer/channel to write to JACK
-    RtAudio* mRtAudio;     ///< RtAudio class if the input and output device are the same
-    RtAudio* mRtAudioIn;   ///< RtAudio class
-    RtAudio* mRtAudioOut;  ///< RtAudio class
+        mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
+    RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
-
-    QQueue<void*> mInputBuffers;
-    QQueue<void*> mOutputBuffers;
-
-    std::tuple<RtAudioInterface*, bool, bool, std::string> mUserData;
-    std::tuple<RtAudioInterface*, bool, bool, std::string> mUserDataOut;
-    std::tuple<RtAudioInterface*, bool, bool, std::string> mUserDataIn;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__
