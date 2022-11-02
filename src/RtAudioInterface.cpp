@@ -190,7 +190,7 @@ void RtAudioInterface::setup(bool verbose)
     if (api_in == api_out) {
         mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
     } else {
-        return;
+        mRtAudio = NULL;
     }
 
     RtAudio::StreamParameters in_params, out_params;
@@ -366,7 +366,9 @@ void RtAudioInterface::RtAudioErrorCallback(RtAudioError::Type type,
 int RtAudioInterface::startProcess() const
 {
     try {
-        mRtAudio->startStream();
+        if (mRtAudio != NULL) {
+            mRtAudio->startStream();
+        }
     } catch (RtAudioError& e) {
         std::cout << e.getMessage() << '\n' << std::endl;
         return (-1);
@@ -378,7 +380,9 @@ int RtAudioInterface::startProcess() const
 int RtAudioInterface::stopProcess() const
 {
     try {
-        mRtAudio->closeStream();
+        if (mRtAudio != NULL) {
+            mRtAudio->closeStream();
+        }
     } catch (RtAudioError& e) {
         std::cout << e.getMessage() << '\n' << std::endl;
         return (-1);
