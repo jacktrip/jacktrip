@@ -12,18 +12,26 @@ USERNAME=""
 PASSWORD=""
 TEAM_ID=""
 KEY_STORE="AC_PASSWORD"
+TEMP_KEYCHAIN=""
+USE_DEFAULT_KEYCHAIN=false
 BINARY="../builddir/jacktrip"
 PSI=false
 
 OPTIND=1
 
-while getopts ":inhqc:d:u:p:t:b:" opt; do
+while getopts ":inhqklc:d:u:p:t:b:" opt; do
     case $opt in
       i)
         BUILD_INSTALLER=true
         ;;
       n)
         NOTARIZE=true
+        ;;
+      k)
+        TEMP_KEYCHAIN="$(pwd)/notarytool_temp.db"
+        ;;
+      l)
+        USE_DEFAULT_KEYCHAIN=true
         ;;
       c)
         CERTIFICATE=$OPTARG
@@ -62,16 +70,22 @@ while getopts ":inhqc:d:u:p:t:b:" opt; do
         echo " -n                 Send a notarization request to Apple. (Only takes effect if building an installer.)"
         echo " -c <certname>      Name of the developer certificate to use for code signing. (No signing by default.)"
         echo " -d <certname>      Name of the certificate to use for package signing. (No signing by default.)"
+        echo
+        echo "Important: If supplying one of the next three options, you must supply all of them."
         echo " -u <username>      Apple ID username (email address) for installer notarization."
         echo " -p <password>      App specific password for installer notarization."
-        echo " -t <teamid>        Team ID for notarization. (Only required if you belong to multiple dev teams.)"
+        echo " -t <teamid>        Team ID for notarization."
+        echo
+        echo " -k                 Use a temporary keychain to store notarization credentials. (Overrides -l.)"
+        echo " -l                 Use the default keychain instead of the login keychain to store credentials."
         echo " -h                 Display this help screen and exit."
         echo
         echo "By default, appname is set to JackTrip and bundlename is org.jacktrip.jacktrip."
         echo "(These should be left as is for official builds.)"
         echo
-        echo "The username, password, and team ID are saved in the keychain by notarytool."
-        echo "They only need to be supplied once, or in the eventh that you need to change them."
+        echo "The username, password, and team ID are saved in the login keychain by notarytool."
+        echo "They only need to be supplied once, or in the event that you need to change them."
+        echo "(They need to be supplied every time if you opt to use a temporary keychain.)"
  
         exit 0
         ;;
@@ -129,7 +143,7 @@ if [ ! -z "$DYNAMIC_QT" ]; then
         elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix $QT_VERSION) ]; then
             DEPLOY_CMD="$(brew --prefix $QT_VERSION)/bin/macdeployqt"
         else
-            echo "The Qt bin folder needs to be in your PATH for this script to work."
+            echo "Error: The Qt bin folder needs to be in your PATH for this script to work."
             exit 1
         fi
     fi
@@ -147,7 +161,7 @@ fi
 [ $BUILD_INSTALLER = true ] || exit 0
 
 # If you have Packages installed, you can build an installer for the newly created app bundle.
-[ -z $(which packagesbuild) ] && { echo "You need to have Packages installed to build a package."; exit 1; }
+[ -z $(which packagesbuild) ] && { echo "Error: You need to have Packages installed to build a package."; exit 1; }
 
 if [ $PSI = true ]; then
     cp "package/postinstall.sh" "package/postinstall.sh.bak"
@@ -204,25 +218,46 @@ fi
 [ $NOTARIZE = true ] || exit 0
 
 # Submit a notarization request to apple if we've chosen to and signed our package.
-if [ $SIGNED = false ] ; then
+if [ $SIGNED = false ]; then
     echo "Not sending notarization request: package not signed."
     exit 1
 fi
 
-if [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
-    # We have new credentials. Store them in the keychain so we can use them.
-    TEAM=""
-    if [ ! -z "$TEAM_ID" ]; then
-        TEAM=" --team-id $TEAM_ID"
+if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ ! -z "$TEMP_KEYCHAIN" ]; then
+    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$TEAM_ID" ]; then
+        echo "Error: Missing credentials. Make sure you supply a username, password and team ID."
+        exit 1
     fi
-    xcrun notarytool store-credentials "$KEY_STORE" --apple-id "$USERNAME" --password "$PASSWORD"$TEAM
+fi 
+
+KEYCHAIN=""
+if [ ! -z "$TEMP_KEYCHAIN" ]; then
+    echo "Using a temporary keychain"
+    [ -e "$TEMP_KEYCHAIN" ] && rm "$TEMP_KEYCHAIN"
+    security create-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
+    security set-keychain-settings -lut 3600 "$TEMP_KEYCHAIN"
+    security unlock-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
+    KEYCHAIN=" --keychain \"$TEMP_KEYCHAIN\""
+elif [ $USE_DEFAULT_KEYCHAIN = true ]; then
+    echo "Using the default keychain"
+    DEFAULT_KEYCHAIN=$(security default-keychain | cut -d '"' -f2)
+    KEYCHAIN=" --keychain \"$DEFAULT_KEYCHAIN\""
+fi
+
+if [ ! -z "$USERNAME" ]; then
+    # We have new credentials. Store them in the keychain so we can use them.
+    ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\" --team-id \"$TEAM_ID\"$KEYCHAIN"
+    echo $ARGS | xargs xcrun
 fi
 
 echo "Sending notarization request"
-xcrun notarytool submit "package/build/$APPNAME.pkg" --keychain-profile "$KEY_STORE" --wait
+ARGS="notarytool submit \"package/build/$APPNAME.pkg\" --keychain-profile \"$KEY_STORE\" --wait$KEYCHAIN"
+echo $ARGS | xargs xcrun
 if [ $? -eq 0 ]; then
+    [ ! -z "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
-    echo "Notarization failed"
+    [ ! -z "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
+    echo "Error: Notarization failed"
     exit 1
 fi
