@@ -58,7 +58,8 @@ moc_h = ['src/DataProtocol.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/Auth.h',
-	'src/SslServer.h']
+	'src/SslServer.h',
+	'externals/rtaudio/RtAudio.h']
 
 ui_h = []
 qres = []
