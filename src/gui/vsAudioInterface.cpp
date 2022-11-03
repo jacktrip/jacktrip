@@ -147,7 +147,7 @@ void VsAudioInterface::setupAudio()
             m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
 
             std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
-            std::string devicesErrorMsg = m_audioInterface->getDevicesErrorMsg();
+            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
 
             if (devicesWarningMsg != "") {
                 std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
@@ -179,7 +179,7 @@ void VsAudioInterface::setupAudio()
             m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
 
             std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
-            std::string devicesErrorMsg = m_audioInterface->getDevicesErrorMsg();
+            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
 
             if (devicesWarningMsg != "") {
                 std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
