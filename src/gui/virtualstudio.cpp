@@ -1379,7 +1379,6 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
 void VirtualStudio::updatedDevicesErrorMsg(const QString& msg)
 {
-    std::cout << "HANDLER 1: " << msg.toStdString() << std::endl;
     m_devicesErrorMsg = msg;
     emit devicesErrorChanged();
     return;
@@ -1387,7 +1386,6 @@ void VirtualStudio::updatedDevicesErrorMsg(const QString& msg)
 
 void VirtualStudio::updatedDevicesWarningMsg(const QString& msg)
 {
-    std::cout << "HANDLER 2: " << msg.toStdString() << std::endl;
     m_devicesWarningMsg = msg;
     emit devicesWarningChanged();
     return;

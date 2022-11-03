@@ -139,16 +139,26 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
 
-            connect(m_audioInterface.data(), &AudioInterface::devicesErrorMsgChanged,
-                    this, &VsAudioInterface::updatedDevicesErrorMsg);
-            connect(m_audioInterface.data(), &AudioInterface::devicesWarningMsgChanged,
-                    this, &VsAudioInterface::updatedDevicesWarningMsg);
             m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
             m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
             // Setup might have changed buffer size
             m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+
+            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
+            std::string devicesErrorMsg = m_audioInterface->getDevicesErrorMsg();
+
+            if (devicesWarningMsg != "") {
+                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            }
+
+            if (devicesErrorMsg != "") {
+                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+            }
+
 #endif
 #endif
         } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
@@ -161,16 +171,25 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
 
-            connect(m_audioInterface.data(), &AudioInterface::devicesErrorMsgChanged,
-                    this, &VsAudioInterface::updatedDevicesErrorMsg);
-            connect(m_audioInterface.data(), &AudioInterface::devicesWarningMsgChanged,
-                    this, &VsAudioInterface::updatedDevicesWarningMsg);
             m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
             m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
             // Setup might have changed buffer size
             m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+
+            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
+            std::string devicesErrorMsg = m_audioInterface->getDevicesErrorMsg();
+
+            if (devicesWarningMsg != "") {
+                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            }
+
+            if (devicesErrorMsg != "") {
+                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+            }
 #endif
         }
 
@@ -228,18 +247,6 @@ void VsAudioInterface::replaceProcess()
 void VsAudioInterface::processMeterMeasurements(QVector<float> values)
 {
     emit newVolumeMeterMeasurements(values);
-}
-
-void VsAudioInterface::updatedDevicesErrorMsg(const QString& msg)
-{
-    emit devicesErrorMsgChanged(msg);
-    return;
-}
-
-void VsAudioInterface::updatedDevicesWarningMsg(const QString& msg)
-{
-    emit devicesWarningMsgChanged(msg);
-    return;
 }
 
 void VsAudioInterface::addInputPlugin(ProcessPlugin* plugin)
@@ -408,4 +415,16 @@ void VsAudioInterface::setOutputMuted(bool muted)
     settings.setValue(QStringLiteral("OutMuted"), m_outMuted ? 1 : 0);
     settings.endGroup();
     emit updatedOutputMuted(muted);
+}
+
+void VsAudioInterface::updateDevicesErrorMsg(const QString& msg)
+{
+    emit devicesErrorMsgChanged(msg);
+    return;
+}
+
+void VsAudioInterface::updateDevicesWarningMsg(const QString& msg)
+{
+    emit devicesWarningMsgChanged(msg);
+    return;
 }

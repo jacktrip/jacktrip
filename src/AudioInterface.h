@@ -216,6 +216,9 @@ class AudioInterface : public QObject
      * \return Sample Rate in Hz
      */
     static int getSampleRateFromType(samplingRateT rate_type);
+    std::string getDevicesWarningMsg();
+    std::string getDevicesErrorMsg();
+
     //------------------------------------------------------------------
 
    private:
@@ -271,10 +274,6 @@ class AudioInterface : public QObject
 
     std::string mWarningMsg;
     std::string mErrorMsg;
-
-   signals:
-    void devicesWarningMsgChanged(const QString msg);
-    void devicesErrorMsgChanged(const QString msg);
 };
 
 #endif  // __AUDIOINTERFACE_H__

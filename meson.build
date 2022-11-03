@@ -45,9 +45,6 @@ src = [	'src/DataProtocol.cpp',
 
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
-	'src/AudioInterface.h',	
-	'src/RtAudioInterface.h',
-	'src/JackAudioInterface.h',
 	'src/ProcessPlugin.h',
 	'src/Meter.h',
 	'src/Volume.h',
@@ -58,8 +55,7 @@ moc_h = ['src/DataProtocol.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/Auth.h',
-	'src/SslServer.h',
-	'externals/rtaudio/RtAudio.h']
+	'src/SslServer.h']
 
 ui_h = []
 qres = []
