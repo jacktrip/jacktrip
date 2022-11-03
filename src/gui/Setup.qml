@@ -39,7 +39,7 @@ Item {
     property string checkboxPressedStroke: "#007AFF"
 
     property bool currShowWarnings: virtualstudio.showWarnings
-    property string warningScreen: virtualstudio.showWarnings ? "ethernet" : "acknowledged"
+    property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
 
     Item {
         id: ethernetWarningItem
@@ -264,7 +264,13 @@ Item {
                     color: saveButtonShadow
                 }
             }
-            onClicked: { virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged" }
+            onClicked: { 
+                if (permissions.micPermission == "unknown") {
+                    virtualstudio.showWarnings = currShowWarnings; warningScreen = "microphone"
+                } else {
+                    virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged"
+                }
+            }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
@@ -319,166 +325,191 @@ Item {
         }
     }
 
-    // Item {
-    //     id: headphoneWarningItem
-    //     width: parent.width; height: parent.height
-    //     visible: warningScreen == "headphones"
+    Item {
+        id: requestMicPermissionsItem
+        width: parent.width; height: parent.height
+        visible: warningScreen == "microphone"
 
-    //     Image {
-    //         id: headphoneWarningLogo
-    //         source: "headphones.svg"
-    //         sourceSize: Qt.size( img.sourceSize.width*5, img.sourceSize.height*5 )
-    //         Image {
-    //             id: img
-    //             source: parent.source
-    //             width: 0
-    //             height: 0
-    //         }
-    //         width: 118
-    //         height: 128
-    //         y: 60
-    //         anchors.horizontalCenter: parent.horizontalCenter
-    //     }
+        Image {
+            id: microphonePrompt
+            source: "Prompt.svg"
+            width: 260
+            height: 250
+            y: 60
+            anchors.horizontalCenter: parent.horizontalCenter
+            sourceSize: Qt.size(microphonePrompt.width,microphonePrompt.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
 
-    //     Colorize {
-    //         anchors.fill: headphoneWarningLogo
-    //         source: headphoneWarningLogo
-    //         hue: 0
-    //         saturation: 0
-    //         lightness: imageLightnessValue
-    //     }
+        Image {
+            source: "logo.svg"
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: microphonePrompt.top
+            anchors.topMargin: 18 * virtualstudio.uiScale
+            width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
+        }
 
-    //     Text {
-    //         id: headphoneWarningHeader
-    //         text: "Use Wired Headphones"
-    //         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-    //         color: textColour
-    //         anchors.horizontalCenter: parent.horizontalCenter
-    //         anchors.top: headphoneWarningLogo.bottom
-    //         anchors.topMargin: 32 * virtualstudio.uiScale
-    //     }
+        Colorize {
+            anchors.fill: microphonePrompt
+            source: microphonePrompt
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
 
-    //     Text {
-    //         id: headphoneWarningSubheader1
-    //         text: "JackTrip requires the use of wired headphones."
-    //         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-    //         color: textColour
-    //         width: 400
-    //         wrapMode: Text.Wrap
-    //         horizontalAlignment: Text.AlignHCenter
-    //         anchors.horizontalCenter: parent.horizontalCenter
-    //         anchors.top: headphoneWarningHeader.bottom
-    //         anchors.topMargin: 32 * virtualstudio.uiScale
-    //     }
+        Button {
+            id: showPromptButton
+            width: 110 * virtualstudio.uiScale
+            height: 28 * virtualstudio.uiScale
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: showPromptButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                border.width: 1
+                border.color: showPromptButton.down ? saveButtonPressedStroke : saveButtonStroke
+                layer.enabled: showPromptButton.hovered && !showPromptButton.down
+            }
+            onClicked: { 
+                // show prompt
+            }
+            anchors.right: microphonePrompt.right
+            anchors.rightMargin: 14.5 * virtualstudio.uiScale
+            anchors.bottomMargin: 18 * virtualstudio.uiScale
+            anchors.bottom: microphonePrompt.bottom
+            Text {
+                text: "OK"
+                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.weight: Font.Bold
+                color: saveButtonText
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
 
-    //     Text {
-    //         id: headphoneWarningSubheader2
-    //         text: "Using speakers can cause loud feedback loops."
-    //         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-    //         color: textColour
-    //         width: 400
-    //         wrapMode: Text.Wrap
-    //         horizontalAlignment: Text.AlignHCenter
-    //         anchors.horizontalCenter: parent.horizontalCenter
-    //         anchors.top: headphoneWarningSubheader1.bottom
-    //         anchors.topMargin: 24 * virtualstudio.uiScale
-    //     }
+        Text {
+            id: micPermissionsHeader
+            text: "JackTrip needs your sounds!"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: microphonePrompt.bottom
+            anchors.topMargin: 48 * virtualstudio.uiScale
+        }
 
-    //     Text {
-    //         id: headphoneWarningSubheader3
-    //         text: "Wireless headphones add way too much latency."
-    //         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-    //         color: textColour
-    //         width: 400
-    //         wrapMode: Text.Wrap
-    //         horizontalAlignment: Text.AlignHCenter
-    //         anchors.horizontalCenter: parent.horizontalCenter
-    //         anchors.top: headphoneWarningSubheader2.bottom
-    //         anchors.topMargin: 24 * virtualstudio.uiScale
-    //     }
+        Text {
+            id: micPermissionsSubheader1
+            text: "JackTrip requires permission to use your microphone."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: micPermissionsHeader.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
 
-    //     Button {
-    //         id: okButtonHeadphones
-    //         background: Rectangle {
-    //             radius: 6 * virtualstudio.uiScale
-    //             color: okButtonHeadphones.down ? saveButtonPressedColour : saveButtonBackgroundColour
-    //             border.width: 1
-    //             border.color: okButtonHeadphones.down ? saveButtonPressedStroke : saveButtonStroke
-    //             layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
-    //             layer.effect: DropShadow {
-    //                 horizontalOffset: 1 * virtualstudio.uiScale
-    //                 verticalOffset: 1 * virtualstudio.uiScale
-    //                 radius: 8.0 * virtualstudio.uiScale
-    //                 samples: 17
-    //                 color: saveButtonShadow
-    //             }
-    //         }
-    //         onClicked: { virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged" }
-    //         anchors.right: parent.right
-    //         anchors.rightMargin: 16 * virtualstudio.uiScale
-    //         anchors.bottomMargin: 16 * virtualstudio.uiScale
-    //         anchors.bottom: parent.bottom
-    //         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-    //         Text {
-    //             text: "OK"
-    //             font.family: "Poppins"
-    //             font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-    //             font.weight: Font.Bold
-    //             color: saveButtonText
-    //             anchors.horizontalCenter: parent.horizontalCenter
-    //             anchors.verticalCenter: parent.verticalCenter
-    //         }
-    //     }
-
-    //     CheckBox {
-    //         id: showHeadphonesWarningCheckbox
-    //         checked: currShowWarnings
-    //         text: qsTr("Show warnings again next time")
-    //         anchors.right: okButtonHeadphones.left
-    //         anchors.rightMargin: 16 * virtualstudio.uiScale
-    //         anchors.verticalCenter: okButtonHeadphones.verticalCenter
-    //         onClicked: { currShowWarnings = showHeadphonesWarningCheckbox.checkState == Qt.Checked }
-    //         indicator: Rectangle {
-    //             implicitWidth: 16 * virtualstudio.uiScale
-    //             implicitHeight: 16 * virtualstudio.uiScale
-    //             x: showHeadphonesWarningCheckbox.leftPadding
-    //             y: parent.height / 2 - height / 2
-    //             radius: 3 * virtualstudio.uiScale
-    //             border.color: showHeadphonesWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
-
-    //             Rectangle {
-    //                 width: 10 * virtualstudio.uiScale
-    //                 height: 10 * virtualstudio.uiScale
-    //                 x: 3 * virtualstudio.uiScale
-    //                 y: 3 * virtualstudio.uiScale
-    //                 radius: 2 * virtualstudio.uiScale
-    //                 color: showHeadphonesWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
-    //                 visible: showHeadphonesWarningCheckbox.checked
-    //             }
-    //         }
-    //         contentItem: Text {
-    //             text: showHeadphonesWarningCheckbox.text
-    //             font.family: "Poppins"
-    //             font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-    //             anchors.horizontalCenter: parent.horizontalCenter
-    //             anchors.verticalCenter: parent.verticalCenter
-    //             leftPadding: showHeadphonesWarningCheckbox.indicator.width + showHeadphonesWarningCheckbox.spacing
-    //             color: textColour
-    //         }
-    //     }
-    // }
+        Text {
+            id: micPermissionsSubheader2
+            text: "Click ‘OK’ to give JackTrip access to your microphone, instrument, or other audio device."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: micPermissionsSubheader1.bottom
+            anchors.topMargin: 24 * virtualstudio.uiScale
+        }
+    }
 
     Item {
         id: noMicItem
         width: parent.width; height: parent.height
         visible: warningScreen == "acknowledged" && permissions.micPermission == 'denied'
 
+        Image {
+            id: noMic
+            source: "Prompt.svg"
+            width: 260
+            height: 250
+            y: 60
+            anchors.horizontalCenter: parent.horizontalCenter
+            sourceSize: Qt.size(noMic.width,noMic.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
+
+        Colorize {
+            anchors.fill: noMic
+            source: noMic
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
+        // Button {
+        //     id: showPromptButton
+        //     width: 110 * virtualstudio.uiScale
+        //     height: 28 * virtualstudio.uiScale
+        //     background: Rectangle {
+        //         radius: 6 * virtualstudio.uiScale
+        //         color: showPromptButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
+        //         border.width: 1
+        //         border.color: showPromptButton.down ? saveButtonPressedStroke : saveButtonStroke
+        //         layer.enabled: showPromptButton.hovered && !showPromptButton.down
+        //     }
+        //     onClicked: { 
+        //         // show prompt
+        //     }
+        //     anchors.right: microphonePrompt.right
+        //     anchors.rightMargin: 14.5 * virtualstudio.uiScale
+        //     anchors.bottomMargin: 18 * virtualstudio.uiScale
+        //     anchors.bottom: microphonePrompt.bottom
+        //     Text {
+        //         text: "OK"
+        //         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+        //         font.weight: Font.Bold
+        //         color: saveButtonText
+        //         anchors.horizontalCenter: parent.horizontalCenter
+        //         anchors.verticalCenter: parent.verticalCenter
+        //     }
+        // }
+
         Text {
-            id: noMicPageTitle
-            x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
-            text: permissions.micPermission
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
+            id: noMicHeader
+            text: "JackTrip can't hear you!"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: noMic.bottom
+            anchors.topMargin: 48 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: noMicSubheader1
+            text: "JackTrip requires permission to use your microphone."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: noMicHeader.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: noMicSubheader2
+            text: "Click 'Go to Settings' to give JackTrip permission to access your microphone, instrument, or other audio device."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: noMicSubheader1.bottom
+            anchors.topMargin: 24 * virtualstudio.uiScale
         }
     }
 

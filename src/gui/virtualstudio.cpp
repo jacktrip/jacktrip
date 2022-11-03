@@ -1161,7 +1161,7 @@ void VirtualStudio::slotAuthSucceded()
     m_device = new VsDevice(m_authenticator.data(), m_testMode);
     m_device->registerApp();
 
-    if (m_permissions->micPermission() == 'granted') {
+    if (m_permissions->micPermission() == "granted") {
         startAudio();
     }
 
