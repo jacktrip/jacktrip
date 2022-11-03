@@ -38,7 +38,6 @@
 #ifndef __AUDIOINTERFACE_H__
 #define __AUDIOINTERFACE_H__
 
-#include <QObject>
 #include <QVarLengthArray>
 #include <QVector>
 
@@ -54,10 +53,8 @@ class JackTrip;
 
 /** \brief Base Class that provides an interface with audio
  */
-class AudioInterface : public QObject
+class AudioInterface
 {
-    Q_OBJECT;
-
    public:
     /// \brief Enum for Audio Resolution in bits
     enum audioBitResolutionT {

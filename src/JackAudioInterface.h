@@ -47,7 +47,6 @@
 #endif
 
 #include <QMutex>
-#include <QObject>
 #include <QVarLengthArray>
 #include <QVector>
 #include <functional>  //for mem_fun_ref
@@ -66,8 +65,6 @@
  */
 class JackAudioInterface : public AudioInterface
 {
-    Q_OBJECT;
-
    public:
     /** \brief The class constructor
      * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
