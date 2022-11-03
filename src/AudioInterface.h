@@ -272,7 +272,7 @@ class AudioInterface : public QObject
     std::string mWarningMsg;
     std::string mErrorMsg;
 
-  signals:
+   signals:
     void devicesWarningMsgChanged(const QString msg);
     void devicesErrorMsgChanged(const QString msg);
 };

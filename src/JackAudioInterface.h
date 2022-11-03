@@ -46,8 +46,8 @@
 #include <jack/jack.h>
 #endif
 
-#include <QObject>
 #include <QMutex>
+#include <QObject>
 #include <QVarLengthArray>
 #include <QVector>
 #include <functional>  //for mem_fun_ref

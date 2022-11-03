@@ -342,7 +342,7 @@ class VirtualStudio : public QObject
     QTimer m_outputClipTimer;
 
     QString m_devicesWarningMsg = QStringLiteral("");
-    QString m_devicesErrorMsg = QStringLiteral("");
+    QString m_devicesErrorMsg   = QStringLiteral("");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
