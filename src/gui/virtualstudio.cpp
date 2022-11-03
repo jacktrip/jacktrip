@@ -1161,42 +1161,9 @@ void VirtualStudio::slotAuthSucceded()
     m_device = new VsDevice(m_authenticator.data(), m_testMode);
     m_device->registerApp();
 
-    if (m_vsAudioInterface.isNull()) {
-        m_vsAudioInterface.reset(new VsAudioInterface());
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("audioInterface"), m_vsAudioInterface.data());
+    if (m_permissions->micPermission() == 'granted') {
+        startAudio();
     }
-#ifdef RT_AUDIO
-    m_vsAudioInterface->setInputDevice(m_inputDevice);
-    m_vsAudioInterface->setOutputDevice(m_outputDevice);
-    m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
-#endif
-    m_vsAudioInterface->setupAudio();
-
-    connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
-            &VsAudioInterface::setInputDevice);
-    connect(this, &VirtualStudio::inputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setInputDevice);
-    connect(this, &VirtualStudio::outputDeviceChanged, m_vsAudioInterface.data(),
-            &VsAudioInterface::setOutputDevice);
-    connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setOutputDevice);
-    connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
-            &VsAudioInterface::setAudioInterfaceMode);
-    connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),
-            &VsAudioInterface::triggerPlayback);
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::newVolumeMeterMeasurements,
-            this, &VirtualStudio::updatedInputVuMeasurements);
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::errorToProcess, this,
-            &VirtualStudio::processError);
-
-    m_vsAudioInterface->setupPlugins();
-
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"),
-        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-    m_vsAudioInterface->startProcess();
 
     if (m_userId.isEmpty()) {
         getUserId();
@@ -1774,6 +1741,46 @@ void VirtualStudio::getUserMetadata()
         emit userMetadataChanged();
         reply->deleteLater();
     });
+}
+
+void VirtualStudio::startAudio()
+{
+    if (m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface.reset(new VsAudioInterface());
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("audioInterface"), m_vsAudioInterface.data());
+    }
+#ifdef RT_AUDIO
+    m_vsAudioInterface->setInputDevice(m_inputDevice);
+    m_vsAudioInterface->setOutputDevice(m_outputDevice);
+    m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
+#endif
+    m_vsAudioInterface->setupAudio();
+
+    connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setInputDevice);
+    connect(this, &VirtualStudio::inputDeviceSelected, m_vsAudioInterface.data(),
+            &VsAudioInterface::setInputDevice);
+    connect(this, &VirtualStudio::outputDeviceChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setOutputDevice);
+    connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
+            &VsAudioInterface::setOutputDevice);
+    connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setAudioInterfaceMode);
+    connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),
+            &VsAudioInterface::triggerPlayback);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::newVolumeMeterMeasurements,
+            this, &VirtualStudio::updatedInputVuMeasurements);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::errorToProcess, this,
+            &VirtualStudio::processError);
+
+    m_vsAudioInterface->setupPlugins();
+
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("inputMeterModel"),
+        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
+
+    m_vsAudioInterface->startProcess();
 }
 
 #ifdef RT_AUDIO

@@ -38,7 +38,7 @@
 #include <Foundation/Foundation.h>
 #include <AVFoundation/AVFoundation.h>
 
-bool VsMacPermissions::hasMicPermission()
+QString VsMacPermissions::micPermission()
 {
     return m_micPermission;
 }
@@ -51,7 +51,7 @@ void VsMacPermissions::getMicPermission()
         case AVAuthorizationStatusAuthorized:
         {
             // The user has previously granted access.
-            setMicPermission(true);
+            setMicPermission(QStringLiteral("granted"));
             break;
         }
         case AVAuthorizationStatusNotDetermined:
@@ -60,26 +60,31 @@ void VsMacPermissions::getMicPermission()
             [AVCaptureDevice requestAccessForMediaType:AVMediaTypeAudio completionHandler:^(BOOL granted) {
                 if (granted) {
                     //do something eventually
-                    setMicPermission((bool)granted);
+                    if (granted) {
+                        setMicPermission(QStringLiteral("granted"));
+                    } else {
+                        setMicPermission(QStringLiteral("denied"));
+                    }
                 }
             }];
+            setMicPermission(QStringLiteral("unknown"));
             break;
         }
         case AVAuthorizationStatusDenied:
         {
             // The user has previously denied access.
-            setMicPermission(false);
+            setMicPermission(QStringLiteral("denied"));
         }
         case AVAuthorizationStatusRestricted:
         {
             // The user can't grant access due to restrictions.
-            setMicPermission(false);
+            setMicPermission(QStringLiteral("denied"));
         }
     }
 }
 
-void VsMacPermissions::setMicPermission(bool granted)
+void VsMacPermissions::setMicPermission(QString status)
 {
-    m_micPermission = granted;
+    m_micPermission = status;
     emit micPermissionUpdated();
 }

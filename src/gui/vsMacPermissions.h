@@ -41,25 +41,26 @@
 
 #include <QDebug>
 #include <QObject>
+#include <QString>
 
 class VsMacPermissions : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool hasMicPermission READ hasMicPermission NOTIFY micPermissionUpdated)
+    Q_PROPERTY(QString micPermission READ micPermission NOTIFY micPermissionUpdated)
 
    public:
     VsMacPermissions(){};
     ~VsMacPermissions(){};
 
-    bool hasMicPermission();
+    QString micPermission();
     void getMicPermission();
-    void setMicPermission(bool granted);
+    void setMicPermission(QString status);
 
    signals:
     void micPermissionUpdated();
 
    private:
-    bool m_micPermission = false;
+    QString m_micPermission = "unknown";
 };
 
 #endif  // __VSMACPERMISSIONS_H__

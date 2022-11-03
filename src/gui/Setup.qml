@@ -319,15 +319,164 @@ Item {
         }
     }
 
+    // Item {
+    //     id: headphoneWarningItem
+    //     width: parent.width; height: parent.height
+    //     visible: warningScreen == "headphones"
+
+    //     Image {
+    //         id: headphoneWarningLogo
+    //         source: "headphones.svg"
+    //         sourceSize: Qt.size( img.sourceSize.width*5, img.sourceSize.height*5 )
+    //         Image {
+    //             id: img
+    //             source: parent.source
+    //             width: 0
+    //             height: 0
+    //         }
+    //         width: 118
+    //         height: 128
+    //         y: 60
+    //         anchors.horizontalCenter: parent.horizontalCenter
+    //     }
+
+    //     Colorize {
+    //         anchors.fill: headphoneWarningLogo
+    //         source: headphoneWarningLogo
+    //         hue: 0
+    //         saturation: 0
+    //         lightness: imageLightnessValue
+    //     }
+
+    //     Text {
+    //         id: headphoneWarningHeader
+    //         text: "Use Wired Headphones"
+    //         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+    //         color: textColour
+    //         anchors.horizontalCenter: parent.horizontalCenter
+    //         anchors.top: headphoneWarningLogo.bottom
+    //         anchors.topMargin: 32 * virtualstudio.uiScale
+    //     }
+
+    //     Text {
+    //         id: headphoneWarningSubheader1
+    //         text: "JackTrip requires the use of wired headphones."
+    //         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+    //         color: textColour
+    //         width: 400
+    //         wrapMode: Text.Wrap
+    //         horizontalAlignment: Text.AlignHCenter
+    //         anchors.horizontalCenter: parent.horizontalCenter
+    //         anchors.top: headphoneWarningHeader.bottom
+    //         anchors.topMargin: 32 * virtualstudio.uiScale
+    //     }
+
+    //     Text {
+    //         id: headphoneWarningSubheader2
+    //         text: "Using speakers can cause loud feedback loops."
+    //         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+    //         color: textColour
+    //         width: 400
+    //         wrapMode: Text.Wrap
+    //         horizontalAlignment: Text.AlignHCenter
+    //         anchors.horizontalCenter: parent.horizontalCenter
+    //         anchors.top: headphoneWarningSubheader1.bottom
+    //         anchors.topMargin: 24 * virtualstudio.uiScale
+    //     }
+
+    //     Text {
+    //         id: headphoneWarningSubheader3
+    //         text: "Wireless headphones add way too much latency."
+    //         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+    //         color: textColour
+    //         width: 400
+    //         wrapMode: Text.Wrap
+    //         horizontalAlignment: Text.AlignHCenter
+    //         anchors.horizontalCenter: parent.horizontalCenter
+    //         anchors.top: headphoneWarningSubheader2.bottom
+    //         anchors.topMargin: 24 * virtualstudio.uiScale
+    //     }
+
+    //     Button {
+    //         id: okButtonHeadphones
+    //         background: Rectangle {
+    //             radius: 6 * virtualstudio.uiScale
+    //             color: okButtonHeadphones.down ? saveButtonPressedColour : saveButtonBackgroundColour
+    //             border.width: 1
+    //             border.color: okButtonHeadphones.down ? saveButtonPressedStroke : saveButtonStroke
+    //             layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
+    //             layer.effect: DropShadow {
+    //                 horizontalOffset: 1 * virtualstudio.uiScale
+    //                 verticalOffset: 1 * virtualstudio.uiScale
+    //                 radius: 8.0 * virtualstudio.uiScale
+    //                 samples: 17
+    //                 color: saveButtonShadow
+    //             }
+    //         }
+    //         onClicked: { virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged" }
+    //         anchors.right: parent.right
+    //         anchors.rightMargin: 16 * virtualstudio.uiScale
+    //         anchors.bottomMargin: 16 * virtualstudio.uiScale
+    //         anchors.bottom: parent.bottom
+    //         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+    //         Text {
+    //             text: "OK"
+    //             font.family: "Poppins"
+    //             font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+    //             font.weight: Font.Bold
+    //             color: saveButtonText
+    //             anchors.horizontalCenter: parent.horizontalCenter
+    //             anchors.verticalCenter: parent.verticalCenter
+    //         }
+    //     }
+
+    //     CheckBox {
+    //         id: showHeadphonesWarningCheckbox
+    //         checked: currShowWarnings
+    //         text: qsTr("Show warnings again next time")
+    //         anchors.right: okButtonHeadphones.left
+    //         anchors.rightMargin: 16 * virtualstudio.uiScale
+    //         anchors.verticalCenter: okButtonHeadphones.verticalCenter
+    //         onClicked: { currShowWarnings = showHeadphonesWarningCheckbox.checkState == Qt.Checked }
+    //         indicator: Rectangle {
+    //             implicitWidth: 16 * virtualstudio.uiScale
+    //             implicitHeight: 16 * virtualstudio.uiScale
+    //             x: showHeadphonesWarningCheckbox.leftPadding
+    //             y: parent.height / 2 - height / 2
+    //             radius: 3 * virtualstudio.uiScale
+    //             border.color: showHeadphonesWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
+
+    //             Rectangle {
+    //                 width: 10 * virtualstudio.uiScale
+    //                 height: 10 * virtualstudio.uiScale
+    //                 x: 3 * virtualstudio.uiScale
+    //                 y: 3 * virtualstudio.uiScale
+    //                 radius: 2 * virtualstudio.uiScale
+    //                 color: showHeadphonesWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
+    //                 visible: showHeadphonesWarningCheckbox.checked
+    //             }
+    //         }
+    //         contentItem: Text {
+    //             text: showHeadphonesWarningCheckbox.text
+    //             font.family: "Poppins"
+    //             font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+    //             anchors.horizontalCenter: parent.horizontalCenter
+    //             anchors.verticalCenter: parent.verticalCenter
+    //             leftPadding: showHeadphonesWarningCheckbox.indicator.width + showHeadphonesWarningCheckbox.spacing
+    //             color: textColour
+    //         }
+    //     }
+    // }
+
     Item {
         id: noMicItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "acknowledged" && permissions.hasMicPermission != true
+        visible: warningScreen == "acknowledged" && permissions.micPermission == 'denied'
 
         Text {
             id: noMicPageTitle
             x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
-            text: permissions.hasMicPermission
+            text: permissions.micPermission
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
@@ -336,7 +485,7 @@ Item {
     Item {
         id: setupItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "acknowledged" && permissions.hasMicPermission == true
+        visible: warningScreen == "acknowledged" && permissions.micPermission == 'granted'
 
         Text {
             id: pageTitle
