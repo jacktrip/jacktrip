@@ -189,6 +189,7 @@ void RtAudioInterface::setup(bool verbose)
     delete rtAudioOut;
     if (api_in == api_out) {
         mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
+#ifdef _WIN32
         if (api_in != "asio") {
             AudioInterface::setDevicesWarningMsg(
                 "The selected devices don't support low latency. You can use them, but "
@@ -196,6 +197,7 @@ void RtAudioInterface::setup(bool verbose)
                 "from the manufacturer!");
             AudioInterface::setDevicesErrorMsg("");
         }
+#endif
     } else {
         AudioInterface::setDevicesWarningMsg("");
         AudioInterface::setDevicesErrorMsg(
