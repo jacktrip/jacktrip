@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.6",
+            "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
+            "download": {
+                "date": "2022-11-02T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.6-Linux-x64-binary.zip",
+                "downloadSize": 29837298,
+                "sha256": "25b15f3208521530b18e2096de722fefe5318149aa296610f8c5eec147586e0a"
+            }
+        },
+        {
             "version": "1.6.4",
             "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
             "download": {

@@ -950,6 +950,11 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
+        // Stop VsAudioInterface
+        if (!m_vsAudioInterface.isNull()) {
+            m_vsAudioInterface->closeAudio();
+        }
+
         // Setup output volume
         m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputVolumePlugin);
@@ -1072,6 +1077,19 @@ void VirtualStudio::disconnect()
         QMutexLocker locker(&m_refreshMutex);
         m_allowRefresh = true;
         m_refreshTimer.start();
+    }
+
+    // Start VsAudioInterface again
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->setupAudio();
+        m_vsAudioInterface->setupPlugins();
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("inputMeterModel"),
+            QVariant::fromValue(
+                QVector<float>(m_vsAudioInterface->getNumInputChannels())));
+
+        m_vsAudioInterface->startProcess();
     }
 }
 

@@ -1,5 +1,10 @@
+- Version: "1.6.6"
+  Date: 2022-11-01
+  Description:
+  - (fixed) Notarization scripts for macOS
+  - Note - this version replaces 1.6.5, as that release was mistakenly deleted
 - Version: "1.6.5"
-  Date: 2022-10-21
+  Date: 2022-10-28
   Description:
   - (added) Input/output volume control and input mute in VS
   - (added) Volume plugin
@@ -17,7 +22,6 @@
   - (fixed) logout freezing jacktrip
   - (fixed) NO_VS builds work without setting NO_UPDATER
   - (fixed) volume meter-related crash
-
 - Version: "1.6.4"
   Date: 2022-09-16
   Description:

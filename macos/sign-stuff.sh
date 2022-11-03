@@ -5,8 +5,7 @@ CERTIFICATE=""
 PACKAGE_CERT=""
 USERNAME=""
 PASSWORD=""
-# Only needed if you belong to more than one dev team
-ASC_PROVIDER=""
+TEAM_ID=""
 
 if [ -z $1 ]; then
 	echo "You need to provide a version number as an argument"
@@ -18,13 +17,13 @@ if [ ! -z $2 ]; then
 	SCRIPT_BRANCH="$2"
 fi
 
-CHECK=$(echo "$1" | sed "s/-/./g") 
+CHECK=$(echo "$1" | sed "s/-/./g")
 MAJOR=$(echo $CHECK | cut -d. -f1)
 MINOR=$(echo $CHECK | cut -d. -f2)
 REVISION=$(echo $CHECK | cut -d. -f3)
 
-if [ $MAJOR -le 1 ] && [ $MINOR -le 5 ] && [ $REVISION -lt 2 ] && [ -z "$SCRIPT_BRANCH" ]; then
-	echo "\033[1mVersion earlier than 1.5.2 detected\033[0m"
+if [ $MAJOR -le 1 ] && [ $MINOR -le 6 ] && [ $REVISION -lt 5 ] && [ -z "$SCRIPT_BRANCH" ]; then
+	echo "\033[1mVersion earlier than 1.6.5 detected\033[0m"
 	echo "\033[1mUsing assemble_app.sh script from dev branch\033[1m"
 	echo
 	SCRIPT_BRANCH="dev"
@@ -53,7 +52,7 @@ unzip -j binary.zip "JackTrip.app/Contents/MacOS/jacktrip" -d "$VERSION/builddir
 rm binary.zip
 echo "\n\033[1mBuilding installer\033[0m"
 cd "$VERSION/macos"
-if ./assemble_app.sh -in -c "$CERTIFICATE" -d "$PACKAGE_CERT" -u "$USERNAME" -p "$PASSWORD" -a "$ASC_PROVIDER"; then
+if ./assemble_app.sh -in -c "$CERTIFICATE" -d "$PACKAGE_CERT" -u "$USERNAME" -p "$PASSWORD" -t "$TEAM_ID"; then
 	echo "\n\033[1mCopying signed package to current directory and performing clean up\033[0m"
 	cp "package/build/JackTrip.pkg" ../../
 else
