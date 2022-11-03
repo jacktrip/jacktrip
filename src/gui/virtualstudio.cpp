@@ -1170,8 +1170,10 @@ void VirtualStudio::slotAuthSucceded()
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
 #endif
 
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this, &VirtualStudio::updatedDevicesErrorMsg);
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningMsgChanged, this, &VirtualStudio::updatedDevicesWarningMsg);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
+            &VirtualStudio::updatedDevicesErrorMsg);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningMsgChanged, this,
+            &VirtualStudio::updatedDevicesWarningMsg);
 
     m_vsAudioInterface->setupAudio();
 
@@ -1375,14 +1377,16 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
     return;
 }
 
-void VirtualStudio::updatedDevicesErrorMsg(const QString& msg) {
+void VirtualStudio::updatedDevicesErrorMsg(const QString& msg)
+{
     std::cout << "HANDLER 1: " << msg.toStdString() << std::endl;
     m_devicesErrorMsg = msg;
     emit devicesErrorChanged();
     return;
 }
 
-void VirtualStudio::updatedDevicesWarningMsg(const QString& msg) {
+void VirtualStudio::updatedDevicesWarningMsg(const QString& msg)
+{
     std::cout << "HANDLER 2: " << msg.toStdString() << std::endl;
     m_devicesWarningMsg = msg;
     emit devicesWarningChanged();

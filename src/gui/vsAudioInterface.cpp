@@ -138,9 +138,11 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setInputDevice(m_inputDeviceName);
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-            
-            connect(m_audioInterface.data(), &AudioInterface::devicesErrorMsgChanged, this, &VsAudioInterface::updatedDevicesErrorMsg);
-            connect(m_audioInterface.data(), &AudioInterface::devicesWarningMsgChanged, this, &VsAudioInterface::updatedDevicesWarningMsg);
+
+            connect(m_audioInterface.data(), &AudioInterface::devicesErrorMsgChanged,
+                    this, &VsAudioInterface::updatedDevicesErrorMsg);
+            connect(m_audioInterface.data(), &AudioInterface::devicesWarningMsgChanged,
+                    this, &VsAudioInterface::updatedDevicesWarningMsg);
             m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
@@ -159,8 +161,10 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
 
-            connect(m_audioInterface.data(), &AudioInterface::devicesErrorMsgChanged, this, &VsAudioInterface::updatedDevicesErrorMsg);
-            connect(m_audioInterface.data(), &AudioInterface::devicesWarningMsgChanged, this, &VsAudioInterface::updatedDevicesWarningMsg);
+            connect(m_audioInterface.data(), &AudioInterface::devicesErrorMsgChanged,
+                    this, &VsAudioInterface::updatedDevicesErrorMsg);
+            connect(m_audioInterface.data(), &AudioInterface::devicesWarningMsgChanged,
+                    this, &VsAudioInterface::updatedDevicesWarningMsg);
             m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
@@ -226,12 +230,14 @@ void VsAudioInterface::processMeterMeasurements(QVector<float> values)
     emit newVolumeMeterMeasurements(values);
 }
 
-void VsAudioInterface::updatedDevicesErrorMsg(const QString& msg) {
+void VsAudioInterface::updatedDevicesErrorMsg(const QString& msg)
+{
     emit devicesErrorMsgChanged(msg);
     return;
 }
 
-void VsAudioInterface::updatedDevicesWarningMsg(const QString& msg) {
+void VsAudioInterface::updatedDevicesWarningMsg(const QString& msg)
+{
     emit devicesWarningMsgChanged(msg);
     return;
 }
