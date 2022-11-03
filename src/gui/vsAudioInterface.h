@@ -109,11 +109,15 @@ class VsAudioInterface : public QObject
     void modeUpdated();
     void newVolumeMeterMeasurements(QVector<float> values);
     void errorToProcess(const QString& errorMessage);
+    void devicesErrorMsgChanged(const QString& msg);
+    void devicesWarningMsgChanged(const QString& msg);
 
    private slots:
     // void refreshAudioStream();
     void replaceProcess();
     void processMeterMeasurements(QVector<float> values);
+    void updatedDevicesErrorMsg(const QString& msg);
+    void updatedDevicesWarningMsg(const QString& msg);
 
    private:
     float m_inMultiplier  = 1.0;

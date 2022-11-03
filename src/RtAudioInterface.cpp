@@ -189,7 +189,13 @@ void RtAudioInterface::setup(bool verbose)
     delete rtAudioOut;
     if (api_in == api_out) {
         mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
+        if (api_in != "asio") {
+            AudioInterface::setDevicesWarningMsg("The selected devices don't support low latency. You can use them, but you will experience audio delay. Make sure you have up to date drivers from the manufacturer!");
+            AudioInterface::setDevicesErrorMsg("");
+        }
     } else {
+        AudioInterface::setDevicesWarningMsg("");
+        AudioInterface::setDevicesErrorMsg("The two devices you have selected are not compatible. Please select a different pair of devices.");
         mRtAudio = NULL;
     }
 
@@ -363,7 +369,7 @@ void RtAudioInterface::RtAudioErrorCallback(RtAudioError::Type type,
 }
 
 //*******************************************************************************
-int RtAudioInterface::startProcess() const
+int RtAudioInterface::startProcess()
 {
     try {
         if (mRtAudio != NULL) {
@@ -377,11 +383,13 @@ int RtAudioInterface::startProcess() const
 }
 
 //*******************************************************************************
-int RtAudioInterface::stopProcess() const
+int RtAudioInterface::stopProcess()
 {
     try {
         if (mRtAudio != NULL) {
             mRtAudio->closeStream();
+            AudioInterface::setDevicesWarningMsg("");
+            AudioInterface::setDevicesErrorMsg("");
         }
     } catch (RtAudioError& e) {
         std::cout << e.getMessage() << '\n' << std::endl;

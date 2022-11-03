@@ -40,6 +40,7 @@
 
 #include <RtAudio.h>
 
+#include <QObject>
 #include <QQueue>
 
 #include "AudioInterface.h"
@@ -49,6 +50,8 @@ class JackTrip;  // Forward declaration
 /// \brief Base Class that provides an interface with RtAudio
 class RtAudioInterface : public AudioInterface
 {
+    Q_OBJECT;
+
    public:
     /** \brief The class constructor
      * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
@@ -69,8 +72,8 @@ class RtAudioInterface : public AudioInterface
     /// \brief List all available audio interfaces, with its properties
     static void printDevices();
     virtual void setup(bool verbose = true);
-    virtual int startProcess() const;
-    virtual int stopProcess() const;
+    virtual int startProcess();
+    virtual int stopProcess();
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
 

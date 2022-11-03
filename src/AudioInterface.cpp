@@ -769,3 +769,17 @@ int AudioInterface::getSampleRateFromType(samplingRateT rate_type)
 
     return sample_rate;
 }
+
+//*******************************************************************************
+void AudioInterface::setDevicesWarningMsg(std::string msg) {
+    mWarningMsg = msg;
+    emit AudioInterface::devicesWarningMsgChanged(QString::fromStdString(mWarningMsg));
+    return;
+}
+
+//*******************************************************************************
+void AudioInterface::setDevicesErrorMsg(std::string msg) {
+    mErrorMsg = msg;
+    emit AudioInterface::devicesErrorMsgChanged(QString::fromStdString(msg));
+    return;
+}

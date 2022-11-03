@@ -46,6 +46,7 @@
 #include <jack/jack.h>
 #endif
 
+#include <QObject>
 #include <QMutex>
 #include <QVarLengthArray>
 #include <QVector>
@@ -65,6 +66,8 @@
  */
 class JackAudioInterface : public AudioInterface
 {
+    Q_OBJECT;
+
    public:
     /** \brief The class constructor
      * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
@@ -97,11 +100,11 @@ class JackAudioInterface : public AudioInterface
      * process-callback will start running. This runs on its own thread.
      * \return 0 on success, otherwise a non-zero error code
      */
-    virtual int startProcess() const;
+    virtual int startProcess();
     /** \brief Stops the process-callback thread
      * \return 0 on success, otherwise a non-zero error code
      */
-    virtual int stopProcess() const;
+    virtual int stopProcess();
     /// \brief Connect the default ports, capture to sends, and receives to playback
     void connectDefaultPorts();
 

@@ -38,6 +38,7 @@
 #ifndef __AUDIOINTERFACE_H__
 #define __AUDIOINTERFACE_H__
 
+#include <QObject>
 #include <QVarLengthArray>
 #include <QVector>
 
@@ -53,8 +54,10 @@ class JackTrip;
 
 /** \brief Base Class that provides an interface with audio
  */
-class AudioInterface
+class AudioInterface : public QObject
 {
+    Q_OBJECT;
+
    public:
     /// \brief Enum for Audio Resolution in bits
     enum audioBitResolutionT {
@@ -103,10 +106,10 @@ class AudioInterface
     /// \brief Tell the audio server that we are ready to roll. The
     /// process-callback will start running. This runs on its own thread.
     /// \return 0 on success, otherwise a non-zero error code
-    virtual int startProcess() const = 0;
+    virtual int startProcess() = 0;
     /// \brief Stops the process-callback thread
     /// \return 0 on success, otherwise a non-zero error code
-    virtual int stopProcess() const = 0;
+    virtual int stopProcess() = 0;
     /** \brief Process callback. Subclass should call this callback after obtaining the
     in_buffer and out_buffer pointers.
     * \param in_buffer Array of input audio samplers for each channel. The user
@@ -260,8 +263,18 @@ class AudioInterface
     AudioTester* mAudioTesterP{nullptr};
 
    protected:
+    void setDevicesWarningMsg(std::string msg);
+    void setDevicesErrorMsg(std::string msg);
+
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
+
+    std::string mWarningMsg;
+    std::string mErrorMsg;
+
+  signals:
+    void devicesWarningMsgChanged(const QString msg);
+    void devicesErrorMsgChanged(const QString msg);
 };
 
 #endif  // __AUDIOINTERFACE_H__

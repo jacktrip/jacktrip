@@ -271,7 +271,7 @@ void JackAudioInterface::setProcessCallback()
 }
 
 //*******************************************************************************
-int JackAudioInterface::startProcess() const
+int JackAudioInterface::startProcess()
 {
     // Tell the JACK server that we are ready to roll.  Our
     // process() callback will start running now.
@@ -283,7 +283,7 @@ int JackAudioInterface::startProcess() const
 }
 
 //*******************************************************************************
-int JackAudioInterface::stopProcess() const
+int JackAudioInterface::stopProcess()
 {
     QMutexLocker locker(&sJackMutex);
     int code = (jack_deactivate(mClient));
