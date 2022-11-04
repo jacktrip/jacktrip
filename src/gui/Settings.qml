@@ -348,13 +348,13 @@ Item {
             wrapMode: Text.WordWrap
             color: warningTextColour
             font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+            visible: Boolean(virtualstudio.devicesError || virtualstudio.devicesWarning);
         }
 
         Rectangle {
             id: divider
             x: leftMargin * virtualstudio.uiScale
-            y: devicesWarningOrError.y + (60 * virtualstudio.uiScale)
+            y: Boolean(virtualstudio.devicesError || virtualstudio.devicesWarning) ? devicesWarningOrError.y + (60 * virtualstudio.uiScale) : refreshButton.y + (60 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
             color: textColour
             visible: virtualstudio.audioBackend != "JACK"
