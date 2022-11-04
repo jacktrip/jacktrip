@@ -473,6 +473,12 @@ void JackTrip::startProcess(
         ID
 #endif  // endwhere
     );
+
+    if (mAudioInterface->getDevicesErrorMsg() != "") {
+        stop();
+        return;
+    }
+
     // cc redundant with instance creator  createHeader(mPacketHeaderType); next line
     // fixme
     createHeader(mPacketHeaderType);
