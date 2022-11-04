@@ -343,11 +343,15 @@ Item {
         }
 
         Image {
+            id: micLogo
             source: "logo.svg"
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: microphonePrompt.top
             anchors.topMargin: 18 * virtualstudio.uiScale
             width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
+            sourceSize: Qt.size(micLogo.width,micLogo.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
 
         Colorize {
@@ -430,9 +434,9 @@ Item {
 
         Image {
             id: noMic
-            source: "Prompt.svg"
-            width: 260
-            height: 250
+            source: "micoff.svg"
+            width: 109.27
+            height: 170
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
             sourceSize: Qt.size(noMic.width,noMic.height)

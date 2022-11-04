@@ -16,10 +16,14 @@ Item {
     property string buttonPressedStroke: virtualstudio.darkMode ? "#6F6C6C" : "#B0B5B5"
     
     Image {
+        id: jtlogo
         source: "logo.svg"
         anchors.horizontalCenter: parent.horizontalCenter
         y: 35 * virtualstudio.uiScale
         width: 50 * virtualstudio.uiScale; height: 92 * virtualstudio.uiScale
+        sourceSize: Qt.size(jtlogo.width,jtlogo.height)
+        fillMode: Image.PreserveAspectFit
+        smooth: true
     }
 
     Text {
