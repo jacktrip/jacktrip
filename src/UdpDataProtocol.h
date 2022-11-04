@@ -96,6 +96,8 @@ class UdpDataProtocol : public DataProtocol
     void setSocket(int& socket);
 #endif
 
+    void processControlPacket(const char* buf);
+
     /** \brief Receives a packet. It blocks until a packet is received
      *
      * This function makes sure we receive a complete packet
@@ -104,7 +106,6 @@ class UdpDataProtocol : public DataProtocol
      * \param n size of packet to receive
      * \return number of bytes read, -1 on error
      */
-    // virtual int receivePacket(char* buf, const size_t n);
     virtual int receivePacket(char* buf, const size_t n);
 
     /** \brief Sends a packet

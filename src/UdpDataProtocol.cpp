@@ -324,24 +324,29 @@ int UdpDataProtocol::bindSocket()
     return sock_fd;
 }
 
+void UdpDataProtocol::processControlPacket(const char* buf)
+{
+    // Control signal (currently just check for exit packet);
+    bool exit = true;
+    for (int i = 0; i < mControlPacketSize; i++) {
+        if (buf[i] != char(0xff)) {
+            exit = false;
+            i    = mControlPacketSize;
+        }
+    }
+    if (exit && !mStopSignalSent) {
+        mStopSignalSent = true;
+        emit signalCeaseTransmission(QStringLiteral("Peer Stopped"));
+        std::cout << "Peer Stopped" << std::endl;
+    }
+}
+
 //*******************************************************************************
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
     int n_bytes = ::recv(mSocket, buf, n, 0);
     if (n_bytes == mControlPacketSize) {
-        // Control signal (currently just check for exit packet);
-        bool exit = true;
-        for (int i = 0; i < mControlPacketSize; i++) {
-            if (buf[i] != char(0xff)) {
-                exit = false;
-                i    = mControlPacketSize;
-            }
-        }
-        if (exit && !mStopSignalSent) {
-            mStopSignalSent = true;
-            emit signalCeaseTransmission(QStringLiteral("Peer Stopped"));
-            std::cout << "Peer Stopped" << std::endl;
-        }
+        processControlPacket(buf);
         return 0;
     }
     return n_bytes;
@@ -621,14 +626,39 @@ void UdpDataProtocol::run()
         mRevivedCount            = 0;
         mStatCount               = 0;
 
-        //Set up our platform specific polling mechanism. (kqueue, epoll)
-#if !defined (MANUAL_POLL) && !defined (_WIN32)
-#ifdef __linux__
+        //Set up our platform specific polling mechanism. (kqueue, epoll, overlapped I/O)
+#if !defined (MANUAL_POLL)
+#if defined (__linux__)
         int epollfd = epoll_create1(0);
         struct epoll_event change, event;
         change.events = EPOLLIN;
         change.data.fd = mSocket;
         epoll_ctl(epollfd, EPOLL_CTL_ADD, mSocket, &change);
+#elif defined (_WIN32)
+        WSAEVENT eventArray[WSA_MAXIMUM_WAIT_EVENTS];
+        WSAOVERLAPPED socketOverlapped;
+        WSABUF dataBuf;
+        dataBuf.len = full_redundant_packet_size;
+        dataBuf.buf = reinterpret_cast<char *>(full_redundant_packet);
+        DWORD recvBytes = 0, flags = 0, index, bytesTransferred = 0;
+        
+        eventArray[0] = WSACreateEvent();
+        if (eventArray == WSA_INVALID_EVENT) {
+            emit signalError("Unable to set up network event monitoring");
+            cout << "ERROR: Unable to set up network event monitoring" << endl;
+            mStopped = true;
+        }
+        ZeroMemory(&socketOverlapped, sizeof(WSAOVERLAPPED));
+        socketOverlapped.hEvent = eventArray[0];
+        
+        if (WSARecv(mSocket, &dataBuf, 1, &recvBytes, &flags, &socketOverlapped, NULL) == SOCKET_ERROR) {
+            int result = WSAGetLastError();
+            if (result != WSA_IO_PENDING) {
+                emit signalError("Unable to listen for incoming network packets");
+                cout << "ERROR: Unable to listen for incoming network packets" << endl;
+                mStopped = true;
+            }
+        }
 #else
         int kq = kqueue();
         struct kevent change;
@@ -649,12 +679,14 @@ void UdpDataProtocol::run()
             // arrive for a longer time
             //timeout = UdpSocket.waitForReadyRead(30);
             //        timeout = cc unused!
-#if defined (_WIN32) || defined (MANUAL_POLL)
+#if defined (MANUAL_POLL)
             waitForReady(60000); //60 seconds
-            receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
-                                    full_packet_size, current_seq_num, last_seq_num,
-                                    newer_seq_num);
-	}
+            if (receivePacket(reinterpret_cast<char *>(full_redundant_packet), full_redundant_packet_size) > 0) {
+                receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
+                                        full_packet_size, current_seq_num, last_seq_num,
+                                        newer_seq_num);
+            }
+        }
 #else
             
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
@@ -671,27 +703,51 @@ void UdpDataProtocol::run()
         */
             //----------------------------------------------------------------------------------
 
-#ifdef __linux__
+#if defined(_WIN32)
+            index = WSAWaitForMultipleEvents(1, eventArray, FALSE, 10, FALSE);
+            if (index == WSA_WAIT_TIMEOUT) {
+                waitTime += 10;
+                emit signalWaitingTooLong(waitTime);
+            } else {
+                waitTime = 0;
+                WSAResetEvent(eventArray[index - WSA_WAIT_EVENT_0]);
+                WSAGetOverlappedResult(mSocket, &socketOverlapped, &bytesTransferred, FALSE, &flags);
+                if (bytesTransferred == mControlPacketSize) {
+                    processControlPacket(reinterpret_cast<char *>(full_redundant_packet));
+                } else if (bytesTransferred > 0 ){
+                    receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
+                                        full_packet_size, current_seq_num, last_seq_num,
+                                        newer_seq_num);
+                }
+                WSARecv(mSocket, &dataBuf, 1, &recvBytes, &flags, &socketOverlapped, NULL);
+            }
+#else
+#if defined(__linux__)
             int n = epoll_wait(epollfd, &event, 1, 10);
 #else
             int n = kevent(kq, &change, 1, &event, 1, &timeout);
 #endif
             if (n > 0) {
                 waitTime = 0;
-                receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
-                                        full_packet_size, current_seq_num, last_seq_num,
-                                        newer_seq_num);
+                if (receivePacket(reinterpret_cast<char *>(full_redundant_packet), full_redundant_packet_size) > 0) {
+                    receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
+                                            full_packet_size, current_seq_num, last_seq_num,
+                                            newer_seq_num);
+                }
             } else {
                 waitTime += 10;
                 emit signalWaitingTooLong(waitTime);
             }
+#endif
         }
-#ifdef __linux__
+#if defined(__linux__)
         close(epollfd);
+#elif defined(_WIN32)
+        WSACloseEvent(eventArray);
 #else
         close(kq);
 #endif
-#endif // _WIN32 || MANUAL_POLL
+#endif // MANUAL_POLL
         break; }
 
     case SENDER : {
@@ -759,16 +815,9 @@ void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
 
 //*******************************************************************************
 void UdpDataProtocol::receivePacketRedundancy(
-    int8_t* full_redundant_packet, int full_redundant_packet_size, int full_packet_size,
+    int8_t* full_redundant_packet, [[maybe_unused]] int full_redundant_packet_size, int full_packet_size,
     uint16_t& current_seq_num, uint16_t& last_seq_num, uint16_t& newer_seq_num)
 {
-    // This is blocking until we get a packet...
-    if (receivePacket(reinterpret_cast<char*>(full_redundant_packet),
-                      full_redundant_packet_size)
-        <= 0) {
-        return;
-    }
-
     if (0.0 < mSimulatedLossRate || 0.0 < mSimulatedJitterRate) {
         double x = mUniformDist(mRndEngine);
         // Drop packets
@@ -974,7 +1023,6 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
 bool UdpDataProtocol::datagramAvailable()
 {
     //Currently using a simplified version of the way QUdpSocket checks for datagrams.
-    //TODO: Consider changing to use poll() or select().
     char c;
 #if defined(_WIN32)
     //Need to use the winsock version of the function for MSG_PEEK
