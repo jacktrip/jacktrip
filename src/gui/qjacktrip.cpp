@@ -1661,7 +1661,7 @@ void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
     }
 
     // set the previous value
-    menu->setCurrentText(previousString);    
+    menu->setCurrentText(previousString);
 }
 #endif
 
