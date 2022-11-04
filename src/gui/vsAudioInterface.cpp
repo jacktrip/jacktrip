@@ -112,6 +112,21 @@ void VsAudioInterface::setupAudio()
                 std::cout << "  JackTrip:setupAudio before m_audioInterface->setup"
                           << std::endl;
             m_audioInterface->setup(true);
+
+            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
+            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
+
+            if (devicesWarningMsg != "") {
+                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+            }
+
+            if (devicesErrorMsg != "") {
+                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+            }
+
+            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+
             if (gVerboseFlag)
                 std::cout
                     << "  JackTrip:setupAudio before m_audioInterface->getSampleRate"
@@ -151,13 +166,14 @@ void VsAudioInterface::setupAudio()
 
             if (devicesWarningMsg != "") {
                 std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
-                updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
             }
 
             if (devicesErrorMsg != "") {
                 std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
-                updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
             }
+
+            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
 
 #endif
 #endif
@@ -183,13 +199,14 @@ void VsAudioInterface::setupAudio()
 
             if (devicesWarningMsg != "") {
                 std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
-                updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
             }
 
             if (devicesErrorMsg != "") {
                 std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
-                updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
             }
+
+            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
 #endif
         }
 
