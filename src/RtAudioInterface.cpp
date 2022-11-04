@@ -83,6 +83,9 @@ void RtAudioInterface::setup(bool verbose)
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
 
+    AudioInterface::setDevicesWarningMsg("");
+    AudioInterface::setDevicesErrorMsg("");
+
     int index_in  = -1;
     int index_out = -1;
     std::string api_in;
