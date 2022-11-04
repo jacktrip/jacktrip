@@ -37,6 +37,7 @@ Item {
     property string saveButtonText: "#DB0A0A"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
+    property string disabledButtonText: "#D3D4D4"
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : "acknowledged"
@@ -459,6 +460,7 @@ Item {
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped
+            enabled: !Boolean(virtualstudio.devicesError)
         }
 
         Slider {
@@ -507,18 +509,17 @@ Item {
         }
 
         Text {
-            anchors.left: outputLabel.left
-            anchors.right: outputCombo.right
-            anchors.leftMargin: 16 * virtualstudio.uiScale
+            anchors.left: inputLabel.left
+            anchors.right: refreshButton.left
             anchors.rightMargin: 16 * virtualstudio.uiScale
-            anchors.bottom: parent.bottom
+            anchors.top: refreshButton.top
             anchors.bottomMargin: 60 * virtualstudio.uiScale
-            text: "JackTrip on Windows requires use of an audio device with ASIO drivers. If you do not see your device, you may need to install drivers from your manufacturer."
-            horizontalAlignment: Text.AlignHCenter
+            text: virtualstudio.devicesError || virtualstudio.devicesWarning
+            horizontalAlignment: Text.AlignHLeft
             wrapMode: Text.WordWrap
             color: warningText
             font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: Qt.platform.os == "windows" && virtualstudio.audioBackend != "JACK"
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
         }
 
         Button {
@@ -537,6 +538,7 @@ Item {
                     color: saveButtonShadow
                 }
             }
+            enabled: !Boolean(virtualstudio.devicesError)
             onClicked: { window.state = "browse"; virtualstudio.applySettings() }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
@@ -548,7 +550,7 @@ Item {
                 font.family: "Poppins"
                 font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
-                color: saveButtonText
+                color: !Boolean(virtualstudio.devicesError) ? saveButtonText : disabledButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }

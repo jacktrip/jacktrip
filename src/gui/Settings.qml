@@ -13,6 +13,7 @@ Item {
     property int fontBig: 28
     property int fontMedium: 13
     property int fontSmall: 11
+    property int fontExtraSmall: 8
 
     property int leftMargin: 48
     property int rightMargin: 16
@@ -27,6 +28,11 @@ Item {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+    property string warningTextColour: "#DB0A0A"
+
+    property string errorFlagColour: "#DB0A0A"
+
+    property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
     property string settingsGroupView: "Audio"
 
@@ -78,12 +84,31 @@ Item {
                 id: audioBtn
                 text: "Audio"
                 width: parent.width
-                contentItem: Label {
-                    text: audioBtn.text
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: textColour
+                contentItem: Item {
+                    implicitWidth: audioButtonText.implicitWidth
+                    implicitHeight: audioButtonText.implicitHeight
+
+                    Label {
+                        id: audioButtonText
+                        text: audioBtn.text
+                        width: Boolean(virtualstudio.devicesError) ? parent.width - 16 * virtualstudio.uiScale : parent.width
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        color: textColour
+                    }
+
+                    Rectangle {
+                        id: audioDevicesErrorFlag
+                        anchors.left: audioButtonText.right
+                        anchors.verticalCenter: audioButtonText.verticalCenter
+                        anchors.rightMargin: 16 * virtualstudio.uiScale
+                        width: 8 * virtualstudio.uiScale 
+                        height: 8 * virtualstudio.uiScale 
+                        color: errorFlagColour
+                        radius: 4 * virtualstudio.uiScale
+                        visible: Boolean(virtualstudio.devicesError)
+                    }
                 }
                 background: Rectangle {
                     width: parent.width
@@ -94,13 +119,22 @@ Item {
                 id: appearanceBtn
                 text: "Appearance"
                 width: parent.width
-                contentItem: Label {
-                    text: appearanceBtn.text
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: textColour
+                contentItem: Item {
+                    implicitWidth: appearanceButtonText.implicitWidth
+                    implicitHeight: appearanceButtonText.implicitHeight
+
+                    Label {
+                        id: appearanceButtonText
+                        text: appearanceBtn.text
+                        width: parent.width
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        color: textColour
+                    }
                 }
+                
+
                 background: Rectangle {
                     width: parent.width
                     color: appearanceBtn.down ? buttonPressedColour : (appearanceBtn.hovered || settingsGroupView == "Appearance" ? buttonHoverColour : backgroundColour)
@@ -110,12 +144,19 @@ Item {
                 id: advancedBtn
                 text: "Advanced"
                 width: parent.width
-                contentItem: Label {
-                    text: advancedBtn.text
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: textColour
+                contentItem: Item {
+                    implicitWidth: advancedButtonText.implicitWidth
+                    implicitHeight: advancedButtonText.implicitHeight
+
+                    Label {
+                        id: advancedButtonText
+                        text: advancedBtn.text
+                        width: parent.width
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        color: textColour
+                    }
                 }
                 background: Rectangle {
                     width: parent.width
@@ -126,12 +167,20 @@ Item {
                 id: profileBtn
                 text: "Profile"
                 width: parent.width
-                contentItem: Label {
-                    text: profileBtn.text
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: textColour
+                contentItem: Item {
+
+                    implicitWidth: profileButtonText.implicitWidth
+                    implicitHeight: profileButtonText.implicitHeight
+
+                    Label {
+                        id: profileButtonText
+                        text: profileBtn.text
+                        width: parent.width
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        color: textColour
+                    }
                 }
                 background: Rectangle {
                     width: parent.width
@@ -173,7 +222,7 @@ Item {
             model: backendComboModel
             currentIndex: virtualstudio.audioBackend == "JACK" ? 0 : 1
             onActivated: { virtualstudio.audioBackend = currentText }
-            x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
+            x: 234 * virtualstudio.uiScale; y: 48 * virtualstudio.uiScale
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.selectableBackend
         }
@@ -199,46 +248,6 @@ Item {
             color: textColour
         }
 
-        ComboBox {
-            id: inputCombo
-            model: inputComboModel
-            currentIndex: virtualstudio.inputDevice
-            onActivated: { virtualstudio.inputDevice = currentIndex }
-            x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 148 : 100)
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-            visible: virtualstudio.audioBackend != "JACK"
-        }
-
-        Meter {
-            id: inputDeviceMeters
-            anchors.left: backendCombo.left
-            anchors.right: parent.right
-            anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : virtualstudio.uiScale * (virtualstudio.selectableBackend ? 148 : 100)
-            height: 100 * virtualstudio.uiScale
-            model: inputMeterModel
-            clipped: inputClipped
-        }
-
-        ComboBox {
-            id: outputCombo
-            model: outputComboModel
-            currentIndex: virtualstudio.outputDevice
-            onActivated: { virtualstudio.outputDevice = currentIndex }
-            x: backendCombo.x; y: inputDeviceMeters.y + (48 * virtualstudio.uiScale)
-            width: backendCombo.width; height: backendCombo.height
-            visible: virtualstudio.audioBackend != "JACK"
-        }
-
-        Text {
-            anchors.verticalCenter: inputCombo.verticalCenter
-            x: leftMargin * virtualstudio.uiScale
-            text: "Input Device"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
-            color: textColour
-        }
-
         Text {
             anchors.verticalCenter: outputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
@@ -246,6 +255,16 @@ Item {
             font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
+        }
+
+        ComboBox {
+            id: outputCombo
+            model: outputComboModel
+            currentIndex: virtualstudio.outputDevice
+            onActivated: { virtualstudio.outputDevice = currentIndex }
+            x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 96 : 48)
+            width: backendCombo.width; height: backendCombo.height
+            visible: virtualstudio.audioBackend != "JACK"
         }
 
         Button {
@@ -259,13 +278,44 @@ Item {
             onClicked: { virtualstudio.playOutputAudio() }
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             x: parent.width - (232 * virtualstudio.uiScale)
-            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + (60 * virtualstudio.uiScale) : inputDeviceMeters.y + (48 * virtualstudio.uiScale)
+            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + (48 * virtualstudio.uiScale) : outputCombo.y + (48 * virtualstudio.uiScale)
             Text {
                 text: "Test Output Audio"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
             }
+        }
+
+        Text {
+            anchors.verticalCenter: inputCombo.verticalCenter
+            x: leftMargin * virtualstudio.uiScale; y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            text: "Input Device"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.audioBackend != "JACK"
+            color: textColour
+        }
+
+        ComboBox {
+            id: inputCombo
+            model: inputComboModel
+            currentIndex: virtualstudio.inputDevice
+            onActivated: { virtualstudio.inputDevice = currentIndex }
+            x: backendCombo.x; y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
+            visible: virtualstudio.audioBackend != "JACK"
+        }
+
+        Meter {
+            id: inputDeviceMeters
+            anchors.left: backendCombo.left
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : virtualstudio.uiScale * (virtualstudio.selectableBackend ? 112 : 64)
+            height: 100 * virtualstudio.uiScale
+            model: inputMeterModel
+            clipped: inputClipped
+            enabled: !Boolean(virtualstudio.devicesError)
         }
 
         Button {
@@ -277,7 +327,7 @@ Item {
                 border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.refreshDevices() }
-            x: parent.width - (232 * virtualstudio.uiScale); y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            x: parent.width - (232 * virtualstudio.uiScale); y: inputDeviceMeters.y + (48 * virtualstudio.uiScale)
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
             Text {
@@ -288,10 +338,23 @@ Item {
             }
         }
 
+        Text {
+            id: devicesWarningOrError
+            x: leftMargin * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ? refreshButton.y + (48 * virtualstudio.uiScale) : testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            width: parent.width - (64 * virtualstudio.uiScale)
+            text: virtualstudio.devicesError || virtualstudio.devicesWarning
+            horizontalAlignment: Text.AlignHLeft
+            wrapMode: Text.WordWrap
+            color: warningTextColour
+            font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+        }
+
         Rectangle {
             id: divider
             x: leftMargin * virtualstudio.uiScale
-            y: virtualstudio.audioBackend != "JACK" ? refreshButton.y + (48 * virtualstudio.uiScale) : testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            y: devicesWarningOrError.y + (60 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
             color: textColour
             visible: virtualstudio.audioBackend != "JACK"
@@ -574,6 +637,7 @@ Item {
 
         Button {
             id: saveButton
+            enabled: !Boolean(virtualstudio.devicesError)
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: saveButton.down ? buttonPressedColour : (saveButton.hovered ? buttonHoverColour : buttonColour)
@@ -588,7 +652,7 @@ Item {
                 text: "Save"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Boolean(virtualstudio.devicesError) ? disabledButtonTextColour : textColour
             }
         }
     }
