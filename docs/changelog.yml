@@ -1,3 +1,7 @@
+- Version: "1.6.7"
+  Date: 2022-11-03
+  Description:
+  - (updated) Move to overlapped I/O for Windows Networking
 - Version: "1.6.6"
   Date: 2022-11-01
   Description:
