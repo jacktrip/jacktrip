@@ -1166,9 +1166,13 @@ void VirtualStudio::slotAuthSucceded()
     m_device = new VsDevice(m_authenticator.data(), m_testMode);
     m_device->registerApp();
 
+#ifdef __APPLE__
     if (m_permissions->micPermission() == "granted") {
         startAudio();
     }
+#else
+    startAudio();
+#endif
 
     if (m_userId.isEmpty()) {
         getUserId();
@@ -1750,9 +1754,11 @@ void VirtualStudio::getUserMetadata()
 
 void VirtualStudio::startAudio()
 {
+#ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
     }
+#endif
     if (m_vsAudioInterface.isNull()) {
         m_vsAudioInterface.reset(new VsAudioInterface());
         m_view.engine()->rootContext()->setContextProperty(
