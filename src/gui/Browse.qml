@@ -100,7 +100,7 @@ Item {
         Text {
             id: emptyListMessage
             visible: parent.count == 0 && !virtualstudio.showCreateStudio
-            text: "No studios found that match your filter criteria"
+            text: "No studios found that match your filter criteria."
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: emptyListMessageWidth
