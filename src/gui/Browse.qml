@@ -120,7 +120,7 @@ Item {
             }
             visible: parent.count == 0 && !virtualstudio.showCreateStudio
             onClicked: {
-                virtualstudio.showSelfHosted = true;
+                virtualstudio.showSelfHosted = false;
                 virtualstudio.showInactive = true;
                 refreshing = true;
                 refresh();
