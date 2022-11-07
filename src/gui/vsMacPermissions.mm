@@ -38,11 +38,28 @@
 #include <Foundation/Foundation.h>
 #include <AVFoundation/AVFoundation.h>
 #include <QDesktopServices>
+#include <QSettings>
 #include <QUrl>
+
+VsMacPermissions::VsMacPermissions()
+{
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    m_micPermissionChecked = settings.value(QStringLiteral("MicPermissionChecked"), false).toBool();
+    settings.endGroup();
+}
 
 QString VsMacPermissions::micPermission()
 {
     return m_micPermission;
+}
+
+bool VsMacPermissions::micPermissionChecked()
+{
+    if (m_micPermissionChecked) {
+        getMicPermission();
+    }
+    return m_micPermissionChecked;
 }
 
 void VsMacPermissions::getMicPermission()
@@ -61,12 +78,9 @@ void VsMacPermissions::getMicPermission()
             // The app hasn't yet asked the user for access.
             [AVCaptureDevice requestAccessForMediaType:AVMediaTypeAudio completionHandler:^(BOOL granted) {
                 if (granted) {
-                    //do something eventually
-                    if (granted) {
-                        setMicPermission(QStringLiteral("granted"));
-                    } else {
-                        setMicPermission(QStringLiteral("denied"));
-                    }
+                    setMicPermission(QStringLiteral("granted"));
+                } else {
+                    setMicPermission(QStringLiteral("denied"));
                 }
             }];
             setMicPermission(QStringLiteral("unknown"));
@@ -88,7 +102,13 @@ void VsMacPermissions::getMicPermission()
 void VsMacPermissions::setMicPermission(QString status)
 {
     m_micPermission = status;
+    m_micPermissionChecked = true;
     emit micPermissionUpdated();
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("MicPermissionChecked"), m_micPermissionChecked);
+    settings.endGroup();
 }
 
 void VsMacPermissions::openSystemPrivacy()
