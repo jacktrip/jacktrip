@@ -111,12 +111,12 @@ Item {
         }
 
         Button {
-            id: clearFiltersButton
+            id: resetFiltersButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: clearFiltersButton.down ? buttonPressedColour : (clearFiltersButton.hovered ? buttonHoverColour : buttonColour)
+                color: resetFiltersButton.down ? buttonPressedColour : (resetFiltersButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
-                border.color: clearFiltersButton.down ? buttonPressedStroke : (clearFiltersButton.hovered ? buttonHoverStroke : buttonStroke)
+                border.color: resetFiltersButton.down ? buttonPressedStroke : (resetFiltersButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             visible: parent.count == 0 && !virtualstudio.showCreateStudio
             onClicked: {
@@ -130,7 +130,7 @@ Item {
             anchors.horizontalCenter: emptyListMessage.horizontalCenter
             width: 120 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
             Text {
-                text: "Clear Filters"
+                text: "Reset Filters"
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
