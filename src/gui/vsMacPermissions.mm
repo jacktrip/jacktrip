@@ -37,6 +37,8 @@
 #include "vsMacPermissions.h"
 #include <Foundation/Foundation.h>
 #include <AVFoundation/AVFoundation.h>
+#include <QDesktopServices>
+#include <QUrl>
 
 QString VsMacPermissions::micPermission()
 {
@@ -87,4 +89,9 @@ void VsMacPermissions::setMicPermission(QString status)
 {
     m_micPermission = status;
     emit micPermissionUpdated();
+}
+
+void VsMacPermissions::openSystemPrivacy()
+{
+    QDesktopServices::openUrl(QUrl("x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone"));
 }

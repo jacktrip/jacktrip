@@ -374,7 +374,7 @@ Item {
                 layer.enabled: showPromptButton.hovered && !showPromptButton.down
             }
             onClicked: { 
-                // show prompt
+                permissions.getMicPermission();
             }
             anchors.right: microphonePrompt.right
             anchors.rightMargin: 14.5 * virtualstudio.uiScale
@@ -452,33 +452,40 @@ Item {
             lightness: imageLightnessValue
         }
 
-        // Button {
-        //     id: showPromptButton
-        //     width: 110 * virtualstudio.uiScale
-        //     height: 28 * virtualstudio.uiScale
-        //     background: Rectangle {
-        //         radius: 6 * virtualstudio.uiScale
-        //         color: showPromptButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
-        //         border.width: 1
-        //         border.color: showPromptButton.down ? saveButtonPressedStroke : saveButtonStroke
-        //         layer.enabled: showPromptButton.hovered && !showPromptButton.down
-        //     }
-        //     onClicked: { 
-        //         // show prompt
-        //     }
-        //     anchors.right: microphonePrompt.right
-        //     anchors.rightMargin: 14.5 * virtualstudio.uiScale
-        //     anchors.bottomMargin: 18 * virtualstudio.uiScale
-        //     anchors.bottom: microphonePrompt.bottom
-        //     Text {
-        //         text: "OK"
-        //         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-        //         font.weight: Font.Bold
-        //         color: saveButtonText
-        //         anchors.horizontalCenter: parent.horizontalCenter
-        //         anchors.verticalCenter: parent.verticalCenter
-        //     }
-        // }
+        Button {
+            id: openSettingsButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: openSettingsButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                border.width: 1
+                border.color: openSettingsButton.down ? saveButtonPressedStroke : saveButtonStroke
+                layer.enabled: openSettingsButton.hovered && !openSettingsButton.down
+                layer.effect: DropShadow {
+                    horizontalOffset: 1 * virtualstudio.uiScale
+                    verticalOffset: 1 * virtualstudio.uiScale
+                    radius: 8.0 * virtualstudio.uiScale
+                    samples: 17
+                    color: saveButtonShadow
+                }
+            }
+            onClicked: { 
+                permissions.openSystemPrivacy();
+            }
+            anchors.right: parent.right
+            anchors.rightMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            width: 200 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            Text {
+                text: "Open Privacy Settings"
+                font.family: "Poppins"
+                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.weight: Font.Bold
+                color: saveButtonText
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
 
         Text {
             id: noMicHeader
@@ -505,7 +512,7 @@ Item {
 
         Text {
             id: noMicSubheader2
-            text: "Click 'Go to Settings' to give JackTrip permission to access your microphone, instrument, or other audio device."
+            text: "Click 'Open Privacy Settings' to give JackTrip permission to access your microphone, instrument, or other audio device."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 400

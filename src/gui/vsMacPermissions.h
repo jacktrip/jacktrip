@@ -53,8 +53,9 @@ class VsMacPermissions : public QObject
     ~VsMacPermissions(){};
 
     QString micPermission();
-    void getMicPermission();
+    Q_INVOKABLE void getMicPermission();
     void setMicPermission(QString status);
+    Q_INVOKABLE void openSystemPrivacy();
 
    signals:
     void micPermissionUpdated();
