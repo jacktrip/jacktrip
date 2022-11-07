@@ -181,7 +181,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     QObject* permissions = new QObject();
     permissions->setProperty("micPermission", "granted");
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("permissions"), QVariant::fromValue(&permissions));
+        QStringLiteral("permissions"), QVariant::fromValue(permissions));
 #endif
 
     m_view.engine()->rootContext()->setContextProperty(
