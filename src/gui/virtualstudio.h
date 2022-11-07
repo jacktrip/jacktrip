@@ -256,6 +256,7 @@ class VirtualStudio : public QObject
     void launchBrowser(const QUrl& url);
     void joinStudio();
     void updatedStats(const QJsonObject& stats);
+    void startAudio();
 
    private:
     void setupAuthenticator();
@@ -267,7 +268,6 @@ class VirtualStudio : public QObject
     void getSubscriptions();
     void getRegions();
     void getUserMetadata();
-    void startAudio();
 #ifdef RT_AUDIO
     void getDeviceList(QStringList* list, bool isInput);
 #endif
