@@ -179,7 +179,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             &VirtualStudio::startAudio);
 #else
     QObject* permissions = new QObject();
-    permissions->setProperty("hasMicPermission", true);
+    permissions->setProperty("micPermission", "granted");
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("permissions"), QVariant::fromValue(permissions.data()));
 #endif
