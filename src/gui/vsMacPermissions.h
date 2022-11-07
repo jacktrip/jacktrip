@@ -62,7 +62,7 @@ class VsMacPermissions : public QObject
     void micPermissionUpdated();
 
    private:
-    QString m_micPermission = "unknown";
+    QString m_micPermission     = "unknown";
     bool m_micPermissionChecked = false;
 };
 

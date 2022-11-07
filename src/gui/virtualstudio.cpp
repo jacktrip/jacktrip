@@ -171,10 +171,12 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_permissions.reset(new VsMacPermissions());
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("permissions"), QVariant::fromValue(m_permissions.data()));
-    if (m_permissions->micPermissionChecked() && m_permissions->micPermission() != "unknown") {
+    if (m_permissions->micPermissionChecked()
+        && m_permissions->micPermission() != "unknown") {
         m_permissions->getMicPermission();
     }
-    connect(m_permissions.data(), &VsMacPermissions::micPermissionUpdated, this, &VirtualStudio::startAudio);
+    connect(m_permissions.data(), &VsMacPermissions::micPermissionUpdated, this,
+            &VirtualStudio::startAudio);
 #else
     QObject* permissions = new QObject();
     permissions->setProperty("hasMicPermission", true);
