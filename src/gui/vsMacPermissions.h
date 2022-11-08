@@ -49,8 +49,7 @@ class VsMacPermissions : public QObject
     Q_PROPERTY(QString micPermission READ micPermission NOTIFY micPermissionUpdated)
 
    public:
-    VsMacPermissions();
-    ~VsMacPermissions(){};
+    explicit VsMacPermissions();
 
     QString micPermission();
     bool micPermissionChecked();

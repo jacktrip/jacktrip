@@ -328,7 +328,7 @@ Item {
     Item {
         id: requestMicPermissionsItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "microphone"
+        visible: warningScreen == "microphone" && permissions.micPermission == "unknown"
 
         Image {
             id: microphonePrompt
@@ -364,21 +364,28 @@ Item {
 
         Button {
             id: showPromptButton
-            width: 110 * virtualstudio.uiScale
-            height: 28 * virtualstudio.uiScale
+            width: 112 * virtualstudio.uiScale
+            height: 30 * virtualstudio.uiScale
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: showPromptButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                border.width: 1
+                border.width: 2
                 border.color: showPromptButton.down ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: showPromptButton.hovered && !showPromptButton.down
+                layer.effect: DropShadow {
+                    horizontalOffset: 1 * virtualstudio.uiScale
+                    verticalOffset: 1 * virtualstudio.uiScale
+                    radius: 8.0 * virtualstudio.uiScale
+                    samples: 17
+                    color: saveButtonShadow
+                }
             }
             onClicked: { 
                 permissions.getMicPermission();
             }
             anchors.right: microphonePrompt.right
-            anchors.rightMargin: 14.5 * virtualstudio.uiScale
-            anchors.bottomMargin: 18 * virtualstudio.uiScale
+            anchors.rightMargin: 13.5 * virtualstudio.uiScale
+            anchors.bottomMargin: 17 * virtualstudio.uiScale
             anchors.bottom: microphonePrompt.bottom
             Text {
                 text: "OK"
@@ -430,7 +437,7 @@ Item {
     Item {
         id: noMicItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "acknowledged" && permissions.micPermission == 'denied'
+        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "denied"
 
         Image {
             id: noMic
@@ -527,7 +534,7 @@ Item {
     Item {
         id: setupItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "acknowledged" && permissions.micPermission == 'granted'
+        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "granted"
 
         Text {
             id: pageTitle
