@@ -69,7 +69,7 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
 
     // Set server levels to stored versions
     QJsonObject json = {
-        {QLatin1String("captureVolume"), m_captureVolume * 100.0},
+        {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
         {QLatin1String("captureMute"), m_captureMute},
     };
     QJsonDocument request = QJsonDocument(json);
@@ -320,7 +320,7 @@ void VsDevice::sendLevels()
 {
     // Add latest volume and mute values to heartbeat body
     QJsonObject json = {
-        {QLatin1String("captureVolume"), (int)(m_captureVolume * 100)},
+        {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
         {QLatin1String("captureMute"), m_captureMute},
     };
     QJsonDocument request = QJsonDocument(json);
