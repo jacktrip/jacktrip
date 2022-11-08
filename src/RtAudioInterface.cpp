@@ -83,8 +83,8 @@ void RtAudioInterface::setup(bool verbose)
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
 
-    AudioInterface::setDevicesWarningMsg("");
-    AudioInterface::setDevicesErrorMsg("");
+    AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+    AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
 
     int index_in  = -1;
     int index_out = -1;
@@ -192,20 +192,15 @@ void RtAudioInterface::setup(bool verbose)
     delete rtAudioOut;
     if (api_in == api_out) {
         mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
-#ifdef _WIN32
+// #ifdef _WIN32
         if (api_in != "asio") {
-            AudioInterface::setDevicesWarningMsg(
-                "The selected devices don't support low latency. You can use them, but "
-                "you will experience audio delay. Make sure you have up to date drivers "
-                "from the manufacturer!");
-            AudioInterface::setDevicesErrorMsg("");
+            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_LATENCY);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
         }
-#endif
+// #endif
     } else {
-        AudioInterface::setDevicesWarningMsg("");
-        AudioInterface::setDevicesErrorMsg(
-            "The two devices you have selected are not compatible. Please select a "
-            "different pair of devices.");
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_INCOMPATIBLE);
         mRtAudio = NULL;
     }
 
@@ -398,8 +393,8 @@ int RtAudioInterface::stopProcess()
     try {
         if (mRtAudio != NULL) {
             mRtAudio->closeStream();
-            AudioInterface::setDevicesWarningMsg("");
-            AudioInterface::setDevicesErrorMsg("");
+            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
         }
     } catch (RtAudioError& e) {
         std::cout << e.getMessage() << '\n' << std::endl;

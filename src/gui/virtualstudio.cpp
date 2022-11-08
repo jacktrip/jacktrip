@@ -335,6 +335,16 @@ QString VirtualStudio::devicesError()
     return m_devicesErrorMsg;
 }
 
+QString VirtualStudio::devicesWarningHelpUrl()
+{
+    return m_devicesWarningHelpUrl;
+}
+
+QString VirtualStudio::devicesErrorHelpUrl()
+{
+    return m_devicesErrorHelpUrl;
+}
+
 float VirtualStudio::inputVolume()
 {
     return m_inMultiplier;
@@ -1388,6 +1398,20 @@ void VirtualStudio::updatedDevicesWarningMsg(const QString& msg)
 {
     m_devicesWarningMsg = msg;
     emit devicesWarningChanged();
+    return;
+}
+
+void VirtualStudio::updatedDevicesErrorHelpUrl(const QString& url)
+{
+    m_devicesErrorHelpUrl = url;
+    emit devicesErrorHelpUrlChanged();
+    return;
+}
+
+void VirtualStudio::updatedDevicesWarningHelpUrl(const QString& url)
+{
+    m_devicesWarningHelpUrl = url;
+    emit devicesWarningHelpUrlChanged();
     return;
 }
 

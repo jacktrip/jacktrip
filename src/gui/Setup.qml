@@ -514,7 +514,11 @@ Item {
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.top: refreshButton.top
             anchors.bottomMargin: 60 * virtualstudio.uiScale
-            text: virtualstudio.devicesError || virtualstudio.devicesWarning
+            text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
+                + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
+                    ? "<a href=virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl>&nbsp;Learn More.</a>"
+                    : ""
+                ) + virtualstudio.devicesErrorHelpUrl + " " + virtualstudio.devicesWarningHelpUrl
             horizontalAlignment: Text.AlignHLeft
             wrapMode: Text.WordWrap
             color: warningText

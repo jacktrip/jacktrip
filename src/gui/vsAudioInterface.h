@@ -111,6 +111,8 @@ class VsAudioInterface : public QObject
     void errorToProcess(const QString& errorMessage);
     void devicesErrorMsgChanged(const QString& msg);
     void devicesWarningMsgChanged(const QString& msg);
+    void devicesErrorHelpUrlChanged(const QString& url);
+    void devicesWarningHelpUrlChanged(const QString& url);
 
    private slots:
     // void refreshAudioStream();
@@ -143,6 +145,8 @@ class VsAudioInterface : public QObject
 
     void updateDevicesErrorMsg(const QString& msg);
     void updateDevicesWarningMsg(const QString& msg);
+    void updateDevicesErrorHelpUrl(const QString& url);
+    void updateDevicesWarningHelpUrl(const QString& url);
 };
 
 #endif  // VSDAUDIOINTERFACE_H

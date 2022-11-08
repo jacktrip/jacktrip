@@ -771,16 +771,36 @@ int AudioInterface::getSampleRateFromType(samplingRateT rate_type)
 }
 
 //*******************************************************************************
-void AudioInterface::setDevicesWarningMsg(std::string msg)
+void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
 {
-    mWarningMsg = msg;
+    switch (msg) {
+    case DEVICE_WARN_LATENCY:
+        mWarningMsg = "The selected devices don't support low latency. You can use them, but you will experience audio delay. Make sure you have up to date drivers from the manufacturer!";
+        mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        break;
+    default:
+        mWarningMsg = "";
+        mWarningHelpUrl = "";
+        break;
+    }
+
     return;
 }
 
 //*******************************************************************************
-void AudioInterface::setDevicesErrorMsg(std::string msg)
+void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
 {
     mErrorMsg = msg;
+    switch (msg) {
+    case DEVICE_ERR_INCOMPATIBLE:
+        mErrorMsg = "The two devices you have selected are not compatible. Please select a different pair of devices.";
+        mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        break;
+    default:
+        mErrorMsg = "";
+        mErrorHelpUrl = "";
+        break;
+    }
     return;
 }
 
@@ -794,4 +814,16 @@ std::string AudioInterface::getDevicesWarningMsg()
 std::string AudioInterface::getDevicesErrorMsg()
 {
     return mErrorMsg;
+}
+
+//*******************************************************************************
+std::string AudioInterface::getDevicesWarningHelpUrl()
+{
+    return mWarningHelpUrl;
+}
+
+//*******************************************************************************
+std::string AudioInterface::getDevicesErrorHelpUrl()
+{
+    return mErrorHelpUrl;
 }
