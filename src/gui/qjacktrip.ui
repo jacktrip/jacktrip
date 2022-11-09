@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>913</height>
+    <height>961</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,38 +19,24 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="1">
-     <widget class="QComboBox" name="typeComboBox">
+    <item row="3" column="1">
+     <widget class="QLabel" name="ipLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="toolTip">
-       <string>To connect to a p2p (peer to peer) server you need to run as a p2p client.
-To connect to a hub server you need to run as a hub client.</string>
+       <string>If running as a server, this is the address you should supply to the other clients.
+(You will need to enable any port forwarding on your router manually.)</string>
       </property>
-      <property name="currentIndex">
-       <number>2</number>
+      <property name="text">
+       <string>Looking up external IP address...</string>
       </property>
-      <item>
-       <property name="text">
-        <string>P2P Client</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>P2P Server</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Hub Client</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Hub Server</string>
-       </property>
-      </item>
      </widget>
     </item>
-    <item row="6" column="0" colspan="2">
+    <item row="8" column="0" colspan="2">
      <layout class="QHBoxLayout" name="buttonLayout">
       <item>
        <widget class="QPushButton" name="connectButton">
@@ -81,36 +67,10 @@ To connect to a hub server you need to run as a hub client.</string>
       </item>
      </layout>
     </item>
-    <item row="3" column="1">
-     <widget class="QLabel" name="ipLabel">
-      <property name="toolTip">
-       <string>If running as a server, this is the address you should supply to the other clients.
-(You will need to enable any port forwarding on your router manually.)</string>
-      </property>
-      <property name="text">
-       <string>Looking up external IP address...</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="addressComboBox">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="toolTip">
-       <string>Enter the IP address or the hostname of the server you want to connect to.</string>
-      </property>
-      <property name="editable">
-       <bool>true</bool>
-      </property>
-      <property name="maxCount">
-       <number>5</number>
-      </property>
-      <property name="insertPolicy">
-       <enum>QComboBox::NoInsert</enum>
+    <item row="6" column="0" colspan="2">
+     <widget class="QGroupBox" name="inputGroupBox">
+      <property name="title">
+       <string>Input Channels</string>
       </property>
      </widget>
     </item>
@@ -252,23 +212,7 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
         <item row="2" column="0" colspan="2">
          <widget class="QGroupBox" name="channelGroupBox">
           <layout class="QGridLayout" name="gridLayout_9">
-           <item row="3" column="0">
-            <widget class="QLabel" name="channelRecvLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Received from network:</string>
-             </property>
-             <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
+           <item row="4" column="1">
             <widget class="QSpinBox" name="channelRecvSpinBox">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -287,26 +231,19 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
              </property>
             </widget>
            </item>
-           <item row="4" column="1">
-            <widget class="QSpinBox" name="channelSendSpinBox">
-             <property name="toolTip">
-              <string>Number of audio channels to send to the network.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
            <item row="4" column="0">
-            <widget class="QLabel" name="channelSendLabel">
+            <widget class="QLabel" name="channelRecvLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
-              <string>&amp;Sent to network:</string>
+              <string>&amp;Received from network:</string>
              </property>
              <property name="buddy">
-              <cstring>channelSendSpinBox</cstring>
+              <cstring>channelRecvSpinBox</cstring>
              </property>
             </widget>
            </item>
@@ -322,7 +259,30 @@ play from this machine. (Available in client fan out/in and full mix modes.)</st
               <string>&amp;Number of channels</string>
              </property>
              <property name="buddy">
-              <cstring>channelRecvSpinBox</cstring>
+              <cstring>channelSendSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="channelSendLabel">
+             <property name="text">
+              <string>&amp;Sent to network:</string>
+             </property>
+             <property name="buddy">
+              <cstring>channelSendSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="channelSendSpinBox">
+             <property name="toolTip">
+              <string>Number of audio channels to send to the network.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
              </property>
             </widget>
            </item>
@@ -1805,6 +1765,66 @@ and wetness is the essence of beauty.</string>
       </widget>
      </widget>
     </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="typeComboBox">
+      <property name="toolTip">
+       <string>To connect to a p2p (peer to peer) server you need to run as a p2p client.
+To connect to a hub server you need to run as a hub client.</string>
+      </property>
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>P2P Client</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>P2P Server</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Hub Client</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Hub Server</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QComboBox" name="addressComboBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>Enter the IP address or the hostname of the server you want to connect to.</string>
+      </property>
+      <property name="editable">
+       <bool>true</bool>
+      </property>
+      <property name="maxCount">
+       <number>5</number>
+      </property>
+      <property name="insertPolicy">
+       <enum>QComboBox::NoInsert</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0" colspan="2">
+     <widget class="QGroupBox" name="outputGroupBox">
+      <property name="title">
+       <string>Output Channels</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -1826,8 +1846,8 @@ and wetness is the essence of beauty.</string>
   <tabstop>disconnectButton</tabstop>
   <tabstop>exitButton</tabstop>
   <tabstop>optionsTabWidget</tabstop>
-  <tabstop>channelRecvSpinBox</tabstop>
   <tabstop>channelSendSpinBox</tabstop>
+  <tabstop>channelRecvSpinBox</tabstop>
   <tabstop>autoPatchComboBox</tabstop>
   <tabstop>patchServerCheckBox</tabstop>
   <tabstop>upmixCheckBox</tabstop>

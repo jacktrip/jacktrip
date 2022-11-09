@@ -28,6 +28,7 @@
 
 #include <QByteArray>
 #include <QCloseEvent>
+#include <QGridLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMutex>
@@ -40,7 +41,7 @@
 #include "../JackTrip.h"
 #include "../UdpHubListener.h"
 #include "messageDialog.h"
-#include "vuDialog.h"
+#include "vuMeter.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -96,6 +97,8 @@ class QJackTrip : public QMainWindow
     void start();
     void stop();
     void exit();
+    void updatedInputMeasurements(const QVector<float> valuesInDb);
+    void updatedOutputMeasurements(const QVector<float> valuesInDb);
 #ifndef NO_VS
     void virtualStudioMode();
 #endif
@@ -116,6 +119,8 @@ class QJackTrip : public QMainWindow
 #endif
 
     void appendPlugins(JackTrip* jackTrip, int numSendChannels, int numRecvChannels);
+    void createMeters(quint32 inputChannels, quint32 outputChannels);
+    void removeMeters();
 
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
@@ -126,12 +131,21 @@ class QJackTrip : public QMainWindow
     QScopedPointer<QNetworkAccessManager> m_netManager;
     QScopedPointer<MessageDialog> m_statsDialog;
     QScopedPointer<MessageDialog> m_debugDialog;
-    QScopedPointer<VuDialog> m_vuDialog;
+    QScopedPointer<QGridLayout> m_inputLayout;
+    QScopedPointer<QGridLayout> m_outputLayout;
     std::ostream m_realCout;
     std::ostream m_realCerr;
     bool m_jackTripRunning;
     bool m_isExiting;
     bool m_exitSent;
+
+    float m_meterMax = 0.0;
+    float m_meterMin = -64.0;
+
+    QList<VuMeter*> m_inputMeters;
+    QList<QLabel*> m_inputLabels;
+    QList<VuMeter*> m_outputMeters;
+    QList<QLabel*> m_outputLabels;
 
     QMutex m_requestMutex;
     QString m_IPv6Address;
