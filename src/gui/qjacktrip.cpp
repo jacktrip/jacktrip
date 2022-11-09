@@ -49,8 +49,8 @@
 #include "../Compressor.h"
 #include "../CompressorPresets.h"
 #include "../Limiter.h"
-#include "../Reverb.h"
 #include "../Meter.h"
+#include "../Reverb.h"
 
 QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     : QMainWindow(parent)
@@ -913,16 +913,17 @@ void QJackTrip::start()
                 m_jackTrip->setIOStatTimeout(m_ui->ioStatsSpinBox->value());
                 m_jackTrip->setIOStatStream(m_statsDialog->getOutputStream());
             }
-            
+
             // Open our meter window
-            m_vuDialog.reset(new VuDialog(this, m_ui->channelSendSpinBox->value(), m_ui->channelRecvSpinBox->value()));
+            m_vuDialog.reset(new VuDialog(this, m_ui->channelSendSpinBox->value(),
+                                          m_ui->channelRecvSpinBox->value()));
             m_vuDialog->show();
 
             // Append any plugins
             appendPlugins(m_jackTrip.data(), m_ui->channelSendSpinBox->value(),
                           m_ui->channelRecvSpinBox->value());
             // Setup meters (also currently using faust plugins).
-            Meter* inputMeter = new Meter(m_ui->channelSendSpinBox->value());
+            Meter* inputMeter  = new Meter(m_ui->channelSendSpinBox->value());
             Meter* outputMeter = new Meter(m_ui->channelRecvSpinBox->value());
             m_jackTrip->appendProcessPluginToNetwork(inputMeter);
             m_jackTrip->appendProcessPluginFromNetwork(outputMeter);
@@ -938,11 +939,11 @@ void QJackTrip::start()
                              &QJackTrip::udpWaitingTooLong, Qt::QueuedConnection);
             QObject::connect(m_jackTrip.data(), &JackTrip::signalQueueLengthChanged, this,
                              &QJackTrip::queueLengthChanged, Qt::QueuedConnection);
-            QObject::connect(inputMeter, &Meter::onComputedVolumeMeasurements, m_vuDialog.data(),
-                             &VuDialog::updatedInputMeasurements);
-            QObject::connect(outputMeter, &Meter::onComputedVolumeMeasurements, m_vuDialog.data(),
-                             &VuDialog::updatedOutputMeasurements);
-            
+            QObject::connect(inputMeter, &Meter::onComputedVolumeMeasurements,
+                             m_vuDialog.data(), &VuDialog::updatedInputMeasurements);
+            QObject::connect(outputMeter, &Meter::onComputedVolumeMeasurements,
+                             m_vuDialog.data(), &VuDialog::updatedOutputMeasurements);
+
             m_ui->statusBar->showMessage(QStringLiteral("Waiting for Peer..."));
             m_ui->disconnectButton->setEnabled(true);
 #ifdef WAIRTOHUB  // WAIR

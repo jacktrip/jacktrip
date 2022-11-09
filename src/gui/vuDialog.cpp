@@ -25,9 +25,9 @@
 
 #include "vuDialog.h"
 
-#include <QSettings>
 #include <QGridLayout>
 #include <QLabel>
+#include <QSettings>
 #include <QSpacerItem>
 
 #include "ui_vuDialog.h"
@@ -39,14 +39,14 @@ VuDialog::VuDialog(QWidget* parent, quint32 inputChannels, quint32 outputChannel
     , m_outputChannels(outputChannels)
 {
     m_ui->setupUi(this);
-    
+
     // Setting the parent should set the ownership for all of these objects.
     // (They should be deleted when the window is.)
-    QGridLayout *inputLayout = new QGridLayout(this);
+    QGridLayout* inputLayout = new QGridLayout(this);
     for (int i = 0; i < inputChannels; i++) {
-        VuMeter *meter = new VuMeter(this);
+        VuMeter* meter = new VuMeter(this);
         m_inputMeters.append(meter);
-        QLabel *label = new QLabel(QString::number(i + 1), this);
+        QLabel* label = new QLabel(QString::number(i + 1), this);
         label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
         inputLayout->addWidget(label, i, 0, 1, 1);
         inputLayout->addWidget(meter, i, 1, 1, 1);
@@ -54,12 +54,12 @@ VuDialog::VuDialog(QWidget* parent, quint32 inputChannels, quint32 outputChannel
     // Effectively add a spacer at the bottom.
     inputLayout->setRowStretch(inputChannels, 100);
     m_ui->inputGroupBox->setLayout(inputLayout);
-    
-    QGridLayout *outputLayout = new QGridLayout(this);
+
+    QGridLayout* outputLayout = new QGridLayout(this);
     for (int i = 0; i < outputChannels; i++) {
-        VuMeter *meter = new VuMeter(this);
+        VuMeter* meter = new VuMeter(this);
         m_outputMeters.append(meter);
-        QLabel *label = new QLabel(QString::number(i + 1), this);
+        QLabel* label = new QLabel(QString::number(i + 1), this);
         label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
         outputLayout->addWidget(label, i, 0, 1, 1);
         outputLayout->addWidget(meter, i, 1, 1, 1);

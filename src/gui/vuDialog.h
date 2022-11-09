@@ -29,6 +29,7 @@
 #include <QDialog>
 #include <QList>
 #include <QScopedPointer>
+
 #include "vuMeter.h"
 
 namespace Ui
@@ -41,7 +42,8 @@ class VuDialog : public QDialog
     Q_OBJECT
 
    public:
-    explicit VuDialog(QWidget* parent = nullptr, quint32 inputChannels = 1, quint32 outputChannels = 1);
+    explicit VuDialog(QWidget* parent = nullptr, quint32 inputChannels = 1,
+                      quint32 outputChannels = 1);
     ~VuDialog() override;
 
     void showEvent(QShowEvent* event) override;
@@ -56,12 +58,12 @@ class VuDialog : public QDialog
 
    private:
     QScopedPointer<Ui::VuDialog> m_ui;
-    
+
     quint32 m_inputChannels;
     quint32 m_outputChannels;
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
-    
+
     QList<VuMeter*> m_inputMeters;
     QList<VuMeter*> m_outputMeters;
 };

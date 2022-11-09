@@ -25,9 +25,7 @@
 
 #include "vuMeter.h"
 
-VuMeter::VuMeter(QWidget* parent)
-    : QWidget(parent)
-    , m_level(0)
+VuMeter::VuMeter(QWidget* parent) : QWidget(parent), m_level(0)
 {
     m_greenOn.setRgb(97, 197, 84);
     m_greenOff.setRgb(29, 67, 24);
@@ -47,7 +45,7 @@ void VuMeter::paintEvent(QPaintEvent* event)
 {
     quint32 binWidth = std::floor((width() - ((m_bins - 1) * m_margins)) / m_bins);
     QPainter painter(this);
-    
+
     painter.setPen(Qt::NoPen);
     quint32 level = std::round(m_level * (m_bins + 1));
     for (int i = 0; i < m_bins; i++) {
@@ -69,7 +67,7 @@ void VuMeter::paintEvent(QPaintEvent* event)
                 painter.setBrush(m_redOff);
             }
         }
-        
+
         painter.drawRect((binWidth + m_margins) * i, 0, binWidth, height());
     }
 }

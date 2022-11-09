@@ -26,8 +26,8 @@
 #ifndef VUMETER_H
 #define VUMETER_H
 
-#include <QWidget>
 #include <QPainter>
+#include <QWidget>
 
 class VuMeter : public QWidget
 {
@@ -38,10 +38,10 @@ class VuMeter : public QWidget
     ~VuMeter() override = default;
 
     void setLevel(qreal level);
-    
+
    protected:
-    void paintEvent(QPaintEvent *event) override;
-    
+    void paintEvent(QPaintEvent* event) override;
+
    private:
     qreal m_level;
     QColor m_greenOn;
@@ -50,8 +50,8 @@ class VuMeter : public QWidget
     QColor m_yellowOff;
     QColor m_redOn;
     QColor m_redOff;
-    
-    quint32 m_bins = 15;
+
+    quint32 m_bins    = 15;
     quint32 m_margins = 2;
 };
 
