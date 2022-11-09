@@ -133,6 +133,7 @@ else
 			'src/gui/vsPing.h',
 			'src/gui/vsUrlHandler.h',
 			'src/gui/vsQmlClipboard.h',
+			'src/gui/vsMacPermissions.h',
 			'src/JTApplication.h'
 		]
 		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
