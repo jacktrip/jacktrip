@@ -117,11 +117,12 @@ void VsAudioInterface::setupAudio()
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
 
             if (devicesWarningMsg != "") {
-                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
             }
 
             if (devicesErrorMsg != "") {
-                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
             }
 
             updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
@@ -165,11 +166,12 @@ void VsAudioInterface::setupAudio()
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
 
             if (devicesWarningMsg != "") {
-                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
             }
 
             if (devicesErrorMsg != "") {
-                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
             }
 
             updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
@@ -196,20 +198,24 @@ void VsAudioInterface::setupAudio()
 
             std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
-            std::string devicesWarningHelpUrl = m_audioInterface->getDevicesWarningHelpUrl();
+            std::string devicesWarningHelpUrl =
+                m_audioInterface->getDevicesWarningHelpUrl();
             std::string devicesErrorHelpUrl = m_audioInterface->getDevicesErrorHelpUrl();
 
             if (devicesWarningMsg != "") {
-                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
                 if (devicesWarningHelpUrl != "") {
-                    std::cout << "Learn More: " << devicesWarningHelpUrl << std::endl;
+                    qDebug() << "Learn More: "
+                             << QString::fromStdString(devicesWarningHelpUrl);
                 }
             }
 
             if (devicesErrorMsg != "") {
-                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
                 if (devicesErrorHelpUrl != "") {
-                    std::cout << "Learn More: " << devicesErrorHelpUrl << std::endl;
+                    qDebug() << "Learn More: "
+                             << QString::fromStdString(devicesErrorHelpUrl);
                 }
             }
 

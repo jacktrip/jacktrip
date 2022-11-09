@@ -260,11 +260,55 @@ Item {
         ComboBox {
             id: outputCombo
             model: outputComboModel
-            currentIndex: virtualstudio.outputDevice
-            onActivated: { virtualstudio.outputDevice = currentIndex }
+            currentIndex: (() => {
+                let count = 0;
+                for (let i = 0; i < outputCombo.model.length; i++) {
+                    if (outputCombo.model[i].type === "element") {
+                        count++;
+                    }
+
+                    if (count > virtualstudio.outputDevice) {
+                        return i;
+                    }
+                }
+
+                return 0;
+            })()
             x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 96 : 48)
             width: backendCombo.width; height: backendCombo.height
             visible: virtualstudio.audioBackend != "JACK"
+            delegate: ItemDelegate {
+                required property var modelData
+                required property int index
+
+                leftPadding: 0
+
+                width: parent.width
+                contentItem: Text {
+                    leftPadding: modelData.type === "element" && outputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
+                    text: modelData.text
+                    font.bold: modelData.type === "header"
+                }
+                highlighted: outputCombo.highlightedIndex === index
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if (modelData.type == "element") {
+                            outputCombo.currentIndex = index
+                            outputCombo.popup.close()
+                            virtualstudio.outputDevice = index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                        }
+                    }
+                }
+            }
+            contentItem: Text {
+                leftPadding: 12
+                font: outputCombo.font
+                horizontalAlignment: Text.AlignHLeft
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+                text: outputCombo.model[outputCombo.currentIndex].text
+            }
         }
 
         Button {
@@ -299,11 +343,56 @@ Item {
         ComboBox {
             id: inputCombo
             model: inputComboModel
-            currentIndex: virtualstudio.inputDevice
-            onActivated: { virtualstudio.inputDevice = currentIndex }
+            currentIndex: (() => {
+                let count = 0;
+                for (let i = 0; i < inputCombo.model.length; i++) {
+                    if (inputCombo.model[i].type === "element") {
+                        count++;
+                    }
+
+                    if (count > virtualstudio.inputDevice) {
+                        return i;
+                    }
+                }
+
+                return 0;
+            })()
             x: backendCombo.x; y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
+                        delegate: ItemDelegate {
+                required property var modelData
+                required property int index
+
+                leftPadding: 0
+
+                width: parent.width
+                contentItem: Text {
+                    leftPadding: modelData.type === "element" && inputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
+                    text: modelData.text
+                    font.bold: modelData.type === "header"
+                }
+                highlighted: inputCombo.highlightedIndex === index
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if (modelData.type == "element") {
+                            inputCombo.currentIndex = index
+                            inputCombo.popup.close()
+                            virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                            console.log("SETTING INPUTDEVICE: ", index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length)
+                        }
+                    }
+                }
+            }
+            contentItem: Text {
+                leftPadding: 12
+                font: inputCombo.font
+                horizontalAlignment: Text.AlignHLeft
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+                text: inputCombo.model[inputCombo.currentIndex].text
+            }
         }
 
         Meter {
