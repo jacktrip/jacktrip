@@ -117,11 +117,12 @@ void VsAudioInterface::setupAudio()
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
 
             if (devicesWarningMsg != "") {
-                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
             }
 
             if (devicesErrorMsg != "") {
-                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
             }
 
             updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
@@ -165,11 +166,12 @@ void VsAudioInterface::setupAudio()
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
 
             if (devicesWarningMsg != "") {
-                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
             }
 
             if (devicesErrorMsg != "") {
-                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
             }
 
             updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
@@ -198,11 +200,12 @@ void VsAudioInterface::setupAudio()
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
 
             if (devicesWarningMsg != "") {
-                std::cout << "Devices Warning: " << devicesWarningMsg << std::endl;
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
             }
 
             if (devicesErrorMsg != "") {
-                std::cout << "Devices Error: " << devicesErrorMsg << std::endl;
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
             }
 
             updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
