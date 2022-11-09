@@ -413,30 +413,6 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                                      bool isInput)
 {
     list->clear();
-    list->append(QStringLiteral("(default)"));
-    if (categories != NULL) {
-#ifdef _WIN32
-        RtAudio temp;
-        RtAudio::Api tempApi = temp.getCurrentApi();
-        switch (tempApi) {
-        case RtAudio::WINDOWS_ASIO:
-            categories->append(QStringLiteral("Low-Latency (ASIO)"));
-            break;
-        case RtAudio::WINDOWS_WASAPI:
-            categories->append(QStringLiteral("All Devices (Non-ASIO)"));
-            break;
-        case RtAudio::WINDOWS_DS:
-            categories->append(QStringLiteral("All Devices (Non-ASIO)"));
-            break;
-        default:
-            categories->append(QStringLiteral(""));
-            break;
-        }
-#else
-        categories->append(QStringLiteral(""));
-#endif
-    }
-
     std::vector<RtAudio::Api> apis;
     RtAudio::getCompiledApi(apis);
 
