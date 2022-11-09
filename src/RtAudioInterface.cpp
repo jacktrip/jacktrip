@@ -93,8 +93,8 @@ void RtAudioInterface::setup(bool verbose)
 
     QStringList all_input_devices;
     QStringList all_output_devices;
-    getDeviceList(&all_input_devices, true);
-    getDeviceList(&all_output_devices, false);
+    getDeviceList(&all_input_devices, NULL, true);
+    getDeviceList(&all_output_devices, NULL, false);
 
     unsigned int n_devices_input  = all_input_devices.size();
     unsigned int n_devices_output = all_output_devices.size();
@@ -409,16 +409,21 @@ int RtAudioInterface::stopProcess()
 }
 
 //*******************************************************************************
-void RtAudioInterface::getDeviceList(QStringList* list, bool isInput)
+void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
+                                     bool isInput)
 {
     list->clear();
     list->append(QStringLiteral("(default)"));
+    if (categories != NULL) {
+        categories->append(QStringLiteral(""));
+    }
 
     std::vector<RtAudio::Api> apis;
     RtAudio::getCompiledApi(apis);
 
     for (uint32_t i = 0; i < apis.size(); i++) {
-        RtAudio rtaudio(apis.at(i));
+        RtAudio::Api api = apis.at(i);
+        RtAudio rtaudio(api);
         unsigned int devices = rtaudio.getDeviceCount();
         for (unsigned int j = 0; j < devices; j++) {
             RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
@@ -433,6 +438,29 @@ void RtAudioInterface::getDeviceList(QStringList* list, bool isInput)
                 } else if (!isInput && info.outputChannels > 0) {
                     list->append(QString::fromStdString(info.name));
                 }
+
+                if (categories == NULL) {
+                    continue;
+                }
+
+#ifdef _WIN32
+                switch (api) {
+                case RtAudio::WINDOWS_ASIO:
+                    categories->append("Low-Latency (ASIO)");
+                    break;
+                case RtAudio::WINDOWS_WASAPI:
+                    categories->append("All Devices (Non-ASIO)");
+                    break;
+                case RtAudio::WINDOWS_DS:
+                    categories->append("All Devices (Non-ASIO)");
+                    break;
+                default:
+                    categories->append("");
+                    break;
+                }
+#else
+                categories->append("");
+#endif
             }
         }
     }

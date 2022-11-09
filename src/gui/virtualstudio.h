@@ -277,6 +277,9 @@ class VirtualStudio : public QObject
     void getRegions();
     void getUserMetadata();
     void stopStudio();
+#ifdef RT_AUDIO
+    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
+#endif
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
@@ -357,6 +360,8 @@ class VirtualStudio : public QObject
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
     QStringList m_outputDeviceList;
+    QStringList m_inputDeviceCategories;
+    QStringList m_outputDeviceCategories;
     QString m_inputDevice;
     QString m_outputDevice;
     quint16 m_bufferSize;
