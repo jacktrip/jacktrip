@@ -239,7 +239,9 @@ HEADERS += src/DataProtocol.h \
   HEADERS += src/gui/about.h \
              src/gui/messageDialog.h \
              src/gui/qjacktrip.h \
-             src/gui/textbuf.h
+             src/gui/textbuf.h \
+             src/gui/vuDialog.h \
+             src/gui/vuMeter.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
                src/gui/vsDevice.h \
@@ -300,7 +302,9 @@ SOURCES += src/DataProtocol.cpp \
   SOURCES += src/gui/messageDialog.cpp \
              src/gui/qjacktrip.cpp \
              src/gui/about.cpp \
-             src/gui/textbuf.cpp
+             src/gui/textbuf.cpp \
+             src/gui/vuDialog.cpp \
+             src/gui/vuMeter.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
                src/gui/vsDevice.cpp \
@@ -325,7 +329,10 @@ SOURCES += src/DataProtocol.cpp \
     HEADERS += src/gui/NoNap.h
     OBJECTIVE_SOURCES += src/gui/NoNap.mm
   }
-  FORMS += src/gui/qjacktrip.ui src/gui/about.ui src/gui/messageDialog.ui
+  FORMS += src/gui/qjacktrip.ui \
+           src/gui/about.ui \
+           src/gui/messageDialog.ui \
+           src/gui/vuDialog.ui
   novs {
     RESOURCES += src/gui/qjacktrip_novs.qrc
   } else {

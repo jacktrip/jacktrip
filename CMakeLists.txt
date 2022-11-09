@@ -171,6 +171,9 @@ if (NOT nogui)
     src/gui/about.cpp
     src/gui/messageDialog.cpp
     src/gui/textbuf.cpp
+    src/gui/vuDialog.cpp
+    src/gui/vuMeter.cpp
+    src/Meter.cpp
   )
   
   if (NOT novs)
@@ -185,7 +188,6 @@ if (NOT nogui)
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
       src/gui/qjacktrip.qrc
-      src/Meter.cpp
       src/Volume.cpp
       src/Tone.cpp
       # Need to include this for AUTOMOC to do its thing

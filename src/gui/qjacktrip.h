@@ -40,6 +40,7 @@
 #include "../JackTrip.h"
 #include "../UdpHubListener.h"
 #include "messageDialog.h"
+#include "vuDialog.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -125,6 +126,7 @@ class QJackTrip : public QMainWindow
     QScopedPointer<QNetworkAccessManager> m_netManager;
     QScopedPointer<MessageDialog> m_statsDialog;
     QScopedPointer<MessageDialog> m_debugDialog;
+    QScopedPointer<VuDialog> m_vuDialog;
     std::ostream m_realCout;
     std::ostream m_realCerr;
     bool m_jackTripRunning;

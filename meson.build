@@ -92,18 +92,23 @@ else
 		'src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp',
-		'src/gui/textbuf.cpp'
+		'src/gui/textbuf.cpp',
+		'src/gui/vuDialog.cpp',
+		'src/gui/vuMeter.cpp'
 	]
 	moc_h += [
 		'src/gui/about.h',
 		'src/gui/qjacktrip.h',
 		'src/gui/messageDialog.h',
-		'src/gui/textbuf.h'
+		'src/gui/textbuf.h',
+		'src/gui/vuDialog.h',
+		'src/gui/vuMeter.h'
 	]
 	ui_h += [
 		'src/gui/qjacktrip.ui',
 		'src/gui/messageDialog.ui',
-		'src/gui/about.ui'
+		'src/gui/about.ui',
+		'src/gui/vuDialog.ui'
 	]
 
 	if get_option('novs') == true
