@@ -43,7 +43,7 @@ VuDialog::VuDialog(QWidget* parent, quint32 inputChannels, quint32 outputChannel
     // Setting the parent should set the ownership for all of these objects.
     // (They should be deleted when the window is.)
     QGridLayout* inputLayout = new QGridLayout(this);
-    for (int i = 0; i < inputChannels; i++) {
+    for (quint32 i = 0; i < inputChannels; i++) {
         VuMeter* meter = new VuMeter(this);
         m_inputMeters.append(meter);
         QLabel* label = new QLabel(QString::number(i + 1), this);
@@ -56,7 +56,7 @@ VuDialog::VuDialog(QWidget* parent, quint32 inputChannels, quint32 outputChannel
     m_ui->inputGroupBox->setLayout(inputLayout);
 
     QGridLayout* outputLayout = new QGridLayout(this);
-    for (int i = 0; i < outputChannels; i++) {
+    for (quint32 i = 0; i < outputChannels; i++) {
         VuMeter* meter = new VuMeter(this);
         m_outputMeters.append(meter);
         QLabel* label = new QLabel(QString::number(i + 1), this);
@@ -87,7 +87,7 @@ void VuDialog::closeEvent(QCloseEvent* event)
 
 void VuDialog::updatedInputMeasurements(const QVector<float> valuesInDb)
 {
-    for (int i = 0; i < m_inputChannels; i++) {
+    for (quint32 i = 0; i < m_inputChannels; i++) {
         // Determine decibel reading
         qreal dB = m_meterMin;
         if (i < valuesInDb.size()) {
@@ -102,7 +102,7 @@ void VuDialog::updatedInputMeasurements(const QVector<float> valuesInDb)
 
 void VuDialog::updatedOutputMeasurements(const QVector<float> valuesInDb)
 {
-    for (int i = 0; i < m_outputChannels; i++) {
+    for (quint32 i = 0; i < m_outputChannels; i++) {
         // Determine decibel reading
         qreal dB = m_meterMin;
         if (i < valuesInDb.size()) {
