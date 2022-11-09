@@ -171,7 +171,6 @@ if (NOT nogui)
     src/gui/about.cpp
     src/gui/messageDialog.cpp
     src/gui/textbuf.cpp
-    src/gui/vuDialog.cpp
     src/gui/vuMeter.cpp
     src/Meter.cpp
   )
