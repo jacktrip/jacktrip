@@ -843,10 +843,19 @@ void QJackTrip::start()
                     m_ui->sampleRateComboBox->currentText().toInt());
                 m_jackTrip->setAudioBufferSizeInSamples(
                     m_ui->bufferSizeComboBox->currentText().toInt());
-                m_jackTrip->setInputDevice(
-                    m_ui->inputDeviceComboBox->currentText().toStdString());
-                m_jackTrip->setOutputDevice(
-                    m_ui->outputDeviceComboBox->currentText().toStdString());
+                // we assume that first entry is "(default)"
+                if (m_ui->inputDeviceComboBox->currentIndex() == 0) {
+                    m_jackTrip->setInputDevice("");
+                } else {
+                    m_jackTrip->setInputDevice(
+                        m_ui->inputDeviceComboBox->currentText().toStdString());
+                }
+                if (m_ui->outputDeviceComboBox->currentIndex() == 0) {
+                    m_jackTrip->setOutputDevice("");
+                } else {
+                    m_jackTrip->setOutputDevice(
+                        m_ui->outputDeviceComboBox->currentText().toStdString());
+                }
             }
 #endif
 
@@ -1626,6 +1635,7 @@ void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
 {
     QString previousString = menu->currentText();
     menu->clear();
+    menu->addItem(QStringLiteral("(default)"));
 
     std::vector<RtAudio::Api> apis;
     RtAudio::getCompiledApi(apis);

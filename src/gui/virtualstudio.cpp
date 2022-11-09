@@ -785,10 +785,10 @@ void VirtualStudio::refreshDevices()
 
     // Make sure we keep our current settings if the device still exists
     if (!m_inputDeviceList.contains(m_inputDevice)) {
-        m_inputDevice = QStringLiteral("");
+        m_inputDevice = QStringLiteral("(default)");
     }
     if (!m_outputDeviceList.contains(m_outputDevice)) {
-        m_outputDevice = QStringLiteral("");
+        m_outputDevice = QStringLiteral("(default)");
     }
 
     emit inputDeviceChanged(m_inputDevice);
@@ -932,8 +932,14 @@ void VirtualStudio::completeConnection()
         int buffer_size    = 0;
 #ifdef RT_AUDIO
         if (m_useRtAudio) {
-            input       = m_inputDevice.toStdString();
-            output      = m_outputDevice.toStdString();
+            input = m_inputDevice.toStdString();
+            if (m_inputDevice == QLatin1String("(default)")) {
+                input = "";
+            }
+            output = m_outputDevice.toStdString();
+            if (m_outputDevice == QLatin1String("(default)")) {
+                output = "";
+            }
             buffer_size = m_bufferSize;
         }
 #endif
