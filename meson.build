@@ -92,13 +92,15 @@ else
 		'src/gui/qjacktrip.cpp',
 		'src/gui/about.cpp',
 		'src/gui/messageDialog.cpp',
-		'src/gui/textbuf.cpp'
+		'src/gui/textbuf.cpp',
+		'src/gui/vuMeter.cpp'
 	]
 	moc_h += [
 		'src/gui/about.h',
 		'src/gui/qjacktrip.h',
 		'src/gui/messageDialog.h',
-		'src/gui/textbuf.h'
+		'src/gui/textbuf.h',
+		'src/gui/vuMeter.h'
 	]
 	ui_h += [
 		'src/gui/qjacktrip.ui',
