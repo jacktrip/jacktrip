@@ -204,6 +204,7 @@ class VirtualStudio : public QObject
     void createStudio();
     void editProfile();
     void showAbout();
+    void openLink(const QString& url);
     void updatedInputVuMeasurements(const QVector<float>& valuesInDecibels);
     void updatedOutputVuMeasurements(const QVector<float>& valuesInDecibels);
     void setInputVolume(float multiplier);

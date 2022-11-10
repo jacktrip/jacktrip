@@ -1137,6 +1137,12 @@ void VirtualStudio::showAbout()
     about.exec();
 }
 
+void VirtualStudio::openLink(const QString& link)
+{
+    QUrl url = QUrl(link);
+    QDesktopServices::openUrl(url);
+}
+
 void VirtualStudio::exit()
 {
     m_refreshTimer.stop();
@@ -1190,6 +1196,10 @@ void VirtualStudio::slotAuthSucceded()
             &VirtualStudio::updatedDevicesErrorMsg);
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningMsgChanged, this,
             &VirtualStudio::updatedDevicesWarningMsg);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorHelpUrlChanged, this,
+            &VirtualStudio::updatedDevicesErrorHelpUrl);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningHelpUrlChanged, this,
+        &VirtualStudio::updatedDevicesWarningHelpUrl);
 
     m_vsAudioInterface->setupAudio();
 
