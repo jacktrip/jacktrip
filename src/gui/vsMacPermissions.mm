@@ -64,38 +64,42 @@ bool VsMacPermissions::micPermissionChecked()
 
 void VsMacPermissions::getMicPermission()
 {
-    // Request permission to access.
-    switch ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeAudio])
-    {
-        case AVAuthorizationStatusAuthorized:
+    if (@available(macOS 10.14, *)) {
+        // Request permission to access.
+        switch ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeAudio])
         {
-            // The user has previously granted access.
-            setMicPermission(QStringLiteral("granted"));
-            break;
+            case AVAuthorizationStatusAuthorized:
+            {
+                // The user has previously granted access.
+                setMicPermission(QStringLiteral("granted"));
+                break;
+            }
+            case AVAuthorizationStatusNotDetermined:
+            {
+                // The app hasn't yet asked the user for access.
+                [AVCaptureDevice requestAccessForMediaType:AVMediaTypeAudio completionHandler:^(BOOL granted) {
+                    if (granted) {
+                        setMicPermission(QStringLiteral("granted"));
+                    } else {
+                        setMicPermission(QStringLiteral("denied"));
+                    }
+                }];
+                setMicPermission(QStringLiteral("unknown"));
+                break;
+            }
+            case AVAuthorizationStatusDenied:
+            {
+                // The user has previously denied access.
+                setMicPermission(QStringLiteral("denied"));
+            }
+            case AVAuthorizationStatusRestricted:
+            {
+                // The user can't grant access due to restrictions.
+                setMicPermission(QStringLiteral("denied"));
+            }
         }
-        case AVAuthorizationStatusNotDetermined:
-        {
-            // The app hasn't yet asked the user for access.
-            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeAudio completionHandler:^(BOOL granted) {
-                if (granted) {
-                    setMicPermission(QStringLiteral("granted"));
-                } else {
-                    setMicPermission(QStringLiteral("denied"));
-                }
-            }];
-            setMicPermission(QStringLiteral("unknown"));
-            break;
-        }
-        case AVAuthorizationStatusDenied:
-        {
-            // The user has previously denied access.
-            setMicPermission(QStringLiteral("denied"));
-        }
-        case AVAuthorizationStatusRestricted:
-        {
-            // The user can't grant access due to restrictions.
-            setMicPermission(QStringLiteral("denied"));
-        }
+    } else {
+        setMicPermission(QStringLiteral("granted"));
     }
 }
 
