@@ -373,6 +373,8 @@ class VirtualStudio : public QObject
 #ifdef __APPLE__
     NoNap m_noNap;
     QSharedPointer<VsMacPermissions> m_permissions;
+#else
+    QSharedPointer<QObject> m_permissions;
 #endif
 };
 
