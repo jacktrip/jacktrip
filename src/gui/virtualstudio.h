@@ -81,8 +81,10 @@ class VirtualStudio : public QObject
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
-    Q_PROPERTY(QString devicesWarningHelpUrl READ devicesWarningHelpUrl NOTIFY devicesWarningHelpUrlChanged)
-    Q_PROPERTY(QString devicesErrorHelpUrl READ devicesErrorHelpUrl NOTIFY devicesErrorHelpUrlChanged)
+    Q_PROPERTY(QString devicesWarningHelpUrl READ devicesWarningHelpUrl NOTIFY
+                   devicesWarningHelpUrlChanged)
+    Q_PROPERTY(QString devicesErrorHelpUrl READ devicesErrorHelpUrl NOTIFY
+                   devicesErrorHelpUrlChanged)
 
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
@@ -353,10 +355,10 @@ class VirtualStudio : public QObject
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
-    QString m_devicesWarningMsg = QStringLiteral("");
-    QString m_devicesErrorMsg   = QStringLiteral("");
+    QString m_devicesWarningMsg     = QStringLiteral("");
+    QString m_devicesErrorMsg       = QStringLiteral("");
     QString m_devicesWarningHelpUrl = QStringLiteral("");
-    QString m_devicesErrorHelpUrl = QStringLiteral("");
+    QString m_devicesErrorHelpUrl   = QStringLiteral("");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;

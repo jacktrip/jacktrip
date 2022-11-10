@@ -775,11 +775,14 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
 {
     switch (msg) {
     case DEVICE_WARN_LATENCY:
-        mWarningMsg = "The selected devices don't support low latency. You can use them, but you will experience audio delay. Make sure you have up to date drivers from the manufacturer!";
+        mWarningMsg =
+            "The selected devices don't support low latency. You can use them, but you "
+            "will experience audio delay. Make sure you have up to date drivers from the "
+            "manufacturer!";
         mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
         break;
     default:
-        mWarningMsg = "";
+        mWarningMsg     = "";
         mWarningHelpUrl = "";
         break;
     }
@@ -793,11 +796,13 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
     mErrorMsg = msg;
     switch (msg) {
     case DEVICE_ERR_INCOMPATIBLE:
-        mErrorMsg = "The two devices you have selected are not compatible. Please select a different pair of devices.";
+        mErrorMsg =
+            "The two devices you have selected are not compatible. Please select a "
+            "different pair of devices.";
         mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
         break;
     default:
-        mErrorMsg = "";
+        mErrorMsg     = "";
         mErrorHelpUrl = "";
         break;
     }

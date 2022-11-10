@@ -1196,10 +1196,10 @@ void VirtualStudio::slotAuthSucceded()
             &VirtualStudio::updatedDevicesErrorMsg);
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningMsgChanged, this,
             &VirtualStudio::updatedDevicesWarningMsg);
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorHelpUrlChanged, this,
-            &VirtualStudio::updatedDevicesErrorHelpUrl);
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningHelpUrlChanged, this,
-        &VirtualStudio::updatedDevicesWarningHelpUrl);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorHelpUrlChanged,
+            this, &VirtualStudio::updatedDevicesErrorHelpUrl);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningHelpUrlChanged,
+            this, &VirtualStudio::updatedDevicesWarningHelpUrl);
 
     m_vsAudioInterface->setupAudio();
 
