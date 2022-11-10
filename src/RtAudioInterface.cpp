@@ -192,12 +192,12 @@ void RtAudioInterface::setup(bool verbose)
     delete rtAudioOut;
     if (api_in == api_out) {
         mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
-// #ifdef _WIN32
+#ifdef _WIN32
         if (api_in != "asio") {
             AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_LATENCY);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
         }
-// #endif
+#endif
     } else {
         AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
         AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_INCOMPATIBLE);
