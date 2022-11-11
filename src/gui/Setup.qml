@@ -40,7 +40,7 @@ Item {
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
-    property string micPermission: permissions.micPermission ? permissions.micPermission : "granted"
+    property string micPermission: permissions && permissions.micPermission ? permissions.micPermission : "granted"
 
     Text {
         id: testText
