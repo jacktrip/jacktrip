@@ -116,6 +116,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mStopOnTimeout(false)
     , mSendRingBuffer(NULL)
     , mReceiveRingBuffer(NULL)
+    , mRegulatorThreadPtr(NULL)
     , mReceiverBindPort(receiver_bind_port)
     , mSenderPeerPort(sender_peer_port)
     , mSenderBindPort(sender_bind_port)
@@ -155,6 +156,8 @@ JackTrip::~JackTrip()
     delete mDataProtocolReceiver;
     delete mAudioInterface;
     delete mPacketHeader;
+    delete mRegulatorWorkerPtr;
+    delete mRegulatorThreadPtr;
     delete mSendRingBuffer;
     delete mReceiveRingBuffer;
 }
@@ -597,6 +600,18 @@ void JackTrip::completeConnection()
 
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
+    }
+
+    if (mBufferStrategy == 3) {
+        mRegulatorThreadPtr = new QThread();
+        mRegulatorThreadPtr->setObjectName("RegulatorThread");
+        Regulator* regulatorPtr    = reinterpret_cast<Regulator*>(mReceiveRingBuffer);
+        RegulatorWorker* workerPtr = new RegulatorWorker(regulatorPtr);
+        workerPtr->moveToThread(mRegulatorThreadPtr);
+        QObject::connect(this, &JackTrip::signalReceivedNetworkPacket, workerPtr,
+                         &RegulatorWorker::pullPacket, Qt::QueuedConnection);
+        mRegulatorThreadPtr->start();
+        mRegulatorWorkerPtr = workerPtr;
     }
 
     mAudioInterface->initPlugins(true);  // mSampleRate known now, which plugins require
@@ -1058,6 +1073,12 @@ void JackTrip::stop(const QString& errorMessage)
     mHasShutdown = true;
     std::cout << "Stopping JackTrip..." << std::endl;
 
+    if (mRegulatorThreadPtr != nullptr) {
+        // Stop the Regulator thread
+        mRegulatorThreadPtr->quit();
+        mRegulatorThreadPtr->wait();
+    }
+
     if (mDataProtocolSender != nullptr) {
         // Stop The Sender
         mDataProtocolSender->stop();
@@ -1092,6 +1113,9 @@ void JackTrip::waitThreads()
 {
     mDataProtocolSender->wait();
     mDataProtocolReceiver->wait();
+    if (mRegulatorThreadPtr != nullptr) {
+        mRegulatorThreadPtr->wait();
+    }
 }
 
 //*******************************************************************************

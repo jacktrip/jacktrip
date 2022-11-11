@@ -46,6 +46,7 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <cstring>
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
@@ -131,22 +132,27 @@ class Regulator : public RingBuffer
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instead of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
-    virtual bool insertSlotNonBlockingRegulator(const int8_t* ptrToSlot,
-                                                [[maybe_unused]] int len,
-                                                [[maybe_unused]] int seq_num, int lostLen)
+    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
+                                       int seq_num)
     {
         shimFPP(ptrToSlot, len, seq_num);
         if (m_b_BroadcastQueueLength)
-            m_b_ReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
+            m_b_BroadcastRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen,
+                                                           seq_num);
         return (true);
     }
 
-    void pullPacket(int8_t* buf);
+    // called by RegulatorWorker after each audio callback, to prep next packet
+    void pullPacket();
 
-    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot)
+    {
+        ::memcpy(ptrToReadSlot, mNextPacket, mBytes);
+    }
+
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
     {
-        m_b_ReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot);
+        m_b_BroadcastRingBuffer->readBroadcastSlot(ptrToReadSlot);
     }
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
@@ -168,7 +174,9 @@ class Regulator : public RingBuffer
     BurgAlgorithm ba;
     int mBytes;
     int mBytesPeerPacket;
+    int8_t* mPullQueue;
     int8_t* mXfrBuffer;
+    const void* mNextPacket;
     int8_t* mAssembledPacket;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
@@ -202,8 +210,30 @@ class Regulator : public RingBuffer
     void changeGlobal_2(int);
     void changeGlobal_3(int);
     void printParams();
-    /// Pointer for the Receive RingBuffer
-    RingBuffer* m_b_ReceiveRingBuffer;
+
+    /// Pointer for the Broadcast RingBuffer
+    RingBuffer* m_b_BroadcastRingBuffer;
     int m_b_BroadcastQueueLength;
 };
+
+class RegulatorWorker : public QObject
+{
+    Q_OBJECT;
+
+   public:
+    RegulatorWorker(Regulator* rPtr) : mRegulatorPtr(rPtr) {}
+    virtual ~RegulatorWorker() {}
+
+   public slots:
+    void pullPacket()
+    {
+        if (mRegulatorPtr != nullptr) {
+            mRegulatorPtr->pullPacket();
+        }
+    }
+
+   private:
+    Regulator* mRegulatorPtr;
+};
+
 #endif  //__REGULATOR_H__

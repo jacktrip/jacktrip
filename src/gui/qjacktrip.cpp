@@ -1005,7 +1005,7 @@ void QJackTrip::exit()
 
 void QJackTrip::updatedInputMeasurements(const QVector<float> valuesInDb)
 {
-    for (quint32 i = 0; i < m_inputMeters.count(); i++) {
+    for (int i = 0; i < m_inputMeters.count(); i++) {
         // Determine decibel reading
         qreal dB = m_meterMin;
         if (i < valuesInDb.size()) {
@@ -1020,7 +1020,7 @@ void QJackTrip::updatedInputMeasurements(const QVector<float> valuesInDb)
 
 void QJackTrip::updatedOutputMeasurements(const QVector<float> valuesInDb)
 {
-    for (quint32 i = 0; i < m_outputMeters.count(); i++) {
+    for (int i = 0; i < m_outputMeters.count(); i++) {
         // Determine decibel reading
         qreal dB = m_meterMin;
         if (i < valuesInDb.size()) {
