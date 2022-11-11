@@ -177,11 +177,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     }
     connect(m_permissions.data(), &VsMacPermissions::micPermissionUpdated, this,
             &VirtualStudio::startAudio);
-#else
-    m_permissions.reset(new QObject());
-    m_permissions->setProperty("micPermission", "granted");
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("permissions"),
-                                                       QVariant::fromValue(m_permissions.data()));
 #endif
 
     m_view.engine()->rootContext()->setContextProperty(

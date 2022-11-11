@@ -40,10 +40,11 @@ Item {
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
+    property string micPermission: permissions.micPermission ? permissions.micPermission : "granted"
 
     Text {
         id: testText
-        text: warningScreen + " " + permissions.micPermission
+        text: warningScreen + " " + micPermission
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         color: textColour
         anchors.horizontalCenter: parent.horizontalCenter
@@ -275,10 +276,7 @@ Item {
                 }
             }
             onClicked: {
-                console.log(currShowWarnings);
-                console.log(warningScreen);
-                console.log(permissions.micPermission); 
-                if (permissions.micPermission == "unknown") {
+                if (micPermission == "unknown") {
                     virtualstudio.showWarnings = currShowWarnings; warningScreen = "microphone"
                 } else {
                     virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged"
@@ -341,7 +339,7 @@ Item {
     Item {
         id: requestMicPermissionsItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "microphone" && permissions.micPermission == "unknown"
+        visible: warningScreen == "microphone" && micPermission == "unknown"
 
         Image {
             id: microphonePrompt
@@ -450,7 +448,7 @@ Item {
     Item {
         id: noMicItem
         width: parent.width; height: parent.height
-        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "denied"
+        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && micPermission == "denied"
 
         Image {
             id: noMic
@@ -547,7 +545,7 @@ Item {
     Item {
         id: setupItem
         width: parent.width; height: parent.height
-        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "granted"
+        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && micPermission == "granted"
 
         Text {
             id: pageTitle
