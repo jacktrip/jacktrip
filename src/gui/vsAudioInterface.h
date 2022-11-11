@@ -109,6 +109,8 @@ class VsAudioInterface : public QObject
     void modeUpdated();
     void newVolumeMeterMeasurements(QVector<float> values);
     void errorToProcess(const QString& errorMessage);
+    void devicesErrorMsgChanged(const QString& msg);
+    void devicesWarningMsgChanged(const QString& msg);
 
    private slots:
     // void refreshAudioStream();
@@ -138,6 +140,9 @@ class VsAudioInterface : public QObject
     Volume* m_inputVolumePlugin;
     Volume* m_outputVolumePlugin;
     Tone* m_outputTonePlugin;
+
+    void updateDevicesErrorMsg(const QString& msg);
+    void updateDevicesWarningMsg(const QString& msg);
 };
 
 #endif  // VSDAUDIOINTERFACE_H

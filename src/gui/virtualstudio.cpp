@@ -325,6 +325,16 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] int device)
 #endif
 }
 
+QString VirtualStudio::devicesWarning()
+{
+    return m_devicesWarningMsg;
+}
+
+QString VirtualStudio::devicesError()
+{
+    return m_devicesErrorMsg;
+}
+
 float VirtualStudio::inputVolume()
 {
     return m_inMultiplier;
@@ -760,12 +770,18 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 void VirtualStudio::refreshDevices()
 {
 #ifdef RT_AUDIO
-    getDeviceList(&m_inputDeviceList, true);
-    getDeviceList(&m_outputDeviceList, false);
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputComboModel"), QVariant::fromValue(m_inputDeviceList));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputComboModel"), QVariant::fromValue(m_outputDeviceList));
+    RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories, true);
+    RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
+                                    false);
+
+    QVariant inputComboModel =
+        formatDeviceList(m_inputDeviceList, m_inputDeviceCategories);
+    QVariant outputComboModel =
+        formatDeviceList(m_outputDeviceList, m_outputDeviceCategories);
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputComboModel"),
+                                                       inputComboModel);
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
+                                                       outputComboModel);
 
     // Make sure we keep our current settings if the device still exists
     if (!m_inputDeviceList.contains(m_inputDevice)) {
@@ -1159,6 +1175,12 @@ void VirtualStudio::slotAuthSucceded()
     m_vsAudioInterface->setOutputDevice(m_outputDevice);
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
 #endif
+
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
+            &VirtualStudio::updatedDevicesErrorMsg);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningMsgChanged, this,
+            &VirtualStudio::updatedDevicesWarningMsg);
+
     m_vsAudioInterface->setupAudio();
 
     connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
@@ -1358,6 +1380,20 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
     m_networkStats = newStats;
     emit networkStatsChanged();
+    return;
+}
+
+void VirtualStudio::updatedDevicesErrorMsg(const QString& msg)
+{
+    m_devicesErrorMsg = msg;
+    emit devicesErrorChanged();
+    return;
+}
+
+void VirtualStudio::updatedDevicesWarningMsg(const QString& msg)
+{
+    m_devicesWarningMsg = msg;
+    emit devicesWarningChanged();
     return;
 }
 
@@ -1764,28 +1800,6 @@ void VirtualStudio::getUserMetadata()
     });
 }
 
-#ifdef RT_AUDIO
-void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
-{
-    RtAudio audio;
-    list->clear();
-    list->append(QStringLiteral("(default)"));
-
-    unsigned int devices = audio.getDeviceCount();
-    RtAudio::DeviceInfo info;
-    for (unsigned int i = 0; i < devices; i++) {
-        info = audio.getDeviceInfo(i);
-        if (info.probed == true) {
-            if (isInput && info.inputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
-            } else if (!isInput && info.outputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
-            }
-        }
-    }
-}
-#endif
-
 void VirtualStudio::stopStudio()
 {
     if (m_currentStudio < 0) {
@@ -1806,6 +1820,47 @@ void VirtualStudio::stopStudio()
         reply->deleteLater();
     });
 }
+
+#ifdef RT_AUDIO
+QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
+                                         const QStringList& categories)
+{
+    QStringList uniqueCategories = QStringList(categories);
+    uniqueCategories.removeDuplicates();
+
+    bool containsCategories = true;
+    if (uniqueCategories.size() == 0) {
+        containsCategories = false;
+    } else if (uniqueCategories.size() == 1 && uniqueCategories.at(0) == "") {
+        containsCategories = false;
+    }
+
+    QVariantList items = QVariantList();
+    for (int i = 0; i < uniqueCategories.size(); i++) {
+        QString category = uniqueCategories.at(i);
+
+        if (containsCategories) {
+            QJsonObject header = QJsonObject();
+            header.insert(QString::fromStdString("text"), uniqueCategories.at(i));
+            header.insert(QString::fromStdString("type"),
+                          QString::fromStdString("header"));
+            items.push_back(QVariant(QJsonValue(header)));
+        }
+
+        for (int j = 0; j < devices.size(); j++) {
+            if (categories.at(j).toStdString() == category.toStdString()) {
+                QJsonObject element = QJsonObject();
+                element.insert(QString::fromStdString("text"), devices.at(j));
+                element.insert(QString::fromStdString("type"),
+                               QString::fromStdString("element"));
+                items.push_back(QVariant(QJsonValue(element)));
+            }
+        }
+    }
+
+    return QVariant(items);
+}
+#endif
 
 VirtualStudio::~VirtualStudio()
 {

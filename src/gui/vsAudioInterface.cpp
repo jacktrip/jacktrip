@@ -111,7 +111,23 @@ void VsAudioInterface::setupAudio()
             if (gVerboseFlag)
                 std::cout << "  JackTrip:setupAudio before m_audioInterface->setup"
                           << std::endl;
-            m_audioInterface->setup();
+            m_audioInterface->setup(true);
+
+            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
+            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
+
+            if (devicesWarningMsg != "") {
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
+            }
+
+            if (devicesErrorMsg != "") {
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+            }
+
+            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+
             if (gVerboseFlag)
                 std::cout
                     << "  JackTrip:setupAudio before m_audioInterface->getSampleRate"
@@ -138,12 +154,29 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setInputDevice(m_inputDeviceName);
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-            m_audioInterface->setup();
+
+            m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
             m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
             // Setup might have changed buffer size
             m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+
+            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
+            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
+
+            if (devicesWarningMsg != "") {
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
+            }
+
+            if (devicesErrorMsg != "") {
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+            }
+
+            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+
 #endif
 #endif
         } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
@@ -155,12 +188,28 @@ void VsAudioInterface::setupAudio()
             m_audioInterface->setInputDevice(m_inputDeviceName);
             m_audioInterface->setOutputDevice(m_outputDeviceName);
             m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-            m_audioInterface->setup();
+
+            m_audioInterface->setup(true);
             // Setup might have reduced number of channels
             m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
             m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
             // Setup might have changed buffer size
             m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+
+            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
+            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
+
+            if (devicesWarningMsg != "") {
+                qDebug() << "Devices Warning: "
+                         << QString::fromStdString(devicesWarningMsg);
+            }
+
+            if (devicesErrorMsg != "") {
+                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+            }
+
+            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
 #endif
         }
 
@@ -309,7 +358,7 @@ void VsAudioInterface::startProcess()
 {
     if (!m_audioInterface.isNull() && !m_audioActive) {
         try {
-            m_audioInterface->initPlugins();
+            m_audioInterface->initPlugins(false);
             m_audioInterface->startProcess();
             if (m_audioInterfaceMode == VsAudioInterface::JACK) {
                 m_audioInterface->connectDefaultPorts();
@@ -380,4 +429,16 @@ void VsAudioInterface::setOutputMuted(bool muted)
     settings.setValue(QStringLiteral("OutMuted"), m_outMuted ? 1 : 0);
     settings.endGroup();
     emit updatedOutputMuted(muted);
+}
+
+void VsAudioInterface::updateDevicesErrorMsg(const QString& msg)
+{
+    emit devicesErrorMsgChanged(msg);
+    return;
+}
+
+void VsAudioInterface::updateDevicesWarningMsg(const QString& msg)
+{
+    emit devicesWarningMsgChanged(msg);
+    return;
 }

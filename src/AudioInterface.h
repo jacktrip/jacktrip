@@ -99,14 +99,14 @@ class AudioInterface
      * Packet Size, Bit Resolution, etc... Sub-classes should also call the parent
      * method to ensure correct inizialization.
      */
-    virtual void setup();
+    virtual void setup(bool verbose = true);
     /// \brief Tell the audio server that we are ready to roll. The
     /// process-callback will start running. This runs on its own thread.
     /// \return 0 on success, otherwise a non-zero error code
-    virtual int startProcess() const = 0;
+    virtual int startProcess() = 0;
     /// \brief Stops the process-callback thread
     /// \return 0 on success, otherwise a non-zero error code
-    virtual int stopProcess() const = 0;
+    virtual int stopProcess() = 0;
     /** \brief Process callback. Subclass should call this callback after obtaining the
     in_buffer and out_buffer pointers.
     * \param in_buffer Array of input audio samplers for each channel. The user
@@ -139,7 +139,7 @@ class AudioInterface
      * Initialize all ProcessPlugin modules.
      * The audio sampling rate (mSampleRate) must be set at this time.
      */
-    void initPlugins();
+    void initPlugins(bool verbose = true);
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
      * supported (audioBitResolutionT).
@@ -213,6 +213,9 @@ class AudioInterface
      * \return Sample Rate in Hz
      */
     static int getSampleRateFromType(samplingRateT rate_type);
+    std::string getDevicesWarningMsg();
+    std::string getDevicesErrorMsg();
+
     //------------------------------------------------------------------
 
    private:
@@ -260,8 +263,14 @@ class AudioInterface
     AudioTester* mAudioTesterP{nullptr};
 
    protected:
+    void setDevicesWarningMsg(std::string msg);
+    void setDevicesErrorMsg(std::string msg);
+
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
+
+    std::string mWarningMsg;
+    std::string mErrorMsg;
 };
 
 #endif  // __AUDIOINTERFACE_H__

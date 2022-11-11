@@ -10,13 +10,18 @@ Item {
     property int clipWidth: 10 * virtualstudio.uiScale
     required property bool clipped
 
-    property string meterColor: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
+    property bool enabled: true
+    property string meterColor: enabled ? (virtualstudio.darkMode ? "#5B5858" : "#D3D4D4") : "#EAECEC"
 
     property string meterGreen: "#61C554"
     property string meterYellow: "#F5BF4F"
     property string meterRed: "#F21B1B"
 
     function getBoxColor (idx, level) {
+
+        if (!enabled) {
+            return meterColor;
+        }
 
         // Case where the meter should be filled
         if (level > (idx / bins)) {
