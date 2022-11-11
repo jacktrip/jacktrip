@@ -29,36 +29,42 @@
 */
 //*****************************************************************
 /**
- * \file vsMacPermissions.h
+ * \file vsPermissions.h
  * \author Matt Horton
- * \date Oct 2022
+ * \date Nov 2022
  */
 
-#ifndef __VSMACPERMISSIONS_H__
-#define __VSMACPERMISSIONS_H__
-
-#include <objc/objc.h>
+#ifndef __VSPERMISSIONS_H__
+#define __VSPERMISSIONS_H__
 
 #include <QDebug>
 #include <QObject>
 #include <QString>
 
-#include "vsPermissions.h"
-
-class VsMacPermissions : public VsPermissions
+class VsPermissions : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString micPermission READ micPermission NOTIFY micPermissionUpdated)
 
    public:
-    explicit VsMacPermissions();
+    VsPermissions() = default; //define here and there
 
-    bool micPermissionChecked() override;
-    Q_INVOKABLE void getMicPermission() override;
-    Q_INVOKABLE void openSystemPrivacy();
+    QString micPermission(); // define here
+    virtual bool micPermissionChecked(); // define here and there
+    Q_INVOKABLE virtual void getMicPermission();
+    void setMicPermission(QString status); //define here
 
-   private:
+   signals:
+    void micPermissionUpdated(); //leave here
+
+   protected:
+#if __APPLE__
     QString m_micPermission     = "unknown";
     bool m_micPermissionChecked = false;
+#else
+    QString m_micPermission     = "granted";
+    bool m_micPermissionChecked = true;
+#endif
 };
 
-#endif  // __VSMACPERMISSIONS_H__
+#endif  // __VSPERMISSIONS_H__

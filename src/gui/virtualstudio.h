@@ -61,6 +61,8 @@
 #ifdef __APPLE__
 #include "NoNap.h"
 #include "vsMacPermissions.h"
+#else
+#include "vsPermissions.h"
 #endif
 
 class QJackTrip;
@@ -372,8 +374,9 @@ class VirtualStudio : public QObject
 
 #ifdef __APPLE__
     NoNap m_noNap;
-    QSharedPointer<VsMacPermissions> m_permissions;
 #endif
+
+    QSharedPointer<VsPermissions> m_permissions;
 };
 
 #endif  // VIRTUALSTUDIO_H

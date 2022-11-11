@@ -29,36 +29,39 @@
 */
 //*****************************************************************
 /**
- * \file vsMacPermissions.h
+ * \file vsPermissions.mm
  * \author Matt Horton
  * \date Oct 2022
  */
 
-#ifndef __VSMACPERMISSIONS_H__
-#define __VSMACPERMISSIONS_H__
-
-#include <objc/objc.h>
-
-#include <QDebug>
-#include <QObject>
-#include <QString>
-
 #include "vsPermissions.h"
+#include <QDesktopServices>
+#include <QSettings>
+#include <QUrl>
 
-class VsMacPermissions : public VsPermissions
+QString VsPermissions::micPermission()
 {
-    Q_OBJECT
+    return m_micPermission;
+}
 
-   public:
-    explicit VsMacPermissions();
+bool VsPermissions::micPermissionChecked()
+{
+    return m_micPermissionChecked;
+}
 
-    bool micPermissionChecked() override;
-    Q_INVOKABLE void getMicPermission() override;
-    Q_INVOKABLE void openSystemPrivacy();
+void VsPermissions::getMicPermission()
+{
+  setMicPermission("granted");
+}
 
-   private:
-    QString m_micPermission     = "unknown";
-    bool m_micPermissionChecked = false;
-};
+void VsPermissions::setMicPermission(QString status)
+{
+    m_micPermission = status;
+    m_micPermissionChecked = true;
+    emit micPermissionUpdated();
 
-#endif  // __VSMACPERMISSIONS_H__
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("MicPermissionChecked"), m_micPermissionChecked);
+    settings.endGroup();
+}

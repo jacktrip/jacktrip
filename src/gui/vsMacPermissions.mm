@@ -49,11 +49,6 @@ VsMacPermissions::VsMacPermissions()
     settings.endGroup();
 }
 
-QString VsMacPermissions::micPermission()
-{
-    return m_micPermission;
-}
-
 bool VsMacPermissions::micPermissionChecked()
 {
     if (m_micPermissionChecked) {
@@ -101,18 +96,6 @@ void VsMacPermissions::getMicPermission()
     } else {
         setMicPermission(QStringLiteral("granted"));
     }
-}
-
-void VsMacPermissions::setMicPermission(QString status)
-{
-    m_micPermission = status;
-    m_micPermissionChecked = true;
-    emit micPermissionUpdated();
-
-    QSettings settings;
-    settings.beginGroup(QStringLiteral("VirtualStudio"));
-    settings.setValue(QStringLiteral("MicPermissionChecked"), m_micPermissionChecked);
-    settings.endGroup();
 }
 
 void VsMacPermissions::openSystemPrivacy()
