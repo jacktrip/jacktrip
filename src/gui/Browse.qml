@@ -18,7 +18,7 @@ Item {
     property int extraSettingsButtonWidth: 16
     property int emptyListMessageWidth: 450
     property int createMessageTopMargin: 16
-    property int createButtonTopMargin: 48
+    property int createButtonTopMargin: 24
     property int fontBig: 28
     property int fontMedium: 11
     
@@ -100,7 +100,7 @@ Item {
         Text {
             id: emptyListMessage
             visible: parent.count == 0 && !virtualstudio.showCreateStudio
-            text: "No studios found that match your filter criteria"
+            text: "No studios found that match your filter criteria."
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: emptyListMessageWidth
@@ -108,6 +108,33 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: emptyListSectionHeading.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Button {
+            id: resetFiltersButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: resetFiltersButton.down ? buttonPressedColour : (resetFiltersButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: resetFiltersButton.down ? buttonPressedStroke : (resetFiltersButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            visible: parent.count == 0 && !virtualstudio.showCreateStudio
+            onClicked: {
+                virtualstudio.showSelfHosted = false;
+                virtualstudio.showInactive = true;
+                refreshing = true;
+                refresh();
+            }
+            anchors.top: emptyListMessage.bottom
+            anchors.topMargin: createButtonTopMargin
+            anchors.horizontalCenter: emptyListMessage.horizontalCenter
+            width: 120 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
+            Text {
+                text: "Reset Filters"
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
         }
 
         Rectangle {
@@ -137,7 +164,7 @@ Item {
 
                 Text {
                     id: createStudioMessage
-                    text: "JackTrip works by connecting your computer's audio to a Virtual Studio. Create your first Studio to get started!"
+                    text: "Looks like you're not a member of any studios!\nHave the studio owner send you an invite link, or create your own studio to invite others."
                     font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                     color: textColour
                     width: emptyListMessageWidth

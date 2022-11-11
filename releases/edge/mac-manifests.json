@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.7-rc.1",
+            "changelog": "New networking code on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7-rc.1",
+            "download": {
+                "date": "2022-11-07T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-rc.1-macOS-x64-installer.pkg",
+                "downloadSize": 11481444,
+                "sha256": "aa07023d130129684dc8d1e395d04eabea9709db32459e203c4fb7cf9759976e"
+            }
+        },
+        {
             "version": "1.6.6",
             "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
             "download": {

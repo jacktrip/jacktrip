@@ -49,6 +49,7 @@
 #include "../Compressor.h"
 #include "../CompressorPresets.h"
 #include "../Limiter.h"
+#include "../Meter.h"
 #include "../Reverb.h"
 
 QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
@@ -236,6 +237,11 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     m_ui->requireAuthGroupBox->setVisible(false);
     m_ui->backendWarningLabel->setVisible(false);
     m_ui->vsModeButton->setVisible(false);
+    m_ui->inputGroupBox->setVisible(false);
+    m_ui->outputGroupBox->setVisible(false);
+
+    m_inputLayout.reset(new QGridLayout(m_ui->inputGroupBox));
+    m_outputLayout.reset(new QGridLayout(m_ui->outputGroupBox));
 
 #ifdef RT_AUDIO
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -915,6 +921,9 @@ void QJackTrip::start()
             // Append any plugins
             appendPlugins(m_jackTrip.data(), m_ui->channelSendSpinBox->value(),
                           m_ui->channelRecvSpinBox->value());
+            // Setup meters (also currently using faust plugins).
+            createMeters(m_ui->channelSendSpinBox->value(),
+                         (m_ui->channelRecvSpinBox->value()));
 
             QObject::connect(m_jackTrip.data(), &JackTrip::signalProcessesStopped, this,
                              &QJackTrip::processFinished, Qt::QueuedConnection);
@@ -927,6 +936,7 @@ void QJackTrip::start()
                              &QJackTrip::udpWaitingTooLong, Qt::QueuedConnection);
             QObject::connect(m_jackTrip.data(), &JackTrip::signalQueueLengthChanged, this,
                              &QJackTrip::queueLengthChanged, Qt::QueuedConnection);
+
             m_ui->statusBar->showMessage(QStringLiteral("Waiting for Peer..."));
             m_ui->disconnectButton->setEnabled(true);
 #ifdef WAIRTOHUB  // WAIR
@@ -993,6 +1003,36 @@ void QJackTrip::exit()
     }
 }
 
+void QJackTrip::updatedInputMeasurements(const QVector<float> valuesInDb)
+{
+    for (quint32 i = 0; i < m_inputMeters.count(); i++) {
+        // Determine decibel reading
+        qreal dB = m_meterMin;
+        if (i < valuesInDb.size()) {
+            dB = std::max(m_meterMin, valuesInDb.at(i));
+        }
+
+        // Produce a normalized value from 0 to 1
+        float level = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+        m_inputMeters.at(i)->setLevel(level);
+    }
+}
+
+void QJackTrip::updatedOutputMeasurements(const QVector<float> valuesInDb)
+{
+    for (quint32 i = 0; i < m_outputMeters.count(); i++) {
+        // Determine decibel reading
+        qreal dB = m_meterMin;
+        if (i < valuesInDb.size()) {
+            dB = std::max(m_meterMin, valuesInDb.at(i));
+        }
+
+        // Produce a normalized value from 0 to 1
+        float level = (dB - m_meterMin) / (m_meterMax - m_meterMin);
+        m_outputMeters.at(i)->setLevel(level);
+    }
+}
+
 #ifndef NO_VS
 void QJackTrip::virtualStudioMode()
 {
@@ -1013,7 +1053,20 @@ int QJackTrip::findTab(const QString& tabName)
 
 void QJackTrip::enableUi(bool enabled)
 {
-    m_ui->optionsTabWidget->setEnabled(enabled);
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+        m_ui->optionsTabWidget->setEnabled(enabled);
+    } else {
+        if (enabled) {
+            m_ui->inputGroupBox->setVisible(false);
+            m_ui->outputGroupBox->setVisible(false);
+            removeMeters();
+            m_ui->optionsTabWidget->setVisible(true);
+        } else {
+            m_ui->optionsTabWidget->setVisible(false);
+            m_ui->inputGroupBox->setVisible(true);
+            m_ui->outputGroupBox->setVisible(true);
+        }
+    }
     m_ui->typeLabel->setEnabled(enabled);
     m_ui->typeComboBox->setEnabled(enabled);
     m_ui->addressLabel->setEnabled(
@@ -1392,6 +1445,66 @@ void QJackTrip::appendPlugins(JackTrip* jackTrip, int numSendChannels,
     if (m_ui->inLimiterCheckBox->isChecked()) {
         jackTrip->appendProcessPluginFromNetwork(new Limiter(numRecvChannels, 1));
     }
+}
+
+void QJackTrip::createMeters(quint32 inputChannels, quint32 outputChannels)
+{
+    // These pointers are also deleted by AudioInterface.
+    Meter* inputMeter  = new Meter(inputChannels);
+    Meter* outputMeter = new Meter(outputChannels);
+    m_jackTrip->appendProcessPluginToNetwork(inputMeter);
+    m_jackTrip->appendProcessPluginFromNetwork(outputMeter);
+
+    // Create our widgets.
+    for (quint32 i = 0; i < inputChannels; i++) {
+        VuMeter* meter = new VuMeter(this);
+        m_inputMeters.append(meter);
+        QLabel* label = new QLabel(QString::number(i + 1), this);
+        m_inputLabels.append(label);
+        label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+        m_inputLayout->addWidget(label, i, 0, 1, 1);
+        m_inputLayout->addWidget(meter, i, 1, 1, 1);
+    }
+    // Effectively add a spacer at the bottom.
+    m_inputLayout->setRowStretch(inputChannels, 100);
+
+    for (quint32 i = 0; i < outputChannels; i++) {
+        VuMeter* meter = new VuMeter(this);
+        m_outputMeters.append(meter);
+        QLabel* label = new QLabel(QString::number(i + 1), this);
+        m_outputLabels.append(label);
+        label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+        m_outputLayout->addWidget(label, i, 0, 1, 1);
+        m_outputLayout->addWidget(meter, i, 1, 1, 1);
+    }
+    m_outputLayout->setRowStretch(outputChannels, 100);
+
+    QObject::connect(inputMeter, &Meter::onComputedVolumeMeasurements, this,
+                     &QJackTrip::updatedInputMeasurements);
+    QObject::connect(outputMeter, &Meter::onComputedVolumeMeasurements, this,
+                     &QJackTrip::updatedOutputMeasurements);
+}
+
+void QJackTrip::removeMeters()
+{
+    m_inputLayout->setRowStretch(m_inputMeters.count(), 0);
+    m_outputLayout->setRowStretch(m_outputMeters.count(), 0);
+    for (int i = 0; i < m_inputLabels.count(); i++) {
+        delete m_inputLabels.at(i);
+    }
+    for (int i = 0; i < m_inputMeters.count(); i++) {
+        delete m_inputMeters.at(i);
+    }
+    for (int i = 0; i < m_outputLabels.count(); i++) {
+        delete m_outputLabels.at(i);
+    }
+    for (int i = 0; i < m_outputMeters.count(); i++) {
+        delete m_outputMeters.at(i);
+    }
+    m_inputLabels.clear();
+    m_inputMeters.clear();
+    m_outputLabels.clear();
+    m_outputMeters.clear();
 }
 
 QString QJackTrip::commandLineFromCurrentOptions()
