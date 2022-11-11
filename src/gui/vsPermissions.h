@@ -47,15 +47,15 @@ class VsPermissions : public QObject
     Q_PROPERTY(QString micPermission READ micPermission NOTIFY micPermissionUpdated)
 
    public:
-    VsPermissions() = default; //define here and there
+    VsPermissions() = default;  // define here and there
 
-    QString micPermission(); // define here
-    virtual bool micPermissionChecked(); // define here and there
+    QString micPermission();              // define here
+    virtual bool micPermissionChecked();  // define here and there
     Q_INVOKABLE virtual void getMicPermission();
-    void setMicPermission(QString status); //define here
+    void setMicPermission(QString status);  // define here
 
    signals:
-    void micPermissionUpdated(); //leave here
+    void micPermissionUpdated();  // leave here
 
    protected:
 #if __APPLE__

@@ -35,6 +35,7 @@
  */
 
 #include "vsPermissions.h"
+
 #include <QDesktopServices>
 #include <QSettings>
 #include <QUrl>
@@ -51,12 +52,12 @@ bool VsPermissions::micPermissionChecked()
 
 void VsPermissions::getMicPermission()
 {
-  setMicPermission("granted");
+    setMicPermission("granted");
 }
 
 void VsPermissions::setMicPermission(QString status)
 {
-    m_micPermission = status;
+    m_micPermission        = status;
     m_micPermissionChecked = true;
     emit micPermissionUpdated();
 

@@ -40,17 +40,7 @@ Item {
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
-
-    Text {
-        id: testText
-        text: warningScreen + " " + permissions.micPermission
-        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        color: textColour
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 32 * virtualstudio.uiScale
-    }    
-
+ 
     Item {
         id: ethernetWarningItem
         width: parent.width; height: parent.height
@@ -275,9 +265,6 @@ Item {
                 }
             }
             onClicked: {
-                console.log(currShowWarnings);
-                console.log(warningScreen);
-                console.log(permissions.micPermission); 
                 if (permissions.micPermission == "unknown") {
                     virtualstudio.showWarnings = currShowWarnings; warningScreen = "microphone"
                 } else {
