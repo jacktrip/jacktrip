@@ -25,15 +25,23 @@ if (nogui)
   set(noupdater TRUE)
 endif ()
 
+if (psi)
+  set(novs TRUE)
+endif ()
+
 if (novs)
+  add_compile_definitions(NO_VS)
   set(QRC_FILE "src/gui/qjacktrip_novs.qrc")
 else ()
   set(QRC_FILE "src/gui/qjacktrip.qrc")
 endif ()
 
+if (noupdater)
+  add_compile_definitions(NO_UPDATER)
+endif ()
+
 if (psi)
   add_compile_definitions(PSI)
-  set(novs TRUE)
   if (novs)
     add_compile_definitions(BUILD_TYPE="psi-borg.org NO_VS binary")
   else ()
@@ -55,14 +63,6 @@ else ()
   string(REPLACE "<file alias=\"about.png\">alt/about.png" "<file>about.png" QRC_CONTENTS "${QRC_CONTENTS}")
   string(REPLACE "<file alias=\"icon.png\">alt/icon.png" "<file>icon.png" QRC_CONTENTS "${QRC_CONTENTS}")
   file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
-endif ()
-
-if (novs)
-  add_compile_definitions(NO_VS)
-endif ()
-
-if (noupdater)
-  add_compile_definitions(NO_UPDATER)
 endif ()
 
 add_compile_definitions(QT_OPENSOURCE)
@@ -171,6 +171,8 @@ if (NOT nogui)
     src/gui/about.cpp
     src/gui/messageDialog.cpp
     src/gui/textbuf.cpp
+    src/gui/vuMeter.cpp
+    src/Meter.cpp
   )
   
   if (NOT novs)
@@ -185,7 +187,6 @@ if (NOT nogui)
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
       src/gui/qjacktrip.qrc
-      src/Meter.cpp
       src/Volume.cpp
       src/Tone.cpp
       # Need to include this for AUTOMOC to do its thing
