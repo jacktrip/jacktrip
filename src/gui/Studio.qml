@@ -81,13 +81,21 @@ Rectangle {
     }
 
     Image {
+        id: wedge
         source: available ? "wedge.svg" : "wedge_inactive.svg"
         x: 6; y: 0; width: 52 * virtualstudio.uiScale; height: 83 * virtualstudio.uiScale
+        sourceSize: Qt.size(wedge.width,wedge.height)
+        fillMode: Image.PreserveAspectFit
+        smooth: true
     }
 
     Image {
+        id: studioLogo
         source: "logo.svg"
         x: 8; y: 11; width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
+        sourceSize: Qt.size(studioLogo.width,studioLogo.height)
+        fillMode: Image.PreserveAspectFit
+        smooth: true
     }
     
     Rectangle {
@@ -139,8 +147,12 @@ Rectangle {
         radius: 2 * virtualstudio.uiScale
         color: publicStudio ? "#0095FF" : "#FF9800"
         Image {
+            id: pubPriv
             source: publicStudio ? "public.svg" : "private.svg"
             x: 1 * virtualstudio.uiScale; y: x; width: 12 * virtualstudio.uiScale; height: width
+            sourceSize: Qt.size(pubPriv.width,pubPriv.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
     }
     
@@ -174,9 +186,13 @@ Rectangle {
             }
         }
         Image {
+            id: joinLeave
             width: 22 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: connected ? "leave.svg" : "join.svg"
+            sourceSize: Qt.size(joinLeave.width,joinLeave.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
     }
     
@@ -218,9 +234,13 @@ Rectangle {
         }
         visible: true
         Image {
+            id: shareImg
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: "share.svg"
+            sourceSize: Qt.size(shareImg.width,shareImg.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
         ToolTip {
             parent: inviteButton
@@ -284,9 +304,13 @@ Rectangle {
         }
         visible: manageable
         Image {
+            id: manageImg
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: "manage.svg"
+            sourceSize: Qt.size(manageImg.width,manageImg.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
     }
     
