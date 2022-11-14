@@ -1802,7 +1802,7 @@ void VirtualStudio::startAudio()
             &VirtualStudio::updatedDevicesErrorMsg);
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningMsgChanged, this,
             &VirtualStudio::updatedDevicesWarningMsg);
-    
+
     m_vsAudioInterface->setupAudio();
 
     connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
