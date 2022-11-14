@@ -81,6 +81,10 @@ class VirtualStudio : public QObject
         int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
     Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
                    outputDeviceChanged)
+
+    Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
+    Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
+
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
@@ -138,6 +142,8 @@ class VirtualStudio : public QObject
     void setInputDevice(int device);
     int outputDevice();
     void setOutputDevice(int device);
+    QString devicesWarning();
+    QString devicesError();
     int bufferSize();
     void setBufferSize(int index);
     int bufferStrategy();
@@ -220,6 +226,8 @@ class VirtualStudio : public QObject
     void outputDeviceChanged(QString device);
     void inputDeviceSelected(QString device);
     void outputDeviceSelected(QString device);
+    void devicesWarningChanged();
+    void devicesErrorChanged();
     void triggerPlayOutputAudio();
     void bufferSizeChanged();
     void bufferStrategyChanged();
@@ -259,6 +267,8 @@ class VirtualStudio : public QObject
     void joinStudio();
     void updatedStats(const QJsonObject& stats);
     void startAudio();
+    void updatedDevicesErrorMsg(const QString& msg);
+    void updatedDevicesWarningMsg(const QString& msg);
 
    private:
     void setupAuthenticator();
@@ -270,10 +280,10 @@ class VirtualStudio : public QObject
     void getSubscriptions();
     void getRegions();
     void getUserMetadata();
-#ifdef RT_AUDIO
-    void getDeviceList(QStringList* list, bool isInput);
-#endif
     void stopStudio();
+#ifdef RT_AUDIO
+    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
+#endif
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
@@ -338,6 +348,9 @@ class VirtualStudio : public QObject
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
+    QString m_devicesWarningMsg = QStringLiteral("");
+    QString m_devicesErrorMsg   = QStringLiteral("");
+
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
 
@@ -351,6 +364,8 @@ class VirtualStudio : public QObject
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
     QStringList m_outputDeviceList;
+    QStringList m_inputDeviceCategories;
+    QStringList m_outputDeviceCategories;
     QString m_inputDevice;
     QString m_outputDevice;
     quint16 m_bufferSize;

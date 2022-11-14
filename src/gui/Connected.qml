@@ -143,7 +143,7 @@ Item {
             anchors.top: inputDeviceHeader.bottom
             anchors.left: inputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?
-                virtualstudio.audioBackend : inputComboModel[virtualstudio.inputDevice]
+                virtualstudio.audioBackend : inputComboModel.filter(item => item.type === "element")[virtualstudio.inputDevice].text
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             elide: Text.ElideRight
@@ -192,7 +192,7 @@ Item {
             anchors.top: outputDeviceHeader.bottom
             anchors.left: outputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?
-                virtualstudio.audioBackend : outputComboModel[virtualstudio.outputDevice]
+                virtualstudio.audioBackend : outputComboModel.filter(item => item.type === "element")[virtualstudio.outputDevice].text
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             elide: Text.ElideRight

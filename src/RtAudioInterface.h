@@ -40,6 +40,8 @@
 
 #include <RtAudio.h>
 
+#include <QQueue>
+
 #include "AudioInterface.h"
 #include "jacktrip_globals.h"
 class JackTrip;  // Forward declaration
@@ -65,14 +67,16 @@ class RtAudioInterface : public AudioInterface
     virtual ~RtAudioInterface();
 
     /// \brief List all available audio interfaces, with its properties
-    virtual void listAllInterfaces();
     static void printDevices();
-    virtual int getDeviceIdFromName(std::string deviceName, bool isInput);
-    virtual void setup();
-    virtual int startProcess() const;
-    virtual int stopProcess() const;
+    virtual void setup(bool verbose = true);
+    virtual int startProcess();
+    virtual int stopProcess();
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
+
+    static void getDeviceList(QStringList* list, QStringList* categories, bool isInput);
+    static void getDeviceInfoFromName(std::string deviceName, int* index,
+                                      std::string* api, bool isInput);
 
     //--------------SETTERS---------------------------------------------
     /// \brief This has no effect in RtAudio
@@ -90,7 +94,7 @@ class RtAudioInterface : public AudioInterface
                                       RtAudioStreamStatus status, void* userData);
     static void RtAudioErrorCallback(RtAudioError::Type type,
                                      const std::string& errorText);
-    void printDeviceInfo(unsigned int deviceId);
+    void printDeviceInfo(std::string api, unsigned int deviceId);
 
     int mNumInChans;   ///< Number of Input Channels
     int mNumOutChans;  ///<  Number of Output Channels
@@ -98,8 +102,8 @@ class RtAudioInterface : public AudioInterface
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
-    RtAudio* mRtAudio;  ///< RtAudio class
-    unsigned int getDefaultDevice(bool isInput);
+    RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
+    unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
 };
 
 #endif  // __RTAUDIOINTERFACE_H__

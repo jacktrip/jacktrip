@@ -145,7 +145,7 @@ AudioInterface::~AudioInterface()
 }
 
 //*******************************************************************************
-void AudioInterface::setup()
+void AudioInterface::setup(bool /*verbose*/)
 {
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
@@ -683,12 +683,15 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
     mProcessPluginsFromNetwork.append(plugin);
 }
 
-void AudioInterface::initPlugins()
+void AudioInterface::initPlugins(bool verbose)
 {
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size();
     if (nPlugins > 0) {
-        std::cout << "Initializing Faust plugins (have " << nPlugins
-                  << ") at sampling rate " << mSampleRate << "\n";
+        if (verbose) {
+            std::cout << "Initializing Faust plugins (have " << nPlugins
+                      << ") at sampling rate " << mSampleRate << "\n";
+        }
+
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsFromNetwork)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(mNumInChans, mNumOutChans);
@@ -765,4 +768,30 @@ int AudioInterface::getSampleRateFromType(samplingRateT rate_type)
     }
 
     return sample_rate;
+}
+
+//*******************************************************************************
+void AudioInterface::setDevicesWarningMsg(std::string msg)
+{
+    mWarningMsg = msg;
+    return;
+}
+
+//*******************************************************************************
+void AudioInterface::setDevicesErrorMsg(std::string msg)
+{
+    mErrorMsg = msg;
+    return;
+}
+
+//*******************************************************************************
+std::string AudioInterface::getDevicesWarningMsg()
+{
+    return mWarningMsg;
+}
+
+//*******************************************************************************
+std::string AudioInterface::getDevicesErrorMsg()
+{
+    return mErrorMsg;
 }

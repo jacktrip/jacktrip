@@ -37,6 +37,7 @@ Item {
     property string saveButtonText: "#DB0A0A"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
+    property string disabledButtonText: "#D3D4D4"
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
@@ -580,11 +581,55 @@ Item {
         ComboBox {
             id: outputCombo
             model: outputComboModel
-            currentIndex: virtualstudio.outputDevice
-            onActivated: { virtualstudio.outputDevice = currentIndex }
+            currentIndex: (() => {
+                let count = 0;
+                for (let i = 0; i < outputCombo.model.length; i++) {
+                    if (outputCombo.model[i].type === "element") {
+                        count++;
+                    }
+
+                    if (count > virtualstudio.outputDevice) {
+                        return i;
+                    }
+                }
+
+                return 0;
+            })()
             x: backendCombo.x; y: backendCombo.y + virtualstudio.uiScale * (virtualstudio.selectableBackend ? 48 : 0)
             width: backendCombo.width; height: backendCombo.height
             visible: virtualstudio.audioBackend != "JACK"
+            delegate: ItemDelegate {
+                required property var modelData
+                required property int index
+
+                leftPadding: 0
+
+                width: parent.width
+                contentItem: Text {
+                    leftPadding: modelData.type === "element" && outputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
+                    text: modelData.text
+                    font.bold: modelData.type === "header"
+                }
+                highlighted: outputCombo.highlightedIndex === index
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if (modelData.type == "element") {
+                            outputCombo.currentIndex = index
+                            outputCombo.popup.close()
+                            virtualstudio.outputDevice = index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                        }
+                    }
+                }
+            }
+            contentItem: Text {
+                leftPadding: 12
+                font: outputCombo.font
+                horizontalAlignment: Text.AlignHLeft
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+                text: outputCombo.model[outputCombo.currentIndex].text
+            }
         }
 
         Text {
@@ -643,13 +688,57 @@ Item {
         ComboBox {
             id: inputCombo
             model: inputComboModel
-            currentIndex: virtualstudio.inputDevice
-            onActivated: { virtualstudio.inputDevice = currentIndex }
+            currentIndex: (() => {
+                let count = 0;
+                for (let i = 0; i < inputCombo.model.length; i++) {
+                    if (inputCombo.model[i].type === "element") {
+                        count++;
+                    }
+
+                    if (count > virtualstudio.inputDevice) {
+                        return i;
+                    }
+                }
+
+                return 0;
+            })()
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - (234 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
+            delegate: ItemDelegate {
+                required property var modelData
+                required property int index
+
+                leftPadding: 0
+
+                width: parent.width
+                contentItem: Text {
+                    leftPadding: modelData.type === "element" && inputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
+                    text: modelData.text
+                    font.bold: modelData.type === "header"
+                }
+                highlighted: inputCombo.highlightedIndex === index
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if (modelData.type == "element") {
+                            inputCombo.currentIndex = index
+                            inputCombo.popup.close()
+                            virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                        }
+                    }
+                }
+            }
+            contentItem: Text {
+                leftPadding: 12
+                font: inputCombo.font
+                horizontalAlignment: Text.AlignHLeft
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+                text: inputCombo.model[inputCombo.currentIndex].text
+            }
         }
 
         Text {
@@ -671,6 +760,7 @@ Item {
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped
+            enabled: !Boolean(virtualstudio.devicesError)
         }
 
         Slider {
@@ -719,18 +809,17 @@ Item {
         }
 
         Text {
-            anchors.left: outputLabel.left
-            anchors.right: outputCombo.right
-            anchors.leftMargin: 16 * virtualstudio.uiScale
+            anchors.left: inputLabel.left
+            anchors.right: refreshButton.left
             anchors.rightMargin: 16 * virtualstudio.uiScale
-            anchors.bottom: parent.bottom
+            anchors.top: refreshButton.top
             anchors.bottomMargin: 60 * virtualstudio.uiScale
-            text: "JackTrip on Windows requires use of an audio device with ASIO drivers. If you do not see your device, you may need to install drivers from your manufacturer."
-            horizontalAlignment: Text.AlignHCenter
+            text: virtualstudio.devicesError || virtualstudio.devicesWarning
+            horizontalAlignment: Text.AlignHLeft
             wrapMode: Text.WordWrap
             color: warningText
             font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: Qt.platform.os == "windows" && virtualstudio.audioBackend != "JACK"
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
         }
 
         Button {
@@ -749,6 +838,7 @@ Item {
                     color: saveButtonShadow
                 }
             }
+            enabled: !Boolean(virtualstudio.devicesError)
             onClicked: { window.state = "browse"; virtualstudio.applySettings() }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
@@ -760,7 +850,7 @@ Item {
                 font.family: "Poppins"
                 font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
-                color: saveButtonText
+                color: !Boolean(virtualstudio.devicesError) ? saveButtonText : disabledButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
