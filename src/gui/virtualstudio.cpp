@@ -1831,28 +1831,6 @@ void VirtualStudio::startAudio()
     m_vsAudioInterface->startProcess();
 }
 
-#ifdef RT_AUDIO
-void VirtualStudio::getDeviceList(QStringList* list, bool isInput)
-{
-    RtAudio audio;
-    list->clear();
-    list->append(QStringLiteral("(default)"));
-
-    unsigned int devices = audio.getDeviceCount();
-    RtAudio::DeviceInfo info;
-    for (unsigned int i = 0; i < devices; i++) {
-        info = audio.getDeviceInfo(i);
-        if (info.probed == true) {
-            if (isInput && info.inputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
-            } else if (!isInput && info.outputChannels > 0) {
-                list->append(QString::fromStdString(info.name));
-            }
-        }
-    }
-}
-#endif
-
 void VirtualStudio::stopStudio()
 {
     if (m_currentStudio < 0) {
