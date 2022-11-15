@@ -36,6 +36,9 @@ Item {
         source: "logo.svg"
         x: parent.width / 2 - (150 * virtualstudio.uiScale); y: 110 * virtualstudio.uiScale
         width: 42 * virtualstudio.uiScale; height: 76 * virtualstudio.uiScale
+        sourceSize: Qt.size(loginLogo.width,loginLogo.height)
+        fillMode: Image.PreserveAspectFit
+        smooth: true
     }
 
     Image {

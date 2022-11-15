@@ -60,6 +60,9 @@
 
 #ifdef __APPLE__
 #include "NoNap.h"
+#include "vsMacPermissions.h"
+#else
+#include "vsPermissions.h"
 #endif
 
 class QJackTrip;
@@ -272,6 +275,7 @@ class VirtualStudio : public QObject
     void launchBrowser(const QUrl& url);
     void joinStudio();
     void updatedStats(const QJsonObject& stats);
+    void startAudio();
     void updatedDevicesErrorMsg(const QString& msg);
     void updatedDevicesWarningMsg(const QString& msg);
     void updatedDevicesErrorHelpUrl(const QString& url);
@@ -399,6 +403,8 @@ class VirtualStudio : public QObject
 #ifdef __APPLE__
     NoNap m_noNap;
 #endif
+
+    QSharedPointer<VsPermissions> m_permissions;
 };
 
 #endif  // VIRTUALSTUDIO_H

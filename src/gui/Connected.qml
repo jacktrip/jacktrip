@@ -70,9 +70,13 @@ Item {
     }
 
     Image {
+        id: jtlogo
         x: parent.width - (49 * virtualstudio.uiScale); y: 16 * virtualstudio.uiScale
         width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
         source: "logo.svg"
+        sourceSize: Qt.size(jtlogo.width,jtlogo.height)
+        fillMode: Image.PreserveAspectFit
+        smooth: true
     }
     
     Text {
@@ -109,6 +113,9 @@ Item {
             source: "mic.svg"
             x: 0; y: 0
             width: 18 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+            sourceSize: Qt.size(mic.width,mic.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
 
         Colorize {
@@ -155,6 +162,9 @@ Item {
             source: "headphones.svg"
             x: 0; y: 0
             width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+            sourceSize: Qt.size(headphones.width,headphones.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
 
         Colorize {
@@ -245,6 +255,9 @@ Item {
                 width: 11.57 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
                 anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
                 source: virtualstudio.inputMuted ? "micoff.svg" : "mic.svg"
+                sourceSize: Qt.size(micMute.width,micMute.height)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
             }
             Colorize {
                 anchors.fill: micMute
@@ -335,6 +348,9 @@ Item {
             source: "network.svg"
             x: 0; y: 0
             width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+            sourceSize: Qt.size(network.width,network.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
 
         Colorize {

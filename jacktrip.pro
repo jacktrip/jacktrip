@@ -108,6 +108,9 @@ macx {
   !nogui {
     LIBS += -framework Foundation
     CONFIG += objective_c
+    !novs {
+      LIBS += -framework AVFoundation
+    }
   }
 }
 
@@ -248,6 +251,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
+               src/gui/vsPermissions.h \
                src/gui/vsPinger.h \
                src/gui/vsPing.h \
                src/gui/vsUrlHandler.h \
@@ -310,6 +314,7 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
+               src/gui/vsPermissions.cpp \
                src/gui/vsPinger.cpp \
                src/gui/vsPing.cpp \
                src/gui/vsUrlHandler.cpp
@@ -326,6 +331,10 @@ SOURCES += src/DataProtocol.cpp \
   macx {
     HEADERS += src/gui/NoNap.h
     OBJECTIVE_SOURCES += src/gui/NoNap.mm
+    !novs {
+      HEADERS += src/gui/vsMacPermissions.h
+      OBJECTIVE_SOURCES += src/gui/vsMacPermissions.mm
+    }
   }
   FORMS += src/gui/qjacktrip.ui \
            src/gui/about.ui \

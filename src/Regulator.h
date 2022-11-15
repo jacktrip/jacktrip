@@ -146,7 +146,6 @@ class Regulator : public RingBuffer
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot) { pullPacket(ptrToReadSlot); }
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
     {
-        m_b_ReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
         m_b_ReceiveRingBuffer->readBroadcastSlot(ptrToReadSlot);
     }
 

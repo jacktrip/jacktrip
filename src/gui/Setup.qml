@@ -41,8 +41,8 @@ Item {
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property bool currShowWarnings: virtualstudio.showWarnings
-    property string warningScreen: virtualstudio.showWarnings ? "ethernet" : "acknowledged"
-
+    property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
+ 
     Item {
         id: ethernetWarningItem
         width: parent.width; height: parent.height
@@ -266,7 +266,13 @@ Item {
                     color: saveButtonShadow
                 }
             }
-            onClicked: { virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged" }
+            onClicked: {
+                if (permissions.micPermission == "unknown") {
+                    virtualstudio.showWarnings = currShowWarnings; warningScreen = "microphone"
+                } else {
+                    virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged"
+                }
+            }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
@@ -322,9 +328,215 @@ Item {
     }
 
     Item {
+        id: requestMicPermissionsItem
+        width: parent.width; height: parent.height
+        visible: warningScreen == "microphone" && permissions.micPermission == "unknown"
+
+        Image {
+            id: microphonePrompt
+            source: "Prompt.svg"
+            width: 260
+            height: 250
+            y: 60
+            anchors.horizontalCenter: parent.horizontalCenter
+            sourceSize: Qt.size(microphonePrompt.width,microphonePrompt.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
+
+        Image {
+            id: micLogo
+            source: "logo.svg"
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: microphonePrompt.top
+            anchors.topMargin: 18 * virtualstudio.uiScale
+            width: 32 * virtualstudio.uiScale; height: 59 * virtualstudio.uiScale
+            sourceSize: Qt.size(micLogo.width,micLogo.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
+
+        Colorize {
+            anchors.fill: microphonePrompt
+            source: microphonePrompt
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
+        Button {
+            id: showPromptButton
+            width: 112 * virtualstudio.uiScale
+            height: 30 * virtualstudio.uiScale
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: showPromptButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                border.width: 2
+                border.color: showPromptButton.down ? saveButtonPressedStroke : saveButtonStroke
+                layer.enabled: showPromptButton.hovered && !showPromptButton.down
+                layer.effect: DropShadow {
+                    horizontalOffset: 1 * virtualstudio.uiScale
+                    verticalOffset: 1 * virtualstudio.uiScale
+                    radius: 8.0 * virtualstudio.uiScale
+                    samples: 17
+                    color: saveButtonShadow
+                }
+            }
+            onClicked: { 
+                permissions.getMicPermission();
+            }
+            anchors.right: microphonePrompt.right
+            anchors.rightMargin: 13.5 * virtualstudio.uiScale
+            anchors.bottomMargin: 17 * virtualstudio.uiScale
+            anchors.bottom: microphonePrompt.bottom
+            Text {
+                text: "OK"
+                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.weight: Font.Bold
+                color: saveButtonText
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+
+        Text {
+            id: micPermissionsHeader
+            text: "JackTrip needs your sounds!"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: microphonePrompt.bottom
+            anchors.topMargin: 48 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: micPermissionsSubheader1
+            text: "JackTrip requires permission to use your microphone."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: micPermissionsHeader.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: micPermissionsSubheader2
+            text: "Click ‘OK’ to give JackTrip access to your microphone, instrument, or other audio device."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: micPermissionsSubheader1.bottom
+            anchors.topMargin: 24 * virtualstudio.uiScale
+        }
+    }
+
+    Item {
+        id: noMicItem
+        width: parent.width; height: parent.height
+        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "denied"
+
+        Image {
+            id: noMic
+            source: "micoff.svg"
+            width: 109.27
+            height: 170
+            y: 60
+            anchors.horizontalCenter: parent.horizontalCenter
+            sourceSize: Qt.size(noMic.width,noMic.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
+
+        Colorize {
+            anchors.fill: noMic
+            source: noMic
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
+        Button {
+            id: openSettingsButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: openSettingsButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                border.width: 1
+                border.color: openSettingsButton.down ? saveButtonPressedStroke : saveButtonStroke
+                layer.enabled: openSettingsButton.hovered && !openSettingsButton.down
+                layer.effect: DropShadow {
+                    horizontalOffset: 1 * virtualstudio.uiScale
+                    verticalOffset: 1 * virtualstudio.uiScale
+                    radius: 8.0 * virtualstudio.uiScale
+                    samples: 17
+                    color: saveButtonShadow
+                }
+            }
+            onClicked: { 
+                permissions.openSystemPrivacy();
+            }
+            anchors.right: parent.right
+            anchors.rightMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            width: 200 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            Text {
+                text: "Open Privacy Settings"
+                font.family: "Poppins"
+                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.weight: Font.Bold
+                color: saveButtonText
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+
+        Text {
+            id: noMicHeader
+            text: "JackTrip can't hear you!"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: noMic.bottom
+            anchors.topMargin: 48 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: noMicSubheader1
+            text: "JackTrip requires permission to use your microphone."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: noMicHeader.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: noMicSubheader2
+            text: "Click 'Open Privacy Settings' to give JackTrip permission to access your microphone, instrument, or other audio device."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 400
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: noMicSubheader1.bottom
+            anchors.topMargin: 24 * virtualstudio.uiScale
+        }
+    }
+
+    Item {
         id: setupItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "acknowledged"
+        visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "granted"
 
         Text {
             id: pageTitle
