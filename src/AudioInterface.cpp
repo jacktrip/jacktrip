@@ -779,7 +779,11 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
             "The selected devices don't support low latency. You can use them, but you "
             "will experience audio delay. Make sure you have up to date drivers from the "
             "manufacturer!";
+#ifdef _WIN32
         mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+#else
+        mWarningHelpUrl = "";
+#endif
         break;
     default:
         mWarningMsg     = "";
@@ -799,7 +803,11 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
         mErrorMsg =
             "The two devices you have selected are not compatible. Please select a "
             "different pair of devices.";
-        mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+#ifdef _WIN32
+        mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+#else
+        mWarningHelpUrl = "";
+#endif
         break;
     default:
         mErrorMsg     = "";
