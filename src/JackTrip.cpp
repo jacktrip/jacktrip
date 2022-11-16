@@ -117,6 +117,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mSendRingBuffer(NULL)
     , mReceiveRingBuffer(NULL)
     , mRegulatorThreadPtr(NULL)
+    , mRegulatorWorkerPtr(NULL)
     , mReceiverBindPort(receiver_bind_port)
     , mSenderPeerPort(sender_peer_port)
     , mSenderBindPort(sender_bind_port)
