@@ -381,7 +381,7 @@ class JackTrip : public QObject
     int getReceivePacketSizeInBytes() const;
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
     {
-        mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0);
+        mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0, 0);
     }
     virtual void receiveBroadcastPacket(int8_t* ptrToReadSlot)
     {
@@ -390,20 +390,18 @@ class JackTrip : public QObject
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
     {
         mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
+        if (mBufferStrategy == 3) {
+            // trigger next packet using RegulatorThread
+            emit signalReceivedNetworkPacket();
+        }
     }
     virtual void readAudioBuffer(int8_t* ptrToReadSlot)
     {
         mSendRingBuffer->readSlotBlocking(ptrToReadSlot);
     }
-    virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, int lostLen)
+    virtual bool writeAudioBuffer(const int8_t* ptrToSlot, int len, int lostLen, int seq)
     {
-        return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen);
-    }
-    virtual bool writeAudioBufferRegulator(const int8_t* ptrToSlot, int len, int seq,
-                                           int lostLen)
-    {
-        return mReceiveRingBuffer->insertSlotNonBlockingRegulator(ptrToSlot, len, seq,
-                                                                  lostLen);
+        return mReceiveRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen, seq);
     }
     uint32_t getBufferSizeInSamples() const
     {
@@ -586,6 +584,7 @@ class JackTrip : public QObject
     void signalUdpWaitingTooLong();
     void signalQueueLengthChanged(int queueLength);
     void signalAudioStarted();
+    void signalReceivedNetworkPacket();
 
    public:
     /// \brief Set the AudioInteface object
@@ -654,6 +653,10 @@ class JackTrip : public QObject
     RingBuffer* mSendRingBuffer;
     /// Pointer for the Receive RingBuffer
     RingBuffer* mReceiveRingBuffer;
+    /// thread used to pull packets from Regulator (if mBufferStrategy==3)
+    QThread* mRegulatorThreadPtr;
+    /// worker used to pull packets from Regulator (if mBufferStrategy==3)
+    QObject* mRegulatorWorkerPtr;
 
     int mReceiverBindPort;  ///< Incoming (receiving) port for local machine
     int mSenderPeerPort;    ///< Incoming (receiving) port for peer machine

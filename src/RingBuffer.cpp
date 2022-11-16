@@ -147,7 +147,8 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
 }
 
 //*******************************************************************************
-bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen)
+bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
+                                       [[maybe_unused]] int seq_num)
 {
     if (len != mSlotSize && 0 != len) {
         // RingBuffer does not support mixed buf sizes
@@ -180,15 +181,6 @@ bool RingBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int los
     mFullSlots++;  // update full slots
     // Wake threads waitng for bufferIsNotFull condition
     mBufferIsNotEmpty.wakeAll();
-    return true;
-}
-
-//*******************************************************************************
-bool RingBuffer::insertSlotNonBlockingRegulator([[maybe_unused]] const int8_t* ptrToSlot,
-                                                [[maybe_unused]] int len,
-                                                [[maybe_unused]] int seq_num,
-                                                [[maybe_unused]] int lostLen)
-{
     return true;
 }
 

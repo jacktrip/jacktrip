@@ -117,7 +117,8 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
 }
 
 //*******************************************************************************
-bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen)
+bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
+                                         [[maybe_unused]] int seq_num)
 {
     if (0 == len) {
         len = mSlotSize;

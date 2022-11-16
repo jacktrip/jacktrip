@@ -155,9 +155,11 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
 
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
-    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
-    mXfrBuffer = new int8_t[mBytes];
-    mPacketCnt = 0;  // burg initialization
+    mBytes      = mFPP * mNumChannels * mBitResolutionMode;
+    mPullQueue  = new int8_t[mBytes * 2];
+    mXfrBuffer  = mPullQueue;
+    mNextPacket = mPullQueue + mBytes;
+    mPacketCnt  = 0;  // burg initialization
     mFadeUp.resize(mFPP, 0.0);
     mFadeDown.resize(mFPP, 0.0);
     for (int i = 0; i < mFPP; i++) {
@@ -203,7 +205,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
     if (m_b_BroadcastQueueLength) {
-        m_b_ReceiveRingBuffer = new JitterBuffer(
+        m_b_BroadcastRingBuffer = new JitterBuffer(
             mFPP, qLen, 48000, 1, m_b_BroadcastQueueLength, mNumChannels, mAudioBitRes);
         qDebug() << "Broadcast started in Regulator with packet queue of"
                  << m_b_BroadcastQueueLength;
@@ -241,7 +243,7 @@ void Regulator::printParams(){
 
 Regulator::~Regulator()
 {
-    delete[] mXfrBuffer;
+    delete[] mPullQueue;
     delete[] mZeros;
     delete[] mAssembledPacket;
     delete pushStat;
@@ -252,7 +254,7 @@ Regulator::~Regulator()
         delete[] slot;
     };
     if (m_b_BroadcastQueueLength)
-        delete m_b_ReceiveRingBuffer;
+        delete m_b_BroadcastRingBuffer;
 }
 
 void Regulator::setFPPratio()
@@ -357,7 +359,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 };
 
 //*******************************************************************************
-void Regulator::pullPacket(int8_t* buf)
+void Regulator::pullPacket()
 {
     QMutexLocker locker(&mMutex);
     mSkip = 0;
@@ -419,7 +421,13 @@ ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
 
 OUTPUT:
-    memcpy(buf, mXfrBuffer, mBytes);
+    // swap positions of mXfrBuffer and mNextPacket
+    mNextPacket = mXfrBuffer;
+    if (mXfrBuffer == mPullQueue) {
+        mXfrBuffer = mPullQueue + mBytes;
+    } else {
+        mXfrBuffer = mPullQueue;
+    }
 };
 
 //*******************************************************************************
