@@ -155,11 +155,11 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
 
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
-    mBytes      = mFPP * mNumChannels * mBitResolutionMode;
-    mPullQueue  = new int8_t[mBytes * 2];
-    mXfrBuffer  = mPullQueue;
-    mNextPacket = mPullQueue + mBytes;
-    mPacketCnt  = 0;  // burg initialization
+    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
+    mPullQueue = new int8_t[mBytes * 2];
+    mXfrBuffer = mPullQueue;
+    mPacketCnt = 0;  // burg initialization
+    mNextPacket.store(mPullQueue + mBytes, std::memory_order_release);
     mFadeUp.resize(mFPP, 0.0);
     mFadeDown.resize(mFPP, 0.0);
     for (int i = 0; i < mFPP; i++) {
@@ -422,7 +422,7 @@ ZERO_OUTPUT:
 
 OUTPUT:
     // swap positions of mXfrBuffer and mNextPacket
-    mNextPacket = mXfrBuffer;
+    mNextPacket.store(mXfrBuffer, std::memory_order_release);
     if (mXfrBuffer == mPullQueue) {
         mXfrBuffer = mPullQueue + mBytes;
     } else {
