@@ -668,7 +668,11 @@ void VirtualStudio::joinStudio()
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
         }
-        qDebug() << "noping out because no servers yet";
+        if (m_studioToJoin.isEmpty()) {
+            qDebug() << "noping out because studio to join is empty";
+        } else {
+            qDebug() << "noping out because no servers yet";
+        }
         return;
     }
 
