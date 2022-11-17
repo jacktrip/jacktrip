@@ -46,8 +46,9 @@
             <Publish Dialog="ExitDialog"
                 Control="Finish" 
                 Event="DoAction" 
-                Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and Installed</Publish>
+                Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
         </UI>
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
         <Icon Id='jacktrip.exe' SourceFile='jacktrip.exe' />
     </Product>
 </Wix>
