@@ -222,7 +222,20 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // thread
     connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
             Qt::QueuedConnection);
-    connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio,
+    connect(this, &VirtualStudio::studioToJoinChanged, this, [&]() {
+        if (!m_studioToJoin.isEmpty()) {
+            // join studio when studio to join changes
+            if (m_connectionState != QStringLiteral("Disconnected") && m_connectionState != QStringLiteral("Waiting")) {
+                m_shouldJoin = true;
+                qDebug() << "Join studio about to be called after getting new studio to join";
+                joinStudio();
+            } else {
+                qDebug() << "noping out because already connected";
+            }
+        } else {
+            qDebug() << "noping out because studio to join is empty";
+        }
+    },
             Qt::QueuedConnection);
 }
 
@@ -685,6 +698,7 @@ void VirtualStudio::joinStudio()
         // Not time to join yet.
         // Waiting until joinStudio is called and m_shouldJoin is true.
         qDebug() << "noping out because !m_shouldJoin";
+        qDebug() << m_shouldJoin;
         return;
     }
 
@@ -880,6 +894,7 @@ void VirtualStudio::applySettings()
         // We're done waiting to be on the browse page
         m_shouldJoin = true;
         qDebug() << "Join studio about to be called after applying settings";
+        qDebug() << m_shouldJoin;
         joinStudio();
     } else {
         qDebug() << "noping out because m_studioToJoin is empty";
@@ -1127,6 +1142,9 @@ void VirtualStudio::disconnect()
 
         m_vsAudioInterface->startProcess();
     }
+
+    m_connectionState = QStringLiteral("Disconnected");
+    emit connectionStateChanged();
 }
 
 void VirtualStudio::manageStudio(int studioIndex)
