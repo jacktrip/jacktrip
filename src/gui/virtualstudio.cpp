@@ -1223,9 +1223,10 @@ void VirtualStudio::slotAuthSucceded()
         // FTUX shows warnings and device setup views
         // if any of these enabled, do not immediately join
         if (!m_showDeviceSetup) {
-            // Don't need to set m_shouldJoin because it's default true
+            // We should join in this case
             qDebug() << "Join studio about to be called after log in";
             qDebug() << "m_should join is" << m_shouldJoin;
+            m_shouldJoin = true;
             joinStudio();
         } else {
             qDebug() << "noping out because we we need to show devices";
