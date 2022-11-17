@@ -198,18 +198,31 @@ void VsAudioInterface::setupAudio()
 
             std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
+            std::string devicesWarningHelpUrl =
+                m_audioInterface->getDevicesWarningHelpUrl();
+            std::string devicesErrorHelpUrl = m_audioInterface->getDevicesErrorHelpUrl();
 
             if (devicesWarningMsg != "") {
                 qDebug() << "Devices Warning: "
                          << QString::fromStdString(devicesWarningMsg);
+                if (devicesWarningHelpUrl != "") {
+                    qDebug() << "Learn More: "
+                             << QString::fromStdString(devicesWarningHelpUrl);
+                }
             }
 
             if (devicesErrorMsg != "") {
                 qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+                if (devicesErrorHelpUrl != "") {
+                    qDebug() << "Learn More: "
+                             << QString::fromStdString(devicesErrorHelpUrl);
+                }
             }
 
             updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
             updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+            updateDevicesWarningHelpUrl(QString::fromStdString(devicesWarningHelpUrl));
+            updateDevicesErrorHelpUrl(QString::fromStdString(devicesErrorHelpUrl));
 #endif
         }
 
@@ -440,5 +453,17 @@ void VsAudioInterface::updateDevicesErrorMsg(const QString& msg)
 void VsAudioInterface::updateDevicesWarningMsg(const QString& msg)
 {
     emit devicesWarningMsgChanged(msg);
+    return;
+}
+
+void VsAudioInterface::updateDevicesWarningHelpUrl(const QString& url)
+{
+    emit devicesWarningHelpUrlChanged(url);
+    return;
+}
+
+void VsAudioInterface::updateDevicesErrorHelpUrl(const QString& url)
+{
+    emit devicesErrorHelpUrlChanged(url);
     return;
 }

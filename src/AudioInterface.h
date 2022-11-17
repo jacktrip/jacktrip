@@ -76,6 +76,10 @@ class AudioInterface
         UNDEF   ///< Undefined
     };
 
+    enum warningMessageT { DEVICE_WARN_NONE, DEVICE_WARN_LATENCY };
+
+    enum errorMessageT { DEVICE_ERR_NONE, DEVICE_ERR_INCOMPATIBLE };
+
     /** \brief The class constructor
      * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param NumInChans Number of Input Channels
@@ -215,6 +219,8 @@ class AudioInterface
     static int getSampleRateFromType(samplingRateT rate_type);
     std::string getDevicesWarningMsg();
     std::string getDevicesErrorMsg();
+    std::string getDevicesWarningHelpUrl();
+    std::string getDevicesErrorHelpUrl();
 
     //------------------------------------------------------------------
 
@@ -263,14 +269,16 @@ class AudioInterface
     AudioTester* mAudioTesterP{nullptr};
 
    protected:
-    void setDevicesWarningMsg(std::string msg);
-    void setDevicesErrorMsg(std::string msg);
+    void setDevicesWarningMsg(warningMessageT msg);
+    void setDevicesErrorMsg(errorMessageT msg);
 
     bool mProcessingAudio;  ///< Set when processing an audio callback buffer pair
     const uint32_t MAX_AUDIO_BUFFER_SIZE = 8192;
 
     std::string mWarningMsg;
     std::string mErrorMsg;
+    std::string mWarningHelpUrl;
+    std::string mErrorHelpUrl;
 };
 
 #endif  // __AUDIOINTERFACE_H__

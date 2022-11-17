@@ -84,6 +84,10 @@ class VirtualStudio : public QObject
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
+    Q_PROPERTY(QString devicesWarningHelpUrl READ devicesWarningHelpUrl NOTIFY
+                   devicesWarningHelpUrlChanged)
+    Q_PROPERTY(QString devicesErrorHelpUrl READ devicesErrorHelpUrl NOTIFY
+                   devicesErrorHelpUrlChanged)
 
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
@@ -144,6 +148,8 @@ class VirtualStudio : public QObject
     void setOutputDevice(int device);
     QString devicesWarning();
     QString devicesError();
+    QString devicesWarningHelpUrl();
+    QString devicesErrorHelpUrl();
     int bufferSize();
     void setBufferSize(int index);
     int bufferStrategy();
@@ -203,6 +209,7 @@ class VirtualStudio : public QObject
     void createStudio();
     void editProfile();
     void showAbout();
+    void openLink(const QString& url);
     void updatedInputVuMeasurements(const QVector<float>& valuesInDecibels);
     void updatedOutputVuMeasurements(const QVector<float>& valuesInDecibels);
     void setInputVolume(float multiplier);
@@ -228,6 +235,8 @@ class VirtualStudio : public QObject
     void outputDeviceSelected(QString device);
     void devicesWarningChanged();
     void devicesErrorChanged();
+    void devicesWarningHelpUrlChanged();
+    void devicesErrorHelpUrlChanged();
     void triggerPlayOutputAudio();
     void bufferSizeChanged();
     void bufferStrategyChanged();
@@ -269,6 +278,8 @@ class VirtualStudio : public QObject
     void startAudio();
     void updatedDevicesErrorMsg(const QString& msg);
     void updatedDevicesWarningMsg(const QString& msg);
+    void updatedDevicesErrorHelpUrl(const QString& url);
+    void updatedDevicesWarningHelpUrl(const QString& url);
 
    private:
     void setupAuthenticator();
@@ -348,8 +359,10 @@ class VirtualStudio : public QObject
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
-    QString m_devicesWarningMsg = QStringLiteral("");
-    QString m_devicesErrorMsg   = QStringLiteral("");
+    QString m_devicesWarningMsg     = QStringLiteral("");
+    QString m_devicesErrorMsg       = QStringLiteral("");
+    QString m_devicesWarningHelpUrl = QStringLiteral("");
+    QString m_devicesErrorHelpUrl   = QStringLiteral("");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
