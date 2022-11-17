@@ -249,6 +249,7 @@ class VirtualStudio : public QObject
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
+    void studioToJoinChanged();
     void shouldJoinChanged();
     void updatedInputVolume(float multiplier);
     void updatedOutputVolume(float multiplier);

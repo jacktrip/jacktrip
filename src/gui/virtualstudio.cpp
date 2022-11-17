@@ -222,6 +222,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // thread
     connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
             Qt::QueuedConnection);
+    connect(this, &VirtualStudio::studioToJoinChanged, this, &VirtualStudio::joinStudio,
+            Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -557,6 +559,7 @@ void VirtualStudio::setShowWarnings(bool show)
         if (!m_showDeviceSetup) {
             // We're done waiting to be on the browse page
             m_shouldJoin = true;
+            qDebug() << "Join studio about to be called after setting show warnings";
             joinStudio();
         } else {
             qDebug() << "noping out because m_showDeviceSetup is still true";
@@ -624,6 +627,7 @@ QUrl VirtualStudio::studioToJoin()
 void VirtualStudio::setStudioToJoin(const QUrl& url)
 {
     m_studioToJoin = url;
+    emit studioToJoinChanged();
 }
 
 bool VirtualStudio::noUpdater()
@@ -661,6 +665,7 @@ void VirtualStudio::setShouldJoin(bool join)
 
 void VirtualStudio::joinStudio()
 {
+    qDebug() << "Join studio was called";
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
@@ -874,6 +879,7 @@ void VirtualStudio::applySettings()
     if (!m_studioToJoin.isEmpty()) {
         // We're done waiting to be on the browse page
         m_shouldJoin = true;
+        qDebug() << "Join studio about to be called after applying settings";
         joinStudio();
     } else {
         qDebug() << "noping out because m_studioToJoin is empty";
@@ -1218,6 +1224,8 @@ void VirtualStudio::slotAuthSucceded()
         // if any of these enabled, do not immediately join
         if (!m_showDeviceSetup) {
             // Don't need to set m_shouldJoin because it's default true
+            qDebug() << "Join studio about to be called after log in";
+            qDebug() << "m_should join is" << m_shouldJoin;
             joinStudio();
         } else {
             qDebug() << "noping out because we we need to show devices";
