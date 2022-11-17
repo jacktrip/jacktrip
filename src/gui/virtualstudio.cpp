@@ -558,6 +558,8 @@ void VirtualStudio::setShowWarnings(bool show)
             // We're done waiting to be on the browse page
             m_shouldJoin = true;
             joinStudio();
+        } else {
+            qDebug() << "noping out because m_showDeviceSetup is still true";
         }
     }
 }
@@ -666,12 +668,14 @@ void VirtualStudio::joinStudio()
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
         }
+        qDebug() << "noping out because no servers yet";
         return;
     }
 
     if (!m_shouldJoin) {
         // Not time to join yet.
         // Waiting until joinStudio is called and m_shouldJoin is true.
+        qDebug() << "noping out because !m_shouldJoin";
         return;
     }
 
@@ -867,6 +871,8 @@ void VirtualStudio::applySettings()
         // We're done waiting to be on the browse page
         m_shouldJoin = true;
         joinStudio();
+    } else {
+        qDebug() << "noping out because m_studioToJoin is empty";
     }
 }
 
@@ -1209,6 +1215,8 @@ void VirtualStudio::slotAuthSucceded()
         if (!m_showDeviceSetup) {
             // Don't need to set m_shouldJoin because it's default true
             joinStudio();
+        } else {
+            qDebug() << "noping out because we we need to show devices";
         }
     }
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
