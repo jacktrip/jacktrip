@@ -16,7 +16,7 @@ Optional:
 
 ### Fedora
 ```sh
-dnf install qt5-qtbase-devel qt5-qtnetworkauth-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel
+dnf install qt5-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
 dnf install "pkgconfig(jack)" alsa-lib-devel git help2man
@@ -29,7 +29,7 @@ directory or use QtCreator to compile.
 ### Ubuntu and Debian/Raspbian
 ```sh
 apt install --no-install-recommends build-essential qt5-default autoconf automake libtool make libjack-jackd2-dev git help2man
-apt install qjackctl qt5-qmake qttools5-dev libqt5svg5-dev libqt5networkauth5-dev qtdeclarative5-dev qml-module-qtquick-controls
+apt install qjackctl qt5-qmake qttools5-dev libqt5svg5-dev libqt5networkauth5-dev libqt5websockets5-dev qtdeclarative5-dev qml-module-qtquick-controls
 apt install librtaudio-dev # if building with RtAudio
 ```
 
