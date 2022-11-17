@@ -222,21 +222,26 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // thread
     connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
             Qt::QueuedConnection);
-    connect(this, &VirtualStudio::studioToJoinChanged, this, [&]() {
-        if (!m_studioToJoin.isEmpty()) {
-            // join studio when studio to join changes
-            if (m_connectionState != QStringLiteral("Disconnected") && m_connectionState != QStringLiteral("Waiting")) {
-                m_shouldJoin = true;
-                qDebug() << "Join studio about to be called after getting new studio to join";
-                joinStudio();
+    connect(
+        this, &VirtualStudio::studioToJoinChanged, this,
+        [&]() {
+            if (!m_studioToJoin.isEmpty()) {
+                // join studio when studio to join changes
+                if (m_connectionState != QStringLiteral("Disconnected")
+                    && m_connectionState != QStringLiteral("Waiting")) {
+                    m_shouldJoin = true;
+                    qDebug() << "Join studio about to be called after getting new studio "
+                                "to join";
+                    joinStudio();
+                } else {
+                    qDebug() << "noping out because already connected";
+                    qDebug() << m_connectionState;
+                }
             } else {
-                qDebug() << "noping out because already connected";
+                qDebug() << "noping out because studio to join is empty";
             }
-        } else {
-            qDebug() << "noping out because studio to join is empty";
-        }
-    },
-            Qt::QueuedConnection);
+        },
+        Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
