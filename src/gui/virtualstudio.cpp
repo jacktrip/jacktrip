@@ -227,9 +227,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         [&]() {
             if (!m_studioToJoin.isEmpty()) {
                 // join studio when studio to join changes
-                if (m_connectionState != QStringLiteral("Disconnected")
-                    && m_connectionState != QStringLiteral("Waiting")) {
-                    m_shouldJoin = true;
+                if (readyToJoin()) {
                     qDebug() << "Join studio about to be called after getting new studio "
                                 "to join";
                     joinStudio();
@@ -585,9 +583,8 @@ void VirtualStudio::setShowWarnings(bool show)
     if (!m_studioToJoin.isEmpty()) {
         // device setup view proceeds warning view
         // if device setup is shown, do not immediately join
-        if (!m_showDeviceSetup) {
+        if (readyToJoin()) {
             // We're done waiting to be on the browse page
-            m_shouldJoin = true;
             qDebug() << "Join studio about to be called after setting show warnings";
             joinStudio();
         } else {
@@ -682,16 +679,6 @@ QString VirtualStudio::failedMessage()
     return m_failedMessage;
 }
 
-bool VirtualStudio::shouldJoin()
-{
-    return m_shouldJoin;
-}
-
-void VirtualStudio::setShouldJoin(bool join)
-{
-    m_shouldJoin = join;
-}
-
 void VirtualStudio::joinStudio()
 {
     qDebug() << "Join studio was called";
@@ -707,14 +694,6 @@ void VirtualStudio::joinStudio()
         } else {
             qDebug() << "noping out because no servers yet";
         }
-        return;
-    }
-
-    if (!m_shouldJoin) {
-        // Not time to join yet.
-        // Waiting until joinStudio is called and m_shouldJoin is true.
-        qDebug() << "noping out because !m_shouldJoin";
-        qDebug() << m_shouldJoin;
         return;
     }
 
@@ -908,9 +887,7 @@ void VirtualStudio::applySettings()
     // which can display upon opening the app from join link
     if (!m_studioToJoin.isEmpty()) {
         // We're done waiting to be on the browse page
-        m_shouldJoin = true;
         qDebug() << "Join studio about to be called after applying settings";
-        qDebug() << m_shouldJoin;
         joinStudio();
     } else {
         qDebug() << "noping out because m_studioToJoin is empty";
@@ -1256,11 +1233,9 @@ void VirtualStudio::slotAuthSucceded()
     if (!m_studioToJoin.isEmpty()) {
         // FTUX shows warnings and device setup views
         // if any of these enabled, do not immediately join
-        if (!m_showDeviceSetup) {
+        if (readyToJoin()) {
             // We should join in this case
             qDebug() << "Join studio about to be called after log in";
-            qDebug() << "m_should join is" << m_shouldJoin;
-            m_shouldJoin = true;
             joinStudio();
         } else {
             qDebug() << "noping out because we we need to show devices";
@@ -1905,6 +1880,13 @@ void VirtualStudio::stopStudio()
         }
         reply->deleteLater();
     });
+}
+
+bool VirtualStudio::readyToJoin()
+{
+    return m_windowState == "browse"
+           && (m_connectionState == QStringLiteral("Waiting")
+               || m_connectionState == QStringLiteral("Disconnected"));
 }
 
 #ifdef RT_AUDIO

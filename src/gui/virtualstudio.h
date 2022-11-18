@@ -115,15 +115,13 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
     Q_PROPERTY(
-        bool shouldJoin READ shouldJoin WRITE setShouldJoin NOTIFY shouldJoinChanged)
-    Q_PROPERTY(
         float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
     Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
                    updatedOutputVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
-    Q_PROPERTY(
-        QString windowState READ windowState WRITE setWindowState NOTIFY windowStateUpdated)
+    Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
+                   windowStateUpdated)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -181,8 +179,6 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString failedMessage();
-    bool shouldJoin();
-    void setShouldJoin(bool join);
     float inputVolume();
     float outputVolume();
     bool inputMuted();
@@ -254,7 +250,6 @@ class VirtualStudio : public QObject
     void periodicRefresh();
     void failedMessageChanged();
     void studioToJoinChanged();
-    void shouldJoinChanged();
     void updatedInputVolume(float multiplier);
     void updatedOutputVolume(float multiplier);
     void updatedInputMuted(bool muted);
@@ -287,13 +282,13 @@ class VirtualStudio : public QObject
     void getRegions();
     void getUserMetadata();
     void stopStudio();
+    bool readyToJoin();
 #ifdef RT_AUDIO
     QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
 #endif
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
-    bool m_shouldJoin   = true;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
@@ -356,7 +351,7 @@ class VirtualStudio : public QObject
 
     QString m_devicesWarningMsg = QStringLiteral("");
     QString m_devicesErrorMsg   = QStringLiteral("");
-    QString m_windowState = QStringLiteral("login");
+    QString m_windowState       = QStringLiteral("login");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
