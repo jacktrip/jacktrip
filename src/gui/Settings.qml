@@ -733,7 +733,7 @@ Item {
                 border.width: 1
                 border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState "browse"; virtualstudio.applySettings() }
+            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.applySettings() }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (119 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
