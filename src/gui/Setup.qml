@@ -839,7 +839,7 @@ Item {
                 }
             }
             enabled: !Boolean(virtualstudio.devicesError)
-            onClicked: { window.state = "browse"; virtualstudio.applySettings() }
+            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.applySettings() }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.bottomMargin: rightMargin * virtualstudio.uiScale

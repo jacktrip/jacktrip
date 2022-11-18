@@ -234,6 +234,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                 } else {
                     qDebug() << "failed readytoJoin check after studioToJoinChanged";
                     qDebug() << m_connectionState;
+                    qDebug() << m_windowState;
                 }
             } else {
                 qDebug() << "failing because studio to join is empty";

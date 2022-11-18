@@ -60,7 +60,7 @@ Item {
                 color: shadowColour
             }
         }
-        onClicked: { window.state = "login"; virtualstudio.toVirtualStudio(); }
+        onClicked: { virtualstudio.windowState = "login"; virtualstudio.toVirtualStudio(); }
         x: parent.width / 2 - (265 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale
         width: 234 * virtualstudio.uiScale; height: 49 * virtualstudio.uiScale
         Text {
@@ -108,7 +108,7 @@ Item {
                 color: shadowColour
             }
         }
-        onClicked: { window.state = "login"; virtualstudio.toStandard(); }
+        onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
         x: parent.width / 2 + (32 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale
         width: 234 * virtualstudio.uiScale; height: 49 * virtualstudio.uiScale
         Text {

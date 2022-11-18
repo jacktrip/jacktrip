@@ -127,22 +127,22 @@ Rectangle {
         target: virtualstudio
         onAuthSucceeded: { 
             if (virtualstudio.showDeviceSetup) {
-                window.state = "setup";
+                virtualstudio.windowState = "setup";
             } else {
-                window.state = "browse";
+                virtualstudio.windowState = "browse";
             }
         }
         onAuthFailed: {
             loginScreen.failTextVisible = true;
         }
         onConnected: {
-            window.state = "connected";
+            virtualstudio.windowState = "connected";
         }
         onFailed: {
-            window.state = "failed";
+            virtualstudio.windowState = "failed";
         }
         onDisconnected: {
-            window.state = "browse";
+            virtualstudio.windowState = "browse";
         }
     }
 }
