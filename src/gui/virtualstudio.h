@@ -122,6 +122,8 @@ class VirtualStudio : public QObject
                    updatedOutputVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
+    Q_PROPERTY(
+        QString windowState READ windowState WRITE setWindowState NOTIFY windowStateUpdated)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -185,6 +187,7 @@ class VirtualStudio : public QObject
     float outputVolume();
     bool inputMuted();
     bool outputMuted();
+    QString windowState();
 
    public slots:
     void toStandard();
@@ -209,6 +212,7 @@ class VirtualStudio : public QObject
     void setOutputVolume(float multiplier);
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
+    void setWindowState(QString state);
     void exit();
 
    signals:
@@ -255,6 +259,7 @@ class VirtualStudio : public QObject
     void updatedOutputVolume(float multiplier);
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
+    void windowStateUpdated();
 
    private slots:
     void slotAuthSucceded();
@@ -351,6 +356,7 @@ class VirtualStudio : public QObject
 
     QString m_devicesWarningMsg = QStringLiteral("");
     QString m_devicesErrorMsg   = QStringLiteral("");
+    QString m_windowState = QStringLiteral("login");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;

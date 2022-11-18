@@ -557,6 +557,17 @@ void VirtualStudio::setShowDeviceSetup(bool show)
     m_showDeviceSetup = show;
 }
 
+QString VirtualStudio::windowState()
+{
+    return m_windowState;
+}
+
+void VirtualStudio::setWindowState(QString state)
+{
+    m_windowState = state;
+    emit windowStateUpdated();
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;
