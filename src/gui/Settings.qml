@@ -29,6 +29,7 @@ Item {
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
     property string warningTextColour: "#DB0A0A"
+    property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string errorFlagColour: "#DB0A0A"
 
@@ -432,7 +433,15 @@ Item {
             x: leftMargin * virtualstudio.uiScale
             y: virtualstudio.audioBackend != "JACK" ? refreshButton.y + (48 * virtualstudio.uiScale) : testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - (64 * virtualstudio.uiScale)
-            text: virtualstudio.devicesError || virtualstudio.devicesWarning
+            textFormat: Text.RichText
+            text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
+                + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
+                    ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
+                    : ""
+                )
+            onLinkActivated: link => {
+                virtualstudio.openLink(link)
+            }
             horizontalAlignment: Text.AlignHLeft
             wrapMode: Text.WordWrap
             color: warningTextColour

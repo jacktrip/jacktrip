@@ -362,6 +362,16 @@ QString VirtualStudio::devicesError()
     return m_devicesErrorMsg;
 }
 
+QString VirtualStudio::devicesWarningHelpUrl()
+{
+    return m_devicesWarningHelpUrl;
+}
+
+QString VirtualStudio::devicesErrorHelpUrl()
+{
+    return m_devicesErrorHelpUrl;
+}
+
 float VirtualStudio::inputVolume()
 {
     return m_inMultiplier;
@@ -1151,6 +1161,12 @@ void VirtualStudio::showAbout()
     about.exec();
 }
 
+void VirtualStudio::openLink(const QString& link)
+{
+    QUrl url = QUrl(link);
+    QDesktopServices::openUrl(url);
+}
+
 void VirtualStudio::exit()
 {
     m_refreshTimer.stop();
@@ -1383,6 +1399,20 @@ void VirtualStudio::updatedDevicesWarningMsg(const QString& msg)
 {
     m_devicesWarningMsg = msg;
     emit devicesWarningChanged();
+    return;
+}
+
+void VirtualStudio::updatedDevicesErrorHelpUrl(const QString& url)
+{
+    m_devicesErrorHelpUrl = url;
+    emit devicesErrorHelpUrlChanged();
+    return;
+}
+
+void VirtualStudio::updatedDevicesWarningHelpUrl(const QString& url)
+{
+    m_devicesWarningHelpUrl = url;
+    emit devicesWarningHelpUrlChanged();
     return;
 }
 
@@ -1810,7 +1840,10 @@ void VirtualStudio::startAudio()
             &VirtualStudio::updatedDevicesErrorMsg);
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningMsgChanged, this,
             &VirtualStudio::updatedDevicesWarningMsg);
-
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorHelpUrlChanged,
+            this, &VirtualStudio::updatedDevicesErrorHelpUrl);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesWarningHelpUrlChanged,
+            this, &VirtualStudio::updatedDevicesWarningHelpUrl);
     m_vsAudioInterface->setupAudio();
 
     connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
