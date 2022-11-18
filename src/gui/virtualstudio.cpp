@@ -228,16 +228,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             if (!m_studioToJoin.isEmpty()) {
                 // join studio when studio to join changes
                 if (readyToJoin()) {
-                    qDebug() << "Join studio about to be called after getting new studio "
-                                "to join";
                     joinStudio();
-                } else {
-                    qDebug() << "failed readytoJoin check after studioToJoinChanged";
-                    qDebug() << m_connectionState;
-                    qDebug() << m_windowState;
                 }
-            } else {
-                qDebug() << "failing because studio to join is empty";
             }
         },
         Qt::QueuedConnection);
@@ -586,10 +578,7 @@ void VirtualStudio::setShowWarnings(bool show)
         // if device setup is shown, do not immediately join
         if (readyToJoin()) {
             // We're done waiting to be on the browse page
-            qDebug() << "Join studio about to be called after setting show warnings";
             joinStudio();
-        } else {
-            qDebug() << "failed readToJoin check after FTUX";
         }
     }
 }
@@ -682,18 +671,12 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    qDebug() << "Join studio was called";
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
         // will come back to this function.
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
-        }
-        if (m_studioToJoin.isEmpty()) {
-            qDebug() << "studio to join is empty (inside joinStudio)";
-        } else {
-            qDebug() << "no servers yet";
         }
         return;
     }
@@ -888,10 +871,7 @@ void VirtualStudio::applySettings()
     // which can display upon opening the app from join link
     if (!m_studioToJoin.isEmpty()) {
         // We're done waiting to be on the browse page
-        qDebug() << "Join studio about to be called after applying settings";
         joinStudio();
-    } else {
-        qDebug() << "not joining because m_studioToJoin is empty after applying settings";
     }
 }
 
@@ -1236,10 +1216,7 @@ void VirtualStudio::slotAuthSucceded()
         // if any of these enabled, do not immediately join
         if (readyToJoin()) {
             // We should join in this case
-            qDebug() << "Join studio about to be called after log in";
             joinStudio();
-        } else {
-            qDebug() << "skipping join after login";
         }
     }
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
@@ -1885,8 +1862,6 @@ void VirtualStudio::stopStudio()
 
 bool VirtualStudio::readyToJoin()
 {
-    qDebug() << m_windowState;
-    qDebug() << m_connectionState;
     return m_windowState == "browse"
            && (m_connectionState == QStringLiteral("Waiting")
                || m_connectionState == QStringLiteral("Disconnected"));
