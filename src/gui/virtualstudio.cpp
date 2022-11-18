@@ -232,11 +232,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                 "to join";
                     joinStudio();
                 } else {
-                    qDebug() << "noping out because already connected";
+                    qDebug() << "failed readytoJoin check after studioToJoinChanged";
                     qDebug() << m_connectionState;
                 }
             } else {
-                qDebug() << "noping out because studio to join is empty";
+                qDebug() << "failing because studio to join is empty";
             }
         },
         Qt::QueuedConnection);
@@ -588,7 +588,7 @@ void VirtualStudio::setShowWarnings(bool show)
             qDebug() << "Join studio about to be called after setting show warnings";
             joinStudio();
         } else {
-            qDebug() << "noping out because m_showDeviceSetup is still true";
+            qDebug() << "failed readToJoin check after FTUX";
         }
     }
 }
@@ -690,9 +690,9 @@ void VirtualStudio::joinStudio()
             getServerList(true, true);
         }
         if (m_studioToJoin.isEmpty()) {
-            qDebug() << "noping out because studio to join is empty";
+            qDebug() << "studio to join is empty (inside joinStudio)";
         } else {
-            qDebug() << "noping out because no servers yet";
+            qDebug() << "no servers yet";
         }
         return;
     }
@@ -890,7 +890,7 @@ void VirtualStudio::applySettings()
         qDebug() << "Join studio about to be called after applying settings";
         joinStudio();
     } else {
-        qDebug() << "noping out because m_studioToJoin is empty";
+        qDebug() << "not joining because m_studioToJoin is empty after applying settings";
     }
 }
 
@@ -1238,7 +1238,7 @@ void VirtualStudio::slotAuthSucceded()
             qDebug() << "Join studio about to be called after log in";
             joinStudio();
         } else {
-            qDebug() << "noping out because we we need to show devices";
+            qDebug() << "skipping join after login";
         }
     }
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
@@ -1884,6 +1884,8 @@ void VirtualStudio::stopStudio()
 
 bool VirtualStudio::readyToJoin()
 {
+    qDebug() << m_windowState;
+    qDebug() << m_connectionState;
     return m_windowState == "browse"
            && (m_connectionState == QStringLiteral("Waiting")
                || m_connectionState == QStringLiteral("Disconnected"));
