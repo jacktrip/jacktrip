@@ -46,6 +46,7 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <atomic>
 #include <cstring>
 
 #include "AudioInterface.h"
@@ -147,7 +148,7 @@ class Regulator : public RingBuffer
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot)
     {
-        ::memcpy(ptrToReadSlot, mNextPacket, mBytes);
+        ::memcpy(ptrToReadSlot, mNextPacket.load(std::memory_order_acquire), mBytes);
     }
 
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
@@ -176,7 +177,7 @@ class Regulator : public RingBuffer
     int mBytesPeerPacket;
     int8_t* mPullQueue;
     int8_t* mXfrBuffer;
-    const void* mNextPacket;
+    std::atomic<const void*> mNextPacket;
     int8_t* mAssembledPacket;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
