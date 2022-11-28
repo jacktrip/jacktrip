@@ -301,7 +301,14 @@ int VirtualStudio::inputDevice()
 {
 #ifdef RT_AUDIO
     if (m_useRtAudio) {
-        int index = m_inputDeviceList.indexOf(m_inputDevice);
+        QStringList filteredInputDeviceList;
+        for (int i = 0; i < m_inputDeviceList.size(); i++) {
+            if (m_inputDeviceList.at(i) != "(default)") {
+                filteredInputDeviceList += m_inputDeviceList.at(i);
+            }
+        }
+
+        int index = filteredInputDeviceList.indexOf(m_inputDevice);
         return index >= 0 ? index : 0;
     }
 #endif
@@ -314,7 +321,15 @@ void VirtualStudio::setInputDevice([[maybe_unused]] int device)
         return;
     }
 #ifdef RT_AUDIO
-    m_inputDevice = m_inputDeviceList.at(device);
+    std::cout << "Setting Input Device: " << device << std::endl;
+    QStringList filteredInputDeviceList;
+    for (int i = 0; i < m_inputDeviceList.size(); i++) {
+        if (m_inputDeviceList.at(i) != "(default)") {
+            filteredInputDeviceList += m_inputDeviceList.at(i);
+        }
+    }
+
+    m_inputDevice = filteredInputDeviceList.at(device);
     emit inputDeviceSelected(m_inputDevice);
 #endif
 }
@@ -323,7 +338,14 @@ int VirtualStudio::outputDevice()
 {
 #ifdef RT_AUDIO
     if (m_useRtAudio) {
-        int index = m_outputDeviceList.indexOf(m_outputDevice);
+        QStringList filteredOutputDeviceList;
+        for (int i = 0; i < m_outputDeviceList.size(); i++) {
+            if (m_outputDeviceList.at(i) != "(default)") {
+                filteredOutputDeviceList += m_outputDeviceList.at(i);
+            }
+        }
+
+        int index = filteredOutputDeviceList.indexOf(m_outputDevice);
         return index >= 0 ? index : 0;
     }
 #endif
@@ -336,7 +358,14 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] int device)
         return;
     }
 #ifdef RT_AUDIO
-    m_outputDevice = m_outputDeviceList.at(device);
+    QStringList filteredOutputDeviceList;
+    for (int i = 0; i < m_outputDeviceList.size(); i++) {
+        if (m_outputDeviceList.at(i) != "(default)") {
+            filteredOutputDeviceList += m_outputDeviceList.at(i);
+        }
+    }
+
+    m_outputDevice = filteredOutputDeviceList.at(device);
     emit outputDeviceSelected(m_outputDevice);
 #endif
 }
@@ -1889,7 +1918,16 @@ void VirtualStudio::stopStudio()
 QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
                                          const QStringList& categories)
 {
-    QStringList uniqueCategories = QStringList(categories);
+    QStringList filteredDevices;
+    QStringList filteredCategories;
+
+    for (int i = 0; i < devices.size(); i++) {
+        if (!devices[i].contains("(default)"))
+            filteredDevices += devices[i];
+            filteredCategories += categories[i];
+    }
+
+    QStringList uniqueCategories = QStringList(filteredCategories);
     uniqueCategories.removeDuplicates();
 
     bool containsCategories = true;
@@ -1911,10 +1949,10 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
             items.push_back(QVariant(QJsonValue(header)));
         }
 
-        for (int j = 0; j < devices.size(); j++) {
-            if (categories.at(j).toStdString() == category.toStdString()) {
+        for (int j = 0; j < filteredDevices.size(); j++) {
+            if (filteredCategories.at(j).toStdString() == category.toStdString()) {
                 QJsonObject element = QJsonObject();
-                element.insert(QString::fromStdString("text"), devices.at(j));
+                element.insert(QString::fromStdString("text"), filteredDevices.at(j));
                 element.insert(QString::fromStdString("type"),
                                QString::fromStdString("element"));
                 items.push_back(QVariant(QJsonValue(element)));
