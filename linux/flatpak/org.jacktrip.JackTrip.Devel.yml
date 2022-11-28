@@ -1,6 +1,6 @@
 app-id: org.jacktrip.JackTrip.Devel
 runtime: org.kde.Platform
-runtime-version: '5.15-21.08'
+runtime-version: '5.15-22.08'
 sdk: org.kde.Sdk
 command: jacktrip
 finish-args:
@@ -19,7 +19,6 @@ cleanup:
   - /lib/python3.8
   - /share/man
 modules:
-  - shared-modules/linux-audio/jack2.json
   - name: python3-pyyaml
     buildsystem: simple
     cleanup: [ "*" ]
@@ -47,5 +46,6 @@ modules:
       - -Dprofile=development
     sources:
       - type: git
+        disable-submodules: true
         url: https://github.com/jacktrip/jacktrip.git
         branch: dev
