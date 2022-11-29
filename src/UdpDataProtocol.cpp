@@ -127,11 +127,7 @@ UdpDataProtocol::~UdpDataProtocol()
 void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
 {
     // Get DNS Address
-#ifndef _WIN32
-    // Don't make the following code conditional on windows
-    //(Addresses a weird timing bug when in hub client mode)
     if (!mPeerAddress.setAddress(peerHostOrIP)) {
-#endif
         QHostInfo info = QHostInfo::fromName(peerHostOrIP);
         if (!info.addresses().isEmpty()) {
             // use the first IP address
@@ -139,9 +135,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
         }
         // cout << "UdpDataProtocol::setPeerAddress IP Address Number: "
         //    << mPeerAddress.toString().toStdString() << endl;
-#ifndef _WIN32
     }
-#endif
 
     // check if the ip address is valid
     if (mPeerAddress.protocol() == QAbstractSocket::IPv6Protocol) {
