@@ -407,13 +407,15 @@ int RtAudioInterface::stopProcess()
 void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                                      bool isInput)
 {
+    RtAudio baseRtAudio;
+    RtAudio::Api baseRtAudioApi = baseRtAudio.getCurrentApi();
+
+    // Add (default)
     list->clear();
     list->append(QStringLiteral("(default)"));
     if (categories != NULL) {
 #ifdef _WIN32
-        RtAudio temp;
-        RtAudio::Api tempApi = temp.getCurrentApi();
-        switch (tempApi) {
+        switch (baseRtAudioApi) {
         case RtAudio::WINDOWS_ASIO:
             categories->append(QStringLiteral("Low-Latency (ASIO)"));
             break;
@@ -432,6 +434,44 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 #endif
     }
 
+    // Explicitly add default device
+    QString defaultDeviceName = "";
+    uint32_t defaultDeviceIdx;
+    if (isInput) {
+        defaultDeviceIdx = baseRtAudio.getDefaultInputDevice();
+    } else {
+        defaultDeviceIdx = baseRtAudio.getDefaultOutputDevice();
+    }
+
+    if (defaultDeviceIdx != 0) {
+        RtAudio::DeviceInfo info = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
+        defaultDeviceName = QString::fromStdString(info.name);
+    }
+
+    if (defaultDeviceName != "") {
+        list->append(defaultDeviceName);
+        if (categories != NULL) {
+#ifdef _WIN32
+            switch (baseRtAudioApi) {
+            case RtAudio::WINDOWS_ASIO:
+                categories->append(QStringLiteral("Low-Latency (ASIO)"));
+                break;
+            case RtAudio::WINDOWS_WASAPI:
+                categories->append(QStringLiteral("All Devices (Non-ASIO)"));
+                break;
+            case RtAudio::WINDOWS_DS:
+                categories->append(QStringLiteral("All Devices (Non-ASIO)"));
+                break;
+            default:
+                categories->append(QStringLiteral(""));
+                break;
+            }
+#else
+            categories->append(QStringLiteral(""));
+#endif
+        }
+    }
+
     std::vector<RtAudio::Api> apis;
     RtAudio::getCompiledApi(apis);
 
@@ -444,6 +484,11 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
             if (info.probed == true) {
                 // Don't include duplicate entries
                 if (list->contains(QString::fromStdString(info.name))) {
+                    continue;
+                }
+
+                // Skip the default device, since we already added it
+                if (QString::fromStdString(info.name) == defaultDeviceName && api == baseRtAudioApi) {
                     continue;
                 }
 
