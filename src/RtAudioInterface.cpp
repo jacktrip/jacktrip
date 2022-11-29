@@ -105,6 +105,7 @@ void RtAudioInterface::setup(bool verbose)
 
     // unsigned int n_devices = mRtAudio->getDeviceCount();
     if (n_devices_total < 1) {
+        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NO_DEVICES);
         cout << "No audio devices found!" << endl;
         std::exit(0);
     } else {
@@ -186,6 +187,12 @@ void RtAudioInterface::setup(bool verbose)
 
         printDeviceInfo(api_out, index_out);
         cout << gPrintSeparator << endl;
+    }
+
+    if (n_devices_input == 0) {
+        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NO_INPUTS);
+    } else if (n_devices_output == 0) {
+        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NO_OUTPUTS);
     }
 
     delete rtAudioIn;
