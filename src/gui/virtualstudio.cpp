@@ -1924,7 +1924,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
     for (int i = 0; i < devices.size(); i++) {
         if (!devices[i].contains("(default)"))
             filteredDevices += devices[i];
-            filteredCategories += categories[i];
+        filteredCategories += categories[i];
     }
 
     QStringList uniqueCategories = QStringList(filteredCategories);

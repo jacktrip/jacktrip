@@ -452,7 +452,7 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 
     if (defaultDeviceIdx != 0) {
         RtAudio::DeviceInfo info = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
-        defaultDeviceName = QString::fromStdString(info.name);
+        defaultDeviceName        = QString::fromStdString(info.name);
     }
 
     if (defaultDeviceName != "") {
@@ -495,7 +495,8 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                 }
 
                 // Skip the default device, since we already added it
-                if (QString::fromStdString(info.name) == defaultDeviceName && api == baseRtAudioApi) {
+                if (QString::fromStdString(info.name) == defaultDeviceName
+                    && api == baseRtAudioApi) {
                     continue;
                 }
 

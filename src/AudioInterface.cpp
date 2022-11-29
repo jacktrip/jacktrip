@@ -806,19 +806,19 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
 #ifdef _WIN32
         mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
 #else
-        mErrorHelpUrl = "";
+        mErrorHelpUrl   = "";
 #endif
         break;
     case DEVICE_ERR_NO_INPUTS:
-        mErrorMsg = "JackTrip couldn't find any input devices!";
+        mErrorMsg     = "JackTrip couldn't find any input devices!";
         mErrorHelpUrl = "";
         break;
     case DEVICE_ERR_NO_OUTPUTS:
-        mErrorMsg = "JackTrip couldn't find any output devices!";
+        mErrorMsg     = "JackTrip couldn't find any output devices!";
         mErrorHelpUrl = "";
         break;
     case DEVICE_ERR_NO_DEVICES:
-        mErrorMsg = "JackTrip couldn't find any audio devices!";
+        mErrorMsg     = "JackTrip couldn't find any audio devices!";
         mErrorHelpUrl = "";
         break;
     default:
