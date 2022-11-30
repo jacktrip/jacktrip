@@ -1,7 +1,22 @@
 - Version: "1.6.7"
   Date: 2022-11-03
   Description:
+  - (added) volume meters in classic mode
+  - (added) release-acquire ordering for Regular
+  - (added) audio driver support article in VS mode
+  - (added) regulatorthread
+  - (added) studios page first time UI
+  - (added) non-asio audio devices can be used on windows
+  - (updated) dependency list in documentation
+  - (updated) windows opens jacktrip after install
   - (updated) Move to overlapped I/O for Windows Networking
+  - (updated) New default device behavior in Virtual Studio mode
+  - (fixed) send capture volume as int
+  - (fixed) connection issues for servers without reverse dns
+  - (fixed) flatpak build errors
+  - (fixed) ventura updater crash
+  - (fixed) uninitialized delete issue
+  - (remvoed) extraneous call to readSlotNonBlocking
 - Version: "1.6.6"
   Date: 2022-11-01
   Description:

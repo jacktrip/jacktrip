@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.7-rc.2",
+            "changelog": "Virtual Studio first time UI, Non-ASIO devices on Windows, Windows can't connect fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7-rc.2",
+            "download": {
+                "date": "2022-11-29T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.7-rc.2/JackTrip-v1.6.7-rc.2-macOS-x64-installer.pkg",
+                "downloadSize": 11516784,
+                "sha256": "4fe2e4dbd67986926b6f738cd4d8a22b801fd3cd50aeebee13d2e1de0310b160"
+            }
+        },
+        {
             "version": "1.6.7-rc.1",
             "changelog": "New networking code on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7-rc.1",
             "download": {

@@ -78,7 +78,13 @@ class AudioInterface
 
     enum warningMessageT { DEVICE_WARN_NONE, DEVICE_WARN_LATENCY };
 
-    enum errorMessageT { DEVICE_ERR_NONE, DEVICE_ERR_INCOMPATIBLE };
+    enum errorMessageT {
+        DEVICE_ERR_NONE,
+        DEVICE_ERR_INCOMPATIBLE,
+        DEVICE_ERR_NO_INPUTS,
+        DEVICE_ERR_NO_OUTPUTS,
+        DEVICE_ERR_NO_DEVICES
+    };
 
     /** \brief The class constructor
      * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)

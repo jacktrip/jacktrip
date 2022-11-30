@@ -381,7 +381,6 @@ Item {
                             inputCombo.currentIndex = index
                             inputCombo.popup.close()
                             virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
-                            console.log("SETTING INPUTDEVICE: ", index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length)
                         }
                     }
                 }
