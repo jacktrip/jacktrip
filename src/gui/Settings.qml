@@ -64,7 +64,7 @@ Item {
         y: header.height-1
         modal: false
         interactive: false
-        visible: window.state == "settings"
+        visible: virtualstudio.windowState == "settings"
 
         background: Rectangle {
             border.color: "#33979797"
@@ -692,7 +692,7 @@ Item {
                 border.width: 1
                 border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; window.state = "login"; virtualstudio.logout() }
+            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; virtualstudio.windowState = "login"; virtualstudio.logout() }
             anchors.horizontalCenter: parent.horizontalCenter
             y: logoutButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
