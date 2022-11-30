@@ -113,7 +113,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
 #ifdef RT_AUDIO
-    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
+    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 1).toInt() == 1;
     m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
     m_outputDevice   = settings.value(QStringLiteral("OutputDevice"), "").toString();
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
