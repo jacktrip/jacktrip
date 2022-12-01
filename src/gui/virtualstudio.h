@@ -126,6 +126,8 @@ class VirtualStudio : public QObject
                    updatedOutputVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
+    Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
+                   audioActivatedChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -192,6 +194,7 @@ class VirtualStudio : public QObject
     bool inputMuted();
     bool outputMuted();
     Q_INVOKABLE void restartAudio();
+    bool audioActivated();
 
    public slots:
     void toStandard();
@@ -217,6 +220,7 @@ class VirtualStudio : public QObject
     void setOutputVolume(float multiplier);
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
+    void setAudioActivated(bool activated);
     void exit();
 
    signals:
@@ -264,6 +268,7 @@ class VirtualStudio : public QObject
     void updatedOutputVolume(float multiplier);
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
+    void audioActivatedChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -293,6 +298,8 @@ class VirtualStudio : public QObject
     void getRegions();
     void getUserMetadata();
     void stopStudio();
+    void toggleAudio();
+    void stopAudio();
 #ifdef RT_AUDIO
     QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
 #endif
@@ -350,7 +357,8 @@ class VirtualStudio : public QObject
     bool m_testMode         = false;
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
-    bool m_authenticated = false;
+    bool m_authenticated  = false;
+    bool m_audioActivated = false;
 
     Meter* m_inputMeter;
     Meter* m_outputMeter;

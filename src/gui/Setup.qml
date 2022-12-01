@@ -848,12 +848,7 @@ Item {
                 }
             }
             enabled: !Boolean(virtualstudio.devicesError)
-            Timer {
-                id: applySettingsTimer
-                interval: 500; running: false; repeat: false
-                onTriggered: virtualstudio.applySettings();
-            }
-            onClicked: { window.state = "browse"; applySettingsTimer.restart() }
+            onClicked: { window.state = "browse"; virtualstudio.applySettings(); }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.bottomMargin: rightMargin * virtualstudio.uiScale

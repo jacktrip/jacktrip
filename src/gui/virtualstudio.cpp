@@ -222,6 +222,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // thread
     connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
             Qt::QueuedConnection);
+
+    connect(this, &VirtualStudio::audioActivatedChanged, this,
+            &VirtualStudio::toggleAudio, Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -410,6 +413,11 @@ bool VirtualStudio::outputMuted()
     return m_outMuted;
 }
 
+bool VirtualStudio::audioActivated()
+{
+    return m_audioActivated;
+}
+
 void VirtualStudio::setInputVolume(float multiplier)
 {
     m_inMultiplier = multiplier;
@@ -487,6 +495,12 @@ void VirtualStudio::setBufferStrategy(int index)
     settings.beginGroup(QStringLiteral("Audio"));
     settings.setValue(QStringLiteral("BufferStrategy"), m_bufferStrategy);
     settings.endGroup();
+}
+
+void VirtualStudio::setAudioActivated(bool activated)
+{
+    m_audioActivated = activated;
+    emit audioActivatedChanged();
 }
 
 int VirtualStudio::currentStudio()
@@ -858,15 +872,13 @@ void VirtualStudio::playOutputAudio()
 
 void VirtualStudio::revertSettings()
 {
-    // Stop VsAudioInterface
-    if (!m_vsAudioInterface.isNull()) {
-        m_vsAudioInterface->closeAudio();
-    }
-
     qDebug() << "Reverting";
     m_uiScale = m_previousUiScale;
     emit uiScaleChanged();
     qDebug() << "UI Scale Reverted";
+
+    setAudioActivated(false);
+    qDebug() << "Audio Deactivated";
 #ifdef RT_AUDIO
     // Restore our previous settings
     m_inputDevice  = m_previousInput;
@@ -880,20 +892,20 @@ void VirtualStudio::revertSettings()
     emit audioBackendChanged(m_useRtAudio);
     qDebug() << "RtAudio signals emitted";
 #endif
+
     qDebug() << "Reverted";
 }
 
 void VirtualStudio::applySettings()
 {
-    // Stop VsAudioInterface
-    if (!m_vsAudioInterface.isNull()) {
-        m_vsAudioInterface->closeAudio();
-    }
-
     qDebug() << "Applying";
     m_previousUiScale = m_uiScale;
     emit newScale();
     qDebug() << "UI Scale set";
+    
+    setAudioActivated(false);
+    qDebug() << "Audio Deactivated";
+
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
@@ -928,6 +940,7 @@ void VirtualStudio::applySettings()
         m_shouldJoin = true;
         joinStudio();
     }
+
     qDebug() << "Applied";
 }
 
@@ -1031,10 +1044,7 @@ void VirtualStudio::completeConnection()
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
 
-        // Stop VsAudioInterface
-        if (!m_vsAudioInterface.isNull()) {
-            m_vsAudioInterface->closeAudio();
-        }
+        setAudioActivated(false);
 
         // Setup output volume
         m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
@@ -1161,7 +1171,7 @@ void VirtualStudio::disconnect()
     }
 
     // Start VsAudioInterface again
-    restartAudio();
+    setAudioActivated(true);
 }
 
 void VirtualStudio::manageStudio(int studioIndex)
@@ -1239,7 +1249,7 @@ void VirtualStudio::slotAuthSucceded()
     m_device->registerApp();
 
     if (m_showDeviceSetup) {
-        restartAudio();
+        setAudioActivated(true);
     }
 
     if (m_userId.isEmpty()) {
@@ -1850,6 +1860,7 @@ void VirtualStudio::getUserMetadata()
 
 void VirtualStudio::startAudio()
 {
+    qDebug() << m_permissions->micPermission();
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
@@ -1903,6 +1914,7 @@ void VirtualStudio::startAudio()
 
 void VirtualStudio::restartAudio()
 {
+    qDebug() << m_permissions->micPermission();
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
@@ -1910,6 +1922,7 @@ void VirtualStudio::restartAudio()
 #endif
     // Start VsAudioInterface again
     if (!m_vsAudioInterface.isNull()) {
+        qDebug() << "restarting in restart";
         m_vsAudioInterface->setupAudio();
         m_vsAudioInterface->setupPlugins();
 
@@ -1920,7 +1933,34 @@ void VirtualStudio::restartAudio()
 
         m_vsAudioInterface->startProcess();
     } else {
+        qDebug() << "starting in restart";
         startAudio();
+    }
+}
+
+void VirtualStudio::stopAudio()
+{
+    // Stop VsAudioInterface
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->closeAudio();
+    }
+}
+
+void VirtualStudio::toggleAudio()
+{
+    qDebug() << m_permissions->micPermission() << m_audioActivated;
+#ifdef __APPLE__
+    if (m_permissions->micPermission() != "granted") {
+        return;
+    }
+#endif
+    qDebug() << "passed toggle mac permissiosn check";
+    if (!m_audioActivated) {
+        qDebug() << "stopping in toggle";
+        stopAudio();
+    } else {
+        qDebug() << "restarting in toggle";
+        restartAudio();
     }
 }
 
