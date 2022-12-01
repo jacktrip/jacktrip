@@ -93,8 +93,10 @@ void RtAudioInterface::setup(bool verbose)
 
     QStringList all_input_devices;
     QStringList all_output_devices;
+    cout << "getting device list" << endl;
     getDeviceList(&all_input_devices, NULL, true);
     getDeviceList(&all_output_devices, NULL, false);
+    cout << "got device list" << endl;
 
     unsigned int n_devices_input  = all_input_devices.size();
     unsigned int n_devices_output = all_output_devices.size();
@@ -167,8 +169,10 @@ void RtAudioInterface::setup(bool verbose)
         }
     }
 
+    cout << "getting device info" << endl;
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
+    cout << "got device info" << endl;
 
     if (static_cast<unsigned int>(getNumInputChannels()) > dev_info_input.inputChannels) {
         setNumInputChannels(dev_info_input.inputChannels);
