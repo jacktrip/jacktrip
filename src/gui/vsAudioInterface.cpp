@@ -100,7 +100,7 @@ void VsAudioInterface::setupAudio()
         // Create AudioInterface Client Object
         if (m_audioInterfaceMode == VsAudioInterface::JACK) {
 #ifndef NO_JACK
-            qDebug << "using JACK";
+            qDebug() << "using JACK";
             if (gVerboseFlag)
                 std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                           << std::endl;
