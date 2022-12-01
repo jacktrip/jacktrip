@@ -100,8 +100,8 @@ void RtAudioInterface::setup(bool verbose)
     unsigned int n_devices_output = all_output_devices.size();
     unsigned int n_devices_total  = n_devices_input + n_devices_output;
 
-    RtAudio* rtAudioIn;
-    RtAudio* rtAudioOut;
+    RtAudio* rtAudioIn = NULL;
+    RtAudio* rtAudioOut = NULL;
 
     // unsigned int n_devices = mRtAudio->getDeviceCount();
     if (n_devices_total < 1) {
@@ -257,6 +257,11 @@ void RtAudioInterface::printDevices()
     RtAudio::getCompiledApi(apis);
 
     for (uint32_t i = 0; i < apis.size(); i++) {
+#ifdef _WIN32
+        if (apis.at(i) == RtAudio::UNIX_JACK) {
+            continue;
+        }
+#endif
         RtAudio rtaudio(apis.at(i));
         unsigned int devices = rtaudio.getDeviceCount();
         for (unsigned int j = 0; j < devices; j++) {
@@ -483,6 +488,11 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
     RtAudio::getCompiledApi(apis);
 
     for (uint32_t i = 0; i < apis.size(); i++) {
+#ifdef _WIN32
+        if (apis.at(i) == RtAudio::UNIX_JACK) {
+            continue;
+        }
+#endif
         RtAudio::Api api = apis.at(i);
         RtAudio rtaudio(api);
         unsigned int devices = rtaudio.getDeviceCount();
@@ -541,6 +551,11 @@ void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
     RtAudio::getCompiledApi(apis);
 
     for (uint32_t i = 0; i < apis.size(); i++) {
+#ifdef _WIN32
+        if (apis.at(i) == RtAudio::UNIX_JACK) {
+            continue;
+        }
+#endif
         RtAudio rtaudio(apis.at(i));
         unsigned int devices = rtaudio.getDeviceCount();
         for (unsigned int j = 0; j < devices; j++) {
