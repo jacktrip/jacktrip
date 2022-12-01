@@ -191,6 +191,7 @@ class VirtualStudio : public QObject
     float outputVolume();
     bool inputMuted();
     bool outputMuted();
+    Q_INVOKABLE void restartAudio();
 
    public slots:
     void toStandard();

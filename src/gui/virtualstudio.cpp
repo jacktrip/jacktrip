@@ -858,30 +858,48 @@ void VirtualStudio::playOutputAudio()
 
 void VirtualStudio::revertSettings()
 {
+    // Stop VsAudioInterface
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->closeAudio();
+    }
+
+    qDebug() << "Reverting";
     m_uiScale = m_previousUiScale;
     emit uiScaleChanged();
+    qDebug() << "UI Scale Reverted";
 #ifdef RT_AUDIO
     // Restore our previous settings
     m_inputDevice  = m_previousInput;
     m_outputDevice = m_previousOutput;
     m_bufferSize   = m_previousBuffer;
     m_useRtAudio   = m_previousUseRtAudio;
+    qDebug() << "RtAudio Variables set";
     emit inputDeviceChanged(m_inputDevice);
     emit outputDeviceChanged(m_outputDevice);
     emit bufferSizeChanged();
     emit audioBackendChanged(m_useRtAudio);
+    qDebug() << "RtAudio signals emitted";
 #endif
+    qDebug() << "Reverted";
 }
 
 void VirtualStudio::applySettings()
 {
+    // Stop VsAudioInterface
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->closeAudio();
+    }
+
+    qDebug() << "Applying";
     m_previousUiScale = m_uiScale;
     emit newScale();
+    qDebug() << "UI Scale set";
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
     settings.setValue(QStringLiteral("ShowDeviceSetup"), m_showDeviceSetup);
     settings.endGroup();
+    qDebug() << "UI Scale preferences saved";
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
     settings.setValue(QStringLiteral("Backend"), m_useRtAudio ? 1 : 0);
@@ -889,14 +907,17 @@ void VirtualStudio::applySettings()
     settings.setValue(QStringLiteral("InputDevice"), m_inputDevice);
     settings.setValue(QStringLiteral("OutputDevice"), m_outputDevice);
     settings.endGroup();
+    qDebug() << "RtAudio preferences saved";
 
     m_previousUseRtAudio = m_useRtAudio;
     m_previousBuffer     = m_bufferSize;
     m_previousInput      = m_inputDevice;
     m_previousOutput     = m_outputDevice;
+    qDebug() << "RtAudio prev variables set";
 
     emit inputDeviceChanged(m_inputDevice);
     emit outputDeviceChanged(m_outputDevice);
+    qDebug() << "RtAudio signals emitted";
 #endif
 
     // attempt to join studio if requested
@@ -907,6 +928,7 @@ void VirtualStudio::applySettings()
         m_shouldJoin = true;
         joinStudio();
     }
+    qDebug() << "Applied";
 }
 
 void VirtualStudio::connectToStudio(int studioIndex)
@@ -1139,17 +1161,7 @@ void VirtualStudio::disconnect()
     }
 
     // Start VsAudioInterface again
-    if (!m_vsAudioInterface.isNull()) {
-        m_vsAudioInterface->setupAudio();
-        m_vsAudioInterface->setupPlugins();
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(
-                QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-        m_vsAudioInterface->startProcess();
-    }
+    restartAudio();
 }
 
 void VirtualStudio::manageStudio(int studioIndex)
@@ -1226,13 +1238,9 @@ void VirtualStudio::slotAuthSucceded()
     m_device = new VsDevice(m_authenticator.data(), m_testMode);
     m_device->registerApp();
 
-#ifdef __APPLE__
-    if (m_permissions->micPermission() == "granted") {
-        startAudio();
+    if (m_showDeviceSetup) {
+        restartAudio();
     }
-#else
-    startAudio();
-#endif
 
     if (m_userId.isEmpty()) {
         getUserId();
@@ -1891,6 +1899,29 @@ void VirtualStudio::startAudio()
         QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
 
     m_vsAudioInterface->startProcess();
+}
+
+void VirtualStudio::restartAudio()
+{
+#ifdef __APPLE__
+    if (m_permissions->micPermission() != "granted") {
+        return;
+    }
+#endif
+    // Start VsAudioInterface again
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->setupAudio();
+        m_vsAudioInterface->setupPlugins();
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("inputMeterModel"),
+            QVariant::fromValue(
+                QVector<float>(m_vsAudioInterface->getNumInputChannels())));
+
+        m_vsAudioInterface->startProcess();
+    } else {
+        startAudio();
+    }
 }
 
 void VirtualStudio::stopStudio()
