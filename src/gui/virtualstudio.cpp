@@ -902,7 +902,7 @@ void VirtualStudio::applySettings()
     m_previousUiScale = m_uiScale;
     emit newScale();
     qDebug() << "UI Scale set";
-    
+
     setAudioActivated(false);
     qDebug() << "Audio Deactivated";
 
