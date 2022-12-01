@@ -720,7 +720,12 @@ Item {
                 border.width: 1
                 border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { window.state = "browse"; virtualstudio.revertSettings() }
+            Timer {
+                id: revertSettingsTimer
+                interval: 500; running: false; repeat: false
+                onTriggered: virtualstudio.revertSettings();
+            }
+            onClicked: { window.state = "browse"; revertSettingsTimer.restart() }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
@@ -741,7 +746,12 @@ Item {
                 border.width: 1
                 border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { window.state = "browse"; virtualstudio.applySettings() }
+            Timer {
+                id: applySettingsTimer
+                interval: 500; running: false; repeat: false
+                onTriggered: virtualstudio.applySettings();
+            }
+            onClicked: { window.state = "browse"; applySettingsTimer.restart() }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (119 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
