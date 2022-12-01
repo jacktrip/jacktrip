@@ -64,7 +64,7 @@ Item {
         y: header.height-1
         modal: false
         interactive: false
-        visible: window.state == "settings"
+        visible: virtualstudio.windowState == "settings"
 
         background: Rectangle {
             border.color: "#33979797"
@@ -548,7 +548,7 @@ Item {
                 border.width: 1
                 border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { window.state = "login"; virtualstudio.toStandard(); }
+            onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
             x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
@@ -672,7 +672,7 @@ Item {
                 border.width: 1
                 border.color: logoutButton.down ? buttonPressedStroke : (logoutButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { window.state = "login"; virtualstudio.logout() }
+            onClicked: { virtualstudio.windowState = "login"; virtualstudio.logout() }
             anchors.horizontalCenter: parent.horizontalCenter
             y: editButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
@@ -692,7 +692,7 @@ Item {
                 border.width: 1
                 border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; window.state = "login"; virtualstudio.logout() }
+            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; virtualstudio.windowState = "login"; virtualstudio.logout() }
             anchors.horizontalCenter: parent.horizontalCenter
             y: logoutButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
@@ -720,7 +720,7 @@ Item {
                 border.width: 1
                 border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { window.state = "browse"; virtualstudio.revertSettings() }
+            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.revertSettings() }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
@@ -741,7 +741,7 @@ Item {
                 border.width: 1
                 border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { window.state = "browse"; virtualstudio.applySettings() }
+            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.applySettings() }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (119 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale

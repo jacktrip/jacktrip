@@ -179,7 +179,7 @@ Rectangle {
         visible: connected || canConnect || canStart
         onClicked: {
             if (!connected) {
-                window.state = "connected";
+                virtualstudio.windowState = "connected";
                 virtualstudio.connectToStudio(index);
             } else {
                 virtualstudio.disconnect();

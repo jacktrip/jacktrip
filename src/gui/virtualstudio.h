@@ -119,13 +119,13 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
     Q_PROPERTY(
-        bool shouldJoin READ shouldJoin WRITE setShouldJoin NOTIFY shouldJoinChanged)
-    Q_PROPERTY(
         float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
     Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
                    updatedOutputVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
+    Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
+                   windowStateUpdated)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -185,12 +185,11 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString failedMessage();
-    bool shouldJoin();
-    void setShouldJoin(bool join);
     float inputVolume();
     float outputVolume();
     bool inputMuted();
     bool outputMuted();
+    QString windowState();
 
    public slots:
     void toStandard();
@@ -216,6 +215,7 @@ class VirtualStudio : public QObject
     void setOutputVolume(float multiplier);
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
+    void setWindowState(QString state);
     void exit();
 
    signals:
@@ -258,11 +258,12 @@ class VirtualStudio : public QObject
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
-    void shouldJoinChanged();
+    void studioToJoinChanged();
     void updatedInputVolume(float multiplier);
     void updatedOutputVolume(float multiplier);
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
+    void windowStateUpdated();
 
    private slots:
     void slotAuthSucceded();
@@ -292,13 +293,13 @@ class VirtualStudio : public QObject
     void getRegions();
     void getUserMetadata();
     void stopStudio();
+    bool readyToJoin();
 #ifdef RT_AUDIO
     QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
 #endif
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
-    bool m_shouldJoin   = true;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
@@ -363,6 +364,7 @@ class VirtualStudio : public QObject
     QString m_devicesErrorMsg       = QStringLiteral("");
     QString m_devicesWarningHelpUrl = QStringLiteral("");
     QString m_devicesErrorHelpUrl   = QStringLiteral("");
+    QString m_windowState           = QStringLiteral("login");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;

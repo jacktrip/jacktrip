@@ -71,7 +71,7 @@ Item {
             border.color: buttonStroke
             layer.enabled: !backButton.down
         }
-        onClicked: { window.state = "browse" }
+        onClicked: { virtualstudio.windowState = "browse" }
         width: 256 * virtualstudio.uiScale
         height: 42 * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
