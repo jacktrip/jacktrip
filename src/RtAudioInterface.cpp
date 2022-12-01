@@ -100,7 +100,7 @@ void RtAudioInterface::setup(bool verbose)
     unsigned int n_devices_output = all_output_devices.size();
     unsigned int n_devices_total  = n_devices_input + n_devices_output;
 
-    RtAudio* rtAudioIn = NULL;
+    RtAudio* rtAudioIn  = NULL;
     RtAudio* rtAudioOut = NULL;
 
     // unsigned int n_devices = mRtAudio->getDeviceCount();
@@ -507,6 +507,14 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                 // Skip the default device, since we already added it
                 if (QString::fromStdString(info.name) == defaultDeviceName
                     && api == baseRtAudioApi) {
+                    continue;
+                }
+
+                if (QString::fromStdString(info.name) == "JackRouter") {
+                    continue;
+                }
+
+                if (info.probed == false) {
                     continue;
                 }
 
