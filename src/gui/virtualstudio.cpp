@@ -826,6 +826,7 @@ void VirtualStudio::logout()
 
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
+    getSubscriptions();
     getServerList(false, signalRefresh, index);
 }
 
@@ -1247,6 +1248,7 @@ void VirtualStudio::slotAuthSucceded()
         getUserId();
     } else {
         getSubscriptions();
+        getServerList(true, false);
     }
 
     if (m_regions.isEmpty()) {
@@ -1774,6 +1776,7 @@ void VirtualStudio::getUserId()
         settings.setValue(QStringLiteral("UserId"), m_userId);
         settings.endGroup();
         getSubscriptions();
+        getServerList(true, false);
 
         if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
             getUserMetadata();
@@ -1808,7 +1811,6 @@ void VirtualStudio::getSubscriptions()
             m_subscribedServers.append(
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
-        getServerList(true, false);
         reply->deleteLater();
     });
 }
