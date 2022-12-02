@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.7",
+            "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
+            "download": {
+                "date": "2022-12-02T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-Linux-x64-binary.zip",
+                "downloadSize": 30495373,
+                "sha256": "09421562aeeefe40bb15945bf1e8e03b3f905ea383ce0a9ddd1f93f099141cfd"
+            }
+        },
+        {
             "version": "1.6.6",
             "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
             "download": {
