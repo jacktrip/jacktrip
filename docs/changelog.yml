@@ -11,6 +11,7 @@
   - (updated) windows opens jacktrip after install
   - (updated) Move to overlapped I/O for Windows Networking
   - (updated) New default device behavior in Virtual Studio mode
+  - (fixed) opening links from Virtual Studio
   - (fixed) send capture volume as int
   - (fixed) connection issues for servers without reverse dns
   - (fixed) flatpak build errors
