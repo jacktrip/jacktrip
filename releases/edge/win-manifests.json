@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.7",
+            "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
+            "download": {
+                "date": "2022-12-02T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-Windows-x64-installer.msi",
+                "downloadSize": 44535808,
+                "sha256": "75464575311da5521e011da8d2f2b5aff1379edb4dee9dcb90e1750dcc97f2f9"
+            }
+        },
+        {
             "version": "1.6.7-rc.2",
             "changelog": "Virtual Studio first time UI, Non-ASIO devices on Windows, Windows can't connect fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7-rc.2",
             "download": {
