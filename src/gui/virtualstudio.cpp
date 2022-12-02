@@ -199,6 +199,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
+    m_view.setResizeMode(QQuickView::SizeRootObjectToView);
     m_view.resize(696 * m_uiScale, 577 * m_uiScale);
 
     // Connect our timers
