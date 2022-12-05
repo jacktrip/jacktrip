@@ -4,7 +4,8 @@
 # Parse command line options
 clean=1
 install=0
-CONFIG=
+HASH=`git rev-parse --short HEAD`
+CONFIG="DEFINES+=JACKTRIP_COMMIT_HASH=\\\"$HASH\\\""
 UNKNOWN_OPTIONS=
 BUILD_RTAUDIO=0
 RTAUDIO=0

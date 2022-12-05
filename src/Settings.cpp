@@ -63,6 +63,14 @@
 #include <unistd.h>
 #endif
 
+#ifdef JACKTRIP_COMMIT_HASH
+#define STR(s)       #s
+#define TO_STRING(s) STR(s)
+#define LONG_VERSION gVersion << "-" << TO_STRING(JACKTRIP_COMMIT_HASH)
+#else
+#define LONG_VERSION gVersion
+#endif
+
 #ifdef RT_AUDIO
 #include "RtAudioInterface.h"
 #endif
@@ -415,8 +423,8 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'v':
             //-------------------------------------------------------
-            cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe." << endl;
+            cout << "JackTrip VERSION: " << LONG_VERSION << endl;
+            cout << "Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
 #ifdef QT_OPENSOURCE
             cout << "This build of JackTrip is subject to LGPL license." << endl;
@@ -688,14 +696,14 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
-    cout << "Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe." << endl;
+    cout << "Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
 #ifdef QT_OPENSOURCE
     cout << "This build of JackTrip is subject to LGPL license." << endl;
 #endif
     cout << "JackTrip source code is released under MIT and GPL licenses." << endl;
     cout << "See LICENSE.md file for more information." << endl;
-    cout << "VERSION: " << gVersion << endl;
+    cout << "VERSION: " << LONG_VERSION << endl;
     cout << "" << endl;
     cout << "Usage: jacktrip [-s|-c|-S|-C hostIPAddressOrURL] [options]" << endl;
     cout << "" << endl;
