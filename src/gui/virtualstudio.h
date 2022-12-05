@@ -70,7 +70,8 @@ class QJackTrip;
 class VirtualStudio : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool showFirstRun READ showFirstRun WRITE setShowFirstRun NOTIFY showFirstRunChanged)
+    Q_PROPERTY(bool showFirstRun READ showFirstRun WRITE setShowFirstRun NOTIFY
+                   showFirstRunChanged)
     Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString logoSection READ logoSection NOTIFY logoSectionChanged)
