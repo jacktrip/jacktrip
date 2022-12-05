@@ -309,7 +309,7 @@ int main(int argc, char* argv[])
         app->setOrganizationName(QStringLiteral("jacktrip"));
         app->setOrganizationDomain(QStringLiteral("jacktrip.org"));
         app->setApplicationName(QStringLiteral("JackTrip"));
-        app->setApplicationVersion(gVersion);
+        app->setApplicationVersion(gShortVersion);
 
         QCommandLineParser parser;
         QCommandLineOption verboseOption(QStringList() << QStringLiteral("V")

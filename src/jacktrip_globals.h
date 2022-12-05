@@ -40,7 +40,36 @@
 
 #include "AudioInterface.h"
 
-constexpr const char* const gVersion = "1.6.8";  ///< JackTrip version
+#define STR(s)       #s
+#define TO_STRING(s) STR(s)
+
+/// JackTrip build timestamp
+#ifdef JACKTRIP_BUILD_TIME
+constexpr const char* const gBuildTime = TO_STRING(JACKTRIP_BUILD_TIME);
+#else
+constexpr const char* const gBuildTime    = "unknown";
+#endif
+
+/// JackTrip commit hash
+#ifdef JACKTRIP_COMMIT_HASH
+constexpr const char* const gCommitHash = TO_STRING(JACKTRIP_COMMIT_HASH);
+#else
+constexpr const char* const gCommitHash   = "unknown";
+#endif
+
+/// JackTrip short version (x.y.z)
+#ifdef JACKTRIP_SHORT_VERSION
+constexpr const char* const gShortVersion = TO_STRING(JACKTRIP_SHORT_VERSION);
+#else
+constexpr const char* const gShortVersion = "0.0.0";
+#endif
+
+/// JackTrip long version (varies)
+#ifdef JACKTRIP_LONG_VERSION
+constexpr const char* const gLongVersion = TO_STRING(JACKTRIP_LONG_VERSION);
+#else
+constexpr const char* const gLongVersion  = TO_STRING(JACKTRIP_SHORT_VERSION);
+#endif
 
 //*******************************************************************************
 /// \name Default Values

@@ -227,7 +227,8 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     // Use the ipify API to find our external IP address.
     m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
     m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
-    m_ui->statusBar->showMessage(QStringLiteral("JackTrip version ").append(gVersion));
+    m_ui->statusBar->showMessage(
+        QStringLiteral("JackTrip version ").append(gLongVersion));
 
     // Set up our interface for the default Client run mode.
     //(loadSettings will take care of the UI in all other cases.)

@@ -288,7 +288,7 @@ bool VirtualStudio::hasRefreshToken()
 
 QString VirtualStudio::versionString()
 {
-    return QLatin1String(gVersion);
+    return QLatin1String(gShortVersion);
 }
 
 QString VirtualStudio::logoSection()

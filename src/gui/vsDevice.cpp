@@ -234,7 +234,7 @@ void VsDevice::sendHeartbeat()
     QJsonObject json = {
         {QLatin1String("stats_updated_at"), now},
         {QLatin1String("mac"), m_appUUID},
-        {QLatin1String("version"), QLatin1String(gVersion)},
+        {QLatin1String("version"), QLatin1String(gShortVersion)},
         {QLatin1String("type"), "jacktrip_app"},
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
@@ -557,7 +557,7 @@ void VsDevice::registerJTAsDevice()
         {QLatin1String("alsaName"), "jacktripapp"},
         {QLatin1String("overlay"), "jacktrip_app"},
         {QLatin1String("mac"), m_appUUID},
-        {QLatin1String("version"), QLatin1String(gVersion)},
+        {QLatin1String("version"), QLatin1String(gShortVersion)},
         {QLatin1String("apiPrefix"), m_apiPrefix},
         {QLatin1String("apiSecret"), m_apiSecret},
 #if defined(Q_OS_MACOS)
