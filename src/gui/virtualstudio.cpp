@@ -275,6 +275,12 @@ bool VirtualStudio::showFirstRun()
     return m_showFirstRun;
 }
 
+void VirtualStudio::setShowFirstRun(bool show)
+{
+    m_showFirstRun = show;
+    emit showFirstRunChanged();
+}
+
 bool VirtualStudio::hasRefreshToken()
 {
     return !m_refreshToken.isEmpty();
