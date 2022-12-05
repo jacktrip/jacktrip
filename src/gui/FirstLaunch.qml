@@ -60,7 +60,7 @@ Item {
                 color: shadowColour
             }
         }
-        onClicked: { virtualstudio.windowState = "login"; virtualstudio.toVirtualStudio(); }
+        onClicked: { virtualstudio.showFirstRun = false; virtualstudio.windowState = "login"; virtualstudio.toVirtualStudio(); }
         x: parent.width / 2 - (265 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale
         width: 234 * virtualstudio.uiScale; height: 49 * virtualstudio.uiScale
         Text {
