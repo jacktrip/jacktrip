@@ -186,6 +186,7 @@ if (NOT nogui)
       src/gui/vsAudioInterface.cpp
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
+      src/gui/vsPermissions.cpp
       src/gui/qjacktrip.qrc
       src/Volume.cpp
       src/Tone.cpp
@@ -193,6 +194,9 @@ if (NOT nogui)
       src/JTApplication.h
       src/gui/vsQmlClipboard.h
     )
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+      set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/vsMacPermissions.mm)
+    endif ()
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
   endif ()
@@ -219,6 +223,9 @@ if (NOT nogui)
     set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/NoNap.mm)
     set (CMAKE_C_FLAGS "-x objective-c")
     set (CMAKE_EXE_LINKER_FLAGS "-framework Foundation")
+    if (NOT novs)
+      set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework AVFoundation")
+    endif ()
   endif ()
 endif ()
 
