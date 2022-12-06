@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.8",
+            "changelog": "Critical bug fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.8",
+            "download": {
+                "date": "2022-12-05T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.8-Linux-x64-binary.zip",
+                "downloadSize": 30496801,
+                "sha256": "c2fcbf86f8ad4db862431f9ccf6b52b275b3cf5fc3bc2f7eea7ac803ee7ca590"
+            }
+        },
+        {
             "version": "1.6.7",
             "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
             "download": {
