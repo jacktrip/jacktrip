@@ -294,7 +294,7 @@ Item {
                 border.width: 1
                 border.color: settingsButton.down ? buttonPressedStroke : (settingsButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { window.state = "settings"; virtualstudio.audioActivated = true }
+            onClicked: { virtualstudio.windowState = "settings"; virtualstudio.audioActivated = true }
             display: AbstractButton.TextBesideIcon
             font {
                 family: "Poppins"; 

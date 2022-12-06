@@ -1,3 +1,9 @@
+- Version: "1.6.8"
+  Date: 2022-12-05
+  Description:
+  - (fixed) broken "Yes" button on launch
+  - (fixed) window resizing issues
+  - (fixed) subscribed studios showing up under Public in VS mode
 - Version: "1.6.7"
   Date: 2022-11-03
   Description:
@@ -11,6 +17,7 @@
   - (updated) windows opens jacktrip after install
   - (updated) Move to overlapped I/O for Windows Networking
   - (updated) New default device behavior in Virtual Studio mode
+  - (fixed) opening links from Virtual Studio
   - (fixed) send capture volume as int
   - (fixed) connection issues for servers without reverse dns
   - (fixed) flatpak build errors

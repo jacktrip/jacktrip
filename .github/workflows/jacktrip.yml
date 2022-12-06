@@ -428,7 +428,7 @@ jobs:
             CONFIG_STRING="-Drtaudio=enabled $CONFIG_STRING"
           fi
           if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
-            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
+            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:alsa=disabled -Drtaudio:default_library=static $CONFIG_STRING"
             if [[ "${{ runner.os }}" == 'Windows' ]]; then 
               CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
             fi
@@ -441,6 +441,9 @@ jobs:
           fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
+          fi
+          if [[ "${{ runner.os }}" == 'Linux' ]]; then
+              CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
           fi
           meson --buildtype release $CONFIG_STRING $BUILD_PATH
           cd $BUILD_PATH

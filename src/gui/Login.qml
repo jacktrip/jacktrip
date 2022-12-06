@@ -127,7 +127,7 @@ Item {
                 color: shadowColour
             }
         }
-        onClicked: { window.state = "start" }
+        onClicked: { virtualstudio.windowState = "start" }
         anchors.horizontalCenter: parent.horizontalCenter
         y: 401 * virtualstudio.uiScale
         width: 263 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale

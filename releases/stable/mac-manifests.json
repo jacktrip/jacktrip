@@ -2,6 +2,26 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.6.8",
+            "changelog": "Critical bug fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.8",
+            "download": {
+                "date": "2022-12-05T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.8-macOS-x64-installer.pkg",
+                "downloadSize": 11517093,
+                "sha256": "5c040b2caa1e7dea97d7f48fd888f532a1c30da7385535b2d4a2805551bc5f71"
+            }
+        },
+        {
+            "version": "1.6.7",
+            "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
+            "download": {
+                "date": "2022-12-02T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-macOS-x64-installer.pkg",
+                "downloadSize": 11517151,
+                "sha256": "38c25788895ec404bdb4b6148114cad8af31b65e5189ca08819d1e954e2ef4e7"
+            }
+        },
+        {
             "version": "1.6.6",
             "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
             "download": {

@@ -113,7 +113,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
 #ifdef RT_AUDIO
-    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 0).toInt() == 1;
+    m_useRtAudio     = settings.value(QStringLiteral("Backend"), 1).toInt() == 1;
     m_inputDevice    = settings.value(QStringLiteral("InputDevice"), "").toString();
     m_outputDevice   = settings.value(QStringLiteral("OutputDevice"), "").toString();
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
@@ -199,6 +199,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
+    m_view.setResizeMode(QQuickView::SizeRootObjectToView);
     m_view.resize(696 * m_uiScale, 577 * m_uiScale);
 
     // Connect our timers
@@ -225,6 +226,17 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     connect(this, &VirtualStudio::audioActivatedChanged, this,
             &VirtualStudio::toggleAudio, Qt::QueuedConnection);
+    connect(
+        this, &VirtualStudio::studioToJoinChanged, this,
+        [&]() {
+            if (!m_studioToJoin.isEmpty()) {
+                // join studio when studio to join changes
+                if (readyToJoin()) {
+                    joinStudio();
+                }
+            }
+        },
+        Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -264,6 +276,12 @@ void VirtualStudio::raiseToTop()
 bool VirtualStudio::showFirstRun()
 {
     return m_showFirstRun;
+}
+
+void VirtualStudio::setShowFirstRun(bool show)
+{
+    m_showFirstRun = show;
+    emit showFirstRunChanged();
 }
 
 bool VirtualStudio::hasRefreshToken()
@@ -590,6 +608,17 @@ void VirtualStudio::setShowDeviceSetup(bool show)
     m_showDeviceSetup = show;
 }
 
+QString VirtualStudio::windowState()
+{
+    return m_windowState;
+}
+
+void VirtualStudio::setWindowState(QString state)
+{
+    m_windowState = state;
+    emit windowStateUpdated();
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;
@@ -607,9 +636,8 @@ void VirtualStudio::setShowWarnings(bool show)
     if (!m_studioToJoin.isEmpty()) {
         // device setup view proceeds warning view
         // if device setup is shown, do not immediately join
-        if (!m_showDeviceSetup) {
+        if (readyToJoin()) {
             // We're done waiting to be on the browse page
-            m_shouldJoin = true;
             joinStudio();
         }
     }
@@ -675,6 +703,7 @@ QUrl VirtualStudio::studioToJoin()
 void VirtualStudio::setStudioToJoin(const QUrl& url)
 {
     m_studioToJoin = url;
+    emit studioToJoinChanged();
 }
 
 bool VirtualStudio::noUpdater()
@@ -700,16 +729,6 @@ QString VirtualStudio::failedMessage()
     return m_failedMessage;
 }
 
-bool VirtualStudio::shouldJoin()
-{
-    return m_shouldJoin;
-}
-
-void VirtualStudio::setShouldJoin(bool join)
-{
-    m_shouldJoin = join;
-}
-
 void VirtualStudio::joinStudio()
 {
     if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
@@ -719,12 +738,6 @@ void VirtualStudio::joinStudio()
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
         }
-        return;
-    }
-
-    if (!m_shouldJoin) {
-        // Not time to join yet.
-        // Waiting until joinStudio is called and m_shouldJoin is true.
         return;
     }
 
@@ -833,6 +846,7 @@ void VirtualStudio::logout()
 
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
+    getSubscriptions();
     getServerList(false, signalRefresh, index);
 }
 
@@ -937,7 +951,6 @@ void VirtualStudio::applySettings()
     // which can display upon opening the app from join link
     if (!m_studioToJoin.isEmpty()) {
         // We're done waiting to be on the browse page
-        m_shouldJoin = true;
         joinStudio();
     }
 
@@ -1172,6 +1185,9 @@ void VirtualStudio::disconnect()
 
     // Start VsAudioInterface again
     setAudioActivated(true);
+
+    m_connectionState = QStringLiteral("Disconnected");
+    emit connectionStateChanged();
 }
 
 void VirtualStudio::manageStudio(int studioIndex)
@@ -1256,6 +1272,7 @@ void VirtualStudio::slotAuthSucceded()
         getUserId();
     } else {
         getSubscriptions();
+        getServerList(true, false);
     }
 
     if (m_regions.isEmpty()) {
@@ -1269,8 +1286,8 @@ void VirtualStudio::slotAuthSucceded()
     if (!m_studioToJoin.isEmpty()) {
         // FTUX shows warnings and device setup views
         // if any of these enabled, do not immediately join
-        if (!m_showDeviceSetup) {
-            // Don't need to set m_shouldJoin because it's default true
+        if (readyToJoin()) {
+            // We should join in this case
             joinStudio();
         }
     }
@@ -1783,6 +1800,7 @@ void VirtualStudio::getUserId()
         settings.setValue(QStringLiteral("UserId"), m_userId);
         settings.endGroup();
         getSubscriptions();
+        getServerList(true, false);
 
         if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
             getUserMetadata();
@@ -1817,7 +1835,6 @@ void VirtualStudio::getSubscriptions()
             m_subscribedServers.append(
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
-        getServerList(true, false);
         reply->deleteLater();
     });
 }
@@ -1983,6 +2000,13 @@ void VirtualStudio::stopStudio()
         }
         reply->deleteLater();
     });
+}
+
+bool VirtualStudio::readyToJoin()
+{
+    return m_windowState == "browse"
+           && (m_connectionState == QStringLiteral("Waiting")
+               || m_connectionState == QStringLiteral("Disconnected"));
 }
 
 #ifdef RT_AUDIO
