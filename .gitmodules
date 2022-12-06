@@ -1,9 +1,6 @@
 [submodule "subprojects/weakjack"]
 	path = externals/weakjack
 	url = https://github.com/x42/weakjack.git
-[submodule "linux/flatpak/shared-modules"]
-	path = linux/flatpak/shared-modules
-	url = https://github.com/flathub/shared-modules.git
 [submodule "documentation/doxygen-awesome-css"]
 	path = externals/doxygen-awesome-css
 	url = https://github.com/jothepro/doxygen-awesome-css.git
