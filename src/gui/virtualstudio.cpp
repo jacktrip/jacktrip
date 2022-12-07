@@ -874,8 +874,8 @@ void VirtualStudio::refreshDevices()
         m_outputDevice = QStringLiteral("(default)");
     }
 
-    emit inputDeviceChanged(m_inputDevice);
-    emit outputDeviceChanged(m_outputDevice);
+    emit inputDeviceChanged(m_inputDevice, false);
+    emit outputDeviceChanged(m_outputDevice, false);
 #endif
 }
 
@@ -900,10 +900,13 @@ void VirtualStudio::revertSettings()
     m_bufferSize   = m_previousBuffer;
     m_useRtAudio   = m_previousUseRtAudio;
     qDebug() << "RtAudio Variables set";
-    emit inputDeviceChanged(m_inputDevice);
-    emit outputDeviceChanged(m_outputDevice);
+    
+    emit inputDeviceChanged(m_inputDevice, false);
+    emit outputDeviceChanged(m_outputDevice, false);
     emit bufferSizeChanged();
-    emit audioBackendChanged(m_useRtAudio);
+    if (m_useRtAudio != m_previousUseRtAudio) {
+        emit audioBackendChanged(m_useRtAudio, false);
+    }
     qDebug() << "RtAudio signals emitted";
 #endif
 
@@ -942,7 +945,7 @@ void VirtualStudio::applySettings()
     qDebug() << "RtAudio prev variables set";
 
     emit inputDeviceChanged(m_inputDevice, false);
-    emit outputDeviceChanged(m_outputDevice);
+    emit outputDeviceChanged(m_outputDevice, false);
     qDebug() << "RtAudio signals emitted";
 #endif
 

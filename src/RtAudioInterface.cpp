@@ -450,6 +450,7 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 #endif
     }
 
+    cout << "getting default device" << endl;
     // Explicitly add default device
     QString defaultDeviceName = "";
     uint32_t defaultDeviceIdx;
@@ -458,12 +459,12 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
     } else {
         defaultDeviceIdx = baseRtAudio.getDefaultOutputDevice();
     }
-
+    cout << "getting default device info" << endl;
     if (defaultDeviceIdx != 0) {
         RtAudio::DeviceInfo info = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
         defaultDeviceName        = QString::fromStdString(info.name);
     }
-
+    cout << "appending default device and categories" << endl;
     if (defaultDeviceName != "") {
         list->append(defaultDeviceName);
         if (categories != NULL) {
@@ -487,10 +488,10 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 #endif
         }
     }
-
+    cout << "getting APIs" << endl;
     std::vector<RtAudio::Api> apis;
     RtAudio::getCompiledApi(apis);
-
+    cout << "adding other devices" << endl;
     for (uint32_t i = 0; i < apis.size(); i++) {
 #ifdef _WIN32
         if (apis.at(i) == RtAudio::UNIX_JACK) {
@@ -501,7 +502,9 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
         RtAudio rtaudio(api);
         unsigned int devices = rtaudio.getDeviceCount();
         for (unsigned int j = 0; j < devices; j++) {
+            cout << "getting device info" << endl;
             RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
+            cout << "got device info" << endl;
             if (info.probed == true) {
                 // Don't include duplicate entries
                 if (list->contains(QString::fromStdString(info.name))) {
@@ -521,7 +524,7 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                 if (info.probed == false) {
                     continue;
                 }
-
+                cout << "appending device" << endl;
                 if (isInput && info.inputChannels > 0) {
                     list->append(QString::fromStdString(info.name));
                 } else if (!isInput && info.outputChannels > 0) {
