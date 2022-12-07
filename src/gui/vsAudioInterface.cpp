@@ -288,7 +288,7 @@ void VsAudioInterface::addOutputPlugin(ProcessPlugin* plugin)
     m_audioInterface->appendProcessPluginFromNetwork(plugin);
 }
 
-void VsAudioInterface::setInputDevice(QString deviceName)
+void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
 {
     m_inputDeviceName = deviceName.toStdString();
     if (m_inputDeviceName == "(default)") {
@@ -297,13 +297,13 @@ void VsAudioInterface::setInputDevice(QString deviceName)
 
     if (!m_audioInterface.isNull()) {
         m_audioInterface->setInputDevice(m_inputDeviceName);
-        if (m_audioActive) {
+        if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
     }
 }
 
-void VsAudioInterface::setOutputDevice(QString deviceName)
+void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
 {
     m_outputDeviceName = deviceName.toStdString();
     if (m_outputDeviceName == "(default)") {
@@ -312,20 +312,20 @@ void VsAudioInterface::setOutputDevice(QString deviceName)
 
     if (!m_audioInterface.isNull()) {
         m_audioInterface->setOutputDevice(m_outputDeviceName);
-        if (m_audioActive) {
+        if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
     }
 }
 
-void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio)
+void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio, bool shouldRestart)
 {
     if (useRtAudio) {
         m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
     } else {
         m_audioInterfaceMode = VsAudioInterface::JACK;
     }
-    if (!m_audioInterface.isNull() || m_hasBeenActive) {
+    if ((!m_audioInterface.isNull() || m_hasBeenActive) && shouldRestart) {
         emit modeUpdated();
     }
 }

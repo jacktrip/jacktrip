@@ -941,7 +941,7 @@ void VirtualStudio::applySettings()
     m_previousOutput     = m_outputDevice;
     qDebug() << "RtAudio prev variables set";
 
-    emit inputDeviceChanged(m_inputDevice);
+    emit inputDeviceChanged(m_inputDevice, false);
     emit outputDeviceChanged(m_outputDevice);
     qDebug() << "RtAudio signals emitted";
 #endif
@@ -1889,8 +1889,8 @@ void VirtualStudio::startAudio()
             QStringLiteral("audioInterface"), m_vsAudioInterface.data());
     }
 #ifdef RT_AUDIO
-    m_vsAudioInterface->setInputDevice(m_inputDevice);
-    m_vsAudioInterface->setOutputDevice(m_outputDevice);
+    m_vsAudioInterface->setInputDevice(m_inputDevice, false);
+    m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
 #endif
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,

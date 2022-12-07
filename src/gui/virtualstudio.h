@@ -235,11 +235,11 @@ class VirtualStudio : public QObject
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
-    void audioBackendChanged(bool useRtAudio);
-    void inputDeviceChanged(QString device);
-    void outputDeviceChanged(QString device);
-    void inputDeviceSelected(QString device);
-    void outputDeviceSelected(QString device);
+    void audioBackendChanged(bool useRtAudio, bool shouldRestart = true);
+    void inputDeviceChanged(QString device, bool shouldRestart = true);
+    void outputDeviceChanged(QString device, bool shouldRestart = true);
+    void inputDeviceSelected(QString device, bool shouldRestart = true);
+    void outputDeviceSelected(QString device, bool shouldRestart = true);
     void devicesWarningChanged();
     void devicesErrorChanged();
     void devicesWarningHelpUrlChanged();
