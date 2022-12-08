@@ -351,6 +351,7 @@ void VirtualStudio::setInputDevice([[maybe_unused]] int device)
     }
 
     m_inputDevice = filteredInputDeviceList.at(device);
+    emit inputDeviceChanged(m_inputDevice, false);
     emit inputDeviceSelected(m_inputDevice);
 #endif
 }
@@ -387,6 +388,7 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] int device)
     }
 
     m_outputDevice = filteredOutputDeviceList.at(device);
+    emit outputDeviceChanged(m_outputDevice, false);
     emit outputDeviceSelected(m_outputDevice);
 #endif
 }
