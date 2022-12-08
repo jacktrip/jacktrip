@@ -189,7 +189,7 @@ Rectangle {
             id: joinLeave
             width: 22 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: connected ? "leave.svg" : "join.svg"
+            source: connected ? "leave.svg" : available ? "join.svg" : "start.svg"
             sourceSize: Qt.size(joinLeave.width,joinLeave.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
