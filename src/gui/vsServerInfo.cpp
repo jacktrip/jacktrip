@@ -87,11 +87,7 @@ bool VsServerInfo::canConnect()
 
 bool VsServerInfo::canStart()
 {
-#ifdef PSI
-    return true;
-#else
-    return false;
-#endif
+    return m_owner || m_admin;
 }
 
 void VsServerInfo::setHost(const QString& host)
@@ -114,6 +110,22 @@ quint16 VsServerInfo::port()
 void VsServerInfo::setPort(quint16 port)
 {
     m_port = port;
+}
+
+bool VsServerInfo::isOwner() {
+    return m_owner;
+}
+
+void VsServerInfo::setIsOwner(bool owner) {
+    m_owner = owner;
+}
+
+bool VsServerInfo::isAdmin() {
+    return m_admin;
+}
+
+void VsServerInfo::setIsAdmin(bool admin) {
+    m_admin = admin;
 }
 
 bool VsServerInfo::isPublic()
