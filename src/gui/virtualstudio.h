@@ -131,6 +131,8 @@ class VirtualStudio : public QObject
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
                    audioActivatedChanged)
+    Q_PROPERTY(
+        bool audioReady READ audioReady WRITE setAudioReady NOTIFY audioReadyChanged)
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
 
@@ -203,6 +205,7 @@ class VirtualStudio : public QObject
     bool outputMuted();
     Q_INVOKABLE void restartAudio();
     bool audioActivated();
+    bool audioReady();
     QString windowState();
 
    public slots:
@@ -230,6 +233,7 @@ class VirtualStudio : public QObject
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
     void setAudioActivated(bool activated);
+    void setAudioReady(bool ready);
     void setWindowState(QString state);
     void exit();
 
@@ -281,6 +285,7 @@ class VirtualStudio : public QObject
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
     void audioActivatedChanged();
+    void audioReadyChanged();
     void windowStateUpdated();
 
    private slots:
@@ -372,6 +377,7 @@ class VirtualStudio : public QObject
     QUrl m_studioToJoin;
     bool m_authenticated  = false;
     bool m_audioActivated = false;
+    bool m_audioReady     = false;
 
     Meter* m_inputMeter;
     Meter* m_outputMeter;

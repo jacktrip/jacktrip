@@ -405,6 +405,19 @@ Item {
             model: inputMeterModel
             clipped: inputClipped
             enabled: !Boolean(virtualstudio.devicesError)
+            visible: virtualstudio.audioReady
+        }
+
+        Text {
+            anchors.left: backendCombo.left
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : virtualstudio.uiScale * (virtualstudio.selectableBackend ? 112 : 64)
+            height: 100 * virtualstudio.uiScale
+            text: "Preparing audio..."
+            font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.audioBackend != "JACK" && !virtualstudio.audioReady
+            color: textColour
         }
 
         Button {

@@ -512,6 +512,11 @@ bool VirtualStudio::audioActivated()
     return m_audioActivated;
 }
 
+bool VirtualStudio::audioReady()
+{
+    return m_audioReady;
+}
+
 void VirtualStudio::setInputVolume(float multiplier)
 {
     m_inMultiplier = multiplier;
@@ -595,6 +600,12 @@ void VirtualStudio::setAudioActivated(bool activated)
 {
     m_audioActivated = activated;
     emit audioActivatedChanged();
+}
+
+void VirtualStudio::setAudioReady(bool ready)
+{
+    m_audioReady = ready;
+    emit audioReadyChanged();
 }
 
 int VirtualStudio::currentStudio()
@@ -1265,9 +1276,6 @@ void VirtualStudio::disconnect()
         m_allowRefresh = true;
         m_refreshTimer.start();
     }
-
-    // Start VsAudioInterface again
-    setAudioActivated(true);
 
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
@@ -2005,6 +2013,9 @@ void VirtualStudio::startAudio()
 
     m_vsAudioInterface->setupPlugins();
 
+    m_audioReady = true;
+    emit audioReadyChanged();
+
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputMeterModel"),
         QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
@@ -2026,6 +2037,9 @@ void VirtualStudio::restartAudio()
         m_vsAudioInterface->setupAudio();
         m_vsAudioInterface->setupPlugins();
 
+        m_audioReady = true;
+        emit audioReadyChanged();
+
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("inputMeterModel"),
             QVariant::fromValue(
@@ -2043,6 +2057,7 @@ void VirtualStudio::stopAudio()
     // Stop VsAudioInterface
     if (!m_vsAudioInterface.isNull()) {
         m_vsAudioInterface->closeAudio();
+        setAudioReady(false);
     }
 }
 
