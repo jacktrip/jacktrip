@@ -996,7 +996,6 @@ void VirtualStudio::applySettings()
     m_previousUiScale = m_uiScale;
     emit newScale();
 
-
     setAudioActivated(false);
 
     QSettings settings;
