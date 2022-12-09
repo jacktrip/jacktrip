@@ -100,7 +100,6 @@ void VsAudioInterface::setupAudio()
         // Create AudioInterface Client Object
         if (m_audioInterfaceMode == VsAudioInterface::JACK) {
 #ifndef NO_JACK
-            qDebug() << "using JACK";
             if (gVerboseFlag)
                 std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                           << std::endl;
@@ -182,7 +181,6 @@ void VsAudioInterface::setupAudio()
 #endif
         } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
 #ifdef RT_AUDIO
-            qDebug() << "Using RtAudio";
             m_audioInterface.reset(new RtAudioInterface(
                 m_numAudioChansIn, m_numAudioChansOut, m_audioBitResolution));
             m_audioInterface->setSampleRate(m_sampleRate);
