@@ -273,7 +273,7 @@ class VirtualStudio : public QObject
     void processFinished();
     void processError(const QString& errorMessage);
     void receivedConnectionFromPeer();
-    void checkForHostname();
+    void handleWebsocketMessage(const QString& msg);
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
     void joinStudio();
@@ -319,6 +319,7 @@ class VirtualStudio : public QObject
     int m_currentStudio       = -1;
     QString m_connectionState = QStringLiteral("Waiting");
     QScopedPointer<JackTrip> m_jackTrip;
+    VsWebSocket* m_studioSocket = NULL;
     QTimer m_startTimer;
     QTimer m_retryPeriodTimer;
     bool m_startedStudio = false;

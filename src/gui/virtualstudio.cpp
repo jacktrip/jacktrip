@@ -203,7 +203,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.resize(696 * m_uiScale, 577 * m_uiScale);
 
     // Connect our timers
-    connect(&m_startTimer, &QTimer::timeout, this, &VirtualStudio::checkForHostname);
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);
     connect(&m_refreshTimer, &QTimer::timeout, this, [&]() {
         m_refreshMutex.lock();
@@ -938,41 +937,23 @@ void VirtualStudio::connectToStudio(int studioIndex)
     emit currentStudioChanged();
     m_onConnectedScreen = true;
 
+    m_studioSocket = new VsWebSocket(
+        QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
+                 .arg(m_apiHost, studioInfo->id(), m_authenticator->token())),
+        m_authenticator->token(), QString(), QString());
+    connect(m_studioSocket, &VsWebSocket::textMessageReceived, this,
+            [&](QString message) {
+                handleWebsocketMessage(message);
+            });
+    m_studioSocket->openSocket();
+
     // Check if we have an address for our server
     if (studioInfo->host().isEmpty()) {
-        // EXPERIMENTAL CODE. (It shouldn't be possible to arrive here.)
-        if (studioInfo->isManageable()) {
-            m_connectionState = QStringLiteral("Starting Studio...");
-            emit connectionStateChanged();
+        if (studioInfo->isOwner() || studioInfo->isAdmin()) {
+            QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
+                                .arg(m_apiHost, studioInfo->id()));
+            QDesktopServices::openUrl(url);
 
-            // Send a put request to start our studio
-            m_startedStudio = true;
-            QString expiration =
-                QDateTime::currentDateTimeUtc().addSecs(60 * 60).toString(Qt::ISODate);
-            QJsonObject json      = {{QLatin1String("enabled"), true},
-                                {QLatin1String("expiresAt"), expiration}};
-            QJsonDocument request = QJsonDocument(json);
-
-            QNetworkReply* reply =
-                m_authenticator->put(QStringLiteral("https://%1/api/servers/%2")
-                                         .arg(m_apiHost, studioInfo->id()),
-                                     request.toJson());
-            connect(reply, &QNetworkReply::finished, this, [&, reply]() {
-                if (reply->error() != QNetworkReply::NoError) {
-                    m_connectionState = QStringLiteral("Unable to Start Studio");
-                    emit connectionStateChanged();
-                } else {
-                    QByteArray response       = reply->readAll();
-                    QJsonDocument serverState = QJsonDocument::fromJson(response);
-                    if (serverState.object()[QStringLiteral("status")].toString()
-                        == QLatin1String("Starting")) {
-                        // Start our timer to check for our hostname
-                        m_startTimer.setInterval(5000);
-                        m_startTimer.start();
-                    }
-                }
-                reply->deleteLater();
-            });
         } else {
             m_connectionState = QStringLiteral("Unable to Start Studio");
             emit connectionStateChanged();
@@ -1358,42 +1339,20 @@ void VirtualStudio::receivedConnectionFromPeer()
     emit connected();
 }
 
-void VirtualStudio::checkForHostname()
+void VirtualStudio::handleWebsocketMessage(const QString& msg)
 {
-    if (m_currentStudio < 0) {
-        return;
-    }
-
+    QJsonObject serverState  = QJsonDocument::fromJson(msg.toUtf8()).object();
+    QString serverStatus     = serverState[QStringLiteral("status")].toString();
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
-    QNetworkReply* reply     = m_authenticator->get(
-            QStringLiteral("https://%1/api/servers/%2").arg(m_apiHost, studioInfo->id()));
-    connect(reply, &QNetworkReply::finished, this, [&, reply, studioInfo]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            m_connectionState = QStringLiteral("Unable to Start Studio");
-            emit connectionStateChanged();
 
-            // Stop our timer
-            m_startTimer.stop();
-        } else {
-            QByteArray response       = reply->readAll();
-            QJsonDocument serverState = QJsonDocument::fromJson(response);
-            if (serverState.object()[QStringLiteral("status")].toString()
-                == QLatin1String("Ready")) {
-                // Ready to connect
-                m_startTimer.stop();
-                studioInfo->setHost(
-                    serverState.object()[QStringLiteral("serverHost")].toString());
-                studioInfo->setPort(
-                    serverState.object()[QStringLiteral("serverPort")].toInt());
-                m_retryPeriod = true;
-                m_retryPeriodTimer.setInterval(15000);
-                m_retryPeriodTimer.start();
-                completeConnection();
-            }
+    if (!m_jackTripRunning) {
+        if (serverStatus == QLatin1String("Ready")) {
+            studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
+            studioInfo->setPort(serverState[QStringLiteral("serverPort")].toInt());
+
+            completeConnection();
         }
-        reply->deleteLater();
-        ;
-    });
+    }
 }
 
 void VirtualStudio::endRetryPeriod()
@@ -1668,8 +1627,10 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                             servers.at(i)[QStringLiteral("sessionId")].toString());
                         serverInfo->setInviteKey(
                             servers.at(i)[QStringLiteral("inviteKey")].toString());
-                        serverInfo->setIsOwner(servers.at(i)[QStringLiteral("owner")].toBool());
-                        serverInfo->setIsAdmin(servers.at(i)[QStringLiteral("admin")].toBool());
+                        serverInfo->setIsOwner(
+                            servers.at(i)[QStringLiteral("owner")].toBool());
+                        serverInfo->setIsAdmin(
+                            servers.at(i)[QStringLiteral("admin")].toBool());
                         if (servers.at(i)[QStringLiteral("owner")].toBool()) {
                             yourServers.append(serverInfo);
                             serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);
