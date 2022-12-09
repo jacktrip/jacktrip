@@ -67,6 +67,12 @@
 #include "RtAudioInterface.h"
 #endif
 
+#ifdef JACKTRIP_BUILD_INFO
+#define STR(s)           #s
+#define TO_STRING(s)     STR(s)
+#define PRINT_BUILD_INFO cout << "Build Info: " << TO_STRING(JACKTRIP_BUILD_INFO) << endl;
+#endif
+
 //#include "ThreadPoolTest.h"
 
 using std::cout;
@@ -416,7 +422,10 @@ void Settings::parseInput(int argc, char** argv)
         case 'v':
             //-------------------------------------------------------
             cout << "JackTrip VERSION: " << gVersion << endl;
-            cout << "Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe." << endl;
+#ifdef JACKTRIP_BUILD_INFO
+            PRINT_BUILD_INFO
+#endif
+            cout << "Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe." << endl;
             cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
 #ifdef QT_OPENSOURCE
             cout << "This build of JackTrip is subject to LGPL license." << endl;
@@ -688,7 +697,7 @@ void Settings::printUsage()
     cout << "" << endl;
     cout << "JackTrip: A System for High-Quality Audio Network Performance" << endl;
     cout << "over the Internet" << endl;
-    cout << "Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe." << endl;
+    cout << "Copyright (c) 2008-2022 Juan-Pablo Caceres, Chris Chafe." << endl;
     cout << "SoundWIRE group at CCRMA, Stanford University" << endl;
 #ifdef QT_OPENSOURCE
     cout << "This build of JackTrip is subject to LGPL license." << endl;
