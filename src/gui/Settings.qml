@@ -345,7 +345,6 @@ Item {
             id: inputCombo
             model: inputComboModel
             currentIndex: (() => {
-                console.log("currentIndex fired");
                 let count = 0;
                 for (let i = 0; i < inputCombo.model.length; i++) {
                     if (inputCombo.model[i].type === "element") {
@@ -353,7 +352,6 @@ Item {
                     }
 
                     if (count > virtualstudio.inputDevice) {
-                        console.log(i);
                         return i;
                     }
                 }
@@ -379,14 +377,9 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.log("in mouseArea onclick");
-                        console.log(modelData.type);
                         if (modelData.type == "element") {
-                            console.log("setting current index");
-                            console.log(index);
                             inputCombo.currentIndex = index
                             inputCombo.popup.close()
-                            console.log(index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length);
                             virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
                         }
                     }
@@ -727,7 +720,12 @@ Item {
                 border.width: 1
                 border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.revertSettings() }
+            onClicked: {
+                virtualstudio.windowState = "browse";
+                inputCombo.currentIndex = virtualstudio.previousInput;
+                outputCombo.currentIndex = virtualstudio.previousOutput;
+                virtualstudio.revertSettings()
+            }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale

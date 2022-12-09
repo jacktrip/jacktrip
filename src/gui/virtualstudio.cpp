@@ -338,6 +338,7 @@ int VirtualStudio::inputDevice()
 
 void VirtualStudio::setInputDevice([[maybe_unused]] int device)
 {
+    qDebug() << "setInputDevice called with" << device;
     if (!m_useRtAudio) {
         return;
     }
@@ -351,6 +352,7 @@ void VirtualStudio::setInputDevice([[maybe_unused]] int device)
     }
 
     m_inputDevice = filteredInputDeviceList.at(device);
+    qDebug() << m_inputDevice;
     emit inputDeviceChanged(m_inputDevice, false);
     emit inputDeviceSelected(m_inputDevice);
 #endif
@@ -390,6 +392,78 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] int device)
     m_outputDevice = filteredOutputDeviceList.at(device);
     emit outputDeviceChanged(m_outputDevice, false);
     emit outputDeviceSelected(m_outputDevice);
+#endif
+}
+
+int VirtualStudio::previousInput()
+{
+#ifdef RT_AUDIO
+    if (m_useRtAudio) {
+        QStringList filteredInputDeviceList;
+        for (int i = 0; i < m_inputDeviceList.size(); i++) {
+            if (m_inputDeviceList.at(i) != "(default)") {
+                filteredInputDeviceList += m_inputDeviceList.at(i);
+            }
+        }
+
+        int index = filteredInputDeviceList.indexOf(m_previousInput);
+        return index >= 0 ? index : 0;
+    }
+#endif
+    return 0;
+}
+
+void VirtualStudio::setPreviousInput([[maybe_unused]] int device)
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
+    QStringList filteredInputDeviceList;
+    for (int i = 0; i < m_inputDeviceList.size(); i++) {
+        if (m_inputDeviceList.at(i) != "(default)") {
+            filteredInputDeviceList += m_inputDeviceList.at(i);
+        }
+    }
+
+    m_previousInput = filteredInputDeviceList.at(device);
+    emit previousInputChanged();
+#endif
+}
+
+int VirtualStudio::previousOutput()
+{
+#ifdef RT_AUDIO
+    if (m_useRtAudio) {
+        QStringList filteredOutputDeviceList;
+        for (int i = 0; i < m_outputDeviceList.size(); i++) {
+            if (m_outputDeviceList.at(i) != "(default)") {
+                filteredOutputDeviceList += m_outputDeviceList.at(i);
+            }
+        }
+
+        int index = filteredOutputDeviceList.indexOf(m_previousOutput);
+        return index >= 0 ? index : 0;
+    }
+#endif
+    return 0;
+}
+
+void VirtualStudio::setPreviousOutput([[maybe_unused]] int device)
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
+    QStringList filteredOutputDeviceList;
+    for (int i = 0; i < m_outputDeviceList.size(); i++) {
+        if (m_outputDeviceList.at(i) != "(default)") {
+            filteredOutputDeviceList += m_outputDeviceList.at(i);
+        }
+    }
+
+    m_previousOutput = filteredOutputDeviceList.at(device);
+    emit previousOutputChanged();
 #endif
 }
 
@@ -896,13 +970,15 @@ void VirtualStudio::revertSettings()
     setAudioActivated(false);
     qDebug() << "Audio Deactivated";
 #ifdef RT_AUDIO
+    qDebug() << m_inputDevice;
+    qDebug() << m_previousInput;
     // Restore our previous settings
     m_inputDevice  = m_previousInput;
     m_outputDevice = m_previousOutput;
     m_bufferSize   = m_previousBuffer;
     m_useRtAudio   = m_previousUseRtAudio;
     qDebug() << "RtAudio Variables set";
-    
+
     emit inputDeviceChanged(m_inputDevice, false);
     emit outputDeviceChanged(m_outputDevice, false);
     emit bufferSizeChanged();
@@ -946,6 +1022,8 @@ void VirtualStudio::applySettings()
     m_previousOutput     = m_outputDevice;
     qDebug() << "RtAudio prev variables set";
 
+    emit previousInputChanged();
+    emit previousOutputChanged();
     emit inputDeviceChanged(m_inputDevice, false);
     emit outputDeviceChanged(m_outputDevice, false);
     qDebug() << "RtAudio signals emitted";

@@ -82,6 +82,10 @@ class VirtualStudio : public QObject
         int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
     Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
                    outputDeviceChanged)
+    Q_PROPERTY(int previousInput READ previousInput WRITE setPreviousInput NOTIFY
+                   previousInputChanged)
+    Q_PROPERTY(int previousOutput READ previousOutput WRITE setPreviousOutput NOTIFY
+                   previousOutputChanged)
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
@@ -150,6 +154,10 @@ class VirtualStudio : public QObject
     void setInputDevice(int device);
     int outputDevice();
     void setOutputDevice(int device);
+    int previousInput();
+    void setPreviousInput(int device);
+    int previousOutput();
+    void setPreviousOutput(int device);
     QString devicesWarning();
     QString devicesError();
     QString devicesWarningHelpUrl();
@@ -240,6 +248,8 @@ class VirtualStudio : public QObject
     void outputDeviceChanged(QString device, bool shouldRestart = true);
     void inputDeviceSelected(QString device, bool shouldRestart = true);
     void outputDeviceSelected(QString device, bool shouldRestart = true);
+    void previousInputChanged();
+    void previousOutputChanged();
     void devicesWarningChanged();
     void devicesErrorChanged();
     void devicesWarningHelpUrlChanged();
