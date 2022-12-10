@@ -1257,15 +1257,17 @@ int JackTrip::clientPingToServerStart()
         connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
         mTimeoutTimer.start();
     }
-    connect(&mTcpClient, &QAbstractSocket::stateChanged, this, [=](QAbstractSocket::SocketState socketState){
-        std::cout << "NEW SOCKET STATE: " << socketState << std::endl;
-    });
-    connect(&mTcpClient, &QAbstractSocket::hostFound, this, [=](){
+    connect(&mTcpClient, &QAbstractSocket::stateChanged, this,
+            [=](QAbstractSocket::SocketState socketState) {
+                std::cout << "NEW SOCKET STATE: " << socketState << std::endl;
+            });
+    connect(&mTcpClient, &QAbstractSocket::hostFound, this, [=]() {
         std::cout << "HOST FOUND!" << std::endl;
     });
-    connect(&mTcpClient, &QAbstractSocket::errorOccurred, this, [=](QAbstractSocket::SocketError socketError){
-        std::cout << "SOCKET ERROR! " << socketError << std::endl;
-    });
+    connect(&mTcpClient, &QAbstractSocket::errorOccurred, this,
+            [=](QAbstractSocket::SocketError socketError) {
+                std::cout << "SOCKET ERROR! " << socketError << std::endl;
+            });
 
     mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
 
