@@ -1350,7 +1350,14 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
             studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
             studioInfo->setPort(serverState[QStringLiteral("serverPort")].toInt());
 
-            completeConnection();
+            // Call completeConnection after a short timeout
+            m_startTimer.setInterval(1000);
+            m_startTimer.setSingleShot(true);
+            connect(&m_startTimer, &QTimer::timeout, this, [&]() {
+                completeConnection();
+            });
+
+            m_startTimer.start();
         }
     }
 }

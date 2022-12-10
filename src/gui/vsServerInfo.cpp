@@ -112,19 +112,23 @@ void VsServerInfo::setPort(quint16 port)
     m_port = port;
 }
 
-bool VsServerInfo::isOwner() {
+bool VsServerInfo::isOwner()
+{
     return m_owner;
 }
 
-void VsServerInfo::setIsOwner(bool owner) {
+void VsServerInfo::setIsOwner(bool owner)
+{
     m_owner = owner;
 }
 
-bool VsServerInfo::isAdmin() {
+bool VsServerInfo::isAdmin()
+{
     return m_admin;
 }
 
-void VsServerInfo::setIsAdmin(bool admin) {
+void VsServerInfo::setIsAdmin(bool admin)
+{
     m_admin = admin;
 }
 
