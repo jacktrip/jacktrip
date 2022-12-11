@@ -232,9 +232,9 @@ jobs:
           else
             NAME="${{ matrix.name }}"
           fi
-          echo "::set-output name=version::$VERSION"
-          echo "::set-output name=name::$NAME"
-          echo "::set-output name=stamp::$(date '+%Y-%m-%d')" # set timestamp for cache
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "stamp=$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT # set timestamp for cache
       - name: setup python
         uses: actions/setup-python@v3
         with:
