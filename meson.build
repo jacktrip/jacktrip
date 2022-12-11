@@ -9,7 +9,12 @@ else
   name_suffix = ''
 endif
 
-qt5 = import('qt5')
+if get_option('qtversion') == '5'
+  qt = import('qt5')
+else
+  qt = import('qt6')
+endif
+
 cmake = import('cmake')
 
 compiler = meson.get_compiler('cpp')
@@ -87,7 +92,11 @@ endif
 
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
-	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	if get_option('qtversion') == '5'
+		qt_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	else
+		qt_dep = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
+	endif
 else
 	src += [
 		'src/gui/qjacktrip.cpp',
@@ -111,7 +120,11 @@ else
 
 	if get_option('novs') == true
 		defines += '-DNO_VS'
-		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+		if get_option('qtversion') == '5'
+			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+		else
+			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+		endif
 		qres = ['src/gui/qjacktrip_novs.qrc']
 	else
 		src += [
@@ -145,7 +158,11 @@ else
 			moc_h += ['src/gui/vsMacPermissions.h']
 		endif
 
-		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		if get_option('qtversion') == '5'
+			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		else
+			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		endif
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 
@@ -167,9 +184,9 @@ else
 		ui_h += ['src/dblsqd/update_dialog.ui']
 	endif
 endif
-deps += qt5_dep
+deps += qt_dep
 
-prepro_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
+prepro_files = qt.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
 
 # TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
 # in QMake this can be checked with QT_EDITION == 'OpenSource'
