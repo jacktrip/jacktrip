@@ -531,7 +531,7 @@ jobs:
           fi
           SIGNED=
           if [[ "${{ steps.check-secrets.outputs.available }}" == "true" ]]; then 
-            CONFIG="-n -k -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" -t \"${TEAM_ID}\" JackTrip org.jacktrip.jacktrip $CONFIG"
+            CONFIG="$CONFIG -n -k -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" -t \"${TEAM_ID}\" JackTrip org.jacktrip.jacktrip"
             SIGNED="-signed"
             echo "Secrets are available, the binaries will be signed."
           fi
