@@ -55,6 +55,7 @@
 #include <QHostInfo>
 #include <QThread>
 #include <QTimer>
+#include <QRandomGenerator>
 #include <QtEndian>
 #include <cstdlib>
 #include <iomanip>
@@ -126,6 +127,8 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mUseAuth(false)
     , mRedundancy(redundancy)
     , mTimeoutTimer(this)
+    , mRetryTimer(this)
+    , mRetries(0)
     , mSleepTime(100)
     , mElapsedTime(0)
     , mEndTime(0)
@@ -734,7 +737,7 @@ void JackTrip::receivedConnectionTCP()
             return;
         }
         mAwaitingTcp = false;
-        mTimeoutTimer.stop();
+        mRetryTimer.stop();
     }
     if (gVerboseFlag)
         cout << "TCP Socket Connected to Server!" << endl;
@@ -898,6 +901,15 @@ void JackTrip::receivedDataTCP()
     completeConnection();
 }
 
+void JackTrip::receivedErrorTCP(QAbstractSocket::SocketError socketError)
+{
+    if (socketError != QAbstractSocket::ConnectionRefusedError) {
+        mTcpClient.close();
+        mRetryTimer.stop();
+        stop(QStringLiteral("TCP Socket Error: ") + QString::number(socketError));
+    }
+}
+
 void JackTrip::connectionSecured()
 {
     // Now that the connection is encrypted, send out port, and credentials.
@@ -1047,18 +1059,43 @@ void JackTrip::tcpTimerTick()
         // Stop everything.
         mAwaitingTcp = false;
         mTcpClient.close();
-        mTimeoutTimer.stop();
+        mRetryTimer.stop();
         stop();
+        return;
     }
 
-    mElapsedTime += mSleepTime;
+    mElapsedTime += mRetryTimer.interval();
     if (mEndTime > 0 && mElapsedTime >= mEndTime) {
         mAwaitingTcp = false;
         mTcpClient.close();
-        mTimeoutTimer.stop();
+        mRetryTimer.stop();
         cout << "JackTrip Server Timed Out!" << endl;
         stop(QStringLiteral("Initial TCP Connection Timed Out"));
+        return;
     }
+
+    // Use randomized exponential backoff to reconnect the TCP client
+    QRandomGenerator randomizer;
+    mRetries++;
+    int newInterval = 2000 * pow(2, mRetries);
+    newInterval = randomizer.bounded(0, newInterval);
+    mRetryTimer.setInterval(newInterval);
+
+    cout << "Connection timed out. Retrying again using exponential backoff." << endl;
+
+    // Create Socket Objects
+    QHostAddress serverHostAddress;
+    if (!serverHostAddress.setAddress(mPeerAddress)) {
+        QHostInfo info = QHostInfo::fromName(mPeerAddress);
+        if (!info.addresses().isEmpty()) {
+            // use the first IP address
+            serverHostAddress = info.addresses().constFirst();
+        }
+    }
+
+    mTcpClient.disconnectFromHost();
+    mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    mRetryTimer.start();
 }
 
 //*******************************************************************************
@@ -1247,27 +1284,19 @@ int JackTrip::clientPingToServerStart()
     // ----------------------------------------------
     connect(&mTcpClient, &QTcpSocket::readyRead, this, &JackTrip::receivedDataTCP);
     connect(&mTcpClient, &QTcpSocket::connected, this, &JackTrip::receivedConnectionTCP);
+    connect(&mTcpClient, &QTcpSocket::errorOccurred, this, &JackTrip::receivedErrorTCP);
     {
         QMutexLocker lock(&mTimerMutex);
+        QRandomGenerator randomizer;
         mAwaitingTcp = true;
         mElapsedTime = 0;
-        mEndTime     = 5000;  // Timeout after 5 seconds.
-        mTimeoutTimer.setInterval(mSleepTime);
-        mTimeoutTimer.disconnect();
-        connect(&mTimeoutTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
-        mTimeoutTimer.start();
+        mEndTime     = 30000;  // Timeout after 30 seconds.
+        mRetryTimer.setInterval(randomizer.bounded(0, 2000 * pow(2, mRetries)));
+        mRetryTimer.setSingleShot(true);
+        mRetryTimer.disconnect();
+        connect(&mRetryTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
+        mRetryTimer.start();
     }
-    connect(&mTcpClient, &QAbstractSocket::stateChanged, this,
-            [=](QAbstractSocket::SocketState socketState) {
-                std::cout << "NEW SOCKET STATE: " << socketState << std::endl;
-            });
-    connect(&mTcpClient, &QAbstractSocket::hostFound, this, [=]() {
-        std::cout << "HOST FOUND!" << std::endl;
-    });
-    connect(&mTcpClient, &QAbstractSocket::errorOccurred, this,
-            [=](QAbstractSocket::SocketError socketError) {
-                std::cout << "SOCKET ERROR! " << socketError << std::endl;
-            });
 
     mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
 
