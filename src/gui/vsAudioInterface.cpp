@@ -65,10 +65,10 @@ VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("Audio"));
-    m_inMultiplier       = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
-    m_outMultiplier      = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
-    m_inMuted            = settings.value(QStringLiteral("InMuted"), false).toBool();
-    m_outMuted           = settings.value(QStringLiteral("OutMuted"), false).toBool();
+    m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
+    m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+    m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+    m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
 #ifdef RT_AUDIO
 #ifndef NO_JACK
     m_audioInterfaceMode = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
