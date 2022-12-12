@@ -82,6 +82,10 @@ class VirtualStudio : public QObject
         int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
     Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
                    outputDeviceChanged)
+    Q_PROPERTY(int previousInput READ previousInput WRITE setPreviousInput NOTIFY
+                   previousInputChanged)
+    Q_PROPERTY(int previousOutput READ previousOutput WRITE setPreviousOutput NOTIFY
+                   previousOutputChanged)
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
@@ -125,6 +129,10 @@ class VirtualStudio : public QObject
                    updatedOutputVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
+    Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
+                   audioActivatedChanged)
+    Q_PROPERTY(
+        bool audioReady READ audioReady WRITE setAudioReady NOTIFY audioReadyChanged)
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
 
@@ -148,6 +156,10 @@ class VirtualStudio : public QObject
     void setInputDevice(int device);
     int outputDevice();
     void setOutputDevice(int device);
+    int previousInput();
+    void setPreviousInput(int device);
+    int previousOutput();
+    void setPreviousOutput(int device);
     QString devicesWarning();
     QString devicesError();
     QString devicesWarningHelpUrl();
@@ -191,6 +203,9 @@ class VirtualStudio : public QObject
     float outputVolume();
     bool inputMuted();
     bool outputMuted();
+    Q_INVOKABLE void restartAudio();
+    bool audioActivated();
+    bool audioReady();
     QString windowState();
 
    public slots:
@@ -217,6 +232,8 @@ class VirtualStudio : public QObject
     void setOutputVolume(float multiplier);
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
+    void setAudioActivated(bool activated);
+    void setAudioReady(bool ready);
     void setWindowState(QString state);
     void exit();
 
@@ -230,11 +247,13 @@ class VirtualStudio : public QObject
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
-    void audioBackendChanged(bool useRtAudio);
-    void inputDeviceChanged(QString device);
-    void outputDeviceChanged(QString device);
-    void inputDeviceSelected(QString device);
-    void outputDeviceSelected(QString device);
+    void audioBackendChanged(bool useRtAudio, bool shouldRestart = true);
+    void inputDeviceChanged(QString device, bool shouldRestart = true);
+    void outputDeviceChanged(QString device, bool shouldRestart = true);
+    void inputDeviceSelected(QString device, bool shouldRestart = true);
+    void outputDeviceSelected(QString device, bool shouldRestart = true);
+    void previousInputChanged();
+    void previousOutputChanged();
     void devicesWarningChanged();
     void devicesErrorChanged();
     void devicesWarningHelpUrlChanged();
@@ -265,6 +284,8 @@ class VirtualStudio : public QObject
     void updatedOutputVolume(float multiplier);
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
+    void audioActivatedChanged();
+    void audioReadyChanged();
     void windowStateUpdated();
 
    private slots:
@@ -295,6 +316,8 @@ class VirtualStudio : public QObject
     void getRegions();
     void getUserMetadata();
     void stopStudio();
+    void toggleAudio();
+    void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
     QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
@@ -352,7 +375,9 @@ class VirtualStudio : public QObject
     bool m_testMode         = false;
     QString m_failedMessage = "";
     QUrl m_studioToJoin;
-    bool m_authenticated = false;
+    bool m_authenticated  = false;
+    bool m_audioActivated = false;
+    bool m_audioReady     = false;
 
     Meter* m_inputMeter;
     Meter* m_outputMeter;

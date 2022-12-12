@@ -91,9 +91,9 @@ class VsAudioInterface : public QObject
     };
 
    public slots:
-    void setInputDevice(QString deviceName);
-    void setOutputDevice(QString deviceName);
-    void setAudioInterfaceMode(bool useRtAudio);
+    void setInputDevice(QString deviceName, bool shouldRestart = true);
+    void setOutputDevice(QString deviceName, bool shouldRestart = true);
+    void setAudioInterfaceMode(bool useRtAudio, bool shouldRestart = true);
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
     void setInputMuted(bool muted);

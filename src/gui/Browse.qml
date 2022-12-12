@@ -294,7 +294,12 @@ Item {
                 border.width: 1
                 border.color: settingsButton.down ? buttonPressedStroke : (settingsButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: virtualstudio.windowState = "settings"
+            Timer {
+                id: restartAudioTimer
+                interval: 805; running: false; repeat: false
+                onTriggered: virtualstudio.audioActivated = true;
+            }
+            onClicked: { virtualstudio.windowState = "settings"; restartAudioTimer.restart(); }
             display: AbstractButton.TextBesideIcon
             font {
                 family: "Poppins"; 
