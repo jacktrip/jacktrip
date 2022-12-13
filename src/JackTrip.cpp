@@ -53,9 +53,9 @@
 #include <QDateTime>
 #include <QHostAddress>
 #include <QHostInfo>
+#include <QRandomGenerator>
 #include <QThread>
 #include <QTimer>
-#include <QRandomGenerator>
 #include <QtEndian>
 #include <cstdlib>
 #include <iomanip>
@@ -1078,7 +1078,7 @@ void JackTrip::tcpTimerTick()
     QRandomGenerator randomizer;
     mRetries++;
     int newInterval = 2000 * pow(2, mRetries);
-    newInterval = randomizer.bounded(0, newInterval);
+    newInterval     = randomizer.bounded(0, newInterval);
     mRetryTimer.setInterval(newInterval);
 
     cout << "Connection timed out. Retrying again using exponential backoff." << endl;
