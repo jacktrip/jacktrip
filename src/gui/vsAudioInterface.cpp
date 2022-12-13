@@ -57,17 +57,31 @@ VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
     , m_inputDeviceName("")
     , m_outputDeviceName("")
     , m_audioBufferSize(gDefaultBufferSizeInSamples)
+#ifdef RT_AUDIO
     , m_audioInterfaceMode(VsAudioInterface::RTAUDIO)
+#else
+    , m_audioInterfaceMode(VsAudioInterface::JACK)
+#endif
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("Audio"));
-    m_inMultiplier       = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
-    m_outMultiplier      = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
-    m_inMuted            = settings.value(QStringLiteral("InMuted"), false).toBool();
-    m_outMuted           = settings.value(QStringLiteral("OutMuted"), false).toBool();
+    m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
+    m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+    m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+    m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+#ifdef RT_AUDIO
+#ifndef NO_JACK
     m_audioInterfaceMode = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
                                ? VsAudioInterface::RTAUDIO
                                : VsAudioInterface::JACK;
+#endif
+#endif
+#ifdef NO_JACK
+    m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
+#endif
+#ifndef RT_AUDIO
+    m_audioInterfaceMode = VsAudioInterface::JACK;
+#endif
     m_inputDeviceName =
         settings.value(QStringLiteral("InputDevice"), "").toString().toStdString();
     m_outputDeviceName =
@@ -319,9 +333,13 @@ void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
 void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio, bool shouldRestart)
 {
     if (useRtAudio) {
+#ifdef RT_AUDIO
         m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
+#endif
     } else {
+#ifndef NO_JACK
         m_audioInterfaceMode = VsAudioInterface::JACK;
+#endif
     }
     if ((!m_audioInterface.isNull() || m_hasBeenActive) && shouldRestart) {
         emit modeUpdated();
@@ -373,9 +391,11 @@ void VsAudioInterface::startProcess()
         try {
             m_audioInterface->initPlugins(false);
             m_audioInterface->startProcess();
+#ifndef NO_JACK
             if (m_audioInterfaceMode == VsAudioInterface::JACK) {
                 m_audioInterface->connectDefaultPorts();
             }
+#endif
         } catch (const std::exception& e) {
             emit errorToProcess(QString::fromUtf8(e.what()));
         }
