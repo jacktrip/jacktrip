@@ -18,13 +18,11 @@ Item {
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
 
-    property bool showWaitingScreen: !(
-        virtualstudio.connectionState === "Preparing audio..."
-        || virtualstudio.connectionState === "Connected"
-        || virtualstudio.connectionState === "Connecting..."
-        || virtualstudio.connectionState === "Disconnecting..."
-        || virtualstudio.connectionState === "Disconnected"
-    )
+    property string studioStatus: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "")
+    property bool showReadyScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "") === "Ready"
+        || (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "") === "Decomissioning"
+    property bool showStartingScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "") === "Starting"
+    property bool showWaitingScreen: !showStartingScreen && !showReadyScreen
     
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
 
@@ -119,7 +117,7 @@ Item {
 
     Item {
         id: inputDevice
-        visible: !showWaitingScreen
+        visible: showReadyScreen
         x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
@@ -169,7 +167,7 @@ Item {
 
     Item {
         id: outputDevice
-        visible: !showWaitingScreen
+        visible: showReadyScreen
         x: bodyMargin * virtualstudio.uiScale; y: 320 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
@@ -219,7 +217,7 @@ Item {
 
     Item {
         id: inputControls
-        visible: !showWaitingScreen
+        visible: showReadyScreen
         x: inputDevice.x + inputDevice.width; y: 230 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
 
@@ -322,7 +320,7 @@ Item {
 
     Item {
         id: outputControls
-        visible: !showWaitingScreen
+        visible: showReadyScreen
         x: outputDevice.x + outputDevice.width; y: 320 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
 
@@ -359,7 +357,7 @@ Item {
 
     Item {
         id: networkStatsHeader
-        visible: !showWaitingScreen
+        visible: showReadyScreen
         x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 128 * virtualstudio.uiScale
@@ -394,7 +392,7 @@ Item {
 
     Item {
         id: networkStatsText
-        visible: !showWaitingScreen
+        visible: showReadyScreen
         x: networkStatsHeader.x + networkStatsHeader.width; y: 410 * virtualstudio.uiScale
         width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 128 * virtualstudio.uiScale
@@ -476,6 +474,23 @@ Item {
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "You will be automatically connected to the studio when it is ready."
+            wrapMode: Text.WordWrap
+        }
+    }
+
+    Item {
+        id: studioStartingScreen
+        visible: showStartingScreen
+        x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
+        width: parent.width - (2 * x)
+
+        Text {
+            id: studioStartingText0
+            x: 0
+            width: parent.width
+            color: textColour
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            text: "This studio is currently starting up. You will be connected automatically when it is ready."
             wrapMode: Text.WordWrap
         }
     }

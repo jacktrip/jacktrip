@@ -1441,7 +1441,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     QJsonObject serverState  = QJsonDocument::fromJson(msg.toUtf8()).object();
     QString serverStatus     = serverState[QStringLiteral("status")].toString();
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
-
+    studioInfo->setStatus(serverStatus);
     if (!m_jackTripRunning) {
         if (serverStatus == QLatin1String("Ready")) {
             studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
@@ -1457,6 +1457,8 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
             m_startTimer.start();
         }
     }
+
+    emit currentStudioChanged();
 }
 
 void VirtualStudio::endRetryPeriod()
