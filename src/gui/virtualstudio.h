@@ -221,7 +221,7 @@ class VirtualStudio : public QObject
     void connectToStudio(int studioIndex);
     void completeConnection();
     void disconnect();
-    void manageStudio(int studioIndex);
+    void manageStudio(int studioIndex, bool start = false);
     void createStudio();
     void editProfile();
     void showAbout();

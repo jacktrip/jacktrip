@@ -1242,15 +1242,23 @@ void VirtualStudio::disconnect()
     emit connectionStateChanged();
 }
 
-void VirtualStudio::manageStudio(int studioIndex)
+void VirtualStudio::manageStudio(int studioIndex, bool start)
 {
     if (studioIndex == -1) {
         // We're here from a connected screen. Use our current studio.
         studioIndex = m_currentStudio;
     }
-    QUrl url = QUrl(
-        QStringLiteral("https://%1/studios/%2")
-            .arg(m_apiHost, static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+
+    QUrl url;
+    if (!start) {
+        url = QUrl(QStringLiteral("https://%1/studios/%2")
+                       .arg(m_apiHost,
+                            static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    } else {
+        url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
+                       .arg(m_apiHost,
+                            static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    }
     QDesktopServices::openUrl(url);
 }
 

@@ -17,8 +17,24 @@ Item {
     property int bodyMargin: 60
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
+
+    property bool showWaitingScreen: !(
+        virtualstudio.connectionState === "Preparing audio..."
+        || virtualstudio.connectionState === "Connected"
+        || virtualstudio.connectionState === "Connecting..."
+        || virtualstudio.connectionState === "Disconnecting..."
+        || virtualstudio.connectionState === "Disconnected"
+    )
     
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
+
+    property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
+    property string browserButtonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
+    property string browserButtonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
+    property string browserButtonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
+    property string browserButtonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
+    property string browserButtonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+
     property string muteButtonMutedColor: "#FCB6B6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
@@ -103,6 +119,7 @@ Item {
 
     Item {
         id: inputDevice
+        visible: !showWaitingScreen
         x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
@@ -152,6 +169,7 @@ Item {
 
     Item {
         id: outputDevice
+        visible: !showWaitingScreen
         x: bodyMargin * virtualstudio.uiScale; y: 320 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
@@ -201,6 +219,7 @@ Item {
 
     Item {
         id: inputControls
+        visible: !showWaitingScreen
         x: inputDevice.x + inputDevice.width; y: 230 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
 
@@ -303,6 +322,7 @@ Item {
 
     Item {
         id: outputControls
+        visible: !showWaitingScreen
         x: outputDevice.x + outputDevice.width; y: 320 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
 
@@ -339,6 +359,7 @@ Item {
 
     Item {
         id: networkStatsHeader
+        visible: !showWaitingScreen
         x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 128 * virtualstudio.uiScale
@@ -373,6 +394,7 @@ Item {
 
     Item {
         id: networkStatsText
+        visible: !showWaitingScreen
         x: networkStatsHeader.x + networkStatsHeader.width; y: 410 * virtualstudio.uiScale
         width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 128 * virtualstudio.uiScale
@@ -393,6 +415,68 @@ Item {
             topPadding: 8 * virtualstudio.uiScale
             anchors.top: netstat0.bottom
             color: textColour
+        }
+    }
+
+    Item {
+        id: waitingScreen
+        visible: showWaitingScreen
+        x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
+        width: parent.width - (2 * x)
+
+        property bool isManageable: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false)
+
+        Text {
+            id: waitingText0
+            x: 0
+            width: parent.width
+            color: textColour
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            text: parent.isManageable
+                ? "Waiting for this studio to start. To start this studio, use the button below to open the page in your web browser."
+                : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
+            wrapMode: Text.WordWrap
+        }
+
+        Button {
+            id: openInBrowserButton
+            visible: parent.isManageable
+            onClicked: {
+                virtualstudio.manageStudio(-1, true)
+            }
+            anchors.top: waitingText0.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 210 * virtualstudio.uiScale; height: 45 * virtualstudio.uiScale
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: openInBrowserButton.down ? browserButtonPressedColour : (openInBrowserButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                border.width: 1
+                border.color: openInBrowserButton.down ? browserButtonPressedStroke : (openInBrowserButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+            }
+
+            Text {
+                text: "Start Studio in Browser"
+                font.family: "Poppins"
+                font.pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                color: textColour
+            }
+        }
+
+        Text {
+            id: waitingText1
+            x: 0
+            width: parent.width
+            color: textColour
+            anchors.top: parent.isManageable ? openInBrowserButton.bottom : waitingText0.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            text: "You will be automatically connected to the studio when it is ready."
+            wrapMode: Text.WordWrap
         }
     }
 }
