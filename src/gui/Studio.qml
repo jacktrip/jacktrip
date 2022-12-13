@@ -45,14 +45,36 @@ Rectangle {
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: inviteCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
     property string toolTipTextColour: inviteCopied ? "#FAFBFB" : textColour
-    property string joinColour: virtualstudio.darkMode ? (connected ? "#FCB6B6" : "#E2EBE0") : (connected ? "#FCB6B6" : "#C4F4BE")
-    property string joinHoverColour: virtualstudio.darkMode ? (connected ? "#D49696" : "#BAC7B8") : (connected ? "#E3A4A4" : "#B0DCAB")
-    property string joinPressedColour: virtualstudio.darkMode ? (connected ? "#F2AEAE" : "#D8E2D6") : (connected ? "#EFADAD" : "#BAE8B5")
-    property string joinStroke: virtualstudio.darkMode ? (connected ? "#A65959" : "#748F70") : (connected ? "#C95E5E" : "#5DB752")
-    property string manageColour: virtualstudio.darkMode ? "#F0F1F1" : "#EAEBEB"
-    property string manageHoverColour: virtualstudio.darkMode ? "#CCCDCD" : "#D3D3D3"
-    property string managePressedColour: virtualstudio.darkMode ? "#E4E5E5" : "#EAEBEB"
-    property string manageStroke: virtualstudio.darkMode ? "#8B8D8D" : "#949494"
+
+    property string baseButtonColour: virtualstudio.darkMode ? "#F0F1F1" : "#EAEBEB"
+    property string baseButtonHoverColour: virtualstudio.darkMode ? "#CCCDCD" : "#D3D3D3"
+    property string baseButtonPressedColour: virtualstudio.darkMode ? "#E4E5E5" : "#EAEBEB"
+    property string baseButtonStroke: virtualstudio.darkMode ? "#8B8D8D" : "#949494"
+
+    property string joinAvailableColour: virtualstudio.darkMode ? "#E2EBE0" : "#C4F4BE"
+    property string joinAvailableHoverColour: virtualstudio.darkMode ? "#BAC7B8" : "#B0DCAB"
+    property string joinAvailablePressedColour: virtualstudio.darkMode ? "#D8E2D6" : "#BAE8B5"
+    property string joinAvailableStroke: virtualstudio.darkMode ? "#748F70" : "#5DB752"
+    
+    property string joinUnavailableColour: baseButtonColour
+    property string joinUnavailableHoverColour: baseButtonHoverColour
+    property string joinUnavailablePressedColour: baseButtonPressedColour
+    property string joinUnavailableStroke: baseButtonStroke
+
+    property string startColour: virtualstudio.darkMode ? "#E2EBE0" : "#C4F4BE"
+    property string startHoverColour: virtualstudio.darkMode ? "#BAC7B8" : "#B0DCAB"
+    property string startPressedColour: virtualstudio.darkMode ? "#D8E2D6" : "#BAE8B5"
+    property string startStroke: virtualstudio.darkMode ? "#748F70" : "#5DB752"
+
+    property string manageColour: baseButtonColour
+    property string manageHoverColour: baseButtonHoverColour
+    property string managePressedColour: baseButtonPressedColour
+    property string manageStroke: baseButtonStroke
+
+    property string leaveColour: virtualstudio.darkMode ? "#FCB6B6" : "#FCB6B6"
+    property string leaveHoverColour: virtualstudio.darkMode ? "#D49696" : "#E3A4A4"
+    property string leavePressedColour: virtualstudio.darkMode ? "#F2AEAE" : "#EFADAD"
+    property string leaveStroke: virtualstudio.darkMode ? "#A65959" : "#C95E5E"
 
     Clipboard {
         id: clipboard
@@ -165,6 +187,34 @@ Rectangle {
         elide: Text.ElideRight
         color: textColour
     }
+
+    Button {
+        id: startButton
+        x: manageable ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
+        y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
+        background: Rectangle {
+            radius: width / 2
+            color: available ? (startButton.down ? startPressedColour : (startButton.hovered ? startHoverColour : startColour))
+                : (startButton.down ? startPressedColour : (startButton.hovered ? startHoverColour : startColour))
+            border.width: startButton.down ? 1 : 0
+            border.color: available ? startStroke : startStroke
+        }
+        visible: !connected && (canStart && !canConnect)
+        onClicked: {
+            virtualstudio.windowState = "connected";
+            virtualstudio.connectToStudio(index);
+        }
+        Image {
+            id: start
+            width: 22 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
+            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+            source: "start.svg"
+            sourceSize: Qt.size(start.width,start.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
+    }
+
     
     Button {
         id: joinButton
@@ -172,25 +222,47 @@ Rectangle {
         y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
-            color: joinButton.down ? joinPressedColour : (joinButton.hovered ? joinHoverColour : joinColour)
+            color: available ? (joinButton.down ? joinAvailablePressedColour : (joinButton.hovered ? joinAvailableHoverColour : joinAvailableColour))
+                : (joinButton.down ? joinUnavailablePressedColour : (joinButton.hovered ? joinUnavailableHoverColour : joinUnavailableColour))
             border.width: joinButton.down ? 1 : 0
-            border.color: joinStroke
+            border.color: available ? joinAvailableStroke : joinUnavailableStroke
         }
-        visible: connected || canConnect || canStart
+        visible: !connected && !(canStart && !canConnect)
         onClicked: {
-            if (!connected) {
-                virtualstudio.windowState = "connected";
-                virtualstudio.connectToStudio(index);
-            } else {
-                virtualstudio.disconnect();
-            }
+            virtualstudio.windowState = "connected";
+            virtualstudio.connectToStudio(index);
         }
         Image {
-            id: joinLeave
+            id: join
             width: 22 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: connected ? "leave.svg" : available ? "join.svg" : "start.svg"
-            sourceSize: Qt.size(joinLeave.width,joinLeave.height)
+            source: "join.svg"
+            sourceSize: Qt.size(join.width,join.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
+    }
+
+    Button {
+        id: leaveButton
+        x: manageable ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
+        y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
+        background: Rectangle {
+            radius: width / 2
+            color: leaveButton.down ? leavePressedColour : (leaveButton.hovered ? leaveHoverColour : leaveColour)
+            border.width: leaveButton.down ? 1 : 0
+            border.color: leaveStroke
+        }
+        visible: connected
+        onClicked: {
+            virtualstudio.disconnect();
+        }
+        Image {
+            id: leave
+            width: 22 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
+            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+            source: "leave.svg"
+            sourceSize: Qt.size(leave.width,leave.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
         }
@@ -199,9 +271,9 @@ Rectangle {
     Text {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
-        text: connected ? "Leave" : available ? "Join" : "Start"
+        text: connected ? "Leave" : canStart && !canConnect ? "Start" : "Join"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-        visible: connected || canConnect || canStart
+        visible: true
         color: textColour
     }
 

@@ -1697,7 +1697,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                         }
                         continue;
                     }
-                    if (activeStudio || (serverInfo->isManageable() && m_showInactive)) {
+                    if (activeStudio || m_showInactive) {
                         serverInfo->setName(
                             servers.at(i)[QStringLiteral("name")].toString());
                         serverInfo->setHost(
