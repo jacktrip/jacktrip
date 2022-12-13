@@ -182,6 +182,13 @@ if rtaudio_dep.found() == true
 	deps += rtaudio_dep
 endif
 
+if rtaudio_dep.found() == false and jack_dep.found() == false
+	error('''
+	JackTrip requires at least one available audio backend. Install the
+	appropriate library or enable the appropriate backends using meson
+	configure.''')
+endif
+
 if host_machine.system() == 'darwin'
 	src += ['src/gui/NoNap.mm']
 	# Adding CoreAudio here is a workaround and should be removed
