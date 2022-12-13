@@ -1285,7 +1285,7 @@ int JackTrip::clientPingToServerStart()
     connect(&mTcpClient, &QTcpSocket::readyRead, this, &JackTrip::receivedDataTCP);
     connect(&mTcpClient, &QTcpSocket::connected, this, &JackTrip::receivedConnectionTCP);
 #ifdef __linux__
-    connect(&mTcpClient, &QTcpSocket::error, this, &JackTrip::receivedErrorTCP);
+    connect(&mTcpClient, &QTcpSocket::error, &JackTrip::receivedErrorTCP);
 #else
     connect(&mTcpClient, &QTcpSocket::errorOccurred, this, &JackTrip::receivedErrorTCP);
 #endif
