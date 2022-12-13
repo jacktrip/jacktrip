@@ -4,7 +4,7 @@
 # Parse command line options
 clean=1
 install=0
-CONFIG=
+CONFIG="DEFINES+=JACKTRIP_BUILD_INFO=\\\"$(git describe --tags)-$(git rev-parse --short HEAD)\\\""
 UNKNOWN_OPTIONS=
 BUILD_RTAUDIO=0
 RTAUDIO=0
