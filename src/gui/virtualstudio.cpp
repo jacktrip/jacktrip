@@ -1062,12 +1062,12 @@ void VirtualStudio::connectToStudio(int studioIndex)
             QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
                                 .arg(m_apiHost, studioInfo->id()));
             QDesktopServices::openUrl(url);
-
         } else {
-            m_connectionState = QStringLiteral("Unable to Start Studio");
-            emit connectionStateChanged();
             m_startedStudio = false;
         }
+
+        m_connectionState = QStringLiteral("Waiting...");
+        emit connectionStateChanged();
     } else {
         m_startedStudio = false;
         completeConnection();
@@ -2045,7 +2045,7 @@ void VirtualStudio::stopStudio()
 bool VirtualStudio::readyToJoin()
 {
     return m_windowState == "browse"
-           && (m_connectionState == QStringLiteral("Waiting")
+           && (m_connectionState == QStringLiteral("Waiting...")
                || m_connectionState == QStringLiteral("Disconnected"));
 }
 

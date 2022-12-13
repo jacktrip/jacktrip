@@ -340,7 +340,7 @@ class VirtualStudio : public QObject
     bool m_selectableBackend  = true;
     bool m_useRtAudio         = false;
     int m_currentStudio       = -1;
-    QString m_connectionState = QStringLiteral("Waiting");
+    QString m_connectionState = QStringLiteral("Waiting...");
     QScopedPointer<JackTrip> m_jackTrip;
     VsWebSocket* m_studioSocket = NULL;
     QTimer m_startTimer;
