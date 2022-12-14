@@ -19,9 +19,8 @@ Item {
     property int rightToolTipMargin: 4
 
     property string studioStatus: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "")
-    property bool showReadyScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "") === "Ready"
-        || (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "") === "Decomissioning"
-    property bool showStartingScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "") === "Starting"
+    property bool showReadyScreen: studioStatus === "Ready"
+    property bool showStartingScreen: studioStatus === "Starting"
     property bool showWaitingScreen: !showStartingScreen && !showReadyScreen
     
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"

@@ -1057,7 +1057,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
     m_studioSocket->openSocket();
 
     // Check if we have an address for our server
-    if (studioInfo->host().isEmpty()) {
+    if (studioInfo->status() != "Ready" && studioInfo->isManageable() == true) {
         if (studioInfo->isOwner() || studioInfo->isAdmin()) {
             QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
                                 .arg(m_apiHost, studioInfo->id()));
@@ -1080,10 +1080,14 @@ void VirtualStudio::completeConnection()
         return;
     }
 
+    VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
+    if (studioInfo->status() == QStringLiteral("Disabled")) {
+        return;
+    }
+
     m_jackTripRunning = true;
     m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
-    VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     try {
         std::string input  = "";
         std::string output = "";
@@ -2119,6 +2123,7 @@ VirtualStudio::~VirtualStudio()
     delete m_inputMeter;
     delete m_outputMeter;
     delete m_inputTestMeter;
+    delete m_studioSocket;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }
