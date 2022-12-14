@@ -55,6 +55,9 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
     m_captureVolume =
         (float)settings.value(QStringLiteral("InMultiplier"), 1.0).toDouble();
     m_captureMute = settings.value(QStringLiteral("InMuted"), false).toBool();
+    m_playbackVolume =
+        (float)settings.value(QStringLiteral("OutMultiplier"), 1.0).toDouble();
+    m_playbackMute = settings.value(QStringLiteral("OutMuted"), false).toBool();
     settings.endGroup();
 
     m_sendVolumeTimer = new QTimer(this);
@@ -71,6 +74,8 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
     QJsonObject json = {
         {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
         {QLatin1String("captureMute"), m_captureMute},
+        {QLatin1String("playbackVolume"), (int)(m_playbackVolume * 100.0)},
+        {QLatin1String("playbackMute"), m_playbackMute},
     };
     QJsonDocument request = QJsonDocument(json);
 
@@ -92,23 +97,31 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
         } else {
             QByteArray response       = reply->readAll();
             QJsonDocument deviceState = QJsonDocument::fromJson(response);
-            float deviceCaptureVol =
+
+            // capture (input) volume
+            m_captureVolume =
                 (float)(deviceState.object()[QStringLiteral("captureVolume")].toDouble()
                         / 100.0);
-            float deviceCaptureMute =
-                deviceState.object()[QStringLiteral("captureMute")].toBool();
+            m_captureMute = deviceState.object()[QStringLiteral("captureMute")].toBool();
+            emit updatedCaptureVolumeFromServer(m_captureVolume);
+            emit updatedCaptureMuteFromServer(m_captureMute);
 
-            m_captureVolume = deviceCaptureVol;
-            emit updatedVolumeFromServer(m_captureVolume);
-
-            m_captureMute = deviceCaptureMute;
-            emit updatedMuteFromServer(m_captureMute);
+            // playback (output) volume
+            m_playbackVolume =
+                (float)(deviceState.object()[QStringLiteral("playbackVolume")].toDouble()
+                        / 100.0);
+            m_playbackMute =
+                deviceState.object()[QStringLiteral("playbackMute")].toBool();
+            emit updatedPlaybackVolumeFromServer(m_playbackVolume);
+            emit updatedPlaybackMuteFromServer(m_playbackMute);
         }
 
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
         settings.setValue(QStringLiteral("InMultiplier"), m_captureVolume);
         settings.setValue(QStringLiteral("InMuted"), m_captureMute);
+        settings.setValue(QStringLiteral("OutMultiplier"), m_playbackVolume);
+        settings.setValue(QStringLiteral("OutMuted"), m_playbackMute);
         settings.endGroup();
 
         reply->deleteLater();
@@ -322,6 +335,8 @@ void VsDevice::sendLevels()
     QJsonObject json = {
         {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
         {QLatin1String("captureMute"), m_captureMute},
+        {QLatin1String("playbackVolume"), (int)(m_playbackVolume * 100.0)},
+        {QLatin1String("playbackMute"), m_playbackMute},
     };
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_authenticator->put(
@@ -445,8 +460,8 @@ void VsDevice::stopPinger()
     }
 }
 
-// updateVolume sets VsDevice's capture volume to the provided float
-void VsDevice::updateVolume(float multiplier)
+// updateCaptureVolume sets VsDevice's capture (input) volume to the provided float
+void VsDevice::updateCaptureVolume(float multiplier)
 {
     if (multiplier == m_captureVolume) {
         return;
@@ -458,13 +473,39 @@ void VsDevice::updateVolume(float multiplier)
     }
 }
 
-// updateMute sets VsDevice's capture mute to the provided boolean
-void VsDevice::updateMute(bool muted)
+// updateCaptureMute sets VsDevice's capture (input) mute to the provided boolean
+void VsDevice::updateCaptureMute(bool muted)
 {
     if (muted == m_captureMute) {
         return;
     }
     m_captureMute = muted;
+
+    if (m_sendVolumeTimer) {
+        m_sendVolumeTimer->start(200);
+    }
+}
+
+// updatePlaybackVolume sets VsDevice's playback (output) volume to the provided float
+void VsDevice::updatePlaybackVolume(float multiplier)
+{
+    if (multiplier == m_playbackVolume) {
+        return;
+    }
+    m_playbackVolume = multiplier;
+
+    if (m_sendVolumeTimer) {
+        m_sendVolumeTimer->start(200);
+    }
+}
+
+// updatePlaybackMute sets VsDevice's playback (output) mute to the provided boolean
+void VsDevice::updatePlaybackMute(bool muted)
+{
+    if (muted == m_playbackMute) {
+        return;
+    }
+    m_playbackMute = muted;
 
     if (m_sendVolumeTimer) {
         m_sendVolumeTimer->start(200);
@@ -493,17 +534,32 @@ void VsDevice::onTextMessageReceived(const QString& message)
         m_pinger->start();
     }
 
-    bool newMute           = newState["captureMute"].toBool();
-    float newCaptureVolume = (float)(newState["captureVolume"].toDouble() / 100.0);
+    // capture (input) volume
+    bool newMute    = newState["captureMute"].toBool();
+    float newVolume = (float)(newState["captureVolume"].toDouble() / 100.0);
 
-    if (newCaptureVolume != m_captureVolume) {
-        m_captureVolume = newCaptureVolume;
-        emit updatedVolumeFromServer(m_captureVolume);
+    if (newVolume != m_captureVolume) {
+        m_captureVolume = newVolume;
+        emit updatedCaptureVolumeFromServer(m_captureVolume);
     }
 
     if (newMute != m_captureMute) {
         m_captureMute = newMute;
-        emit updatedMuteFromServer(m_captureMute);
+        emit updatedCaptureMuteFromServer(m_captureMute);
+    }
+
+    // playback (output) volume
+    newMute   = newState["playbackMute"].toBool();
+    newVolume = (float)(newState["playbackVolume"].toDouble() / 100.0);
+
+    if (newVolume != m_playbackVolume) {
+        m_playbackVolume = newVolume;
+        emit updatedPlaybackVolumeFromServer(m_playbackVolume);
+    }
+
+    if (newMute != m_playbackMute) {
+        m_playbackMute = newMute;
+        emit updatedPlaybackMuteFromServer(m_playbackMute);
     }
 
     reconcileAgentConfig(newState);
