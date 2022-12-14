@@ -1443,7 +1443,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     studioInfo->setStatus(serverStatus);
     if (!m_jackTripRunning) {
-        if (serverStatus == QLatin1String("Ready")) {
+        if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
             studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
             studioInfo->setPort(serverState[QStringLiteral("serverPort")].toInt());
 
