@@ -44,7 +44,7 @@ VsServerInfo::serverSectionT VsServerInfo::section()
     return m_section;
 }
 
-QString VsServerInfo::type()
+QString VsServerInfo::type() const
 {
     if (m_section == YOUR_STUDIOS) {
         return QStringLiteral("Your Studios");
@@ -60,7 +60,7 @@ void VsServerInfo::setSection(serverSectionT section)
     m_section = section;
 }
 
-QString VsServerInfo::name()
+QString VsServerInfo::name() const
 {
     return m_name;
 }
@@ -70,22 +70,22 @@ void VsServerInfo::setName(const QString& name)
     m_name = name;
 }
 
-QString VsServerInfo::host()
+QString VsServerInfo::host() const
 {
     return m_host;
 }
 
-QString VsServerInfo::status()
+QString VsServerInfo::status() const
 {
     return m_status;
 }
 
-bool VsServerInfo::canConnect()
+bool VsServerInfo::canConnect() const
 {
     return !m_host.isEmpty() && m_status == "Ready";
 }
 
-bool VsServerInfo::canStart()
+bool VsServerInfo::canStart() const
 {
     return m_owner || m_admin;
 }
@@ -102,7 +102,7 @@ void VsServerInfo::setStatus(const QString& status)
     emit canConnectChanged();
 }
 
-quint16 VsServerInfo::port()
+quint16 VsServerInfo::port() const
 {
     return m_port;
 }
@@ -142,12 +142,12 @@ void VsServerInfo::setIsPublic(bool isPublic)
     m_isPublic = isPublic;
 }
 
-QString VsServerInfo::region()
+QString VsServerInfo::region() const
 {
     return m_region;
 }
 
-QString VsServerInfo::flag()
+QString VsServerInfo::flag() const
 {
     QStringList parts = m_region.split(QStringLiteral("-"));
     if (parts.count() > 1) {
@@ -161,7 +161,7 @@ QString VsServerInfo::flag()
     return QStringLiteral("flags/US.svg");
 }
 
-QString VsServerInfo::location()
+QString VsServerInfo::location() const
 {
     return m_region;
 }
@@ -171,7 +171,7 @@ void VsServerInfo::setRegion(const QString& region)
     m_region = region;
 }
 
-bool VsServerInfo::isManageable()
+bool VsServerInfo::isManageable() const
 {
     return m_isManageable;
 }
@@ -181,7 +181,7 @@ void VsServerInfo::setIsManageable(bool isManageable)
     m_isManageable = isManageable;
 }
 
-quint16 VsServerInfo::period()
+quint16 VsServerInfo::period() const
 {
     return m_period;
 }
@@ -191,7 +191,7 @@ void VsServerInfo::setPeriod(quint16 period)
     m_period = period;
 }
 
-quint32 VsServerInfo::sampleRate()
+quint32 VsServerInfo::sampleRate() const
 {
     return m_sampleRate;
 }
@@ -201,7 +201,7 @@ void VsServerInfo::setSampleRate(quint32 sampleRate)
     m_sampleRate = sampleRate;
 }
 
-quint16 VsServerInfo::queueBuffer()
+quint16 VsServerInfo::queueBuffer() const
 {
     return m_queueBuffer;
 }
@@ -211,7 +211,7 @@ void VsServerInfo::setQueueBuffer(quint16 queueBuffer)
     m_queueBuffer = queueBuffer;
 }
 
-QString VsServerInfo::bannerURL()
+QString VsServerInfo::bannerURL() const
 {
     return m_bannerURL;
 }
@@ -221,7 +221,7 @@ void VsServerInfo::setBannerURL(const QString& bannerURL)
     m_bannerURL = bannerURL;
 }
 
-QString VsServerInfo::id()
+QString VsServerInfo::id() const
 {
     return m_id;
 }
@@ -231,7 +231,7 @@ void VsServerInfo::setId(const QString& id)
     m_id = id;
 }
 
-QString VsServerInfo::sessionId()
+QString VsServerInfo::sessionId() const
 {
     return m_sessionId;
 }
@@ -241,7 +241,7 @@ void VsServerInfo::setSessionId(const QString& sessionId)
     m_sessionId = sessionId;
 }
 
-QString VsServerInfo::inviteKey()
+QString VsServerInfo::inviteKey() const
 {
     return m_inviteKey;
 }
@@ -249,6 +249,18 @@ QString VsServerInfo::inviteKey()
 void VsServerInfo::setInviteKey(const QString& inviteKey)
 {
     m_inviteKey = inviteKey;
+}
+
+bool VsServerInfo::operator<(const VsServerInfo& other) const
+{
+    if (status() == QStringLiteral("Ready")) {
+        if (other.status() != QStringLiteral("Ready")) {
+            return true;
+        }
+    } else if (other.status() == QStringLiteral("Ready")) {
+        return false;
+    }
+    return name() < other.name();
 }
 
 VsServerInfo::~VsServerInfo() = default;
