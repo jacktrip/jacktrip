@@ -79,11 +79,11 @@ class VsServerInfo : public QObject
     void setHost(const QString& host);
     quint16 port() const;
     void setPort(quint16 port);
-    bool isOwner();
+    bool isOwner() const;
     void setIsOwner(bool owner);
-    bool isAdmin();
+    bool isAdmin() const;
     void setIsAdmin(bool admin);
-    bool isPublic();
+    bool isPublic() const;
     void setIsPublic(bool isPublic);
     QString region() const;
     QString flag() const;
