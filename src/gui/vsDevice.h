@@ -77,12 +77,16 @@ class VsDevice : public QObject
 
    signals:
     void updateNetworkStats(QJsonObject stats);
-    void updatedVolumeFromServer(float multiplier);
-    void updatedMuteFromServer(bool muted);
+    void updatedCaptureVolumeFromServer(float multiplier);
+    void updatedCaptureMuteFromServer(bool muted);
+    void updatedPlaybackVolumeFromServer(float multiplier);
+    void updatedPlaybackMuteFromServer(bool muted);
 
    public slots:
-    void updateVolume(float multiplier);
-    void updateMute(bool muted);
+    void updateCaptureVolume(float multiplier);
+    void updateCaptureMute(bool muted);
+    void updatePlaybackVolume(float multiplier);
+    void updatePlaybackMute(bool muted);
 
    private slots:
     void terminateJackTrip();
@@ -107,8 +111,10 @@ class VsDevice : public QObject
     QScopedPointer<JackTrip> m_jackTrip;
     QOAuth2AuthorizationCodeFlow* m_authenticator;
     QRandomGenerator m_randomizer;
-    float m_captureVolume = 1.0;
-    bool m_captureMute    = false;
+    float m_captureVolume  = 1.0;
+    bool m_captureMute     = false;
+    float m_playbackVolume = 1.0;
+    bool m_playbackMute    = false;
     QTimer* m_sendVolumeTimer;
 };
 
