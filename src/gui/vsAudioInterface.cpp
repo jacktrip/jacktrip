@@ -43,6 +43,7 @@
 
 #include "../Meter.h"
 #include "../Tone.h"
+#include "AudioInterfaceMode.h"
 
 // Constructor
 VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
@@ -69,19 +70,16 @@ VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
-#ifdef RT_AUDIO
-#ifndef NO_JACK
-    m_audioInterfaceMode = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
+    if constexpr (isBackendAvailable<AudioInterfaceMode::BOTH>()) {
+        m_audioInterfaceMode = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
                                ? VsAudioInterface::RTAUDIO
                                : VsAudioInterface::JACK;
-#endif
-#endif
-#ifdef NO_JACK
-    m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
-#endif
-#ifndef RT_AUDIO
-    m_audioInterfaceMode = VsAudioInterface::JACK;
-#endif
+    } else if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+        m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
+    } else {
+        m_audioInterfaceMode = VsAudioInterface::JACK;
+    }
+
     m_inputDeviceName =
         settings.value(QStringLiteral("InputDevice"), "").toString().toStdString();
     m_outputDeviceName =
@@ -178,18 +176,31 @@ void VsAudioInterface::setupAudio()
 
             std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
             std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
+            std::string devicesWarningHelpUrl =
+                m_audioInterface->getDevicesWarningHelpUrl();
+            std::string devicesErrorHelpUrl = m_audioInterface->getDevicesErrorHelpUrl();
 
             if (devicesWarningMsg != "") {
                 qDebug() << "Devices Warning: "
                          << QString::fromStdString(devicesWarningMsg);
+                if (devicesWarningHelpUrl != "") {
+                    qDebug() << "Learn More: "
+                             << QString::fromStdString(devicesWarningHelpUrl);
+                }
             }
 
             if (devicesErrorMsg != "") {
                 qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+                if (devicesErrorHelpUrl != "") {
+                    qDebug() << "Learn More: "
+                             << QString::fromStdString(devicesErrorHelpUrl);
+                }
             }
 
             updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
             updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+            updateDevicesWarningHelpUrl(QString::fromStdString(devicesWarningHelpUrl));
+            updateDevicesErrorHelpUrl(QString::fromStdString(devicesErrorHelpUrl));
 
 #endif
 #endif
