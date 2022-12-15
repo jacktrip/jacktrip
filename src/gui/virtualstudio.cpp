@@ -1772,18 +1772,18 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
 
             std::sort(yourServers.begin(), yourServers.end(),
                       [](QObject* first, QObject* second) {
-                          return static_cast<VsServerInfo*>(first)->name()
-                                 < static_cast<VsServerInfo*>(second)->name();
+                          return *static_cast<VsServerInfo*>(first)
+                                 < *static_cast<VsServerInfo*>(second);
                       });
             std::sort(subServers.begin(), subServers.end(),
                       [](QObject* first, QObject* second) {
-                          return static_cast<VsServerInfo*>(first)->name()
-                                 < static_cast<VsServerInfo*>(second)->name();
+                          return *static_cast<VsServerInfo*>(first)
+                                 < *static_cast<VsServerInfo*>(second);
                       });
             std::sort(pubServers.begin(), pubServers.end(),
                       [](QObject* first, QObject* second) {
-                          return static_cast<VsServerInfo*>(first)->name()
-                                 < static_cast<VsServerInfo*>(second)->name();
+                          return *static_cast<VsServerInfo*>(first)
+                                 < *static_cast<VsServerInfo*>(second);
                       });
 
             // If we don't have any owned servers, move the JackTrip logo to an
