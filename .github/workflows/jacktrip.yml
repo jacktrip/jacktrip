@@ -214,7 +214,7 @@ jobs:
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: true
@@ -232,11 +232,32 @@ jobs:
           else
             NAME="${{ matrix.name }}"
           fi
-          echo "::set-output name=version::$VERSION"
-          echo "::set-output name=name::$NAME"
-          echo "::set-output name=stamp::$(date '+%Y-%m-%d')" # set timestamp for cache
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "stamp=$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT # set timestamp for cache
+      - name: check if secrets are available
+        id: check-secrets
+        shell: bash
+        run: |
+          if [[ "${{ secrets.APP_SIGNING_CERT_BASE64 }}" != "" && \
+                "${{ secrets.INSTALLER_SIGNING_CERT_BASE64 }}" != "" && \
+                "${{ secrets.CERT_PASSPHRASE }}" != "" && \
+                "${{ secrets.APP_CERT_NAME }}" != "" && \
+                "${{ secrets.INSTALLER_CERT_NAME }}" != "" && \
+                "${{ secrets.APPLE_APP_SPECIFIC_PWD }}" != "" && \
+                "${{ secrets.TOTP_SECRET }}" != "" && \
+                "${{ secrets.ESIGNER_CREDENTIAL_ID }}" != "" && \
+                "${{ secrets.SSL_COM_PWD }}" != "" && \
+                "${{ secrets.KEYCHAIN_PWD }}" != "" ]]; \
+          then
+            echo "Secrets to sign artifacts were configured in the repo"
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "Secrets to sign artifacts were not configured in the repo"
+            echo "available=false" >> $GITHUB_OUTPUT
+          fi
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.x'
       - name: cache vcpkg on Windows
@@ -457,6 +478,34 @@ jobs:
             DESKTOP_FILE_PATH=$BUILD_PATH/linux/org.jacktrip.JackTrip.desktop
           fi
           desktop-file-validate $DESKTOP_FILE_PATH
+      - name: set signing secrets for macOS
+        if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path) && steps.check-secrets.outputs.available == 'true'
+        shell: bash
+        env:
+          APP_SIGNING_CERT_BASE64: ${{ secrets.APP_SIGNING_CERT_BASE64}}
+          INSTALLER_SIGNING_CERT_BASE64: ${{ secrets.INSTALLER_SIGNING_CERT_BASE64 }}
+          CERT_PASSPHRASE: ${{ secrets.CERT_PASSPHRASE }}
+          KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PWD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          INSTALLER_CERT_PATH=$RUNNER_TEMP/installer_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate and provisioning profile from secrets
+          echo -n "$APP_SIGNING_CERT_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+          echo -n "$INSTALLER_SIGNING_CERT_BASE64" | base64 --decode --output $INSTALLER_CERT_PATH
+          
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PWD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PWD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$CERT_PASSPHRASE" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security import $INSTALLER_CERT_PATH -P "$CERT_PASSPHRASE" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
@@ -471,24 +520,37 @@ jobs:
           fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
+        shell: bash
+        env:
+          CERTIFICATE: ${{ secrets.APP_CERT_NAME }}
+          PACKAGE_CERT: ${{ secrets.INSTALLER_CERT_NAME }}
+          USERNAME: app@jacktrip.org
+          PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PWD }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
           CONFIG=
           if [[ -n "${{ matrix.installer-path }}" ]]; then 
             CONFIG="-i $CONFIG"
+          fi
+          SIGNED=
+          if [[ "${{ steps.check-secrets.outputs.available }}" == "true" ]]; then 
+            CONFIG="$CONFIG -n -k -c \"${CERTIFICATE}\" -d \"${PACKAGE_CERT}\" -u \"${USERNAME}\" -p \"${PASSWORD}\" -t \"${TEAM_ID}\" JackTrip org.jacktrip.jacktrip"
+            SIGNED="-signed"
+            echo "Secrets are available, the binaries will be signed."
           fi
           cd macos
           echo $CONFIG | xargs ./assemble_app.sh
           echo "Assemble complete"
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
-            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application.zip *.app
+            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.app
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application.zip LICENSE.md LICENSES
+            zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip LICENSE.md LICENSES
           fi
           if [[ -n ${{ matrix.installer-path }} ]]; then
             cd $GITHUB_WORKSPACE/macos
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
-            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.pkg
+            cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-installer.pkg
           fi
       - name: create installer on Windows
         if: runner.os == 'Windows' && matrix.installer-path
@@ -498,6 +560,23 @@ jobs:
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
           bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+      - name: sign artifacts on Windows
+        if: runner.os == 'Windows' && matrix.installer-path && steps.check-secrets.outputs.available == 'true'
+        shell: cmd
+        env:
+          TOTP: ${{ secrets.TOTP_SECRET }}
+          CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
+          USERNAME: jacktrip
+          PASSWORD: ${{ secrets.SSL_COM_PWD}}
+        run: |
+          cd win\CodeSignTool
+          curl -L -O -J https://files.jacktrip.org/contrib/CodeSignTool-v1.2.6-windows.zip
+          unzip CodeSignTool-v1.2.6-windows.zip
+          mkdir signed
+          bash -c "cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi signed/installer.msi"
+          call "CodeSignTool.bat sign -credential_id=%CRED_ID% -username=%USERNAME% -password=%PASSWORD% -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=signed\installer.msi"
+          bash -c "cp signed/installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
+          bash -c "rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
         if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
@@ -506,15 +585,27 @@ jobs:
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: upload application bundle
         uses: actions/upload-artifact@v2
-        if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && steps.check-secrets.outputs.available != 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
+      - name: upload signed application bundle
+        uses: actions/upload-artifact@v2
+        if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && steps.check-secrets.outputs.available == 'true'
+        with:
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-application
+          path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload installer
         uses: actions/upload-artifact@v2
-        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && steps.check-secrets.outputs.available != 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
+          path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
+      - name: upload signed installer
+        uses: actions/upload-artifact@v2
+        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && steps.check-secrets.outputs.available == 'true'
+        with:
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: analyze build
         if: github.event_name == 'pull_request' && matrix.static-analysis == true
@@ -539,7 +630,7 @@ jobs:
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
     needs: build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     name: 'deploy release'
     env:
       DOWNLOAD_PATH: ${{ github.workspace }}/Install
