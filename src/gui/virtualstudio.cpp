@@ -121,6 +121,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     refreshDevices();
     m_previousInput  = m_inputDevice;
     m_previousOutput = m_outputDevice;
+
+    if constexpr (!isBackendAvailable<AudioInterfaceMode::ALL>()) {
+        m_selectableBackend = false;
+    }
 #else
     m_selectableBackend = false;
     m_vsAudioInterface.reset(new VsAudioInterface());
@@ -512,6 +516,16 @@ bool VirtualStudio::audioActivated()
 bool VirtualStudio::audioReady()
 {
     return m_audioReady;
+}
+
+bool VirtualStudio::backendAvailable()
+{
+    if constexpr ((isBackendAvailable<AudioInterfaceMode::JACK>()
+                   || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void VirtualStudio::setInputVolume(float multiplier)
@@ -1329,7 +1343,10 @@ void VirtualStudio::slotAuthSucceded()
     m_device->registerApp();
 
     if (m_showDeviceSetup) {
-        setAudioActivated(true);
+        if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()
+                      || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+            setAudioActivated(true);
+        }
     }
 
     if (m_userId.isEmpty()) {
@@ -2039,6 +2056,12 @@ void VirtualStudio::toggleAudio()
         return;
     }
 #endif
+
+    if constexpr (!(isBackendAvailable<AudioInterfaceMode::JACK>()
+                    || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
+        return;
+    }
+
     if (!m_audioActivated) {
         stopAudio();
     } else {

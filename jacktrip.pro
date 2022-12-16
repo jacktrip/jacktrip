@@ -2,7 +2,7 @@
 # Created by Juan-Pablo Caceres
 #******************************
 
-CONFIG += c++11 console
+CONFIG += c++17 console
 CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release build_all
@@ -151,7 +151,7 @@ linux-g++-64 {
 win32 {
   message(Building on win32)
 #cc  CONFIG += x86 console
-  CONFIG += c++11 console
+  CONFIG += c++17 console
   exists("C:\Program Files\JACK2") {
     message("using Jack in C:\Program Files\JACK2")
     INCLUDEPATH += "C:\Program Files\JACK2\include"

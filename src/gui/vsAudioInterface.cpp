@@ -69,19 +69,16 @@ VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
-#ifdef RT_AUDIO
-#ifndef NO_JACK
-    m_audioInterfaceMode = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
-                               ? VsAudioInterface::RTAUDIO
-                               : VsAudioInterface::JACK;
-#endif
-#endif
-#ifdef NO_JACK
-    m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
-#endif
-#ifndef RT_AUDIO
-    m_audioInterfaceMode = VsAudioInterface::JACK;
-#endif
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()) {
+        m_audioInterfaceMode = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
+                                   ? VsAudioInterface::RTAUDIO
+                                   : VsAudioInterface::JACK;
+    } else if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+        m_audioInterfaceMode = VsAudioInterface::RTAUDIO;
+    } else {
+        m_audioInterfaceMode = VsAudioInterface::JACK;
+    }
+
     m_inputDeviceName =
         settings.value(QStringLiteral("InputDevice"), "").toString().toStdString();
     m_outputDeviceName =
@@ -113,131 +110,30 @@ void VsAudioInterface::setupAudio()
 
         // Create AudioInterface Client Object
         if (m_audioInterfaceMode == VsAudioInterface::JACK) {
-#ifndef NO_JACK
-            if (gVerboseFlag)
-                std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
-                          << std::endl;
-            m_audioInterface.reset(new JackAudioInterface(
-                m_numAudioChansIn, m_numAudioChansOut, m_audioBitResolution));
-
-            m_audioInterface->setClientName(QStringLiteral("JackTrip"));
-
-            if (gVerboseFlag)
-                std::cout << "  JackTrip:setupAudio before m_audioInterface->setup"
-                          << std::endl;
-            m_audioInterface->setup(true);
-
-            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
-            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
-
-            if (devicesWarningMsg != "") {
-                qDebug() << "Devices Warning: "
-                         << QString::fromStdString(devicesWarningMsg);
+            if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
+                          || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+                setupJackAudio();
+            } else {
+                if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+                    setupRtAudio();
+                } else {
+                    throw std::runtime_error(
+                        "JackTrip was compiled without RtAudio and can't find JACK. In "
+                        "order to use JackTrip, you'll need to install JACK or rebuild "
+                        "with RtAudio support.");
+                    std::exit(1);
+                }
             }
-
-            if (devicesErrorMsg != "") {
-                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
-            }
-
-            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
-            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
-
-            if (gVerboseFlag)
-                std::cout
-                    << "  JackTrip:setupAudio before m_audioInterface->getSampleRate"
-                    << std::endl;
-            m_sampleRate = m_audioInterface->getSampleRate();
-            if (gVerboseFlag)
-                std::cout << "  JackTrip:setupAudio before m_audioInterface->getDeviceID"
-                          << std::endl;
-            m_deviceID = m_audioInterface->getDeviceID();
-            if (gVerboseFlag)
-                std::cout << "  JackTrip:setupAudio before "
-                             "m_audioInterface->getBufferSizeInSamples"
-                          << std::endl;
-            m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
-#endif          //__NON_JACK__
-#ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
-#ifdef RT_AUDIO
-            std::cout << "Warning: using non jack version, RtAudio will be used instead"
-                      << std::endl;
-            m_audioInterface.reset(new RtAudioInterface(
-                m_numAudioChansIn, m_numAudioChansOut, m_audioBitResolution));
-            m_audioInterface->setSampleRate(m_sampleRate);
-            m_audioInterface->setDeviceID(m_deviceID);
-            m_audioInterface->setInputDevice(m_inputDeviceName);
-            m_audioInterface->setOutputDevice(m_outputDeviceName);
-            m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-
-            m_audioInterface->setup(true);
-            // Setup might have reduced number of channels
-            m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-            m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-            // Setup might have changed buffer size
-            m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
-
-            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
-            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
-
-            if (devicesWarningMsg != "") {
-                qDebug() << "Devices Warning: "
-                         << QString::fromStdString(devicesWarningMsg);
-            }
-
-            if (devicesErrorMsg != "") {
-                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
-            }
-
-            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
-            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
-
-#endif
-#endif
         } else if (m_audioInterfaceMode == VsAudioInterface::RTAUDIO) {
-#ifdef RT_AUDIO
-            m_audioInterface.reset(new RtAudioInterface(
-                m_numAudioChansIn, m_numAudioChansOut, m_audioBitResolution));
-            m_audioInterface->setSampleRate(m_sampleRate);
-            m_audioInterface->setDeviceID(m_deviceID);
-            m_audioInterface->setInputDevice(m_inputDeviceName);
-            m_audioInterface->setOutputDevice(m_outputDeviceName);
-            m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-
-            m_audioInterface->setup(true);
-            // Setup might have reduced number of channels
-            m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-            m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-            // Setup might have changed buffer size
-            m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
-
-            std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
-            std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
-            std::string devicesWarningHelpUrl =
-                m_audioInterface->getDevicesWarningHelpUrl();
-            std::string devicesErrorHelpUrl = m_audioInterface->getDevicesErrorHelpUrl();
-
-            if (devicesWarningMsg != "") {
-                qDebug() << "Devices Warning: "
-                         << QString::fromStdString(devicesWarningMsg);
-                if (devicesWarningHelpUrl != "") {
-                    qDebug() << "Learn More: "
-                             << QString::fromStdString(devicesWarningHelpUrl);
-                }
+            if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+                setupRtAudio();
+            } else {
+                throw std::runtime_error(
+                    "JackTrip was compiled without RtAudio and can't find JACK. In order "
+                    "to use JackTrip, you'll need to install JACK or rebuild with "
+                    "RtAudio support.");
+                std::exit(1);
             }
-
-            if (devicesErrorMsg != "") {
-                qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
-                if (devicesErrorHelpUrl != "") {
-                    qDebug() << "Learn More: "
-                             << QString::fromStdString(devicesErrorHelpUrl);
-                }
-            }
-
-            updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
-            updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
-            updateDevicesWarningHelpUrl(QString::fromStdString(devicesWarningHelpUrl));
-            updateDevicesErrorHelpUrl(QString::fromStdString(devicesErrorHelpUrl));
-#endif
         }
 
         std::cout << "The Sampling Rate is: " << m_sampleRate << std::endl;
@@ -255,6 +151,111 @@ void VsAudioInterface::setupAudio()
     } catch (const std::exception& e) {
         emit errorToProcess(QString::fromUtf8(e.what()));
     }
+}
+
+void VsAudioInterface::setupJackAudio()
+{
+#ifndef NO_JACK
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
+                  || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
+                      << std::endl;
+        m_audioInterface.reset(new JackAudioInterface(
+            m_numAudioChansIn, m_numAudioChansOut, m_audioBitResolution));
+
+        m_audioInterface->setClientName(QStringLiteral("JackTrip"));
+
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before m_audioInterface->setup"
+                      << std::endl;
+        m_audioInterface->setup(true);
+
+        std::string devicesWarningMsg = m_audioInterface->getDevicesWarningMsg();
+        std::string devicesErrorMsg   = m_audioInterface->getDevicesErrorMsg();
+
+        if (devicesWarningMsg != "") {
+            qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
+        }
+
+        if (devicesErrorMsg != "") {
+            qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+        }
+
+        updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+        updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before m_audioInterface->getSampleRate"
+                      << std::endl;
+        m_sampleRate = m_audioInterface->getSampleRate();
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before m_audioInterface->getDeviceID"
+                      << std::endl;
+        m_deviceID = m_audioInterface->getDeviceID();
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before "
+                         "m_audioInterface->getBufferSizeInSamples"
+                      << std::endl;
+        m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+    } else {
+        return;
+    }
+#else
+    return;
+#endif
+}
+
+void VsAudioInterface::setupRtAudio()
+{
+#ifdef RT_AUDIO
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
+                  || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+        m_audioInterface.reset(new RtAudioInterface(m_numAudioChansIn, m_numAudioChansOut,
+                                                    m_audioBitResolution));
+        m_audioInterface->setSampleRate(m_sampleRate);
+        m_audioInterface->setDeviceID(m_deviceID);
+        m_audioInterface->setInputDevice(m_inputDeviceName);
+        m_audioInterface->setOutputDevice(m_outputDeviceName);
+        m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
+
+        m_audioInterface->setup(true);
+        // Setup might have reduced number of channels
+        m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
+        m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
+        // Setup might have changed buffer size
+        m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
+
+        std::string devicesWarningMsg     = m_audioInterface->getDevicesWarningMsg();
+        std::string devicesErrorMsg       = m_audioInterface->getDevicesErrorMsg();
+        std::string devicesWarningHelpUrl = m_audioInterface->getDevicesWarningHelpUrl();
+        std::string devicesErrorHelpUrl   = m_audioInterface->getDevicesErrorHelpUrl();
+
+        if (devicesWarningMsg != "") {
+            qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
+            if (devicesWarningHelpUrl != "") {
+                qDebug() << "Learn More: "
+                         << QString::fromStdString(devicesWarningHelpUrl);
+            }
+        }
+
+        if (devicesErrorMsg != "") {
+            qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+            if (devicesErrorHelpUrl != "") {
+                qDebug() << "Learn More: " << QString::fromStdString(devicesErrorHelpUrl);
+            }
+        }
+
+        updateDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+        updateDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+        updateDevicesWarningHelpUrl(QString::fromStdString(devicesWarningHelpUrl));
+        updateDevicesErrorHelpUrl(QString::fromStdString(devicesErrorHelpUrl));
+    } else {
+        return;
+    }
+#else
+    return;
+#endif
 }
 
 void VsAudioInterface::closeAudio()
