@@ -54,6 +54,7 @@
 #include "../Tone.h"
 #include "../Volume.h"
 #include "../jacktrip_globals.h"
+#include "AudioInterfaceMode.h"
 
 class VsAudioInterface : public QObject
 {
@@ -120,6 +121,9 @@ class VsAudioInterface : public QObject
     void processMeterMeasurements(QVector<float> values);
 
    private:
+    void setupJackAudio();
+    void setupRtAudio();
+
     float m_inMultiplier  = 1.0;
     float m_outMultiplier = 1.0;
     bool m_inMuted        = false;

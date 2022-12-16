@@ -133,6 +133,7 @@ class VirtualStudio : public QObject
                    audioActivatedChanged)
     Q_PROPERTY(
         bool audioReady READ audioReady WRITE setAudioReady NOTIFY audioReadyChanged)
+    Q_PROPERTY(bool backendAvailable READ backendAvailable CONSTANT)
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
 
@@ -206,6 +207,7 @@ class VirtualStudio : public QObject
     Q_INVOKABLE void restartAudio();
     bool audioActivated();
     bool audioReady();
+    bool backendAvailable();
     QString windowState();
 
    public slots:

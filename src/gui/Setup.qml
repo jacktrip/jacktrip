@@ -575,7 +575,18 @@ Item {
             text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             wrapMode: Text.WordWrap
-            visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend
+            visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend && virtualstudio.backendAvailable
+            color: textColour
+        }
+
+        Text {
+            id: noBackendLabel
+            x: leftMargin * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
+            width: parent.width - x - (16 * virtualstudio.uiScale)
+            text: "JackTrip has been compiled without an audio backend. Please rebuild with the rtaudio flag or without the nojack flag."
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            wrapMode: Text.WordWrap
+            visible: !virtualstudio.backendAvailable
             color: textColour
         }
 
@@ -629,7 +640,7 @@ Item {
                 horizontalAlignment: Text.AlignHLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
-                text: outputCombo.model[outputCombo.currentIndex].text
+                text: outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
             }
         }
 
@@ -640,6 +651,7 @@ Item {
             text: virtualstudio.audioBackend != "JACK" ? "Output Device" : "Output Volume"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
+            visible: virtualstudio.backendAvailable
         }
 
         Slider {
@@ -649,7 +661,7 @@ Item {
             onMoved: { audioInterface.outputVolume = value }
             to: 1.0
             padding: 0
-            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + 48 * virtualstudio.uiScale : backendCombo.y + virtualstudio.uiScale * (virtualstudio.selectableBackend ? 60 : 0)
+            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + 48 * virtualstudio.uiScale : jackLabel.y + 72 * virtualstudio.uiScale
             anchors.left: outputCombo.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
@@ -662,6 +674,7 @@ Item {
                 color: outputSlider.pressed ? sliderPressedColour : sliderColour
                 border.color: buttonStroke
             }
+            visible: virtualstudio.backendAvailable
         }
 
         Button {
@@ -677,7 +690,7 @@ Item {
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             y: outputSlider.y + (36 * virtualstudio.uiScale)
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            visible: virtualstudio.audioBackend != "JACK"
+            visible: virtualstudio.audioReady
             Text {
                 text: "Test Output Audio"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -738,7 +751,7 @@ Item {
                 horizontalAlignment: Text.AlignHLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
-                text: inputCombo.model[inputCombo.currentIndex].text
+                text: inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
             }
         }
 
@@ -750,6 +763,7 @@ Item {
             text: virtualstudio.audioBackend != "JACK" ? "Input Device" : "Input Volume"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
+            visible: virtualstudio.backendAvailable
         }
 
         Meter {
@@ -757,11 +771,12 @@ Item {
             anchors.left: backendCombo.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: virtualstudio.audioBackend != "JACK" ? inputCombo.y + 72 * virtualstudio.uiScale : outputSlider.y + (72 * virtualstudio.uiScale)
+            y: virtualstudio.audioBackend != "JACK" ? inputCombo.y + 72 * virtualstudio.uiScale : testOutputAudioButton.y + (72 * virtualstudio.uiScale)
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped
             enabled: !Boolean(virtualstudio.devicesError)
+            visible: virtualstudio.backendAvailable
         }
 
         Slider {
@@ -784,6 +799,7 @@ Item {
                 color: inputSlider.pressed ? sliderPressedColour : sliderColour
                 border.color: buttonStroke
             }
+            visible: virtualstudio.backendAvailable
         }
 
         Button {
@@ -800,7 +816,7 @@ Item {
             anchors.topMargin: 18 * virtualstudio.uiScale
             anchors.top: inputSlider.bottom
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            visible: virtualstudio.audioBackend != "JACK"
+            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.backendAvailable
             Text {
                 text: "Refresh Devices"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -847,7 +863,7 @@ Item {
                     color: saveButtonShadow
                 }
             }
-            enabled: !Boolean(virtualstudio.devicesError)
+            enabled: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable
             onClicked: { virtualstudio.windowState = "browse"; virtualstudio.applySettings() }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
@@ -859,7 +875,7 @@ Item {
                 font.family: "Poppins"
                 font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
-                color: !Boolean(virtualstudio.devicesError) ? saveButtonText : disabledButtonText
+                color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -868,6 +884,7 @@ Item {
         CheckBox {
             id: showAgainCheckbox
             checked: virtualstudio.showDeviceSetup
+            visible: virtualstudio.backendAvailable
             text: qsTr("Ask again next time")
             anchors.right: saveButton.left
             anchors.rightMargin: 16 * virtualstudio.uiScale

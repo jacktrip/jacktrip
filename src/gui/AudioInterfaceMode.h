@@ -36,7 +36,7 @@
  */
 
 enum class AudioInterfaceMode {
-    JACK,    ///< Jack Mode
+    JACK,     ///< Jack Mode
     RTAUDIO,  ///< RtAudio Mode
     BOTH,
     NONE
@@ -48,7 +48,7 @@ constexpr AudioInterfaceMode mode = AudioInterfaceMode::BOTH;
 #else
 constexpr AudioInterfaceMode mode = AudioInterfaceMode::RTAUDIO;
 #endif
-#else 
+#else
 #ifndef NO_JACK
 constexpr AudioInterfaceMode mode = AudioInterfaceMode::JACK;
 #else
@@ -56,18 +56,18 @@ constexpr AudioInterfaceMode mode = AudioInterfaceMode::NONE;
 #endif
 #endif
 
-template <AudioInterfaceMode backend>
+template<AudioInterfaceMode backend>
 constexpr auto isBackendAvailable()
 {
     if constexpr (backend == AudioInterfaceMode::RTAUDIO) {
         if (mode == AudioInterfaceMode::RTAUDIO || mode == AudioInterfaceMode::BOTH) {
-            return true; 
+            return true;
         } else {
             return false;
         }
     } else if constexpr (backend == AudioInterfaceMode::JACK) {
         if (mode == AudioInterfaceMode::JACK || mode == AudioInterfaceMode::BOTH) {
-            return true; 
+            return true;
         } else {
             return false;
         }
