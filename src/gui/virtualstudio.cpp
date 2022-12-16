@@ -1460,6 +1460,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
         if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
             studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
             studioInfo->setPort(serverState[QStringLiteral("serverPort")].toInt());
+            studioInfo->setSessionId(serverState[QStringLiteral("sessionId")].toString());
 
             // Call completeConnection after a short timeout
             m_startTimer.setInterval(1000);
