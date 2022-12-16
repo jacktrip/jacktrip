@@ -299,7 +299,7 @@ Rectangle {
             if (!connected) {
                 virtualstudio.manageStudio(index)
             } else {
-                virtualstudio.manageStudio(-1)
+                virtualstudio.launchVideo(-1)
             }
         }
         visible: manageable
@@ -307,7 +307,7 @@ Rectangle {
             id: manageImg
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: "manage.svg"
+            source: connected ? "video.svg" : "manage.svg"
             sourceSize: Qt.size(manageImg.width,manageImg.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
@@ -317,7 +317,7 @@ Rectangle {
     Text {
         anchors.horizontalCenter: manageButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
-        text: "Manage"
+        text: connected ? "Video" : "Manage"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: manageable
         color: textColour
