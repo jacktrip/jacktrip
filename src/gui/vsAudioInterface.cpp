@@ -69,7 +69,7 @@ VsAudioInterface::VsAudioInterface(int NumChansIn, int NumChansOut,
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
-    if constexpr (isBackendAvailable<AudioInterfaceMode::BOTH>()) {
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()) {
         m_audioInterfaceMode = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
                                    ? VsAudioInterface::RTAUDIO
                                    : VsAudioInterface::JACK;
@@ -110,14 +110,13 @@ void VsAudioInterface::setupAudio()
 
         // Create AudioInterface Client Object
         if (m_audioInterfaceMode == VsAudioInterface::JACK) {
-            if constexpr (isBackendAvailable<AudioInterfaceMode::BOTH>()
+            if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                           || isBackendAvailable<AudioInterfaceMode::JACK>()) {
                 setupJackAudio();
             } else {
                 if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
                     setupRtAudio();
                 } else {
-                    // oh shit
                     throw std::runtime_error(
                         "JackTrip was compiled without RtAudio and can't find JACK. In "
                         "order to use JackTrip, you'll need to install JACK or rebuild "
@@ -129,7 +128,6 @@ void VsAudioInterface::setupAudio()
             if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
                 setupRtAudio();
             } else {
-                // oh shit
                 throw std::runtime_error(
                     "JackTrip was compiled without RtAudio and can't find JACK. In order "
                     "to use JackTrip, you'll need to install JACK or rebuild with "
@@ -158,7 +156,7 @@ void VsAudioInterface::setupAudio()
 void VsAudioInterface::setupJackAudio()
 {
 #ifndef NO_JACK
-    if constexpr (isBackendAvailable<AudioInterfaceMode::BOTH>()
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::JACK>()) {
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
@@ -211,7 +209,7 @@ void VsAudioInterface::setupJackAudio()
 void VsAudioInterface::setupRtAudio()
 {
 #ifdef RT_AUDIO
-    if constexpr (isBackendAvailable<AudioInterfaceMode::BOTH>()
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
         m_audioInterface.reset(new RtAudioInterface(m_numAudioChansIn, m_numAudioChansOut,
                                                     m_audioBitResolution));

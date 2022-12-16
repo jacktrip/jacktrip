@@ -122,7 +122,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_previousInput  = m_inputDevice;
     m_previousOutput = m_outputDevice;
 
-    if constexpr (!isBackendAvailable<AudioInterfaceMode::BOTH>()) {
+    if constexpr (!isBackendAvailable<AudioInterfaceMode::ALL>()) {
         m_selectableBackend = false;
     }
 #else
