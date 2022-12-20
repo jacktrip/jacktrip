@@ -410,7 +410,7 @@ void Settings::parseInput(int argc, char** argv)
             setDevicesByString(optarg);
             break;
         case OPT_AUDIOINPUTDEVICE:
-             mInputDeviceName = optarg;
+            mInputDeviceName = optarg;
             break;
         case OPT_AUDIOOUTPUTDEVICE:
             mOutputDeviceName = optarg;
