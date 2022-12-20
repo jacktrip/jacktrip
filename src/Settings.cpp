@@ -89,7 +89,9 @@ enum JTLongOptIDS {
     OPT_NUMSEND,
     OPT_APPENDTHREADID,
     OPT_LISTDEVICES,
-    OPT_AUDIODEVICE
+    OPT_AUDIODEVICE,
+    OPT_AUDIOINPUTDEVICE,
+    OPT_AUDIOOUTPUTDEVICE
 };
 
 //*******************************************************************************
@@ -153,6 +155,10 @@ void Settings::parseInput(int argc, char** argv)
          'd'},  // Set RTAudio device id to use (DEPRECATED)
         {"audiodevice", required_argument, NULL,
          OPT_AUDIODEVICE},  // Set RTAudio devices by name
+        {"audioinputdevice", required_argument, NULL,
+         OPT_AUDIOINPUTDEVICE},  // Set RTAudio input device by name
+        {"audiooutputdevice", required_argument, NULL,
+         OPT_AUDIOOUTPUTDEVICE},  // Set RTAudio output device by name
         {"listdevices", no_argument, NULL,
          OPT_LISTDEVICES},                          // Set RTAudio device id to use
         {"bufsize", required_argument, NULL, 'F'},  // Set buffer Size
@@ -402,6 +408,12 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_AUDIODEVICE:  // Set audio device
             //-------------------------------------------------------
             setDevicesByString(optarg);
+            break;
+        case OPT_AUDIOINPUTDEVICE:
+             mInputDeviceName = optarg;
+            break;
+        case OPT_AUDIOOUTPUTDEVICE:
+            mOutputDeviceName = optarg;
             break;
         case OPT_LISTDEVICES:  // List audio devices
             //-------------------------------------------------------
@@ -816,6 +828,8 @@ void Settings::printUsage()
          << endl;
     cout << " --audiodevice \"input-output device name\"" << endl;
     cout << " --audiodevice \"input device name\",\"output device name\"" << endl;
+    cout << " --audioinputdevice \"input device name\"" << endl;
+    cout << " --audiooutputdevice \"output device name\"" << endl;
     cout << "                                          Set audio device to use; if not set, "
             "the default device will be used"
          << endl;
