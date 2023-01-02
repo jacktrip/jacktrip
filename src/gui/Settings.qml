@@ -245,7 +245,18 @@ Item {
             text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             wrapMode: Text.WordWrap
-            visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend
+            visible: virtualstudio.audioBackend == "JACK" && !virtualstudio.selectableBackend && virtualstudio.backendAvailable
+            color: textColour
+        }
+
+        Text {
+            id: noBackendLabel
+            x: leftMargin * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
+            width: parent.width - x - (16 * virtualstudio.uiScale)
+            text: "JackTrip has been compiled without an audio backend. Please rebuild with the rtaudio flag or without the nojack flag."
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            wrapMode: Text.WordWrap
+            visible: !virtualstudio.backendAvailable
             color: textColour
         }
 
@@ -308,7 +319,7 @@ Item {
                 horizontalAlignment: Text.AlignHLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
-                text: outputCombo.model[outputCombo.currentIndex].text
+                text: outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
             }
         }
 
@@ -323,21 +334,25 @@ Item {
             onClicked: { virtualstudio.playOutputAudio() }
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             x: parent.width - (232 * virtualstudio.uiScale)
-            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + (48 * virtualstudio.uiScale) : outputCombo.y + (48 * virtualstudio.uiScale)
+            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + (48 * virtualstudio.uiScale) : jackLabel.y + (72 * virtualstudio.uiScale)
             Text {
                 text: "Test Output Audio"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
             }
+            visible: virtualstudio.audioReady
         }
 
         Text {
+            id: inputLabel
             anchors.verticalCenter: inputCombo.verticalCenter
-            x: leftMargin * virtualstudio.uiScale; y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            x: leftMargin * virtualstudio.uiScale
+            anchors.top: virtualstudio.audioBackend != "JACK" ? inputCombo.top : inputDeviceMeters.top
+            anchors.topMargin: virtualstudio.audioBackend != "JACK" ? (inputCombo.height - inputLabel.height)/2 : 0
             text: "Input Device"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
+            visible: virtualstudio.backendAvailable
             color: textColour
         }
 
@@ -361,7 +376,7 @@ Item {
             x: backendCombo.x; y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK"
-                        delegate: ItemDelegate {
+            delegate: ItemDelegate {
                 required property var modelData
                 required property int index
 
@@ -391,7 +406,7 @@ Item {
                 horizontalAlignment: Text.AlignHLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
-                text: inputCombo.model[inputCombo.currentIndex].text
+                text: inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
             }
         }
 
@@ -400,7 +415,7 @@ Item {
             anchors.left: backendCombo.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : virtualstudio.uiScale * (virtualstudio.selectableBackend ? 112 : 64)
+            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : testOutputAudioButton.y + 72 * virtualstudio.uiScale
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped

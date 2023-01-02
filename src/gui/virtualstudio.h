@@ -133,6 +133,7 @@ class VirtualStudio : public QObject
                    audioActivatedChanged)
     Q_PROPERTY(
         bool audioReady READ audioReady WRITE setAudioReady NOTIFY audioReadyChanged)
+    Q_PROPERTY(bool backendAvailable READ backendAvailable CONSTANT)
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
 
@@ -206,6 +207,7 @@ class VirtualStudio : public QObject
     Q_INVOKABLE void restartAudio();
     bool audioActivated();
     bool audioReady();
+    bool backendAvailable();
     QString windowState();
 
    public slots:
@@ -221,7 +223,7 @@ class VirtualStudio : public QObject
     void connectToStudio(int studioIndex);
     void completeConnection();
     void disconnect();
-    void manageStudio(int studioIndex);
+    void manageStudio(int studioIndex, bool start = false);
     void launchVideo(int studioIndex);
     void createStudio();
     void editProfile();
@@ -295,7 +297,7 @@ class VirtualStudio : public QObject
     void processFinished();
     void processError(const QString& errorMessage);
     void receivedConnectionFromPeer();
-    void checkForHostname();
+    void handleWebsocketMessage(const QString& msg);
     void endRetryPeriod();
     void launchBrowser(const QUrl& url);
     void joinStudio();
@@ -341,8 +343,9 @@ class VirtualStudio : public QObject
     bool m_selectableBackend  = true;
     bool m_useRtAudio         = false;
     int m_currentStudio       = -1;
-    QString m_connectionState = QStringLiteral("Waiting");
+    QString m_connectionState = QStringLiteral("Waiting...");
     QScopedPointer<JackTrip> m_jackTrip;
+    VsWebSocket* m_studioSocket = NULL;
     QTimer m_startTimer;
     QTimer m_retryPeriodTimer;
     bool m_startedStudio = false;

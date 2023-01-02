@@ -89,8 +89,6 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
             if (!statusCode.isValid()) {
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                // TODO: Fix me
-                // emit authFailed();
                 reply->deleteLater();
                 return;
             }
@@ -145,8 +143,6 @@ void VsDevice::registerApp()
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
             if (!statusCode.isValid()) {
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                // TODO: Fix me
-                // emit authFailed();
                 reply->deleteLater();
                 return;
             }
@@ -165,8 +161,6 @@ void VsDevice::registerApp()
             } else {
                 // Other error status. Won't create device.
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                // TODO: Fix me
-                // emit authFailed();
                 reply->deleteLater();
                 return;
             }
@@ -197,8 +191,6 @@ void VsDevice::removeApp()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            // TODO: Fix me
-            // emit authFailed();
             reply->deleteLater();
             return;
         } else {
@@ -293,8 +285,6 @@ void VsDevice::sendHeartbeat()
         connect(reply, &QNetworkReply::finished, this, [=]() {
             if (reply->error() != QNetworkReply::NoError) {
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                // TODO: Fix me
-                // emit authFailed();
                 reply->deleteLater();
                 return;
             } else {
@@ -320,8 +310,6 @@ void VsDevice::setServerId(QString serverId)
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            // TODO: Fix me
-            // emit authFailed();
             reply->deleteLater();
             return;
         }
@@ -345,8 +333,6 @@ void VsDevice::sendLevels()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            // TODO: Fix me
-            // emit authFailed();
             reply->deleteLater();
             return;
         }
@@ -430,10 +416,12 @@ void VsDevice::reconcileAgentConfig(QJsonDocument newState)
         return;
     }
     for (auto it = newObject.constBegin(); it != newObject.constEnd(); it++) {
+        // if currently enabled but new config is not enabled, disconnect immediately
+        if (enabled() && it.key() == "enabled" && !it.value().toBool()
+            && !m_jackTrip.isNull()) {
+            stopJackTrip();
+        }
         m_deviceAgentConfig.insert(it.key(), it.value());
-    }
-    if (!enabled() && !m_jackTrip.isNull()) {
-        stopJackTrip();
     }
 }
 
@@ -631,8 +619,6 @@ void VsDevice::registerJTAsDevice()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            // TODO: Fix me
-            // emit authFailed();
             reply->deleteLater();
             return;
         } else {

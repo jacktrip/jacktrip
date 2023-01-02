@@ -567,6 +567,7 @@ class JackTrip : public QObject
    private slots:
     void receivedConnectionTCP();
     void receivedDataTCP();
+    void receivedErrorTCP(QAbstractSocket::SocketError socketError);
     void connectionSecured();
     void receivedDataUDP();
     void udpTimerTick();
@@ -682,6 +683,8 @@ class JackTrip : public QObject
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
 
     QTimer mTimeoutTimer;
+    QTimer mRetryTimer;
+    int mRetries;
     int mSleepTime;
     int mElapsedTime;
     int mEndTime;

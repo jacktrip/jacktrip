@@ -1,3 +1,19 @@
+- Version: "1.6.9"
+  Date: 2022-12-16
+  Description:
+  - (added) VS Mode - Start and join inactive studios
+  - (added) JackTrip now prints build info on running from console
+  - (added) VS Mode - supports changing output volume from the server
+  - (updated) signing now happens in the main build workflow
+  - (updated) VS mode sorts active studios above inactive studios
+  - (updated) cmake build
+  - (updated) meson builds will fail if no backend is enabled
+  - (updated) replaced many ifdefs with if constexpr
+  - (fixed) network stats failing after studio start
+  - (fixed) occasional immediate disconnects
+  - (fixed) segfault issue due to ifdefs
+  - (fixed) Hanging UI on Windows
+  - (fixed) turned a comment warning into an appropriate error
 - Version: "1.6.8"
   Date: 2022-12-05
   Description:

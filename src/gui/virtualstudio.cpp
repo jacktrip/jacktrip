@@ -121,6 +121,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     refreshDevices();
     m_previousInput  = m_inputDevice;
     m_previousOutput = m_outputDevice;
+
+    if constexpr (!isBackendAvailable<AudioInterfaceMode::ALL>()) {
+        m_selectableBackend = false;
+    }
 #else
     m_selectableBackend = false;
     m_vsAudioInterface.reset(new VsAudioInterface());
@@ -203,7 +207,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.resize(696 * m_uiScale, 577 * m_uiScale);
 
     // Connect our timers
-    connect(&m_startTimer, &QTimer::timeout, this, &VirtualStudio::checkForHostname);
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);
     connect(&m_refreshTimer, &QTimer::timeout, this, [&]() {
         m_refreshMutex.lock();
@@ -513,6 +516,16 @@ bool VirtualStudio::audioActivated()
 bool VirtualStudio::audioReady()
 {
     return m_audioReady;
+}
+
+bool VirtualStudio::backendAvailable()
+{
+    if constexpr ((isBackendAvailable<AudioInterfaceMode::JACK>()
+                   || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void VirtualStudio::setInputVolume(float multiplier)
@@ -1047,46 +1060,28 @@ void VirtualStudio::connectToStudio(int studioIndex)
     emit currentStudioChanged();
     m_onConnectedScreen = true;
 
-    // Check if we have an address for our server
-    if (studioInfo->host().isEmpty()) {
-        // EXPERIMENTAL CODE. (It shouldn't be possible to arrive here.)
-        if (studioInfo->isManageable()) {
-            m_connectionState = QStringLiteral("Starting Studio...");
-            emit connectionStateChanged();
-
-            // Send a put request to start our studio
-            m_startedStudio = true;
-            QString expiration =
-                QDateTime::currentDateTimeUtc().addSecs(60 * 60).toString(Qt::ISODate);
-            QJsonObject json      = {{QLatin1String("enabled"), true},
-                                {QLatin1String("expiresAt"), expiration}};
-            QJsonDocument request = QJsonDocument(json);
-
-            QNetworkReply* reply =
-                m_authenticator->put(QStringLiteral("https://%1/api/servers/%2")
-                                         .arg(m_apiHost, studioInfo->id()),
-                                     request.toJson());
-            connect(reply, &QNetworkReply::finished, this, [&, reply]() {
-                if (reply->error() != QNetworkReply::NoError) {
-                    m_connectionState = QStringLiteral("Unable to Start Studio");
-                    emit connectionStateChanged();
-                } else {
-                    QByteArray response       = reply->readAll();
-                    QJsonDocument serverState = QJsonDocument::fromJson(response);
-                    if (serverState.object()[QStringLiteral("status")].toString()
-                        == QLatin1String("Starting")) {
-                        // Start our timer to check for our hostname
-                        m_startTimer.setInterval(5000);
-                        m_startTimer.start();
-                    }
-                }
-                reply->deleteLater();
+    m_studioSocket = new VsWebSocket(
+        QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
+                 .arg(m_apiHost, studioInfo->id(), m_authenticator->token())),
+        m_authenticator->token(), QString(), QString());
+    connect(m_studioSocket, &VsWebSocket::textMessageReceived, this,
+            [&](QString message) {
+                handleWebsocketMessage(message);
             });
+    m_studioSocket->openSocket();
+
+    // Check if we have an address for our server
+    if (studioInfo->status() != "Ready" && studioInfo->isManageable() == true) {
+        if (studioInfo->isOwner() || studioInfo->isAdmin()) {
+            QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
+                                .arg(m_apiHost, studioInfo->id()));
+            QDesktopServices::openUrl(url);
         } else {
-            m_connectionState = QStringLiteral("Unable to Start Studio");
-            emit connectionStateChanged();
             m_startedStudio = false;
         }
+
+        m_connectionState = QStringLiteral("Waiting...");
+        emit connectionStateChanged();
     } else {
         m_startedStudio = false;
         completeConnection();
@@ -1099,10 +1094,14 @@ void VirtualStudio::completeConnection()
         return;
     }
 
+    VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
+    if (studioInfo->status() == QStringLiteral("Disabled")) {
+        return;
+    }
+
     m_jackTripRunning = true;
     m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
-    VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     try {
         std::string input  = "";
         std::string output = "";
@@ -1261,15 +1260,23 @@ void VirtualStudio::disconnect()
     emit connectionStateChanged();
 }
 
-void VirtualStudio::manageStudio(int studioIndex)
+void VirtualStudio::manageStudio(int studioIndex, bool start)
 {
     if (studioIndex == -1) {
         // We're here from a connected screen. Use our current studio.
         studioIndex = m_currentStudio;
     }
-    QUrl url = QUrl(
-        QStringLiteral("https://%1/studios/%2")
-            .arg(m_apiHost, static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+
+    QUrl url;
+    if (!start) {
+        url = QUrl(QStringLiteral("https://%1/studios/%2")
+                       .arg(m_apiHost,
+                            static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    } else {
+        url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
+                       .arg(m_apiHost,
+                            static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    }
     QDesktopServices::openUrl(url);
 }
 
@@ -1348,7 +1355,10 @@ void VirtualStudio::slotAuthSucceded()
     m_device->registerApp();
 
     if (m_showDeviceSetup) {
-        setAudioActivated(true);
+        if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()
+                      || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+            setAudioActivated(true);
+        }
     }
 
     if (m_userId.isEmpty()) {
@@ -1469,42 +1479,30 @@ void VirtualStudio::receivedConnectionFromPeer()
     emit connected();
 }
 
-void VirtualStudio::checkForHostname()
+void VirtualStudio::handleWebsocketMessage(const QString& msg)
 {
-    if (m_currentStudio < 0) {
-        return;
+    QJsonObject serverState  = QJsonDocument::fromJson(msg.toUtf8()).object();
+    QString serverStatus     = serverState[QStringLiteral("status")].toString();
+    VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
+    studioInfo->setStatus(serverStatus);
+    if (!m_jackTripRunning) {
+        if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
+            studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
+            studioInfo->setPort(serverState[QStringLiteral("serverPort")].toInt());
+            studioInfo->setSessionId(serverState[QStringLiteral("sessionId")].toString());
+
+            // Call completeConnection after a short timeout
+            m_startTimer.setInterval(1000);
+            m_startTimer.setSingleShot(true);
+            connect(&m_startTimer, &QTimer::timeout, this, [&]() {
+                completeConnection();
+            });
+
+            m_startTimer.start();
+        }
     }
 
-    VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
-    QNetworkReply* reply     = m_authenticator->get(
-            QStringLiteral("https://%1/api/servers/%2").arg(m_apiHost, studioInfo->id()));
-    connect(reply, &QNetworkReply::finished, this, [&, reply, studioInfo]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            m_connectionState = QStringLiteral("Unable to Start Studio");
-            emit connectionStateChanged();
-
-            // Stop our timer
-            m_startTimer.stop();
-        } else {
-            QByteArray response       = reply->readAll();
-            QJsonDocument serverState = QJsonDocument::fromJson(response);
-            if (serverState.object()[QStringLiteral("status")].toString()
-                == QLatin1String("Ready")) {
-                // Ready to connect
-                m_startTimer.stop();
-                studioInfo->setHost(
-                    serverState.object()[QStringLiteral("serverHost")].toString());
-                studioInfo->setPort(
-                    serverState.object()[QStringLiteral("serverPort")].toInt());
-                m_retryPeriod = true;
-                m_retryPeriodTimer.setInterval(15000);
-                m_retryPeriodTimer.start();
-                completeConnection();
-            }
-        }
-        reply->deleteLater();
-        ;
-    });
+    emit currentStudioChanged();
 }
 
 void VirtualStudio::endRetryPeriod()
@@ -1753,7 +1751,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                         }
                         continue;
                     }
-                    if (activeStudio || (serverInfo->isManageable() && m_showInactive)) {
+                    if (activeStudio || m_showInactive) {
                         serverInfo->setName(
                             servers.at(i)[QStringLiteral("name")].toString());
                         serverInfo->setHost(
@@ -1779,6 +1777,10 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                             servers.at(i)[QStringLiteral("sessionId")].toString());
                         serverInfo->setInviteKey(
                             servers.at(i)[QStringLiteral("inviteKey")].toString());
+                        serverInfo->setIsOwner(
+                            servers.at(i)[QStringLiteral("owner")].toBool());
+                        serverInfo->setIsAdmin(
+                            servers.at(i)[QStringLiteral("admin")].toBool());
                         if (servers.at(i)[QStringLiteral("owner")].toBool()) {
                             yourServers.append(serverInfo);
                             serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);
@@ -2066,6 +2068,12 @@ void VirtualStudio::toggleAudio()
         return;
     }
 #endif
+
+    if constexpr (!(isBackendAvailable<AudioInterfaceMode::JACK>()
+                    || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
+        return;
+    }
+
     if (!m_audioActivated) {
         stopAudio();
     } else {
@@ -2097,7 +2105,7 @@ void VirtualStudio::stopStudio()
 bool VirtualStudio::readyToJoin()
 {
     return m_windowState == "browse"
-           && (m_connectionState == QStringLiteral("Waiting")
+           && (m_connectionState == QStringLiteral("Waiting...")
                || m_connectionState == QStringLiteral("Disconnected"));
 }
 
@@ -2161,6 +2169,7 @@ VirtualStudio::~VirtualStudio()
     delete m_inputMeter;
     delete m_outputMeter;
     delete m_inputTestMeter;
+    delete m_studioSocket;
 
     QDesktopServices::unsetUrlHandler("jacktrip");
 }

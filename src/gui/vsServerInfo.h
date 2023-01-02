@@ -79,6 +79,10 @@ class VsServerInfo : public QObject
     void setHost(const QString& host);
     quint16 port() const;
     void setPort(quint16 port);
+    bool isOwner() const;
+    void setIsOwner(bool owner);
+    bool isAdmin() const;
+    void setIsAdmin(bool admin);
     bool isPublic() const;
     void setIsPublic(bool isPublic);
     QString region() const;
@@ -113,6 +117,8 @@ class VsServerInfo : public QObject
     QString m_name;
     QString m_host;
     quint16 m_port;
+    bool m_owner;
+    bool m_admin;
     bool m_isPublic;
     QString m_region;
     bool m_isManageable;
@@ -134,16 +140,12 @@ class VsServerInfo : public QObject
     "mixBranch": "main",
     "mixCode": "SimpleMix(~maxClients).masterVolume_(1).connect.start;",
     "enabled": true,
-    "admin": true,
     "cloudId": "string",
-    "owner": true,
     "ownerId": "string",
-    "status": "Ready",
     "subStatus": "Active",
     "createdAt": "2021-09-07T17:15:38Z",
     "expiresAt": "2021-09-07T17:15:38Z",
     "updatedAt": "2021-09-07T17:15:38Z"
-    "inviteKey": "invitestring",
     */
 };
 
