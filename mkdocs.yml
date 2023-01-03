@@ -22,11 +22,16 @@ nav:
     - Changelog: About/CHANGELOG.md
     - License: About/License.md
 plugins:
+  - search
   - macros:
       include_yaml:
         - releases: docs/changelog.yml
 theme:
   name: material
+  logo: assets/jacktrip.svg
+  palette:
+    primary: black
+    accent: red
   features:
     - navigation.tabs
 markdown_extensions:
