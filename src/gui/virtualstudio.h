@@ -224,6 +224,7 @@ class VirtualStudio : public QObject
     void completeConnection();
     void disconnect();
     void manageStudio(int studioIndex, bool start = false);
+    void launchVideo(int studioIndex);
     void createStudio();
     void editProfile();
     void showAbout();
