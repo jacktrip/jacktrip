@@ -1280,6 +1280,18 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
     QDesktopServices::openUrl(url);
 }
 
+void VirtualStudio::launchVideo(int studioIndex)
+{
+    if (studioIndex == -1) {
+        // We're here from a connected screen. Use our current studio.
+        studioIndex = m_currentStudio;
+    }
+    QUrl url = QUrl(
+        QStringLiteral("https://%1/studios/%2/live")
+            .arg(m_apiHost, static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    QDesktopServices::openUrl(url);
+}
+
 void VirtualStudio::createStudio()
 {
     QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_apiHost));
