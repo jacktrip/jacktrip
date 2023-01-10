@@ -3,6 +3,16 @@
     "releases": [
         {
             "version": "1.6.9-beta1",
+            "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.9-beta2",
+            "download": {
+                "date": "2022-01-10T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.9-beta2/JackTrip-v1.6.9-beta2-Windows-x64-installer.msi",
+                "downloadSize": 44548096,
+                "sha256": "a8e7c9b353d953df894a827e2856baa71f89dc8fa835a5f3eb8422a94ffff5b5"
+            }
+        },
+        {
+            "version": "1.6.9-beta1",
             "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.9-beta1",
             "download": {
                 "date": "2022-12-16T00:00:00Z",
