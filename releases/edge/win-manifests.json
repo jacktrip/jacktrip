@@ -2,7 +2,7 @@
     "app_name": "JackTrip",
     "releases": [
         {
-            "version": "1.6.9-beta1",
+            "version": "1.6.9-beta2",
             "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.9-beta2",
             "download": {
                 "date": "2022-01-10T00:00:00Z",
