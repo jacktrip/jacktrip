@@ -1411,6 +1411,9 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
+    // use disconnect function to handle reset of all internal flags and timers
+    disconnect();
+
     // reset network statistics
     m_networkStats = QJsonObject();
 
@@ -1688,6 +1691,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
     {
         QMutexLocker locker(&m_refreshMutex);
         if (!m_allowRefresh || m_refreshInProgress) {
+            if (signalRefresh) {
+                emit refreshFinished(index);
+            }
             return;
         } else {
             m_refreshInProgress = true;
@@ -1706,6 +1712,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
         reply, &QNetworkReply::finished, this,
         [&, reply, topServerId, firstLoad, signalRefresh]() {
             if (reply->error() != QNetworkReply::NoError) {
+                if (signalRefresh) {
+                    emit refreshFinished(index);
+                }
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
                 emit authFailed();
                 reply->deleteLater();
@@ -1715,6 +1724,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             QByteArray response      = reply->readAll();
             QJsonDocument serverList = QJsonDocument::fromJson(response);
             if (!serverList.isArray()) {
+                if (signalRefresh) {
+                    emit refreshFinished(index);
+                }
                 std::cout << "Error: Not an array" << std::endl;
                 QMutexLocker locker(&m_refreshMutex);
                 m_refreshInProgress = false;
@@ -1838,6 +1850,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             // request going out and the response.
             if (!m_allowRefresh) {
                 m_refreshInProgress = false;
+                if (signalRefresh) {
+                    emit refreshFinished(index);
+                }
                 return;
             }
             m_servers.clear();
