@@ -1496,11 +1496,22 @@ void JackTrip::checkIfPortIsBinded(int port)
     // Bind the socket
     // cc        if ( !UdpSockTemp.bind(QHostAddress::AnyIPv4, port,
     // QUdpSocket::DontShareAddress) )
-    if (!UdpSockTemp.bind(QHostAddress::Any, port, QUdpSocket::DontShareAddress)) {
-        UdpSockTemp.close();  // close the socket
-        throw std::runtime_error(
-            "Could not bind UDP socket. It may already be binded by another process on "
+
+    // check all combinations to ensure the port is free
+    std::map<std::string, QHostAddress::SpecialAddress> interfaces = {
+        {"IPv4", QHostAddress::AnyIPv4},
+        {"IPv6", QHostAddress::AnyIPv6},
+        {"IPv4+IPv6", QHostAddress::Any}};
+
+    std::map<std::string, QHostAddress::SpecialAddress>::iterator it;
+    for (it = interfaces.begin(); it != interfaces.end(); it++) {
+        bool binded = UdpSockTemp.bind(it->second, port, QUdpSocket::DontShareAddress);
+        if (!binded) {
+            UdpSockTemp.close();  // close the socket
+            throw std::runtime_error(
+            "Could not bind " + it->first + " UDP socket. It may already be binded by another process on "
             "your machine. Try using a different port number");
+        }
+        UdpSockTemp.close();
     }
-    UdpSockTemp.close();  // close the socket
 }
