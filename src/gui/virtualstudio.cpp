@@ -897,6 +897,7 @@ void VirtualStudio::toVirtualStudio()
                 (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
                 parameters->insert(QStringLiteral("audience"), AUTH_AUDIENCE);
+                parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
             }
             if (!parameters->contains("client_id")) {
                 parameters->insert("client_id", AUTH_CLIENT_ID);
@@ -1652,6 +1653,7 @@ void VirtualStudio::setupAuthenticator()
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
                 parameters->insert(QStringLiteral("audience"),
                                    QStringLiteral("https://api.jacktrip.org"));
+                parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
             }
         });
 
