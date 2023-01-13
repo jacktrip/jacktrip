@@ -348,7 +348,6 @@ class VirtualStudio : public QObject
     VsWebSocket* m_studioSocket = NULL;
     QTimer m_startTimer;
     QTimer m_retryPeriodTimer;
-    bool m_startedStudio = false;
     bool m_retryPeriod;
     bool m_jackTripRunning = false;
 

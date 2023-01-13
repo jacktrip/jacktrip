@@ -1077,14 +1077,11 @@ void VirtualStudio::connectToStudio(int studioIndex)
             QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
                                 .arg(m_apiHost, studioInfo->id()));
             QDesktopServices::openUrl(url);
-        } else {
-            m_startedStudio = false;
         }
 
         m_connectionState = QStringLiteral("Waiting...");
         emit connectionStateChanged();
     } else {
-        m_startedStudio = false;
         completeConnection();
     }
 }
@@ -1216,30 +1213,8 @@ void VirtualStudio::disconnect()
     m_retryPeriod = false;
 
     if (m_jackTripRunning) {
-        if (m_startedStudio) {
-            VsServerInfo* studioInfo =
-                static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
-            QMessageBox msgBox;
-            msgBox.setText(QStringLiteral("Do you want to stop the current studio?"));
-            msgBox.setWindowTitle(QStringLiteral("Stop Studio"));
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            msgBox.setDefaultButton(QMessageBox::Yes);
-            int ret = msgBox.exec();
-            if (ret == QMessageBox::Yes) {
-                studioInfo->setHost(QLatin1String(""));
-                stopStudio();
-            }
-        }
-
         m_device->stopPinger();
         m_device->stopJackTrip();
-    } else if (m_startedStudio) {
-        m_startTimer.stop();
-        stopStudio();
-        if (!m_isExiting) {
-            emit disconnected();
-            m_onConnectedScreen = false;
-        }
     } else {
         // How did we get here? This shouldn't be possible, but include for safety.
         if (m_isExiting) {
@@ -1417,12 +1392,6 @@ void VirtualStudio::processFinished()
 
     if (m_isExiting) {
         emit signalExit();
-        return;
-    }
-
-    if (m_retryPeriod && m_startedStudio) {
-        // Retry if necessary.
-        completeConnection();
         return;
     }
 
