@@ -1073,12 +1073,6 @@ void VirtualStudio::connectToStudio(int studioIndex)
 
     // Check if we have an address for our server
     if (studioInfo->status() != "Ready" && studioInfo->isManageable() == true) {
-        if (studioInfo->isOwner() || studioInfo->isAdmin()) {
-            QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
-                                .arg(m_apiHost, studioInfo->id()));
-            QDesktopServices::openUrl(url);
-        }
-
         m_connectionState = QStringLiteral("Waiting...");
         emit connectionStateChanged();
     } else {

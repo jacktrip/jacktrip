@@ -187,34 +187,6 @@ Rectangle {
         elide: Text.ElideRight
         color: textColour
     }
-
-    Button {
-        id: startButton
-        x: manageable ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
-        y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
-        background: Rectangle {
-            radius: width / 2
-            color: available ? (startButton.down ? startPressedColour : (startButton.hovered ? startHoverColour : startColour))
-                : (startButton.down ? startPressedColour : (startButton.hovered ? startHoverColour : startColour))
-            border.width: startButton.down ? 1 : 0
-            border.color: available ? startStroke : startStroke
-        }
-        visible: !connected && (canStart && !canConnect)
-        onClicked: {
-            virtualstudio.windowState = "connected";
-            virtualstudio.connectToStudio(index);
-        }
-        Image {
-            id: start
-            width: 22 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
-            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: "start.svg"
-            sourceSize: Qt.size(start.width,start.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-    }
-
     
     Button {
         id: joinButton
@@ -227,7 +199,7 @@ Rectangle {
             border.width: joinButton.down ? 1 : 0
             border.color: available ? joinAvailableStroke : joinUnavailableStroke
         }
-        visible: !connected && !(canStart && !canConnect)
+        visible: !connected
         onClicked: {
             virtualstudio.windowState = "connected";
             virtualstudio.connectToStudio(index);
@@ -271,7 +243,7 @@ Rectangle {
     Text {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
-        text: connected ? "Leave" : canStart && !canConnect ? "Start" : "Join"
+        text: connected ? "Leave" : "Join"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
         visible: true
         color: textColour
