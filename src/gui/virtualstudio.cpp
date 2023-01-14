@@ -1273,8 +1273,7 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
                 QByteArray response       = reply->readAll();
                 QJsonDocument serverState = QJsonDocument::fromJson(response);
                 if (serverState.object()[QStringLiteral("status")].toString()
-                    == QLatin1String("Starting")) {
-                }
+                    == QLatin1String("Starting")) {}
             }
             reply->deleteLater();
         });
