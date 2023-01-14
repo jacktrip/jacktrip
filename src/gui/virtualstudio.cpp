@@ -717,6 +717,17 @@ void VirtualStudio::setWindowState(QString state)
     emit windowStateUpdated();
 }
 
+QString VirtualStudio::apiHost()
+{
+    return m_apiHost;
+}
+
+void VirtualStudio::setApiHost(QString host)
+{
+    m_apiHost = host;
+    emit apiHostChanged();
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;

@@ -430,36 +430,61 @@ Item {
             color: textColour
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: parent.isManageable
-                ? "Waiting for this studio to start. To start this studio, use the button below to open the page in your web browser."
+                ? "Waiting for this studio to start. To start this studio, please choose one of the options below."
                 : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
             wrapMode: Text.WordWrap
         }
 
-        Button {
-            id: openInBrowserButton
-            visible: parent.isManageable
-            onClicked: {
-                virtualstudio.manageStudio(-1, true)
-            }
+        Item {
+            id: startButtonsBox
             anchors.top: waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 210 * virtualstudio.uiScale; height: 45 * virtualstudio.uiScale
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: openInBrowserButton.down ? browserButtonPressedColour : (openInBrowserButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                border.width: 1
-                border.color: openInBrowserButton.down ? browserButtonPressedStroke : (openInBrowserButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+            visible: parent.isManageable
+
+            height: 64 * virtualstudio.uiScale
+
+            Button {
+                id: startStudioNowButton
+                anchors.verticalCenter: startButtonsBox.verticalCenter
+                x: 0
+                onClicked: {
+                    virtualstudio.manageStudio(-1, true)
+                }
+
+                width: 210 * virtualstudio.uiScale; height: 45 * virtualstudio.uiScale
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: startStudioNowButton.down ? browserButtonPressedColour : (startStudioNowButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                    border.width: 1
+                    border.color: startStudioNowButton.down ? browserButtonPressedStroke : (startStudioNowButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+                }
+
+                Text {
+                    text: "Start Studio"
+                    font.family: "Poppins"
+                    font.pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: textColour
+                }
             }
 
             Text {
-                text: "Start Studio in Browser"
-                font.family: "Poppins"
-                font.pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                color: textColour
+                id: startStudioInBrowserText
+                anchors.verticalCenter: startStudioNowButton.verticalCenter
+                anchors.left: startStudioNowButton.right
+                anchors.leftMargin: 24 * virtualstudio.uiScale
+                width: 240 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text:`<a style="color: black;" href="https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""}/live">Change Settings and Start</a>`
+
+                onLinkActivated: link => {
+                    virtualstudio.openLink(link)
+                }
+                horizontalAlignment: Text.AlignHLeft
+                wrapMode: Text.WordWrap
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             }
         }
 
@@ -468,7 +493,7 @@ Item {
             x: 0
             width: parent.width
             color: textColour
-            anchors.top: parent.isManageable ? openInBrowserButton.bottom : waitingText0.bottom
+            anchors.top: parent.isManageable ? startButtonsBox.bottom : waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
