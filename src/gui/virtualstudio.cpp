@@ -1254,9 +1254,30 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
                        .arg(m_apiHost,
                             static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     } else {
-        url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
-                       .arg(m_apiHost,
-                            static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+        QString expiration =
+            QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
+        QJsonObject json      = {{QLatin1String("enabled"), true},
+                            {QLatin1String("expiresAt"), expiration}};
+        QJsonDocument request = QJsonDocument(json);
+
+        QNetworkReply* reply = m_authenticator->put(
+            QStringLiteral("https://%1/api/servers/%2")
+                .arg(m_apiHost,
+                     static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()),
+            request.toJson());
+        connect(reply, &QNetworkReply::finished, this, [&, reply]() {
+            if (reply->error() != QNetworkReply::NoError) {
+                m_connectionState = QStringLiteral("Unable to Start Studio");
+                emit connectionStateChanged();
+            } else {
+                QByteArray response       = reply->readAll();
+                QJsonDocument serverState = QJsonDocument::fromJson(response);
+                if (serverState.object()[QStringLiteral("status")].toString()
+                    == QLatin1String("Starting")) {
+                }
+            }
+            reply->deleteLater();
+        });
     }
     QDesktopServices::openUrl(url);
 }
