@@ -295,13 +295,8 @@ Item {
                     anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
                     anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
                     layer.enabled: true
-                    layer.effect: DropShadow {
-                        horizontalOffset: 1 * virtualstudio.uiScale
-                        verticalOffset: 1 * virtualstudio.uiScale
-                        radius: 10.0 * virtualstudio.uiScale
-                        samples: 21
-                        color: shadowColour
-                    }
+                    border.width: 1
+                    border.color: buttonStroke
 
                     Text {
                         anchors.centerIn: parent

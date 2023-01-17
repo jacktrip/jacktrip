@@ -7,17 +7,6 @@ Rectangle {
     width: 664; height: 83 * virtualstudio.uiScale
     radius: 6 * virtualstudio.uiScale
     color: backgroundColour
-    border.width: 0.3
-    border.color: "#40979797"
-
-    layer.enabled: true
-    layer.effect: DropShadow {
-        horizontalOffset: 1 * virtualstudio.uiScale
-        verticalOffset: 1 * virtualstudio.uiScale
-        radius: 8.0 * virtualstudio.uiScale
-        samples: 17
-        color: shadowColour
-    }
     
     property string serverLocation: "Germany - Berlin"
     property string flagImage: "flags/DE.svg"
@@ -45,6 +34,7 @@ Rectangle {
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: inviteCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
     property string toolTipTextColour: inviteCopied ? "#FAFBFB" : textColour
+    property string tooltipStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
 
     property string baseButtonColour: virtualstudio.darkMode ? "#F0F1F1" : "#EAEBEB"
     property string baseButtonHoverColour: virtualstudio.darkMode ? "#CCCDCD" : "#D3D3D3"
@@ -76,6 +66,11 @@ Rectangle {
     property string leavePressedColour: virtualstudio.darkMode ? "#F2AEAE" : "#EFADAD"
     property string leaveStroke: virtualstudio.darkMode ? "#A65959" : "#C95E5E"
 
+    property string studioStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
+
+    border.width: 1
+    border.color: studioStroke
+
     Clipboard {
         id: clipboard
     }
@@ -85,15 +80,6 @@ Rectangle {
         anchors.fill: parent
         color: "transparent"
         radius: 6
-    }
-
-    DropShadow {
-        horizontalOffset: -1 * virtualstudio.uiScale
-        verticalOffset: -1 * virtualstudio.uiScale
-        radius: 8.0 * virtualstudio.uiScale
-        samples: 17
-        color: shadowColour
-        source: shadow
     }
 
     Rectangle {
@@ -327,13 +313,8 @@ Rectangle {
                 anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
                 anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
                 layer.enabled: true
-                layer.effect: DropShadow {
-                    horizontalOffset: 1 * virtualstudio.uiScale
-                    verticalOffset: 1 * virtualstudio.uiScale
-                    radius: 10.0 * virtualstudio.uiScale
-                    samples: 21
-                    color: shadowColour
-                }
+                border.width: 1
+                border.color: tooltipStroke
 
                 Text {
                     anchors.centerIn: parent
