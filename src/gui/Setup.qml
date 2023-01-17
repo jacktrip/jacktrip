@@ -629,7 +629,7 @@ Item {
         Slider {
             id: outputSlider
             from: 0.0
-            value: audioInterface ? audioInterface.outputVolume : 0.5
+            value: audioInterface ? audioInterface.outputVolume : 1.0
             onMoved: { audioInterface.outputVolume = value }
             to: 1.0
             padding: 0
@@ -754,7 +754,7 @@ Item {
         Slider {
             id: inputSlider
             from: 0.0
-            value: audioInterface ? audioInterface.inputVolume : 0.5
+            value: audioInterface ? audioInterface.inputVolume : 1.0
             onMoved: { audioInterface.inputVolume = value }
             to: 1.0
             padding: 0
