@@ -477,7 +477,7 @@ Item {
                 anchors.leftMargin: 24 * virtualstudio.uiScale
                 width: 240 * virtualstudio.uiScale
                 textFormat: Text.RichText
-                text:`<a style="color: black;" href="https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""}/live">Change Settings and Start</a>`
+                text:`<a style="color: ${textColour};" href="https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""}/live">Change Settings and Start</a>`
 
                 onLinkActivated: link => {
                     virtualstudio.openLink(link)
