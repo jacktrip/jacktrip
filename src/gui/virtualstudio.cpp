@@ -2185,6 +2185,8 @@ VirtualStudio::~VirtualStudio()
 
     delete m_inputMeter;
     delete m_outputMeter;
+    delete m_outputVolumePlugin;
+    delete m_inputVolumePlugin;
     delete m_inputTestMeter;
     delete m_studioSocket;
 
