@@ -233,10 +233,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         this, &VirtualStudio::studioToJoinChanged, this,
         [&]() {
             if (!m_studioToJoin.isEmpty()) {
-                // join studio when studio to join changes
-                if (readyToJoin()) {
-                    joinStudio();
-                }
+                joinStudio();
             }
         },
         Qt::QueuedConnection);
@@ -732,12 +729,7 @@ void VirtualStudio::setShowWarnings(bool show)
     emit showWarningsChanged();
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
-        // device setup view proceeds warning view
-        // if device setup is shown, do not immediately join
-        if (readyToJoin()) {
-            // We're done waiting to be on the browse page
-            joinStudio();
-        }
+        joinStudio();
     }
 }
 
@@ -836,6 +828,12 @@ void VirtualStudio::joinStudio()
         if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
         }
+        return;
+    }
+
+    // FTUX shows warnings and device setup views
+    // if any of these enabled, do not immediately join
+    if (!readyToJoin()) {
         return;
     }
 
@@ -1378,12 +1376,7 @@ void VirtualStudio::slotAuthSucceded()
 
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
-        // FTUX shows warnings and device setup views
-        // if any of these enabled, do not immediately join
-        if (readyToJoin()) {
-            // We should join in this case
-            joinStudio();
-        }
+        joinStudio();
     }
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
     connect(m_device, &VsDevice::updatedCaptureVolumeFromServer, this,
@@ -2121,6 +2114,8 @@ void VirtualStudio::stopStudio()
 
 bool VirtualStudio::readyToJoin()
 {
+    // FTUX shows warnings and device setup views
+    // if any of these enabled, do not immediately join
     return m_windowState == "browse"
            && (m_connectionState == QStringLiteral("Waiting...")
                || m_connectionState == QStringLiteral("Disconnected"));
