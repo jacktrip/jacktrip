@@ -6,7 +6,7 @@
             "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.9-beta3",
             "download": {
                 "date": "2022-01-18T00:00:00Z",
-                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.9-betae/JackTrip-v1.6.9-beta3-macOS-x64-installer.pkg",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.9-beta3/JackTrip-v1.6.9-beta3-macOS-x64-installer.pkg",
                 "downloadSize": 11528836,
                 "sha256": "30689d83641377c1594e1db44d8e6cf75a45780969381d02c11ede81a175561f"
             }
