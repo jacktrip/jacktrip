@@ -88,7 +88,7 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
             QVariant statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
             if (!statusCode.isValid()) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                std::cout << "Error Updating Device with Volume and Mute Values (During Device Initialization): " << reply->errorString().toStdString() << std::endl;
                 reply->deleteLater();
                 return;
             }
@@ -142,7 +142,7 @@ void VsDevice::registerApp()
             QVariant statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
             if (!statusCode.isValid()) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                std::cout << "Error Getting Device (1): " << reply->errorString().toStdString() << std::endl;
                 reply->deleteLater();
                 return;
             }
@@ -160,7 +160,7 @@ void VsDevice::registerApp()
                 registerJTAsDevice();
             } else {
                 // Other error status. Won't create device.
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                std::cout << "Error Getting Device (2): " << reply->errorString().toStdString() << std::endl;
                 reply->deleteLater();
                 return;
             }
@@ -190,7 +190,7 @@ void VsDevice::removeApp()
         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Deleting Device: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();
             return;
         } else {
@@ -284,7 +284,7 @@ void VsDevice::sendHeartbeat()
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [=]() {
             if (reply->error() != QNetworkReply::NoError) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                std::cout << "Error Sending Device Heartbeat: " << reply->errorString().toStdString() << std::endl;
                 reply->deleteLater();
                 return;
             } else {
@@ -309,7 +309,7 @@ void VsDevice::setServerId(QString serverId)
          request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Setting Server ID on Device: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();
             return;
         }
@@ -332,7 +332,7 @@ void VsDevice::sendLevels()
          request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Updating Device with Volume and Mute Values: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();
             return;
         }
@@ -618,7 +618,7 @@ void VsDevice::registerJTAsDevice()
         QStringLiteral("https://%1/api/devices").arg(m_apiHost), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Registering Device: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();
             return;
         } else {

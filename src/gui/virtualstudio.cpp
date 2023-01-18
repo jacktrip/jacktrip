@@ -1704,7 +1704,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 if (signalRefresh) {
                     emit refreshFinished(index);
                 }
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+                std::cout << "Error Getting Server List: " << reply->errorString().toStdString() << std::endl;
                 emit authFailed();
                 reply->deleteLater();
                 return;
@@ -1884,7 +1884,7 @@ void VirtualStudio::getUserId()
         m_authenticator->get(QStringLiteral("https://auth.jacktrip.org/userinfo"));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting User Info from Auth0: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -1915,7 +1915,7 @@ void VirtualStudio::getSubscriptions()
         QStringLiteral("https://%1/api/users/%2/subscriptions").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting Subscriptions for User: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -1944,7 +1944,7 @@ void VirtualStudio::getRegions()
         QStringLiteral("https://%1/api/users/%2/regions").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting Regions: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -1962,7 +1962,7 @@ void VirtualStudio::getUserMetadata()
         QStringLiteral("https://%1/api/users/%2").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting User Data from API: " << reply->errorString().toStdString() << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
