@@ -136,6 +136,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool backendAvailable READ backendAvailable CONSTANT)
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
+    Q_PROPERTY(QString apiHost READ apiHost WRITE setApiHost NOTIFY apiHostChanged)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -209,6 +210,8 @@ class VirtualStudio : public QObject
     bool audioReady();
     bool backendAvailable();
     QString windowState();
+    QString apiHost();
+    void setApiHost(QString host);
 
    public slots:
     void toStandard();
@@ -290,6 +293,7 @@ class VirtualStudio : public QObject
     void audioActivatedChanged();
     void audioReadyChanged();
     void windowStateUpdated();
+    void apiHostChanged();
 
    private slots:
     void slotAuthSucceded();
@@ -348,7 +352,6 @@ class VirtualStudio : public QObject
     VsWebSocket* m_studioSocket = NULL;
     QTimer m_startTimer;
     QTimer m_retryPeriodTimer;
-    bool m_startedStudio = false;
     bool m_retryPeriod;
     bool m_jackTripRunning = false;
 

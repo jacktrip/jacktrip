@@ -714,6 +714,17 @@ void VirtualStudio::setWindowState(QString state)
     emit windowStateUpdated();
 }
 
+QString VirtualStudio::apiHost()
+{
+    return m_apiHost;
+}
+
+void VirtualStudio::setApiHost(QString host)
+{
+    m_apiHost = host;
+    emit apiHostChanged();
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;
@@ -1071,18 +1082,9 @@ void VirtualStudio::connectToStudio(int studioIndex)
 
     // Check if we have an address for our server
     if (studioInfo->status() != "Ready" && studioInfo->isManageable() == true) {
-        if (studioInfo->isOwner() || studioInfo->isAdmin()) {
-            QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
-                                .arg(m_apiHost, studioInfo->id()));
-            QDesktopServices::openUrl(url);
-        } else {
-            m_startedStudio = false;
-        }
-
         m_connectionState = QStringLiteral("Waiting...");
         emit connectionStateChanged();
     } else {
-        m_startedStudio = false;
         completeConnection();
     }
 }
@@ -1214,30 +1216,8 @@ void VirtualStudio::disconnect()
     m_retryPeriod = false;
 
     if (m_jackTripRunning) {
-        if (m_startedStudio) {
-            VsServerInfo* studioInfo =
-                static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
-            QMessageBox msgBox;
-            msgBox.setText(QStringLiteral("Do you want to stop the current studio?"));
-            msgBox.setWindowTitle(QStringLiteral("Stop Studio"));
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            msgBox.setDefaultButton(QMessageBox::Yes);
-            int ret = msgBox.exec();
-            if (ret == QMessageBox::Yes) {
-                studioInfo->setHost(QLatin1String(""));
-                stopStudio();
-            }
-        }
-
         m_device->stopPinger();
         m_device->stopJackTrip();
-    } else if (m_startedStudio) {
-        m_startTimer.stop();
-        stopStudio();
-        if (!m_isExiting) {
-            emit disconnected();
-            m_onConnectedScreen = false;
-        }
     } else {
         // How did we get here? This shouldn't be possible, but include for safety.
         if (m_isExiting) {
@@ -1272,9 +1252,29 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
                        .arg(m_apiHost,
                             static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     } else {
-        url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
-                       .arg(m_apiHost,
-                            static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+        QString expiration =
+            QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
+        QJsonObject json      = {{QLatin1String("enabled"), true},
+                            {QLatin1String("expiresAt"), expiration}};
+        QJsonDocument request = QJsonDocument(json);
+
+        QNetworkReply* reply = m_authenticator->put(
+            QStringLiteral("https://%1/api/servers/%2")
+                .arg(m_apiHost,
+                     static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()),
+            request.toJson());
+        connect(reply, &QNetworkReply::finished, this, [&, reply]() {
+            if (reply->error() != QNetworkReply::NoError) {
+                m_connectionState = QStringLiteral("Unable to Start Studio");
+                emit connectionStateChanged();
+            } else {
+                QByteArray response       = reply->readAll();
+                QJsonDocument serverState = QJsonDocument::fromJson(response);
+                if (serverState.object()[QStringLiteral("status")].toString()
+                    == QLatin1String("Starting")) {}
+            }
+            reply->deleteLater();
+        });
     }
     QDesktopServices::openUrl(url);
 }
@@ -1413,12 +1413,6 @@ void VirtualStudio::processFinished()
 
     if (m_isExiting) {
         emit signalExit();
-        return;
-    }
-
-    if (m_retryPeriod && m_startedStudio) {
-        // Retry if necessary.
-        completeConnection();
         return;
     }
 
