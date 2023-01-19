@@ -1345,6 +1345,10 @@ void VirtualStudio::slotAuthSucceded()
 
     m_authenticated = true;
     m_refreshToken  = m_authenticator->refreshToken();
+
+    QNetworkAccessManager* networkAccessManager = m_authenticator->networkAccessManager();
+    networkAccessManager->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+
     emit hasRefreshTokenChanged();
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
@@ -1987,6 +1991,10 @@ void VirtualStudio::getSubscriptions()
                 subscriptions.at(i)[QStringLiteral("serverId")].toString());
         }
         reply->deleteLater();
+    });
+
+    connect(reply, &QNetworkReply::redirected, this, [&](QUrl url) {
+        std::cout << "REDIRECTED TO " << url.toString().toStdString() << std::endl;
     });
 }
 
