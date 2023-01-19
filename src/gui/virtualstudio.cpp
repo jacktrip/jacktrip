@@ -1400,7 +1400,7 @@ void VirtualStudio::slotAuthSucceded()
 void VirtualStudio::slotAuthFailed()
 {
     m_authenticated = false;
-    emit authFailed();
+    emit authFailed(); // TODO: Is this supposed to be here?
 }
 
 void VirtualStudio::processFinished()
@@ -1861,7 +1861,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 }
             }
             if (firstLoad) {
-                emit authSucceeded();
+                emit authSucceeded(); // TODO: this only happens on first load, maybe this condition needs to be expanded somehow?
                 m_refreshTimer.setInterval(10000);
                 m_refreshTimer.start();
                 m_heartbeatTimer.setInterval(5000);
