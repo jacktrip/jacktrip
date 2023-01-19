@@ -1400,7 +1400,7 @@ void VirtualStudio::slotAuthSucceded()
 void VirtualStudio::slotAuthFailed()
 {
     m_authenticated = false;
-    emit authFailed(); // TODO: Is this supposed to be here?
+    emit authFailed();  // TODO: Is this supposed to be here?
 }
 
 void VirtualStudio::processFinished()
@@ -1704,7 +1704,8 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 if (signalRefresh) {
                     emit refreshFinished(index);
                 }
-                std::cout << "Error Getting Server List: " << reply->errorString().toStdString() << std::endl;
+                std::cout << "Error Getting Server List: "
+                          << reply->errorString().toStdString() << std::endl;
                 emit authFailed();
                 reply->deleteLater();
                 return;
@@ -1861,7 +1862,8 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 }
             }
             if (firstLoad) {
-                emit authSucceeded(); // TODO: this only happens on first load, maybe this condition needs to be expanded somehow?
+                emit authSucceeded();  // TODO: this only happens on first load, maybe
+                                       // this condition needs to be expanded somehow?
                 m_refreshTimer.setInterval(10000);
                 m_refreshTimer.start();
                 m_heartbeatTimer.setInterval(5000);
@@ -1884,7 +1886,8 @@ void VirtualStudio::getUserId()
         m_authenticator->get(QStringLiteral("https://auth.jacktrip.org/userinfo"));
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error Getting User Info from Auth0: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting User Info from Auth0: "
+                      << reply->errorString().toStdString() << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -1915,7 +1918,8 @@ void VirtualStudio::getSubscriptions()
         QStringLiteral("https://%1/api/users/%2/subscriptions").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error Getting Subscriptions for User: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting Subscriptions for User: "
+                      << reply->errorString().toStdString() << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -1944,7 +1948,8 @@ void VirtualStudio::getRegions()
         QStringLiteral("https://%1/api/users/%2/regions").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error Getting Regions: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting Regions: " << reply->errorString().toStdString()
+                      << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -1962,7 +1967,8 @@ void VirtualStudio::getUserMetadata()
         QStringLiteral("https://%1/api/users/%2").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error Getting User Data from API: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "Error Getting User Data from API: "
+                      << reply->errorString().toStdString() << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
