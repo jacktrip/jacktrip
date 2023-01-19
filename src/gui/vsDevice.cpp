@@ -220,6 +220,7 @@ void VsDevice::removeApp()
 // sendHeartbeat is reponsible for sending liveness heartbeats to the API
 void VsDevice::sendHeartbeat()
 {
+    std::cout << "Called VsDevice::sendHeartbeat()" << std::endl;
     if (m_webSocket == nullptr) {
         m_webSocket =
             new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat")
