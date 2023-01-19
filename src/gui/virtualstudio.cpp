@@ -1400,7 +1400,7 @@ void VirtualStudio::slotAuthSucceded()
 void VirtualStudio::slotAuthFailed()
 {
     m_authenticated = false;
-    emit authFailed();  // TODO: Is this supposed to be here?
+    // emit authFailed();  // TODO: Is this supposed to be here?
 }
 
 void VirtualStudio::processFinished()
