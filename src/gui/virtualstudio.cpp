@@ -1960,6 +1960,14 @@ void VirtualStudio::getSubscriptions()
             }
             std::cout << std::endl;
 
+            std::cout << "SSL ERRORS" << std::endl;
+            QList<QSslError> errors;
+            reply->sslErrors(errors);
+            for (int i = 0; i < errors.size(); ++i) {
+                std::cout << errors[i].errorString().toStdString() << std::endl;
+            }
+            std::cout << std::endl;
+
             emit authFailed();
             reply->deleteLater();
             return;
