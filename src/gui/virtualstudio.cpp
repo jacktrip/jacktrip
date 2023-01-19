@@ -1346,8 +1346,7 @@ void VirtualStudio::slotAuthSucceded()
     m_authenticated = true;
     m_refreshToken  = m_authenticator->refreshToken();
 
-    QNetworkAccessManager* networkAccessManager = m_authenticator->networkAccessManager();
-    networkAccessManager->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+    std::cout << "Refresh Token: " << m_refreshToken.toStdString() << std::endl;
 
     emit hasRefreshTokenChanged();
     QSettings settings;
