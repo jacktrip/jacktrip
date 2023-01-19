@@ -282,9 +282,11 @@ void VsDevice::sendHeartbeat()
 
     if (m_webSocket->isValid()) {
         // Send heartbeat via websocket
+        std::cout << "Sending heartbeat via websocket" << std::endl;
         m_webSocket->sendMessage(request.toJson());
     } else {
         // Send heartbeat via POST API
+        std::cout << "Sending heartbeat via POST API" << std::endl;
         QNetworkReply* reply = m_authenticator->post(
             QStringLiteral("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, m_appID),
             request.toJson());
