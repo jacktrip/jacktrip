@@ -1341,6 +1341,8 @@ void VirtualStudio::slotAuthSucceded()
         m_apiHost = TEST_API_HOST;
     }
 
+    std::cout << "Slot Auth Succeeded" << std::endl;
+
     m_authenticated = true;
     m_refreshToken  = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
