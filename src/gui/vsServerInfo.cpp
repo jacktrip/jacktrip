@@ -112,6 +112,16 @@ void VsServerInfo::setPort(quint16 port)
     m_port = port;
 }
 
+bool VsServerInfo::enabled() const
+{
+    return m_enabled;
+}
+
+void VsServerInfo::setEnabled(bool enabled)
+{
+    m_enabled = enabled;
+}
+
 bool VsServerInfo::isOwner() const
 {
     return m_owner;
@@ -249,6 +259,16 @@ QString VsServerInfo::inviteKey() const
 void VsServerInfo::setInviteKey(const QString& inviteKey)
 {
     m_inviteKey = inviteKey;
+}
+
+QString VsServerInfo::cloudId() const
+{
+    return m_cloudId;
+}
+
+void VsServerInfo::setCloudId(const QString& cloudId)
+{
+    m_cloudId = cloudId;
 }
 
 bool VsServerInfo::operator<(const VsServerInfo& other) const

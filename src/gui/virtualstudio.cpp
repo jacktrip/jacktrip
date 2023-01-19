@@ -1474,8 +1474,12 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
 {
     QJsonObject serverState  = QJsonDocument::fromJson(msg.toUtf8()).object();
     QString serverStatus     = serverState[QStringLiteral("status")].toString();
+    bool serverEnabled       = serverState[QStringLiteral("enabled")].toBool();
+    QString serverCloudId    = serverState[QStringLiteral("cloudId")].toString();
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     studioInfo->setStatus(serverStatus);
+    studioInfo->setEnabled(serverEnabled);
+    studioInfo->setCloudId(serverCloudId);
     if (!m_jackTripRunning) {
         if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
             studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
@@ -1778,6 +1782,10 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                             servers.at(i)[QStringLiteral("sessionId")].toString());
                         serverInfo->setInviteKey(
                             servers.at(i)[QStringLiteral("inviteKey")].toString());
+                        serverInfo->setCloudId(
+                            servers.at(i)[QStringLiteral("cloudId")].toString());
+                        serverInfo->setEnabled(
+                            servers.at(i)[QStringLiteral("enabled")].toBool());
                         serverInfo->setIsOwner(
                             servers.at(i)[QStringLiteral("owner")].toBool());
                         serverInfo->setIsAdmin(
