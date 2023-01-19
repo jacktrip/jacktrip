@@ -1914,12 +1914,36 @@ void VirtualStudio::getUserId()
 
 void VirtualStudio::getSubscriptions()
 {
+    std::cout << "m_userId: " << m_userId.toStdString() << std::endl;
+    std::cout << "m_apiHost: " << m_apiHost.toStdString() << std::endl;
+    if (m_authenticator->status() == QAbstractOAuth::Status::NotAuthenticated) {
+        std::cout << "m_authenticator Status: "
+                  << "Not Authenticated" << std::endl
+                  << std::endl;
+    } else if (m_authenticator->status()
+               == QAbstractOAuth::Status::TemporaryCredentialsReceived) {
+        std::cout << "m_authenticator Status: "
+                  << "Temporary Credentials Received" << std::endl
+                  << std::endl;
+    } else if (m_authenticator->status() == QAbstractOAuth::Status::Granted) {
+        std::cout << "m_authenticator Status: "
+                  << "Granted" << std::endl
+                  << std::endl;
+    } else if (m_authenticator->status() == QAbstractOAuth::Status::RefreshingToken) {
+        std::cout << "m_authenticator Status: "
+                  << "Refreshing Token" << std::endl
+                  << std::endl;
+    }
+    std::cout << "m_authenticator Token: " << m_authenticator->token().toStdString()
+              << std::endl
+              << std::endl;
     QNetworkReply* reply = m_authenticator->get(
         QStringLiteral("https://%1/api/users/%2/subscriptions").arg(m_apiHost, m_userId));
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Getting Subscriptions for User: "
-                      << reply->errorString().toStdString() << std::endl;
+                      << reply->errorString().toStdString() << " (Code " << reply->error()
+                      << ")" << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
