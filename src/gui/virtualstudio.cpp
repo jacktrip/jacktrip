@@ -1400,7 +1400,7 @@ void VirtualStudio::slotAuthSucceded()
 void VirtualStudio::slotAuthFailed()
 {
     m_authenticated = false;
-    // emit authFailed();  // TODO: Is this supposed to be here?
+    emit authFailed();  // TODO: Is this supposed to be here?
 }
 
 void VirtualStudio::processFinished()
@@ -1620,7 +1620,9 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float>& valuesInDe
 
 void VirtualStudio::setupAuthenticator()
 {
+    std::cout << "Setting Up Authenticator" << std::endl;
     if (m_authenticator.isNull()) {
+        std::cout << "Current Authenticator is Null. Making a New One." << std::endl;
         // Set up our authorization flow
         m_authenticator.reset(new QOAuth2AuthorizationCodeFlow);
         m_authenticator->setScope(
