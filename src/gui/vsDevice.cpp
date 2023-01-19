@@ -145,7 +145,8 @@ void VsDevice::registerApp()
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
             if (!statusCode.isValid()) {
                 std::cout << "Error Getting Device (1): "
-                          << reply->errorString().toStdString() << std::endl;
+                          << reply->errorString().toStdString() << " (Code "
+                          << reply->error() << ")" << std::endl;
                 reply->deleteLater();
                 return;
             }
@@ -164,7 +165,8 @@ void VsDevice::registerApp()
             } else {
                 // Other error status. Won't create device.
                 std::cout << "Error Getting Device (2): "
-                          << reply->errorString().toStdString() << std::endl;
+                          << reply->errorString().toStdString() << " (Code "
+                          << reply->error() << ")" << std::endl;
                 reply->deleteLater();
                 return;
             }
@@ -195,7 +197,7 @@ void VsDevice::removeApp()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Deleting Device: " << reply->errorString().toStdString()
-                      << std::endl;
+                      << " (Code " << reply->error() << ")" << std::endl;
             reply->deleteLater();
             return;
         } else {
@@ -293,7 +295,8 @@ void VsDevice::sendHeartbeat()
         connect(reply, &QNetworkReply::finished, this, [=]() {
             if (reply->error() != QNetworkReply::NoError) {
                 std::cout << "Error Sending Device Heartbeat: "
-                          << reply->errorString().toStdString() << std::endl;
+                          << reply->errorString().toStdString() << " (Code "
+                          << reply->error() << ")" << std::endl;
                 reply->deleteLater();
                 return;
             } else {
@@ -319,7 +322,8 @@ void VsDevice::setServerId(QString serverId)
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Setting Server ID on Device: "
-                      << reply->errorString().toStdString() << std::endl;
+                      << reply->errorString().toStdString() << " (Code " << reply->error()
+                      << ")" << std::endl;
             reply->deleteLater();
             return;
         }
@@ -343,7 +347,8 @@ void VsDevice::sendLevels()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Updating Device with Volume and Mute Values: "
-                      << reply->errorString().toStdString() << std::endl;
+                      << reply->errorString().toStdString() << " (Code " << reply->error()
+                      << ")" << std::endl;
             reply->deleteLater();
             return;
         }
@@ -630,7 +635,8 @@ void VsDevice::registerJTAsDevice()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Registering Device: "
-                      << reply->errorString().toStdString() << std::endl;
+                      << reply->errorString().toStdString() << " (Code " << reply->error()
+                      << ")" << std::endl;
             reply->deleteLater();
             return;
         } else {

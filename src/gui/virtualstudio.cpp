@@ -1717,7 +1717,8 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                     emit refreshFinished(index);
                 }
                 std::cout << "Error Getting Server List: "
-                          << reply->errorString().toStdString() << std::endl;
+                          << reply->errorString().toStdString() << " (Code "
+                          << reply->error() << ")" << std::endl;
                 emit authFailed();
                 reply->deleteLater();
                 return;
@@ -1899,7 +1900,8 @@ void VirtualStudio::getUserId()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Getting User Info from Auth0: "
-                      << reply->errorString().toStdString() << std::endl;
+                      << reply->errorString().toStdString() << " (Code " << reply->error()
+                      << ")" << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -2005,7 +2007,7 @@ void VirtualStudio::getRegions()
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Getting Regions: " << reply->errorString().toStdString()
-                      << std::endl;
+                      << " (Code " << reply->error() << ")" << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
@@ -2024,7 +2026,8 @@ void VirtualStudio::getUserMetadata()
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error Getting User Data from API: "
-                      << reply->errorString().toStdString() << std::endl;
+                      << reply->errorString().toStdString() << " (Code " << reply->error()
+                      << ")" << std::endl;
             emit authFailed();
             reply->deleteLater();
             return;
