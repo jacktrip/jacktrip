@@ -1341,7 +1341,7 @@ void VirtualStudio::slotAuthSucceded()
         m_apiHost = TEST_API_HOST;
     }
 
-    std::cout << "Slot Auth Succeeded" << std::endl;
+    std::cout << "Slot Auth Succeeded (1)" << std::endl;
 
     m_authenticated = true;
     m_refreshToken  = m_authenticator->refreshToken();
@@ -1363,16 +1363,20 @@ void VirtualStudio::slotAuthSucceded()
     }
 
     if (m_userId.isEmpty()) {
+        std::cout << "Slot Auth Succeeded (2)" << std::endl;
         getUserId();
     } else {
+        std::cout << "Slot Auth Succeeded (3)" << std::endl;
         getSubscriptions();
         getServerList(true, false);
     }
 
     if (m_regions.isEmpty()) {
+        std::cout << "Slot Auth Succeeded (4)" << std::endl;
         getRegions();
     }
     if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
+        std::cout << "Slot Auth Succeeded (5)" << std::endl;
         getUserMetadata();
     }
 
