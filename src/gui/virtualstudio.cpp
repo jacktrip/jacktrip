@@ -1952,6 +1952,14 @@ void VirtualStudio::getSubscriptions()
             std::cout << "Error Getting Subscriptions for User: "
                       << reply->errorString().toStdString() << " (Code " << reply->error()
                       << ")" << std::endl;
+
+            std::cout << "HEADER LIST" << std::endl;
+            QList<QByteArray> headers = reply->rawHeaderList();
+            for (int i = 0; i < headers.size(); ++i) {
+                std::cout << QString::fromUtf8(headers[i]).toStdString() << std::endl;
+            }
+            std::cout << std::endl;
+
             emit authFailed();
             reply->deleteLater();
             return;
