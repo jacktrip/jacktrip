@@ -1423,8 +1423,14 @@ void VirtualStudio::processFinished()
     m_jackTripRunning = false;
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
-    emit disconnected();
-    m_onConnectedScreen = false;
+
+    // if this occurs on the setup or settings screen (for example, due to an issue with
+    // devices) then don't emit disconnected, as that would move you back to the "Browse"
+    // screen
+    if (m_onConnectedScreen) {
+        m_onConnectedScreen = false;
+        emit disconnected();
+    }
 #ifdef __APPLE__
     m_noNap.enableNap();
 #endif
