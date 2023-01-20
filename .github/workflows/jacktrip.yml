@@ -557,9 +557,13 @@ jobs:
         shell: cmd
         run: |
           cd win
+          ls build_installer.bat
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
+          ls $BUILD_PATH/${{ matrix.installer-path }}
+          ls deploy
           bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+          ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: sign artifacts on Windows
         if: runner.os == 'Windows' && matrix.installer-path && steps.check-secrets.outputs.available == 'true'
         shell: cmd
