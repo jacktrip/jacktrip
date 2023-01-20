@@ -1356,12 +1356,16 @@ void VirtualStudio::slotAuthSucceded()
     settings.endGroup();
 
     m_device = new VsDevice(m_authenticator.data(), m_testMode);
-    std::cout << "Expiration (1359): " << m_authenticator->expirationAt().toString().toStdString() << std::endl;
-    std::cout << "Expiration (1359): " << m_authenticator->state().toStdString() << std::endl;
+    std::cout << "Expiration (1359): "
+              << m_authenticator->expirationAt().toString().toStdString() << std::endl;
+    std::cout << "Expiration (1359): " << m_authenticator->state().toStdString()
+              << std::endl;
 
     m_device->registerApp();
-    std::cout << "Expiration (1359+): " << m_authenticator->expirationAt().toString().toStdString() << std::endl;
-    std::cout << "Expiration (1359+): " << m_authenticator->state().toStdString() << std::endl;
+    std::cout << "Expiration (1359+): "
+              << m_authenticator->expirationAt().toString().toStdString() << std::endl;
+    std::cout << "Expiration (1359+): " << m_authenticator->state().toStdString()
+              << std::endl;
 
     if (m_showDeviceSetup) {
         if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()
@@ -1372,11 +1376,17 @@ void VirtualStudio::slotAuthSucceded()
 
     if (m_userId.isEmpty()) {
         std::cout << "Slot Auth Succeeded (2)" << std::endl;
-        std::cout << "Expiration (1372): " << m_authenticator->expirationAt().toString().toStdString() << std::endl;
-        std::cout << "Expiration (1372): " << m_authenticator->state().toStdString() << std::endl;
+        std::cout << "Expiration (1372): "
+                  << m_authenticator->expirationAt().toString().toStdString()
+                  << std::endl;
+        std::cout << "Expiration (1372): " << m_authenticator->state().toStdString()
+                  << std::endl;
         getUserId();
-        std::cout << "Expiration (1372+): " << m_authenticator->expirationAt().toString().toStdString() << std::endl;
-        std::cout << "Expiration (1372+): " << m_authenticator->state().toStdString() << std::endl;
+        std::cout << "Expiration (1372+): "
+                  << m_authenticator->expirationAt().toString().toStdString()
+                  << std::endl;
+        std::cout << "Expiration (1372+): " << m_authenticator->state().toStdString()
+                  << std::endl;
     } else {
         std::cout << "Slot Auth Succeeded (3)" << std::endl;
         getSubscriptions();
