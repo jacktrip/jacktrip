@@ -1222,7 +1222,7 @@ void VirtualStudio::disconnect()
         // How did we get here? This shouldn't be possible, but include for safety.
         if (m_isExiting) {
             emit signalExit();
-        } else {
+        } else if (m_onConnectedScreen) {
             emit disconnected();
             m_onConnectedScreen = false;
         }
