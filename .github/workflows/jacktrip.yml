@@ -576,9 +576,9 @@ jobs:
           unzip CodeSignTool-v1.2.6-windows.zip
           mkdir signed
           echo "before print"
-          ls $BUILD_PATH/
-          ls $BUILD_PATH/${{ matrix.installer-path }}/
-          ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
+          ls $BUILD_PATH
+          ls $BUILD_PATH\${{ matrix.installer-path }}
+          ls $BUILD_PATH\${{ matrix.installer-path }}\JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
           echo "before cp"
           bash -c "cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi signed/installer.msi"
           ls CodeSignTool.bat
