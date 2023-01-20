@@ -1341,8 +1341,10 @@ void VirtualStudio::slotAuthSucceded()
         m_apiHost = TEST_API_HOST;
     }
 
-    m_authenticated = true;
-    m_refreshToken  = m_authenticator->refreshToken();
+    m_authenticated            = true;
+    QNetworkAccessManager* nam = m_authenticator->networkAccessManager();
+    nam->setAutoDeleteReplies(true);
+    m_refreshToken = m_authenticator->refreshToken();
     emit hasRefreshTokenChanged();
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);

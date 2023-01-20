@@ -41,6 +41,7 @@
 #include <QEventLoop>
 #include <QList>
 #include <QMutex>
+#include <QNetworkAccessManager>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
