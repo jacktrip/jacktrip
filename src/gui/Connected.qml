@@ -95,7 +95,7 @@ Item {
 
     Text {
         id: heading
-        text: virtualstudio.connectionState
+        text: studioStatus === "Starting" ? "Starting..." : virtualstudio.connectionState
         x: leftHeaderMargin * virtualstudio.uiScale; y: 34 * virtualstudio.uiScale
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
         color: textColour
@@ -431,7 +431,7 @@ Item {
             color: textColour
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: parent.isManageable
-                    ? "Waiting for this studio to start. To start this studio, please choose one of the options below."
+                    ? "Waiting for this studio to start. Please start the studio using one of the options below."
                     : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
             wrapMode: Text.WordWrap
         }
