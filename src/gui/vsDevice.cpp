@@ -82,15 +82,16 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
     QNetworkReply* reply = m_authenticator->put(
         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
         request.toJson());
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+            this, &VsDevice::onError);
+    connect(reply, &QNetworkReply::sslErrors, this, &VsDevice::onSslErrors);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
             QVariant statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
             if (!statusCode.isValid()) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                reply->deleteLater();
-                return;
+                qDebug() << "Failed updating device:" << reply->errorString();
             }
         } else {
             QByteArray response       = reply->readAll();
@@ -133,36 +134,44 @@ void VsDevice::registerApp()
         m_appUUID = QUuid::createUuid().toString(QUuid::StringFormat::WithoutBraces);
     }
 
+    QNetworkAccessManager* nam = m_authenticator->networkAccessManager();
+    QAbstractNetworkCache* namCache = nam->cache();
+    if (namCache != 0) {
+        qDebug() << "Cache size:" << namCache->cacheSize();
+        namCache->clear();
+    }
+
     // check if device exists
     QNetworkReply* reply = m_authenticator->get(
         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+            this, &VsDevice::onError);
+    connect(reply, &QNetworkReply::sslErrors, this, &VsDevice::onSslErrors);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
+        QList<QNetworkReply::RawHeaderPair> pairs = reply->rawHeaderPairs();
+        qDebug() << "Get Device response headers:" << pairs;
         if (reply->error() != QNetworkReply::NoError) {
             QVariant statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
             if (!statusCode.isValid()) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                reply->deleteLater();
-                return;
-            }
-
-            int status = statusCode.toInt();
-            // Device does not exist
-            if (status >= 400 && status < 500) {
-                std::cout << "Device not found. Creating new device." << std::endl;
-
-                if (m_apiPrefix == "" || m_apiSecret == "") {
-                    m_apiPrefix = randomString(7);
-                    m_apiSecret = randomString(22);
-                }
-
-                registerJTAsDevice();
+                qDebug() << "Failed retrieving device:" << reply->errorString();
             } else {
-                // Other error status. Won't create device.
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                reply->deleteLater();
-                return;
+                int status = statusCode.toInt();
+                // Device does not exist
+                if (status >= 400 && status < 500) {
+                    qDebug() << "Device not found. Creating new device.";
+
+                    if (m_apiPrefix == "" || m_apiSecret == "") {
+                        m_apiPrefix = randomString(7);
+                        m_apiSecret = randomString(22);
+                    }
+
+                    registerJTAsDevice();
+                } else {
+                    // Other error status. Won't create device.
+                    qDebug() << "Could not create device:" << reply->errorString();
+                }
             }
         } else if (m_apiPrefix != "" && m_apiSecret != "") {
             sendHeartbeat();
@@ -188,11 +197,12 @@ void VsDevice::removeApp()
 
     QNetworkReply* reply = m_authenticator->deleteResource(
         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+            this, &VsDevice::onError);
+    connect(reply, &QNetworkReply::sslErrors, this, &VsDevice::onSslErrors);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            reply->deleteLater();
-            return;
+            qDebug() << "Failed removing device:" << reply->errorString();
         } else {
             m_appID.clear();
             m_appUUID.clear();
@@ -278,15 +288,25 @@ void VsDevice::sendHeartbeat()
         // Send heartbeat via websocket
         m_webSocket->sendMessage(request.toJson());
     } else {
+        QNetworkAccessManager* nam = m_authenticator->networkAccessManager();
+        QAbstractNetworkCache* namCache = nam->cache();
+        if (namCache != 0) {
+            qDebug() << "Cache size:" << namCache->cacheSize();
+            namCache->clear();
+        }
+
         // Send heartbeat via POST API
         QNetworkReply* reply = m_authenticator->post(
             QStringLiteral("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, m_appID),
             request.toJson());
+        connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+                this, &VsDevice::onError);
+        connect(reply, &QNetworkReply::sslErrors, this, &VsDevice::onSslErrors);
         connect(reply, &QNetworkReply::finished, this, [=]() {
+            QList<QNetworkReply::RawHeaderPair> pairs = reply->rawHeaderPairs();
+            qDebug() << "Heartbeat response headers:" << pairs;
             if (reply->error() != QNetworkReply::NoError) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                reply->deleteLater();
-                return;
+                qDebug() << "Failed sending heartbeat:" << reply->errorString();
             } else {
                 QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
                 reconcileAgentConfig(response);
@@ -307,11 +327,12 @@ void VsDevice::setServerId(QString serverId)
     QNetworkReply* reply  = m_authenticator->put(
          QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
          request.toJson());
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+            this, &VsDevice::onError);
+    connect(reply, &QNetworkReply::sslErrors, this, &VsDevice::onSslErrors);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            reply->deleteLater();
-            return;
+            qDebug() << "Failed setting server ID:" << reply->errorString();
         }
         reply->deleteLater();
     });
@@ -330,11 +351,12 @@ void VsDevice::sendLevels()
     QNetworkReply* reply  = m_authenticator->put(
          QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
          request.toJson());
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+            this, &VsDevice::onError);
+    connect(reply, &QNetworkReply::sslErrors, this, &VsDevice::onSslErrors);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            reply->deleteLater();
-            return;
+            qDebug() << "Failed setting levels:" << reply->errorString();
         }
         reply->deleteLater();
     });
@@ -616,11 +638,12 @@ void VsDevice::registerJTAsDevice()
 
     QNetworkReply* reply = m_authenticator->post(
         QStringLiteral("https://%1/api/devices").arg(m_apiHost), request.toJson());
+    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+            this, &VsDevice::onError);
+    connect(reply, &QNetworkReply::sslErrors, this, &VsDevice::onSslErrors);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            reply->deleteLater();
-            return;
+            qDebug() << "Failed registering device:" << reply->errorString();
         } else {
             QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
 
@@ -661,4 +684,26 @@ QString VsDevice::randomString(int stringLength)
     }
 
     return str;
+}
+
+void VsDevice::onError(QNetworkReply::NetworkError)
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    if (reply != 0) {
+        qDebug() << "Error:" << reply->errorString();
+        reply->deleteLater();
+    }
+}
+
+void VsDevice::onSslErrors(const QList<QSslError>& errors)
+{
+    for (int i = 0; i < errors.size(); ++i) {
+        qDebug() << "SSL Error:" << errors.at(i).errorString();
+    }
+
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    if (reply != 0) {
+        qDebug() << "Error:" << reply->errorString();
+        reply->deleteLater();
+    }
 }

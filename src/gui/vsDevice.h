@@ -96,6 +96,8 @@ class VsDevice : public QObject
    private:
     void registerJTAsDevice();
     bool enabled();
+    void onError(QNetworkReply::NetworkError);
+    void onSslErrors(const QList<QSslError>& errors);
     QString randomString(int stringLength);
 
     VsPinger* m_pinger = NULL;

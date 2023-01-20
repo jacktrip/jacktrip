@@ -326,6 +326,8 @@ class VirtualStudio : public QObject
     void toggleAudio();
     void stopAudio();
     bool readyToJoin();
+    void onError(QNetworkReply::NetworkError);
+    void onSslErrors(const QList<QSslError>& errors);
 #ifdef RT_AUDIO
     QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
 #endif
