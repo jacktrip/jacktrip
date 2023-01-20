@@ -5,9 +5,9 @@ import QtGraphicalEffects 1.12
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
+
     property bool connecting: false
-    
+
     property int leftHeaderMargin: 16
     property int fontBig: 28
     property int fontMedium: 12
@@ -21,8 +21,9 @@ Item {
     property string studioStatus: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "")
     property bool showReadyScreen: studioStatus === "Ready"
     property bool showStartingScreen: studioStatus === "Starting"
-    property bool showWaitingScreen: !showStartingScreen && !showReadyScreen
-    
+    property bool showStoppingScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable && !serverModel[virtualstudio.currentStudio].enabled && serverModel[virtualstudio.currentStudio].cloudId !== "" : false)
+    property bool showWaitingScreen: !showStoppingScreen && !showStartingScreen && !showReadyScreen
+
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
 
     property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -91,7 +92,7 @@ Item {
         fillMode: Image.PreserveAspectFit
         smooth: true
     }
-    
+
     Text {
         id: heading
         text: virtualstudio.connectionState
@@ -99,7 +100,7 @@ Item {
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
         color: textColour
     }
-    
+
     Studio {
         x: leftHeaderMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
         width: parent.width - (2 * x)
@@ -430,8 +431,8 @@ Item {
             color: textColour
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: parent.isManageable
-                ? "Waiting for this studio to start. To start this studio, please choose one of the options below."
-                : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
+                    ? "Waiting for this studio to start. To start this studio, please choose one of the options below."
+                    : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
             wrapMode: Text.WordWrap
         }
 
@@ -496,6 +497,7 @@ Item {
             anchors.top: parent.isManageable ? startButtonsBox.bottom : waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
+            visible: parent.isManageable
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "You will be automatically connected to the studio when it is ready."
             wrapMode: Text.WordWrap
@@ -515,6 +517,23 @@ Item {
             color: textColour
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "This studio is currently starting up. You will be connected automatically when it is ready."
+            wrapMode: Text.WordWrap
+        }
+    }
+
+    Item {
+        id: studioStoppingScreen
+        visible: showStoppingScreen
+        x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
+        width: parent.width - (2 * x)
+
+        Text {
+            id: studioStoppingText0
+            x: 0
+            width: parent.width
+            color: textColour
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            text: "This studio is shutting down, please wait to start it again."
             wrapMode: Text.WordWrap
         }
     }
