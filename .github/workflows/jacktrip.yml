@@ -574,6 +574,7 @@ jobs:
           curl -L -O -J https://files.jacktrip.org/contrib/CodeSignTool-v1.2.6-windows.zip
           ls CodeSignTool-v1.2.6-windows.zip
           unzip CodeSignTool-v1.2.6-windows.zip
+          dir
           mkdir signed
           echo "before print"
           bash -c "ls $BUILD_PATH/"
