@@ -570,8 +570,8 @@ jobs:
           PASSWORD: ${{ secrets.SSL_COM_PWD}}
         run: |
           cd win/CodeSignTool
-          curl -L -O -J https://files.jacktrip.org/contrib/CodeSignTool-v1.2.6-windows.zip
-          unzip CodeSignTool-v1.2.6-windows.zip
+          curl -L -O -J https://storage.googleapis.com/files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-jars.zip
+          unzip CodeSignTool-jars.zip
           mkdir signed
           ./CodeSignTool.sh sign -credential_id=$CRED_ID -username=$USERNAME -password=$PASSWORD -totp_secret=$TOTP -output_dir_path=signed -input_file_path=$BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
           cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi
