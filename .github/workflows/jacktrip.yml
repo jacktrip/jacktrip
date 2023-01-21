@@ -571,16 +571,16 @@ jobs:
         run: |
           ls win\CodeSignTool
           cd win\CodeSignTool
-          curl -L -O -J https://storage.googleapis.com/files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-jars.zip
-          ls CodeSignTool-jars.zip
-          unzip CodeSignTool-jars.zip
+          curl -L -O -J https://files.jacktrip.org/contrib/CodeSignTool-v1.2.6-windows.zip
+          ls CodeSignTool-v1.2.6-windows.zip
+          unzip CodeSignTool-v1.2.6-windows.zip
           mkdir signed
           echo "before print"
           bash -c "ls $BUILD_PATH/"
           bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/"
           bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
           echo "before cp"
-          bash -c "cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi signed/installer.msi"
+          bash -c "set -e; cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi signed/installer.msi"
           ls CodeSignTool.bat
           ls signed
           bash -c "ls signed"
