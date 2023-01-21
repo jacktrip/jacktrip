@@ -562,34 +562,20 @@ jobs:
           bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
       - name: sign artifacts on Windows
         if: runner.os == 'Windows' && matrix.installer-path && steps.check-secrets.outputs.available == 'true'
-        shell: cmd
+        shell: bash
         env:
           TOTP: ${{ secrets.TOTP_SECRET }}
           CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
           USERNAME: jacktrip
           PASSWORD: ${{ secrets.SSL_COM_PWD}}
         run: |
-          ls win\CodeSignTool
-          cd win\CodeSignTool
-          curl -L -O -J https://files.jacktrip.org/contrib/CodeSignTool-v1.2.6-windows.zip
-          ls CodeSignTool-v1.2.6-windows.zip
-          unzip CodeSignTool-v1.2.6-windows.zip
-          dir
+          cd win/CodeSignTool
+          curl -L -O -J https://storage.googleapis.com/files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-jars.zip
+          unzip CodeSignTool-jars.zip
           mkdir signed
-          echo "before print"
-          bash -c "ls $BUILD_PATH/"
-          bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/"
-          bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
-          echo "before cp"
-          bash -c "set -e; cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi signed/installer.msi"
-          ls CodeSignTool.bat
-          ls signed
-          call "dir .\signed /S"
-          call "CodeSignTool.bat sign -credential_id=%CRED_ID% -username=%USERNAME% -password=%PASSWORD% -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=.\signed\installer.msi"
-          ls signed
-          bash -c "set -e; cp signed/installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
-          bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
-          bash -c "rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+          ./CodeSignTool.sh sign -credential_id=$CRED_ID -username=$USERNAME -password=$PASSWORD -totp_secret=$TOTP -output_dir_path=signed -input_file_path=$BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
+          cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi
+          rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v2
         if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
