@@ -572,26 +572,20 @@ jobs:
           NAME: ${{ steps.set-version.outputs.name }}
           INSTALLER_PATH: ${{ matrix.installer-path }}
         run: |
-          ls win\CodeSignTool
           cd win\CodeSignTool
           curl -L -O -J https://files.jacktrip.org/contrib/CodeSignTool-v1.2.6-windows.zip
-          ls CodeSignTool-v1.2.6-windows.zip
           unzip CodeSignTool-v1.2.6-windows.zip
-          dir
           mkdir signed
-          echo "before print"
-          bash -c "ls $BUILD_PATH/"
-          bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/"
-          bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
           echo "before cp"
           bash -c "set -e; cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi signed/installer.msi"
-          ls CodeSignTool.bat
-          ls signed
           dir
           call "dir"
-          call "dir .\signed /S"
-          call "echo %BUILD_PATH%\%INSTALLER_PATH%\JackTrip-%VERSION%-%NAME%-installer.msi"
-          call "CodeSignTool.bat sign -credential_id=%CRED_ID% -username=%USERNAME% -password=%PASSWORD% -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=%BUILD_PATH%\%INSTALLER_PATH%\JackTrip-%VERSION%-%NAME%-installer.msi"
+          call echo %BUILD_PATH%
+          call echo %INSTALLER_PATH%
+          call echo %VERSION%
+          call echo %NAME%
+          call echo %BUILD_PATH%\%INSTALLER_PATH%\JackTrip-%VERSION%-%NAME%-installer.msi
+          call CodeSignTool.bat sign -credential_id=%CRED_ID% -username=%USERNAME% -password=%PASSWORD% -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=%BUILD_PATH%\%INSTALLER_PATH%\JackTrip-%VERSION%-%NAME%-installer.msi
           ls signed
           bash -c "cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi" $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
           bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
