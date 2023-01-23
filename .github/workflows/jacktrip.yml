@@ -584,6 +584,8 @@ jobs:
           bash -c "set -e; cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi signed/installer.msi"
           ls CodeSignTool.bat
           ls signed
+          dir
+          call "dir"
           call "dir .\signed /S"
           call "CodeSignTool.bat sign -credential_id=%CRED_ID% -username=%USERNAME% -password=%PASSWORD% -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=.\signed\installer.msi"
           ls signed
