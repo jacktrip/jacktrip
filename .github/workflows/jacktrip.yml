@@ -568,6 +568,9 @@ jobs:
           CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
           USERNAME: jacktrip
           PASSWORD: ${{ secrets.SSL_COM_PWD}}
+          VERSION: ${{ steps.set-version.outputs.version }}
+          NAME: ${{ steps.set-version.outputs.name }}
+          INSTALLER_PATH: ${{ matrix.installer-path }}
         run: |
           ls win\CodeSignTool
           cd win\CodeSignTool
@@ -587,9 +590,10 @@ jobs:
           dir
           call "dir"
           call "dir .\signed /S"
-          call "CodeSignTool.bat sign -credential_id=%CRED_ID% -username=%USERNAME% -password=%PASSWORD% -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=.\signed\installer.msi"
+          call "echo %BUILD_PATH%\%INSTALLER_PATH%\JackTrip-%VERSION%-%NAME%-installer.msi"
+          call "CodeSignTool.bat sign -credential_id=%CRED_ID% -username=%USERNAME% -password=%PASSWORD% -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=%BUILD_PATH%\%INSTALLER_PATH%\JackTrip-%VERSION%-%NAME%-installer.msi"
           ls signed
-          bash -c "set -e; cp signed/installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
+          bash -c "cp $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi" $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
           bash -c "ls $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
           bash -c "rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
       - name: upload jacktrip binary
