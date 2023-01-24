@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.7.0",
+            "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
+            "download": {
+                "date": "2022-01-24T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.0-Linux-x64-binary.zip",
+                "downloadSize": 32554865,
+                "sha256": "13b3781f6dca0713eb135c9352c23cf0f40094603357ee5d5a940868597e8bb8"
+            }
+        },
+        {
             "version": "1.6.8",
             "changelog": "Critical bug fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.8",
             "download": {
