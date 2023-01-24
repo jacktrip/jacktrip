@@ -591,7 +591,7 @@ jobs:
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: upload signed installer
         uses: actions/upload-artifact@v2
-        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && steps.check-secrets.outputs.available == 'true' && runner.os != 'Windows'
+        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && needs.check-secrets.outputs.available == 'true' && runner.os != 'Windows'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
