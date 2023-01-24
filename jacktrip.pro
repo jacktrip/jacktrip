@@ -32,6 +32,7 @@ nogui {
     QT += networkauth
     QT += qml
     QT += quick
+    QT += quickcontrols2
     QT += svg
     QT += websockets
   }
