@@ -262,7 +262,7 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
           echo "stamp=$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT # set timestamp for cache
       - name: setup python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
       - name: cache vcpkg on Windows
