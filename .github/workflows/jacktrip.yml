@@ -77,7 +77,7 @@ jobs:
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -102,7 +102,7 @@ jobs:
             build-system: qmake
 
           - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -282,7 +282,7 @@ jobs:
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev qtquickcontrols2-5-dev
+            sudo apt-get install --yes qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev qtquickcontrols2-5-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
