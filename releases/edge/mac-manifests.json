@@ -5,7 +5,7 @@
             "version": "1.7.0",
             "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
             "download": {
-                "date": "2022-01-24T00:00:00Z",
+                "date": "2023-01-24T00:00:00Z",
                 "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.0-macOS-x64-installer.pkg",
                 "downloadSize": 11530594,
                 "sha256": "0e5731c2ad71aa4bd28ccf9311e312f2386c42b02abbca142777dfb06ea1b427"
