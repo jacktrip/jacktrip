@@ -233,10 +233,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         this, &VirtualStudio::studioToJoinChanged, this,
         [&]() {
             if (!m_studioToJoin.isEmpty()) {
-                // join studio when studio to join changes
-                if (readyToJoin()) {
-                    joinStudio();
-                }
+                joinStudio();
             }
         },
         Qt::QueuedConnection);
@@ -717,6 +714,17 @@ void VirtualStudio::setWindowState(QString state)
     emit windowStateUpdated();
 }
 
+QString VirtualStudio::apiHost()
+{
+    return m_apiHost;
+}
+
+void VirtualStudio::setApiHost(QString host)
+{
+    m_apiHost = host;
+    emit apiHostChanged();
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;
@@ -732,12 +740,7 @@ void VirtualStudio::setShowWarnings(bool show)
     emit showWarningsChanged();
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
-        // device setup view proceeds warning view
-        // if device setup is shown, do not immediately join
-        if (readyToJoin()) {
-            // We're done waiting to be on the browse page
-            joinStudio();
-        }
+        joinStudio();
     }
 }
 
@@ -839,6 +842,12 @@ void VirtualStudio::joinStudio()
         return;
     }
 
+    // FTUX shows warnings and device setup views
+    // if any of these enabled, do not immediately join
+    if (!readyToJoin()) {
+        return;
+    }
+
     QString scheme = m_studioToJoin.scheme();
     QString path   = m_studioToJoin.path();
     QString url    = m_studioToJoin.toString();
@@ -897,6 +906,7 @@ void VirtualStudio::toVirtualStudio()
                 (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
                 parameters->insert(QStringLiteral("audience"), AUTH_AUDIENCE);
+                parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
             }
             if (!parameters->contains("client_id")) {
                 parameters->insert("client_id", AUTH_CLIENT_ID);
@@ -1072,18 +1082,9 @@ void VirtualStudio::connectToStudio(int studioIndex)
 
     // Check if we have an address for our server
     if (studioInfo->status() != "Ready" && studioInfo->isManageable() == true) {
-        if (studioInfo->isOwner() || studioInfo->isAdmin()) {
-            QUrl url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
-                                .arg(m_apiHost, studioInfo->id()));
-            QDesktopServices::openUrl(url);
-        } else {
-            m_startedStudio = false;
-        }
-
         m_connectionState = QStringLiteral("Waiting...");
         emit connectionStateChanged();
     } else {
-        m_startedStudio = false;
         completeConnection();
     }
 }
@@ -1215,35 +1216,13 @@ void VirtualStudio::disconnect()
     m_retryPeriod = false;
 
     if (m_jackTripRunning) {
-        if (m_startedStudio) {
-            VsServerInfo* studioInfo =
-                static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
-            QMessageBox msgBox;
-            msgBox.setText(QStringLiteral("Do you want to stop the current studio?"));
-            msgBox.setWindowTitle(QStringLiteral("Stop Studio"));
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            msgBox.setDefaultButton(QMessageBox::Yes);
-            int ret = msgBox.exec();
-            if (ret == QMessageBox::Yes) {
-                studioInfo->setHost(QLatin1String(""));
-                stopStudio();
-            }
-        }
-
         m_device->stopPinger();
         m_device->stopJackTrip();
-    } else if (m_startedStudio) {
-        m_startTimer.stop();
-        stopStudio();
-        if (!m_isExiting) {
-            emit disconnected();
-            m_onConnectedScreen = false;
-        }
     } else {
         // How did we get here? This shouldn't be possible, but include for safety.
         if (m_isExiting) {
             emit signalExit();
-        } else {
+        } else if (m_onConnectedScreen) {
             emit disconnected();
             m_onConnectedScreen = false;
         }
@@ -1273,9 +1252,29 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
                        .arg(m_apiHost,
                             static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     } else {
-        url = QUrl(QStringLiteral("https://%1/studios/%2?start=true")
-                       .arg(m_apiHost,
-                            static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+        QString expiration =
+            QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
+        QJsonObject json      = {{QLatin1String("enabled"), true},
+                            {QLatin1String("expiresAt"), expiration}};
+        QJsonDocument request = QJsonDocument(json);
+
+        QNetworkReply* reply = m_authenticator->put(
+            QStringLiteral("https://%1/api/servers/%2")
+                .arg(m_apiHost,
+                     static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()),
+            request.toJson());
+        connect(reply, &QNetworkReply::finished, this, [&, reply]() {
+            if (reply->error() != QNetworkReply::NoError) {
+                m_connectionState = QStringLiteral("Unable to Start Studio");
+                emit connectionStateChanged();
+            } else {
+                QByteArray response       = reply->readAll();
+                QJsonDocument serverState = QJsonDocument::fromJson(response);
+                if (serverState.object()[QStringLiteral("status")].toString()
+                    == QLatin1String("Starting")) {}
+            }
+            reply->deleteLater();
+        });
     }
     QDesktopServices::openUrl(url);
 }
@@ -1377,12 +1376,7 @@ void VirtualStudio::slotAuthSucceded()
 
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
-        // FTUX shows warnings and device setup views
-        // if any of these enabled, do not immediately join
-        if (readyToJoin()) {
-            // We should join in this case
-            joinStudio();
-        }
+        joinStudio();
     }
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
     connect(m_device, &VsDevice::updatedCaptureVolumeFromServer, this,
@@ -1411,17 +1405,14 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
+    // use disconnect function to handle reset of all internal flags and timers
+    disconnect();
+
     // reset network statistics
     m_networkStats = QJsonObject();
 
     if (m_isExiting) {
         emit signalExit();
-        return;
-    }
-
-    if (m_retryPeriod && m_startedStudio) {
-        // Retry if necessary.
-        completeConnection();
         return;
     }
 
@@ -1432,8 +1423,14 @@ void VirtualStudio::processFinished()
     m_jackTripRunning = false;
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
-    emit disconnected();
-    m_onConnectedScreen = false;
+
+    // if this occurs on the setup or settings screen (for example, due to an issue with
+    // devices) then don't emit disconnected, as that would move you back to the "Browse"
+    // screen
+    if (m_onConnectedScreen) {
+        m_onConnectedScreen = false;
+        emit disconnected();
+    }
 #ifdef __APPLE__
     m_noNap.enableNap();
 #endif
@@ -1483,8 +1480,12 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
 {
     QJsonObject serverState  = QJsonDocument::fromJson(msg.toUtf8()).object();
     QString serverStatus     = serverState[QStringLiteral("status")].toString();
+    bool serverEnabled       = serverState[QStringLiteral("enabled")].toBool();
+    QString serverCloudId    = serverState[QStringLiteral("cloudId")].toString();
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     studioInfo->setStatus(serverStatus);
+    studioInfo->setEnabled(serverEnabled);
+    studioInfo->setCloudId(serverCloudId);
     if (!m_jackTripRunning) {
         if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
             studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
@@ -1652,6 +1653,7 @@ void VirtualStudio::setupAuthenticator()
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
                 parameters->insert(QStringLiteral("audience"),
                                    QStringLiteral("https://api.jacktrip.org"));
+                parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
             }
         });
 
@@ -1688,6 +1690,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
     {
         QMutexLocker locker(&m_refreshMutex);
         if (!m_allowRefresh || m_refreshInProgress) {
+            if (signalRefresh) {
+                emit refreshFinished(index);
+            }
             return;
         } else {
             m_refreshInProgress = true;
@@ -1706,6 +1711,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
         reply, &QNetworkReply::finished, this,
         [&, reply, topServerId, firstLoad, signalRefresh]() {
             if (reply->error() != QNetworkReply::NoError) {
+                if (signalRefresh) {
+                    emit refreshFinished(index);
+                }
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
                 emit authFailed();
                 reply->deleteLater();
@@ -1715,6 +1723,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             QByteArray response      = reply->readAll();
             QJsonDocument serverList = QJsonDocument::fromJson(response);
             if (!serverList.isArray()) {
+                if (signalRefresh) {
+                    emit refreshFinished(index);
+                }
                 std::cout << "Error: Not an array" << std::endl;
                 QMutexLocker locker(&m_refreshMutex);
                 m_refreshInProgress = false;
@@ -1777,6 +1788,10 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                             servers.at(i)[QStringLiteral("sessionId")].toString());
                         serverInfo->setInviteKey(
                             servers.at(i)[QStringLiteral("inviteKey")].toString());
+                        serverInfo->setCloudId(
+                            servers.at(i)[QStringLiteral("cloudId")].toString());
+                        serverInfo->setEnabled(
+                            servers.at(i)[QStringLiteral("enabled")].toBool());
                         serverInfo->setIsOwner(
                             servers.at(i)[QStringLiteral("owner")].toBool());
                         serverInfo->setIsAdmin(
@@ -1838,6 +1853,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             // request going out and the response.
             if (!m_allowRefresh) {
                 m_refreshInProgress = false;
+                if (signalRefresh) {
+                    emit refreshFinished(index);
+                }
                 return;
             }
             m_servers.clear();
@@ -2104,6 +2122,8 @@ void VirtualStudio::stopStudio()
 
 bool VirtualStudio::readyToJoin()
 {
+    // FTUX shows warnings and device setup views
+    // if any of these enabled, do not immediately join
     return m_windowState == "browse"
            && (m_connectionState == QStringLiteral("Waiting...")
                || m_connectionState == QStringLiteral("Disconnected"));
