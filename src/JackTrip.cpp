@@ -57,6 +57,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QtEndian>
+#include <QtGlobal>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -1290,7 +1291,7 @@ int JackTrip::clientPingToServerStart()
     connect(&mTcpClient, &QTcpSocket::readyRead, this, &JackTrip::receivedDataTCP);
     connect(&mTcpClient, &QTcpSocket::connected, this, &JackTrip::receivedConnectionTCP);
     // Enable CI builds on Ubuntu 20.04 with Qt 5.12.8
-#ifdef __linux__
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
     connect(&mTcpClient,
             QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), this,
             &JackTrip::receivedErrorTCP);

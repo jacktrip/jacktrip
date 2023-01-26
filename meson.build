@@ -145,7 +145,7 @@ else
 			moc_h += ['src/gui/vsMacPermissions.h']
 		endif
 
-		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 
