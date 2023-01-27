@@ -364,6 +364,9 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
     }
 #endif
     int bindPort = selectBindPort();
+    if (bindPort == 0) {
+        return 0;
+    }
     m_jackTrip->setBindPorts(bindPort);
     m_jackTrip->setRemoteClientName(m_appID);
     // increment m_bufferStrategy by 1 for array-index mapping
@@ -674,14 +677,11 @@ int VsDevice::selectBindPort()
     }
     int attempt = 0;
     while (attempt <= 5000) {
-        candidate = qrand() % (gBindPortHigh - gBindPortLow + 1) + gBindPortLow;
+        candidate = QRandomGenerator::global()->bounded(gBindPortLow, gBindPortHigh + 1);
         attempt++;
-        try {
-            m_jackTrip->checkIfPortIsBinded(candidate);
+        if (!m_jackTrip->checkIfPortIsBinded(candidate)) {
             return candidate;
-        } catch (const std::exception& e) {
-            qDebug() << e.what();
         }
     }
-    return candidate;
+    return 0;
 }
