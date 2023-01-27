@@ -33,6 +33,16 @@ alternative options to install from.
 === "Debian"
 
     Debian stable users can obtain their latest version from the [Debian backports] repository.
+    
+    As an example for Debian Bullseye follow these steps: 
+    
+    ```bash
+    mkdir -p /etc/apt/sources.list.d/
+    echo "deb http://deb.debian.org/debian bullseye-backports main" \
+    | tee /etc/apt/sources.list.d/backports.list
+    apt-get update
+    apt-get install -t bullseye-backports jacktrip
+    ``` 
 
 === "All"
 
