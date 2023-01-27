@@ -81,7 +81,7 @@ Item {
             flagImage: bannerURL ? bannerURL : flag
             studioName: name
             publicStudio: isPublic
-            manageable: isManageable
+            admin: isAdmin
             available: canConnect
             connected: false
             studioId: id ? id : ""

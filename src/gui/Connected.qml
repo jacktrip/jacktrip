@@ -21,7 +21,7 @@ Item {
     property string studioStatus: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "")
     property bool showReadyScreen: studioStatus === "Ready"
     property bool showStartingScreen: studioStatus === "Starting"
-    property bool showStoppingScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable && !serverModel[virtualstudio.currentStudio].enabled && serverModel[virtualstudio.currentStudio].cloudId !== "" : false)
+    property bool showStoppingScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isAdmin && !serverModel[virtualstudio.currentStudio].enabled && serverModel[virtualstudio.currentStudio].cloudId !== "" : false)
     property bool showWaitingScreen: !showStoppingScreen && !showStartingScreen && !showReadyScreen
 
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -109,7 +109,7 @@ Item {
         flagImage: virtualstudio.currentStudio >= 0 ? ( serverModel[virtualstudio.currentStudio].bannerURL ? serverModel[virtualstudio.currentStudio].bannerURL : serverModel[virtualstudio.currentStudio].flag ) : "flags/DE.svg"
         studioName: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].name : "Test Studio"
         publicStudio: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isPublic : false
-        manageable: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false
+        admin: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isAdmin : false
         available: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].canConnect : false
         studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
         inviteKeyString: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].inviteKey : ""
@@ -422,7 +422,7 @@ Item {
         x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
         width: parent.width - (2 * x)
 
-        property bool isManageable: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false)
+        property bool isAdmin: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isAdmin : false)
 
         Text {
             id: waitingText0
@@ -430,7 +430,7 @@ Item {
             width: parent.width
             color: textColour
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            text: parent.isManageable
+            text: parent.isAdmin
                     ? "Waiting for this studio to start. Please start the studio using one of the options below."
                     : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
             wrapMode: Text.WordWrap
@@ -441,7 +441,7 @@ Item {
             anchors.top: waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
-            visible: parent.isManageable
+            visible: parent.isAdmin
 
             height: 64 * virtualstudio.uiScale
 
@@ -494,10 +494,10 @@ Item {
             x: 0
             width: parent.width
             color: textColour
-            anchors.top: parent.isManageable ? startButtonsBox.bottom : waitingText0.bottom
+            anchors.top: parent.isAdmin ? startButtonsBox.bottom : waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
-            visible: parent.isManageable
+            visible: parent.isAdmin
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "You will be automatically connected to the studio when it is ready."
             wrapMode: Text.WordWrap
