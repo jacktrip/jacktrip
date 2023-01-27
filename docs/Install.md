@@ -14,7 +14,22 @@ On Linux the easiest way to install JackTrip is to use the distribution's packag
     sudo apt install jacktrip
     ```
 
-The [GitHub releases page](https://github.com/jacktrip/jacktrip/releases) also includes a binary which should run on most Linux distributions (x64). This build is known to not look well under Wayland.
+### Latest release
+
+If your distribution doesn't include the latest release in their repository, there are different
+alternative options to install from.
+
+Ubuntu users can install from a [PPA repository](https://launchpad.net/~umlaeute/+archive/ubuntu/jacktrip/)
+maintained by the packager of Ubuntu's official JackTrip packages.
+
+```bash
+sudo add-apt-repository ppa:umlaeute/jacktrip
+sudo apt update
+sudo apt install jacktrip
+```
+
+The [GitHub releases page](https://github.com/jacktrip/jacktrip/releases) also includes a binary
+which should run on most Linux distributions (x64). This build is known to not look well under Wayland.
 
 ## macOS
 macOS installer and application bundle are available on the [GitHub releases page](https://github.com/jacktrip/jacktrip/releases). The installer will install the JackTrip app in `/Applications`, as well as create a link to the `jacktrip` executable in `/usr/local/bin` for use in the command line.
