@@ -14,7 +14,7 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
 === "Debian/Ubuntu"
 
     ```bash
-    apt install meson build-essential qtbase5-dev librtaudio-dev libjack-jackd2-dev help2man
+    apt install meson build-essential qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev libqt5svg5-dev libqt5networkauth5-dev libqt5websockets5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libjack-jackd2-dev git help2man
     ```
 
 === "MacOS"
