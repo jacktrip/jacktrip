@@ -217,27 +217,7 @@ Item {
         y: header.height
         color: backgroundColour
         visible: settingsGroupView == "Audio"
-
-        ComboBox {
-            id: backendCombo
-            model: backendComboModel
-            currentIndex: virtualstudio.audioBackend == "JACK" ? 0 : 1
-            onActivated: { virtualstudio.audioBackend = currentText }
-            x: 234 * virtualstudio.uiScale; y: 48 * virtualstudio.uiScale
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-            visible: virtualstudio.selectableBackend
-        }
-
-        Text {
-            id: backendLabel
-            anchors.verticalCenter: backendCombo.verticalCenter
-            x: leftMargin * virtualstudio.uiScale
-            text: "Audio Backend"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.selectableBackend
-            color: textColour
-        }
-
+        
         Text {
             id: jackLabel
             x: leftMargin * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
@@ -265,7 +245,7 @@ Item {
             x: leftMargin * virtualstudio.uiScale
             text: "Output Device"
             font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
+            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             color: textColour
         }
 
@@ -286,9 +266,9 @@ Item {
 
                 return 0;
             })()
-            x: 234 * virtualstudio.uiScale; y: virtualstudio.uiScale * (virtualstudio.selectableBackend ? 96 : 48)
-            width: backendCombo.width; height: backendCombo.height
-            visible: virtualstudio.audioBackend != "JACK"
+            x: 234 * virtualstudio.uiScale; y: 48 * virtualstudio.uiScale
+            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
+            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             delegate: ItemDelegate {
                 required property var modelData
                 required property int index
@@ -334,7 +314,7 @@ Item {
             onClicked: { virtualstudio.playOutputAudio() }
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             x: parent.width - (232 * virtualstudio.uiScale)
-            y: virtualstudio.audioBackend != "JACK" ? outputCombo.y + (48 * virtualstudio.uiScale) : jackLabel.y + (72 * virtualstudio.uiScale)
+            y: outputCombo.y + (48 * virtualstudio.uiScale)
             Text {
                 text: "Test Output Audio"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -344,15 +324,22 @@ Item {
             visible: virtualstudio.audioReady
         }
 
+        Rectangle {
+            id: divider1
+            x: leftMargin * virtualstudio.uiScale
+            y: testOutputAudioButton.y + (60 * virtualstudio.uiScale)
+            width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
+            color: textColour
+            visible: virtualstudio.audioReady
+        }
+
         Text {
             id: inputLabel
             anchors.verticalCenter: inputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
-            anchors.top: virtualstudio.audioBackend != "JACK" ? inputCombo.top : inputDeviceMeters.top
-            anchors.topMargin: virtualstudio.audioBackend != "JACK" ? (inputCombo.height - inputLabel.height)/2 : 0
             text: "Input Device"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.backendAvailable
+            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             color: textColour
         }
 
@@ -373,9 +360,9 @@ Item {
 
                 return 0;
             })()
-            x: backendCombo.x; y: testOutputAudioButton.y + (48 * virtualstudio.uiScale)
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-            visible: virtualstudio.audioBackend != "JACK"
+            x: outputCombo.x; y: divider1.y + (48 * virtualstudio.uiScale)
+            width: outputCombo.width; height: outputCombo.height
+            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             delegate: ItemDelegate {
                 required property var modelData
                 required property int index
@@ -423,16 +410,13 @@ Item {
             visible: virtualstudio.audioReady
         }
 
-        Text {
-            anchors.left: backendCombo.left
-            anchors.right: parent.right
-            anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : virtualstudio.uiScale * (virtualstudio.selectableBackend ? 112 : 64)
-            height: 100 * virtualstudio.uiScale
-            text: "Preparing audio..."
-            font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK" && !virtualstudio.audioReady
+        Rectangle {
+            id: divider2
+            x: leftMargin * virtualstudio.uiScale
+            y: inputCombo.y + (60 * virtualstudio.uiScale)
+            width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
             color: textColour
+            visible: virtualstudio.audioReady
         }
 
         Button {
@@ -446,7 +430,7 @@ Item {
             onClicked: { virtualstudio.refreshDevices() }
             x: parent.width - (232 * virtualstudio.uiScale); y: inputDeviceMeters.y + (48 * virtualstudio.uiScale)
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            visible: virtualstudio.audioBackend != "JACK"
+            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             Text {
                 text: "Refresh Devices"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -458,7 +442,7 @@ Item {
         Text {
             id: devicesWarningOrError
             x: leftMargin * virtualstudio.uiScale
-            y: virtualstudio.audioBackend != "JACK" ? refreshButton.y + (48 * virtualstudio.uiScale) : testOutputAudioButton.y + (48 * virtualstudio.uiScale)
+            y: refreshButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - (64 * virtualstudio.uiScale)
             textFormat: Text.RichText
             text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
@@ -474,35 +458,6 @@ Item {
             color: warningTextColour
             font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: Boolean(virtualstudio.devicesError || virtualstudio.devicesWarning);
-        }
-
-        Rectangle {
-            id: divider
-            x: leftMargin * virtualstudio.uiScale
-            y: Boolean(virtualstudio.devicesError || virtualstudio.devicesWarning) ? devicesWarningOrError.y + (60 * virtualstudio.uiScale) : refreshButton.y + (60 * virtualstudio.uiScale)
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
-            color: textColour
-            visible: virtualstudio.audioBackend != "JACK"
-        }
-
-        ComboBox {
-            id: bufferCombo
-            x: backendCombo.x; y: divider.y + (24 * virtualstudio.uiScale)
-            width: backendCombo.width; height: backendCombo.height
-            model: bufferComboModel
-            currentIndex: virtualstudio.bufferSize
-            onActivated: { virtualstudio.bufferSize = currentIndex }
-            font.family: "Poppins"
-            visible: virtualstudio.audioBackend != "JACK"
-        }
-
-        Text {
-            anchors.verticalCenter: bufferCombo.verticalCenter
-            x: 48 * virtualstudio.uiScale
-            text: "Buffer Size"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
-            color: textColour
         }
     }
 
@@ -616,8 +571,48 @@ Item {
         }
 
         ComboBox {
+            id: backendCombo
+            model: backendComboModel
+            currentIndex: virtualstudio.audioBackend == "JACK" ? 0 : 1
+            onActivated: { virtualstudio.audioBackend = currentText }
+            x: 234 * virtualstudio.uiScale; y: updateChannelCombo.y + (48 * virtualstudio.uiScale)
+            width: updateChannelCombo.width; height: updateChannelCombo.height
+            visible: virtualstudio.selectableBackend
+        }
+
+        Text {
+            id: backendLabel
+            anchors.verticalCenter: backendCombo.verticalCenter
+            x: leftMargin * virtualstudio.uiScale
+            text: "Audio Backend"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.selectableBackend
+            color: textColour
+        }
+
+        ComboBox {
+            id: bufferCombo
+            x: 234 * virtualstudio.uiScale; y: backendCombo.y + (48 * virtualstudio.uiScale)
+            width: backendCombo.width; height: updateChannelCombo.height
+            model: bufferComboModel
+            currentIndex: virtualstudio.bufferSize
+            onActivated: { virtualstudio.bufferSize = currentIndex }
+            font.family: "Poppins"
+            visible: virtualstudio.audioBackend != "JACK"
+        }
+
+        Text {
+            anchors.verticalCenter: bufferCombo.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Buffer Size"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.audioBackend != "JACK"
+            color: textColour
+        }
+
+        ComboBox {
             id: bufferStrategyCombo
-            x: updateChannelCombo.x; y: updateChannelCombo.y + (48 * virtualstudio.uiScale)
+            x: updateChannelCombo.x; y: bufferCombo.y + (48 * virtualstudio.uiScale)
             width: updateChannelCombo.width; height: updateChannelCombo.height
             model: bufferStrategyComboModel
             currentIndex: virtualstudio.bufferStrategy
