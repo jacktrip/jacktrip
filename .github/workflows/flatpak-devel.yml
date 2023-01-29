@@ -1,7 +1,19 @@
 on:
   push:
     branches: [dev]
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
 name: Flatpak Devel
 jobs:
   flatpak:
