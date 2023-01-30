@@ -269,7 +269,7 @@ Item {
 
                 return 0;
             })()
-            x: 234 * virtualstudio.uiScale; y: 48 * virtualstudio.uiScale
+            x: 234 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             delegate: ItemDelegate {
@@ -311,7 +311,8 @@ Item {
             anchors.left: outputLabel.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: outputCombo.y + 48 * virtualstudio.uiScale
+            anchors.top: outputCombo.bottom
+            anchors.topMargin: 24 * virtualstudio.uiScale
             height: 100 * virtualstudio.uiScale
             model: outputMeterModel
             clipped: outputClipped
@@ -424,7 +425,7 @@ Item {
 
                 return 0;
             })()
-            x: outputCombo.x; y: divider1.y + (48 * virtualstudio.uiScale)
+            x: outputCombo.x; y: divider1.y + (32 * virtualstudio.uiScale)
             width: outputCombo.width; height: outputCombo.height
             visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             delegate: ItemDelegate {
@@ -466,7 +467,8 @@ Item {
             anchors.left: inputLabel.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: inputCombo.y + 48 * virtualstudio.uiScale
+            anchors.top: inputCombo.bottom
+            anchors.topMargin: 24 * virtualstudio.uiScale
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped
@@ -498,7 +500,6 @@ Item {
             smooth: true
             visible: virtualstudio.audioReady
         }
-
 
         Slider {
             id: inputSlider
