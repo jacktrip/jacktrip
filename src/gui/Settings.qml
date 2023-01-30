@@ -28,6 +28,8 @@ Item {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
+    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
     property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
@@ -245,7 +247,7 @@ Item {
             anchors.verticalCenter: outputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Output Device"
-            font { family: "Poppins"; pixelSize: 13 * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             color: textColour
         }
@@ -317,6 +319,54 @@ Item {
             visible: virtualstudio.audioReady
         }
 
+        Image {
+            id: outputQuieterIcon
+            x: leftMargin * virtualstudio.uiScale
+            anchors.verticalCenter: testOutputAudioButton.verticalCenter
+            height: 20 * virtualstudio.uiScale
+            source: "quiet.svg"
+            sourceSize: Qt.size(outputQuieterIcon.width,outputQuieterIcon.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            visible: virtualstudio.audioReady
+        }
+
+        Image {
+            id: outputLouderIcon
+            anchors.right: testOutputAudioButton.left
+            anchors.verticalCenter: outputQuieterIcon.verticalCenter
+            anchors.rightMargin: 16 * virtualstudio.uiScale
+            height: 20 * virtualstudio.uiScale
+            source: "loud.svg"
+            sourceSize: Qt.size(outputLouderIcon.width,outputLouderIcon.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            visible: virtualstudio.audioReady
+        }
+
+        Slider {
+            id: outputSlider
+            from: 0.0
+            value: audioInterface ? audioInterface.outputVolume : 0.5
+            onMoved: { audioInterface.outputVolume = value }
+            to: 1.0
+            anchors.left: outputQuieterIcon.right
+            anchors.right: outputLouderIcon.left
+            anchors.leftMargin: 4 * virtualstudio.uiScale
+            anchors.rightMargin: 8 * virtualstudio.uiScale
+            anchors.verticalCenter: testOutputAudioButton.verticalCenter
+            handle: Rectangle {
+                x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
+                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: outputSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+            visible: virtualstudio.audioReady
+        }
+
         Button {
             id: testOutputAudioButton
             background: Rectangle {
@@ -352,7 +402,7 @@ Item {
             anchors.verticalCenter: inputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Input Device"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             color: textColour
         }
@@ -424,10 +474,67 @@ Item {
             visible: virtualstudio.audioReady
         }
 
+        Image {
+            id: inputQuieterIcon
+            x: leftMargin * virtualstudio.uiScale
+            anchors.verticalCenter: hiddenInputButton.verticalCenter
+            height: 20 * virtualstudio.uiScale
+            source: "quiet.svg"
+            sourceSize: Qt.size(inputQuieterIcon.width,inputQuieterIcon.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            visible: virtualstudio.audioReady
+        }
+
+        Image {
+            id: inputLouderIcon
+            anchors.right: hiddenInputButton.left
+            anchors.verticalCenter: hiddenInputButton.verticalCenter
+            anchors.rightMargin: 16 * virtualstudio.uiScale
+            height: 20 * virtualstudio.uiScale
+            source: "loud.svg"
+            sourceSize: Qt.size(inputLouderIcon.width,inputLouderIcon.height)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            visible: virtualstudio.audioReady
+        }
+
+
+        Slider {
+            id: inputSlider
+            from: 0.0
+            value: audioInterface ? audioInterface.inputVolume : 0.5
+            onMoved: { audioInterface.inputVolume = value }
+            to: 1.0
+            anchors.left: inputQuieterIcon.right
+            anchors.right: inputLouderIcon.left
+            anchors.leftMargin: 4 * virtualstudio.uiScale
+            anchors.rightMargin: 8 * virtualstudio.uiScale
+            anchors.verticalCenter: hiddenInputButton.verticalCenter
+            handle: Rectangle {
+                x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
+                y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: inputSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+            visible: virtualstudio.audioReady
+        }
+
+        Button {
+            id: hiddenInputButton
+            width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            x: parent.width - (160 * virtualstudio.uiScale)
+            y: inputDeviceMeters.y + (48 * virtualstudio.uiScale)
+            visible: false
+        }
+
         Rectangle {
             id: divider2
             x: leftMargin * virtualstudio.uiScale
-            y: inputDeviceMeters.y + (60 * virtualstudio.uiScale)
+            y: inputSlider.y + (60 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 2 * virtualstudio.uiScale
             color: "#E0E0E0"
             visible: virtualstudio.audioReady
