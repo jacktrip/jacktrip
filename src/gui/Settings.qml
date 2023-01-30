@@ -342,8 +342,8 @@ Item {
             id: divider1
             x: leftMargin * virtualstudio.uiScale
             y: testOutputAudioButton.y + (60 * virtualstudio.uiScale)
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
-            color: textColour
+            width: parent.width - x - (16 * virtualstudio.uiScale); height: 2 * virtualstudio.uiScale
+            color: "#E0E0E0"
             visible: virtualstudio.audioReady
         }
 
@@ -428,8 +428,8 @@ Item {
             id: divider2
             x: leftMargin * virtualstudio.uiScale
             y: inputDeviceMeters.y + (60 * virtualstudio.uiScale)
-            width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
-            color: textColour
+            width: parent.width - x - (16 * virtualstudio.uiScale); height: 2 * virtualstudio.uiScale
+            color: "#E0E0E0"
             visible: virtualstudio.audioReady
         }
 
