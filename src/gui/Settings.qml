@@ -241,6 +241,7 @@ Item {
         }
 
         Text {
+            id: outputLabel
             anchors.verticalCenter: outputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Output Device"
@@ -303,6 +304,19 @@ Item {
             }
         }
 
+        Meter {
+            id: outputDeviceMeters
+            anchors.left: outputLabel.left
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            y: outputCombo.y + 48 * virtualstudio.uiScale
+            height: 100 * virtualstudio.uiScale
+            model: outputMeterModel
+            clipped: outputClipped
+            enabled: !Boolean(virtualstudio.devicesError)
+            visible: virtualstudio.audioReady
+        }
+
         Button {
             id: testOutputAudioButton
             background: Rectangle {
@@ -312,12 +326,12 @@ Item {
                 border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.playOutputAudio() }
-            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            x: parent.width - (232 * virtualstudio.uiScale)
-            y: outputCombo.y + (48 * virtualstudio.uiScale)
+            width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            x: parent.width - (160 * virtualstudio.uiScale)
+            y: outputDeviceMeters.y + (48 * virtualstudio.uiScale)
             Text {
-                text: "Test Output Audio"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                text: "Play Test Tone"
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
             }
@@ -399,10 +413,10 @@ Item {
 
         Meter {
             id: inputDeviceMeters
-            anchors.left: backendCombo.left
+            anchors.left: inputLabel.left
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            y: virtualstudio.audioBackend != "JACK" ?  inputCombo.y + 48 * virtualstudio.uiScale : testOutputAudioButton.y + 72 * virtualstudio.uiScale
+            y: inputCombo.y + 48 * virtualstudio.uiScale
             height: 100 * virtualstudio.uiScale
             model: inputMeterModel
             clipped: inputClipped
@@ -413,7 +427,7 @@ Item {
         Rectangle {
             id: divider2
             x: leftMargin * virtualstudio.uiScale
-            y: inputCombo.y + (60 * virtualstudio.uiScale)
+            y: inputDeviceMeters.y + (60 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 1 * virtualstudio.uiScale
             color: textColour
             visible: virtualstudio.audioReady
@@ -428,12 +442,13 @@ Item {
                 border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.refreshDevices() }
-            x: parent.width - (232 * virtualstudio.uiScale); y: inputDeviceMeters.y + (48 * virtualstudio.uiScale)
-            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            x: parent.width - (160 * virtualstudio.uiScale);
+            y: divider2.y + (48 * virtualstudio.uiScale)
+            width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             Text {
                 text: "Refresh Devices"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
             }

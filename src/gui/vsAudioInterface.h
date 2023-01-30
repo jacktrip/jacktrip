@@ -108,7 +108,8 @@ class VsAudioInterface : public QObject
     void triggerPlayback();
     void settingsUpdated();
     void modeUpdated();
-    void newVolumeMeterMeasurements(QVector<float> values);
+    void newInputMeterMeasurements(QVector<float> values);
+    void newOutputMeterMeasurements(QVector<float> values);
     void errorToProcess(const QString& errorMessage);
     void devicesErrorMsgChanged(const QString& msg);
     void devicesWarningMsgChanged(const QString& msg);
@@ -118,7 +119,8 @@ class VsAudioInterface : public QObject
    private slots:
     // void refreshAudioStream();
     void replaceProcess();
-    void processMeterMeasurements(QVector<float> values);
+    void processInputMeterMeasurements(QVector<float> values);
+    void processOutputMeterMeasurements(QVector<float> values);
 
    private:
     void setupJackAudio();
@@ -142,6 +144,7 @@ class VsAudioInterface : public QObject
     std::string m_inputDeviceName, m_outputDeviceName;  ///< RTAudio device names
     uint32_t m_audioBufferSize;  ///< Audio buffer size to process on each callback
     VsAudioInterface::audiointerfaceModeT m_audioInterfaceMode;
+    Meter* m_outputMeter;
     Meter* m_inputMeter;
     Volume* m_inputVolumePlugin;
     Volume* m_outputVolumePlugin;
