@@ -633,6 +633,16 @@ Item {
                 color: textColour
             }
 
+            Image {
+                id: headphonesIcon
+                anchors.left: outputLabel.left
+                anchors.verticalCenter: outputDeviceMeters.verticalCenter
+                source: "headphones.svg"
+                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
             ComboBox {
                 id: outputCombo
                 anchors.left: outputLabel.right
@@ -693,7 +703,7 @@ Item {
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
                 anchors.top: outputCombo.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
                 model: outputMeterModel
                 clipped: outputClipped
@@ -712,7 +722,7 @@ Item {
                 anchors.right: outputLouderIcon.left
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: outputDeviceMeters.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 16 * virtualstudio.uiScale
                 handle: Rectangle {
                     x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
                     y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
@@ -769,7 +779,7 @@ Item {
             Rectangle {
                 id: divider1
                 anchors.top: testOutputAudioButton.bottom
-                anchors.topMargin: 32 * virtualstudio.uiScale
+                anchors.topMargin: 24 * virtualstudio.uiScale
                 width: parent.width - x - (16 * virtualstudio.uiScale); height: 2 * virtualstudio.uiScale
                 color: "#E0E0E0"
                 visible: virtualstudio.audioReady
@@ -780,10 +790,20 @@ Item {
                 anchors.left: outputLabel.left
                 anchors.right: outputLabel.right
                 anchors.top: divider1.bottom
-                anchors.topMargin: 48 * virtualstudio.uiScale
+                anchors.topMargin: 32 * virtualstudio.uiScale
                 text: "Input Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
+            }
+
+            Image {
+                id: microphoneIcon
+                anchors.left: outputLabel.left
+                anchors.verticalCenter: inputDeviceMeters.verticalCenter
+                source: "mic.svg"
+                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
             }
 
             ComboBox {
@@ -845,7 +865,7 @@ Item {
                 anchors.left: inputCombo.left
                 anchors.right: inputCombo.right
                 anchors.top: inputCombo.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
                 model: inputMeterModel
                 clipped: inputClipped
@@ -864,7 +884,7 @@ Item {
                 anchors.right: inputLouderIcon.left
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputDeviceMeters.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 16 * virtualstudio.uiScale
                 handle: Rectangle {
                     x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
                     y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
