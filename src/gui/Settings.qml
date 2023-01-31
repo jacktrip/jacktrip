@@ -551,7 +551,7 @@ Item {
             }
             onClicked: { virtualstudio.refreshDevices() }
             x: parent.width - (160 * virtualstudio.uiScale);
-            y: divider2.y + (48 * virtualstudio.uiScale)
+            y: divider2.y + (32 * virtualstudio.uiScale)
             width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
             Text {
