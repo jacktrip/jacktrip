@@ -553,6 +553,7 @@ Item {
         Button {
             id: refreshButton
             text: "Refresh Devices"
+            palette.buttonText: textColour
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
@@ -633,6 +634,14 @@ Item {
                 sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Meter {
@@ -700,6 +709,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Image {
@@ -711,6 +728,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Text {
@@ -733,6 +758,14 @@ Item {
                 sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Meter {
@@ -779,6 +812,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Image {
@@ -790,6 +831,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Button {
@@ -827,6 +876,14 @@ Item {
                 sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             ComboBox {
@@ -928,6 +985,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Image {
@@ -939,6 +1004,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Button {
@@ -990,6 +1063,14 @@ Item {
                 sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             ComboBox {
@@ -1090,6 +1171,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Image {
@@ -1101,6 +1190,14 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
+
+                Colorize {
+                    anchors.fill: parent
+                    source: parent
+                    hue: 0
+                    saturation: 0
+                    lightness: virtualstudio.darkMode ? 1 : 0
+                }
             }
 
             Button {

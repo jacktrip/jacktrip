@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -329,6 +330,14 @@ Item {
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 1 : 0
+            }
         }
 
         Image {
@@ -341,6 +350,14 @@ Item {
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 1 : 0
+            }
         }
 
         Slider {
@@ -483,6 +500,14 @@ Item {
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 1 : 0
+            }
         }
 
         Image {
@@ -495,6 +520,14 @@ Item {
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 1 : 0
+            }
         }
 
         Slider {
@@ -540,6 +573,7 @@ Item {
         Button {
             id: refreshButton
             text: "Refresh Devices"
+            palette.buttonText: textColour
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
