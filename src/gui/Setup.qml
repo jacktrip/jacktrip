@@ -542,9 +542,6 @@ Item {
         property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
         property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable;
 
-        // property int leftMargin: 48
-        // property int rightMargin: 16
-
         Text {
             id: pageTitle
             x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
@@ -576,6 +573,7 @@ Item {
                 family: "Poppins"
                 pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
             }
+            visible: parent.isUsingRtAudio
         }
 
         Item {
@@ -608,11 +606,199 @@ Item {
             Text {
                 id: jackLabel
                 x: 0; y: 0
-                width: parent.width - (16 * virtualstudio.uiScale)
+                width: parent.width - rightMargin * virtualstudio.uiScale
                 text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 wrapMode: Text.WordWrap
                 color: textColour
+            }
+
+            Text {
+                id: jackOutputLabel
+                anchors.left: jackLabel.left
+                anchors.top: jackLabel.bottom
+                anchors.topMargin: 48 * virtualstudio.uiScale
+                width: 144 * virtualstudio.uiScale
+                text: "Output Volume"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                wrapMode: Text.WordWrap
+                color: textColour
+            }
+
+            Image {
+                id: jackHeadphonesIcon
+                anchors.left: jackOutputLabel.left
+                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
+                source: "headphones.svg"
+                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
+            Meter {
+                id: jackOutputMeters
+                anchors.left: jackOutputLabel.right
+                anchors.right: parent.right
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                anchors.verticalCenter: jackOutputLabel.verticalCenter
+                height: 24 * virtualstudio.uiScale
+                model: outputMeterModel
+                clipped: outputClipped
+                enabled: !Boolean(virtualstudio.devicesError)
+            }
+
+            Button {
+                id: jackTestOutputAudioButton
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
+                    border.width: 1
+                    border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+                }
+                onClicked: { virtualstudio.playOutputAudio() }
+                anchors.right: parent.right
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
+                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                Text {
+                    text: "Play Test Tone"
+                    font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                    color: textColour
+                }
+            }
+
+            Slider {
+                id: jackOutputVolumeSlider
+                from: 0.0
+                value: audioInterface ? audioInterface.outputVolume : 0.5
+                onMoved: { audioInterface.outputVolume = value }
+                to: 1.0
+                padding: 0
+                anchors.left: jackOutputQuieterButton.right
+                anchors.leftMargin: 8 * virtualstudio.uiScale
+                anchors.right: jackOutputLouderIcon.left
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: jackOutputMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                handle: Rectangle {
+                    x: jackOutputVolumeSlider.leftPadding + jackOutputVolumeSlider.visualPosition * (jackOutputVolumeSlider.availableWidth - width)
+                    y: jackOutputVolumeSlider.topPadding + jackOutputVolumeSlider.availableHeight / 2 - height / 2
+                    implicitWidth: 26 * virtualstudio.uiScale
+                    implicitHeight: 26 * virtualstudio.uiScale
+                    radius: 13 * virtualstudio.uiScale
+                    color: jackOutputVolumeSlider.pressed ? sliderPressedColour : sliderColour
+                    border.color: buttonStroke
+                }
+            }
+
+            Image {
+                id: jackOutputQuieterButton
+                anchors.left: jackOutputMeters.left
+                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
+                source: "quiet.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
+            Image {
+                id: jackOutputLouderIcon
+                anchors.right: jackTestOutputAudioButton.left
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
+                source: "loud.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
+            Text {
+                id: jackInputLabel
+                anchors.left: jackLabel.left
+                anchors.top: jackOutputVolumeSlider.bottom
+                anchors.topMargin: 48 * virtualstudio.uiScale
+                width: 144 * virtualstudio.uiScale
+                text: "Input Volume"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                wrapMode: Text.WordWrap
+                color: textColour
+            }
+
+            Image {
+                id: jackMicrophoneIcon
+                anchors.left: jackInputLabel.left
+                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
+                source: "mic.svg"
+                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
+            Meter {
+                id: jackInputMeters
+                anchors.left: jackInputLabel.right
+                anchors.right: parent.right
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                anchors.verticalCenter: jackInputLabel.verticalCenter
+                height: 24 * virtualstudio.uiScale
+                model: inputMeterModel
+                clipped: inputClipped
+                enabled: !Boolean(virtualstudio.devicesError)
+            }
+
+            Slider {
+                id: jackInputVolumeSlider
+                from: 0.0
+                value: audioInterface ? audioInterface.inputVolume : 0.5
+                onMoved: { audioInterface.inputVolume = value }
+                to: 1.0
+                padding: 0
+                anchors.left: jackInputQuieterButton.right
+                anchors.leftMargin: 8 * virtualstudio.uiScale
+                anchors.right: jackInputLouderIcon.left
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: jackInputMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                handle: Rectangle {
+                    x: jackInputVolumeSlider.leftPadding + jackInputVolumeSlider.visualPosition * (jackInputVolumeSlider.availableWidth - width)
+                    y: jackInputVolumeSlider.topPadding + jackInputVolumeSlider.availableHeight / 2 - height / 2
+                    implicitWidth: 26 * virtualstudio.uiScale
+                    implicitHeight: 26 * virtualstudio.uiScale
+                    radius: 13 * virtualstudio.uiScale
+                    color: jackInputVolumeSlider.pressed ? sliderPressedColour : sliderColour
+                    border.color: buttonStroke
+                }
+            }
+
+            Image {
+                id: jackInputQuieterButton
+                anchors.left: jackInputMeters.left
+                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
+                source: "quiet.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
+            Image {
+                id: jackInputLouderIcon
+                anchors.right: jackHiddenInputButton.left
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
+                source: "loud.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
+            Button {
+                id: jackHiddenInputButton
+                anchors.right: parent.right
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
+                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                visible: false
             }
         }
 
