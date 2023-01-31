@@ -246,9 +246,9 @@ Item {
             id: outputLabel
             anchors.verticalCenter: outputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
-            text: "Output Device"
+            text: virtualstudio.audioBackend == "JACK" ? "Output" : "Output Device"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
+            visible: virtualstudio.audioReady
             color: textColour
         }
 
@@ -400,9 +400,9 @@ Item {
             id: inputLabel
             anchors.verticalCenter: inputCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
-            text: "Input Device"
+            text: virtualstudio.audioBackend == "JACK" ? "Input" : "Input Device"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
+            visible: virtualstudio.audioReady
             color: textColour
         }
 
