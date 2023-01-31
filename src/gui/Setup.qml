@@ -6,7 +6,7 @@ Item {
     width: parent.width; height: parent.height
     clip: true
 
-    property int fontBig: 28
+    property int fontBig: 20
     property int fontMedium: 13
     property int fontSmall: 11
     property int fontExtraSmall: 8
@@ -553,6 +553,27 @@ Item {
             color: textColour
         }
 
+        Button {
+            id: refreshButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { virtualstudio.refreshDevices() }
+            anchors.right: parent.right
+            anchors.rightMargin: rightMargin * virtualstudio.uiScale
+            anchors.verticalCenter: pageTitle.verticalCenter
+            width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            Text {
+                text: "Refresh Devices"
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+
         Item {
             id: noBackend
             x: leftMargin * virtualstudio.uiScale
@@ -604,7 +625,7 @@ Item {
                 x: 0; y: 0
                 width: 144 * virtualstudio.uiScale
                 text: "Output Device"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
 
@@ -663,6 +684,18 @@ Item {
                 }
             }
 
+            Meter {
+                id: outputDeviceMeters
+                anchors.left: outputCombo.left
+                anchors.right: outputCombo.right
+                anchors.top: outputCombo.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                height: 24 * virtualstudio.uiScale
+                model: outputMeterModel
+                clipped: outputClipped
+                enabled: !Boolean(virtualstudio.devicesError)
+            }
+
             Slider {
                 id: outputSlider
                 from: 0.0
@@ -670,9 +703,11 @@ Item {
                 onMoved: { audioInterface.outputVolume = value }
                 to: 1.0
                 padding: 0
-                anchors.left: outputCombo.left
-                anchors.right: outputCombo.right
-                anchors.top: outputCombo.bottom
+                anchors.left: outputQuieterIcon.right
+                anchors.leftMargin: 8 * virtualstudio.uiScale
+                anchors.right: outputLouderIcon.left
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: outputDeviceMeters.bottom
                 anchors.topMargin: 24 * virtualstudio.uiScale
                 handle: Rectangle {
                     x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
@@ -683,6 +718,29 @@ Item {
                     color: outputSlider.pressed ? sliderPressedColour : sliderColour
                     border.color: buttonStroke
                 }
+            }
+
+            Image {
+                id: outputQuieterIcon
+                anchors.left: outputCombo.left
+                anchors.verticalCenter: outputSlider.verticalCenter
+                source: "quiet.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                visible: virtualstudio.audioReady
+            }
+
+            Image {
+                id: outputLouderIcon
+                anchors.right: testOutputAudioButton.left
+                anchors.rightMargin: 16 * virtualstudio.uiScale
+                anchors.verticalCenter: outputSlider.verticalCenter
+                source: "loud.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                visible: virtualstudio.audioReady
             }
 
             Button {
@@ -696,13 +754,12 @@ Item {
                 onClicked: { virtualstudio.playOutputAudio() }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.top: outputSlider.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
-                width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                anchors.verticalCenter: outputSlider.verticalCenter
+                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 visible: virtualstudio.audioReady
                 Text {
                     text: "Play Test Tone"
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                     anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                     color: textColour
                 }
@@ -724,10 +781,9 @@ Item {
                 anchors.top: divider1.bottom
                 anchors.topMargin: 48 * virtualstudio.uiScale
                 text: "Input Device"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
-
 
             ComboBox {
                 id: inputCombo
@@ -802,8 +858,10 @@ Item {
                 onMoved: { audioInterface.inputVolume = value }
                 to: 1.0
                 padding: 0
-                anchors.left: inputDeviceMeters.left
-                anchors.right: inputDeviceMeters.right
+                anchors.left: inputQuieterIcon.right
+                anchors.leftMargin: 8 * virtualstudio.uiScale
+                anchors.right: inputLouderIcon.left
+                anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputDeviceMeters.bottom
                 anchors.topMargin: 24 * virtualstudio.uiScale
                 handle: Rectangle {
@@ -817,34 +875,44 @@ Item {
                 }
             }
 
+            Image {
+                id: inputQuieterIcon
+                anchors.left: inputDeviceMeters.left
+                anchors.verticalCenter: inputSlider.verticalCenter
+                source: "quiet.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                visible: virtualstudio.audioReady
+            }
+
+            Image {
+                id: inputLouderIcon
+                anchors.right: hiddenInputButton.left
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                anchors.verticalCenter: inputSlider.verticalCenter
+                source: "loud.svg"
+                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                visible: virtualstudio.audioReady
+            }
+
             Button {
-                id: refreshButton
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
-                    border.width: 1
-                    border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
-                }
-                onClicked: { virtualstudio.refreshDevices() }
+                id: hiddenInputButton
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.topMargin: 18 * virtualstudio.uiScale
-                anchors.top: inputSlider.bottom
-                width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                Text {
-                    text: "Refresh Devices"
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                    color: textColour
-                }
+                anchors.verticalCenter: inputSlider.verticalCenter
+                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                visible: false
             }
 
             Text {
                 anchors.left: inputLabel.left
-                anchors.right: refreshButton.left
+                anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: refreshButton.top
-                anchors.bottomMargin: 60 * virtualstudio.uiScale
+                anchors.top: inputSlider.bottom
+                anchors.bottomMargin: 24 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
                     + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
