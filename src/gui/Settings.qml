@@ -324,9 +324,8 @@ Item {
             id: outputQuieterIcon
             x: leftMargin * virtualstudio.uiScale
             anchors.verticalCenter: testOutputAudioButton.verticalCenter
-            height: 20 * virtualstudio.uiScale
             source: "quiet.svg"
-            sourceSize: Qt.size(outputQuieterIcon.width,outputQuieterIcon.height)
+            sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
@@ -337,9 +336,8 @@ Item {
             anchors.right: testOutputAudioButton.left
             anchors.verticalCenter: outputQuieterIcon.verticalCenter
             anchors.rightMargin: 16 * virtualstudio.uiScale
-            height: 20 * virtualstudio.uiScale
             source: "loud.svg"
-            sourceSize: Qt.size(outputLouderIcon.width,outputLouderIcon.height)
+            sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
@@ -480,9 +478,8 @@ Item {
             id: inputQuieterIcon
             x: leftMargin * virtualstudio.uiScale
             anchors.verticalCenter: hiddenInputButton.verticalCenter
-            height: 20 * virtualstudio.uiScale
             source: "quiet.svg"
-            sourceSize: Qt.size(inputQuieterIcon.width,inputQuieterIcon.height)
+            sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
@@ -493,9 +490,8 @@ Item {
             anchors.right: hiddenInputButton.left
             anchors.verticalCenter: hiddenInputButton.verticalCenter
             anchors.rightMargin: 16 * virtualstudio.uiScale
-            height: 20 * virtualstudio.uiScale
             source: "loud.svg"
-            sourceSize: Qt.size(inputLouderIcon.width,inputLouderIcon.height)
+            sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: virtualstudio.audioReady
