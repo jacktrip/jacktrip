@@ -539,22 +539,25 @@ Item {
 
         Button {
             id: refreshButton
+            text: "Refresh Devices"
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
                 border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
+            icon {
+                source: "refresh.svg";
+                color: textColour;
+            }
             onClicked: { virtualstudio.refreshDevices() }
             x: parent.width - (160 * virtualstudio.uiScale);
             y: divider2.y + (32 * virtualstudio.uiScale)
             width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.audioBackend != "JACK" && virtualstudio.audioReady
-            Text {
-                text: "Refresh Devices"
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+            font {
+                family: "Poppins"
+                pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
             }
         }
 

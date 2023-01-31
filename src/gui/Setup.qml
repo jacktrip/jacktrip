@@ -555,22 +555,26 @@ Item {
 
         Button {
             id: refreshButton
+            text: "Refresh Devices"
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
                 border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
+            icon {
+                source: "refresh.svg";
+                color: textColour;
+            }
+            display: AbstractButton.TextBesideIcon
             onClicked: { virtualstudio.refreshDevices() }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.verticalCenter: pageTitle.verticalCenter
             width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Refresh Devices"
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+            font {
+                family: "Poppins"
+                pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
             }
         }
 
@@ -728,7 +732,6 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
-                visible: virtualstudio.audioReady
             }
 
             Image {
@@ -740,7 +743,6 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
-                visible: virtualstudio.audioReady
             }
 
             Button {
@@ -756,7 +758,6 @@ Item {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: outputSlider.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                visible: virtualstudio.audioReady
                 Text {
                     text: "Play Test Tone"
                     font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -883,7 +884,6 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
-                visible: virtualstudio.audioReady
             }
 
             Image {
@@ -895,7 +895,6 @@ Item {
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
-                visible: virtualstudio.audioReady
             }
 
             Button {
