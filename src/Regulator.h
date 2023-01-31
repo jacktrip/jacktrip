@@ -127,7 +127,7 @@ class Regulator : public RingBuffer
     virtual ~Regulator();
 
     void shimFPP(const int8_t* buf, int len, int seq_num);
-    void pushPacket(const int8_t* buf, int seq_num);
+    void pushPacket(const int8_t* buf, int seq_num, double timeStampOffset);
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))

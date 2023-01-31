@@ -312,7 +312,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             mFPPratioIsSet = true;
         }
         if (mFPPratioNumerator == mFPPratioDenominator) {
-            pushPacket(buf, seq_num);
+            pushPacket(buf, seq_num, 0.0);
         } else {
             seq_num %= mModSeqNumPeer;
             if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower, , (local/peer)/1
@@ -320,7 +320,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
                 if ((seq_num % mFPPratioNumerator) == mModCycle) {
                     if (mAssemblyCnt == mModCycle)
-                        pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
+                        pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator, 0.0);
                     //                    else
                     //                        qDebug() << "incomplete due to lost packet";
                     mAssemblyCnt = 0;
@@ -329,30 +329,32 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             } else if (mFPPratioDenominator
                        > 1) {  // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
                 seq_num *= mFPPratioDenominator;
+                double timeStampOffset = 0.0;
                 for (int i = 0; i < mFPPratioDenominator; i++) {
                     int tmp = i * mBytes;
                     memcpy(mAssembledPacket, &buf[tmp], mBytes);
-                    pushPacket(mAssembledPacket, seq_num);
+                    pushPacket(mAssembledPacket, seq_num, timeStampOffset);
                     seq_num++;
+                    timeStampOffset += mFPPdurMsec;
                 }
             }
         }
         pushStat->tick();
         double adjustAuto = pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec);
-        //        qDebug() << adjustAuto;
+//                qDebug() << mMsecTolerance << adjustAuto;
         if (mAuto && (pushStat->lastTime > AutoInitDur))
             mMsecTolerance = adjustAuto;
     }
 };
 
 //*******************************************************************************
-void Regulator::pushPacket(const int8_t* buf, int seq_num)
+void Regulator::pushPacket(const int8_t* buf, int seq_num, double timeStampOffset)
 {
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
-        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+        timeStampOffset + mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mLastSeqNumIn = seq_num;
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
