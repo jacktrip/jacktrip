@@ -32,7 +32,7 @@ alternative options to install from.
 
 === "Debian"
 
-    Debian stable users can obtain their latest version from the [Debian backports] repository.
+    Debian stable users can obtain their latest version from the [Debian backports](https://backports.debian.org/) repository.
     
     As an example for Debian Bullseye follow these steps: 
     
