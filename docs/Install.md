@@ -38,8 +38,7 @@ alternative options to install from.
     
     ```bash
     mkdir -p /etc/apt/sources.list.d/
-    echo "deb http://deb.debian.org/debian bullseye-backports main" \
-    | tee /etc/apt/sources.list.d/backports.list
+    echo "deb http://deb.debian.org/debian bullseye-backports main" | tee /etc/apt/sources.list.d/backports.list
     apt-get update
     apt-get install -t bullseye-backports jacktrip
     ``` 
