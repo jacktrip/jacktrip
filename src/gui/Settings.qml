@@ -867,15 +867,26 @@ Item {
 
         }
 
-        Text {
-            id: noBackendLabel
-            x: leftMargin * virtualstudio.uiScale; y: 150 * virtualstudio.uiScale
-            width: parent.width - x - (16 * virtualstudio.uiScale)
-            text: "JackTrip has been compiled without an audio backend. Please rebuild with the rtaudio flag or without the nojack flag."
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            wrapMode: Text.WordWrap
-            visible: !virtualstudio.backendAvailable
-            color: textColour
+        Item {
+            id: noBackend
+            anchors.top: parent.top
+            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.leftMargin: leftMargin * virtualstudio.uiScale
+            anchors.right: parent.right
+            
+            visible: parent.hasNoBackend
+
+            Text {
+                id: noBackendLabel
+                x: 0; y: 0
+                width: parent.width - (16 * virtualstudio.uiScale)
+                text: "JackTrip has been compiled without an audio backend. Please rebuild with the rtaudio flag or without the nojack flag."
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                wrapMode: Text.WordWrap
+                color: textColour
+            }
         }
     }
 
