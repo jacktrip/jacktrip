@@ -233,7 +233,7 @@ Item {
             anchors.leftMargin: 24 * virtualstudio.uiScale
             anchors.right: parent.right
 
-            visible: parent.isUsingRtAudio && virtualstudio.audioReady
+            visible: parent.isUsingRtAudio
 
             Text {
                 id: outputLabel
@@ -417,7 +417,6 @@ Item {
                 anchors.topMargin: 24 * virtualstudio.uiScale
                 width: parent.width - x - (16 * virtualstudio.uiScale); height: 2 * virtualstudio.uiScale
                 color: "#E0E0E0"
-                visible: virtualstudio.audioReady
             }
 
             Text {
@@ -617,7 +616,7 @@ Item {
             anchors.leftMargin: leftMargin * virtualstudio.uiScale
             anchors.right: parent.right
 
-            visible: parent.isUsingJack && virtualstudio.audioReady
+            visible: parent.isUsingJack
 
             Text {
                 id: jackLabel

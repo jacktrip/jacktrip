@@ -1041,7 +1041,6 @@ Item {
                 anchors.topMargin: 24 * virtualstudio.uiScale
                 width: parent.width - x - (16 * virtualstudio.uiScale); height: 2 * virtualstudio.uiScale
                 color: "#E0E0E0"
-                visible: virtualstudio.audioReady
             }
 
             Text {
