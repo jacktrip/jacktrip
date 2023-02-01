@@ -326,7 +326,7 @@ Item {
                 height: 24 * virtualstudio.uiScale
                 model: outputMeterModel
                 clipped: outputClipped
-                enabled: !Boolean(virtualstudio.devicesError)
+                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
             }
 
             Slider {
@@ -511,7 +511,7 @@ Item {
                 height: 24 * virtualstudio.uiScale
                 model: inputMeterModel
                 clipped: inputClipped
-                enabled: !Boolean(virtualstudio.devicesError)
+                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
             }
 
             Slider {
@@ -667,7 +667,7 @@ Item {
                 height: 24 * virtualstudio.uiScale
                 model: outputMeterModel
                 clipped: outputClipped
-                enabled: !Boolean(virtualstudio.devicesError)
+                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
             }
 
             Button {
@@ -791,7 +791,7 @@ Item {
                 height: 24 * virtualstudio.uiScale
                 model: inputMeterModel
                 clipped: inputClipped
-                enabled: !Boolean(virtualstudio.devicesError)
+                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
             }
 
             Slider {
