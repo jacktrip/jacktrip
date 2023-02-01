@@ -1,6 +1,6 @@
 # Write Documentation
 
-This documentation of JackTrip is generated with [Material](https://squidfunk.github.io/mkdocs-material/)
+This documentation of JackTrip is generated with [Material](https://squidfunk.github.io/mkdocs-material/) theme
 for [MkDocs](https://www.mkdocs.org/). All pages are derived from Markdown files in the subdirectory `docs`
 in JackTrip's git repository. Setup and table of contents is found in a YAML file called mkdocs.yml in
 the root directory.
@@ -16,7 +16,7 @@ When you're working on the changes locally, it might be more convenient to test 
 
 MkDocs and Material for MkDocs are installed from pip:
 ```bash
-pip install mkdocs mkdocs-material
+pip install mkdocs mkdocs-material mkdocs-macros-plugin
 ``` 
 
 When writing documentation it is very handy to run `mkdocs serve`. This will open
