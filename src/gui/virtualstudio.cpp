@@ -1150,13 +1150,13 @@ void VirtualStudio::completeConnection()
                 &Volume::muteUpdated);
 
         // Setup output meter
-        Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
         connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedOutputVuMeasurements);
 
         // Setup input meter
-        Meter* m_inputMeter = new Meter(jackTrip->getNumInputChannels());
+        m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
@@ -1237,6 +1237,12 @@ void VirtualStudio::disconnect()
 
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
+
+    // cleanup 
+    m_inputMeter = nullptr;
+    m_outputMeter = nullptr;
+    m_inputVolumePlugin = nullptr;
+    m_outputVolumePlugin = nullptr;
 }
 
 void VirtualStudio::manageStudio(int studioIndex, bool start)
