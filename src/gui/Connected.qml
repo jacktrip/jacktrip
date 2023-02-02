@@ -5,9 +5,9 @@ import QtGraphicalEffects 1.12
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
+
     property bool connecting: false
-    
+
     property int leftHeaderMargin: 16
     property int fontBig: 28
     property int fontMedium: 12
@@ -21,8 +21,9 @@ Item {
     property string studioStatus: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "")
     property bool showReadyScreen: studioStatus === "Ready"
     property bool showStartingScreen: studioStatus === "Starting"
-    property bool showWaitingScreen: !showStartingScreen && !showReadyScreen
-    
+    property bool showStoppingScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isAdmin && !serverModel[virtualstudio.currentStudio].enabled && serverModel[virtualstudio.currentStudio].cloudId !== "" : false)
+    property bool showWaitingScreen: !showStoppingScreen && !showStartingScreen && !showReadyScreen
+
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
 
     property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -91,15 +92,15 @@ Item {
         fillMode: Image.PreserveAspectFit
         smooth: true
     }
-    
+
     Text {
         id: heading
-        text: virtualstudio.connectionState
+        text: studioStatus === "Starting" ? "Starting..." : virtualstudio.connectionState
         x: leftHeaderMargin * virtualstudio.uiScale; y: 34 * virtualstudio.uiScale
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
         color: textColour
     }
-    
+
     Studio {
         x: leftHeaderMargin * virtualstudio.uiScale; y: 96 * virtualstudio.uiScale
         width: parent.width - (2 * x)
@@ -108,7 +109,7 @@ Item {
         flagImage: virtualstudio.currentStudio >= 0 ? ( serverModel[virtualstudio.currentStudio].bannerURL ? serverModel[virtualstudio.currentStudio].bannerURL : serverModel[virtualstudio.currentStudio].flag ) : "flags/DE.svg"
         studioName: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].name : "Test Studio"
         publicStudio: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isPublic : false
-        manageable: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false
+        admin: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isAdmin : false
         available: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].canConnect : false
         studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
         inviteKeyString: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].inviteKey : ""
@@ -416,7 +417,7 @@ Item {
         x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
         width: parent.width - (2 * x)
 
-        property bool isManageable: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isManageable : false)
+        property bool isAdmin: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isAdmin : false)
 
         Text {
             id: waitingText0
@@ -424,37 +425,62 @@ Item {
             width: parent.width
             color: textColour
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            text: parent.isManageable
-                ? "Waiting for this studio to start. To start this studio, use the button below to open the page in your web browser."
-                : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
+            text: parent.isAdmin
+                    ? "Waiting for this studio to start. Please start the studio using one of the options below."
+                    : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
             wrapMode: Text.WordWrap
         }
 
-        Button {
-            id: openInBrowserButton
-            visible: parent.isManageable
-            onClicked: {
-                virtualstudio.manageStudio(-1, true)
-            }
+        Item {
+            id: startButtonsBox
             anchors.top: waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 210 * virtualstudio.uiScale; height: 45 * virtualstudio.uiScale
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: openInBrowserButton.down ? browserButtonPressedColour : (openInBrowserButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                border.width: 1
-                border.color: openInBrowserButton.down ? browserButtonPressedStroke : (openInBrowserButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+            visible: parent.isAdmin
+
+            height: 64 * virtualstudio.uiScale
+
+            Button {
+                id: startStudioNowButton
+                anchors.verticalCenter: startButtonsBox.verticalCenter
+                x: 0
+                onClicked: {
+                    virtualstudio.manageStudio(-1, true)
+                }
+
+                width: 210 * virtualstudio.uiScale; height: 45 * virtualstudio.uiScale
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: startStudioNowButton.down ? browserButtonPressedColour : (startStudioNowButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                    border.width: 1
+                    border.color: startStudioNowButton.down ? browserButtonPressedStroke : (startStudioNowButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+                }
+
+                Text {
+                    text: "Start Studio"
+                    font.family: "Poppins"
+                    font.pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: textColour
+                }
             }
 
             Text {
-                text: "Start Studio in Browser"
-                font.family: "Poppins"
-                font.pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                color: textColour
+                id: startStudioInBrowserText
+                anchors.verticalCenter: startStudioNowButton.verticalCenter
+                anchors.left: startStudioNowButton.right
+                anchors.leftMargin: 24 * virtualstudio.uiScale
+                width: 240 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text:`<a style="color: ${textColour};" href="https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""}/live?start=true">Change Settings and Start</a>`
+
+                onLinkActivated: link => {
+                    virtualstudio.openLink(link)
+                }
+                horizontalAlignment: Text.AlignHLeft
+                wrapMode: Text.WordWrap
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             }
         }
 
@@ -463,9 +489,10 @@ Item {
             x: 0
             width: parent.width
             color: textColour
-            anchors.top: parent.isManageable ? openInBrowserButton.bottom : waitingText0.bottom
+            anchors.top: parent.isAdmin ? startButtonsBox.bottom : waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
+            visible: parent.isAdmin
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "You will be automatically connected to the studio when it is ready."
             wrapMode: Text.WordWrap
@@ -485,6 +512,23 @@ Item {
             color: textColour
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "This studio is currently starting up. You will be connected automatically when it is ready."
+            wrapMode: Text.WordWrap
+        }
+    }
+
+    Item {
+        id: studioStoppingScreen
+        visible: showStoppingScreen
+        x: bodyMargin * virtualstudio.uiScale; y: 230 * virtualstudio.uiScale
+        width: parent.width - (2 * x)
+
+        Text {
+            id: studioStoppingText0
+            x: 0
+            width: parent.width
+            color: textColour
+            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            text: "This studio is shutting down, please wait to start it again."
             wrapMode: Text.WordWrap
         }
     }

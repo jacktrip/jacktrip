@@ -15,7 +15,7 @@ Rectangle {
     property string studioId: ""
     property string inviteKeyString: ""
     property bool publicStudio: false
-    property bool manageable: false
+    property bool admin: false
     property bool available: true
     property bool connected: false
     property bool inviteCopied: false
@@ -139,7 +139,7 @@ Rectangle {
     
     Text {
         x: leftMargin * virtualstudio.uiScale; y: 11 * virtualstudio.uiScale;
-        width: manageable ? parent.width - (310 * virtualstudio.uiScale) : parent.width - (233 * virtualstudio.uiScale)
+        width: (admin || connected) ? parent.width - (310 * virtualstudio.uiScale) : parent.width - (233 * virtualstudio.uiScale)
         text: studioName
         fontSizeMode: Text.HorizontalFit
         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -167,44 +167,16 @@ Rectangle {
     Text {
         anchors.verticalCenter: publicRect.verticalCenter
         x: (leftMargin + 22) * virtualstudio.uiScale
-        width: manageable ? parent.width - (255 * virtualstudio.uiScale) : parent.width - (178 * virtualstudio.uiScale)
+        width: (admin || connected) ? parent.width - (255 * virtualstudio.uiScale) : parent.width - (178 * virtualstudio.uiScale)
         text: publicStudio ? "Public hub studio " + serverLocation : "Private hub studio " + serverLocation
         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
         elide: Text.ElideRight
         color: textColour
     }
-
-    Button {
-        id: startButton
-        x: manageable ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
-        y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
-        background: Rectangle {
-            radius: width / 2
-            color: available ? (startButton.down ? startPressedColour : (startButton.hovered ? startHoverColour : startColour))
-                : (startButton.down ? startPressedColour : (startButton.hovered ? startHoverColour : startColour))
-            border.width: startButton.down ? 1 : 0
-            border.color: available ? startStroke : startStroke
-        }
-        visible: !connected && (canStart && !canConnect)
-        onClicked: {
-            virtualstudio.windowState = "connected";
-            virtualstudio.connectToStudio(index);
-        }
-        Image {
-            id: start
-            width: 22 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
-            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: "start.svg"
-            sourceSize: Qt.size(start.width,start.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-    }
-
     
     Button {
         id: joinButton
-        x: manageable ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
+        x: (admin || connected) ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
         y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
@@ -213,7 +185,7 @@ Rectangle {
             border.width: joinButton.down ? 1 : 0
             border.color: available ? joinAvailableStroke : joinUnavailableStroke
         }
-        visible: !connected && !(canStart && !canConnect)
+        visible: !connected
         onClicked: {
             virtualstudio.windowState = "connected";
             virtualstudio.connectToStudio(index);
@@ -231,7 +203,7 @@ Rectangle {
 
     Button {
         id: leaveButton
-        x: manageable ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
+        x: (admin || connected) ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
         y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
@@ -257,7 +229,7 @@ Rectangle {
     Text {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
-        text: connected ? "Leave" : canStart && !canConnect ? "Start" : "Join"
+        text: connected ? "Leave" : "Join"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
         visible: true
         color: textColour
@@ -265,7 +237,7 @@ Rectangle {
 
     Button {
         id: inviteButton
-        x: manageable ? parent.width - (142 * virtualstudio.uiScale) : parent.width - (65 * virtualstudio.uiScale)
+        x: (admin || connected) ? parent.width - (142 * virtualstudio.uiScale) : parent.width - (65 * virtualstudio.uiScale)
         y: topMargin * virtualstudio.uiScale; width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
@@ -339,30 +311,30 @@ Rectangle {
     }
     
     Button {
-        id: manageButton
+        id: manageOrVideoButton
         x: parent.width - (65 * virtualstudio.uiScale); y: topMargin * virtualstudio.uiScale
         width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
-            color: manageButton.down ? managePressedColour : (manageButton.hovered ? manageHoverColour : manageColour)
-            border.width:  manageButton.down ? 1 : 0
+            color: manageOrVideoButton.down ? managePressedColour : (manageOrVideoButton.hovered ? manageHoverColour : manageColour)
+            border.width:  manageOrVideoButton.down ? 1 : 0
             border.color: manageStroke
         }
         onClicked: { 
-            if (manageable && connected) {
+            if (connected) {
                 virtualstudio.launchVideo(-1)
-            } else if (connected) {
+            } else if (admin) {
                 virtualstudio.manageStudio(-1);
             } else {
                 virtualstudio.manageStudio(index);
             }
         }
-        visible: manageable
+        visible: admin || connected
         Image {
             id: manageImg
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: manageable && connected ? "video.svg" : "manage.svg"
+            source: connected ? "video.svg" : "manage.svg"
             sourceSize: Qt.size(manageImg.width,manageImg.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
@@ -370,11 +342,11 @@ Rectangle {
     }
     
     Text {
-        anchors.horizontalCenter: manageButton.horizontalCenter
+        anchors.horizontalCenter: manageOrVideoButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
-        text: manageable && connected ? "Video" : "Manage"
+        text: connected ? "Video" : "Manage"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-        visible: manageable
+        visible: admin || connected
         color: textColour
     }
 }

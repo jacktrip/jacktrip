@@ -54,11 +54,14 @@ class VsServerInfo : public QObject
     Q_PROPERTY(QString flag READ flag CONSTANT)
     Q_PROPERTY(QString bannerURL READ bannerURL CONSTANT)
     Q_PROPERTY(QString location READ location CONSTANT)
-    Q_PROPERTY(bool isManageable READ isManageable CONSTANT)
+    Q_PROPERTY(bool isAdmin READ isAdmin CONSTANT)
+    Q_PROPERTY(bool isManaged READ isManaged CONSTANT)
     Q_PROPERTY(quint16 period READ period CONSTANT)
     Q_PROPERTY(quint32 sampleRate READ sampleRate CONSTANT)
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
     Q_PROPERTY(QString status READ status CONSTANT)
+    Q_PROPERTY(bool enabled READ enabled CONSTANT)
+    Q_PROPERTY(QString cloudId READ cloudId CONSTANT)
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString inviteKey READ inviteKey CONSTANT)
 
@@ -79,6 +82,8 @@ class VsServerInfo : public QObject
     void setHost(const QString& host);
     quint16 port() const;
     void setPort(quint16 port);
+    bool enabled() const;
+    void setEnabled(bool enabled);
     bool isOwner() const;
     void setIsOwner(bool owner);
     bool isAdmin() const;
@@ -89,8 +94,8 @@ class VsServerInfo : public QObject
     QString flag() const;
     QString location() const;
     void setRegion(const QString& region);
-    bool isManageable() const;
-    void setIsManageable(bool isManageable);
+    bool isManaged() const;
+    void setIsManaged(bool isManageable);
     quint16 period() const;
     void setPeriod(quint16 period);
     quint32 sampleRate() const;
@@ -107,6 +112,8 @@ class VsServerInfo : public QObject
     void setStatus(const QString& status);
     QString inviteKey() const;
     void setInviteKey(const QString& inviteKey);
+    QString cloudId() const;
+    void setCloudId(const QString& cloudId);
     bool operator<(const VsServerInfo& other) const;
 
    signals:
@@ -117,11 +124,12 @@ class VsServerInfo : public QObject
     QString m_name;
     QString m_host;
     quint16 m_port;
+    bool m_enabled;
     bool m_owner;
     bool m_admin;
+    bool m_isManaged;
     bool m_isPublic;
     QString m_region;
-    bool m_isManageable;
     quint16 m_period;
     quint32 m_sampleRate;
     quint16 m_queueBuffer;
@@ -129,18 +137,16 @@ class VsServerInfo : public QObject
     QString m_id;
     QString m_sessionId;
     QString m_status;
+    QString m_cloudId;
     QString m_inviteKey;
 
     /* Remaining JSON fields
     "loopback": true,
     "stereo": true,
     "type": "JackTrip",
-    "managed": true,
     "size": "c5.large",
     "mixBranch": "main",
     "mixCode": "SimpleMix(~maxClients).masterVolume_(1).connect.start;",
-    "enabled": true,
-    "cloudId": "string",
     "ownerId": "string",
     "subStatus": "Active",
     "createdAt": "2021-09-07T17:15:38Z",

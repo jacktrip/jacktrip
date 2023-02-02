@@ -57,6 +57,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QtEndian>
+#include <QtGlobal>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -1077,11 +1078,17 @@ void JackTrip::tcpTimerTick()
     // Use randomized exponential backoff to reconnect the TCP client
     QRandomGenerator randomizer;
     mRetries++;
+    // exponential backoff sleep with 6s maximum + jitter
     int newInterval = 2000 * pow(2, mRetries);
-    newInterval     = randomizer.bounded(0, newInterval);
+    newInterval     = std::min(newInterval, 6000);
+    newInterval += randomizer.bounded(0, 500);
+    QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
+    qDebug() << "Sleep time " << newInterval << " ms at " << now;
     mRetryTimer.setInterval(newInterval);
 
-    cout << "Connection timed out. Retrying again using exponential backoff." << endl;
+    qDebug() << "Connection timed out. Retrying again using exponential backoff";
+
+    mTcpClient.abort();
 
     // Create Socket Objects
     QHostAddress serverHostAddress;
@@ -1092,9 +1099,8 @@ void JackTrip::tcpTimerTick()
             serverHostAddress = info.addresses().constFirst();
         }
     }
-
-    mTcpClient.disconnectFromHost();
     mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+
     mRetryTimer.start();
 }
 
@@ -1285,7 +1291,7 @@ int JackTrip::clientPingToServerStart()
     connect(&mTcpClient, &QTcpSocket::readyRead, this, &JackTrip::receivedDataTCP);
     connect(&mTcpClient, &QTcpSocket::connected, this, &JackTrip::receivedConnectionTCP);
     // Enable CI builds on Ubuntu 20.04 with Qt 5.12.8
-#ifdef __linux__
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
     connect(&mTcpClient,
             QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), this,
             &JackTrip::receivedErrorTCP);

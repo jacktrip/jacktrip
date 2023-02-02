@@ -2,10 +2,40 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.7.0",
+            "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
+            "download": {
+                "date": "2023-01-24T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.0-Windows-x64-installer.msi",
+                "downloadSize": 44572672,
+                "sha256": "a1890fe10de484f423a17118031d898abacc9b9eb2ccd35bdb4351e9411ff866"
+            }
+        },
+        {
+            "version": "1.7.0-rc1",
+            "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0-rc1",
+            "download": {
+                "date": "2023-01-20T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.7.0-rc1/JackTrip-v1.7.0-rc1-Windows-x64-installer.msi",
+                "downloadSize": 44556288,
+                "sha256": "edba383791a598954d129d39024e87f3c062985d10f47dbea43f3d226ee37c6c"
+            }
+        },
+        {
+            "version": "1.6.9-beta3",
+            "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.9-beta3",
+            "download": {
+                "date": "2023-01-10T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.9-beta3/JackTrip-v1.6.9-beta3-Windows-x64-installer.msi",
+                "downloadSize": 44552192,
+                "sha256": "f0d8157d99da5ecfa3fb21e6bb039ea48052fc0792b114ca4f40ae0a554a4852"
+            }
+        },
+        {
             "version": "1.6.9-beta2",
             "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.9-beta2",
             "download": {
-                "date": "2022-01-10T00:00:00Z",
+                "date": "2023-01-10T00:00:00Z",
                 "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.6.9-beta2/JackTrip-v1.6.9-beta2-Windows-x64-installer.msi",
                 "downloadSize": 44548096,
                 "sha256": "a8e7c9b353d953df894a827e2856baa71f89dc8fa835a5f3eb8422a94ffff5b5"
