@@ -181,14 +181,14 @@ void VsServerInfo::setRegion(const QString& region)
     m_region = region;
 }
 
-bool VsServerInfo::isManageable() const
+bool VsServerInfo::isManaged() const
 {
-    return m_isManageable;
+    return m_isManaged;
 }
 
-void VsServerInfo::setIsManageable(bool isManageable)
+void VsServerInfo::setIsManaged(bool isManaged)
 {
-    m_isManageable = isManageable;
+    m_isManaged = isManaged;
 }
 
 quint16 VsServerInfo::period() const

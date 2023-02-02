@@ -96,6 +96,7 @@ class VsDevice : public QObject
    private:
     void registerJTAsDevice();
     bool enabled();
+    int selectBindPort();
     QString randomString(int stringLength);
 
     VsPinger* m_pinger = NULL;

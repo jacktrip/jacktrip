@@ -1081,7 +1081,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
     m_studioSocket->openSocket();
 
     // Check if we have an address for our server
-    if (studioInfo->status() != "Ready" && studioInfo->isManageable() == true) {
+    if (studioInfo->status() != "Ready" && studioInfo->isAdmin() == true) {
         m_connectionState = QStringLiteral("Waiting...");
         emit connectionStateChanged();
     } else {
@@ -1122,6 +1122,10 @@ void VirtualStudio::completeConnection()
 #endif
         JackTrip* jackTrip = m_device->initJackTrip(
             m_useRtAudio, input, output, buffer_size, m_bufferStrategy, studioInfo);
+        if (jackTrip == 0) {
+            processError("Could not bind port");
+            return;
+        }
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
@@ -1150,13 +1154,13 @@ void VirtualStudio::completeConnection()
                 &Volume::muteUpdated);
 
         // Setup output meter
-        Meter* m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
         connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedOutputVuMeasurements);
 
         // Setup input meter
-        Meter* m_inputMeter = new Meter(jackTrip->getNumInputChannels());
+        m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
@@ -1237,6 +1241,12 @@ void VirtualStudio::disconnect()
 
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
+
+    // cleanup 
+    m_inputMeter = nullptr;
+    m_outputMeter = nullptr;
+    m_inputVolumePlugin = nullptr;
+    m_outputVolumePlugin = nullptr;
 }
 
 void VirtualStudio::manageStudio(int studioIndex, bool start)
@@ -1744,20 +1754,20 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 if (servers.at(i)[QStringLiteral("type")].toString().contains(
                         QStringLiteral("JackTrip"))) {
                     VsServerInfo* serverInfo = new VsServerInfo(this);
-                    serverInfo->setIsManageable(
+                    serverInfo->setIsAdmin(
                         servers.at(i)[QStringLiteral("admin")].toBool());
                     QString status = servers.at(i)[QStringLiteral("status")].toString();
                     bool activeStudio = status == QLatin1String("Ready");
                     bool hostedStudio = servers.at(i)[QStringLiteral("managed")].toBool();
                     // Only iterate through servers that we want to show
                     if (!m_showSelfHosted && !hostedStudio) {
-                        if (activeStudio || (serverInfo->isManageable())) {
+                        if (activeStudio || (serverInfo->isAdmin())) {
                             skippedStudios++;
                         }
                         continue;
                     }
                     if (!m_showInactive && !activeStudio) {
-                        if (serverInfo->isManageable()) {
+                        if (serverInfo->isAdmin()) {
                             skippedStudios++;
                         }
                         continue;
@@ -1767,6 +1777,8 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                             servers.at(i)[QStringLiteral("name")].toString());
                         serverInfo->setHost(
                             servers.at(i)[QStringLiteral("serverHost")].toString());
+                        serverInfo->setIsManaged(
+                            servers.at(i)[QStringLiteral("managed")].toBool());
                         serverInfo->setStatus(
                             servers.at(i)[QStringLiteral("status")].toString());
                         serverInfo->setPort(
@@ -1794,8 +1806,6 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                             servers.at(i)[QStringLiteral("enabled")].toBool());
                         serverInfo->setIsOwner(
                             servers.at(i)[QStringLiteral("owner")].toBool());
-                        serverInfo->setIsAdmin(
-                            servers.at(i)[QStringLiteral("admin")].toBool());
                         if (servers.at(i)[QStringLiteral("owner")].toBool()) {
                             yourServers.append(serverInfo);
                             serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);
@@ -2199,6 +2209,8 @@ VirtualStudio::~VirtualStudio()
 
     delete m_inputMeter;
     delete m_outputMeter;
+    delete m_outputVolumePlugin;
+    delete m_inputVolumePlugin;
     delete m_inputTestMeter;
     delete m_studioSocket;
 

@@ -635,7 +635,7 @@ void UdpDataProtocol::run()
         dataBuf.len = full_redundant_packet_size;
         dataBuf.buf = reinterpret_cast<char *>(full_redundant_packet);
         DWORD recvBytes = 0, flags = 0, index, bytesTransferred = 0;
-        
+
         eventArray[0] = WSACreateEvent();
         if (eventArray == WSA_INVALID_EVENT) {
             emit signalError("Unable to set up network event monitoring");
@@ -644,7 +644,7 @@ void UdpDataProtocol::run()
         }
         ZeroMemory(&socketOverlapped, sizeof(WSAOVERLAPPED));
         socketOverlapped.hEvent = eventArray[0];
-        
+
         if (WSARecv(mSocket, &dataBuf, 1, &recvBytes, &flags, &socketOverlapped, NULL) == SOCKET_ERROR) {
             int result = WSAGetLastError();
             if (result != WSA_IO_PENDING) {
@@ -682,7 +682,7 @@ void UdpDataProtocol::run()
             }
         }
 #else
-            
+
             // OLD CODE WITHOUT REDUNDANCY----------------------------------------------------
             /*
         // This is blocking until we get a packet...

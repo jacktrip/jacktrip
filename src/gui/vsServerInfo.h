@@ -54,7 +54,8 @@ class VsServerInfo : public QObject
     Q_PROPERTY(QString flag READ flag CONSTANT)
     Q_PROPERTY(QString bannerURL READ bannerURL CONSTANT)
     Q_PROPERTY(QString location READ location CONSTANT)
-    Q_PROPERTY(bool isManageable READ isManageable CONSTANT)
+    Q_PROPERTY(bool isAdmin READ isAdmin CONSTANT)
+    Q_PROPERTY(bool isManaged READ isManaged CONSTANT)
     Q_PROPERTY(quint16 period READ period CONSTANT)
     Q_PROPERTY(quint32 sampleRate READ sampleRate CONSTANT)
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
@@ -93,8 +94,8 @@ class VsServerInfo : public QObject
     QString flag() const;
     QString location() const;
     void setRegion(const QString& region);
-    bool isManageable() const;
-    void setIsManageable(bool isManageable);
+    bool isManaged() const;
+    void setIsManaged(bool isManageable);
     quint16 period() const;
     void setPeriod(quint16 period);
     quint32 sampleRate() const;
@@ -126,9 +127,9 @@ class VsServerInfo : public QObject
     bool m_enabled;
     bool m_owner;
     bool m_admin;
+    bool m_isManaged;
     bool m_isPublic;
     QString m_region;
-    bool m_isManageable;
     quint16 m_period;
     quint32 m_sampleRate;
     quint16 m_queueBuffer;
@@ -143,7 +144,6 @@ class VsServerInfo : public QObject
     "loopback": true,
     "stereo": true,
     "type": "JackTrip",
-    "managed": true,
     "size": "c5.large",
     "mixBranch": "main",
     "mixCode": "SimpleMix(~maxClients).masterVolume_(1).connect.start;",

@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -8,11 +7,11 @@ Item {
     
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
-    property string buttonColour: virtualstudio.darkMode ? "#565252" : "#F0F1F1"
-    property string buttonHoverColour: virtualstudio.darkMode ? "#6F6C6C" : "#F0F1F1"
-    property string buttonPressedColour: virtualstudio.darkMode ? "#494646" : "#D8D9D9"
+    property string buttonColour: virtualstudio.darkMode ? "#FAFBFB" : "#F0F1F1"
+    property string buttonHoverColour: virtualstudio.darkMode ? "#E9E9E9" : "#E4E5E5"
+    property string buttonPressedColour: virtualstudio.darkMode ? "#FAFBFB" : "#E4E5E5"
     property string buttonStroke: virtualstudio.darkMode ? "#636060" : "#DEDFDF"
-    property string buttonHoverStroke: virtualstudio.darkMode ? "#777575" : "#DEDFDF"
+    property string buttonHoverStroke: virtualstudio.darkMode ? "#6F6C6C" : "#B0B5B5"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#6F6C6C" : "#B0B5B5"
     
     Image {
@@ -52,13 +51,6 @@ Item {
             border.width: 1
             border.color: vsButton.down ? buttonPressedStroke : (vsButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: vsButton.hovered && !vsButton.down
-            layer.effect: DropShadow {
-                horizontalOffset: 1 * virtualstudio.uiScale
-                verticalOffset: 1 * virtualstudio.uiScale
-                radius: 8.0 * virtualstudio.uiScale
-                samples: 17
-                color: shadowColour
-            }
         }
         onClicked: { virtualstudio.showFirstRun = false; virtualstudio.windowState = "login"; virtualstudio.toVirtualStudio(); }
         x: parent.width / 2 - (265 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale
@@ -100,13 +92,6 @@ Item {
             border.width: 1
             border.color: standardButton.down ? buttonPressedStroke : (standardButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: standardButton.hovered && !standardButton.down
-            layer.effect: DropShadow {
-                horizontalOffset: 1 * virtualstudio.uiScale
-                verticalOffset: 1 * virtualstudio.uiScale
-                radius: 8.0 * virtualstudio.uiScale
-                samples: 17
-                color: shadowColour
-            }
         }
         onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
         x: parent.width / 2 + (32 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale

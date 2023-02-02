@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -32,6 +31,7 @@ Item {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+    property string createButtonStroke: virtualstudio.darkMode ? "#AB0F0F" : "#0F0D0D"
     
     function refresh() {
         scrollY = studioListView.contentY;
@@ -81,7 +81,7 @@ Item {
             flagImage: bannerURL ? bannerURL : flag
             studioName: name
             publicStudio: isPublic
-            manageable: isManageable
+            admin: isAdmin
             available: canConnect
             connected: false
             studioId: id ? id : ""
@@ -181,15 +181,8 @@ Item {
                         radius: 6 * virtualstudio.uiScale
                         color: createButton.down ? "#E7E8E8" : "#F2F3F3"
                         border.width: 1
-                        border.color: createButton.down ? "#B0B5B5" : "#EAEBEB"
+                        border.color: createButton.down ? "#B0B5B5" : createButtonStroke
                         layer.enabled: createButton.hovered && !createButton.down
-                        layer.effect: DropShadow {
-                            horizontalOffset: 1 * virtualstudio.uiScale
-                            verticalOffset: 1 * virtualstudio.uiScale
-                            radius: 8.0 * virtualstudio.uiScale
-                            samples: 17
-                            color: "#80A1A1A1"
-                        }
                     }
                     onClicked: { virtualstudio.createStudio(); }
                     anchors.top: createStudioMessage.bottom

@@ -1,8 +1,9 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Rectangle {
+  property string filterStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+
   property bool listIsEmpty: false
   // required property string section: section (for 5.15)
   color: "transparent"
@@ -30,13 +31,6 @@ Rectangle {
           border.width: 1
           border.color: createButton.down ? "#B0B5B5" : "#EAEBEB"
           layer.enabled: createButton.hovered && !createButton.down
-          layer.effect: DropShadow {
-              horizontalOffset: 1 * virtualstudio.uiScale
-              verticalOffset: 1 * virtualstudio.uiScale
-              radius: 8.0 * virtualstudio.uiScale
-              samples: 17
-              color: "#80A1A1A1"
-          }
       }
       onClicked: { virtualstudio.createStudio(); }
       anchors.right: filterButton.left
@@ -62,13 +56,6 @@ Rectangle {
           border.width: 1
           border.color: filterButton.down ? "#B0B5B5" : "#EAEBEB"
           layer.enabled: filterButton.hovered && !filterButton.down
-          layer.effect: DropShadow {
-              horizontalOffset: 1 * virtualstudio.uiScale
-              verticalOffset: 1 * virtualstudio.uiScale
-              radius: 8.0 * virtualstudio.uiScale
-              samples: 17
-              color: "#80A1A1A1"
-          }
       }
       onClicked: { filterMenu.open(); }
       anchors.right: parent.right
@@ -95,15 +82,8 @@ Rectangle {
               radius: 6 * virtualstudio.uiScale
               color: "#F6F8F8"
               border.width: 1
-              border.color: "#34979797"
+              border.color: filterStroke
               layer.enabled: true
-              layer.effect: DropShadow {
-                  horizontalOffset: 1 * virtualstudio.uiScale
-                  verticalOffset: 1 * virtualstudio.uiScale
-                  radius: 8.0 * virtualstudio.uiScale
-                  samples: 17
-                  color: "#80A1A1A1"
-              }
           }
           contentItem: Column {
               anchors.fill: parent

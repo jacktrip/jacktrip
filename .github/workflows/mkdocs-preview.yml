@@ -1,0 +1,30 @@
+name: Render docs preview
+on:
+  pull_request:
+    paths:
+      - mkdocs.yml
+      - docs/**
+
+jobs:
+  build:
+    name: Render docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: pip install mkdocs-material mkdocs-macros-plugin
+      - name: Prepare for offline browsing
+        run: |
+          echo "use_directory_urls: false" >> mkdocs.yml
+      - name: Render docs 
+        run: mkdocs build
+      - name: Move to a subdirectory
+        run: |
+          mkdir docs-upload
+          mv site docs-upload/JackTrip-docs-${{ github.sha }}
+      - name: Upload docs for preview
+        uses: actions/upload-artifact@v3
+        with:
+          name: JackTrip-docs-${{ github.sha }}
+          path: docs-upload
