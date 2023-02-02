@@ -28,6 +28,8 @@ Item {
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
     property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
     property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
+    property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
+    property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string saveButtonShadow: "#80A1A1A1"
     property string saveButtonBackgroundColour: "#F2F3F3"
     property string saveButtonPressedColour: "#E7E8E8"
@@ -690,6 +692,25 @@ Item {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: jackOutputMeters.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
+
+                background: Rectangle {
+                    x: jackOutputVolumeSlider.leftPadding
+                    y: jackOutputVolumeSlider.topPadding + jackOutputVolumeSlider.availableHeight / 2 - height / 2
+                    implicitWidth: parent.width
+                    implicitHeight: 6
+                    width: jackOutputVolumeSlider.availableWidth
+                    height: implicitHeight
+                    radius: 4
+                    color: sliderTrackColour
+
+                    Rectangle {
+                        width: jackOutputVolumeSlider.visualPosition * parent.width
+                        height: parent.height
+                        color: sliderActiveTrackColour
+                        radius: 4
+                    }
+                }
+
                 handle: Rectangle {
                     x: jackOutputVolumeSlider.leftPadding + jackOutputVolumeSlider.visualPosition * (jackOutputVolumeSlider.availableWidth - width)
                     y: jackOutputVolumeSlider.topPadding + jackOutputVolumeSlider.availableHeight / 2 - height / 2
@@ -793,6 +814,25 @@ Item {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: jackInputMeters.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
+
+                background: Rectangle {
+                    x: jackInputVolumeSlider.leftPadding
+                    y: jackInputVolumeSlider.topPadding + jackInputVolumeSlider.availableHeight / 2 - height / 2
+                    implicitWidth: parent.width
+                    implicitHeight: 6
+                    width: jackInputVolumeSlider.availableWidth
+                    height: implicitHeight
+                    radius: 4
+                    color: sliderTrackColour
+
+                    Rectangle {
+                        width: jackInputVolumeSlider.visualPosition * parent.width
+                        height: parent.height
+                        color: sliderActiveTrackColour
+                        radius: 4
+                    }
+                }
+
                 handle: Rectangle {
                     x: jackInputVolumeSlider.leftPadding + jackInputVolumeSlider.visualPosition * (jackInputVolumeSlider.availableWidth - width)
                     y: jackInputVolumeSlider.topPadding + jackInputVolumeSlider.availableHeight / 2 - height / 2
@@ -966,6 +1006,25 @@ Item {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: outputDeviceMeters.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
+
+                background: Rectangle {
+                    x: outputSlider.leftPadding
+                    y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
+                    implicitWidth: parent.width
+                    implicitHeight: 6
+                    width: outputSlider.availableWidth
+                    height: implicitHeight
+                    radius: 4
+                    color: sliderTrackColour
+
+                    Rectangle {
+                        width: outputSlider.visualPosition * parent.width
+                        height: parent.height
+                        color: sliderActiveTrackColour
+                        radius: 4
+                    }
+                }
+
                 handle: Rectangle {
                     x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
                     y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
@@ -1151,6 +1210,25 @@ Item {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputDeviceMeters.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
+
+                background: Rectangle {
+                    x: inputSlider.leftPadding
+                    y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
+                    implicitWidth: parent.width
+                    implicitHeight: 6
+                    width: inputSlider.availableWidth
+                    height: implicitHeight
+                    radius: 4
+                    color: sliderTrackColour
+
+                    Rectangle {
+                        width: inputSlider.visualPosition * parent.width
+                        height: parent.height
+                        color: sliderActiveTrackColour
+                        radius: 4
+                    }
+                }
+
                 handle: Rectangle {
                     x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
                     y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
