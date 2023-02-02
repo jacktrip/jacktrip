@@ -107,15 +107,8 @@ Item {
                 radius: 6 * virtualstudio.uiScale
                 color: okButtonEthernet.down ? saveButtonPressedColour : saveButtonBackgroundColour
                 border.width: 1
-                border.color: okButtonEthernet.down ? saveButtonPressedStroke : saveButtonStroke
+                border.color: okButtonEthernet.down || okButtonEthernet.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: okButtonEthernet.hovered && !okButtonEthernet.down
-                layer.effect: DropShadow {
-                    horizontalOffset: 1 * virtualstudio.uiScale
-                    verticalOffset: 1 * virtualstudio.uiScale
-                    radius: 8.0 * virtualstudio.uiScale
-                    samples: 17
-                    color: saveButtonShadow
-                }
             }
             onClicked: { warningScreen = "headphones" }
             anchors.right: parent.right
@@ -148,7 +141,7 @@ Item {
                 x: showEthernetWarningCheckbox.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 3 * virtualstudio.uiScale
-                border.color: showEthernetWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
+                border.color: showEthernetWarningCheckbox.down || showEthernetWarningCheckbox.hovered  ? checkboxPressedStroke : checkboxStroke
 
                 Rectangle {
                     width: 10 * virtualstudio.uiScale
@@ -156,7 +149,7 @@ Item {
                     x: 3 * virtualstudio.uiScale
                     y: 3 * virtualstudio.uiScale
                     radius: 2 * virtualstudio.uiScale
-                    color: showEthernetWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
+                    color: showEthernetWarningCheckbox.down ||  showEthernetWarningCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
                     visible: showEthernetWarningCheckbox.checked
                 }
             }
@@ -256,15 +249,8 @@ Item {
                 radius: 6 * virtualstudio.uiScale
                 color: okButtonHeadphones.down ? saveButtonPressedColour : saveButtonBackgroundColour
                 border.width: 1
-                border.color: okButtonHeadphones.down ? saveButtonPressedStroke : saveButtonStroke
+                border.color: okButtonHeadphones.down || okButtonHeadphones.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
-                layer.effect: DropShadow {
-                    horizontalOffset: 1 * virtualstudio.uiScale
-                    verticalOffset: 1 * virtualstudio.uiScale
-                    radius: 8.0 * virtualstudio.uiScale
-                    samples: 17
-                    color: saveButtonShadow
-                }
             }
             onClicked: {
                 if (permissions.micPermission == "unknown") {
@@ -303,7 +289,7 @@ Item {
                 x: showHeadphonesWarningCheckbox.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 3 * virtualstudio.uiScale
-                border.color: showHeadphonesWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
+                border.color: showHeadphonesWarningCheckbox.down || showHeadphonesWarningCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
 
                 Rectangle {
                     width: 10 * virtualstudio.uiScale
@@ -311,7 +297,7 @@ Item {
                     x: 3 * virtualstudio.uiScale
                     y: 3 * virtualstudio.uiScale
                     radius: 2 * virtualstudio.uiScale
-                    color: showHeadphonesWarningCheckbox.down ? checkboxPressedStroke : checkboxStroke
+                    color: showHeadphonesWarningCheckbox.down || showHeadphonesWarningCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
                     visible: showHeadphonesWarningCheckbox.checked
                 }
             }
@@ -372,15 +358,8 @@ Item {
                 radius: 6 * virtualstudio.uiScale
                 color: showPromptButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
                 border.width: 2
-                border.color: showPromptButton.down ? saveButtonPressedStroke : saveButtonStroke
+                border.color: showPromptButton.down || showPromptButton.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: showPromptButton.hovered && !showPromptButton.down
-                layer.effect: DropShadow {
-                    horizontalOffset: 1 * virtualstudio.uiScale
-                    verticalOffset: 1 * virtualstudio.uiScale
-                    radius: 8.0 * virtualstudio.uiScale
-                    samples: 17
-                    color: saveButtonShadow
-                }
             }
             onClicked: { 
                 permissions.getMicPermission();
@@ -467,15 +446,8 @@ Item {
                 radius: 6 * virtualstudio.uiScale
                 color: openSettingsButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
                 border.width: 1
-                border.color: openSettingsButton.down ? saveButtonPressedStroke : saveButtonStroke
+                border.color: openSettingsButton.down || openSettingsButton.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: openSettingsButton.hovered && !openSettingsButton.down
-                layer.effect: DropShadow {
-                    horizontalOffset: 1 * virtualstudio.uiScale
-                    verticalOffset: 1 * virtualstudio.uiScale
-                    radius: 8.0 * virtualstudio.uiScale
-                    samples: 17
-                    color: saveButtonShadow
-                }
             }
             onClicked: { 
                 permissions.openSystemPrivacy();
@@ -657,7 +629,7 @@ Item {
         Slider {
             id: outputSlider
             from: 0.0
-            value: audioInterface ? audioInterface.outputVolume : 0.5
+            value: audioInterface ? audioInterface.outputVolume : 1.0
             onMoved: { audioInterface.outputVolume = value }
             to: 1.0
             padding: 0
@@ -683,7 +655,7 @@ Item {
                 radius: 6 * virtualstudio.uiScale
                 color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
-                border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+                border.color: testOutputAudioButton.down || testOutputAudioButton.hovered ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.playOutputAudio() }
             anchors.right: parent.right
@@ -782,7 +754,7 @@ Item {
         Slider {
             id: inputSlider
             from: 0.0
-            value: audioInterface ? audioInterface.inputVolume : 0.5
+            value: audioInterface ? audioInterface.inputVolume : 1.0
             onMoved: { audioInterface.inputVolume = value }
             to: 1.0
             padding: 0
@@ -808,7 +780,7 @@ Item {
                 radius: 6 * virtualstudio.uiScale
                 color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
-                border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+                border.color: refreshButton.down || refreshButton.hovered ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: { virtualstudio.refreshDevices() }
             anchors.right: parent.right
@@ -853,15 +825,7 @@ Item {
                 radius: 6 * virtualstudio.uiScale
                 color: saveButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
                 border.width: 1
-                border.color: saveButton.down ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: saveButton.hovered && !saveButton.down
-                layer.effect: DropShadow {
-                    horizontalOffset: 1 * virtualstudio.uiScale
-                    verticalOffset: 1 * virtualstudio.uiScale
-                    radius: 8.0 * virtualstudio.uiScale
-                    samples: 17
-                    color: saveButtonShadow
-                }
+                border.color: saveButton.down || saveButton.hovered ? saveButtonPressedStroke : saveButtonStroke
             }
             enabled: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable
             onClicked: { virtualstudio.windowState = "browse"; virtualstudio.applySettings() }
@@ -896,7 +860,7 @@ Item {
                 x: showAgainCheckbox.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 3 * virtualstudio.uiScale
-                border.color: showAgainCheckbox.down ? checkboxPressedStroke : checkboxStroke
+                border.color: showAgainCheckbox.down || showAgainCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
 
                 Rectangle {
                     width: 10 * virtualstudio.uiScale
@@ -904,7 +868,7 @@ Item {
                     x: 3 * virtualstudio.uiScale
                     y: 3 * virtualstudio.uiScale
                     radius: 2 * virtualstudio.uiScale
-                    color: showAgainCheckbox.down ? checkboxPressedStroke : checkboxStroke
+                    color: showAgainCheckbox.down || showAgainCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
                     visible: showAgainCheckbox.checked
                 }
             }
