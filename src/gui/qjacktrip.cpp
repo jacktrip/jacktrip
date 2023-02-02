@@ -828,6 +828,7 @@ void QJackTrip::start()
             }
 
             m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP,
+                                          1,
                                           m_ui->channelSendSpinBox->value(),
                                           m_ui->channelRecvSpinBox->value(),
 #ifdef WAIR  // wair

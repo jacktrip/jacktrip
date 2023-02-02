@@ -348,7 +348,7 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
                                  [[maybe_unused]] int bufferStrategy,
                                  VsServerInfo* studioInfo)
 {
-    m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, 2, 2,
+    m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, 1, 2, 2,
 #ifdef WAIR  // wair
                                   0,
 #endif  // endwhere

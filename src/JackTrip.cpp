@@ -82,7 +82,7 @@ bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
-                   int NumChansIn, int NumChansOut,
+                   int BaseChanIn, int NumChansIn, int NumChansOut,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
 #endif  // endwhere
