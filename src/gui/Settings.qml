@@ -417,7 +417,7 @@ Item {
                     radius: 6 * virtualstudio.uiScale
                     color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
                     border.width: 1
-                    border.color: testOutputAudioButton.down ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+                    border.color: testOutputAudioButton.down || testOutputAudioButton.hovered ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
                 }
                 onClicked: { virtualstudio.playOutputAudio() }
                 anchors.right: parent.right
