@@ -641,7 +641,7 @@ Item {
                 }
                 horizontalAlignment: Text.AlignHLeft
                 wrapMode: Text.WordWrap
-                color: warningText
+                color: warningTextColour
                 font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
             }
