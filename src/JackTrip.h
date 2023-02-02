@@ -624,6 +624,7 @@ class JackTrip : public QObject
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
+    int mBaseAudioChanIn;   ///< Base Audio Input Channel
     int mNumAudioChansIn;   ///< Number of Audio Input Channels
     int mNumAudioChansOut;  ///< Number of Audio Output Channels
 

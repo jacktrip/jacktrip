@@ -47,17 +47,17 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutChans,
+RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(jacktrip, NumInChans, NumOutChans, AudioBitResolution)
+    : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, AudioBitResolution)
     , mRtAudio(NULL)
 {
 }
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(int NumInChans, int NumOutChans,
+RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, false)
+    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, AudioBitResolution, false)
     , mRtAudio(NULL)
 {
     RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution);

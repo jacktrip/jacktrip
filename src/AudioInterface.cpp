@@ -47,7 +47,7 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-AudioInterface::AudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutChans,
+AudioInterface::AudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
 #ifdef WAIR  // wair
                                int NumNetRevChans,
 #endif  // endwhere

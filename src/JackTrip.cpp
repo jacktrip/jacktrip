@@ -97,6 +97,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mDataProtocol(DataProtocolType)
     , mPacketHeaderType(PacketHeaderType)
     , mAudiointerfaceMode(JackTrip::JACK)
+    , mBaseAudioChanIn(BaseChanIn)
     , mNumAudioChansIn(NumChansIn)
     , mNumAudioChansOut(NumChansOut)
 #ifdef WAIR  // WAIR
@@ -237,7 +238,7 @@ void JackTrip::setupAudio(
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+        mAudioInterface = new RtAudioInterface(this, mBaseAudioChanIn, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
@@ -246,6 +247,8 @@ void JackTrip::setupAudio(
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup(true);
         // Setup might have reduced number of channels
+
+        // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
         // Setup might have changed buffer size
@@ -254,7 +257,7 @@ void JackTrip::setupAudio(
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef RT_AUDIO
-        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+        mAudioInterface = new RtAudioInterface(this, mBaseAudioChanIn, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
@@ -263,6 +266,8 @@ void JackTrip::setupAudio(
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup(true);
         // Setup might have reduced number of channels
+
+        // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
         // Setup might have changed buffer size

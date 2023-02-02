@@ -56,11 +56,14 @@ class RtAudioInterface : public AudioInterface
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
-    RtAudioInterface(JackTrip* jacktrip, int NumInChans = gDefaultNumInChannels,
+    RtAudioInterface(JackTrip* jacktrip,
+                     int BaseInChan                         = 1,
+                     int NumInChans                         = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief Overloaded class constructor with null JackTrip pointer
-    RtAudioInterface(int NumInChans                         = gDefaultNumInChannels,
+    RtAudioInterface(int BaseInChan                         = 1,
+                     int NumInChans                         = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief The class destructor

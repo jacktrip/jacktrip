@@ -62,12 +62,12 @@ QMutex JackAudioInterface::sJackMutex;
 
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(
-    JackTrip* jacktrip, int NumInChans, int NumOutChans,
+    JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
 #ifdef WAIR  // wair
     int NumNetRevChans,
 #endif  // endwhere
     AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
-    : AudioInterface(jacktrip, NumInChans, NumOutChans,
+    : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans,
 #ifdef WAIR  // wair
                      NumNetRevChans,
 #endif  // endwhere
@@ -86,12 +86,12 @@ JackAudioInterface::JackAudioInterface(
 
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(
-    int NumInChans, int NumOutChans,
+    int BaseInChan, int NumInChans, int NumOutChans,
 #ifdef WAIR  // wair
     int NumNetRevChans,
 #endif  // endwhere
     AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
-    : AudioInterface(nullptr, NumInChans, NumOutChans,
+    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans,
 #ifdef WAIR  // wair
                      NumNetRevChans,
 #endif  // endwhere
@@ -106,7 +106,7 @@ JackAudioInterface::JackAudioInterface(
     , mBroadcast(false)
     , mJackTrip(nullptr)
 {
-    JackAudioInterface(nullptr, NumInChans, NumOutChans,
+    JackAudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans,
 #ifdef WAIR  // wair
                        NumNetRevChans,
 #endif  // endwhere

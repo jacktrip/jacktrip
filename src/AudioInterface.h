@@ -93,7 +93,7 @@ class AudioInterface
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
     AudioInterface(
-        JackTrip* jacktrip, int NumInChans, int NumOutChans,
+        JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
