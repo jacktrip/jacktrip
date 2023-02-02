@@ -363,6 +363,11 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
         m_jackTrip->setOutputDevice(output);
     }
 #endif
+    int bindPort = selectBindPort();
+    if (bindPort == 0) {
+        return 0;
+    }
+    m_jackTrip->setBindPorts(bindPort);
     m_jackTrip->setRemoteClientName(m_appID);
     // increment m_bufferStrategy by 1 for array-index mapping
     m_jackTrip->setBufferStrategy(bufferStrategy + 1);
@@ -661,4 +666,22 @@ QString VsDevice::randomString(int stringLength)
     }
 
     return str;
+}
+
+// selectBindPort finds the next open bind port to use for jacktrip
+int VsDevice::selectBindPort()
+{
+    int candidate = gDefaultPort;
+    if (m_jackTrip.isNull()) {
+        return candidate;
+    }
+    int attempt = 0;
+    while (attempt <= 5000) {
+        candidate = QRandomGenerator::global()->bounded(gBindPortLow, gBindPortHigh + 1);
+        attempt++;
+        if (!m_jackTrip->checkIfPortIsBinded(candidate)) {
+            return candidate;
+        }
+    }
+    return 0;
 }

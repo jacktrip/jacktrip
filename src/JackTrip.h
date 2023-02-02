@@ -191,7 +191,7 @@ class JackTrip : public QObject
 
     /// \brief Check if UDP port is already binded
     /// \param port Port number
-    virtual void checkIfPortIsBinded(int port);
+    virtual bool checkIfPortIsBinded(int port);
 
     //------------------------------------------------------------------------------------
     /// \name Getters and Setters Methods to change parameters after construction

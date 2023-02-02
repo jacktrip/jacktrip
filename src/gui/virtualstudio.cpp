@@ -1122,6 +1122,10 @@ void VirtualStudio::completeConnection()
 #endif
         JackTrip* jackTrip = m_device->initJackTrip(
             m_useRtAudio, input, output, buffer_size, m_bufferStrategy, studioInfo);
+        if (jackTrip == 0) {
+            processError("Could not bind port");
+            return;
+        }
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::processFinished, Qt::QueuedConnection);
