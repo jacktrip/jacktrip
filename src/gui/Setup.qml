@@ -634,6 +634,7 @@ Item {
                 id: jackTestOutputAudioButton
                 background: Rectangle {
                     radius: 6 * virtualstudio.uiScale
+                    color: jackTestOutputAudioButton.down ? buttonPressedColour : (jackTestOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
                     border.width: 1
                     border.color: jackTestOutputAudioButton.down || jackTestOutputAudioButton.hovered ? buttonPressedStroke : (jackTestOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
                 }
