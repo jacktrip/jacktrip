@@ -54,6 +54,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChan
                                audioBitResolutionT AudioBitResolution,
                                bool processWithNetwork)
     : mJackTrip(jacktrip)
+    , mBaseInChan(BaseInChan)
     , mNumInChans(NumInChans)
     , mNumOutChans(NumOutChans)
     ,

@@ -239,6 +239,7 @@ class AudioInterface
                                  unsigned int n_frames);
 
     JackTrip* mJackTrip;  ///< JackTrip Mediator Class pointer
+    int mBaseInChan;      ///< Base Input Channel
     int mNumInChans;      ///< Number of Input Channels
     int mNumOutChans;     ///<  Number of Output Channels
 #ifdef WAIR               // wair
