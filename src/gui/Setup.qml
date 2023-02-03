@@ -1296,6 +1296,7 @@ Item {
                 id: inputChannelsCombo
                 anchors.left: inputCombo.left
                 anchors.right: inputCombo.horizontalCenter
+                anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 model: inputChannelsComboModel
@@ -1310,11 +1311,10 @@ Item {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            // if (modelData.type == "element") {
-                            //     inputCombo.currentIndex = index
-                            //     inputCombo.popup.close()
-                            //     virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
-                            // }
+                            inputChannelsCombo.currentIndex = index
+                            inputChannelsCombo.popup.close()
+                            virtualstudio.baseInputChannel = modelData.baseChannel
+                            virtualstudio.numChannels = modelData.numChannels
                         }
                     }
                 }
@@ -1325,6 +1325,53 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
                     text: inputChannelsCombo.model[inputChannelsCombo.currentIndex].label || ""
+                }
+            }
+
+            Text {
+                id: inputMixModeLabel
+                anchors.left: inputCombo.horizontalCenter
+                anchors.right: inputCombo.right
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: inputSlider.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: "Mono / Stereo"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            ComboBox {
+                id: inputMixModeCombo
+                anchors.left: inputCombo.horizontalCenter
+                anchors.right: inputCombo.right
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: inputMixModeLabel.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                model: inputMixModeComboModel
+                delegate: ItemDelegate {
+                    required property var modelData
+                    required property int index
+                    width: parent.width
+                    contentItem: Text {
+                        text: modelData.label
+                    }
+                    highlighted: inputMixModeCombo.highlightedIndex === index
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            inputMixModeCombo.currentIndex = index
+                            inputMixModeCombo.popup.close()
+                        }
+                    }
+                }
+                contentItem: Text {
+                    leftPadding: 12
+                    font: inputCombo.font
+                    horizontalAlignment: Text.AlignHLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: inputMixModeCombo.model[inputMixModeCombo.currentIndex].label || ""
                 }
             }
         }
