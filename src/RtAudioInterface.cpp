@@ -93,8 +93,8 @@ void RtAudioInterface::setup(bool verbose)
 
     QStringList all_input_devices;
     QStringList all_output_devices;
-    getDeviceList(&all_input_devices, NULL, true);
-    getDeviceList(&all_output_devices, NULL, false);
+    getDeviceList(&all_input_devices, NULL, NULL, true);
+    getDeviceList(&all_output_devices, NULL, NULL, false);
 
     unsigned int n_devices_input  = all_input_devices.size();
     unsigned int n_devices_output = all_output_devices.size();
@@ -416,7 +416,7 @@ int RtAudioInterface::stopProcess()
 }
 
 //*******************************************************************************
-void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
+void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories, QList<int>* channels,
                                      bool isInput)
 {
     RtAudio baseRtAudio;
@@ -445,10 +445,14 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
         categories->append(QStringLiteral(""));
 #endif
     }
+    if (channels != NULL) {
+        channels->append(0);
+    }
 
     // Explicitly add default device
     QString defaultDeviceName = "";
     uint32_t defaultDeviceIdx;
+    RtAudio::DeviceInfo defaultDeviceInfo;
     if (isInput) {
         defaultDeviceIdx = baseRtAudio.getDefaultInputDevice();
     } else {
@@ -456,8 +460,8 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
     }
 
     if (defaultDeviceIdx != 0) {
-        RtAudio::DeviceInfo info = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
-        defaultDeviceName        = QString::fromStdString(info.name);
+        defaultDeviceInfo = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
+        defaultDeviceName        = QString::fromStdString(defaultDeviceInfo.name);
     }
 
     if (defaultDeviceName != "") {
@@ -481,6 +485,13 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 #else
             categories->append(QStringLiteral(""));
 #endif
+        }
+        if (channels != NULL) {
+            if (isInput) {
+                channels->append(defaultDeviceInfo.inputChannels);
+            } else {
+                channels->append(defaultDeviceInfo.outputChannels);
+            }
         }
     }
 
@@ -520,8 +531,14 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 
                 if (isInput && info.inputChannels > 0) {
                     list->append(QString::fromStdString(info.name));
+                    if (channels != NULL) {
+                        channels->append(info.inputChannels);
+                    }
                 } else if (!isInput && info.outputChannels > 0) {
                     list->append(QString::fromStdString(info.name));
+                    if (channels != NULL) {
+                        channels->append(info.outputChannels);
+                    }
                 }
 
                 if (categories == NULL) {

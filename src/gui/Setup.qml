@@ -1262,7 +1262,7 @@ Item {
                 anchors.left: inputLabel.left
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputSlider.bottom
+                anchors.top: inputSlider.bottom // TODO: Fix this!
                 anchors.bottomMargin: 24 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
@@ -1277,7 +1277,55 @@ Item {
                 wrapMode: Text.WordWrap
                 color: warningText
                 font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+                visible: false && Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+            }
+
+            Text {
+                id: inputChannelsLabel
+                anchors.left: inputCombo.left
+                anchors.right: inputCombo.horizontalCenter
+                anchors.top: inputSlider.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: "Input Channel(s)"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            ComboBox {
+                id: inputChannelsCombo
+                anchors.left: inputCombo.left
+                anchors.right: inputCombo.horizontalCenter
+                anchors.top: inputChannelsLabel.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                model: inputChannelsComboModel
+                delegate: ItemDelegate {
+                    required property var modelData
+                    required property int index
+                    width: parent.width
+                    contentItem: Text {
+                        text: modelData.label
+                    }
+                    highlighted: inputChannelsCombo.highlightedIndex === index
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            // if (modelData.type == "element") {
+                            //     inputCombo.currentIndex = index
+                            //     inputCombo.popup.close()
+                            //     virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                            // }
+                        }
+                    }
+                }
+                contentItem: Text {
+                    leftPadding: 12
+                    font: inputCombo.font
+                    horizontalAlignment: Text.AlignHLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: inputChannelsCombo.model[inputChannelsCombo.currentIndex].label || ""
+                }
             }
         }
 

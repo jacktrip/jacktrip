@@ -86,6 +86,8 @@ class VirtualStudio : public QObject
                    previousInputChanged)
     Q_PROPERTY(int previousOutput READ previousOutput WRITE setPreviousOutput NOTIFY
                    previousOutputChanged)
+    Q_PROPERTY(int baseInputChannel READ baseInputChannel WRITE setBaseInputChannel)
+    Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels)
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
@@ -156,6 +158,10 @@ class VirtualStudio : public QObject
     void setAudioBackend(const QString& backend);
     int inputDevice();
     void setInputDevice(int device);
+    int baseInputChannel();
+    void setBaseInputChannel(int baseChannel);
+    int numInputChannels();
+    void setNumInputChannels(int numChannels);
     int outputDevice();
     void setOutputDevice(int device);
     int previousInput();
@@ -327,7 +333,7 @@ class VirtualStudio : public QObject
     void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
-    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
+    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories, const QList<int>& channels);
 #endif
 
     bool m_showFirstRun = false;
@@ -415,12 +421,19 @@ class VirtualStudio : public QObject
     QStringList m_outputDeviceList;
     QStringList m_inputDeviceCategories;
     QStringList m_outputDeviceCategories;
+    QList<int> m_inputDeviceChannels;
+    QList<int> m_outputDeviceChannels;
     QString m_inputDevice;
     QString m_outputDevice;
     quint16 m_bufferSize;
     QString m_previousInput;
     QString m_previousOutput;
     quint16 m_previousBuffer;
+    
+    int m_baseInputChannel;
+    int m_numInputChannels;
+    QString m_inputMixMode;
+
     bool m_previousUseRtAudio = false;
     inline void delay(int millisecondsWait)
     {

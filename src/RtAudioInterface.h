@@ -77,7 +77,7 @@ class RtAudioInterface : public AudioInterface
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
 
-    static void getDeviceList(QStringList* list, QStringList* categories, bool isInput);
+    static void getDeviceList(QStringList* list, QStringList* categories, QList<int>* channels, bool isInput);
     static void getDeviceInfoFromName(std::string deviceName, int* index,
                                       std::string* api, bool isInput);
 
