@@ -421,33 +421,13 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 {
     RtAudio baseRtAudio;
     RtAudio::Api baseRtAudioApi = baseRtAudio.getCurrentApi();
-
-    // Add (default)
-    list->clear();
-    list->append(QStringLiteral("(default)"));
     if (categories != NULL) {
-#ifdef _WIN32
-        switch (baseRtAudioApi) {
-        case RtAudio::WINDOWS_ASIO:
-            categories->append(QStringLiteral("Low-Latency (ASIO)"));
-            break;
-        case RtAudio::WINDOWS_WASAPI:
-            categories->append(QStringLiteral("All Devices (Non-ASIO)"));
-            break;
-        case RtAudio::WINDOWS_DS:
-            categories->append(QStringLiteral("All Devices (Non-ASIO)"));
-            break;
-        default:
-            categories->append(QStringLiteral(""));
-            break;
-        }
-#else
-        categories->append(QStringLiteral(""));
-#endif
+        categories->clear();
     }
     if (channels != NULL) {
-        channels->append(0);
+        channels->clear();
     }
+    list->clear();
 
     // Explicitly add default device
     QString defaultDeviceName = "";
@@ -539,6 +519,8 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                     if (channels != NULL) {
                         channels->append(info.outputChannels);
                     }
+                } else {
+                    continue;
                 }
 
                 if (categories == NULL) {

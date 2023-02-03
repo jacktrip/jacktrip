@@ -309,10 +309,6 @@ void VsAudioInterface::addOutputPlugin(ProcessPlugin* plugin)
 void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
 {
     m_inputDeviceName = deviceName.toStdString();
-    if (m_inputDeviceName == "(default)") {
-        m_inputDeviceName = "";
-    }
-
     if (!m_audioInterface.isNull()) {
         m_audioInterface->setInputDevice(m_inputDeviceName);
         if (m_audioActive && shouldRestart) {
@@ -324,10 +320,6 @@ void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
 void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
 {
     m_outputDeviceName = deviceName.toStdString();
-    if (m_outputDeviceName == "(default)") {
-        m_outputDeviceName = "";
-    }
-
     if (!m_audioInterface.isNull()) {
         m_audioInterface->setOutputDevice(m_outputDeviceName);
         if (m_audioActive && shouldRestart) {
