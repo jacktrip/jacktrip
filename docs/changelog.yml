@@ -1,3 +1,15 @@
+- Version: "1.7.1"
+  Date: 2023-02-03
+  Description:
+  - (added) missing QuickControl2 dependency
+  - (added) documentation preview in build steps
+  - (added) README text about PPA and Debian backports
+  - (updated) upgraded to Qt 5.15.3
+  - (updated) linux package dependencies
+  - (updated) JackTrip now uses a random available port when connecting
+  - (updated) VS mode - Audio settings screen layouts
+  - (fixed) VS mode - video button is now available to all users of a Studio
+  - (fixed) A few memory leaks
 - Version: "1.7.0"
   Date: 2023-01-20
   Description:
