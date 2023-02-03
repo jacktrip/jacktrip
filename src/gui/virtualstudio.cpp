@@ -471,6 +471,17 @@ void VirtualStudio::setNumInputChannels([[maybe_unused]] int numChannels)
 #endif
 }
 
+void VirtualStudio::setInputMixMode(const QString& mode)
+{
+    m_inputMixMode = mode;
+    return;
+}
+
+QString VirtualStudio::inputMixMode()
+{
+    return m_inputMixMode;
+}
+
 int VirtualStudio::outputDevice()
 {
 #ifdef RT_AUDIO

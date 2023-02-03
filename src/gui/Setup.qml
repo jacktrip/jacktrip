@@ -1362,6 +1362,7 @@ Item {
                         onClicked: {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
+                            virtualstudio.inputMixMode = inputMixModeComboModel[index].value
                         }
                     }
                 }

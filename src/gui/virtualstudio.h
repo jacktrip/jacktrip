@@ -88,6 +88,7 @@ class VirtualStudio : public QObject
                    previousOutputChanged)
     Q_PROPERTY(int baseInputChannel READ baseInputChannel WRITE setBaseInputChannel)
     Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels)
+    Q_PROPERTY(QString inputMixMode READ inputMixMode WRITE setInputMixMode)
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
@@ -162,6 +163,8 @@ class VirtualStudio : public QObject
     void setBaseInputChannel(int baseChannel);
     int numInputChannels();
     void setNumInputChannels(int numChannels);
+    void setInputMixMode(const QString& mode);
+    QString inputMixMode();
     int outputDevice();
     void setOutputDevice(int device);
     int previousInput();
