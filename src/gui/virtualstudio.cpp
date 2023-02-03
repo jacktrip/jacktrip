@@ -2037,8 +2037,10 @@ void VirtualStudio::startAudio()
             &VsAudioInterface::setAudioInterfaceMode);
     connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),
             &VsAudioInterface::triggerPlayback);
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::newVolumeMeterMeasurements,
-            this, &VirtualStudio::updatedInputVuMeasurements);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::newInputMeterMeasurements, this,
+            &VirtualStudio::updatedInputVuMeasurements);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::newOutputMeterMeasurements,
+            this, &VirtualStudio::updatedOutputVuMeasurements);
     connect(m_vsAudioInterface.data(), &VsAudioInterface::errorToProcess, this,
             &VirtualStudio::processError);
 
@@ -2050,6 +2052,10 @@ void VirtualStudio::startAudio()
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputMeterModel"),
         QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
+
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputMeterModel"),
+        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
 
     m_vsAudioInterface->startProcess();
 }
@@ -2073,6 +2079,11 @@ void VirtualStudio::restartAudio()
             QStringLiteral("inputMeterModel"),
             QVariant::fromValue(
                 QVector<float>(m_vsAudioInterface->getNumInputChannels())));
+
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputMeterModel"),
+            QVariant::fromValue(
+                QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
 
         m_vsAudioInterface->startProcess();
     } else {

@@ -43,6 +43,8 @@ Item {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
     property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
+    property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
+    property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour
@@ -243,6 +245,25 @@ Item {
             anchors.leftMargin: 8 * virtualstudio.uiScale
             anchors.right: inputDeviceMeters.right
             opacity: virtualstudio.inputMuted ? 0.3 : 1
+
+            background: Rectangle {
+                x: inputSlider.leftPadding
+                y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: inputSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: inputSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
             handle: Rectangle {
                 x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
                 y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
@@ -338,6 +359,25 @@ Item {
             y: outputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: outputDeviceMeters.left
             anchors.right: outputDeviceMeters.right
+
+            background: Rectangle {
+                x: outputSlider.leftPadding
+                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: outputSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: outputSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
             handle: Rectangle {
                 x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
                 y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2

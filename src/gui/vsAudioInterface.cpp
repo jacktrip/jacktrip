@@ -286,9 +286,14 @@ void VsAudioInterface::replaceProcess()
     }
 }
 
-void VsAudioInterface::processMeterMeasurements(QVector<float> values)
+void VsAudioInterface::processInputMeterMeasurements(QVector<float> values)
 {
-    emit newVolumeMeterMeasurements(values);
+    emit newInputMeterMeasurements(values);
+}
+
+void VsAudioInterface::processOutputMeterMeasurements(QVector<float> values)
+{
+    emit newOutputMeterMeasurements(values);
 }
 
 void VsAudioInterface::addInputPlugin(ProcessPlugin* plugin)
@@ -361,6 +366,7 @@ void VsAudioInterface::setupPlugins()
 {
     // Create plugins
     m_inputMeter         = new Meter(getNumInputChannels());
+    m_outputMeter        = new Meter(getNumOutputChannels());
     m_inputVolumePlugin  = new Volume(getNumInputChannels());
     m_outputVolumePlugin = new Volume(getNumOutputChannels());
     m_outputTonePlugin   = new Tone(getNumOutputChannels());
@@ -370,10 +376,13 @@ void VsAudioInterface::setupPlugins()
     addInputPlugin(m_inputVolumePlugin);
     addOutputPlugin(m_outputVolumePlugin);
     addInputPlugin(m_inputMeter);
+    addOutputPlugin(m_outputMeter);
 
     // Connect plugins for communication with UI
     connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
-            &VsAudioInterface::processMeterMeasurements);
+            &VsAudioInterface::processInputMeterMeasurements);
+    connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
+            &VsAudioInterface::processOutputMeterMeasurements);
     connect(this, &VsAudioInterface::updatedInputVolume, m_inputVolumePlugin,
             &Volume::volumeUpdated);
     connect(this, &VsAudioInterface::updatedOutputVolume, m_outputVolumePlugin,
