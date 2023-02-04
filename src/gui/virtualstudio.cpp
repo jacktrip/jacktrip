@@ -1078,13 +1078,17 @@ void VirtualStudio::validateDevicesState()
         );
 
         // if the current m_baseInputChannel or m_numInputChannels is invalid based on this device's option, use the first two channels by default
-        if ((m_baseInputChannel + (m_numInputChannels - 1) > numDevicesChannelsAvailable) || (m_baseInputChannel % 2 == 0)) {
-            m_baseInputChannel = 1;
-            m_numInputChannels = 2;
+        if ((m_baseInputChannel + (m_numInputChannels - 1) > numDevicesChannelsAvailable)) {
+            if (m_numInputChannels == 2 && numDevicesChannelsAvailable > 1) {
+                m_baseInputChannel = 1;
+                m_numInputChannels = 2;
+            } else {
+                m_baseInputChannel = 1;
+                m_numInputChannels = 1;
+            }
             emit baseInputChannelChanged(m_baseInputChannel);
             emit numInputChannelsChanged(m_numInputChannels);
         }
-
         if (m_numInputChannels != 1) {
             // Set the input mix mode to have two options: "Stereo" and "Mix to Mono"
             QJsonObject inputMixModeComboElement1 = QJsonObject();

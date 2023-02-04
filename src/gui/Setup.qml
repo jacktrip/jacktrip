@@ -1327,7 +1327,7 @@ Item {
                             inputChannelsCombo.currentIndex = index
                             inputChannelsCombo.popup.close()
                             virtualstudio.baseInputChannel = modelData.baseChannel
-                            virtualstudio.numChannels = modelData.numChannels
+                            virtualstudio.numInputChannels = modelData.numChannels
                             virtualstudio.validateDevicesState()
                         }
                     }
