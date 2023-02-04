@@ -365,8 +365,6 @@ void VirtualStudio::setInputDevice([[maybe_unused]] const QString& device)
     m_inputDevice = device;
     emit inputDeviceChanged(m_inputDevice, false);
     emit inputDeviceSelected(m_inputDevice);
-
-    validateDevicesState();
 #endif
 }
 
@@ -387,7 +385,6 @@ void VirtualStudio::setBaseInputChannel([[maybe_unused]] int baseChannel)
     }
 #ifdef RT_AUDIO
     m_baseInputChannel = baseChannel;
-    validateDevicesState();
 #endif
 }
 
@@ -408,14 +405,12 @@ void VirtualStudio::setNumInputChannels([[maybe_unused]] int numChannels)
     }
 #ifdef RT_AUDIO
     m_numInputChannels = numChannels;
-    validateDevicesState();
 #endif
 }
 
 void VirtualStudio::setInputMixMode(const QString& mode)
 {
     m_inputMixMode = mode;
-    validateDevicesState();
     return;
 }
 
@@ -441,8 +436,6 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] const QString& device)
     m_outputDevice = device;
     emit outputDeviceChanged(m_outputDevice, false);
     emit outputDeviceSelected(m_outputDevice);
-
-    validateDevicesState();
 #endif
 }
 
@@ -1020,18 +1013,17 @@ void VirtualStudio::validateDevicesState()
     }
 
     // Given the currently selected input device, reset the available input channel options
-
     int indexOfInput = m_inputDeviceList.indexOf(m_inputDevice);
     if (indexOfInput == -1) {
         std::cerr << "Invalid state. Input device index should never be -1" << std::endl;
         return;
     }
 
-    int numChannels = m_inputDeviceChannels.at(indexOfInput);
-    if (numChannels < 1) {
+    int numDevicesChannelsAvailable = m_inputDeviceChannels.at(indexOfInput);
+    if (numDevicesChannelsAvailable < 1) {
         std::cerr << "Invalid state. Number of channels should never be less than 1" << std::endl;
         return;
-    } else if (numChannels == 1) {
+    } else if (numDevicesChannelsAvailable == 1) {
 
         // Set the input mix mode to just have "Mono" as the option
         QJsonObject inputMixModeComboElement = QJsonObject();
@@ -1062,35 +1054,16 @@ void VirtualStudio::validateDevicesState()
         emit inputMixModeChanged(m_inputMixMode);
     } else {
 
-        // Set the input mix mode to have two options: "Stereo" and "Mix to Mono"
-        QJsonObject inputMixModeComboElement1 = QJsonObject();
-        inputMixModeComboElement1.insert(QString::fromStdString("label"), QString::fromStdString("Stereo"));
-        inputMixModeComboElement1.insert(QString::fromStdString("value"), QString::fromStdString("stereo"));
-        QJsonObject inputMixModeComboElement2 = QJsonObject();
-        inputMixModeComboElement2.insert(QString::fromStdString("label"), QString::fromStdString("Mix to Mono"));
-        inputMixModeComboElement2.insert(QString::fromStdString("value"), QString::fromStdString("mix-to-mono"));
-        
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMixModeComboModel"),
-            QVariant::fromValue(QVariant(QVariantList() << QVariant(QJsonValue(inputMixModeComboElement1)) << QVariant(QJsonValue(inputMixModeComboElement2))))
-        );
-
-        // if m_inputMixMode is an invalid value, set it to "stereo"
-        if (m_inputMixMode != QStringLiteral("stereo") && m_inputMixMode != QStringLiteral("mix-to-mono")) {
-            m_inputMixMode = "stereo";
-            emit inputMixModeChanged(m_inputMixMode);
-        }
-
         // set the input channels selector to have the options based on the currently selected device
         QVariantList items = QVariantList();
-        for (int i = 0; i < numChannels; i++) {
+        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             QJsonObject element = QJsonObject();
             element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
             element.insert(QString::fromStdString("baseChannel"), QVariant(i + 1).toInt());
             element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
             items.push_back(QVariant(QJsonValue(element)));
         }
-        for (int i = 0; i < numChannels - 1; i++) {
+        for (int i = 0; i < numDevicesChannelsAvailable - 1; i++) {
             if (i % 2 == 0) {
                 QJsonObject element = QJsonObject();
                 element.insert(QString::fromStdString("label"), QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
@@ -1105,11 +1078,50 @@ void VirtualStudio::validateDevicesState()
         );
 
         // if the current m_baseInputChannel or m_numInputChannels is invalid based on this device's option, use the first two channels by default
-        if ((m_baseInputChannel + (m_numInputChannels - 1) > numChannels) || (m_baseInputChannel % 2 == 0)) {
+        if ((m_baseInputChannel + (m_numInputChannels - 1) > numDevicesChannelsAvailable) || (m_baseInputChannel % 2 == 0)) {
             m_baseInputChannel = 1;
             m_numInputChannels = 2;
             emit baseInputChannelChanged(m_baseInputChannel);
             emit numInputChannelsChanged(m_numInputChannels);
+        }
+
+        if (m_numInputChannels != 1) {
+            // Set the input mix mode to have two options: "Stereo" and "Mix to Mono"
+            QJsonObject inputMixModeComboElement1 = QJsonObject();
+            inputMixModeComboElement1.insert(QString::fromStdString("label"), QString::fromStdString("Stereo"));
+            inputMixModeComboElement1.insert(QString::fromStdString("value"), QString::fromStdString("stereo"));
+            QJsonObject inputMixModeComboElement2 = QJsonObject();
+            inputMixModeComboElement2.insert(QString::fromStdString("label"), QString::fromStdString("Mix to Mono"));
+            inputMixModeComboElement2.insert(QString::fromStdString("value"), QString::fromStdString("mix-to-mono"));
+            
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("inputMixModeComboModel"),
+                QVariant::fromValue(QVariant(QVariantList() << QVariant(QJsonValue(inputMixModeComboElement1)) << QVariant(QJsonValue(inputMixModeComboElement2))))
+            );
+
+            // if m_inputMixMode is an invalid value, set it to "stereo"
+            if (m_inputMixMode != QStringLiteral("stereo") && m_inputMixMode != QStringLiteral("mix-to-mono")) {
+                m_inputMixMode = "stereo";
+                emit inputMixModeChanged(m_inputMixMode);
+            }
+        } else {
+
+            // TODO: Fix this branch. Not going through when I think it should be.
+            std::cout << "Should set options as MONO only" << std::endl;
+
+            // Set the input mix mode to just have "Mono" as the option
+            QJsonObject inputMixModeComboElement = QJsonObject();
+            inputMixModeComboElement.insert(QString::fromStdString("label"), QString::fromStdString("Mono"));
+            inputMixModeComboElement.insert(QString::fromStdString("value"), QString::fromStdString("mono"));
+            m_view.engine()->rootContext()->setContextProperty(
+                QStringLiteral("inputMixModeComboModel"),
+                QVariant::fromValue(QVariant(QVariantList() << QVariant(QJsonValue(inputMixModeComboElement))))
+            );
+
+            if (m_baseInputChannel > numDevicesChannelsAvailable) {
+                m_baseInputChannel = 1;
+                emit baseInputChannelChanged(m_baseInputChannel);
+            }
         }
     }
 }
@@ -2138,8 +2150,9 @@ void VirtualStudio::startAudio()
             QStringLiteral("audioInterface"), m_vsAudioInterface.data());
     }
 #ifdef RT_AUDIO
-    m_vsAudioInterface->setInputDevice(m_inputDevice, false);
-    m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
+    validateDevicesState();
+    m_vsAudioInterface->setInputDevice(m_inputDevice, true);
+    m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
 #endif
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
@@ -2196,6 +2209,9 @@ void VirtualStudio::restartAudio()
 #endif
     // Start VsAudioInterface again
     if (!m_vsAudioInterface.isNull()) {
+        validateDevicesState();
+        m_vsAudioInterface->setInputDevice(m_inputDevice, true);
+        m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
         m_vsAudioInterface->setupAudio();
         m_vsAudioInterface->setupPlugins();
 

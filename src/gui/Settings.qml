@@ -310,6 +310,7 @@ Item {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
                                 virtualstudio.outputDevice = outputCombo.model[index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
+                                virtualstudio.validateDevicesState()
                             }
                         }
                     }
@@ -520,6 +521,7 @@ Item {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
                                 virtualstudio.inputDevice = inputCombo.model[index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
+                                virtualstudio.validateDevicesState()
                             }
                         }
                     }
@@ -692,6 +694,7 @@ Item {
                             inputChannelsCombo.popup.close()
                             virtualstudio.baseInputChannel = modelData.baseChannel
                             virtualstudio.numChannels = modelData.numChannels
+                            virtualstudio.validateDevicesState()
                         }
                     }
                 }
@@ -740,6 +743,7 @@ Item {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
                             virtualstudio.inputMixMode = inputMixModeComboModel[index].value
+                            virtualstudio.validateDevicesState()
                         }
                     }
                 }
