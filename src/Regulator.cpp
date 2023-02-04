@@ -664,6 +664,9 @@ void BurgAlgorithm::predict(std::vector<long double>& coeffs, std::vector<float>
 //*******************************************************************************
 ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 {
+    int shrinkCoeffsFactor = 1;
+    if (FPP == 1024)
+        shrinkCoeffsFactor = 8;
     trainSamps = (hist * FPP);
     mTruth.resize(FPP, 0.0);
     mXfadedPred.resize(FPP, 0.0);
@@ -674,7 +677,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
     }
     mTrain.resize(trainSamps, 0.0);
     mPrediction.resize(trainSamps - 1, 0.0);  // ORDER
-    mCoeffs.resize(trainSamps - 2, 0.0);
+    mCoeffs.resize(trainSamps / shrinkCoeffsFactor - 2, 0.0);
     mCrossFadeDown.resize(FPP, 0.0);
     mCrossFadeUp.resize(FPP, 0.0);
     mCrossfade.resize(FPP, 0.0);
