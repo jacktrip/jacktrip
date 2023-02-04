@@ -272,13 +272,18 @@ Item {
                 width: parent.width - outputLabel.width - rightMargin * virtualstudio.uiScale
                 model: outputComboModel
                 currentIndex: (() => {
+                    // TODO: account for situations where there are categories
+                    if (virtualstudio.outputDevice === "") {
+                        return 0;
+                    }
+
                     let count = 0;
                     for (let i = 0; i < outputCombo.model.length; i++) {
                         if (outputCombo.model[i].type === "element") {
                             count++;
                         }
 
-                        if (count > virtualstudio.outputDevice) {
+                        if (outputCombo.model[i].text === virtualstudio.outputDevice) {
                             return i;
                         }
                     }
@@ -304,7 +309,7 @@ Item {
                             if (modelData.type == "element") {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
-                                virtualstudio.outputDevice = index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                                virtualstudio.outputDevice = outputCombo.model[index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
                             }
                         }
                     }
@@ -473,13 +478,19 @@ Item {
                 id: inputCombo
                 model: inputComboModel
                 currentIndex: (() => {
+
+                    // TODO: account for situations where there are categories
+                    if (virtualstudio.inputDevice === "") {
+                        return 0;
+                    }
+
                     let count = 0;
                     for (let i = 0; i < inputCombo.model.length; i++) {
                         if (inputCombo.model[i].type === "element") {
                             count++;
                         }
 
-                        if (count > virtualstudio.inputDevice) {
+                        if (outputCombo.model[i].text === virtualstudio.inputDevice) {
                             return i;
                         }
                     }
@@ -508,7 +519,7 @@ Item {
                             if (modelData.type == "element") {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
-                                virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                                virtualstudio.inputDevice = inputCombo.model[index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
                             }
                         }
                     }
@@ -628,7 +639,7 @@ Item {
                 anchors.left: inputLabel.left
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputSlider.bottom
+                anchors.top: inputSlider.bottom // TODO: Fix this!
                 anchors.bottomMargin: 24 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
@@ -643,7 +654,103 @@ Item {
                 wrapMode: Text.WordWrap
                 color: warningTextColour
                 font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+                visible: false && Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+            }
+
+            Text {
+                id: inputChannelsLabel
+                anchors.left: inputCombo.left
+                anchors.right: inputCombo.horizontalCenter
+                anchors.top: inputSlider.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: "Input Channel(s)"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            ComboBox {
+                id: inputChannelsCombo
+                anchors.left: inputCombo.left
+                anchors.right: inputCombo.horizontalCenter
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: inputChannelsLabel.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                model: inputChannelsComboModel
+                delegate: ItemDelegate {
+                    required property var modelData
+                    required property int index
+                    width: parent.width
+                    contentItem: Text {
+                        text: modelData.label
+                    }
+                    highlighted: inputChannelsCombo.highlightedIndex === index
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            inputChannelsCombo.currentIndex = index
+                            inputChannelsCombo.popup.close()
+                            virtualstudio.baseInputChannel = modelData.baseChannel
+                            virtualstudio.numChannels = modelData.numChannels
+                        }
+                    }
+                }
+                contentItem: Text {
+                    leftPadding: 12
+                    font: inputCombo.font
+                    horizontalAlignment: Text.AlignHLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: inputChannelsCombo.model[inputChannelsCombo.currentIndex].label || ""
+                }
+            }
+
+            Text {
+                id: inputMixModeLabel
+                anchors.left: inputCombo.horizontalCenter
+                anchors.right: inputCombo.right
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: inputSlider.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: "Mono / Stereo"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            ComboBox {
+                id: inputMixModeCombo
+                anchors.left: inputCombo.horizontalCenter
+                anchors.right: inputCombo.right
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: inputMixModeLabel.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                model: inputMixModeComboModel
+                delegate: ItemDelegate {
+                    required property var modelData
+                    required property int index
+                    width: parent.width
+                    contentItem: Text {
+                        text: modelData.label
+                    }
+                    highlighted: inputMixModeCombo.highlightedIndex === index
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            inputMixModeCombo.currentIndex = index
+                            inputMixModeCombo.popup.close()
+                            virtualstudio.inputMixMode = inputMixModeComboModel[index].value
+                        }
+                    }
+                }
+                contentItem: Text {
+                    leftPadding: 12
+                    font: inputCombo.font
+                    horizontalAlignment: Text.AlignHLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: inputMixModeCombo.model[inputMixModeCombo.currentIndex].label || ""
+                }
             }
         }
 

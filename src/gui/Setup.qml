@@ -906,7 +906,6 @@ Item {
                 width: parent.width - outputLabel.width - rightMargin * virtualstudio.uiScale
                 model: outputComboModel
                 currentIndex: (() => {
-
                     // TODO: account for situations where there are categories
                     if (virtualstudio.outputDevice === "") {
                         return 0;
