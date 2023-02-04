@@ -906,13 +906,19 @@ Item {
                 width: parent.width - outputLabel.width - rightMargin * virtualstudio.uiScale
                 model: outputComboModel
                 currentIndex: (() => {
+
+                    // TODO: account for situations where there are categories
+                    if (virtualstudio.outputDevice === "") {
+                        return 0;
+                    }
+
                     let count = 0;
                     for (let i = 0; i < outputCombo.model.length; i++) {
                         if (outputCombo.model[i].type === "element") {
                             count++;
                         }
 
-                        if (count > virtualstudio.outputDevice) {
+                        if (outputCombo.model[i].text === virtualstudio.outputDevice) {
                             return i;
                         }
                     }
@@ -938,7 +944,7 @@ Item {
                             if (modelData.type == "element") {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
-                                virtualstudio.outputDevice = index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                                virtualstudio.outputDevice = outputCombo.model[index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
                             }
                         }
                     }
@@ -1107,13 +1113,19 @@ Item {
                 id: inputCombo
                 model: inputComboModel
                 currentIndex: (() => {
+
+                    // TODO: account for situations where there are categories
+                    if (virtualstudio.inputDevice === "") {
+                        return 0;
+                    }
+
                     let count = 0;
                     for (let i = 0; i < inputCombo.model.length; i++) {
                         if (inputCombo.model[i].type === "element") {
                             count++;
                         }
 
-                        if (count > virtualstudio.inputDevice) {
+                        if (outputCombo.model[i].text === virtualstudio.inputDevice) {
                             return i;
                         }
                     }
@@ -1142,7 +1154,7 @@ Item {
                             if (modelData.type == "element") {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
-                                virtualstudio.inputDevice = index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length
+                                virtualstudio.inputDevice = inputCombo.model[index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
                             }
                         }
                     }
