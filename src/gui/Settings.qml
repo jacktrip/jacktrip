@@ -491,7 +491,7 @@ Item {
                             count++;
                         }
 
-                        if (outputCombo.model[i].text === virtualstudio.inputDevice) {
+                        if (inputCombo.model[i].text === virtualstudio.inputDevice) {
                             return i;
                         }
                     }
