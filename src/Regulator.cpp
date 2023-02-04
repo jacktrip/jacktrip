@@ -281,7 +281,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
-            mPeerFPP = len / (mNumChannels * mBitResolutionMode);
+            mPeerFPP        = len / (mNumChannels * mBitResolutionMode);
+            mPeerFPPdurMsec = 1000.0 * mPeerFPP / 48000.0;
             // bufstrategy 1 autoq mode overloads qLen with negative val
             // creates this ugly code
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
@@ -338,7 +339,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             }
         }
         pushStat->tick();
-        double adjustAuto = pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec);
+        double adjustAuto =
+            pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec);
         //        qDebug() << adjustAuto;
         if (mAuto && (pushStat->lastTime > AutoInitDur))
             mMsecTolerance = adjustAuto;
@@ -712,7 +714,7 @@ void StdDev::reset()
     max          = -999999.0;
 };
 
-double StdDev::calcAuto(double autoHeadroom, double localFPPdur)
+double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPdur)
 {
     //    qDebug() << longTermStdDev << longTermMax << AutoMax << window <<
     //    longTermCnt;
@@ -720,7 +722,9 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur)
         return AutoMax;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
     if (tmp < localFPPdur)
-        tmp = localFPPdur;  // might also check peerFPP...
+        tmp = localFPPdur;
+    if (tmp < peerFPPdur)
+        tmp = peerFPPdur;
     tmp += autoHeadroom;
     return tmp;
 };
