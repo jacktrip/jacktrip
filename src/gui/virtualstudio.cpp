@@ -429,7 +429,12 @@ void VirtualStudio::setInputMixMode(const QString& mode)
 
 QString VirtualStudio::inputMixMode()
 {
+    if (!m_useRtAudio) {
+        return QString("");
+    }
+#ifdef RT_AUDIO
     return m_inputMixMode;
+#endif
 }
 
 QString VirtualStudio::outputDevice()
@@ -1013,6 +1018,10 @@ void VirtualStudio::refreshDevices()
 
 void VirtualStudio::validateDevicesState()
 {
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
     if (m_inputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
         return;
     }
@@ -1161,6 +1170,7 @@ void VirtualStudio::validateDevicesState()
             }
         }
     }
+#endif // RT_AUDIO
 }
 
 void VirtualStudio::playOutputAudio()
@@ -2252,9 +2262,11 @@ void VirtualStudio::restartAudio()
 #endif
     // Start VsAudioInterface again
     if (!m_vsAudioInterface.isNull()) {
+#ifdef RT_AUDIO
         validateDevicesState();
         m_vsAudioInterface->setInputDevice(m_inputDevice, true);
         m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
+#endif
         m_vsAudioInterface->setupAudio();
         m_vsAudioInterface->setupPlugins();
 
