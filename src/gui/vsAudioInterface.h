@@ -93,6 +93,9 @@ class VsAudioInterface : public QObject
 
    public slots:
     void setInputDevice(QString deviceName, bool shouldRestart = true);
+    void setBaseInputChannel(int baseChannel, bool shouldRestart = true);
+    void setNumInputChannels(int numChannels, bool shouldRestart = true);
+    void setInputMixMode(const QString& mode, bool shouldRestart = true);
     void setOutputDevice(QString deviceName, bool shouldRestart = true);
     void setAudioInterfaceMode(bool useRtAudio, bool shouldRestart = true);
     void setInputVolume(float multiplier);
@@ -132,6 +135,10 @@ class VsAudioInterface : public QObject
     bool m_outMuted       = false;
     bool m_audioActive    = false;
     bool m_hasBeenActive  = false;
+
+    int m_baseInputChannel     = 1;
+    int m_numInputChannels     = 1;
+    std::string m_inputMixMode = "mono";
 
     // Needed in constructor
     int m_numAudioChansIn;   ///< Number of Audio Input Channels

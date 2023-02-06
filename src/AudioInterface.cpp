@@ -47,7 +47,8 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-AudioInterface::AudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
+AudioInterface::AudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans,
+                               int NumOutChans,
 #ifdef WAIR  // wair
                                int NumNetRevChans,
 #endif  // endwhere
@@ -112,24 +113,21 @@ AudioInterface::~AudioInterface()
     delete[] mAudioInputPacket;
     delete[] mAudioOutputPacket;
 #ifndef WAIR  // NOT WAIR:
-    for (int i = 0; i < mNumInChans; i++) {
+    for (int i = 0; i < mInProcessBuffer.size(); i++) {
         delete[] mInProcessBuffer[i];
     }
 
-    for (int i = 0; i < mNumOutChans; i++) {
+    for (int i = 0; i < mOutProcessBuffer.size(); i++) {
         delete[] mOutProcessBuffer[i];
     }
 #else   // WAIR
-    int iCnt = (mNumInChans > mNumNetRevChans) ? mNumInChans : mNumNetRevChans;
-    int oCnt = (mNumOutChans > mNumNetRevChans) ? mNumOutChans : mNumNetRevChans;
-    int aCnt = (mNumNetRevChans) ? mNumInChans : 0;
-    for (int i = 0; i < iCnt; i++) {
+    for (int i = 0; i < mInProcessBuffer.size(); i++) {
         delete[] mInProcessBuffer[i];
     }
-    for (int i = 0; i < oCnt; i++) {
+    for (int i = 0; i < mOutProcessBuffer.size(); i++) {
         delete[] mOutProcessBuffer[i];
     }
-    for (int i = 0; i < aCnt; i++) {
+    for (int i = 0; i < mAPInBuffer.size(); i++) {
         delete[] mAPInBuffer[i];
     }
 #endif  // endwhere
@@ -140,7 +138,7 @@ AudioInterface::~AudioInterface()
     for (auto* i : qAsConst(mProcessPluginsToNetwork)) {
         delete i;
     }
-    for (int i = 0; i < mNumInChans; i++) {
+    for (int i = 0; i < mInBufCopy.size(); i++) {
         delete[] mInBufCopy[i];
     }
 }

@@ -218,11 +218,16 @@ void VsAudioInterface::setupRtAudio()
         m_audioInterface->setInputDevice(m_inputDeviceName);
         m_audioInterface->setOutputDevice(m_outputDeviceName);
         m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-
+        m_audioInterface->setBaseInputChannel(m_baseInputChannel);
+        std::cout << "Setting Num Input Channels on m_audioInterface (1) : "
+                  << m_numInputChannels << std::endl;
+        m_audioInterface->setNumInputChannels(m_numInputChannels);
+        m_audioInterface->setInputMixMode(m_inputMixMode);
         m_audioInterface->setup(true);
         // Setup might have reduced number of channels
         m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
         m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
+        m_baseInputChannel = m_audioInterface->getBaseInputChannel();
         // Setup might have changed buffer size
         m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
 
@@ -315,6 +320,58 @@ void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
             emit settingsUpdated();
         }
     }
+}
+
+void VsAudioInterface::setBaseInputChannel(int baseChannel, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_baseInputChannel = baseChannel;
+    if (!m_audioInterface.isNull()) {
+        m_audioInterface->setBaseInputChannel(m_baseInputChannel);
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+#endif
+    return;
+}
+
+void VsAudioInterface::setNumInputChannels(int numChannels, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_numInputChannels = numChannels;
+    if (!m_audioInterface.isNull()) {
+        std::cout << "Setting Num Input Channels on m_audioInterface (2) : "
+                  << m_numInputChannels << std::endl;
+        m_audioInterface->setNumInputChannels(m_numInputChannels);
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+#endif
+}
+
+void VsAudioInterface::setInputMixMode(const QString& mode, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_inputMixMode = mode.toStdString();
+    if (!m_audioInterface.isNull()) {
+        m_audioInterface->setInputMixMode(m_inputMixMode);
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+    return;
+#endif
 }
 
 void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)

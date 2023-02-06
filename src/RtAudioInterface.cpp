@@ -47,7 +47,8 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
+RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans,
+                                   int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, AudioBitResolution)
     , mRtAudio(NULL)
@@ -57,7 +58,8 @@ RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumIn
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, AudioBitResolution, false)
+    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, AudioBitResolution,
+                     false)
     , mRtAudio(NULL)
 {
     RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution);
@@ -79,6 +81,8 @@ void RtAudioInterface::setup(bool verbose)
     mNumOutChans = getNumOutputChannels();
     mInBuffer.resize(getNumInputChannels());
     mOutBuffer.resize(getNumOutputChannels());
+    mBaseInChan   = getBaseInputChannel();
+    mInputMixMode = getInputMixMode();
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
@@ -170,8 +174,13 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(getNumInputChannels()) > dev_info_input.inputChannels) {
-        setNumInputChannels(dev_info_input.inputChannels);
+    if (static_cast<unsigned int>(getBaseInputChannel()) > dev_info_input.inputChannels) {
+        setBaseInputChannel(dev_info_input.inputChannels);
+    }
+
+    std::cout << static_cast<unsigned int>(getNumInputChannels()) << " > " << dev_info_input.inputChannels - static_cast<unsigned int>(getBaseInputChannel()) + 1 << std::endl;
+    if (static_cast<unsigned int>(getNumInputChannels()) > dev_info_input.inputChannels - static_cast<unsigned int>(getBaseInputChannel()) + 1) {
+        setNumInputChannels(dev_info_input.inputChannels - static_cast<unsigned int>(getBaseInputChannel()) + 1);
     }
     if (static_cast<unsigned int>(getNumOutputChannels())
         > dev_info_output.outputChannels) {
@@ -212,10 +221,11 @@ void RtAudioInterface::setup(bool verbose)
     }
 
     RtAudio::StreamParameters in_params, out_params;
-    in_params.deviceId   = index_in;
-    out_params.deviceId  = index_out;
-    in_params.nChannels  = getNumInputChannels();
-    out_params.nChannels = getNumOutputChannels();
+    in_params.deviceId     = index_in;
+    out_params.deviceId    = index_out;
+    in_params.nChannels    = mNumInChans;
+    out_params.nChannels   = mNumOutChans;
+    in_params.firstChannel = mBaseInChan - 1;  // Important! RtAudio indexes starting at 0
 
     RtAudio::StreamOptions options;
     // The second flag affects linux and mac only
@@ -416,8 +426,8 @@ int RtAudioInterface::stopProcess()
 }
 
 //*******************************************************************************
-void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories, QList<int>* channels,
-                                     bool isInput)
+void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
+                                     QList<int>* channels, bool isInput)
 {
     RtAudio baseRtAudio;
     RtAudio::Api baseRtAudioApi = baseRtAudio.getCurrentApi();
@@ -441,7 +451,7 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 
     if (defaultDeviceIdx != 0) {
         defaultDeviceInfo = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
-        defaultDeviceName        = QString::fromStdString(defaultDeviceInfo.name);
+        defaultDeviceName = QString::fromStdString(defaultDeviceInfo.name);
     }
 
     if (defaultDeviceName != "") {

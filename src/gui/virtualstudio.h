@@ -78,17 +78,20 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool selectableBackend READ selectableBackend CONSTANT)
     Q_PROPERTY(QString audioBackend READ audioBackend WRITE setAudioBackend NOTIFY
                    audioBackendChanged)
-    Q_PROPERTY(
-        QString inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
+    Q_PROPERTY(QString inputDevice READ inputDevice WRITE setInputDevice NOTIFY
+                   inputDeviceChanged)
     Q_PROPERTY(QString outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
                    outputDeviceChanged)
     Q_PROPERTY(int previousInput READ previousInput WRITE setPreviousInput NOTIFY
                    previousInputChanged)
     Q_PROPERTY(int previousOutput READ previousOutput WRITE setPreviousOutput NOTIFY
                    previousOutputChanged)
-    Q_PROPERTY(int baseInputChannel READ baseInputChannel WRITE setBaseInputChannel NOTIFY baseInputChannelChanged)
-    Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels NOTIFY numInputChannelsChanged)
-    Q_PROPERTY(QString inputMixMode READ inputMixMode WRITE setInputMixMode NOTIFY inputMixModeChanged)
+    Q_PROPERTY(int baseInputChannel READ baseInputChannel WRITE setBaseInputChannel NOTIFY
+                   baseInputChannelChanged)
+    Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels NOTIFY
+                   numInputChannelsChanged)
+    Q_PROPERTY(QString inputMixMode READ inputMixMode WRITE setInputMixMode NOTIFY
+                   inputMixModeChanged)
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
@@ -265,9 +268,9 @@ class VirtualStudio : public QObject
     void logoSectionChanged();
     void audioBackendChanged(bool useRtAudio, bool shouldRestart = true);
     void inputDeviceChanged(QString device, bool shouldRestart = true);
-    void baseInputChannelChanged(int baseChannel);
-    void numInputChannelsChanged(int numChannels);
-    void inputMixModeChanged(QString mode);
+    void baseInputChannelChanged(int baseChannel, bool shouldRestart = true);
+    void numInputChannelsChanged(int numChannels, bool shouldRestart = true);
+    void inputMixModeChanged(QString mode, bool shouldRestart = true);
     void outputDeviceChanged(QString device, bool shouldRestart = true);
     void inputDeviceSelected(QString device, bool shouldRestart = true);
     void outputDeviceSelected(QString device, bool shouldRestart = true);
@@ -340,7 +343,8 @@ class VirtualStudio : public QObject
     void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
-    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories, const QList<int>& channels);
+    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories,
+                              const QList<int>& channels);
 #endif
 
     bool m_showFirstRun = false;
@@ -436,7 +440,7 @@ class VirtualStudio : public QObject
     QString m_previousInput;
     QString m_previousOutput;
     quint16 m_previousBuffer;
-    
+
     int m_baseInputChannel;
     int m_numInputChannels;
     QString m_inputMixMode;

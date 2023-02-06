@@ -56,14 +56,12 @@ class RtAudioInterface : public AudioInterface
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
-    RtAudioInterface(JackTrip* jacktrip,
-                     int BaseInChan                         = 1,
+    RtAudioInterface(JackTrip* jacktrip, int BaseInChan = 1,
                      int NumInChans                         = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief Overloaded class constructor with null JackTrip pointer
-    RtAudioInterface(int BaseInChan                         = 1,
-                     int NumInChans                         = gDefaultNumInChannels,
+    RtAudioInterface(int BaseInChan = 1, int NumInChans = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief The class destructor
@@ -77,7 +75,8 @@ class RtAudioInterface : public AudioInterface
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
 
-    static void getDeviceList(QStringList* list, QStringList* categories, QList<int>* channels, bool isInput);
+    static void getDeviceList(QStringList* list, QStringList* categories,
+                              QList<int>* channels, bool isInput);
     static void getDeviceInfoFromName(std::string deviceName, int* index,
                                       std::string* api, bool isInput);
 
@@ -99,8 +98,10 @@ class RtAudioInterface : public AudioInterface
                                      const std::string& errorText);
     void printDeviceInfo(std::string api, unsigned int deviceId);
 
-    int mNumInChans;   ///< Number of Input Channels
-    int mNumOutChans;  ///<  Number of Output Channels
+    int mNumInChans;            ///< Number of Input Channels
+    int mNumOutChans;           ///< Number of Output Channels
+    int mBaseInChan;            ///< Base Input Channel
+    std::string mInputMixMode;  ///< Input Mixing Mode
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
