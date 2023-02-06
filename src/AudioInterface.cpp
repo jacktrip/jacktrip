@@ -113,32 +113,34 @@ AudioInterface::~AudioInterface()
     delete[] mAudioInputPacket;
     delete[] mAudioOutputPacket;
 #ifndef WAIR  // NOT WAIR:
-    for (int i = 0; i < mInProcessBuffer.size(); i++) {
+    for (int i = 0; i < mNumInChans; i++) {
         delete[] mInProcessBuffer[i];
     }
 
-    for (int i = 0; i < mOutProcessBuffer.size(); i++) {
+    for (int i = 0; i < mNumOutChans; i++) {
         delete[] mOutProcessBuffer[i];
     }
 #else   // WAIR
-    for (int i = 0; i < mInProcessBuffer.size(); i++) {
+    int iCnt = (mNumInChans > mNumNetRevChans) ? mNumInChans : mNumNetRevChans;
+    int oCnt = (mNumOutChans > mNumNetRevChans) ? mNumOutChans : mNumNetRevChans;
+    int aCnt = (mNumNetRevChans) ? mNumInChans : 0;
+    for (int i = 0; i < iCnt; i++) {
         delete[] mInProcessBuffer[i];
     }
-    for (int i = 0; i < mOutProcessBuffer.size(); i++) {
+    for (int i = 0; i < oCnt; i++) {
         delete[] mOutProcessBuffer[i];
     }
-    for (int i = 0; i < mAPInBuffer.size(); i++) {
+    for (int i = 0; i < aCnt; i++) {
         delete[] mAPInBuffer[i];
     }
 #endif  // endwhere
-
     for (auto* i : qAsConst(mProcessPluginsFromNetwork)) {
         delete i;
     }
     for (auto* i : qAsConst(mProcessPluginsToNetwork)) {
         delete i;
     }
-    for (int i = 0; i < mInBufCopy.size(); i++) {
+    for (int i = 0; i < mNumInChans; i++) {
         delete[] mInBufCopy[i];
     }
 }
