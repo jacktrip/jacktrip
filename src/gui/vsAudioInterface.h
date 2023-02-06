@@ -137,7 +137,6 @@ class VsAudioInterface : public QObject
     bool m_hasBeenActive  = false;
 
     int m_baseInputChannel     = 1;
-    int m_numInputChannels     = 1;
     std::string m_inputMixMode = "mono";
 
     // Needed in constructor

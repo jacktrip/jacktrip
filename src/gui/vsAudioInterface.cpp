@@ -219,9 +219,6 @@ void VsAudioInterface::setupRtAudio()
         m_audioInterface->setOutputDevice(m_outputDeviceName);
         m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
         m_audioInterface->setBaseInputChannel(m_baseInputChannel);
-        std::cout << "Setting Num Input Channels on m_audioInterface (1) : "
-                  << m_numInputChannels << std::endl;
-        m_audioInterface->setNumInputChannels(m_numInputChannels);
         m_audioInterface->setInputMixMode(m_inputMixMode);
         m_audioInterface->setup(true);
         // Setup might have reduced number of channels
@@ -345,11 +342,9 @@ void VsAudioInterface::setNumInputChannels(int numChannels, bool shouldRestart)
         return;
     }
 #ifdef RT_AUDIO
-    m_numInputChannels = numChannels;
+    m_numAudioChansIn = numChannels;
     if (!m_audioInterface.isNull()) {
-        std::cout << "Setting Num Input Channels on m_audioInterface (2) : "
-                  << m_numInputChannels << std::endl;
-        m_audioInterface->setNumInputChannels(m_numInputChannels);
+        m_audioInterface->setNumInputChannels(m_numAudioChansIn);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
