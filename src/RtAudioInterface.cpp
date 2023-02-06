@@ -178,14 +178,19 @@ void RtAudioInterface::setup(bool verbose)
         setBaseInputChannel(dev_info_input.inputChannels);
     }
 
-    if (static_cast<unsigned int>(getNumInputChannels()) > dev_info_input.inputChannels - static_cast<unsigned int>(getBaseInputChannel()) + 1) {
-        mNumInChans = dev_info_input.inputChannels - static_cast<unsigned int>(getBaseInputChannel()) + 1;
-        setNumInputChannels(mNumInChans); // sets mNumInChans in the parent AudioInterface class
+    if (static_cast<unsigned int>(getNumInputChannels())
+        > dev_info_input.inputChannels - static_cast<unsigned int>(getBaseInputChannel())
+              + 1) {
+        mNumInChans = dev_info_input.inputChannels
+                      - static_cast<unsigned int>(getBaseInputChannel()) + 1;
+        setNumInputChannels(
+            mNumInChans);  // sets mNumInChans in the parent AudioInterface class
     }
     if (static_cast<unsigned int>(getNumOutputChannels())
         > dev_info_output.outputChannels) {
         mNumOutChans = dev_info_output.outputChannels;
-        setNumOutputChannels(mNumOutChans); // sets mNumOutChans in the parent AudioInterface class
+        setNumOutputChannels(
+            mNumOutChans);  // sets mNumOutChans in the parent AudioInterface class
     }
 
     if (verbose) {

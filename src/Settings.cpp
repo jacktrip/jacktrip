@@ -123,8 +123,8 @@ void Settings::parseInput(int argc, char** argv)
         {"receivechannels", required_argument, NULL,
          OPT_NUMRECEIVE},  // Number of incoming channels
         {"sendchannels", required_argument, NULL,
-         OPT_NUMSEND},                     // Number of outgoing channels
-        {"basesendchannelnum", required_argument, NULL, OPT_BASESENDCHANNELNUM },
+         OPT_NUMSEND},  // Number of outgoing channels
+        {"basesendchannelnum", required_argument, NULL, OPT_BASESENDCHANNELNUM},
 #ifdef WAIR                                // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
         {"addcombfilterlength", required_argument, NULL,
@@ -241,8 +241,9 @@ void Settings::parseInput(int argc, char** argv)
             if (0 < atoi(optarg)) {
                 mBaseAudioInputChanNum = atoi(optarg);
             } else {
-                std::cerr << "--basesendchannelnum ERROR: Base input channel must be greater "
-                             "than 0\n";
+                std::cerr
+                    << "--basesendchannelnum ERROR: Base input channel must be greater "
+                       "than 0\n";
                 std::exit(1);
             }
             break;
@@ -990,7 +991,8 @@ JackTrip* Settings::getConfiguredJackTrip()
     if (gVerboseFlag)
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
-        mJackTripMode, mDataProtocol, mBaseAudioInputChanNum, mNumAudioInputChans, mNumAudioOutputChans,
+        mJackTripMode, mDataProtocol, mBaseAudioInputChanNum, mNumAudioInputChans,
+        mNumAudioOutputChans,
 #ifdef WAIR  // wair
         mNumNetRevChans,
 #endif  // endwhere
