@@ -445,6 +445,8 @@ class VirtualStudio : public QObject
     int m_numInputChannels;
     QString m_inputMixMode;
 
+    int m_numOutputChannels = 2;
+
     bool m_previousUseRtAudio = false;
     inline void delay(int millisecondsWait)
     {
