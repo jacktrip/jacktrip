@@ -74,10 +74,9 @@ RtAudioInterface::~RtAudioInterface()
         delete mRtAudio;
     }
 
-    // TODO: clean up memory
-    // if (mStereoToMonoMixer != NULL) {
-    //     delete mStereoToMonoMixer;
-    // }
+    if (mStereoToMonoMixer != NULL) {
+        delete mStereoToMonoMixer;
+    }
 }
 
 //*******************************************************************************

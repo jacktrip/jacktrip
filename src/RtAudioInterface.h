@@ -114,7 +114,7 @@ class RtAudioInterface : public AudioInterface
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
 
-    StereoToMono* mStereoToMonoMixer;
+    StereoToMono* mStereoToMonoMixer = NULL;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__
