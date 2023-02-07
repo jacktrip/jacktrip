@@ -1318,11 +1318,12 @@ void VirtualStudio::completeConnection()
         JackTrip* jackTrip       = m_device->initJackTrip(
                   m_useRtAudio, input, output,
 #ifdef RT_AUDIO
-            m_numInputChannels, m_numOutputChannels,
+            m_numInputChannels, m_numOutputChannels, m_baseInputChannel,
 #else
             2, 2,  // default to 2 channels for input and 2 channels for output
+            1,     // start at channel 1 by default
 #endif
-            m_baseInputChannel, inputMixMode, buffer_size, m_bufferStrategy, studioInfo);
+            inputMixMode, buffer_size, m_bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;
