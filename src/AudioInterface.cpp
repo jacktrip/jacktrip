@@ -48,7 +48,7 @@ using std::endl;
 
 //*******************************************************************************
 AudioInterface::AudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans,
-                               int NumOutChans,
+                               int NumOutChans, QString InputMixMode,
 #ifdef WAIR  // wair
                                int NumNetRevChans,
 #endif  // endwhere
@@ -58,6 +58,7 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChan
     , mBaseInChan(BaseInChan)
     , mNumInChans(NumInChans)
     , mNumOutChans(NumOutChans)
+    , mInputMixMode(InputMixMode.toStdString())
     ,
 #ifdef WAIR  // WAIR
     mNumNetRevChans(NumNetRevChans)

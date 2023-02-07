@@ -82,7 +82,7 @@ bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
-                   int BaseChanIn, int NumChansIn, int NumChansOut,
+                   int BaseChanIn, int NumChansIn, int NumChansOut, QString InputMixMode,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
 #endif  // endwhere
@@ -100,6 +100,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mBaseAudioChanIn(BaseChanIn)
     , mNumAudioChansIn(NumChansIn)
     , mNumAudioChansOut(NumChansOut)
+    , mInputMixMode(InputMixMode)
 #ifdef WAIR  // WAIR
     , mNumNetRevChans(NumNetRevChans)
 #endif  // endwhere
@@ -191,7 +192,7 @@ void JackTrip::setupAudio(
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
         mAudioInterface =
-            new JackAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+            new JackAudioInterface(this, 1, mNumAudioChansIn, mNumAudioChansOut, QStringLiteral(""),
 #ifdef WAIR  // wair
                                    mNumNetRevChans,
 #endif  // endwhere
@@ -239,7 +240,7 @@ void JackTrip::setupAudio(
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
         mAudioInterface = new RtAudioInterface(this, mBaseAudioChanIn, mNumAudioChansIn,
-                                               mNumAudioChansOut, mAudioBitResolution);
+                                               mNumAudioChansOut, mInputMixMode, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
@@ -258,7 +259,7 @@ void JackTrip::setupAudio(
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef RT_AUDIO
         mAudioInterface = new RtAudioInterface(this, mBaseAudioChanIn, mNumAudioChansIn,
-                                               mNumAudioChansOut, mAudioBitResolution);
+                                               mNumAudioChansOut, mInputMixMode, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);

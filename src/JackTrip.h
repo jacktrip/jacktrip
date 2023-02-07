@@ -136,6 +136,7 @@ class JackTrip : public QObject
         jacktripModeT JacktripMode = CLIENT, dataProtocolT DataProtocolType = UDP,
         int NumChansIn = gDefaultNumInChannels, int BaseChanIn = 1,
         int NumChansOut = gDefaultNumInChannels,
+        QString InputMixMode = QStringLiteral(""),
 #ifdef WAIR  // wair
         int NumNetRevChans = 0,
 #endif  // endwhere
@@ -628,6 +629,7 @@ class JackTrip : public QObject
     int mBaseAudioChanIn;   ///< Base Audio Input Channel
     int mNumAudioChansIn;   ///< Number of Audio Input Channels
     int mNumAudioChansOut;  ///< Number of Audio Output Channels
+    QString mInputMixMode;  ///< Input mix mode
 
 #ifdef WAIR                  // WAIR
     int mNumNetRevChans;     ///< Number of Network Audio Channels (net comb filters)

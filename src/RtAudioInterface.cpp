@@ -50,21 +50,21 @@ using std::endl;
 
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans,
-                                   int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution, std::string InputMixMode)
-    : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, AudioBitResolution)
+                                   int NumOutChans, QString InputMixMode,
+                                   audioBitResolutionT AudioBitResolution)
+    : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, InputMixMode, AudioBitResolution)
     , mRtAudio(NULL), mInputMixMode(InputMixMode)
 {
 }
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution, std::string InputMixMode)
-    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, AudioBitResolution,
+RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans, QString InputMixMode,
+                                   audioBitResolutionT AudioBitResolution)
+    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, InputMixMode, AudioBitResolution,
                      false)
     , mRtAudio(NULL), mInputMixMode(InputMixMode)
 {
-    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, AudioBitResolution, InputMixMode);
+    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, InputMixMode, AudioBitResolution);
 }
 
 //*******************************************************************************
@@ -88,7 +88,7 @@ void RtAudioInterface::setup(bool verbose)
     mInBuffer.resize(AudioInterface::getNumInputChannels());
     mOutBuffer.resize(AudioInterface::getNumOutputChannels());
     mBaseInChan   = getBaseInputChannel();
-    mInputMixMode = getInputMixMode();
+    mInputMixMode = QString::fromStdString(getInputMixMode());
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;

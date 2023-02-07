@@ -74,7 +74,7 @@ class JackAudioInterface : public AudioInterface
      * \param ClientName Client name in Jack
      */
     JackAudioInterface(
-        JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
+        JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans, QString InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere

@@ -213,7 +213,8 @@ void VsAudioInterface::setupRtAudio()
                   || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
         m_audioInterface.reset(new RtAudioInterface(m_baseInputChannel, m_numAudioChansIn,
                                                     m_numAudioChansOut,
-                                                    m_audioBitResolution, m_inputMixMode));
+                                                    QString::fromStdString(m_inputMixMode),
+                                                    m_audioBitResolution));
         m_audioInterface->setSampleRate(m_sampleRate);
         m_audioInterface->setDeviceID(m_deviceID);
         m_audioInterface->setInputDevice(m_inputDeviceName);
