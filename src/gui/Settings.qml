@@ -679,6 +679,14 @@ Item {
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 model: inputChannelsComboModel
+                currentIndex: (() => {
+                    let idx = inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
+                        && elem.numChannels === virtualstudio.numInputChannels);
+                    if (idx < 0) {
+                        idx = 0;
+                    }
+                    return idx;
+                })()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -729,6 +737,13 @@ Item {
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 model: inputMixModeComboModel
+                currentIndex: (() => {
+                    let idx = inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
+                    if (idx < 0) {
+                        idx = 0;
+                    }
+                    return idx;
+                })()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index

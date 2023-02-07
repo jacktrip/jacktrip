@@ -398,7 +398,7 @@ int VirtualStudio::numInputChannels()
 {
 #ifdef RT_AUDIO
     if (m_useRtAudio) {
-        return m_baseInputChannel;
+        return m_numInputChannels;
     }
 #endif
     return 0;
@@ -1013,6 +1013,9 @@ void VirtualStudio::refreshDevices()
     validateDevicesState();
     emit inputDeviceChanged(m_inputDevice, false);
     emit outputDeviceChanged(m_outputDevice, false);
+    emit baseInputChannelChanged(m_baseInputChannel, false);
+    emit numInputChannelsChanged(m_numInputChannels, false);
+    emit inputMixModeChanged(m_inputMixMode, false);
 #endif
 }
 
@@ -1198,6 +1201,9 @@ void VirtualStudio::revertSettings()
 
     emit inputDeviceChanged(m_inputDevice, false);
     emit outputDeviceChanged(m_outputDevice, false);
+    emit baseInputChannelChanged(m_baseInputChannel, false);
+    emit numInputChannelsChanged(m_numInputChannels, false);
+    emit inputMixModeChanged(m_inputMixMode, false);
     emit bufferSizeChanged();
     if (m_useRtAudio != m_previousUseRtAudio) {
         emit audioBackendChanged(m_useRtAudio, false);
@@ -1237,6 +1243,9 @@ void VirtualStudio::applySettings()
     emit previousOutputChanged();
     emit inputDeviceChanged(m_inputDevice, false);
     emit outputDeviceChanged(m_outputDevice, false);
+    emit baseInputChannelChanged(m_baseInputChannel, false);
+    emit numInputChannelsChanged(m_numInputChannels, false);
+    emit inputMixModeChanged(m_inputMixMode, false);
 #endif
 
     // attempt to join studio if requested
@@ -2219,6 +2228,9 @@ void VirtualStudio::startAudio()
     m_vsAudioInterface->setInputDevice(m_inputDevice, true);
     m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
+    m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, true);
+    m_vsAudioInterface->setNumInputChannels(m_numInputChannels, true);
+    m_vsAudioInterface->setInputMixMode(m_inputMixMode, true);
 #endif
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
             &VirtualStudio::updatedDevicesErrorMsg);
