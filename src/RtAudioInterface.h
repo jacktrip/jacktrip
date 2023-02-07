@@ -91,8 +91,6 @@ class RtAudioInterface : public AudioInterface
     //--------------GETTERS---------------------------------------------
     //------------------------------------------------------------------
 
-    int getNumInputChannels();
-
    private:
     int RtAudioCallback(void* outputBuffer, void* inputBuffer, unsigned int nFrames,
                         double streamTime, RtAudioStreamStatus status);

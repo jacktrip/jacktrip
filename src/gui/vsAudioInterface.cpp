@@ -221,13 +221,9 @@ void VsAudioInterface::setupRtAudio()
         m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
         m_audioInterface->setBaseInputChannel(m_baseInputChannel);
         m_audioInterface->setInputMixMode(m_inputMixMode);
+
+        // Note: setup might change the number of channels and/or buffer size
         m_audioInterface->setup(true);
-        // Setup might have reduced number of channels
-        m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-        m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-        m_baseInputChannel = m_audioInterface->getBaseInputChannel();
-        // Setup might have changed buffer size
-        m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
 
         std::string devicesWarningMsg     = m_audioInterface->getDevicesWarningMsg();
         std::string devicesErrorMsg       = m_audioInterface->getDevicesErrorMsg();

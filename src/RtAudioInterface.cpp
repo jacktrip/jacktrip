@@ -91,8 +91,8 @@ void RtAudioInterface::setup(bool verbose)
     mNumOutChans = AudioInterface::getNumOutputChannels();
     mInBuffer.resize(AudioInterface::getNumInputChannels());
     mOutBuffer.resize(AudioInterface::getNumOutputChannels());
-    mBaseInChan   = getBaseInputChannel();
-    mInputMixMode = QString::fromStdString(getInputMixMode());
+    mBaseInChan   = AudioInterface::getBaseInputChannel();
+    mInputMixMode = QString::fromStdString(AudioInterface::getInputMixMode());
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
@@ -184,23 +184,30 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(getBaseInputChannel()) > dev_info_input.inputChannels) {
-        setBaseInputChannel(dev_info_input.inputChannels);
+    if (static_cast<unsigned int>(AudioInterface::getBaseInputChannel())
+        > dev_info_input.inputChannels) {
+        AudioInterface::setBaseInputChannel(dev_info_input.inputChannels);
     }
 
-    if (static_cast<unsigned int>(getNumInputChannels())
-        > dev_info_input.inputChannels - static_cast<unsigned int>(getBaseInputChannel())
-              + 1) {
+    if (static_cast<unsigned int>(AudioInterface::getNumInputChannels())
+        > dev_info_input.inputChannels
+              - static_cast<unsigned int>(AudioInterface::getBaseInputChannel()) + 1) {
         mNumInChans = dev_info_input.inputChannels
-                      - static_cast<unsigned int>(getBaseInputChannel()) + 1;
-        setNumInputChannels(
-            mNumInChans);  // sets mNumInChans in the parent AudioInterface class
+                      - static_cast<unsigned int>(AudioInterface::getBaseInputChannel())
+                      + 1;
+        AudioInterface::setNumInputChannels(mNumInChans);
     }
-    if (static_cast<unsigned int>(getNumOutputChannels())
+
+    if (mNumInChans == 2 && mInputMixMode == "mix-to-mono") {
+        AudioInterface::setNumInputChannels(1);
+    } else if (mNumInChans == 2) {
+        AudioInterface::setNumInputChannels(2);
+    }
+
+    if (static_cast<unsigned int>(AudioInterface::getNumOutputChannels())
         > dev_info_output.outputChannels) {
         mNumOutChans = dev_info_output.outputChannels;
-        setNumOutputChannels(
-            mNumOutChans);  // sets mNumOutChans in the parent AudioInterface class
+        AudioInterface::setNumOutputChannels(mNumOutChans);
     }
 
     if (verbose) {
@@ -613,13 +620,4 @@ void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
     *index = -1;
     *api   = "";
     return;
-}
-
-//*******************************************************************************
-int RtAudioInterface::getNumInputChannels()
-{
-    if (AudioInterface::getNumInputChannels() == 2 && mInputMixMode == "mix-to-mono") {
-        return 1;
-    }
-    return AudioInterface::getNumInputChannels();
 }
