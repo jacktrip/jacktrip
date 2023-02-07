@@ -43,6 +43,7 @@
 #include <QQueue>
 
 #include "AudioInterface.h"
+#include "StereoToMono.h"
 #include "jacktrip_globals.h"
 class JackTrip;  // Forward declaration
 
@@ -59,11 +60,13 @@ class RtAudioInterface : public AudioInterface
     RtAudioInterface(JackTrip* jacktrip, int BaseInChan = 1,
                      int NumInChans                         = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
-                     audioBitResolutionT AudioBitResolution = BIT16);
+                     audioBitResolutionT AudioBitResolution = BIT16,
+                     std::string InputMixMode = "");
     /// \brief Overloaded class constructor with null JackTrip pointer
     RtAudioInterface(int BaseInChan = 1, int NumInChans = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
-                     audioBitResolutionT AudioBitResolution = BIT16);
+                     audioBitResolutionT AudioBitResolution = BIT16,
+                     std::string InputMixMode = "");
     /// \brief The class destructor
     virtual ~RtAudioInterface();
 
@@ -88,6 +91,8 @@ class RtAudioInterface : public AudioInterface
     //--------------GETTERS---------------------------------------------
     //------------------------------------------------------------------
 
+    int getNumInputChannels();
+
    private:
     int RtAudioCallback(void* outputBuffer, void* inputBuffer, unsigned int nFrames,
                         double streamTime, RtAudioStreamStatus status);
@@ -108,6 +113,8 @@ class RtAudioInterface : public AudioInterface
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
+
+    StereoToMono* mStereoToMonoMixer;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__

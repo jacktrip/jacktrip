@@ -43,26 +43,28 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 
+#include "StereoToMono.h"
+
 using std::cout;
 using std::endl;
 
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans,
                                    int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution)
+                                   audioBitResolutionT AudioBitResolution, std::string InputMixMode)
     : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, AudioBitResolution)
-    , mRtAudio(NULL)
+    , mRtAudio(NULL), mInputMixMode(InputMixMode)
 {
 }
 
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution)
+                                   audioBitResolutionT AudioBitResolution, std::string InputMixMode)
     : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, AudioBitResolution,
                      false)
-    , mRtAudio(NULL)
+    , mRtAudio(NULL), mInputMixMode(InputMixMode)
 {
-    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution);
+    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, AudioBitResolution, InputMixMode);
 }
 
 //*******************************************************************************
@@ -71,16 +73,21 @@ RtAudioInterface::~RtAudioInterface()
     if (mRtAudio != NULL) {
         delete mRtAudio;
     }
+
+    // TODO: clean up memory
+    // if (mStereoToMonoMixer != NULL) {
+    //     delete mStereoToMonoMixer;
+    // }
 }
 
 //*******************************************************************************
 void RtAudioInterface::setup(bool verbose)
 {
     // Initialize Buffer array to read and write audio and members
-    mNumInChans  = getNumInputChannels();
-    mNumOutChans = getNumOutputChannels();
-    mInBuffer.resize(getNumInputChannels());
-    mOutBuffer.resize(getNumOutputChannels());
+    mNumInChans  = AudioInterface::getNumInputChannels();
+    mNumOutChans = AudioInterface::getNumOutputChannels();
+    mInBuffer.resize(AudioInterface::getNumInputChannels());
+    mOutBuffer.resize(AudioInterface::getNumOutputChannels());
     mBaseInChan   = getBaseInputChannel();
     mInputMixMode = getInputMixMode();
 
@@ -262,6 +269,9 @@ void RtAudioInterface::setup(bool verbose)
         throw std::runtime_error(e.getMessage());
     }
 
+    mStereoToMonoMixer = new StereoToMono();
+    mStereoToMonoMixer->init(sampleRate);
+
     // Setup parent class
     AudioInterface::setup(verbose);
 }
@@ -371,6 +381,9 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
 
+        if (mNumInChans == 2 && mInputMixMode == "mix-to-mono") {
+            mStereoToMonoMixer->compute(nFrames, mInBuffer.data(), mInBuffer.data());
+        }
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     }
 
@@ -597,4 +610,12 @@ void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
     *index = -1;
     *api   = "";
     return;
+}
+
+//*******************************************************************************
+int RtAudioInterface::getNumInputChannels() {
+    if (AudioInterface::getNumInputChannels() == 2 && mInputMixMode == "mix-to-mono") {
+        return 1;
+    }
+    return AudioInterface::getNumInputChannels();
 }
