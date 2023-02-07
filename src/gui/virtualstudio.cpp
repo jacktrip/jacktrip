@@ -125,7 +125,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     }
 
     m_baseInputChannel = settings.value(QStringLiteral("BaseInputChannel"), 1).toInt();
-    m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 2).toInt();
+    m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
     m_inputMixMode = settings.value(QStringLiteral("InputMixMode"), "Mono").toString();
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
@@ -1164,6 +1164,11 @@ void VirtualStudio::validateDevicesState()
                 QVariant::fromValue(QVariant(
                     QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
 
+            // if m_inputMixMode is an invalid value, set it to "mono"
+            if (m_inputMixMode != QStringLiteral("mono")) {
+                m_inputMixMode = "mono";
+                emit inputMixModeChanged(m_inputMixMode);
+            }
             if (m_baseInputChannel > numDevicesChannelsAvailable) {
                 m_baseInputChannel = 1;
                 emit baseInputChannelChanged(m_baseInputChannel);
@@ -1218,6 +1223,9 @@ void VirtualStudio::applySettings()
     settings.setValue(QStringLiteral("BufferSize"), m_bufferSize);
     settings.setValue(QStringLiteral("InputDevice"), m_inputDevice);
     settings.setValue(QStringLiteral("OutputDevice"), m_outputDevice);
+    settings.setValue(QStringLiteral("BaseInputChannel"), m_baseInputChannel);
+    settings.setValue(QStringLiteral("NumInputChannels"), m_numInputChannels);
+    settings.setValue(QStringLiteral("InputMixMode"), m_inputMixMode);
     settings.endGroup();
 
     m_previousUseRtAudio = m_useRtAudio;
