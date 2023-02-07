@@ -41,9 +41,8 @@
 #include <cstdlib>
 
 #include "JackTrip.h"
-#include "jacktrip_globals.h"
-
 #include "StereoToMono.h"
+#include "jacktrip_globals.h"
 
 using std::cout;
 using std::endl;
@@ -52,19 +51,24 @@ using std::endl;
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans,
                                    int NumOutChans, QString InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, InputMixMode, AudioBitResolution)
-    , mRtAudio(NULL), mInputMixMode(InputMixMode)
+    : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, InputMixMode,
+                     AudioBitResolution)
+    , mRtAudio(NULL)
+    , mInputMixMode(InputMixMode)
 {
 }
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans, QString InputMixMode,
+RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans,
+                                   QString InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, InputMixMode, AudioBitResolution,
-                     false)
-    , mRtAudio(NULL), mInputMixMode(InputMixMode)
+    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, InputMixMode,
+                     AudioBitResolution, false)
+    , mRtAudio(NULL)
+    , mInputMixMode(InputMixMode)
 {
-    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, InputMixMode, AudioBitResolution);
+    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, InputMixMode,
+                     AudioBitResolution);
 }
 
 //*******************************************************************************
@@ -612,7 +616,8 @@ void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
 }
 
 //*******************************************************************************
-int RtAudioInterface::getNumInputChannels() {
+int RtAudioInterface::getNumInputChannels()
+{
     if (AudioInterface::getNumInputChannels() == 2 && mInputMixMode == "mix-to-mono") {
         return 1;
     }

@@ -62,7 +62,8 @@ QMutex JackAudioInterface::sJackMutex;
 
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(
-    JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans, QString InputMixMode,
+    JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
+    QString InputMixMode,
 #ifdef WAIR  // wair
     int NumNetRevChans,
 #endif  // endwhere

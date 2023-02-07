@@ -349,7 +349,8 @@ JackTrip* VsDevice::initJackTrip(
     [[maybe_unused]] int bufferStrategy, VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP,
-                                  baseInputChannel, numChannelsIn, numChannelsOut, QString::fromStdString(inputMixMode),
+                                  baseInputChannel, numChannelsIn, numChannelsOut,
+                                  QString::fromStdString(inputMixMode),
 #ifdef WAIR  // wair
                                   0,
 #endif  // endwhere

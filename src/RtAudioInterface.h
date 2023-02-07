@@ -60,12 +60,12 @@ class RtAudioInterface : public AudioInterface
     RtAudioInterface(JackTrip* jacktrip, int BaseInChan = 1,
                      int NumInChans                         = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
-                     QString InputMixMode = QStringLiteral(""),
+                     QString InputMixMode                   = QStringLiteral(""),
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief Overloaded class constructor with null JackTrip pointer
     RtAudioInterface(int BaseInChan = 1, int NumInChans = gDefaultNumInChannels,
                      int NumOutChans                        = gDefaultNumOutChannels,
-                     QString InputMixMode = QStringLiteral(""),
+                     QString InputMixMode                   = QStringLiteral(""),
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief The class destructor
     virtual ~RtAudioInterface();
@@ -103,9 +103,9 @@ class RtAudioInterface : public AudioInterface
                                      const std::string& errorText);
     void printDeviceInfo(std::string api, unsigned int deviceId);
 
-    int mNumInChans;            ///< Number of Input Channels
-    int mNumOutChans;           ///< Number of Output Channels
-    int mBaseInChan;            ///< Base Input Channel
+    int mNumInChans;        ///< Number of Input Channels
+    int mNumOutChans;       ///< Number of Output Channels
+    int mBaseInChan;        ///< Base Input Channel
     QString mInputMixMode;  ///< Input Mixing Mode
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK

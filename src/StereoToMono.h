@@ -40,8 +40,8 @@
 #define __STEREOTOMONO_H__
 
 #include <QObject>
-#include <iostream>
 #include <QVector>
+#include <iostream>
 #include <vector>
 
 #include "ProcessPlugin.h"
@@ -62,10 +62,7 @@ class StereoToMono : public ProcessPlugin
     }
 
     /// \brief The class destructor
-    virtual ~StereoToMono()
-    {
-        delete stereoToMonoP;
-    }
+    virtual ~StereoToMono() { delete stereoToMonoP; }
 
     void init(int samplingRate) override;
     int getNumInputs() override { return 2; }

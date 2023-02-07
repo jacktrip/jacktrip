@@ -60,7 +60,8 @@ void StereoToMono::init(int samplingRate)
 void StereoToMono::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
-        std::cerr << "*** Stereo-to-Mono " << this << ": init never called! Doing it now.\n";
+        std::cerr << "*** Stereo-to-Mono " << this
+                  << ": init never called! Doing it now.\n";
         if (fSamplingFreq <= 0) {
             fSamplingFreq = 48000;
             std::cout << "Stereo-to-Mono " << this

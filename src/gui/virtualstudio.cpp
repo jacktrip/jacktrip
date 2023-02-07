@@ -1326,8 +1326,8 @@ void VirtualStudio::completeConnection()
 #else
         std::string inputMixMode = "";
 #endif
-        JackTrip* jackTrip       = m_device->initJackTrip(
-                  m_useRtAudio, input, output,
+        JackTrip* jackTrip = m_device->initJackTrip(
+            m_useRtAudio, input, output,
 #ifdef RT_AUDIO
             m_numInputChannels, m_numOutputChannels, m_baseInputChannel,
 #else
