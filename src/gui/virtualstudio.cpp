@@ -1313,8 +1313,10 @@ void VirtualStudio::completeConnection()
             // }
             buffer_size = m_bufferSize;
         }
-#endif
         std::string inputMixMode = m_inputMixMode.toStdString();
+#else
+        std::string inputMixMode = "";
+#endif
         JackTrip* jackTrip       = m_device->initJackTrip(
                   m_useRtAudio, input, output,
 #ifdef RT_AUDIO
