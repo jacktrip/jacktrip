@@ -101,15 +101,17 @@ class RtAudioInterface : public AudioInterface
                                      const std::string& errorText);
     void printDeviceInfo(std::string api, unsigned int deviceId);
 
-    int mNumInChans;        ///< Number of Input Channels
-    int mNumOutChans;       ///< Number of Output Channels
-    int mBaseInChan;        ///< Base Input Channel
-    QString mInputMixMode;  ///< Input Mixing Mode
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
+
+    int mNumInChans;        ///< Number of Input Channels
+    int mNumOutChans;       ///< Number of Output Channels
+    int mBaseInChan;        ///< Base Input Channel
+    QString mInputMixMode;  ///< Input Mixing Mode
+
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
 
     StereoToMono* mStereoToMonoMixer = NULL;
