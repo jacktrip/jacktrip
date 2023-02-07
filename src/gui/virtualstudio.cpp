@@ -1175,7 +1175,7 @@ void VirtualStudio::validateDevicesState()
             }
         }
     }
-#endif // RT_AUDIO
+#endif  // RT_AUDIO
 }
 
 void VirtualStudio::playOutputAudio()

@@ -211,7 +211,8 @@ void VsAudioInterface::setupRtAudio()
 #ifdef RT_AUDIO
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-        m_audioInterface.reset(new RtAudioInterface(m_baseInputChannel, m_numAudioChansIn, m_numAudioChansOut,
+        m_audioInterface.reset(new RtAudioInterface(m_baseInputChannel, m_numAudioChansIn,
+                                                    m_numAudioChansOut,
                                                     m_audioBitResolution));
         m_audioInterface->setSampleRate(m_sampleRate);
         m_audioInterface->setDeviceID(m_deviceID);
@@ -272,7 +273,7 @@ void VsAudioInterface::closeAudio()
             emit errorToProcess(QString::fromUtf8(e.what()));
         }
         m_audioInterface.clear();
-        m_deviceID         = gDefaultDeviceID;
+        m_deviceID = gDefaultDeviceID;
     }
 }
 
