@@ -1257,29 +1257,6 @@ Item {
             }
 
             Text {
-                anchors.left: inputLabel.left
-                anchors.right: parent.right
-                anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputChannelsCombo.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
-                anchors.bottomMargin: 24 * virtualstudio.uiScale
-                textFormat: Text.RichText
-                text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
-                    + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
-                        ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
-                        : ""
-                    )
-                onLinkActivated: link => {
-                    virtualstudio.openLink(link)
-                }
-                horizontalAlignment: Text.AlignHLeft
-                wrapMode: Text.WordWrap
-                color: warningText
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
-            }
-
-            Text {
                 id: inputChannelsLabel
                 anchors.left: inputCombo.left
                 anchors.right: inputCombo.horizontalCenter
@@ -1390,6 +1367,68 @@ Item {
                     elide: Text.ElideRight
                     text: inputMixModeCombo.model[inputMixModeCombo.currentIndex].label || ""
                 }
+            }
+
+            Text {
+                id: inputChannelHelpMessage
+                anchors.left: inputChannelsCombo.left
+                anchors.leftMargin: 2 * virtualstudio.uiScale
+                anchors.right: inputChannelsCombo.right
+                anchors.top: inputChannelsCombo.bottom
+                anchors.topMargin: 8 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                wrapMode: Text.WordWrap
+                text: "Choose up to 2 channels"
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            Text {
+                id: inputMixModeHelpMessage
+                anchors.left: inputMixModeCombo.left
+                anchors.leftMargin: 2 * virtualstudio.uiScale
+                anchors.right: inputMixModeCombo.right
+                anchors.top: inputMixModeCombo.bottom
+                anchors.topMargin: 8 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                wrapMode: Text.WordWrap
+                text: (() => {
+                    if (virtualstudio.inputMixMode === "stereo") {
+                        return "Treat the channels as Left and Right signals, coming through each speaker separately.";
+                    } else if (virtualstudio.inputMixMode === "mix-to-mono") {
+                        return "Combine the channels into one central channel coming through both speakers.";
+                    } else if (virtualstudio.inputMixMode === "mono") {
+                        return "";
+                    } else {
+                        return "";
+                    }
+                })()
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            Text {
+                id: warningOrErrorMessage
+                anchors.left: inputLabel.left
+                anchors.right: parent.right
+                anchors.rightMargin: 16 * virtualstudio.uiScale
+                anchors.top: inputChannelHelpMessage.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.bottomMargin: 24 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
+                    + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
+                        ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
+                        : ""
+                    )
+                onLinkActivated: link => {
+                    virtualstudio.openLink(link)
+                }
+                horizontalAlignment: Text.AlignHLeft
+                wrapMode: Text.WordWrap
+                color: warningText
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
             }
         }
 
