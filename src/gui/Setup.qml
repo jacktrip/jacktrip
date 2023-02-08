@@ -906,23 +906,16 @@ Item {
                 width: parent.width - outputLabel.width - rightMargin * virtualstudio.uiScale
                 model: outputComboModel
                 currentIndex: (() => {
-                    // TODO: account for situations where there are categories
                     if (virtualstudio.outputDevice === "") {
-                        return 0;
+                        return outputComboModel.findIndex(elem => elem.type === "element");
                     }
 
-                    let count = 0;
-                    for (let i = 0; i < outputCombo.model.length; i++) {
-                        if (outputCombo.model[i].type === "element") {
-                            count++;
-                        }
-
-                        if (outputCombo.model[i].text === virtualstudio.outputDevice) {
-                            return i;
-                        }
+                    let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+                    if (idx < 0) {
+                        idx = outputComboModel.findIndex(elem => elem.type === "element");
                     }
 
-                    return 0;
+                    return idx;
                 })()
                 delegate: ItemDelegate {
                     required property var modelData
@@ -943,7 +936,7 @@ Item {
                             if (modelData.type == "element") {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
-                                virtualstudio.outputDevice = outputCombo.model[index - outputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
+                                virtualstudio.outputDevice = modelData.text
                                 virtualstudio.validateDevicesState()
                             }
                         }
@@ -1113,24 +1106,16 @@ Item {
                 id: inputCombo
                 model: inputComboModel
                 currentIndex: (() => {
-
-                    // TODO: account for situations where there are categories
                     if (virtualstudio.inputDevice === "") {
-                        return 0;
+                        return inputComboModel.findIndex(elem => elem.type === "element");
                     }
 
-                    let count = 0;
-                    for (let i = 0; i < inputCombo.model.length; i++) {
-                        if (inputCombo.model[i].type === "element") {
-                            count++;
-                        }
-
-                        if (inputCombo.model[i].text === virtualstudio.inputDevice) {
-                            return i;
-                        }
+                    let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+                    if (idx < 0) {
+                        idx = inputComboModel.findIndex(elem => elem.type === "element");
                     }
 
-                    return 0;
+                    return idx;
                 })()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
@@ -1154,7 +1139,7 @@ Item {
                             if (modelData.type == "element") {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
-                                virtualstudio.inputDevice = inputCombo.model[index - inputCombo.model.filter((elem, idx) => idx < index && elem.type === "header").length].text
+                                virtualstudio.inputDevice = modelData.text
                                 virtualstudio.validateDevicesState()
                             }
                         }
