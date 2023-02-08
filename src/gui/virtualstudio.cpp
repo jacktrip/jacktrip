@@ -1242,10 +1242,10 @@ void VirtualStudio::disconnect()
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
 
-    // cleanup 
-    m_inputMeter = nullptr;
-    m_outputMeter = nullptr;
-    m_inputVolumePlugin = nullptr;
+    // cleanup
+    m_inputMeter         = nullptr;
+    m_outputMeter        = nullptr;
+    m_inputVolumePlugin  = nullptr;
     m_outputVolumePlugin = nullptr;
 }
 
