@@ -1815,7 +1815,8 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDec
         }
     }
 
-    // For certain specific cases, copy the first channel's value into the second channel's value
+    // For certain specific cases, copy the first channel's value into the second
+    // channel's value
     if ((m_inputMixMode == QStringLiteral("mono") && m_numInputChannels == 1)
         || (m_inputMixMode == QStringLiteral("mix-to-mono") && m_numInputChannels == 2)) {
         uiValues[1] = uiValues[0];
