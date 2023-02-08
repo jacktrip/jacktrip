@@ -626,7 +626,8 @@ Item {
                 anchors.left: inputLabel.left
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputSlider.bottom // TODO: Fix this!
+                anchors.top: inputChannelsCombo.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
                 anchors.bottomMargin: 24 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)

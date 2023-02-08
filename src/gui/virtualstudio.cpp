@@ -239,7 +239,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
-    m_view.resize(696 * m_uiScale, 577 * m_uiScale);
+    m_view.resize(696 * m_uiScale, 632 * m_uiScale);
 
     // Connect our timers
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);
