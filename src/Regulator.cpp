@@ -281,7 +281,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
-            mPeerFPP = len / (mNumChannels * mBitResolutionMode);
+            mPeerFPP        = len / (mNumChannels * mBitResolutionMode);
+            mPeerFPPdurMsec = 1000.0 * mPeerFPP / 48000.0;
             // bufstrategy 1 autoq mode overloads qLen with negative val
             // creates this ugly code
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
@@ -338,7 +339,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             }
         }
         pushStat->tick();
-        double adjustAuto = pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec);
+        double adjustAuto =
+            pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec);
         //        qDebug() << adjustAuto;
         if (mAuto && (pushStat->lastTime > AutoInitDur))
             mMsecTolerance = adjustAuto;
@@ -664,6 +666,9 @@ void BurgAlgorithm::predict(std::vector<long double>& coeffs, std::vector<float>
 //*******************************************************************************
 ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 {
+    int shrinkCoeffsFactor = 1;
+    if (FPP == 1024)
+        shrinkCoeffsFactor = 8;
     trainSamps = (hist * FPP);
     mTruth.resize(FPP, 0.0);
     mXfadedPred.resize(FPP, 0.0);
@@ -674,7 +679,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
     }
     mTrain.resize(trainSamps, 0.0);
     mPrediction.resize(trainSamps - 1, 0.0);  // ORDER
-    mCoeffs.resize(trainSamps - 2, 0.0);
+    mCoeffs.resize(trainSamps / shrinkCoeffsFactor - 2, 0.0);
     mCrossFadeDown.resize(FPP, 0.0);
     mCrossFadeUp.resize(FPP, 0.0);
     mCrossfade.resize(FPP, 0.0);
@@ -709,7 +714,7 @@ void StdDev::reset()
     max          = -999999.0;
 };
 
-double StdDev::calcAuto(double autoHeadroom, double localFPPdur)
+double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPdur)
 {
     //    qDebug() << longTermStdDev << longTermMax << AutoMax << window <<
     //    longTermCnt;
@@ -717,7 +722,9 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur)
         return AutoMax;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
     if (tmp < localFPPdur)
-        tmp = localFPPdur;  // might also check peerFPP...
+        tmp = localFPPdur;
+    if (tmp < peerFPPdur)
+        tmp = peerFPPdur;
     tmp += autoHeadroom;
     return tmp;
 };
