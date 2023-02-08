@@ -1412,7 +1412,7 @@ Item {
                 anchors.left: inputLabel.left
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputChannelHelpMessage.bottom
+                anchors.top: inputMixModeHelpMessage.bottom
                 anchors.topMargin: 24 * virtualstudio.uiScale
                 anchors.bottomMargin: 24 * virtualstudio.uiScale
                 textFormat: Text.RichText
