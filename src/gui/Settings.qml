@@ -779,8 +779,8 @@ Item {
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
                 anchors.top: inputMixModeHelpMessage.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
-                anchors.bottomMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 8 * virtualstudio.uiScale
+                anchors.bottomMargin: 8 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
                     + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
@@ -792,7 +792,7 @@ Item {
                 }
                 horizontalAlignment: Text.AlignHLeft
                 wrapMode: Text.WordWrap
-                color: warningText
+                color: warningTextColour
                 font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
             }
