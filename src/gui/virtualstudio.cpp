@@ -1815,12 +1815,14 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDec
         }
     }
 
+#ifdef RT_AUDIO
     // For certain specific cases, copy the first channel's value into the second
     // channel's value
     if ((m_inputMixMode == QStringLiteral("mono") && m_numInputChannels == 1)
         || (m_inputMixMode == QStringLiteral("mix-to-mono") && m_numInputChannels == 2)) {
         uiValues[1] = uiValues[0];
     }
+#endif
 
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputMeterModel"),
                                                        QVariant::fromValue(uiValues));
