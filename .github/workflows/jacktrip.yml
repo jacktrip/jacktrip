@@ -66,8 +66,8 @@ jobs:
             weakjack: false
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
-            static-qt-version: 5.12.12 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v27' # required for static qt; update this to force rebuilding static Qt
+            static-qt-version: 5.15.3 # if set, it will enable static Qt build
+            qt-static-cache-key: 'v29' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -77,7 +77,7 @@ jobs:
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -95,14 +95,14 @@ jobs:
             nogui: true
             novs: true
             weakjack: false
-            static-qt-version: 5.12.12
-            qt-static-cache-key: 'v27' # we use the same key as the main Linux build
+            static-qt-version: 5.15.3
+            qt-static-cache-key: 'v29' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
 
           - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -262,7 +262,7 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
           echo "stamp=$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT # set timestamp for cache
       - name: setup python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
       - name: cache vcpkg on Windows
@@ -278,11 +278,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes libjack-dev
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
-            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
+            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt5-default qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev
+            sudo apt-get install --yes qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev qtquickcontrols2-5-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
@@ -372,7 +372,9 @@ jobs:
         run: |
           QT_FULL_VERSION=${{ matrix.static-qt-version }}
           QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
-          QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/qt-everywhere-src-$QT_FULL_VERSION.tar.xz"
+          QT_ARCHIVE_BASE_NAME=qt-everywhere-
+          if [[ ! "$QT_MAJOR_MINOR_VERSION" < "5.15" ]]; then QT_ARCHIVE_BASE_NAME=${QT_ARCHIVE_BASE_NAME}opensource-; fi # filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15
+          QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
           echo "Downloading Qt source from $QT_SRC_URL"
           curl -L $QT_SRC_URL -o qt.tar.xz
           echo "Unpacking Qt source"
@@ -566,31 +568,31 @@ jobs:
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
           bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
       - name: upload jacktrip binary
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: upload application bundle
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) &&  needs.check-secrets.outputs.should_run != 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload signed application bundle
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) &&  needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload installer
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && ( needs.check-secrets.outputs.should_run != 'true' || runner.os == 'Windows')
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: upload signed installer
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && needs.check-secrets.outputs.should_run == 'true' && runner.os != 'Windows'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
@@ -610,7 +612,7 @@ jobs:
           echo ${{ github.event.pull_request.head.ref }} > $CLANG_TIDY_PATH/pr-head-ref.txt
       - name: upload static analysis
         if: github.event_name == 'pull_request' && matrix.static-analysis == true
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.CLANG_TIDY_NAME }}
           path: ${{ env.CLANG_TIDY_PATH }}/
@@ -682,7 +684,7 @@ jobs:
           cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi
           rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: upload installer
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer

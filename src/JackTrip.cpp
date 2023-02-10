@@ -57,6 +57,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QtEndian>
+#include <QtGlobal>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -466,11 +467,23 @@ void JackTrip::startProcess(
         // qDebug() << "before mJackTrip->startProcess" << mReceiverBindPort<<
         // mSenderBindPort;
 #endif
-    checkIfPortIsBinded(mReceiverBindPort);
+    if (checkIfPortIsBinded(mReceiverBindPort)) {
+        stop(QStringLiteral("Could not bind %1 UDP socket. It may already be binded by "
+                            "another process on "
+                            "your machine. Try using a different port number")
+                 .arg(mReceiverBindPort));
+        return;
+    }
     if (gVerboseFlag)
         std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mSenderBindPort)"
                   << std::endl;
-    checkIfPortIsBinded(mSenderBindPort);
+    if (checkIfPortIsBinded(mSenderBindPort)) {
+        stop(QStringLiteral("Could not bind %1 UDP socket. It may already be binded by "
+                            "another process on "
+                            "your machine. Try using a different port number")
+                 .arg(mSenderBindPort));
+        return;
+    }
     // Set all classes and parameters
     // ------------------------------
     if (gVerboseFlag)
@@ -1290,7 +1303,7 @@ int JackTrip::clientPingToServerStart()
     connect(&mTcpClient, &QTcpSocket::readyRead, this, &JackTrip::receivedDataTCP);
     connect(&mTcpClient, &QTcpSocket::connected, this, &JackTrip::receivedConnectionTCP);
     // Enable CI builds on Ubuntu 20.04 with Qt 5.12.8
-#ifdef __linux__
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
     connect(&mTcpClient,
             QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), this,
             &JackTrip::receivedErrorTCP);
@@ -1495,17 +1508,27 @@ bool JackTrip::checkPeerSettings(int8_t* full_packet)
 }
 
 //*******************************************************************************
-void JackTrip::checkIfPortIsBinded(int port)
+bool JackTrip::checkIfPortIsBinded(int port)
 {
     QUdpSocket UdpSockTemp;  // Create socket to wait for client
     // Bind the socket
     // cc        if ( !UdpSockTemp.bind(QHostAddress::AnyIPv4, port,
     // QUdpSocket::DontShareAddress) )
-    if (!UdpSockTemp.bind(QHostAddress::Any, port, QUdpSocket::DontShareAddress)) {
-        UdpSockTemp.close();  // close the socket
-        throw std::runtime_error(
-            "Could not bind UDP socket. It may already be binded by another process on "
-            "your machine. Try using a different port number");
+
+    // check all combinations to ensure the port is free
+    std::map<std::string, QHostAddress::SpecialAddress> interfaces = {
+        {"IPv4", QHostAddress::AnyIPv4},
+        {"IPv6", QHostAddress::AnyIPv6},
+        {"IPv4+IPv6", QHostAddress::Any}};
+
+    std::map<std::string, QHostAddress::SpecialAddress>::iterator it;
+    for (it = interfaces.begin(); it != interfaces.end(); it++) {
+        bool binded = UdpSockTemp.bind(it->second, port, QUdpSocket::DontShareAddress);
+        if (!binded) {
+            UdpSockTemp.close();  // close the socket
+            return true;
+        }
+        UdpSockTemp.close();
     }
-    UdpSockTemp.close();  // close the socket
+    return false;
 }
