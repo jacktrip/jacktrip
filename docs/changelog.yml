@@ -10,6 +10,7 @@
   - (updated) VS mode - Audio settings screen layouts
   - (fixed) VS mode - video button is now available to all users of a Studio
   - (fixed) A few memory leaks
+  - (fixed) linux static builds
 - Version: "1.7.0"
   Date: 2023-01-20
   Description:
