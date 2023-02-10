@@ -239,7 +239,9 @@ Item {
 
             Text {
                 id: outputLabel
-                x: 0; y: 0
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.topMargin: 48 * virtualstudio.uiScale
                 width: 144 * virtualstudio.uiScale
                 text: "Output Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -624,11 +626,38 @@ Item {
                 visible: false
             }
 
+            Button {
+                id: refreshButton
+                text: "Refresh Devices"
+                palette.buttonText: textColour
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
+                    border.width: 1
+                    border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+                }
+                icon {
+                    source: "refresh.svg";
+                    color: textColour;
+                }
+                display: AbstractButton.TextBesideIcon
+                onClicked: { virtualstudio.refreshDevices() }
+                anchors.right: parent.right
+                anchors.top: inputSlider.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                font {
+                    family: "Poppins"
+                    pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                }
+            }
+
             Text {
                 anchors.left: inputLabel.left
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputSlider.bottom
+                anchors.top: refreshButton.bottom
                 anchors.bottomMargin: 24 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
