@@ -105,6 +105,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mBufferQueueLength(BufferQueueLength)
     , mBufferStrategy(1)
     , mBroadcastQueueLength(0)
+    // ***cc
     , mSampleRate(gDefaultSampleRate)
     , mDeviceID(gDefaultDeviceID)
     , mAudioBufferSize(gDefaultBufferSizeInSamples)
@@ -552,6 +553,11 @@ void JackTrip::startProcess(
             std::cout << "  JackTrip:startProcess case CLIENTTOPINGSERVER before "
                          "clientPingToServerStart"
                       << std::endl;
+        // ***cc
+        std::cout << "mSampleRate " << mSampleRate << std::endl;
+        std::cout << "mAudioBufferSize " << mAudioBufferSize << std::endl;
+        std::cout << "mRedundancy " << mRedundancy << std::endl;
+        std::cout << "mUseRtUdpPriority " << mUseRtUdpPriority << std::endl;
         if (clientPingToServerStart()
             == -1) {  // if error on server start (-1) we return immediately
             stop(QStringLiteral(
