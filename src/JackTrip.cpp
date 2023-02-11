@@ -553,7 +553,7 @@ void JackTrip::startProcess(
             std::cout << "  JackTrip:startProcess case CLIENTTOPINGSERVER before "
                          "clientPingToServerStart"
                       << std::endl;
-        // ***cc
+        // ***cc this will trigger build
         std::cout << "mSampleRate " << mSampleRate << std::endl;
         std::cout << "mAudioBufferSize " << mAudioBufferSize << std::endl;
         std::cout << "mRedundancy " << mRedundancy << std::endl;
