@@ -39,6 +39,8 @@
 
 #include <QDebug>
 
+#include "../audio/AudioInterfaceMode.h"
+
 // Constructor
 VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
                    QObject* parent)

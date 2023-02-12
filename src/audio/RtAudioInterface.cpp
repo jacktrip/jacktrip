@@ -40,8 +40,8 @@
 #include <QString>
 #include <cstdlib>
 
-#include "JackTrip.h"
-#include "jacktrip_globals.h"
+#include "../JackTrip.h"
+#include "../jacktrip_globals.h"
 
 using std::cout;
 using std::endl;

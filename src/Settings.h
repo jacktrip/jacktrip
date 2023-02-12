@@ -45,13 +45,14 @@
 #include "DataProtocol.h"
 
 #ifndef NO_JACK
-#include "JackAudioInterface.h"
+#include "audio/JackAudioInterface.h"
 #endif  // NO_JACK
 
 #include "AudioTester.h"
 #include "Effects.h"
 #include "JackTrip.h"
 #include "UdpHubListener.h"
+#include "audio/AudioInterfaceMode.h"
 
 /** \brief Class to set usage options and parse settings from input
  */

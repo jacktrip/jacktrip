@@ -37,7 +37,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/Settings.cpp',
 	'src/UdpDataProtocol.cpp',
 	'src/UdpHubListener.cpp',
-	'src/AudioInterface.cpp',
+	'src/audio/AudioInterface.cpp',
 	'src/Compressor.cpp',
 	'src/Limiter.cpp',
 	'src/Meter.cpp',
@@ -74,7 +74,7 @@ jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
 	defines += '-DNO_JACK'
 else
-	src += 	['src/JackAudioInterface.cpp',
+	src += 	['src/audio/JackAudioInterface.cpp',
 		'src/JMess.cpp',
 		'src/Patcher.cpp']
 	moc_h += ['src/Patcher.h']
@@ -193,7 +193,7 @@ defines += '-DQT_OPENSOURCE'
 rtaudio_dep = dependency('rtaudio', required: get_option('rtaudio'))
 if rtaudio_dep.found() == true
 	defines += '-DRT_AUDIO'
-	src += 'src/RtAudioInterface.cpp'
+	src += 'src/audio/RtAudioInterface.cpp'
 	deps += rtaudio_dep
 endif
 

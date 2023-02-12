@@ -38,7 +38,7 @@
 #ifndef __JACKTRIP_GLOBALS_H__
 #define __JACKTRIP_GLOBALS_H__
 
-#include "AudioInterface.h"
+#include "audio/AudioInterface.h"
 
 constexpr const char* const gVersion = "1.7.1";  ///< JackTrip version
 

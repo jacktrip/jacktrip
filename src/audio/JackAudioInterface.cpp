@@ -42,8 +42,8 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "JackTrip.h"
-#include "jacktrip_globals.h"
+#include "../JackTrip.h"
+#include "../jacktrip_globals.h"
 
 ///************PROTORYPE FOR CELT**************************
 //#include <celt/celt.h>

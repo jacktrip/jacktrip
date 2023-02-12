@@ -49,8 +49,8 @@
 #include <atomic>
 #include <cstring>
 
-#include "AudioInterface.h"
 #include "RingBuffer.h"
+#include "audio/AudioInterface.h"
 
 class BurgAlgorithm
 {

@@ -42,8 +42,8 @@
 
 #include <QQueue>
 
+#include "../jacktrip_globals.h"
 #include "AudioInterface.h"
-#include "jacktrip_globals.h"
 class JackTrip;  // Forward declaration
 
 /// \brief Base Class that provides an interface with RtAudio

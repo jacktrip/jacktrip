@@ -222,7 +222,7 @@ HEADERS += src/DataProtocol.h \
            src/Settings.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
-           src/AudioInterface.h \
+           src/audio/AudioInterface.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
@@ -234,7 +234,7 @@ HEADERS += src/DataProtocol.h \
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
-  HEADERS += src/JackAudioInterface.h \
+  HEADERS += src/audio/JackAudioInterface.h \
              src/JMess.h \
              src/Patcher.h
 }
@@ -268,7 +268,7 @@ HEADERS += src/DataProtocol.h \
 }
 
 rtaudio|bundled_rtaudio {
-  HEADERS += src/RtAudioInterface.h
+  HEADERS += src/audio/RtAudioInterface.h
 }
 
 SOURCES += src/DataProtocol.cpp \
@@ -290,14 +290,14 @@ SOURCES += src/DataProtocol.cpp \
            src/Settings.cpp \
            src/UdpDataProtocol.cpp \
            src/UdpHubListener.cpp \
-           src/AudioInterface.cpp \
+           src/audio/AudioInterface.cpp \
            src/main.cpp \
            src/SslServer.cpp \
            src/Auth.cpp
 #(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {
-  SOURCES += src/JackAudioInterface.cpp \
+  SOURCES += src/audio/JackAudioInterface.cpp \
              src/JMess.cpp \
              src/Patcher.cpp
 }
@@ -351,7 +351,7 @@ SOURCES += src/DataProtocol.cpp \
 }
 
 rtaudio|bundled_rtaudio {
-  SOURCES += src/RtAudioInterface.cpp
+  SOURCES += src/audio/RtAudioInterface.cpp
 }
 
 weakjack {

@@ -133,8 +133,8 @@ set(qjacktrip_SRC
   src/JackTripWorker.cpp
   src/DataProtocol.cpp
   src/UdpDataProtocol.cpp
-  src/AudioInterface.cpp
-  src/JackAudioInterface.cpp
+  src/audio/AudioInterface.cpp
+  src/audio/JackAudioInterface.cpp
   src/JMess.cpp
   src/LoopBack.cpp
   src/PacketHeader.cpp
@@ -154,7 +154,7 @@ set(qjacktrip_SRC
 if (rtaudio)
   add_compile_definitions(RT_AUDIO)
   set (qjacktrip_SRC ${qjacktrip_SRC}
-    src/RtAudioInterface.cpp
+    src/audio/RtAudioInterface.cpp
   )
 endif ()
 

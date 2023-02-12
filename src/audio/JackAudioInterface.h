@@ -51,9 +51,9 @@
 #include <QVector>
 #include <functional>  //for mem_fun_ref
 
+#include "../ProcessPlugin.h"
+#include "../jacktrip_types.h"
 #include "AudioInterface.h"
-#include "ProcessPlugin.h"
-#include "jacktrip_types.h"
 
 // class JackTrip; //forward declaration
 

@@ -38,7 +38,7 @@
 #include "JackTrip.h"
 
 #ifndef NO_JACK
-#include "JackAudioInterface.h"
+#include "audio/JackAudioInterface.h"
 #endif
 #include "Auth.h"
 #include "JitterBuffer.h"
@@ -47,7 +47,7 @@
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
 #ifdef RT_AUDIO
-#include "RtAudioInterface.h"
+#include "audio/RtAudioInterface.h"
 #endif
 
 #include <QDateTime>
