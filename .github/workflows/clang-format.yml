@@ -1,9 +1,8 @@
 name: clang-format Check
 on:
   push:
-    paths:
-      - 'src/**'
-  pull_request:
+    branches:
+      - dev
     paths:
       - 'src/**'
 
@@ -14,8 +13,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Clang-Format Check
-      uses: DoozyX/clang-format-lint-action@v0.13
+      uses: DoozyX/clang-format-lint-action@v0.15
       with:
         source: 'src'
         extensions: 'h,cpp'
-        clangFormatVersion: 13
+        clangFormatVersion: 15
+        inplace: True
+    - name: Commit Clang-Format Changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        default_author: github_actions
+        message: 'clang-format version 15'
