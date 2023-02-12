@@ -23,12 +23,54 @@ this+=   isnot     ;
 this = again;
 ```
 
-## Formatting the entire code base
+## Forget about formatting with a git pre-commit hook
 
-Formatting the entire code base can be done with specifying all code files of the project
-or be invoking Meson's clang-format target:
+With git the user can install hooks that are executed when specific tasks are done.
+We can add a pre-commit hook for clang-format. So that everytime we commit our
+changes, git runs clang-format for us.
+
+Handling git hooks by hand is cumbersome. With [pre-commit](https://pre-commit.com/)
+this becomes a lot easier.
+
+Pre-commit is a Python app that can be installed with pip.
 
 ```bash
-ninja -C builddir clang-format
+pip install pre-commit
 ```
 
+Within the root directory of the jacktrip repository the pre-commit hook can be
+installed as follows:
+
+```bash
+pre-commit install
+```
+
+Pre-commit only runs on changed files. Running pre-commit on all files is done
+by:
+
+```bash
+pre-commit run --all-files
+```
+
+Sometimes these hooks come into your way. But you can disable them when committing:
+
+```bash
+git commit -am "Commit all my stuff" --no-verify
+```
+
+### Pre-commit configuration
+
+Pre-commit is configured by the *.pre-commit-config.yaml* file in the repository's
+root. Currently it only includes the clang-format hook.
+
+```yaml
+fail_fast: false
+repos:
+  - repo: https://github.com/ssciwr/clang-format-hook
+    rev: v13.0.1
+    hooks:
+    - id: clang-format
+      files: ^src/
+      types_or: [c++]
+      exclude: '^src/.+dsp\.h'
+```
