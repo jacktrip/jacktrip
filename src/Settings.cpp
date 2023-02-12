@@ -64,7 +64,7 @@
 #endif
 
 #ifdef RT_AUDIO
-#include "RtAudioInterface.h"
+#include "audio/RtAudioInterface.h"
 #endif
 
 #ifdef JACKTRIP_BUILD_INFO

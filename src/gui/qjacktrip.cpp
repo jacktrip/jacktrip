@@ -32,6 +32,9 @@
 #include <QVector>
 #include <cstdlib>
 #include <ctime>
+#ifdef RT_AUDIO
+#include <RtAudio.h>
+#endif
 
 #include "about.h"
 #ifndef NO_VS
@@ -42,15 +45,12 @@
 #include "weak_libjack.h"
 #endif
 
-#ifdef RT_AUDIO
-#include "RtAudio.h"
-#endif
-
 #include "../Compressor.h"
 #include "../CompressorPresets.h"
 #include "../Limiter.h"
 #include "../Meter.h"
 #include "../Reverb.h"
+#include "../audio/AudioInterfaceMode.h"
 
 QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     : QMainWindow(parent)

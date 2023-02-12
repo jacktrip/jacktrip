@@ -41,7 +41,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "JackTrip.h"
+#include "../JackTrip.h"
 
 using std::cout;
 using std::endl;

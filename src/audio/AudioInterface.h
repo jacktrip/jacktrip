@@ -41,9 +41,9 @@
 #include <QVarLengthArray>
 #include <QVector>
 
-#include "AudioTester.h"
-#include "ProcessPlugin.h"
-#include "jacktrip_types.h"
+#include "../AudioTester.h"
+#include "../ProcessPlugin.h"
+#include "../jacktrip_types.h"
 //#include "jacktrip_globals.h"
 
 // Forward declarations

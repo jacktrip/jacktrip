@@ -31,53 +31,56 @@
 
 /**
  * \file AudioInterfaceMode.h
- * \author Matt Horton
+ * \author Matt Horton, Nils Tonnätt
  * \date December 2022
  */
 
-enum class AudioInterfaceMode {
-    JACK,     ///< Jack Mode
-    RTAUDIO,  ///< RtAudio Mode
-    ALL,
-    NONE
+#pragma once
+
+#if defined(__cpp_lib_to_underlying)
+#include <utility>
+using std::to_underlying(auto value);
+
+#else
+#include <type_traits>
+template<class T>
+constexpr std::underlying_type_t<T> to_underlying(T value) noexcept
+{
+    return static_cast<std::underlying_type_t<T> >(value);
+}
+#endif
+
+enum class AudioInterfaceMode : unsigned int {
+    NONE     = 0,
+    JACK     = 1 << 0,  ///< Jack Mode
+    RTAUDIO  = 1 << 1,  ///< RtAudio Mode
+    PIPEWIRE = 1 << 2,  ///< Pipewire Mode
+    ALL      = JACK | RTAUDIO
 };
 
 #ifdef RT_AUDIO
-#ifndef NO_JACK
-constexpr AudioInterfaceMode mode = AudioInterfaceMode::ALL;
+#define RT_AUDIO_AVAIL AudioInterfaceMode::RTAUDIO
 #else
-constexpr AudioInterfaceMode mode = AudioInterfaceMode::RTAUDIO;
-#endif
-#else
-#ifndef NO_JACK
-constexpr AudioInterfaceMode mode = AudioInterfaceMode::JACK;
-#else
-constexpr AudioInterfaceMode mode = AudioInterfaceMode::NONE;
-#endif
+#define RT_AUDIO_AVAIL AudioInterfaceMode::NONE
 #endif
 
+#ifndef NO_JACK
+#define JACK_AVAIL AudioInterfaceMode::JACK
+#else
+#define JACK_AVAIL AudioInterfaceMode::NONE
+#endif
+
+#ifdef PIPEWIRE
+#define PW_AVAIL AudioInterfaceMode::PIPEWIRE
+#else
+#define PW_AVAIL AudioInterfaceMode::NONE
+#endif
+
+constexpr std::underlying_type_t<AudioInterfaceMode> mode =
+    to_underlying(RT_AUDIO_AVAIL) | to_underlying(JACK_AVAIL) | to_underlying(PW_AVAIL);
+
 template<AudioInterfaceMode backend>
-constexpr auto isBackendAvailable()
+constexpr bool isBackendAvailable()
 {
-    if constexpr (backend == AudioInterfaceMode::RTAUDIO) {
-        if (mode == AudioInterfaceMode::RTAUDIO || mode == AudioInterfaceMode::ALL) {
-            return true;
-        } else {
-            return false;
-        }
-    } else if constexpr (backend == AudioInterfaceMode::JACK) {
-        if (mode == AudioInterfaceMode::JACK || mode == AudioInterfaceMode::ALL) {
-            return true;
-        } else {
-            return false;
-        }
-    } else if constexpr (backend == AudioInterfaceMode::ALL) {
-        if (mode == AudioInterfaceMode::ALL) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
+    return (mode & to_underlying(backend)) != 0;
 }

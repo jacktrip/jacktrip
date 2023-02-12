@@ -47,11 +47,12 @@
 #include <QUdpSocket>
 #include <stdexcept>
 
-#include "AudioInterface.h"
 #include "DataProtocol.h"
+#include "audio/AudioInterface.h"
+#include "audio/AudioInterfaceMode.h"
 
 #ifndef NO_JACK
-#include "JackAudioInterface.h"
+#include "audio/JackAudioInterface.h"
 #endif  // NO_JACK
 
 #include "AudioTester.h"
