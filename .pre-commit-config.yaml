@@ -1,0 +1,9 @@
+fail_fast: false
+repos:
+  - repo: https://github.com/ssciwr/clang-format-hook
+    rev: v13.0.1
+    hooks:
+    - id: clang-format
+      files: ^src/
+      types_or: [c++]
+      exclude: '^src/.+dsp\.h'
