@@ -129,7 +129,7 @@ Item {
             id: mic
             source: "mic.svg"
             x: 0; y: 0
-            width: 18 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+            width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
             sourceSize: Qt.size(mic.width,mic.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
@@ -290,7 +290,7 @@ Item {
             onClicked: { virtualstudio.inputMuted = !virtualstudio.inputMuted }
             Image {
                 id: micMute
-                width: 11.57 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
+                width: 18 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
                 anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
                 source: virtualstudio.inputMuted ? "micoff.svg" : "mic.svg"
                 sourceSize: Qt.size(micMute.width,micMute.height)
