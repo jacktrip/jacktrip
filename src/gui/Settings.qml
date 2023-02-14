@@ -11,7 +11,7 @@ Item {
         color: backgroundColour
     }
 
-    property int fontBig: 28
+    property int fontBig: 20
     property int fontMedium: 13
     property int fontSmall: 11
     property int fontExtraSmall: 8
@@ -44,6 +44,7 @@ Item {
     ToolBar {
         id: header
         width: parent.width
+        height: 64 * virtualstudio.uiScale
 
         background: Rectangle {
             border.color: "#33979797"
@@ -51,14 +52,61 @@ Item {
             width: parent.width
         }
 
-        contentItem: Label {
-            text: "Settings"
-            elide: Label.ElideRight
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+        contentItem: Item {
+            id: headerContent
+            width: header.width
+            height: header.height
+            x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
+
+            property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
+
+            Label {
+                id: pageTitle
+                text: "Settings"
+                height: headerContent.height;
+                anchors.left: headerContent.left;
+                anchors.leftMargin: 32 * virtualstudio.uiScale
+                elide: Label.ElideRight
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            Button {
+                id: refreshButton
+                text: "Refresh Devices"
+                // anchors.right: header.right
+                // anchors.rightMargin: rightMargin * virtualstudio.uiScale
+
+                anchors.verticalCenter: pageTitle.verticalCenter;
+                anchors.right: headerContent.right;
+                anchors.rightMargin: 16 * virtualstudio.uiScale;
+
+                palette.buttonText: textColour
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
+                    border.width: 1
+                    border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+                }
+                icon {
+                    source: "refresh.svg";
+                    color: textColour;
+                }
+                display: AbstractButton.TextBesideIcon
+                onClicked: { virtualstudio.refreshDevices() }
+                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                font {
+                    family: "Poppins"
+                    pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                }
+                visible: parent.isUsingRtAudio
+            }
+
         }
+
+
     }
 
     Drawer {
@@ -229,7 +277,7 @@ Item {
         Item {
             id: usingRtAudio
             anchors.top: parent.top
-            anchors.topMargin: 48 * virtualstudio.uiScale
+            anchors.topMargin: 32 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: 24 * virtualstudio.uiScale
@@ -620,33 +668,6 @@ Item {
                 anchors.verticalCenter: inputSlider.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 visible: false
-            }
-
-            Button {
-                id: refreshButton
-                text: "Refresh Devices"
-                palette.buttonText: textColour
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
-                    border.width: 1
-                    border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
-                }
-                icon {
-                    source: "refresh.svg";
-                    color: textColour;
-                }
-                display: AbstractButton.TextBesideIcon
-                onClicked: { virtualstudio.refreshDevices() }
-                anchors.right: parent.right
-                anchors.top: inputSlider.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
-                anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                font {
-                    family: "Poppins"
-                    pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                }
             }
 
             Text {
