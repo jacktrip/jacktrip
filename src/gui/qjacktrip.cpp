@@ -844,7 +844,7 @@ void QJackTrip::start()
 
 #ifdef RT_AUDIO
             if (m_ui->backendComboBox->currentIndex() == 1) {
-                m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
+                m_jackTrip->setAudiointerfaceMode(AudioInterfaceMode::RTAUDIO);
                 m_jackTrip->setSampleRate(
                     m_ui->sampleRateComboBox->currentText().toInt());
                 m_jackTrip->setAudioBufferSizeInSamples(

@@ -95,12 +95,6 @@ class JackTrip : public QObject
         ZEROS       ///< Set new buffers to zero if there are no new ones
     };
 
-    /// \brief Enum for Audio Interface Mode
-    enum audiointerfaceModeT {
-        JACK,    ///< Jack Mode
-        RTAUDIO  ///< RtAudio Mode
-    };
-
     /// \brief Enum for Connection Mode (in packet header)
     enum connectionModeT {
         NORMAL,   ///< Normal Mode
@@ -334,7 +328,7 @@ class JackTrip : public QObject
         return getTotalAudioOutputPacketSizeInBytes();
     }
 
-    virtual void setAudiointerfaceMode(JackTrip::audiointerfaceModeT audiointerface_mode)
+    virtual void setAudiointerfaceMode(AudioInterfaceMode audiointerface_mode)
     {
         mAudiointerfaceMode = audiointerface_mode;
     }
@@ -438,7 +432,7 @@ class JackTrip : public QObject
 #ifndef NO_JACK
     QString getAssignedClientName()
     {
-        if (mAudioInterface && mAudiointerfaceMode == JackTrip::JACK) {
+        if (mAudioInterface && mAudiointerfaceMode == AudioInterfaceMode::JACK) {
             return static_cast<JackAudioInterface*>(mAudioInterface)
                 ->getAssignedClientName();
         } else {
@@ -623,7 +617,7 @@ class JackTrip : public QObject
     jacktripModeT mJackTripMode;                        ///< JackTrip::jacktripModeT
     dataProtocolT mDataProtocol;                        ///< Data Protocol Tipe
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
-    JackTrip::audiointerfaceModeT mAudiointerfaceMode;
+    AudioInterfaceMode mAudiointerfaceMode;
 
     int mNumAudioChansIn;   ///< Number of Audio Input Channels
     int mNumAudioChansOut;  ///< Number of Audio Output Channels

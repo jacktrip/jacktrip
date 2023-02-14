@@ -391,7 +391,7 @@ void Settings::parseInput(int argc, char** argv)
 #ifdef RT_AUDIO
         case 'R':  // RtAudio
             //-------------------------------------------------------
-            mUseJack = false;
+            mAudioInterfaceMode = AudioInterfaceMode::RTAUDIO;
             break;
         case 'T':  // Sampling Rate
             //-------------------------------------------------------
@@ -1028,11 +1028,8 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setPacketHeaderType(DataProtocol::EMPTY);
     }
 
-    // Set RtAudio
-#ifdef RT_AUDIO
-    if (!mUseJack) {
-        jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
-    }
+    // Set Audio Backend Mode
+    jackTrip->setAudiointerfaceMode(mAudioInterfaceMode);
 
     // Change default Sampling Rate
     if (mChangeDefaultSR) {
@@ -1052,7 +1049,6 @@ JackTrip* Settings::getConfiguredJackTrip()
     // Set device names
     jackTrip->setInputDevice(mInputDeviceName);
     jackTrip->setOutputDevice(mOutputDeviceName);
-#endif
 
     jackTrip->setBufferStrategy(mBufferStrategy);
     jackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
