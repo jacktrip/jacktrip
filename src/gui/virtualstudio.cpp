@@ -126,7 +126,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_baseInputChannel = settings.value(QStringLiteral("BaseInputChannel"), 1).toInt();
     m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
-    m_inputMixMode = settings.value(QStringLiteral("InputMixMode"), "Mono").toString();
+    m_inputMixMode = settings.value(QStringLiteral("InputMixMode"), "mono").toString();
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     m_previousBuffer = m_bufferSize;
