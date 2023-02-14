@@ -114,17 +114,16 @@ class Settings : public QObject
     bool mEmptyHeader        = false;                 ///< EmptyHeader mode
     bool mJackTripServer     = false;                 ///< JackTrip Server mode
     QString mLocalAddress    = gDefaultLocalAddress;  ///< Local Address
-    unsigned int mRedundancy = 1;      ///< Redundancy factor for data in the network
-    bool mUseJack            = true;   ///< Use or not JackAduio
-    bool mChangeDefaultSR    = false;  ///< Change Default Sampling Rate
-    bool mChangeDefaultID    = 0;      ///< Change Default device ID
-    bool mChangeDefaultBS    = false;  ///< Change Default Buffer Size
-#ifdef RT_AUDIO
+    unsigned int mRedundancy = 1;  ///< Redundancy factor for data in the network
+    AudioInterfaceMode mAudioInterfaceMode =
+        AudioInterfaceMode::JACK;   ///< Audio Backend / AudioInterface mode
+    bool mChangeDefaultSR = false;  ///< Change Default Sampling Rate
+    bool mChangeDefaultID = 0;      ///< Change Default device ID
+    bool mChangeDefaultBS = false;  ///< Change Default Buffer Size
     unsigned int mSampleRate;
     unsigned int mDeviceID;
     unsigned int mAudioBufferSize;
     std::string mInputDeviceName, mOutputDeviceName;
-#endif
     unsigned int mHubConnectionMode = JackTrip::SERVERTOCLIENT;
     bool mPatchServerAudio          = false;
     bool mStereoUpmix               = false;

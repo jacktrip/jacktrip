@@ -96,7 +96,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mJackTripMode(JacktripMode)
     , mDataProtocol(DataProtocolType)
     , mPacketHeaderType(PacketHeaderType)
-    , mAudiointerfaceMode(JackTrip::JACK)
+    , mAudiointerfaceMode(AudioInterfaceMode::JACK)
     , mNumAudioChansIn(NumChansIn)
     , mNumAudioChansOut(NumChansOut)
 #ifdef WAIR  // WAIR
@@ -184,7 +184,7 @@ void JackTrip::setupAudio(
     }
 
     // Create AudioInterface Client Object
-    if (mAudiointerfaceMode == JackTrip::JACK) {
+    if (mAudiointerfaceMode == AudioInterfaceMode::JACK) {
 #ifndef NO_JACK
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
@@ -252,7 +252,7 @@ void JackTrip::setupAudio(
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
 #endif
-    } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
+    } else if (mAudiointerfaceMode == AudioInterfaceMode::RTAUDIO) {
 #ifdef RT_AUDIO
         mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
                                                mAudioBitResolution);

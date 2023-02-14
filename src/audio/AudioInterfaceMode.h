@@ -37,12 +37,18 @@
 
 #pragma once
 
+#include <type_traits>
+#include <vector>
+
+#if defined(RT_AUDIO)
+#include <RtAudio.h>
+#endif
+
 #if defined(__cpp_lib_to_underlying)
 #include <utility>
 using std::to_underlying(auto value);
 
 #else
-#include <type_traits>
 template<class T>
 constexpr std::underlying_type_t<T> to_underlying(T value) noexcept
 {

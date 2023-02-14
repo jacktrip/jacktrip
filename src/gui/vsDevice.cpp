@@ -358,7 +358,7 @@ JackTrip* VsDevice::initJackTrip([[maybe_unused]] bool useRtAudio,
     m_jackTrip->setConnectDefaultAudioPorts(true);
 #ifdef RT_AUDIO
     if (useRtAudio) {
-        m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
+        m_jackTrip->setAudiointerfaceMode(AudioInterfaceMode::RTAUDIO);
         m_jackTrip->setSampleRate(studioInfo->sampleRate());
         m_jackTrip->setAudioBufferSizeInSamples(bufferSize);
         m_jackTrip->setInputDevice(input);
