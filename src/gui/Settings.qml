@@ -239,7 +239,9 @@ Item {
 
             Text {
                 id: outputLabel
-                x: 0; y: 0
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.topMargin: 48 * virtualstudio.uiScale
                 width: 144 * virtualstudio.uiScale
                 text: "Output Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -251,7 +253,7 @@ Item {
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: outputDeviceMeters.verticalCenter
                 source: "headphones.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 
@@ -455,7 +457,7 @@ Item {
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: inputDeviceMeters.verticalCenter
                 source: "mic.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 
@@ -622,6 +624,33 @@ Item {
                 visible: false
             }
 
+            Button {
+                id: refreshButton
+                text: "Refresh Devices"
+                palette.buttonText: textColour
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
+                    border.width: 1
+                    border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+                }
+                icon {
+                    source: "refresh.svg";
+                    color: textColour;
+                }
+                display: AbstractButton.TextBesideIcon
+                onClicked: { virtualstudio.refreshDevices() }
+                anchors.right: parent.right
+                anchors.top: inputSlider.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                font {
+                    family: "Poppins"
+                    pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                }
+            }
+
             Text {
                 id: inputChannelsLabel
                 anchors.left: inputCombo.left
@@ -778,9 +807,8 @@ Item {
                 anchors.left: inputLabel.left
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputMixModeHelpMessage.bottom
-                anchors.topMargin: 8 * virtualstudio.uiScale
-                anchors.bottomMargin: 8 * virtualstudio.uiScale
+                anchors.top: refreshButton.bottom
+                anchors.bottomMargin: 24 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
                     + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
@@ -836,7 +864,7 @@ Item {
                 anchors.left: jackOutputLabel.left
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
                 source: "headphones.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 
@@ -979,7 +1007,7 @@ Item {
                 anchors.left: jackInputLabel.left
                 anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
                 source: "mic.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 

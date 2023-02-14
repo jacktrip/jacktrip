@@ -323,8 +323,6 @@ Rectangle {
         onClicked: { 
             if (connected) {
                 virtualstudio.launchVideo(-1)
-            } else if (admin) {
-                virtualstudio.manageStudio(-1);
             } else {
                 virtualstudio.manageStudio(index);
             }

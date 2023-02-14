@@ -3,7 +3,7 @@ on:
   push:
     paths:
       - 'src/**'
-  pull-request:
+  pull_request:
     paths:
       - 'src/**'
 

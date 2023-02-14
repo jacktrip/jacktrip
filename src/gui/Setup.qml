@@ -605,7 +605,7 @@ Item {
                 anchors.left: jackOutputLabel.left
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
                 source: "headphones.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 
@@ -748,7 +748,7 @@ Item {
                 anchors.left: jackInputLabel.left
                 anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
                 source: "mic.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 
@@ -885,7 +885,7 @@ Item {
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: outputDeviceMeters.verticalCenter
                 source: "headphones.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 
@@ -1089,7 +1089,7 @@ Item {
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: inputDeviceMeters.verticalCenter
                 source: "mic.svg"
-                sourceSize: Qt.size(20 * virtualstudio.uiScale, 20 * virtualstudio.uiScale)
+                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
                 fillMode: Image.PreserveAspectFit
                 smooth: true
 

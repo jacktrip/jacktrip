@@ -2,6 +2,26 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.7.1",
+            "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
+            "download": {
+                "date": "2023-02-10T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-Windows-x64-installer.msi",
+                "downloadSize": 45330432,
+                "sha256": "fb5d756afcd471ca8ae45b05b411235026f23f2178893d85ac12f39c3f66a01a"
+            }
+        },
+        {
+            "version": "1.7.1-beta1",
+            "changelog": "Video button, bug fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1-beta1",
+            "download": {
+                "date": "2023-02-03T00:00:00Z",
+                "url": "https://github.com/jacktrip/jacktrip/releases/download/v1.7.1-beta1/JackTrip-v1.7.1-beta1-Windows-x64-installer.msi",
+                "downloadSize": 45326336,
+                "sha256": "eeb16bc11957413fb74da852b9e0fa3cb8c84cb2945d5c992a40f3e9b526c294"
+            }
+        },
+        {
             "version": "1.7.0",
             "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
             "download": {
