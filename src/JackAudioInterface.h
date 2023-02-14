@@ -75,7 +75,7 @@ class JackAudioInterface : public AudioInterface
      */
     JackAudioInterface(
         JackTrip* jacktrip, int BaseInChan, int NumInChans, int NumOutChans,
-        QString InputMixMode,
+        int InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere

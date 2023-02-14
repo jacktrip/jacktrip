@@ -827,14 +827,14 @@ void QJackTrip::start()
                 jackTripMode = JackTrip::CLIENTTOPINGSERVER;
             }
 
-            m_jackTrip.reset(new JackTrip(
-                jackTripMode, JackTrip::UDP, 1, m_ui->channelSendSpinBox->value(),
-                m_ui->channelRecvSpinBox->value(), QStringLiteral(""),
+            m_jackTrip.reset(new JackTrip(jackTripMode, JackTrip::UDP, 1,
+                                          m_ui->channelSendSpinBox->value(),
+                                          m_ui->channelRecvSpinBox->value(), -1,
 #ifdef WAIR  // wair
-                0,
+                                          0,
 #endif  // endwhere
-                m_ui->queueLengthSpinBox->value(), m_ui->redundancySpinBox->value(),
-                resolution));
+                                          m_ui->queueLengthSpinBox->value(),
+                                          m_ui->redundancySpinBox->value(), resolution));
             m_jackTrip->setConnectDefaultAudioPorts(
                 m_ui->connectAudioCheckBox->isChecked());
             if (m_ui->zeroCheckBox->isChecked()) {

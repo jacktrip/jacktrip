@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "../InputMixMode.h"
 #include "../jacktrip_globals.h"
 #include "about.h"
 #include "qjacktrip.h"
@@ -126,7 +127,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_baseInputChannel = settings.value(QStringLiteral("BaseInputChannel"), 1).toInt();
     m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
-    m_inputMixMode = settings.value(QStringLiteral("InputMixMode"), "mono").toString();
+    m_inputMixMode =
+        settings
+            .value(QStringLiteral("InputMixMode"), static_cast<int>(InputMixMode::MONO))
+            .toInt();
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     m_previousBuffer = m_bufferSize;
@@ -153,7 +157,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     inputMixModeComboElement.insert(QString::fromStdString("label"),
                                     QString::fromStdString("Mono"));
     inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                    QString::fromStdString("mono"));
+                                    static_cast<int>(InputMixMode::MONO));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputMixModeComboModel"),
         QVariant::fromValue(
@@ -415,7 +419,7 @@ void VirtualStudio::setNumInputChannels([[maybe_unused]] int numChannels)
 #endif
 }
 
-void VirtualStudio::setInputMixMode(const QString& mode)
+void VirtualStudio::setInputMixMode(int mode)
 {
     if (!m_useRtAudio) {
         return;
@@ -427,10 +431,10 @@ void VirtualStudio::setInputMixMode(const QString& mode)
     return;
 }
 
-QString VirtualStudio::inputMixMode()
+int VirtualStudio::inputMixMode()
 {
     if (!m_useRtAudio) {
-        return QString("");
+        return -1;
     }
 #ifdef RT_AUDIO
     return m_inputMixMode;
@@ -1061,7 +1065,7 @@ void VirtualStudio::validateDevicesState()
         inputMixModeComboElement.insert(QString::fromStdString("label"),
                                         QString::fromStdString("Mono"));
         inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                        QString::fromStdString("mono"));
+                                        static_cast<int>(InputMixMode::MONO));
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("inputMixModeComboModel"),
             QVariant::fromValue(QVariant(
@@ -1083,7 +1087,7 @@ void VirtualStudio::validateDevicesState()
         // Set the only allowed options for these variables automatically
         m_baseInputChannel = 1;
         m_numInputChannels = 1;
-        m_inputMixMode     = QStringLiteral("mono");
+        m_inputMixMode     = static_cast<int>(InputMixMode::MONO);
 
         emit baseInputChannelChanged(m_baseInputChannel);
         emit numInputChannelsChanged(m_numInputChannels);
@@ -1120,28 +1124,26 @@ void VirtualStudio::validateDevicesState()
         // this device's option, use the first two channels by default
         if ((m_baseInputChannel + (m_numInputChannels - 1)
              > numDevicesChannelsAvailable)) {
-            if (m_numInputChannels == 2 && numDevicesChannelsAvailable > 1) {
-                m_baseInputChannel = 1;
-                m_numInputChannels = 2;
-            } else {
-                m_baseInputChannel = 1;
-                m_numInputChannels = 1;
-            }
+            // we're in the case where numDevicesChannelsAvailable >= 2, so always have
+            // the ability to use the first 2 channels
+            m_baseInputChannel = 1;
+            m_numInputChannels = 2;
             emit baseInputChannelChanged(m_baseInputChannel);
             emit numInputChannelsChanged(m_numInputChannels);
         }
         if (m_numInputChannels != 1) {
-            // Set the input mix mode to have two options: "Stereo" and "Mix to Mono"
+            // Set the input mix mode to have two options: "Stereo" and "Mix to Mono" if
+            // we're using 2 channels
             QJsonObject inputMixModeComboElement1 = QJsonObject();
             inputMixModeComboElement1.insert(QString::fromStdString("label"),
                                              QString::fromStdString("Stereo"));
             inputMixModeComboElement1.insert(QString::fromStdString("value"),
-                                             QString::fromStdString("stereo"));
+                                             static_cast<int>(InputMixMode::STEREO));
             QJsonObject inputMixModeComboElement2 = QJsonObject();
             inputMixModeComboElement2.insert(QString::fromStdString("label"),
                                              QString::fromStdString("Mix to Mono"));
             inputMixModeComboElement2.insert(QString::fromStdString("value"),
-                                             QString::fromStdString("mix-to-mono"));
+                                             static_cast<int>(InputMixMode::MIXTOMONO));
 
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputMixModeComboModel"),
@@ -1149,32 +1151,30 @@ void VirtualStudio::validateDevicesState()
                     QVariantList() << QVariant(QJsonValue(inputMixModeComboElement1))
                                    << QVariant(QJsonValue(inputMixModeComboElement2)))));
 
-            // if m_inputMixMode is an invalid value, set it to "stereo"
-            if (m_inputMixMode != QStringLiteral("stereo")
-                && m_inputMixMode != QStringLiteral("mix-to-mono")) {
-                m_inputMixMode = "stereo";
+            // if m_inputMixMode is an invalid value, set it to "stereo" by default
+            // given that we are using 2 channels
+            if (m_inputMixMode != static_cast<int>(InputMixMode::STEREO)
+                && m_inputMixMode != static_cast<int>(InputMixMode::MIXTOMONO)) {
+                m_inputMixMode = static_cast<int>(InputMixMode::STEREO);
                 emit inputMixModeChanged(m_inputMixMode);
             }
         } else {
-            // Set the input mix mode to just have "Mono" as the option
+            // Set the input mix mode to just have "Mono" as the option if we're using 1
+            // channel
             QJsonObject inputMixModeComboElement = QJsonObject();
             inputMixModeComboElement.insert(QString::fromStdString("label"),
                                             QString::fromStdString("Mono"));
             inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                            QString::fromStdString("mono"));
+                                            static_cast<int>(InputMixMode::MONO));
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputMixModeComboModel"),
                 QVariant::fromValue(QVariant(
                     QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
 
-            // if m_inputMixMode is an invalid value, set it to "mono"
-            if (m_inputMixMode != QStringLiteral("mono")) {
-                m_inputMixMode = "mono";
+            // if m_inputMixMode is an invalid value, set it to InputMixMode::MONO
+            if (m_inputMixMode != static_cast<int>(InputMixMode::MONO)) {
+                m_inputMixMode = static_cast<int>(InputMixMode::MONO);
                 emit inputMixModeChanged(m_inputMixMode);
-            }
-            if (m_baseInputChannel > numDevicesChannelsAvailable) {
-                m_baseInputChannel = 1;
-                emit baseInputChannelChanged(m_baseInputChannel);
             }
         }
     }
@@ -1322,9 +1322,9 @@ void VirtualStudio::completeConnection()
             // }
             buffer_size = m_bufferSize;
         }
-        std::string inputMixMode = m_inputMixMode.toStdString();
+        int inputMixMode = m_inputMixMode;
 #else
-        std::string inputMixMode = "";
+        int inputMixMode = -1;
 #endif
         JackTrip* jackTrip = m_device->initJackTrip(
             m_useRtAudio, input, output,
@@ -1818,8 +1818,10 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDec
 #ifdef RT_AUDIO
     // For certain specific cases, copy the first channel's value into the second
     // channel's value
-    if ((m_inputMixMode == QStringLiteral("mono") && m_numInputChannels == 1)
-        || (m_inputMixMode == QStringLiteral("mix-to-mono") && m_numInputChannels == 2)) {
+    if ((m_inputMixMode == static_cast<int>(InputMixMode::MONO)
+         && m_numInputChannels == 1)
+        || (m_inputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)
+            && m_numInputChannels == 2)) {
         uiValues[1] = uiValues[0];
     }
 #endif

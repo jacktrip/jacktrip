@@ -82,7 +82,7 @@ bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
-                   int BaseChanIn, int NumChansIn, int NumChansOut, QString InputMixMode,
+                   int BaseChanIn, int NumChansIn, int NumChansOut, int InputMixMode,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
 #endif  // endwhere
@@ -191,12 +191,12 @@ void JackTrip::setupAudio(
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
-        mAudioInterface = new JackAudioInterface(this, 1, mNumAudioChansIn,
-                                                 mNumAudioChansOut, QStringLiteral(""),
+        mAudioInterface =
+            new JackAudioInterface(this, 1, mNumAudioChansIn, mNumAudioChansOut, -1,
 #ifdef WAIR  // wair
-                                                 mNumNetRevChans,
+                                   mNumNetRevChans,
 #endif  // endwhere
-                                                 mAudioBitResolution);
+                                   mAudioBitResolution);
 
 #ifdef WAIRTOHUB  // WAIR
 

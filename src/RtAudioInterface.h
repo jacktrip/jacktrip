@@ -58,14 +58,12 @@ class RtAudioInterface : public AudioInterface
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
     RtAudioInterface(JackTrip* jacktrip, int BaseInChan = 1,
-                     int NumInChans                         = gDefaultNumInChannels,
-                     int NumOutChans                        = gDefaultNumOutChannels,
-                     QString InputMixMode                   = QStringLiteral(""),
+                     int NumInChans  = gDefaultNumInChannels,
+                     int NumOutChans = gDefaultNumOutChannels, int InputMixMode = -1,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief Overloaded class constructor with null JackTrip pointer
     RtAudioInterface(int BaseInChan = 1, int NumInChans = gDefaultNumInChannels,
-                     int NumOutChans                        = gDefaultNumOutChannels,
-                     QString InputMixMode                   = QStringLiteral(""),
+                     int NumOutChans = gDefaultNumOutChannels, int InputMixMode = -1,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief The class destructor
     virtual ~RtAudioInterface();
@@ -107,10 +105,10 @@ class RtAudioInterface : public AudioInterface
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
 
-    int mNumInChans;        ///< Number of Input Channels
-    int mNumOutChans;       ///< Number of Output Channels
-    int mBaseInChan;        ///< Base Input Channel
-    QString mInputMixMode;  ///< Input Mixing Mode
+    int mNumInChans;    ///< Number of Input Channels
+    int mNumOutChans;   ///< Number of Output Channels
+    int mBaseInChan;    ///< Base Input Channel
+    int mInputMixMode;  ///< Input Mixing Mode
 
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
 

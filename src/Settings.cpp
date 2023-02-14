@@ -992,7 +992,7 @@ JackTrip* Settings::getConfiguredJackTrip()
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
         mJackTripMode, mDataProtocol, mBaseAudioInputChanNum, mNumAudioInputChans,
-        mNumAudioOutputChans, QStringLiteral(""),
+        mNumAudioOutputChans, -1,
 #ifdef WAIR  // wair
         mNumNetRevChans,
 #endif  // endwhere

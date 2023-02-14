@@ -211,9 +211,9 @@ void VsAudioInterface::setupRtAudio()
 #ifdef RT_AUDIO
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-        m_audioInterface.reset(new RtAudioInterface(
-            m_baseInputChannel, m_numAudioChansIn, m_numAudioChansOut,
-            QString::fromStdString(m_inputMixMode), m_audioBitResolution));
+        m_audioInterface.reset(new RtAudioInterface(m_baseInputChannel, m_numAudioChansIn,
+                                                    m_numAudioChansOut, m_inputMixMode,
+                                                    m_audioBitResolution));
         m_audioInterface->setSampleRate(m_sampleRate);
         m_audioInterface->setDeviceID(m_deviceID);
         m_audioInterface->setInputDevice(m_inputDeviceName);
@@ -347,13 +347,13 @@ void VsAudioInterface::setNumInputChannels(int numChannels, bool shouldRestart)
 #endif
 }
 
-void VsAudioInterface::setInputMixMode(const QString& mode, bool shouldRestart)
+void VsAudioInterface::setInputMixMode(const int mode, bool shouldRestart)
 {
     if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
         return;
     }
 #ifdef RT_AUDIO
-    m_inputMixMode = mode.toStdString();
+    m_inputMixMode = mode;
     if (!m_audioInterface.isNull()) {
         m_audioInterface->setInputMixMode(m_inputMixMode);
         if (m_audioActive && shouldRestart) {

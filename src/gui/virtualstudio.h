@@ -47,6 +47,7 @@
 #include <QVector>
 #include <QtNetworkAuth>
 
+#include "../InputMixMode.h"
 #include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Volume.h"
@@ -90,7 +91,7 @@ class VirtualStudio : public QObject
                    baseInputChannelChanged)
     Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels NOTIFY
                    numInputChannelsChanged)
-    Q_PROPERTY(QString inputMixMode READ inputMixMode WRITE setInputMixMode NOTIFY
+    Q_PROPERTY(int inputMixMode READ inputMixMode WRITE setInputMixMode NOTIFY
                    inputMixModeChanged)
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
@@ -166,8 +167,8 @@ class VirtualStudio : public QObject
     void setBaseInputChannel(int baseChannel);
     int numInputChannels();
     void setNumInputChannels(int numChannels);
-    void setInputMixMode(const QString& mode);
-    QString inputMixMode();
+    void setInputMixMode(int mode);
+    int inputMixMode();
     QString outputDevice();
     void setOutputDevice(const QString& device);
     int previousInput();
@@ -270,7 +271,7 @@ class VirtualStudio : public QObject
     void inputDeviceChanged(QString device, bool shouldRestart = true);
     void baseInputChannelChanged(int baseChannel, bool shouldRestart = true);
     void numInputChannelsChanged(int numChannels, bool shouldRestart = true);
-    void inputMixModeChanged(QString mode, bool shouldRestart = true);
+    void inputMixModeChanged(int mode, bool shouldRestart = true);
     void outputDeviceChanged(QString device, bool shouldRestart = true);
     void inputDeviceSelected(QString device, bool shouldRestart = true);
     void outputDeviceSelected(QString device, bool shouldRestart = true);
@@ -443,7 +444,7 @@ class VirtualStudio : public QObject
 
     int m_baseInputChannel;
     int m_numInputChannels;
-    QString m_inputMixMode;
+    int m_inputMixMode;
 
     int m_numOutputChannels = 2;
 

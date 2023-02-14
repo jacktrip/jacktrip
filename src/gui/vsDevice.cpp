@@ -345,12 +345,12 @@ JackTrip* VsDevice::initJackTrip(
     [[maybe_unused]] bool useRtAudio, [[maybe_unused]] std::string input,
     [[maybe_unused]] std::string output, [[maybe_unused]] int numChannelsIn,
     [[maybe_unused]] int numChannelsOut, [[maybe_unused]] int baseInputChannel,
-    [[maybe_unused]] std::string inputMixMode, [[maybe_unused]] int bufferSize,
+    [[maybe_unused]] int inputMixMode, [[maybe_unused]] int bufferSize,
     [[maybe_unused]] int bufferStrategy, VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP,
                                   baseInputChannel, numChannelsIn, numChannelsOut,
-                                  QString::fromStdString(inputMixMode),
+                                  inputMixMode,
 #ifdef WAIR  // wair
                                   0,
 #endif  // endwhere

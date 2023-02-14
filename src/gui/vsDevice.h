@@ -68,7 +68,7 @@ class VsDevice : public QObject
     void setServerId(QString studioID);
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
                            int numChannelsIn, int numChannelsOut, int baseInputChannel,
-                           std::string inputMixMode, int bufferSize, int bufferStrategy,
+                           int inputMixMode, int bufferSize, int bufferStrategy,
                            VsServerInfo* studioInfo);
     void startJackTrip();
     void stopJackTrip();

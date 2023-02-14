@@ -146,8 +146,8 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
         }
     }
 #else   // endwhere
-    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1,
-                                 QStringLiteral(""), mBufferQueueLength));
+    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1, -1,
+                                 mBufferQueueLength));
 #endif  // not wair
 #endif  // ifndef __JAMTEST__
 
