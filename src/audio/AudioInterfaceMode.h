@@ -38,10 +38,15 @@
 #pragma once
 
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #if defined(RT_AUDIO)
 #include <RtAudio.h>
+#endif
+
+#if defined(USE_WEAK_JACK)
+#include "weak_libjack.h"
 #endif
 
 #if defined(__cpp_lib_to_underlying)
@@ -62,6 +67,89 @@ enum class AudioInterfaceMode : unsigned int {
     RTAUDIO  = 1 << 1,  ///< RtAudio Mode
     PIPEWIRE = 1 << 2,  ///< Pipewire Mode
     ALL      = JACK | RTAUDIO
+};
+
+class Audio
+{
+   public:
+    enum class Backend : unsigned int {
+        NONE        = 0,
+        JACK        = 1 << 0,  ///< Jack Mode
+        ALSA        = 1 << 1,  ///< RtAudio Mode
+        PulseAudio  = 1 << 2,
+        OSS         = 1 << 3,
+        CoreAudio   = 1 << 4,
+        WASAPI      = 1 << 5,
+        ASIO        = 1 << 6,
+        DirectSound = 1 << 7,
+        Pipewire    = 1 << 8,  ///< Pipewire Mode
+    };
+
+    Audio() { fillAvailableBackends(); }
+    //    availableBackends(std::vector<AudioInterfaceMode>&)->void;
+
+#if !defined(NO_JACK)
+#if !defined(USE_WEAK_JACK)
+    static constexpr bool isJackAvailable() { return true; }
+#else
+    static constexpr bool isJackAvailable() { return have_libjack() == 0; }
+#endif
+#else
+    static constexpr bool isJackAvailable() { return false; }
+#endif
+
+#if defined(RT_AUDIO)
+    std::vector<RtAudio::Api> m_RtAudioApis;
+#endif
+
+    void fillAvailableBackends() noexcept
+    {
+#if defined(RT_AUDIO)
+        RtAudio::getCompiledApi(m_RtAudioApis);
+        for (RtAudio::Api& rtapi : m_RtAudioApis) {
+            switch (rtapi) {
+            case RtAudio::LINUX_ALSA:
+                m_availableBackends.try_emplace(Backend::ALSA, "ALSA");
+                break;
+            case RtAudio::LINUX_PULSE:
+                m_availableBackends.try_emplace(Backend::PulseAudio, "PulseAudio");
+                break;
+            case RtAudio::LINUX_OSS:
+                m_availableBackends.try_emplace(Backend::OSS, "OSS");
+                break;
+            case RtAudio::UNIX_JACK:
+                break;
+            case RtAudio::MACOSX_CORE:
+                m_availableBackends.try_emplace(Backend::CoreAudio, "CoreAudio");
+                break;
+            case RtAudio::WINDOWS_WASAPI:
+                m_availableBackends.try_emplace(Backend::WASAPI, "WASAPI");
+                break;
+            case RtAudio::WINDOWS_ASIO:
+                m_availableBackends.try_emplace(Backend::ASIO, "ASIO");
+                break;
+            case RtAudio::WINDOWS_DS:
+                m_availableBackends.try_emplace(Backend::DirectSound, "DirectSound");
+                break;
+            default:
+                break;
+            }
+        }
+#endif
+        if (isJackAvailable()) {
+            m_availableBackends.try_emplace(Backend::JACK, "JACK");
+        }
+    }
+
+    void getAvailableBackendNames(std::vector<std::string>& backendNames)
+    {
+        for (const auto& backend : m_availableBackends) {
+            backendNames.push_back(backend.second);
+        }
+    }
+
+   private:
+    std::unordered_map<Backend, std::string> m_availableBackends;
 };
 
 #ifdef RT_AUDIO

@@ -144,6 +144,9 @@ class Settings : public QObject
     QString mUsername;
     QString mPassword;
 
+    std::vector<std::string> mBackendNames;
+    Audio mAudio;
+
     QSharedPointer<AudioTester> mAudioTester;
 };
 
