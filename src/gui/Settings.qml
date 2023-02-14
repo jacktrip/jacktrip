@@ -239,9 +239,7 @@ Item {
 
             Text {
                 id: outputLabel
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.topMargin: 48 * virtualstudio.uiScale
+                x: 0; y: 0
                 width: 144 * virtualstudio.uiScale
                 text: "Output Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -807,8 +805,9 @@ Item {
                 anchors.left: inputLabel.left
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: refreshButton.bottom
-                anchors.bottomMargin: 24 * virtualstudio.uiScale
+                anchors.top: inputMixModeHelpMessage.bottom
+                anchors.topMargin: 8 * virtualstudio.uiScale
+                anchors.bottomMargin: 8 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
                     + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
