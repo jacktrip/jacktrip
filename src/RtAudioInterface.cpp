@@ -230,6 +230,12 @@ void RtAudioInterface::setup(bool verbose)
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
 
+    bool ALSAoverride = true;
+    if (ALSAoverride) {
+        mRtAudio = new RtAudio(RtAudio::getCompiledApiByName("alsa"));
+        std::cout << "--- ALSAoverride -------\n" <<
+                     mRtAudio->getApiDisplayName(mRtAudio->getCurrentApi()) << '\n' << std::endl;
+    }
     try {
         // IMPORTANT NOTE: It's VERY important to remember to pass "this"
         // to the user data in the process callback, otherwise member won't
