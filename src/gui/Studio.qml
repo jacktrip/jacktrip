@@ -265,7 +265,7 @@ Rectangle {
         visible: true
         Image {
             id: shareImg
-            width: 20 * virtualstudio.uiScale; height: width
+            width: 24 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: "share.svg"
             sourceSize: Qt.size(shareImg.width,shareImg.height)
