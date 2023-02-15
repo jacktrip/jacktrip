@@ -186,8 +186,6 @@ else
 endif
 deps += qt_dep
 
-prepro_files = qt.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
-
 # TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
 # in QMake this can be checked with QT_EDITION == 'OpenSource'
 defines += '-DQT_OPENSOURCE'
@@ -223,7 +221,11 @@ if host_machine.system() == 'darwin' and get_option('novs') == false
 	deps += apple_av_dep
 endif
 
-jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
+qres_files = qt.compile_resources(sources: qres)
+moc_files = qt.compile_moc(headers: moc_h, extra_args: defines)
+ui_files = qt.compile_ui(sources: ui_h)
+
+jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
 help2man = find_program('help2man', required: false)
 if not (host_machine.system() == 'windows')
