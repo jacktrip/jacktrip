@@ -897,6 +897,22 @@ void VirtualStudio::toVirtualStudio()
         // Attempt to refresh our virtual studio auth token
         setupAuthenticator();
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+        m_authenticator->setModifyParametersFunction(
+            [](QAbstractOAuth2::Stage stage, QMultiMap<QString, QVariant>* parameters) {
+                if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
+                    QByteArray code =
+                        parameters->value(QStringLiteral("code")).toByteArray();
+                    parameters->replace("code", QUrl::fromPercentEncoding(code));
+                } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
+                    parameters->insert(QStringLiteral("audience"), AUTH_AUDIENCE);
+                    parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
+                }
+                if (!parameters->contains("client_id")) {
+                    parameters->insert("client_id", AUTH_CLIENT_ID);
+                }
+            });
+#else
         // Something about this is required for refreshing auth tokens:
         // https://bugreports.qt.io/browse/QTBUG-84866
         m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
@@ -912,6 +928,7 @@ void VirtualStudio::toVirtualStudio()
                 parameters->insert("client_id", AUTH_CLIENT_ID);
             }
         });
+#endif
 
         m_authenticator->setRefreshToken(m_refreshToken);
         m_authenticator->refreshAccessToken();
@@ -1655,6 +1672,20 @@ void VirtualStudio::setupAuthenticator()
         m_authenticator->setClientIdentifier(AUTH_CLIENT_ID);
         m_authenticator->setAccessTokenUrl(AUTH_TOKEN_URI);
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+        m_authenticator->setModifyParametersFunction(
+            [](QAbstractOAuth2::Stage stage, QMultiMap<QString, QVariant>* parameters) {
+                if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
+                    QByteArray code =
+                        parameters->value(QStringLiteral("code")).toByteArray();
+                    parameters->replace("code", QUrl::fromPercentEncoding(code));
+                } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
+                    parameters->insert(QStringLiteral("audience"),
+                                       QStringLiteral("https://api.jacktrip.org"));
+                    parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
+                }
+            });
+#else
         m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
                                                         QVariantMap* parameters) {
             if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
@@ -1666,7 +1697,7 @@ void VirtualStudio::setupAuthenticator()
                 parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
             }
         });
-
+#endif
         QOAuthHttpServerReplyHandler* replyHandler =
             new QOAuthHttpServerReplyHandler(port, this);
         replyHandler->setCallbackText(QStringLiteral(
