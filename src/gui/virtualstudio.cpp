@@ -132,18 +132,20 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // if we have m_inputDevice == "" and m_outputDevice == ""
     if (m_inputDevice == "" && m_outputDevice == "") {
         // for fresh installs, use mono by default
-        m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
-        m_inputMixMode =
-            settings
-                .value(QStringLiteral("InputMixMode"), static_cast<int>(InputMixMode::MONO))
-                .toInt();
+        m_numInputChannels =
+            settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
+        m_inputMixMode = settings
+                             .value(QStringLiteral("InputMixMode"),
+                                    static_cast<int>(InputMixMode::MONO))
+                             .toInt();
     } else {
         // existing installs - keep using stereo
-        m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 2).toInt();
-        m_inputMixMode =
-            settings
-                .value(QStringLiteral("InputMixMode"), static_cast<int>(InputMixMode::STEREO))
-                .toInt();
+        m_numInputChannels =
+            settings.value(QStringLiteral("NumInputChannels"), 2).toInt();
+        m_inputMixMode = settings
+                             .value(QStringLiteral("InputMixMode"),
+                                    static_cast<int>(InputMixMode::STEREO))
+                             .toInt();
     }
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
