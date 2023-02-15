@@ -88,12 +88,12 @@ RtAudioInterface::~RtAudioInterface()
 void RtAudioInterface::setup(bool verbose)
 {
     // Initialize Buffer array to read and write audio and members
-    mNumInChans  = AudioInterface::getNumInputChannels();
-    mNumOutChans = AudioInterface::getNumOutputChannels();
-    mInBuffer.resize(AudioInterface::getNumInputChannels());
-    mOutBuffer.resize(AudioInterface::getNumOutputChannels());
-    mBaseInChan   = AudioInterface::getBaseInputChannel();
-    mInputMixMode = AudioInterface::getInputMixMode();
+    mNumInChans  = getNumInputChannels();
+    mNumOutChans = getNumOutputChannels();
+    mInBuffer.resize(getNumInputChannels());
+    mOutBuffer.resize(getNumOutputChannels());
+    mBaseInChan   = getBaseInputChannel();
+    mInputMixMode = getInputMixMode();
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
@@ -185,30 +185,30 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(AudioInterface::getBaseInputChannel())
+    if (static_cast<unsigned int>(getBaseInputChannel())
         > dev_info_input.inputChannels) {
-        AudioInterface::setBaseInputChannel(dev_info_input.inputChannels);
+        setBaseInputChannel(dev_info_input.inputChannels);
     }
 
-    if (static_cast<unsigned int>(AudioInterface::getNumInputChannels())
+    if (static_cast<unsigned int>(getNumInputChannels())
         > dev_info_input.inputChannels
-              - static_cast<unsigned int>(AudioInterface::getBaseInputChannel()) + 1) {
+              - static_cast<unsigned int>(getBaseInputChannel()) + 1) {
         mNumInChans = dev_info_input.inputChannels
-                      - static_cast<unsigned int>(AudioInterface::getBaseInputChannel())
+                      - static_cast<unsigned int>(getBaseInputChannel())
                       + 1;
-        AudioInterface::setNumInputChannels(mNumInChans);
+        setNumInputChannels(mNumInChans);
     }
 
     if (mNumInChans == 2 && mInputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
-        AudioInterface::setNumInputChannels(1);
+        setNumInputChannels(1);
     } else if (mNumInChans == 2) {
-        AudioInterface::setNumInputChannels(2);
+        setNumInputChannels(2);
     }
 
-    if (static_cast<unsigned int>(AudioInterface::getNumOutputChannels())
+    if (static_cast<unsigned int>(getNumOutputChannels())
         > dev_info_output.outputChannels) {
         mNumOutChans = dev_info_output.outputChannels;
-        AudioInterface::setNumOutputChannels(mNumOutChans);
+        setNumOutputChannels(mNumOutChans);
     }
 
     if (verbose) {
