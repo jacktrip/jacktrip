@@ -125,12 +125,26 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_outputDevice = "";
     }
 
+    // use default base channel 1, if the setting does not exist
     m_baseInputChannel = settings.value(QStringLiteral("BaseInputChannel"), 1).toInt();
-    m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
-    m_inputMixMode =
-        settings
-            .value(QStringLiteral("InputMixMode"), static_cast<int>(InputMixMode::MONO))
-            .toInt();
+
+    // Handle migration scenarios. Assume this is a new user
+    // if we have m_inputDevice == "" and m_outputDevice == ""
+    if (m_inputDevice == "" && m_outputDevice == "") {
+        // for fresh installs, use mono by default
+        m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
+        m_inputMixMode =
+            settings
+                .value(QStringLiteral("InputMixMode"), static_cast<int>(InputMixMode::MONO))
+                .toInt();
+    } else {
+        // existing installs - keep using stereo
+        m_numInputChannels = settings.value(QStringLiteral("NumInputChannels"), 2).toInt();
+        m_inputMixMode =
+            settings
+                .value(QStringLiteral("InputMixMode"), static_cast<int>(InputMixMode::STEREO))
+                .toInt();
+    }
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     m_previousBuffer = m_bufferSize;
