@@ -105,11 +105,6 @@ class RtAudioInterface : public AudioInterface
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
 
-    int mNumInChans;    ///< Number of Input Channels
-    int mNumOutChans;   ///< Number of Output Channels
-    int mBaseInChan;    ///< Base Input Channel
-    int mInputMixMode;  ///< Input Mixing Mode
-
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
 
     StereoToMono* mStereoToMonoMixer = NULL;

@@ -55,7 +55,6 @@ RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumIn
     : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, InputMixMode,
                      AudioBitResolution)
     , mRtAudio(NULL)
-    , mInputMixMode(InputMixMode)
 {
 }
 
@@ -66,7 +65,6 @@ RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutCha
     : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, InputMixMode,
                      AudioBitResolution, false)
     , mRtAudio(NULL)
-    , mInputMixMode(InputMixMode)
 {
     RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, InputMixMode,
                      AudioBitResolution);
@@ -88,12 +86,10 @@ RtAudioInterface::~RtAudioInterface()
 void RtAudioInterface::setup(bool verbose)
 {
     // Initialize Buffer array to read and write audio and members
-    mNumInChans  = getNumInputChannels();
-    mNumOutChans = getNumOutputChannels();
-    mInBuffer.resize(getNumInputChannels());
-    mOutBuffer.resize(getNumOutputChannels());
-    mBaseInChan   = getBaseInputChannel();
-    mInputMixMode = getInputMixMode();
+    int chansIn      = getNumInputChannels();
+    int chansOut     = getNumOutputChannels();
+    int baseChanIn   = getBaseInputChannel();
+    int inputMixMode = getInputMixMode();
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
@@ -185,30 +181,18 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(getBaseInputChannel())
-        > dev_info_input.inputChannels) {
-        setBaseInputChannel(dev_info_input.inputChannels);
+    if (static_cast<unsigned int>(baseChanIn) > dev_info_input.inputChannels) {
+        baseChanIn = dev_info_input.inputChannels;
     }
 
-    if (static_cast<unsigned int>(getNumInputChannels())
-        > dev_info_input.inputChannels
-              - static_cast<unsigned int>(getBaseInputChannel()) + 1) {
-        mNumInChans = dev_info_input.inputChannels
-                      - static_cast<unsigned int>(getBaseInputChannel())
-                      + 1;
-        setNumInputChannels(mNumInChans);
+    if (static_cast<unsigned int>(chansIn)
+        > dev_info_input.inputChannels - static_cast<unsigned int>(baseChanIn) + 1) {
+        chansIn =
+            dev_info_input.inputChannels - static_cast<unsigned int>(baseChanIn) + 1;
     }
 
-    if (mNumInChans == 2 && mInputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
-        setNumInputChannels(1);
-    } else if (mNumInChans == 2) {
-        setNumInputChannels(2);
-    }
-
-    if (static_cast<unsigned int>(getNumOutputChannels())
-        > dev_info_output.outputChannels) {
-        mNumOutChans = dev_info_output.outputChannels;
-        setNumOutputChannels(mNumOutChans);
+    if (static_cast<unsigned int>(chansOut) > dev_info_output.outputChannels) {
+        chansOut = dev_info_output.outputChannels;
     }
 
     if (verbose) {
@@ -247,9 +231,9 @@ void RtAudioInterface::setup(bool verbose)
     RtAudio::StreamParameters in_params, out_params;
     in_params.deviceId     = index_in;
     out_params.deviceId    = index_out;
-    in_params.nChannels    = mNumInChans;
-    out_params.nChannels   = mNumOutChans;
-    in_params.firstChannel = mBaseInChan - 1;  // Important! RtAudio indexes starting at 0
+    in_params.nChannels    = chansIn;
+    out_params.nChannels   = chansOut;
+    in_params.firstChannel = baseChanIn - 1;  // Important! RtAudio indexes starting at 0
 
     RtAudio::StreamOptions options;
     // The second flag affects linux and mac only
@@ -261,8 +245,22 @@ void RtAudioInterface::setup(bool verbose)
     options.priority   = 30;
     options.streamName = gJackDefaultClientName;
 
+    // Update parent class
+    setNumInputChannels(chansIn);
+    setNumOutputChannels(chansOut);
+    setBaseInputChannel(baseChanIn);
+
+    // Setup buffers
+    mInBuffer.resize(chansIn);
+    mOutBuffer.resize(chansOut);
+
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
+    mStereoToMonoMixer        = new StereoToMono();
+    mStereoToMonoMixer->init(sampleRate);
+
+    // Setup parent class
+    AudioInterface::setup(verbose);
 
     try {
         // IMPORTANT NOTE: It's VERY important to remember to pass "this"
@@ -279,12 +277,6 @@ void RtAudioInterface::setup(bool verbose)
         std::cout << e.getMessage() << '\n' << std::endl;
         throw std::runtime_error(e.getMessage());
     }
-
-    mStereoToMonoMixer = new StereoToMono();
-    mStereoToMonoMixer->init(sampleRate);
-
-    // Setup parent class
-    AudioInterface::setup(verbose);
 }
 
 //*******************************************************************************
@@ -380,20 +372,23 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
     inputBuffer_sample  = (sample_t*)inputBuffer;
     outputBuffer_sample = (sample_t*)outputBuffer;
 
+    int chansIn  = getNumInputChannels();
+    int chansOut = getNumOutputChannels();
+    int mixMode  = getInputMixMode();
     if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
         // Get input and output buffers
         //-------------------------------------------------------------------
-        for (int i = 0; i < mNumInChans; i++) {
+        for (int i = 0; i < mInBuffer.size(); i++) {
             // Input Ports are READ ONLY
             mInBuffer[i] = inputBuffer_sample + (nFrames * i);
         }
-        for (int i = 0; i < mNumOutChans; i++) {
+
+        for (int i = 0; i < mOutBuffer.size(); i++) {
             // Output Ports are WRITABLE
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
-
-        if (mNumInChans == 2
-            && mInputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+        if (chansIn == 2 && mInBuffer.size() == chansIn
+            && mixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
             mStereoToMonoMixer->compute(nFrames, mInBuffer.data(), mInBuffer.data());
         }
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);

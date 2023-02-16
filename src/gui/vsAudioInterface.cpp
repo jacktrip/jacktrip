@@ -307,7 +307,6 @@ void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
 {
     m_inputDeviceName = deviceName.toStdString();
     if (!m_audioInterface.isNull()) {
-        m_audioInterface->setInputDevice(m_inputDeviceName);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
@@ -322,7 +321,6 @@ void VsAudioInterface::setBaseInputChannel(int baseChannel, bool shouldRestart)
 #ifdef RT_AUDIO
     m_baseInputChannel = baseChannel;
     if (!m_audioInterface.isNull()) {
-        m_audioInterface->setBaseInputChannel(m_baseInputChannel);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
@@ -339,7 +337,6 @@ void VsAudioInterface::setNumInputChannels(int numChannels, bool shouldRestart)
 #ifdef RT_AUDIO
     m_numAudioChansIn = numChannels;
     if (!m_audioInterface.isNull()) {
-        m_audioInterface->setNumInputChannels(m_numAudioChansIn);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
@@ -355,7 +352,6 @@ void VsAudioInterface::setInputMixMode(const int mode, bool shouldRestart)
 #ifdef RT_AUDIO
     m_inputMixMode = mode;
     if (!m_audioInterface.isNull()) {
-        m_audioInterface->setInputMixMode(m_inputMixMode);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
@@ -368,7 +364,6 @@ void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
 {
     m_outputDeviceName = deviceName.toStdString();
     if (!m_audioInterface.isNull()) {
-        m_audioInterface->setOutputDevice(m_outputDeviceName);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }

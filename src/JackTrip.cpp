@@ -41,6 +41,7 @@
 #include "JackAudioInterface.h"
 #endif
 #include "Auth.h"
+#include "InputMixMode.h"
 #include "JitterBuffer.h"
 #include "Regulator.h"
 #include "RingBufferWavetable.h"
@@ -253,6 +254,10 @@ void JackTrip::setupAudio(
         // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        if (mNumAudioChansIn == 2
+            && mInputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+            mNumAudioChansIn = 1;
+        }
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
@@ -273,6 +278,10 @@ void JackTrip::setupAudio(
         // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        if (mNumAudioChansIn == 2
+            && mInputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+            mNumAudioChansIn = 1;
+        }
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
