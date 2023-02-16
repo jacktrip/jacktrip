@@ -135,8 +135,8 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            static-qt-version: 5.15.8
+            qt-static-cache-key: 'v08'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -179,8 +179,8 @@ jobs:
             novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-static
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            static-qt-version: 5.15.8
+            qt-static-cache-key: 'v08'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
