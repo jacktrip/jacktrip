@@ -86,10 +86,9 @@ RtAudioInterface::~RtAudioInterface()
 void RtAudioInterface::setup(bool verbose)
 {
     // Initialize Buffer array to read and write audio and members
-    int chansIn      = getNumInputChannels();
-    int chansOut     = getNumOutputChannels();
-    int baseChanIn   = getBaseInputChannel();
-    int inputMixMode = getInputMixMode();
+    int chansIn    = getNumInputChannels();
+    int chansOut   = getNumOutputChannels();
+    int baseChanIn = getBaseInputChannel();
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
@@ -372,9 +371,8 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
     inputBuffer_sample  = (sample_t*)inputBuffer;
     outputBuffer_sample = (sample_t*)outputBuffer;
 
-    int chansIn  = getNumInputChannels();
-    int chansOut = getNumOutputChannels();
-    int mixMode  = getInputMixMode();
+    int chansIn = getNumInputChannels();
+    int mixMode = getInputMixMode();
     if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
         // Get input and output buffers
         //-------------------------------------------------------------------
