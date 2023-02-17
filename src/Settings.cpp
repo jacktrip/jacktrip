@@ -64,7 +64,7 @@
 #endif
 
 #ifdef RT_AUDIO
-#include "RtAudioInterface.h"
+#include "audio/RtAudioInterface.h"
 #endif
 
 #ifdef JACKTRIP_BUILD_INFO
@@ -97,7 +97,8 @@ enum JTLongOptIDS {
     OPT_LISTDEVICES,
     OPT_AUDIODEVICE,
     OPT_AUDIOINPUTDEVICE,
-    OPT_AUDIOOUTPUTDEVICE
+    OPT_AUDIOOUTPUTDEVICE,
+    OPT_AUDIOBACKENDS,
 };
 
 //*******************************************************************************
@@ -154,6 +155,7 @@ void Settings::parseInput(int argc, char** argv)
         {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
         {"appendthreadid", no_argument, NULL,
          OPT_APPENDTHREADID},  // Append thread id to client names
+        {"audiobackends", no_argument, NULL, OPT_AUDIOBACKENDS},
 #ifdef RT_AUDIO
         {"rtaudio", no_argument, NULL, 'R'},      // Run in JamLink mode
         {"srate", required_argument, NULL, 'T'},  // Set Sample Rate
@@ -388,10 +390,18 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_APPENDTHREADID:
             mAppendThreadID = true;
             break;
+        case OPT_AUDIOBACKENDS:
+            mAudio.getAvailableBackendNames(mBackendNames);
+            std::cout << "Available Audio Backends:\n";
+            for (const auto& backend : mBackendNames) {
+                std::cout << "\t" << backend << "\n";
+            }
+            std::exit(0);
+            break;
 #ifdef RT_AUDIO
         case 'R':  // RtAudio
             //-------------------------------------------------------
-            mUseJack = false;
+            mAudioInterfaceMode = AudioInterfaceMode::RTAUDIO;
             break;
         case 'T':  // Sampling Rate
             //-------------------------------------------------------
@@ -824,8 +834,9 @@ void Settings::printUsage()
             "(sources) mixing at Hub Server (otherwise 2 assumed by -O)"
          << endl;
     cout << endl;
+    cout << "ARGUMENTS FOR AUDIO BACKENDS:\n";
+    cout << "     --audiobackends                      List all available audio backends\n";
 #ifdef RT_AUDIO
-    cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " -R, --rtaudio                            Use system's default sound system "
             "instead of Jack"
          << endl;
@@ -1028,11 +1039,8 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setPacketHeaderType(DataProtocol::EMPTY);
     }
 
-    // Set RtAudio
-#ifdef RT_AUDIO
-    if (!mUseJack) {
-        jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
-    }
+    // Set Audio Backend Mode
+    jackTrip->setAudiointerfaceMode(mAudioInterfaceMode);
 
     // Change default Sampling Rate
     if (mChangeDefaultSR) {
@@ -1052,7 +1060,6 @@ JackTrip* Settings::getConfiguredJackTrip()
     // Set device names
     jackTrip->setInputDevice(mInputDeviceName);
     jackTrip->setOutputDevice(mOutputDeviceName);
-#endif
 
     jackTrip->setBufferStrategy(mBufferStrategy);
     jackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,

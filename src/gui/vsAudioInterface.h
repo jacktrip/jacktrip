@@ -44,17 +44,17 @@
 #include <QString>
 
 #ifndef NO_JACK
-#include "../JackAudioInterface.h"
+#include "../audio/JackAudioInterface.h"
 #endif
 #ifdef RT_AUDIO
-#include "../RtAudioInterface.h"
+#include "../audio/RtAudioInterface.h"
 #endif
 
 #include "../Meter.h"
 #include "../Tone.h"
 #include "../Volume.h"
+#include "../audio/AudioInterfaceMode.h"
 #include "../jacktrip_globals.h"
-#include "AudioInterfaceMode.h"
 
 class VsAudioInterface : public QObject
 {
