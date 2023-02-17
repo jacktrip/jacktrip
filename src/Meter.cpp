@@ -145,8 +145,10 @@ void Meter::onTick()
 {
     if (hasProcessedAudio) {
         /* Send the measurements to whatever other component requests it */
-        QVector<float> valuesCopy(mValues);
-        valuesCopy.detach();
+        QVector<float> valuesCopy(mValues.size());
+        for (int i = 0; i < mValues.size(); ++i) {
+            valuesCopy[i] = mValues.at(i);
+        }
         emit onComputedVolumeMeasurements(valuesCopy);
 
         /* Set meter values to the default floor */
