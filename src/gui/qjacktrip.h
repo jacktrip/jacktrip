@@ -39,6 +39,7 @@
 #include <QTemporaryFile>
 
 #include "../JackTrip.h"
+#include "../Settings.h"
 #include "../UdpHubListener.h"
 #include "messageDialog.h"
 #include "vuMeter.h"
@@ -65,7 +66,7 @@ class QJackTrip : public QMainWindow
     Q_OBJECT
 
    public:
-    explicit QJackTrip(int argc = 0, bool suppressCommandlineWarning = false,
+    explicit QJackTrip(Settings* settings, bool suppressCommandlineWarning = false,
                        QWidget* parent = nullptr);
     ~QJackTrip() override;
 
@@ -104,14 +105,13 @@ class QJackTrip : public QMainWindow
 #endif
 
    private:
-    enum runTypeT { P2P_CLIENT, P2P_SERVER, HUB_CLIENT, HUB_SERVER };
     enum patchTypeT { SERVERTOCLIENT, CLIENTECHO, CLIENTFOFI, FULLMIX, NOAUTO };
 
     int findTab(const QString& tabName);
     void enableUi(bool enabled);
     void advancedOptionsForHubServer(bool isHubServer);
     void migrateSettings();
-    void loadSettings();
+    void loadSettings(Settings* cliSettings = nullptr);
     void saveSettings();
 
 #ifdef RT_AUDIO
@@ -153,7 +153,6 @@ class QJackTrip : public QMainWindow
     QString m_lastPath;
 
     QLabel m_autoQueueIndicator;
-    int m_argc;
     bool m_hideWarning;
     bool m_firstShow = true;
 
