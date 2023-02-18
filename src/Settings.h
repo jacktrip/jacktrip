@@ -69,8 +69,6 @@ class Settings : public QObject
     {
     }
 
-    enum runTypeT { P2P_CLIENT, P2P_SERVER, HUB_CLIENT, HUB_SERVER };
-
     /// \brief Parses command line input
     void parseInput(int argc, char** argv);
 
@@ -84,11 +82,11 @@ class Settings : public QObject
 #endif
 
     bool getLoopBack() { return mLoopBack; }
-    bool isHubServer() { return mRunMode == HUB_SERVER; }
+    bool isHubServer() { return mJackTripMode == JackTrip::SERVERPINGSERVER; }
     bool guiIgnoresArguments() { return mGuiIgnoresArguments; }
     bool isModeSet() { return mModeSet; }
 
-    runTypeT getRunMode() { return mRunMode; }
+    JackTrip::jacktripModeT getJackTripMode() { return mJackTripMode; }
     int getNumAudioInputChans() { return mNumAudioInputChans; }
     int getNumAudioOutputChans() { return mNumAudioOutputChans; }
     int getQueueLength() { return mBufferQueueLength; }
@@ -126,7 +124,6 @@ class Settings : public QObject
     bool mGuiEnabled          = false;
     bool mGuiIgnoresArguments = false;
 
-    runTypeT mRunMode = P2P_SERVER;
     JackTrip::jacktripModeT mJackTripMode =
         JackTrip::SERVER;  ///< JackTrip::jacktripModeT
     bool mModeSet                         = false;
@@ -157,7 +154,6 @@ class Settings : public QObject
     bool mLoopBack           = false;                 ///< Loop-back mode
     bool mJamLink            = false;                 ///< JamLink mode
     bool mEmptyHeader        = false;                 ///< EmptyHeader mode
-    bool mJackTripServer     = false;                 ///< JackTrip Server mode
     QString mLocalAddress    = gDefaultLocalAddress;  ///< Local Address
     unsigned int mRedundancy = 1;      ///< Redundancy factor for data in the network
     bool mUseJack            = true;   ///< Use or not JackAduio

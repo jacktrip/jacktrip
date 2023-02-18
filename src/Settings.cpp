@@ -273,19 +273,16 @@ void Settings::parseInput(int argc, char** argv)
         case 's':  // Run in P2P server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;
-            mRunMode      = P2P_SERVER;
             checkMode();
             break;
         case 'S':  // Run in Hub server mode
             //-------------------------------------------------------
-            mJackTripServer = true;
-            mRunMode        = HUB_SERVER;
+            mJackTripMode = JackTrip::SERVERPINGSERVER;
             checkMode();
             break;
         case 'c':  // P2P client mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::CLIENT;
-            mRunMode      = P2P_CLIENT;
             mPeerAddress  = optarg;
             checkMode();
             break;
@@ -297,7 +294,6 @@ void Settings::parseInput(int argc, char** argv)
         case 'C':  // Ping to server
             //-------------------------------------------------------
             mJackTripMode = JackTrip::CLIENTTOPINGSERVER;
-            mRunMode      = HUB_CLIENT;
             mPeerAddress  = optarg;
             checkMode();
             break;

@@ -325,10 +325,10 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
         m_ui->backendLabel->setEnabled(false);
 
         // If we're in Hub Server mode, switch us back to P2P server mode.
-        if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
-            m_ui->typeComboBox->setCurrentIndex(Settings::P2P_SERVER);
+        if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+            m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
         }
-        m_ui->typeComboBox->removeItem(Settings::HUB_SERVER);
+        m_ui->typeComboBox->removeItem(HUB_SERVER);
         m_ui->backendWarningLabel->setText(
             "JACK was not found. This means that only the RtAudio backend is available "
             "and that JackTrip cannot be run in hub server mode.");
@@ -477,7 +477,7 @@ void QJackTrip::processFinished()
     m_noNap.enableNap();
 #endif
     m_ui->disconnectButton->setEnabled(false);
-    if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         m_udpHub.reset();
     } else {
         m_jackTrip.reset();
@@ -526,10 +526,10 @@ void QJackTrip::udpWaitingTooLong()
 void QJackTrip::chooseRunType(int index)
 {
     // Update ui to reflect choice of run mode.
-    if (index == Settings::HUB_CLIENT || index == Settings::P2P_CLIENT) {
+    if (index == HUB_CLIENT || index == P2P_CLIENT) {
         m_ui->addressComboBox->setEnabled(true);
         m_ui->addressLabel->setEnabled(true);
-        if (index == Settings::HUB_CLIENT) {
+        if (index == HUB_CLIENT) {
             credentialsChanged();
         } else {
             m_ui->connectButton->setEnabled(
@@ -549,7 +549,7 @@ void QJackTrip::chooseRunType(int index)
         m_ui->connectButton->setEnabled(true);
     }
 
-    if (index == Settings::HUB_SERVER) {
+    if (index == HUB_SERVER) {
         m_ui->channelGroupBox->setVisible(false);
         m_ui->timeoutCheckBox->setVisible(false);
         m_ui->autoPatchGroupBox->setVisible(true);
@@ -583,7 +583,7 @@ void QJackTrip::chooseRunType(int index)
 #endif
     }
 
-    if (index == Settings::HUB_CLIENT) {
+    if (index == HUB_CLIENT) {
         m_ui->remoteNameEdit->setVisible(true);
         m_ui->remoteNameLabel->setVisible(true);
         m_ui->authGroupBox->setVisible(true);
@@ -602,16 +602,16 @@ void QJackTrip::addressChanged(const QString& address)
     if (m_jackTripRunning) {
         return;
     }
-    if (m_ui->typeComboBox->currentIndex() == Settings::P2P_CLIENT) {
+    if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         m_ui->connectButton->setEnabled(!address.isEmpty());
-    } else if (m_ui->typeComboBox->currentIndex() == Settings::HUB_CLIENT) {
+    } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
         credentialsChanged();
     }
 }
 
 void QJackTrip::authFilesChanged()
 {
-    if (m_ui->typeComboBox->currentIndex() != Settings::HUB_SERVER) {
+    if (m_ui->typeComboBox->currentIndex() != HUB_SERVER) {
         return;
     }
 
@@ -626,7 +626,7 @@ void QJackTrip::authFilesChanged()
 
 void QJackTrip::credentialsChanged()
 {
-    if (m_ui->typeComboBox->currentIndex() != Settings::HUB_CLIENT) {
+    if (m_ui->typeComboBox->currentIndex() != HUB_CLIENT) {
         return;
     }
 
@@ -750,14 +750,11 @@ void QJackTrip::start()
             resolution = AudioInterface::BIT32;
         }
 
-        if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
+        if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
             m_udpHub.reset(new UdpHubListener(m_ui->localPortSpinBox->value(),
                                               m_ui->basePortSpinBox->value()));
-            int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
-            if (hubConnectionMode > CLIENTFOFI) {
-                // Adjust for the RESERVEDMATRIX gap.
-                hubConnectionMode++;
-            }
+            int hubConnectionMode = hubModeFromPatchType(
+                static_cast<patchTypeT>(m_ui->autoPatchComboBox->currentIndex()));
             if (m_ui->patchServerCheckBox->isChecked()) {
                 if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI) {
                     hubConnectionMode = JackTrip::SERVFOFI;
@@ -818,9 +815,9 @@ void QJackTrip::start()
             m_ui->statusBar->showMessage(QStringLiteral("Hub Server Started"));
         } else {
             JackTrip::jacktripModeT jackTripMode;
-            if (m_ui->typeComboBox->currentIndex() == Settings::P2P_CLIENT) {
+            if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
                 jackTripMode = JackTrip::CLIENT;
-            } else if (m_ui->typeComboBox->currentIndex() == Settings::P2P_SERVER) {
+            } else if (m_ui->typeComboBox->currentIndex() == P2P_SERVER) {
                 jackTripMode = JackTrip::SERVER;
             } else {
                 jackTripMode = JackTrip::CLIENTTOPINGSERVER;
@@ -978,7 +975,7 @@ void QJackTrip::start()
 void QJackTrip::stop()
 {
     m_ui->disconnectButton->setEnabled(false);
-    if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         m_udpHub->stop();
     } else {
         m_jackTrip->stop();
@@ -1052,7 +1049,7 @@ int QJackTrip::findTab(const QString& tabName)
 
 void QJackTrip::enableUi(bool enabled)
 {
-    if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         m_ui->optionsTabWidget->setEnabled(enabled);
     } else {
         if (enabled) {
@@ -1070,12 +1067,12 @@ void QJackTrip::enableUi(bool enabled)
     m_ui->typeComboBox->setEnabled(enabled);
     m_ui->addressLabel->setEnabled(
         enabled
-        && (m_ui->typeComboBox->currentIndex() == Settings::P2P_CLIENT
-            || m_ui->typeComboBox->currentIndex() == Settings::HUB_CLIENT));
+        && (m_ui->typeComboBox->currentIndex() == P2P_CLIENT
+            || m_ui->typeComboBox->currentIndex() == HUB_CLIENT));
     m_ui->addressComboBox->setEnabled(
         enabled
-        && (m_ui->typeComboBox->currentIndex() == Settings::P2P_CLIENT
-            || m_ui->typeComboBox->currentIndex() == Settings::HUB_CLIENT));
+        && (m_ui->typeComboBox->currentIndex() == P2P_CLIENT
+            || m_ui->typeComboBox->currentIndex() == HUB_CLIENT));
 }
 
 void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
@@ -1157,7 +1154,16 @@ void QJackTrip::loadSettings(Settings* cliSettings)
     }
 
     if (useCommandLine) {
-        m_ui->typeComboBox->setCurrentIndex(cliSettings->getRunMode());
+        JackTrip::jacktripModeT mode = cliSettings->getJackTripMode();
+        if (mode == JackTrip::CLIENT) {
+            m_ui->typeComboBox->setCurrentIndex(P2P_CLIENT);
+        } else if (mode == JackTrip::SERVER) {
+            m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
+        } else if (mode == JackTrip::CLIENTTOPINGSERVER) {
+            m_ui->typeComboBox->setCurrentIndex(HUB_CLIENT);
+        } else {
+            m_ui->typeComboBox->setCurrentIndex(HUB_SERVER);
+        }
         m_ui->channelSendSpinBox->setValue(cliSettings->getNumAudioInputChans());
         m_ui->channelRecvSpinBox->setValue(cliSettings->getNumAudioOutputChans());
 
@@ -1609,11 +1615,11 @@ QString QJackTrip::commandLineFromCurrentOptions()
 {
     QString commandLine = QStringLiteral("jacktrip");
 
-    if (m_ui->typeComboBox->currentIndex() == Settings::P2P_CLIENT) {
+    if (m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         commandLine.append(" -c ").append(m_ui->addressComboBox->currentText());
-    } else if (m_ui->typeComboBox->currentIndex() == Settings::P2P_SERVER) {
+    } else if (m_ui->typeComboBox->currentIndex() == P2P_SERVER) {
         commandLine.append(" -s");
-    } else if (m_ui->typeComboBox->currentIndex() == Settings::HUB_CLIENT) {
+    } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
         commandLine.append(" -C ").append(m_ui->addressComboBox->currentText());
     } else {
         commandLine.append(" -S");
@@ -1623,12 +1629,9 @@ QString QJackTrip::commandLineFromCurrentOptions()
         commandLine.append(" -z");
     }
 
-    if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
-        int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
-        if (hubConnectionMode > CLIENTFOFI) {
-            // Adjust for the RESERVEDMATRIX gap.
-            hubConnectionMode++;
-        }
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+        int hubConnectionMode = hubModeFromPatchType(
+            static_cast<patchTypeT>(m_ui->autoPatchComboBox->currentIndex()));
         if (hubConnectionMode > 0) {
             commandLine.append(QStringLiteral(" -p %1").arg(hubConnectionMode));
         }
@@ -1687,8 +1690,8 @@ QString QJackTrip::commandLineFromCurrentOptions()
     if (m_ui->localPortSpinBox->value() != gDefaultPort) {
         commandLine.append(QStringLiteral(" -B %1").arg(m_ui->localPortSpinBox->value()));
     }
-    if (m_ui->typeComboBox->currentIndex() == Settings::HUB_CLIENT
-        || m_ui->typeComboBox->currentIndex() == Settings::P2P_CLIENT) {
+    if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT
+        || m_ui->typeComboBox->currentIndex() == P2P_CLIENT) {
         if (m_ui->remotePortSpinBox->value() != gDefaultPort) {
             commandLine.append(
                 QStringLiteral(" -P %1").arg(m_ui->remotePortSpinBox->value()));
@@ -1696,7 +1699,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
     }
 
     // Auth settings
-    if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         if (m_ui->requireAuthCheckBox->isChecked()) {
             commandLine.append(" -A");
             if (!m_ui->certEdit->text().isEmpty()) {
@@ -1709,7 +1712,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
                 commandLine.append(" --credsfile ").append(m_ui->credsEdit->text());
             }
         }
-    } else if (m_ui->typeComboBox->currentIndex() == Settings::HUB_CLIENT) {
+    } else if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT) {
         if (m_ui->authCheckBox->isChecked()) {
             commandLine.append(" -A");
             if (!m_ui->usernameEdit->text().isEmpty()) {
@@ -1721,7 +1724,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
         }
     }
 
-    if (m_ui->typeComboBox->currentIndex() == Settings::HUB_SERVER) {
+    if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         int offset = m_ui->localPortSpinBox->value() - gDefaultPort;
         if (m_ui->basePortSpinBox->value() != 61002 + offset) {
             commandLine.append(
@@ -1732,7 +1735,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
             commandLine.append(
                 QStringLiteral(" -J \"%1\"").arg(m_ui->clientNameEdit->text()));
         }
-        if (m_ui->typeComboBox->currentIndex() == Settings::HUB_CLIENT
+        if (m_ui->typeComboBox->currentIndex() == HUB_CLIENT
             && !m_ui->remoteNameEdit->text().isEmpty()) {
             commandLine.append(
                 QStringLiteral(" -K \"%1\"").arg(m_ui->remoteNameEdit->text()));
@@ -1818,7 +1821,7 @@ QString QJackTrip::commandLineFromCurrentOptions()
     }
 
 #ifdef RT_AUDIO
-    if (m_ui->typeComboBox->currentIndex() != Settings::HUB_SERVER
+    if (m_ui->typeComboBox->currentIndex() != HUB_SERVER
         && m_ui->backendComboBox->currentIndex() == 1) {
         commandLine.append(" --rtaudio");
         commandLine.append(
@@ -1886,6 +1889,22 @@ void QJackTrip::showCommandLineMessageBox()
     msgBox.setWindowTitle(QStringLiteral("Command Line"));
     msgBox.setTextInteractionFlags(Qt::TextSelectableByMouse);
     msgBox.exec();
+}
+
+JackTrip::hubConnectionModeT QJackTrip::hubModeFromPatchType(
+    QJackTrip::patchTypeT patchType)
+{
+    if (patchType == SERVERTOCLIENT) {
+        return JackTrip::SERVERTOCLIENT;
+    } else if (patchType == CLIENTECHO) {
+        return JackTrip::CLIENTECHO;
+    } else if (patchType == CLIENTFOFI) {
+        return JackTrip::CLIENTFOFI;
+    } else if (patchType == FULLMIX) {
+        return JackTrip::FULLMIX;
+    } else {
+        return JackTrip::NOAUTO;
+    }
 }
 
 QJackTrip::~QJackTrip()

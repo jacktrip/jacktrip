@@ -105,6 +105,7 @@ class QJackTrip : public QMainWindow
 #endif
 
    private:
+    enum runTypeT { P2P_CLIENT, P2P_SERVER, HUB_CLIENT, HUB_SERVER };
     enum patchTypeT { SERVERTOCLIENT, CLIENTECHO, CLIENTFOFI, FULLMIX, NOAUTO };
 
     int findTab(const QString& tabName);
@@ -124,6 +125,8 @@ class QJackTrip : public QMainWindow
 
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
+
+    JackTrip::hubConnectionModeT hubModeFromPatchType(patchTypeT patchType);
 
     QScopedPointer<Ui::QJackTrip> m_ui;
     QScopedPointer<UdpHubListener> m_udpHub;
