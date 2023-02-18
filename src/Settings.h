@@ -85,7 +85,7 @@ class Settings : public QObject
 
     bool getLoopBack() { return mLoopBack; }
     bool isHubServer() { return mRunMode == HUB_SERVER; }
-    bool guiIgnoresArguments() { return mGuiIgnoresArgemunts; }
+    bool guiIgnoresArguments() { return mGuiIgnoresArguments; }
     bool isModeSet() { return mModeSet; }
 
     runTypeT getRunMode() { return mRunMode; }
@@ -124,7 +124,7 @@ class Settings : public QObject
     void checkMode();
 
     bool mGuiEnabled          = false;
-    bool mGuiIgnoresArgemunts = false;
+    bool mGuiIgnoresArguments = false;
 
     runTypeT mRunMode = P2P_SERVER;
     JackTrip::jacktripModeT mJackTripMode =

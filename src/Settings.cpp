@@ -291,7 +291,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'L':  // set optional local host address
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mLocalAddress        = optarg;
             break;
         case 'C':  // Ping to server
@@ -380,17 +380,17 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'l':  // loopback
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mLoopBack            = true;
             break;
         case 'e':  // jamlink
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mEmptyHeader         = true;
             break;
         case 'j':  // jamlink
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mJamLink             = true;
             break;
         case 'J':  // Set client Name
@@ -407,18 +407,18 @@ void Settings::parseInput(int argc, char** argv)
 #ifdef RT_AUDIO
         case 'R':  // RtAudio
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mUseJack             = false;
             break;
         case 'T':  // Sampling Rate
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mChangeDefaultSR     = true;
             mSampleRate          = atoi(optarg);
             break;
         case 'd':  // RTAudio device id
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             cout << "WARNING: Setting device ID is deprecated and will be removed in the "
                     "future."
                  << endl;
@@ -427,29 +427,29 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'F':  // Buffer Size
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mChangeDefaultBS     = true;
             mAudioBufferSize     = atoi(optarg);
             break;
         case OPT_AUDIODEVICE:  // Set audio device
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             if (!mGuiEnabled) {
                 // Don't try to parse this if we're in the GUI and ignoring it.
                 setDevicesByString(optarg);
             }
             break;
         case OPT_AUDIOINPUTDEVICE:
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mInputDeviceName     = optarg;
             break;
         case OPT_AUDIOOUTPUTDEVICE:
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mOutputDeviceName    = optarg;
             break;
         case OPT_LISTDEVICES:  // List audio devices
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             if (!mGuiEnabled) {
                 RtAudioInterface::printDevices();
                 std::exit(0);
@@ -513,7 +513,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'I':  // IO Stat timeout
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mIOStatTimeout       = atoi(optarg);
             if (0 > mIOStatTimeout && !mGuiEnabled) {
                 printUsage();
@@ -524,7 +524,7 @@ void Settings::parseInput(int argc, char** argv)
         case 'G':  // IO Stat log file
             //-------------------------------------------------------
             {
-                mGuiIgnoresArgemunts = true;
+                mGuiIgnoresArguments = true;
                 if (mGuiEnabled) {
                     break;
                 }
@@ -547,11 +547,11 @@ void Settings::parseInput(int argc, char** argv)
             }
             break;
         case OPT_SIMLOSS:  // Simulate packet loss
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             mSimulatedLossRate   = atof(optarg);
             break;
         case OPT_SIMJITTER:  // Simulate jitter
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             char* endp;
             mSimulatedJitterRate = strtod(optarg, &endp);
             if (0 == *endp) {
@@ -573,7 +573,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'O': {  // Overflow limiter (i, o, or io)
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             if (mGuiEnabled) {
                 break;
             }
@@ -594,7 +594,7 @@ void Settings::parseInput(int argc, char** argv)
         }
         case 'a': {  // assumed number of clients (applies to outgoing limiter)
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             if (mGuiEnabled) {
                 break;
             }
@@ -615,7 +615,7 @@ void Settings::parseInput(int argc, char** argv)
         }
         case 'f': {  // --effects (-f) effectsSpecArg
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             if (mGuiEnabled) {
                 break;
             }
@@ -659,7 +659,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'x': {  // examine connection (test mode)
             //-------------------------------------------------------
-            mGuiIgnoresArgemunts = true;
+            mGuiIgnoresArguments = true;
             if (mGuiEnabled) {
                 break;
             }
@@ -951,7 +951,7 @@ void Settings::printUsage()
     cout << " --password                               The password to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
     cout << endl;
     cout << "ARGUMENTS FOR THE GUI:" << endl;
-    cout << " --gui                                   Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --holp switches which will override this." << endl;
+    cout << " --gui                                   Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --help switches which will override this." << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
