@@ -1167,14 +1167,21 @@ void QJackTrip::loadSettings(Settings* cliSettings)
         m_ui->channelSendSpinBox->setValue(cliSettings->getNumAudioInputChans());
         m_ui->channelRecvSpinBox->setValue(cliSettings->getNumAudioOutputChans());
 
-        // Accomodate for the fact that the GUI doesn't support the reserved patching mode
         unsigned int patchMode = cliSettings->getHubConnectionMode();
-        if (patchMode == JackTrip::RESERVEDMATRIX) {
-            patchMode = NOAUTO;
-        } else if (patchMode > JackTrip::RESERVEDMATRIX) {
-            patchMode--;
+        if (patchMode == JackTrip::SERVERTOCLIENT) {
+            m_ui->autoPatchComboBox->setCurrentIndex(SERVERTOCLIENT);
+        } else if (patchMode == JackTrip::CLIENTECHO) {
+            m_ui->autoPatchComboBox->setCurrentIndex(CLIENTECHO);
+        } else if (patchMode == JackTrip::CLIENTFOFI) {
+            m_ui->autoPatchComboBox->setCurrentIndex(CLIENTFOFI);
+        } else if (patchMode == JackTrip::FULLMIX) {
+            m_ui->autoPatchComboBox->setCurrentIndex(FULLMIX);
+        } else {
+            // Accomodate for the fact that the GUI doesn't support the reserved patching
+            // mode by disabling patching if selected.
+            m_ui->autoPatchComboBox->setCurrentIndex(NOAUTO);
         }
-        m_ui->autoPatchComboBox->setCurrentIndex(patchMode);
+
         m_ui->patchServerCheckBox->setChecked(cliSettings->getPatchServerAudio());
         m_ui->upmixCheckBox->setChecked(cliSettings->getPatchServerAudio());
         m_ui->zeroCheckBox->setChecked(cliSettings->getUnderrunMode() == JackTrip::ZEROS);
