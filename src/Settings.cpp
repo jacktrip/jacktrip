@@ -651,7 +651,6 @@ void Settings::parseInput(int argc, char** argv)
                 optarg = argv[optind++];
             }
             mPassword = optarg;
-            std::cout << mPassword.toStdString() << std::endl;
             break;
         case 'x': {  // examine connection (test mode)
             //-------------------------------------------------------

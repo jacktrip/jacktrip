@@ -1081,8 +1081,6 @@ void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
     m_ui->clientNameEdit->setVisible(!isHubServer);
     m_ui->redundancyLabel->setVisible(!isHubServer);
     m_ui->redundancySpinBox->setVisible(!isHubServer);
-    m_ui->resolutionLabel->setVisible(!isHubServer);
-    m_ui->resolutionComboBox->setVisible(!isHubServer);
     m_ui->connectAudioCheckBox->setVisible(!isHubServer);
     m_ui->basePortLabel->setVisible(isHubServer);
     m_ui->basePortSpinBox->setVisible(isHubServer);
@@ -1255,56 +1253,16 @@ void QJackTrip::loadSettings(Settings* cliSettings)
     } else {
         m_ui->typeComboBox->setCurrentIndex(
             settings.value(QStringLiteral("RunMode"), 2).toInt());
-        m_ui->channelSendSpinBox->setValue(
-            settings.value(QStringLiteral("ChannelsSend"), gDefaultNumInChannels)
-                .toInt());
-        m_ui->channelRecvSpinBox->setValue(
-            settings.value(QStringLiteral("ChannelsRecv"), gDefaultNumOutChannels)
-                .toInt());
-        m_ui->autoPatchComboBox->setCurrentIndex(
-            settings.value(QStringLiteral("AutoPatchMode"), 0).toInt());
-        m_ui->patchServerCheckBox->setChecked(
-            settings.value(QStringLiteral("PatchIncludesServer"), false).toBool());
-        m_ui->upmixCheckBox->setChecked(
-            settings.value(QStringLiteral("StereoUpmix"), false).toBool());
         m_ui->zeroCheckBox->setChecked(
             settings.value(QStringLiteral("ZeroUnderrun"), false).toBool());
-        m_ui->timeoutCheckBox->setChecked(
-            settings.value(QStringLiteral("Timeout"), false).toBool());
-        m_ui->clientNameEdit->setText(
-            settings.value(QStringLiteral("ClientName"), "").toString());
-        m_ui->remoteNameEdit->setText(
-            settings.value(QStringLiteral("RemoteName"), "").toString());
         m_ui->localPortSpinBox->setValue(
             settings.value(QStringLiteral("LocalPort"), gDefaultPort).toInt());
-        m_ui->remotePortSpinBox->setValue(
-            settings.value(QStringLiteral("RemotePort"), gDefaultPort).toInt());
-        m_ui->basePortSpinBox->setValue(
-            settings.value(QStringLiteral("BasePort"), 61002).toInt());
         m_ui->queueLengthSpinBox->setValue(
             settings.value(QStringLiteral("QueueLength"), gDefaultQueueLength).toInt());
-        m_ui->redundancySpinBox->setValue(
-            settings.value(QStringLiteral("Redundancy"), gDefaultRedundancy).toInt());
         m_ui->resolutionComboBox->setCurrentIndex(
             settings.value(QStringLiteral("Resolution"), 1).toInt());
-        m_ui->connectAudioCheckBox->setChecked(
-            settings.value(QStringLiteral("ConnectAudio"), true).toBool());
         m_ui->realTimeCheckBox->setChecked(
             settings.value(QStringLiteral("RTNetworking"), true).toBool());
-
-        settings.beginGroup(QStringLiteral("Auth"));
-        m_ui->requireAuthCheckBox->setChecked(
-            settings.value(QStringLiteral("Require"), false).toBool());
-        m_ui->certEdit->setText(
-            settings.value(QStringLiteral("CertFile"), "").toString());
-        m_ui->keyEdit->setText(settings.value(QStringLiteral("KeyFile"), "").toString());
-        m_ui->credsEdit->setText(
-            settings.value(QStringLiteral("CredsFile"), "").toString());
-        m_ui->authCheckBox->setChecked(
-            settings.value(QStringLiteral("Use"), false).toBool());
-        m_ui->usernameEdit->setText(
-            settings.value(QStringLiteral("Username"), "").toString());
-        settings.endGroup();
 
         settings.beginGroup(QStringLiteral("JitterBuffer"));
         bool jitterAnnounce =
@@ -1336,6 +1294,64 @@ void QJackTrip::loadSettings(Settings* cliSettings)
             settings.value(QStringLiteral("TuningParameter"), 500).toInt());
         settings.endGroup();
     }
+
+    // These settings may need to be loaded even if we were using our command line.
+    // (This depends on the mode that was selected.)
+    if (!useCommandLine || m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+        m_ui->channelSendSpinBox->setValue(
+            settings.value(QStringLiteral("ChannelsSend"), gDefaultNumInChannels)
+                .toInt());
+        m_ui->channelRecvSpinBox->setValue(
+            settings.value(QStringLiteral("ChannelsRecv"), gDefaultNumOutChannels)
+                .toInt());
+        m_ui->timeoutCheckBox->setChecked(
+            settings.value(QStringLiteral("Timeout"), false).toBool());
+        m_ui->clientNameEdit->setText(
+            settings.value(QStringLiteral("ClientName"), "").toString());
+        m_ui->redundancySpinBox->setValue(
+            settings.value(QStringLiteral("Redundancy"), gDefaultRedundancy).toInt());
+        m_ui->connectAudioCheckBox->setChecked(
+            settings.value(QStringLiteral("ConnectAudio"), true).toBool());
+    }
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_SERVER)) {
+        m_ui->autoPatchComboBox->setCurrentIndex(
+            settings.value(QStringLiteral("AutoPatchMode"), 0).toInt());
+        m_ui->patchServerCheckBox->setChecked(
+            settings.value(QStringLiteral("PatchIncludesServer"), false).toBool());
+        m_ui->upmixCheckBox->setChecked(
+            settings.value(QStringLiteral("StereoUpmix"), false).toBool());
+        m_ui->basePortSpinBox->setValue(
+            settings.value(QStringLiteral("BasePort"), 61002).toInt());
+    }
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_CLIENT)) {
+        m_ui->remoteNameEdit->setText(
+            settings.value(QStringLiteral("RemoteName"), "").toString());
+    }
+    if (!useCommandLine
+        || !(m_ui->typeComboBox->currentIndex() == HUB_CLIENT
+             || m_ui->typeComboBox->currentIndex() == P2P_CLIENT)) {
+        m_ui->remotePortSpinBox->setValue(
+            settings.value(QStringLiteral("RemotePort"), gDefaultPort).toInt());
+    }
+
+    settings.beginGroup(QStringLiteral("Auth"));
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_SERVER)) {
+        m_ui->requireAuthCheckBox->setChecked(
+            settings.value(QStringLiteral("Require"), false).toBool());
+        m_ui->certEdit->setText(
+            settings.value(QStringLiteral("CertFile"), "").toString());
+        m_ui->keyEdit->setText(settings.value(QStringLiteral("KeyFile"), "").toString());
+        m_ui->credsEdit->setText(
+            settings.value(QStringLiteral("CredsFile"), "").toString());
+    }
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_CLIENT)) {
+        m_ui->authCheckBox->setChecked(
+            settings.value(QStringLiteral("Use"), false).toBool());
+        m_ui->usernameEdit->setText(
+            settings.value(QStringLiteral("Username"), "").toString());
+        m_ui->passwordEdit->setText("");
+    }
+    settings.endGroup();
 
     // Settings from this point onwards are currently read only from the previously stored
     // values and not from the commmand line.
