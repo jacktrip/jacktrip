@@ -41,7 +41,6 @@
 
 #include <QObject>
 #include <QTimer>
-#include <QVector>
 #include <iostream>
 #include <vector>
 

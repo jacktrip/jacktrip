@@ -38,8 +38,6 @@
 
 #include "Meter.h"
 
-#include <QVector>
-
 #include "jacktrip_types.h"
 
 //*******************************************************************************
