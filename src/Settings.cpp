@@ -93,7 +93,6 @@ enum JTLongOptIDS {
     OPT_AUTHPASS,
     OPT_NUMRECEIVE,
     OPT_NUMSEND,
-    OPT_BASESENDCHANNELNUM,
     OPT_APPENDTHREADID,
     OPT_LISTDEVICES,
     OPT_AUDIODEVICE,
@@ -124,7 +123,6 @@ void Settings::parseInput(int argc, char** argv)
          OPT_NUMRECEIVE},  // Number of incoming channels
         {"sendchannels", required_argument, NULL,
          OPT_NUMSEND},  // Number of outgoing channels
-        {"basesendchannelnum", required_argument, NULL, OPT_BASESENDCHANNELNUM},
 #ifdef WAIR                                // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
         {"addcombfilterlength", required_argument, NULL,
@@ -234,16 +232,6 @@ void Settings::parseInput(int argc, char** argv)
             } else {
                 std::cerr << "--sendchannels ERROR: Number of channels must be greater "
                              "than 0\n";
-                std::exit(1);
-            }
-            break;
-        case OPT_BASESENDCHANNELNUM:
-            if (0 < atoi(optarg)) {
-                mBaseAudioInputChanNum = atoi(optarg);
-            } else {
-                std::cerr
-                    << "--basesendchannelnum ERROR: Base input channel must be greater "
-                       "than 0\n";
                 std::exit(1);
             }
             break;
@@ -747,8 +735,6 @@ void Settings::printUsage()
             "the network (# greater than 0)\n";
     cout << "     --sendchannels #                          Number of send Channels to "
             "the network (# greater than 0)\n";
-    cout << "     --basesendchannelnum #                    Base audio input channel "
-            "to start at (# greater than 0)\n";
 #ifdef WAIR  // WAIR
     cout << " -w, --wair                               Run in WAIR Mode" << endl;
     cout << " -N, --addcombfilterlength #              comb length adjustment for WAIR "
