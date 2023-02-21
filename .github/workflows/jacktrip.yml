@@ -618,7 +618,6 @@ jobs:
           path: ${{ env.CLANG_TIDY_PATH }}/
   sign:
     needs: [build, check-secrets]
-    if: needs.check-secrets.outputs.should_run == 'true'
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
     strategy:
@@ -626,6 +625,7 @@ jobs:
       matrix:
         include:
           - name: Sign Windows artifacts
+            if: needs.check-secrets.outputs.should_run == 'true'
             release-name: Windows-x64
             build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
             runs-on: ubuntu-latest
@@ -691,7 +691,7 @@ jobs:
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_test:
-    needs: build
+    needs: [build, sign]
     runs-on: ubuntu-latest
     name: 'deploy release'
     env:
@@ -707,7 +707,7 @@ jobs:
           ls ${{ env.DOWNLOAD_PATH }}/JackTrip*/*
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
-    needs: build
+    needs: [build, sign]
     runs-on: ubuntu-latest
     name: 'deploy release'
     env:
