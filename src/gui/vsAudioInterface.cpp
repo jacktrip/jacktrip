@@ -286,14 +286,14 @@ void VsAudioInterface::replaceProcess()
     }
 }
 
-void VsAudioInterface::processInputMeterMeasurements(QVector<float> values)
+void VsAudioInterface::processInputMeterMeasurements(float* values, int numChannels)
 {
-    emit newInputMeterMeasurements(values);
+    emit newInputMeterMeasurements(values, numChannels);
 }
 
-void VsAudioInterface::processOutputMeterMeasurements(QVector<float> values)
+void VsAudioInterface::processOutputMeterMeasurements(float* values, int numChannels)
 {
-    emit newOutputMeterMeasurements(values);
+    emit newOutputMeterMeasurements(values, numChannels);
 }
 
 void VsAudioInterface::addInputPlugin(ProcessPlugin* plugin)

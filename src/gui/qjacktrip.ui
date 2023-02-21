@@ -1763,6 +1763,74 @@ and wetness is the essence of beauty.</string>
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="scriptingTab">
+       <attribute name="title">
+        <string>Scripting</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_12">
+        <item row="1" column="0">
+         <widget class="QLineEdit" name="connectScriptEdit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLineEdit" name="disconnectScriptEdit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <spacer name="scriptingVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="connectScriptBrowse">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QCheckBox" name="connectScriptCheckBox">
+          <property name="text">
+           <string>Execute script on &amp;connection</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QCheckBox" name="disconnectScriptCheckBox">
+          <property name="text">
+           <string>Execute script on &amp;disconnection</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="disconnectScriptBrowse">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item row="0" column="1">
@@ -1905,6 +1973,12 @@ To connect to a hub server you need to run as a hub client.</string>
   <tabstop>outCompressorCheckBox</tabstop>
   <tabstop>outLimiterCheckBox</tabstop>
   <tabstop>outClientsSpinBox</tabstop>
+  <tabstop>connectScriptCheckBox</tabstop>
+  <tabstop>connectScriptEdit</tabstop>
+  <tabstop>connectScriptBrowse</tabstop>
+  <tabstop>disconnectScriptCheckBox</tabstop>
+  <tabstop>disconnectScriptEdit</tabstop>
+  <tabstop>disconnectScriptBrowse</tabstop>
  </tabstops>
  <resources>
   <include location="qjacktrip.qrc"/>

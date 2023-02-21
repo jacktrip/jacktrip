@@ -1265,7 +1265,7 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
         QString expiration =
             QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
         QJsonObject json      = {{QLatin1String("enabled"), true},
-                            {QLatin1String("expiresAt"), expiration}};
+                                 {QLatin1String("expiresAt"), expiration}};
         QJsonDocument request = QJsonDocument(json);
 
         QNetworkReply* reply = m_authenticator->put(
@@ -1574,7 +1574,8 @@ void VirtualStudio::updatedDevicesWarningHelpUrl(const QString& url)
     return;
 }
 
-void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDecibels)
+void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
+                                               int numChannels)
 {
     QJsonArray uiValues;
     bool detectedClip = false;
@@ -1583,7 +1584,7 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDec
     for (int i = 0; i < 2; i++) {
         // Determine decibel reading
         float dB = m_meterMin;
-        if (i < valuesInDecibels.size()) {
+        if (i < numChannels) {
             dB = std::max(m_meterMin, valuesInDecibels[i]);
         }
 
@@ -1606,7 +1607,8 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDec
                                                        QVariant::fromValue(uiValues));
 }
 
-void VirtualStudio::updatedOutputVuMeasurements(const QVector<float>& valuesInDecibels)
+void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
+                                                int numChannels)
 {
     QJsonArray uiValues;
     bool detectedClip = false;
@@ -1615,7 +1617,7 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float>& valuesInDe
     for (int i = 0; i < 2; i++) {
         // Determine decibel reading
         float dB = m_meterMin;
-        if (i < valuesInDecibels.size()) {
+        if (i < numChannels) {
             dB = std::max(m_meterMin, valuesInDecibels[i]);
         }
 

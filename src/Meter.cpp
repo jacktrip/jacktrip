@@ -57,11 +57,7 @@ void Meter::init(int samplingRate)
     }
 
     /* Set meter values to the default floor */
-    mValues.resize(mNumChannels);
-    QVector<float>::iterator it;
-    for (it = mValues.begin(); it != mValues.end(); ++it) {
-        *it = threshold;
-    }
+    setupValues();
 
     /* Start timer */
     int timeout_ms = 100;
@@ -93,21 +89,25 @@ void Meter::compute(int nframes, float** inputs, float** /*_*/)
         init(fSamplingFreq);
     }
 
-    QVector<float> meterBuf(nframes);
-    float* meterBufPtr = meterBuf.data();
-    float** output     = &meterBufPtr;
+    if (mBufSize < nframes) {
+        if (mBuffer) {
+            delete mBuffer;
+        }
+        mBufSize = nframes;
+        mBuffer  = new float[mBufSize];
+    }
+
     for (int i = 0; i < mNumChannels; i++) {
         /* Run the signal through Faust  */
-        meterP[i]->compute(nframes, &inputs[i], output);
+        meterP[i]->compute(nframes, &inputs[i], &mBuffer);
 
         /* Use the existing value of mValues[i] as
            the threshold - this will be reset to the default floor of -80dB
            on each timeout */
         float max = mValues[i];
-        QVector<float>::iterator it;
-        for (it = meterBuf.begin(); it != meterBuf.end(); ++it) {
-            if (*it > max) {
-                max = *it;
+        for (int j = 0; j < nframes; j++) {
+            if (mBuffer[j] > max) {
+                max = mBuffer[j];
             }
         }
 
@@ -133,26 +133,43 @@ void Meter::updateNumChannels(int nChansIn, int nChansOut)
         mNumChannels = nChansOut;
     }
 
-    mValues.resize(mNumChannels);
-    QVector<float>::iterator it;
-    for (it = mValues.begin(); it != mValues.end(); ++it) {
-        *it = threshold;
+    setupValues();
+}
+
+void Meter::setupValues()
+{
+    if (mValues) {
+        float* oldValues = mValues;
+        // Delete our old array after 5 seconds.
+        QTimer::singleShot(5000, this, [=]() {
+            delete oldValues;
+        });
+    }
+    if (mOutValues) {
+        float* oldOut = mOutValues;
+        QTimer::singleShot(5000, this, [=]() {
+            delete oldOut;
+        });
+    }
+    mValues    = new float[mNumChannels];
+    mOutValues = new float[mNumChannels];
+    for (int i = 0; i < mNumChannels; i++) {
+        mValues[i]    = threshold;
+        mOutValues[i] = threshold;
     }
 }
 
 //*******************************************************************************
 void Meter::onTick()
 {
+    /* Set meter values to the default floor */
+    for (int i = 0; i < mNumChannels; i++) {
+        mOutValues[i] = mValues[i];
+        mValues[i]    = threshold;
+    }
+
     if (hasProcessedAudio) {
         /* Send the measurements to whatever other component requests it */
-        QVector<float> valuesCopy(mValues);
-        valuesCopy.detach();
-        emit onComputedVolumeMeasurements(valuesCopy);
-
-        /* Set meter values to the default floor */
-        QVector<float>::iterator it;
-        for (it = mValues.begin(); it != mValues.end(); ++it) {
-            *it = threshold;
-        }
+        emit onComputedVolumeMeasurements(mOutValues, mNumChannels);
     }
 }

@@ -73,6 +73,15 @@ class Meter : public ProcessPlugin
             delete meterP[i];
         }
         meterP.clear();
+        if (mValues) {
+            delete mValues;
+        }
+        if (mOutValues) {
+            delete mOutValues;
+        }
+        if (mBuffer) {
+            delete mBuffer;
+        }
     }
 
     void init(int samplingRate) override;
@@ -84,6 +93,8 @@ class Meter : public ProcessPlugin
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
    private:
+    void setupValues();
+
     float fs;
     int mNumChannels;
     float threshold = -80.0;
@@ -91,13 +102,16 @@ class Meter : public ProcessPlugin
     bool hasProcessedAudio = false;
 
     QTimer mTimer;
-    QVector<float> mValues;
+    float* mValues    = nullptr;
+    float* mOutValues = nullptr;
+    float* mBuffer    = nullptr;
+    int mBufSize      = 0;
 
    private slots:
     void onTick();
 
    signals:
-    void onComputedVolumeMeasurements(QVector<float> values);
+    void onComputedVolumeMeasurements(float* values, int n);
 };
 
 #endif
