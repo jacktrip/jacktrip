@@ -51,8 +51,10 @@ class VuMeter : public QWidget
     QColor m_redOn;
     QColor m_redOff;
 
-    quint32 m_bins    = 15;
+    quint32 m_bins    = 30;
     quint32 m_margins = 2;
+    quint32 m_threshhold1;
+    quint32 m_threshhold2;
 };
 
 #endif  // VUMETER_H
