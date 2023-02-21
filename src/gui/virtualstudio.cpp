@@ -1265,7 +1265,7 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
         QString expiration =
             QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
         QJsonObject json      = {{QLatin1String("enabled"), true},
-                                 {QLatin1String("expiresAt"), expiration}};
+                            {QLatin1String("expiresAt"), expiration}};
         QJsonDocument request = QJsonDocument(json);
 
         QNetworkReply* reply = m_authenticator->put(
