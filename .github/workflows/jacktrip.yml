@@ -690,6 +690,21 @@ jobs:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
   # release - list of files uploaded to GH release is specified in the *upload* step
+  deploy_test:
+    needs: build
+    runs-on: ubuntu-latest
+    name: 'deploy release'
+    env:
+      DOWNLOAD_PATH: ${{ github.workspace }}/Install
+    steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
+      - name: print files names downloaded
+        run: |
+          ls ${{ env.DOWNLOAD_PATH }}
+          ls ${{ env.DOWNLOAD_PATH }}/JackTrip*/*
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
     needs: build
