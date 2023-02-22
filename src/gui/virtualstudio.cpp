@@ -125,8 +125,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_outputDevice = "";
     }
 
-    // use default base channel 1, if the setting does not exist
-    m_baseInputChannel = settings.value(QStringLiteral("BaseInputChannel"), 1).toInt();
+    // use default base channel 0, if the setting does not exist
+    m_baseInputChannel = settings.value(QStringLiteral("BaseInputChannel"), 0).toInt();
 
     // Handle migration scenarios. Assume this is a new user
     // if we have m_inputDevice == "" and m_outputDevice == ""
@@ -183,7 +183,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     inputChannelsComboElement.insert(QString::fromStdString("label"),
                                      QString::fromStdString("1"));
     inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                     QVariant(1).toInt());
+                                     QVariant(0).toInt());
     inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
                                      QVariant(1).toInt());
     m_view.engine()->rootContext()->setContextProperty(
@@ -1092,7 +1092,7 @@ void VirtualStudio::validateDevicesState()
         inputChannelsComboElement.insert(QString::fromStdString("label"),
                                          QString::fromStdString("1"));
         inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                         QVariant(1).toInt());
+                                         QVariant(0).toInt());
         inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
                                          QVariant(1).toInt());
         m_view.engine()->rootContext()->setContextProperty(
@@ -1101,7 +1101,7 @@ void VirtualStudio::validateDevicesState()
                 QVariantList() << QVariant(QJsonValue(inputChannelsComboElement)))));
 
         // Set the only allowed options for these variables automatically
-        m_baseInputChannel = 1;
+        m_baseInputChannel = 0;
         m_numInputChannels = 1;
         m_inputMixMode     = static_cast<int>(InputMixMode::MONO);
 
@@ -1116,18 +1116,18 @@ void VirtualStudio::validateDevicesState()
             QJsonObject element = QJsonObject();
             element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
             element.insert(QString::fromStdString("baseChannel"),
-                           QVariant(i + 1).toInt());
+                           QVariant(i).toInt());
             element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
             items.push_back(QVariant(QJsonValue(element)));
         }
-        for (int i = 0; i < numDevicesChannelsAvailable - 1; i++) {
+        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             if (i % 2 == 0) {
                 QJsonObject element = QJsonObject();
                 element.insert(
                     QString::fromStdString("label"),
                     QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
                 element.insert(QString::fromStdString("baseChannel"),
-                               QVariant(i + 1).toInt());
+                               QVariant(i).toInt());
                 element.insert(QString::fromStdString("numChannels"),
                                QVariant(2).toInt());
                 items.push_back(QVariant(QJsonValue(element)));
@@ -1138,11 +1138,10 @@ void VirtualStudio::validateDevicesState()
 
         // if the current m_baseInputChannel or m_numInputChannels is invalid based on
         // this device's option, use the first two channels by default
-        if ((m_baseInputChannel + (m_numInputChannels - 1)
-             > numDevicesChannelsAvailable)) {
+        if (m_baseInputChannel + m_numInputChannels > numDevicesChannelsAvailable) {
             // we're in the case where numDevicesChannelsAvailable >= 2, so always have
             // the ability to use the first 2 channels
-            m_baseInputChannel = 1;
+            m_baseInputChannel = 0;
             m_numInputChannels = 2;
             emit baseInputChannelChanged(m_baseInputChannel);
             emit numInputChannelsChanged(m_numInputChannels);

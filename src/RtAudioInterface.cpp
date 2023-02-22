@@ -89,7 +89,7 @@ void RtAudioInterface::setup(bool verbose)
 
     int chansIn    = iChans.size();
     int chansOut   = oChans.size();
-    int baseChanIn = 1;
+    int baseChanIn = 0;
 
     if (iChans.size() >= 1) {
         int min = iChans.at(0);
@@ -98,7 +98,7 @@ void RtAudioInterface::setup(bool verbose)
                 min = iChans.at(i);
             }
         }
-        if (min >= 1) {
+        if (min >= 0) {
             baseChanIn = min;
         }
     }
@@ -193,14 +193,12 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(baseChanIn) > dev_info_input.inputChannels) {
-        baseChanIn = dev_info_input.inputChannels;
-    }
-
-    if (static_cast<unsigned int>(chansIn)
-        > dev_info_input.inputChannels - static_cast<unsigned int>(baseChanIn) + 1) {
-        chansIn =
-            dev_info_input.inputChannels - static_cast<unsigned int>(baseChanIn) + 1;
+    if (static_cast<unsigned int>(baseChanIn) + static_cast<unsigned int>(chansIn) > dev_info_input.inputChannels) {
+        baseChanIn = 0;
+        chansIn = 2;
+        if (static_cast<unsigned int>(dev_info_input.inputChannels) < 2) {
+            chansIn = 1;
+        }
     }
 
     if (static_cast<unsigned int>(chansOut) > dev_info_output.outputChannels) {
@@ -245,7 +243,7 @@ void RtAudioInterface::setup(bool verbose)
     out_params.deviceId    = index_out;
     in_params.nChannels    = chansIn;
     out_params.nChannels   = chansOut;
-    in_params.firstChannel = baseChanIn - 1;  // Important! RtAudio indexes starting at 0
+    in_params.firstChannel = baseChanIn;
 
     RtAudio::StreamOptions options;
     // The second flag affects linux and mac only

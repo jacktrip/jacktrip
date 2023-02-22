@@ -134,7 +134,7 @@ class JackTrip : public QObject
      */
     JackTrip(
         jacktripModeT JacktripMode = CLIENT, dataProtocolT DataProtocolType = UDP,
-        int NumChansIn = gDefaultNumInChannels, int BaseChanIn = 1,
+        int NumChansIn = gDefaultNumInChannels, int BaseChanIn = 0,
         int NumChansOut = gDefaultNumInChannels, int InputMixMode = -1,
 #ifdef WAIR  // wair
         int NumNetRevChans = 0,
