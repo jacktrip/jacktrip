@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file Reverb.cpp
+ * \file StereoToMono.cpp
  * \author Dominick Hing
  * \date February 2023
  */
