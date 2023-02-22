@@ -135,8 +135,8 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            static-qt-version: 5.15.8
+            qt-static-cache-key: 'v08'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -179,8 +179,8 @@ jobs:
             novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-static
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            static-qt-version: 5.15.8
+            qt-static-cache-key: 'v08'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -373,7 +373,7 @@ jobs:
           QT_FULL_VERSION=${{ matrix.static-qt-version }}
           QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
           QT_ARCHIVE_BASE_NAME=qt-everywhere-
-          if [[ ! "$QT_MAJOR_MINOR_VERSION" < "5.15" ]]; then QT_ARCHIVE_BASE_NAME=${QT_ARCHIVE_BASE_NAME}opensource-; fi # filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15
+          if [[ ! "$QT_FULL_VERSION" < "5.15.3" && "$QT_FULL_VERSION" < "6.0.0" ]]; then QT_ARCHIVE_BASE_NAME=${QT_ARCHIVE_BASE_NAME}opensource-; fi # filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15.3
           QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
           echo "Downloading Qt source from $QT_SRC_URL"
           curl -L $QT_SRC_URL -o qt.tar.xz

@@ -1360,7 +1360,8 @@ int JackTrip::clientPingToServerStart()
         mAwaitingTcp = true;
         mElapsedTime = 0;
         mEndTime     = 30000;  // Timeout after 30 seconds.
-        mRetryTimer.setInterval(randomizer.bounded(0, 2000 * pow(2, mRetries)));
+        mRetryTimer.setInterval(randomizer.bounded(
+            static_cast<int>(0), static_cast<int>(2000 * pow(2, mRetries))));
         mRetryTimer.setSingleShot(true);
         mRetryTimer.disconnect();
         connect(&mRetryTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
