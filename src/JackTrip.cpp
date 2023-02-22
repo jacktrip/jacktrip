@@ -261,8 +261,8 @@ void JackTrip::setupAudio(
         for (int i = 0; i < mNumAudioChansOut; i++) {
             outputChannels[i] = 1 + i;
         }
-        mAudioInterface =
-            new RtAudioInterface(this, inputChannels, mInputMixMode, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(this, inputChannels, outputChannels,
+                                               mInputMixMode, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
@@ -274,7 +274,8 @@ void JackTrip::setupAudio(
         // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
-        if (mNumAudioChansIn == 2 && mInputMixMode == InputMixMode::MIXTOMONO) {
+        if (mNumAudioChansIn == 2
+            && static_cast<int>(mInputMixMode) == InputMixMode::MIXTOMONO) {
             mNumAudioChansIn = 1;
         }
         // Setup might have changed buffer size
