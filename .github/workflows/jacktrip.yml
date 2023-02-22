@@ -710,27 +710,68 @@ jobs:
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # deploy_jtl:
-  #   if:  startsWith(github.ref, 'refs/tags/') && needs.check-secrets.outputs.should_run == 'true'
-  #   needs: [build, sign]
-  #   runs-on: ubuntu-latest
-  #   name: 'deploy to updater'
-  #   permissions:
-  #     contents: "read"
-  #     id-token: "write"
-  #   env:
-  #     DOWNLOAD_PATH: ${{ github.workspace }}/Install
-  #   steps:
-  #     - name: download artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
-  #     - name: Authenticate to GCS
-  #       uses: google-github-actions/auth@v1
-  #       with:
-  #         workload_identity_provider: ${{ env.GCP_IDP }}
-  #         service_account: ${{ env.GCS_SVC_ACCT }}
-  #         create_credentials_file: true
-  #     - name: Upload file
-  #       run: |
-  #         gcloud storage cp ./somefile.txt gs://files.jacktrip.org/app-builds/somefile.txt
+  deploy_jtl:
+    # if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true' # use this when done
+    if:  needs.check-secrets.outputs.should_run == 'true' # testing
+    needs: [build, sign]
+    runs-on: ubuntu-latest
+    name: 'deploy to updater'
+    permissions:
+      contents: "read"
+      id-token: "write"
+    env:
+      DOWNLOAD_PATH: ${{ github.workspace }}/Install
+    steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
+      - name: Authenticate to GCS
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ env.GCP_IDP }}
+          service_account: ${{ env.GCS_SVC_ACCT }}
+          create_credentials_file: true
+      - name: Upload files
+        if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # don't run in testing. will remove line
+        run: |
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip*-Linux*-static-binary.zip gs://files.jacktrip.org/app-builds
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip*-Windows*-signed-installer.msi gs://files.jacktrip.org/app-builds
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip*-macOS*-signed-installer.pkg gs://files.jacktrip.org/app-builds
+      - name: Update edge manifests
+        run: |
+          gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
+
+          # Set the value of the variable
+          my_var="Some value"
+
+          # Define the JSON object to append
+          new_object=$(cat <<EOF
+          {
+            "version": "1.0.0",
+            "date": "$(date +%Y-%m-%d)",
+            "description": "Added new feature",
+            "my_var_value": "$my_var"
+          }
+          EOF
+          )
+
+          # Read the existing JSON array from the file
+          existing_mac_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json)
+          existing_win_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json)
+
+          # Combine the new object and the existing array into a new array
+          new_mac_array=$(echo "$new_object $existing_mac_array" | jq -s .)
+          new_win_array=$(echo "$new_object $existing_win_array" | jq -s .)
+
+          # Update the "releases" key in the root object with the new array
+          jq '.releases = '"$new_mac_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json
+          jq '.releases = '"$new_win_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json
+
+          cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json
+          cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json
+      - name: Update stable manifests
+        if: "!github.event.release.prerelease"
+        run: |
+          # do the full release work
+          
