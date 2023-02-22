@@ -742,6 +742,7 @@ jobs:
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip*-macOS*-signed-installer.pkg gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
         run: |
+          mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
           gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
 
           # Set the value of the variable
