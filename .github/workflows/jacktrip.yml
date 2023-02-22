@@ -721,6 +721,8 @@ jobs:
       id-token: "write"
     env:
       DOWNLOAD_PATH: ${{ github.workspace }}/Install
+      GCP_IDP: ${{ secrets.GCP_IDP }}
+      GCS_SVC_ACCT: ${{ secrets.GCS_SVC_ACCT }}
     steps:
       - name: download artifacts
         uses: actions/download-artifact@v2
