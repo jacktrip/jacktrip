@@ -39,6 +39,7 @@
 #define __INPUTMIXMODE_H__
 
 enum class InputMixMode : int {
+    UNSET     = -1,
     MONO      = 0,
     STEREO    = 1,
     MIXTOMONO = 2,

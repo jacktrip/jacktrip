@@ -52,6 +52,7 @@
 #include <functional>  //for mem_fun_ref
 
 #include "AudioInterface.h"
+#include "InputMixMode.h"
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
 
@@ -75,7 +76,7 @@ class JackAudioInterface : public AudioInterface
      */
     JackAudioInterface(
         JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-        QVarLengthArray<int> OutputChans, int InputMixMode,
+        QVarLengthArray<int> OutputChans, InputMixMode InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere

@@ -67,6 +67,8 @@
 #include "RtAudioInterface.h"
 #endif
 
+#include "InputMixMode.h"
+
 #ifdef JACKTRIP_BUILD_INFO
 #define STR(s)           #s
 #define TO_STRING(s)     STR(s)
@@ -122,7 +124,7 @@ void Settings::parseInput(int argc, char** argv)
         {"receivechannels", required_argument, NULL,
          OPT_NUMRECEIVE},  // Number of incoming channels
         {"sendchannels", required_argument, NULL,
-         OPT_NUMSEND},  // Number of outgoing channels
+         OPT_NUMSEND},                     // Number of outgoing channels
 #ifdef WAIR                                // WAIR
         {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
         {"addcombfilterlength", required_argument, NULL,
@@ -978,7 +980,7 @@ JackTrip* Settings::getConfiguredJackTrip()
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
         mJackTripMode, mDataProtocol, mBaseAudioInputChanNum, mNumAudioInputChans,
-        mNumAudioOutputChans, -1,
+        mNumAudioOutputChans, InputMixMode::UNSET,
 #ifdef WAIR  // wair
         mNumNetRevChans,
 #endif  // endwhere

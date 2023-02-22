@@ -83,7 +83,8 @@ bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
-                   int BaseChanIn, int NumChansIn, int NumChansOut, int InputMixMode,
+                   int BaseChanIn, int NumChansIn, int NumChansOut,
+                   InputMixMode InputMixMode,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
 #endif  // endwhere
@@ -202,7 +203,8 @@ void JackTrip::setupAudio(
         for (int i = 0; i < mNumAudioChansOut; i++) {
             outputChannels[i] = 1 + i;
         }
-        mAudioInterface = new JackAudioInterface(this, inputChannels, outputChannels, -1,
+        mAudioInterface = new JackAudioInterface(this, inputChannels, outputChannels,
+                                                 InputMixMode::UNSET,
 #ifdef WAIR  // wair
                                                  mNumNetRevChans,
 #endif  // endwhere
@@ -305,8 +307,7 @@ void JackTrip::setupAudio(
         // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
-        if (mNumAudioChansIn == 2
-            && mInputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+        if (mNumAudioChansIn == 2 && mInputMixMode == InputMixMode::MIXTOMONO) {
             mNumAudioChansIn = 1;
         }
         // Setup might have changed buffer size

@@ -43,6 +43,7 @@
 #include <QQueue>
 
 #include "AudioInterface.h"
+#include "InputMixMode.h"
 #include "StereoToMono.h"
 #include "jacktrip_globals.h"
 class JackTrip;  // Forward declaration
@@ -58,11 +59,12 @@ class RtAudioInterface : public AudioInterface
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
     RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-                     QVarLengthArray<int> OutputChans, int InputMixMode = -1,
+                     QVarLengthArray<int> OutputChans,
+                     InputMixMode InputMixMode              = InputMixMode::UNSET,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief Overloaded class constructor with null JackTrip pointer
     RtAudioInterface(QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
-                     int InputMixMode                       = -1,
+                     InputMixMode InputMixMode              = InputMixMode::UNSET,
                      audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief The class destructor
     virtual ~RtAudioInterface();

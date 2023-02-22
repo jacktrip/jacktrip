@@ -43,6 +43,7 @@
 #include <iostream>
 #include <limits>
 
+#include "InputMixMode.h"
 #include "JackTrip.h"
 #include "UdpHubListener.h"
 //#include "NetKS.h"
@@ -126,7 +127,7 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
     qDebug() << "mNumNetRevChans" << mNumNetRevChans;
 
     mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1,
-                                 QString(""), mNumNetRevChans, FORCEBUFFERQ));
+                                 InputMixMode::UNSET, mNumNetRevChans, FORCEBUFFERQ));
     // Add Plugins
     if (mWAIR) {
         cout << "Running in WAIR Mode..." << endl;
@@ -146,8 +147,8 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
         }
     }
 #else   // endwhere
-    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1, -1,
-                                 mBufferQueueLength));
+    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1,
+                                 InputMixMode::UNSET, mBufferQueueLength));
 #endif  // not wair
 #endif  // ifndef __JAMTEST__
 

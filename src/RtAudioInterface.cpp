@@ -41,6 +41,7 @@
 #include <cstdlib>
 
 #include "./InputMixMode.h"
+#include "InputMixMode.h"
 #include "JackTrip.h"
 #include "StereoToMono.h"
 #include "jacktrip_globals.h"
@@ -50,7 +51,8 @@ using std::endl;
 
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-                                   QVarLengthArray<int> OutputChans, int InputMixMode,
+                                   QVarLengthArray<int> OutputChans,
+                                   InputMixMode InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(jacktrip, InputChans, OutputChans, InputMixMode, AudioBitResolution)
     , mRtAudio(NULL)
@@ -59,7 +61,8 @@ RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> Inpu
 
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
-                                   QVarLengthArray<int> OutputChans, int InputMixMode,
+                                   QVarLengthArray<int> OutputChans,
+                                   InputMixMode InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(nullptr, InputChans, OutputChans, InputMixMode, AudioBitResolution,
                      false)
@@ -193,9 +196,10 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(baseChanIn) + static_cast<unsigned int>(chansIn) > dev_info_input.inputChannels) {
+    if (static_cast<unsigned int>(baseChanIn) + static_cast<unsigned int>(chansIn)
+        > dev_info_input.inputChannels) {
         baseChanIn = 0;
-        chansIn = 2;
+        chansIn    = 2;
         if (static_cast<unsigned int>(dev_info_input.inputChannels) < 2) {
             chansIn = 1;
         }
@@ -391,8 +395,8 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
     inputBuffer_sample  = (sample_t*)inputBuffer;
     outputBuffer_sample = (sample_t*)outputBuffer;
 
-    int chansIn = getNumInputChannels();
-    int mixMode = getInputMixMode();
+    int chansIn          = getNumInputChannels();
+    InputMixMode mixMode = getInputMixMode();
     if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
         // Get input and output buffers
         //-------------------------------------------------------------------
@@ -406,7 +410,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
         if (chansIn == 2 && mInBuffer.size() == chansIn
-            && mixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+            && mixMode == InputMixMode::MIXTOMONO) {
             mStereoToMonoMixer->compute(nFrames, mInBuffer.data(), mInBuffer.data());
         }
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);

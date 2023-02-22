@@ -49,7 +49,8 @@ using std::endl;
 
 //*******************************************************************************
 AudioInterface::AudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-                               QVarLengthArray<int> OutputChans, int InputMixMode,
+                               QVarLengthArray<int> OutputChans,
+                               InputMixMode InputMixMode,
 #ifdef WAIR  // wair
                                int NumNetRevChans,
 #endif  // endwhere
@@ -148,10 +149,10 @@ AudioInterface::~AudioInterface()
 //*******************************************************************************
 void AudioInterface::setup(bool /*verbose*/)
 {
-    int nChansIn     = mInputChans.size();
-    int nChansOut    = mOutputChans.size();
-    int inputMixMode = mInputMixMode;
-    if (inputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+    int nChansIn              = mInputChans.size();
+    int nChansOut             = mOutputChans.size();
+    InputMixMode inputMixMode = mInputMixMode;
+    if (inputMixMode == InputMixMode::MIXTOMONO) {
         nChansIn = 1;
     }
 
@@ -232,9 +233,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
                               unsigned int n_frames)
 {
-    int nChansIn     = mInputChans.size();
-    int inputMixMode = mInputMixMode;
-    if (inputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+    int nChansIn              = mInputChans.size();
+    InputMixMode inputMixMode = mInputMixMode;
+    if (inputMixMode == InputMixMode::MIXTOMONO) {
         nChansIn = 1;
     }
     // Allocate the Process Callback
@@ -504,9 +505,9 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
 void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                              unsigned int n_frames)
 {
-    int nChansIn     = mInputChans.size();
-    int inputMixMode = mInputMixMode;
-    if (inputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+    int nChansIn              = mInputChans.size();
+    InputMixMode inputMixMode = mInputMixMode;
+    if (inputMixMode == InputMixMode::MIXTOMONO) {
         nChansIn = 1;
     }
     // Input Process (from JACK to NETWORK)
@@ -673,9 +674,9 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
         return;
     }
 
-    int nChansIn     = mInputChans.size();
-    int inputMixMode = mInputMixMode;
-    if (inputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+    int nChansIn              = mInputChans.size();
+    InputMixMode inputMixMode = mInputMixMode;
+    if (inputMixMode == InputMixMode::MIXTOMONO) {
         nChansIn = 1;
     }
 
@@ -717,10 +718,10 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 
 void AudioInterface::initPlugins(bool verbose)
 {
-    int nChansIn     = mInputChans.size();
-    int nChansOut    = mOutputChans.size();
-    int inputMixMode = mInputMixMode;
-    if (inputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+    int nChansIn              = mInputChans.size();
+    int nChansOut             = mOutputChans.size();
+    InputMixMode inputMixMode = mInputMixMode;
+    if (inputMixMode == InputMixMode::MIXTOMONO) {
         nChansIn = 1;
     }
 

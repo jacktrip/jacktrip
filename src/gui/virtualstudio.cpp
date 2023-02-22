@@ -1115,8 +1115,7 @@ void VirtualStudio::validateDevicesState()
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             QJsonObject element = QJsonObject();
             element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
-            element.insert(QString::fromStdString("baseChannel"),
-                           QVariant(i).toInt());
+            element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
             element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
             items.push_back(QVariant(QJsonValue(element)));
         }

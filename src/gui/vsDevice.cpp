@@ -350,7 +350,7 @@ JackTrip* VsDevice::initJackTrip(
 {
     m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP,
                                   baseInputChannel, numChannelsIn, numChannelsOut,
-                                  inputMixMode,
+                                  static_cast<InputMixMode>(inputMixMode),
 #ifdef WAIR  // wair
                                   0,
 #endif  // endwhere

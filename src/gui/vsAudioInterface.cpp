@@ -237,7 +237,8 @@ void VsAudioInterface::setupRtAudio()
         }
 
         m_audioInterface.reset(new RtAudioInterface(
-            inputChans, outputChans, m_inputMixMode, m_audioBitResolution));
+            inputChans, outputChans, static_cast<InputMixMode>(m_inputMixMode),
+            m_audioBitResolution));
         m_audioInterface->setSampleRate(m_sampleRate);
         m_audioInterface->setDeviceID(m_deviceID);
         m_audioInterface->setInputDevice(m_inputDeviceName);
