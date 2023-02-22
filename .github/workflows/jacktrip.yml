@@ -750,12 +750,12 @@ jobs:
 
           # Define the JSON object to append
           new_object=$(cat <<EOF
-          {
+          [{
             "version": "1.0.0",
             "date": "$(date +%Y-%m-%d)",
             "description": "Added new feature",
             "my_var_value": "$my_var"
-          }
+          }]
           EOF
           )
 
@@ -764,8 +764,8 @@ jobs:
           existing_win_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json)
 
           # Combine the new object and the existing array into a new array
-          new_mac_array=$(echo "$new_object $existing_mac_array" | jq -s '.[0] + .[1:]')
-          new_win_array=$(echo "$new_object $existing_win_array" | jq -s '.[0] + .[1:]')
+          new_mac_array=$(echo "$new_object $existing_mac_array" | jq -s 'add')
+          new_win_array=$(echo "$new_object $existing_win_array" | jq -s 'add')
 
           # Update the "releases" key in the root object with the new array
           jq '.releases = '"$new_mac_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json
