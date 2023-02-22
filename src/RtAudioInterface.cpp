@@ -49,25 +49,23 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int BaseInChan, int NumInChans,
-                                   int NumOutChans, int InputMixMode,
+RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> inputChans,
+                                   QVarLengthArray<int> outputChans, int InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(jacktrip, BaseInChan, NumInChans, NumOutChans, InputMixMode,
-                     AudioBitResolution)
+    : AudioInterface(jacktrip, inputChans, outputChans, InputMixMode, AudioBitResolution)
     , mRtAudio(NULL)
 {
 }
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(int BaseInChan, int NumInChans, int NumOutChans,
-                                   int InputMixMode,
+RtAudioInterface::RtAudioInterface(QVarLengthArray<int> inputChans,
+                                   QVarLengthArray<int> outputChans, int InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(nullptr, BaseInChan, NumInChans, NumOutChans, InputMixMode,
-                     AudioBitResolution, false)
+    : AudioInterface(nullptr, inputChans, outputChans, InputMixMode, AudioBitResolution,
+                     false)
     , mRtAudio(NULL)
 {
-    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, InputMixMode,
-                     AudioBitResolution);
+    RtAudioInterface(nullptr, inputChans, outputChans, InputMixMode, AudioBitResolution);
 }
 
 //*******************************************************************************
@@ -86,9 +84,24 @@ RtAudioInterface::~RtAudioInterface()
 void RtAudioInterface::setup(bool verbose)
 {
     // Initialize Buffer array to read and write audio and members
-    int chansIn    = getNumInputChannels();
-    int chansOut   = getNumOutputChannels();
-    int baseChanIn = getBaseInputChannel();
+    QVarLengthArray<int> iChans = getInputChannels();
+    QVarLengthArray<int> oChans = getOutputChannels();
+
+    int chansIn    = iChans.size();
+    int chansOut   = oChans.size();
+    int baseChanIn = 1;
+
+    if (iChans.size() >= 1) {
+        int min = iChans.at(0);
+        for (int i = 0; i < iChans.size(); i++) {
+            if (iChans.at(i) < min) {
+                min = iChans.at(i);
+            }
+        }
+        if (min >= 1) {
+            baseChanIn = min;
+        }
+    }
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
@@ -245,9 +258,18 @@ void RtAudioInterface::setup(bool verbose)
     options.streamName = gJackDefaultClientName;
 
     // Update parent class
-    setNumInputChannels(chansIn);
-    setNumOutputChannels(chansOut);
-    setBaseInputChannel(baseChanIn);
+    QVarLengthArray<int> updatedInputChannels;
+    QVarLengthArray<int> updatedOutputChannels;
+    updatedInputChannels.resize(chansIn);
+    updatedOutputChannels.resize(chansOut);
+    for (int i = 0; i < chansIn; i++) {
+        updatedInputChannels[i] = baseChanIn + i;
+    }
+    for (int i = 0; i < chansOut; i++) {
+        updatedOutputChannels[i] = 1 + i;
+    }
+    setInputChannels(updatedInputChannels);
+    setOutputChannels(updatedOutputChannels);
 
     // Setup buffers
     mInBuffer.resize(chansIn);
