@@ -274,8 +274,7 @@ void JackTrip::setupAudio(
         // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
-        if (mNumAudioChansIn == 2
-            && mInputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)) {
+        if (mNumAudioChansIn == 2 && mInputMixMode == InputMixMode::MIXTOMONO) {
             mNumAudioChansIn = 1;
         }
         // Setup might have changed buffer size

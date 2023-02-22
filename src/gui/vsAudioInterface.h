@@ -138,7 +138,7 @@ class VsAudioInterface : public QObject
     bool m_hasBeenActive  = false;
 
     int m_baseInputChannel = 0;
-    int m_inputMixMode     = -1;
+    int m_inputMixMode     = 0;
 
     // Needed in constructor
     int m_numAudioChansIn;   ///< Number of Audio Input Channels
