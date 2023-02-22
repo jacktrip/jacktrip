@@ -74,8 +74,8 @@ class JackAudioInterface : public AudioInterface
      * \param ClientName Client name in Jack
      */
     JackAudioInterface(
-        JackTrip* jacktrip, QVarLengthArray<int> inputChans,
-        QVarLengthArray<int> outputChans, int InputMixMode,
+        JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+        QVarLengthArray<int> OutputChans, int InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
@@ -83,7 +83,7 @@ class JackAudioInterface : public AudioInterface
         const QString& ClientName = QStringLiteral("JackTrip"));
     /// \brief Overloaded class constructor with null JackTrip pointer
     JackAudioInterface(
-        QVarLengthArray<int> inputChans, QVarLengthArray<int> outputChans,
+        QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere

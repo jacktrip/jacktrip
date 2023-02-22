@@ -49,23 +49,23 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> inputChans,
-                                   QVarLengthArray<int> outputChans, int InputMixMode,
+RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+                                   QVarLengthArray<int> OutputChans, int InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(jacktrip, inputChans, outputChans, InputMixMode, AudioBitResolution)
+    : AudioInterface(jacktrip, InputChans, OutputChans, InputMixMode, AudioBitResolution)
     , mRtAudio(NULL)
 {
 }
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(QVarLengthArray<int> inputChans,
-                                   QVarLengthArray<int> outputChans, int InputMixMode,
+RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
+                                   QVarLengthArray<int> OutputChans, int InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
-    : AudioInterface(nullptr, inputChans, outputChans, InputMixMode, AudioBitResolution,
+    : AudioInterface(nullptr, InputChans, OutputChans, InputMixMode, AudioBitResolution,
                      false)
     , mRtAudio(NULL)
 {
-    RtAudioInterface(nullptr, inputChans, outputChans, InputMixMode, AudioBitResolution);
+    RtAudioInterface(nullptr, InputChans, OutputChans, InputMixMode, AudioBitResolution);
 }
 
 //*******************************************************************************

@@ -48,16 +48,16 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-AudioInterface::AudioInterface(JackTrip* jacktrip, QVarLengthArray<int> inputChans,
-                               QVarLengthArray<int> outputChans, int InputMixMode,
+AudioInterface::AudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+                               QVarLengthArray<int> OutputChans, int InputMixMode,
 #ifdef WAIR  // wair
                                int NumNetRevChans,
 #endif  // endwhere
                                audioBitResolutionT AudioBitResolution,
                                bool processWithNetwork)
     : mJackTrip(jacktrip)
-    , mInputChans(inputChans)
-    , mOutputChans(outputChans)
+    , mInputChans(InputChans)
+    , mOutputChans(OutputChans)
     , mInputMixMode(InputMixMode)
     ,
 #ifdef WAIR  // WAIR

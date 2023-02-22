@@ -93,8 +93,8 @@ class AudioInterface
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
     AudioInterface(
-        JackTrip* jacktrip, QVarLengthArray<int> inputChans,
-        QVarLengthArray<int> outputChans, int InputMixMode,
+        JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+        QVarLengthArray<int> OutputChans, int InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
