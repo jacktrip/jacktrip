@@ -690,21 +690,6 @@ jobs:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
   # release - list of files uploaded to GH release is specified in the *upload* step
-  deploy_test:
-    needs: [build, sign]
-    runs-on: ubuntu-latest
-    name: 'deploy release'
-    env:
-      DOWNLOAD_PATH: ${{ github.workspace }}/Install
-    steps:
-      - name: download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
-      - name: print files names downloaded
-        run: |
-          ls ${{ env.DOWNLOAD_PATH }}
-          ls ${{ env.DOWNLOAD_PATH }}/JackTrip*/*
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
     needs: [build, sign]
@@ -725,3 +710,27 @@ jobs:
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # deploy_jtl:
+  #   if:  startsWith(github.ref, 'refs/tags/') && needs.check-secrets.outputs.should_run == 'true'
+  #   needs: [build, sign]
+  #   runs-on: ubuntu-latest
+  #   name: 'deploy to updater'
+  #   permissions:
+  #     contents: "read"
+  #     id-token: "write"
+  #   env:
+  #     DOWNLOAD_PATH: ${{ github.workspace }}/Install
+  #   steps:
+  #     - name: download artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
+  #     - name: Authenticate to GCS
+  #       uses: google-github-actions/auth@v1
+  #       with:
+  #         workload_identity_provider: ${{ env.GCP_IDP }}
+  #         service_account: ${{ env.GCS_SVC_ACCT }}
+  #         create_credentials_file: true
+  #     - name: Upload file
+  #       run: |
+  #         gcloud storage cp ./somefile.txt gs://files.jacktrip.org/app-builds/somefile.txt
