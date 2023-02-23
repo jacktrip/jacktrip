@@ -778,7 +778,6 @@ jobs:
           # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip gs://files.jacktrip.org/app-builds
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
-        shell: bash
         run: |
           mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
           gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
@@ -786,7 +785,7 @@ jobs:
           file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} | cut -d ' ' -f 1)
           file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
           
-          version_number=${steps.set-version.outputs.version:1}
+          version_number=$(echo ${{ steps.set-version.outputs.version }} | cut -c 1- )
 
           # Define the JSON object to append
           new_object=$(cat <<EOF
