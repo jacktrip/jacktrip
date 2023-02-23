@@ -731,6 +731,12 @@ jobs:
             release-name: macOS-x64
             build-job-name: macOS-x64-qmake-clang-static-bundled_rtaudio
             runs-on: ubuntu-latest
+          - name: Update Linux manifests
+            if: needs.check-secrets.outputs.should_run == 'true'
+            platform-name: linux
+            release-name: Linux-x64
+            build-job-name: Linux-x64-qmake-gcc-static
+            runs-on: ubuntu-latest
     permissions:
       contents: "read"
       id-token: "write"
@@ -754,9 +760,11 @@ jobs:
             NAME="${{ matrix.build-job-name }}"
           fi
           if [[ "${{ matrix.platform-name }}" == "mac" ]]; then
-            EXTENSION=".pkg"
+            EXTENSION="signed-installer.pkg"
+          elif [[ "${{ matrix.platform-name }}" == "win" ]]; then
+            EXTENSION="signed-installer.msi"
           else
-            EXTENSION=".msi"
+            EXTENSION="binary.zip"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "name=$NAME" >> $GITHUB_OUTPUT
@@ -765,7 +773,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.extension }}
       - name: Authenticate to GCS
         uses: google-github-actions/auth@v1
         with:
@@ -775,16 +783,16 @@ jobs:
       - name: Upload files
         if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # don't run in testing. will remove line
         run: |
-          # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip gs://files.jacktrip.org/app-builds
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} gs://files.jacktrip.org/app-builds
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.extension }} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
+        if: ${{ matrix.platform-name }} != "linux" 
         id: update-edge
         run: |
           mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
           gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
 
-          file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} | cut -d ' ' -f 1)
-          file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
+          file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.extension }} | cut -d ' ' -f 1)
+          file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.extension }})
           echo "filesha=$file_sha" >> $GITHUB_OUTPUT
           echo "filesize=$file_size" >> $GITHUB_OUTPUT
           
@@ -798,7 +806,7 @@ jobs:
             "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
             "download": {
                 "date": "$(date "+%Y-%m-%dT00:00:00Z")",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer${{ steps.set-version.outputs.extension}}",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.extension}}",
                 "downloadSize": "$file_size",
                 "sha256": "$file_sha"
             }
@@ -833,7 +841,7 @@ jobs:
             "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
             "download": {
                 "date": "$(date "+%Y-%m-%dT00:00:00Z")",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer${{ steps.set-version.outputs.extension}}",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.extension}}",
                 "downloadSize": "$file_size",
                 "sha256": "$file_sha"
             }
