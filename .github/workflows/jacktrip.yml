@@ -753,7 +753,7 @@ jobs:
           else
             NAME="${{ matrix.build-job-name }}"
           fi
-          if [[ "${{ matrix.platform-name }}" == "mac"]]; then
+          if [[ "${{ matrix.platform-name }}" == "mac" ]]; then
             EXTENSION=".pkg"
           else
             EXTENSION=".msi"
