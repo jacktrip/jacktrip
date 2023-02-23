@@ -778,14 +778,18 @@ jobs:
           # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip gs://files.jacktrip.org/app-builds
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
+        id: update-edge
         run: |
           mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
           gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
 
           file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} | cut -d ' ' -f 1)
           file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
+          echo "filesha=file_sha" >> $GITHUB_OUTPUT
+          echo "filesize=file_size" >> $GITHUB_OUTPUT
           
           version_number=$(echo ${{ steps.set-version.outputs.version }} | cut -c 2- )
+          echo "versionnum=version_number" >> $GITHUB_OUTPUT
 
           # Define the JSON object to append
           new_object=$(cat <<EOF
@@ -801,6 +805,7 @@ jobs:
           }]
           EOF
           )
+          echo "newobject=new_object" >> $GITHUB_OUTPUT
 
           # Read the existing JSON array from the file
           existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json)
@@ -812,8 +817,28 @@ jobs:
           jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
 
           cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
+          # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/edge
       - name: Update stable manifests
         if: "!github.event.release.prerelease"
         run: |
           # do the full release work
+          file_sha=${{ steps.update-edge.outputs.filesha }}
+          file_size=${{ steps.update-edge.outputs.filesize }}
+          
+          version_number=${{ steps.update-edge.outputs.versionnum }}
+
+          # Define the JSON object to append
+          new_object=${{ steps.update-edge.outputs.newobject }}
+
+          # Read the existing JSON array from the file
+          existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json)
+
+          # Combine the new object and the existing array into a new array
+          new_array=$(echo "$new_object $existing_array" | jq -s 'add')
+
+          # Update the "releases" key in the root object with the new array
+          jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json
+
+          cat ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json
+          # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/stable
           
