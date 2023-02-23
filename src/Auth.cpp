@@ -39,22 +39,31 @@
 #include <QCryptographicHash>
 #include <QDate>
 #include <QFile>
+#include <QRandomGenerator>
 #include <QTextStream>
 #include <QThread>
 #include <iostream>
 
-Auth::Auth(const QString& fileName, QObject* parent)
+Auth::Auth(const QString& fileName, bool monitorChanges, QObject* parent)
     : QObject(parent)
     , m_days({"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"})
     , m_authFileName(fileName)
+    , m_monitorChanges(monitorChanges)
 {
-    // Load our credentials file.
-    loadAuthFile(m_authFileName);
+    if (!m_authFileName.isEmpty()) {
+        // Load our credentials file.
+        loadAuthFile(m_authFileName);
 
-    // Monitor the file for any changes. (Reload when it does.)
-    m_authFileWatcher.addPath(m_authFileName);
-    QObject::connect(&m_authFileWatcher, &QFileSystemWatcher::fileChanged, this,
-                     &Auth::reloadAuthFile, Qt::QueuedConnection);
+        // Monitor the file for any changes. (Reload when it does.)
+        if (m_monitorChanges) {
+            m_authFileWatcher.addPath(m_authFileName);
+        }
+    }
+
+    if (m_monitorChanges) {
+        QObject::connect(&m_authFileWatcher, &QFileSystemWatcher::fileChanged, this,
+                         &Auth::reloadAuthFile, Qt::QueuedConnection);
+    }
 }
 
 Auth::AuthResponseT Auth::checkCredentials(const QString& username,
@@ -81,6 +90,91 @@ Auth::AuthResponseT Auth::checkCredentials(const QString& username,
     return WRONGCREDS;
 }
 
+bool Auth::setFileName(const QString& fileName, bool readFile)
+{
+    if (m_monitorChanges) {
+        if (!m_authFileName.isEmpty()) {
+            m_authFileWatcher.removePath(m_authFileName);
+        }
+        m_authFileWatcher.addPath(fileName);
+    }
+    m_authFileName = fileName;
+    // If we're monitoring for changes, then we read the file regardless of the readFile
+    // setting.
+    if (readFile || m_monitorChanges) {
+        return loadAuthFile(m_authFileName);
+    } else {
+        m_passwordTable.clear();
+        m_timesTable.clear();
+        return true;
+    }
+}
+
+QStringList Auth::getUsers()
+{
+    return m_passwordTable.keys();
+}
+
+QString Auth::getTimes(const QString& username)
+{
+    return m_timesTable[username];
+}
+
+void Auth::deleteUser(const QString& username)
+{
+    m_passwordTable.remove(username);
+    m_timesTable.remove(username);
+}
+
+void Auth::editUser(const QString& username, const QString& times,
+                    const QString& password)
+{
+    // Can't add a new user if the password isn't set.
+    if (!m_passwordTable.contains(username) && password.isEmpty()) {
+        return;
+    }
+
+    if (!password.isEmpty()) {
+        QString hashed            = generateSha512Hash(password, generateSalt());
+        m_passwordTable[username] = hashed;
+    }
+
+    if (verifyTimeFormat(times)) {
+        m_timesTable[username] = times;
+    } else {
+        std::cout << "WARNING: Not writing invalid time string (" << times.toStdString()
+                  << ") for user " << username.toStdString();
+    }
+}
+
+bool Auth::writeFile()
+{
+    QFile file(m_authFileName);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+        QTextStream output(&file);
+        QHashIterator<QString, QString> iterator(m_passwordTable);
+        while (iterator.hasNext()) {
+            iterator.next();
+            output << QStringLiteral("%1:%2:%3\n")
+                          .arg(iterator.key(), iterator.value(),
+                               m_timesTable[iterator.key()]);
+        }
+        file.close();
+    } else {
+        return false;
+    }
+    return true;
+}
+
+QString Auth::generateSalt()
+{
+    QString result;
+    for (int i = 0; i < 16; i++) {
+        result.append(char64(QRandomGenerator::global()->bounded(0, 64)));
+    }
+    return result;
+}
+
 void Auth::reloadAuthFile()
 {
     // Some text editors will replace the original file instead of modifying the existing
@@ -91,13 +185,14 @@ void Auth::reloadAuthFile()
     loadAuthFile(m_authFileName);
 }
 
-void Auth::loadAuthFile(const QString& filename)
+bool Auth::loadAuthFile(const QString& filename)
 {
-    QFile file(filename);
-    if (file.open(QIODevice::ReadOnly)) {
-        m_passwordTable.clear();
-        m_timesTable.clear();
+    m_passwordTable.clear();
+    m_timesTable.clear();
 
+    bool errorFree = true;
+    QFile file(filename);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         // Read our file into our password table
         QTextStream input(&file);
         int lineNumber = 0;
@@ -106,9 +201,14 @@ void Auth::loadAuthFile(const QString& filename)
             QStringList lineParts = input.readLine().split(QStringLiteral(":"));
             if (lineParts.count() < 3) {
                 // We don't have a correctly formatted line. Ignore it.
-                std::cout
-                    << "WARNING: Incorrectly formatted line in auth file ignored. (Line "
-                    << lineNumber << ")" << std::endl;
+                errorFree = false;
+                if (m_monitorChanges) {
+                    // Don't output warnings if we're not monitoring changes.
+                    // (This is the case when we're loading it into the editor.)
+                    std::cout << "WARNING: Incorrectly formatted line in auth file "
+                                 "ignored. (Line "
+                              << lineNumber << ")" << std::endl;
+                }
                 continue;
             }
 
@@ -125,8 +225,11 @@ void Auth::loadAuthFile(const QString& filename)
                 invalid = true;
             }
             if (invalid) {
-                std::cout << "WARNING: Invalid password hash in auth file. (Line "
-                          << lineNumber << ")" << std::endl;
+                errorFree = false;
+                if (m_monitorChanges) {
+                    std::cout << "WARNING: Invalid password hash in auth file. (Line "
+                              << lineNumber << ")" << std::endl;
+                }
                 continue;
             }
 
@@ -135,6 +238,7 @@ void Auth::loadAuthFile(const QString& filename)
         }
         file.close();
     }
+    return errorFree;
 }
 
 bool Auth::checkTime(const QString& username)
@@ -181,6 +285,38 @@ bool Auth::checkTime(const QString& username)
 
     // We didn't find a match.
     return false;
+}
+
+bool Auth::verifyTimeFormat(const QString& timeString)
+{
+    QStringList times = timeString.split(QStringLiteral(","));
+    if (times.count() == 1 && times.at(0).isEmpty()) {
+        return true;
+    }
+
+    for (int i = 0; i < times.count(); i++) {
+        if (times.at(i) == QLatin1String("*")) {
+            continue;
+        }
+        if (m_days.contains(times.at(i).left(2))) {
+            QString accessTime = QString(times.at(i)).remove(0, 2);
+            if (accessTime == QLatin1String("*")) {
+                continue;
+            }
+            QStringList range = accessTime.split(QStringLiteral("-"));
+            if (range.count() == 2) {
+                QTime start = QTime::fromString(range.at(0), QStringLiteral("hhmm"));
+                QTime end   = QTime::fromString(range.at(1), QStringLiteral("hhmm"));
+
+                if (!start.isValid() || !end.isValid()) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+    return true;
 }
 
 char Auth::char64(int value)
