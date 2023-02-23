@@ -714,8 +714,23 @@ jobs:
     # if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true' # use this when done
     if:  needs.check-secrets.outputs.should_run == 'true' # testing
     needs: [build, sign]
-    runs-on: ubuntu-latest
-    name: 'deploy to updater'
+    runs-on: ${{ matrix.runs-on }}
+    name: ${{ matrix.name }}
+    strategy:
+      matrix:
+        include:
+          - name: Update Windows manifests
+            if: needs.check-secrets.outputs.should_run == 'true'
+            platform-name: win
+            release-name: Windows-x64
+            build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            runs-on: ubuntu-latest
+          - name: Update Mac manifests
+            if: needs.check-secrets.outputs.should_run == 'true'
+            platform-name: mac
+            release-name: macOS-x64
+            build-job-name: macOS-x64-qmake-clang-static-bundled_rtaudio
+            runs-on: ubuntu-latest
     permissions:
       contents: "read"
       id-token: "write"
@@ -733,11 +748,24 @@ jobs:
           else
             VERSION=${GITHUB_SHA::7}
           fi
+          if [[ -n "${{ matrix.release-name }}" && "$GITHUB_REF" == refs/tags/* ]]; then
+            NAME="${{ matrix.release-name }}"
+          else
+            NAME="${{ matrix.build-job-name }}"
+          fi
+          if [[ "${{ matrix.platform-name }}" == "mac"]]; then
+            EXTENSION=".pkg"
+          else
+            EXTENSION=".msi"
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "extension=$EXTENSION" >> $GITHUB_OUTPUT
       - name: download artifacts
         uses: actions/download-artifact@v2
         with:
           path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
       - name: Authenticate to GCS
         uses: google-github-actions/auth@v1
         with:
@@ -747,69 +775,43 @@ jobs:
       - name: Upload files
         if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # don't run in testing. will remove line
         run: |
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Linux-x64-static-binary.zip gs://files.jacktrip.org/app-builds
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Windows-x64-signed-installer.msi gs://files.jacktrip.org/app-builds
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-macOS-x64-signed-installer.pkg gs://files.jacktrip.org/app-builds
+          # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip gs://files.jacktrip.org/app-builds
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
         run: |
           mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
           gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
 
-          # Set the value of the variable
-          my_var="Some value"
-
-          win_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Windows-x64-signed-installer.msi | cut -d ' ' -f 1)
-          win_size=$(stat -f%z ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Windows-x64-signed-installer.msi)
-          mac_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-macOS-x64-signed-installer.pkg | cut -d ' ' -f 1)
-          mac_size=$(stat -f%z ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-macOS-x64-signed-installer.pkg)
+          file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} | cut -d ' ' -f 1)
+          file_size=$(stat -f%z ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
           
           version_number=${steps.set-version.outputs.version:1}
 
           # Define the JSON object to append
-          new_mac_object=$(cat <<EOF
+          new_object=$(cat <<EOF
           [{
             "version":  "$version_number",
             "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
             "download": {
                 "date": "$(date "+%Y-%m-%dT00:00:00Z")",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-macOS-x64-installer.pkg",
-                "downloadSize": "$mac_size",
-                "sha256": "$mac_sha"
-            }
-          }]
-          EOF
-          )
-
-          
-
-          new_win_object=$(cat <<EOF
-          [{
-            "version": "$version_number",
-            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
-            "download": {
-                "date": "$(date "+%Y-%m-%dT00:00:00Z")",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-Windows-x64-installer.pkg",
-                "downloadSize": "$win_size",
-                "sha256": "$win_sha"
+                "url": "https://files.jacktrip.org/app-builds/JackTrip--${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer${{ steps.set-version.outputs.extension}}",
+                "downloadSize": "$file_size",
+                "sha256": "$file_sha"
             }
           }]
           EOF
           )
 
           # Read the existing JSON array from the file
-          existing_mac_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json)
-          existing_win_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json)
+          existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json)
 
           # Combine the new object and the existing array into a new array
-          new_mac_array=$(echo "$new_object $existing_mac_array" | jq -s 'add')
-          new_win_array=$(echo "$new_object $existing_win_array" | jq -s 'add')
+          new_array=$(echo "$new_object $existing_array" | jq -s 'add')
 
           # Update the "releases" key in the root object with the new array
-          jq '.releases = '"$new_mac_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json
-          jq '.releases = '"$new_win_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json
+          jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
 
-          cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/mac-manifests.json
-          cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/win-manifests.json
+          cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
       - name: Update stable manifests
         if: "!github.event.release.prerelease"
         run: |
