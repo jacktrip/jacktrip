@@ -798,7 +798,7 @@ jobs:
             "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
             "download": {
                 "date": "$(date "+%Y-%m-%dT00:00:00Z")",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip--${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer${{ steps.set-version.outputs.extension}}",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer${{ steps.set-version.outputs.extension}}",
                 "downloadSize": "$file_size",
                 "sha256": "$file_sha"
             }
@@ -833,7 +833,7 @@ jobs:
             "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
             "download": {
                 "date": "$(date "+%Y-%m-%dT00:00:00Z")",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip--${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer${{ steps.set-version.outputs.extension}}",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer${{ steps.set-version.outputs.extension}}",
                 "downloadSize": "$file_size",
                 "sha256": "$file_sha"
             }
