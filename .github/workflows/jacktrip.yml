@@ -783,7 +783,7 @@ jobs:
           gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
 
           file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} | cut -d ' ' -f 1)
-          file_size=$(stat -f%z ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
+          file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
           
           version_number=${steps.set-version.outputs.version:1}
 
