@@ -785,7 +785,7 @@ jobs:
           file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} | cut -d ' ' -f 1)
           file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
           
-          version_number=$(echo ${{ steps.set-version.outputs.version }} | cut -c 1- )
+          version_number=$(echo ${{ steps.set-version.outputs.version }} | cut -c 2- )
 
           # Define the JSON object to append
           new_object=$(cat <<EOF
