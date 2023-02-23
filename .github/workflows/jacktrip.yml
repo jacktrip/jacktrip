@@ -654,8 +654,8 @@ jobs:
           else
             NAME="${{ matrix.build-job-name }}"
           fi
-          echo "::set-output name=version::$VERSION"
-          echo "::set-output name=name::$NAME"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
       - name: Retrieve binary artifact
         uses: actions/download-artifact@v2
         if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
@@ -724,6 +724,16 @@ jobs:
       GCP_IDP: ${{ secrets.GCP_IDP }}
       GCS_SVC_ACCT: ${{ secrets.GCS_SVC_ACCT }}
     steps:
+      - name: set version string for manifests
+        shell: bash
+        id: set-version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${GITHUB_SHA::7}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
       - name: download artifacts
         uses: actions/download-artifact@v2
         with:
@@ -737,9 +747,9 @@ jobs:
       - name: Upload files
         if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # don't run in testing. will remove line
         run: |
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip*-Linux*-static-binary.zip gs://files.jacktrip.org/app-builds
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip*-Windows*-signed-installer.msi gs://files.jacktrip.org/app-builds
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip*-macOS*-signed-installer.pkg gs://files.jacktrip.org/app-builds
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Linux-x64-static-binary.zip gs://files.jacktrip.org/app-builds
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Windows-x64-signed-installer.msi gs://files.jacktrip.org/app-builds
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-macOS-x64-signed-installer.pkg gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
         run: |
           mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
@@ -748,13 +758,40 @@ jobs:
           # Set the value of the variable
           my_var="Some value"
 
+          win_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Windows-x64-signed-installer.msi | cut -d ' ' -f 1)
+          win_size=$(stat -f%z ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-Windows-x64-signed-installer.msi)
+          mac_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-macOS-x64-signed-installer.pkg | cut -d ' ' -f 1)
+          mac_size=$(stat -f%z ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-macOS-x64-signed-installer.pkg)
+          
+          version_number=${steps.set-version.outputs.version:1}
+
           # Define the JSON object to append
-          new_object=$(cat <<EOF
+          new_mac_object=$(cat <<EOF
           [{
-            "version": "1.0.0",
-            "date": "$(date +%Y-%m-%d)",
-            "description": "Added new feature",
-            "my_var_value": "$my_var"
+            "version":  "$version_number",
+            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
+            "download": {
+                "date": "$(date "+%Y-%m-%dT00:00:00Z")",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-macOS-x64-installer.pkg",
+                "downloadSize": "$mac_size",
+                "sha256": "$mac_sha"
+            }
+          }]
+          EOF
+          )
+
+          
+
+          new_win_object=$(cat <<EOF
+          [{
+            "version": "$version_number",
+            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
+            "download": {
+                "date": "$(date "+%Y-%m-%dT00:00:00Z")",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-Windows-x64-installer.pkg",
+                "downloadSize": "$win_size",
+                "sha256": "$win_sha"
+            }
           }]
           EOF
           )
