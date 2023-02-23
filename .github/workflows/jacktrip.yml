@@ -778,6 +778,7 @@ jobs:
           # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip gs://files.jacktrip.org/app-builds
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
+        shell: bash
         run: |
           mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
           gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
