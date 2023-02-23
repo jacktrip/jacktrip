@@ -785,11 +785,11 @@ jobs:
 
           file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}} | cut -d ' ' -f 1)
           file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer${{ steps.set-version.outputs.extension}})
-          echo "filesha=file_sha" >> $GITHUB_OUTPUT
-          echo "filesize=file_size" >> $GITHUB_OUTPUT
+          echo "filesha=$file_sha" >> $GITHUB_OUTPUT
+          echo "filesize=$file_size" >> $GITHUB_OUTPUT
           
           version_number=$(echo ${{ steps.set-version.outputs.version }} | cut -c 2- )
-          echo "versionnum=version_number" >> $GITHUB_OUTPUT
+          echo "versionnum=$version_number" >> $GITHUB_OUTPUT
 
           # Define the JSON object to append
           new_object=$(cat <<EOF
@@ -805,7 +805,7 @@ jobs:
           }]
           EOF
           )
-          echo "newobject=new_object" >> $GITHUB_OUTPUT
+          echo "newobject=$new_object" >> $GITHUB_OUTPUT
 
           # Read the existing JSON array from the file
           existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json)
