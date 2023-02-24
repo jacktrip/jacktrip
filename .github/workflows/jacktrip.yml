@@ -826,8 +826,7 @@ jobs:
             # Update the "releases" key in the root object with the new array
             jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
 
-            cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
-            gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/edge
+            gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json gs://files.jacktrip.org/app-releases/edge
           fi
       - name: Update stable manifests
         if: "!github.event.release.prerelease"
@@ -862,6 +861,5 @@ jobs:
           # Update the "releases" key in the root object with the new array
           jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json
 
-          cat ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json
-          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/stable
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json gs://files.jacktrip.org/app-releases/stable
           
