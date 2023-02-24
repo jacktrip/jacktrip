@@ -89,9 +89,9 @@ void RtAudioInterface::setup(bool verbose)
     QVarLengthArray<int> iChans = getInputChannels();
     QVarLengthArray<int> oChans = getOutputChannels();
 
-    int chansIn    = iChans.size();
-    int chansOut   = oChans.size();
-    int baseChanIn = 0;
+    uint32_t chansIn    = iChans.size();
+    uint32_t chansOut   = oChans.size();
+    uint32_t baseChanIn = 0;
 
     if (iChans.size() >= 1) {
         int min = iChans.at(0);
@@ -195,16 +195,15 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(baseChanIn) + static_cast<unsigned int>(chansIn)
-        > dev_info_input.inputChannels) {
+    if (baseChanIn + chansIn > dev_info_input.inputChannels) {
         baseChanIn = 0;
         chansIn    = 2;
-        if (static_cast<unsigned int>(dev_info_input.inputChannels) < 2) {
+        if (dev_info_input.inputChannels < 2) {
             chansIn = 1;
         }
     }
 
-    if (static_cast<unsigned int>(chansOut) > dev_info_output.outputChannels) {
+    if (chansOut > dev_info_output.outputChannels) {
         chansOut = dev_info_output.outputChannels;
     }
 
@@ -263,10 +262,10 @@ void RtAudioInterface::setup(bool verbose)
     QVarLengthArray<int> updatedOutputChannels;
     updatedInputChannels.resize(chansIn);
     updatedOutputChannels.resize(chansOut);
-    for (int i = 0; i < chansIn; i++) {
+    for (uint32_t i = 0; i < chansIn; i++) {
         updatedInputChannels[i] = baseChanIn + i;
     }
-    for (int i = 0; i < chansOut; i++) {
+    for (uint32_t i = 0; i < chansOut; i++) {
         updatedOutputChannels[i] = 1 + i;
     }
     setInputChannels(updatedInputChannels);
