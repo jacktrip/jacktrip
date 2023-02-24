@@ -789,7 +789,6 @@ jobs:
         run: |
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
-        if: ${{ matrix.platform-name }} != "linux" 
         id: update-edge
         run: |
           mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
@@ -803,32 +802,34 @@ jobs:
           version_number=$(echo ${{ steps.set-version.outputs.version }} | cut -c 2- )
           echo "versionnum=$version_number" >> $GITHUB_OUTPUT
 
-          # Define the JSON object to append
-          new_object=$(cat <<EOF
-          [{
-            "version":  "$version_number",
-            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
-            "download": {
-                "date": "$(date "+%Y-%m-%dT00:00:00Z")",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }}",
-                "downloadSize": "$file_size",
-                "sha256": "$file_sha"
-            }
-          }]
-          EOF
-          )
+          if [[ "${{ matrix.platform-name }}" != "linux"  ]]; then
+            # Define the JSON object to append
+            new_object=$(cat <<EOF
+            [{
+              "version":  "$version_number",
+              "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
+              "download": {
+                  "date": "$(date "+%Y-%m-%dT00:00:00Z")",
+                  "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }}",
+                  "downloadSize": "$file_size",
+                  "sha256": "$file_sha"
+              }
+            }]
+            EOF
+            )
 
-          # Read the existing JSON array from the file
-          existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json)
+            # Read the existing JSON array from the file
+            existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json)
 
-          # Combine the new object and the existing array into a new array
-          new_array=$(echo "$new_object $existing_array" | jq -s 'add')
+            # Combine the new object and the existing array into a new array
+            new_array=$(echo "$new_object $existing_array" | jq -s 'add')
 
-          # Update the "releases" key in the root object with the new array
-          jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
+            # Update the "releases" key in the root object with the new array
+            jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
 
-          cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
-          # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/edge
+            cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
+            # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/edge
+          fi
       - name: Update stable manifests
         if: "!github.event.release.prerelease"
         run: |
