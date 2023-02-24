@@ -829,7 +829,7 @@ jobs:
             gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json gs://files.jacktrip.org/app-releases/edge
           fi
       - name: Update stable manifests
-        if: "!github.event.release.prerelease"
+        if: github.event_name == 'release' && "!github.event.release.prerelease"
         run: |
           # do the full release work
           file_sha=${{ steps.update-edge.outputs.filesha }}
