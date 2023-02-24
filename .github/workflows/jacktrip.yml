@@ -711,8 +711,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   deploy_jtl:
-    # if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true' # use this when done
-    if:  needs.check-secrets.outputs.should_run == 'true' # testing
+    if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true'
     needs: [build, sign]
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
@@ -785,7 +784,6 @@ jobs:
           service_account: ${{ env.GCS_SVC_ACCT }}
           create_credentials_file: true
       - name: Upload files
-        if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # don't run in testing. will remove line
         run: |
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
@@ -828,7 +826,7 @@ jobs:
             jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
 
             cat ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
-            # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/edge
+            gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/edge
           fi
       - name: Update stable manifests
         if: "!github.event.release.prerelease"
@@ -864,5 +862,5 @@ jobs:
           jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json
 
           cat ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json
-          # gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/stable
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json ${{ env.DOWNLOAD_PATH }}/app-releases/stable
           
