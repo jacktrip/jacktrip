@@ -711,7 +711,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   deploy_jtl:
-    if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true'
+    # if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true' # use this when done
+    if:  needs.check-secrets.outputs.should_run == 'true' # testing
     needs: [build, sign]
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
