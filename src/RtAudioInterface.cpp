@@ -40,7 +40,6 @@
 #include <QString>
 #include <cstdlib>
 
-#include "./InputMixMode.h"
 #include "InputMixMode.h"
 #include "JackTrip.h"
 #include "StereoToMono.h"
