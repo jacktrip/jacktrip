@@ -807,12 +807,12 @@ Item {
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
                 text: (() => {
-                    if (virtualstudio.inputMixMode === "stereo") {
+                    if (virtualstudio.inputMixMode === 2) {
                         return "Treat the channels as Left and Right signals, coming through each speaker separately.";
-                    } else if (virtualstudio.inputMixMode === "mix-to-mono") {
+                    } else if (virtualstudio.inputMixMode === 3) {
                         return "Combine the channels into one central channel coming through both speakers.";
-                    } else if (virtualstudio.inputMixMode === "mono") {
-                        return "";
+                    } else if (virtualstudio.inputMixMode === 1) {
+                        return "Send a single channel of audio";
                     } else {
                         return "";
                     }
