@@ -1229,7 +1229,7 @@ void QJackTrip::loadSettings(Settings* cliSettings)
 
         settings.beginGroup(QStringLiteral("JitterBuffer"));
         settings.setValue(QStringLiteral("JitterAnnounce"), true);
-        int bufferStrategy = cliSettings->getBufferStrategry();
+        int bufferStrategy = cliSettings->getBufferStrategy();
         m_ui->jitterCheckBox->setChecked(bufferStrategy > 0);
         m_ui->broadcastCheckBox->setChecked(cliSettings->getBroadCastQueue() > 0);
         m_ui->broadcastQueueSpinBox->setValue(

@@ -104,7 +104,7 @@ class Settings : public QObject
     QString getClientName() { return mClientName; }
     QString getRemoteClientName() { return mRemoteClientName; }
     bool getConnectDefaultAudioPorts() { return mConnectDefaultAudioPorts; }
-    int getBufferStrategry() { return mBufferStrategy; }
+    int getBufferStrategy() { return mBufferStrategy; }
     int getBroadCastQueue() { return mBroadcastQueue; }
     bool getUseRtUdpPriority() { return mUseRtUdpPriority; }
     unsigned int getHubConnectionMode() { return mHubConnectionMode; }
