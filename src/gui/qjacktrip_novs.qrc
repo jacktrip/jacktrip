@@ -1,7 +1,7 @@
 <RCC>
   <qresource prefix="qjacktrip">
-    <file alias="about@2x.png">alt/about@2x.png</file>
-    <file alias="about.png">alt/about.png</file>
-    <file alias="icon.png">alt/icon.png</file>
+    <file>about@2x.png</file>
+    <file>about.png</file>
+    <file>icon.png</file>
   </qresource>
 </RCC>

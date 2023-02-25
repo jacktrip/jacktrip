@@ -149,6 +149,7 @@ set(qjacktrip_SRC
   src/SslServer.cpp
   src/Auth.cpp
   src/ProcessPlugin.cpp
+  src/StereoToMono.cpp
 )
 
 if (rtaudio)
