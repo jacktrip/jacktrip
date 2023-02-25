@@ -52,7 +52,7 @@
 #include "../Meter.h"
 #include "../Reverb.h"
 
-QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
+QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidget* parent)
     : QMainWindow(parent)
     , m_ui(new Ui::QJackTrip)
     , m_netManager(new QNetworkAccessManager(this))
@@ -64,7 +64,6 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     , m_isExiting(false)
     , m_exitSent(false)
     , m_hasIPv4Reply(false)
-    , m_argc(argc)
     , m_hideWarning(false)
 {
     m_ui->setupUi(this);
@@ -283,19 +282,19 @@ QJackTrip::QJackTrip(int argc, bool suppressCommandlineWarning, QWidget* parent)
     }
 #endif
 
-    // One of our arguments will always be --gui, so if that's the only one
-    // then we don't need to show the warning message.
-    if (((!gVerboseFlag && m_argc > 2) || m_argc > 3) && !suppressCommandlineWarning) {
+    migrateSettings();
+    loadSettings(settings);
+
+    // Display a warning about any ignored command line options.
+    if (settings->guiIgnoresArguments() && !suppressCommandlineWarning) {
         QMessageBox msgBox;
         msgBox.setText(
-            "The GUI version of JackTrip currently ignores any command line "
-            "options other than the verbose option (-V).\n\nThis may change in future.");
+            "You have supplied command line options that the GUI version of JackTrip "
+            "currently ignores. (Everything else will run as expected.)\n\nRun "
+            "\"jacktrip -h\" for more details.");
         msgBox.setWindowTitle(QStringLiteral("Command line options"));
         msgBox.exec();
     }
-
-    migrateSettings();
-    loadSettings();
 
     QVector<QLabel*> labels;
     labels << m_ui->inFreeverbLabel << m_ui->inZitarevLabel << m_ui->outFreeverbLabel;
@@ -754,11 +753,8 @@ void QJackTrip::start()
         if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
             m_udpHub.reset(new UdpHubListener(m_ui->localPortSpinBox->value(),
                                               m_ui->basePortSpinBox->value()));
-            int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
-            if (hubConnectionMode > CLIENTFOFI) {
-                // Adjust for the RESERVEDMATRIX gap.
-                hubConnectionMode++;
-            }
+            int hubConnectionMode = hubModeFromPatchType(
+                static_cast<patchTypeT>(m_ui->autoPatchComboBox->currentIndex()));
             if (m_ui->patchServerCheckBox->isChecked()) {
                 if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI) {
                     hubConnectionMode = JackTrip::SERVFOFI;
@@ -1085,8 +1081,6 @@ void QJackTrip::advancedOptionsForHubServer(bool isHubServer)
     m_ui->clientNameEdit->setVisible(!isHubServer);
     m_ui->redundancyLabel->setVisible(!isHubServer);
     m_ui->redundancySpinBox->setVisible(!isHubServer);
-    m_ui->resolutionLabel->setVisible(!isHubServer);
-    m_ui->resolutionComboBox->setVisible(!isHubServer);
     m_ui->connectAudioCheckBox->setVisible(!isHubServer);
     m_ui->basePortLabel->setVisible(isHubServer);
     m_ui->basePortSpinBox->setVisible(isHubServer);
@@ -1120,58 +1114,22 @@ void QJackTrip::migrateSettings()
     settings.setValue(QStringLiteral("Migrated"), true);
 }
 
-void QJackTrip::loadSettings()
+void QJackTrip::loadSettings(Settings* cliSettings)
 {
     QSettings settings;
-    m_ui->typeComboBox->setCurrentIndex(
-        settings.value(QStringLiteral("RunMode"), 2).toInt());
-
-    // Migrate to separate send and receive channel numbers.
-    int oldChannelSetting = settings.value(QStringLiteral("Channels"), -1).toInt();
-    if (oldChannelSetting != -1) {
-        m_ui->channelSendSpinBox->setValue(oldChannelSetting);
-        m_ui->channelRecvSpinBox->setValue(oldChannelSetting);
-        settings.remove(QStringLiteral("Channels"));
-    } else {
-        m_ui->channelSendSpinBox->setValue(
-            settings.value(QStringLiteral("ChannelsSend"), gDefaultNumInChannels)
-                .toInt());
-        m_ui->channelRecvSpinBox->setValue(
-            settings.value(QStringLiteral("ChannelsRecv"), gDefaultNumOutChannels)
-                .toInt());
+    bool useCommandLine = false;
+    if (cliSettings) {
+        useCommandLine = cliSettings->isModeSet();
     }
 
-    m_ui->autoPatchComboBox->setCurrentIndex(
-        settings.value(QStringLiteral("AutoPatchMode"), 0).toInt());
-    m_ui->patchServerCheckBox->setChecked(
-        settings.value(QStringLiteral("PatchIncludesServer"), false).toBool());
-    m_ui->upmixCheckBox->setChecked(
-        settings.value(QStringLiteral("StereoUpmix"), false).toBool());
-    m_ui->zeroCheckBox->setChecked(
-        settings.value(QStringLiteral("ZeroUnderrun"), false).toBool());
-    m_ui->timeoutCheckBox->setChecked(
-        settings.value(QStringLiteral("Timeout"), false).toBool());
-    m_ui->clientNameEdit->setText(
-        settings.value(QStringLiteral("ClientName"), "").toString());
-    m_ui->remoteNameEdit->setText(
-        settings.value(QStringLiteral("RemoteName"), "").toString());
-    m_ui->localPortSpinBox->setValue(
-        settings.value(QStringLiteral("LocalPort"), gDefaultPort).toInt());
-    m_ui->remotePortSpinBox->setValue(
-        settings.value(QStringLiteral("RemotePort"), gDefaultPort).toInt());
-    m_ui->basePortSpinBox->setValue(
-        settings.value(QStringLiteral("BasePort"), 61002).toInt());
-    m_ui->queueLengthSpinBox->setValue(
-        settings.value(QStringLiteral("QueueLength"), gDefaultQueueLength).toInt());
-    m_ui->redundancySpinBox->setValue(
-        settings.value(QStringLiteral("Redundancy"), gDefaultRedundancy).toInt());
-    m_ui->resolutionComboBox->setCurrentIndex(
-        settings.value(QStringLiteral("Resolution"), 1).toInt());
-    m_ui->connectAudioCheckBox->setChecked(
-        settings.value(QStringLiteral("ConnectAudio"), true).toBool());
-    m_ui->realTimeCheckBox->setChecked(
-        settings.value(QStringLiteral("RTNetworking"), true).toBool());
-    // This may have been set by the command line, so don't overwrite if that's the case.
+    // Migrate to separate send and receive channel numbers first if needed
+    int oldChannelSetting = settings.value(QStringLiteral("Channels"), -1).toInt();
+    if (oldChannelSetting != -1) {
+        settings.setValue(QStringLiteral("ChannelsSend"), oldChannelSetting);
+        settings.setValue(QStringLiteral("ChannelsRecv"), oldChannelSetting);
+        settings.remove(QStringLiteral("Channels"));
+    }
+
     m_ui->verboseCheckBox->setChecked(
         gVerboseFlag || settings.value(QStringLiteral("Debug"), 0).toBool());
     m_lastPath = settings.value(QStringLiteral("LastPath"), QDir::homePath()).toString();
@@ -1186,9 +1144,217 @@ void QJackTrip::loadSettings()
     }
     settings.endGroup();
     // Need to get this here so it isn't overwritten by the previous section.
-    m_ui->addressComboBox->setCurrentText(
-        settings.value(QStringLiteral("LastAddress"), "").toString());
+    if (useCommandLine && !cliSettings->getPeerAddress().isEmpty()) {
+        m_ui->addressComboBox->setCurrentText(cliSettings->getPeerAddress());
+    } else {
+        m_ui->addressComboBox->setCurrentText(
+            settings.value(QStringLiteral("LastAddress"), "").toString());
+    }
 
+    if (useCommandLine) {
+        JackTrip::jacktripModeT mode = cliSettings->getJackTripMode();
+        if (mode == JackTrip::CLIENT) {
+            m_ui->typeComboBox->setCurrentIndex(P2P_CLIENT);
+        } else if (mode == JackTrip::SERVER) {
+            m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
+        } else if (mode == JackTrip::CLIENTTOPINGSERVER) {
+            m_ui->typeComboBox->setCurrentIndex(HUB_CLIENT);
+        } else {
+            m_ui->typeComboBox->setCurrentIndex(HUB_SERVER);
+        }
+        m_ui->channelSendSpinBox->setValue(cliSettings->getNumAudioInputChans());
+        m_ui->channelRecvSpinBox->setValue(cliSettings->getNumAudioOutputChans());
+
+        unsigned int patchMode = cliSettings->getHubConnectionMode();
+        if (patchMode == JackTrip::SERVERTOCLIENT) {
+            m_ui->autoPatchComboBox->setCurrentIndex(SERVERTOCLIENT);
+        } else if (patchMode == JackTrip::CLIENTECHO) {
+            m_ui->autoPatchComboBox->setCurrentIndex(CLIENTECHO);
+        } else if (patchMode == JackTrip::CLIENTFOFI) {
+            m_ui->autoPatchComboBox->setCurrentIndex(CLIENTFOFI);
+        } else if (patchMode == JackTrip::FULLMIX) {
+            m_ui->autoPatchComboBox->setCurrentIndex(FULLMIX);
+        } else {
+            // Accomodate for the fact that the GUI doesn't support the reserved patching
+            // mode by disabling patching if selected.
+            m_ui->autoPatchComboBox->setCurrentIndex(NOAUTO);
+        }
+
+        m_ui->patchServerCheckBox->setChecked(cliSettings->getPatchServerAudio());
+        m_ui->upmixCheckBox->setChecked(cliSettings->getPatchServerAudio());
+        m_ui->zeroCheckBox->setChecked(cliSettings->getUnderrunMode() == JackTrip::ZEROS);
+        m_ui->timeoutCheckBox->setChecked(cliSettings->getStopOnTimeout());
+        m_ui->clientNameEdit->setText(cliSettings->getClientName());
+        m_ui->remoteNameEdit->setText(cliSettings->getRemoteClientName());
+        m_ui->localPortSpinBox->setValue(cliSettings->getBindPort());
+        m_ui->remotePortSpinBox->setValue(cliSettings->getPeerPort());
+        int basePort = cliSettings->getServerUdpPort();
+        if (basePort == 0) {
+            // TODO: This currently mirrors the behaviour seen in UdpHubListener.cpp, but
+            // I'm not sure it's particularly intuitive. It makes sense if the bind port
+            // was changed using the offset flag -o but not if it was changed using -B.
+            // These two cases are not currently distinguished between.
+            basePort = 61002 + cliSettings->getBindPort() - gDefaultPort;
+        }
+        m_ui->basePortSpinBox->setValue(basePort);
+        int queueLength = cliSettings->getQueueLength();
+        m_ui->queueLengthSpinBox->setValue(
+            queueLength > 0
+                ? queueLength
+                : settings.value(QStringLiteral("QueueLength"), gDefaultQueueLength)
+                      .toInt());
+        m_ui->redundancySpinBox->setValue(cliSettings->getRedundancy());
+        AudioInterface::audioBitResolutionT resolution =
+            cliSettings->getAudioBitResolution();
+        if (resolution == AudioInterface::BIT8) {
+            m_ui->resolutionComboBox->setCurrentIndex(0);
+        } else if (resolution == AudioInterface::BIT16) {
+            m_ui->resolutionComboBox->setCurrentIndex(1);
+        } else if (resolution == AudioInterface::BIT24) {
+            m_ui->resolutionComboBox->setCurrentIndex(2);
+        } else {
+            m_ui->resolutionComboBox->setCurrentIndex(3);
+        }
+        m_ui->connectAudioCheckBox->setChecked(
+            cliSettings->getConnectDefaultAudioPorts());
+        m_ui->realTimeCheckBox->setChecked(cliSettings->getUseRtUdpPriority());
+
+        m_ui->requireAuthCheckBox->setChecked(cliSettings->getUseAuthentication());
+        m_ui->authCheckBox->setChecked(cliSettings->getUseAuthentication());
+        m_ui->certEdit->setText(cliSettings->getCertFile());
+        m_ui->keyEdit->setText(cliSettings->getKeyFile());
+        m_ui->credsEdit->setText(cliSettings->getCredsFile());
+        m_ui->usernameEdit->setText(cliSettings->getUsername());
+        m_ui->passwordEdit->setText(cliSettings->getPassword());
+
+        settings.beginGroup(QStringLiteral("JitterBuffer"));
+        settings.setValue(QStringLiteral("JitterAnnounce"), true);
+        int bufferStrategy = cliSettings->getBufferStrategy();
+        m_ui->jitterCheckBox->setChecked(bufferStrategy > 0);
+        m_ui->broadcastCheckBox->setChecked(cliSettings->getBroadCastQueue() > 0);
+        m_ui->broadcastQueueSpinBox->setValue(
+            cliSettings->getBroadCastQueue() > 0
+                ? cliSettings->getBroadCastQueue()
+                : settings
+                      .value(QStringLiteral("BroadcastLength"), gDefaultQueueLength * 2)
+                      .toInt());
+        if (bufferStrategy > 0) {
+            m_ui->bufferStrategyComboBox->setCurrentIndex(bufferStrategy - 1);
+        } else {
+            m_ui->bufferStrategyComboBox->setCurrentIndex(
+                settings.value(QStringLiteral("Strategy"), 1).toInt() - 1);
+        }
+        m_ui->autoQueueCheckBox->setChecked(queueLength < 0);
+        m_ui->autoQueueSpinBox->setValue(
+            queueLength < 0
+                ? std::abs(queueLength)
+                : settings.value(QStringLiteral("TuningParameter"), 500).toInt());
+        settings.endGroup();
+    } else {
+        m_ui->typeComboBox->setCurrentIndex(
+            settings.value(QStringLiteral("RunMode"), 2).toInt());
+        m_ui->zeroCheckBox->setChecked(
+            settings.value(QStringLiteral("ZeroUnderrun"), false).toBool());
+        m_ui->localPortSpinBox->setValue(
+            settings.value(QStringLiteral("LocalPort"), gDefaultPort).toInt());
+        m_ui->queueLengthSpinBox->setValue(
+            settings.value(QStringLiteral("QueueLength"), gDefaultQueueLength).toInt());
+        m_ui->resolutionComboBox->setCurrentIndex(
+            settings.value(QStringLiteral("Resolution"), 1).toInt());
+        m_ui->realTimeCheckBox->setChecked(
+            settings.value(QStringLiteral("RTNetworking"), true).toBool());
+
+        settings.beginGroup(QStringLiteral("JitterBuffer"));
+        bool jitterAnnounce =
+            settings.value(QStringLiteral("JitterAnnounce"), false).toBool();
+        if (!jitterAnnounce
+            && !settings.value(QStringLiteral("Enabled"), true).toBool()) {
+            QMessageBox msgBox;
+            msgBox.setText(
+                "From this build onwards, the new jitter buffer is being enabled by "
+                "default. "
+                "You can turn it off in the Jitter Buffer settings tab.");
+            msgBox.setWindowTitle(QStringLiteral("Jitter Buffer"));
+            msgBox.exec();
+            settings.setValue(QStringLiteral("Enabled"), true);
+        }
+        settings.setValue(QStringLiteral("JitterAnnounce"), true);
+        m_ui->jitterCheckBox->setChecked(
+            settings.value(QStringLiteral("Enabled"), true).toBool());
+        m_ui->broadcastCheckBox->setChecked(
+            settings.value(QStringLiteral("Broadcast"), false).toBool());
+        m_ui->broadcastQueueSpinBox->setValue(
+            settings.value(QStringLiteral("BroadcastLength"), gDefaultQueueLength * 2)
+                .toInt());
+        m_ui->bufferStrategyComboBox->setCurrentIndex(
+            settings.value(QStringLiteral("Strategy"), 1).toInt() - 1);
+        m_ui->autoQueueCheckBox->setChecked(
+            settings.value(QStringLiteral("AutoQueue"), true).toBool());
+        m_ui->autoQueueSpinBox->setValue(
+            settings.value(QStringLiteral("TuningParameter"), 500).toInt());
+        settings.endGroup();
+    }
+
+    // These settings may need to be loaded even if we were using our command line.
+    // (This depends on the mode that was selected.)
+    if (!useCommandLine || m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+        m_ui->channelSendSpinBox->setValue(
+            settings.value(QStringLiteral("ChannelsSend"), gDefaultNumInChannels)
+                .toInt());
+        m_ui->channelRecvSpinBox->setValue(
+            settings.value(QStringLiteral("ChannelsRecv"), gDefaultNumOutChannels)
+                .toInt());
+        m_ui->timeoutCheckBox->setChecked(
+            settings.value(QStringLiteral("Timeout"), false).toBool());
+        m_ui->clientNameEdit->setText(
+            settings.value(QStringLiteral("ClientName"), "").toString());
+        m_ui->redundancySpinBox->setValue(
+            settings.value(QStringLiteral("Redundancy"), gDefaultRedundancy).toInt());
+        m_ui->connectAudioCheckBox->setChecked(
+            settings.value(QStringLiteral("ConnectAudio"), true).toBool());
+    }
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_SERVER)) {
+        m_ui->autoPatchComboBox->setCurrentIndex(
+            settings.value(QStringLiteral("AutoPatchMode"), 0).toInt());
+        m_ui->patchServerCheckBox->setChecked(
+            settings.value(QStringLiteral("PatchIncludesServer"), false).toBool());
+        m_ui->upmixCheckBox->setChecked(
+            settings.value(QStringLiteral("StereoUpmix"), false).toBool());
+        m_ui->basePortSpinBox->setValue(
+            settings.value(QStringLiteral("BasePort"), 61002).toInt());
+    }
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_CLIENT)) {
+        m_ui->remoteNameEdit->setText(
+            settings.value(QStringLiteral("RemoteName"), "").toString());
+    }
+    if (!useCommandLine
+        || !(m_ui->typeComboBox->currentIndex() == HUB_CLIENT
+             || m_ui->typeComboBox->currentIndex() == P2P_CLIENT)) {
+        m_ui->remotePortSpinBox->setValue(
+            settings.value(QStringLiteral("RemotePort"), gDefaultPort).toInt());
+    }
+
+    settings.beginGroup(QStringLiteral("Auth"));
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_SERVER)) {
+        m_ui->requireAuthCheckBox->setChecked(
+            settings.value(QStringLiteral("Require"), false).toBool());
+        m_ui->certEdit->setText(
+            settings.value(QStringLiteral("CertFile"), "").toString());
+        m_ui->keyEdit->setText(settings.value(QStringLiteral("KeyFile"), "").toString());
+        m_ui->credsEdit->setText(
+            settings.value(QStringLiteral("CredsFile"), "").toString());
+    }
+    if (!useCommandLine || !(m_ui->typeComboBox->currentIndex() == HUB_CLIENT)) {
+        m_ui->authCheckBox->setChecked(
+            settings.value(QStringLiteral("Use"), false).toBool());
+        m_ui->usernameEdit->setText(
+            settings.value(QStringLiteral("Username"), "").toString());
+        m_ui->passwordEdit->setText("");
+    }
+    settings.endGroup();
+
+    // Settings from this point onwards are currently read only from the previously stored
+    // values and not from the commmand line.
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
     m_ui->backendComboBox->setCurrentIndex(
@@ -1211,50 +1377,11 @@ void QJackTrip::loadSettings()
     settings.endGroup();
 #endif
 
-    settings.beginGroup(QStringLiteral("Auth"));
-    m_ui->requireAuthCheckBox->setChecked(
-        settings.value(QStringLiteral("Require"), false).toBool());
-    m_ui->certEdit->setText(settings.value(QStringLiteral("CertFile"), "").toString());
-    m_ui->keyEdit->setText(settings.value(QStringLiteral("KeyFile"), "").toString());
-    m_ui->credsEdit->setText(settings.value(QStringLiteral("CredsFile"), "").toString());
-    m_ui->authCheckBox->setChecked(settings.value(QStringLiteral("Use"), false).toBool());
-    m_ui->usernameEdit->setText(
-        settings.value(QStringLiteral("Username"), "").toString());
-    settings.endGroup();
-
     settings.beginGroup(QStringLiteral("IOStats"));
     m_ui->ioStatsCheckBox->setChecked(
         settings.value(QStringLiteral("Display"), false).toBool());
     m_ui->ioStatsSpinBox->setValue(
         settings.value(QStringLiteral("ReportingInterval"), 1).toInt());
-    settings.endGroup();
-
-    settings.beginGroup(QStringLiteral("JitterBuffer"));
-    bool jitterAnnounce =
-        settings.value(QStringLiteral("JitterAnnounce"), false).toBool();
-    if (!jitterAnnounce && !settings.value(QStringLiteral("Enabled"), true).toBool()) {
-        QMessageBox msgBox;
-        msgBox.setText(
-            "From this build onwards, the new jitter buffer is being enabled by default. "
-            "You can turn it off in the Jitter Buffer settings tab.");
-        msgBox.setWindowTitle(QStringLiteral("Jitter Buffer"));
-        msgBox.exec();
-        settings.setValue(QStringLiteral("Enabled"), true);
-    }
-    settings.setValue(QStringLiteral("JitterAnnounce"), true);
-    m_ui->jitterCheckBox->setChecked(
-        settings.value(QStringLiteral("Enabled"), true).toBool());
-    m_ui->broadcastCheckBox->setChecked(
-        settings.value(QStringLiteral("Broadcast"), false).toBool());
-    m_ui->broadcastQueueSpinBox->setValue(
-        settings.value(QStringLiteral("BroadcastLength"), gDefaultQueueLength * 2)
-            .toInt());
-    m_ui->bufferStrategyComboBox->setCurrentIndex(
-        settings.value(QStringLiteral("Strategy"), 1).toInt() - 1);
-    m_ui->autoQueueCheckBox->setChecked(
-        settings.value(QStringLiteral("AutoQueue"), true).toBool());
-    m_ui->autoQueueSpinBox->setValue(
-        settings.value(QStringLiteral("TuningParameter"), 500).toInt());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("InPlugins"));
@@ -1526,11 +1653,8 @@ QString QJackTrip::commandLineFromCurrentOptions()
     }
 
     if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
-        int hubConnectionMode = m_ui->autoPatchComboBox->currentIndex();
-        if (hubConnectionMode > CLIENTFOFI) {
-            // Adjust for the RESERVEDMATRIX gap.
-            hubConnectionMode++;
-        }
+        int hubConnectionMode = hubModeFromPatchType(
+            static_cast<patchTypeT>(m_ui->autoPatchComboBox->currentIndex()));
         if (hubConnectionMode > 0) {
             commandLine.append(QStringLiteral(" -p %1").arg(hubConnectionMode));
         }
@@ -1788,6 +1912,22 @@ void QJackTrip::showCommandLineMessageBox()
     msgBox.setWindowTitle(QStringLiteral("Command Line"));
     msgBox.setTextInteractionFlags(Qt::TextSelectableByMouse);
     msgBox.exec();
+}
+
+JackTrip::hubConnectionModeT QJackTrip::hubModeFromPatchType(
+    QJackTrip::patchTypeT patchType)
+{
+    if (patchType == SERVERTOCLIENT) {
+        return JackTrip::SERVERTOCLIENT;
+    } else if (patchType == CLIENTECHO) {
+        return JackTrip::CLIENTECHO;
+    } else if (patchType == CLIENTFOFI) {
+        return JackTrip::CLIENTFOFI;
+    } else if (patchType == FULLMIX) {
+        return JackTrip::FULLMIX;
+    } else {
+        return JackTrip::NOAUTO;
+    }
 }
 
 QJackTrip::~QJackTrip()

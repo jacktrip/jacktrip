@@ -38,7 +38,7 @@
 #include "Settings.h"
 
 #include "LoopBack.h"
-//#include "NetKS.h"
+// #include "NetKS.h"
 #include "Effects.h"
 
 #ifdef WAIR  // wair
@@ -46,7 +46,7 @@
 #include "ap8x2.dsp.h"
 #endif  // endwhere
 
-//#include "JackTripWorker.h"
+// #include "JackTripWorker.h"
 #include <getopt.h>  // for command line parsing
 
 #include <cassert>
@@ -73,7 +73,7 @@
 #define PRINT_BUILD_INFO cout << "Build Info: " << TO_STRING(JACKTRIP_BUILD_INFO) << endl;
 #endif
 
-//#include "ThreadPoolTest.h"
+// #include "ThreadPoolTest.h"
 
 using std::cout;
 using std::endl;
@@ -97,7 +97,9 @@ enum JTLongOptIDS {
     OPT_LISTDEVICES,
     OPT_AUDIODEVICE,
     OPT_AUDIOINPUTDEVICE,
-    OPT_AUDIOOUTPUTDEVICE
+    OPT_AUDIOOUTPUTDEVICE,
+    OPT_GUI,
+    OPT_DEEPLINK
 };
 
 //*******************************************************************************
@@ -106,7 +108,7 @@ void Settings::parseInput(int argc, char** argv)
     // Always use decimal point for floating point numbers
     setlocale(LC_NUMERIC, "C");
     // If no command arguments are given, print instructions
-    if (argc == 1) {
+    if (argc == 1 && !mGuiEnabled) {
         printUsage();
         std::exit(0);
     }
@@ -198,13 +200,15 @@ void Settings::parseInput(int argc, char** argv)
          OPT_AUTHKEY},  // Private key for server authentication
         {"credsfile", required_argument, NULL,
          OPT_AUTHCREDS},  // Username and password store for server authentication
-        {"username", required_argument, NULL,
+        {"username", optional_argument, NULL,
          OPT_AUTHUSER},  // Username when using authentication as a hub client
-        {"password", required_argument, NULL,
+        {"password", optional_argument, NULL,
          OPT_AUTHPASS},  // Password when using authentication as a hub client
         {"help", no_argument, NULL, 'h'},  // Print Help
         {"examine-audio-delay", required_argument, NULL,
          'x'},  // test mode - measure audio round-trip latency statistics
+        {"gui", no_argument, NULL, OPT_GUI},                  // Force GUI mode
+        {"deeplink", optional_argument, NULL, OPT_DEEPLINK},  // VirtualStudio Deeplink
         {NULL, 0, NULL, 0}};
 
     // Parse Command Line Arguments
@@ -213,9 +217,9 @@ void Settings::parseInput(int argc, char** argv)
     int ch;
     while ((ch = getopt_long(
                 argc, argv,
-                "n:N:H:sc:SC:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uiDvVhI:G:f:O:a:x:A",
+                "n:N:H:sc:SC:L:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uiDvVhI:G:f:O:a:x:A",
                 longopts, NULL))
-           != -1)
+           != -1) {
         switch (ch) {
         case OPT_NUMRECEIVE:
             if (0 < atoi(optarg)) {
@@ -269,24 +273,29 @@ void Settings::parseInput(int argc, char** argv)
         case 's':  // Run in P2P server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;
+            checkMode();
             break;
         case 'S':  // Run in Hub server mode
             //-------------------------------------------------------
-            mJackTripServer = true;
+            mJackTripMode = JackTrip::SERVERPINGSERVER;
+            checkMode();
             break;
         case 'c':  // P2P client mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::CLIENT;
             mPeerAddress  = optarg;
+            checkMode();
             break;
         case 'L':  // set optional local host address
             //-------------------------------------------------------
-            mLocalAddress = optarg;
+            mGuiIgnoresArguments = true;
+            mLocalAddress        = optarg;
             break;
         case 'C':  // Ping to server
             //-------------------------------------------------------
             mJackTripMode = JackTrip::CLIENTTOPINGSERVER;
             mPeerAddress  = optarg;
+            checkMode();
             break;
         case 'o':  // Port Offset
             //-------------------------------------------------------
@@ -367,15 +376,18 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'l':  // loopback
             //-------------------------------------------------------
-            mLoopBack = true;
+            mGuiIgnoresArguments = true;
+            mLoopBack            = true;
             break;
         case 'e':  // jamlink
             //-------------------------------------------------------
-            mEmptyHeader = true;
+            mGuiIgnoresArguments = true;
+            mEmptyHeader         = true;
             break;
         case 'j':  // jamlink
             //-------------------------------------------------------
-            mJamLink = true;
+            mGuiIgnoresArguments = true;
+            mJamLink             = true;
             break;
         case 'J':  // Set client Name
             //-------------------------------------------------------
@@ -391,15 +403,18 @@ void Settings::parseInput(int argc, char** argv)
 #ifdef RT_AUDIO
         case 'R':  // RtAudio
             //-------------------------------------------------------
-            mUseJack = false;
+            mGuiIgnoresArguments = true;
+            mUseJack             = false;
             break;
         case 'T':  // Sampling Rate
             //-------------------------------------------------------
-            mChangeDefaultSR = true;
-            mSampleRate      = atoi(optarg);
+            mGuiIgnoresArguments = true;
+            mChangeDefaultSR     = true;
+            mSampleRate          = atoi(optarg);
             break;
         case 'd':  // RTAudio device id
             //-------------------------------------------------------
+            mGuiIgnoresArguments = true;
             cout << "WARNING: Setting device ID is deprecated and will be removed in the "
                     "future."
                  << endl;
@@ -408,23 +423,33 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'F':  // Buffer Size
             //-------------------------------------------------------
-            mChangeDefaultBS = true;
-            mAudioBufferSize = atoi(optarg);
+            mGuiIgnoresArguments = true;
+            mChangeDefaultBS     = true;
+            mAudioBufferSize     = atoi(optarg);
             break;
         case OPT_AUDIODEVICE:  // Set audio device
             //-------------------------------------------------------
-            setDevicesByString(optarg);
+            mGuiIgnoresArguments = true;
+            if (!mGuiEnabled) {
+                // Don't try to parse this if we're in the GUI and ignoring it.
+                setDevicesByString(optarg);
+            }
             break;
         case OPT_AUDIOINPUTDEVICE:
-            mInputDeviceName = optarg;
+            mGuiIgnoresArguments = true;
+            mInputDeviceName     = optarg;
             break;
         case OPT_AUDIOOUTPUTDEVICE:
-            mOutputDeviceName = optarg;
+            mGuiIgnoresArguments = true;
+            mOutputDeviceName    = optarg;
             break;
         case OPT_LISTDEVICES:  // List audio devices
             //-------------------------------------------------------
-            RtAudioInterface::printDevices();
-            std::exit(0);
+            mGuiIgnoresArguments = true;
+            if (!mGuiEnabled) {
+                RtAudioInterface::printDevices();
+                std::exit(0);
+            }
             break;
 #endif
         case 'D':
@@ -484,8 +509,9 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'I':  // IO Stat timeout
             //-------------------------------------------------------
-            mIOStatTimeout = atoi(optarg);
-            if (0 > mIOStatTimeout) {
+            mGuiIgnoresArguments = true;
+            mIOStatTimeout       = atoi(optarg);
+            if (0 > mIOStatTimeout && !mGuiEnabled) {
                 printUsage();
                 std::cerr << "--iostat ERROR: negative timeout." << endl;
                 std::exit(1);
@@ -494,6 +520,10 @@ void Settings::parseInput(int argc, char** argv)
         case 'G':  // IO Stat log file
             //-------------------------------------------------------
             {
+                mGuiIgnoresArguments = true;
+                if (mGuiEnabled) {
+                    break;
+                }
                 std::ofstream* outStream = new std::ofstream(optarg);
                 if (!outStream->is_open()) {
                     printUsage();
@@ -513,9 +543,11 @@ void Settings::parseInput(int argc, char** argv)
             }
             break;
         case OPT_SIMLOSS:  // Simulate packet loss
-            mSimulatedLossRate = atof(optarg);
+            mGuiIgnoresArguments = true;
+            mSimulatedLossRate   = atof(optarg);
             break;
         case OPT_SIMJITTER:  // Simulate jitter
+            mGuiIgnoresArguments = true;
             char* endp;
             mSimulatedJitterRate = strtod(optarg, &endp);
             if (0 == *endp) {
@@ -537,6 +569,10 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case 'O': {  // Overflow limiter (i, o, or io)
             //-------------------------------------------------------
+            mGuiIgnoresArguments = true;
+            if (mGuiEnabled) {
+                break;
+            }
             char cmd[]{"--overflowlimiting (-O)"};
             if (gVerboseFlag) {
                 printf("%s argument = %s\n", cmd, optarg);
@@ -554,6 +590,10 @@ void Settings::parseInput(int argc, char** argv)
         }
         case 'a': {  // assumed number of clients (applies to outgoing limiter)
             //-------------------------------------------------------
+            mGuiIgnoresArguments = true;
+            if (mGuiEnabled) {
+                break;
+            }
             char cmd[]{"--assumednumclients (-a)"};
             if (gVerboseFlag) {
                 printf("%s argument = %s\n", cmd, optarg);
@@ -571,6 +611,10 @@ void Settings::parseInput(int argc, char** argv)
         }
         case 'f': {  // --effects (-f) effectsSpecArg
             //-------------------------------------------------------
+            mGuiIgnoresArguments = true;
+            if (mGuiEnabled) {
+                break;
+            }
             char cmd[]{"--effects (-f)"};
             int returnCode = mEffects.parseEffectsOptArg(cmd, optarg);
             if (returnCode > 1) {
@@ -596,13 +640,27 @@ void Settings::parseInput(int argc, char** argv)
             mCredsFile = optarg;
             break;
         case OPT_AUTHUSER:
+            // Need to manually check if we have our optional argument.
+            // (getopt_long will only find an optional parameter for long arguments if
+            // there's a '=' rather than a space between them. If we don't manually check,
+            // the paramater will be interpreted as an unknown argument.)
+            if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+                optarg = argv[optind++];
+            }
             mUsername = optarg;
             break;
         case OPT_AUTHPASS:
+            if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+                optarg = argv[optind++];
+            }
             mPassword = optarg;
             break;
         case 'x': {  // examine connection (test mode)
             //-------------------------------------------------------
+            mGuiIgnoresArguments = true;
+            if (mGuiEnabled) {
+                break;
+            }
             char cmd[]{"--examine-audio-delay (-x)"};
             if (tolower(optarg[0]) == 'h') {
                 mAudioTester->printHelp(cmd, ch);
@@ -620,6 +678,15 @@ void Settings::parseInput(int argc, char** argv)
             mAudioTester->setPrintIntervalSec(atof(optarg));
             break;
         }
+        // The following two options need to be handled earlier, so are all parsed in
+        // main. Included here so that we don't get an unrecognized option error.
+        case OPT_GUI:
+            break;
+        case OPT_DEEPLINK:
+            if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+                optarg = argv[optind++];
+            }
+            break;
         case ':': {
             printUsage();
             printf("*** Missing option argument *** see above for usage\n\n");
@@ -641,6 +708,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         }
         }
+    }
 
     // Warn user if undefined options where entered
     //----------------------------------------------------------------------------
@@ -669,6 +737,11 @@ void Settings::parseInput(int argc, char** argv)
     }
     // Exit if options are incompatible
     //----------------------------------------------------------------------------
+    if (mGuiEnabled) {
+        // The following tests aren't yet needed for the supported GUI options.
+        return;
+    }
+
     bool haveSomeServerMode = not((mJackTripMode == JackTrip::CLIENT)
                                   || (mJackTripMode == JackTrip::CLIENTTOPINGSERVER));
     if (mEffects.getHaveEffect() && haveSomeServerMode) {
@@ -874,6 +947,9 @@ void Settings::printUsage()
     cout << " --credsfile                              The file containing the stored usernames and passwords" << endl;
     cout << " --username                               The username to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
     cout << " --password                               The password to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
+    cout << endl;
+    cout << "ARGUMENTS FOR THE GUI:" << endl;
+    cout << " --gui                                   Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --help switches which will override this." << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;
@@ -1175,4 +1251,16 @@ void Settings::disableEcho(bool disabled)
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 #endif
+}
+
+void Settings::checkMode()
+{
+    if (mModeSet) {
+        std::cerr
+            << "Conflicting arguments given. Please choose only one of -c, -s, -C or -S."
+            << std::endl;
+        std::exit(1);
+    } else {
+        mModeSet = true;
+    }
 }

@@ -37,7 +37,6 @@
 
 #ifndef NO_GUI
 #include <QApplication>
-#include <QCommandLineParser>
 
 #ifndef NO_UPDATER
 #include "dblsqd/feed.h"
@@ -45,6 +44,7 @@
 #endif
 
 #ifndef NO_VS
+#include <QCommandLineParser>
 #include <QDebug>
 #include <QFile>
 #include <QLocalServer>
@@ -311,20 +311,15 @@ int main(int argc, char* argv[])
         app->setApplicationName(QStringLiteral("JackTrip"));
         app->setApplicationVersion(gVersion);
 
-        QCommandLineParser parser;
-        QCommandLineOption verboseOption(QStringList() << QStringLiteral("V")
-                                                       << QStringLiteral("verbose"));
-        parser.addOption(verboseOption);
-        parser.parse(app->arguments());
-        if (parser.isSet(verboseOption)) {
-            gVerboseFlag = true;
-        }
+        Settings cliSettings(true);
+        cliSettings.parseInput(argc, argv);
 
 #ifndef NO_VS
         // Register clipboard Qml type
         qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
 
         // Parse command line for deep link
+        QCommandLineParser parser;
         QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
         deeplinkOption.setValueName(QStringLiteral("deeplink"));
         parser.addOption(deeplinkOption);
@@ -437,9 +432,9 @@ int main(int argc, char* argv[])
         instanceCheckSocket->connectToServer("jacktripExists");
 
 #endif  // _WIN32
-        window.reset(new QJackTrip(argc, !deeplink.isEmpty()));
+        window.reset(new QJackTrip(&cliSettings, !deeplink.isEmpty()));
 #else
-        window.reset(new QJackTrip(argc));
+        window.reset(new QJackTrip(&cliSettings));
 #endif  // NO_VS
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
@@ -522,7 +517,9 @@ int main(int argc, char* argv[])
     } else {
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.
+#ifndef PSI
         QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+#endif
         try {
             Settings settings;
             settings.parseInput(argc, argv);
