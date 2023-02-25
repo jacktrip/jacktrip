@@ -149,13 +149,13 @@ set(qjacktrip_SRC
   src/SslServer.cpp
   src/Auth.cpp
   src/ProcessPlugin.cpp
-  src/StereoToMono.cpp
 )
 
 if (rtaudio)
   add_compile_definitions(RT_AUDIO)
   set (qjacktrip_SRC ${qjacktrip_SRC}
     src/RtAudioInterface.cpp
+    src/StereoToMono.cpp
   )
 endif ()
 
