@@ -640,7 +640,10 @@ void Settings::parseInput(int argc, char** argv)
             mCredsFile = optarg;
             break;
         case OPT_AUTHUSER:
-            // Need to manually check if we have our optional argument
+            // Need to manually check if we have our optional argument.
+            // (getopt_long will only find an optional parameter for long arguments if
+            // there's a '=' rather than a space between them. If we don't manually check,
+            // the paramater will be interpreted as an unknown argument.)
             if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
                 optarg = argv[optind++];
             }
