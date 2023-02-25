@@ -86,7 +86,6 @@ class AudioInterface
         DEVICE_ERR_NO_DEVICES
     };
 
-    
     enum inputMixModeT : int {
         MIX_UNSET = 0,
         MONO      = 1,
@@ -261,8 +260,8 @@ class AudioInterface
     QVarLengthArray<int> mInputChans;
     QVarLengthArray<int> mOutputChans;
     inputMixModeT mInputMixMode;  ///< Input mixing mode
-#ifdef WAIR                      // wair
-    int mNumNetRevChans;         ///<  Number of Network Audio Channels (net comb filters)
+#ifdef WAIR                       // wair
+    int mNumNetRevChans;  ///<  Number of Network Audio Channels (net comb filters)
     QVarLengthArray<sample_t*>
         mNetInBuffer;  ///< Vector of Input buffers/channel read from net
     QVarLengthArray<sample_t*>

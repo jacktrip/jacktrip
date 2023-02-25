@@ -348,13 +348,13 @@ JackTrip* VsDevice::initJackTrip(
     [[maybe_unused]] int inputMixMode, [[maybe_unused]] int bufferSize,
     [[maybe_unused]] int bufferStrategy, VsServerInfo* studioInfo)
 {
-    m_jackTrip.reset(new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP,
-                                  baseInputChannel, numChannelsIn, numChannelsOut,
-                                  static_cast<AudioInterface::inputMixModeT>(inputMixMode),
+    m_jackTrip.reset(new JackTrip(
+        JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, baseInputChannel, numChannelsIn,
+        numChannelsOut, static_cast<AudioInterface::inputMixModeT>(inputMixMode),
 #ifdef WAIR  // wair
-                                  0,
+        0,
 #endif  // endwhere
-                                  4, 1));
+        4, 1));
     m_jackTrip->setConnectDefaultAudioPorts(true);
 #ifdef RT_AUDIO
     if (useRtAudio) {

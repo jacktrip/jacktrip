@@ -126,7 +126,8 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
     qDebug() << "mNumNetRevChans" << mNumNetRevChans;
 
     mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1,
-                                 AudioInterface::MIX_UNSET, mNumNetRevChans, FORCEBUFFERQ));
+                                 AudioInterface::MIX_UNSET, mNumNetRevChans,
+                                 FORCEBUFFERQ));
     // Add Plugins
     if (mWAIR) {
         cout << "Running in WAIR Mode..." << endl;
