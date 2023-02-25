@@ -45,7 +45,6 @@
 #include <QtNetworkAuth>
 #include <QtWebSockets>
 
-#include "../InputMixMode.h"
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
 #include "vsConstants.h"

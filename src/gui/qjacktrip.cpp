@@ -48,7 +48,6 @@
 
 #include "../Compressor.h"
 #include "../CompressorPresets.h"
-#include "../InputMixMode.h"
 #include "../Limiter.h"
 #include "../Meter.h"
 #include "../Reverb.h"
@@ -830,7 +829,7 @@ void QJackTrip::start()
 
             m_jackTrip.reset(new JackTrip(
                 jackTripMode, JackTrip::UDP, 1, m_ui->channelSendSpinBox->value(),
-                m_ui->channelRecvSpinBox->value(), InputMixMode::UNSET,
+                m_ui->channelRecvSpinBox->value(), AudioInterface::MIX_UNSET,
 #ifdef WAIR  // wair
                 0,
 #endif  // endwhere

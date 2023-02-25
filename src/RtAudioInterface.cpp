@@ -40,7 +40,6 @@
 #include <QString>
 #include <cstdlib>
 
-#include "InputMixMode.h"
 #include "JackTrip.h"
 #include "StereoToMono.h"
 #include "jacktrip_globals.h"
@@ -51,7 +50,7 @@ using std::endl;
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
                                    QVarLengthArray<int> OutputChans,
-                                   InputMixMode InputMixMode,
+                                   inputMixModeT InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(jacktrip, InputChans, OutputChans, InputMixMode, AudioBitResolution)
     , mRtAudio(NULL)
@@ -61,7 +60,7 @@ RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> Inpu
 //*******************************************************************************
 RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
                                    QVarLengthArray<int> OutputChans,
-                                   InputMixMode InputMixMode,
+                                   inputMixModeT InputMixMode,
                                    audioBitResolutionT AudioBitResolution)
     : AudioInterface(nullptr, InputChans, OutputChans, InputMixMode, AudioBitResolution,
                      false)
@@ -393,8 +392,8 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
     inputBuffer_sample  = (sample_t*)inputBuffer;
     outputBuffer_sample = (sample_t*)outputBuffer;
 
-    int chansIn          = getNumInputChannels();
-    InputMixMode mixMode = getInputMixMode();
+    int chansIn           = getNumInputChannels();
+    inputMixModeT mixMode = getInputMixMode();
     if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
         // Get input and output buffers
         //-------------------------------------------------------------------
@@ -408,7 +407,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
         if (chansIn == 2 && mInBuffer.size() == chansIn
-            && mixMode == InputMixMode::MIXTOMONO) {
+            && mixMode == AudioInterface::MIXTOMONO) {
             mStereoToMonoMixer->compute(nFrames, mInBuffer.data(), mInBuffer.data());
         }
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);

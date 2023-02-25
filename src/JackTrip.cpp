@@ -41,7 +41,6 @@
 #include "JackAudioInterface.h"
 #endif
 #include "Auth.h"
-#include "InputMixMode.h"
 #include "JitterBuffer.h"
 #include "Regulator.h"
 #include "RingBufferWavetable.h"
@@ -84,7 +83,7 @@ bool JackTrip::sJackStopped = false;
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
                    int BaseChanIn, int NumChansIn, int NumChansOut,
-                   InputMixMode InputMixMode,
+                   AudioInterface::inputMixModeT InputMixMode,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
 #endif  // endwhere
@@ -204,7 +203,7 @@ void JackTrip::setupAudio(
             outputChannels[i] = 1 + i;
         }
         mAudioInterface = new JackAudioInterface(this, inputChannels, outputChannels,
-                                                 InputMixMode::UNSET,
+                                                 AudioInterface::MIX_UNSET,
 #ifdef WAIR  // wair
                                                  mNumNetRevChans,
 #endif  // endwhere
@@ -274,7 +273,7 @@ void JackTrip::setupAudio(
         // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
-        if (mNumAudioChansIn == 2 && mInputMixMode == InputMixMode::MIXTOMONO) {
+        if (mNumAudioChansIn == 2 && mInputMixMode == AudioInterface::MIXTOMONO) {
             mNumAudioChansIn = 1;
         }
         // Setup might have changed buffer size
@@ -306,7 +305,7 @@ void JackTrip::setupAudio(
         // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
-        if (mNumAudioChansIn == 2 && mInputMixMode == InputMixMode::MIXTOMONO) {
+        if (mNumAudioChansIn == 2 && mInputMixMode == AudioInterface::MIXTOMONO) {
             mNumAudioChansIn = 1;
         }
         // Setup might have changed buffer size
