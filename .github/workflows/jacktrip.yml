@@ -625,7 +625,6 @@ jobs:
       matrix:
         include:
           - name: Sign Windows artifacts
-            if: needs.check-secrets.outputs.should_run == 'true'
             release-name: Windows-x64
             build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
             runs-on: ubuntu-latest
@@ -637,10 +636,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        if: needs.check-secrets.outputs.should_run == 'true'
         with:
           fetch-depth: 0
           submodules: true
       - name: set version string for artifacts
+        if: needs.check-secrets.outputs.should_run == 'true'
         shell: bash
         id: set-version
         run: |
@@ -658,18 +659,18 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
       - name: Retrieve binary artifact
         uses: actions/download-artifact@v2
-        if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: (matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: Retrieve Windows installer artifact
         uses: actions/download-artifact@v2
-        if: runner.os == 'Linux' && matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: (runner.os == 'Linux' && matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: sign artifacts for Windows
-        if: runner.os == 'Linux' && matrix.installer-path
+        if: runner.os == 'Linux' && matrix.installer-path && needs.check-secrets.outputs.should_run == 'true'
         env:
           TOTP: ${{ secrets.TOTP_SECRET }}
           CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
@@ -685,7 +686,7 @@ jobs:
           rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: upload installer
         uses: actions/upload-artifact@v3
-        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: (matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
