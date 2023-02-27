@@ -161,8 +161,21 @@ void VsAudioInterface::setupJackAudio()
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
-        m_audioInterface.reset(new JackAudioInterface(
-            m_numAudioChansIn, m_numAudioChansOut, m_audioBitResolution));
+
+        QVarLengthArray<int> inputChans;
+        QVarLengthArray<int> outputChans;
+        inputChans.resize(m_numAudioChansIn);
+        outputChans.resize(m_numAudioChansOut);
+
+        for (int i = 0; i < m_numAudioChansIn; i++) {
+            inputChans[i] = 1 + i;
+        }
+        for (int i = 0; i < m_numAudioChansOut; i++) {
+            outputChans[i] = 1 + i;
+        }
+
+        m_audioInterface.reset(
+            new JackAudioInterface(inputChans, outputChans, m_audioBitResolution));
 
         m_audioInterface->setClientName(QStringLiteral("JackTrip"));
 
@@ -211,20 +224,29 @@ void VsAudioInterface::setupRtAudio()
 #ifdef RT_AUDIO
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-        m_audioInterface.reset(new RtAudioInterface(m_numAudioChansIn, m_numAudioChansOut,
-                                                    m_audioBitResolution));
+        QVarLengthArray<int> inputChans;
+        QVarLengthArray<int> outputChans;
+        inputChans.resize(m_numAudioChansIn);
+        outputChans.resize(m_numAudioChansOut);
+
+        for (int i = 0; i < m_numAudioChansIn; i++) {
+            inputChans[i] = m_baseInputChannel + i;
+        }
+        for (int i = 0; i < m_numAudioChansOut; i++) {
+            outputChans[i] = 1 + i;
+        }
+
+        m_audioInterface.reset(new RtAudioInterface(
+            inputChans, outputChans, static_cast<InputMixMode>(m_inputMixMode),
+            m_audioBitResolution));
         m_audioInterface->setSampleRate(m_sampleRate);
         m_audioInterface->setDeviceID(m_deviceID);
         m_audioInterface->setInputDevice(m_inputDeviceName);
         m_audioInterface->setOutputDevice(m_outputDeviceName);
         m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
 
+        // Note: setup might change the number of channels and/or buffer size
         m_audioInterface->setup(true);
-        // Setup might have reduced number of channels
-        m_numAudioChansIn  = m_audioInterface->getNumInputChannels();
-        m_numAudioChansOut = m_audioInterface->getNumOutputChannels();
-        // Setup might have changed buffer size
-        m_audioBufferSize = m_audioInterface->getBufferSizeInSamples();
 
         std::string devicesWarningMsg     = m_audioInterface->getDevicesWarningMsg();
         std::string devicesErrorMsg       = m_audioInterface->getDevicesErrorMsg();
@@ -270,9 +292,7 @@ void VsAudioInterface::closeAudio()
             emit errorToProcess(QString::fromUtf8(e.what()));
         }
         m_audioInterface.clear();
-        m_numAudioChansIn  = gDefaultNumInChannels;
-        m_numAudioChansOut = gDefaultNumOutChannels;
-        m_deviceID         = gDefaultDeviceID;
+        m_deviceID = gDefaultDeviceID;
     }
 }
 
@@ -309,27 +329,64 @@ void VsAudioInterface::addOutputPlugin(ProcessPlugin* plugin)
 void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
 {
     m_inputDeviceName = deviceName.toStdString();
-    if (m_inputDeviceName == "(default)") {
-        m_inputDeviceName = "";
-    }
-
     if (!m_audioInterface.isNull()) {
-        m_audioInterface->setInputDevice(m_inputDeviceName);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
     }
 }
 
+void VsAudioInterface::setBaseInputChannel(int baseChannel, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_baseInputChannel = baseChannel;
+    if (!m_audioInterface.isNull()) {
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+#endif
+    return;
+}
+
+void VsAudioInterface::setNumInputChannels(int numChannels, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_numAudioChansIn = numChannels;
+    if (!m_audioInterface.isNull()) {
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+#endif
+}
+
+void VsAudioInterface::setInputMixMode(const int mode, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_inputMixMode = mode;
+    if (!m_audioInterface.isNull()) {
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+    return;
+#endif
+}
+
 void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
 {
     m_outputDeviceName = deviceName.toStdString();
-    if (m_outputDeviceName == "(default)") {
-        m_outputDeviceName = "";
-    }
-
     if (!m_audioInterface.isNull()) {
-        m_audioInterface->setOutputDevice(m_outputDeviceName);
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }

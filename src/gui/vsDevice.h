@@ -45,6 +45,7 @@
 #include <QtNetworkAuth>
 #include <QtWebSockets>
 
+#include "../InputMixMode.h"
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
 #include "vsConstants.h"
@@ -67,7 +68,9 @@ class VsDevice : public QObject
     void sendHeartbeat();
     void setServerId(QString studioID);
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
-                           int bufferSize, int bufferStrategy, VsServerInfo* studioInfo);
+                           int numChannelsIn, int numChannelsOut, int baseInputChannel,
+                           int inputMixMode, int bufferSize, int bufferStrategy,
+                           VsServerInfo* studioInfo);
     void startJackTrip();
     void stopJackTrip();
     void reconcileAgentConfig(QJsonDocument newState);

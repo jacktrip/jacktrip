@@ -41,6 +41,7 @@
 #include "JackAudioInterface.h"
 #endif
 #include "Auth.h"
+#include "InputMixMode.h"
 #include "JitterBuffer.h"
 #include "Regulator.h"
 #include "RingBufferWavetable.h"
@@ -82,7 +83,8 @@ bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
-                   int NumChansIn, int NumChansOut,
+                   int BaseChanIn, int NumChansIn, int NumChansOut,
+                   InputMixMode InputMixMode,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
 #endif  // endwhere
@@ -97,8 +99,10 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mDataProtocol(DataProtocolType)
     , mPacketHeaderType(PacketHeaderType)
     , mAudiointerfaceMode(JackTrip::JACK)
+    , mBaseAudioChanIn(BaseChanIn)
     , mNumAudioChansIn(NumChansIn)
     , mNumAudioChansOut(NumChansOut)
+    , mInputMixMode(InputMixMode)
 #ifdef WAIR  // WAIR
     , mNumNetRevChans(NumNetRevChans)
 #endif  // endwhere
@@ -189,12 +193,22 @@ void JackTrip::setupAudio(
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
-        mAudioInterface =
-            new JackAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+        QVarLengthArray<int> inputChannels;
+        QVarLengthArray<int> outputChannels;
+        inputChannels.resize(mNumAudioChansIn);
+        outputChannels.resize(mNumAudioChansOut);
+        for (int i = 0; i < mNumAudioChansIn; i++) {
+            inputChannels[i] = 1 + i;
+        }
+        for (int i = 0; i < mNumAudioChansOut; i++) {
+            outputChannels[i] = 1 + i;
+        }
+        mAudioInterface = new JackAudioInterface(this, inputChannels, outputChannels,
+                                                 InputMixMode::UNSET,
 #ifdef WAIR  // wair
-                                   mNumNetRevChans,
+                                                 mNumNetRevChans,
 #endif  // endwhere
-                                   mAudioBitResolution);
+                                                 mAudioBitResolution);
 
 #ifdef WAIRTOHUB  // WAIR
 
@@ -237,8 +251,18 @@ void JackTrip::setupAudio(
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
-                                               mAudioBitResolution);
+        QVarLengthArray<int> inputChannels;
+        QVarLengthArray<int> outputChannels;
+        inputChannels.resize(mNumAudioChansIn);
+        outputChannels.resize(mNumAudioChansOut);
+        for (int i = 0; i < mNumAudioChansIn; i++) {
+            inputChannels[i] = mBaseAudioChanIn + i;
+        }
+        for (int i = 0; i < mNumAudioChansOut; i++) {
+            outputChannels[i] = 1 + i;
+        }
+        mAudioInterface = new RtAudioInterface(this, inputChannels, outputChannels,
+                                               mInputMixMode, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
@@ -246,16 +270,31 @@ void JackTrip::setupAudio(
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup(true);
         // Setup might have reduced number of channels
+
+        // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        if (mNumAudioChansIn == 2 && mInputMixMode == InputMixMode::MIXTOMONO) {
+            mNumAudioChansIn = 1;
+        }
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef RT_AUDIO
-        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
-                                               mAudioBitResolution);
+        QVarLengthArray<int> inputChannels;
+        QVarLengthArray<int> outputChannels;
+        inputChannels.resize(mNumAudioChansIn);
+        outputChannels.resize(mNumAudioChansOut);
+        for (int i = 0; i < mNumAudioChansIn; i++) {
+            inputChannels[i] = mBaseAudioChanIn + i;
+        }
+        for (int i = 0; i < mNumAudioChansOut; i++) {
+            outputChannels[i] = 1 + i;
+        }
+        mAudioInterface = new RtAudioInterface(this, inputChannels, outputChannels,
+                                               mInputMixMode, mAudioBitResolution);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
@@ -263,8 +302,13 @@ void JackTrip::setupAudio(
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup(true);
         // Setup might have reduced number of channels
+
+        // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        if (mNumAudioChansIn == 2 && mInputMixMode == InputMixMode::MIXTOMONO) {
+            mNumAudioChansIn = 1;
+        }
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif

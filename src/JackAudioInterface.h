@@ -52,6 +52,7 @@
 #include <functional>  //for mem_fun_ref
 
 #include "AudioInterface.h"
+#include "InputMixMode.h"
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
 
@@ -74,7 +75,8 @@ class JackAudioInterface : public AudioInterface
      * \param ClientName Client name in Jack
      */
     JackAudioInterface(
-        JackTrip* jacktrip, int NumInChans, int NumOutChans,
+        JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+        QVarLengthArray<int> OutputChans, InputMixMode InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
@@ -82,7 +84,7 @@ class JackAudioInterface : public AudioInterface
         const QString& ClientName = QStringLiteral("JackTrip"));
     /// \brief Overloaded class constructor with null JackTrip pointer
     JackAudioInterface(
-        int NumInChans, int NumOutChans,
+        QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere

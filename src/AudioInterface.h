@@ -42,6 +42,7 @@
 #include <QVector>
 
 #include "AudioTester.h"
+#include "InputMixMode.h"
 #include "ProcessPlugin.h"
 #include "jacktrip_types.h"
 //#include "jacktrip_globals.h"
@@ -93,7 +94,8 @@ class AudioInterface
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
     AudioInterface(
-        JackTrip* jacktrip, int NumInChans, int NumOutChans,
+        JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+        QVarLengthArray<int> OutputChans, InputMixMode InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
@@ -173,8 +175,15 @@ class AudioInterface
         const AudioInterface::audioBitResolutionT sourceBitResolution);
 
     //--------------SETTERS---------------------------------------------
-    virtual void setNumInputChannels(int nchannels) { mNumInChans = nchannels; }
-    virtual void setNumOutputChannels(int nchannels) { mNumOutChans = nchannels; }
+    virtual void setInputChannels(QVarLengthArray<int> inputChans)
+    {
+        mInputChans = inputChans;
+    }
+    virtual void setOutputChannels(QVarLengthArray<int> outputChans)
+    {
+        mOutputChans = outputChans;
+    }
+    virtual void setInputMixMode(InputMixMode mode) { mInputMixMode = mode; }
     virtual void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
     virtual void setBufferSize(uint32_t buffersize) { mBufferSizeInSamples = buffersize; }
     virtual void setDeviceID(uint32_t device_id) { mDeviceID = device_id; }
@@ -199,9 +208,12 @@ class AudioInterface
 
     //--------------GETTERS---------------------------------------------
     /// \brief Get Number of Input Channels
-    virtual int getNumInputChannels() const { return mNumInChans; }
+    virtual int getNumInputChannels() const { return mInputChans.size(); }
     /// \brief Get Number of Output Channels
-    virtual int getNumOutputChannels() const { return mNumOutChans; }
+    virtual int getNumOutputChannels() const { return mOutputChans.size(); }
+    virtual QVarLengthArray<int> getInputChannels() const { return mInputChans; }
+    virtual QVarLengthArray<int> getOutputChannels() const { return mOutputChans; }
+    virtual InputMixMode getInputMixMode() const { return mInputMixMode; }
     virtual uint32_t getBufferSizeInSamples() const { return mBufferSizeInSamples; }
     virtual uint32_t getDeviceID() const { return mDeviceID; }
     virtual std::string getInputDevice() const { return mInputDeviceName; }
@@ -239,10 +251,11 @@ class AudioInterface
                                  unsigned int n_frames);
 
     JackTrip* mJackTrip;  ///< JackTrip Mediator Class pointer
-    int mNumInChans;      ///< Number of Input Channels
-    int mNumOutChans;     ///<  Number of Output Channels
-#ifdef WAIR               // wair
-    int mNumNetRevChans;  ///<  Number of Network Audio Channels (net comb filters)
+    QVarLengthArray<int> mInputChans;
+    QVarLengthArray<int> mOutputChans;
+    InputMixMode mInputMixMode;  ///< Input mixing mode
+#ifdef WAIR                      // wair
+    int mNumNetRevChans;         ///<  Number of Network Audio Channels (net comb filters)
     QVarLengthArray<sample_t*>
         mNetInBuffer;  ///< Vector of Input buffers/channel read from net
     QVarLengthArray<sample_t*>

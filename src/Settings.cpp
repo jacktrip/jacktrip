@@ -67,6 +67,8 @@
 #include "RtAudioInterface.h"
 #endif
 
+#include "InputMixMode.h"
+
 #ifdef JACKTRIP_BUILD_INFO
 #define STR(s)           #s
 #define TO_STRING(s)     STR(s)
@@ -1053,7 +1055,8 @@ JackTrip* Settings::getConfiguredJackTrip()
     if (gVerboseFlag)
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
-        mJackTripMode, mDataProtocol, mNumAudioInputChans, mNumAudioOutputChans,
+        mJackTripMode, mDataProtocol, mBaseAudioInputChanNum, mNumAudioInputChans,
+        mNumAudioOutputChans, InputMixMode::UNSET,
 #ifdef WAIR  // wair
         mNumNetRevChans,
 #endif  // endwhere

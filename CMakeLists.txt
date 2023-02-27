@@ -155,6 +155,7 @@ if (rtaudio)
   add_compile_definitions(RT_AUDIO)
   set (qjacktrip_SRC ${qjacktrip_SRC}
     src/RtAudioInterface.cpp
+    src/StereoToMono.cpp
   )
 endif ()
 
