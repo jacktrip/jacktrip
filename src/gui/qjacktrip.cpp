@@ -28,6 +28,7 @@
 #include <QFileDialog>
 #include <QHostAddress>
 #include <QMessageBox>
+#include <QProcess>
 #include <QSettings>
 #include <QVector>
 #include <cstdlib>
@@ -221,6 +222,21 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
         m_ui->outLimiterLabel->setEnabled(m_ui->outLimiterCheckBox->isChecked());
         m_ui->outClientsSpinBox->setEnabled(m_ui->outLimiterCheckBox->isChecked());
     });
+
+    connect(m_ui->connectScriptCheckBox, &QCheckBox::stateChanged, this, [=]() {
+        m_ui->connectScriptEdit->setEnabled(m_ui->connectScriptCheckBox->isChecked());
+        m_ui->connectScriptBrowse->setEnabled(m_ui->connectScriptCheckBox->isChecked());
+    });
+    connect(m_ui->disconnectScriptCheckBox, &QCheckBox::stateChanged, this, [=]() {
+        m_ui->disconnectScriptEdit->setEnabled(
+            m_ui->disconnectScriptCheckBox->isChecked());
+        m_ui->disconnectScriptBrowse->setEnabled(
+            m_ui->disconnectScriptCheckBox->isChecked());
+    });
+    connect(m_ui->connectScriptBrowse, &QPushButton::clicked, this,
+            &QJackTrip::browseForFile);
+    connect(m_ui->disconnectScriptBrowse, &QPushButton::clicked, this,
+            &QJackTrip::browseForFile);
 
     connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
             &QJackTrip::receivedIP);
@@ -483,6 +499,21 @@ void QJackTrip::processFinished()
     } else {
         m_jackTrip.reset();
     }
+
+    if (m_ui->disconnectScriptCheckBox->isChecked()) {
+        QStringList arguments = m_ui->disconnectScriptEdit->text().split(
+            QStringLiteral(" "), Qt::SkipEmptyParts);
+        if (!arguments.isEmpty()) {
+            QProcess disconnectScript;
+            disconnectScript.setProgram(arguments.takeFirst());
+            disconnectScript.setWorkingDirectory(QDir::homePath());
+            disconnectScript.setArguments(arguments);
+            disconnectScript.setStandardOutputFile(QProcess::nullDevice());
+            disconnectScript.setStandardErrorFile(QProcess::nullDevice());
+            disconnectScript.startDetached();
+        }
+    }
+
     if (m_isExiting) {
         m_exitSent = true;
         emit signalExit();
@@ -511,6 +542,19 @@ void QJackTrip::processError(const QString& errorMessage)
 void QJackTrip::receivedConnectionFromPeer()
 {
     m_ui->statusBar->showMessage(QStringLiteral("Received Connection from Peer!"));
+    if (m_ui->connectScriptCheckBox->isChecked()) {
+        QStringList arguments = m_ui->connectScriptEdit->text().split(QStringLiteral(" "),
+                                                                      Qt::SkipEmptyParts);
+        if (!arguments.isEmpty()) {
+            QProcess connectScript;
+            connectScript.setProgram(arguments.takeFirst());
+            connectScript.setWorkingDirectory(QDir::homePath());
+            connectScript.setArguments(arguments);
+            connectScript.setStandardOutputFile(QProcess::nullDevice());
+            connectScript.setStandardErrorFile(QProcess::nullDevice());
+            connectScript.startDetached();
+        }
+    }
 }
 
 void QJackTrip::queueLengthChanged(int queueLength)
@@ -560,6 +604,10 @@ void QJackTrip::chooseRunType(int index)
         if (index != -1) {
             m_ui->optionsTabWidget->removeTab(index);
         }
+        index = findTab(QStringLiteral("Scripting"));
+        if (index != -1) {
+            m_ui->optionsTabWidget->removeTab(index);
+        }
         authFilesChanged();
 #ifdef RT_AUDIO
         index = findTab(QStringLiteral("Audio Backend"));
@@ -575,6 +623,10 @@ void QJackTrip::chooseRunType(int index)
         advancedOptionsForHubServer(false);
         if (findTab(QStringLiteral("Plugins")) == -1) {
             m_ui->optionsTabWidget->addTab(m_ui->pluginsTab, QStringLiteral("Plugins"));
+        }
+        if (findTab(QStringLiteral("Scripting")) == -1) {
+            m_ui->optionsTabWidget->addTab(m_ui->scriptingTab,
+                                           QStringLiteral("Scripting"));
         }
 #ifdef RT_AUDIO
         if (findTab(QStringLiteral("Audio Backend")) == -1) {
@@ -653,7 +705,13 @@ void QJackTrip::browseForFile()
         fileEdit = m_ui->keyEdit;
     } else {
         fileType = QLatin1String("");
-        fileEdit = m_ui->credsEdit;
+        if (sender == m_ui->connectScriptBrowse) {
+            fileEdit = m_ui->connectScriptEdit;
+        } else if (sender == m_ui->disconnectScriptBrowse) {
+            fileEdit = m_ui->disconnectScriptEdit;
+        } else {
+            fileEdit = m_ui->credsEdit;
+        }
     }
     QString fileName = QFileDialog::getOpenFileName(this, QStringLiteral("Open File"),
                                                     m_lastPath, fileType);
@@ -1000,13 +1058,13 @@ void QJackTrip::exit()
     }
 }
 
-void QJackTrip::updatedInputMeasurements(const QVector<float> valuesInDb)
+void QJackTrip::updatedInputMeasurements(const float* valuesInDb, int numChannels)
 {
     for (int i = 0; i < m_inputMeters.count(); i++) {
         // Determine decibel reading
         qreal dB = m_meterMin;
-        if (i < valuesInDb.size()) {
-            dB = std::max(m_meterMin, valuesInDb.at(i));
+        if (i < numChannels) {
+            dB = std::max(m_meterMin, valuesInDb[i]);
         }
 
         // Produce a normalized value from 0 to 1
@@ -1015,13 +1073,13 @@ void QJackTrip::updatedInputMeasurements(const QVector<float> valuesInDb)
     }
 }
 
-void QJackTrip::updatedOutputMeasurements(const QVector<float> valuesInDb)
+void QJackTrip::updatedOutputMeasurements(const float* valuesInDb, int numChannels)
 {
     for (int i = 0; i < m_outputMeters.count(); i++) {
         // Determine decibel reading
         qreal dB = m_meterMin;
-        if (i < valuesInDb.size()) {
-            dB = std::max(m_meterMin, valuesInDb.at(i));
+        if (i < numChannels) {
+            dB = std::max(m_meterMin, valuesInDb[i]);
         }
 
         // Produce a normalized value from 0 to 1
@@ -1416,6 +1474,17 @@ void QJackTrip::loadSettings(Settings* cliSettings)
     m_ui->outClientsSpinBox->setValue(
         settings.value(QStringLiteral("Clients"), 1).toInt());
     settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("Scripting"));
+    m_ui->connectScriptCheckBox->setChecked(
+        settings.value(QStringLiteral("ConnectEnabled"), false).toBool());
+    m_ui->connectScriptEdit->setText(
+        settings.value(QStringLiteral("ConnectScript"), "").toString());
+    m_ui->disconnectScriptCheckBox->setChecked(
+        settings.value(QStringLiteral("DisconnectEnabled"), false).toBool());
+    m_ui->disconnectScriptEdit->setText(
+        settings.value(QStringLiteral("DisconnectScript"), "").toString());
+    settings.endGroup();
 }
 
 void QJackTrip::saveSettings()
@@ -1518,6 +1587,16 @@ void QJackTrip::saveSettings()
                       m_ui->outCompressorCheckBox->isChecked());
     settings.setValue(QStringLiteral("Limiter"), m_ui->outLimiterCheckBox->isChecked());
     settings.setValue(QStringLiteral("Clients"), m_ui->outClientsSpinBox->value());
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("Scripting"));
+    settings.setValue(QStringLiteral("ConnectEnabled"),
+                      m_ui->connectScriptCheckBox->isChecked());
+    settings.setValue(QStringLiteral("ConnectScript"), m_ui->connectScriptEdit->text());
+    settings.setValue(QStringLiteral("DisconnectEnabled"),
+                      m_ui->disconnectScriptCheckBox->isChecked());
+    settings.setValue(QStringLiteral("DisconnectScript"),
+                      m_ui->disconnectScriptEdit->text());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("Window"));

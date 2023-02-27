@@ -98,8 +98,8 @@ class QJackTrip : public QMainWindow
     void start();
     void stop();
     void exit();
-    void updatedInputMeasurements(const QVector<float> valuesInDb);
-    void updatedOutputMeasurements(const QVector<float> valuesInDb);
+    void updatedInputMeasurements(const float* valuesInDb, int numChannels);
+    void updatedOutputMeasurements(const float* valuesInDb, int numChannels);
 #ifndef NO_VS
     void virtualStudioMode();
 #endif

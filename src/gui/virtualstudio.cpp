@@ -1801,7 +1801,8 @@ void VirtualStudio::updatedDevicesWarningHelpUrl(const QString& url)
     return;
 }
 
-void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDecibels)
+void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
+                                               int numChannels)
 {
     QJsonArray uiValues;
     bool detectedClip = false;
@@ -1810,7 +1811,7 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDec
     for (int i = 0; i < 2; i++) {
         // Determine decibel reading
         float dB = m_meterMin;
-        if (i < valuesInDecibels.size()) {
+        if (i < numChannels) {
             dB = std::max(m_meterMin, valuesInDecibels[i]);
         }
 
@@ -1844,7 +1845,8 @@ void VirtualStudio::updatedInputVuMeasurements(const QVector<float>& valuesInDec
                                                        QVariant::fromValue(uiValues));
 }
 
-void VirtualStudio::updatedOutputVuMeasurements(const QVector<float>& valuesInDecibels)
+void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
+                                                int numChannels)
 {
     QJsonArray uiValues;
     bool detectedClip = false;
@@ -1853,7 +1855,7 @@ void VirtualStudio::updatedOutputVuMeasurements(const QVector<float>& valuesInDe
     for (int i = 0; i < 2; i++) {
         // Determine decibel reading
         float dB = m_meterMin;
-        if (i < valuesInDecibels.size()) {
+        if (i < numChannels) {
             dB = std::max(m_meterMin, valuesInDecibels[i]);
         }
 

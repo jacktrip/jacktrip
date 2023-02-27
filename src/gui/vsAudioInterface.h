@@ -112,8 +112,8 @@ class VsAudioInterface : public QObject
     void triggerPlayback();
     void settingsUpdated();
     void modeUpdated();
-    void newInputMeterMeasurements(QVector<float> values);
-    void newOutputMeterMeasurements(QVector<float> values);
+    void newInputMeterMeasurements(float* values, int numChannels);
+    void newOutputMeterMeasurements(float* values, int numChannels);
     void errorToProcess(const QString& errorMessage);
     void devicesErrorMsgChanged(const QString& msg);
     void devicesWarningMsgChanged(const QString& msg);
@@ -123,8 +123,8 @@ class VsAudioInterface : public QObject
    private slots:
     // void refreshAudioStream();
     void replaceProcess();
-    void processInputMeterMeasurements(QVector<float> values);
-    void processOutputMeterMeasurements(QVector<float> values);
+    void processInputMeterMeasurements(float* values, int numChannels);
+    void processOutputMeterMeasurements(float* values, int numChannels);
 
    private:
     void setupJackAudio();

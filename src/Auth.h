@@ -54,17 +54,28 @@ class Auth : public QObject
         WRONGTIME   = 5 << 16
     };
 
-    Auth(const QString& fileName, QObject* parent = nullptr);
+    Auth(const QString& fileName = "", bool monitorChanges = false,
+         QObject* parent = nullptr);
     ~Auth();
 
     AuthResponseT checkCredentials(const QString& username, const QString& password);
+    bool setFileName(const QString& fileName, bool readFile = true);
+    QStringList getUsers();
+    QString getTimes(const QString& username);
+    void deleteUser(const QString& username);
+    void editUser(const QString& username, const QString& times,
+                  const QString& password = "");
+    bool writeFile();
+
+    QString generateSalt();
 
    private slots:
     void reloadAuthFile();
 
    private:
-    void loadAuthFile(const QString& filename);
+    bool loadAuthFile(const QString& filename);
     bool checkTime(const QString& username);
+    bool verifyTimeFormat(const QString& times);
 
     char char64(int value);
     QByteArray charGroup(unsigned char byte3, unsigned char byte2, unsigned char byte1,
@@ -77,6 +88,7 @@ class Auth : public QObject
     QHash<QString, QString> m_timesTable;
 
     QString m_authFileName;
+    bool m_monitorChanges;
     QFileSystemWatcher m_authFileWatcher;
 };
 
