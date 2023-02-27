@@ -776,7 +776,7 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v2
         with:
-          path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
+          path: ${{ env.DOWNLOAD_PATH }}
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}
       - name: Authenticate to GCS
         uses: google-github-actions/auth@v1
