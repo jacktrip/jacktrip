@@ -46,7 +46,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include "../InputMixMode.h"
 #include "../jacktrip_globals.h"
 #include "about.h"
 #include "qjacktrip.h"
@@ -136,7 +135,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
         m_inputMixMode = settings
                              .value(QStringLiteral("InputMixMode"),
-                                    static_cast<int>(InputMixMode::MONO))
+                                    static_cast<int>(AudioInterface::MONO))
                              .toInt();
     } else {
         // existing installs - keep using stereo
@@ -144,7 +143,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             settings.value(QStringLiteral("NumInputChannels"), 2).toInt();
         m_inputMixMode = settings
                              .value(QStringLiteral("InputMixMode"),
-                                    static_cast<int>(InputMixMode::STEREO))
+                                    static_cast<int>(AudioInterface::STEREO))
                              .toInt();
     }
 
@@ -173,7 +172,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     inputMixModeComboElement.insert(QString::fromStdString("label"),
                                     QString::fromStdString("Mono"));
     inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                    static_cast<int>(InputMixMode::MONO));
+                                    static_cast<int>(AudioInterface::MONO));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("inputMixModeComboModel"),
         QVariant::fromValue(
@@ -1081,7 +1080,7 @@ void VirtualStudio::validateDevicesState()
         inputMixModeComboElement.insert(QString::fromStdString("label"),
                                         QString::fromStdString("Mono"));
         inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                        static_cast<int>(InputMixMode::MONO));
+                                        static_cast<int>(AudioInterface::MONO));
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("inputMixModeComboModel"),
             QVariant::fromValue(QVariant(
@@ -1103,7 +1102,7 @@ void VirtualStudio::validateDevicesState()
         // Set the only allowed options for these variables automatically
         m_baseInputChannel = 0;
         m_numInputChannels = 1;
-        m_inputMixMode     = static_cast<int>(InputMixMode::MONO);
+        m_inputMixMode     = static_cast<int>(AudioInterface::MONO);
 
         emit baseInputChannelChanged(m_baseInputChannel);
         emit numInputChannelsChanged(m_numInputChannels);
@@ -1152,12 +1151,12 @@ void VirtualStudio::validateDevicesState()
             inputMixModeComboElement1.insert(QString::fromStdString("label"),
                                              QString::fromStdString("Stereo"));
             inputMixModeComboElement1.insert(QString::fromStdString("value"),
-                                             static_cast<int>(InputMixMode::STEREO));
+                                             static_cast<int>(AudioInterface::STEREO));
             QJsonObject inputMixModeComboElement2 = QJsonObject();
             inputMixModeComboElement2.insert(QString::fromStdString("label"),
                                              QString::fromStdString("Mix to Mono"));
             inputMixModeComboElement2.insert(QString::fromStdString("value"),
-                                             static_cast<int>(InputMixMode::MIXTOMONO));
+                                             static_cast<int>(AudioInterface::MIXTOMONO));
 
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputMixModeComboModel"),
@@ -1167,9 +1166,9 @@ void VirtualStudio::validateDevicesState()
 
             // if m_inputMixMode is an invalid value, set it to "stereo" by default
             // given that we are using 2 channels
-            if (m_inputMixMode != static_cast<int>(InputMixMode::STEREO)
-                && m_inputMixMode != static_cast<int>(InputMixMode::MIXTOMONO)) {
-                m_inputMixMode = static_cast<int>(InputMixMode::STEREO);
+            if (m_inputMixMode != static_cast<int>(AudioInterface::STEREO)
+                && m_inputMixMode != static_cast<int>(AudioInterface::MIXTOMONO)) {
+                m_inputMixMode = static_cast<int>(AudioInterface::STEREO);
                 emit inputMixModeChanged(m_inputMixMode);
             }
         } else {
@@ -1179,15 +1178,15 @@ void VirtualStudio::validateDevicesState()
             inputMixModeComboElement.insert(QString::fromStdString("label"),
                                             QString::fromStdString("Mono"));
             inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                            static_cast<int>(InputMixMode::MONO));
+                                            static_cast<int>(AudioInterface::MONO));
             m_view.engine()->rootContext()->setContextProperty(
                 QStringLiteral("inputMixModeComboModel"),
                 QVariant::fromValue(QVariant(
                     QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
 
-            // if m_inputMixMode is an invalid value, set it to InputMixMode::MONO
-            if (m_inputMixMode != static_cast<int>(InputMixMode::MONO)) {
-                m_inputMixMode = static_cast<int>(InputMixMode::MONO);
+            // if m_inputMixMode is an invalid value, set it to AudioInterface::MONO
+            if (m_inputMixMode != static_cast<int>(AudioInterface::MONO)) {
+                m_inputMixMode = static_cast<int>(AudioInterface::MONO);
                 emit inputMixModeChanged(m_inputMixMode);
             }
         }
@@ -1833,9 +1832,9 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
 #ifdef RT_AUDIO
     // For certain specific cases, copy the first channel's value into the second
     // channel's value
-    if ((m_inputMixMode == static_cast<int>(InputMixMode::MONO)
+    if ((m_inputMixMode == static_cast<int>(AudioInterface::MONO)
          && m_numInputChannels == 1)
-        || (m_inputMixMode == static_cast<int>(InputMixMode::MIXTOMONO)
+        || (m_inputMixMode == static_cast<int>(AudioInterface::MIXTOMONO)
             && m_numInputChannels == 2)) {
         uiValues[1] = uiValues[0];
     }

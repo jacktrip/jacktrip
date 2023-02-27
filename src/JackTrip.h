@@ -55,7 +55,6 @@
 #endif  // NO_JACK
 
 #include "AudioTester.h"
-#include "InputMixMode.h"
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
@@ -136,8 +135,8 @@ class JackTrip : public QObject
     JackTrip(
         jacktripModeT JacktripMode = CLIENT, dataProtocolT DataProtocolType = UDP,
         int NumChansIn = gDefaultNumInChannels, int BaseChanIn = 0,
-        int NumChansOut           = gDefaultNumInChannels,
-        InputMixMode InputMixMode = InputMixMode::UNSET,
+        int NumChansOut                            = gDefaultNumInChannels,
+        AudioInterface::inputMixModeT InputMixMode = AudioInterface::MIX_UNSET,
 #ifdef WAIR  // wair
         int NumNetRevChans = 0,
 #endif  // endwhere
@@ -627,10 +626,10 @@ class JackTrip : public QObject
     DataProtocol::packetHeaderTypeT mPacketHeaderType;  ///< Packet Header Type
     JackTrip::audiointerfaceModeT mAudiointerfaceMode;
 
-    int mBaseAudioChanIn;        ///< Base Audio Input Channel
-    int mNumAudioChansIn;        ///< Number of Audio Input Channels
-    int mNumAudioChansOut;       ///< Number of Audio Output Channels
-    InputMixMode mInputMixMode;  ///< Input mix mode
+    int mBaseAudioChanIn;                         ///< Base Audio Input Channel
+    int mNumAudioChansIn;                         ///< Number of Audio Input Channels
+    int mNumAudioChansOut;                        ///< Number of Audio Output Channels
+    AudioInterface::inputMixModeT mInputMixMode;  ///< Input mix mode
 
 #ifdef WAIR                  // WAIR
     int mNumNetRevChans;     ///< Number of Network Audio Channels (net comb filters)

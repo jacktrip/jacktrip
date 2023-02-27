@@ -50,7 +50,6 @@
 #include "../RtAudioInterface.h"
 #endif
 
-#include "../InputMixMode.h"
 #include "../Meter.h"
 #include "../Tone.h"
 #include "../Volume.h"

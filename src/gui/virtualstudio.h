@@ -47,7 +47,6 @@
 #include <QVector>
 #include <QtNetworkAuth>
 
-#include "../InputMixMode.h"
 #include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Volume.h"
