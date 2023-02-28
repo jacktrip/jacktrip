@@ -1325,8 +1325,8 @@ void VirtualStudio::completeConnection()
         int buffer_size    = 0;
 #ifdef RT_AUDIO
         if (m_useRtAudio) {
-            input = m_inputDevice.toStdString();
-            output = m_outputDevice.toStdString();
+            input       = m_inputDevice.toStdString();
+            output      = m_outputDevice.toStdString();
             buffer_size = m_bufferSize;
         }
         int inputMixMode = m_inputMixMode;
