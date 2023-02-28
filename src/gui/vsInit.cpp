@@ -82,7 +82,7 @@ void VsInit::checkForInstance(QCoreApplication* app, QString& deeplink,
         Qt::QueuedConnection);
     // Create instanceServer to prevent new instances from being created
     void (QLocalSocket::*errorFunc)(QLocalSocket::LocalSocketError);
-#ifdef Q_OS_LINUX
+#if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
     errorFunc = &QLocalSocket::error;
 #else
     errorFunc = &QLocalSocket::errorOccurred;

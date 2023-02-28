@@ -325,7 +325,7 @@ int main(int argc, char* argv[])
         // Set url scheme in registry
         VsInit::setUrlScheme();
         vsInit.reset(new VsInit());
-        vsInit->checkForInstance(app.data(), deeplink, vs.data());
+        vsInit->checkForInstance(app.data(), deeplink, vs);
 #endif  // _WIN32
         window.reset(new QJackTrip(&cliSettings, !deeplink.isEmpty()));
 #else
