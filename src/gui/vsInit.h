@@ -31,7 +31,7 @@
 
 /**
  * \file vsInit.h
- * \author 
+ * \author
  * \date February 2023
  */
 
@@ -39,9 +39,9 @@
 #define __VSINIT_H__
 
 #include <QCoreApplication>
-#include <QScopedPointer>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QScopedPointer>
 
 #include "virtualstudio.h"
 
@@ -49,13 +49,14 @@ class VsInit
 {
    public:
     VsInit() = default;
-    
+
     static QString parseDeeplink(QCoreApplication* app);
 #ifdef _WIN32
     static void setUrlScheme();
 #endif
-    void checkForInstance(QCoreApplication* app, QString& deeplink, QSharedPointer<VirtualStudio> vs);
-    
+    void checkForInstance(QCoreApplication* app, QString& deeplink,
+                          QSharedPointer<VirtualStudio> vs);
+
    private:
     QScopedPointer<QLocalServer> m_instanceServer;
     QScopedPointer<QLocalSocket> m_instanceCheckSocket;

@@ -31,11 +31,12 @@
 
 /**
  * \file vsInit.cpp
- * \author 
+ * \author
  * \date February 2023
  */
 
 #include "vsInit.h"
+
 #include <QCommandLineParser>
 #include <QDir>
 #include <QSettings>
@@ -55,7 +56,8 @@ QString VsInit::parseDeeplink(QCoreApplication* app)
     }
 }
 
-void VsInit::checkForInstance(QCoreApplication* app, QString& deeplink, QSharedPointer<VirtualStudio> vs)
+void VsInit::checkForInstance(QCoreApplication* app, QString& deeplink,
+                              QSharedPointer<VirtualStudio> vs)
 {
     m_vs = vs;
     // Create socket
@@ -156,7 +158,7 @@ void VsInit::setUrlScheme()
     set.setValue("DefaultIcon/Default", path);
     set.setValue("URL Protocol", "");
     set.setValue("shell/open/command/Default",
-                    QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
+                 QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
     set.endGroup();
 }
 #endif
