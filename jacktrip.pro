@@ -248,6 +248,7 @@ HEADERS += src/DataProtocol.h \
              src/gui/vuMeter.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
+               src/gui/vsInit.h \
                src/gui/vsDevice.h \
                src/gui/vsAudioInterface.h \
                src/gui/vsServerInfo.h \
@@ -312,6 +313,7 @@ SOURCES += src/DataProtocol.cpp \
              src/gui/vuMeter.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
+               src/gui/vsInit.cpp \
                src/gui/vsDevice.cpp \
                src/gui/vsAudioInterface.cpp \
                src/gui/vsServerInfo.cpp \

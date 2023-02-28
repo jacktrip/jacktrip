@@ -180,6 +180,7 @@ if (NOT nogui)
   if (NOT novs)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/gui/virtualstudio.cpp
+      src/gui/vsInit.cpp
       src/gui/vsQuickView.cpp
       src/gui/vsServerInfo.cpp
       src/gui/vsPing.cpp

@@ -131,6 +131,7 @@ else
 	else
 		src += [
 			'src/gui/virtualstudio.cpp',
+			'src/gui/vsInit.cpp',
 			'src/gui/vsDevice.cpp',
 			'src/gui/vsAudioInterface.cpp',
 			'src/gui/vsServerInfo.cpp',
