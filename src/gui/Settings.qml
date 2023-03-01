@@ -41,6 +41,30 @@ Item {
 
     property string settingsGroupView: "Audio"
 
+    function getCurrentInputDeviceIndex () {
+        if (virtualstudio.inputDevice === "") {
+            return inputComboModel.findIndex(elem => elem.type === "element");
+        }
+
+        let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        if (idx < 0) {
+            idx = inputComboModel.findIndex(elem => elem.type === "element");
+        }
+        return idx;
+    }
+
+    function getCurrentOutputDeviceIndex() {
+        if (virtualstudio.outputDevice === "") {
+            return outputComboModel.findIndex(elem => elem.type === "element");
+        }
+
+        let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        if (idx < 0) {
+            idx = outputComboModel.findIndex(elem => elem.type === "element");
+        }
+        return idx;
+    }
+
     ToolBar {
         id: header
         width: parent.width
@@ -95,7 +119,11 @@ Item {
                     color: textColour;
                 }
                 display: AbstractButton.TextBesideIcon
-                onClicked: { virtualstudio.refreshDevices() }
+                onClicked: {
+                    virtualstudio.refreshDevices();
+                    inputCombo.currentIndex = getCurrentInputDeviceIndex();
+                    outputCombo.currentIndex = getCurrentOutputDeviceIndex();
+                }
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 font {
                     family: "Poppins"
@@ -319,18 +347,7 @@ Item {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 width: parent.width - outputLabel.width - rightMargin * virtualstudio.uiScale
                 model: outputComboModel
-                currentIndex: (() => {
-                    if (virtualstudio.outputDevice === "") {
-                        return outputComboModel.findIndex(elem => elem.type === "element");
-                    }
-
-                    let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
-                    if (idx < 0) {
-                        idx = outputComboModel.findIndex(elem => elem.type === "element");
-                    }
-
-                    return idx;
-                })()
+                currentIndex: getCurrentOutputDeviceIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -519,18 +536,7 @@ Item {
             ComboBox {
                 id: inputCombo
                 model: inputComboModel
-                currentIndex: (() => {
-                    if (virtualstudio.inputDevice === "") {
-                        return inputComboModel.findIndex(elem => elem.type === "element");
-                    }
-
-                    let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
-                    if (idx < 0) {
-                        idx = inputComboModel.findIndex(elem => elem.type === "element");
-                    }
-
-                    return idx;
-                })()
+                currentIndex: getCurrentInputDeviceIndex()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
                 anchors.verticalCenter: inputLabel.verticalCenter
