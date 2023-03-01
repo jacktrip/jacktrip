@@ -496,7 +496,7 @@ int main(int argc, char* argv[])
                                     .toLower();
         QString baseUrl =
             QStringLiteral(
-                "https://raw.githubusercontent.com/jacktrip/jacktrip/dev/releases/%1")
+                "https://files.jacktrip.org/app-releases/%1")
                 .arg(updateChannel);
 #else
         QString baseUrl = QStringLiteral("https://nuages.psi-borg.org/jacktrip");
