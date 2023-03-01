@@ -1,17 +1,3 @@
-- Version: "1.8.0"
-  Date: 2023-03-01
-  Description:
-  - (added) Qt version option for Meson builds
-  - (added) GHA builds now include static preview docs
-  - (added) when using the classic GUI, command line options are now parsed
-  - (added) VS mode - Selecting and configuring device channels
-  - (updated) icons in VS mode 
-  - (updated) Linux builds now use Qt 5.15.8
-  - (updated) Replaced QVector in meter code
-  - (updated) Removed set-output from GHA scripts for deprecation
-  - (updated) Automated the auto-updater release process
-  - (fixed) ambiguous call to overloaded function in Qt6
-  - (fixed) issue where selected devices were not the devices used for output
 - Version: "1.7.1"
   Date: 2023-02-03
   Description:
