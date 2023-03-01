@@ -536,7 +536,7 @@ Item {
             ComboBox {
                 id: inputCombo
                 model: inputComboModel
-                currentIndex: getCurrentOutputDeviceIndex()
+                currentIndex: getCurrentInputDeviceIndex()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
                 anchors.verticalCenter: inputLabel.verticalCenter
