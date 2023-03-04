@@ -184,10 +184,12 @@ class AudioInterface
     virtual void setInputChannels(QVarLengthArray<int> inputChans)
     {
         mInputChans = inputChans;
+        mNumInChans = inputChans.size();
     }
     virtual void setOutputChannels(QVarLengthArray<int> outputChans)
     {
         mOutputChans = outputChans;
+        mNumOutChans = outputChans.size();
     }
     virtual void setInputMixMode(inputMixModeT mode) { mInputMixMode = mode; }
     virtual void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
@@ -257,6 +259,8 @@ class AudioInterface
                                  unsigned int n_frames);
 
     JackTrip* mJackTrip;  ///< JackTrip Mediator Class pointer
+    int mNumInChans;      ///< Number of Input Channels
+    int mNumOutChans;     ///<  Number of Output Channels
     QVarLengthArray<int> mInputChans;
     QVarLengthArray<int> mOutputChans;
     inputMixModeT mInputMixMode;  ///< Input mixing mode

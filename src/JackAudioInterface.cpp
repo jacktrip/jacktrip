@@ -83,6 +83,8 @@ JackAudioInterface::JackAudioInterface(
     , mBroadcast(false)
     , mJackTrip(jacktrip)
 {
+    mNumInChans = InputChans.size();
+    mNumOutChans = OutputChans.size();
 }
 
 //*******************************************************************************
