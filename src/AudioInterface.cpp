@@ -55,10 +55,8 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputCha
 #endif  // endwhere
                                audioBitResolutionT AudioBitResolution,
                                bool processWithNetwork)
-    : mJackTrip(jacktrip)
-    , mInputChans(InputChans)
+    : mInputChans(InputChans)
     , mOutputChans(OutputChans)
-    , mInputMixMode(InputMixMode)
     ,
 #ifdef WAIR  // WAIR
     mNumNetRevChans(NumNetRevChans)
@@ -72,6 +70,8 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputCha
     , mAudioOutputPacket(NULL)
     , mLoopBack(false)
     , mProcessWithNetwork(processWithNetwork)
+    , mJackTrip(jacktrip)
+    , mInputMixMode(InputMixMode)
     , mProcessingAudio(false)
 {
 #ifndef WAIR
@@ -108,6 +108,9 @@ AudioInterface::AudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputCha
         mInBufCopy[i] =
             new sample_t[MAX_AUDIO_BUFFER_SIZE];  // required for processing audio input
     }
+
+    mNumInChans  = mInputChans.size();
+    mNumOutChans = mOutputChans.size();
 }
 
 //*******************************************************************************

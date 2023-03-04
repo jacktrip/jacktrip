@@ -73,47 +73,10 @@ JackAudioInterface::JackAudioInterface(
                      NumNetRevChans,
 #endif  // endwhere
                      AudioBitResolution)
-// , mNumInChans(NumInChans)
-// , mNumOutChans(NumOutChans)
-#ifdef WAIR  // WAIR
-    , mNumNetRevChans(NumNetRevChans)
-#endif  // endwhere
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)
-    , mJackTrip(jacktrip)
 {
-    mNumInChans  = InputChans.size();
-    mNumOutChans = OutputChans.size();
-}
-
-//*******************************************************************************
-JackAudioInterface::JackAudioInterface(
-    QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
-#ifdef WAIR  // wair
-    int NumNetRevChans,
-#endif  // endwhere
-    AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
-    : AudioInterface(nullptr, InputChans, OutputChans, AudioInterface::MIX_UNSET,
-#ifdef WAIR  // wair
-                     NumNetRevChans,
-#endif  // endwhere
-                     AudioBitResolution, false)
-// , mNumInChans(NumInChans)
-// , mNumOutChans(NumOutChans)
-#ifdef WAIR  // WAIR
-    , mNumNetRevChans(NumNetRevChans)
-#endif  // endwhere
-    , mClient(NULL)
-    , mClientName(ClientName)
-    , mBroadcast(false)
-    , mJackTrip(nullptr)
-{
-    JackAudioInterface(nullptr, InputChans, OutputChans, AudioInterface::MIX_UNSET,
-#ifdef WAIR  // wair
-                       NumNetRevChans,
-#endif  // endwhere
-                       AudioBitResolution, ClientName);
 }
 
 //*******************************************************************************

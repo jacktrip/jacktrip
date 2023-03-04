@@ -61,10 +61,6 @@ class RtAudioInterface : public AudioInterface
                      QVarLengthArray<int> OutputChans,
                      inputMixModeT InputMixMode             = AudioInterface::MIX_UNSET,
                      audioBitResolutionT AudioBitResolution = BIT16);
-    /// \brief Overloaded class constructor with null JackTrip pointer
-    RtAudioInterface(QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
-                     inputMixModeT InputMixMode             = AudioInterface::MIX_UNSET,
-                     audioBitResolutionT AudioBitResolution = BIT16);
     /// \brief The class destructor
     virtual ~RtAudioInterface();
 
