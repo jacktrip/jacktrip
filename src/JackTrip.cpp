@@ -203,7 +203,6 @@ void JackTrip::setupAudio(
             outputChannels[i] = 1 + i;
         }
         mAudioInterface = new JackAudioInterface(inputChannels, outputChannels,
-                                                 AudioInterface::MIX_UNSET,
 #ifdef WAIR  // wair
                                                  mNumNetRevChans,
 #endif  // endwhere
