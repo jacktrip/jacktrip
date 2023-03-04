@@ -62,17 +62,18 @@ QMutex JackAudioInterface::sJackMutex;
 
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(
-    JackTrip* jacktrip, QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
+    QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
     inputMixModeT InputMixMode,
 #ifdef WAIR  // wair
     int NumNetRevChans,
 #endif  // endwhere
-    AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
-    : AudioInterface(jacktrip, InputChans, OutputChans, InputMixMode,
+    AudioInterface::audioBitResolutionT AudioBitResolution, JackTrip* jacktrip,
+    const QString& ClientName)
+    : AudioInterface(InputChans, OutputChans, InputMixMode,
 #ifdef WAIR  // wair
                      NumNetRevChans,
 #endif  // endwhere
-                     AudioBitResolution)
+                     AudioBitResolution, jacktrip)
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)

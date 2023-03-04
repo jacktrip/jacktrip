@@ -48,11 +48,12 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
                                    QVarLengthArray<int> OutputChans,
                                    inputMixModeT InputMixMode,
-                                   audioBitResolutionT AudioBitResolution)
-    : AudioInterface(jacktrip, InputChans, OutputChans, InputMixMode, AudioBitResolution)
+                                   audioBitResolutionT AudioBitResolution,
+                                   JackTrip* jacktrip)
+    : AudioInterface(InputChans, OutputChans, InputMixMode, AudioBitResolution, jacktrip)
     , mRtAudio(NULL)
 {
 }

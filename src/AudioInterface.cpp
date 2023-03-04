@@ -47,14 +47,14 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
-AudioInterface::AudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
+AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
                                QVarLengthArray<int> OutputChans,
                                inputMixModeT InputMixMode,
 #ifdef WAIR  // wair
                                int NumNetRevChans,
 #endif  // endwhere
                                audioBitResolutionT AudioBitResolution,
-                               bool processWithNetwork)
+                               bool processWithNetwork, JackTrip* jacktrip)
     : mInputChans(InputChans)
     , mOutputChans(OutputChans)
     ,

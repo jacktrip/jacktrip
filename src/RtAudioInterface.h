@@ -57,10 +57,10 @@ class RtAudioInterface : public AudioInterface
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
-    RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-                     QVarLengthArray<int> OutputChans,
+    RtAudioInterface(QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
                      inputMixModeT InputMixMode             = AudioInterface::MIX_UNSET,
-                     audioBitResolutionT AudioBitResolution = BIT16);
+                     audioBitResolutionT AudioBitResolution = BIT16,
+                     JackTrip* jacktrip                     = nullptr);
     /// \brief The class destructor
     virtual ~RtAudioInterface();
 

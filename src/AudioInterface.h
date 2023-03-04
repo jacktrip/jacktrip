@@ -100,13 +100,13 @@ class AudioInterface
      * \param AudioBitResolution Audio Sample Resolutions in bits
      */
     AudioInterface(
-        JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-        QVarLengthArray<int> OutputChans, inputMixModeT InputMixMode,
+        QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
+        inputMixModeT InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-        bool processWithNetwork                                = true);
+        bool processWithNetwork = true, JackTrip* jacktrip = nullptr);
     /// \brief The class destructor
     virtual ~AudioInterface();
 

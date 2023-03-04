@@ -74,12 +74,13 @@ class JackAudioInterface : public AudioInterface
      * \param ClientName Client name in Jack
      */
     JackAudioInterface(
-        JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-        QVarLengthArray<int> OutputChans, inputMixModeT InputMixMode,
+        QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
+        inputMixModeT InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+        JackTrip* jacktrip                                     = nullptr,
         const QString& ClientName = QStringLiteral("JackTrip"));
     /// \brief The class destructor
     virtual ~JackAudioInterface();
