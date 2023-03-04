@@ -260,7 +260,7 @@ void JackTrip::setupAudio(
             outputChannels[i] = 1 + i;
         }
         mAudioInterface = new RtAudioInterface(
-            inputChannels, outputChannels, mInputMixMode, mAudioBitResolution true, this);
+            inputChannels, outputChannels, mInputMixMode, mAudioBitResolution, true, this);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
