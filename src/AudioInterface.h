@@ -98,6 +98,8 @@ class AudioInterface
      * \param NumInChans Number of Input Channels
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param processWithNetwork Send audio to and from the network
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      */
     AudioInterface(
         QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
@@ -106,7 +108,7 @@ class AudioInterface
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-        bool processWithNetwork = true, JackTrip* jacktrip = nullptr);
+        bool processWithNetwork = false, JackTrip* jacktrip = nullptr);
     /// \brief The class destructor
     virtual ~AudioInterface();
 

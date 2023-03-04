@@ -52,8 +52,9 @@ RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
                                    QVarLengthArray<int> OutputChans,
                                    inputMixModeT InputMixMode,
                                    audioBitResolutionT AudioBitResolution,
-                                   JackTrip* jacktrip)
-    : AudioInterface(InputChans, OutputChans, InputMixMode, AudioBitResolution, jacktrip)
+                                   bool processWithNetwork, JackTrip* jacktrip)
+    : AudioInterface(InputChans, OutputChans, InputMixMode, AudioBitResolution,
+                     processWithNetwork, jacktrip)
     , mRtAudio(NULL)
 {
 }

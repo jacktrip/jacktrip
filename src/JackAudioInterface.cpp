@@ -66,13 +66,13 @@ JackAudioInterface::JackAudioInterface(
 #ifdef WAIR  // wair
     int NumNetRevChans,
 #endif  // endwhere
-    AudioInterface::audioBitResolutionT AudioBitResolution, JackTrip* jacktrip,
-    const QString& ClientName)
+    AudioInterface::audioBitResolutionT AudioBitResolution, bool processWithNetwork,
+    JackTrip* jacktrip, const QString& ClientName)
     : AudioInterface(InputChans, OutputChans, MIX_UNSET,
 #ifdef WAIR  // wair
                      NumNetRevChans,
 #endif  // endwhere
-                     AudioBitResolution, jacktrip)
+                     AudioBitResolution, processWithNetwork, jacktrip)
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)

@@ -206,7 +206,7 @@ void JackTrip::setupAudio(
 #ifdef WAIR  // wair
                                                  mNumNetRevChans,
 #endif  // endwhere
-                                                 mAudioBitResolution, this);
+                                                 mAudioBitResolution, true, this);
 
 #ifdef WAIRTOHUB  // WAIR
 
@@ -259,8 +259,8 @@ void JackTrip::setupAudio(
         for (int i = 0; i < mNumAudioChansOut; i++) {
             outputChannels[i] = 1 + i;
         }
-        mAudioInterface = new RtAudioInterface(this, inputChannels, outputChannels,
-                                               mInputMixMode, mAudioBitResolution);
+        mAudioInterface = new RtAudioInterface(
+            inputChannels, outputChannels, mInputMixMode, mAudioBitResolution true, this);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
@@ -291,8 +291,9 @@ void JackTrip::setupAudio(
         for (int i = 0; i < mNumAudioChansOut; i++) {
             outputChannels[i] = 1 + i;
         }
-        mAudioInterface = new RtAudioInterface(inputChannels, outputChannels,
-                                               mInputMixMode, mAudioBitResolution, this);
+        mAudioInterface =
+            new RtAudioInterface(inputChannels, outputChannels, mInputMixMode,
+                                 mAudioBitResolution, true, this);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);

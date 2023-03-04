@@ -39,7 +39,7 @@
 #define __JACKAUDIOINTERFACE_H__
 
 #include <iostream>
-//#include <tr1/memory> //for shared_ptr
+// #include <tr1/memory> //for shared_ptr
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
 #else
@@ -67,10 +67,11 @@ class JackAudioInterface : public AudioInterface
 {
    public:
     /** \brief The class constructor
-     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param NumInChans Number of Input Channels
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param processWithNetwork Send audio to and from the network
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param ClientName Client name in Jack
      */
     JackAudioInterface(
@@ -79,7 +80,7 @@ class JackAudioInterface : public AudioInterface
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-        JackTrip* jacktrip                                     = nullptr,
+        bool processWithNetwork = false, JackTrip* jacktrip = nullptr,
         const QString& ClientName = QStringLiteral("JackTrip"));
     /// \brief The class destructor
     virtual ~JackAudioInterface();
