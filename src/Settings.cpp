@@ -99,6 +99,7 @@ enum JTLongOptIDS {
     OPT_AUDIOINPUTDEVICE,
     OPT_AUDIOOUTPUTDEVICE,
     OPT_AUDIOBACKENDS,
+    OPT_BACKEND,
 };
 
 //*******************************************************************************
@@ -156,6 +157,7 @@ void Settings::parseInput(int argc, char** argv)
         {"appendthreadid", no_argument, NULL,
          OPT_APPENDTHREADID},  // Append thread id to client names
         {"audiobackends", no_argument, NULL, OPT_AUDIOBACKENDS},
+        {"backend", required_argument, NULL, OPT_BACKEND},
 #ifdef RT_AUDIO
         {"rtaudio", no_argument, NULL, 'R'},      // Run in JamLink mode
         {"srate", required_argument, NULL, 'T'},  // Set Sample Rate
@@ -398,6 +400,17 @@ void Settings::parseInput(int argc, char** argv)
             }
             std::exit(0);
             break;
+        case OPT_BACKEND:
+            if (mAudio.setAudioBackendByString(optarg)) {
+                std::cout << "Set audio backend to " << optarg << ".\n";
+                break;
+            } else {
+                std::cout << "There's no audio backend with the name " << optarg << ".\n"
+                          << "Please use a backend name according to the output of\n"
+                          << "jacktrip --audiobackends!\n\n";
+                std::exit(0);
+            };
+
 #ifdef RT_AUDIO
         case 'R':  // RtAudio
             //-------------------------------------------------------
@@ -836,6 +849,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "ARGUMENTS FOR AUDIO BACKENDS:\n";
     cout << "     --audiobackends                      List all available audio backends\n";
+    cout << "     --backend <backend name>             Set the audio backend\n";
 #ifdef RT_AUDIO
     cout << " -R, --rtaudio                            Use system's default sound system "
             "instead of Jack"

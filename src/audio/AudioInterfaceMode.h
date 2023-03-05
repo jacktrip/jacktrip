@@ -148,8 +148,22 @@ class Audio
         }
     }
 
+    auto getAudioBackend() -> Backend { return mBackend; }
+
+    bool setAudioBackendByString(std::string backend)
+    {
+        for (const auto& [available_enum, available_string] : m_availableBackends) {
+            if (backend == available_string) {
+                mBackend = available_enum;
+                return true;
+            }
+        }
+        return false;
+    }
+
    private:
     std::unordered_map<Backend, std::string> m_availableBackends;
+    Backend mBackend = Backend::JACK;
 };
 
 #ifdef RT_AUDIO
