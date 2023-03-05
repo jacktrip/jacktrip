@@ -94,19 +94,20 @@ class AudioInterface
     };
 
     /** \brief The class constructor
-     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param NumInChans Number of Input Channels
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param processWithNetwork Send audio to and from the network
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      */
     AudioInterface(
-        JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-        QVarLengthArray<int> OutputChans, inputMixModeT InputMixMode,
+        QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
+        inputMixModeT InputMixMode,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-        bool processWithNetwork                                = true);
+        bool processWithNetwork = false, JackTrip* jacktrip = nullptr);
     /// \brief The class destructor
     virtual ~AudioInterface();
 
@@ -184,10 +185,12 @@ class AudioInterface
     virtual void setInputChannels(QVarLengthArray<int> inputChans)
     {
         mInputChans = inputChans;
+        mNumInChans = inputChans.size();
     }
     virtual void setOutputChannels(QVarLengthArray<int> outputChans)
     {
         mOutputChans = outputChans;
+        mNumOutChans = outputChans.size();
     }
     virtual void setInputMixMode(inputMixModeT mode) { mInputMixMode = mode; }
     virtual void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
@@ -256,11 +259,9 @@ class AudioInterface
     void computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                  unsigned int n_frames);
 
-    JackTrip* mJackTrip;  ///< JackTrip Mediator Class pointer
     QVarLengthArray<int> mInputChans;
     QVarLengthArray<int> mOutputChans;
-    inputMixModeT mInputMixMode;  ///< Input mixing mode
-#ifdef WAIR                       // wair
+#ifdef WAIR               // wair
     int mNumNetRevChans;  ///<  Number of Network Audio Channels (net comb filters)
     QVarLengthArray<sample_t*>
         mNetInBuffer;  ///< Vector of Input buffers/channel read from net
@@ -294,6 +295,11 @@ class AudioInterface
     AudioTester* mAudioTesterP{nullptr};
 
    protected:
+    JackTrip* mJackTrip;          ///< JackTrip Mediator Class pointer
+    int mNumInChans;              ///< Number of Input Channels
+    int mNumOutChans;             ///<  Number of Output Channels
+    inputMixModeT mInputMixMode;  ///< Input mixing mode
+
     void setDevicesWarningMsg(warningMessageT msg);
     void setDevicesErrorMsg(errorMessageT msg);
 

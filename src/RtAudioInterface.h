@@ -52,19 +52,16 @@ class RtAudioInterface : public AudioInterface
 {
    public:
     /** \brief The class constructor
-     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param NumInChans Number of Input Channels
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param processWithNetwork Send audio to and from the network
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      */
-    RtAudioInterface(JackTrip* jacktrip, QVarLengthArray<int> InputChans,
-                     QVarLengthArray<int> OutputChans,
-                     inputMixModeT InputMixMode             = AudioInterface::MIX_UNSET,
-                     audioBitResolutionT AudioBitResolution = BIT16);
-    /// \brief Overloaded class constructor with null JackTrip pointer
     RtAudioInterface(QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
                      inputMixModeT InputMixMode             = AudioInterface::MIX_UNSET,
-                     audioBitResolutionT AudioBitResolution = BIT16);
+                     audioBitResolutionT AudioBitResolution = BIT16,
+                     bool processWithNetwork = false, JackTrip* jacktrip = nullptr);
     /// \brief The class destructor
     virtual ~RtAudioInterface();
 

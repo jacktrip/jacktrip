@@ -62,56 +62,21 @@ QMutex JackAudioInterface::sJackMutex;
 
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(
-    JackTrip* jacktrip, QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
-    inputMixModeT InputMixMode,
-#ifdef WAIR  // wair
-    int NumNetRevChans,
-#endif  // endwhere
-    AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
-    : AudioInterface(jacktrip, InputChans, OutputChans, InputMixMode,
-#ifdef WAIR  // wair
-                     NumNetRevChans,
-#endif  // endwhere
-                     AudioBitResolution)
-// , mNumInChans(NumInChans)
-// , mNumOutChans(NumOutChans)
-#ifdef WAIR  // WAIR
-    , mNumNetRevChans(NumNetRevChans)
-#endif  // endwhere
-    , mClient(NULL)
-    , mClientName(ClientName)
-    , mBroadcast(false)
-    , mJackTrip(jacktrip)
-{
-}
-
-//*******************************************************************************
-JackAudioInterface::JackAudioInterface(
     QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
 #ifdef WAIR  // wair
     int NumNetRevChans,
 #endif  // endwhere
-    AudioInterface::audioBitResolutionT AudioBitResolution, const QString& ClientName)
-    : AudioInterface(nullptr, InputChans, OutputChans, AudioInterface::MIX_UNSET,
+    AudioInterface::audioBitResolutionT AudioBitResolution, bool processWithNetwork,
+    JackTrip* jacktrip, const QString& ClientName)
+    : AudioInterface(InputChans, OutputChans, MIX_UNSET,
 #ifdef WAIR  // wair
                      NumNetRevChans,
 #endif  // endwhere
-                     AudioBitResolution, false)
-// , mNumInChans(NumInChans)
-// , mNumOutChans(NumOutChans)
-#ifdef WAIR  // WAIR
-    , mNumNetRevChans(NumNetRevChans)
-#endif  // endwhere
+                     AudioBitResolution, processWithNetwork, jacktrip)
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)
-    , mJackTrip(nullptr)
 {
-    JackAudioInterface(nullptr, InputChans, OutputChans, AudioInterface::MIX_UNSET,
-#ifdef WAIR  // wair
-                       NumNetRevChans,
-#endif  // endwhere
-                       AudioBitResolution, ClientName);
 }
 
 //*******************************************************************************
