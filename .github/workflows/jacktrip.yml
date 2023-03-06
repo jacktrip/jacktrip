@@ -713,27 +713,6 @@ jobs:
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  release_test:
-    if:  github.event_name == 'release'
-    runs-on: ubuntu-latest
-    name: 'test release if statement'
-    steps:
-      - name: print
-        run: echo "release if passed"
-  tag_test:
-    if:  startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-    name: 'test tag if statement'
-    steps:
-      - name: print
-        run: echo "tag if passed"
-  secrets_test:
-    if:  needs.check-secrets.outputs.should_run == 'true'
-    runs-on: ubuntu-latest
-    name: 'test secrets if statement'
-    steps:
-      - name: print
-        run: echo "secrets if passed"
   deploy_jtl:
     if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true'
     needs: [build, sign]
