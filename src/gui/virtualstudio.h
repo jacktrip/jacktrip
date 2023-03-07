@@ -105,6 +105,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
                    bufferStrategyChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
+    Q_PROPERTY(QUrl studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY studioToJoinChanged)
     Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
     Q_PROPERTY(QJsonObject userMetadata READ userMetadata NOTIFY userMetadataChanged)
     Q_PROPERTY(bool showInactive READ showInactive WRITE setShowInactive NOTIFY
