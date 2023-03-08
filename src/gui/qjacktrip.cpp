@@ -333,9 +333,7 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
     // Check if Jack is actually available
     if (have_libjack() != 0) {
 #ifdef RT_AUDIO
-#ifdef PSI
         bool usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
-#endif  // PSI
         m_ui->backendComboBox->setCurrentIndex(1);
         m_ui->backendComboBox->setEnabled(false);
         m_ui->backendLabel->setEnabled(false);
@@ -349,7 +347,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
             "JACK was not found. This means that only the RtAudio backend is available "
             "and that JackTrip cannot be run in hub server mode.");
 
-#ifdef PSI
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
         if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
@@ -385,7 +382,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
             settings.setValue(QStringLiteral("UsingFallback"), false);
         }
         settings.endGroup();
-#endif  // PSI
 #else   // RT_AUDIO
         QMessageBox msgBox;
         msgBox.setText(
