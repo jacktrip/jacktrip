@@ -2418,6 +2418,8 @@ void VirtualStudio::startAudio()
     m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, true);
     m_vsAudioInterface->setNumInputChannels(m_numInputChannels, true);
     m_vsAudioInterface->setInputMixMode(m_inputMixMode, true);
+    m_vsAudioInterface->setBaseOutputChannel(m_baseOutputChannel, true);
+    m_vsAudioInterface->setNumOutputChannels(m_numOutputChannels, true);
 #endif
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
             &VirtualStudio::updatedDevicesErrorMsg);
@@ -2443,6 +2445,10 @@ void VirtualStudio::startAudio()
             &VsAudioInterface::setBaseInputChannel);
     connect(this, &VirtualStudio::inputMixModeChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setInputMixMode);
+    connect(this, &VirtualStudio::numOutputChannelsChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setNumOutputChannels);
+    connect(this, &VirtualStudio::baseOutputChannelChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setBaseOutputChannel);
     connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setAudioInterfaceMode);
     connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),

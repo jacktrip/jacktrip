@@ -233,7 +233,7 @@ void VsAudioInterface::setupRtAudio()
             inputChans[i] = m_baseInputChannel + i;
         }
         for (int i = 0; i < m_numAudioChansOut; i++) {
-            outputChans[i] = 1 + i;
+            outputChans[i] = m_baseOutputChannel + i;
         }
 
         m_audioInterface.reset(new RtAudioInterface(
@@ -392,6 +392,37 @@ void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
             emit settingsUpdated();
         }
     }
+}
+
+void VsAudioInterface::setBaseOutputChannel(int baseChannel, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_baseOutputChannel = baseChannel;
+    if (!m_audioInterface.isNull()) {
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+#endif
+    return;
+}
+
+void VsAudioInterface::setNumOutputChannels(int numChannels, bool shouldRestart)
+{
+    if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_numAudioChansOut = numChannels;
+    if (!m_audioInterface.isNull()) {
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+#endif
 }
 
 void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio, bool shouldRestart)
