@@ -1290,17 +1290,6 @@ void VirtualStudio::validateOutputDevicesState()
                   << std::endl;
         return;
     } else if (numDevicesChannelsAvailable == 1) {
-        // Set the output mix mode to just have "Mono" as the option
-        QJsonObject outputMixModeComboElement = QJsonObject();
-        outputMixModeComboElement.insert(QString::fromStdString("label"),
-                                         QString::fromStdString("Mono"));
-        outputMixModeComboElement.insert(QString::fromStdString("value"),
-                                         static_cast<int>(AudioInterface::MONO));
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputMixModeComboModel"),
-            QVariant::fromValue(QVariant(
-                QVariantList() << QVariant(QJsonValue(outputMixModeComboElement)))));
-
         // Set the output channels combo to only have channel 1 as an option
         QJsonObject outputChannelsComboElement = QJsonObject();
         outputChannelsComboElement.insert(QString::fromStdString("label"),
@@ -1324,13 +1313,6 @@ void VirtualStudio::validateOutputDevicesState()
         // set the output channels selector to have the options based on the currently
         // selected device
         QVariantList items = QVariantList();
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
-            QJsonObject element = QJsonObject();
-            element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
-            element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
-            element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
-            items.push_back(QVariant(QJsonValue(element)));
-        }
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             if (i % 2 == 0) {
                 QJsonObject element = QJsonObject();
