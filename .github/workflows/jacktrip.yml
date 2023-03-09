@@ -694,7 +694,7 @@ jobs:
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
-    if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
+    if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # run on releases only
     needs: [build, sign]
     runs-on: ubuntu-latest
     name: 'deploy release'
