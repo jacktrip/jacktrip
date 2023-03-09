@@ -82,7 +82,7 @@ bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
-                   int BaseChanIn, int NumChansIn, int NumChansOut,
+                   int BaseChanIn, int NumChansIn, int BaseChanOut, int NumChansOut,
                    AudioInterface::inputMixModeT InputMixMode,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
@@ -100,6 +100,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mAudiointerfaceMode(JackTrip::JACK)
     , mBaseAudioChanIn(BaseChanIn)
     , mNumAudioChansIn(NumChansIn)
+    , mBaseAudioChanOut(BaseChanOut)
     , mNumAudioChansOut(NumChansOut)
     , mInputMixMode(InputMixMode)
 #ifdef WAIR  // WAIR
@@ -257,7 +258,7 @@ void JackTrip::setupAudio(
             inputChannels[i] = mBaseAudioChanIn + i;
         }
         for (int i = 0; i < mNumAudioChansOut; i++) {
-            outputChannels[i] = 1 + i;
+            outputChannels[i] = mBaseAudioChanOut + i;
         }
         mAudioInterface =
             new RtAudioInterface(inputChannels, outputChannels, mInputMixMode,
@@ -290,7 +291,7 @@ void JackTrip::setupAudio(
             inputChannels[i] = mBaseAudioChanIn + i;
         }
         for (int i = 0; i < mNumAudioChansOut; i++) {
-            outputChannels[i] = 1 + i;
+            outputChannels[i] = mBaseAudioChanOut + i;
         }
         mAudioInterface =
             new RtAudioInterface(inputChannels, outputChannels, mInputMixMode,

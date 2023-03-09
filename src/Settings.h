@@ -131,6 +131,7 @@ class Settings : public QObject
     int mNumAudioInputChans               = 2;              ///< Number of Input Channels
     int mNumAudioOutputChans              = 2;              ///< Number of Output Channels
     int mBaseAudioInputChanNum            = 0;              ///< Base Input Channel Number
+    int mBaseAudioOutputChanNum           = 0;  ///< Base Output Channel Number
     int mBufferQueueLength =
         gDefaultQueueLength;  ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution = AudioInterface::BIT16;

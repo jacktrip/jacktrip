@@ -343,18 +343,20 @@ void VsDevice::sendLevels()
 // initJackTrip spawns a new jacktrip process with the desired settings
 JackTrip* VsDevice::initJackTrip(
     [[maybe_unused]] bool useRtAudio, [[maybe_unused]] std::string input,
-    [[maybe_unused]] std::string output, [[maybe_unused]] int numChannelsIn,
-    [[maybe_unused]] int numChannelsOut, [[maybe_unused]] int baseInputChannel,
-    [[maybe_unused]] int inputMixMode, [[maybe_unused]] int bufferSize,
-    [[maybe_unused]] int bufferStrategy, VsServerInfo* studioInfo)
+    [[maybe_unused]] std::string output, [[maybe_unused]] int baseInputChannel,
+    [[maybe_unused]] int numChannelsIn, [[maybe_unused]] int baseOutputChannel,
+    [[maybe_unused]] int numChannelsOut, [[maybe_unused]] int inputMixMode,
+    [[maybe_unused]] int bufferSize, [[maybe_unused]] int bufferStrategy,
+    VsServerInfo* studioInfo)
 {
-    m_jackTrip.reset(new JackTrip(
-        JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, baseInputChannel, numChannelsIn,
-        numChannelsOut, static_cast<AudioInterface::inputMixModeT>(inputMixMode),
+    m_jackTrip.reset(
+        new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, baseInputChannel,
+                     numChannelsIn, baseOutputChannel, numChannelsOut,
+                     static_cast<AudioInterface::inputMixModeT>(inputMixMode),
 #ifdef WAIR  // wair
-        0,
+                     0,
 #endif  // endwhere
-        4, 1));
+                     4, 1));
     m_jackTrip->setConnectDefaultAudioPorts(true);
 #ifdef RT_AUDIO
     if (useRtAudio) {

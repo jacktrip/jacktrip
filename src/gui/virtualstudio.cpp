@@ -1503,10 +1503,11 @@ void VirtualStudio::completeConnection()
         JackTrip* jackTrip = m_device->initJackTrip(
             m_useRtAudio, input, output,
 #ifdef RT_AUDIO
-            m_numInputChannels, m_numOutputChannels, m_baseInputChannel,
+            m_baseInputChannel, m_numInputChannels, m_baseOutputChannel,
+            m_numOutputChannels,
 #else
-            2, 2,  // default to 2 channels for input and 2 channels for output
-            1,     // start at channel 1 by default
+            0, 2, 0, 2,  // default to 2 channels for input and 2 channels for output
+                         // starting at channel 0
 #endif
             inputMixMode, buffer_size, m_bufferStrategy, studioInfo);
         if (jackTrip == 0) {
