@@ -1044,8 +1044,8 @@ Item {
 
             Image {
                 id: outputLouderIcon
-                anchors.right: testOutputAudioButton.left
-                anchors.rightMargin: 16 * virtualstudio.uiScale
+                anchors.right: parent.right
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: outputSlider.verticalCenter
                 source: "loud.svg"
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
@@ -1061,6 +1061,63 @@ Item {
                 }
             }
 
+            Text {
+                id: outputChannelsLabel
+                anchors.left: outputCombo.left
+                anchors.right: outputCombo.horizontalCenter
+                anchors.top: outputSlider.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: "Output Channel(s)"
+                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            ComboBox {
+                id: outputChannelsCombo
+                anchors.left: outputCombo.left
+                anchors.right: outputCombo.horizontalCenter
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: outputChannelsLabel.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                model: outputChannelsComboModel
+                currentIndex: (() => {
+                    let idx = outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
+                        && elem.numChannels === virtualstudio.numOutputChannels);
+                    if (idx < 0) {
+                        idx = 0;
+                    }
+                    return idx;
+                })()
+                delegate: ItemDelegate {
+                    required property var modelData
+                    required property int index
+                    width: parent.width
+                    contentItem: Text {
+                        text: modelData.label
+                    }
+                    highlighted: outputChannelsCombo.highlightedIndex === index
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            outputChannelsCombo.currentIndex = index
+                            outputChannelsCombo.popup.close()
+                            virtualstudio.baseOutputChannel = modelData.baseChannel
+                            virtualstudio.numOutputChannels = modelData.numChannels
+                            virtualstudio.validateDevicesState()
+                        }
+                    }
+                }
+                contentItem: Text {
+                    leftPadding: 12
+                    font: inputCombo.font
+                    horizontalAlignment: Text.AlignHLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: outputChannelsCombo.model[outputChannelsCombo.currentIndex].label || ""
+                }
+            }
+
             Button {
                 id: testOutputAudioButton
                 background: Rectangle {
@@ -1072,7 +1129,7 @@ Item {
                 onClicked: { virtualstudio.playOutputAudio() }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: outputSlider.verticalCenter
+                anchors.verticalCenter: outputChannelsCombo.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
                     text: "Play Test Tone"
@@ -1236,7 +1293,7 @@ Item {
 
             Image {
                 id: inputLouderIcon
-                anchors.right: hiddenInputButton.left
+                anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: inputSlider.verticalCenter
                 source: "loud.svg"
@@ -1251,15 +1308,6 @@ Item {
                     saturation: 0
                     lightness: virtualstudio.darkMode ? 1 : 0
                 }
-            }
-
-            Button {
-                id: hiddenInputButton
-                anchors.right: parent.right
-                anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: inputSlider.verticalCenter
-                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                visible: false
             }
 
             Text {
