@@ -305,7 +305,7 @@ Item {
         Item {
             id: usingRtAudio
             anchors.top: parent.top
-            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: 24 * virtualstudio.uiScale
@@ -480,10 +480,10 @@ Item {
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.horizontalCenter
                 anchors.top: outputSlider.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Output Channel(s)"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
 
@@ -493,7 +493,7 @@ Item {
                 anchors.right: outputCombo.horizontalCenter
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: outputChannelsLabel.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 model: outputChannelsComboModel
                 currentIndex: (() => {
                     let idx = outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
@@ -738,10 +738,10 @@ Item {
                 anchors.left: inputCombo.left
                 anchors.right: inputCombo.horizontalCenter
                 anchors.top: inputSlider.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Input Channel(s)"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
 
@@ -751,7 +751,7 @@ Item {
                 anchors.right: inputCombo.horizontalCenter
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputChannelsLabel.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 model: inputChannelsComboModel
                 currentIndex: (() => {
                     let idx = inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
@@ -796,10 +796,10 @@ Item {
                 anchors.right: inputCombo.right
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputSlider.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Mono / Stereo"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
 
@@ -809,7 +809,7 @@ Item {
                 anchors.right: inputCombo.right
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputMixModeLabel.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 model: inputMixModeComboModel
                 currentIndex: (() => {
                     let idx = inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
@@ -912,7 +912,7 @@ Item {
         Item {
             id: usingJACK
             anchors.top: parent.top
-            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: leftMargin * virtualstudio.uiScale
@@ -1209,7 +1209,7 @@ Item {
         Item {
             id: noBackend
             anchors.top: parent.top
-            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: leftMargin * virtualstudio.uiScale
