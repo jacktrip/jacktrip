@@ -1454,7 +1454,7 @@ Item {
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
-                text: "Save Settings"
+                text: virtualstudio.studioToJoin.toString() ? "Connect to Studio" : "Save Settings"
                 font.family: "Poppins"
                 font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
