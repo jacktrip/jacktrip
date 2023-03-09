@@ -2033,7 +2033,11 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
             detectedClip = true;
         }
     }
-
+#ifdef RT_AUDIO
+    if (m_numOutputChannels == 1) {
+        uiValues[1] = uiValues[0];
+    }
+#endif
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
                                                        QVariant::fromValue(uiValues));
 }
