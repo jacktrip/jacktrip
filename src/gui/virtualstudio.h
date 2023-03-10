@@ -153,6 +153,7 @@ class VirtualStudio : public QObject
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
     void raiseToTop();
+    bool vsModeActive();
 
     bool showFirstRun();
     void setShowFirstRun(bool show);
@@ -351,6 +352,7 @@ class VirtualStudio : public QObject
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
+    bool m_vsModeActive = false;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;

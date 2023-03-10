@@ -100,7 +100,7 @@ void VsInit::checkForInstance(QString& deeplink)
                     [&]() {
                         // This is the first instance. Bring it to the
                         // top.
-                        if (!m_vs.isNull()) {
+                        if (!m_vs.isNull() && m_vs->vsModeActive()) {
                             m_vs->raiseToTop();
                         }
                         while (m_instanceServer->hasPendingConnections()) {
@@ -129,8 +129,8 @@ void VsInit::checkForInstance(QString& deeplink)
                             QUrl url(urlString);
 
                             // Join studio using received URL
-                            if (!m_vs.isNull() && url.scheme() == "jacktrip"
-                                && url.host() == "join") {
+                            if (!m_vs.isNull() && m_vs->vsModeActive()
+                                && url.scheme() == "jacktrip" && url.host() == "join") {
                                 m_vs->setStudioToJoin(url);
                             }
                         }
