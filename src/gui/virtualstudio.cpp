@@ -348,6 +348,11 @@ void VirtualStudio::raiseToTop()
     m_view.requestActivate();  // Raise to top
 }
 
+bool VirtualStudio::vsModeActive()
+{
+    return m_vsModeActive;
+}
+
 bool VirtualStudio::showFirstRun()
 {
     return m_showFirstRun;
@@ -997,6 +1002,7 @@ void VirtualStudio::toStandard()
     if (!m_standardWindow.isNull()) {
         m_view.hide();
         m_standardWindow->show();
+        m_vsModeActive = false;
     }
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
@@ -1729,6 +1735,7 @@ void VirtualStudio::slotAuthSucceded()
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
     settings.endGroup();
+    m_vsModeActive = true;
 
     m_device = new VsDevice(m_authenticator.data(), m_testMode);
     m_device->registerApp();
