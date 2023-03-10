@@ -5,13 +5,17 @@
   - (added) GHA builds now include static preview docs
   - (added) when using the classic GUI, command line options are now parsed
   - (added) VS mode - Selecting and configuring device channels
+  - (added) Classic mode - Warning for machines without JACK installed
   - (updated) icons in VS mode 
   - (updated) Linux builds now use Qt 5.15.8
   - (updated) Replaced QVector in meter code
   - (updated) Removed set-output from GHA scripts for deprecation
   - (updated) Automated the auto-updater release process
+  - (updated) RtAudio is included in Linux binary releases
+  - (updated) text on audio setup confirm button when using deeplink
   - (fixed) ambiguous call to overloaded function in Qt6
   - (fixed) issue where selected devices were not the devices used for output
+  - (fixed) crash when using Classic mode and CLI w/ JACK
 - Version: "1.7.1"
   Date: 2023-02-03
   Description:
