@@ -333,9 +333,8 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
     // Check if Jack is actually available
     if (have_libjack() != 0) {
 #ifdef RT_AUDIO
-#ifdef PSI
-        bool usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
-#endif  // PSI
+        m_audioFallback       = true;
+        m_usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
         m_ui->backendComboBox->setCurrentIndex(1);
         m_ui->backendComboBox->setEnabled(false);
         m_ui->backendLabel->setEnabled(false);
@@ -348,34 +347,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
         m_ui->backendWarningLabel->setText(
             "JACK was not found. This means that only the RtAudio backend is available "
             "and that JackTrip cannot be run in hub server mode.");
-
-#ifdef PSI
-        QSettings settings;
-        settings.beginGroup(QStringLiteral("Audio"));
-        if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
-            QCheckBox* dontBugMe =
-                new QCheckBox(QStringLiteral("Don't show this warning again"));
-            QMessageBox msgBox;
-            msgBox.setText(
-                "An installation of JACK was not found. JackTrip will still run using "
-                "a different audio backend (RtAudio) but some more advanced features, "
-                "like the ability to run your own hub server, will not be available."
-                "\n\n(If you install JACK at a later stage, these features will "
-                "automatically be re-enabled.)");
-            msgBox.setWindowTitle(QStringLiteral("JACK Not Available"));
-            msgBox.setCheckBox(dontBugMe);
-            QObject::connect(dontBugMe, &QCheckBox::stateChanged, this, [=]() {
-                m_hideWarning = dontBugMe->isChecked();
-            });
-            msgBox.exec();
-            if (m_hideWarning) {
-                settings.setValue(QStringLiteral("HideJackWarning"), true);
-            }
-            if (!usingRtAudioAlready) {
-                settings.setValue(QStringLiteral("UsingFallback"), true);
-            }
-        }
-        settings.endGroup();
     } else {
         // If we've fallen back to RtAudio before and JACK is now installed, use JACK.
         QSettings settings;
@@ -385,7 +356,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
             settings.setValue(QStringLiteral("UsingFallback"), false);
         }
         settings.endGroup();
-#endif  // PSI
 #else   // RT_AUDIO
         QMessageBox msgBox;
         msgBox.setText(
@@ -470,6 +440,38 @@ void QJackTrip::showEvent(QShowEvent* event)
             this->resize(QSize(this->size().height(), 600));
         }
         settings.endGroup();
+
+        // Also show our JACK not found warning if needed.
+#ifdef RT_AUDIO
+        if (m_audioFallback) {
+            QSettings settings;
+            settings.beginGroup(QStringLiteral("Audio"));
+            if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
+                QCheckBox* dontBugMe =
+                    new QCheckBox(QStringLiteral("Don't show this warning again"));
+                QMessageBox msgBox;
+                msgBox.setText(
+                    "An installation of JACK was not found. JackTrip will still run "
+                    "using a different audio backend (RtAudio) but some more advanced "
+                    "features, like the ability to run your own hub server, will not be "
+                    "available.\n\n(If you install JACK at a later stage, these features "
+                    "will automatically be re-enabled.)");
+                msgBox.setWindowTitle(QStringLiteral("JACK Not Available"));
+                msgBox.setCheckBox(dontBugMe);
+                QObject::connect(dontBugMe, &QCheckBox::stateChanged, this, [=]() {
+                    m_hideWarning = dontBugMe->isChecked();
+                });
+                msgBox.exec();
+                if (m_hideWarning) {
+                    settings.setValue(QStringLiteral("HideJackWarning"), true);
+                }
+                if (!m_usingRtAudioAlready) {
+                    settings.setValue(QStringLiteral("UsingFallback"), true);
+                }
+            }
+            settings.endGroup();
+        }
+#endif  // RT_AUDIO
         m_firstShow = false;
     }
 }

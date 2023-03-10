@@ -157,7 +157,9 @@ class QJackTrip : public QMainWindow
 
     QLabel m_autoQueueIndicator;
     bool m_hideWarning;
-    bool m_firstShow = true;
+    bool m_audioFallback       = false;
+    bool m_usingRtAudioAlready = false;
+    bool m_firstShow           = true;
 
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> m_vs;
