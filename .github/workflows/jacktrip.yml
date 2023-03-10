@@ -60,7 +60,7 @@ jobs:
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-20.04
             system-rtaudio: false
-            bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
+            bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
             novs: false
             weakjack: false
@@ -76,6 +76,17 @@ jobs:
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
+          - name: Linux-x64-qmake-gcc-shared-no_rtaudio
+            runs-on: ubuntu-22.04
+            system-rtaudio: false
+            bundled-rtaudio: false
+            nogui: false
+            novs: false
+            weakjack: false
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: qmake
+
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
             runs-on: ubuntu-22.04
             system-rtaudio: false
