@@ -325,7 +325,7 @@ int main(int argc, char* argv[])
         // Set url scheme in registry
         VsInit::setUrlScheme();
         vsInit.reset(new VsInit());
-        vsInit->checkForInstance(app.data(), deeplink, vs);
+        vsInit->checkForInstance(deeplink);
 #endif  // _WIN32
         window.reset(new QJackTrip(&cliSettings, !deeplink.isEmpty()));
 #else
@@ -337,6 +337,7 @@ int main(int argc, char* argv[])
         vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
         QObject::connect(vs.data(), &VirtualStudio::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
+        vsInit->setVs(vs);
         vs->setStandardWindow(window);
         window->setVs(vs);
 

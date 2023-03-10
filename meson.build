@@ -144,6 +144,7 @@ else
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
+			'src/gui/vsInit.h',
 			'src/gui/vsDevice.h',
 			'src/gui/vsAudioInterface.h',
 			'src/gui/vsServerInfo.h',

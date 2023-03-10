@@ -45,8 +45,10 @@
 
 #include "virtualstudio.h"
 
-class VsInit
+class VsInit : QObject
 {
+    Q_OBJECT
+
    public:
     VsInit() = default;
 
@@ -54,8 +56,8 @@ class VsInit
 #ifdef _WIN32
     static void setUrlScheme();
 #endif
-    void checkForInstance(QCoreApplication* app, QString& deeplink,
-                          QSharedPointer<VirtualStudio> vs);
+    void checkForInstance(QString& deeplink);
+    void setVs(QSharedPointer<VirtualStudio> vs) { m_vs = vs; }
 
    private:
     QScopedPointer<QLocalServer> m_instanceServer;

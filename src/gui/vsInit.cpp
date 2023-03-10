@@ -56,15 +56,13 @@ QString VsInit::parseDeeplink(QCoreApplication* app)
     }
 }
 
-void VsInit::checkForInstance(QCoreApplication* app, QString& deeplink,
-                              QSharedPointer<VirtualStudio> vs)
+void VsInit::checkForInstance(QString& deeplink)
 {
-    m_vs = vs;
     // Create socket
-    m_instanceCheckSocket.reset(new QLocalSocket(app));
+    m_instanceCheckSocket.reset(new QLocalSocket(this));
     // End process if instance exists
     QObject::connect(
-        m_instanceCheckSocket.data(), &QLocalSocket::connected, app,
+        m_instanceCheckSocket.data(), &QLocalSocket::connected, this,
         [=]() {
             // pass deeplink to existing instance before quitting
             if (!deeplink.isEmpty()) {
@@ -88,21 +86,23 @@ void VsInit::checkForInstance(QCoreApplication* app, QString& deeplink,
     errorFunc = &QLocalSocket::errorOccurred;
 #endif
     QObject::connect(
-        m_instanceCheckSocket.data(), errorFunc, app,
-        [=](QLocalSocket::LocalSocketError socketError) {
+        m_instanceCheckSocket.data(), errorFunc, this,
+        [&](QLocalSocket::LocalSocketError socketError) {
             switch (socketError) {
             case QLocalSocket::ServerNotFoundError:
             case QLocalSocket::SocketTimeoutError:
             case QLocalSocket::ConnectionRefusedError:
-                m_instanceServer.reset(new QLocalServer(app));
+                m_instanceServer.reset(new QLocalServer(this));
                 m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
                 m_instanceServer->listen("jacktripExists");
                 QObject::connect(
-                    m_instanceServer.data(), &QLocalServer::newConnection, app,
+                    m_instanceServer.data(), &QLocalServer::newConnection, this,
                     [&]() {
                         // This is the first instance. Bring it to the
                         // top.
-                        m_vs->raiseToTop();
+                        if (!m_vs.isNull()) {
+                            m_vs->raiseToTop();
+                        }
                         while (m_instanceServer->hasPendingConnections()) {
                             // Receive URL from 2nd instance
                             QLocalSocket* connectedSocket =
@@ -129,7 +129,8 @@ void VsInit::checkForInstance(QCoreApplication* app, QString& deeplink,
                             QUrl url(urlString);
 
                             // Join studio using received URL
-                            if (url.scheme() == "jacktrip" && url.host() == "join") {
+                            if (!m_vs.isNull() && url.scheme() == "jacktrip"
+                                && url.host() == "join") {
                                 m_vs->setStudioToJoin(url);
                             }
                         }
