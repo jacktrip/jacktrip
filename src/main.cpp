@@ -337,7 +337,9 @@ int main(int argc, char* argv[])
         vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
         QObject::connect(vs.data(), &VirtualStudio::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
+#ifdef _WIN32
         vsInit->setVs(vs);
+#endif
         vs->setStandardWindow(window);
         window->setVs(vs);
 
