@@ -125,7 +125,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     }
 
     // use default base channel 0, if the setting does not exist
-    m_baseInputChannel = settings.value(QStringLiteral("BaseInputChannel"), 0).toInt();
+    m_baseInputChannel  = settings.value(QStringLiteral("BaseInputChannel"), 0).toInt();
+    m_baseOutputChannel = settings.value(QStringLiteral("BaseOutputChannel"), 0).toInt();
 
     // Handle migration scenarios. Assume this is a new user
     // if we have m_inputDevice == "" and m_outputDevice == ""
@@ -137,6 +138,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                              .value(QStringLiteral("InputMixMode"),
                                     static_cast<int>(AudioInterface::MONO))
                              .toInt();
+
+        // use 2 channels for output
+        m_numOutputChannels =
+            settings.value(QStringLiteral("NumOutputChannels"), 2).toInt();
     } else {
         // existing installs - keep using stereo
         m_numInputChannels =
@@ -145,6 +150,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                              .value(QStringLiteral("InputMixMode"),
                                     static_cast<int>(AudioInterface::STEREO))
                              .toInt();
+
+        // use 2 channels for output
+        m_numOutputChannels =
+            settings.value(QStringLiteral("NumOutputChannels"), 2).toInt();
     }
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
@@ -189,6 +198,18 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("inputChannelsComboModel"),
         QVariant::fromValue(
             QVariant(QVariantList() << QVariant(QJsonValue(inputChannelsComboElement)))));
+
+    QJsonObject outputChannelsComboElement = QJsonObject();
+    outputChannelsComboElement.insert(QString::fromStdString("label"),
+                                      QString::fromStdString("1 & 2"));
+    outputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
+                                      QVariant(0).toInt());
+    outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
+                                      QVariant(2).toInt());
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("outputChannelsComboModel"),
+        QVariant::fromValue(QVariant(
+            QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
 
 #endif
     m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 0).toInt();
@@ -258,7 +279,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
-    m_view.resize(696 * m_uiScale, 656 * m_uiScale);
+    m_view.resize(696 * m_uiScale, 676 * m_uiScale);
 
     // Connect our timers
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);
@@ -473,6 +494,48 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] const QString& device)
     m_outputDevice = device;
     emit outputDeviceChanged(m_outputDevice, false);
     emit outputDeviceSelected(m_outputDevice);
+#endif
+}
+
+int VirtualStudio::baseOutputChannel()
+{
+#ifdef RT_AUDIO
+    if (m_useRtAudio) {
+        return m_baseOutputChannel;
+    }
+#endif
+    return 0;
+}
+
+void VirtualStudio::setBaseOutputChannel([[maybe_unused]] int baseChannel)
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_baseOutputChannel = baseChannel;
+    emit baseOutputChannelChanged(m_baseOutputChannel, true);
+#endif
+}
+
+int VirtualStudio::numOutputChannels()
+{
+#ifdef RT_AUDIO
+    if (m_useRtAudio) {
+        return m_numOutputChannels;
+    }
+#endif
+    return 0;
+}
+
+void VirtualStudio::setNumOutputChannels([[maybe_unused]] int numChannels)
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
+    m_numOutputChannels = numChannels;
+    emit numOutputChannelsChanged(m_numOutputChannels, true);
 #endif
 }
 
@@ -1040,6 +1103,12 @@ void VirtualStudio::refreshDevices()
 
 void VirtualStudio::validateDevicesState()
 {
+    validateInputDevicesState();
+    validateOutputDevicesState();
+}
+
+void VirtualStudio::validateInputDevicesState()
+{
     if (!m_useRtAudio) {
         return;
     }
@@ -1048,17 +1117,12 @@ void VirtualStudio::validateDevicesState()
         return;
     }
 
-    // Given input device list and output device list, check that the currently set device
+    // Given input device list, check that the currently set device
     // actually exists
     if (m_inputDevice == QStringLiteral("")
         || m_inputDeviceList.indexOf(m_inputDevice) == -1) {
         m_inputDevice = m_inputDeviceList[0];
         emit inputDeviceChanged(m_inputDevice, false);
-    }
-    if (m_outputDevice == QStringLiteral("")
-        || m_outputDeviceList.indexOf(m_outputDevice) == -1) {
-        m_outputDevice = m_outputDeviceList[0];
-        emit outputDeviceChanged(m_outputDevice, false);
     }
 
     // Given the currently selected input device, reset the available input channel
@@ -1189,6 +1253,91 @@ void VirtualStudio::validateDevicesState()
                 m_inputMixMode = static_cast<int>(AudioInterface::MONO);
                 emit inputMixModeChanged(m_inputMixMode);
             }
+        }
+    }
+#endif  // RT_AUDIO
+}
+
+void VirtualStudio::validateOutputDevicesState()
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
+    if (m_outputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
+        return;
+    }
+
+    // Given output device list, check that the currently set device
+    // actually exists
+    if (m_outputDevice == QStringLiteral("")
+        || m_outputDeviceList.indexOf(m_outputDevice) == -1) {
+        m_outputDevice = m_outputDeviceList[0];
+        emit outputDeviceChanged(m_outputDevice, false);
+    }
+
+    // Given the currently selected output device, reset the available output channel
+    // options
+    int indexOfOutput = m_outputDeviceList.indexOf(m_outputDevice);
+    if (indexOfOutput == -1) {
+        std::cerr << "Invalid state. Output device index should never be -1" << std::endl;
+        return;
+    }
+
+    int numDevicesChannelsAvailable = m_outputDeviceChannels.at(indexOfOutput);
+    if (numDevicesChannelsAvailable < 1) {
+        std::cerr << "Invalid state. Number of channels should never be less than 1"
+                  << std::endl;
+        return;
+    } else if (numDevicesChannelsAvailable == 1) {
+        // Set the output channels combo to only have channel 1 as an option
+        QJsonObject outputChannelsComboElement = QJsonObject();
+        outputChannelsComboElement.insert(QString::fromStdString("label"),
+                                          QString::fromStdString("1"));
+        outputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
+                                          QVariant(0).toInt());
+        outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
+                                          QVariant(1).toInt());
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputChannelsComboModel"),
+            QVariant::fromValue(QVariant(
+                QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
+
+        // Set the only allowed options for these variables automatically
+        m_baseOutputChannel = 0;
+        m_numOutputChannels = 1;
+
+        emit baseOutputChannelChanged(m_baseOutputChannel);
+        emit numOutputChannelsChanged(m_numOutputChannels);
+    } else {
+        // set the output channels selector to have the options based on the currently
+        // selected device
+        QVariantList items = QVariantList();
+        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+            if (i % 2 == 0) {
+                QJsonObject element = QJsonObject();
+                element.insert(
+                    QString::fromStdString("label"),
+                    QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
+                element.insert(QString::fromStdString("baseChannel"),
+                               QVariant(i).toInt());
+                element.insert(QString::fromStdString("numChannels"),
+                               QVariant(2).toInt());
+                items.push_back(QVariant(QJsonValue(element)));
+            }
+        }
+        m_view.engine()->rootContext()->setContextProperty(
+            QStringLiteral("outputChannelsComboModel"), QVariant(items));
+
+        // if the current m_baseOutputChannel or m_numOutputChannels is invalid based on
+        // this device's option, use the first two channels by default
+        if (m_baseOutputChannel + m_numOutputChannels > numDevicesChannelsAvailable) {
+            // we're in the case where numDevicesChannelsAvailable >= 2, so always have
+            // the ability to use the first 2 channels
+            m_baseOutputChannel = 0;
+            m_numOutputChannels = 2;
+            emit baseOutputChannelChanged(m_baseOutputChannel);
+            emit numOutputChannelsChanged(m_numOutputChannels);
         }
     }
 #endif  // RT_AUDIO
@@ -1336,10 +1485,11 @@ void VirtualStudio::completeConnection()
         JackTrip* jackTrip = m_device->initJackTrip(
             m_useRtAudio, input, output,
 #ifdef RT_AUDIO
-            m_numInputChannels, m_numOutputChannels, m_baseInputChannel,
+            m_baseInputChannel, m_numInputChannels, m_baseOutputChannel,
+            m_numOutputChannels,
 #else
-            2, 2,  // default to 2 channels for input and 2 channels for output
-            1,     // start at channel 1 by default
+            0, 2, 0, 2,  // default to 2 channels for input and 2 channels for output
+                         // starting at channel 0
 #endif
             inputMixMode, buffer_size, m_bufferStrategy, studioInfo);
         if (jackTrip == 0) {
@@ -1866,7 +2016,11 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
             detectedClip = true;
         }
     }
-
+#ifdef RT_AUDIO
+    if (m_numOutputChannels == 1) {
+        uiValues[1] = uiValues[0];
+    }
+#endif
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
                                                        QVariant::fromValue(uiValues));
 }
@@ -2251,6 +2405,8 @@ void VirtualStudio::startAudio()
     m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, true);
     m_vsAudioInterface->setNumInputChannels(m_numInputChannels, true);
     m_vsAudioInterface->setInputMixMode(m_inputMixMode, true);
+    m_vsAudioInterface->setBaseOutputChannel(m_baseOutputChannel, true);
+    m_vsAudioInterface->setNumOutputChannels(m_numOutputChannels, true);
 #endif
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
             &VirtualStudio::updatedDevicesErrorMsg);
@@ -2276,6 +2432,10 @@ void VirtualStudio::startAudio()
             &VsAudioInterface::setBaseInputChannel);
     connect(this, &VirtualStudio::inputMixModeChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setInputMixMode);
+    connect(this, &VirtualStudio::numOutputChannelsChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setNumOutputChannels);
+    connect(this, &VirtualStudio::baseOutputChannelChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setBaseOutputChannel);
     connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setAudioInterfaceMode);
     connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),

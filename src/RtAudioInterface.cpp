@@ -78,9 +78,10 @@ void RtAudioInterface::setup(bool verbose)
     QVarLengthArray<int> iChans = getInputChannels();
     QVarLengthArray<int> oChans = getOutputChannels();
 
-    uint32_t chansIn    = iChans.size();
-    uint32_t chansOut   = oChans.size();
-    uint32_t baseChanIn = 0;
+    uint32_t chansIn     = iChans.size();
+    uint32_t chansOut    = oChans.size();
+    uint32_t baseChanIn  = 0;
+    uint32_t baseChanOut = 0;
 
     if (iChans.size() >= 1) {
         int min = iChans.at(0);
@@ -91,6 +92,18 @@ void RtAudioInterface::setup(bool verbose)
         }
         if (min >= 0) {
             baseChanIn = min;
+        }
+    }
+
+    if (oChans.size() >= 1) {
+        int min = oChans.at(0);
+        for (int i = 0; i < oChans.size(); i++) {
+            if (oChans.at(i) < min) {
+                min = iChans.at(i);
+            }
+        }
+        if (min >= 0) {
+            baseChanOut = min;
         }
     }
 
@@ -192,8 +205,12 @@ void RtAudioInterface::setup(bool verbose)
         }
     }
 
-    if (chansOut > dev_info_output.outputChannels) {
-        chansOut = dev_info_output.outputChannels;
+    if (baseChanOut + chansOut > dev_info_output.outputChannels) {
+        baseChanOut = 0;
+        chansOut    = 2;
+        if (dev_info_output.outputChannels < 2) {
+            chansOut = 1;
+        }
     }
 
     if (verbose) {
@@ -230,11 +247,12 @@ void RtAudioInterface::setup(bool verbose)
     }
 
     RtAudio::StreamParameters in_params, out_params;
-    in_params.deviceId     = index_in;
-    out_params.deviceId    = index_out;
-    in_params.nChannels    = chansIn;
-    out_params.nChannels   = chansOut;
-    in_params.firstChannel = baseChanIn;
+    in_params.deviceId      = index_in;
+    out_params.deviceId     = index_out;
+    in_params.nChannels     = chansIn;
+    out_params.nChannels    = chansOut;
+    in_params.firstChannel  = baseChanIn;
+    out_params.firstChannel = baseChanOut;
 
     RtAudio::StreamOptions options;
     // The second flag affects linux and mac only
@@ -255,7 +273,7 @@ void RtAudioInterface::setup(bool verbose)
         updatedInputChannels[i] = baseChanIn + i;
     }
     for (uint32_t i = 0; i < chansOut; i++) {
-        updatedOutputChannels[i] = 1 + i;
+        updatedOutputChannels[i] = baseChanOut + i;
     }
     setInputChannels(updatedInputChannels);
     setOutputChannels(updatedOutputChannels);

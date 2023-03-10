@@ -92,6 +92,10 @@ class VirtualStudio : public QObject
                    numInputChannelsChanged)
     Q_PROPERTY(int inputMixMode READ inputMixMode WRITE setInputMixMode NOTIFY
                    inputMixModeChanged)
+    Q_PROPERTY(int baseOutputChannel READ baseOutputChannel WRITE setBaseOutputChannel
+                   NOTIFY baseOutputChannelChanged)
+    Q_PROPERTY(int numOutputChannels READ numOutputChannels WRITE setNumOutputChannels
+                   NOTIFY numOutputChannelsChanged)
 
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
@@ -172,6 +176,10 @@ class VirtualStudio : public QObject
     int inputMixMode();
     QString outputDevice();
     void setOutputDevice(const QString& device);
+    int baseOutputChannel();
+    void setBaseOutputChannel(int baseChannel);
+    int numOutputChannels();
+    void setNumOutputChannels(int numChannels);
     int previousInput();
     void setPreviousInput(int device);
     int previousOutput();
@@ -235,6 +243,8 @@ class VirtualStudio : public QObject
     void refreshStudios(int index, bool signalRefresh = false);
     void refreshDevices();
     void validateDevicesState();
+    void validateInputDevicesState();
+    void validateOutputDevicesState();
     void playOutputAudio();
     void revertSettings();
     void applySettings();
@@ -276,6 +286,8 @@ class VirtualStudio : public QObject
     void outputDeviceChanged(QString device, bool shouldRestart = true);
     void inputDeviceSelected(QString device, bool shouldRestart = true);
     void outputDeviceSelected(QString device, bool shouldRestart = true);
+    void baseOutputChannelChanged(int baseChannel, bool shouldRestart = true);
+    void numOutputChannelsChanged(int numChannels, bool shouldRestart = true);
     void previousInputChanged();
     void previousOutputChanged();
     void devicesWarningChanged();
@@ -447,7 +459,8 @@ class VirtualStudio : public QObject
     int m_numInputChannels;
     int m_inputMixMode;
 
-    int m_numOutputChannels = 2;
+    int m_baseOutputChannel;
+    int m_numOutputChannels;
 
     bool m_previousUseRtAudio = false;
     inline void delay(int millisecondsWait)

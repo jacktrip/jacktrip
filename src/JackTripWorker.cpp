@@ -125,7 +125,7 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
     //        qDebug() << "is WAIR?" <<  tmp ;
     qDebug() << "mNumNetRevChans" << mNumNetRevChans;
 
-    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1,
+    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 0, 1, 0, 1,
                                  AudioInterface::MIX_UNSET, mNumNetRevChans,
                                  FORCEBUFFERQ));
     // Add Plugins
@@ -147,7 +147,7 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
         }
     }
 #else   // endwhere
-    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 1, 1, 1,
+    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 0, 1, 0, 1,
                                  AudioInterface::MIX_UNSET, mBufferQueueLength));
 #endif  // not wair
 #endif  // ifndef __JAMTEST__

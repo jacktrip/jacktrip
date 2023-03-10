@@ -305,7 +305,7 @@ Item {
         Item {
             id: usingRtAudio
             anchors.top: parent.top
-            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: 24 * virtualstudio.uiScale
@@ -458,8 +458,8 @@ Item {
 
             Image {
                 id: outputLouderIcon
-                anchors.right: testOutputAudioButton.left
-                anchors.rightMargin: 16 * virtualstudio.uiScale
+                anchors.right: parent.right
+                anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: outputSlider.verticalCenter
                 source: "loud.svg"
                 sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
@@ -475,6 +475,63 @@ Item {
                 }
             }
 
+            Text {
+                id: outputChannelsLabel
+                anchors.left: outputCombo.left
+                anchors.right: outputCombo.horizontalCenter
+                anchors.top: outputSlider.bottom
+                anchors.topMargin: 12 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: "Output Channel(s)"
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            ComboBox {
+                id: outputChannelsCombo
+                anchors.left: outputCombo.left
+                anchors.right: outputCombo.horizontalCenter
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.top: outputChannelsLabel.bottom
+                anchors.topMargin: 12 * virtualstudio.uiScale
+                model: outputChannelsComboModel
+                currentIndex: (() => {
+                    let idx = outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
+                        && elem.numChannels === virtualstudio.numOutputChannels);
+                    if (idx < 0) {
+                        idx = 0;
+                    }
+                    return idx;
+                })()
+                delegate: ItemDelegate {
+                    required property var modelData
+                    required property int index
+                    width: parent.width
+                    contentItem: Text {
+                        text: modelData.label
+                    }
+                    highlighted: outputChannelsCombo.highlightedIndex === index
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            outputChannelsCombo.currentIndex = index
+                            outputChannelsCombo.popup.close()
+                            virtualstudio.baseOutputChannel = modelData.baseChannel
+                            virtualstudio.numOutputChannels = modelData.numChannels
+                            virtualstudio.validateDevicesState()
+                        }
+                    }
+                }
+                contentItem: Text {
+                    leftPadding: 12
+                    font: inputCombo.font
+                    horizontalAlignment: Text.AlignHLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: outputChannelsCombo.model[outputChannelsCombo.currentIndex].label || ""
+                }
+            }
+
             Button {
                 id: testOutputAudioButton
                 background: Rectangle {
@@ -486,7 +543,7 @@ Item {
                 onClicked: { virtualstudio.playOutputAudio() }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: outputSlider.verticalCenter
+                anchors.verticalCenter: outputChannelsCombo.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
                     text: "Play Test Tone"
@@ -681,10 +738,10 @@ Item {
                 anchors.left: inputCombo.left
                 anchors.right: inputCombo.horizontalCenter
                 anchors.top: inputSlider.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Input Channel(s)"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
 
@@ -694,7 +751,7 @@ Item {
                 anchors.right: inputCombo.horizontalCenter
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputChannelsLabel.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 model: inputChannelsComboModel
                 currentIndex: (() => {
                     let idx = inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
@@ -739,10 +796,10 @@ Item {
                 anchors.right: inputCombo.right
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputSlider.bottom
-                anchors.topMargin: 24 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Mono / Stereo"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
 
@@ -752,7 +809,7 @@ Item {
                 anchors.right: inputCombo.right
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputMixModeLabel.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
+                anchors.topMargin: 12 * virtualstudio.uiScale
                 model: inputMixModeComboModel
                 currentIndex: (() => {
                     let idx = inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
@@ -855,7 +912,7 @@ Item {
         Item {
             id: usingJACK
             anchors.top: parent.top
-            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: leftMargin * virtualstudio.uiScale
@@ -1152,7 +1209,7 @@ Item {
         Item {
             id: noBackend
             anchors.top: parent.top
-            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.topMargin: 24 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: leftMargin * virtualstudio.uiScale
