@@ -130,7 +130,7 @@ class Settings : public QObject
     JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data Protocol
     int mNumAudioInputChans               = 2;              ///< Number of Input Channels
     int mNumAudioOutputChans              = 2;              ///< Number of Output Channels
-    int mBaseAudioInputChanNum            = 1;              ///< Base Input Channel Number
+    int mBaseAudioInputChanNum            = 0;              ///< Base Input Channel Number
     int mBufferQueueLength =
         gDefaultQueueLength;  ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution = AudioInterface::BIT16;

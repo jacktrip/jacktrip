@@ -1325,14 +1325,8 @@ void VirtualStudio::completeConnection()
         int buffer_size    = 0;
 #ifdef RT_AUDIO
         if (m_useRtAudio) {
-            input = m_inputDevice.toStdString();
-            // if (m_inputDevice == QLatin1String("(default)")) {
-            //     input = "";
-            // }
-            // output = m_outputDevice.toStdString();
-            // if (m_outputDevice == QLatin1String("(default)")) {
-            //     output = "";
-            // }
+            input       = m_inputDevice.toStdString();
+            output      = m_outputDevice.toStdString();
             buffer_size = m_bufferSize;
         }
         int inputMixMode = m_inputMixMode;

@@ -882,7 +882,7 @@ void QJackTrip::start()
             }
 
             m_jackTrip.reset(new JackTrip(
-                jackTripMode, JackTrip::UDP, 1, m_ui->channelSendSpinBox->value(),
+                jackTripMode, JackTrip::UDP, 0, m_ui->channelSendSpinBox->value(),
                 m_ui->channelRecvSpinBox->value(), AudioInterface::MIX_UNSET,
 #ifdef WAIR  // wair
                 0,

@@ -392,10 +392,8 @@ int main(int argc, char* argv[])
         QString updateChannel = settings.value(QStringLiteral("UpdateChannel"), "stable")
                                     .toString()
                                     .toLower();
-        QString baseUrl =
-            QStringLiteral(
-                "https://raw.githubusercontent.com/jacktrip/jacktrip/dev/releases/%1")
-                .arg(updateChannel);
+        QString baseUrl = QStringLiteral("https://files.jacktrip.org/app-releases/%1")
+                              .arg(updateChannel);
 #else
         QString baseUrl = QStringLiteral("https://nuages.psi-borg.org/jacktrip");
 #endif  // PSI
