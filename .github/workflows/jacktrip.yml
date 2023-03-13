@@ -127,18 +127,16 @@ jobs:
             meson-library-type: shared
             static-analysis: true
             
-          # - name: Linux-x64-meson-gcc-shared # meson static build doesn't work currently
-          #   runs-on: ubuntu-18.04
-          #   system-rtaudio: false
-          #   bundled-rtaudio: false
-          #   nogui: false
-          #   weakjack: false
-          #   static-qt-version: 5.12.12
-          #   qt-static-cache-key: 'v26'
-          #   jacktrip-path: jacktrip
-          #   binary-path: binary
-          #   build-system: meson
-          #   meson-library-type: static
+          - name: Linux-x64-meson-gcc-shared # meson shared build without rtaudio
+            runs-on: ubuntu-22.04
+            system-rtaudio: false
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: false
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
 
           - name: macOS-x64-qmake-clang-static-bundled_rtaudio
             release-name: macOS-x64
