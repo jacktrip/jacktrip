@@ -471,7 +471,6 @@ int VirtualStudio::inputMixMode()
 }
 #endif
 
-
 QString VirtualStudio::outputDevice()
 {
 #ifdef RT_AUDIO
