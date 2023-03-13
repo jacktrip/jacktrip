@@ -10,6 +10,7 @@
     <file>Login.qml</file>
     <file>Studio.qml</file>
     <file>Browse.qml</file>
+    <file>AudioSettings.qml</file>
     <file>Settings.qml</file>
     <file>Meter.qml</file>
     <file>Connected.qml</file>
