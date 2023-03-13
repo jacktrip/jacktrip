@@ -337,19 +337,18 @@ void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
     }
 }
 
+#ifdef RT_AUDIO
 void VsAudioInterface::setBaseInputChannel(int baseChannel, bool shouldRestart)
 {
     if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
         return;
     }
-#ifdef RT_AUDIO
     m_baseInputChannel = baseChannel;
     if (!m_audioInterface.isNull()) {
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
     }
-#endif
     return;
 }
 
@@ -358,14 +357,12 @@ void VsAudioInterface::setNumInputChannels(int numChannels, bool shouldRestart)
     if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
         return;
     }
-#ifdef RT_AUDIO
     m_numAudioChansIn = numChannels;
     if (!m_audioInterface.isNull()) {
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
     }
-#endif
 }
 
 void VsAudioInterface::setInputMixMode(const int mode, bool shouldRestart)
@@ -373,7 +370,6 @@ void VsAudioInterface::setInputMixMode(const int mode, bool shouldRestart)
     if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
         return;
     }
-#ifdef RT_AUDIO
     m_inputMixMode = mode;
     if (!m_audioInterface.isNull()) {
         if (m_audioActive && shouldRestart) {
@@ -381,9 +377,8 @@ void VsAudioInterface::setInputMixMode(const int mode, bool shouldRestart)
         }
     }
     return;
-#endif
 }
-
+#endif
 void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
 {
     m_outputDeviceName = deviceName.toStdString();
@@ -394,19 +389,18 @@ void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
     }
 }
 
+#ifdef RT_AUDIO
 void VsAudioInterface::setBaseOutputChannel(int baseChannel, bool shouldRestart)
 {
     if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
         return;
     }
-#ifdef RT_AUDIO
     m_baseOutputChannel = baseChannel;
     if (!m_audioInterface.isNull()) {
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
     }
-#endif
     return;
 }
 
@@ -415,15 +409,14 @@ void VsAudioInterface::setNumOutputChannels(int numChannels, bool shouldRestart)
     if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
         return;
     }
-#ifdef RT_AUDIO
     m_numAudioChansOut = numChannels;
     if (!m_audioInterface.isNull()) {
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
     }
-#endif
 }
+#endif
 
 void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio, bool shouldRestart)
 {

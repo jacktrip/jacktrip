@@ -418,13 +418,12 @@ void VirtualStudio::setInputDevice([[maybe_unused]] const QString& device)
 #endif
 }
 
+#ifdef RT_AUDIO
 int VirtualStudio::baseInputChannel()
 {
-#ifdef RT_AUDIO
     if (m_useRtAudio) {
         return m_baseInputChannel;
     }
-#endif
     return 0;
 }
 
@@ -433,19 +432,15 @@ void VirtualStudio::setBaseInputChannel([[maybe_unused]] int baseChannel)
     if (!m_useRtAudio) {
         return;
     }
-#ifdef RT_AUDIO
     m_baseInputChannel = baseChannel;
     emit baseInputChannelChanged(m_baseInputChannel, true);
-#endif
 }
 
 int VirtualStudio::numInputChannels()
 {
-#ifdef RT_AUDIO
     if (m_useRtAudio) {
         return m_numInputChannels;
     }
-#endif
     return 0;
 }
 
@@ -454,10 +449,8 @@ void VirtualStudio::setNumInputChannels([[maybe_unused]] int numChannels)
     if (!m_useRtAudio) {
         return;
     }
-#ifdef RT_AUDIO
     m_numInputChannels = numChannels;
     emit numInputChannelsChanged(m_numInputChannels, true);
-#endif
 }
 
 void VirtualStudio::setInputMixMode(int mode)
@@ -465,11 +458,8 @@ void VirtualStudio::setInputMixMode(int mode)
     if (!m_useRtAudio) {
         return;
     }
-#ifdef RT_AUDIO
     m_inputMixMode = mode;
     emit inputMixModeChanged(m_inputMixMode, true);
-#endif
-    return;
 }
 
 int VirtualStudio::inputMixMode()
@@ -477,10 +467,9 @@ int VirtualStudio::inputMixMode()
     if (!m_useRtAudio) {
         return -1;
     }
-#ifdef RT_AUDIO
     return m_inputMixMode;
-#endif
 }
+#endif
 
 QString VirtualStudio::outputDevice()
 {
@@ -502,13 +491,12 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] const QString& device)
 #endif
 }
 
+#ifdef RT_AUDIO
 int VirtualStudio::baseOutputChannel()
 {
-#ifdef RT_AUDIO
     if (m_useRtAudio) {
         return m_baseOutputChannel;
     }
-#endif
     return 0;
 }
 
@@ -517,19 +505,15 @@ void VirtualStudio::setBaseOutputChannel([[maybe_unused]] int baseChannel)
     if (!m_useRtAudio) {
         return;
     }
-#ifdef RT_AUDIO
     m_baseOutputChannel = baseChannel;
     emit baseOutputChannelChanged(m_baseOutputChannel, true);
-#endif
 }
 
 int VirtualStudio::numOutputChannels()
 {
-#ifdef RT_AUDIO
     if (m_useRtAudio) {
         return m_numOutputChannels;
     }
-#endif
     return 0;
 }
 
@@ -538,11 +522,10 @@ void VirtualStudio::setNumOutputChannels([[maybe_unused]] int numChannels)
     if (!m_useRtAudio) {
         return;
     }
-#ifdef RT_AUDIO
     m_numOutputChannels = numChannels;
     emit numOutputChannelsChanged(m_numOutputChannels, true);
-#endif
 }
+#endif
 
 int VirtualStudio::previousInput()
 {
@@ -2433,16 +2416,18 @@ void VirtualStudio::startAudio()
             &VsAudioInterface::setOutputDevice);
     connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
             &VsAudioInterface::setOutputDevice);
-    connect(this, &VirtualStudio::numInputChannelsChanged, m_vsAudioInterface.data(),
-            &VsAudioInterface::setNumInputChannels);
+#ifdef RT_AUDIO
     connect(this, &VirtualStudio::baseInputChannelChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setBaseInputChannel);
+    connect(this, &VirtualStudio::numInputChannelsChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setNumInputChannels);
     connect(this, &VirtualStudio::inputMixModeChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setInputMixMode);
-    connect(this, &VirtualStudio::numOutputChannelsChanged, m_vsAudioInterface.data(),
-            &VsAudioInterface::setNumOutputChannels);
     connect(this, &VirtualStudio::baseOutputChannelChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setBaseOutputChannel);
+    connect(this, &VirtualStudio::numOutputChannelsChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setNumOutputChannels);
+#endif
     connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setAudioInterfaceMode);
     connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),

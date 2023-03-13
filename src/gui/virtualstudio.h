@@ -86,6 +86,7 @@ class VirtualStudio : public QObject
                    previousInputChanged)
     Q_PROPERTY(int previousOutput READ previousOutput WRITE setPreviousOutput NOTIFY
                    previousOutputChanged)
+#ifdef RT_AUDIO
     Q_PROPERTY(int baseInputChannel READ baseInputChannel WRITE setBaseInputChannel NOTIFY
                    baseInputChannelChanged)
     Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels NOTIFY
@@ -96,7 +97,7 @@ class VirtualStudio : public QObject
                    NOTIFY baseOutputChannelChanged)
     Q_PROPERTY(int numOutputChannels READ numOutputChannels WRITE setNumOutputChannels
                    NOTIFY numOutputChannelsChanged)
-
+#endif
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
     Q_PROPERTY(QString devicesWarningHelpUrl READ devicesWarningHelpUrl NOTIFY
@@ -169,18 +170,22 @@ class VirtualStudio : public QObject
     void setAudioBackend(const QString& backend);
     QString inputDevice();
     void setInputDevice(const QString& device);
+#ifdef RT_AUDIO
     int baseInputChannel();
     void setBaseInputChannel(int baseChannel);
     int numInputChannels();
     void setNumInputChannels(int numChannels);
     void setInputMixMode(int mode);
     int inputMixMode();
+#endif
     QString outputDevice();
     void setOutputDevice(const QString& device);
+#ifdef RT_AUDIO
     int baseOutputChannel();
     void setBaseOutputChannel(int baseChannel);
     int numOutputChannels();
     void setNumOutputChannels(int numChannels);
+#endif
     int previousInput();
     void setPreviousInput(int device);
     int previousOutput();
