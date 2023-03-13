@@ -2416,16 +2416,18 @@ void VirtualStudio::startAudio()
             &VsAudioInterface::setOutputDevice);
     connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
             &VsAudioInterface::setOutputDevice);
-    connect(this, &VirtualStudio::numInputChannelsChanged, m_vsAudioInterface.data(),
-            &VsAudioInterface::setNumInputChannels);
+#ifdef RT_AUDIO
     connect(this, &VirtualStudio::baseInputChannelChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setBaseInputChannel);
+    connect(this, &VirtualStudio::numInputChannelsChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setNumInputChannels);
     connect(this, &VirtualStudio::inputMixModeChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setInputMixMode);
-    connect(this, &VirtualStudio::numOutputChannelsChanged, m_vsAudioInterface.data(),
-            &VsAudioInterface::setNumOutputChannels);
     connect(this, &VirtualStudio::baseOutputChannelChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setBaseOutputChannel);
+    connect(this, &VirtualStudio::numOutputChannelsChanged, m_vsAudioInterface.data(),
+            &VsAudioInterface::setNumOutputChannels);
+#endif
     connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setAudioInterfaceMode);
     connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),

@@ -93,12 +93,16 @@ class VsAudioInterface : public QObject
 
    public slots:
     void setInputDevice(QString deviceName, bool shouldRestart = true);
+#ifdef RT_AUDIO
     void setBaseInputChannel(int baseChannel, bool shouldRestart = true);
     void setNumInputChannels(int numChannels, bool shouldRestart = true);
     void setInputMixMode(const int mode, bool shouldRestart = true);
+#endif
     void setOutputDevice(QString deviceName, bool shouldRestart = true);
+#ifdef RT_AUDIO
     void setBaseOutputChannel(int baseChannel, bool shouldRestart = true);
     void setNumOutputChannels(int numChannels, bool shouldRestart = true);
+#endif
     void setAudioInterfaceMode(bool useRtAudio, bool shouldRestart = true);
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
