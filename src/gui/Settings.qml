@@ -100,9 +100,6 @@ Item {
             Button {
                 id: refreshButton
                 text: "Refresh Devices"
-                // anchors.right: header.right
-                // anchors.rightMargin: rightMargin * virtualstudio.uiScale
-
                 anchors.verticalCenter: pageTitle.verticalCenter;
                 anchors.right: headerContent.right;
                 anchors.rightMargin: 16 * virtualstudio.uiScale;
@@ -129,7 +126,7 @@ Item {
                     family: "Poppins"
                     pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 }
-                visible: parent.isUsingRtAudio
+                visible: parent.isUsingRtAudio && settingsGroupView == "Audio"
             }
 
         }
