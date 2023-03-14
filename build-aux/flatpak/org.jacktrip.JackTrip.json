@@ -1,0 +1,36 @@
+{
+    "app-id": "org.jacktrip.JackTrip",
+    "runtime": "org.kde.Platform",
+    "runtime-version": "5.15-22.08",
+    "sdk": "org.kde.Sdk",
+    "command": "jacktrip",
+    "finish-args": [
+        "--share=ipc",
+        "--socket=x11",
+        "--device=dri",
+        "--share=network",
+        "--filesystem=xdg-run/pipewire-0",
+        "--env=PIPEWIRE_LATENCY=256/48000"
+    ],
+    "cleanup": [
+        "/lib/python3.10",
+        "/share/man"
+    ],
+    "modules": [
+        "pypi-dependencies.json",
+        {
+            "name": "jacktrip",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dbuildtype=debugoptimized"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "disable-submodules": true,
+                    "url": "https://github.com/jacktrip/jacktrip/"
+                }
+            ]
+        }
+    ]
+}
