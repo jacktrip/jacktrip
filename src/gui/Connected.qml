@@ -49,6 +49,7 @@ Item {
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour
     property string warningTextColour: "#DB0A0A"
+    property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string meterGreen: "#61C554"
     property string meterYellow: "#F5BF4F"
@@ -463,10 +464,19 @@ Item {
         Text {
             x: 0; y: 0
             width: devicesWarning.width
+            textFormat: Text.RichText
+            text: (virtualstudio.devicesWarning)
+                + ((virtualstudio.devicesWarningHelpUrl)
+                    ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
+                    : ""
+                )
+            onLinkActivated: link => {
+                virtualstudio.openLink(link)
+            }
+            horizontalAlignment: Text.AlignHLeft
+            wrapMode: Text.WordWrap
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            text: virtualstudio.devicesWarning;
             color: warningTextColour
-            wrapMode: Text.Wrap
         }
     }
 
