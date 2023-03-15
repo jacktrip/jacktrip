@@ -14,6 +14,8 @@ Rectangle {
 
     property int leftMargin: 48
     property int rightMargin: 16
+    property int bottomToolTipMargin: 8
+    property int rightToolTipMargin: 4
     property int buttonWidth: 103
     property int buttonHeight: 25
 
@@ -31,6 +33,8 @@ Rectangle {
     property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
+    property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
+    property string toolTipTextColour: textColour
 
     property string errorFlagColour: "#DB0A0A"
     property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
@@ -53,13 +57,73 @@ Rectangle {
 
         visible: parent.isUsingRtAudio
 
+        Rectangle {
+            id: leftSpacer
+            x: 0; y: 0
+            width: 144 * virtualstudio.uiScale
+            height: 0
+            color: "transparent"
+        }
+
         Text {
             id: outputLabel
             x: 0; y: 0
-            width: 144 * virtualstudio.uiScale
             text: "Output Device"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
+        }
+
+        Image {
+            id: outputHelpIcon
+            anchors.left: outputLabel.right
+            anchors.bottom: outputLabel.top
+            anchors.bottomMargin: -8 * virtualstudio.uiScale
+            source: "help.svg"
+            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+
+            property bool showToolTip: false
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 0.8 : 0.2
+            }
+
+            MouseArea {
+                id: outputMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: outputHelpIcon.showToolTip = true
+                onExited: outputHelpIcon.showToolTip = false
+            }
+
+            ToolTip {
+                visible: outputHelpIcon.showToolTip
+                contentItem: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 3
+                    anchors.fill: parent
+                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                    layer.enabled: true
+                    border.width: 1
+                    border.color: buttonStroke
+
+                    Text {
+                        anchors.centerIn: parent
+                        font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        text: qsTr("How you'll hear the studio audio")
+                        color: toolTipTextColour
+                    }
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
+            }
         }
 
         Image {
@@ -82,10 +146,10 @@ Rectangle {
 
         ComboBox {
             id: outputCombo
-            anchors.left: outputLabel.right
+            anchors.left: leftSpacer.right
             anchors.verticalCenter: outputLabel.verticalCenter
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
-            width: parent.width - outputLabel.width - rightMargin * virtualstudio.uiScale
+            width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
             model: outputComboModel
             currentIndex: outputCurrIndex
             delegate: ItemDelegate {
@@ -304,12 +368,64 @@ Rectangle {
         Text {
             id: inputLabel
             anchors.left: outputLabel.left
-            anchors.right: outputLabel.right
             anchors.top: divider1.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
             text: "Input Device"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
+        }
+
+        Image {
+            id: inputHelpIcon
+            anchors.left: inputLabel.right
+            anchors.bottom: inputLabel.top
+            anchors.bottomMargin: -8 * virtualstudio.uiScale
+            source: "help.svg"
+            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+
+            property bool showToolTip: false
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 0.8 : 0.2
+            }
+
+            MouseArea {
+                id: inputMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: inputHelpIcon.showToolTip = true
+                onExited: inputHelpIcon.showToolTip = false
+            }
+
+            ToolTip {
+                visible: inputHelpIcon.showToolTip
+                contentItem: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 3
+                    anchors.fill: parent
+                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                    layer.enabled: true
+                    border.width: 1
+                    border.color: buttonStroke
+
+                    Text {
+                        anchors.centerIn: parent
+                        font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        text: qsTr("Send audio to the studio (microphone, instrument, mixer, etc.)")
+                        color: toolTipTextColour
+                    }
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
+            }
         }
 
         Image {
@@ -447,7 +563,7 @@ Rectangle {
 
         Image {
             id: inputLouderIcon
-            anchors.right: hiddenInputButton.left
+            anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.verticalCenter: inputSlider.verticalCenter
             source: "loud.svg"
@@ -918,7 +1034,7 @@ Rectangle {
 
         Image {
             id: jackInputLouderIcon
-            anchors.right: jackHiddenInputButton.left
+            anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
             source: "loud.svg"
