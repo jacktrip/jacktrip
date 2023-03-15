@@ -240,8 +240,9 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
     connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
             &QJackTrip::receivedIP);
     // Use the ipify API to find our external IP address.
-    m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
-    m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
+    // m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
+    m_netManager->get(
+        QNetworkRequest(QUrl(QStringLiteral("https://app.jacktrip.org/api/getmyip"))));
     m_ui->statusBar->showMessage(QStringLiteral("JackTrip version ").append(gVersion));
 
     // Set up our interface for the default Client run mode.
