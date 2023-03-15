@@ -1036,6 +1036,20 @@ void VirtualStudio::logout()
         m_device->removeApp();
     }
 
+    QUrl logoutURL = QUrl("https://auth.jacktrip.org/v2/logout");
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("client_id"), AUTH_CLIENT_ID);
+    if (m_testMode) {
+        query.addQueryItem(QStringLiteral("returnTo"),
+                           QStringLiteral("https://test.jacktrip.org/"));
+    } else {
+        query.addQueryItem(QStringLiteral("returnTo"),
+                           QStringLiteral("https://app.jacktrip.org/"));
+    }
+
+    logoutURL.setQuery(query);
+    launchBrowser(logoutURL);
+
     m_authenticator->setToken(QLatin1String(""));
     m_authenticator->setRefreshToken(QLatin1String(""));
 
