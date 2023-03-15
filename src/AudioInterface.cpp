@@ -817,11 +817,12 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
 {
     switch (msg) {
     case DEVICE_WARN_LATENCY:
-        mWarningMsg =
-            "The selected devices don't support low latency. You can use them, but you "
-            "will experience audio delay. Make sure you have up to date drivers from the "
-            "manufacturer!";
 #ifdef _WIN32
+        mWarningMsg =
+            "The currently selected devices don't support low latency. You can use them, "
+            "but you "
+            "may experience audio delay. Make sure you have up to date drivers from the "
+            "manufacturer!";
         mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
 #else
         mWarningHelpUrl = "";
