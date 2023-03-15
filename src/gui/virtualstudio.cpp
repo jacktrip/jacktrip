@@ -1013,7 +1013,6 @@ void VirtualStudio::toVirtualStudio()
                 (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
                 parameters->insert(QStringLiteral("audience"), AUTH_AUDIENCE);
-                parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
             }
             if (!parameters->contains("client_id")) {
                 parameters->insert("client_id", AUTH_CLIENT_ID);
@@ -1036,6 +1035,20 @@ void VirtualStudio::logout()
     if (m_device != nullptr) {
         m_device->removeApp();
     }
+
+    QUrl logoutURL = QUrl("https://auth.jacktrip.org/v2/logout");
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("client_id"), AUTH_CLIENT_ID);
+    if (m_testMode) {
+        query.addQueryItem(QStringLiteral("returnTo"),
+                           QStringLiteral("https://test.jacktrip.org/"));
+    } else {
+        query.addQueryItem(QStringLiteral("returnTo"),
+                           QStringLiteral("https://app.jacktrip.org/"));
+    }
+
+    logoutURL.setQuery(query);
+    launchBrowser(logoutURL);
 
     m_authenticator->setToken(QLatin1String(""));
     m_authenticator->setRefreshToken(QLatin1String(""));
@@ -2040,7 +2053,6 @@ void VirtualStudio::setupAuthenticator()
             } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
                 parameters->insert(QStringLiteral("audience"),
                                    QStringLiteral("https://api.jacktrip.org"));
-                parameters->insert(QStringLiteral("prompt"), QStringLiteral("login"));
             }
         });
 
