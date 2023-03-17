@@ -237,11 +237,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
     connect(m_ui->disconnectScriptBrowse, &QPushButton::clicked, this,
             &QJackTrip::browseForFile);
 
-    connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
-            &QJackTrip::receivedIP);
-    // Use the ipify API to find our external IP address.
-    m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
-    m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
     m_ui->statusBar->showMessage(QStringLiteral("JackTrip version ").append(gVersion));
 
     // Set up our interface for the default Client run mode.
@@ -440,6 +435,13 @@ void QJackTrip::showEvent(QShowEvent* event)
             this->resize(QSize(this->size().height(), 600));
         }
         settings.endGroup();
+
+        // Use the ipify API to find our external IP address.
+        connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
+                &QJackTrip::receivedIP);
+        m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
+        m_netManager->get(
+            QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
 
         // Also show our JACK not found warning if needed.
 #ifdef RT_AUDIO
