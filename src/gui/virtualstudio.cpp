@@ -1099,7 +1099,7 @@ void VirtualStudio::refreshDevices()
     emit outputDeviceChanged(m_outputDevice, false);
     emit baseInputChannelChanged(m_baseInputChannel, false);
     emit numInputChannelsChanged(m_numInputChannels, false);
-    emit inputMixModeChanged(m_inputMixMode, false);
+    emit inputMixModeChanged(m_inputMixMode, true); // restart after the last setting is applied
 #endif
 }
 
