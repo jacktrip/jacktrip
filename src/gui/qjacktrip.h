@@ -151,8 +151,6 @@ class QJackTrip : public QMainWindow
     QList<QLabel*> m_outputLabels;
 
     QMutex m_requestMutex;
-    QString m_IPv6Address;
-    bool m_hasIPv4Reply;
     QString m_lastPath;
 
     QLabel m_autoQueueIndicator;

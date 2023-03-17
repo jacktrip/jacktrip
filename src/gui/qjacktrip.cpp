@@ -64,7 +64,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
     , m_jackTripRunning(false)
     , m_isExiting(false)
     , m_exitSent(false)
-    , m_hasIPv4Reply(false)
     , m_hideWarning(false)
 {
     m_ui->setupUi(this);
@@ -239,8 +238,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
 
     connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
             &QJackTrip::receivedIP);
-    // Use the ipify API to find our external IP address.
-    // m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
     m_netManager->get(
         QNetworkRequest(QUrl(QStringLiteral("https://app.jacktrip.org/api/getmyip"))));
     m_ui->statusBar->showMessage(QStringLiteral("JackTrip version ").append(gVersion));
@@ -727,38 +724,15 @@ void QJackTrip::browseForFile()
 void QJackTrip::receivedIP(QNetworkReply* reply)
 {
     QMutexLocker locker(&m_requestMutex);
-    // Check whether we're dealing with our IPv4 or IPv6 request.
-    if (reply->url().host().startsWith(QLatin1String("api6"))) {
-        if (reply->error() == QNetworkReply::NoError) {
-            m_IPv6Address = QString(reply->readAll());
-            // Make sure this isn't just a repeat of our IPv4 address.
-            if (QHostAddress(m_IPv6Address).protocol() != QAbstractSocket::IPv6Protocol) {
-                m_IPv6Address.clear();
-                reply->deleteLater();
-                return;
-            }
-            if (m_hasIPv4Reply) {
-                m_ui->ipLabel->setText(m_ui->ipLabel->text().append(
-                    QStringLiteral("\n(IPv6: %1)").arg(m_IPv6Address)));
-            }
-            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        }
-    } else {
-        if (reply->error() != QNetworkReply::NoError) {
-            m_ui->ipLabel->setText(
-                QStringLiteral("Unable to determine external IP address."));
-        } else {
-            QByteArray address = reply->readAll();
-            m_ui->ipLabel->setText(
-                QStringLiteral("External IP address: ").append(address));
-            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        }
-        if (!m_IPv6Address.isEmpty()) {
-            m_ui->ipLabel->setText(m_ui->ipLabel->text().append(
-                QStringLiteral("\n(IPv6: %1)").arg(m_IPv6Address)));
-        }
-        m_hasIPv4Reply = true;
+    if (reply->error() != QNetworkReply::NoError) {
+        m_ui->ipLabel->setText(
+            QStringLiteral("Unable to determine external IP address."));
+        return;
     }
+    QByteArray address = reply->readAll();
+    m_ui->ipLabel->setText(
+        QStringLiteral("External IP address: ").append(address));
+    m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     reply->deleteLater();
 }
 

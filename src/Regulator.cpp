@@ -259,6 +259,9 @@ Regulator::~Regulator()
 
 void Regulator::setFPPratio()
 {
+    qDebug() << "myFPP = " << mFPP << " / "
+        << "peerFPP = " << mPeerFPP;
+
     if (mPeerFPP != mFPP) {
         if (mPeerFPP > mFPP)
             mFPPratioDenominator = mPeerFPP / mFPP;
